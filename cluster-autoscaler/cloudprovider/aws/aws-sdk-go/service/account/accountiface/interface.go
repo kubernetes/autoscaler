@@ -64,13 +64,40 @@ type AccountAPI interface {
 	DeleteAlternateContactWithContext(aws.Context, *account.DeleteAlternateContactInput, ...request.Option) (*account.DeleteAlternateContactOutput, error)
 	DeleteAlternateContactRequest(*account.DeleteAlternateContactInput) (*request.Request, *account.DeleteAlternateContactOutput)
 
+	DisableRegion(*account.DisableRegionInput) (*account.DisableRegionOutput, error)
+	DisableRegionWithContext(aws.Context, *account.DisableRegionInput, ...request.Option) (*account.DisableRegionOutput, error)
+	DisableRegionRequest(*account.DisableRegionInput) (*request.Request, *account.DisableRegionOutput)
+
+	EnableRegion(*account.EnableRegionInput) (*account.EnableRegionOutput, error)
+	EnableRegionWithContext(aws.Context, *account.EnableRegionInput, ...request.Option) (*account.EnableRegionOutput, error)
+	EnableRegionRequest(*account.EnableRegionInput) (*request.Request, *account.EnableRegionOutput)
+
 	GetAlternateContact(*account.GetAlternateContactInput) (*account.GetAlternateContactOutput, error)
 	GetAlternateContactWithContext(aws.Context, *account.GetAlternateContactInput, ...request.Option) (*account.GetAlternateContactOutput, error)
 	GetAlternateContactRequest(*account.GetAlternateContactInput) (*request.Request, *account.GetAlternateContactOutput)
 
+	GetContactInformation(*account.GetContactInformationInput) (*account.GetContactInformationOutput, error)
+	GetContactInformationWithContext(aws.Context, *account.GetContactInformationInput, ...request.Option) (*account.GetContactInformationOutput, error)
+	GetContactInformationRequest(*account.GetContactInformationInput) (*request.Request, *account.GetContactInformationOutput)
+
+	GetRegionOptStatus(*account.GetRegionOptStatusInput) (*account.GetRegionOptStatusOutput, error)
+	GetRegionOptStatusWithContext(aws.Context, *account.GetRegionOptStatusInput, ...request.Option) (*account.GetRegionOptStatusOutput, error)
+	GetRegionOptStatusRequest(*account.GetRegionOptStatusInput) (*request.Request, *account.GetRegionOptStatusOutput)
+
+	ListRegions(*account.ListRegionsInput) (*account.ListRegionsOutput, error)
+	ListRegionsWithContext(aws.Context, *account.ListRegionsInput, ...request.Option) (*account.ListRegionsOutput, error)
+	ListRegionsRequest(*account.ListRegionsInput) (*request.Request, *account.ListRegionsOutput)
+
+	ListRegionsPages(*account.ListRegionsInput, func(*account.ListRegionsOutput, bool) bool) error
+	ListRegionsPagesWithContext(aws.Context, *account.ListRegionsInput, func(*account.ListRegionsOutput, bool) bool, ...request.Option) error
+
 	PutAlternateContact(*account.PutAlternateContactInput) (*account.PutAlternateContactOutput, error)
 	PutAlternateContactWithContext(aws.Context, *account.PutAlternateContactInput, ...request.Option) (*account.PutAlternateContactOutput, error)
 	PutAlternateContactRequest(*account.PutAlternateContactInput) (*request.Request, *account.PutAlternateContactOutput)
+
+	PutContactInformation(*account.PutContactInformationInput) (*account.PutContactInformationOutput, error)
+	PutContactInformationWithContext(aws.Context, *account.PutContactInformationInput, ...request.Option) (*account.PutContactInformationOutput, error)
+	PutContactInformationRequest(*account.PutContactInformationInput) (*request.Request, *account.PutContactInformationOutput)
 }
 
 var _ AccountAPI = (*account.Account)(nil)

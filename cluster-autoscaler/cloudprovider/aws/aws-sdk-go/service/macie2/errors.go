@@ -50,6 +50,13 @@ const (
 	// were sent during a certain amount of time.
 	ErrCodeThrottlingException = "ThrottlingException"
 
+	// ErrCodeUnprocessableEntityException for service response error code
+	// "UnprocessableEntityException".
+	//
+	// Provides information about an error that occurred due to an unprocessable
+	// entity.
+	ErrCodeUnprocessableEntityException = "UnprocessableEntityException"
+
 	// ErrCodeValidationException for service response error code
 	// "ValidationException".
 	//
@@ -65,5 +72,6 @@ var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
 	"ResourceNotFoundException":     newErrorResourceNotFoundException,
 	"ServiceQuotaExceededException": newErrorServiceQuotaExceededException,
 	"ThrottlingException":           newErrorThrottlingException,
+	"UnprocessableEntityException":  newErrorUnprocessableEntityException,
 	"ValidationException":           newErrorValidationException,
 }

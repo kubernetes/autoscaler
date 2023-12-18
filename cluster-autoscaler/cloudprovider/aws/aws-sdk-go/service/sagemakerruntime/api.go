@@ -3,12 +3,22 @@
 package sagemakerruntime
 
 import (
+	"bytes"
 	"fmt"
+	"io"
+	"sync"
+	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/awserr"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/awsutil"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/client"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/request"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/private/protocol"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/private/protocol/eventstream"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/private/protocol/eventstream/eventstreamapi"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/private/protocol/rest"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/private/protocol/restjson"
 )
 
 const opInvokeEndpoint = "InvokeEndpoint"
@@ -179,10 +189,10 @@ func (c *SageMakerRuntime) InvokeEndpointAsyncRequest(input *InvokeEndpointAsync
 // at the specified endpoint in an asynchronous manner.
 //
 // Inference requests sent to this API are enqueued for asynchronous processing.
-// The processing of the inference request may or may not complete before the
-// you receive a response from this API. The response from this API will not
-// contain the result of the inference request but contain information about
-// where you can locate it.
+// The processing of the inference request may or may not complete before you
+// receive a response from this API. The response from this API will not contain
+// the result of the inference request but contain information about where you
+// can locate it.
 //
 // Amazon SageMaker strips all POST headers except those supported by the API.
 // Amazon SageMaker might add additional headers. You should not rely on the
@@ -190,7 +200,7 @@ func (c *SageMakerRuntime) InvokeEndpointAsyncRequest(input *InvokeEndpointAsync
 //
 // Calls to InvokeEndpointAsync are authenticated by using Amazon Web Services
 // Signature Version 4. For information, see Authenticating Requests (Amazon
-// Web Services Signature Version 4) (https://docs.aws.amazon.com/https:/docs.aws.amazon.com/AmazonS3/latest/API/sig-v4-authenticating-requests.html)
+// Web Services Signature Version 4) (https://docs.aws.amazon.com/AmazonS3/latest/API/sig-v4-authenticating-requests.html)
 // in the Amazon S3 API Reference.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -231,6 +241,291 @@ func (c *SageMakerRuntime) InvokeEndpointAsyncWithContext(ctx aws.Context, input
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
+}
+
+const opInvokeEndpointWithResponseStream = "InvokeEndpointWithResponseStream"
+
+// InvokeEndpointWithResponseStreamRequest generates a "aws/request.Request" representing the
+// client's request for the InvokeEndpointWithResponseStream operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See InvokeEndpointWithResponseStream for more information on using the InvokeEndpointWithResponseStream
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the InvokeEndpointWithResponseStreamRequest method.
+//	req, resp := client.InvokeEndpointWithResponseStreamRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/runtime.sagemaker-2017-05-13/InvokeEndpointWithResponseStream
+func (c *SageMakerRuntime) InvokeEndpointWithResponseStreamRequest(input *InvokeEndpointWithResponseStreamInput) (req *request.Request, output *InvokeEndpointWithResponseStreamOutput) {
+	op := &request.Operation{
+		Name:       opInvokeEndpointWithResponseStream,
+		HTTPMethod: "POST",
+		HTTPPath:   "/endpoints/{EndpointName}/invocations-response-stream",
+	}
+
+	if input == nil {
+		input = &InvokeEndpointWithResponseStreamInput{}
+	}
+
+	output = &InvokeEndpointWithResponseStreamOutput{}
+	req = c.newRequest(op, input, output)
+
+	es := NewInvokeEndpointWithResponseStreamEventStream()
+	output.eventStream = es
+
+	req.Handlers.Send.Swap(client.LogHTTPResponseHandler.Name, client.LogHTTPResponseHeaderHandler)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, rest.UnmarshalHandler)
+	req.Handlers.Unmarshal.PushBack(es.runOutputStream)
+	req.Handlers.Unmarshal.PushBack(es.runOnStreamPartClose)
+	return
+}
+
+// InvokeEndpointWithResponseStream API operation for Amazon SageMaker Runtime.
+//
+// Invokes a model at the specified endpoint to return the inference response
+// as a stream. The inference stream provides the response payload incrementally
+// as a series of parts. Before you can get an inference stream, you must have
+// access to a model that's deployed using Amazon SageMaker hosting services,
+// and the container for that model must support inference streaming.
+//
+// For more information that can help you use this API, see the following sections
+// in the Amazon SageMaker Developer Guide:
+//
+//   - For information about how to add streaming support to a model, see How
+//     Containers Serve Requests (https://docs.aws.amazon.com/sagemaker/latest/dg/your-algorithms-inference-code.html#your-algorithms-inference-code-how-containe-serves-requests).
+//
+//   - For information about how to process the streaming response, see Invoke
+//     real-time endpoints (https://docs.aws.amazon.com/sagemaker/latest/dg/realtime-endpoints-test-endpoints.html).
+//
+// Amazon SageMaker strips all POST headers except those supported by the API.
+// Amazon SageMaker might add additional headers. You should not rely on the
+// behavior of headers outside those enumerated in the request syntax.
+//
+// Calls to InvokeEndpointWithResponseStream are authenticated by using Amazon
+// Web Services Signature Version 4. For information, see Authenticating Requests
+// (Amazon Web Services Signature Version 4) (https://docs.aws.amazon.com/AmazonS3/latest/API/sig-v4-authenticating-requests.html)
+// in the Amazon S3 API Reference.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon SageMaker Runtime's
+// API operation InvokeEndpointWithResponseStream for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InternalFailure
+//     An internal failure occurred.
+//
+//   - ServiceUnavailable
+//     The service is unavailable. Try your call again.
+//
+//   - ValidationError
+//     Inspect your request and try again.
+//
+//   - ModelError
+//     Model (owned by the customer in the container) returned 4xx or 5xx error
+//     code.
+//
+//   - ModelStreamError
+//     An error occurred while streaming the response body. This error can have
+//     the following error codes:
+//
+//     ModelInvocationTimeExceeded
+//
+//     The model failed to finish sending the response within the timeout period
+//     allowed by Amazon SageMaker.
+//
+//     StreamBroken
+//
+//     The Transmission Control Protocol (TCP) connection between the client and
+//     the model was reset or closed.
+//
+//   - InternalStreamFailure
+//     The stream processing failed because of an unknown error, exception or failure.
+//     Try your request again.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/runtime.sagemaker-2017-05-13/InvokeEndpointWithResponseStream
+func (c *SageMakerRuntime) InvokeEndpointWithResponseStream(input *InvokeEndpointWithResponseStreamInput) (*InvokeEndpointWithResponseStreamOutput, error) {
+	req, out := c.InvokeEndpointWithResponseStreamRequest(input)
+	return out, req.Send()
+}
+
+// InvokeEndpointWithResponseStreamWithContext is the same as InvokeEndpointWithResponseStream with the addition of
+// the ability to pass a context and additional request options.
+//
+// See InvokeEndpointWithResponseStream for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SageMakerRuntime) InvokeEndpointWithResponseStreamWithContext(ctx aws.Context, input *InvokeEndpointWithResponseStreamInput, opts ...request.Option) (*InvokeEndpointWithResponseStreamOutput, error) {
+	req, out := c.InvokeEndpointWithResponseStreamRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+var _ awserr.Error
+var _ time.Time
+
+// InvokeEndpointWithResponseStreamEventStream provides the event stream handling for the InvokeEndpointWithResponseStream.
+//
+// For testing and mocking the event stream this type should be initialized via
+// the NewInvokeEndpointWithResponseStreamEventStream constructor function. Using the functional options
+// to pass in nested mock behavior.
+type InvokeEndpointWithResponseStreamEventStream struct {
+
+	// Reader is the EventStream reader for the ResponseStream
+	// events. This value is automatically set by the SDK when the API call is made
+	// Use this member when unit testing your code with the SDK to mock out the
+	// EventStream Reader.
+	//
+	// Must not be nil.
+	Reader ResponseStreamReader
+
+	outputReader io.ReadCloser
+
+	done      chan struct{}
+	closeOnce sync.Once
+	err       *eventstreamapi.OnceError
+}
+
+// NewInvokeEndpointWithResponseStreamEventStream initializes an InvokeEndpointWithResponseStreamEventStream.
+// This function should only be used for testing and mocking the InvokeEndpointWithResponseStreamEventStream
+// stream within your application.
+//
+// The Reader member must be set before reading events from the stream.
+//
+//	es := NewInvokeEndpointWithResponseStreamEventStream(func(o *InvokeEndpointWithResponseStreamEventStream){
+//	    es.Reader = myMockStreamReader
+//	})
+func NewInvokeEndpointWithResponseStreamEventStream(opts ...func(*InvokeEndpointWithResponseStreamEventStream)) *InvokeEndpointWithResponseStreamEventStream {
+	es := &InvokeEndpointWithResponseStreamEventStream{
+		done: make(chan struct{}),
+		err:  eventstreamapi.NewOnceError(),
+	}
+
+	for _, fn := range opts {
+		fn(es)
+	}
+
+	return es
+}
+
+func (es *InvokeEndpointWithResponseStreamEventStream) runOnStreamPartClose(r *request.Request) {
+	if es.done == nil {
+		return
+	}
+	go es.waitStreamPartClose()
+
+}
+
+func (es *InvokeEndpointWithResponseStreamEventStream) waitStreamPartClose() {
+	var outputErrCh <-chan struct{}
+	if v, ok := es.Reader.(interface{ ErrorSet() <-chan struct{} }); ok {
+		outputErrCh = v.ErrorSet()
+	}
+	var outputClosedCh <-chan struct{}
+	if v, ok := es.Reader.(interface{ Closed() <-chan struct{} }); ok {
+		outputClosedCh = v.Closed()
+	}
+
+	select {
+	case <-es.done:
+	case <-outputErrCh:
+		es.err.SetError(es.Reader.Err())
+		es.Close()
+	case <-outputClosedCh:
+		if err := es.Reader.Err(); err != nil {
+			es.err.SetError(es.Reader.Err())
+		}
+		es.Close()
+	}
+}
+
+// Events returns a channel to read events from.
+//
+// These events are:
+//
+//   - PayloadPart
+//   - ResponseStreamUnknownEvent
+func (es *InvokeEndpointWithResponseStreamEventStream) Events() <-chan ResponseStreamEvent {
+	return es.Reader.Events()
+}
+
+func (es *InvokeEndpointWithResponseStreamEventStream) runOutputStream(r *request.Request) {
+	var opts []func(*eventstream.Decoder)
+	if r.Config.Logger != nil && r.Config.LogLevel.Matches(aws.LogDebugWithEventStreamBody) {
+		opts = append(opts, eventstream.DecodeWithLogger(r.Config.Logger))
+	}
+
+	unmarshalerForEvent := unmarshalerForResponseStreamEvent{
+		metadata: protocol.ResponseMetadata{
+			StatusCode: r.HTTPResponse.StatusCode,
+			RequestID:  r.RequestID,
+		},
+	}.UnmarshalerForEventName
+
+	decoder := eventstream.NewDecoder(r.HTTPResponse.Body, opts...)
+	eventReader := eventstreamapi.NewEventReader(decoder,
+		protocol.HandlerPayloadUnmarshal{
+			Unmarshalers: r.Handlers.UnmarshalStream,
+		},
+		unmarshalerForEvent,
+	)
+
+	es.outputReader = r.HTTPResponse.Body
+	es.Reader = newReadResponseStream(eventReader)
+}
+
+// Close closes the stream. This will also cause the stream to be closed.
+// Close must be called when done using the stream API. Not calling Close
+// may result in resource leaks.
+//
+// You can use the closing of the Reader's Events channel to terminate your
+// application's read from the API's stream.
+func (es *InvokeEndpointWithResponseStreamEventStream) Close() (err error) {
+	es.closeOnce.Do(es.safeClose)
+	return es.Err()
+}
+
+func (es *InvokeEndpointWithResponseStreamEventStream) safeClose() {
+	if es.done != nil {
+		close(es.done)
+	}
+
+	es.Reader.Close()
+	if es.outputReader != nil {
+		es.outputReader.Close()
+	}
+}
+
+// Err returns any error that occurred while reading or writing EventStream
+// Events from the service API's response. Returns nil if there were no errors.
+func (es *InvokeEndpointWithResponseStreamEventStream) Err() error {
+	if err := es.err.Err(); err != nil {
+		return err
+	}
+	if err := es.Reader.Err(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // Your request caused an exception with an internal dependency. Contact customer
@@ -362,10 +657,104 @@ func (s *InternalFailure) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
+// The stream processing failed because of an unknown error, exception or failure.
+// Try your request again.
+type InternalStreamFailure struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"Message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s InternalStreamFailure) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s InternalStreamFailure) GoString() string {
+	return s.String()
+}
+
+// The InternalStreamFailure is and event in the ResponseStream group of events.
+func (s *InternalStreamFailure) eventResponseStream() {}
+
+// UnmarshalEvent unmarshals the EventStream Message into the InternalStreamFailure value.
+// This method is only used internally within the SDK's EventStream handling.
+func (s *InternalStreamFailure) UnmarshalEvent(
+	payloadUnmarshaler protocol.PayloadUnmarshaler,
+	msg eventstream.Message,
+) error {
+	if err := payloadUnmarshaler.UnmarshalPayload(
+		bytes.NewReader(msg.Payload), s,
+	); err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalEvent marshals the type into an stream event value. This method
+// should only used internally within the SDK's EventStream handling.
+func (s *InternalStreamFailure) MarshalEvent(pm protocol.PayloadMarshaler) (msg eventstream.Message, err error) {
+	msg.Headers.Set(eventstreamapi.MessageTypeHeader, eventstream.StringValue(eventstreamapi.ExceptionMessageType))
+	var buf bytes.Buffer
+	if err = pm.MarshalPayload(&buf, s); err != nil {
+		return eventstream.Message{}, err
+	}
+	msg.Payload = buf.Bytes()
+	return msg, err
+}
+
+func newErrorInternalStreamFailure(v protocol.ResponseMetadata) error {
+	return &InternalStreamFailure{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *InternalStreamFailure) Code() string {
+	return "InternalStreamFailure"
+}
+
+// Message returns the exception's message.
+func (s *InternalStreamFailure) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *InternalStreamFailure) OrigErr() error {
+	return nil
+}
+
+func (s *InternalStreamFailure) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *InternalStreamFailure) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *InternalStreamFailure) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
 type InvokeEndpointAsyncInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
-	// The desired MIME type of the inference in the response.
+	// The desired MIME type of the inference response from the model container.
 	Accept *string `location:"header" locationName:"X-Amzn-SageMaker-Accept" type:"string"`
 
 	// The MIME type of the input data in the request body.
@@ -395,7 +784,7 @@ type InvokeEndpointAsyncInput struct {
 	CustomAttributes *string `location:"header" locationName:"X-Amzn-SageMaker-Custom-Attributes" type:"string" sensitive:"true"`
 
 	// The name of the endpoint that you specified when you created the endpoint
-	// using the CreateEndpoint (https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_CreateEndpoint.html)
+	// using the CreateEndpoint (https://docs.aws.amazon.com/sagemaker/latest/dg/API_CreateEndpoint.html)
 	// API.
 	//
 	// EndpointName is a required field
@@ -410,8 +799,12 @@ type InvokeEndpointAsyncInput struct {
 	// InputLocation is a required field
 	InputLocation *string `location:"header" locationName:"X-Amzn-SageMaker-InputLocation" min:"1" type:"string" required:"true"`
 
+	// Maximum amount of time in seconds a request can be processed before it is
+	// marked as expired. The default is 15 minutes, or 900 seconds.
+	InvocationTimeoutSeconds *int64 `location:"header" locationName:"X-Amzn-SageMaker-InvocationTimeoutSeconds" min:"1" type:"integer"`
+
 	// Maximum age in seconds a request can be in the queue before it is marked
-	// as expired.
+	// as expired. The default is 6 hours, or 21,600 seconds.
 	RequestTTLSeconds *int64 `location:"header" locationName:"X-Amzn-SageMaker-RequestTTLSeconds" min:"60" type:"integer"`
 }
 
@@ -450,6 +843,9 @@ func (s *InvokeEndpointAsyncInput) Validate() error {
 	}
 	if s.InputLocation != nil && len(*s.InputLocation) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("InputLocation", 1))
+	}
+	if s.InvocationTimeoutSeconds != nil && *s.InvocationTimeoutSeconds < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("InvocationTimeoutSeconds", 1))
 	}
 	if s.RequestTTLSeconds != nil && *s.RequestTTLSeconds < 60 {
 		invalidParams.Add(request.NewErrParamMinValue("RequestTTLSeconds", 60))
@@ -497,6 +893,12 @@ func (s *InvokeEndpointAsyncInput) SetInputLocation(v string) *InvokeEndpointAsy
 	return s
 }
 
+// SetInvocationTimeoutSeconds sets the InvocationTimeoutSeconds field's value.
+func (s *InvokeEndpointAsyncInput) SetInvocationTimeoutSeconds(v int64) *InvokeEndpointAsyncInput {
+	s.InvocationTimeoutSeconds = &v
+	return s
+}
+
 // SetRequestTTLSeconds sets the RequestTTLSeconds field's value.
 func (s *InvokeEndpointAsyncInput) SetRequestTTLSeconds(v int64) *InvokeEndpointAsyncInput {
 	s.RequestTTLSeconds = &v
@@ -505,6 +907,9 @@ func (s *InvokeEndpointAsyncInput) SetRequestTTLSeconds(v int64) *InvokeEndpoint
 
 type InvokeEndpointAsyncOutput struct {
 	_ struct{} `type:"structure"`
+
+	// The Amazon S3 URI where the inference failure response payload is stored.
+	FailureLocation *string `location:"header" locationName:"X-Amzn-SageMaker-FailureLocation" type:"string"`
 
 	// Identifier for an inference request. This will be the same as the InferenceId
 	// specified in the input. Amazon SageMaker will generate an identifier for
@@ -533,6 +938,12 @@ func (s InvokeEndpointAsyncOutput) GoString() string {
 	return s.String()
 }
 
+// SetFailureLocation sets the FailureLocation field's value.
+func (s *InvokeEndpointAsyncOutput) SetFailureLocation(v string) *InvokeEndpointAsyncOutput {
+	s.FailureLocation = &v
+	return s
+}
+
 // SetInferenceId sets the InferenceId field's value.
 func (s *InvokeEndpointAsyncOutput) SetInferenceId(v string) *InvokeEndpointAsyncOutput {
 	s.InferenceId = &v
@@ -548,7 +959,7 @@ func (s *InvokeEndpointAsyncOutput) SetOutputLocation(v string) *InvokeEndpointA
 type InvokeEndpointInput struct {
 	_ struct{} `type:"structure" payload:"Body"`
 
-	// The desired MIME type of the inference in the response.
+	// The desired MIME type of the inference response from the model container.
 	Accept *string `location:"header" locationName:"Accept" type:"string"`
 
 	// Provides input data, in the format specified in the ContentType request header.
@@ -573,7 +984,7 @@ type InvokeEndpointInput struct {
 	// to provide an ID that you can use to track a request or to provide other
 	// metadata that a service endpoint was programmed to process. The value must
 	// consist of no more than 1024 visible US-ASCII characters as specified in
-	// Section 3.3.6. Field Value Components (https://tools.ietf.org/html/rfc7230#section-3.2.6)
+	// Section 3.3.6. Field Value Components (https://datatracker.ietf.org/doc/html/rfc7230#section-3.2.6)
 	// of the Hypertext Transfer Protocol (HTTP/1.1).
 	//
 	// The code in your model is responsible for setting or updating any custom
@@ -589,6 +1000,11 @@ type InvokeEndpointInput struct {
 	// replaced with "sensitive" in string returned by InvokeEndpointInput's
 	// String and GoString methods.
 	CustomAttributes *string `location:"header" locationName:"X-Amzn-SageMaker-Custom-Attributes" type:"string" sensitive:"true"`
+
+	// An optional JMESPath expression used to override the EnableExplanations parameter
+	// of the ClarifyExplainerConfig API. See the EnableExplanations (https://docs.aws.amazon.com/sagemaker/latest/dg/clarify-online-explainability-create-endpoint.html#clarify-online-explainability-create-endpoint-enable)
+	// section in the developer guide for more information.
+	EnableExplanations *string `location:"header" locationName:"X-Amzn-SageMaker-Enable-Explanations" min:"1" type:"string"`
 
 	// The name of the endpoint that you specified when you created the endpoint
 	// using the CreateEndpoint (https://docs.aws.amazon.com/sagemaker/latest/dg/API_CreateEndpoint.html)
@@ -643,6 +1059,9 @@ func (s *InvokeEndpointInput) Validate() error {
 	if s.Body == nil {
 		invalidParams.Add(request.NewErrParamRequired("Body"))
 	}
+	if s.EnableExplanations != nil && len(*s.EnableExplanations) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("EnableExplanations", 1))
+	}
 	if s.EndpointName == nil {
 		invalidParams.Add(request.NewErrParamRequired("EndpointName"))
 	}
@@ -686,6 +1105,12 @@ func (s *InvokeEndpointInput) SetCustomAttributes(v string) *InvokeEndpointInput
 	return s
 }
 
+// SetEnableExplanations sets the EnableExplanations field's value.
+func (s *InvokeEndpointInput) SetEnableExplanations(v string) *InvokeEndpointInput {
+	s.EnableExplanations = &v
+	return s
+}
+
 // SetEndpointName sets the EndpointName field's value.
 func (s *InvokeEndpointInput) SetEndpointName(v string) *InvokeEndpointInput {
 	s.EndpointName = &v
@@ -724,6 +1149,11 @@ type InvokeEndpointOutput struct {
 	// For information about the format of the response body, see Common Data Formats-Inference
 	// (https://docs.aws.amazon.com/sagemaker/latest/dg/cdf-inference.html).
 	//
+	// If the explainer is activated, the body includes the explanations provided
+	// by the model. For more information, see the Response section under Invoke
+	// the Endpoint (https://docs.aws.amazon.com/sagemaker/latest/dg/clarify-online-explainability-invoke-endpoint.html#clarify-online-explainability-response)
+	// in the Developer Guide.
+	//
 	// Body is a sensitive parameter and its value will be
 	// replaced with "sensitive" in string returned by InvokeEndpointOutput's
 	// String and GoString methods.
@@ -731,7 +1161,7 @@ type InvokeEndpointOutput struct {
 	// Body is a required field
 	Body []byte `type:"blob" required:"true" sensitive:"true"`
 
-	// The MIME type of the inference returned in the response body.
+	// The MIME type of the inference returned from the model container.
 	ContentType *string `location:"header" locationName:"Content-Type" type:"string"`
 
 	// Provides additional information in the response about the inference returned
@@ -803,6 +1233,241 @@ func (s *InvokeEndpointOutput) SetCustomAttributes(v string) *InvokeEndpointOutp
 func (s *InvokeEndpointOutput) SetInvokedProductionVariant(v string) *InvokeEndpointOutput {
 	s.InvokedProductionVariant = &v
 	return s
+}
+
+type InvokeEndpointWithResponseStreamInput struct {
+	_ struct{} `type:"structure" payload:"Body"`
+
+	// The desired MIME type of the inference response from the model container.
+	Accept *string `location:"header" locationName:"X-Amzn-SageMaker-Accept" type:"string"`
+
+	// Provides input data, in the format specified in the ContentType request header.
+	// Amazon SageMaker passes all of the data in the body to the model.
+	//
+	// For information about the format of the request body, see Common Data Formats-Inference
+	// (https://docs.aws.amazon.com/sagemaker/latest/dg/cdf-inference.html).
+	//
+	// Body is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by InvokeEndpointWithResponseStreamInput's
+	// String and GoString methods.
+	//
+	// Body is a required field
+	Body []byte `type:"blob" required:"true" sensitive:"true"`
+
+	// The MIME type of the input data in the request body.
+	ContentType *string `location:"header" locationName:"Content-Type" type:"string"`
+
+	// Provides additional information about a request for an inference submitted
+	// to a model hosted at an Amazon SageMaker endpoint. The information is an
+	// opaque value that is forwarded verbatim. You could use this value, for example,
+	// to provide an ID that you can use to track a request or to provide other
+	// metadata that a service endpoint was programmed to process. The value must
+	// consist of no more than 1024 visible US-ASCII characters as specified in
+	// Section 3.3.6. Field Value Components (https://datatracker.ietf.org/doc/html/rfc7230#section-3.2.6)
+	// of the Hypertext Transfer Protocol (HTTP/1.1).
+	//
+	// The code in your model is responsible for setting or updating any custom
+	// attributes in the response. If your code does not set this value in the response,
+	// an empty value is returned. For example, if a custom attribute represents
+	// the trace ID, your model can prepend the custom attribute with Trace ID:
+	// in your post-processing function.
+	//
+	// This feature is currently supported in the Amazon Web Services SDKs but not
+	// in the Amazon SageMaker Python SDK.
+	//
+	// CustomAttributes is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by InvokeEndpointWithResponseStreamInput's
+	// String and GoString methods.
+	CustomAttributes *string `location:"header" locationName:"X-Amzn-SageMaker-Custom-Attributes" type:"string" sensitive:"true"`
+
+	// The name of the endpoint that you specified when you created the endpoint
+	// using the CreateEndpoint (https://docs.aws.amazon.com/sagemaker/latest/dg/API_CreateEndpoint.html)
+	// API.
+	//
+	// EndpointName is a required field
+	EndpointName *string `location:"uri" locationName:"EndpointName" type:"string" required:"true"`
+
+	// An identifier that you assign to your request.
+	InferenceId *string `location:"header" locationName:"X-Amzn-SageMaker-Inference-Id" min:"1" type:"string"`
+
+	// If the endpoint hosts multiple containers and is configured to use direct
+	// invocation, this parameter specifies the host name of the container to invoke.
+	TargetContainerHostname *string `location:"header" locationName:"X-Amzn-SageMaker-Target-Container-Hostname" type:"string"`
+
+	// Specify the production variant to send the inference request to when invoking
+	// an endpoint that is running two or more variants. Note that this parameter
+	// overrides the default behavior for the endpoint, which is to distribute the
+	// invocation traffic based on the variant weights.
+	//
+	// For information about how to use variant targeting to perform a/b testing,
+	// see Test models in production (https://docs.aws.amazon.com/sagemaker/latest/dg/model-ab-testing.html)
+	TargetVariant *string `location:"header" locationName:"X-Amzn-SageMaker-Target-Variant" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s InvokeEndpointWithResponseStreamInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s InvokeEndpointWithResponseStreamInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *InvokeEndpointWithResponseStreamInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "InvokeEndpointWithResponseStreamInput"}
+	if s.Body == nil {
+		invalidParams.Add(request.NewErrParamRequired("Body"))
+	}
+	if s.EndpointName == nil {
+		invalidParams.Add(request.NewErrParamRequired("EndpointName"))
+	}
+	if s.EndpointName != nil && len(*s.EndpointName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("EndpointName", 1))
+	}
+	if s.InferenceId != nil && len(*s.InferenceId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("InferenceId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccept sets the Accept field's value.
+func (s *InvokeEndpointWithResponseStreamInput) SetAccept(v string) *InvokeEndpointWithResponseStreamInput {
+	s.Accept = &v
+	return s
+}
+
+// SetBody sets the Body field's value.
+func (s *InvokeEndpointWithResponseStreamInput) SetBody(v []byte) *InvokeEndpointWithResponseStreamInput {
+	s.Body = v
+	return s
+}
+
+// SetContentType sets the ContentType field's value.
+func (s *InvokeEndpointWithResponseStreamInput) SetContentType(v string) *InvokeEndpointWithResponseStreamInput {
+	s.ContentType = &v
+	return s
+}
+
+// SetCustomAttributes sets the CustomAttributes field's value.
+func (s *InvokeEndpointWithResponseStreamInput) SetCustomAttributes(v string) *InvokeEndpointWithResponseStreamInput {
+	s.CustomAttributes = &v
+	return s
+}
+
+// SetEndpointName sets the EndpointName field's value.
+func (s *InvokeEndpointWithResponseStreamInput) SetEndpointName(v string) *InvokeEndpointWithResponseStreamInput {
+	s.EndpointName = &v
+	return s
+}
+
+// SetInferenceId sets the InferenceId field's value.
+func (s *InvokeEndpointWithResponseStreamInput) SetInferenceId(v string) *InvokeEndpointWithResponseStreamInput {
+	s.InferenceId = &v
+	return s
+}
+
+// SetTargetContainerHostname sets the TargetContainerHostname field's value.
+func (s *InvokeEndpointWithResponseStreamInput) SetTargetContainerHostname(v string) *InvokeEndpointWithResponseStreamInput {
+	s.TargetContainerHostname = &v
+	return s
+}
+
+// SetTargetVariant sets the TargetVariant field's value.
+func (s *InvokeEndpointWithResponseStreamInput) SetTargetVariant(v string) *InvokeEndpointWithResponseStreamInput {
+	s.TargetVariant = &v
+	return s
+}
+
+type InvokeEndpointWithResponseStreamOutput struct {
+	_ struct{} `type:"structure" payload:"Body"`
+
+	eventStream *InvokeEndpointWithResponseStreamEventStream
+
+	// The MIME type of the inference returned from the model container.
+	ContentType *string `location:"header" locationName:"X-Amzn-SageMaker-Content-Type" type:"string"`
+
+	// Provides additional information in the response about the inference returned
+	// by a model hosted at an Amazon SageMaker endpoint. The information is an
+	// opaque value that is forwarded verbatim. You could use this value, for example,
+	// to return an ID received in the CustomAttributes header of a request or other
+	// metadata that a service endpoint was programmed to produce. The value must
+	// consist of no more than 1024 visible US-ASCII characters as specified in
+	// Section 3.3.6. Field Value Components (https://tools.ietf.org/html/rfc7230#section-3.2.6)
+	// of the Hypertext Transfer Protocol (HTTP/1.1). If the customer wants the
+	// custom attribute returned, the model must set the custom attribute to be
+	// included on the way back.
+	//
+	// The code in your model is responsible for setting or updating any custom
+	// attributes in the response. If your code does not set this value in the response,
+	// an empty value is returned. For example, if a custom attribute represents
+	// the trace ID, your model can prepend the custom attribute with Trace ID:
+	// in your post-processing function.
+	//
+	// This feature is currently supported in the Amazon Web Services SDKs but not
+	// in the Amazon SageMaker Python SDK.
+	//
+	// CustomAttributes is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by InvokeEndpointWithResponseStreamOutput's
+	// String and GoString methods.
+	CustomAttributes *string `location:"header" locationName:"X-Amzn-SageMaker-Custom-Attributes" type:"string" sensitive:"true"`
+
+	// Identifies the production variant that was invoked.
+	InvokedProductionVariant *string `location:"header" locationName:"x-Amzn-Invoked-Production-Variant" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s InvokeEndpointWithResponseStreamOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s InvokeEndpointWithResponseStreamOutput) GoString() string {
+	return s.String()
+}
+
+// SetContentType sets the ContentType field's value.
+func (s *InvokeEndpointWithResponseStreamOutput) SetContentType(v string) *InvokeEndpointWithResponseStreamOutput {
+	s.ContentType = &v
+	return s
+}
+
+// SetCustomAttributes sets the CustomAttributes field's value.
+func (s *InvokeEndpointWithResponseStreamOutput) SetCustomAttributes(v string) *InvokeEndpointWithResponseStreamOutput {
+	s.CustomAttributes = &v
+	return s
+}
+
+// SetInvokedProductionVariant sets the InvokedProductionVariant field's value.
+func (s *InvokeEndpointWithResponseStreamOutput) SetInvokedProductionVariant(v string) *InvokeEndpointWithResponseStreamOutput {
+	s.InvokedProductionVariant = &v
+	return s
+}
+
+// GetStream returns the type to interact with the event stream.
+func (s *InvokeEndpointWithResponseStreamOutput) GetStream() *InvokeEndpointWithResponseStreamEventStream {
+	return s.eventStream
 }
 
 // Model (owned by the customer in the container) returned 4xx or 5xx error
@@ -943,6 +1608,342 @@ func (s *ModelNotReadyException) StatusCode() int {
 // RequestID returns the service's response RequestID for request.
 func (s *ModelNotReadyException) RequestID() string {
 	return s.RespMetadata.RequestID
+}
+
+// An error occurred while streaming the response body. This error can have
+// the following error codes:
+//
+// # ModelInvocationTimeExceeded
+//
+// The model failed to finish sending the response within the timeout period
+// allowed by Amazon SageMaker.
+//
+// # StreamBroken
+//
+// The Transmission Control Protocol (TCP) connection between the client and
+// the model was reset or closed.
+type ModelStreamError struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	// This error can have the following error codes:
+	//
+	// ModelInvocationTimeExceeded
+	//
+	// The model failed to finish sending the response within the timeout period
+	// allowed by Amazon SageMaker.
+	//
+	// StreamBroken
+	//
+	// The Transmission Control Protocol (TCP) connection between the client and
+	// the model was reset or closed.
+	ErrorCode *string `type:"string"`
+
+	Message_ *string `locationName:"Message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModelStreamError) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModelStreamError) GoString() string {
+	return s.String()
+}
+
+// The ModelStreamError is and event in the ResponseStream group of events.
+func (s *ModelStreamError) eventResponseStream() {}
+
+// UnmarshalEvent unmarshals the EventStream Message into the ModelStreamError value.
+// This method is only used internally within the SDK's EventStream handling.
+func (s *ModelStreamError) UnmarshalEvent(
+	payloadUnmarshaler protocol.PayloadUnmarshaler,
+	msg eventstream.Message,
+) error {
+	if err := payloadUnmarshaler.UnmarshalPayload(
+		bytes.NewReader(msg.Payload), s,
+	); err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalEvent marshals the type into an stream event value. This method
+// should only used internally within the SDK's EventStream handling.
+func (s *ModelStreamError) MarshalEvent(pm protocol.PayloadMarshaler) (msg eventstream.Message, err error) {
+	msg.Headers.Set(eventstreamapi.MessageTypeHeader, eventstream.StringValue(eventstreamapi.ExceptionMessageType))
+	var buf bytes.Buffer
+	if err = pm.MarshalPayload(&buf, s); err != nil {
+		return eventstream.Message{}, err
+	}
+	msg.Payload = buf.Bytes()
+	return msg, err
+}
+
+func newErrorModelStreamError(v protocol.ResponseMetadata) error {
+	return &ModelStreamError{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *ModelStreamError) Code() string {
+	return "ModelStreamError"
+}
+
+// Message returns the exception's message.
+func (s *ModelStreamError) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *ModelStreamError) OrigErr() error {
+	return nil
+}
+
+func (s *ModelStreamError) Error() string {
+	return fmt.Sprintf("%s: %s\n%s", s.Code(), s.Message(), s.String())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *ModelStreamError) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *ModelStreamError) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
+// A wrapper for pieces of the payload that's returned in response to a streaming
+// inference request. A streaming inference response consists of one or more
+// payload parts.
+type PayloadPart struct {
+	_ struct{} `type:"structure" payload:"Bytes"`
+
+	// A blob that contains part of the response for your streaming inference request.
+	//
+	// Bytes is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by PayloadPart's
+	// String and GoString methods.
+	//
+	// Bytes is automatically base64 encoded/decoded by the SDK.
+	Bytes []byte `type:"blob" sensitive:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PayloadPart) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PayloadPart) GoString() string {
+	return s.String()
+}
+
+// SetBytes sets the Bytes field's value.
+func (s *PayloadPart) SetBytes(v []byte) *PayloadPart {
+	s.Bytes = v
+	return s
+}
+
+// The PayloadPart is and event in the ResponseStream group of events.
+func (s *PayloadPart) eventResponseStream() {}
+
+// UnmarshalEvent unmarshals the EventStream Message into the PayloadPart value.
+// This method is only used internally within the SDK's EventStream handling.
+func (s *PayloadPart) UnmarshalEvent(
+	payloadUnmarshaler protocol.PayloadUnmarshaler,
+	msg eventstream.Message,
+) error {
+	s.Bytes = make([]byte, len(msg.Payload))
+	copy(s.Bytes, msg.Payload)
+	return nil
+}
+
+// MarshalEvent marshals the type into an stream event value. This method
+// should only used internally within the SDK's EventStream handling.
+func (s *PayloadPart) MarshalEvent(pm protocol.PayloadMarshaler) (msg eventstream.Message, err error) {
+	msg.Headers.Set(eventstreamapi.MessageTypeHeader, eventstream.StringValue(eventstreamapi.EventMessageType))
+	msg.Headers.Set(":content-type", eventstream.StringValue("application/octet-stream"))
+	msg.Payload = s.Bytes
+	return msg, err
+}
+
+// ResponseStreamEvent groups together all EventStream
+// events writes for ResponseStream.
+//
+// These events are:
+//
+//   - PayloadPart
+type ResponseStreamEvent interface {
+	eventResponseStream()
+	eventstreamapi.Marshaler
+	eventstreamapi.Unmarshaler
+}
+
+// ResponseStreamReader provides the interface for reading to the stream. The
+// default implementation for this interface will be ResponseStream.
+//
+// The reader's Close method must allow multiple concurrent calls.
+//
+// These events are:
+//
+//   - PayloadPart
+//   - ResponseStreamUnknownEvent
+type ResponseStreamReader interface {
+	// Returns a channel of events as they are read from the event stream.
+	Events() <-chan ResponseStreamEvent
+
+	// Close will stop the reader reading events from the stream.
+	Close() error
+
+	// Returns any error that has occurred while reading from the event stream.
+	Err() error
+}
+
+type readResponseStream struct {
+	eventReader *eventstreamapi.EventReader
+	stream      chan ResponseStreamEvent
+	err         *eventstreamapi.OnceError
+
+	done      chan struct{}
+	closeOnce sync.Once
+}
+
+func newReadResponseStream(eventReader *eventstreamapi.EventReader) *readResponseStream {
+	r := &readResponseStream{
+		eventReader: eventReader,
+		stream:      make(chan ResponseStreamEvent),
+		done:        make(chan struct{}),
+		err:         eventstreamapi.NewOnceError(),
+	}
+	go r.readEventStream()
+
+	return r
+}
+
+// Close will close the underlying event stream reader.
+func (r *readResponseStream) Close() error {
+	r.closeOnce.Do(r.safeClose)
+	return r.Err()
+}
+
+func (r *readResponseStream) ErrorSet() <-chan struct{} {
+	return r.err.ErrorSet()
+}
+
+func (r *readResponseStream) Closed() <-chan struct{} {
+	return r.done
+}
+
+func (r *readResponseStream) safeClose() {
+	close(r.done)
+}
+
+func (r *readResponseStream) Err() error {
+	return r.err.Err()
+}
+
+func (r *readResponseStream) Events() <-chan ResponseStreamEvent {
+	return r.stream
+}
+
+func (r *readResponseStream) readEventStream() {
+	defer r.Close()
+	defer close(r.stream)
+
+	for {
+		event, err := r.eventReader.ReadEvent()
+		if err != nil {
+			if err == io.EOF {
+				return
+			}
+			select {
+			case <-r.done:
+				// If closed already ignore the error
+				return
+			default:
+			}
+			if _, ok := err.(*eventstreamapi.UnknownMessageTypeError); ok {
+				continue
+			}
+			r.err.SetError(err)
+			return
+		}
+
+		select {
+		case r.stream <- event.(ResponseStreamEvent):
+		case <-r.done:
+			return
+		}
+	}
+}
+
+type unmarshalerForResponseStreamEvent struct {
+	metadata protocol.ResponseMetadata
+}
+
+func (u unmarshalerForResponseStreamEvent) UnmarshalerForEventName(eventType string) (eventstreamapi.Unmarshaler, error) {
+	switch eventType {
+	case "PayloadPart":
+		return &PayloadPart{}, nil
+	case "InternalStreamFailure":
+		return newErrorInternalStreamFailure(u.metadata).(eventstreamapi.Unmarshaler), nil
+	case "ModelStreamError":
+		return newErrorModelStreamError(u.metadata).(eventstreamapi.Unmarshaler), nil
+	default:
+		return &ResponseStreamUnknownEvent{Type: eventType}, nil
+	}
+}
+
+// ResponseStreamUnknownEvent provides a failsafe event for the
+// ResponseStream group of events when an unknown event is received.
+type ResponseStreamUnknownEvent struct {
+	Type    string
+	Message eventstream.Message
+}
+
+// The ResponseStreamUnknownEvent is and event in the ResponseStream
+// group of events.
+func (s *ResponseStreamUnknownEvent) eventResponseStream() {}
+
+// MarshalEvent marshals the type into an stream event value. This method
+// should only used internally within the SDK's EventStream handling.
+func (e *ResponseStreamUnknownEvent) MarshalEvent(pm protocol.PayloadMarshaler) (
+	msg eventstream.Message, err error,
+) {
+	return e.Message.Clone(), nil
+}
+
+// UnmarshalEvent unmarshals the EventStream Message into the ResponseStream value.
+// This method is only used internally within the SDK's EventStream handling.
+func (e *ResponseStreamUnknownEvent) UnmarshalEvent(
+	payloadUnmarshaler protocol.PayloadUnmarshaler,
+	msg eventstream.Message,
+) error {
+	e.Message = msg.Clone()
+	return nil
 }
 
 // The service is unavailable. Try your call again.

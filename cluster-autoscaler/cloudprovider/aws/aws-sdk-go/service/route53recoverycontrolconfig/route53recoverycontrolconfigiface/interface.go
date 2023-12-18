@@ -108,6 +108,10 @@ type Route53RecoveryControlConfigAPI interface {
 	DescribeSafetyRuleWithContext(aws.Context, *route53recoverycontrolconfig.DescribeSafetyRuleInput, ...request.Option) (*route53recoverycontrolconfig.DescribeSafetyRuleOutput, error)
 	DescribeSafetyRuleRequest(*route53recoverycontrolconfig.DescribeSafetyRuleInput) (*request.Request, *route53recoverycontrolconfig.DescribeSafetyRuleOutput)
 
+	GetResourcePolicy(*route53recoverycontrolconfig.GetResourcePolicyInput) (*route53recoverycontrolconfig.GetResourcePolicyOutput, error)
+	GetResourcePolicyWithContext(aws.Context, *route53recoverycontrolconfig.GetResourcePolicyInput, ...request.Option) (*route53recoverycontrolconfig.GetResourcePolicyOutput, error)
+	GetResourcePolicyRequest(*route53recoverycontrolconfig.GetResourcePolicyInput) (*request.Request, *route53recoverycontrolconfig.GetResourcePolicyOutput)
+
 	ListAssociatedRoute53HealthChecks(*route53recoverycontrolconfig.ListAssociatedRoute53HealthChecksInput) (*route53recoverycontrolconfig.ListAssociatedRoute53HealthChecksOutput, error)
 	ListAssociatedRoute53HealthChecksWithContext(aws.Context, *route53recoverycontrolconfig.ListAssociatedRoute53HealthChecksInput, ...request.Option) (*route53recoverycontrolconfig.ListAssociatedRoute53HealthChecksOutput, error)
 	ListAssociatedRoute53HealthChecksRequest(*route53recoverycontrolconfig.ListAssociatedRoute53HealthChecksInput) (*request.Request, *route53recoverycontrolconfig.ListAssociatedRoute53HealthChecksOutput)

@@ -56,11 +56,12 @@ func (c *ResourceGroups) CreateGroupRequest(input *CreateGroupInput) (req *reque
 // CreateGroup API operation for AWS Resource Groups.
 //
 // Creates a resource group with the specified name and description. You can
-// optionally include a resource query, or a service configuration. For more
-// information about constructing a resource query, see Create a tag-based group
-// in Resource Groups (https://docs.aws.amazon.com/ARG/latest/userguide/gettingstarted-query.html#gettingstarted-query-cli-tag).
-// For more information about service configurations, see Service configurations
-// for resource groups (https://docs.aws.amazon.com/ARG/latest/APIReference/about-slg.html).
+// optionally include either a resource query or a service configuration. For
+// more information about constructing a resource query, see Build queries and
+// groups in Resource Groups (https://docs.aws.amazon.com/ARG/latest/userguide/getting_started-query.html)
+// in the Resource Groups User Guide. For more information about service-linked
+// groups and service configurations, see Service configurations for Resource
+// Groups (https://docs.aws.amazon.com/ARG/latest/APIReference/about-slg.html).
 //
 // # Minimum permissions
 //
@@ -218,6 +219,98 @@ func (c *ResourceGroups) DeleteGroupWithContext(ctx aws.Context, input *DeleteGr
 	return out, req.Send()
 }
 
+const opGetAccountSettings = "GetAccountSettings"
+
+// GetAccountSettingsRequest generates a "aws/request.Request" representing the
+// client's request for the GetAccountSettings operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetAccountSettings for more information on using the GetAccountSettings
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetAccountSettingsRequest method.
+//	req, resp := client.GetAccountSettingsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/resource-groups-2017-11-27/GetAccountSettings
+func (c *ResourceGroups) GetAccountSettingsRequest(input *GetAccountSettingsInput) (req *request.Request, output *GetAccountSettingsOutput) {
+	op := &request.Operation{
+		Name:       opGetAccountSettings,
+		HTTPMethod: "POST",
+		HTTPPath:   "/get-account-settings",
+	}
+
+	if input == nil {
+		input = &GetAccountSettingsInput{}
+	}
+
+	output = &GetAccountSettingsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetAccountSettings API operation for AWS Resource Groups.
+//
+// Retrieves the current status of optional features in Resource Groups.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Resource Groups's
+// API operation GetAccountSettings for usage and error information.
+//
+// Returned Error Types:
+//
+//   - BadRequestException
+//     The request includes one or more parameters that violate validation rules.
+//
+//   - ForbiddenException
+//     The caller isn't authorized to make the request. Check permissions.
+//
+//   - MethodNotAllowedException
+//     The request uses an HTTP method that isn't allowed for the specified resource.
+//
+//   - TooManyRequestsException
+//     You've exceeded throttling limits by making too many requests in a period
+//     of time.
+//
+//   - InternalServerErrorException
+//     An internal error occurred while processing the request. Try again later.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/resource-groups-2017-11-27/GetAccountSettings
+func (c *ResourceGroups) GetAccountSettings(input *GetAccountSettingsInput) (*GetAccountSettingsOutput, error) {
+	req, out := c.GetAccountSettingsRequest(input)
+	return out, req.Send()
+}
+
+// GetAccountSettingsWithContext is the same as GetAccountSettings with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetAccountSettings for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ResourceGroups) GetAccountSettingsWithContext(ctx aws.Context, input *GetAccountSettingsInput, opts ...request.Option) (*GetAccountSettingsOutput, error) {
+	req, out := c.GetAccountSettingsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opGetGroup = "GetGroup"
 
 // GetGroupRequest generates a "aws/request.Request" representing the
@@ -362,9 +455,9 @@ func (c *ResourceGroups) GetGroupConfigurationRequest(input *GetGroupConfigurati
 
 // GetGroupConfiguration API operation for AWS Resource Groups.
 //
-// Returns the service configuration associated with the specified resource
+// Retrieves the service configuration associated with the specified resource
 // group. For details about the service configuration syntax, see Service configurations
-// for resource groups (https://docs.aws.amazon.com/ARG/latest/APIReference/about-slg.html).
+// for Resource Groups (https://docs.aws.amazon.com/ARG/latest/APIReference/about-slg.html).
 //
 // # Minimum permissions
 //
@@ -672,6 +765,16 @@ func (c *ResourceGroups) GroupResourcesRequest(input *GroupResourcesInput) (req 
 //
 // Adds the specified resources to the specified group.
 //
+// You can use this operation with only resource groups that are configured
+// with the following types:
+//
+//   - AWS::EC2::HostManagement
+//
+//   - AWS::EC2::CapacityReservationPool
+//
+// Other resource group type and resource types aren't currently supported by
+// this operation.
+//
 // # Minimum permissions
 //
 // To run this command, you must have the following permissions:
@@ -946,7 +1049,7 @@ func (c *ResourceGroups) ListGroupsRequest(input *ListGroupsInput) (req *request
 
 // ListGroups API operation for AWS Resource Groups.
 //
-// Returns a list of existing resource groups in your account.
+// Returns a list of existing Resource Groups in your account.
 //
 // # Minimum permissions
 //
@@ -1205,9 +1308,9 @@ func (c *ResourceGroups) SearchResourcesRequest(input *SearchResourcesInput) (re
 
 // SearchResources API operation for AWS Resource Groups.
 //
-// Returns a list of AWS resource identifiers that matches the specified query.
-// The query uses the same format as a resource query in a CreateGroup or UpdateGroupQuery
-// operation.
+// Returns a list of Amazon Web Services resource identifiers that matches the
+// specified query. The query uses the same format as a resource query in a
+// CreateGroup or UpdateGroupQuery operation.
 //
 // # Minimum permissions
 //
@@ -1473,7 +1576,10 @@ func (c *ResourceGroups) UngroupResourcesRequest(input *UngroupResourcesInput) (
 
 // UngroupResources API operation for AWS Resource Groups.
 //
-// Removes the specified resources from the specified group.
+// Removes the specified resources from the specified group. This operation
+// works only with static groups that you populated using the GroupResources
+// operation. It doesn't work with any resource groups that are automatically
+// populated by tag-based or CloudFormation stack-based queries.
 //
 // # Minimum permissions
 //
@@ -1627,6 +1733,102 @@ func (c *ResourceGroups) Untag(input *UntagInput) (*UntagOutput, error) {
 // for more information on using Contexts.
 func (c *ResourceGroups) UntagWithContext(ctx aws.Context, input *UntagInput, opts ...request.Option) (*UntagOutput, error) {
 	req, out := c.UntagRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opUpdateAccountSettings = "UpdateAccountSettings"
+
+// UpdateAccountSettingsRequest generates a "aws/request.Request" representing the
+// client's request for the UpdateAccountSettings operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UpdateAccountSettings for more information on using the UpdateAccountSettings
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UpdateAccountSettingsRequest method.
+//	req, resp := client.UpdateAccountSettingsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/resource-groups-2017-11-27/UpdateAccountSettings
+func (c *ResourceGroups) UpdateAccountSettingsRequest(input *UpdateAccountSettingsInput) (req *request.Request, output *UpdateAccountSettingsOutput) {
+	op := &request.Operation{
+		Name:       opUpdateAccountSettings,
+		HTTPMethod: "POST",
+		HTTPPath:   "/update-account-settings",
+	}
+
+	if input == nil {
+		input = &UpdateAccountSettingsInput{}
+	}
+
+	output = &UpdateAccountSettingsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// UpdateAccountSettings API operation for AWS Resource Groups.
+//
+// Turns on or turns off optional features in Resource Groups.
+//
+// The preceding example shows that the request to turn on group lifecycle events
+// is IN_PROGRESS. You can call the GetAccountSettings operation to check for
+// completion by looking for GroupLifecycleEventsStatus to change to ACTIVE.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Resource Groups's
+// API operation UpdateAccountSettings for usage and error information.
+//
+// Returned Error Types:
+//
+//   - BadRequestException
+//     The request includes one or more parameters that violate validation rules.
+//
+//   - ForbiddenException
+//     The caller isn't authorized to make the request. Check permissions.
+//
+//   - MethodNotAllowedException
+//     The request uses an HTTP method that isn't allowed for the specified resource.
+//
+//   - TooManyRequestsException
+//     You've exceeded throttling limits by making too many requests in a period
+//     of time.
+//
+//   - InternalServerErrorException
+//     An internal error occurred while processing the request. Try again later.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/resource-groups-2017-11-27/UpdateAccountSettings
+func (c *ResourceGroups) UpdateAccountSettings(input *UpdateAccountSettingsInput) (*UpdateAccountSettingsOutput, error) {
+	req, out := c.UpdateAccountSettingsRequest(input)
+	return out, req.Send()
+}
+
+// UpdateAccountSettingsWithContext is the same as UpdateAccountSettings with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UpdateAccountSettings for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ResourceGroups) UpdateAccountSettingsWithContext(ctx aws.Context, input *UpdateAccountSettingsInput, opts ...request.Option) (*UpdateAccountSettingsOutput, error) {
+	req, out := c.UpdateAccountSettingsRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -1836,6 +2038,57 @@ func (c *ResourceGroups) UpdateGroupQueryWithContext(ctx aws.Context, input *Upd
 	return out, req.Send()
 }
 
+// The Resource Groups settings for this Amazon Web Services account.
+type AccountSettings struct {
+	_ struct{} `type:"structure"`
+
+	// The desired target status of the group lifecycle events feature. If
+	GroupLifecycleEventsDesiredStatus *string `type:"string" enum:"GroupLifecycleEventsDesiredStatus"`
+
+	// The current status of the group lifecycle events feature.
+	GroupLifecycleEventsStatus *string `type:"string" enum:"GroupLifecycleEventsStatus"`
+
+	// The text of any error message occurs during an attempt to turn group lifecycle
+	// events on or off.
+	GroupLifecycleEventsStatusMessage *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AccountSettings) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AccountSettings) GoString() string {
+	return s.String()
+}
+
+// SetGroupLifecycleEventsDesiredStatus sets the GroupLifecycleEventsDesiredStatus field's value.
+func (s *AccountSettings) SetGroupLifecycleEventsDesiredStatus(v string) *AccountSettings {
+	s.GroupLifecycleEventsDesiredStatus = &v
+	return s
+}
+
+// SetGroupLifecycleEventsStatus sets the GroupLifecycleEventsStatus field's value.
+func (s *AccountSettings) SetGroupLifecycleEventsStatus(v string) *AccountSettings {
+	s.GroupLifecycleEventsStatus = &v
+	return s
+}
+
+// SetGroupLifecycleEventsStatusMessage sets the GroupLifecycleEventsStatusMessage field's value.
+func (s *AccountSettings) SetGroupLifecycleEventsStatusMessage(v string) *AccountSettings {
+	s.GroupLifecycleEventsStatusMessage = &v
+	return s
+}
+
 // The request includes one or more parameters that violate validation rules.
 type BadRequestException struct {
 	_            struct{}                  `type:"structure"`
@@ -1903,11 +2156,11 @@ func (s *BadRequestException) RequestID() string {
 type CreateGroupInput struct {
 	_ struct{} `type:"structure"`
 
-	// A configuration associates the resource group with an AWS service and specifies
-	// how the service can interact with the resources in the group. A configuration
-	// is an array of GroupConfigurationItem elements. For details about the syntax
-	// of service configurations, see Service configurations for resource groups
-	// (https://docs.aws.amazon.com/ARG/latest/APIReference/about-slg.html).
+	// A configuration associates the resource group with an Amazon Web Services
+	// service and specifies how the service can interact with the resources in
+	// the group. A configuration is an array of GroupConfigurationItem elements.
+	// For details about the syntax of service configurations, see Service configurations
+	// for Resource Groups (https://docs.aws.amazon.com/ARG/latest/APIReference/about-slg.html).
 	//
 	// A resource group can contain either a Configuration or a ResourceQuery, but
 	// not both.
@@ -1921,14 +2174,15 @@ type CreateGroupInput struct {
 	// You can't change the name of a resource group after you create it. A resource
 	// group name can consist of letters, numbers, hyphens, periods, and underscores.
 	// The name cannot start with AWS or aws; these are reserved. A resource group
-	// name must be unique within each AWS Region in your AWS account.
+	// name must be unique within each Amazon Web Services Region in your Amazon
+	// Web Services account.
 	//
 	// Name is a required field
 	Name *string `min:"1" type:"string" required:"true"`
 
-	// The resource query that determines which AWS resources are members of this
-	// group. For more information about resource queries, see Create a tag-based
-	// group in Resource Groups (https://docs.aws.amazon.com/ARG/latest/userguide/gettingstarted-query.html#gettingstarted-query-cli-tag).
+	// The resource query that determines which Amazon Web Services resources are
+	// members of this group. For more information about resource queries, see Create
+	// a tag-based group in Resource Groups (https://docs.aws.amazon.com/ARG/latest/userguide/gettingstarted-query.html#gettingstarted-query-cli-tag).
 	//
 	// A resource group can contain either a ResourceQuery or a Configuration, but
 	// not both.
@@ -2025,7 +2279,7 @@ type CreateGroupOutput struct {
 
 	// The service configuration associated with the resource group. For details
 	// about the syntax of a service configuration, see Service configurations for
-	// resource groups (https://docs.aws.amazon.com/ARG/latest/APIReference/about-slg.html).
+	// Resource Groups (https://docs.aws.amazon.com/ARG/latest/APIReference/about-slg.html).
 	GroupConfiguration *GroupConfiguration `type:"structure"`
 
 	// The resource query associated with the group. For more information about
@@ -2281,10 +2535,64 @@ func (s *ForbiddenException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
+type GetAccountSettingsInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetAccountSettingsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetAccountSettingsInput) GoString() string {
+	return s.String()
+}
+
+type GetAccountSettingsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The current settings for the optional features in Resource Groups.
+	AccountSettings *AccountSettings `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetAccountSettingsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetAccountSettingsOutput) GoString() string {
+	return s.String()
+}
+
+// SetAccountSettings sets the AccountSettings field's value.
+func (s *GetAccountSettingsOutput) SetAccountSettings(v *AccountSettings) *GetAccountSettingsOutput {
+	s.AccountSettings = v
+	return s
+}
+
 type GetGroupConfigurationInput struct {
 	_ struct{} `type:"structure"`
 
-	// The name or the ARN of the resource group.
+	// The name or the ARN of the resource group for which you want to retrive the
+	// service configuration.
 	Group *string `min:"1" type:"string"`
 }
 
@@ -2328,9 +2636,9 @@ func (s *GetGroupConfigurationInput) SetGroup(v string) *GetGroupConfigurationIn
 type GetGroupConfigurationOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The service configuration associated with the specified group. For details
-	// about the service configuration syntax, see Service configurations for resource
-	// groups (https://docs.aws.amazon.com/ARG/latest/APIReference/about-slg.html).
+	// A structure that describes the service configuration attached with the specified
+	// group. For details about the service configuration syntax, see Service configurations
+	// for Resource Groups (https://docs.aws.amazon.com/ARG/latest/APIReference/about-slg.html).
 	GroupConfiguration *GroupConfiguration `type:"structure"`
 }
 
@@ -2419,7 +2727,9 @@ func (s *GetGroupInput) SetGroupName(v string) *GetGroupInput {
 type GetGroupOutput struct {
 	_ struct{} `type:"structure"`
 
-	// A full description of the resource group.
+	// A structure that contains the metadata details for the specified resource
+	// group. Use GetGroupQuery and GetGroupConfiguration to get those additional
+	// details of the resource group.
 	Group *Group `type:"structure"`
 }
 
@@ -2626,18 +2936,19 @@ func (s *GetTagsOutput) SetTags(v map[string]*string) *GetTagsOutput {
 	return s
 }
 
-// A resource group that contains AWS resources. You can assign resources to
-// the group by associating either of the following elements with the group:
+// A resource group that contains Amazon Web Services resources. You can assign
+// resources to the group by associating either of the following elements with
+// the group:
 //
 //   - ResourceQuery - Use a resource query to specify a set of tag keys and
-//     values. All resources in the same AWS Region and AWS account that have
-//     those keys with the same values are included in the group. You can add
-//     a resource query when you create the group, or later by using the PutGroupConfiguration
-//     operation.
+//     values. All resources in the same Amazon Web Services Region and Amazon
+//     Web Services account that have those keys with the same values are included
+//     in the group. You can add a resource query when you create the group,
+//     or later by using the PutGroupConfiguration operation.
 //
 //   - GroupConfiguration - Use a service configuration to associate the group
-//     with an AWS service. The configuration specifies which resource types
-//     can be included in the group.
+//     with an Amazon Web Services service. The configuration specifies which
+//     resource types can be included in the group.
 type Group struct {
 	_ struct{} `type:"structure"`
 
@@ -2692,11 +3003,12 @@ func (s *Group) SetName(v string) *Group {
 }
 
 // A service configuration associated with a resource group. The configuration
-// options are determined by the AWS service that defines the Type, and specifies
-// which resources can be included in the group. You can add a service configuration
-// when you create the group by using CreateGroup, or later by using the PutGroupConfiguration
-// operation. For details about group service configuration syntax, see Service
-// configurations for resource groups (https://docs.aws.amazon.com/ARG/latest/APIReference/about-slg.html).
+// options are determined by the Amazon Web Services service that defines the
+// Type, and specifies which resources can be included in the group. You can
+// add a service configuration when you create the group by using CreateGroup,
+// or later by using the PutGroupConfiguration operation. For details about
+// group service configuration syntax, see Service configurations for resource
+// groups (https://docs.aws.amazon.com/ARG/latest/APIReference/about-slg.html).
 type GroupConfiguration struct {
 	_ struct{} `type:"structure"`
 
@@ -2999,8 +3311,8 @@ func (s *GroupIdentifier) SetGroupName(v string) *GroupIdentifier {
 	return s
 }
 
-// A mapping of a query attached to a resource group that determines the AWS
-// resources that are members of the group.
+// A mapping of a query attached to a resource group that determines the Amazon
+// Web Services resources that are members of the group.
 type GroupQuery struct {
 	_ struct{} `type:"structure"`
 
@@ -3010,8 +3322,8 @@ type GroupQuery struct {
 	// GroupName is a required field
 	GroupName *string `min:"1" type:"string" required:"true"`
 
-	// The resource query that determines which AWS resources are members of the
-	// associated resource group.
+	// The resource query that determines which Amazon Web Services resources are
+	// members of the associated resource group.
 	//
 	// ResourceQuery is a required field
 	ResourceQuery *ResourceQuery `type:"structure" required:"true"`
@@ -3055,7 +3367,7 @@ type GroupResourcesInput struct {
 	// Group is a required field
 	Group *string `min:"1" type:"string" required:"true"`
 
-	// The list of ARNs for resources to be added to the group.
+	// The list of ARNs of the resources to be added to the group.
 	//
 	// ResourceArns is a required field
 	ResourceArns []*string `min:"1" type:"list" required:"true"`
@@ -3116,19 +3428,19 @@ func (s *GroupResourcesInput) SetResourceArns(v []*string) *GroupResourcesInput 
 type GroupResourcesOutput struct {
 	_ struct{} `type:"structure"`
 
-	// A list of ARNs of any resources that failed to be added to the group by this
-	// operation.
+	// A list of ARNs of any resources that this operation failed to add to the
+	// group.
 	Failed []*FailedResource `type:"list"`
 
-	// A list of ARNs of any resources that are still in the process of being added
-	// to the group by this operation. These pending additions continue asynchronously.
-	// You can check the status of pending additions by using the ListGroupResources
+	// A list of ARNs of any resources that this operation is still in the process
+	// adding to the group. These pending additions continue asynchronously. You
+	// can check the status of pending additions by using the ListGroupResources
 	// operation, and checking the Resources array in the response and the Status
 	// field of each object in that array.
 	Pending []*PendingResource `type:"list"`
 
-	// A list of ARNs of resources that were successfully added to the group by
-	// this operation.
+	// A list of ARNs of the resources that this operation successfully added to
+	// the group.
 	Succeeded []*string `min:"1" type:"list"`
 }
 
@@ -3243,7 +3555,7 @@ type ListGroupResourcesInput struct {
 	//    types in the format AWS::ServiceCode::ResourceType. For example, AWS::EC2::Instance,
 	//    or AWS::S3::Bucket.
 	//
-	// When you specify a resource-type filter for ListGroupResources, AWS Resource
+	// When you specify a resource-type filter for ListGroupResources, Resource
 	// Groups validates your filter resource types against the types that are defined
 	// in the query associated with the group. For example, if a group contains
 	// only S3 buckets because its query specifies only that resource type, but
@@ -3257,7 +3569,7 @@ type ListGroupResourcesInput struct {
 	// they are not part of the query associated with the group. This validation
 	// doesn't occur when the group query specifies AWS::AllSupported, because a
 	// group based on such a query can contain any of the allowed resource types
-	// for the query type (tag-based or AWS CloudFormation stack-based queries).
+	// for the query type (tag-based or Amazon CloudFront stack-based queries).
 	Filters []*ResourceFilter `type:"list"`
 
 	// The name or the ARN of the resource group
@@ -3489,7 +3801,7 @@ type ListGroupsInput struct {
 	//
 	//    * configuration-type - Filter the results to include only those groups
 	//    that have the specified configuration types attached. The current supported
-	//    values are: AWS:EC2::CapacityReservationPool AWS:EC2::HostManagement
+	//    values are: AWS::EC2::CapacityReservationPool AWS::EC2::HostManagement
 	Filters []*GroupFilter `type:"list"`
 
 	// The total number of results that you want included on each page of the response.
@@ -3792,12 +4104,12 @@ type PutGroupConfigurationInput struct {
 	_ struct{} `type:"structure"`
 
 	// The new configuration to associate with the specified group. A configuration
-	// associates the resource group with an AWS service and specifies how the service
-	// can interact with the resources in the group. A configuration is an array
-	// of GroupConfigurationItem elements.
+	// associates the resource group with an Amazon Web Services service and specifies
+	// how the service can interact with the resources in the group. A configuration
+	// is an array of GroupConfigurationItem elements.
 	//
 	// For information about the syntax of a service configuration, see Service
-	// configurations for resource groups (https://docs.aws.amazon.com/ARG/latest/APIReference/about-slg.html).
+	// configurations for Resource Groups (https://docs.aws.amazon.com/ARG/latest/APIReference/about-slg.html).
 	//
 	// A resource group can contain either a Configuration or a ResourceQuery, but
 	// not both.
@@ -3884,21 +4196,21 @@ func (s PutGroupConfigurationOutput) GoString() string {
 }
 
 // A two-part error structure that can occur in ListGroupResources or SearchResources
-// operations on CloudFormation stack-based queries. The error occurs if the
-// CloudFormation stack on which the query is based either does not exist, or
-// has a status that renders the stack inactive. A QueryError occurrence does
-// not necessarily mean that AWS Resource Groups could not complete the operation,
-// but the resulting group might have no member resources.
+// operations on CloudFront stack-based queries. The error occurs if the CloudFront
+// stack on which the query is based either does not exist, or has a status
+// that renders the stack inactive. A QueryError occurrence does not necessarily
+// mean that Resource Groups could not complete the operation, but the resulting
+// group might have no member resources.
 type QueryError struct {
 	_ struct{} `type:"structure"`
 
-	// Possible values are CLOUDFORMATION_STACK_INACTIVE and CLOUDFORMATION_STACK_NOT_EXISTING.
+	// Specifies the error code that was raised.
 	ErrorCode *string `type:"string" enum:"QueryErrorCode"`
 
 	// A message that explains the ErrorCode value. Messages might state that the
-	// specified CloudFormation stack does not exist (or no longer exists). For
-	// CLOUDFORMATION_STACK_INACTIVE, the message typically states that the CloudFormation
-	// stack has a status that is not (or no longer) active, such as CREATE_FAILED.
+	// specified CloudFront stack does not exist (or no longer exists). For CLOUDFORMATION_STACK_INACTIVE,
+	// the message typically states that the CloudFront stack has a status that
+	// is not (or no longer) active, such as CREATE_FAILED.
 	Message *string `type:"string"`
 }
 
@@ -4039,79 +4351,52 @@ func (s *ResourceIdentifier) SetResourceType(v string) *ResourceIdentifier {
 	return s
 }
 
-// The query that is used to define a resource group or a search for resources.
-// A query specifies both a query type and a query string as a JSON object.
-// See the examples section for example JSON strings.
+// The query you can use to define a resource group or a search for resources.
+// A ResourceQuery specifies both a query Type and a Query string as JSON string
+// objects. See the examples section for example JSON strings. For more information
+// about creating a resource group with a resource query, see Build queries
+// and groups in Resource Groups (https://docs.aws.amazon.com/ARG/latest/userguide/gettingstarted-query.html)
+// in the Resource Groups User Guide
 //
-// The examples that follow are shown as standard JSON strings. If you include
-// such a string as a parameter to the AWS CLI or an SDK API, you might need
-// to 'escape' the string into a single line. For example, see the Quoting strings
-// (https://docs.aws.amazon.com/cli/latest/userguide/cli-usage-parameters-quoting-strings.html)
-// in the AWS CLI User Guide.
+// When you combine all of the elements together into a single string, any double
+// quotes that are embedded inside another double quote pair must be escaped
+// by preceding the embedded double quote with a backslash character (\). For
+// example, a complete ResourceQuery parameter must be formatted like the following
+// CLI parameter example:
 //
-// # Example 1
+// --resource-query '{"Type":"TAG_FILTERS_1_0","Query":"{\"ResourceTypeFilters\":[\"AWS::AllSupported\"],\"TagFilters\":[{\"Key\":\"Stage\",\"Values\":[\"Test\"]}]}"}'
 //
-// The following generic example shows a resource query JSON string that includes
-// only resources that meet the following criteria:
+// In the preceding example, all of the double quote characters in the value
+// part of the Query element must be escaped because the value itself is surrounded
+// by double quotes. For more information, see Quoting strings (https://docs.aws.amazon.com/cli/latest/userguide/cli-usage-parameters-quoting-strings.html)
+// in the Command Line Interface User Guide.
 //
-//   - The resource type must be either resource_type1 or resource_type2.
+// For the complete list of resource types that you can use in the array value
+// for ResourceTypeFilters, see Resources you can use with Resource Groups and
+// Tag Editor (https://docs.aws.amazon.com/ARG/latest/userguide/supported-resources.html)
+// in the Resource Groups User Guide. For example:
 //
-//   - The resource must have a tag Key1 with a value of either ValueA or ValueB.
-//
-//   - The resource must have a tag Key2 with a value of either ValueC or ValueD.
-//
-// { "Type": "TAG_FILTERS_1_0", "Query": { "ResourceTypeFilters": [ "resource_type1",
-// "resource_type2"], "TagFilters": [ { "Key": "Key1", "Values": ["ValueA","ValueB"]
-// }, { "Key":"Key2", "Values":["ValueC","ValueD"] } ] } }
-//
-// This has the equivalent "shortcut" syntax of the following:
-//
-// { "Type": "TAG_FILTERS_1_0", "Query": { "ResourceTypeFilters": [ "resource_type1",
-// "resource_type2"], "TagFilters": [ { "Key1": ["ValueA","ValueB"] }, { "Key2":
-// ["ValueC","ValueD"] } ] } }
-//
-// # Example 2
-//
-// The following example shows a resource query JSON string that includes only
-// Amazon EC2 instances that are tagged Stage with a value of Test.
-//
-// { "Type": "TAG_FILTERS_1_0", "Query": "{ "ResourceTypeFilters": "AWS::EC2::Instance",
-// "TagFilters": { "Stage": "Test" } } }
-//
-// # Example 3
-//
-// The following example shows a resource query JSON string that includes resource
-// of any supported type as long as it is tagged Stage with a value of Prod.
-//
-// { "Type": "TAG_FILTERS_1_0", "Query": { "ResourceTypeFilters": "AWS::AllSupported",
-// "TagFilters": { "Stage": "Prod" } } }
-//
-// # Example 4
-//
-// The following example shows a resource query JSON string that includes only
-// Amazon EC2 instances and Amazon S3 buckets that are part of the specified
-// AWS CloudFormation stack.
-//
-// { "Type": "CLOUDFORMATION_STACK_1_0", "Query": { "ResourceTypeFilters": [
-// "AWS::EC2::Instance", "AWS::S3::Bucket" ], "StackIdentifier": "arn:aws:cloudformation:us-west-2:123456789012:stack/AWStestuseraccount/fb0d5000-aba8-00e8-aa9e-50d5cEXAMPLE"
-// } }
+// "ResourceTypeFilters":["AWS::S3::Bucket", "AWS::EC2::Instance"]
 type ResourceQuery struct {
 	_ struct{} `type:"structure"`
 
-	// The query that defines a group or a search.
+	// The query that defines a group or a search. The contents depends on the value
+	// of the Type element.
 	//
-	// Query is a required field
-	Query *string `type:"string" required:"true"`
-
-	// The type of the query. You can use the following values:
+	//    * ResourceTypeFilters – Applies to all ResourceQuery objects of either
+	//    Type. This element contains one of the following two items: The value
+	//    AWS::AllSupported. This causes the ResourceQuery to match resources of
+	//    any resource type that also match the query. A list (a JSON array) of
+	//    resource type identifiers that limit the query to only resources of the
+	//    specified types. For the complete list of resource types that you can
+	//    use in the array value for ResourceTypeFilters, see Resources you can
+	//    use with Resource Groups and Tag Editor (https://docs.aws.amazon.com/ARG/latest/userguide/supported-resources.html)
+	//    in the Resource Groups User Guide. Example: "ResourceTypeFilters": ["AWS::AllSupported"]
+	//    or "ResourceTypeFilters": ["AWS::EC2::Instance", "AWS::S3::Bucket"]
 	//
-	//    * CLOUDFORMATION_STACK_1_0: Specifies that the Query contains an ARN for
-	//    a CloudFormation stack.
-	//
-	//    * TAG_FILTERS_1_0: Specifies that the Query parameter contains a JSON
-	//    string that represents a collection of simple tag filters for resource
-	//    types and tags. The JSON string uses a syntax similar to the GetResources
-	//    (https://docs.aws.amazon.com/resourcegroupstagging/latest/APIReference/API_GetResources.html)
+	//    * TagFilters – applicable only if Type = TAG_FILTERS_1_0. The Query
+	//    contains a JSON string that represents a collection of simple tag filters.
+	//    The JSON string uses a syntax similar to the GetResources (https://docs.aws.amazon.com/resourcegroupstagging/latest/APIReference/API_GetResources.html)
 	//    operation, but uses only the ResourceTypeFilters (https://docs.aws.amazon.com/resourcegroupstagging/latest/APIReference/API_GetResources.html#resourcegrouptagging-GetResources-request-ResourceTypeFilters)
 	//    and TagFilters (https://docs.aws.amazon.com/resourcegroupstagging/latest/APIReference/API_GetResources.html#resourcegrouptagging-GetResources-request-TagFiltersTagFilters)
 	//    fields. If you specify more than one tag key, only resources that match
@@ -4120,16 +4405,34 @@ type ResourceQuery struct {
 	//    matches the filter if it has a tag key value that matches any of the specified
 	//    values. For example, consider the following sample query for resources
 	//    that have two tags, Stage and Version, with two values each: [{"Stage":["Test","Deploy"]},{"Version":["1","2"]}]
-	//    The results of this query could include the following. An EC2 instance
-	//    that has the following two tags: {"Stage":"Deploy"}, and {"Version":"2"}
-	//    An S3 bucket that has the following two tags: {"Stage":"Test"}, and {"Version":"1"}
-	//    The query would not include the following items in the results, however.
-	//    An EC2 instance that has only the following tag: {"Stage":"Deploy"}. The
-	//    instance does not have all of the tag keys specified in the filter, so
-	//    it is excluded from the results. An RDS database that has the following
-	//    two tags: {"Stage":"Archived"} and {"Version":"4"} The database has all
-	//    of the tag keys, but none of those keys has an associated value that matches
-	//    at least one of the specified values in the filter.
+	//    The results of this resource query could include the following. An Amazon
+	//    EC2 instance that has the following two tags: {"Stage":"Deploy"}, and
+	//    {"Version":"2"} An S3 bucket that has the following two tags: {"Stage":"Test"},
+	//    and {"Version":"1"} The resource query results would not include the following
+	//    items in the results, however. An Amazon EC2 instance that has only the
+	//    following tag: {"Stage":"Deploy"}. The instance does not have all of the
+	//    tag keys specified in the filter, so it is excluded from the results.
+	//    An RDS database that has the following two tags: {"Stage":"Archived"}
+	//    and {"Version":"4"} The database has all of the tag keys, but none of
+	//    those keys has an associated value that matches at least one of the specified
+	//    values in the filter. Example: "TagFilters": [ { "Key": "Stage", "Values":
+	//    [ "Gamma", "Beta" ] }
+	//
+	//    * StackIdentifier – applicable only if Type = CLOUDFORMATION_STACK_1_0.
+	//    The value of this parameter is the Amazon Resource Name (ARN) of the CloudFormation
+	//    stack whose resources you want included in the group.
+	//
+	// Query is a required field
+	Query *string `type:"string" required:"true"`
+
+	// The type of the query to perform. This can have one of two values:
+	//
+	//    * CLOUDFORMATION_STACK_1_0: Specifies that you want the group to contain
+	//    the members of an CloudFormation stack. The Query contains a StackIdentifier
+	//    element with an ARN for a CloudFormation stack.
+	//
+	//    * TAG_FILTERS_1_0: Specifies that you want the group to include resource
+	//    that have tags that match the query.
 	//
 	// Type is a required field
 	Type *string `min:"1" type:"string" required:"true" enum:"QueryType"`
@@ -4313,8 +4616,13 @@ type SearchResourcesOutput struct {
 	NextToken *string `type:"string"`
 
 	// A list of QueryError objects. Each error is an object that contains ErrorCode
-	// and Message structures. Possible values for ErrorCode are CLOUDFORMATION_STACK_INACTIVE
-	// and CLOUDFORMATION_STACK_NOT_EXISTING.
+	// and Message structures.
+	//
+	// Possible values for ErrorCode:
+	//
+	//    * CLOUDFORMATION_STACK_INACTIVE
+	//
+	//    * CLOUDFORMATION_STACK_NOT_EXISTING
 	QueryErrors []*QueryError `type:"list"`
 
 	// The ARNs and resource types of resources that are members of the group that
@@ -4817,6 +5125,69 @@ func (s *UntagOutput) SetKeys(v []*string) *UntagOutput {
 	return s
 }
 
+type UpdateAccountSettingsInput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies whether you want to turn group lifecycle events (https://docs.aws.amazon.com/ARG/latest/userguide/monitor-groups.html)
+	// on or off.
+	GroupLifecycleEventsDesiredStatus *string `type:"string" enum:"GroupLifecycleEventsDesiredStatus"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateAccountSettingsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateAccountSettingsInput) GoString() string {
+	return s.String()
+}
+
+// SetGroupLifecycleEventsDesiredStatus sets the GroupLifecycleEventsDesiredStatus field's value.
+func (s *UpdateAccountSettingsInput) SetGroupLifecycleEventsDesiredStatus(v string) *UpdateAccountSettingsInput {
+	s.GroupLifecycleEventsDesiredStatus = &v
+	return s
+}
+
+type UpdateAccountSettingsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A structure that displays the status of the optional features in the account.
+	AccountSettings *AccountSettings `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateAccountSettingsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateAccountSettingsOutput) GoString() string {
+	return s.String()
+}
+
+// SetAccountSettings sets the AccountSettings field's value.
+func (s *UpdateAccountSettingsOutput) SetAccountSettings(v *AccountSettings) *UpdateAccountSettingsOutput {
+	s.AccountSettings = v
+	return s
+}
+
 type UpdateGroupInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4927,8 +5298,8 @@ type UpdateGroupQueryInput struct {
 	// Deprecated: This field is deprecated, use Group instead.
 	GroupName *string `min:"1" deprecated:"true" type:"string"`
 
-	// The resource query to determine which AWS resources are members of this resource
-	// group.
+	// The resource query to determine which Amazon Web Services resources are members
+	// of this resource group.
 	//
 	// A resource group can contain either a Configuration or a ResourceQuery, but
 	// not both.
@@ -5065,11 +5436,54 @@ func GroupFilterName_Values() []string {
 }
 
 const (
+	// GroupLifecycleEventsDesiredStatusActive is a GroupLifecycleEventsDesiredStatus enum value
+	GroupLifecycleEventsDesiredStatusActive = "ACTIVE"
+
+	// GroupLifecycleEventsDesiredStatusInactive is a GroupLifecycleEventsDesiredStatus enum value
+	GroupLifecycleEventsDesiredStatusInactive = "INACTIVE"
+)
+
+// GroupLifecycleEventsDesiredStatus_Values returns all elements of the GroupLifecycleEventsDesiredStatus enum
+func GroupLifecycleEventsDesiredStatus_Values() []string {
+	return []string{
+		GroupLifecycleEventsDesiredStatusActive,
+		GroupLifecycleEventsDesiredStatusInactive,
+	}
+}
+
+const (
+	// GroupLifecycleEventsStatusActive is a GroupLifecycleEventsStatus enum value
+	GroupLifecycleEventsStatusActive = "ACTIVE"
+
+	// GroupLifecycleEventsStatusInactive is a GroupLifecycleEventsStatus enum value
+	GroupLifecycleEventsStatusInactive = "INACTIVE"
+
+	// GroupLifecycleEventsStatusInProgress is a GroupLifecycleEventsStatus enum value
+	GroupLifecycleEventsStatusInProgress = "IN_PROGRESS"
+
+	// GroupLifecycleEventsStatusError is a GroupLifecycleEventsStatus enum value
+	GroupLifecycleEventsStatusError = "ERROR"
+)
+
+// GroupLifecycleEventsStatus_Values returns all elements of the GroupLifecycleEventsStatus enum
+func GroupLifecycleEventsStatus_Values() []string {
+	return []string{
+		GroupLifecycleEventsStatusActive,
+		GroupLifecycleEventsStatusInactive,
+		GroupLifecycleEventsStatusInProgress,
+		GroupLifecycleEventsStatusError,
+	}
+}
+
+const (
 	// QueryErrorCodeCloudformationStackInactive is a QueryErrorCode enum value
 	QueryErrorCodeCloudformationStackInactive = "CLOUDFORMATION_STACK_INACTIVE"
 
 	// QueryErrorCodeCloudformationStackNotExisting is a QueryErrorCode enum value
 	QueryErrorCodeCloudformationStackNotExisting = "CLOUDFORMATION_STACK_NOT_EXISTING"
+
+	// QueryErrorCodeCloudformationStackUnassumableRole is a QueryErrorCode enum value
+	QueryErrorCodeCloudformationStackUnassumableRole = "CLOUDFORMATION_STACK_UNASSUMABLE_ROLE"
 )
 
 // QueryErrorCode_Values returns all elements of the QueryErrorCode enum
@@ -5077,6 +5491,7 @@ func QueryErrorCode_Values() []string {
 	return []string{
 		QueryErrorCodeCloudformationStackInactive,
 		QueryErrorCodeCloudformationStackNotExisting,
+		QueryErrorCodeCloudformationStackUnassumableRole,
 	}
 }
 

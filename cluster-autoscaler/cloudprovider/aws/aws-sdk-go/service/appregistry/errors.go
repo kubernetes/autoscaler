@@ -33,6 +33,12 @@ const (
 	// The maximum number of resources per account has been reached.
 	ErrCodeServiceQuotaExceededException = "ServiceQuotaExceededException"
 
+	// ErrCodeThrottlingException for service response error code
+	// "ThrottlingException".
+	//
+	// The maximum number of API requests has been exceeded.
+	ErrCodeThrottlingException = "ThrottlingException"
+
 	// ErrCodeValidationException for service response error code
 	// "ValidationException".
 	//
@@ -45,5 +51,6 @@ var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
 	"InternalServerException":       newErrorInternalServerException,
 	"ResourceNotFoundException":     newErrorResourceNotFoundException,
 	"ServiceQuotaExceededException": newErrorServiceQuotaExceededException,
+	"ThrottlingException":           newErrorThrottlingException,
 	"ValidationException":           newErrorValidationException,
 }

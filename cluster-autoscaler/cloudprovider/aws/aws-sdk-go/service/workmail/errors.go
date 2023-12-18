@@ -65,9 +65,9 @@ const (
 	// ErrCodeInvalidCustomSesConfigurationException for service response error code
 	// "InvalidCustomSesConfigurationException".
 	//
-	// You SES configuration has customizations that Amazon WorkMail cannot save.
-	// The error message lists the invalid setting. For examples of invalid settings,
-	// refer to CreateReceiptRule (https://docs.aws.amazon.com/ses/latest/APIReference/API_CreateReceiptRule.html).
+	// You SES configuration has customizations that WorkMail cannot save. The error
+	// message lists the invalid setting. For examples of invalid settings, refer
+	// to CreateReceiptRule (https://docs.aws.amazon.com/ses/latest/APIReference/API_CreateReceiptRule.html).
 	ErrCodeInvalidCustomSesConfigurationException = "InvalidCustomSesConfigurationException"
 
 	// ErrCodeInvalidParameterException for service response error code
@@ -112,7 +112,7 @@ const (
 	// ErrCodeNameAvailabilityException for service response error code
 	// "NameAvailabilityException".
 	//
-	// The user, group, or resource name isn't unique in Amazon WorkMail.
+	// The user, group, or resource name isn't unique in WorkMail.
 	ErrCodeNameAvailabilityException = "NameAvailabilityException"
 
 	// ErrCodeOrganizationNotFoundException for service response error code
@@ -132,7 +132,7 @@ const (
 	// ErrCodeReservedNameException for service response error code
 	// "ReservedNameException".
 	//
-	// This user, group, or resource name is not allowed in Amazon WorkMail.
+	// This user, group, or resource name is not allowed in WorkMail.
 	ErrCodeReservedNameException = "ReservedNameException"
 
 	// ErrCodeResourceNotFoundException for service response error code

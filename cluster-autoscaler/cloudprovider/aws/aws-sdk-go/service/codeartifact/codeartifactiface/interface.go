@@ -84,6 +84,10 @@ type CodeArtifactAPI interface {
 	DeleteDomainPermissionsPolicyWithContext(aws.Context, *codeartifact.DeleteDomainPermissionsPolicyInput, ...request.Option) (*codeartifact.DeleteDomainPermissionsPolicyOutput, error)
 	DeleteDomainPermissionsPolicyRequest(*codeartifact.DeleteDomainPermissionsPolicyInput) (*request.Request, *codeartifact.DeleteDomainPermissionsPolicyOutput)
 
+	DeletePackage(*codeartifact.DeletePackageInput) (*codeartifact.DeletePackageOutput, error)
+	DeletePackageWithContext(aws.Context, *codeartifact.DeletePackageInput, ...request.Option) (*codeartifact.DeletePackageOutput, error)
+	DeletePackageRequest(*codeartifact.DeletePackageInput) (*request.Request, *codeartifact.DeletePackageOutput)
+
 	DeletePackageVersions(*codeartifact.DeletePackageVersionsInput) (*codeartifact.DeletePackageVersionsOutput, error)
 	DeletePackageVersionsWithContext(aws.Context, *codeartifact.DeletePackageVersionsInput, ...request.Option) (*codeartifact.DeletePackageVersionsOutput, error)
 	DeletePackageVersionsRequest(*codeartifact.DeletePackageVersionsInput) (*request.Request, *codeartifact.DeletePackageVersionsOutput)
@@ -99,6 +103,10 @@ type CodeArtifactAPI interface {
 	DescribeDomain(*codeartifact.DescribeDomainInput) (*codeartifact.DescribeDomainOutput, error)
 	DescribeDomainWithContext(aws.Context, *codeartifact.DescribeDomainInput, ...request.Option) (*codeartifact.DescribeDomainOutput, error)
 	DescribeDomainRequest(*codeartifact.DescribeDomainInput) (*request.Request, *codeartifact.DescribeDomainOutput)
+
+	DescribePackage(*codeartifact.DescribePackageInput) (*codeartifact.DescribePackageOutput, error)
+	DescribePackageWithContext(aws.Context, *codeartifact.DescribePackageInput, ...request.Option) (*codeartifact.DescribePackageOutput, error)
+	DescribePackageRequest(*codeartifact.DescribePackageInput) (*request.Request, *codeartifact.DescribePackageOutput)
 
 	DescribePackageVersion(*codeartifact.DescribePackageVersionInput) (*codeartifact.DescribePackageVersionOutput, error)
 	DescribePackageVersionWithContext(aws.Context, *codeartifact.DescribePackageVersionInput, ...request.Option) (*codeartifact.DescribePackageVersionOutput, error)
@@ -190,9 +198,17 @@ type CodeArtifactAPI interface {
 	ListTagsForResourceWithContext(aws.Context, *codeartifact.ListTagsForResourceInput, ...request.Option) (*codeartifact.ListTagsForResourceOutput, error)
 	ListTagsForResourceRequest(*codeartifact.ListTagsForResourceInput) (*request.Request, *codeartifact.ListTagsForResourceOutput)
 
+	PublishPackageVersion(*codeartifact.PublishPackageVersionInput) (*codeartifact.PublishPackageVersionOutput, error)
+	PublishPackageVersionWithContext(aws.Context, *codeartifact.PublishPackageVersionInput, ...request.Option) (*codeartifact.PublishPackageVersionOutput, error)
+	PublishPackageVersionRequest(*codeartifact.PublishPackageVersionInput) (*request.Request, *codeartifact.PublishPackageVersionOutput)
+
 	PutDomainPermissionsPolicy(*codeartifact.PutDomainPermissionsPolicyInput) (*codeartifact.PutDomainPermissionsPolicyOutput, error)
 	PutDomainPermissionsPolicyWithContext(aws.Context, *codeartifact.PutDomainPermissionsPolicyInput, ...request.Option) (*codeartifact.PutDomainPermissionsPolicyOutput, error)
 	PutDomainPermissionsPolicyRequest(*codeartifact.PutDomainPermissionsPolicyInput) (*request.Request, *codeartifact.PutDomainPermissionsPolicyOutput)
+
+	PutPackageOriginConfiguration(*codeartifact.PutPackageOriginConfigurationInput) (*codeartifact.PutPackageOriginConfigurationOutput, error)
+	PutPackageOriginConfigurationWithContext(aws.Context, *codeartifact.PutPackageOriginConfigurationInput, ...request.Option) (*codeartifact.PutPackageOriginConfigurationOutput, error)
+	PutPackageOriginConfigurationRequest(*codeartifact.PutPackageOriginConfigurationInput) (*request.Request, *codeartifact.PutPackageOriginConfigurationOutput)
 
 	PutRepositoryPermissionsPolicy(*codeartifact.PutRepositoryPermissionsPolicyInput) (*codeartifact.PutRepositoryPermissionsPolicyOutput, error)
 	PutRepositoryPermissionsPolicyWithContext(aws.Context, *codeartifact.PutRepositoryPermissionsPolicyInput, ...request.Option) (*codeartifact.PutRepositoryPermissionsPolicyOutput, error)

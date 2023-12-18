@@ -56,7 +56,9 @@
 // A tag comprises a key and a value, both set by you. For example, you might
 // set a tag as topic:nature to label a particular video category. See Tagging
 // Amazon Web Services Resources (https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html)
-// for more information, including restrictions that apply to tags.
+// for more information, including restrictions that apply to tags and "Tag
+// naming limits and requirements"; Amazon IVS has no service-specific constraints
+// beyond what is documented there.
 //
 // Tags can help you identify and organize your Amazon Web Services resources.
 // For example, you can use the same tag for different resources to indicate
@@ -76,8 +78,9 @@
 //   - Authentication is about verifying identity. You need to be authenticated
 //     to sign Amazon IVS API requests.
 //
-//   - Authorization is about granting permissions. You need to be authorized
-//     to view Amazon IVS private channels (https://docs.aws.amazon.com/ivs/latest/userguide/private-channels.html).
+//   - Authorization is about granting permissions. Your IAM roles need to
+//     have permissions for Amazon IVS API requests. In addition, authorization
+//     is needed to view Amazon IVS private channels (https://docs.aws.amazon.com/ivs/latest/userguide/private-channels.html).
 //     (Private channels are channels that are enabled for "playback authorization.")
 //
 // # Authentication
@@ -90,8 +93,8 @@
 //
 // You generate a signature using valid Amazon Web Services credentials that
 // have permission to perform the requested action. For example, you must sign
-// PutMetadata requests with a signature generated from an IAM user account
-// that has the ivs:PutMetadata permission.
+// PutMetadata requests with a signature generated from a user account that
+// has the ivs:PutMetadata permission.
 //
 // For more information:
 //
@@ -103,13 +106,20 @@
 //     (https://docs.aws.amazon.com/ivs/latest/userguide/security-iam.html) on
 //     the Security page of the Amazon IVS User Guide.
 //
+// Amazon Resource Names (ARNs)
+//
+// ARNs uniquely identify AWS resources. An ARN is required when you need to
+// specify a resource unambiguously across all of AWS, such as in IAM policies
+// and API calls. For more information, see Amazon Resource Names (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+// in the AWS General Reference.
+//
 // Channel Endpoints
 //
 //   - CreateChannel — Creates a new channel and an associated stream key
 //     to start streaming.
 //
 //   - GetChannel — Gets the channel configuration for the specified channel
-//     ARN (Amazon Resource Name).
+//     ARN.
 //
 //   - BatchGetChannel — Performs GetChannel on multiple ARNs simultaneously.
 //
@@ -164,7 +174,7 @@
 //     recommend batching your data into a single PutMetadata call.) At most
 //     155 requests per second per account are allowed.
 //
-// # PlaybackKeyPair Endpoints
+// # Private Channel Endpoints
 //
 // For more information, see Setting Up Private Channels (https://docs.aws.amazon.com/ivs/latest/userguide/private-channels.html)
 // in the Amazon IVS User Guide.
@@ -185,6 +195,14 @@
 //   - DeletePlaybackKeyPair — Deletes a specified authorization key pair.
 //     This invalidates future viewer tokens generated using the key pair’s
 //     privateKey.
+//
+//   - StartViewerSessionRevocation — Starts the process of revoking the
+//     viewer session associated with a specified channel ARN and viewer ID.
+//     Optionally, you can provide a version to revoke viewer sessions less than
+//     and including that version.
+//
+//   - BatchStartViewerSessionRevocation — Performs StartViewerSessionRevocation
+//     on multiple channel ARN and viewer ID pairs simultaneously.
 //
 // RecordingConfiguration Endpoints
 //

@@ -4,6 +4,7 @@ package appintegrationsservice
 
 import (
 	"fmt"
+	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/awsutil"
@@ -11,6 +12,102 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/private/protocol"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/private/protocol/restjson"
 )
+
+const opCreateApplication = "CreateApplication"
+
+// CreateApplicationRequest generates a "aws/request.Request" representing the
+// client's request for the CreateApplication operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateApplication for more information on using the CreateApplication
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreateApplicationRequest method.
+//	req, resp := client.CreateApplicationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/appintegrations-2020-07-29/CreateApplication
+func (c *AppIntegrationsService) CreateApplicationRequest(input *CreateApplicationInput) (req *request.Request, output *CreateApplicationOutput) {
+	op := &request.Operation{
+		Name:       opCreateApplication,
+		HTTPMethod: "POST",
+		HTTPPath:   "/applications",
+	}
+
+	if input == nil {
+		input = &CreateApplicationInput{}
+	}
+
+	output = &CreateApplicationOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateApplication API operation for Amazon AppIntegrations Service.
+//
+// This API is in preview release and subject to change.
+//
+// Creates and persists an Application resource.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon AppIntegrations Service's
+// API operation CreateApplication for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InternalServiceError
+//     Request processing failed due to an error or failure with the service.
+//
+//   - ResourceQuotaExceededException
+//     The allowed quota for the resource has been exceeded.
+//
+//   - DuplicateResourceException
+//     A resource with the specified name already exists.
+//
+//   - ThrottlingException
+//     The throttling limit has been exceeded.
+//
+//   - InvalidRequestException
+//     The request is not valid.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/appintegrations-2020-07-29/CreateApplication
+func (c *AppIntegrationsService) CreateApplication(input *CreateApplicationInput) (*CreateApplicationOutput, error) {
+	req, out := c.CreateApplicationRequest(input)
+	return out, req.Send()
+}
+
+// CreateApplicationWithContext is the same as CreateApplication with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateApplication for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AppIntegrationsService) CreateApplicationWithContext(ctx aws.Context, input *CreateApplicationInput, opts ...request.Option) (*CreateApplicationOutput, error) {
+	req, out := c.CreateApplicationRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
 
 const opCreateDataIntegration = "CreateDataIntegration"
 
@@ -399,6 +496,99 @@ func (c *AppIntegrationsService) DeleteEventIntegrationWithContext(ctx aws.Conte
 	return out, req.Send()
 }
 
+const opGetApplication = "GetApplication"
+
+// GetApplicationRequest generates a "aws/request.Request" representing the
+// client's request for the GetApplication operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetApplication for more information on using the GetApplication
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetApplicationRequest method.
+//	req, resp := client.GetApplicationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/appintegrations-2020-07-29/GetApplication
+func (c *AppIntegrationsService) GetApplicationRequest(input *GetApplicationInput) (req *request.Request, output *GetApplicationOutput) {
+	op := &request.Operation{
+		Name:       opGetApplication,
+		HTTPMethod: "GET",
+		HTTPPath:   "/applications/{Arn}",
+	}
+
+	if input == nil {
+		input = &GetApplicationInput{}
+	}
+
+	output = &GetApplicationOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetApplication API operation for Amazon AppIntegrations Service.
+//
+// This API is in preview release and subject to change.
+//
+// Get an Application resource.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon AppIntegrations Service's
+// API operation GetApplication for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InternalServiceError
+//     Request processing failed due to an error or failure with the service.
+//
+//   - ThrottlingException
+//     The throttling limit has been exceeded.
+//
+//   - ResourceNotFoundException
+//     The specified resource was not found.
+//
+//   - InvalidRequestException
+//     The request is not valid.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/appintegrations-2020-07-29/GetApplication
+func (c *AppIntegrationsService) GetApplication(input *GetApplicationInput) (*GetApplicationOutput, error) {
+	req, out := c.GetApplicationRequest(input)
+	return out, req.Send()
+}
+
+// GetApplicationWithContext is the same as GetApplication with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetApplication for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AppIntegrationsService) GetApplicationWithContext(ctx aws.Context, input *GetApplicationInput, opts ...request.Option) (*GetApplicationOutput, error) {
+	req, out := c.GetApplicationRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opGetDataIntegration = "GetDataIntegration"
 
 // GetDataIntegrationRequest generates a "aws/request.Request" representing the
@@ -586,6 +776,153 @@ func (c *AppIntegrationsService) GetEventIntegrationWithContext(ctx aws.Context,
 	return out, req.Send()
 }
 
+const opListApplications = "ListApplications"
+
+// ListApplicationsRequest generates a "aws/request.Request" representing the
+// client's request for the ListApplications operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListApplications for more information on using the ListApplications
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListApplicationsRequest method.
+//	req, resp := client.ListApplicationsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/appintegrations-2020-07-29/ListApplications
+func (c *AppIntegrationsService) ListApplicationsRequest(input *ListApplicationsInput) (req *request.Request, output *ListApplicationsOutput) {
+	op := &request.Operation{
+		Name:       opListApplications,
+		HTTPMethod: "GET",
+		HTTPPath:   "/applications",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListApplicationsInput{}
+	}
+
+	output = &ListApplicationsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListApplications API operation for Amazon AppIntegrations Service.
+//
+// This API is in preview release and subject to change.
+//
+// Lists applications in the account.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon AppIntegrations Service's
+// API operation ListApplications for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InternalServiceError
+//     Request processing failed due to an error or failure with the service.
+//
+//   - ThrottlingException
+//     The throttling limit has been exceeded.
+//
+//   - InvalidRequestException
+//     The request is not valid.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/appintegrations-2020-07-29/ListApplications
+func (c *AppIntegrationsService) ListApplications(input *ListApplicationsInput) (*ListApplicationsOutput, error) {
+	req, out := c.ListApplicationsRequest(input)
+	return out, req.Send()
+}
+
+// ListApplicationsWithContext is the same as ListApplications with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListApplications for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AppIntegrationsService) ListApplicationsWithContext(ctx aws.Context, input *ListApplicationsInput, opts ...request.Option) (*ListApplicationsOutput, error) {
+	req, out := c.ListApplicationsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListApplicationsPages iterates over the pages of a ListApplications operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListApplications method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListApplications operation.
+//	pageNum := 0
+//	err := client.ListApplicationsPages(params,
+//	    func(page *appintegrationsservice.ListApplicationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *AppIntegrationsService) ListApplicationsPages(input *ListApplicationsInput, fn func(*ListApplicationsOutput, bool) bool) error {
+	return c.ListApplicationsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListApplicationsPagesWithContext same as ListApplicationsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AppIntegrationsService) ListApplicationsPagesWithContext(ctx aws.Context, input *ListApplicationsInput, fn func(*ListApplicationsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListApplicationsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListApplicationsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListApplicationsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opListDataIntegrationAssociations = "ListDataIntegrationAssociations"
 
 // ListDataIntegrationAssociationsRequest generates a "aws/request.Request" representing the
@@ -616,6 +953,12 @@ func (c *AppIntegrationsService) ListDataIntegrationAssociationsRequest(input *L
 		Name:       opListDataIntegrationAssociations,
 		HTTPMethod: "GET",
 		HTTPPath:   "/dataIntegrations/{Identifier}/associations",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
 	}
 
 	if input == nil {
@@ -682,6 +1025,57 @@ func (c *AppIntegrationsService) ListDataIntegrationAssociationsWithContext(ctx 
 	return out, req.Send()
 }
 
+// ListDataIntegrationAssociationsPages iterates over the pages of a ListDataIntegrationAssociations operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListDataIntegrationAssociations method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListDataIntegrationAssociations operation.
+//	pageNum := 0
+//	err := client.ListDataIntegrationAssociationsPages(params,
+//	    func(page *appintegrationsservice.ListDataIntegrationAssociationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *AppIntegrationsService) ListDataIntegrationAssociationsPages(input *ListDataIntegrationAssociationsInput, fn func(*ListDataIntegrationAssociationsOutput, bool) bool) error {
+	return c.ListDataIntegrationAssociationsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListDataIntegrationAssociationsPagesWithContext same as ListDataIntegrationAssociationsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AppIntegrationsService) ListDataIntegrationAssociationsPagesWithContext(ctx aws.Context, input *ListDataIntegrationAssociationsInput, fn func(*ListDataIntegrationAssociationsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListDataIntegrationAssociationsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListDataIntegrationAssociationsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListDataIntegrationAssociationsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opListDataIntegrations = "ListDataIntegrations"
 
 // ListDataIntegrationsRequest generates a "aws/request.Request" representing the
@@ -712,6 +1106,12 @@ func (c *AppIntegrationsService) ListDataIntegrationsRequest(input *ListDataInte
 		Name:       opListDataIntegrations,
 		HTTPMethod: "GET",
 		HTTPPath:   "/dataIntegrations",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
 	}
 
 	if input == nil {
@@ -775,6 +1175,57 @@ func (c *AppIntegrationsService) ListDataIntegrationsWithContext(ctx aws.Context
 	return out, req.Send()
 }
 
+// ListDataIntegrationsPages iterates over the pages of a ListDataIntegrations operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListDataIntegrations method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListDataIntegrations operation.
+//	pageNum := 0
+//	err := client.ListDataIntegrationsPages(params,
+//	    func(page *appintegrationsservice.ListDataIntegrationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *AppIntegrationsService) ListDataIntegrationsPages(input *ListDataIntegrationsInput, fn func(*ListDataIntegrationsOutput, bool) bool) error {
+	return c.ListDataIntegrationsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListDataIntegrationsPagesWithContext same as ListDataIntegrationsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AppIntegrationsService) ListDataIntegrationsPagesWithContext(ctx aws.Context, input *ListDataIntegrationsInput, fn func(*ListDataIntegrationsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListDataIntegrationsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListDataIntegrationsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListDataIntegrationsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opListEventIntegrationAssociations = "ListEventIntegrationAssociations"
 
 // ListEventIntegrationAssociationsRequest generates a "aws/request.Request" representing the
@@ -805,6 +1256,12 @@ func (c *AppIntegrationsService) ListEventIntegrationAssociationsRequest(input *
 		Name:       opListEventIntegrationAssociations,
 		HTTPMethod: "GET",
 		HTTPPath:   "/eventIntegrations/{Name}/associations",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
 	}
 
 	if input == nil {
@@ -866,6 +1323,57 @@ func (c *AppIntegrationsService) ListEventIntegrationAssociationsWithContext(ctx
 	return out, req.Send()
 }
 
+// ListEventIntegrationAssociationsPages iterates over the pages of a ListEventIntegrationAssociations operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListEventIntegrationAssociations method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListEventIntegrationAssociations operation.
+//	pageNum := 0
+//	err := client.ListEventIntegrationAssociationsPages(params,
+//	    func(page *appintegrationsservice.ListEventIntegrationAssociationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *AppIntegrationsService) ListEventIntegrationAssociationsPages(input *ListEventIntegrationAssociationsInput, fn func(*ListEventIntegrationAssociationsOutput, bool) bool) error {
+	return c.ListEventIntegrationAssociationsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListEventIntegrationAssociationsPagesWithContext same as ListEventIntegrationAssociationsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AppIntegrationsService) ListEventIntegrationAssociationsPagesWithContext(ctx aws.Context, input *ListEventIntegrationAssociationsInput, fn func(*ListEventIntegrationAssociationsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListEventIntegrationAssociationsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListEventIntegrationAssociationsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListEventIntegrationAssociationsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opListEventIntegrations = "ListEventIntegrations"
 
 // ListEventIntegrationsRequest generates a "aws/request.Request" representing the
@@ -896,6 +1404,12 @@ func (c *AppIntegrationsService) ListEventIntegrationsRequest(input *ListEventIn
 		Name:       opListEventIntegrations,
 		HTTPMethod: "GET",
 		HTTPPath:   "/eventIntegrations",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
 	}
 
 	if input == nil {
@@ -952,6 +1466,57 @@ func (c *AppIntegrationsService) ListEventIntegrationsWithContext(ctx aws.Contex
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
+}
+
+// ListEventIntegrationsPages iterates over the pages of a ListEventIntegrations operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListEventIntegrations method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListEventIntegrations operation.
+//	pageNum := 0
+//	err := client.ListEventIntegrationsPages(params,
+//	    func(page *appintegrationsservice.ListEventIntegrationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *AppIntegrationsService) ListEventIntegrationsPages(input *ListEventIntegrationsInput, fn func(*ListEventIntegrationsOutput, bool) bool) error {
+	return c.ListEventIntegrationsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListEventIntegrationsPagesWithContext same as ListEventIntegrationsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AppIntegrationsService) ListEventIntegrationsPagesWithContext(ctx aws.Context, input *ListEventIntegrationsInput, fn func(*ListEventIntegrationsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListEventIntegrationsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListEventIntegrationsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListEventIntegrationsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
 }
 
 const opListTagsForResource = "ListTagsForResource"
@@ -1220,6 +1785,100 @@ func (c *AppIntegrationsService) UntagResourceWithContext(ctx aws.Context, input
 	return out, req.Send()
 }
 
+const opUpdateApplication = "UpdateApplication"
+
+// UpdateApplicationRequest generates a "aws/request.Request" representing the
+// client's request for the UpdateApplication operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UpdateApplication for more information on using the UpdateApplication
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UpdateApplicationRequest method.
+//	req, resp := client.UpdateApplicationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/appintegrations-2020-07-29/UpdateApplication
+func (c *AppIntegrationsService) UpdateApplicationRequest(input *UpdateApplicationInput) (req *request.Request, output *UpdateApplicationOutput) {
+	op := &request.Operation{
+		Name:       opUpdateApplication,
+		HTTPMethod: "PATCH",
+		HTTPPath:   "/applications/{Arn}",
+	}
+
+	if input == nil {
+		input = &UpdateApplicationInput{}
+	}
+
+	output = &UpdateApplicationOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// UpdateApplication API operation for Amazon AppIntegrations Service.
+//
+// This API is in preview release and subject to change.
+//
+// Updates and persists an Application resource.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon AppIntegrations Service's
+// API operation UpdateApplication for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InternalServiceError
+//     Request processing failed due to an error or failure with the service.
+//
+//   - ThrottlingException
+//     The throttling limit has been exceeded.
+//
+//   - ResourceNotFoundException
+//     The specified resource was not found.
+//
+//   - InvalidRequestException
+//     The request is not valid.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/appintegrations-2020-07-29/UpdateApplication
+func (c *AppIntegrationsService) UpdateApplication(input *UpdateApplicationInput) (*UpdateApplicationOutput, error) {
+	req, out := c.UpdateApplicationRequest(input)
+	return out, req.Send()
+}
+
+// UpdateApplicationWithContext is the same as UpdateApplication with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UpdateApplication for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AppIntegrationsService) UpdateApplicationWithContext(ctx aws.Context, input *UpdateApplicationInput, opts ...request.Option) (*UpdateApplicationOutput, error) {
+	req, out := c.UpdateApplicationRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opUpdateDataIntegration = "UpdateDataIntegration"
 
 // UpdateDataIntegrationRequest generates a "aws/request.Request" representing the
@@ -1473,31 +2132,371 @@ func (s *AccessDeniedException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
+// The configuration for where the application should be loaded from.
+type ApplicationSourceConfig struct {
+	_ struct{} `type:"structure"`
+
+	// The external URL source for the application.
+	ExternalUrlConfig *ExternalUrlConfig `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ApplicationSourceConfig) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ApplicationSourceConfig) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ApplicationSourceConfig) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ApplicationSourceConfig"}
+	if s.ExternalUrlConfig != nil {
+		if err := s.ExternalUrlConfig.Validate(); err != nil {
+			invalidParams.AddNested("ExternalUrlConfig", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetExternalUrlConfig sets the ExternalUrlConfig field's value.
+func (s *ApplicationSourceConfig) SetExternalUrlConfig(v *ExternalUrlConfig) *ApplicationSourceConfig {
+	s.ExternalUrlConfig = v
+	return s
+}
+
+// Summary information about the Application.
+type ApplicationSummary struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the Application.
+	Arn *string `min:"1" type:"string"`
+
+	// The time when the application was created.
+	CreatedTime *time.Time `type:"timestamp"`
+
+	// A unique identifier for the Application.
+	Id *string `type:"string"`
+
+	// The time when the application was last modified.
+	LastModifiedTime *time.Time `type:"timestamp"`
+
+	// The name of the application.
+	Name *string `min:"1" type:"string"`
+
+	// The namespace of the application.
+	Namespace *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ApplicationSummary) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ApplicationSummary) GoString() string {
+	return s.String()
+}
+
+// SetArn sets the Arn field's value.
+func (s *ApplicationSummary) SetArn(v string) *ApplicationSummary {
+	s.Arn = &v
+	return s
+}
+
+// SetCreatedTime sets the CreatedTime field's value.
+func (s *ApplicationSummary) SetCreatedTime(v time.Time) *ApplicationSummary {
+	s.CreatedTime = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *ApplicationSummary) SetId(v string) *ApplicationSummary {
+	s.Id = &v
+	return s
+}
+
+// SetLastModifiedTime sets the LastModifiedTime field's value.
+func (s *ApplicationSummary) SetLastModifiedTime(v time.Time) *ApplicationSummary {
+	s.LastModifiedTime = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *ApplicationSummary) SetName(v string) *ApplicationSummary {
+	s.Name = &v
+	return s
+}
+
+// SetNamespace sets the Namespace field's value.
+func (s *ApplicationSummary) SetNamespace(v string) *ApplicationSummary {
+	s.Namespace = &v
+	return s
+}
+
+type CreateApplicationInput struct {
+	_ struct{} `type:"structure"`
+
+	// The configuration for where the application should be loaded from.
+	//
+	// ApplicationSourceConfig is a required field
+	ApplicationSourceConfig *ApplicationSourceConfig `type:"structure" required:"true"`
+
+	// A unique, case-sensitive identifier that you provide to ensure the idempotency
+	// of the request. If not provided, the Amazon Web Services SDK populates this
+	// field. For more information about idempotency, see Making retries safe with
+	// idempotent APIs (https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/).
+	ClientToken *string `min:"1" type:"string" idempotencyToken:"true"`
+
+	// The description of the application.
+	Description *string `min:"1" type:"string"`
+
+	// The name of the application.
+	//
+	// Name is a required field
+	Name *string `min:"1" type:"string" required:"true"`
+
+	// The namespace of the application.
+	//
+	// Namespace is a required field
+	Namespace *string `min:"1" type:"string" required:"true"`
+
+	// The events that the application publishes.
+	Publications []*Publication `type:"list"`
+
+	// The events that the application subscribes.
+	Subscriptions []*Subscription `type:"list"`
+
+	// The tags used to organize, track, or control access for this resource. For
+	// example, { "tags": {"key1":"value1", "key2":"value2"} }.
+	Tags map[string]*string `min:"1" type:"map"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateApplicationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateApplicationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateApplicationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateApplicationInput"}
+	if s.ApplicationSourceConfig == nil {
+		invalidParams.Add(request.NewErrParamRequired("ApplicationSourceConfig"))
+	}
+	if s.ClientToken != nil && len(*s.ClientToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClientToken", 1))
+	}
+	if s.Description != nil && len(*s.Description) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Description", 1))
+	}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+	if s.Namespace == nil {
+		invalidParams.Add(request.NewErrParamRequired("Namespace"))
+	}
+	if s.Namespace != nil && len(*s.Namespace) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Namespace", 1))
+	}
+	if s.Tags != nil && len(s.Tags) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Tags", 1))
+	}
+	if s.ApplicationSourceConfig != nil {
+		if err := s.ApplicationSourceConfig.Validate(); err != nil {
+			invalidParams.AddNested("ApplicationSourceConfig", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.Publications != nil {
+		for i, v := range s.Publications {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Publications", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.Subscriptions != nil {
+		for i, v := range s.Subscriptions {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Subscriptions", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetApplicationSourceConfig sets the ApplicationSourceConfig field's value.
+func (s *CreateApplicationInput) SetApplicationSourceConfig(v *ApplicationSourceConfig) *CreateApplicationInput {
+	s.ApplicationSourceConfig = v
+	return s
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *CreateApplicationInput) SetClientToken(v string) *CreateApplicationInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *CreateApplicationInput) SetDescription(v string) *CreateApplicationInput {
+	s.Description = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CreateApplicationInput) SetName(v string) *CreateApplicationInput {
+	s.Name = &v
+	return s
+}
+
+// SetNamespace sets the Namespace field's value.
+func (s *CreateApplicationInput) SetNamespace(v string) *CreateApplicationInput {
+	s.Namespace = &v
+	return s
+}
+
+// SetPublications sets the Publications field's value.
+func (s *CreateApplicationInput) SetPublications(v []*Publication) *CreateApplicationInput {
+	s.Publications = v
+	return s
+}
+
+// SetSubscriptions sets the Subscriptions field's value.
+func (s *CreateApplicationInput) SetSubscriptions(v []*Subscription) *CreateApplicationInput {
+	s.Subscriptions = v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CreateApplicationInput) SetTags(v map[string]*string) *CreateApplicationInput {
+	s.Tags = v
+	return s
+}
+
+type CreateApplicationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the Application.
+	Arn *string `min:"1" type:"string"`
+
+	// A unique identifier for the Application.
+	Id *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateApplicationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateApplicationOutput) GoString() string {
+	return s.String()
+}
+
+// SetArn sets the Arn field's value.
+func (s *CreateApplicationOutput) SetArn(v string) *CreateApplicationOutput {
+	s.Arn = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *CreateApplicationOutput) SetId(v string) *CreateApplicationOutput {
+	s.Id = &v
+	return s
+}
+
 type CreateDataIntegrationInput struct {
 	_ struct{} `type:"structure"`
 
 	// A unique, case-sensitive identifier that you provide to ensure the idempotency
-	// of the request.
+	// of the request. If not provided, the Amazon Web Services SDK populates this
+	// field. For more information about idempotency, see Making retries safe with
+	// idempotent APIs (https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/).
 	ClientToken *string `min:"1" type:"string" idempotencyToken:"true"`
 
 	// A description of the DataIntegration.
 	Description *string `min:"1" type:"string"`
 
+	// The configuration for what files should be pulled from the source.
+	FileConfiguration *FileConfiguration `type:"structure"`
+
 	// The KMS key for the DataIntegration.
-	KmsKey *string `min:"1" type:"string"`
+	//
+	// KmsKey is a required field
+	KmsKey *string `min:"1" type:"string" required:"true"`
 
 	// The name of the DataIntegration.
 	//
 	// Name is a required field
 	Name *string `min:"1" type:"string" required:"true"`
 
+	// The configuration for what data should be pulled from the source.
+	ObjectConfiguration map[string]map[string][]*string `type:"map"`
+
 	// The name of the data and how often it should be pulled from the source.
 	ScheduleConfig *ScheduleConfiguration `type:"structure"`
 
 	// The URI of the data source.
-	SourceURI *string `min:"1" type:"string"`
+	//
+	// SourceURI is a required field
+	SourceURI *string `min:"1" type:"string" required:"true"`
 
-	// One or more tags.
+	// The tags used to organize, track, or control access for this resource. For
+	// example, { "tags": {"key1":"value1", "key2":"value2"} }.
 	Tags map[string]*string `min:"1" type:"map"`
 }
 
@@ -1528,6 +2527,9 @@ func (s *CreateDataIntegrationInput) Validate() error {
 	if s.Description != nil && len(*s.Description) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("Description", 1))
 	}
+	if s.KmsKey == nil {
+		invalidParams.Add(request.NewErrParamRequired("KmsKey"))
+	}
 	if s.KmsKey != nil && len(*s.KmsKey) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("KmsKey", 1))
 	}
@@ -1537,11 +2539,19 @@ func (s *CreateDataIntegrationInput) Validate() error {
 	if s.Name != nil && len(*s.Name) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
 	}
+	if s.SourceURI == nil {
+		invalidParams.Add(request.NewErrParamRequired("SourceURI"))
+	}
 	if s.SourceURI != nil && len(*s.SourceURI) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("SourceURI", 1))
 	}
 	if s.Tags != nil && len(s.Tags) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("Tags", 1))
+	}
+	if s.FileConfiguration != nil {
+		if err := s.FileConfiguration.Validate(); err != nil {
+			invalidParams.AddNested("FileConfiguration", err.(request.ErrInvalidParams))
+		}
 	}
 	if s.ScheduleConfig != nil {
 		if err := s.ScheduleConfig.Validate(); err != nil {
@@ -1567,6 +2577,12 @@ func (s *CreateDataIntegrationInput) SetDescription(v string) *CreateDataIntegra
 	return s
 }
 
+// SetFileConfiguration sets the FileConfiguration field's value.
+func (s *CreateDataIntegrationInput) SetFileConfiguration(v *FileConfiguration) *CreateDataIntegrationInput {
+	s.FileConfiguration = v
+	return s
+}
+
 // SetKmsKey sets the KmsKey field's value.
 func (s *CreateDataIntegrationInput) SetKmsKey(v string) *CreateDataIntegrationInput {
 	s.KmsKey = &v
@@ -1576,6 +2592,12 @@ func (s *CreateDataIntegrationInput) SetKmsKey(v string) *CreateDataIntegrationI
 // SetName sets the Name field's value.
 func (s *CreateDataIntegrationInput) SetName(v string) *CreateDataIntegrationInput {
 	s.Name = &v
+	return s
+}
+
+// SetObjectConfiguration sets the ObjectConfiguration field's value.
+func (s *CreateDataIntegrationInput) SetObjectConfiguration(v map[string]map[string][]*string) *CreateDataIntegrationInput {
+	s.ObjectConfiguration = v
 	return s
 }
 
@@ -1604,11 +2626,16 @@ type CreateDataIntegrationOutput struct {
 	Arn *string `min:"1" type:"string"`
 
 	// A unique, case-sensitive identifier that you provide to ensure the idempotency
-	// of the request.
+	// of the request. If not provided, the Amazon Web Services SDK populates this
+	// field. For more information about idempotency, see Making retries safe with
+	// idempotent APIs (https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/).
 	ClientToken *string `min:"1" type:"string"`
 
 	// A description of the DataIntegration.
 	Description *string `min:"1" type:"string"`
+
+	// The configuration for what files should be pulled from the source.
+	FileConfiguration *FileConfiguration `type:"structure"`
 
 	// A unique identifier.
 	Id *string `type:"string"`
@@ -1619,13 +2646,17 @@ type CreateDataIntegrationOutput struct {
 	// The name of the DataIntegration.
 	Name *string `min:"1" type:"string"`
 
+	// The configuration for what data should be pulled from the source.
+	ObjectConfiguration map[string]map[string][]*string `type:"map"`
+
 	// The name of the data and how often it should be pulled from the source.
 	ScheduleConfiguration *ScheduleConfiguration `type:"structure"`
 
 	// The URI of the data source.
 	SourceURI *string `min:"1" type:"string"`
 
-	// One or more tags.
+	// The tags used to organize, track, or control access for this resource. For
+	// example, { "tags": {"key1":"value1", "key2":"value2"} }.
 	Tags map[string]*string `min:"1" type:"map"`
 }
 
@@ -1665,6 +2696,12 @@ func (s *CreateDataIntegrationOutput) SetDescription(v string) *CreateDataIntegr
 	return s
 }
 
+// SetFileConfiguration sets the FileConfiguration field's value.
+func (s *CreateDataIntegrationOutput) SetFileConfiguration(v *FileConfiguration) *CreateDataIntegrationOutput {
+	s.FileConfiguration = v
+	return s
+}
+
 // SetId sets the Id field's value.
 func (s *CreateDataIntegrationOutput) SetId(v string) *CreateDataIntegrationOutput {
 	s.Id = &v
@@ -1680,6 +2717,12 @@ func (s *CreateDataIntegrationOutput) SetKmsKey(v string) *CreateDataIntegration
 // SetName sets the Name field's value.
 func (s *CreateDataIntegrationOutput) SetName(v string) *CreateDataIntegrationOutput {
 	s.Name = &v
+	return s
+}
+
+// SetObjectConfiguration sets the ObjectConfiguration field's value.
+func (s *CreateDataIntegrationOutput) SetObjectConfiguration(v map[string]map[string][]*string) *CreateDataIntegrationOutput {
+	s.ObjectConfiguration = v
 	return s
 }
 
@@ -1705,7 +2748,9 @@ type CreateEventIntegrationInput struct {
 	_ struct{} `type:"structure"`
 
 	// A unique, case-sensitive identifier that you provide to ensure the idempotency
-	// of the request.
+	// of the request. If not provided, the Amazon Web Services SDK populates this
+	// field. For more information about idempotency, see Making retries safe with
+	// idempotent APIs (https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/).
 	ClientToken *string `min:"1" type:"string" idempotencyToken:"true"`
 
 	// The description of the event integration.
@@ -1726,7 +2771,8 @@ type CreateEventIntegrationInput struct {
 	// Name is a required field
 	Name *string `min:"1" type:"string" required:"true"`
 
-	// One or more tags.
+	// The tags used to organize, track, or control access for this resource. For
+	// example, { "tags": {"key1":"value1", "key2":"value2"} }.
 	Tags map[string]*string `min:"1" type:"map"`
 }
 
@@ -1858,11 +2904,11 @@ func (s *CreateEventIntegrationOutput) SetEventIntegrationArn(v string) *CreateE
 type DataIntegrationAssociationSummary struct {
 	_ struct{} `type:"structure"`
 
-	// The identifier for teh client that is associated with the DataIntegration
+	// The identifier for the client that is associated with the DataIntegration
 	// association.
 	ClientId *string `min:"1" type:"string"`
 
-	// The Amazon Resource Name (ARN)of the DataIntegration.
+	// The Amazon Resource Name (ARN) of the DataIntegration.
 	DataIntegrationArn *string `min:"1" type:"string"`
 
 	// The Amazon Resource Name (ARN) of the DataIntegration association.
@@ -2230,7 +3276,8 @@ type EventIntegration struct {
 	// The name of the event integration.
 	Name *string `min:"1" type:"string"`
 
-	// The tags.
+	// The tags used to organize, track, or control access for this resource. For
+	// example, { "tags": {"key1":"value1", "key2":"value2"} }.
 	Tags map[string]*string `min:"1" type:"map"`
 }
 
@@ -2365,6 +3412,298 @@ func (s *EventIntegrationAssociation) SetEventIntegrationName(v string) *EventIn
 	return s
 }
 
+// The external URL source for the application.
+type ExternalUrlConfig struct {
+	_ struct{} `type:"structure"`
+
+	// The URL to access the application.
+	//
+	// AccessUrl is a required field
+	AccessUrl *string `min:"1" type:"string" required:"true"`
+
+	// Additional URLs to allow list if different than the access URL.
+	ApprovedOrigins []*string `min:"1" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ExternalUrlConfig) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ExternalUrlConfig) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ExternalUrlConfig) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ExternalUrlConfig"}
+	if s.AccessUrl == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccessUrl"))
+	}
+	if s.AccessUrl != nil && len(*s.AccessUrl) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AccessUrl", 1))
+	}
+	if s.ApprovedOrigins != nil && len(s.ApprovedOrigins) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ApprovedOrigins", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccessUrl sets the AccessUrl field's value.
+func (s *ExternalUrlConfig) SetAccessUrl(v string) *ExternalUrlConfig {
+	s.AccessUrl = &v
+	return s
+}
+
+// SetApprovedOrigins sets the ApprovedOrigins field's value.
+func (s *ExternalUrlConfig) SetApprovedOrigins(v []*string) *ExternalUrlConfig {
+	s.ApprovedOrigins = v
+	return s
+}
+
+// The configuration for what files should be pulled from the source.
+type FileConfiguration struct {
+	_ struct{} `type:"structure"`
+
+	// Restrictions for what files should be pulled from the source.
+	Filters map[string][]*string `type:"map"`
+
+	// Identifiers for the source folders to pull all files from recursively.
+	//
+	// Folders is a required field
+	Folders []*string `min:"1" type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FileConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FileConfiguration) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *FileConfiguration) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "FileConfiguration"}
+	if s.Folders == nil {
+		invalidParams.Add(request.NewErrParamRequired("Folders"))
+	}
+	if s.Folders != nil && len(s.Folders) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Folders", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetFilters sets the Filters field's value.
+func (s *FileConfiguration) SetFilters(v map[string][]*string) *FileConfiguration {
+	s.Filters = v
+	return s
+}
+
+// SetFolders sets the Folders field's value.
+func (s *FileConfiguration) SetFolders(v []*string) *FileConfiguration {
+	s.Folders = v
+	return s
+}
+
+type GetApplicationInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The Amazon Resource Name (ARN) of the Application.
+	//
+	// Arn is a required field
+	Arn *string `location:"uri" locationName:"Arn" min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetApplicationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetApplicationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetApplicationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetApplicationInput"}
+	if s.Arn == nil {
+		invalidParams.Add(request.NewErrParamRequired("Arn"))
+	}
+	if s.Arn != nil && len(*s.Arn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Arn", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetArn sets the Arn field's value.
+func (s *GetApplicationInput) SetArn(v string) *GetApplicationInput {
+	s.Arn = &v
+	return s
+}
+
+type GetApplicationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The configuration for where the application should be loaded from.
+	ApplicationSourceConfig *ApplicationSourceConfig `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the Application.
+	Arn *string `min:"1" type:"string"`
+
+	// The created time of the Application.
+	CreatedTime *time.Time `type:"timestamp"`
+
+	// The description of the application.
+	Description *string `min:"1" type:"string"`
+
+	// A unique identifier for the Application.
+	Id *string `type:"string"`
+
+	// The last modified time of the Application.
+	LastModifiedTime *time.Time `type:"timestamp"`
+
+	// The name of the application.
+	Name *string `min:"1" type:"string"`
+
+	// The namespace of the application.
+	Namespace *string `min:"1" type:"string"`
+
+	// The events that the application publishes.
+	Publications []*Publication `type:"list"`
+
+	// The events that the application subscribes.
+	Subscriptions []*Subscription `type:"list"`
+
+	// The tags used to organize, track, or control access for this resource. For
+	// example, { "tags": {"key1":"value1", "key2":"value2"} }.
+	Tags map[string]*string `min:"1" type:"map"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetApplicationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetApplicationOutput) GoString() string {
+	return s.String()
+}
+
+// SetApplicationSourceConfig sets the ApplicationSourceConfig field's value.
+func (s *GetApplicationOutput) SetApplicationSourceConfig(v *ApplicationSourceConfig) *GetApplicationOutput {
+	s.ApplicationSourceConfig = v
+	return s
+}
+
+// SetArn sets the Arn field's value.
+func (s *GetApplicationOutput) SetArn(v string) *GetApplicationOutput {
+	s.Arn = &v
+	return s
+}
+
+// SetCreatedTime sets the CreatedTime field's value.
+func (s *GetApplicationOutput) SetCreatedTime(v time.Time) *GetApplicationOutput {
+	s.CreatedTime = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *GetApplicationOutput) SetDescription(v string) *GetApplicationOutput {
+	s.Description = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *GetApplicationOutput) SetId(v string) *GetApplicationOutput {
+	s.Id = &v
+	return s
+}
+
+// SetLastModifiedTime sets the LastModifiedTime field's value.
+func (s *GetApplicationOutput) SetLastModifiedTime(v time.Time) *GetApplicationOutput {
+	s.LastModifiedTime = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *GetApplicationOutput) SetName(v string) *GetApplicationOutput {
+	s.Name = &v
+	return s
+}
+
+// SetNamespace sets the Namespace field's value.
+func (s *GetApplicationOutput) SetNamespace(v string) *GetApplicationOutput {
+	s.Namespace = &v
+	return s
+}
+
+// SetPublications sets the Publications field's value.
+func (s *GetApplicationOutput) SetPublications(v []*Publication) *GetApplicationOutput {
+	s.Publications = v
+	return s
+}
+
+// SetSubscriptions sets the Subscriptions field's value.
+func (s *GetApplicationOutput) SetSubscriptions(v []*Subscription) *GetApplicationOutput {
+	s.Subscriptions = v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *GetApplicationOutput) SetTags(v map[string]*string) *GetApplicationOutput {
+	s.Tags = v
+	return s
+}
+
 type GetDataIntegrationInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
@@ -2423,6 +3762,9 @@ type GetDataIntegrationOutput struct {
 	// The KMS key for the DataIntegration.
 	Description *string `min:"1" type:"string"`
 
+	// The configuration for what files should be pulled from the source.
+	FileConfiguration *FileConfiguration `type:"structure"`
+
 	// A unique identifier.
 	Id *string `type:"string"`
 
@@ -2432,13 +3774,17 @@ type GetDataIntegrationOutput struct {
 	// The name of the DataIntegration.
 	Name *string `min:"1" type:"string"`
 
+	// The configuration for what data should be pulled from the source.
+	ObjectConfiguration map[string]map[string][]*string `type:"map"`
+
 	// The name of the data and how often it should be pulled from the source.
 	ScheduleConfiguration *ScheduleConfiguration `type:"structure"`
 
 	// The URI of the data source.
 	SourceURI *string `min:"1" type:"string"`
 
-	// One or more tags.
+	// The tags used to organize, track, or control access for this resource. For
+	// example, { "tags": {"key1":"value1", "key2":"value2"} }.
 	Tags map[string]*string `min:"1" type:"map"`
 }
 
@@ -2472,6 +3818,12 @@ func (s *GetDataIntegrationOutput) SetDescription(v string) *GetDataIntegrationO
 	return s
 }
 
+// SetFileConfiguration sets the FileConfiguration field's value.
+func (s *GetDataIntegrationOutput) SetFileConfiguration(v *FileConfiguration) *GetDataIntegrationOutput {
+	s.FileConfiguration = v
+	return s
+}
+
 // SetId sets the Id field's value.
 func (s *GetDataIntegrationOutput) SetId(v string) *GetDataIntegrationOutput {
 	s.Id = &v
@@ -2487,6 +3839,12 @@ func (s *GetDataIntegrationOutput) SetKmsKey(v string) *GetDataIntegrationOutput
 // SetName sets the Name field's value.
 func (s *GetDataIntegrationOutput) SetName(v string) *GetDataIntegrationOutput {
 	s.Name = &v
+	return s
+}
+
+// SetObjectConfiguration sets the ObjectConfiguration field's value.
+func (s *GetDataIntegrationOutput) SetObjectConfiguration(v map[string]map[string][]*string) *GetDataIntegrationOutput {
+	s.ObjectConfiguration = v
 	return s
 }
 
@@ -2575,7 +3933,8 @@ type GetEventIntegrationOutput struct {
 	// The name of the event integration.
 	Name *string `min:"1" type:"string"`
 
-	// One or more tags.
+	// The tags used to organize, track, or control access for this resource. For
+	// example, { "tags": {"key1":"value1", "key2":"value2"} }.
 	Tags map[string]*string `min:"1" type:"map"`
 }
 
@@ -2759,6 +4118,103 @@ func (s *InvalidRequestException) StatusCode() int {
 // RequestID returns the service's response RequestID for request.
 func (s *InvalidRequestException) RequestID() string {
 	return s.RespMetadata.RequestID
+}
+
+type ListApplicationsInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The maximum number of results to return per page.
+	MaxResults *int64 `location:"querystring" locationName:"maxResults" min:"1" type:"integer"`
+
+	// The token for the next set of results. Use the value returned in the previous
+	// response in the next request to retrieve the next set of results.
+	NextToken *string `location:"querystring" locationName:"nextToken" min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListApplicationsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListApplicationsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListApplicationsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListApplicationsInput"}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+	if s.NextToken != nil && len(*s.NextToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListApplicationsInput) SetMaxResults(v int64) *ListApplicationsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListApplicationsInput) SetNextToken(v string) *ListApplicationsInput {
+	s.NextToken = &v
+	return s
+}
+
+type ListApplicationsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The Applications associated with this account.
+	Applications []*ApplicationSummary `min:"1" type:"list"`
+
+	// If there are additional results, this is the token for the next set of results.
+	NextToken *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListApplicationsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListApplicationsOutput) GoString() string {
+	return s.String()
+}
+
+// SetApplications sets the Applications field's value.
+func (s *ListApplicationsOutput) SetApplications(v []*ApplicationSummary) *ListApplicationsOutput {
+	s.Applications = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListApplicationsOutput) SetNextToken(v string) *ListApplicationsOutput {
+	s.NextToken = &v
+	return s
 }
 
 type ListDataIntegrationAssociationsInput struct {
@@ -3263,6 +4719,85 @@ func (s *ListTagsForResourceOutput) SetTags(v map[string]*string) *ListTagsForRe
 	return s
 }
 
+// The configuration of an event that the application publishes.
+type Publication struct {
+	_ struct{} `type:"structure"`
+
+	// The description of the publication.
+	Description *string `min:"1" type:"string"`
+
+	// The name of the publication.
+	//
+	// Event is a required field
+	Event *string `min:"1" type:"string" required:"true"`
+
+	// The JSON schema of the publication event.
+	//
+	// Schema is a required field
+	Schema *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Publication) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Publication) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *Publication) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "Publication"}
+	if s.Description != nil && len(*s.Description) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Description", 1))
+	}
+	if s.Event == nil {
+		invalidParams.Add(request.NewErrParamRequired("Event"))
+	}
+	if s.Event != nil && len(*s.Event) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Event", 1))
+	}
+	if s.Schema == nil {
+		invalidParams.Add(request.NewErrParamRequired("Schema"))
+	}
+	if s.Schema != nil && len(*s.Schema) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Schema", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDescription sets the Description field's value.
+func (s *Publication) SetDescription(v string) *Publication {
+	s.Description = &v
+	return s
+}
+
+// SetEvent sets the Event field's value.
+func (s *Publication) SetEvent(v string) *Publication {
+	s.Event = &v
+	return s
+}
+
+// SetSchema sets the Schema field's value.
+func (s *Publication) SetSchema(v string) *Publication {
+	s.Schema = &v
+	return s
+}
+
 // The specified resource was not found.
 type ResourceNotFoundException struct {
 	_            struct{}                  `type:"structure"`
@@ -3395,14 +4930,17 @@ func (s *ResourceQuotaExceededException) RequestID() string {
 type ScheduleConfiguration struct {
 	_ struct{} `type:"structure"`
 
-	// The start date for objects to import in the first flow run.
+	// The start date for objects to import in the first flow run as an Unix/epoch
+	// timestamp in milliseconds or in ISO-8601 format.
 	FirstExecutionFrom *string `min:"1" type:"string"`
 
 	// The name of the object to pull from the data source.
 	Object *string `min:"1" type:"string"`
 
 	// How often the data should be pulled from data source.
-	ScheduleExpression *string `min:"1" type:"string"`
+	//
+	// ScheduleExpression is a required field
+	ScheduleExpression *string `min:"1" type:"string" required:"true"`
 }
 
 // String returns the string representation.
@@ -3432,6 +4970,9 @@ func (s *ScheduleConfiguration) Validate() error {
 	if s.Object != nil && len(*s.Object) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("Object", 1))
 	}
+	if s.ScheduleExpression == nil {
+		invalidParams.Add(request.NewErrParamRequired("ScheduleExpression"))
+	}
 	if s.ScheduleExpression != nil && len(*s.ScheduleExpression) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("ScheduleExpression", 1))
 	}
@@ -3460,6 +5001,68 @@ func (s *ScheduleConfiguration) SetScheduleExpression(v string) *ScheduleConfigu
 	return s
 }
 
+// The configuration of an event that the application subscribes.
+type Subscription struct {
+	_ struct{} `type:"structure"`
+
+	// The description of the subscription.
+	Description *string `min:"1" type:"string"`
+
+	// The name of the subscription.
+	//
+	// Event is a required field
+	Event *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Subscription) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Subscription) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *Subscription) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "Subscription"}
+	if s.Description != nil && len(*s.Description) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Description", 1))
+	}
+	if s.Event == nil {
+		invalidParams.Add(request.NewErrParamRequired("Event"))
+	}
+	if s.Event != nil && len(*s.Event) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Event", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDescription sets the Description field's value.
+func (s *Subscription) SetDescription(v string) *Subscription {
+	s.Description = &v
+	return s
+}
+
+// SetEvent sets the Event field's value.
+func (s *Subscription) SetEvent(v string) *Subscription {
+	s.Event = &v
+	return s
+}
+
 type TagResourceInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3468,7 +5071,8 @@ type TagResourceInput struct {
 	// ResourceArn is a required field
 	ResourceArn *string `location:"uri" locationName:"resourceArn" min:"1" type:"string" required:"true"`
 
-	// One or more tags.
+	// The tags used to organize, track, or control access for this resource. For
+	// example, { "tags": {"key1":"value1", "key2":"value2"} }.
 	//
 	// Tags is a required field
 	Tags map[string]*string `locationName:"tags" min:"1" type:"map" required:"true"`
@@ -3700,6 +5304,153 @@ func (s UntagResourceOutput) GoString() string {
 	return s.String()
 }
 
+type UpdateApplicationInput struct {
+	_ struct{} `type:"structure"`
+
+	// The configuration for where the application should be loaded from.
+	ApplicationSourceConfig *ApplicationSourceConfig `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the Application.
+	//
+	// Arn is a required field
+	Arn *string `location:"uri" locationName:"Arn" min:"1" type:"string" required:"true"`
+
+	// The description of the application.
+	Description *string `min:"1" type:"string"`
+
+	// The name of the application.
+	Name *string `min:"1" type:"string"`
+
+	// The events that the application publishes.
+	Publications []*Publication `type:"list"`
+
+	// The events that the application subscribes.
+	Subscriptions []*Subscription `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateApplicationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateApplicationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdateApplicationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdateApplicationInput"}
+	if s.Arn == nil {
+		invalidParams.Add(request.NewErrParamRequired("Arn"))
+	}
+	if s.Arn != nil && len(*s.Arn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Arn", 1))
+	}
+	if s.Description != nil && len(*s.Description) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Description", 1))
+	}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+	if s.ApplicationSourceConfig != nil {
+		if err := s.ApplicationSourceConfig.Validate(); err != nil {
+			invalidParams.AddNested("ApplicationSourceConfig", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.Publications != nil {
+		for i, v := range s.Publications {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Publications", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.Subscriptions != nil {
+		for i, v := range s.Subscriptions {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Subscriptions", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetApplicationSourceConfig sets the ApplicationSourceConfig field's value.
+func (s *UpdateApplicationInput) SetApplicationSourceConfig(v *ApplicationSourceConfig) *UpdateApplicationInput {
+	s.ApplicationSourceConfig = v
+	return s
+}
+
+// SetArn sets the Arn field's value.
+func (s *UpdateApplicationInput) SetArn(v string) *UpdateApplicationInput {
+	s.Arn = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *UpdateApplicationInput) SetDescription(v string) *UpdateApplicationInput {
+	s.Description = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *UpdateApplicationInput) SetName(v string) *UpdateApplicationInput {
+	s.Name = &v
+	return s
+}
+
+// SetPublications sets the Publications field's value.
+func (s *UpdateApplicationInput) SetPublications(v []*Publication) *UpdateApplicationInput {
+	s.Publications = v
+	return s
+}
+
+// SetSubscriptions sets the Subscriptions field's value.
+func (s *UpdateApplicationInput) SetSubscriptions(v []*Subscription) *UpdateApplicationInput {
+	s.Subscriptions = v
+	return s
+}
+
+type UpdateApplicationOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateApplicationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateApplicationOutput) GoString() string {
+	return s.String()
+}
+
 type UpdateDataIntegrationInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3798,7 +5549,7 @@ func (s UpdateDataIntegrationOutput) GoString() string {
 type UpdateEventIntegrationInput struct {
 	_ struct{} `type:"structure"`
 
-	// The description of the event inegration.
+	// The description of the event integration.
 	Description *string `min:"1" type:"string"`
 
 	// The name of the event integration.

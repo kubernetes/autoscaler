@@ -83,9 +83,17 @@ type RecycleBinAPI interface {
 	ListTagsForResourceWithContext(aws.Context, *recyclebin.ListTagsForResourceInput, ...request.Option) (*recyclebin.ListTagsForResourceOutput, error)
 	ListTagsForResourceRequest(*recyclebin.ListTagsForResourceInput) (*request.Request, *recyclebin.ListTagsForResourceOutput)
 
+	LockRule(*recyclebin.LockRuleInput) (*recyclebin.LockRuleOutput, error)
+	LockRuleWithContext(aws.Context, *recyclebin.LockRuleInput, ...request.Option) (*recyclebin.LockRuleOutput, error)
+	LockRuleRequest(*recyclebin.LockRuleInput) (*request.Request, *recyclebin.LockRuleOutput)
+
 	TagResource(*recyclebin.TagResourceInput) (*recyclebin.TagResourceOutput, error)
 	TagResourceWithContext(aws.Context, *recyclebin.TagResourceInput, ...request.Option) (*recyclebin.TagResourceOutput, error)
 	TagResourceRequest(*recyclebin.TagResourceInput) (*request.Request, *recyclebin.TagResourceOutput)
+
+	UnlockRule(*recyclebin.UnlockRuleInput) (*recyclebin.UnlockRuleOutput, error)
+	UnlockRuleWithContext(aws.Context, *recyclebin.UnlockRuleInput, ...request.Option) (*recyclebin.UnlockRuleOutput, error)
+	UnlockRuleRequest(*recyclebin.UnlockRuleInput) (*request.Request, *recyclebin.UnlockRuleOutput)
 
 	UntagResource(*recyclebin.UntagResourceInput) (*recyclebin.UntagResourceOutput, error)
 	UntagResourceWithContext(aws.Context, *recyclebin.UntagResourceInput, ...request.Option) (*recyclebin.UntagResourceOutput, error)

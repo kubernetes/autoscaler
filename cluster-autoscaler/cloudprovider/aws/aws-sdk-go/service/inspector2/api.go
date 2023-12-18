@@ -57,7 +57,11 @@ func (c *Inspector2) AssociateMemberRequest(input *AssociateMemberInput) (req *r
 // AssociateMember API operation for Inspector2.
 //
 // Associates an Amazon Web Services account with an Amazon Inspector delegated
-// administrator.
+// administrator. An HTTP 200 response indicates the association was successfully
+// started, but doesn’t indicate whether it was completed. You can check if
+// the association completed by using ListMembers (https://docs.aws.amazon.com/inspector/v2/APIReference/API_ListMembers.html)
+// for multiple accounts or GetMembers (https://docs.aws.amazon.com/inspector/v2/APIReference/API_GetMember.html)
+// for a single account.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -199,6 +203,187 @@ func (c *Inspector2) BatchGetAccountStatusWithContext(ctx aws.Context, input *Ba
 	return out, req.Send()
 }
 
+const opBatchGetCodeSnippet = "BatchGetCodeSnippet"
+
+// BatchGetCodeSnippetRequest generates a "aws/request.Request" representing the
+// client's request for the BatchGetCodeSnippet operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See BatchGetCodeSnippet for more information on using the BatchGetCodeSnippet
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the BatchGetCodeSnippetRequest method.
+//	req, resp := client.BatchGetCodeSnippetRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/BatchGetCodeSnippet
+func (c *Inspector2) BatchGetCodeSnippetRequest(input *BatchGetCodeSnippetInput) (req *request.Request, output *BatchGetCodeSnippetOutput) {
+	op := &request.Operation{
+		Name:       opBatchGetCodeSnippet,
+		HTTPMethod: "POST",
+		HTTPPath:   "/codesnippet/batchget",
+	}
+
+	if input == nil {
+		input = &BatchGetCodeSnippetInput{}
+	}
+
+	output = &BatchGetCodeSnippetOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// BatchGetCodeSnippet API operation for Inspector2.
+//
+// Retrieves code snippets from findings that Amazon Inspector detected code
+// vulnerabilities in.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Inspector2's
+// API operation BatchGetCodeSnippet for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ValidationException
+//     The request has failed validation due to missing required fields or having
+//     invalid inputs.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - InternalServerException
+//     The request has failed due to an internal failure of the Amazon Inspector
+//     service.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/BatchGetCodeSnippet
+func (c *Inspector2) BatchGetCodeSnippet(input *BatchGetCodeSnippetInput) (*BatchGetCodeSnippetOutput, error) {
+	req, out := c.BatchGetCodeSnippetRequest(input)
+	return out, req.Send()
+}
+
+// BatchGetCodeSnippetWithContext is the same as BatchGetCodeSnippet with the addition of
+// the ability to pass a context and additional request options.
+//
+// See BatchGetCodeSnippet for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Inspector2) BatchGetCodeSnippetWithContext(ctx aws.Context, input *BatchGetCodeSnippetInput, opts ...request.Option) (*BatchGetCodeSnippetOutput, error) {
+	req, out := c.BatchGetCodeSnippetRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opBatchGetFindingDetails = "BatchGetFindingDetails"
+
+// BatchGetFindingDetailsRequest generates a "aws/request.Request" representing the
+// client's request for the BatchGetFindingDetails operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See BatchGetFindingDetails for more information on using the BatchGetFindingDetails
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the BatchGetFindingDetailsRequest method.
+//	req, resp := client.BatchGetFindingDetailsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/BatchGetFindingDetails
+func (c *Inspector2) BatchGetFindingDetailsRequest(input *BatchGetFindingDetailsInput) (req *request.Request, output *BatchGetFindingDetailsOutput) {
+	op := &request.Operation{
+		Name:       opBatchGetFindingDetails,
+		HTTPMethod: "POST",
+		HTTPPath:   "/findings/details/batch/get",
+	}
+
+	if input == nil {
+		input = &BatchGetFindingDetailsInput{}
+	}
+
+	output = &BatchGetFindingDetailsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// BatchGetFindingDetails API operation for Inspector2.
+//
+// Gets vulnerability details for findings.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Inspector2's
+// API operation BatchGetFindingDetails for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ValidationException
+//     The request has failed validation due to missing required fields or having
+//     invalid inputs.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - InternalServerException
+//     The request has failed due to an internal failure of the Amazon Inspector
+//     service.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/BatchGetFindingDetails
+func (c *Inspector2) BatchGetFindingDetails(input *BatchGetFindingDetailsInput) (*BatchGetFindingDetailsOutput, error) {
+	req, out := c.BatchGetFindingDetailsRequest(input)
+	return out, req.Send()
+}
+
+// BatchGetFindingDetailsWithContext is the same as BatchGetFindingDetails with the addition of
+// the ability to pass a context and additional request options.
+//
+// See BatchGetFindingDetails for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Inspector2) BatchGetFindingDetailsWithContext(ctx aws.Context, input *BatchGetFindingDetailsInput, opts ...request.Option) (*BatchGetFindingDetailsOutput, error) {
+	req, out := c.BatchGetFindingDetailsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opBatchGetFreeTrialInfo = "BatchGetFreeTrialInfo"
 
 // BatchGetFreeTrialInfoRequest generates a "aws/request.Request" representing the
@@ -284,6 +469,190 @@ func (c *Inspector2) BatchGetFreeTrialInfo(input *BatchGetFreeTrialInfoInput) (*
 // for more information on using Contexts.
 func (c *Inspector2) BatchGetFreeTrialInfoWithContext(ctx aws.Context, input *BatchGetFreeTrialInfoInput, opts ...request.Option) (*BatchGetFreeTrialInfoOutput, error) {
 	req, out := c.BatchGetFreeTrialInfoRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opBatchGetMemberEc2DeepInspectionStatus = "BatchGetMemberEc2DeepInspectionStatus"
+
+// BatchGetMemberEc2DeepInspectionStatusRequest generates a "aws/request.Request" representing the
+// client's request for the BatchGetMemberEc2DeepInspectionStatus operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See BatchGetMemberEc2DeepInspectionStatus for more information on using the BatchGetMemberEc2DeepInspectionStatus
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the BatchGetMemberEc2DeepInspectionStatusRequest method.
+//	req, resp := client.BatchGetMemberEc2DeepInspectionStatusRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/BatchGetMemberEc2DeepInspectionStatus
+func (c *Inspector2) BatchGetMemberEc2DeepInspectionStatusRequest(input *BatchGetMemberEc2DeepInspectionStatusInput) (req *request.Request, output *BatchGetMemberEc2DeepInspectionStatusOutput) {
+	op := &request.Operation{
+		Name:       opBatchGetMemberEc2DeepInspectionStatus,
+		HTTPMethod: "POST",
+		HTTPPath:   "/ec2deepinspectionstatus/member/batch/get",
+	}
+
+	if input == nil {
+		input = &BatchGetMemberEc2DeepInspectionStatusInput{}
+	}
+
+	output = &BatchGetMemberEc2DeepInspectionStatusOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// BatchGetMemberEc2DeepInspectionStatus API operation for Inspector2.
+//
+// Retrieves Amazon Inspector deep inspection activation status of multiple
+// member accounts within your organization. You must be the delegated administrator
+// of an organization in Amazon Inspector to use this API.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Inspector2's
+// API operation BatchGetMemberEc2DeepInspectionStatus for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ValidationException
+//     The request has failed validation due to missing required fields or having
+//     invalid inputs.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - InternalServerException
+//     The request has failed due to an internal failure of the Amazon Inspector
+//     service.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/BatchGetMemberEc2DeepInspectionStatus
+func (c *Inspector2) BatchGetMemberEc2DeepInspectionStatus(input *BatchGetMemberEc2DeepInspectionStatusInput) (*BatchGetMemberEc2DeepInspectionStatusOutput, error) {
+	req, out := c.BatchGetMemberEc2DeepInspectionStatusRequest(input)
+	return out, req.Send()
+}
+
+// BatchGetMemberEc2DeepInspectionStatusWithContext is the same as BatchGetMemberEc2DeepInspectionStatus with the addition of
+// the ability to pass a context and additional request options.
+//
+// See BatchGetMemberEc2DeepInspectionStatus for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Inspector2) BatchGetMemberEc2DeepInspectionStatusWithContext(ctx aws.Context, input *BatchGetMemberEc2DeepInspectionStatusInput, opts ...request.Option) (*BatchGetMemberEc2DeepInspectionStatusOutput, error) {
+	req, out := c.BatchGetMemberEc2DeepInspectionStatusRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opBatchUpdateMemberEc2DeepInspectionStatus = "BatchUpdateMemberEc2DeepInspectionStatus"
+
+// BatchUpdateMemberEc2DeepInspectionStatusRequest generates a "aws/request.Request" representing the
+// client's request for the BatchUpdateMemberEc2DeepInspectionStatus operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See BatchUpdateMemberEc2DeepInspectionStatus for more information on using the BatchUpdateMemberEc2DeepInspectionStatus
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the BatchUpdateMemberEc2DeepInspectionStatusRequest method.
+//	req, resp := client.BatchUpdateMemberEc2DeepInspectionStatusRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/BatchUpdateMemberEc2DeepInspectionStatus
+func (c *Inspector2) BatchUpdateMemberEc2DeepInspectionStatusRequest(input *BatchUpdateMemberEc2DeepInspectionStatusInput) (req *request.Request, output *BatchUpdateMemberEc2DeepInspectionStatusOutput) {
+	op := &request.Operation{
+		Name:       opBatchUpdateMemberEc2DeepInspectionStatus,
+		HTTPMethod: "POST",
+		HTTPPath:   "/ec2deepinspectionstatus/member/batch/update",
+	}
+
+	if input == nil {
+		input = &BatchUpdateMemberEc2DeepInspectionStatusInput{}
+	}
+
+	output = &BatchUpdateMemberEc2DeepInspectionStatusOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// BatchUpdateMemberEc2DeepInspectionStatus API operation for Inspector2.
+//
+// Activates or deactivates Amazon Inspector deep inspection for the provided
+// member accounts in your organization. You must be the delegated administrator
+// of an organization in Amazon Inspector to use this API.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Inspector2's
+// API operation BatchUpdateMemberEc2DeepInspectionStatus for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ValidationException
+//     The request has failed validation due to missing required fields or having
+//     invalid inputs.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - InternalServerException
+//     The request has failed due to an internal failure of the Amazon Inspector
+//     service.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/BatchUpdateMemberEc2DeepInspectionStatus
+func (c *Inspector2) BatchUpdateMemberEc2DeepInspectionStatus(input *BatchUpdateMemberEc2DeepInspectionStatusInput) (*BatchUpdateMemberEc2DeepInspectionStatusOutput, error) {
+	req, out := c.BatchUpdateMemberEc2DeepInspectionStatusRequest(input)
+	return out, req.Send()
+}
+
+// BatchUpdateMemberEc2DeepInspectionStatusWithContext is the same as BatchUpdateMemberEc2DeepInspectionStatus with the addition of
+// the ability to pass a context and additional request options.
+//
+// See BatchUpdateMemberEc2DeepInspectionStatus for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Inspector2) BatchUpdateMemberEc2DeepInspectionStatusWithContext(ctx aws.Context, input *BatchUpdateMemberEc2DeepInspectionStatusInput, opts ...request.Option) (*BatchUpdateMemberEc2DeepInspectionStatusOutput, error) {
+	req, out := c.BatchUpdateMemberEc2DeepInspectionStatusRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -383,6 +752,100 @@ func (c *Inspector2) CancelFindingsReportWithContext(ctx aws.Context, input *Can
 	return out, req.Send()
 }
 
+const opCancelSbomExport = "CancelSbomExport"
+
+// CancelSbomExportRequest generates a "aws/request.Request" representing the
+// client's request for the CancelSbomExport operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CancelSbomExport for more information on using the CancelSbomExport
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CancelSbomExportRequest method.
+//	req, resp := client.CancelSbomExportRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/CancelSbomExport
+func (c *Inspector2) CancelSbomExportRequest(input *CancelSbomExportInput) (req *request.Request, output *CancelSbomExportOutput) {
+	op := &request.Operation{
+		Name:       opCancelSbomExport,
+		HTTPMethod: "POST",
+		HTTPPath:   "/sbomexport/cancel",
+	}
+
+	if input == nil {
+		input = &CancelSbomExportInput{}
+	}
+
+	output = &CancelSbomExportOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CancelSbomExport API operation for Inspector2.
+//
+// Cancels a software bill of materials (SBOM) report.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Inspector2's
+// API operation CancelSbomExport for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ValidationException
+//     The request has failed validation due to missing required fields or having
+//     invalid inputs.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - ResourceNotFoundException
+//     The operation tried to access an invalid resource. Make sure the resource
+//     is specified correctly.
+//
+//   - InternalServerException
+//     The request has failed due to an internal failure of the Amazon Inspector
+//     service.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/CancelSbomExport
+func (c *Inspector2) CancelSbomExport(input *CancelSbomExportInput) (*CancelSbomExportOutput, error) {
+	req, out := c.CancelSbomExportRequest(input)
+	return out, req.Send()
+}
+
+// CancelSbomExportWithContext is the same as CancelSbomExport with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CancelSbomExport for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Inspector2) CancelSbomExportWithContext(ctx aws.Context, input *CancelSbomExportInput, opts ...request.Option) (*CancelSbomExportOutput, error) {
+	req, out := c.CancelSbomExportRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opCreateFilter = "CreateFilter"
 
 // CreateFilterRequest generates a "aws/request.Request" representing the
@@ -426,7 +889,8 @@ func (c *Inspector2) CreateFilterRequest(input *CreateFilterInput) (req *request
 
 // CreateFilter API operation for Inspector2.
 //
-// Creates a filter resource using specified filter criteria.
+// Creates a filter resource using specified filter criteria. When the filter
+// action is set to SUPPRESS this action creates a suppression rule.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -524,7 +988,9 @@ func (c *Inspector2) CreateFindingsReportRequest(input *CreateFindingsReportInpu
 
 // CreateFindingsReport API operation for Inspector2.
 //
-// Creates a finding report.
+// Creates a finding report. By default only ACTIVE findings are returned in
+// the report. To see SUPRESSED or CLOSED findings you must specify a value
+// for the findingStatus filter criteria.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -570,6 +1036,100 @@ func (c *Inspector2) CreateFindingsReport(input *CreateFindingsReportInput) (*Cr
 // for more information on using Contexts.
 func (c *Inspector2) CreateFindingsReportWithContext(ctx aws.Context, input *CreateFindingsReportInput, opts ...request.Option) (*CreateFindingsReportOutput, error) {
 	req, out := c.CreateFindingsReportRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opCreateSbomExport = "CreateSbomExport"
+
+// CreateSbomExportRequest generates a "aws/request.Request" representing the
+// client's request for the CreateSbomExport operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateSbomExport for more information on using the CreateSbomExport
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreateSbomExportRequest method.
+//	req, resp := client.CreateSbomExportRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/CreateSbomExport
+func (c *Inspector2) CreateSbomExportRequest(input *CreateSbomExportInput) (req *request.Request, output *CreateSbomExportOutput) {
+	op := &request.Operation{
+		Name:       opCreateSbomExport,
+		HTTPMethod: "POST",
+		HTTPPath:   "/sbomexport/create",
+	}
+
+	if input == nil {
+		input = &CreateSbomExportInput{}
+	}
+
+	output = &CreateSbomExportOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateSbomExport API operation for Inspector2.
+//
+// Creates a software bill of materials (SBOM) report.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Inspector2's
+// API operation CreateSbomExport for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ValidationException
+//     The request has failed validation due to missing required fields or having
+//     invalid inputs.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - ResourceNotFoundException
+//     The operation tried to access an invalid resource. Make sure the resource
+//     is specified correctly.
+//
+//   - InternalServerException
+//     The request has failed due to an internal failure of the Amazon Inspector
+//     service.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/CreateSbomExport
+func (c *Inspector2) CreateSbomExport(input *CreateSbomExportInput) (*CreateSbomExportOutput, error) {
+	req, out := c.CreateSbomExportRequest(input)
+	return out, req.Send()
+}
+
+// CreateSbomExportWithContext is the same as CreateSbomExport with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateSbomExport for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Inspector2) CreateSbomExportWithContext(ctx aws.Context, input *CreateSbomExportInput, opts ...request.Option) (*CreateSbomExportOutput, error) {
+	req, out := c.CreateSbomExportRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -713,7 +1273,7 @@ func (c *Inspector2) DescribeOrganizationConfigurationRequest(input *DescribeOrg
 // DescribeOrganizationConfiguration API operation for Inspector2.
 //
 // Describe Amazon Inspector configuration settings for an Amazon Web Services
-// organization
+// organization.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1234,6 +1794,93 @@ func (c *Inspector2) EnableDelegatedAdminAccountWithContext(ctx aws.Context, inp
 	return out, req.Send()
 }
 
+const opGetConfiguration = "GetConfiguration"
+
+// GetConfigurationRequest generates a "aws/request.Request" representing the
+// client's request for the GetConfiguration operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetConfiguration for more information on using the GetConfiguration
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetConfigurationRequest method.
+//	req, resp := client.GetConfigurationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/GetConfiguration
+func (c *Inspector2) GetConfigurationRequest(input *GetConfigurationInput) (req *request.Request, output *GetConfigurationOutput) {
+	op := &request.Operation{
+		Name:       opGetConfiguration,
+		HTTPMethod: "POST",
+		HTTPPath:   "/configuration/get",
+	}
+
+	if input == nil {
+		input = &GetConfigurationInput{}
+	}
+
+	output = &GetConfigurationOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetConfiguration API operation for Inspector2.
+//
+// Retrieves setting configurations for Inspector scans.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Inspector2's
+// API operation GetConfiguration for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ResourceNotFoundException
+//     The operation tried to access an invalid resource. Make sure the resource
+//     is specified correctly.
+//
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - InternalServerException
+//     The request has failed due to an internal failure of the Amazon Inspector
+//     service.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/GetConfiguration
+func (c *Inspector2) GetConfiguration(input *GetConfigurationInput) (*GetConfigurationOutput, error) {
+	req, out := c.GetConfigurationRequest(input)
+	return out, req.Send()
+}
+
+// GetConfigurationWithContext is the same as GetConfiguration with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetConfiguration for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Inspector2) GetConfigurationWithContext(ctx aws.Context, input *GetConfigurationInput, opts ...request.Option) (*GetConfigurationOutput, error) {
+	req, out := c.GetConfigurationRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opGetDelegatedAdminAccount = "GetDelegatedAdminAccount"
 
 // GetDelegatedAdminAccountRequest generates a "aws/request.Request" representing the
@@ -1324,6 +1971,191 @@ func (c *Inspector2) GetDelegatedAdminAccount(input *GetDelegatedAdminAccountInp
 // for more information on using Contexts.
 func (c *Inspector2) GetDelegatedAdminAccountWithContext(ctx aws.Context, input *GetDelegatedAdminAccountInput, opts ...request.Option) (*GetDelegatedAdminAccountOutput, error) {
 	req, out := c.GetDelegatedAdminAccountRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opGetEc2DeepInspectionConfiguration = "GetEc2DeepInspectionConfiguration"
+
+// GetEc2DeepInspectionConfigurationRequest generates a "aws/request.Request" representing the
+// client's request for the GetEc2DeepInspectionConfiguration operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetEc2DeepInspectionConfiguration for more information on using the GetEc2DeepInspectionConfiguration
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetEc2DeepInspectionConfigurationRequest method.
+//	req, resp := client.GetEc2DeepInspectionConfigurationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/GetEc2DeepInspectionConfiguration
+func (c *Inspector2) GetEc2DeepInspectionConfigurationRequest(input *GetEc2DeepInspectionConfigurationInput) (req *request.Request, output *GetEc2DeepInspectionConfigurationOutput) {
+	op := &request.Operation{
+		Name:       opGetEc2DeepInspectionConfiguration,
+		HTTPMethod: "POST",
+		HTTPPath:   "/ec2deepinspectionconfiguration/get",
+	}
+
+	if input == nil {
+		input = &GetEc2DeepInspectionConfigurationInput{}
+	}
+
+	output = &GetEc2DeepInspectionConfigurationOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetEc2DeepInspectionConfiguration API operation for Inspector2.
+//
+// Retrieves the activation status of Amazon Inspector deep inspection and custom
+// paths associated with your account.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Inspector2's
+// API operation GetEc2DeepInspectionConfiguration for usage and error information.
+//
+// Returned Error Types:
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The operation tried to access an invalid resource. Make sure the resource
+//     is specified correctly.
+//
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - InternalServerException
+//     The request has failed due to an internal failure of the Amazon Inspector
+//     service.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/GetEc2DeepInspectionConfiguration
+func (c *Inspector2) GetEc2DeepInspectionConfiguration(input *GetEc2DeepInspectionConfigurationInput) (*GetEc2DeepInspectionConfigurationOutput, error) {
+	req, out := c.GetEc2DeepInspectionConfigurationRequest(input)
+	return out, req.Send()
+}
+
+// GetEc2DeepInspectionConfigurationWithContext is the same as GetEc2DeepInspectionConfiguration with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetEc2DeepInspectionConfiguration for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Inspector2) GetEc2DeepInspectionConfigurationWithContext(ctx aws.Context, input *GetEc2DeepInspectionConfigurationInput, opts ...request.Option) (*GetEc2DeepInspectionConfigurationOutput, error) {
+	req, out := c.GetEc2DeepInspectionConfigurationRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opGetEncryptionKey = "GetEncryptionKey"
+
+// GetEncryptionKeyRequest generates a "aws/request.Request" representing the
+// client's request for the GetEncryptionKey operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetEncryptionKey for more information on using the GetEncryptionKey
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetEncryptionKeyRequest method.
+//	req, resp := client.GetEncryptionKeyRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/GetEncryptionKey
+func (c *Inspector2) GetEncryptionKeyRequest(input *GetEncryptionKeyInput) (req *request.Request, output *GetEncryptionKeyOutput) {
+	op := &request.Operation{
+		Name:       opGetEncryptionKey,
+		HTTPMethod: "GET",
+		HTTPPath:   "/encryptionkey/get",
+	}
+
+	if input == nil {
+		input = &GetEncryptionKeyInput{}
+	}
+
+	output = &GetEncryptionKeyOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetEncryptionKey API operation for Inspector2.
+//
+// Gets an encryption key.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Inspector2's
+// API operation GetEncryptionKey for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ValidationException
+//     The request has failed validation due to missing required fields or having
+//     invalid inputs.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - ResourceNotFoundException
+//     The operation tried to access an invalid resource. Make sure the resource
+//     is specified correctly.
+//
+//   - InternalServerException
+//     The request has failed due to an internal failure of the Amazon Inspector
+//     service.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/GetEncryptionKey
+func (c *Inspector2) GetEncryptionKey(input *GetEncryptionKeyInput) (*GetEncryptionKeyOutput, error) {
+	req, out := c.GetEncryptionKeyRequest(input)
+	return out, req.Send()
+}
+
+// GetEncryptionKeyWithContext is the same as GetEncryptionKey with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetEncryptionKey for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Inspector2) GetEncryptionKeyWithContext(ctx aws.Context, input *GetEncryptionKeyInput, opts ...request.Option) (*GetEncryptionKeyOutput, error) {
+	req, out := c.GetEncryptionKeyRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -1512,6 +2344,100 @@ func (c *Inspector2) GetMember(input *GetMemberInput) (*GetMemberOutput, error) 
 // for more information on using Contexts.
 func (c *Inspector2) GetMemberWithContext(ctx aws.Context, input *GetMemberInput, opts ...request.Option) (*GetMemberOutput, error) {
 	req, out := c.GetMemberRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opGetSbomExport = "GetSbomExport"
+
+// GetSbomExportRequest generates a "aws/request.Request" representing the
+// client's request for the GetSbomExport operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetSbomExport for more information on using the GetSbomExport
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetSbomExportRequest method.
+//	req, resp := client.GetSbomExportRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/GetSbomExport
+func (c *Inspector2) GetSbomExportRequest(input *GetSbomExportInput) (req *request.Request, output *GetSbomExportOutput) {
+	op := &request.Operation{
+		Name:       opGetSbomExport,
+		HTTPMethod: "POST",
+		HTTPPath:   "/sbomexport/get",
+	}
+
+	if input == nil {
+		input = &GetSbomExportInput{}
+	}
+
+	output = &GetSbomExportOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetSbomExport API operation for Inspector2.
+//
+// Gets details of a software bill of materials (SBOM) report.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Inspector2's
+// API operation GetSbomExport for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ValidationException
+//     The request has failed validation due to missing required fields or having
+//     invalid inputs.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The operation tried to access an invalid resource. Make sure the resource
+//     is specified correctly.
+//
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - InternalServerException
+//     The request has failed due to an internal failure of the Amazon Inspector
+//     service.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/GetSbomExport
+func (c *Inspector2) GetSbomExport(input *GetSbomExportInput) (*GetSbomExportOutput, error) {
+	req, out := c.GetSbomExportRequest(input)
+	return out, req.Send()
+}
+
+// GetSbomExportWithContext is the same as GetSbomExport with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetSbomExport for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Inspector2) GetSbomExportWithContext(ctx aws.Context, input *GetSbomExportInput, opts ...request.Option) (*GetSbomExportOutput, error) {
+	req, out := c.GetSbomExportRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -2921,6 +3847,249 @@ func (c *Inspector2) ListUsageTotalsPagesWithContext(ctx aws.Context, input *Lis
 	return p.Err()
 }
 
+const opResetEncryptionKey = "ResetEncryptionKey"
+
+// ResetEncryptionKeyRequest generates a "aws/request.Request" representing the
+// client's request for the ResetEncryptionKey operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ResetEncryptionKey for more information on using the ResetEncryptionKey
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ResetEncryptionKeyRequest method.
+//	req, resp := client.ResetEncryptionKeyRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/ResetEncryptionKey
+func (c *Inspector2) ResetEncryptionKeyRequest(input *ResetEncryptionKeyInput) (req *request.Request, output *ResetEncryptionKeyOutput) {
+	op := &request.Operation{
+		Name:       opResetEncryptionKey,
+		HTTPMethod: "PUT",
+		HTTPPath:   "/encryptionkey/reset",
+	}
+
+	if input == nil {
+		input = &ResetEncryptionKeyInput{}
+	}
+
+	output = &ResetEncryptionKeyOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// ResetEncryptionKey API operation for Inspector2.
+//
+// Resets an encryption key. After the key is reset your resources will be encrypted
+// by an Amazon Web Services owned key.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Inspector2's
+// API operation ResetEncryptionKey for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ValidationException
+//     The request has failed validation due to missing required fields or having
+//     invalid inputs.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - ResourceNotFoundException
+//     The operation tried to access an invalid resource. Make sure the resource
+//     is specified correctly.
+//
+//   - InternalServerException
+//     The request has failed due to an internal failure of the Amazon Inspector
+//     service.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/ResetEncryptionKey
+func (c *Inspector2) ResetEncryptionKey(input *ResetEncryptionKeyInput) (*ResetEncryptionKeyOutput, error) {
+	req, out := c.ResetEncryptionKeyRequest(input)
+	return out, req.Send()
+}
+
+// ResetEncryptionKeyWithContext is the same as ResetEncryptionKey with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ResetEncryptionKey for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Inspector2) ResetEncryptionKeyWithContext(ctx aws.Context, input *ResetEncryptionKeyInput, opts ...request.Option) (*ResetEncryptionKeyOutput, error) {
+	req, out := c.ResetEncryptionKeyRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opSearchVulnerabilities = "SearchVulnerabilities"
+
+// SearchVulnerabilitiesRequest generates a "aws/request.Request" representing the
+// client's request for the SearchVulnerabilities operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See SearchVulnerabilities for more information on using the SearchVulnerabilities
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the SearchVulnerabilitiesRequest method.
+//	req, resp := client.SearchVulnerabilitiesRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/SearchVulnerabilities
+func (c *Inspector2) SearchVulnerabilitiesRequest(input *SearchVulnerabilitiesInput) (req *request.Request, output *SearchVulnerabilitiesOutput) {
+	op := &request.Operation{
+		Name:       opSearchVulnerabilities,
+		HTTPMethod: "POST",
+		HTTPPath:   "/vulnerabilities/search",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"nextToken"},
+			OutputTokens:    []string{"nextToken"},
+			LimitToken:      "",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &SearchVulnerabilitiesInput{}
+	}
+
+	output = &SearchVulnerabilitiesOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// SearchVulnerabilities API operation for Inspector2.
+//
+// Lists Amazon Inspector coverage details for a specific vulnerability.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Inspector2's
+// API operation SearchVulnerabilities for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ValidationException
+//     The request has failed validation due to missing required fields or having
+//     invalid inputs.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - InternalServerException
+//     The request has failed due to an internal failure of the Amazon Inspector
+//     service.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/SearchVulnerabilities
+func (c *Inspector2) SearchVulnerabilities(input *SearchVulnerabilitiesInput) (*SearchVulnerabilitiesOutput, error) {
+	req, out := c.SearchVulnerabilitiesRequest(input)
+	return out, req.Send()
+}
+
+// SearchVulnerabilitiesWithContext is the same as SearchVulnerabilities with the addition of
+// the ability to pass a context and additional request options.
+//
+// See SearchVulnerabilities for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Inspector2) SearchVulnerabilitiesWithContext(ctx aws.Context, input *SearchVulnerabilitiesInput, opts ...request.Option) (*SearchVulnerabilitiesOutput, error) {
+	req, out := c.SearchVulnerabilitiesRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// SearchVulnerabilitiesPages iterates over the pages of a SearchVulnerabilities operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See SearchVulnerabilities method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a SearchVulnerabilities operation.
+//	pageNum := 0
+//	err := client.SearchVulnerabilitiesPages(params,
+//	    func(page *inspector2.SearchVulnerabilitiesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *Inspector2) SearchVulnerabilitiesPages(input *SearchVulnerabilitiesInput, fn func(*SearchVulnerabilitiesOutput, bool) bool) error {
+	return c.SearchVulnerabilitiesPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// SearchVulnerabilitiesPagesWithContext same as SearchVulnerabilitiesPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Inspector2) SearchVulnerabilitiesPagesWithContext(ctx aws.Context, input *SearchVulnerabilitiesInput, fn func(*SearchVulnerabilitiesOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *SearchVulnerabilitiesInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.SearchVulnerabilitiesRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*SearchVulnerabilitiesOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opTagResource = "TagResource"
 
 // TagResourceRequest generates a "aws/request.Request" representing the
@@ -3108,6 +4277,287 @@ func (c *Inspector2) UntagResourceWithContext(ctx aws.Context, input *UntagResou
 	return out, req.Send()
 }
 
+const opUpdateConfiguration = "UpdateConfiguration"
+
+// UpdateConfigurationRequest generates a "aws/request.Request" representing the
+// client's request for the UpdateConfiguration operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UpdateConfiguration for more information on using the UpdateConfiguration
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UpdateConfigurationRequest method.
+//	req, resp := client.UpdateConfigurationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/UpdateConfiguration
+func (c *Inspector2) UpdateConfigurationRequest(input *UpdateConfigurationInput) (req *request.Request, output *UpdateConfigurationOutput) {
+	op := &request.Operation{
+		Name:       opUpdateConfiguration,
+		HTTPMethod: "POST",
+		HTTPPath:   "/configuration/update",
+	}
+
+	if input == nil {
+		input = &UpdateConfigurationInput{}
+	}
+
+	output = &UpdateConfigurationOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// UpdateConfiguration API operation for Inspector2.
+//
+// Updates setting configurations for your Amazon Inspector account. When you
+// use this API as an Amazon Inspector delegated administrator this updates
+// the setting for all accounts you manage. Member accounts in an organization
+// cannot update this setting.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Inspector2's
+// API operation UpdateConfiguration for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ValidationException
+//     The request has failed validation due to missing required fields or having
+//     invalid inputs.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - InternalServerException
+//     The request has failed due to an internal failure of the Amazon Inspector
+//     service.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/UpdateConfiguration
+func (c *Inspector2) UpdateConfiguration(input *UpdateConfigurationInput) (*UpdateConfigurationOutput, error) {
+	req, out := c.UpdateConfigurationRequest(input)
+	return out, req.Send()
+}
+
+// UpdateConfigurationWithContext is the same as UpdateConfiguration with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UpdateConfiguration for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Inspector2) UpdateConfigurationWithContext(ctx aws.Context, input *UpdateConfigurationInput, opts ...request.Option) (*UpdateConfigurationOutput, error) {
+	req, out := c.UpdateConfigurationRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opUpdateEc2DeepInspectionConfiguration = "UpdateEc2DeepInspectionConfiguration"
+
+// UpdateEc2DeepInspectionConfigurationRequest generates a "aws/request.Request" representing the
+// client's request for the UpdateEc2DeepInspectionConfiguration operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UpdateEc2DeepInspectionConfiguration for more information on using the UpdateEc2DeepInspectionConfiguration
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UpdateEc2DeepInspectionConfigurationRequest method.
+//	req, resp := client.UpdateEc2DeepInspectionConfigurationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/UpdateEc2DeepInspectionConfiguration
+func (c *Inspector2) UpdateEc2DeepInspectionConfigurationRequest(input *UpdateEc2DeepInspectionConfigurationInput) (req *request.Request, output *UpdateEc2DeepInspectionConfigurationOutput) {
+	op := &request.Operation{
+		Name:       opUpdateEc2DeepInspectionConfiguration,
+		HTTPMethod: "POST",
+		HTTPPath:   "/ec2deepinspectionconfiguration/update",
+	}
+
+	if input == nil {
+		input = &UpdateEc2DeepInspectionConfigurationInput{}
+	}
+
+	output = &UpdateEc2DeepInspectionConfigurationOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// UpdateEc2DeepInspectionConfiguration API operation for Inspector2.
+//
+// Activates, deactivates Amazon Inspector deep inspection, or updates custom
+// paths for your account.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Inspector2's
+// API operation UpdateEc2DeepInspectionConfiguration for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ValidationException
+//     The request has failed validation due to missing required fields or having
+//     invalid inputs.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - InternalServerException
+//     The request has failed due to an internal failure of the Amazon Inspector
+//     service.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/UpdateEc2DeepInspectionConfiguration
+func (c *Inspector2) UpdateEc2DeepInspectionConfiguration(input *UpdateEc2DeepInspectionConfigurationInput) (*UpdateEc2DeepInspectionConfigurationOutput, error) {
+	req, out := c.UpdateEc2DeepInspectionConfigurationRequest(input)
+	return out, req.Send()
+}
+
+// UpdateEc2DeepInspectionConfigurationWithContext is the same as UpdateEc2DeepInspectionConfiguration with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UpdateEc2DeepInspectionConfiguration for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Inspector2) UpdateEc2DeepInspectionConfigurationWithContext(ctx aws.Context, input *UpdateEc2DeepInspectionConfigurationInput, opts ...request.Option) (*UpdateEc2DeepInspectionConfigurationOutput, error) {
+	req, out := c.UpdateEc2DeepInspectionConfigurationRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opUpdateEncryptionKey = "UpdateEncryptionKey"
+
+// UpdateEncryptionKeyRequest generates a "aws/request.Request" representing the
+// client's request for the UpdateEncryptionKey operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UpdateEncryptionKey for more information on using the UpdateEncryptionKey
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UpdateEncryptionKeyRequest method.
+//	req, resp := client.UpdateEncryptionKeyRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/UpdateEncryptionKey
+func (c *Inspector2) UpdateEncryptionKeyRequest(input *UpdateEncryptionKeyInput) (req *request.Request, output *UpdateEncryptionKeyOutput) {
+	op := &request.Operation{
+		Name:       opUpdateEncryptionKey,
+		HTTPMethod: "PUT",
+		HTTPPath:   "/encryptionkey/update",
+	}
+
+	if input == nil {
+		input = &UpdateEncryptionKeyInput{}
+	}
+
+	output = &UpdateEncryptionKeyOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// UpdateEncryptionKey API operation for Inspector2.
+//
+// Updates an encryption key. A ResourceNotFoundException means that an AWS
+// owned key is being used for encryption.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Inspector2's
+// API operation UpdateEncryptionKey for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ValidationException
+//     The request has failed validation due to missing required fields or having
+//     invalid inputs.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - ResourceNotFoundException
+//     The operation tried to access an invalid resource. Make sure the resource
+//     is specified correctly.
+//
+//   - InternalServerException
+//     The request has failed due to an internal failure of the Amazon Inspector
+//     service.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/UpdateEncryptionKey
+func (c *Inspector2) UpdateEncryptionKey(input *UpdateEncryptionKeyInput) (*UpdateEncryptionKeyOutput, error) {
+	req, out := c.UpdateEncryptionKeyRequest(input)
+	return out, req.Send()
+}
+
+// UpdateEncryptionKeyWithContext is the same as UpdateEncryptionKey with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UpdateEncryptionKey for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Inspector2) UpdateEncryptionKeyWithContext(ctx aws.Context, input *UpdateEncryptionKeyInput, opts ...request.Option) (*UpdateEncryptionKeyOutput, error) {
+	req, out := c.UpdateEncryptionKeyRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opUpdateFilter = "UpdateFilter"
 
 // UpdateFilterRequest generates a "aws/request.Request" representing the
@@ -3198,6 +4648,98 @@ func (c *Inspector2) UpdateFilter(input *UpdateFilterInput) (*UpdateFilterOutput
 // for more information on using Contexts.
 func (c *Inspector2) UpdateFilterWithContext(ctx aws.Context, input *UpdateFilterInput, opts ...request.Option) (*UpdateFilterOutput, error) {
 	req, out := c.UpdateFilterRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opUpdateOrgEc2DeepInspectionConfiguration = "UpdateOrgEc2DeepInspectionConfiguration"
+
+// UpdateOrgEc2DeepInspectionConfigurationRequest generates a "aws/request.Request" representing the
+// client's request for the UpdateOrgEc2DeepInspectionConfiguration operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UpdateOrgEc2DeepInspectionConfiguration for more information on using the UpdateOrgEc2DeepInspectionConfiguration
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UpdateOrgEc2DeepInspectionConfigurationRequest method.
+//	req, resp := client.UpdateOrgEc2DeepInspectionConfigurationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/UpdateOrgEc2DeepInspectionConfiguration
+func (c *Inspector2) UpdateOrgEc2DeepInspectionConfigurationRequest(input *UpdateOrgEc2DeepInspectionConfigurationInput) (req *request.Request, output *UpdateOrgEc2DeepInspectionConfigurationOutput) {
+	op := &request.Operation{
+		Name:       opUpdateOrgEc2DeepInspectionConfiguration,
+		HTTPMethod: "POST",
+		HTTPPath:   "/ec2deepinspectionconfiguration/org/update",
+	}
+
+	if input == nil {
+		input = &UpdateOrgEc2DeepInspectionConfigurationInput{}
+	}
+
+	output = &UpdateOrgEc2DeepInspectionConfigurationOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// UpdateOrgEc2DeepInspectionConfiguration API operation for Inspector2.
+//
+// Updates the Amazon Inspector deep inspection custom paths for your organization.
+// You must be an Amazon Inspector delegated administrator to use this API.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Inspector2's
+// API operation UpdateOrgEc2DeepInspectionConfiguration for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ValidationException
+//     The request has failed validation due to missing required fields or having
+//     invalid inputs.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - InternalServerException
+//     The request has failed due to an internal failure of the Amazon Inspector
+//     service.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08/UpdateOrgEc2DeepInspectionConfiguration
+func (c *Inspector2) UpdateOrgEc2DeepInspectionConfiguration(input *UpdateOrgEc2DeepInspectionConfigurationInput) (*UpdateOrgEc2DeepInspectionConfigurationOutput, error) {
+	req, out := c.UpdateOrgEc2DeepInspectionConfigurationRequest(input)
+	return out, req.Send()
+}
+
+// UpdateOrgEc2DeepInspectionConfigurationWithContext is the same as UpdateOrgEc2DeepInspectionConfiguration with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UpdateOrgEc2DeepInspectionConfiguration for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Inspector2) UpdateOrgEc2DeepInspectionConfigurationWithContext(ctx aws.Context, input *UpdateOrgEc2DeepInspectionConfigurationInput, opts ...request.Option) (*UpdateOrgEc2DeepInspectionConfigurationOutput, error) {
+	req, out := c.UpdateOrgEc2DeepInspectionConfigurationRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -3516,7 +5058,7 @@ func (s *AccountAggregationResponse) SetSeverityCounts(v *SeverityCounts) *Accou
 }
 
 // An object with details the status of an Amazon Web Services account within
-// your Amazon Inspector environment
+// your Amazon Inspector environment.
 type AccountState struct {
 	_ struct{} `type:"structure"`
 
@@ -3601,6 +5143,12 @@ type AggregationRequest struct {
 	// image layers.
 	ImageLayerAggregation *ImageLayerAggregation `locationName:"imageLayerAggregation" type:"structure"`
 
+	// Returns an object with findings aggregated by AWS Lambda function.
+	LambdaFunctionAggregation *LambdaFunctionAggregation `locationName:"lambdaFunctionAggregation" type:"structure"`
+
+	// Returns an object with findings aggregated by AWS Lambda layer.
+	LambdaLayerAggregation *LambdaLayerAggregation `locationName:"lambdaLayerAggregation" type:"structure"`
+
 	// An object that contains details about an aggregation request based on operating
 	// system package type.
 	PackageAggregation *PackageAggregation `locationName:"packageAggregation" type:"structure"`
@@ -3653,6 +5201,16 @@ func (s *AggregationRequest) Validate() error {
 	if s.ImageLayerAggregation != nil {
 		if err := s.ImageLayerAggregation.Validate(); err != nil {
 			invalidParams.AddNested("ImageLayerAggregation", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.LambdaFunctionAggregation != nil {
+		if err := s.LambdaFunctionAggregation.Validate(); err != nil {
+			invalidParams.AddNested("LambdaFunctionAggregation", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.LambdaLayerAggregation != nil {
+		if err := s.LambdaLayerAggregation.Validate(); err != nil {
+			invalidParams.AddNested("LambdaLayerAggregation", err.(request.ErrInvalidParams))
 		}
 	}
 	if s.PackageAggregation != nil {
@@ -3713,6 +5271,18 @@ func (s *AggregationRequest) SetImageLayerAggregation(v *ImageLayerAggregation) 
 	return s
 }
 
+// SetLambdaFunctionAggregation sets the LambdaFunctionAggregation field's value.
+func (s *AggregationRequest) SetLambdaFunctionAggregation(v *LambdaFunctionAggregation) *AggregationRequest {
+	s.LambdaFunctionAggregation = v
+	return s
+}
+
+// SetLambdaLayerAggregation sets the LambdaLayerAggregation field's value.
+func (s *AggregationRequest) SetLambdaLayerAggregation(v *LambdaLayerAggregation) *AggregationRequest {
+	s.LambdaLayerAggregation = v
+	return s
+}
+
 // SetPackageAggregation sets the PackageAggregation field's value.
 func (s *AggregationRequest) SetPackageAggregation(v *PackageAggregation) *AggregationRequest {
 	s.PackageAggregation = v
@@ -3758,6 +5328,12 @@ type AggregationResponse struct {
 	// An object that contains details about an aggregation response based on container
 	// image layers.
 	ImageLayerAggregation *ImageLayerAggregationResponse `locationName:"imageLayerAggregation" type:"structure"`
+
+	// An aggregation of findings by AWS Lambda function.
+	LambdaFunctionAggregation *LambdaFunctionAggregationResponse `locationName:"lambdaFunctionAggregation" type:"structure"`
+
+	// An aggregation of findings by AWS Lambda layer.
+	LambdaLayerAggregation *LambdaLayerAggregationResponse `locationName:"lambdaLayerAggregation" type:"structure"`
 
 	// An object that contains details about an aggregation response based on operating
 	// system package type.
@@ -3823,6 +5399,18 @@ func (s *AggregationResponse) SetFindingTypeAggregation(v *FindingTypeAggregatio
 // SetImageLayerAggregation sets the ImageLayerAggregation field's value.
 func (s *AggregationResponse) SetImageLayerAggregation(v *ImageLayerAggregationResponse) *AggregationResponse {
 	s.ImageLayerAggregation = v
+	return s
+}
+
+// SetLambdaFunctionAggregation sets the LambdaFunctionAggregation field's value.
+func (s *AggregationResponse) SetLambdaFunctionAggregation(v *LambdaFunctionAggregationResponse) *AggregationResponse {
+	s.LambdaFunctionAggregation = v
+	return s
+}
+
+// SetLambdaLayerAggregation sets the LambdaLayerAggregation field's value.
+func (s *AggregationResponse) SetLambdaLayerAggregation(v *LambdaLayerAggregationResponse) *AggregationResponse {
+	s.LambdaLayerAggregation = v
 	return s
 }
 
@@ -3921,7 +5509,7 @@ func (s *AmiAggregation) SetSortOrder(v string) *AmiAggregation {
 type AmiAggregationResponse struct {
 	_ struct{} `type:"structure"`
 
-	// The Amazon Web Services account ID that the AMI belongs.
+	// The Amazon Web Services account ID for the AMI.
 	AccountId *string `locationName:"accountId" min:"12" type:"string"`
 
 	// The IDs of Amazon EC2 instances using this AMI.
@@ -4061,6 +5649,67 @@ func (s *AssociateMemberOutput) SetAccountId(v string) *AssociateMemberOutput {
 	return s
 }
 
+// The Amazon Web Services Threat Intel Group (ATIG) details for a specific
+// vulnerability.
+type AtigData struct {
+	_ struct{} `type:"structure"`
+
+	// The date and time this vulnerability was first observed.
+	FirstSeen *time.Time `locationName:"firstSeen" type:"timestamp"`
+
+	// The date and time this vulnerability was last observed.
+	LastSeen *time.Time `locationName:"lastSeen" type:"timestamp"`
+
+	// The commercial sectors this vulnerability targets.
+	Targets []*string `locationName:"targets" type:"list"`
+
+	// The MITRE ATT&CK (https://attack.mitre.org/) tactics, techniques, and procedures
+	// (TTPs) associated with vulnerability.
+	Ttps []*string `locationName:"ttps" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AtigData) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AtigData) GoString() string {
+	return s.String()
+}
+
+// SetFirstSeen sets the FirstSeen field's value.
+func (s *AtigData) SetFirstSeen(v time.Time) *AtigData {
+	s.FirstSeen = &v
+	return s
+}
+
+// SetLastSeen sets the LastSeen field's value.
+func (s *AtigData) SetLastSeen(v time.Time) *AtigData {
+	s.LastSeen = &v
+	return s
+}
+
+// SetTargets sets the Targets field's value.
+func (s *AtigData) SetTargets(v []*string) *AtigData {
+	s.Targets = v
+	return s
+}
+
+// SetTtps sets the Ttps field's value.
+func (s *AtigData) SetTtps(v []*string) *AtigData {
+	s.Ttps = v
+	return s
+}
+
 // Represents which scan types are automatically enabled for new members of
 // your Amazon Inspector organization.
 type AutoEnable struct {
@@ -4077,6 +5726,12 @@ type AutoEnable struct {
 	//
 	// Ecr is a required field
 	Ecr *bool `locationName:"ecr" type:"boolean" required:"true"`
+
+	// Represents whether AWS Lambda standard scans are automatically enabled for
+	// new members of your Amazon Inspector organization.
+	Lambda *bool `locationName:"lambda" type:"boolean"`
+
+	LambdaCode *bool `locationName:"lambdaCode" type:"boolean"`
 }
 
 // String returns the string representation.
@@ -4122,6 +5777,18 @@ func (s *AutoEnable) SetEc2(v bool) *AutoEnable {
 // SetEcr sets the Ecr field's value.
 func (s *AutoEnable) SetEcr(v bool) *AutoEnable {
 	s.Ecr = &v
+	return s
+}
+
+// SetLambda sets the Lambda field's value.
+func (s *AutoEnable) SetLambda(v bool) *AutoEnable {
+	s.Lambda = &v
+	return s
+}
+
+// SetLambdaCode sets the LambdaCode field's value.
+func (s *AutoEnable) SetLambdaCode(v bool) *AutoEnable {
+	s.LambdaCode = &v
 	return s
 }
 
@@ -4511,7 +6178,7 @@ type AwsEcrContainerImageDetails struct {
 	// The date and time the Amazon ECR container image was pushed.
 	PushedAt *time.Time `locationName:"pushedAt" type:"timestamp"`
 
-	// The registry the Amazon ECR container image belongs to.
+	// The registry for the Amazon ECR container image.
 	//
 	// Registry is a required field
 	Registry *string `locationName:"registry" min:"1" type:"string" required:"true"`
@@ -4585,6 +6252,134 @@ func (s *AwsEcrContainerImageDetails) SetRegistry(v string) *AwsEcrContainerImag
 // SetRepositoryName sets the RepositoryName field's value.
 func (s *AwsEcrContainerImageDetails) SetRepositoryName(v string) *AwsEcrContainerImageDetails {
 	s.RepositoryName = &v
+	return s
+}
+
+// A summary of information about the AWS Lambda function.
+type AwsLambdaFunctionDetails struct {
+	_ struct{} `type:"structure"`
+
+	// The instruction set architecture that the AWS Lambda function supports. Architecture
+	// is a string array with one of the valid values. The default architecture
+	// value is x86_64.
+	Architectures []*string `locationName:"architectures" min:"1" type:"list" enum:"Architecture"`
+
+	// The SHA256 hash of the AWS Lambda function's deployment package.
+	//
+	// CodeSha256 is a required field
+	CodeSha256 *string `locationName:"codeSha256" min:"1" type:"string" required:"true"`
+
+	// The AWS Lambda function's execution role.
+	//
+	// ExecutionRoleArn is a required field
+	ExecutionRoleArn *string `locationName:"executionRoleArn" type:"string" required:"true"`
+
+	// The name of the AWS Lambda function.
+	//
+	// FunctionName is a required field
+	FunctionName *string `locationName:"functionName" type:"string" required:"true"`
+
+	// The date and time that a user last updated the configuration, in ISO 8601
+	// format (https://www.iso.org/iso-8601-date-and-time-format.html)
+	LastModifiedAt *time.Time `locationName:"lastModifiedAt" type:"timestamp"`
+
+	// The AWS Lambda function's layers (https://docs.aws.amazon.com/lambda/latest/dg/configuration-layers.html).
+	// A Lambda function can have up to five layers.
+	Layers []*string `locationName:"layers" min:"1" type:"list"`
+
+	// The type of deployment package. Set to Image for container image and set
+	// Zip for .zip file archive.
+	PackageType *string `locationName:"packageType" type:"string" enum:"PackageType"`
+
+	// The runtime environment for the AWS Lambda function.
+	//
+	// Runtime is a required field
+	Runtime *string `locationName:"runtime" type:"string" required:"true" enum:"Runtime"`
+
+	// The version of the AWS Lambda function.
+	//
+	// Version is a required field
+	Version *string `locationName:"version" type:"string" required:"true"`
+
+	// The AWS Lambda function's networking configuration.
+	VpcConfig *LambdaVpcConfig `locationName:"vpcConfig" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AwsLambdaFunctionDetails) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AwsLambdaFunctionDetails) GoString() string {
+	return s.String()
+}
+
+// SetArchitectures sets the Architectures field's value.
+func (s *AwsLambdaFunctionDetails) SetArchitectures(v []*string) *AwsLambdaFunctionDetails {
+	s.Architectures = v
+	return s
+}
+
+// SetCodeSha256 sets the CodeSha256 field's value.
+func (s *AwsLambdaFunctionDetails) SetCodeSha256(v string) *AwsLambdaFunctionDetails {
+	s.CodeSha256 = &v
+	return s
+}
+
+// SetExecutionRoleArn sets the ExecutionRoleArn field's value.
+func (s *AwsLambdaFunctionDetails) SetExecutionRoleArn(v string) *AwsLambdaFunctionDetails {
+	s.ExecutionRoleArn = &v
+	return s
+}
+
+// SetFunctionName sets the FunctionName field's value.
+func (s *AwsLambdaFunctionDetails) SetFunctionName(v string) *AwsLambdaFunctionDetails {
+	s.FunctionName = &v
+	return s
+}
+
+// SetLastModifiedAt sets the LastModifiedAt field's value.
+func (s *AwsLambdaFunctionDetails) SetLastModifiedAt(v time.Time) *AwsLambdaFunctionDetails {
+	s.LastModifiedAt = &v
+	return s
+}
+
+// SetLayers sets the Layers field's value.
+func (s *AwsLambdaFunctionDetails) SetLayers(v []*string) *AwsLambdaFunctionDetails {
+	s.Layers = v
+	return s
+}
+
+// SetPackageType sets the PackageType field's value.
+func (s *AwsLambdaFunctionDetails) SetPackageType(v string) *AwsLambdaFunctionDetails {
+	s.PackageType = &v
+	return s
+}
+
+// SetRuntime sets the Runtime field's value.
+func (s *AwsLambdaFunctionDetails) SetRuntime(v string) *AwsLambdaFunctionDetails {
+	s.Runtime = &v
+	return s
+}
+
+// SetVersion sets the Version field's value.
+func (s *AwsLambdaFunctionDetails) SetVersion(v string) *AwsLambdaFunctionDetails {
+	s.Version = &v
+	return s
+}
+
+// SetVpcConfig sets the VpcConfig field's value.
+func (s *AwsLambdaFunctionDetails) SetVpcConfig(v *LambdaVpcConfig) *AwsLambdaFunctionDetails {
+	s.VpcConfig = v
 	return s
 }
 
@@ -4728,6 +6523,186 @@ func (s *BatchGetAccountStatusOutput) SetFailedAccounts(v []*FailedAccount) *Bat
 	return s
 }
 
+type BatchGetCodeSnippetInput struct {
+	_ struct{} `type:"structure"`
+
+	// An array of finding ARNs for the findings you want to retrieve code snippets
+	// from.
+	//
+	// FindingArns is a required field
+	FindingArns []*string `locationName:"findingArns" min:"1" type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BatchGetCodeSnippetInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BatchGetCodeSnippetInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *BatchGetCodeSnippetInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "BatchGetCodeSnippetInput"}
+	if s.FindingArns == nil {
+		invalidParams.Add(request.NewErrParamRequired("FindingArns"))
+	}
+	if s.FindingArns != nil && len(s.FindingArns) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("FindingArns", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetFindingArns sets the FindingArns field's value.
+func (s *BatchGetCodeSnippetInput) SetFindingArns(v []*string) *BatchGetCodeSnippetInput {
+	s.FindingArns = v
+	return s
+}
+
+type BatchGetCodeSnippetOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The retrieved code snippets associated with the provided finding ARNs.
+	CodeSnippetResults []*CodeSnippetResult `locationName:"codeSnippetResults" type:"list"`
+
+	// Any errors Amazon Inspector encountered while trying to retrieve the requested
+	// code snippets.
+	Errors []*CodeSnippetError `locationName:"errors" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BatchGetCodeSnippetOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BatchGetCodeSnippetOutput) GoString() string {
+	return s.String()
+}
+
+// SetCodeSnippetResults sets the CodeSnippetResults field's value.
+func (s *BatchGetCodeSnippetOutput) SetCodeSnippetResults(v []*CodeSnippetResult) *BatchGetCodeSnippetOutput {
+	s.CodeSnippetResults = v
+	return s
+}
+
+// SetErrors sets the Errors field's value.
+func (s *BatchGetCodeSnippetOutput) SetErrors(v []*CodeSnippetError) *BatchGetCodeSnippetOutput {
+	s.Errors = v
+	return s
+}
+
+type BatchGetFindingDetailsInput struct {
+	_ struct{} `type:"structure"`
+
+	// A list of finding ARNs.
+	//
+	// FindingArns is a required field
+	FindingArns []*string `locationName:"findingArns" min:"1" type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BatchGetFindingDetailsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BatchGetFindingDetailsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *BatchGetFindingDetailsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "BatchGetFindingDetailsInput"}
+	if s.FindingArns == nil {
+		invalidParams.Add(request.NewErrParamRequired("FindingArns"))
+	}
+	if s.FindingArns != nil && len(s.FindingArns) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("FindingArns", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetFindingArns sets the FindingArns field's value.
+func (s *BatchGetFindingDetailsInput) SetFindingArns(v []*string) *BatchGetFindingDetailsInput {
+	s.FindingArns = v
+	return s
+}
+
+type BatchGetFindingDetailsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Error information for findings that details could not be returned for.
+	Errors []*FindingDetailsError `locationName:"errors" type:"list"`
+
+	// A finding's vulnerability details.
+	FindingDetails []*FindingDetail `locationName:"findingDetails" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BatchGetFindingDetailsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BatchGetFindingDetailsOutput) GoString() string {
+	return s.String()
+}
+
+// SetErrors sets the Errors field's value.
+func (s *BatchGetFindingDetailsOutput) SetErrors(v []*FindingDetailsError) *BatchGetFindingDetailsOutput {
+	s.Errors = v
+	return s
+}
+
+// SetFindingDetails sets the FindingDetails field's value.
+func (s *BatchGetFindingDetailsOutput) SetFindingDetails(v []*FindingDetail) *BatchGetFindingDetailsOutput {
+	s.FindingDetails = v
+	return s
+}
+
 type BatchGetFreeTrialInfoInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4823,6 +6798,173 @@ func (s *BatchGetFreeTrialInfoOutput) SetFailedAccounts(v []*FreeTrialInfoError)
 	return s
 }
 
+type BatchGetMemberEc2DeepInspectionStatusInput struct {
+	_ struct{} `type:"structure"`
+
+	AccountIds []*string `locationName:"accountIds" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BatchGetMemberEc2DeepInspectionStatusInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BatchGetMemberEc2DeepInspectionStatusInput) GoString() string {
+	return s.String()
+}
+
+// SetAccountIds sets the AccountIds field's value.
+func (s *BatchGetMemberEc2DeepInspectionStatusInput) SetAccountIds(v []*string) *BatchGetMemberEc2DeepInspectionStatusInput {
+	s.AccountIds = v
+	return s
+}
+
+type BatchGetMemberEc2DeepInspectionStatusOutput struct {
+	_ struct{} `type:"structure"`
+
+	AccountIds []*MemberAccountEc2DeepInspectionStatusState `locationName:"accountIds" type:"list"`
+
+	FailedAccountIds []*FailedMemberAccountEc2DeepInspectionStatusState `locationName:"failedAccountIds" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BatchGetMemberEc2DeepInspectionStatusOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BatchGetMemberEc2DeepInspectionStatusOutput) GoString() string {
+	return s.String()
+}
+
+// SetAccountIds sets the AccountIds field's value.
+func (s *BatchGetMemberEc2DeepInspectionStatusOutput) SetAccountIds(v []*MemberAccountEc2DeepInspectionStatusState) *BatchGetMemberEc2DeepInspectionStatusOutput {
+	s.AccountIds = v
+	return s
+}
+
+// SetFailedAccountIds sets the FailedAccountIds field's value.
+func (s *BatchGetMemberEc2DeepInspectionStatusOutput) SetFailedAccountIds(v []*FailedMemberAccountEc2DeepInspectionStatusState) *BatchGetMemberEc2DeepInspectionStatusOutput {
+	s.FailedAccountIds = v
+	return s
+}
+
+type BatchUpdateMemberEc2DeepInspectionStatusInput struct {
+	_ struct{} `type:"structure"`
+
+	// The unique identifiers for the Amazon Web Services accounts to change Amazon
+	// Inspector deep inspection status for.
+	//
+	// AccountIds is a required field
+	AccountIds []*MemberAccountEc2DeepInspectionStatus `locationName:"accountIds" type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BatchUpdateMemberEc2DeepInspectionStatusInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BatchUpdateMemberEc2DeepInspectionStatusInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *BatchUpdateMemberEc2DeepInspectionStatusInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "BatchUpdateMemberEc2DeepInspectionStatusInput"}
+	if s.AccountIds == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccountIds"))
+	}
+	if s.AccountIds != nil {
+		for i, v := range s.AccountIds {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "AccountIds", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccountIds sets the AccountIds field's value.
+func (s *BatchUpdateMemberEc2DeepInspectionStatusInput) SetAccountIds(v []*MemberAccountEc2DeepInspectionStatus) *BatchUpdateMemberEc2DeepInspectionStatusInput {
+	s.AccountIds = v
+	return s
+}
+
+type BatchUpdateMemberEc2DeepInspectionStatusOutput struct {
+	_ struct{} `type:"structure"`
+
+	// An array of objects that provide details for each of the accounts that Amazon
+	// Inspector deep inspection status was successfully changed for.
+	AccountIds []*MemberAccountEc2DeepInspectionStatusState `locationName:"accountIds" type:"list"`
+
+	// An array of objects that provide details for each of the accounts that Amazon
+	// Inspector deep inspection status could not be successfully changed for.
+	FailedAccountIds []*FailedMemberAccountEc2DeepInspectionStatusState `locationName:"failedAccountIds" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BatchUpdateMemberEc2DeepInspectionStatusOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BatchUpdateMemberEc2DeepInspectionStatusOutput) GoString() string {
+	return s.String()
+}
+
+// SetAccountIds sets the AccountIds field's value.
+func (s *BatchUpdateMemberEc2DeepInspectionStatusOutput) SetAccountIds(v []*MemberAccountEc2DeepInspectionStatusState) *BatchUpdateMemberEc2DeepInspectionStatusOutput {
+	s.AccountIds = v
+	return s
+}
+
+// SetFailedAccountIds sets the FailedAccountIds field's value.
+func (s *BatchUpdateMemberEc2DeepInspectionStatusOutput) SetFailedAccountIds(v []*FailedMemberAccountEc2DeepInspectionStatusState) *BatchUpdateMemberEc2DeepInspectionStatusOutput {
+	s.FailedAccountIds = v
+	return s
+}
+
 type CancelFindingsReportInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4899,6 +7041,485 @@ func (s CancelFindingsReportOutput) GoString() string {
 // SetReportId sets the ReportId field's value.
 func (s *CancelFindingsReportOutput) SetReportId(v string) *CancelFindingsReportOutput {
 	s.ReportId = &v
+	return s
+}
+
+type CancelSbomExportInput struct {
+	_ struct{} `type:"structure"`
+
+	// The report ID of the SBOM export to cancel.
+	//
+	// ReportId is a required field
+	ReportId *string `locationName:"reportId" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CancelSbomExportInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CancelSbomExportInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CancelSbomExportInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CancelSbomExportInput"}
+	if s.ReportId == nil {
+		invalidParams.Add(request.NewErrParamRequired("ReportId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetReportId sets the ReportId field's value.
+func (s *CancelSbomExportInput) SetReportId(v string) *CancelSbomExportInput {
+	s.ReportId = &v
+	return s
+}
+
+type CancelSbomExportOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The report ID of the canceled SBOM export.
+	ReportId *string `locationName:"reportId" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CancelSbomExportOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CancelSbomExportOutput) GoString() string {
+	return s.String()
+}
+
+// SetReportId sets the ReportId field's value.
+func (s *CancelSbomExportOutput) SetReportId(v string) *CancelSbomExportOutput {
+	s.ReportId = &v
+	return s
+}
+
+// The Cybersecurity and Infrastructure Security Agency (CISA) details for a
+// specific vulnerability.
+type CisaData struct {
+	_ struct{} `type:"structure"`
+
+	// The remediation action recommended by CISA for this vulnerability.
+	Action *string `locationName:"action" type:"string"`
+
+	// The date and time CISA added this vulnerability to their catalogue.
+	DateAdded *time.Time `locationName:"dateAdded" type:"timestamp"`
+
+	// The date and time CISA expects a fix to have been provided vulnerability.
+	DateDue *time.Time `locationName:"dateDue" type:"timestamp"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CisaData) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CisaData) GoString() string {
+	return s.String()
+}
+
+// SetAction sets the Action field's value.
+func (s *CisaData) SetAction(v string) *CisaData {
+	s.Action = &v
+	return s
+}
+
+// SetDateAdded sets the DateAdded field's value.
+func (s *CisaData) SetDateAdded(v time.Time) *CisaData {
+	s.DateAdded = &v
+	return s
+}
+
+// SetDateDue sets the DateDue field's value.
+func (s *CisaData) SetDateDue(v time.Time) *CisaData {
+	s.DateDue = &v
+	return s
+}
+
+// Contains information on where a code vulnerability is located in your Lambda
+// function.
+type CodeFilePath struct {
+	_ struct{} `type:"structure"`
+
+	// The line number of the last line of code that a vulnerability was found in.
+	//
+	// EndLine is a required field
+	EndLine *int64 `locationName:"endLine" type:"integer" required:"true"`
+
+	// The name of the file the code vulnerability was found in.
+	//
+	// FileName is a required field
+	FileName *string `locationName:"fileName" min:"1" type:"string" required:"true"`
+
+	// The file path to the code that a vulnerability was found in.
+	//
+	// FilePath is a required field
+	FilePath *string `locationName:"filePath" min:"1" type:"string" required:"true"`
+
+	// The line number of the first line of code that a vulnerability was found
+	// in.
+	//
+	// StartLine is a required field
+	StartLine *int64 `locationName:"startLine" type:"integer" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CodeFilePath) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CodeFilePath) GoString() string {
+	return s.String()
+}
+
+// SetEndLine sets the EndLine field's value.
+func (s *CodeFilePath) SetEndLine(v int64) *CodeFilePath {
+	s.EndLine = &v
+	return s
+}
+
+// SetFileName sets the FileName field's value.
+func (s *CodeFilePath) SetFileName(v string) *CodeFilePath {
+	s.FileName = &v
+	return s
+}
+
+// SetFilePath sets the FilePath field's value.
+func (s *CodeFilePath) SetFilePath(v string) *CodeFilePath {
+	s.FilePath = &v
+	return s
+}
+
+// SetStartLine sets the StartLine field's value.
+func (s *CodeFilePath) SetStartLine(v int64) *CodeFilePath {
+	s.StartLine = &v
+	return s
+}
+
+// Contains information on the lines of code associated with a code snippet.
+type CodeLine struct {
+	_ struct{} `type:"structure"`
+
+	// The content of a line of code
+	//
+	// Content is a required field
+	Content *string `locationName:"content" type:"string" required:"true"`
+
+	// The line number that a section of code is located at.
+	//
+	// LineNumber is a required field
+	LineNumber *int64 `locationName:"lineNumber" type:"integer" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CodeLine) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CodeLine) GoString() string {
+	return s.String()
+}
+
+// SetContent sets the Content field's value.
+func (s *CodeLine) SetContent(v string) *CodeLine {
+	s.Content = &v
+	return s
+}
+
+// SetLineNumber sets the LineNumber field's value.
+func (s *CodeLine) SetLineNumber(v int64) *CodeLine {
+	s.LineNumber = &v
+	return s
+}
+
+// Contains information about any errors encountered while trying to retrieve
+// a code snippet.
+type CodeSnippetError struct {
+	_ struct{} `type:"structure"`
+
+	// The error code for the error that prevented a code snippet from being retrieved.
+	//
+	// ErrorCode is a required field
+	ErrorCode *string `locationName:"errorCode" type:"string" required:"true" enum:"CodeSnippetErrorCode"`
+
+	// The error message received when Amazon Inspector failed to retrieve a code
+	// snippet.
+	//
+	// ErrorMessage is a required field
+	ErrorMessage *string `locationName:"errorMessage" min:"1" type:"string" required:"true"`
+
+	// The ARN of the finding that a code snippet couldn't be retrieved for.
+	//
+	// FindingArn is a required field
+	FindingArn *string `locationName:"findingArn" min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CodeSnippetError) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CodeSnippetError) GoString() string {
+	return s.String()
+}
+
+// SetErrorCode sets the ErrorCode field's value.
+func (s *CodeSnippetError) SetErrorCode(v string) *CodeSnippetError {
+	s.ErrorCode = &v
+	return s
+}
+
+// SetErrorMessage sets the ErrorMessage field's value.
+func (s *CodeSnippetError) SetErrorMessage(v string) *CodeSnippetError {
+	s.ErrorMessage = &v
+	return s
+}
+
+// SetFindingArn sets the FindingArn field's value.
+func (s *CodeSnippetError) SetFindingArn(v string) *CodeSnippetError {
+	s.FindingArn = &v
+	return s
+}
+
+// Contains information on a code snippet retrieved by Amazon Inspector from
+// a code vulnerability finding.
+type CodeSnippetResult struct {
+	_ struct{} `type:"structure"`
+
+	// Contains information on the retrieved code snippet.
+	CodeSnippet []*CodeLine `locationName:"codeSnippet" min:"1" type:"list"`
+
+	// The line number of the last line of a code snippet.
+	EndLine *int64 `locationName:"endLine" type:"integer"`
+
+	// The ARN of a finding that the code snippet is associated with.
+	FindingArn *string `locationName:"findingArn" min:"1" type:"string"`
+
+	// The line number of the first line of a code snippet.
+	StartLine *int64 `locationName:"startLine" type:"integer"`
+
+	// Details of a suggested code fix.
+	SuggestedFixes []*SuggestedFix `locationName:"suggestedFixes" min:"1" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CodeSnippetResult) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CodeSnippetResult) GoString() string {
+	return s.String()
+}
+
+// SetCodeSnippet sets the CodeSnippet field's value.
+func (s *CodeSnippetResult) SetCodeSnippet(v []*CodeLine) *CodeSnippetResult {
+	s.CodeSnippet = v
+	return s
+}
+
+// SetEndLine sets the EndLine field's value.
+func (s *CodeSnippetResult) SetEndLine(v int64) *CodeSnippetResult {
+	s.EndLine = &v
+	return s
+}
+
+// SetFindingArn sets the FindingArn field's value.
+func (s *CodeSnippetResult) SetFindingArn(v string) *CodeSnippetResult {
+	s.FindingArn = &v
+	return s
+}
+
+// SetStartLine sets the StartLine field's value.
+func (s *CodeSnippetResult) SetStartLine(v int64) *CodeSnippetResult {
+	s.StartLine = &v
+	return s
+}
+
+// SetSuggestedFixes sets the SuggestedFixes field's value.
+func (s *CodeSnippetResult) SetSuggestedFixes(v []*SuggestedFix) *CodeSnippetResult {
+	s.SuggestedFixes = v
+	return s
+}
+
+// Contains information on the code vulnerability identified in your Lambda
+// function.
+type CodeVulnerabilityDetails struct {
+	_ struct{} `type:"structure"`
+
+	// The Common Weakness Enumeration (CWE) item associated with the detected vulnerability.
+	//
+	// Cwes is a required field
+	Cwes []*string `locationName:"cwes" min:"1" type:"list" required:"true"`
+
+	// The ID for the Amazon CodeGuru detector associated with the finding. For
+	// more information on detectors see Amazon CodeGuru Detector Library (https://docs.aws.amazon.com/codeguru/detector-library).
+	//
+	// DetectorId is a required field
+	DetectorId *string `locationName:"detectorId" min:"1" type:"string" required:"true"`
+
+	// The name of the detector used to identify the code vulnerability. For more
+	// information on detectors see CodeGuru Detector Library (https://docs.aws.amazon.com/codeguru/detector-library).
+	//
+	// DetectorName is a required field
+	DetectorName *string `locationName:"detectorName" min:"1" type:"string" required:"true"`
+
+	// The detector tag associated with the vulnerability. Detector tags group related
+	// vulnerabilities by common themes or tactics. For a list of available tags
+	// by programming language, see Java tags (https://docs.aws.amazon.com/codeguru/detector-library/java/tags/),
+	// or Python tags (https://docs.aws.amazon.com/codeguru/detector-library/python/tags/).
+	DetectorTags []*string `locationName:"detectorTags" min:"1" type:"list"`
+
+	// Contains information on where the code vulnerability is located in your code.
+	//
+	// FilePath is a required field
+	FilePath *CodeFilePath `locationName:"filePath" type:"structure" required:"true"`
+
+	// A URL containing supporting documentation about the code vulnerability detected.
+	ReferenceUrls []*string `locationName:"referenceUrls" min:"1" type:"list"`
+
+	// The identifier for a rule that was used to detect the code vulnerability.
+	RuleId *string `locationName:"ruleId" min:"1" type:"string"`
+
+	// The Amazon Resource Name (ARN) of the Lambda layer that the code vulnerability
+	// was detected in.
+	SourceLambdaLayerArn *string `locationName:"sourceLambdaLayerArn" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CodeVulnerabilityDetails) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CodeVulnerabilityDetails) GoString() string {
+	return s.String()
+}
+
+// SetCwes sets the Cwes field's value.
+func (s *CodeVulnerabilityDetails) SetCwes(v []*string) *CodeVulnerabilityDetails {
+	s.Cwes = v
+	return s
+}
+
+// SetDetectorId sets the DetectorId field's value.
+func (s *CodeVulnerabilityDetails) SetDetectorId(v string) *CodeVulnerabilityDetails {
+	s.DetectorId = &v
+	return s
+}
+
+// SetDetectorName sets the DetectorName field's value.
+func (s *CodeVulnerabilityDetails) SetDetectorName(v string) *CodeVulnerabilityDetails {
+	s.DetectorName = &v
+	return s
+}
+
+// SetDetectorTags sets the DetectorTags field's value.
+func (s *CodeVulnerabilityDetails) SetDetectorTags(v []*string) *CodeVulnerabilityDetails {
+	s.DetectorTags = v
+	return s
+}
+
+// SetFilePath sets the FilePath field's value.
+func (s *CodeVulnerabilityDetails) SetFilePath(v *CodeFilePath) *CodeVulnerabilityDetails {
+	s.FilePath = v
+	return s
+}
+
+// SetReferenceUrls sets the ReferenceUrls field's value.
+func (s *CodeVulnerabilityDetails) SetReferenceUrls(v []*string) *CodeVulnerabilityDetails {
+	s.ReferenceUrls = v
+	return s
+}
+
+// SetRuleId sets the RuleId field's value.
+func (s *CodeVulnerabilityDetails) SetRuleId(v string) *CodeVulnerabilityDetails {
+	s.RuleId = &v
+	return s
+}
+
+// SetSourceLambdaLayerArn sets the SourceLambdaLayerArn field's value.
+func (s *CodeVulnerabilityDetails) SetSourceLambdaLayerArn(v string) *CodeVulnerabilityDetails {
+	s.SourceLambdaLayerArn = &v
 	return s
 }
 
@@ -5018,6 +7639,47 @@ func (s *Counts) SetGroupKey(v string) *Counts {
 	return s
 }
 
+// Contains details of a coverage date filter.
+type CoverageDateFilter struct {
+	_ struct{} `type:"structure"`
+
+	// A timestamp representing the end of the time period to filter results by.
+	EndInclusive *time.Time `locationName:"endInclusive" type:"timestamp"`
+
+	// A timestamp representing the start of the time period to filter results by.
+	StartInclusive *time.Time `locationName:"startInclusive" type:"timestamp"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CoverageDateFilter) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CoverageDateFilter) GoString() string {
+	return s.String()
+}
+
+// SetEndInclusive sets the EndInclusive field's value.
+func (s *CoverageDateFilter) SetEndInclusive(v time.Time) *CoverageDateFilter {
+	s.EndInclusive = &v
+	return s
+}
+
+// SetStartInclusive sets the StartInclusive field's value.
+func (s *CoverageDateFilter) SetStartInclusive(v time.Time) *CoverageDateFilter {
+	s.StartInclusive = &v
+	return s
+}
+
 // A structure that identifies filter criteria for GetCoverageStatistics.
 type CoverageFilterCriteria struct {
 	_ struct{} `type:"structure"`
@@ -5035,15 +7697,31 @@ type CoverageFilterCriteria struct {
 	// The Amazon ECR repository name to filter on.
 	EcrRepositoryName []*CoverageStringFilter `locationName:"ecrRepositoryName" min:"1" type:"list"`
 
+	// Returns coverage statistics for AWS Lambda functions filtered by function
+	// names.
+	LambdaFunctionName []*CoverageStringFilter `locationName:"lambdaFunctionName" min:"1" type:"list"`
+
+	// Returns coverage statistics for AWS Lambda functions filtered by runtime.
+	LambdaFunctionRuntime []*CoverageStringFilter `locationName:"lambdaFunctionRuntime" min:"1" type:"list"`
+
+	// Returns coverage statistics for AWS Lambda functions filtered by tag.
+	LambdaFunctionTags []*CoverageMapFilter `locationName:"lambdaFunctionTags" min:"1" type:"list"`
+
+	// Filters Amazon Web Services resources based on whether Amazon Inspector has
+	// checked them for vulnerabilities within the specified time range.
+	LastScannedAt []*CoverageDateFilter `locationName:"lastScannedAt" min:"1" type:"list"`
+
 	// An array of Amazon Web Services resource IDs to return coverage statistics
 	// for.
 	ResourceId []*CoverageStringFilter `locationName:"resourceId" min:"1" type:"list"`
 
 	// An array of Amazon Web Services resource types to return coverage statistics
-	// for.
+	// for. The values can be AWS_EC2_INSTANCE, AWS_LAMBDA_FUNCTION or AWS_ECR_REPOSITORY.
 	ResourceType []*CoverageStringFilter `locationName:"resourceType" min:"1" type:"list"`
 
-	// The scan status code to filter on.
+	// The scan status code to filter on. Valid values are: ValidationException,
+	// InternalServerException, ResourceNotFoundException, BadRequestException,
+	// and ThrottlingException.
 	ScanStatusCode []*CoverageStringFilter `locationName:"scanStatusCode" min:"1" type:"list"`
 
 	// The scan status reason to filter on.
@@ -5085,6 +7763,18 @@ func (s *CoverageFilterCriteria) Validate() error {
 	}
 	if s.EcrRepositoryName != nil && len(s.EcrRepositoryName) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("EcrRepositoryName", 1))
+	}
+	if s.LambdaFunctionName != nil && len(s.LambdaFunctionName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("LambdaFunctionName", 1))
+	}
+	if s.LambdaFunctionRuntime != nil && len(s.LambdaFunctionRuntime) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("LambdaFunctionRuntime", 1))
+	}
+	if s.LambdaFunctionTags != nil && len(s.LambdaFunctionTags) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("LambdaFunctionTags", 1))
+	}
+	if s.LastScannedAt != nil && len(s.LastScannedAt) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("LastScannedAt", 1))
 	}
 	if s.ResourceId != nil && len(s.ResourceId) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("ResourceId", 1))
@@ -5138,6 +7828,36 @@ func (s *CoverageFilterCriteria) Validate() error {
 			}
 			if err := v.Validate(); err != nil {
 				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "EcrRepositoryName", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.LambdaFunctionName != nil {
+		for i, v := range s.LambdaFunctionName {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "LambdaFunctionName", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.LambdaFunctionRuntime != nil {
+		for i, v := range s.LambdaFunctionRuntime {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "LambdaFunctionRuntime", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.LambdaFunctionTags != nil {
+		for i, v := range s.LambdaFunctionTags {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "LambdaFunctionTags", i), err.(request.ErrInvalidParams))
 			}
 		}
 	}
@@ -5219,6 +7939,30 @@ func (s *CoverageFilterCriteria) SetEcrImageTags(v []*CoverageStringFilter) *Cov
 // SetEcrRepositoryName sets the EcrRepositoryName field's value.
 func (s *CoverageFilterCriteria) SetEcrRepositoryName(v []*CoverageStringFilter) *CoverageFilterCriteria {
 	s.EcrRepositoryName = v
+	return s
+}
+
+// SetLambdaFunctionName sets the LambdaFunctionName field's value.
+func (s *CoverageFilterCriteria) SetLambdaFunctionName(v []*CoverageStringFilter) *CoverageFilterCriteria {
+	s.LambdaFunctionName = v
+	return s
+}
+
+// SetLambdaFunctionRuntime sets the LambdaFunctionRuntime field's value.
+func (s *CoverageFilterCriteria) SetLambdaFunctionRuntime(v []*CoverageStringFilter) *CoverageFilterCriteria {
+	s.LambdaFunctionRuntime = v
+	return s
+}
+
+// SetLambdaFunctionTags sets the LambdaFunctionTags field's value.
+func (s *CoverageFilterCriteria) SetLambdaFunctionTags(v []*CoverageMapFilter) *CoverageFilterCriteria {
+	s.LambdaFunctionTags = v
+	return s
+}
+
+// SetLastScannedAt sets the LastScannedAt field's value.
+func (s *CoverageFilterCriteria) SetLastScannedAt(v []*CoverageDateFilter) *CoverageFilterCriteria {
+	s.LastScannedAt = v
 	return s
 }
 
@@ -5401,6 +8145,9 @@ type CoveredResource struct {
 	// AccountId is a required field
 	AccountId *string `locationName:"accountId" min:"12" type:"string" required:"true"`
 
+	// The date and time the resource was last checked for vulnerabilities.
+	LastScannedAt *time.Time `locationName:"lastScannedAt" type:"timestamp"`
+
 	// The ID of the covered resource.
 	//
 	// ResourceId is a required field
@@ -5444,6 +8191,12 @@ func (s CoveredResource) GoString() string {
 // SetAccountId sets the AccountId field's value.
 func (s *CoveredResource) SetAccountId(v string) *CoveredResource {
 	s.AccountId = &v
+	return s
+}
+
+// SetLastScannedAt sets the LastScannedAt field's value.
+func (s *CoveredResource) SetLastScannedAt(v time.Time) *CoveredResource {
+	s.LastScannedAt = &v
 	return s
 }
 
@@ -5500,6 +8253,9 @@ type CreateFilterInput struct {
 	// Name is a required field
 	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
 
+	// The reason for creating the filter.
+	Reason *string `locationName:"reason" min:"1" type:"string"`
+
 	// A list of tags for the filter.
 	Tags map[string]*string `locationName:"tags" type:"map"`
 }
@@ -5540,6 +8296,9 @@ func (s *CreateFilterInput) Validate() error {
 	if s.Name != nil && len(*s.Name) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
 	}
+	if s.Reason != nil && len(*s.Reason) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Reason", 1))
+	}
 	if s.FilterCriteria != nil {
 		if err := s.FilterCriteria.Validate(); err != nil {
 			invalidParams.AddNested("FilterCriteria", err.(request.ErrInvalidParams))
@@ -5573,6 +8332,12 @@ func (s *CreateFilterInput) SetFilterCriteria(v *FilterCriteria) *CreateFilterIn
 // SetName sets the Name field's value.
 func (s *CreateFilterInput) SetName(v string) *CreateFilterInput {
 	s.Name = &v
+	return s
+}
+
+// SetReason sets the Reason field's value.
+func (s *CreateFilterInput) SetReason(v string) *CreateFilterInput {
+	s.Reason = &v
 	return s
 }
 
@@ -5722,6 +8487,200 @@ func (s CreateFindingsReportOutput) GoString() string {
 // SetReportId sets the ReportId field's value.
 func (s *CreateFindingsReportOutput) SetReportId(v string) *CreateFindingsReportOutput {
 	s.ReportId = &v
+	return s
+}
+
+type CreateSbomExportInput struct {
+	_ struct{} `type:"structure"`
+
+	// The output format for the software bill of materials (SBOM) report.
+	//
+	// ReportFormat is a required field
+	ReportFormat *string `locationName:"reportFormat" type:"string" required:"true" enum:"SbomReportFormat"`
+
+	// The resource filter criteria for the software bill of materials (SBOM) report.
+	ResourceFilterCriteria *ResourceFilterCriteria `locationName:"resourceFilterCriteria" type:"structure"`
+
+	// Contains details of the Amazon S3 bucket and KMS key used to export findings.
+	//
+	// S3Destination is a required field
+	S3Destination *Destination `locationName:"s3Destination" type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateSbomExportInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateSbomExportInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateSbomExportInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateSbomExportInput"}
+	if s.ReportFormat == nil {
+		invalidParams.Add(request.NewErrParamRequired("ReportFormat"))
+	}
+	if s.S3Destination == nil {
+		invalidParams.Add(request.NewErrParamRequired("S3Destination"))
+	}
+	if s.ResourceFilterCriteria != nil {
+		if err := s.ResourceFilterCriteria.Validate(); err != nil {
+			invalidParams.AddNested("ResourceFilterCriteria", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.S3Destination != nil {
+		if err := s.S3Destination.Validate(); err != nil {
+			invalidParams.AddNested("S3Destination", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetReportFormat sets the ReportFormat field's value.
+func (s *CreateSbomExportInput) SetReportFormat(v string) *CreateSbomExportInput {
+	s.ReportFormat = &v
+	return s
+}
+
+// SetResourceFilterCriteria sets the ResourceFilterCriteria field's value.
+func (s *CreateSbomExportInput) SetResourceFilterCriteria(v *ResourceFilterCriteria) *CreateSbomExportInput {
+	s.ResourceFilterCriteria = v
+	return s
+}
+
+// SetS3Destination sets the S3Destination field's value.
+func (s *CreateSbomExportInput) SetS3Destination(v *Destination) *CreateSbomExportInput {
+	s.S3Destination = v
+	return s
+}
+
+type CreateSbomExportOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The report ID for the software bill of materials (SBOM) report.
+	ReportId *string `locationName:"reportId" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateSbomExportOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateSbomExportOutput) GoString() string {
+	return s.String()
+}
+
+// SetReportId sets the ReportId field's value.
+func (s *CreateSbomExportOutput) SetReportId(v string) *CreateSbomExportOutput {
+	s.ReportId = &v
+	return s
+}
+
+// The Common Vulnerability Scoring System (CVSS) version 2 details for the
+// vulnerability.
+type Cvss2 struct {
+	_ struct{} `type:"structure"`
+
+	// The CVSS v2 base score for the vulnerability.
+	BaseScore *float64 `locationName:"baseScore" type:"double"`
+
+	// The scoring vector associated with the CVSS v2 score.
+	ScoringVector *string `locationName:"scoringVector" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Cvss2) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Cvss2) GoString() string {
+	return s.String()
+}
+
+// SetBaseScore sets the BaseScore field's value.
+func (s *Cvss2) SetBaseScore(v float64) *Cvss2 {
+	s.BaseScore = &v
+	return s
+}
+
+// SetScoringVector sets the ScoringVector field's value.
+func (s *Cvss2) SetScoringVector(v string) *Cvss2 {
+	s.ScoringVector = &v
+	return s
+}
+
+// The Common Vulnerability Scoring System (CVSS) version 3 details for the
+// vulnerability.
+type Cvss3 struct {
+	_ struct{} `type:"structure"`
+
+	// The CVSS v3 base score for the vulnerability.
+	BaseScore *float64 `locationName:"baseScore" type:"double"`
+
+	// The scoring vector associated with the CVSS v3 score.
+	ScoringVector *string `locationName:"scoringVector" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Cvss3) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Cvss3) GoString() string {
+	return s.String()
+}
+
+// SetBaseScore sets the BaseScore field's value.
+func (s *Cvss3) SetBaseScore(v float64) *Cvss3 {
+	s.BaseScore = &v
+	return s
+}
+
+// SetScoringVector sets the ScoringVector field's value.
+func (s *Cvss3) SetScoringVector(v string) *Cvss3 {
+	s.ScoringVector = &v
 	return s
 }
 
@@ -6202,7 +9161,7 @@ type Destination struct {
 	// BucketName is a required field
 	BucketName *string `locationName:"bucketName" type:"string" required:"true"`
 
-	// The prefix of the KMS key used to export findings.
+	// The prefix that the findings will be written under.
 	KeyPrefix *string `locationName:"keyPrefix" type:"string"`
 
 	// The ARN of the KMS key used to encrypt data when exporting findings.
@@ -6659,7 +9618,7 @@ func (s *Ec2InstanceAggregation) SetSortOrder(v string) *Ec2InstanceAggregation 
 type Ec2InstanceAggregationResponse struct {
 	_ struct{} `type:"structure"`
 
-	// The Amazon Web Services account the Amazon EC2 instance belongs to.
+	// The Amazon Web Services account for the Amazon EC2 instance.
 	AccountId *string `locationName:"accountId" type:"string"`
 
 	// The Amazon Machine Image (AMI) of the Amazon EC2 instance.
@@ -6793,6 +9752,90 @@ func (s *Ec2Metadata) SetTags(v map[string]*string) *Ec2Metadata {
 	return s
 }
 
+// Details about the ECR automated re-scan duration setting for your environment.
+type EcrConfiguration struct {
+	_ struct{} `type:"structure"`
+
+	// The ECR automated re-scan duration defines how long an ECR image will be
+	// actively scanned by Amazon Inspector. When the number of days since an image
+	// was last pushed exceeds the automated re-scan duration the monitoring state
+	// of that image becomes inactive and all associated findings are scheduled
+	// for closure.
+	//
+	// RescanDuration is a required field
+	RescanDuration *string `locationName:"rescanDuration" type:"string" required:"true" enum:"EcrRescanDuration"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EcrConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EcrConfiguration) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *EcrConfiguration) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "EcrConfiguration"}
+	if s.RescanDuration == nil {
+		invalidParams.Add(request.NewErrParamRequired("RescanDuration"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetRescanDuration sets the RescanDuration field's value.
+func (s *EcrConfiguration) SetRescanDuration(v string) *EcrConfiguration {
+	s.RescanDuration = &v
+	return s
+}
+
+// Details about the state of the ECR scans for your environment.
+type EcrConfigurationState struct {
+	_ struct{} `type:"structure"`
+
+	// An object that contains details about the state of the ECR automated re-scan
+	// setting.
+	RescanDurationState *EcrRescanDurationState `locationName:"rescanDurationState" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EcrConfigurationState) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EcrConfigurationState) GoString() string {
+	return s.String()
+}
+
+// SetRescanDurationState sets the RescanDurationState field's value.
+func (s *EcrConfigurationState) SetRescanDurationState(v *EcrRescanDurationState) *EcrConfigurationState {
+	s.RescanDurationState = v
+	return s
+}
+
 // Information on the Amazon ECR image metadata associated with a finding.
 type EcrContainerImageMetadata struct {
 	_ struct{} `type:"structure"`
@@ -6863,6 +9906,62 @@ func (s *EcrRepositoryMetadata) SetName(v string) *EcrRepositoryMetadata {
 // SetScanFrequency sets the ScanFrequency field's value.
 func (s *EcrRepositoryMetadata) SetScanFrequency(v string) *EcrRepositoryMetadata {
 	s.ScanFrequency = &v
+	return s
+}
+
+// Details about the state of any changes to the ECR automated re-scan duration
+// setting.
+type EcrRescanDurationState struct {
+	_ struct{} `type:"structure"`
+
+	// The ECR automated re-scan duration defines how long an ECR image will be
+	// actively scanned by Amazon Inspector. When the number of days since an image
+	// was last pushed exceeds the automated re-scan duration the monitoring state
+	// of that image becomes inactive and all associated findings are scheduled
+	// for closure.
+	RescanDuration *string `locationName:"rescanDuration" type:"string" enum:"EcrRescanDuration"`
+
+	// The status of changes to the ECR automated re-scan duration.
+	Status *string `locationName:"status" type:"string" enum:"EcrRescanDurationStatus"`
+
+	// A timestamp representing when the last time the ECR scan duration setting
+	// was changed.
+	UpdatedAt *time.Time `locationName:"updatedAt" type:"timestamp"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EcrRescanDurationState) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EcrRescanDurationState) GoString() string {
+	return s.String()
+}
+
+// SetRescanDuration sets the RescanDuration field's value.
+func (s *EcrRescanDurationState) SetRescanDuration(v string) *EcrRescanDurationState {
+	s.RescanDuration = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *EcrRescanDurationState) SetStatus(v string) *EcrRescanDurationState {
+	s.Status = &v
+	return s
+}
+
+// SetUpdatedAt sets the UpdatedAt field's value.
+func (s *EcrRescanDurationState) SetUpdatedAt(v time.Time) *EcrRescanDurationState {
+	s.UpdatedAt = &v
 	return s
 }
 
@@ -7075,6 +10174,194 @@ func (s *EnableOutput) SetFailedAccounts(v []*FailedAccount) *EnableOutput {
 	return s
 }
 
+// Details about the Exploit Prediction Scoring System (EPSS) score.
+type Epss struct {
+	_ struct{} `type:"structure"`
+
+	// The Exploit Prediction Scoring System (EPSS) score.
+	Score *float64 `locationName:"score" type:"double"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Epss) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Epss) GoString() string {
+	return s.String()
+}
+
+// SetScore sets the Score field's value.
+func (s *Epss) SetScore(v float64) *Epss {
+	s.Score = &v
+	return s
+}
+
+// Details about the Exploit Prediction Scoring System (EPSS) score for a finding.
+type EpssDetails struct {
+	_ struct{} `type:"structure"`
+
+	// The EPSS score.
+	Score *float64 `locationName:"score" type:"double"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EpssDetails) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EpssDetails) GoString() string {
+	return s.String()
+}
+
+// SetScore sets the Score field's value.
+func (s *EpssDetails) SetScore(v float64) *EpssDetails {
+	s.Score = &v
+	return s
+}
+
+// Details of the evidence for a vulnerability identified in a finding.
+type Evidence struct {
+	_ struct{} `type:"structure"`
+
+	// The evidence details.
+	EvidenceDetail *string `locationName:"evidenceDetail" type:"string"`
+
+	// The evidence rule.
+	EvidenceRule *string `locationName:"evidenceRule" type:"string"`
+
+	// The evidence severity.
+	Severity *string `locationName:"severity" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Evidence) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Evidence) GoString() string {
+	return s.String()
+}
+
+// SetEvidenceDetail sets the EvidenceDetail field's value.
+func (s *Evidence) SetEvidenceDetail(v string) *Evidence {
+	s.EvidenceDetail = &v
+	return s
+}
+
+// SetEvidenceRule sets the EvidenceRule field's value.
+func (s *Evidence) SetEvidenceRule(v string) *Evidence {
+	s.EvidenceRule = &v
+	return s
+}
+
+// SetSeverity sets the Severity field's value.
+func (s *Evidence) SetSeverity(v string) *Evidence {
+	s.Severity = &v
+	return s
+}
+
+// Contains information on when this exploit was observed.
+type ExploitObserved struct {
+	_ struct{} `type:"structure"`
+
+	// The date an time when the exploit was first seen.
+	FirstSeen *time.Time `locationName:"firstSeen" type:"timestamp"`
+
+	// The date an time when the exploit was last seen.
+	LastSeen *time.Time `locationName:"lastSeen" type:"timestamp"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ExploitObserved) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ExploitObserved) GoString() string {
+	return s.String()
+}
+
+// SetFirstSeen sets the FirstSeen field's value.
+func (s *ExploitObserved) SetFirstSeen(v time.Time) *ExploitObserved {
+	s.FirstSeen = &v
+	return s
+}
+
+// SetLastSeen sets the LastSeen field's value.
+func (s *ExploitObserved) SetLastSeen(v time.Time) *ExploitObserved {
+	s.LastSeen = &v
+	return s
+}
+
+// The details of an exploit available for a finding discovered in your environment.
+type ExploitabilityDetails struct {
+	_ struct{} `type:"structure"`
+
+	// The date and time of the last exploit associated with a finding discovered
+	// in your environment.
+	LastKnownExploitAt *time.Time `locationName:"lastKnownExploitAt" type:"timestamp"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ExploitabilityDetails) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ExploitabilityDetails) GoString() string {
+	return s.String()
+}
+
+// SetLastKnownExploitAt sets the LastKnownExploitAt field's value.
+func (s *ExploitabilityDetails) SetLastKnownExploitAt(v time.Time) *ExploitabilityDetails {
+	s.LastKnownExploitAt = &v
+	return s
+}
+
 // An object with details on why an account failed to enable Amazon Inspector.
 type FailedAccount struct {
 	_ struct{} `type:"structure"`
@@ -7147,6 +10434,62 @@ func (s *FailedAccount) SetResourceStatus(v *ResourceStatus) *FailedAccount {
 // SetStatus sets the Status field's value.
 func (s *FailedAccount) SetStatus(v string) *FailedAccount {
 	s.Status = &v
+	return s
+}
+
+// An object that contains details about a member account in your organization
+// that failed to activate Amazon Inspector deep inspection.
+type FailedMemberAccountEc2DeepInspectionStatusState struct {
+	_ struct{} `type:"structure"`
+
+	// The unique identifier for the Amazon Web Services account of the organization
+	// member that failed to activate Amazon Inspector deep inspection.
+	//
+	// AccountId is a required field
+	AccountId *string `locationName:"accountId" min:"12" type:"string" required:"true"`
+
+	// The status of EC2 scanning in the account that failed to activate Amazon
+	// Inspector deep inspection.
+	Ec2ScanStatus *string `locationName:"ec2ScanStatus" type:"string" enum:"Status"`
+
+	// The error message explaining why the account failed to activate Amazon Inspector
+	// deep inspection.
+	ErrorMessage *string `locationName:"errorMessage" min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FailedMemberAccountEc2DeepInspectionStatusState) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FailedMemberAccountEc2DeepInspectionStatusState) GoString() string {
+	return s.String()
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *FailedMemberAccountEc2DeepInspectionStatusState) SetAccountId(v string) *FailedMemberAccountEc2DeepInspectionStatusState {
+	s.AccountId = &v
+	return s
+}
+
+// SetEc2ScanStatus sets the Ec2ScanStatus field's value.
+func (s *FailedMemberAccountEc2DeepInspectionStatusState) SetEc2ScanStatus(v string) *FailedMemberAccountEc2DeepInspectionStatusState {
+	s.Ec2ScanStatus = &v
+	return s
+}
+
+// SetErrorMessage sets the ErrorMessage field's value.
+func (s *FailedMemberAccountEc2DeepInspectionStatusState) SetErrorMessage(v string) *FailedMemberAccountEc2DeepInspectionStatusState {
+	s.ErrorMessage = &v
 	return s
 }
 
@@ -7284,6 +10627,20 @@ type FilterCriteria struct {
 	// Details of the Amazon Web Services account IDs used to filter findings.
 	AwsAccountId []*StringFilter `locationName:"awsAccountId" min:"1" type:"list"`
 
+	// The name of the detector used to identify a code vulnerability in a Lambda
+	// function used to filter findings.
+	CodeVulnerabilityDetectorName []*StringFilter `locationName:"codeVulnerabilityDetectorName" min:"1" type:"list"`
+
+	// The detector type tag associated with the vulnerability used to filter findings.
+	// Detector tags group related vulnerabilities by common themes or tactics.
+	// For a list of available tags by programming language, see Java tags (https://docs.aws.amazon.com/codeguru/detector-library/java/tags/),
+	// or Python tags (https://docs.aws.amazon.com/codeguru/detector-library/python/tags/).
+	CodeVulnerabilityDetectorTags []*StringFilter `locationName:"codeVulnerabilityDetectorTags" min:"1" type:"list"`
+
+	// The file path to the file in a Lambda function that contains a code vulnerability
+	// used to filter findings.
+	CodeVulnerabilityFilePath []*StringFilter `locationName:"codeVulnerabilityFilePath" min:"1" type:"list"`
+
 	// Details of the component IDs used to filter findings.
 	ComponentId []*StringFilter `locationName:"componentId" min:"1" type:"list"`
 
@@ -7317,6 +10674,12 @@ type FilterCriteria struct {
 	// The tags attached to the Amazon ECR container image.
 	EcrImageTags []*StringFilter `locationName:"ecrImageTags" min:"1" type:"list"`
 
+	// The EPSS score used to filter findings.
+	EpssScore []*NumberFilter `locationName:"epssScore" min:"1" type:"list"`
+
+	// Filters the list of AWS Lambda findings by the availability of exploits.
+	ExploitAvailable []*StringFilter `locationName:"exploitAvailable" min:"1" type:"list"`
+
 	// Details on the finding ARNs used to filter findings.
 	FindingArn []*StringFilter `locationName:"findingArn" min:"1" type:"list"`
 
@@ -7329,13 +10692,37 @@ type FilterCriteria struct {
 	// Details on the date and time a finding was first seen used to filter findings.
 	FirstObservedAt []*DateFilter `locationName:"firstObservedAt" min:"1" type:"list"`
 
+	// Details on whether a fix is available through a version update. This value
+	// can be YES, NO, or PARTIAL. A PARTIAL fix means that some, but not all, of
+	// the packages identified in the finding have fixes available through updated
+	// versions.
+	FixAvailable []*StringFilter `locationName:"fixAvailable" min:"1" type:"list"`
+
 	// The Amazon Inspector score to filter on.
 	InspectorScore []*NumberFilter `locationName:"inspectorScore" min:"1" type:"list"`
+
+	// Filters the list of AWS Lambda functions by execution role.
+	LambdaFunctionExecutionRoleArn []*StringFilter `locationName:"lambdaFunctionExecutionRoleArn" min:"1" type:"list"`
+
+	// Filters the list of AWS Lambda functions by the date and time that a user
+	// last updated the configuration, in ISO 8601 format (https://www.iso.org/iso-8601-date-and-time-format.html)
+	LambdaFunctionLastModifiedAt []*DateFilter `locationName:"lambdaFunctionLastModifiedAt" min:"1" type:"list"`
+
+	// Filters the list of AWS Lambda functions by the function's layers (https://docs.aws.amazon.com/lambda/latest/dg/configuration-layers.html).
+	// A Lambda function can have up to five layers.
+	LambdaFunctionLayers []*StringFilter `locationName:"lambdaFunctionLayers" min:"1" type:"list"`
+
+	// Filters the list of AWS Lambda functions by the name of the function.
+	LambdaFunctionName []*StringFilter `locationName:"lambdaFunctionName" min:"1" type:"list"`
+
+	// Filters the list of AWS Lambda functions by the runtime environment for the
+	// Lambda function.
+	LambdaFunctionRuntime []*StringFilter `locationName:"lambdaFunctionRuntime" min:"1" type:"list"`
 
 	// Details on the date and time a finding was last seen used to filter findings.
 	LastObservedAt []*DateFilter `locationName:"lastObservedAt" min:"1" type:"list"`
 
-	// Details on the ingress source addresses used to filter findings.
+	// Details on network protocol used to filter findings.
 	NetworkProtocol []*StringFilter `locationName:"networkProtocol" min:"1" type:"list"`
 
 	// Details on the port ranges used to filter findings.
@@ -7400,6 +10787,15 @@ func (s *FilterCriteria) Validate() error {
 	if s.AwsAccountId != nil && len(s.AwsAccountId) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("AwsAccountId", 1))
 	}
+	if s.CodeVulnerabilityDetectorName != nil && len(s.CodeVulnerabilityDetectorName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("CodeVulnerabilityDetectorName", 1))
+	}
+	if s.CodeVulnerabilityDetectorTags != nil && len(s.CodeVulnerabilityDetectorTags) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("CodeVulnerabilityDetectorTags", 1))
+	}
+	if s.CodeVulnerabilityFilePath != nil && len(s.CodeVulnerabilityFilePath) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("CodeVulnerabilityFilePath", 1))
+	}
 	if s.ComponentId != nil && len(s.ComponentId) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("ComponentId", 1))
 	}
@@ -7433,6 +10829,12 @@ func (s *FilterCriteria) Validate() error {
 	if s.EcrImageTags != nil && len(s.EcrImageTags) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("EcrImageTags", 1))
 	}
+	if s.EpssScore != nil && len(s.EpssScore) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("EpssScore", 1))
+	}
+	if s.ExploitAvailable != nil && len(s.ExploitAvailable) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ExploitAvailable", 1))
+	}
 	if s.FindingArn != nil && len(s.FindingArn) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("FindingArn", 1))
 	}
@@ -7445,8 +10847,26 @@ func (s *FilterCriteria) Validate() error {
 	if s.FirstObservedAt != nil && len(s.FirstObservedAt) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("FirstObservedAt", 1))
 	}
+	if s.FixAvailable != nil && len(s.FixAvailable) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("FixAvailable", 1))
+	}
 	if s.InspectorScore != nil && len(s.InspectorScore) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("InspectorScore", 1))
+	}
+	if s.LambdaFunctionExecutionRoleArn != nil && len(s.LambdaFunctionExecutionRoleArn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("LambdaFunctionExecutionRoleArn", 1))
+	}
+	if s.LambdaFunctionLastModifiedAt != nil && len(s.LambdaFunctionLastModifiedAt) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("LambdaFunctionLastModifiedAt", 1))
+	}
+	if s.LambdaFunctionLayers != nil && len(s.LambdaFunctionLayers) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("LambdaFunctionLayers", 1))
+	}
+	if s.LambdaFunctionName != nil && len(s.LambdaFunctionName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("LambdaFunctionName", 1))
+	}
+	if s.LambdaFunctionRuntime != nil && len(s.LambdaFunctionRuntime) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("LambdaFunctionRuntime", 1))
 	}
 	if s.LastObservedAt != nil && len(s.LastObservedAt) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("LastObservedAt", 1))
@@ -7497,6 +10917,36 @@ func (s *FilterCriteria) Validate() error {
 			}
 			if err := v.Validate(); err != nil {
 				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "AwsAccountId", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.CodeVulnerabilityDetectorName != nil {
+		for i, v := range s.CodeVulnerabilityDetectorName {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "CodeVulnerabilityDetectorName", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.CodeVulnerabilityDetectorTags != nil {
+		for i, v := range s.CodeVulnerabilityDetectorTags {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "CodeVulnerabilityDetectorTags", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.CodeVulnerabilityFilePath != nil {
+		for i, v := range s.CodeVulnerabilityFilePath {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "CodeVulnerabilityFilePath", i), err.(request.ErrInvalidParams))
 			}
 		}
 	}
@@ -7600,6 +11050,16 @@ func (s *FilterCriteria) Validate() error {
 			}
 		}
 	}
+	if s.ExploitAvailable != nil {
+		for i, v := range s.ExploitAvailable {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "ExploitAvailable", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
 	if s.FindingArn != nil {
 		for i, v := range s.FindingArn {
 			if v == nil {
@@ -7627,6 +11087,56 @@ func (s *FilterCriteria) Validate() error {
 			}
 			if err := v.Validate(); err != nil {
 				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "FindingType", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.FixAvailable != nil {
+		for i, v := range s.FixAvailable {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "FixAvailable", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.LambdaFunctionExecutionRoleArn != nil {
+		for i, v := range s.LambdaFunctionExecutionRoleArn {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "LambdaFunctionExecutionRoleArn", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.LambdaFunctionLayers != nil {
+		for i, v := range s.LambdaFunctionLayers {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "LambdaFunctionLayers", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.LambdaFunctionName != nil {
+		for i, v := range s.LambdaFunctionName {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "LambdaFunctionName", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.LambdaFunctionRuntime != nil {
+		for i, v := range s.LambdaFunctionRuntime {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "LambdaFunctionRuntime", i), err.(request.ErrInvalidParams))
 			}
 		}
 	}
@@ -7753,6 +11263,24 @@ func (s *FilterCriteria) SetAwsAccountId(v []*StringFilter) *FilterCriteria {
 	return s
 }
 
+// SetCodeVulnerabilityDetectorName sets the CodeVulnerabilityDetectorName field's value.
+func (s *FilterCriteria) SetCodeVulnerabilityDetectorName(v []*StringFilter) *FilterCriteria {
+	s.CodeVulnerabilityDetectorName = v
+	return s
+}
+
+// SetCodeVulnerabilityDetectorTags sets the CodeVulnerabilityDetectorTags field's value.
+func (s *FilterCriteria) SetCodeVulnerabilityDetectorTags(v []*StringFilter) *FilterCriteria {
+	s.CodeVulnerabilityDetectorTags = v
+	return s
+}
+
+// SetCodeVulnerabilityFilePath sets the CodeVulnerabilityFilePath field's value.
+func (s *FilterCriteria) SetCodeVulnerabilityFilePath(v []*StringFilter) *FilterCriteria {
+	s.CodeVulnerabilityFilePath = v
+	return s
+}
+
 // SetComponentId sets the ComponentId field's value.
 func (s *FilterCriteria) SetComponentId(v []*StringFilter) *FilterCriteria {
 	s.ComponentId = v
@@ -7819,6 +11347,18 @@ func (s *FilterCriteria) SetEcrImageTags(v []*StringFilter) *FilterCriteria {
 	return s
 }
 
+// SetEpssScore sets the EpssScore field's value.
+func (s *FilterCriteria) SetEpssScore(v []*NumberFilter) *FilterCriteria {
+	s.EpssScore = v
+	return s
+}
+
+// SetExploitAvailable sets the ExploitAvailable field's value.
+func (s *FilterCriteria) SetExploitAvailable(v []*StringFilter) *FilterCriteria {
+	s.ExploitAvailable = v
+	return s
+}
+
 // SetFindingArn sets the FindingArn field's value.
 func (s *FilterCriteria) SetFindingArn(v []*StringFilter) *FilterCriteria {
 	s.FindingArn = v
@@ -7843,9 +11383,45 @@ func (s *FilterCriteria) SetFirstObservedAt(v []*DateFilter) *FilterCriteria {
 	return s
 }
 
+// SetFixAvailable sets the FixAvailable field's value.
+func (s *FilterCriteria) SetFixAvailable(v []*StringFilter) *FilterCriteria {
+	s.FixAvailable = v
+	return s
+}
+
 // SetInspectorScore sets the InspectorScore field's value.
 func (s *FilterCriteria) SetInspectorScore(v []*NumberFilter) *FilterCriteria {
 	s.InspectorScore = v
+	return s
+}
+
+// SetLambdaFunctionExecutionRoleArn sets the LambdaFunctionExecutionRoleArn field's value.
+func (s *FilterCriteria) SetLambdaFunctionExecutionRoleArn(v []*StringFilter) *FilterCriteria {
+	s.LambdaFunctionExecutionRoleArn = v
+	return s
+}
+
+// SetLambdaFunctionLastModifiedAt sets the LambdaFunctionLastModifiedAt field's value.
+func (s *FilterCriteria) SetLambdaFunctionLastModifiedAt(v []*DateFilter) *FilterCriteria {
+	s.LambdaFunctionLastModifiedAt = v
+	return s
+}
+
+// SetLambdaFunctionLayers sets the LambdaFunctionLayers field's value.
+func (s *FilterCriteria) SetLambdaFunctionLayers(v []*StringFilter) *FilterCriteria {
+	s.LambdaFunctionLayers = v
+	return s
+}
+
+// SetLambdaFunctionName sets the LambdaFunctionName field's value.
+func (s *FilterCriteria) SetLambdaFunctionName(v []*StringFilter) *FilterCriteria {
+	s.LambdaFunctionName = v
+	return s
+}
+
+// SetLambdaFunctionRuntime sets the LambdaFunctionRuntime field's value.
+func (s *FilterCriteria) SetLambdaFunctionRuntime(v []*StringFilter) *FilterCriteria {
+	s.LambdaFunctionRuntime = v
 	return s
 }
 
@@ -7942,10 +11518,23 @@ type Finding struct {
 	// AwsAccountId is a required field
 	AwsAccountId *string `locationName:"awsAccountId" min:"12" type:"string" required:"true"`
 
+	// Details about the code vulnerability identified in a Lambda function used
+	// to filter findings.
+	CodeVulnerabilityDetails *CodeVulnerabilityDetails `locationName:"codeVulnerabilityDetails" type:"structure"`
+
 	// The description of the finding.
 	//
 	// Description is a required field
 	Description *string `locationName:"description" min:"1" type:"string" required:"true"`
+
+	// The finding's EPSS score.
+	Epss *EpssDetails `locationName:"epss" type:"structure"`
+
+	// If a finding discovered in your environment has an exploit available.
+	ExploitAvailable *string `locationName:"exploitAvailable" type:"string" enum:"ExploitAvailable"`
+
+	// The details of an exploit available for a finding discovered in your environment.
+	ExploitabilityDetails *ExploitabilityDetails `locationName:"exploitabilityDetails" type:"structure"`
 
 	// The Amazon Resource Number (ARN) of the finding.
 	//
@@ -7956,6 +11545,12 @@ type Finding struct {
 	//
 	// FirstObservedAt is a required field
 	FirstObservedAt *time.Time `locationName:"firstObservedAt" type:"timestamp" required:"true"`
+
+	// Details on whether a fix is available through a version update. This value
+	// can be YES, NO, or PARTIAL. A PARTIAL fix means that some, but not all, of
+	// the packages identified in the finding have fixes available through updated
+	// versions.
+	FixAvailable *string `locationName:"fixAvailable" type:"string" enum:"FixAvailable"`
 
 	// The Amazon Inspector score given to the finding.
 	InspectorScore *float64 `locationName:"inspectorScore" type:"double"`
@@ -7979,12 +11574,18 @@ type Finding struct {
 	// Remediation is a required field
 	Remediation *Remediation `locationName:"remediation" type:"structure" required:"true"`
 
-	// Contains information on the resources involved in a finding.
+	// Contains information on the resources involved in a finding. The resource
+	// value determines the valid values for type in your request. For more information,
+	// see Finding types (https://docs.aws.amazon.com/inspector/latest/user/findings-types.html)
+	// in the Amazon Inspector user guide.
 	//
 	// Resources is a required field
 	Resources []*Resource `locationName:"resources" min:"1" type:"list" required:"true"`
 
-	// The severity of the finding.
+	// The severity of the finding. UNTRIAGED applies to PACKAGE_VULNERABILITY type
+	// findings that the vendor has not assigned a severity yet. For more information,
+	// see Severity levels for findings (https://docs.aws.amazon.com/inspector/latest/user/findings-understanding-severity.html)
+	// in the Amazon Inspector user guide.
 	//
 	// Severity is a required field
 	Severity *string `locationName:"severity" type:"string" required:"true" enum:"Severity"`
@@ -7997,7 +11598,9 @@ type Finding struct {
 	// The title of the finding.
 	Title *string `locationName:"title" min:"1" type:"string"`
 
-	// The type of the finding.
+	// The type of the finding. The type value determines the valid values for resource
+	// in your request. For more information, see Finding types (https://docs.aws.amazon.com/inspector/latest/user/findings-types.html)
+	// in the Amazon Inspector user guide.
 	//
 	// Type is a required field
 	Type *string `locationName:"type" type:"string" required:"true" enum:"FindingType"`
@@ -8030,9 +11633,33 @@ func (s *Finding) SetAwsAccountId(v string) *Finding {
 	return s
 }
 
+// SetCodeVulnerabilityDetails sets the CodeVulnerabilityDetails field's value.
+func (s *Finding) SetCodeVulnerabilityDetails(v *CodeVulnerabilityDetails) *Finding {
+	s.CodeVulnerabilityDetails = v
+	return s
+}
+
 // SetDescription sets the Description field's value.
 func (s *Finding) SetDescription(v string) *Finding {
 	s.Description = &v
+	return s
+}
+
+// SetEpss sets the Epss field's value.
+func (s *Finding) SetEpss(v *EpssDetails) *Finding {
+	s.Epss = v
+	return s
+}
+
+// SetExploitAvailable sets the ExploitAvailable field's value.
+func (s *Finding) SetExploitAvailable(v string) *Finding {
+	s.ExploitAvailable = &v
+	return s
+}
+
+// SetExploitabilityDetails sets the ExploitabilityDetails field's value.
+func (s *Finding) SetExploitabilityDetails(v *ExploitabilityDetails) *Finding {
+	s.ExploitabilityDetails = v
 	return s
 }
 
@@ -8045,6 +11672,12 @@ func (s *Finding) SetFindingArn(v string) *Finding {
 // SetFirstObservedAt sets the FirstObservedAt field's value.
 func (s *Finding) SetFirstObservedAt(v time.Time) *Finding {
 	s.FirstObservedAt = &v
+	return s
+}
+
+// SetFixAvailable sets the FixAvailable field's value.
+func (s *Finding) SetFixAvailable(v string) *Finding {
+	s.FixAvailable = &v
 	return s
 }
 
@@ -8117,6 +11750,178 @@ func (s *Finding) SetType(v string) *Finding {
 // SetUpdatedAt sets the UpdatedAt field's value.
 func (s *Finding) SetUpdatedAt(v time.Time) *Finding {
 	s.UpdatedAt = &v
+	return s
+}
+
+// Details of the vulnerability identified in a finding.
+type FindingDetail struct {
+	_ struct{} `type:"structure"`
+
+	// The Cybersecurity and Infrastructure Security Agency (CISA) details for a
+	// specific vulnerability.
+	CisaData *CisaData `locationName:"cisaData" type:"structure"`
+
+	// The Common Weakness Enumerations (CWEs) associated with the vulnerability.
+	Cwes []*string `locationName:"cwes" type:"list"`
+
+	// The Exploit Prediction Scoring System (EPSS) score of the vulnerability.
+	EpssScore *float64 `locationName:"epssScore" type:"double"`
+
+	// Information on the evidence of the vulnerability.
+	Evidences []*Evidence `locationName:"evidences" type:"list"`
+
+	// Contains information on when this exploit was observed.
+	ExploitObserved *ExploitObserved `locationName:"exploitObserved" type:"structure"`
+
+	// The finding ARN that the vulnerability details are associated with.
+	FindingArn *string `locationName:"findingArn" min:"1" type:"string"`
+
+	// The reference URLs for the vulnerability data.
+	ReferenceUrls []*string `locationName:"referenceUrls" type:"list"`
+
+	// The risk score of the vulnerability.
+	RiskScore *int64 `locationName:"riskScore" type:"integer"`
+
+	// The known malware tools or kits that can exploit the vulnerability.
+	Tools []*string `locationName:"tools" type:"list"`
+
+	// The MITRE adversary tactics, techniques, or procedures (TTPs) associated
+	// with the vulnerability.
+	Ttps []*string `locationName:"ttps" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FindingDetail) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FindingDetail) GoString() string {
+	return s.String()
+}
+
+// SetCisaData sets the CisaData field's value.
+func (s *FindingDetail) SetCisaData(v *CisaData) *FindingDetail {
+	s.CisaData = v
+	return s
+}
+
+// SetCwes sets the Cwes field's value.
+func (s *FindingDetail) SetCwes(v []*string) *FindingDetail {
+	s.Cwes = v
+	return s
+}
+
+// SetEpssScore sets the EpssScore field's value.
+func (s *FindingDetail) SetEpssScore(v float64) *FindingDetail {
+	s.EpssScore = &v
+	return s
+}
+
+// SetEvidences sets the Evidences field's value.
+func (s *FindingDetail) SetEvidences(v []*Evidence) *FindingDetail {
+	s.Evidences = v
+	return s
+}
+
+// SetExploitObserved sets the ExploitObserved field's value.
+func (s *FindingDetail) SetExploitObserved(v *ExploitObserved) *FindingDetail {
+	s.ExploitObserved = v
+	return s
+}
+
+// SetFindingArn sets the FindingArn field's value.
+func (s *FindingDetail) SetFindingArn(v string) *FindingDetail {
+	s.FindingArn = &v
+	return s
+}
+
+// SetReferenceUrls sets the ReferenceUrls field's value.
+func (s *FindingDetail) SetReferenceUrls(v []*string) *FindingDetail {
+	s.ReferenceUrls = v
+	return s
+}
+
+// SetRiskScore sets the RiskScore field's value.
+func (s *FindingDetail) SetRiskScore(v int64) *FindingDetail {
+	s.RiskScore = &v
+	return s
+}
+
+// SetTools sets the Tools field's value.
+func (s *FindingDetail) SetTools(v []*string) *FindingDetail {
+	s.Tools = v
+	return s
+}
+
+// SetTtps sets the Ttps field's value.
+func (s *FindingDetail) SetTtps(v []*string) *FindingDetail {
+	s.Ttps = v
+	return s
+}
+
+// Details about an error encountered when trying to return vulnerability data
+// for a finding.
+type FindingDetailsError struct {
+	_ struct{} `type:"structure"`
+
+	// The error code.
+	//
+	// ErrorCode is a required field
+	ErrorCode *string `locationName:"errorCode" type:"string" required:"true" enum:"FindingDetailsErrorCode"`
+
+	// The error message.
+	//
+	// ErrorMessage is a required field
+	ErrorMessage *string `locationName:"errorMessage" min:"1" type:"string" required:"true"`
+
+	// The finding ARN that returned an error.
+	//
+	// FindingArn is a required field
+	FindingArn *string `locationName:"findingArn" min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FindingDetailsError) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FindingDetailsError) GoString() string {
+	return s.String()
+}
+
+// SetErrorCode sets the ErrorCode field's value.
+func (s *FindingDetailsError) SetErrorCode(v string) *FindingDetailsError {
+	s.ErrorCode = &v
+	return s
+}
+
+// SetErrorMessage sets the ErrorMessage field's value.
+func (s *FindingDetailsError) SetErrorMessage(v string) *FindingDetailsError {
+	s.ErrorMessage = &v
+	return s
+}
+
+// SetFindingArn sets the FindingArn field's value.
+func (s *FindingDetailsError) SetFindingArn(v string) *FindingDetailsError {
+	s.FindingArn = &v
 	return s
 }
 
@@ -8391,6 +12196,60 @@ func (s *FreeTrialInfoError) SetMessage(v string) *FreeTrialInfoError {
 	return s
 }
 
+type GetConfigurationInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetConfigurationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetConfigurationInput) GoString() string {
+	return s.String()
+}
+
+type GetConfigurationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies how the ECR automated re-scan duration is currently configured
+	// for your environment.
+	EcrConfiguration *EcrConfigurationState `locationName:"ecrConfiguration" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetConfigurationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetConfigurationOutput) GoString() string {
+	return s.String()
+}
+
+// SetEcrConfiguration sets the EcrConfiguration field's value.
+func (s *GetConfigurationOutput) SetEcrConfiguration(v *EcrConfigurationState) *GetConfigurationOutput {
+	s.EcrConfiguration = v
+	return s
+}
+
 type GetDelegatedAdminAccountInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 }
@@ -8441,6 +12300,180 @@ func (s GetDelegatedAdminAccountOutput) GoString() string {
 // SetDelegatedAdmin sets the DelegatedAdmin field's value.
 func (s *GetDelegatedAdminAccountOutput) SetDelegatedAdmin(v *DelegatedAdmin) *GetDelegatedAdminAccountOutput {
 	s.DelegatedAdmin = v
+	return s
+}
+
+type GetEc2DeepInspectionConfigurationInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetEc2DeepInspectionConfigurationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetEc2DeepInspectionConfigurationInput) GoString() string {
+	return s.String()
+}
+
+type GetEc2DeepInspectionConfigurationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// An error message explaining why Amazon Inspector deep inspection configurations
+	// could not be retrieved for your account.
+	ErrorMessage *string `locationName:"errorMessage" min:"1" type:"string"`
+
+	// The Amazon Inspector deep inspection custom paths for your organization.
+	OrgPackagePaths []*string `locationName:"orgPackagePaths" type:"list"`
+
+	// The Amazon Inspector deep inspection custom paths for your account.
+	PackagePaths []*string `locationName:"packagePaths" type:"list"`
+
+	// The activation status of Amazon Inspector deep inspection in your account.
+	Status *string `locationName:"status" type:"string" enum:"Ec2DeepInspectionStatus"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetEc2DeepInspectionConfigurationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetEc2DeepInspectionConfigurationOutput) GoString() string {
+	return s.String()
+}
+
+// SetErrorMessage sets the ErrorMessage field's value.
+func (s *GetEc2DeepInspectionConfigurationOutput) SetErrorMessage(v string) *GetEc2DeepInspectionConfigurationOutput {
+	s.ErrorMessage = &v
+	return s
+}
+
+// SetOrgPackagePaths sets the OrgPackagePaths field's value.
+func (s *GetEc2DeepInspectionConfigurationOutput) SetOrgPackagePaths(v []*string) *GetEc2DeepInspectionConfigurationOutput {
+	s.OrgPackagePaths = v
+	return s
+}
+
+// SetPackagePaths sets the PackagePaths field's value.
+func (s *GetEc2DeepInspectionConfigurationOutput) SetPackagePaths(v []*string) *GetEc2DeepInspectionConfigurationOutput {
+	s.PackagePaths = v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *GetEc2DeepInspectionConfigurationOutput) SetStatus(v string) *GetEc2DeepInspectionConfigurationOutput {
+	s.Status = &v
+	return s
+}
+
+type GetEncryptionKeyInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The resource type the key encrypts.
+	//
+	// ResourceType is a required field
+	ResourceType *string `location:"querystring" locationName:"resourceType" type:"string" required:"true" enum:"ResourceType"`
+
+	// The scan type the key encrypts.
+	//
+	// ScanType is a required field
+	ScanType *string `location:"querystring" locationName:"scanType" type:"string" required:"true" enum:"ScanType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetEncryptionKeyInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetEncryptionKeyInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetEncryptionKeyInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetEncryptionKeyInput"}
+	if s.ResourceType == nil {
+		invalidParams.Add(request.NewErrParamRequired("ResourceType"))
+	}
+	if s.ScanType == nil {
+		invalidParams.Add(request.NewErrParamRequired("ScanType"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetResourceType sets the ResourceType field's value.
+func (s *GetEncryptionKeyInput) SetResourceType(v string) *GetEncryptionKeyInput {
+	s.ResourceType = &v
+	return s
+}
+
+// SetScanType sets the ScanType field's value.
+func (s *GetEncryptionKeyInput) SetScanType(v string) *GetEncryptionKeyInput {
+	s.ScanType = &v
+	return s
+}
+
+type GetEncryptionKeyOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A kms key ID.
+	//
+	// KmsKeyId is a required field
+	KmsKeyId *string `locationName:"kmsKeyId" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetEncryptionKeyOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetEncryptionKeyOutput) GoString() string {
+	return s.String()
+}
+
+// SetKmsKeyId sets the KmsKeyId field's value.
+func (s *GetEncryptionKeyOutput) SetKmsKeyId(v string) *GetEncryptionKeyOutput {
+	s.KmsKeyId = &v
 	return s
 }
 
@@ -8629,6 +12662,138 @@ func (s GetMemberOutput) GoString() string {
 // SetMember sets the Member field's value.
 func (s *GetMemberOutput) SetMember(v *Member) *GetMemberOutput {
 	s.Member = v
+	return s
+}
+
+type GetSbomExportInput struct {
+	_ struct{} `type:"structure"`
+
+	// The report ID of the SBOM export to get details for.
+	//
+	// ReportId is a required field
+	ReportId *string `locationName:"reportId" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetSbomExportInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetSbomExportInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetSbomExportInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetSbomExportInput"}
+	if s.ReportId == nil {
+		invalidParams.Add(request.NewErrParamRequired("ReportId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetReportId sets the ReportId field's value.
+func (s *GetSbomExportInput) SetReportId(v string) *GetSbomExportInput {
+	s.ReportId = &v
+	return s
+}
+
+type GetSbomExportOutput struct {
+	_ struct{} `type:"structure"`
+
+	// An error code.
+	ErrorCode *string `locationName:"errorCode" type:"string" enum:"ReportingErrorCode"`
+
+	// An error message.
+	ErrorMessage *string `locationName:"errorMessage" min:"1" type:"string"`
+
+	// Contains details about the resource filter criteria used for the software
+	// bill of materials (SBOM) report.
+	FilterCriteria *ResourceFilterCriteria `locationName:"filterCriteria" type:"structure"`
+
+	// The format of the software bill of materials (SBOM) report.
+	Format *string `locationName:"format" type:"string" enum:"SbomReportFormat"`
+
+	// The report ID of the software bill of materials (SBOM) report.
+	ReportId *string `locationName:"reportId" type:"string"`
+
+	// Contains details of the Amazon S3 bucket and KMS key used to export findings.
+	S3Destination *Destination `locationName:"s3Destination" type:"structure"`
+
+	// The status of the software bill of materials (SBOM) report.
+	Status *string `locationName:"status" type:"string" enum:"ExternalReportStatus"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetSbomExportOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetSbomExportOutput) GoString() string {
+	return s.String()
+}
+
+// SetErrorCode sets the ErrorCode field's value.
+func (s *GetSbomExportOutput) SetErrorCode(v string) *GetSbomExportOutput {
+	s.ErrorCode = &v
+	return s
+}
+
+// SetErrorMessage sets the ErrorMessage field's value.
+func (s *GetSbomExportOutput) SetErrorMessage(v string) *GetSbomExportOutput {
+	s.ErrorMessage = &v
+	return s
+}
+
+// SetFilterCriteria sets the FilterCriteria field's value.
+func (s *GetSbomExportOutput) SetFilterCriteria(v *ResourceFilterCriteria) *GetSbomExportOutput {
+	s.FilterCriteria = v
+	return s
+}
+
+// SetFormat sets the Format field's value.
+func (s *GetSbomExportOutput) SetFormat(v string) *GetSbomExportOutput {
+	s.Format = &v
+	return s
+}
+
+// SetReportId sets the ReportId field's value.
+func (s *GetSbomExportOutput) SetReportId(v string) *GetSbomExportOutput {
+	s.ReportId = &v
+	return s
+}
+
+// SetS3Destination sets the S3Destination field's value.
+func (s *GetSbomExportOutput) SetS3Destination(v *Destination) *GetSbomExportOutput {
+	s.S3Destination = v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *GetSbomExportOutput) SetStatus(v string) *GetSbomExportOutput {
+	s.Status = &v
 	return s
 }
 
@@ -8926,16 +13091,554 @@ func (s *InternalServerException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
+// The details that define a findings aggregation based on AWS Lambda functions.
+type LambdaFunctionAggregation struct {
+	_ struct{} `type:"structure"`
+
+	// The AWS Lambda function names to include in the aggregation results.
+	FunctionNames []*StringFilter `locationName:"functionNames" min:"1" type:"list"`
+
+	// The tags to include in the aggregation results.
+	FunctionTags []*MapFilter `locationName:"functionTags" min:"1" type:"list"`
+
+	// The resource IDs to include in the aggregation results.
+	ResourceIds []*StringFilter `locationName:"resourceIds" min:"1" type:"list"`
+
+	// Returns findings aggregated by AWS Lambda function runtime environments.
+	Runtimes []*StringFilter `locationName:"runtimes" min:"1" type:"list"`
+
+	// The finding severity to use for sorting the results.
+	SortBy *string `locationName:"sortBy" type:"string" enum:"LambdaFunctionSortBy"`
+
+	// The order to use for sorting the results.
+	SortOrder *string `locationName:"sortOrder" type:"string" enum:"SortOrder"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LambdaFunctionAggregation) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LambdaFunctionAggregation) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *LambdaFunctionAggregation) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "LambdaFunctionAggregation"}
+	if s.FunctionNames != nil && len(s.FunctionNames) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("FunctionNames", 1))
+	}
+	if s.FunctionTags != nil && len(s.FunctionTags) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("FunctionTags", 1))
+	}
+	if s.ResourceIds != nil && len(s.ResourceIds) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceIds", 1))
+	}
+	if s.Runtimes != nil && len(s.Runtimes) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Runtimes", 1))
+	}
+	if s.FunctionNames != nil {
+		for i, v := range s.FunctionNames {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "FunctionNames", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.FunctionTags != nil {
+		for i, v := range s.FunctionTags {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "FunctionTags", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.ResourceIds != nil {
+		for i, v := range s.ResourceIds {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "ResourceIds", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.Runtimes != nil {
+		for i, v := range s.Runtimes {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Runtimes", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetFunctionNames sets the FunctionNames field's value.
+func (s *LambdaFunctionAggregation) SetFunctionNames(v []*StringFilter) *LambdaFunctionAggregation {
+	s.FunctionNames = v
+	return s
+}
+
+// SetFunctionTags sets the FunctionTags field's value.
+func (s *LambdaFunctionAggregation) SetFunctionTags(v []*MapFilter) *LambdaFunctionAggregation {
+	s.FunctionTags = v
+	return s
+}
+
+// SetResourceIds sets the ResourceIds field's value.
+func (s *LambdaFunctionAggregation) SetResourceIds(v []*StringFilter) *LambdaFunctionAggregation {
+	s.ResourceIds = v
+	return s
+}
+
+// SetRuntimes sets the Runtimes field's value.
+func (s *LambdaFunctionAggregation) SetRuntimes(v []*StringFilter) *LambdaFunctionAggregation {
+	s.Runtimes = v
+	return s
+}
+
+// SetSortBy sets the SortBy field's value.
+func (s *LambdaFunctionAggregation) SetSortBy(v string) *LambdaFunctionAggregation {
+	s.SortBy = &v
+	return s
+}
+
+// SetSortOrder sets the SortOrder field's value.
+func (s *LambdaFunctionAggregation) SetSortOrder(v string) *LambdaFunctionAggregation {
+	s.SortOrder = &v
+	return s
+}
+
+// A response that contains the results of an AWS Lambda function finding aggregation.
+type LambdaFunctionAggregationResponse struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the AWS account that owns the AWS Lambda function.
+	AccountId *string `locationName:"accountId" min:"12" type:"string"`
+
+	// The AWS Lambda function names included in the aggregation results.
+	FunctionName *string `locationName:"functionName" type:"string"`
+
+	// The tags included in the aggregation results.
+	LambdaTags map[string]*string `locationName:"lambdaTags" type:"map"`
+
+	// The date that the AWS Lambda function included in the aggregation results
+	// was last changed.
+	LastModifiedAt *time.Time `locationName:"lastModifiedAt" type:"timestamp"`
+
+	// The resource IDs included in the aggregation results.
+	//
+	// ResourceId is a required field
+	ResourceId *string `locationName:"resourceId" min:"1" type:"string" required:"true"`
+
+	// The runtimes included in the aggregation results.
+	Runtime *string `locationName:"runtime" type:"string"`
+
+	// An object that contains the counts of aggregated finding per severity.
+	SeverityCounts *SeverityCounts `locationName:"severityCounts" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LambdaFunctionAggregationResponse) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LambdaFunctionAggregationResponse) GoString() string {
+	return s.String()
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *LambdaFunctionAggregationResponse) SetAccountId(v string) *LambdaFunctionAggregationResponse {
+	s.AccountId = &v
+	return s
+}
+
+// SetFunctionName sets the FunctionName field's value.
+func (s *LambdaFunctionAggregationResponse) SetFunctionName(v string) *LambdaFunctionAggregationResponse {
+	s.FunctionName = &v
+	return s
+}
+
+// SetLambdaTags sets the LambdaTags field's value.
+func (s *LambdaFunctionAggregationResponse) SetLambdaTags(v map[string]*string) *LambdaFunctionAggregationResponse {
+	s.LambdaTags = v
+	return s
+}
+
+// SetLastModifiedAt sets the LastModifiedAt field's value.
+func (s *LambdaFunctionAggregationResponse) SetLastModifiedAt(v time.Time) *LambdaFunctionAggregationResponse {
+	s.LastModifiedAt = &v
+	return s
+}
+
+// SetResourceId sets the ResourceId field's value.
+func (s *LambdaFunctionAggregationResponse) SetResourceId(v string) *LambdaFunctionAggregationResponse {
+	s.ResourceId = &v
+	return s
+}
+
+// SetRuntime sets the Runtime field's value.
+func (s *LambdaFunctionAggregationResponse) SetRuntime(v string) *LambdaFunctionAggregationResponse {
+	s.Runtime = &v
+	return s
+}
+
+// SetSeverityCounts sets the SeverityCounts field's value.
+func (s *LambdaFunctionAggregationResponse) SetSeverityCounts(v *SeverityCounts) *LambdaFunctionAggregationResponse {
+	s.SeverityCounts = v
+	return s
+}
+
+// The AWS Lambda function metadata.
+type LambdaFunctionMetadata struct {
+	_ struct{} `type:"structure"`
+
+	// The name of a function.
+	FunctionName *string `locationName:"functionName" type:"string"`
+
+	// The resource tags on an AWS Lambda function.
+	FunctionTags map[string]*string `locationName:"functionTags" type:"map"`
+
+	// The layers for an AWS Lambda function. A Lambda function can have up to five
+	// layers.
+	Layers []*string `locationName:"layers" type:"list"`
+
+	// An AWS Lambda function's runtime.
+	Runtime *string `locationName:"runtime" type:"string" enum:"Runtime"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LambdaFunctionMetadata) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LambdaFunctionMetadata) GoString() string {
+	return s.String()
+}
+
+// SetFunctionName sets the FunctionName field's value.
+func (s *LambdaFunctionMetadata) SetFunctionName(v string) *LambdaFunctionMetadata {
+	s.FunctionName = &v
+	return s
+}
+
+// SetFunctionTags sets the FunctionTags field's value.
+func (s *LambdaFunctionMetadata) SetFunctionTags(v map[string]*string) *LambdaFunctionMetadata {
+	s.FunctionTags = v
+	return s
+}
+
+// SetLayers sets the Layers field's value.
+func (s *LambdaFunctionMetadata) SetLayers(v []*string) *LambdaFunctionMetadata {
+	s.Layers = v
+	return s
+}
+
+// SetRuntime sets the Runtime field's value.
+func (s *LambdaFunctionMetadata) SetRuntime(v string) *LambdaFunctionMetadata {
+	s.Runtime = &v
+	return s
+}
+
+// The details that define a findings aggregation based on an AWS Lambda function's
+// layers.
+type LambdaLayerAggregation struct {
+	_ struct{} `type:"structure"`
+
+	// The names of the AWS Lambda functions associated with the layers.
+	FunctionNames []*StringFilter `locationName:"functionNames" min:"1" type:"list"`
+
+	// The Amazon Resource Name (ARN) of the AWS Lambda function layer.
+	LayerArns []*StringFilter `locationName:"layerArns" min:"1" type:"list"`
+
+	// The resource IDs for the AWS Lambda function layers.
+	ResourceIds []*StringFilter `locationName:"resourceIds" min:"1" type:"list"`
+
+	// The finding severity to use for sorting the results.
+	SortBy *string `locationName:"sortBy" type:"string" enum:"LambdaLayerSortBy"`
+
+	// The order to use for sorting the results.
+	SortOrder *string `locationName:"sortOrder" type:"string" enum:"SortOrder"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LambdaLayerAggregation) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LambdaLayerAggregation) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *LambdaLayerAggregation) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "LambdaLayerAggregation"}
+	if s.FunctionNames != nil && len(s.FunctionNames) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("FunctionNames", 1))
+	}
+	if s.LayerArns != nil && len(s.LayerArns) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("LayerArns", 1))
+	}
+	if s.ResourceIds != nil && len(s.ResourceIds) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceIds", 1))
+	}
+	if s.FunctionNames != nil {
+		for i, v := range s.FunctionNames {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "FunctionNames", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.LayerArns != nil {
+		for i, v := range s.LayerArns {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "LayerArns", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.ResourceIds != nil {
+		for i, v := range s.ResourceIds {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "ResourceIds", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetFunctionNames sets the FunctionNames field's value.
+func (s *LambdaLayerAggregation) SetFunctionNames(v []*StringFilter) *LambdaLayerAggregation {
+	s.FunctionNames = v
+	return s
+}
+
+// SetLayerArns sets the LayerArns field's value.
+func (s *LambdaLayerAggregation) SetLayerArns(v []*StringFilter) *LambdaLayerAggregation {
+	s.LayerArns = v
+	return s
+}
+
+// SetResourceIds sets the ResourceIds field's value.
+func (s *LambdaLayerAggregation) SetResourceIds(v []*StringFilter) *LambdaLayerAggregation {
+	s.ResourceIds = v
+	return s
+}
+
+// SetSortBy sets the SortBy field's value.
+func (s *LambdaLayerAggregation) SetSortBy(v string) *LambdaLayerAggregation {
+	s.SortBy = &v
+	return s
+}
+
+// SetSortOrder sets the SortOrder field's value.
+func (s *LambdaLayerAggregation) SetSortOrder(v string) *LambdaLayerAggregation {
+	s.SortOrder = &v
+	return s
+}
+
+// A response that contains the results of an AWS Lambda function layer finding
+// aggregation.
+type LambdaLayerAggregationResponse struct {
+	_ struct{} `type:"structure"`
+
+	// The account ID of the AWS Lambda function layer.
+	//
+	// AccountId is a required field
+	AccountId *string `locationName:"accountId" min:"12" type:"string" required:"true"`
+
+	// The names of the AWS Lambda functions associated with the layers.
+	//
+	// FunctionName is a required field
+	FunctionName *string `locationName:"functionName" min:"1" type:"string" required:"true"`
+
+	// The Amazon Resource Name (ARN) of the AWS Lambda function layer.
+	//
+	// LayerArn is a required field
+	LayerArn *string `locationName:"layerArn" min:"1" type:"string" required:"true"`
+
+	// The Resource ID of the AWS Lambda function layer.
+	//
+	// ResourceId is a required field
+	ResourceId *string `locationName:"resourceId" min:"1" type:"string" required:"true"`
+
+	// An object that contains the counts of aggregated finding per severity.
+	SeverityCounts *SeverityCounts `locationName:"severityCounts" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LambdaLayerAggregationResponse) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LambdaLayerAggregationResponse) GoString() string {
+	return s.String()
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *LambdaLayerAggregationResponse) SetAccountId(v string) *LambdaLayerAggregationResponse {
+	s.AccountId = &v
+	return s
+}
+
+// SetFunctionName sets the FunctionName field's value.
+func (s *LambdaLayerAggregationResponse) SetFunctionName(v string) *LambdaLayerAggregationResponse {
+	s.FunctionName = &v
+	return s
+}
+
+// SetLayerArn sets the LayerArn field's value.
+func (s *LambdaLayerAggregationResponse) SetLayerArn(v string) *LambdaLayerAggregationResponse {
+	s.LayerArn = &v
+	return s
+}
+
+// SetResourceId sets the ResourceId field's value.
+func (s *LambdaLayerAggregationResponse) SetResourceId(v string) *LambdaLayerAggregationResponse {
+	s.ResourceId = &v
+	return s
+}
+
+// SetSeverityCounts sets the SeverityCounts field's value.
+func (s *LambdaLayerAggregationResponse) SetSeverityCounts(v *SeverityCounts) *LambdaLayerAggregationResponse {
+	s.SeverityCounts = v
+	return s
+}
+
+// The VPC security groups and subnets that are attached to an AWS Lambda function.
+// For more information, see VPC Settings (https://docs.aws.amazon.com/lambda/latest/dg/configuration-vpc.html).
+type LambdaVpcConfig struct {
+	_ struct{} `type:"structure"`
+
+	// The VPC security groups and subnets that are attached to an AWS Lambda function.
+	// For more information, see VPC Settings (https://docs.aws.amazon.com/lambda/latest/dg/configuration-vpc.html).
+	SecurityGroupIds []*string `locationName:"securityGroupIds" type:"list"`
+
+	// A list of VPC subnet IDs.
+	SubnetIds []*string `locationName:"subnetIds" type:"list"`
+
+	// The ID of the VPC.
+	VpcId *string `locationName:"vpcId" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LambdaVpcConfig) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LambdaVpcConfig) GoString() string {
+	return s.String()
+}
+
+// SetSecurityGroupIds sets the SecurityGroupIds field's value.
+func (s *LambdaVpcConfig) SetSecurityGroupIds(v []*string) *LambdaVpcConfig {
+	s.SecurityGroupIds = v
+	return s
+}
+
+// SetSubnetIds sets the SubnetIds field's value.
+func (s *LambdaVpcConfig) SetSubnetIds(v []*string) *LambdaVpcConfig {
+	s.SubnetIds = v
+	return s
+}
+
+// SetVpcId sets the VpcId field's value.
+func (s *LambdaVpcConfig) SetVpcId(v string) *LambdaVpcConfig {
+	s.VpcId = &v
+	return s
+}
+
 type ListAccountPermissionsInput struct {
 	_ struct{} `type:"structure"`
 
-	// The maximum number of results to return in the response.
+	// The maximum number of results the response can return. If your request would
+	// return more than the maximum the response will return a nextToken value,
+	// use this value when you call the action again to get the remaining results.
 	MaxResults *int64 `locationName:"maxResults" min:"1" type:"integer"`
 
 	// A token to use for paginating results that are returned in the response.
 	// Set the value of this parameter to null for the first request to a list action.
-	// For subsequent calls, use the NextToken value returned from the previous
-	// request to continue listing results after the first page.
+	// If your response returns more than the maxResults maximum value it will also
+	// return a nextToken value. For subsequent calls, use the NextToken value returned
+	// from the previous request to continue listing results after the first page.
 	NextToken *string `locationName:"nextToken" type:"string"`
 
 	// The service scan type to check permissions for.
@@ -9043,13 +13746,16 @@ type ListCoverageInput struct {
 	// for your environment.
 	FilterCriteria *CoverageFilterCriteria `locationName:"filterCriteria" type:"structure"`
 
-	// The maximum number of results to return in the response.
+	// The maximum number of results the response can return. If your request would
+	// return more than the maximum the response will return a nextToken value,
+	// use this value when you call the action again to get the remaining results.
 	MaxResults *int64 `locationName:"maxResults" min:"1" type:"integer"`
 
 	// A token to use for paginating results that are returned in the response.
 	// Set the value of this parameter to null for the first request to a list action.
-	// For subsequent calls, use the NextToken value returned from the previous
-	// request to continue listing results after the first page.
+	// If your response returns more than the maxResults maximum value it will also
+	// return a nextToken value. For subsequent calls, use the nextToken value returned
+	// from the previous request to continue listing results after the first page.
 	NextToken *string `locationName:"nextToken" type:"string"`
 }
 
@@ -9275,13 +13981,16 @@ func (s *ListCoverageStatisticsOutput) SetTotalCounts(v int64) *ListCoverageStat
 type ListDelegatedAdminAccountsInput struct {
 	_ struct{} `type:"structure"`
 
-	// The maximum number of results to return in the response.
+	// The maximum number of results the response can return. If your request would
+	// return more than the maximum the response will return a nextToken value,
+	// use this value when you call the action again to get the remaining results.
 	MaxResults *int64 `locationName:"maxResults" min:"1" type:"integer"`
 
 	// A token to use for paginating results that are returned in the response.
 	// Set the value of this parameter to null for the first request to a list action.
-	// For subsequent calls, use the NextToken value returned from the previous
-	// request to continue listing results after the first page.
+	// If your response returns more than the maxResults maximum value it will also
+	// return a nextToken value. For subsequent calls, use the nextToken value returned
+	// from the previous request to continue listing results after the first page.
 	NextToken *string `locationName:"nextToken" type:"string"`
 }
 
@@ -9380,13 +14089,16 @@ type ListFiltersInput struct {
 	// The Amazon resource number (ARN) of the filter.
 	Arns []*string `locationName:"arns" type:"list"`
 
-	// The maximum number of results to return in the response.
+	// The maximum number of results the response can return. If your request would
+	// return more than the maximum the response will return a nextToken value,
+	// use this value when you call the action again to get the remaining results.
 	MaxResults *int64 `locationName:"maxResults" min:"1" type:"integer"`
 
 	// A token to use for paginating results that are returned in the response.
 	// Set the value of this parameter to null for the first request to a list action.
-	// For subsequent calls, use the NextToken value returned from the previous
-	// request to continue listing results after the first page.
+	// If your response returns more than the maxResults maximum value it will also
+	// return a nextToken value. For subsequent calls, use the nextToken value returned
+	// from the previous request to continue listing results after the first page.
 	NextToken *string `locationName:"nextToken" type:"string"`
 }
 
@@ -9506,13 +14218,16 @@ type ListFindingAggregationsInput struct {
 	// AggregationType is a required field
 	AggregationType *string `locationName:"aggregationType" type:"string" required:"true" enum:"AggregationType"`
 
-	// The maximum number of results to return in the response.
+	// The maximum number of results the response can return. If your request would
+	// return more than the maximum the response will return a nextToken value,
+	// use this value when you call the action again to get the remaining results.
 	MaxResults *int64 `locationName:"maxResults" min:"1" type:"integer"`
 
 	// A token to use for paginating results that are returned in the response.
 	// Set the value of this parameter to null for the first request to a list action.
-	// For subsequent calls, use the NextToken value returned from the previous
-	// request to continue listing results after the first page.
+	// If your response returns more than the maxResults maximum value it will also
+	// return a nextToken value. For subsequent calls, use the nextToken value returned
+	// from the previous request to continue listing results after the first page.
 	NextToken *string `locationName:"nextToken" type:"string"`
 }
 
@@ -9658,13 +14373,16 @@ type ListFindingsInput struct {
 	// Details on the filters to apply to your finding results.
 	FilterCriteria *FilterCriteria `locationName:"filterCriteria" type:"structure"`
 
-	// The maximum number of results to return in the response.
+	// The maximum number of results the response can return. If your request would
+	// return more than the maximum the response will return a nextToken value,
+	// use this value when you call the action again to get the remaining results.
 	MaxResults *int64 `locationName:"maxResults" min:"1" type:"integer"`
 
 	// A token to use for paginating results that are returned in the response.
 	// Set the value of this parameter to null for the first request to a list action.
-	// For subsequent calls, use the NextToken value returned from the previous
-	// request to continue listing results after the first page.
+	// If your response returns more than the maxResults maximum value it will also
+	// return a nextToken value. For subsequent calls, use the nextToken value returned
+	// from the previous request to continue listing results after the first page.
 	NextToken *string `locationName:"nextToken" type:"string"`
 
 	// Details on the sort criteria to apply to your finding results.
@@ -9782,13 +14500,16 @@ func (s *ListFindingsOutput) SetNextToken(v string) *ListFindingsOutput {
 type ListMembersInput struct {
 	_ struct{} `type:"structure"`
 
-	// The maximum number of results to return in the response.
+	// The maximum number of results the response can return. If your request would
+	// return more than the maximum the response will return a nextToken value,
+	// use this value when you call the action again to get the remaining results.
 	MaxResults *int64 `locationName:"maxResults" min:"1" type:"integer"`
 
 	// A token to use for paginating results that are returned in the response.
 	// Set the value of this parameter to null for the first request to a list action.
-	// For subsequent calls, use the NextToken value returned from the previous
-	// request to continue listing results after the first page.
+	// If your response returns more than the maxResults maximum value it will also
+	// return a nextToken value. For subsequent calls, use the nextToken value returned
+	// from the previous request to continue listing results after the first page.
 	NextToken *string `locationName:"nextToken" type:"string"`
 
 	// Specifies whether to list only currently associated members if True or to
@@ -9972,13 +14693,16 @@ type ListUsageTotalsInput struct {
 	// The Amazon Web Services account IDs to retrieve usage totals for.
 	AccountIds []*string `locationName:"accountIds" min:"1" type:"list"`
 
-	// The maximum number of results to return in the response.
+	// The maximum number of results the response can return. If your request would
+	// return more than the maximum the response will return a nextToken value,
+	// use this value when you call the action again to get the remaining results.
 	MaxResults *int64 `locationName:"maxResults" min:"1" type:"integer"`
 
 	// A token to use for paginating results that are returned in the response.
 	// Set the value of this parameter to null for the first request to a list action.
-	// For subsequent calls, use the NextToken value returned from the previous
-	// request to continue listing results after the first page.
+	// If your response returns more than the maxResults maximum value it will also
+	// return a nextToken value. For subsequent calls, use the nextToken value returned
+	// from the previous request to continue listing results after the first page.
 	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
 }
 
@@ -10208,6 +14932,128 @@ func (s *Member) SetRelationshipStatus(v string) *Member {
 // SetUpdatedAt sets the UpdatedAt field's value.
 func (s *Member) SetUpdatedAt(v time.Time) *Member {
 	s.UpdatedAt = &v
+	return s
+}
+
+// An object that contains details about the status of Amazon Inspector deep
+// inspection for a member account in your organization.
+type MemberAccountEc2DeepInspectionStatus struct {
+	_ struct{} `type:"structure"`
+
+	// The unique identifier for the Amazon Web Services account of the organization
+	// member.
+	//
+	// AccountId is a required field
+	AccountId *string `locationName:"accountId" min:"12" type:"string" required:"true"`
+
+	// Whether Amazon Inspector deep inspection is active in the account. If TRUE
+	// Amazon Inspector deep inspection is active, if FALSE it is not active.
+	//
+	// ActivateDeepInspection is a required field
+	ActivateDeepInspection *bool `locationName:"activateDeepInspection" type:"boolean" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s MemberAccountEc2DeepInspectionStatus) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s MemberAccountEc2DeepInspectionStatus) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *MemberAccountEc2DeepInspectionStatus) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "MemberAccountEc2DeepInspectionStatus"}
+	if s.AccountId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccountId"))
+	}
+	if s.AccountId != nil && len(*s.AccountId) < 12 {
+		invalidParams.Add(request.NewErrParamMinLen("AccountId", 12))
+	}
+	if s.ActivateDeepInspection == nil {
+		invalidParams.Add(request.NewErrParamRequired("ActivateDeepInspection"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *MemberAccountEc2DeepInspectionStatus) SetAccountId(v string) *MemberAccountEc2DeepInspectionStatus {
+	s.AccountId = &v
+	return s
+}
+
+// SetActivateDeepInspection sets the ActivateDeepInspection field's value.
+func (s *MemberAccountEc2DeepInspectionStatus) SetActivateDeepInspection(v bool) *MemberAccountEc2DeepInspectionStatus {
+	s.ActivateDeepInspection = &v
+	return s
+}
+
+// An object that contains details about the state of Amazon Inspector deep
+// inspection for a member account.
+type MemberAccountEc2DeepInspectionStatusState struct {
+	_ struct{} `type:"structure"`
+
+	// The unique identifier for the Amazon Web Services account of the organization
+	// member
+	//
+	// AccountId is a required field
+	AccountId *string `locationName:"accountId" min:"12" type:"string" required:"true"`
+
+	// The error message explaining why the account failed to activate Amazon Inspector
+	// deep inspection.
+	ErrorMessage *string `locationName:"errorMessage" min:"1" type:"string"`
+
+	// The state of Amazon Inspector deep inspection in the member account.
+	Status *string `locationName:"status" type:"string" enum:"Ec2DeepInspectionStatus"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s MemberAccountEc2DeepInspectionStatusState) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s MemberAccountEc2DeepInspectionStatusState) GoString() string {
+	return s.String()
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *MemberAccountEc2DeepInspectionStatusState) SetAccountId(v string) *MemberAccountEc2DeepInspectionStatusState {
+	s.AccountId = &v
+	return s
+}
+
+// SetErrorMessage sets the ErrorMessage field's value.
+func (s *MemberAccountEc2DeepInspectionStatusState) SetErrorMessage(v string) *MemberAccountEc2DeepInspectionStatusState {
+	s.ErrorMessage = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *MemberAccountEc2DeepInspectionStatusState) SetStatus(v string) *MemberAccountEc2DeepInspectionStatusState {
+	s.Status = &v
 	return s
 }
 
@@ -10484,6 +15330,9 @@ type PackageFilter struct {
 	// An object that contains details on the package release to filter on.
 	Release *StringFilter `locationName:"release" type:"structure"`
 
+	// An object that describes the details of a string filter.
+	SourceLambdaLayerArn *StringFilter `locationName:"sourceLambdaLayerArn" type:"structure"`
+
 	// An object that contains details on the source layer hash to filter on.
 	SourceLayerHash *StringFilter `locationName:"sourceLayerHash" type:"structure"`
 
@@ -10527,6 +15376,11 @@ func (s *PackageFilter) Validate() error {
 			invalidParams.AddNested("Release", err.(request.ErrInvalidParams))
 		}
 	}
+	if s.SourceLambdaLayerArn != nil {
+		if err := s.SourceLambdaLayerArn.Validate(); err != nil {
+			invalidParams.AddNested("SourceLambdaLayerArn", err.(request.ErrInvalidParams))
+		}
+	}
 	if s.SourceLayerHash != nil {
 		if err := s.SourceLayerHash.Validate(); err != nil {
 			invalidParams.AddNested("SourceLayerHash", err.(request.ErrInvalidParams))
@@ -10565,6 +15419,12 @@ func (s *PackageFilter) SetName(v *StringFilter) *PackageFilter {
 // SetRelease sets the Release field's value.
 func (s *PackageFilter) SetRelease(v *StringFilter) *PackageFilter {
 	s.Release = v
+	return s
+}
+
+// SetSourceLambdaLayerArn sets the SourceLambdaLayerArn field's value.
+func (s *PackageFilter) SetSourceLambdaLayerArn(v *StringFilter) *PackageFilter {
+	s.SourceLambdaLayerArn = v
 	return s
 }
 
@@ -10617,9 +15477,7 @@ type PackageVulnerabilityDetails struct {
 	VulnerabilityId *string `locationName:"vulnerabilityId" min:"1" type:"string" required:"true"`
 
 	// The packages impacted by this vulnerability.
-	//
-	// VulnerablePackages is a required field
-	VulnerablePackages []*VulnerablePackage `locationName:"vulnerablePackages" type:"list" required:"true"`
+	VulnerablePackages []*VulnerablePackage `locationName:"vulnerablePackages" type:"list"`
 }
 
 // String returns the string representation.
@@ -11041,6 +15899,88 @@ func (s *RepositoryAggregationResponse) SetSeverityCounts(v *SeverityCounts) *Re
 	return s
 }
 
+type ResetEncryptionKeyInput struct {
+	_ struct{} `type:"structure"`
+
+	// The resource type the key encrypts.
+	//
+	// ResourceType is a required field
+	ResourceType *string `locationName:"resourceType" type:"string" required:"true" enum:"ResourceType"`
+
+	// The scan type the key encrypts.
+	//
+	// ScanType is a required field
+	ScanType *string `locationName:"scanType" type:"string" required:"true" enum:"ScanType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResetEncryptionKeyInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResetEncryptionKeyInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ResetEncryptionKeyInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ResetEncryptionKeyInput"}
+	if s.ResourceType == nil {
+		invalidParams.Add(request.NewErrParamRequired("ResourceType"))
+	}
+	if s.ScanType == nil {
+		invalidParams.Add(request.NewErrParamRequired("ScanType"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetResourceType sets the ResourceType field's value.
+func (s *ResetEncryptionKeyInput) SetResourceType(v string) *ResetEncryptionKeyInput {
+	s.ResourceType = &v
+	return s
+}
+
+// SetScanType sets the ScanType field's value.
+func (s *ResetEncryptionKeyInput) SetScanType(v string) *ResetEncryptionKeyInput {
+	s.ScanType = &v
+	return s
+}
+
+type ResetEncryptionKeyOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResetEncryptionKeyOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResetEncryptionKeyOutput) GoString() string {
+	return s.String()
+}
+
 // Details about the resource involved in a finding.
 type Resource struct {
 	_ struct{} `type:"structure"`
@@ -11133,6 +16073,9 @@ type ResourceDetails struct {
 	// An object that contains details about the Amazon ECR container image involved
 	// in the finding.
 	AwsEcrContainerImage *AwsEcrContainerImageDetails `locationName:"awsEcrContainerImage" type:"structure"`
+
+	// A summary of the information about an AWS Lambda function affected by a finding.
+	AwsLambdaFunction *AwsLambdaFunctionDetails `locationName:"awsLambdaFunction" type:"structure"`
 }
 
 // String returns the string representation.
@@ -11162,6 +16105,297 @@ func (s *ResourceDetails) SetAwsEc2Instance(v *AwsEc2InstanceDetails) *ResourceD
 // SetAwsEcrContainerImage sets the AwsEcrContainerImage field's value.
 func (s *ResourceDetails) SetAwsEcrContainerImage(v *AwsEcrContainerImageDetails) *ResourceDetails {
 	s.AwsEcrContainerImage = v
+	return s
+}
+
+// SetAwsLambdaFunction sets the AwsLambdaFunction field's value.
+func (s *ResourceDetails) SetAwsLambdaFunction(v *AwsLambdaFunctionDetails) *ResourceDetails {
+	s.AwsLambdaFunction = v
+	return s
+}
+
+// The resource filter criteria for a Software bill of materials (SBOM) report.
+type ResourceFilterCriteria struct {
+	_ struct{} `type:"structure"`
+
+	// The account IDs used as resource filter criteria.
+	AccountId []*ResourceStringFilter `locationName:"accountId" min:"1" type:"list"`
+
+	// The EC2 instance tags used as resource filter criteria.
+	Ec2InstanceTags []*ResourceMapFilter `locationName:"ec2InstanceTags" min:"1" type:"list"`
+
+	// The ECR image tags used as resource filter criteria.
+	EcrImageTags []*ResourceStringFilter `locationName:"ecrImageTags" min:"1" type:"list"`
+
+	// The ECR repository names used as resource filter criteria.
+	EcrRepositoryName []*ResourceStringFilter `locationName:"ecrRepositoryName" min:"1" type:"list"`
+
+	// The AWS Lambda function name used as resource filter criteria.
+	LambdaFunctionName []*ResourceStringFilter `locationName:"lambdaFunctionName" min:"1" type:"list"`
+
+	// The AWS Lambda function tags used as resource filter criteria.
+	LambdaFunctionTags []*ResourceMapFilter `locationName:"lambdaFunctionTags" min:"1" type:"list"`
+
+	// The resource IDs used as resource filter criteria.
+	ResourceId []*ResourceStringFilter `locationName:"resourceId" min:"1" type:"list"`
+
+	// The resource types used as resource filter criteria.
+	ResourceType []*ResourceStringFilter `locationName:"resourceType" min:"1" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResourceFilterCriteria) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResourceFilterCriteria) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ResourceFilterCriteria) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ResourceFilterCriteria"}
+	if s.AccountId != nil && len(s.AccountId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AccountId", 1))
+	}
+	if s.Ec2InstanceTags != nil && len(s.Ec2InstanceTags) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Ec2InstanceTags", 1))
+	}
+	if s.EcrImageTags != nil && len(s.EcrImageTags) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("EcrImageTags", 1))
+	}
+	if s.EcrRepositoryName != nil && len(s.EcrRepositoryName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("EcrRepositoryName", 1))
+	}
+	if s.LambdaFunctionName != nil && len(s.LambdaFunctionName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("LambdaFunctionName", 1))
+	}
+	if s.LambdaFunctionTags != nil && len(s.LambdaFunctionTags) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("LambdaFunctionTags", 1))
+	}
+	if s.ResourceId != nil && len(s.ResourceId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceId", 1))
+	}
+	if s.ResourceType != nil && len(s.ResourceType) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceType", 1))
+	}
+	if s.AccountId != nil {
+		for i, v := range s.AccountId {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "AccountId", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.Ec2InstanceTags != nil {
+		for i, v := range s.Ec2InstanceTags {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Ec2InstanceTags", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.EcrImageTags != nil {
+		for i, v := range s.EcrImageTags {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "EcrImageTags", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.EcrRepositoryName != nil {
+		for i, v := range s.EcrRepositoryName {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "EcrRepositoryName", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.LambdaFunctionName != nil {
+		for i, v := range s.LambdaFunctionName {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "LambdaFunctionName", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.LambdaFunctionTags != nil {
+		for i, v := range s.LambdaFunctionTags {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "LambdaFunctionTags", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.ResourceId != nil {
+		for i, v := range s.ResourceId {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "ResourceId", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.ResourceType != nil {
+		for i, v := range s.ResourceType {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "ResourceType", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *ResourceFilterCriteria) SetAccountId(v []*ResourceStringFilter) *ResourceFilterCriteria {
+	s.AccountId = v
+	return s
+}
+
+// SetEc2InstanceTags sets the Ec2InstanceTags field's value.
+func (s *ResourceFilterCriteria) SetEc2InstanceTags(v []*ResourceMapFilter) *ResourceFilterCriteria {
+	s.Ec2InstanceTags = v
+	return s
+}
+
+// SetEcrImageTags sets the EcrImageTags field's value.
+func (s *ResourceFilterCriteria) SetEcrImageTags(v []*ResourceStringFilter) *ResourceFilterCriteria {
+	s.EcrImageTags = v
+	return s
+}
+
+// SetEcrRepositoryName sets the EcrRepositoryName field's value.
+func (s *ResourceFilterCriteria) SetEcrRepositoryName(v []*ResourceStringFilter) *ResourceFilterCriteria {
+	s.EcrRepositoryName = v
+	return s
+}
+
+// SetLambdaFunctionName sets the LambdaFunctionName field's value.
+func (s *ResourceFilterCriteria) SetLambdaFunctionName(v []*ResourceStringFilter) *ResourceFilterCriteria {
+	s.LambdaFunctionName = v
+	return s
+}
+
+// SetLambdaFunctionTags sets the LambdaFunctionTags field's value.
+func (s *ResourceFilterCriteria) SetLambdaFunctionTags(v []*ResourceMapFilter) *ResourceFilterCriteria {
+	s.LambdaFunctionTags = v
+	return s
+}
+
+// SetResourceId sets the ResourceId field's value.
+func (s *ResourceFilterCriteria) SetResourceId(v []*ResourceStringFilter) *ResourceFilterCriteria {
+	s.ResourceId = v
+	return s
+}
+
+// SetResourceType sets the ResourceType field's value.
+func (s *ResourceFilterCriteria) SetResourceType(v []*ResourceStringFilter) *ResourceFilterCriteria {
+	s.ResourceType = v
+	return s
+}
+
+// A resource map filter for a software bill of material report.
+type ResourceMapFilter struct {
+	_ struct{} `type:"structure"`
+
+	// The filter's comparison.
+	//
+	// Comparison is a required field
+	Comparison *string `locationName:"comparison" type:"string" required:"true" enum:"ResourceMapComparison"`
+
+	// The filter's key.
+	//
+	// Key is a required field
+	Key *string `locationName:"key" min:"1" type:"string" required:"true"`
+
+	// The filter's value.
+	Value *string `locationName:"value" min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResourceMapFilter) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResourceMapFilter) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ResourceMapFilter) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ResourceMapFilter"}
+	if s.Comparison == nil {
+		invalidParams.Add(request.NewErrParamRequired("Comparison"))
+	}
+	if s.Key == nil {
+		invalidParams.Add(request.NewErrParamRequired("Key"))
+	}
+	if s.Key != nil && len(*s.Key) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Key", 1))
+	}
+	if s.Value != nil && len(*s.Value) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Value", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetComparison sets the Comparison field's value.
+func (s *ResourceMapFilter) SetComparison(v string) *ResourceMapFilter {
+	s.Comparison = &v
+	return s
+}
+
+// SetKey sets the Key field's value.
+func (s *ResourceMapFilter) SetKey(v string) *ResourceMapFilter {
+	s.Key = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *ResourceMapFilter) SetValue(v string) *ResourceMapFilter {
+	s.Value = &v
 	return s
 }
 
@@ -11244,6 +16478,9 @@ type ResourceScanMetadata struct {
 	// An object that contains details about the repository an Amazon ECR image
 	// resides in.
 	EcrRepository *EcrRepositoryMetadata `locationName:"ecrRepository" type:"structure"`
+
+	// An object that contains metadata details for an AWS Lambda function.
+	LambdaFunction *LambdaFunctionMetadata `locationName:"lambdaFunction" type:"structure"`
 }
 
 // String returns the string representation.
@@ -11282,6 +16519,12 @@ func (s *ResourceScanMetadata) SetEcrRepository(v *EcrRepositoryMetadata) *Resou
 	return s
 }
 
+// SetLambdaFunction sets the LambdaFunction field's value.
+func (s *ResourceScanMetadata) SetLambdaFunction(v *LambdaFunctionMetadata) *ResourceScanMetadata {
+	s.LambdaFunction = v
+	return s
+}
+
 // Details the state of Amazon Inspector for each resource type Amazon Inspector
 // scans.
 type ResourceState struct {
@@ -11298,6 +16541,12 @@ type ResourceState struct {
 	//
 	// Ecr is a required field
 	Ecr *State `locationName:"ecr" type:"structure" required:"true"`
+
+	// An object that described the state of Amazon Inspector scans for an account.
+	Lambda *State `locationName:"lambda" type:"structure"`
+
+	// An object that described the state of Amazon Inspector scans for an account.
+	LambdaCode *State `locationName:"lambdaCode" type:"structure"`
 }
 
 // String returns the string representation.
@@ -11330,6 +16579,18 @@ func (s *ResourceState) SetEcr(v *State) *ResourceState {
 	return s
 }
 
+// SetLambda sets the Lambda field's value.
+func (s *ResourceState) SetLambda(v *State) *ResourceState {
+	s.Lambda = v
+	return s
+}
+
+// SetLambdaCode sets the LambdaCode field's value.
+func (s *ResourceState) SetLambdaCode(v *State) *ResourceState {
+	s.LambdaCode = v
+	return s
+}
+
 // Details the status of Amazon Inspector for each resource type Amazon Inspector
 // scans.
 type ResourceStatus struct {
@@ -11344,6 +16605,13 @@ type ResourceStatus struct {
 	//
 	// Ecr is a required field
 	Ecr *string `locationName:"ecr" type:"string" required:"true" enum:"Status"`
+
+	// The status of Amazon Inspector scanning for AWS Lambda function.
+	Lambda *string `locationName:"lambda" type:"string" enum:"Status"`
+
+	// The status of Amazon Inspector scanning for custom application code for Amazon
+	// Web Services Lambda functions.
+	LambdaCode *string `locationName:"lambdaCode" type:"string" enum:"Status"`
 }
 
 // String returns the string representation.
@@ -11376,11 +16644,179 @@ func (s *ResourceStatus) SetEcr(v string) *ResourceStatus {
 	return s
 }
 
+// SetLambda sets the Lambda field's value.
+func (s *ResourceStatus) SetLambda(v string) *ResourceStatus {
+	s.Lambda = &v
+	return s
+}
+
+// SetLambdaCode sets the LambdaCode field's value.
+func (s *ResourceStatus) SetLambdaCode(v string) *ResourceStatus {
+	s.LambdaCode = &v
+	return s
+}
+
+// A resource string filter for a software bill of materials report.
+type ResourceStringFilter struct {
+	_ struct{} `type:"structure"`
+
+	// The filter's comparison.
+	//
+	// Comparison is a required field
+	Comparison *string `locationName:"comparison" type:"string" required:"true" enum:"ResourceStringComparison"`
+
+	// The filter's value.
+	//
+	// Value is a required field
+	Value *string `locationName:"value" min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResourceStringFilter) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResourceStringFilter) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ResourceStringFilter) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ResourceStringFilter"}
+	if s.Comparison == nil {
+		invalidParams.Add(request.NewErrParamRequired("Comparison"))
+	}
+	if s.Value == nil {
+		invalidParams.Add(request.NewErrParamRequired("Value"))
+	}
+	if s.Value != nil && len(*s.Value) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Value", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetComparison sets the Comparison field's value.
+func (s *ResourceStringFilter) SetComparison(v string) *ResourceStringFilter {
+	s.Comparison = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *ResourceStringFilter) SetValue(v string) *ResourceStringFilter {
+	s.Value = &v
+	return s
+}
+
 // The status of the scan.
 type ScanStatus struct {
 	_ struct{} `type:"structure"`
 
-	// The reason for the scan.
+	// The scan status. Possible return values and descriptions are:
+	//
+	// PENDING_INITIAL_SCAN - This resource has been identified for scanning, results
+	// will be available soon.
+	//
+	// ACCESS_DENIED - Resource access policy restricting Amazon Inspector access.
+	// Please update the IAM policy.
+	//
+	// INTERNAL_ERROR - Amazon Inspector has encountered an internal error for this
+	// resource. Amazon Inspector service will automatically resolve the issue and
+	// resume the scanning. No action required from the user.
+	//
+	// UNMANAGED_EC2_INSTANCE - The EC2 instance is not managed by SSM, please use
+	// the following SSM automation to remediate the issue: https://docs.aws.amazon.com/systems-manager-automation-runbooks/latest/userguide/automation-awssupport-troubleshoot-managed-instance.html
+	// (https://docs.aws.amazon.com/systems-manager-automation-runbooks/latest/userguide/automation-awssupport-troubleshoot-managed-instance.html).
+	// Once the instance becomes managed by SSM, Inspector will automatically begin
+	// scanning this instance.
+	//
+	// UNSUPPORTED_OS - Amazon Inspector does not support this OS, architecture,
+	// or image manifest type at this time. To see a complete list of supported
+	// operating systems see: https://docs.aws.amazon.com/inspector/latest/user/supported.html
+	// (https://docs.aws.amazon.com/inspector/latest/user/supported.html).
+	//
+	// SCAN_ELIGIBILITY_EXPIRED - The configured scan duration has lapsed for this
+	// image.
+	//
+	// RESOURCE_TERMINATED - This resource has been terminated. The findings and
+	// coverage associated with this resource are in the process of being cleaned
+	// up.
+	//
+	// SUCCESSFUL - The scan was successful.
+	//
+	// NO_RESOURCES_FOUND - Reserved for future use.
+	//
+	// IMAGE_SIZE_EXCEEDED - Reserved for future use.
+	//
+	// SCAN_FREQUENCY_MANUAL - This image will not be covered by Amazon Inspector
+	// due to the repository scan frequency configuration.
+	//
+	// SCAN_FREQUENCY_SCAN_ON_PUSH - This image will be scanned one time and will
+	// not new findings because of the scan frequency configuration.
+	//
+	// EC2_INSTANCE_STOPPED - This EC2 instance is in a stopped state, therefore,
+	// Amazon Inspector will pause scanning. The existing findings will continue
+	// to exist until the instance is terminated. Once the instance is re-started,
+	// Inspector will automatically start scanning the instance again. Please note
+	// that you will not be charged for this instance while it’s in a stopped
+	// state.
+	//
+	// PENDING_DISABLE - This resource is pending cleanup during disablement. The
+	// customer will not be billed while a resource is in the pending disable status.
+	//
+	// NO INVENTORY - Amazon Inspector couldn’t find software application inventory
+	// to scan for vulnerabilities. This might be caused due to required Amazon
+	// Inspector associations being deleted or failing to run on your resource.
+	// Please verify the status of InspectorInventoryCollection-do-not-delete association
+	// in the SSM console for the resource. Additionally, you can verify the instance’s
+	// inventory in the SSM Fleet Manager console.
+	//
+	// STALE_INVENTORY - Amazon Inspector wasn’t able to collect an updated software
+	// application inventory in the last 7 days. Please confirm the required Amazon
+	// Inspector associations still exist and you can still see an updated inventory
+	// in the SSM console.
+	//
+	// EXCLUDED_BY_TAG - This resource was not scanned because it has been excluded
+	// by a tag.
+	//
+	// UNSUPPORTED_RUNTIME - The function was not scanned because it has an unsupported
+	// runtime. To see a complete list of supported runtimes see: https://docs.aws.amazon.com/inspector/latest/user/supported.html
+	// (https://docs.aws.amazon.com/inspector/latest/user/supported.html).
+	//
+	// UNSUPPORTED_MEDIA_TYPE - The ECR image has an unsupported media type.
+	//
+	// UNSUPPORTED_CONFIG_FILE - Reserved for future use.
+	//
+	// DEEP_INSPECTION_PACKAGE_COLLECTION_LIMIT_EXCEEDED - The instance has exceeded
+	// the 5000 package limit for Amazon Inspector Deep inspection. To resume Deep
+	// inspection for this instance you can try to adjust the custom paths associated
+	// with the account.
+	//
+	// DEEP_INSPECTION_DAILY_SSM_INVENTORY_LIMIT_EXCEEDED - The SSM agent couldn't
+	// send inventory to Amazon Inspector because the SSM quota for Inventory data
+	// collected per instance per day has already been reached for this instance.
+	//
+	// DEEP_INSPECTION_COLLECTION_TIME_LIMIT_EXCEEDED - Amazon Inspector failed
+	// to extract the package inventory because the package collection time exceeding
+	// the maximum threshold of 15 minutes.
+	//
+	// DEEP_INSPECTION_NO_INVENTORY The Amazon Inspector plugin hasn't yet been
+	// able to collect an inventory of packages for this instance. This is usually
+	// the result of a pending scan, however, if this status persists after 6 hours,
+	// use SSM to ensure that the required Amazon Inspector associations exist and
+	// are running for the instance.
 	//
 	// Reason is a required field
 	Reason *string `locationName:"reason" type:"string" required:"true" enum:"ScanStatusReason"`
@@ -11418,6 +16854,162 @@ func (s *ScanStatus) SetReason(v string) *ScanStatus {
 // SetStatusCode sets the StatusCode field's value.
 func (s *ScanStatus) SetStatusCode(v string) *ScanStatus {
 	s.StatusCode = &v
+	return s
+}
+
+// Details on the criteria used to define the filter for a vulnerability search.
+type SearchVulnerabilitiesFilterCriteria struct {
+	_ struct{} `type:"structure"`
+
+	// The IDs for specific vulnerabilities.
+	//
+	// VulnerabilityIds is a required field
+	VulnerabilityIds []*string `locationName:"vulnerabilityIds" min:"1" type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SearchVulnerabilitiesFilterCriteria) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SearchVulnerabilitiesFilterCriteria) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *SearchVulnerabilitiesFilterCriteria) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "SearchVulnerabilitiesFilterCriteria"}
+	if s.VulnerabilityIds == nil {
+		invalidParams.Add(request.NewErrParamRequired("VulnerabilityIds"))
+	}
+	if s.VulnerabilityIds != nil && len(s.VulnerabilityIds) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("VulnerabilityIds", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetVulnerabilityIds sets the VulnerabilityIds field's value.
+func (s *SearchVulnerabilitiesFilterCriteria) SetVulnerabilityIds(v []*string) *SearchVulnerabilitiesFilterCriteria {
+	s.VulnerabilityIds = v
+	return s
+}
+
+type SearchVulnerabilitiesInput struct {
+	_ struct{} `type:"structure"`
+
+	// The criteria used to filter the results of a vulnerability search.
+	//
+	// FilterCriteria is a required field
+	FilterCriteria *SearchVulnerabilitiesFilterCriteria `locationName:"filterCriteria" type:"structure" required:"true"`
+
+	// A token to use for paginating results that are returned in the response.
+	// Set the value of this parameter to null for the first request to a list action.
+	// For subsequent calls, use the NextToken value returned from the previous
+	// request to continue listing results after the first page.
+	NextToken *string `locationName:"nextToken" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SearchVulnerabilitiesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SearchVulnerabilitiesInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *SearchVulnerabilitiesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "SearchVulnerabilitiesInput"}
+	if s.FilterCriteria == nil {
+		invalidParams.Add(request.NewErrParamRequired("FilterCriteria"))
+	}
+	if s.FilterCriteria != nil {
+		if err := s.FilterCriteria.Validate(); err != nil {
+			invalidParams.AddNested("FilterCriteria", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetFilterCriteria sets the FilterCriteria field's value.
+func (s *SearchVulnerabilitiesInput) SetFilterCriteria(v *SearchVulnerabilitiesFilterCriteria) *SearchVulnerabilitiesInput {
+	s.FilterCriteria = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *SearchVulnerabilitiesInput) SetNextToken(v string) *SearchVulnerabilitiesInput {
+	s.NextToken = &v
+	return s
+}
+
+type SearchVulnerabilitiesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The pagination parameter to be used on the next list operation to retrieve
+	// more items.
+	NextToken *string `locationName:"nextToken" type:"string"`
+
+	// Details about the listed vulnerability.
+	//
+	// Vulnerabilities is a required field
+	Vulnerabilities []*Vulnerability `locationName:"vulnerabilities" type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SearchVulnerabilitiesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SearchVulnerabilitiesOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *SearchVulnerabilitiesOutput) SetNextToken(v string) *SearchVulnerabilitiesOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetVulnerabilities sets the Vulnerabilities field's value.
+func (s *SearchVulnerabilitiesOutput) SetVulnerabilities(v []*Vulnerability) *SearchVulnerabilitiesOutput {
+	s.Vulnerabilities = v
 	return s
 }
 
@@ -11717,7 +17309,7 @@ func (s *Step) SetComponentType(v string) *Step {
 type StringFilter struct {
 	_ struct{} `type:"structure"`
 
-	// The operator to use when comparing values in the filter
+	// The operator to use when comparing values in the filter.
 	//
 	// Comparison is a required field
 	Comparison *string `locationName:"comparison" type:"string" required:"true" enum:"StringComparison"`
@@ -11774,6 +17366,47 @@ func (s *StringFilter) SetComparison(v string) *StringFilter {
 // SetValue sets the Value field's value.
 func (s *StringFilter) SetValue(v string) *StringFilter {
 	s.Value = &v
+	return s
+}
+
+// A suggested fix for a vulnerability in your Lambda function code.
+type SuggestedFix struct {
+	_ struct{} `type:"structure"`
+
+	// The fix's code.
+	Code *string `locationName:"code" min:"1" type:"string"`
+
+	// The fix's description.
+	Description *string `locationName:"description" min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SuggestedFix) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SuggestedFix) GoString() string {
+	return s.String()
+}
+
+// SetCode sets the Code field's value.
+func (s *SuggestedFix) SetCode(v string) *SuggestedFix {
+	s.Code = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *SuggestedFix) SetDescription(v string) *SuggestedFix {
+	s.Description = &v
 	return s
 }
 
@@ -11868,6 +17501,9 @@ type ThrottlingException struct {
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
 
 	Message_ *string `locationName:"message" type:"string"`
+
+	// The number of seconds to wait before retrying the request.
+	RetryAfterSeconds *int64 `location:"header" locationName:"Retry-After" type:"integer"`
 }
 
 // String returns the string representation.
@@ -11913,7 +17549,7 @@ func (s *ThrottlingException) OrigErr() error {
 }
 
 func (s *ThrottlingException) Error() string {
-	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+	return fmt.Sprintf("%s: %s\n%s", s.Code(), s.Message(), s.String())
 }
 
 // Status code returns the HTTP status code for the request's response error.
@@ -11929,6 +17565,9 @@ func (s *ThrottlingException) RequestID() string {
 // The details that define an aggregation based on finding title.
 type TitleAggregation struct {
 	_ struct{} `type:"structure"`
+
+	// The type of finding to aggregate on.
+	FindingType *string `locationName:"findingType" type:"string" enum:"AggregationFindingType"`
 
 	// The resource type to aggregate on.
 	ResourceType *string `locationName:"resourceType" type:"string" enum:"AggregationResourceType"`
@@ -11998,6 +17637,12 @@ func (s *TitleAggregation) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetFindingType sets the FindingType field's value.
+func (s *TitleAggregation) SetFindingType(v string) *TitleAggregation {
+	s.FindingType = &v
+	return s
 }
 
 // SetResourceType sets the ResourceType field's value.
@@ -12177,6 +17822,279 @@ func (s UntagResourceOutput) GoString() string {
 	return s.String()
 }
 
+type UpdateConfigurationInput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies how the ECR automated re-scan will be updated for your environment.
+	//
+	// EcrConfiguration is a required field
+	EcrConfiguration *EcrConfiguration `locationName:"ecrConfiguration" type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateConfigurationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateConfigurationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdateConfigurationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdateConfigurationInput"}
+	if s.EcrConfiguration == nil {
+		invalidParams.Add(request.NewErrParamRequired("EcrConfiguration"))
+	}
+	if s.EcrConfiguration != nil {
+		if err := s.EcrConfiguration.Validate(); err != nil {
+			invalidParams.AddNested("EcrConfiguration", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetEcrConfiguration sets the EcrConfiguration field's value.
+func (s *UpdateConfigurationInput) SetEcrConfiguration(v *EcrConfiguration) *UpdateConfigurationInput {
+	s.EcrConfiguration = v
+	return s
+}
+
+type UpdateConfigurationOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateConfigurationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateConfigurationOutput) GoString() string {
+	return s.String()
+}
+
+type UpdateEc2DeepInspectionConfigurationInput struct {
+	_ struct{} `type:"structure"`
+
+	// Specify TRUE to activate Amazon Inspector deep inspection in your account,
+	// or FALSE to deactivate. Member accounts in an organization cannot deactivate
+	// deep inspection, instead the delegated administrator for the organization
+	// can deactivate a member account using BatchUpdateMemberEc2DeepInspectionStatus
+	// (https://docs.aws.amazon.com/inspector/v2/APIReference/API_BatchUpdateMemberEc2DeepInspectionStatus.html).
+	ActivateDeepInspection *bool `locationName:"activateDeepInspection" type:"boolean"`
+
+	// The Amazon Inspector deep inspection custom paths you are adding for your
+	// account.
+	PackagePaths []*string `locationName:"packagePaths" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateEc2DeepInspectionConfigurationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateEc2DeepInspectionConfigurationInput) GoString() string {
+	return s.String()
+}
+
+// SetActivateDeepInspection sets the ActivateDeepInspection field's value.
+func (s *UpdateEc2DeepInspectionConfigurationInput) SetActivateDeepInspection(v bool) *UpdateEc2DeepInspectionConfigurationInput {
+	s.ActivateDeepInspection = &v
+	return s
+}
+
+// SetPackagePaths sets the PackagePaths field's value.
+func (s *UpdateEc2DeepInspectionConfigurationInput) SetPackagePaths(v []*string) *UpdateEc2DeepInspectionConfigurationInput {
+	s.PackagePaths = v
+	return s
+}
+
+type UpdateEc2DeepInspectionConfigurationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// An error message explaining why new Amazon Inspector deep inspection custom
+	// paths could not be added.
+	ErrorMessage *string `locationName:"errorMessage" min:"1" type:"string"`
+
+	// The current Amazon Inspector deep inspection custom paths for the organization.
+	OrgPackagePaths []*string `locationName:"orgPackagePaths" type:"list"`
+
+	// The current Amazon Inspector deep inspection custom paths for your account.
+	PackagePaths []*string `locationName:"packagePaths" type:"list"`
+
+	// The status of Amazon Inspector deep inspection in your account.
+	Status *string `locationName:"status" type:"string" enum:"Ec2DeepInspectionStatus"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateEc2DeepInspectionConfigurationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateEc2DeepInspectionConfigurationOutput) GoString() string {
+	return s.String()
+}
+
+// SetErrorMessage sets the ErrorMessage field's value.
+func (s *UpdateEc2DeepInspectionConfigurationOutput) SetErrorMessage(v string) *UpdateEc2DeepInspectionConfigurationOutput {
+	s.ErrorMessage = &v
+	return s
+}
+
+// SetOrgPackagePaths sets the OrgPackagePaths field's value.
+func (s *UpdateEc2DeepInspectionConfigurationOutput) SetOrgPackagePaths(v []*string) *UpdateEc2DeepInspectionConfigurationOutput {
+	s.OrgPackagePaths = v
+	return s
+}
+
+// SetPackagePaths sets the PackagePaths field's value.
+func (s *UpdateEc2DeepInspectionConfigurationOutput) SetPackagePaths(v []*string) *UpdateEc2DeepInspectionConfigurationOutput {
+	s.PackagePaths = v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *UpdateEc2DeepInspectionConfigurationOutput) SetStatus(v string) *UpdateEc2DeepInspectionConfigurationOutput {
+	s.Status = &v
+	return s
+}
+
+type UpdateEncryptionKeyInput struct {
+	_ struct{} `type:"structure"`
+
+	// A KMS key ID for the encryption key.
+	//
+	// KmsKeyId is a required field
+	KmsKeyId *string `locationName:"kmsKeyId" type:"string" required:"true"`
+
+	// The resource type for the encryption key.
+	//
+	// ResourceType is a required field
+	ResourceType *string `locationName:"resourceType" type:"string" required:"true" enum:"ResourceType"`
+
+	// The scan type for the encryption key.
+	//
+	// ScanType is a required field
+	ScanType *string `locationName:"scanType" type:"string" required:"true" enum:"ScanType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateEncryptionKeyInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateEncryptionKeyInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdateEncryptionKeyInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdateEncryptionKeyInput"}
+	if s.KmsKeyId == nil {
+		invalidParams.Add(request.NewErrParamRequired("KmsKeyId"))
+	}
+	if s.ResourceType == nil {
+		invalidParams.Add(request.NewErrParamRequired("ResourceType"))
+	}
+	if s.ScanType == nil {
+		invalidParams.Add(request.NewErrParamRequired("ScanType"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetKmsKeyId sets the KmsKeyId field's value.
+func (s *UpdateEncryptionKeyInput) SetKmsKeyId(v string) *UpdateEncryptionKeyInput {
+	s.KmsKeyId = &v
+	return s
+}
+
+// SetResourceType sets the ResourceType field's value.
+func (s *UpdateEncryptionKeyInput) SetResourceType(v string) *UpdateEncryptionKeyInput {
+	s.ResourceType = &v
+	return s
+}
+
+// SetScanType sets the ScanType field's value.
+func (s *UpdateEncryptionKeyInput) SetScanType(v string) *UpdateEncryptionKeyInput {
+	s.ScanType = &v
+	return s
+}
+
+type UpdateEncryptionKeyOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateEncryptionKeyOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateEncryptionKeyOutput) GoString() string {
+	return s.String()
+}
+
 type UpdateFilterInput struct {
 	_ struct{} `type:"structure"`
 
@@ -12197,6 +18115,9 @@ type UpdateFilterInput struct {
 
 	// The name of the filter.
 	Name *string `locationName:"name" min:"1" type:"string"`
+
+	// The reason the filter was updated.
+	Reason *string `locationName:"reason" min:"1" type:"string"`
 }
 
 // String returns the string representation.
@@ -12231,6 +18152,9 @@ func (s *UpdateFilterInput) Validate() error {
 	}
 	if s.Name != nil && len(*s.Name) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+	if s.Reason != nil && len(*s.Reason) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Reason", 1))
 	}
 	if s.FilterCriteria != nil {
 		if err := s.FilterCriteria.Validate(); err != nil {
@@ -12274,6 +18198,12 @@ func (s *UpdateFilterInput) SetName(v string) *UpdateFilterInput {
 	return s
 }
 
+// SetReason sets the Reason field's value.
+func (s *UpdateFilterInput) SetReason(v string) *UpdateFilterInput {
+	s.Reason = &v
+	return s
+}
+
 type UpdateFilterOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -12305,6 +18235,75 @@ func (s UpdateFilterOutput) GoString() string {
 func (s *UpdateFilterOutput) SetArn(v string) *UpdateFilterOutput {
 	s.Arn = &v
 	return s
+}
+
+type UpdateOrgEc2DeepInspectionConfigurationInput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Inspector deep inspection custom paths you are adding for your
+	// organization.
+	//
+	// OrgPackagePaths is a required field
+	OrgPackagePaths []*string `locationName:"orgPackagePaths" type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateOrgEc2DeepInspectionConfigurationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateOrgEc2DeepInspectionConfigurationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdateOrgEc2DeepInspectionConfigurationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdateOrgEc2DeepInspectionConfigurationInput"}
+	if s.OrgPackagePaths == nil {
+		invalidParams.Add(request.NewErrParamRequired("OrgPackagePaths"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetOrgPackagePaths sets the OrgPackagePaths field's value.
+func (s *UpdateOrgEc2DeepInspectionConfigurationInput) SetOrgPackagePaths(v []*string) *UpdateOrgEc2DeepInspectionConfigurationInput {
+	s.OrgPackagePaths = v
+	return s
+}
+
+type UpdateOrgEc2DeepInspectionConfigurationOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateOrgEc2DeepInspectionConfigurationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateOrgEc2DeepInspectionConfigurationOutput) GoString() string {
+	return s.String()
 }
 
 type UpdateOrganizationConfigurationInput struct {
@@ -12611,6 +18610,190 @@ func (s *ValidationExceptionField) SetName(v string) *ValidationExceptionField {
 	return s
 }
 
+// Contains details about a specific vulnerability Amazon Inspector can detect.
+type Vulnerability struct {
+	_ struct{} `type:"structure"`
+
+	// An object that contains information about the Amazon Web Services Threat
+	// Intel Group (ATIG) details for the vulnerability.
+	AtigData *AtigData `locationName:"atigData" type:"structure"`
+
+	// An object that contains the Cybersecurity and Infrastructure Security Agency
+	// (CISA) details for the vulnerability.
+	CisaData *CisaData `locationName:"cisaData" type:"structure"`
+
+	// An object that contains the Common Vulnerability Scoring System (CVSS) Version
+	// 2 details for the vulnerability.
+	Cvss2 *Cvss2 `locationName:"cvss2" type:"structure"`
+
+	// An object that contains the Common Vulnerability Scoring System (CVSS) Version
+	// 3 details for the vulnerability.
+	Cvss3 *Cvss3 `locationName:"cvss3" type:"structure"`
+
+	// The Common Weakness Enumeration (CWE) associated with the vulnerability.
+	Cwes []*string `locationName:"cwes" type:"list"`
+
+	// A description of the vulnerability.
+	Description *string `locationName:"description" type:"string"`
+
+	// Platforms that the vulnerability can be detected on.
+	DetectionPlatforms []*string `locationName:"detectionPlatforms" type:"list"`
+
+	// An object that contains the Exploit Prediction Scoring System (EPSS) score
+	// for a vulnerability.
+	Epss *Epss `locationName:"epss" type:"structure"`
+
+	// An object that contains details on when the exploit was observed.
+	ExploitObserved *ExploitObserved `locationName:"exploitObserved" type:"structure"`
+
+	// The ID for the specific vulnerability.
+	//
+	// Id is a required field
+	Id *string `locationName:"id" min:"1" type:"string" required:"true"`
+
+	// Links to various resources with more information on this vulnerability.
+	ReferenceUrls []*string `locationName:"referenceUrls" type:"list"`
+
+	// A list of related vulnerabilities.
+	RelatedVulnerabilities []*string `locationName:"relatedVulnerabilities" type:"list"`
+
+	// The source of the vulnerability information. Possible results are RHEL, AMAZON_CVE,
+	// DEBIAN or NVD.
+	Source *string `locationName:"source" type:"string" enum:"VulnerabilitySource"`
+
+	// A link to the official source material for this vulnerability.
+	SourceUrl *string `locationName:"sourceUrl" type:"string"`
+
+	// The date and time when the vendor created this vulnerability.
+	VendorCreatedAt *time.Time `locationName:"vendorCreatedAt" type:"timestamp"`
+
+	// The severity assigned by the vendor.
+	VendorSeverity *string `locationName:"vendorSeverity" min:"1" type:"string"`
+
+	// The date and time when the vendor last updated this vulnerability.
+	VendorUpdatedAt *time.Time `locationName:"vendorUpdatedAt" type:"timestamp"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Vulnerability) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Vulnerability) GoString() string {
+	return s.String()
+}
+
+// SetAtigData sets the AtigData field's value.
+func (s *Vulnerability) SetAtigData(v *AtigData) *Vulnerability {
+	s.AtigData = v
+	return s
+}
+
+// SetCisaData sets the CisaData field's value.
+func (s *Vulnerability) SetCisaData(v *CisaData) *Vulnerability {
+	s.CisaData = v
+	return s
+}
+
+// SetCvss2 sets the Cvss2 field's value.
+func (s *Vulnerability) SetCvss2(v *Cvss2) *Vulnerability {
+	s.Cvss2 = v
+	return s
+}
+
+// SetCvss3 sets the Cvss3 field's value.
+func (s *Vulnerability) SetCvss3(v *Cvss3) *Vulnerability {
+	s.Cvss3 = v
+	return s
+}
+
+// SetCwes sets the Cwes field's value.
+func (s *Vulnerability) SetCwes(v []*string) *Vulnerability {
+	s.Cwes = v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *Vulnerability) SetDescription(v string) *Vulnerability {
+	s.Description = &v
+	return s
+}
+
+// SetDetectionPlatforms sets the DetectionPlatforms field's value.
+func (s *Vulnerability) SetDetectionPlatforms(v []*string) *Vulnerability {
+	s.DetectionPlatforms = v
+	return s
+}
+
+// SetEpss sets the Epss field's value.
+func (s *Vulnerability) SetEpss(v *Epss) *Vulnerability {
+	s.Epss = v
+	return s
+}
+
+// SetExploitObserved sets the ExploitObserved field's value.
+func (s *Vulnerability) SetExploitObserved(v *ExploitObserved) *Vulnerability {
+	s.ExploitObserved = v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *Vulnerability) SetId(v string) *Vulnerability {
+	s.Id = &v
+	return s
+}
+
+// SetReferenceUrls sets the ReferenceUrls field's value.
+func (s *Vulnerability) SetReferenceUrls(v []*string) *Vulnerability {
+	s.ReferenceUrls = v
+	return s
+}
+
+// SetRelatedVulnerabilities sets the RelatedVulnerabilities field's value.
+func (s *Vulnerability) SetRelatedVulnerabilities(v []*string) *Vulnerability {
+	s.RelatedVulnerabilities = v
+	return s
+}
+
+// SetSource sets the Source field's value.
+func (s *Vulnerability) SetSource(v string) *Vulnerability {
+	s.Source = &v
+	return s
+}
+
+// SetSourceUrl sets the SourceUrl field's value.
+func (s *Vulnerability) SetSourceUrl(v string) *Vulnerability {
+	s.SourceUrl = &v
+	return s
+}
+
+// SetVendorCreatedAt sets the VendorCreatedAt field's value.
+func (s *Vulnerability) SetVendorCreatedAt(v time.Time) *Vulnerability {
+	s.VendorCreatedAt = &v
+	return s
+}
+
+// SetVendorSeverity sets the VendorSeverity field's value.
+func (s *Vulnerability) SetVendorSeverity(v string) *Vulnerability {
+	s.VendorSeverity = &v
+	return s
+}
+
+// SetVendorUpdatedAt sets the VendorUpdatedAt field's value.
+func (s *Vulnerability) SetVendorUpdatedAt(v time.Time) *Vulnerability {
+	s.VendorUpdatedAt = &v
+	return s
+}
+
 // Information on the vulnerable package identified by a finding.
 type VulnerablePackage struct {
 	_ struct{} `type:"structure"`
@@ -12637,6 +18820,13 @@ type VulnerablePackage struct {
 
 	// The release of the vulnerable package.
 	Release *string `locationName:"release" min:"1" type:"string"`
+
+	// The code to run in your environment to update packages with a fix available.
+	Remediation *string `locationName:"remediation" min:"1" type:"string"`
+
+	// The Amazon Resource Number (ARN) of the AWS Lambda function affected by a
+	// finding.
+	SourceLambdaLayerArn *string `locationName:"sourceLambdaLayerArn" type:"string"`
 
 	// The source layer hash of the vulnerable package.
 	SourceLayerHash *string `locationName:"sourceLayerHash" min:"71" type:"string"`
@@ -12707,6 +18897,18 @@ func (s *VulnerablePackage) SetRelease(v string) *VulnerablePackage {
 	return s
 }
 
+// SetRemediation sets the Remediation field's value.
+func (s *VulnerablePackage) SetRemediation(v string) *VulnerablePackage {
+	s.Remediation = &v
+	return s
+}
+
+// SetSourceLambdaLayerArn sets the SourceLambdaLayerArn field's value.
+func (s *VulnerablePackage) SetSourceLambdaLayerArn(v string) *VulnerablePackage {
+	s.SourceLambdaLayerArn = &v
+	return s
+}
+
 // SetSourceLayerHash sets the SourceLayerHash field's value.
 func (s *VulnerablePackage) SetSourceLayerHash(v string) *VulnerablePackage {
 	s.SourceLayerHash = &v
@@ -12745,6 +18947,9 @@ const (
 
 	// AggregationFindingTypePackageVulnerability is a AggregationFindingType enum value
 	AggregationFindingTypePackageVulnerability = "PACKAGE_VULNERABILITY"
+
+	// AggregationFindingTypeCodeVulnerability is a AggregationFindingType enum value
+	AggregationFindingTypeCodeVulnerability = "CODE_VULNERABILITY"
 )
 
 // AggregationFindingType_Values returns all elements of the AggregationFindingType enum
@@ -12752,6 +18957,7 @@ func AggregationFindingType_Values() []string {
 	return []string{
 		AggregationFindingTypeNetworkReachability,
 		AggregationFindingTypePackageVulnerability,
+		AggregationFindingTypeCodeVulnerability,
 	}
 }
 
@@ -12761,6 +18967,9 @@ const (
 
 	// AggregationResourceTypeAwsEcrContainerImage is a AggregationResourceType enum value
 	AggregationResourceTypeAwsEcrContainerImage = "AWS_ECR_CONTAINER_IMAGE"
+
+	// AggregationResourceTypeAwsLambdaFunction is a AggregationResourceType enum value
+	AggregationResourceTypeAwsLambdaFunction = "AWS_LAMBDA_FUNCTION"
 )
 
 // AggregationResourceType_Values returns all elements of the AggregationResourceType enum
@@ -12768,6 +18977,7 @@ func AggregationResourceType_Values() []string {
 	return []string{
 		AggregationResourceTypeAwsEc2Instance,
 		AggregationResourceTypeAwsEcrContainerImage,
+		AggregationResourceTypeAwsLambdaFunction,
 	}
 }
 
@@ -12798,6 +19008,12 @@ const (
 
 	// AggregationTypeAccount is a AggregationType enum value
 	AggregationTypeAccount = "ACCOUNT"
+
+	// AggregationTypeAwsLambdaFunction is a AggregationType enum value
+	AggregationTypeAwsLambdaFunction = "AWS_LAMBDA_FUNCTION"
+
+	// AggregationTypeLambdaLayer is a AggregationType enum value
+	AggregationTypeLambdaLayer = "LAMBDA_LAYER"
 )
 
 // AggregationType_Values returns all elements of the AggregationType enum
@@ -12812,6 +19028,8 @@ func AggregationType_Values() []string {
 		AggregationTypeAwsEcrContainer,
 		AggregationTypeImageLayer,
 		AggregationTypeAccount,
+		AggregationTypeAwsLambdaFunction,
+		AggregationTypeLambdaLayer,
 	}
 }
 
@@ -12840,6 +19058,22 @@ func AmiSortBy_Values() []string {
 }
 
 const (
+	// ArchitectureX8664 is a Architecture enum value
+	ArchitectureX8664 = "X86_64"
+
+	// ArchitectureArm64 is a Architecture enum value
+	ArchitectureArm64 = "ARM64"
+)
+
+// Architecture_Values returns all elements of the Architecture enum
+func Architecture_Values() []string {
+	return []string{
+		ArchitectureX8664,
+		ArchitectureArm64,
+	}
+}
+
+const (
 	// AwsEcrContainerSortByCritical is a AwsEcrContainerSortBy enum value
 	AwsEcrContainerSortByCritical = "CRITICAL"
 
@@ -12856,6 +19090,30 @@ func AwsEcrContainerSortBy_Values() []string {
 		AwsEcrContainerSortByCritical,
 		AwsEcrContainerSortByHigh,
 		AwsEcrContainerSortByAll,
+	}
+}
+
+const (
+	// CodeSnippetErrorCodeInternalError is a CodeSnippetErrorCode enum value
+	CodeSnippetErrorCodeInternalError = "INTERNAL_ERROR"
+
+	// CodeSnippetErrorCodeAccessDenied is a CodeSnippetErrorCode enum value
+	CodeSnippetErrorCodeAccessDenied = "ACCESS_DENIED"
+
+	// CodeSnippetErrorCodeCodeSnippetNotFound is a CodeSnippetErrorCode enum value
+	CodeSnippetErrorCodeCodeSnippetNotFound = "CODE_SNIPPET_NOT_FOUND"
+
+	// CodeSnippetErrorCodeInvalidInput is a CodeSnippetErrorCode enum value
+	CodeSnippetErrorCodeInvalidInput = "INVALID_INPUT"
+)
+
+// CodeSnippetErrorCode_Values returns all elements of the CodeSnippetErrorCode enum
+func CodeSnippetErrorCode_Values() []string {
+	return []string{
+		CodeSnippetErrorCodeInternalError,
+		CodeSnippetErrorCodeAccessDenied,
+		CodeSnippetErrorCodeCodeSnippetNotFound,
+		CodeSnippetErrorCodeInvalidInput,
 	}
 }
 
@@ -12880,6 +19138,9 @@ const (
 
 	// CoverageResourceTypeAwsEcrRepository is a CoverageResourceType enum value
 	CoverageResourceTypeAwsEcrRepository = "AWS_ECR_REPOSITORY"
+
+	// CoverageResourceTypeAwsLambdaFunction is a CoverageResourceType enum value
+	CoverageResourceTypeAwsLambdaFunction = "AWS_LAMBDA_FUNCTION"
 )
 
 // CoverageResourceType_Values returns all elements of the CoverageResourceType enum
@@ -12888,6 +19149,7 @@ func CoverageResourceType_Values() []string {
 		CoverageResourceTypeAwsEc2Instance,
 		CoverageResourceTypeAwsEcrContainerImage,
 		CoverageResourceTypeAwsEcrRepository,
+		CoverageResourceTypeAwsLambdaFunction,
 	}
 }
 
@@ -12936,6 +19198,30 @@ func DelegatedAdminStatus_Values() []string {
 }
 
 const (
+	// Ec2DeepInspectionStatusActivated is a Ec2DeepInspectionStatus enum value
+	Ec2DeepInspectionStatusActivated = "ACTIVATED"
+
+	// Ec2DeepInspectionStatusDeactivated is a Ec2DeepInspectionStatus enum value
+	Ec2DeepInspectionStatusDeactivated = "DEACTIVATED"
+
+	// Ec2DeepInspectionStatusPending is a Ec2DeepInspectionStatus enum value
+	Ec2DeepInspectionStatusPending = "PENDING"
+
+	// Ec2DeepInspectionStatusFailed is a Ec2DeepInspectionStatus enum value
+	Ec2DeepInspectionStatusFailed = "FAILED"
+)
+
+// Ec2DeepInspectionStatus_Values returns all elements of the Ec2DeepInspectionStatus enum
+func Ec2DeepInspectionStatus_Values() []string {
+	return []string{
+		Ec2DeepInspectionStatusActivated,
+		Ec2DeepInspectionStatusDeactivated,
+		Ec2DeepInspectionStatusPending,
+		Ec2DeepInspectionStatusFailed,
+	}
+}
+
+const (
 	// Ec2InstanceSortByNetworkFindings is a Ec2InstanceSortBy enum value
 	Ec2InstanceSortByNetworkFindings = "NETWORK_FINDINGS"
 
@@ -12968,6 +19254,9 @@ const (
 
 	// Ec2PlatformUnknown is a Ec2Platform enum value
 	Ec2PlatformUnknown = "UNKNOWN"
+
+	// Ec2PlatformMacos is a Ec2Platform enum value
+	Ec2PlatformMacos = "MACOS"
 )
 
 // Ec2Platform_Values returns all elements of the Ec2Platform enum
@@ -12976,6 +19265,47 @@ func Ec2Platform_Values() []string {
 		Ec2PlatformWindows,
 		Ec2PlatformLinux,
 		Ec2PlatformUnknown,
+		Ec2PlatformMacos,
+	}
+}
+
+const (
+	// EcrRescanDurationLifetime is a EcrRescanDuration enum value
+	EcrRescanDurationLifetime = "LIFETIME"
+
+	// EcrRescanDurationDays30 is a EcrRescanDuration enum value
+	EcrRescanDurationDays30 = "DAYS_30"
+
+	// EcrRescanDurationDays180 is a EcrRescanDuration enum value
+	EcrRescanDurationDays180 = "DAYS_180"
+)
+
+// EcrRescanDuration_Values returns all elements of the EcrRescanDuration enum
+func EcrRescanDuration_Values() []string {
+	return []string{
+		EcrRescanDurationLifetime,
+		EcrRescanDurationDays30,
+		EcrRescanDurationDays180,
+	}
+}
+
+const (
+	// EcrRescanDurationStatusSuccess is a EcrRescanDurationStatus enum value
+	EcrRescanDurationStatusSuccess = "SUCCESS"
+
+	// EcrRescanDurationStatusPending is a EcrRescanDurationStatus enum value
+	EcrRescanDurationStatusPending = "PENDING"
+
+	// EcrRescanDurationStatusFailed is a EcrRescanDurationStatus enum value
+	EcrRescanDurationStatusFailed = "FAILED"
+)
+
+// EcrRescanDurationStatus_Values returns all elements of the EcrRescanDurationStatus enum
+func EcrRescanDurationStatus_Values() []string {
+	return []string{
+		EcrRescanDurationStatusSuccess,
+		EcrRescanDurationStatusPending,
+		EcrRescanDurationStatusFailed,
 	}
 }
 
@@ -13038,6 +19368,9 @@ const (
 
 	// ErrorCodeDisassociateAllMembers is a ErrorCode enum value
 	ErrorCodeDisassociateAllMembers = "DISASSOCIATE_ALL_MEMBERS"
+
+	// ErrorCodeAccountIsIsolated is a ErrorCode enum value
+	ErrorCodeAccountIsIsolated = "ACCOUNT_IS_ISOLATED"
 )
 
 // ErrorCode_Values returns all elements of the ErrorCode enum
@@ -13056,6 +19389,23 @@ func ErrorCode_Values() []string {
 		ErrorCodeEventbridgeThrottled,
 		ErrorCodeResourceScanNotDisabled,
 		ErrorCodeDisassociateAllMembers,
+		ErrorCodeAccountIsIsolated,
+	}
+}
+
+const (
+	// ExploitAvailableYes is a ExploitAvailable enum value
+	ExploitAvailableYes = "YES"
+
+	// ExploitAvailableNo is a ExploitAvailable enum value
+	ExploitAvailableNo = "NO"
+)
+
+// ExploitAvailable_Values returns all elements of the ExploitAvailable enum
+func ExploitAvailable_Values() []string {
+	return []string{
+		ExploitAvailableYes,
+		ExploitAvailableNo,
 	}
 }
 
@@ -13100,6 +19450,30 @@ func FilterAction_Values() []string {
 }
 
 const (
+	// FindingDetailsErrorCodeInternalError is a FindingDetailsErrorCode enum value
+	FindingDetailsErrorCodeInternalError = "INTERNAL_ERROR"
+
+	// FindingDetailsErrorCodeAccessDenied is a FindingDetailsErrorCode enum value
+	FindingDetailsErrorCodeAccessDenied = "ACCESS_DENIED"
+
+	// FindingDetailsErrorCodeFindingDetailsNotFound is a FindingDetailsErrorCode enum value
+	FindingDetailsErrorCodeFindingDetailsNotFound = "FINDING_DETAILS_NOT_FOUND"
+
+	// FindingDetailsErrorCodeInvalidInput is a FindingDetailsErrorCode enum value
+	FindingDetailsErrorCodeInvalidInput = "INVALID_INPUT"
+)
+
+// FindingDetailsErrorCode_Values returns all elements of the FindingDetailsErrorCode enum
+func FindingDetailsErrorCode_Values() []string {
+	return []string{
+		FindingDetailsErrorCodeInternalError,
+		FindingDetailsErrorCodeAccessDenied,
+		FindingDetailsErrorCodeFindingDetailsNotFound,
+		FindingDetailsErrorCodeInvalidInput,
+	}
+}
+
+const (
 	// FindingStatusActive is a FindingStatus enum value
 	FindingStatusActive = "ACTIVE"
 
@@ -13125,6 +19499,9 @@ const (
 
 	// FindingTypePackageVulnerability is a FindingType enum value
 	FindingTypePackageVulnerability = "PACKAGE_VULNERABILITY"
+
+	// FindingTypeCodeVulnerability is a FindingType enum value
+	FindingTypeCodeVulnerability = "CODE_VULNERABILITY"
 )
 
 // FindingType_Values returns all elements of the FindingType enum
@@ -13132,6 +19509,7 @@ func FindingType_Values() []string {
 	return []string{
 		FindingTypeNetworkReachability,
 		FindingTypePackageVulnerability,
+		FindingTypeCodeVulnerability,
 	}
 }
 
@@ -13152,6 +19530,26 @@ func FindingTypeSortBy_Values() []string {
 		FindingTypeSortByCritical,
 		FindingTypeSortByHigh,
 		FindingTypeSortByAll,
+	}
+}
+
+const (
+	// FixAvailableYes is a FixAvailable enum value
+	FixAvailableYes = "YES"
+
+	// FixAvailableNo is a FixAvailable enum value
+	FixAvailableNo = "NO"
+
+	// FixAvailablePartial is a FixAvailable enum value
+	FixAvailablePartial = "PARTIAL"
+)
+
+// FixAvailable_Values returns all elements of the FixAvailable enum
+func FixAvailable_Values() []string {
+	return []string{
+		FixAvailableYes,
+		FixAvailableNo,
+		FixAvailablePartial,
 	}
 }
 
@@ -13193,6 +19591,12 @@ const (
 
 	// FreeTrialTypeEcr is a FreeTrialType enum value
 	FreeTrialTypeEcr = "ECR"
+
+	// FreeTrialTypeLambda is a FreeTrialType enum value
+	FreeTrialTypeLambda = "LAMBDA"
+
+	// FreeTrialTypeLambdaCode is a FreeTrialType enum value
+	FreeTrialTypeLambdaCode = "LAMBDA_CODE"
 )
 
 // FreeTrialType_Values returns all elements of the FreeTrialType enum
@@ -13200,6 +19604,8 @@ func FreeTrialType_Values() []string {
 	return []string{
 		FreeTrialTypeEc2,
 		FreeTrialTypeEcr,
+		FreeTrialTypeLambda,
+		FreeTrialTypeLambdaCode,
 	}
 }
 
@@ -13248,6 +19654,46 @@ func ImageLayerSortBy_Values() []string {
 		ImageLayerSortByCritical,
 		ImageLayerSortByHigh,
 		ImageLayerSortByAll,
+	}
+}
+
+const (
+	// LambdaFunctionSortByCritical is a LambdaFunctionSortBy enum value
+	LambdaFunctionSortByCritical = "CRITICAL"
+
+	// LambdaFunctionSortByHigh is a LambdaFunctionSortBy enum value
+	LambdaFunctionSortByHigh = "HIGH"
+
+	// LambdaFunctionSortByAll is a LambdaFunctionSortBy enum value
+	LambdaFunctionSortByAll = "ALL"
+)
+
+// LambdaFunctionSortBy_Values returns all elements of the LambdaFunctionSortBy enum
+func LambdaFunctionSortBy_Values() []string {
+	return []string{
+		LambdaFunctionSortByCritical,
+		LambdaFunctionSortByHigh,
+		LambdaFunctionSortByAll,
+	}
+}
+
+const (
+	// LambdaLayerSortByCritical is a LambdaLayerSortBy enum value
+	LambdaLayerSortByCritical = "CRITICAL"
+
+	// LambdaLayerSortByHigh is a LambdaLayerSortBy enum value
+	LambdaLayerSortByHigh = "HIGH"
+
+	// LambdaLayerSortByAll is a LambdaLayerSortBy enum value
+	LambdaLayerSortByAll = "ALL"
+)
+
+// LambdaLayerSortBy_Values returns all elements of the LambdaLayerSortBy enum
+func LambdaLayerSortBy_Values() []string {
+	return []string{
+		LambdaLayerSortByCritical,
+		LambdaLayerSortByHigh,
+		LambdaLayerSortByAll,
 	}
 }
 
@@ -13339,6 +19785,21 @@ const (
 
 	// PackageManagerOs is a PackageManager enum value
 	PackageManagerOs = "OS"
+
+	// PackageManagerPip is a PackageManager enum value
+	PackageManagerPip = "PIP"
+
+	// PackageManagerPythonpkg is a PackageManager enum value
+	PackageManagerPythonpkg = "PYTHONPKG"
+
+	// PackageManagerNodepkg is a PackageManager enum value
+	PackageManagerNodepkg = "NODEPKG"
+
+	// PackageManagerPom is a PackageManager enum value
+	PackageManagerPom = "POM"
+
+	// PackageManagerGemspec is a PackageManager enum value
+	PackageManagerGemspec = "GEMSPEC"
 )
 
 // PackageManager_Values returns all elements of the PackageManager enum
@@ -13356,6 +19817,11 @@ func PackageManager_Values() []string {
 		PackageManagerGomod,
 		PackageManagerJar,
 		PackageManagerOs,
+		PackageManagerPip,
+		PackageManagerPythonpkg,
+		PackageManagerNodepkg,
+		PackageManagerPom,
+		PackageManagerGemspec,
 	}
 }
 
@@ -13376,6 +19842,22 @@ func PackageSortBy_Values() []string {
 		PackageSortByCritical,
 		PackageSortByHigh,
 		PackageSortByAll,
+	}
+}
+
+const (
+	// PackageTypeImage is a PackageType enum value
+	PackageTypeImage = "IMAGE"
+
+	// PackageTypeZip is a PackageType enum value
+	PackageTypeZip = "ZIP"
+)
+
+// PackageType_Values returns all elements of the PackageType enum
+func PackageType_Values() []string {
+	return []string{
+		PackageTypeImage,
+		PackageTypeZip,
 	}
 }
 
@@ -13457,6 +19939,18 @@ const (
 
 	// ReportingErrorCodeInvalidPermissions is a ReportingErrorCode enum value
 	ReportingErrorCodeInvalidPermissions = "INVALID_PERMISSIONS"
+
+	// ReportingErrorCodeNoFindingsFound is a ReportingErrorCode enum value
+	ReportingErrorCodeNoFindingsFound = "NO_FINDINGS_FOUND"
+
+	// ReportingErrorCodeBucketNotFound is a ReportingErrorCode enum value
+	ReportingErrorCodeBucketNotFound = "BUCKET_NOT_FOUND"
+
+	// ReportingErrorCodeIncompatibleBucketRegion is a ReportingErrorCode enum value
+	ReportingErrorCodeIncompatibleBucketRegion = "INCOMPATIBLE_BUCKET_REGION"
+
+	// ReportingErrorCodeMalformedKmsKey is a ReportingErrorCode enum value
+	ReportingErrorCodeMalformedKmsKey = "MALFORMED_KMS_KEY"
 )
 
 // ReportingErrorCode_Values returns all elements of the ReportingErrorCode enum
@@ -13464,6 +19958,10 @@ func ReportingErrorCode_Values() []string {
 	return []string{
 		ReportingErrorCodeInternalError,
 		ReportingErrorCodeInvalidPermissions,
+		ReportingErrorCodeNoFindingsFound,
+		ReportingErrorCodeBucketNotFound,
+		ReportingErrorCodeIncompatibleBucketRegion,
+		ReportingErrorCodeMalformedKmsKey,
 	}
 }
 
@@ -13492,11 +19990,29 @@ func RepositorySortBy_Values() []string {
 }
 
 const (
+	// ResourceMapComparisonEquals is a ResourceMapComparison enum value
+	ResourceMapComparisonEquals = "EQUALS"
+)
+
+// ResourceMapComparison_Values returns all elements of the ResourceMapComparison enum
+func ResourceMapComparison_Values() []string {
+	return []string{
+		ResourceMapComparisonEquals,
+	}
+}
+
+const (
 	// ResourceScanTypeEc2 is a ResourceScanType enum value
 	ResourceScanTypeEc2 = "EC2"
 
 	// ResourceScanTypeEcr is a ResourceScanType enum value
 	ResourceScanTypeEcr = "ECR"
+
+	// ResourceScanTypeLambda is a ResourceScanType enum value
+	ResourceScanTypeLambda = "LAMBDA"
+
+	// ResourceScanTypeLambdaCode is a ResourceScanType enum value
+	ResourceScanTypeLambdaCode = "LAMBDA_CODE"
 )
 
 // ResourceScanType_Values returns all elements of the ResourceScanType enum
@@ -13504,6 +20020,24 @@ func ResourceScanType_Values() []string {
 	return []string{
 		ResourceScanTypeEc2,
 		ResourceScanTypeEcr,
+		ResourceScanTypeLambda,
+		ResourceScanTypeLambdaCode,
+	}
+}
+
+const (
+	// ResourceStringComparisonEquals is a ResourceStringComparison enum value
+	ResourceStringComparisonEquals = "EQUALS"
+
+	// ResourceStringComparisonNotEquals is a ResourceStringComparison enum value
+	ResourceStringComparisonNotEquals = "NOT_EQUALS"
+)
+
+// ResourceStringComparison_Values returns all elements of the ResourceStringComparison enum
+func ResourceStringComparison_Values() []string {
+	return []string{
+		ResourceStringComparisonEquals,
+		ResourceStringComparisonNotEquals,
 	}
 }
 
@@ -13516,6 +20050,9 @@ const (
 
 	// ResourceTypeAwsEcrRepository is a ResourceType enum value
 	ResourceTypeAwsEcrRepository = "AWS_ECR_REPOSITORY"
+
+	// ResourceTypeAwsLambdaFunction is a ResourceType enum value
+	ResourceTypeAwsLambdaFunction = "AWS_LAMBDA_FUNCTION"
 )
 
 // ResourceType_Values returns all elements of the ResourceType enum
@@ -13524,6 +20061,91 @@ func ResourceType_Values() []string {
 		ResourceTypeAwsEc2Instance,
 		ResourceTypeAwsEcrContainerImage,
 		ResourceTypeAwsEcrRepository,
+		ResourceTypeAwsLambdaFunction,
+	}
+}
+
+const (
+	// RuntimeNodejs is a Runtime enum value
+	RuntimeNodejs = "NODEJS"
+
+	// RuntimeNodejs12X is a Runtime enum value
+	RuntimeNodejs12X = "NODEJS_12_X"
+
+	// RuntimeNodejs14X is a Runtime enum value
+	RuntimeNodejs14X = "NODEJS_14_X"
+
+	// RuntimeNodejs16X is a Runtime enum value
+	RuntimeNodejs16X = "NODEJS_16_X"
+
+	// RuntimeJava8 is a Runtime enum value
+	RuntimeJava8 = "JAVA_8"
+
+	// RuntimeJava8Al2 is a Runtime enum value
+	RuntimeJava8Al2 = "JAVA_8_AL2"
+
+	// RuntimeJava11 is a Runtime enum value
+	RuntimeJava11 = "JAVA_11"
+
+	// RuntimePython37 is a Runtime enum value
+	RuntimePython37 = "PYTHON_3_7"
+
+	// RuntimePython38 is a Runtime enum value
+	RuntimePython38 = "PYTHON_3_8"
+
+	// RuntimePython39 is a Runtime enum value
+	RuntimePython39 = "PYTHON_3_9"
+
+	// RuntimeUnsupported is a Runtime enum value
+	RuntimeUnsupported = "UNSUPPORTED"
+
+	// RuntimeNodejs18X is a Runtime enum value
+	RuntimeNodejs18X = "NODEJS_18_X"
+
+	// RuntimeGo1X is a Runtime enum value
+	RuntimeGo1X = "GO_1_X"
+
+	// RuntimeJava17 is a Runtime enum value
+	RuntimeJava17 = "JAVA_17"
+
+	// RuntimePython310 is a Runtime enum value
+	RuntimePython310 = "PYTHON_3_10"
+)
+
+// Runtime_Values returns all elements of the Runtime enum
+func Runtime_Values() []string {
+	return []string{
+		RuntimeNodejs,
+		RuntimeNodejs12X,
+		RuntimeNodejs14X,
+		RuntimeNodejs16X,
+		RuntimeJava8,
+		RuntimeJava8Al2,
+		RuntimeJava11,
+		RuntimePython37,
+		RuntimePython38,
+		RuntimePython39,
+		RuntimeUnsupported,
+		RuntimeNodejs18X,
+		RuntimeGo1X,
+		RuntimeJava17,
+		RuntimePython310,
+	}
+}
+
+const (
+	// SbomReportFormatCyclonedx14 is a SbomReportFormat enum value
+	SbomReportFormatCyclonedx14 = "CYCLONEDX_1_4"
+
+	// SbomReportFormatSpdx23 is a SbomReportFormat enum value
+	SbomReportFormatSpdx23 = "SPDX_2_3"
+)
+
+// SbomReportFormat_Values returns all elements of the SbomReportFormat enum
+func SbomReportFormat_Values() []string {
+	return []string{
+		SbomReportFormatCyclonedx14,
+		SbomReportFormatSpdx23,
 	}
 }
 
@@ -13582,6 +20204,39 @@ const (
 
 	// ScanStatusReasonEc2InstanceStopped is a ScanStatusReason enum value
 	ScanStatusReasonEc2InstanceStopped = "EC2_INSTANCE_STOPPED"
+
+	// ScanStatusReasonPendingDisable is a ScanStatusReason enum value
+	ScanStatusReasonPendingDisable = "PENDING_DISABLE"
+
+	// ScanStatusReasonNoInventory is a ScanStatusReason enum value
+	ScanStatusReasonNoInventory = "NO_INVENTORY"
+
+	// ScanStatusReasonStaleInventory is a ScanStatusReason enum value
+	ScanStatusReasonStaleInventory = "STALE_INVENTORY"
+
+	// ScanStatusReasonExcludedByTag is a ScanStatusReason enum value
+	ScanStatusReasonExcludedByTag = "EXCLUDED_BY_TAG"
+
+	// ScanStatusReasonUnsupportedRuntime is a ScanStatusReason enum value
+	ScanStatusReasonUnsupportedRuntime = "UNSUPPORTED_RUNTIME"
+
+	// ScanStatusReasonUnsupportedMediaType is a ScanStatusReason enum value
+	ScanStatusReasonUnsupportedMediaType = "UNSUPPORTED_MEDIA_TYPE"
+
+	// ScanStatusReasonUnsupportedConfigFile is a ScanStatusReason enum value
+	ScanStatusReasonUnsupportedConfigFile = "UNSUPPORTED_CONFIG_FILE"
+
+	// ScanStatusReasonDeepInspectionPackageCollectionLimitExceeded is a ScanStatusReason enum value
+	ScanStatusReasonDeepInspectionPackageCollectionLimitExceeded = "DEEP_INSPECTION_PACKAGE_COLLECTION_LIMIT_EXCEEDED"
+
+	// ScanStatusReasonDeepInspectionDailySsmInventoryLimitExceeded is a ScanStatusReason enum value
+	ScanStatusReasonDeepInspectionDailySsmInventoryLimitExceeded = "DEEP_INSPECTION_DAILY_SSM_INVENTORY_LIMIT_EXCEEDED"
+
+	// ScanStatusReasonDeepInspectionCollectionTimeLimitExceeded is a ScanStatusReason enum value
+	ScanStatusReasonDeepInspectionCollectionTimeLimitExceeded = "DEEP_INSPECTION_COLLECTION_TIME_LIMIT_EXCEEDED"
+
+	// ScanStatusReasonDeepInspectionNoInventory is a ScanStatusReason enum value
+	ScanStatusReasonDeepInspectionNoInventory = "DEEP_INSPECTION_NO_INVENTORY"
 )
 
 // ScanStatusReason_Values returns all elements of the ScanStatusReason enum
@@ -13600,6 +20255,17 @@ func ScanStatusReason_Values() []string {
 		ScanStatusReasonScanFrequencyManual,
 		ScanStatusReasonScanFrequencyScanOnPush,
 		ScanStatusReasonEc2InstanceStopped,
+		ScanStatusReasonPendingDisable,
+		ScanStatusReasonNoInventory,
+		ScanStatusReasonStaleInventory,
+		ScanStatusReasonExcludedByTag,
+		ScanStatusReasonUnsupportedRuntime,
+		ScanStatusReasonUnsupportedMediaType,
+		ScanStatusReasonUnsupportedConfigFile,
+		ScanStatusReasonDeepInspectionPackageCollectionLimitExceeded,
+		ScanStatusReasonDeepInspectionDailySsmInventoryLimitExceeded,
+		ScanStatusReasonDeepInspectionCollectionTimeLimitExceeded,
+		ScanStatusReasonDeepInspectionNoInventory,
 	}
 }
 
@@ -13609,6 +20275,9 @@ const (
 
 	// ScanTypePackage is a ScanType enum value
 	ScanTypePackage = "PACKAGE"
+
+	// ScanTypeCode is a ScanType enum value
+	ScanTypeCode = "CODE"
 )
 
 // ScanType_Values returns all elements of the ScanType enum
@@ -13616,6 +20285,7 @@ func ScanType_Values() []string {
 	return []string{
 		ScanTypeNetwork,
 		ScanTypePackage,
+		ScanTypeCode,
 	}
 }
 
@@ -13625,6 +20295,9 @@ const (
 
 	// ServiceEcr is a Service enum value
 	ServiceEcr = "ECR"
+
+	// ServiceLambda is a Service enum value
+	ServiceLambda = "LAMBDA"
 )
 
 // Service_Values returns all elements of the Service enum
@@ -13632,6 +20305,7 @@ func Service_Values() []string {
 	return []string{
 		ServiceEc2,
 		ServiceEcr,
+		ServiceLambda,
 	}
 }
 
@@ -13715,6 +20389,9 @@ const (
 
 	// SortFieldVendorSeverity is a SortField enum value
 	SortFieldVendorSeverity = "VENDOR_SEVERITY"
+
+	// SortFieldEpssScore is a SortField enum value
+	SortFieldEpssScore = "EPSS_SCORE"
 )
 
 // SortField_Values returns all elements of the SortField enum
@@ -13736,6 +20413,7 @@ func SortField_Values() []string {
 		SortFieldVulnerabilitySource,
 		SortFieldInspectorScore,
 		SortFieldVendorSeverity,
+		SortFieldEpssScore,
 	}
 }
 
@@ -13836,6 +20514,12 @@ const (
 
 	// UsageTypeEcrRescan is a UsageType enum value
 	UsageTypeEcrRescan = "ECR_RESCAN"
+
+	// UsageTypeLambdaFunctionHours is a UsageType enum value
+	UsageTypeLambdaFunctionHours = "LAMBDA_FUNCTION_HOURS"
+
+	// UsageTypeLambdaFunctionCodeHours is a UsageType enum value
+	UsageTypeLambdaFunctionCodeHours = "LAMBDA_FUNCTION_CODE_HOURS"
 )
 
 // UsageType_Values returns all elements of the UsageType enum
@@ -13844,6 +20528,8 @@ func UsageType_Values() []string {
 		UsageTypeEc2InstanceHours,
 		UsageTypeEcrInitialScan,
 		UsageTypeEcrRescan,
+		UsageTypeLambdaFunctionHours,
+		UsageTypeLambdaFunctionCodeHours,
 	}
 }
 
@@ -13864,5 +20550,17 @@ func ValidationExceptionReason_Values() []string {
 		ValidationExceptionReasonCannotParse,
 		ValidationExceptionReasonFieldValidationFailed,
 		ValidationExceptionReasonOther,
+	}
+}
+
+const (
+	// VulnerabilitySourceNvd is a VulnerabilitySource enum value
+	VulnerabilitySourceNvd = "NVD"
+)
+
+// VulnerabilitySource_Values returns all elements of the VulnerabilitySource enum
+func VulnerabilitySource_Values() []string {
+	return []string{
+		VulnerabilitySourceNvd,
 	}
 }

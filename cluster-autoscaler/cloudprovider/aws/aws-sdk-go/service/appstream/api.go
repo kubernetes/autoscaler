@@ -13,6 +13,97 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/private/protocol/jsonrpc"
 )
 
+const opAssociateAppBlockBuilderAppBlock = "AssociateAppBlockBuilderAppBlock"
+
+// AssociateAppBlockBuilderAppBlockRequest generates a "aws/request.Request" representing the
+// client's request for the AssociateAppBlockBuilderAppBlock operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See AssociateAppBlockBuilderAppBlock for more information on using the AssociateAppBlockBuilderAppBlock
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the AssociateAppBlockBuilderAppBlockRequest method.
+//	req, resp := client.AssociateAppBlockBuilderAppBlockRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/AssociateAppBlockBuilderAppBlock
+func (c *AppStream) AssociateAppBlockBuilderAppBlockRequest(input *AssociateAppBlockBuilderAppBlockInput) (req *request.Request, output *AssociateAppBlockBuilderAppBlockOutput) {
+	op := &request.Operation{
+		Name:       opAssociateAppBlockBuilderAppBlock,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &AssociateAppBlockBuilderAppBlockInput{}
+	}
+
+	output = &AssociateAppBlockBuilderAppBlockOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// AssociateAppBlockBuilderAppBlock API operation for Amazon AppStream.
+//
+// Associates the specified app block builder with the specified app block.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon AppStream's
+// API operation AssociateAppBlockBuilderAppBlock for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ConcurrentModificationException
+//     An API error occurred. Wait a few minutes and try again.
+//
+//   - LimitExceededException
+//     The requested limit exceeds the permitted limit for an account.
+//
+//   - ResourceNotFoundException
+//     The specified resource was not found.
+//
+//   - InvalidParameterCombinationException
+//     Indicates an incorrect combination of parameters, or a missing parameter.
+//
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/AssociateAppBlockBuilderAppBlock
+func (c *AppStream) AssociateAppBlockBuilderAppBlock(input *AssociateAppBlockBuilderAppBlockInput) (*AssociateAppBlockBuilderAppBlockOutput, error) {
+	req, out := c.AssociateAppBlockBuilderAppBlockRequest(input)
+	return out, req.Send()
+}
+
+// AssociateAppBlockBuilderAppBlockWithContext is the same as AssociateAppBlockBuilderAppBlock with the addition of
+// the ability to pass a context and additional request options.
+//
+// See AssociateAppBlockBuilderAppBlock for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AppStream) AssociateAppBlockBuilderAppBlockWithContext(ctx aws.Context, input *AssociateAppBlockBuilderAppBlockInput, opts ...request.Option) (*AssociateAppBlockBuilderAppBlockOutput, error) {
+	req, out := c.AssociateAppBlockBuilderAppBlockRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opAssociateApplicationFleet = "AssociateApplicationFleet"
 
 // AssociateApplicationFleetRequest generates a "aws/request.Request" representing the
@@ -651,6 +742,197 @@ func (c *AppStream) CreateAppBlockWithContext(ctx aws.Context, input *CreateAppB
 	return out, req.Send()
 }
 
+const opCreateAppBlockBuilder = "CreateAppBlockBuilder"
+
+// CreateAppBlockBuilderRequest generates a "aws/request.Request" representing the
+// client's request for the CreateAppBlockBuilder operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateAppBlockBuilder for more information on using the CreateAppBlockBuilder
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreateAppBlockBuilderRequest method.
+//	req, resp := client.CreateAppBlockBuilderRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/CreateAppBlockBuilder
+func (c *AppStream) CreateAppBlockBuilderRequest(input *CreateAppBlockBuilderInput) (req *request.Request, output *CreateAppBlockBuilderOutput) {
+	op := &request.Operation{
+		Name:       opCreateAppBlockBuilder,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &CreateAppBlockBuilderInput{}
+	}
+
+	output = &CreateAppBlockBuilderOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateAppBlockBuilder API operation for Amazon AppStream.
+//
+// Creates an app block builder.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon AppStream's
+// API operation CreateAppBlockBuilder for usage and error information.
+//
+// Returned Error Types:
+//
+//   - LimitExceededException
+//     The requested limit exceeds the permitted limit for an account.
+//
+//   - RequestLimitExceededException
+//     AppStream 2.0 can’t process the request right now because the Describe
+//     calls from your AWS account are being throttled by Amazon EC2. Try again
+//     later.
+//
+//   - InvalidAccountStatusException
+//     The resource cannot be created because your AWS account is suspended. For
+//     assistance, contact AWS Support.
+//
+//   - InvalidRoleException
+//     The specified role is invalid.
+//
+//   - ConcurrentModificationException
+//     An API error occurred. Wait a few minutes and try again.
+//
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
+//
+//   - ResourceAlreadyExistsException
+//     The specified resource already exists.
+//
+//   - ResourceNotAvailableException
+//     The specified resource exists and is not in use, but isn't available.
+//
+//   - ResourceNotFoundException
+//     The specified resource was not found.
+//
+//   - InvalidParameterCombinationException
+//     Indicates an incorrect combination of parameters, or a missing parameter.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/CreateAppBlockBuilder
+func (c *AppStream) CreateAppBlockBuilder(input *CreateAppBlockBuilderInput) (*CreateAppBlockBuilderOutput, error) {
+	req, out := c.CreateAppBlockBuilderRequest(input)
+	return out, req.Send()
+}
+
+// CreateAppBlockBuilderWithContext is the same as CreateAppBlockBuilder with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateAppBlockBuilder for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AppStream) CreateAppBlockBuilderWithContext(ctx aws.Context, input *CreateAppBlockBuilderInput, opts ...request.Option) (*CreateAppBlockBuilderOutput, error) {
+	req, out := c.CreateAppBlockBuilderRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opCreateAppBlockBuilderStreamingURL = "CreateAppBlockBuilderStreamingURL"
+
+// CreateAppBlockBuilderStreamingURLRequest generates a "aws/request.Request" representing the
+// client's request for the CreateAppBlockBuilderStreamingURL operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateAppBlockBuilderStreamingURL for more information on using the CreateAppBlockBuilderStreamingURL
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreateAppBlockBuilderStreamingURLRequest method.
+//	req, resp := client.CreateAppBlockBuilderStreamingURLRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/CreateAppBlockBuilderStreamingURL
+func (c *AppStream) CreateAppBlockBuilderStreamingURLRequest(input *CreateAppBlockBuilderStreamingURLInput) (req *request.Request, output *CreateAppBlockBuilderStreamingURLOutput) {
+	op := &request.Operation{
+		Name:       opCreateAppBlockBuilderStreamingURL,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &CreateAppBlockBuilderStreamingURLInput{}
+	}
+
+	output = &CreateAppBlockBuilderStreamingURLOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateAppBlockBuilderStreamingURL API operation for Amazon AppStream.
+//
+// Creates a URL to start a create app block builder streaming session.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon AppStream's
+// API operation CreateAppBlockBuilderStreamingURL for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ResourceNotFoundException
+//     The specified resource was not found.
+//
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/CreateAppBlockBuilderStreamingURL
+func (c *AppStream) CreateAppBlockBuilderStreamingURL(input *CreateAppBlockBuilderStreamingURLInput) (*CreateAppBlockBuilderStreamingURLOutput, error) {
+	req, out := c.CreateAppBlockBuilderStreamingURLRequest(input)
+	return out, req.Send()
+}
+
+// CreateAppBlockBuilderStreamingURLWithContext is the same as CreateAppBlockBuilderStreamingURL with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateAppBlockBuilderStreamingURL for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AppStream) CreateAppBlockBuilderStreamingURLWithContext(ctx aws.Context, input *CreateAppBlockBuilderStreamingURLInput, opts ...request.Option) (*CreateAppBlockBuilderStreamingURLOutput, error) {
+	req, out := c.CreateAppBlockBuilderStreamingURLRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opCreateApplication = "CreateApplication"
 
 // CreateApplicationRequest generates a "aws/request.Request" representing the
@@ -984,8 +1266,8 @@ func (c *AppStream) CreateFleetRequest(input *CreateFleetInput) (req *request.Re
 
 // CreateFleet API operation for Amazon AppStream.
 //
-// Creates a fleet. A fleet consists of streaming instances that run a specified
-// image when using Always-On or On-Demand.
+// Creates a fleet. A fleet consists of streaming instances that your users
+// access for their applications and desktops.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1804,6 +2086,98 @@ func (c *AppStream) DeleteAppBlock(input *DeleteAppBlockInput) (*DeleteAppBlockO
 // for more information on using Contexts.
 func (c *AppStream) DeleteAppBlockWithContext(ctx aws.Context, input *DeleteAppBlockInput, opts ...request.Option) (*DeleteAppBlockOutput, error) {
 	req, out := c.DeleteAppBlockRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDeleteAppBlockBuilder = "DeleteAppBlockBuilder"
+
+// DeleteAppBlockBuilderRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteAppBlockBuilder operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteAppBlockBuilder for more information on using the DeleteAppBlockBuilder
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteAppBlockBuilderRequest method.
+//	req, resp := client.DeleteAppBlockBuilderRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DeleteAppBlockBuilder
+func (c *AppStream) DeleteAppBlockBuilderRequest(input *DeleteAppBlockBuilderInput) (req *request.Request, output *DeleteAppBlockBuilderOutput) {
+	op := &request.Operation{
+		Name:       opDeleteAppBlockBuilder,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DeleteAppBlockBuilderInput{}
+	}
+
+	output = &DeleteAppBlockBuilderOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// DeleteAppBlockBuilder API operation for Amazon AppStream.
+//
+// Deletes an app block builder.
+//
+// An app block builder can only be deleted when it has no association with
+// an app block.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon AppStream's
+// API operation DeleteAppBlockBuilder for usage and error information.
+//
+// Returned Error Types:
+//
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
+//
+//   - ConcurrentModificationException
+//     An API error occurred. Wait a few minutes and try again.
+//
+//   - ResourceInUseException
+//     The specified resource is in use.
+//
+//   - ResourceNotFoundException
+//     The specified resource was not found.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DeleteAppBlockBuilder
+func (c *AppStream) DeleteAppBlockBuilder(input *DeleteAppBlockBuilderInput) (*DeleteAppBlockBuilderOutput, error) {
+	req, out := c.DeleteAppBlockBuilderRequest(input)
+	return out, req.Send()
+}
+
+// DeleteAppBlockBuilderWithContext is the same as DeleteAppBlockBuilder with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteAppBlockBuilder for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AppStream) DeleteAppBlockBuilderWithContext(ctx aws.Context, input *DeleteAppBlockBuilderInput, opts ...request.Option) (*DeleteAppBlockBuilderOutput, error) {
+	req, out := c.DeleteAppBlockBuilderRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -2673,6 +3047,284 @@ func (c *AppStream) DeleteUserWithContext(ctx aws.Context, input *DeleteUserInpu
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
+}
+
+const opDescribeAppBlockBuilderAppBlockAssociations = "DescribeAppBlockBuilderAppBlockAssociations"
+
+// DescribeAppBlockBuilderAppBlockAssociationsRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeAppBlockBuilderAppBlockAssociations operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeAppBlockBuilderAppBlockAssociations for more information on using the DescribeAppBlockBuilderAppBlockAssociations
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribeAppBlockBuilderAppBlockAssociationsRequest method.
+//	req, resp := client.DescribeAppBlockBuilderAppBlockAssociationsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DescribeAppBlockBuilderAppBlockAssociations
+func (c *AppStream) DescribeAppBlockBuilderAppBlockAssociationsRequest(input *DescribeAppBlockBuilderAppBlockAssociationsInput) (req *request.Request, output *DescribeAppBlockBuilderAppBlockAssociationsOutput) {
+	op := &request.Operation{
+		Name:       opDescribeAppBlockBuilderAppBlockAssociations,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &DescribeAppBlockBuilderAppBlockAssociationsInput{}
+	}
+
+	output = &DescribeAppBlockBuilderAppBlockAssociationsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeAppBlockBuilderAppBlockAssociations API operation for Amazon AppStream.
+//
+// Retrieves a list that describes one or more app block builder associations.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon AppStream's
+// API operation DescribeAppBlockBuilderAppBlockAssociations for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InvalidParameterCombinationException
+//     Indicates an incorrect combination of parameters, or a missing parameter.
+//
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DescribeAppBlockBuilderAppBlockAssociations
+func (c *AppStream) DescribeAppBlockBuilderAppBlockAssociations(input *DescribeAppBlockBuilderAppBlockAssociationsInput) (*DescribeAppBlockBuilderAppBlockAssociationsOutput, error) {
+	req, out := c.DescribeAppBlockBuilderAppBlockAssociationsRequest(input)
+	return out, req.Send()
+}
+
+// DescribeAppBlockBuilderAppBlockAssociationsWithContext is the same as DescribeAppBlockBuilderAppBlockAssociations with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeAppBlockBuilderAppBlockAssociations for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AppStream) DescribeAppBlockBuilderAppBlockAssociationsWithContext(ctx aws.Context, input *DescribeAppBlockBuilderAppBlockAssociationsInput, opts ...request.Option) (*DescribeAppBlockBuilderAppBlockAssociationsOutput, error) {
+	req, out := c.DescribeAppBlockBuilderAppBlockAssociationsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// DescribeAppBlockBuilderAppBlockAssociationsPages iterates over the pages of a DescribeAppBlockBuilderAppBlockAssociations operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeAppBlockBuilderAppBlockAssociations method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeAppBlockBuilderAppBlockAssociations operation.
+//	pageNum := 0
+//	err := client.DescribeAppBlockBuilderAppBlockAssociationsPages(params,
+//	    func(page *appstream.DescribeAppBlockBuilderAppBlockAssociationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *AppStream) DescribeAppBlockBuilderAppBlockAssociationsPages(input *DescribeAppBlockBuilderAppBlockAssociationsInput, fn func(*DescribeAppBlockBuilderAppBlockAssociationsOutput, bool) bool) error {
+	return c.DescribeAppBlockBuilderAppBlockAssociationsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeAppBlockBuilderAppBlockAssociationsPagesWithContext same as DescribeAppBlockBuilderAppBlockAssociationsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AppStream) DescribeAppBlockBuilderAppBlockAssociationsPagesWithContext(ctx aws.Context, input *DescribeAppBlockBuilderAppBlockAssociationsInput, fn func(*DescribeAppBlockBuilderAppBlockAssociationsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeAppBlockBuilderAppBlockAssociationsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeAppBlockBuilderAppBlockAssociationsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeAppBlockBuilderAppBlockAssociationsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opDescribeAppBlockBuilders = "DescribeAppBlockBuilders"
+
+// DescribeAppBlockBuildersRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeAppBlockBuilders operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeAppBlockBuilders for more information on using the DescribeAppBlockBuilders
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribeAppBlockBuildersRequest method.
+//	req, resp := client.DescribeAppBlockBuildersRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DescribeAppBlockBuilders
+func (c *AppStream) DescribeAppBlockBuildersRequest(input *DescribeAppBlockBuildersInput) (req *request.Request, output *DescribeAppBlockBuildersOutput) {
+	op := &request.Operation{
+		Name:       opDescribeAppBlockBuilders,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &DescribeAppBlockBuildersInput{}
+	}
+
+	output = &DescribeAppBlockBuildersOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeAppBlockBuilders API operation for Amazon AppStream.
+//
+// Retrieves a list that describes one or more app block builders.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon AppStream's
+// API operation DescribeAppBlockBuilders for usage and error information.
+//
+// Returned Error Types:
+//
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
+//
+//   - ResourceNotFoundException
+//     The specified resource was not found.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DescribeAppBlockBuilders
+func (c *AppStream) DescribeAppBlockBuilders(input *DescribeAppBlockBuildersInput) (*DescribeAppBlockBuildersOutput, error) {
+	req, out := c.DescribeAppBlockBuildersRequest(input)
+	return out, req.Send()
+}
+
+// DescribeAppBlockBuildersWithContext is the same as DescribeAppBlockBuilders with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeAppBlockBuilders for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AppStream) DescribeAppBlockBuildersWithContext(ctx aws.Context, input *DescribeAppBlockBuildersInput, opts ...request.Option) (*DescribeAppBlockBuildersOutput, error) {
+	req, out := c.DescribeAppBlockBuildersRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// DescribeAppBlockBuildersPages iterates over the pages of a DescribeAppBlockBuilders operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeAppBlockBuilders method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeAppBlockBuilders operation.
+//	pageNum := 0
+//	err := client.DescribeAppBlockBuildersPages(params,
+//	    func(page *appstream.DescribeAppBlockBuildersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *AppStream) DescribeAppBlockBuildersPages(input *DescribeAppBlockBuildersInput, fn func(*DescribeAppBlockBuildersOutput, bool) bool) error {
+	return c.DescribeAppBlockBuildersPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeAppBlockBuildersPagesWithContext same as DescribeAppBlockBuildersPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AppStream) DescribeAppBlockBuildersPagesWithContext(ctx aws.Context, input *DescribeAppBlockBuildersInput, fn func(*DescribeAppBlockBuildersOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeAppBlockBuildersInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeAppBlockBuildersRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeAppBlockBuildersOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
 }
 
 const opDescribeAppBlocks = "DescribeAppBlocks"
@@ -4024,6 +4676,95 @@ func (c *AppStream) DisableUserWithContext(ctx aws.Context, input *DisableUserIn
 	return out, req.Send()
 }
 
+const opDisassociateAppBlockBuilderAppBlock = "DisassociateAppBlockBuilderAppBlock"
+
+// DisassociateAppBlockBuilderAppBlockRequest generates a "aws/request.Request" representing the
+// client's request for the DisassociateAppBlockBuilderAppBlock operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DisassociateAppBlockBuilderAppBlock for more information on using the DisassociateAppBlockBuilderAppBlock
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DisassociateAppBlockBuilderAppBlockRequest method.
+//	req, resp := client.DisassociateAppBlockBuilderAppBlockRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DisassociateAppBlockBuilderAppBlock
+func (c *AppStream) DisassociateAppBlockBuilderAppBlockRequest(input *DisassociateAppBlockBuilderAppBlockInput) (req *request.Request, output *DisassociateAppBlockBuilderAppBlockOutput) {
+	op := &request.Operation{
+		Name:       opDisassociateAppBlockBuilderAppBlock,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DisassociateAppBlockBuilderAppBlockInput{}
+	}
+
+	output = &DisassociateAppBlockBuilderAppBlockOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// DisassociateAppBlockBuilderAppBlock API operation for Amazon AppStream.
+//
+// Disassociates a specified app block builder from a specified app block.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon AppStream's
+// API operation DisassociateAppBlockBuilderAppBlock for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ConcurrentModificationException
+//     An API error occurred. Wait a few minutes and try again.
+//
+//   - InvalidParameterCombinationException
+//     Indicates an incorrect combination of parameters, or a missing parameter.
+//
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
+//
+//   - ResourceNotFoundException
+//     The specified resource was not found.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DisassociateAppBlockBuilderAppBlock
+func (c *AppStream) DisassociateAppBlockBuilderAppBlock(input *DisassociateAppBlockBuilderAppBlockInput) (*DisassociateAppBlockBuilderAppBlockOutput, error) {
+	req, out := c.DisassociateAppBlockBuilderAppBlockRequest(input)
+	return out, req.Send()
+}
+
+// DisassociateAppBlockBuilderAppBlockWithContext is the same as DisassociateAppBlockBuilderAppBlock with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DisassociateAppBlockBuilderAppBlock for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AppStream) DisassociateAppBlockBuilderAppBlockWithContext(ctx aws.Context, input *DisassociateAppBlockBuilderAppBlockInput, opts ...request.Option) (*DisassociateAppBlockBuilderAppBlockOutput, error) {
+	req, out := c.DisassociateAppBlockBuilderAppBlockRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opDisassociateApplicationFleet = "DisassociateApplicationFleet"
 
 // DisassociateApplicationFleetRequest generates a "aws/request.Request" representing the
@@ -4760,6 +5501,112 @@ func (c *AppStream) ListTagsForResourceWithContext(ctx aws.Context, input *ListT
 	return out, req.Send()
 }
 
+const opStartAppBlockBuilder = "StartAppBlockBuilder"
+
+// StartAppBlockBuilderRequest generates a "aws/request.Request" representing the
+// client's request for the StartAppBlockBuilder operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See StartAppBlockBuilder for more information on using the StartAppBlockBuilder
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the StartAppBlockBuilderRequest method.
+//	req, resp := client.StartAppBlockBuilderRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/StartAppBlockBuilder
+func (c *AppStream) StartAppBlockBuilderRequest(input *StartAppBlockBuilderInput) (req *request.Request, output *StartAppBlockBuilderOutput) {
+	op := &request.Operation{
+		Name:       opStartAppBlockBuilder,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &StartAppBlockBuilderInput{}
+	}
+
+	output = &StartAppBlockBuilderOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// StartAppBlockBuilder API operation for Amazon AppStream.
+//
+// Starts an app block builder.
+//
+// An app block builder can only be started when it's associated with an app
+// block.
+//
+// Starting an app block builder starts a new instance, which is equivalent
+// to an elastic fleet instance with application builder assistance functionality.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon AppStream's
+// API operation StartAppBlockBuilder for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ConcurrentModificationException
+//     An API error occurred. Wait a few minutes and try again.
+//
+//   - InvalidAccountStatusException
+//     The resource cannot be created because your AWS account is suspended. For
+//     assistance, contact AWS Support.
+//
+//   - LimitExceededException
+//     The requested limit exceeds the permitted limit for an account.
+//
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
+//
+//   - RequestLimitExceededException
+//     AppStream 2.0 can’t process the request right now because the Describe
+//     calls from your AWS account are being throttled by Amazon EC2. Try again
+//     later.
+//
+//   - ResourceNotAvailableException
+//     The specified resource exists and is not in use, but isn't available.
+//
+//   - ResourceNotFoundException
+//     The specified resource was not found.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/StartAppBlockBuilder
+func (c *AppStream) StartAppBlockBuilder(input *StartAppBlockBuilderInput) (*StartAppBlockBuilderOutput, error) {
+	req, out := c.StartAppBlockBuilderRequest(input)
+	return out, req.Send()
+}
+
+// StartAppBlockBuilderWithContext is the same as StartAppBlockBuilder with the addition of
+// the ability to pass a context and additional request options.
+//
+// See StartAppBlockBuilder for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AppStream) StartAppBlockBuilderWithContext(ctx aws.Context, input *StartAppBlockBuilderInput, opts ...request.Option) (*StartAppBlockBuilderOutput, error) {
+	req, out := c.StartAppBlockBuilderRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opStartFleet = "StartFleet"
 
 // StartFleetRequest generates a "aws/request.Request" representing the
@@ -4951,6 +5798,94 @@ func (c *AppStream) StartImageBuilder(input *StartImageBuilderInput) (*StartImag
 // for more information on using Contexts.
 func (c *AppStream) StartImageBuilderWithContext(ctx aws.Context, input *StartImageBuilderInput, opts ...request.Option) (*StartImageBuilderOutput, error) {
 	req, out := c.StartImageBuilderRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opStopAppBlockBuilder = "StopAppBlockBuilder"
+
+// StopAppBlockBuilderRequest generates a "aws/request.Request" representing the
+// client's request for the StopAppBlockBuilder operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See StopAppBlockBuilder for more information on using the StopAppBlockBuilder
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the StopAppBlockBuilderRequest method.
+//	req, resp := client.StopAppBlockBuilderRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/StopAppBlockBuilder
+func (c *AppStream) StopAppBlockBuilderRequest(input *StopAppBlockBuilderInput) (req *request.Request, output *StopAppBlockBuilderOutput) {
+	op := &request.Operation{
+		Name:       opStopAppBlockBuilder,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &StopAppBlockBuilderInput{}
+	}
+
+	output = &StopAppBlockBuilderOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// StopAppBlockBuilder API operation for Amazon AppStream.
+//
+// Stops an app block builder.
+//
+// Stopping an app block builder terminates the instance, and the instance state
+// is not persisted.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon AppStream's
+// API operation StopAppBlockBuilder for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ConcurrentModificationException
+//     An API error occurred. Wait a few minutes and try again.
+//
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
+//
+//   - ResourceNotFoundException
+//     The specified resource was not found.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/StopAppBlockBuilder
+func (c *AppStream) StopAppBlockBuilder(input *StopAppBlockBuilderInput) (*StopAppBlockBuilderOutput, error) {
+	req, out := c.StopAppBlockBuilderRequest(input)
+	return out, req.Send()
+}
+
+// StopAppBlockBuilderWithContext is the same as StopAppBlockBuilder with the addition of
+// the ability to pass a context and additional request options.
+//
+// See StopAppBlockBuilder for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AppStream) StopAppBlockBuilderWithContext(ctx aws.Context, input *StopAppBlockBuilderInput, opts ...request.Option) (*StopAppBlockBuilderOutput, error) {
+	req, out := c.StopAppBlockBuilderRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -5306,6 +6241,120 @@ func (c *AppStream) UntagResourceWithContext(ctx aws.Context, input *UntagResour
 	return out, req.Send()
 }
 
+const opUpdateAppBlockBuilder = "UpdateAppBlockBuilder"
+
+// UpdateAppBlockBuilderRequest generates a "aws/request.Request" representing the
+// client's request for the UpdateAppBlockBuilder operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UpdateAppBlockBuilder for more information on using the UpdateAppBlockBuilder
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UpdateAppBlockBuilderRequest method.
+//	req, resp := client.UpdateAppBlockBuilderRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/UpdateAppBlockBuilder
+func (c *AppStream) UpdateAppBlockBuilderRequest(input *UpdateAppBlockBuilderInput) (req *request.Request, output *UpdateAppBlockBuilderOutput) {
+	op := &request.Operation{
+		Name:       opUpdateAppBlockBuilder,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &UpdateAppBlockBuilderInput{}
+	}
+
+	output = &UpdateAppBlockBuilderOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// UpdateAppBlockBuilder API operation for Amazon AppStream.
+//
+// Updates an app block builder.
+//
+// If the app block builder is in the STARTING or STOPPING state, you can't
+// update it. If the app block builder is in the RUNNING state, you can only
+// update the DisplayName and Description. If the app block builder is in the
+// STOPPED state, you can update any attribute except the Name.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon AppStream's
+// API operation UpdateAppBlockBuilder for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ConcurrentModificationException
+//     An API error occurred. Wait a few minutes and try again.
+//
+//   - InvalidAccountStatusException
+//     The resource cannot be created because your AWS account is suspended. For
+//     assistance, contact AWS Support.
+//
+//   - InvalidParameterCombinationException
+//     Indicates an incorrect combination of parameters, or a missing parameter.
+//
+//   - InvalidRoleException
+//     The specified role is invalid.
+//
+//   - LimitExceededException
+//     The requested limit exceeds the permitted limit for an account.
+//
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
+//
+//   - RequestLimitExceededException
+//     AppStream 2.0 can’t process the request right now because the Describe
+//     calls from your AWS account are being throttled by Amazon EC2. Try again
+//     later.
+//
+//   - ResourceInUseException
+//     The specified resource is in use.
+//
+//   - ResourceNotAvailableException
+//     The specified resource exists and is not in use, but isn't available.
+//
+//   - ResourceNotFoundException
+//     The specified resource was not found.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/UpdateAppBlockBuilder
+func (c *AppStream) UpdateAppBlockBuilder(input *UpdateAppBlockBuilderInput) (*UpdateAppBlockBuilderOutput, error) {
+	req, out := c.UpdateAppBlockBuilderRequest(input)
+	return out, req.Send()
+}
+
+// UpdateAppBlockBuilderWithContext is the same as UpdateAppBlockBuilder with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UpdateAppBlockBuilder for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AppStream) UpdateAppBlockBuilderWithContext(ctx aws.Context, input *UpdateAppBlockBuilderInput, opts ...request.Option) (*UpdateAppBlockBuilderOutput, error) {
+	req, out := c.UpdateAppBlockBuilderRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opUpdateApplication = "UpdateApplication"
 
 // UpdateApplicationRequest generates a "aws/request.Request" representing the
@@ -5628,8 +6677,8 @@ func (c *AppStream) UpdateFleetRequest(input *UpdateFleetInput) (req *request.Re
 //     and DisconnectTimeoutInSeconds attributes.
 //
 //   - Elastic fleet type You can update the DisplayName, IdleDisconnectTimeoutInSeconds,
-//     DisconnectTimeoutInSeconds, MaxConcurrentSessions, and UsbDeviceFilterStrings
-//     attributes.
+//     DisconnectTimeoutInSeconds, MaxConcurrentSessions, SessionScriptS3Location
+//     and UsbDeviceFilterStrings attributes.
 //
 // If the fleet is in the STARTING or STOPPED state, you can't update it.
 //
@@ -5966,6 +7015,9 @@ func (s *AccessEndpoint) SetVpceId(v string) *AccessEndpoint {
 type AppBlock struct {
 	_ struct{} `type:"structure"`
 
+	// The errors of the app block.
+	AppBlockErrors []*ErrorDetails `type:"list"`
+
 	// The ARN of the app block.
 	//
 	// Arn is a required field
@@ -5985,13 +7037,31 @@ type AppBlock struct {
 	// Name is a required field
 	Name *string `min:"1" type:"string" required:"true"`
 
+	// The packaging type of the app block.
+	PackagingType *string `type:"string" enum:"PackagingType"`
+
+	// The post setup script details of the app block.
+	//
+	// This only applies to app blocks with PackagingType APPSTREAM2.
+	PostSetupScriptDetails *ScriptDetails `type:"structure"`
+
 	// The setup script details of the app block.
 	//
-	// SetupScriptDetails is a required field
-	SetupScriptDetails *ScriptDetails `type:"structure" required:"true"`
+	// This only applies to app blocks with PackagingType CUSTOM.
+	SetupScriptDetails *ScriptDetails `type:"structure"`
 
 	// The source S3 location of the app block.
 	SourceS3Location *S3Location `type:"structure"`
+
+	// The state of the app block.
+	//
+	// An app block with AppStream 2.0 packaging will be in the INACTIVE state if
+	// no application package (VHD) is assigned to it. After an application package
+	// (VHD) is created by an app block builder for an app block, it becomes ACTIVE.
+	//
+	// Custom app blocks are always in the ACTIVE state and no action is required
+	// to use them.
+	State *string `type:"string" enum:"AppBlockState"`
 }
 
 // String returns the string representation.
@@ -6010,6 +7080,12 @@ func (s AppBlock) String() string {
 // value will be replaced with "sensitive".
 func (s AppBlock) GoString() string {
 	return s.String()
+}
+
+// SetAppBlockErrors sets the AppBlockErrors field's value.
+func (s *AppBlock) SetAppBlockErrors(v []*ErrorDetails) *AppBlock {
+	s.AppBlockErrors = v
+	return s
 }
 
 // SetArn sets the Arn field's value.
@@ -6042,6 +7118,18 @@ func (s *AppBlock) SetName(v string) *AppBlock {
 	return s
 }
 
+// SetPackagingType sets the PackagingType field's value.
+func (s *AppBlock) SetPackagingType(v string) *AppBlock {
+	s.PackagingType = &v
+	return s
+}
+
+// SetPostSetupScriptDetails sets the PostSetupScriptDetails field's value.
+func (s *AppBlock) SetPostSetupScriptDetails(v *ScriptDetails) *AppBlock {
+	s.PostSetupScriptDetails = v
+	return s
+}
+
 // SetSetupScriptDetails sets the SetupScriptDetails field's value.
 func (s *AppBlock) SetSetupScriptDetails(v *ScriptDetails) *AppBlock {
 	s.SetupScriptDetails = v
@@ -6051,6 +7139,262 @@ func (s *AppBlock) SetSetupScriptDetails(v *ScriptDetails) *AppBlock {
 // SetSourceS3Location sets the SourceS3Location field's value.
 func (s *AppBlock) SetSourceS3Location(v *S3Location) *AppBlock {
 	s.SourceS3Location = v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *AppBlock) SetState(v string) *AppBlock {
+	s.State = &v
+	return s
+}
+
+// Describes an app block builder.
+type AppBlockBuilder struct {
+	_ struct{} `type:"structure"`
+
+	// The list of interface VPC endpoint (interface endpoint) objects. Administrators
+	// can connect to the app block builder only through the specified endpoints.
+	AccessEndpoints []*AccessEndpoint `min:"1" type:"list"`
+
+	// The app block builder errors.
+	AppBlockBuilderErrors []*ResourceError `type:"list"`
+
+	// The ARN of the app block builder.
+	//
+	// Arn is a required field
+	Arn *string `type:"string" required:"true"`
+
+	// The creation time of the app block builder.
+	CreatedTime *time.Time `type:"timestamp"`
+
+	// The description of the app block builder.
+	Description *string `min:"1" type:"string"`
+
+	// The display name of the app block builder.
+	DisplayName *string `min:"1" type:"string"`
+
+	// Indicates whether default internet access is enabled for the app block builder.
+	EnableDefaultInternetAccess *bool `type:"boolean"`
+
+	// The ARN of the IAM role that is applied to the app block builder.
+	IamRoleArn *string `type:"string"`
+
+	// The instance type of the app block builder.
+	//
+	// InstanceType is a required field
+	InstanceType *string `min:"1" type:"string" required:"true"`
+
+	// The name of the app block builder.
+	//
+	// Name is a required field
+	Name *string `min:"1" type:"string" required:"true"`
+
+	// The platform of the app block builder.
+	//
+	// WINDOWS_SERVER_2019 is the only valid value.
+	//
+	// Platform is a required field
+	Platform *string `type:"string" required:"true" enum:"AppBlockBuilderPlatformType"`
+
+	// The state of the app block builder.
+	//
+	// State is a required field
+	State *string `type:"string" required:"true" enum:"AppBlockBuilderState"`
+
+	// The state change reason.
+	StateChangeReason *AppBlockBuilderStateChangeReason `type:"structure"`
+
+	// The VPC configuration for the app block builder.
+	//
+	// VpcConfig is a required field
+	VpcConfig *VpcConfig `type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AppBlockBuilder) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AppBlockBuilder) GoString() string {
+	return s.String()
+}
+
+// SetAccessEndpoints sets the AccessEndpoints field's value.
+func (s *AppBlockBuilder) SetAccessEndpoints(v []*AccessEndpoint) *AppBlockBuilder {
+	s.AccessEndpoints = v
+	return s
+}
+
+// SetAppBlockBuilderErrors sets the AppBlockBuilderErrors field's value.
+func (s *AppBlockBuilder) SetAppBlockBuilderErrors(v []*ResourceError) *AppBlockBuilder {
+	s.AppBlockBuilderErrors = v
+	return s
+}
+
+// SetArn sets the Arn field's value.
+func (s *AppBlockBuilder) SetArn(v string) *AppBlockBuilder {
+	s.Arn = &v
+	return s
+}
+
+// SetCreatedTime sets the CreatedTime field's value.
+func (s *AppBlockBuilder) SetCreatedTime(v time.Time) *AppBlockBuilder {
+	s.CreatedTime = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *AppBlockBuilder) SetDescription(v string) *AppBlockBuilder {
+	s.Description = &v
+	return s
+}
+
+// SetDisplayName sets the DisplayName field's value.
+func (s *AppBlockBuilder) SetDisplayName(v string) *AppBlockBuilder {
+	s.DisplayName = &v
+	return s
+}
+
+// SetEnableDefaultInternetAccess sets the EnableDefaultInternetAccess field's value.
+func (s *AppBlockBuilder) SetEnableDefaultInternetAccess(v bool) *AppBlockBuilder {
+	s.EnableDefaultInternetAccess = &v
+	return s
+}
+
+// SetIamRoleArn sets the IamRoleArn field's value.
+func (s *AppBlockBuilder) SetIamRoleArn(v string) *AppBlockBuilder {
+	s.IamRoleArn = &v
+	return s
+}
+
+// SetInstanceType sets the InstanceType field's value.
+func (s *AppBlockBuilder) SetInstanceType(v string) *AppBlockBuilder {
+	s.InstanceType = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *AppBlockBuilder) SetName(v string) *AppBlockBuilder {
+	s.Name = &v
+	return s
+}
+
+// SetPlatform sets the Platform field's value.
+func (s *AppBlockBuilder) SetPlatform(v string) *AppBlockBuilder {
+	s.Platform = &v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *AppBlockBuilder) SetState(v string) *AppBlockBuilder {
+	s.State = &v
+	return s
+}
+
+// SetStateChangeReason sets the StateChangeReason field's value.
+func (s *AppBlockBuilder) SetStateChangeReason(v *AppBlockBuilderStateChangeReason) *AppBlockBuilder {
+	s.StateChangeReason = v
+	return s
+}
+
+// SetVpcConfig sets the VpcConfig field's value.
+func (s *AppBlockBuilder) SetVpcConfig(v *VpcConfig) *AppBlockBuilder {
+	s.VpcConfig = v
+	return s
+}
+
+// Describes an association between an app block builder and app block.
+type AppBlockBuilderAppBlockAssociation struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the app block.
+	//
+	// AppBlockArn is a required field
+	AppBlockArn *string `type:"string" required:"true"`
+
+	// The name of the app block builder.
+	//
+	// AppBlockBuilderName is a required field
+	AppBlockBuilderName *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AppBlockBuilderAppBlockAssociation) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AppBlockBuilderAppBlockAssociation) GoString() string {
+	return s.String()
+}
+
+// SetAppBlockArn sets the AppBlockArn field's value.
+func (s *AppBlockBuilderAppBlockAssociation) SetAppBlockArn(v string) *AppBlockBuilderAppBlockAssociation {
+	s.AppBlockArn = &v
+	return s
+}
+
+// SetAppBlockBuilderName sets the AppBlockBuilderName field's value.
+func (s *AppBlockBuilderAppBlockAssociation) SetAppBlockBuilderName(v string) *AppBlockBuilderAppBlockAssociation {
+	s.AppBlockBuilderName = &v
+	return s
+}
+
+// Describes the reason why the last app block builder state change occurred.
+type AppBlockBuilderStateChangeReason struct {
+	_ struct{} `type:"structure"`
+
+	// The state change reason code.
+	Code *string `type:"string" enum:"AppBlockBuilderStateChangeReasonCode"`
+
+	// The state change reason message.
+	Message *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AppBlockBuilderStateChangeReason) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AppBlockBuilderStateChangeReason) GoString() string {
+	return s.String()
+}
+
+// SetCode sets the Code field's value.
+func (s *AppBlockBuilderStateChangeReason) SetCode(v string) *AppBlockBuilderStateChangeReason {
+	s.Code = &v
+	return s
+}
+
+// SetMessage sets the Message field's value.
+func (s *AppBlockBuilderStateChangeReason) SetMessage(v string) *AppBlockBuilderStateChangeReason {
+	s.Message = &v
 	return s
 }
 
@@ -6369,6 +7713,97 @@ func (s *ApplicationSettingsResponse) SetS3BucketName(v string) *ApplicationSett
 // SetSettingsGroup sets the SettingsGroup field's value.
 func (s *ApplicationSettingsResponse) SetSettingsGroup(v string) *ApplicationSettingsResponse {
 	s.SettingsGroup = &v
+	return s
+}
+
+type AssociateAppBlockBuilderAppBlockInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the app block.
+	//
+	// AppBlockArn is a required field
+	AppBlockArn *string `type:"string" required:"true"`
+
+	// The name of the app block builder.
+	//
+	// AppBlockBuilderName is a required field
+	AppBlockBuilderName *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AssociateAppBlockBuilderAppBlockInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AssociateAppBlockBuilderAppBlockInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AssociateAppBlockBuilderAppBlockInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AssociateAppBlockBuilderAppBlockInput"}
+	if s.AppBlockArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("AppBlockArn"))
+	}
+	if s.AppBlockBuilderName == nil {
+		invalidParams.Add(request.NewErrParamRequired("AppBlockBuilderName"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAppBlockArn sets the AppBlockArn field's value.
+func (s *AssociateAppBlockBuilderAppBlockInput) SetAppBlockArn(v string) *AssociateAppBlockBuilderAppBlockInput {
+	s.AppBlockArn = &v
+	return s
+}
+
+// SetAppBlockBuilderName sets the AppBlockBuilderName field's value.
+func (s *AssociateAppBlockBuilderAppBlockInput) SetAppBlockBuilderName(v string) *AssociateAppBlockBuilderAppBlockInput {
+	s.AppBlockBuilderName = &v
+	return s
+}
+
+type AssociateAppBlockBuilderAppBlockOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The list of app block builders associated with app blocks.
+	AppBlockBuilderAppBlockAssociation *AppBlockBuilderAppBlockAssociation `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AssociateAppBlockBuilderAppBlockOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AssociateAppBlockBuilderAppBlockOutput) GoString() string {
+	return s.String()
+}
+
+// SetAppBlockBuilderAppBlockAssociation sets the AppBlockBuilderAppBlockAssociation field's value.
+func (s *AssociateAppBlockBuilderAppBlockOutput) SetAppBlockBuilderAppBlockAssociation(v *AppBlockBuilderAppBlockAssociation) *AssociateAppBlockBuilderAppBlockOutput {
+	s.AppBlockBuilderAppBlockAssociation = v
 	return s
 }
 
@@ -6832,14 +8267,69 @@ func (s *BatchDisassociateUserStackOutput) SetErrors(v []*UserStackAssociationEr
 	return s
 }
 
+// The certificate-based authentication properties used to authenticate SAML
+// 2.0 Identity Provider (IdP) user identities to Active Directory domain-joined
+// streaming instances. Fallback is turned on by default when certificate-based
+// authentication is Enabled . Fallback allows users to log in using their AD
+// domain password if certificate-based authentication is unsuccessful, or to
+// unlock a desktop lock screen. Enabled_no_directory_login_fallback enables
+// certificate-based authentication, but does not allow users to log in using
+// their AD domain password. Users will be disconnected to re-authenticate using
+// certificates.
+type CertificateBasedAuthProperties struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the AWS Certificate Manager Private CA resource.
+	CertificateAuthorityArn *string `type:"string"`
+
+	// The status of the certificate-based authentication properties.
+	Status *string `type:"string" enum:"CertificateBasedAuthStatus"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CertificateBasedAuthProperties) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CertificateBasedAuthProperties) GoString() string {
+	return s.String()
+}
+
+// SetCertificateAuthorityArn sets the CertificateAuthorityArn field's value.
+func (s *CertificateBasedAuthProperties) SetCertificateAuthorityArn(v string) *CertificateBasedAuthProperties {
+	s.CertificateAuthorityArn = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *CertificateBasedAuthProperties) SetStatus(v string) *CertificateBasedAuthProperties {
+	s.Status = &v
+	return s
+}
+
 // Describes the capacity for a fleet.
 type ComputeCapacity struct {
 	_ struct{} `type:"structure"`
 
 	// The desired number of streaming instances.
+	DesiredInstances *int64 `type:"integer"`
+
+	// The desired number of user sessions for a multi-session fleet. This is not
+	// allowed for single-session fleets.
 	//
-	// DesiredInstances is a required field
-	DesiredInstances *int64 `type:"integer" required:"true"`
+	// When you create a fleet, you must set either the DesiredSessions or DesiredInstances
+	// attribute, based on the type of fleet you create. You can’t define both
+	// attributes or leave both attributes blank.
+	DesiredSessions *int64 `type:"integer"`
 }
 
 // String returns the string representation.
@@ -6860,22 +8350,15 @@ func (s ComputeCapacity) GoString() string {
 	return s.String()
 }
 
-// Validate inspects the fields of the type to determine if they are valid.
-func (s *ComputeCapacity) Validate() error {
-	invalidParams := request.ErrInvalidParams{Context: "ComputeCapacity"}
-	if s.DesiredInstances == nil {
-		invalidParams.Add(request.NewErrParamRequired("DesiredInstances"))
-	}
-
-	if invalidParams.Len() > 0 {
-		return invalidParams
-	}
-	return nil
-}
-
 // SetDesiredInstances sets the DesiredInstances field's value.
 func (s *ComputeCapacity) SetDesiredInstances(v int64) *ComputeCapacity {
 	s.DesiredInstances = &v
+	return s
+}
+
+// SetDesiredSessions sets the DesiredSessions field's value.
+func (s *ComputeCapacity) SetDesiredSessions(v int64) *ComputeCapacity {
+	s.DesiredSessions = &v
 	return s
 }
 
@@ -6883,13 +8366,41 @@ func (s *ComputeCapacity) SetDesiredInstances(v int64) *ComputeCapacity {
 type ComputeCapacityStatus struct {
 	_ struct{} `type:"structure"`
 
+	// The number of user sessions currently being used for streaming sessions.
+	// This only applies to multi-session fleets.
+	ActiveUserSessions *int64 `type:"integer"`
+
+	// The total number of session slots that are available for streaming or are
+	// currently streaming.
+	//
+	// ActualUserSessionCapacity = AvailableUserSessionCapacity + ActiveUserSessions
+	//
+	// This only applies to multi-session fleets.
+	ActualUserSessions *int64 `type:"integer"`
+
 	// The number of currently available instances that can be used to stream sessions.
 	Available *int64 `type:"integer"`
+
+	// The number of idle session slots currently available for user sessions.
+	//
+	// AvailableUserSessionCapacity = ActualUserSessionCapacity - ActiveUserSessions
+	//
+	// This only applies to multi-session fleets.
+	AvailableUserSessions *int64 `type:"integer"`
 
 	// The desired number of streaming instances.
 	//
 	// Desired is a required field
 	Desired *int64 `type:"integer" required:"true"`
+
+	// The total number of sessions slots that are either running or pending. This
+	// represents the total number of concurrent streaming sessions your fleet can
+	// support in a steady state.
+	//
+	// DesiredUserSessionCapacity = ActualUserSessionCapacity + PendingUserSessionCapacity
+	//
+	// This only applies to multi-session fleets.
+	DesiredUserSessions *int64 `type:"integer"`
 
 	// The number of instances in use for streaming.
 	InUse *int64 `type:"integer"`
@@ -6916,15 +8427,39 @@ func (s ComputeCapacityStatus) GoString() string {
 	return s.String()
 }
 
+// SetActiveUserSessions sets the ActiveUserSessions field's value.
+func (s *ComputeCapacityStatus) SetActiveUserSessions(v int64) *ComputeCapacityStatus {
+	s.ActiveUserSessions = &v
+	return s
+}
+
+// SetActualUserSessions sets the ActualUserSessions field's value.
+func (s *ComputeCapacityStatus) SetActualUserSessions(v int64) *ComputeCapacityStatus {
+	s.ActualUserSessions = &v
+	return s
+}
+
 // SetAvailable sets the Available field's value.
 func (s *ComputeCapacityStatus) SetAvailable(v int64) *ComputeCapacityStatus {
 	s.Available = &v
 	return s
 }
 
+// SetAvailableUserSessions sets the AvailableUserSessions field's value.
+func (s *ComputeCapacityStatus) SetAvailableUserSessions(v int64) *ComputeCapacityStatus {
+	s.AvailableUserSessions = &v
+	return s
+}
+
 // SetDesired sets the Desired field's value.
 func (s *ComputeCapacityStatus) SetDesired(v int64) *ComputeCapacityStatus {
 	s.Desired = &v
+	return s
+}
+
+// SetDesiredUserSessions sets the DesiredUserSessions field's value.
+func (s *ComputeCapacityStatus) SetDesiredUserSessions(v int64) *ComputeCapacityStatus {
+	s.DesiredUserSessions = &v
 	return s
 }
 
@@ -7123,6 +8658,332 @@ func (s *CopyImageOutput) SetDestinationImageName(v string) *CopyImageOutput {
 	return s
 }
 
+type CreateAppBlockBuilderInput struct {
+	_ struct{} `type:"structure"`
+
+	// The list of interface VPC endpoint (interface endpoint) objects. Administrators
+	// can connect to the app block builder only through the specified endpoints.
+	AccessEndpoints []*AccessEndpoint `min:"1" type:"list"`
+
+	// The description of the app block builder.
+	Description *string `type:"string"`
+
+	// The display name of the app block builder.
+	DisplayName *string `type:"string"`
+
+	// Enables or disables default internet access for the app block builder.
+	EnableDefaultInternetAccess *bool `type:"boolean"`
+
+	// The Amazon Resource Name (ARN) of the IAM role to apply to the app block
+	// builder. To assume a role, the app block builder calls the AWS Security Token
+	// Service (STS) AssumeRole API operation and passes the ARN of the role to
+	// use. The operation creates a new session with temporary credentials. AppStream
+	// 2.0 retrieves the temporary credentials and creates the appstream_machine_role
+	// credential profile on the instance.
+	//
+	// For more information, see Using an IAM Role to Grant Permissions to Applications
+	// and Scripts Running on AppStream 2.0 Streaming Instances (https://docs.aws.amazon.com/appstream2/latest/developerguide/using-iam-roles-to-grant-permissions-to-applications-scripts-streaming-instances.html)
+	// in the Amazon AppStream 2.0 Administration Guide.
+	IamRoleArn *string `type:"string"`
+
+	// The instance type to use when launching the app block builder. The following
+	// instance types are available:
+	//
+	//    * stream.standard.small
+	//
+	//    * stream.standard.medium
+	//
+	//    * stream.standard.large
+	//
+	//    * stream.standard.xlarge
+	//
+	//    * stream.standard.2xlarge
+	//
+	// InstanceType is a required field
+	InstanceType *string `min:"1" type:"string" required:"true"`
+
+	// The unique name for the app block builder.
+	//
+	// Name is a required field
+	Name *string `type:"string" required:"true"`
+
+	// The platform of the app block builder.
+	//
+	// WINDOWS_SERVER_2019 is the only valid value.
+	//
+	// Platform is a required field
+	Platform *string `type:"string" required:"true" enum:"AppBlockBuilderPlatformType"`
+
+	// The tags to associate with the app block builder. A tag is a key-value pair,
+	// and the value is optional. For example, Environment=Test. If you do not specify
+	// a value, Environment=.
+	//
+	// If you do not specify a value, the value is set to an empty string.
+	//
+	// Generally allowed characters are: letters, numbers, and spaces representable
+	// in UTF-8, and the following special characters:
+	//
+	// _ . : / = + \ - @
+	//
+	// For more information, see Tagging Your Resources (https://docs.aws.amazon.com/appstream2/latest/developerguide/tagging-basic.html)
+	// in the Amazon AppStream 2.0 Administration Guide.
+	Tags map[string]*string `min:"1" type:"map"`
+
+	// The VPC configuration for the app block builder.
+	//
+	// App block builders require that you specify at least two subnets in different
+	// availability zones.
+	//
+	// VpcConfig is a required field
+	VpcConfig *VpcConfig `type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateAppBlockBuilderInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateAppBlockBuilderInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateAppBlockBuilderInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateAppBlockBuilderInput"}
+	if s.AccessEndpoints != nil && len(s.AccessEndpoints) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AccessEndpoints", 1))
+	}
+	if s.InstanceType == nil {
+		invalidParams.Add(request.NewErrParamRequired("InstanceType"))
+	}
+	if s.InstanceType != nil && len(*s.InstanceType) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("InstanceType", 1))
+	}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Platform == nil {
+		invalidParams.Add(request.NewErrParamRequired("Platform"))
+	}
+	if s.Tags != nil && len(s.Tags) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Tags", 1))
+	}
+	if s.VpcConfig == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpcConfig"))
+	}
+	if s.AccessEndpoints != nil {
+		for i, v := range s.AccessEndpoints {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "AccessEndpoints", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccessEndpoints sets the AccessEndpoints field's value.
+func (s *CreateAppBlockBuilderInput) SetAccessEndpoints(v []*AccessEndpoint) *CreateAppBlockBuilderInput {
+	s.AccessEndpoints = v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *CreateAppBlockBuilderInput) SetDescription(v string) *CreateAppBlockBuilderInput {
+	s.Description = &v
+	return s
+}
+
+// SetDisplayName sets the DisplayName field's value.
+func (s *CreateAppBlockBuilderInput) SetDisplayName(v string) *CreateAppBlockBuilderInput {
+	s.DisplayName = &v
+	return s
+}
+
+// SetEnableDefaultInternetAccess sets the EnableDefaultInternetAccess field's value.
+func (s *CreateAppBlockBuilderInput) SetEnableDefaultInternetAccess(v bool) *CreateAppBlockBuilderInput {
+	s.EnableDefaultInternetAccess = &v
+	return s
+}
+
+// SetIamRoleArn sets the IamRoleArn field's value.
+func (s *CreateAppBlockBuilderInput) SetIamRoleArn(v string) *CreateAppBlockBuilderInput {
+	s.IamRoleArn = &v
+	return s
+}
+
+// SetInstanceType sets the InstanceType field's value.
+func (s *CreateAppBlockBuilderInput) SetInstanceType(v string) *CreateAppBlockBuilderInput {
+	s.InstanceType = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CreateAppBlockBuilderInput) SetName(v string) *CreateAppBlockBuilderInput {
+	s.Name = &v
+	return s
+}
+
+// SetPlatform sets the Platform field's value.
+func (s *CreateAppBlockBuilderInput) SetPlatform(v string) *CreateAppBlockBuilderInput {
+	s.Platform = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CreateAppBlockBuilderInput) SetTags(v map[string]*string) *CreateAppBlockBuilderInput {
+	s.Tags = v
+	return s
+}
+
+// SetVpcConfig sets the VpcConfig field's value.
+func (s *CreateAppBlockBuilderInput) SetVpcConfig(v *VpcConfig) *CreateAppBlockBuilderInput {
+	s.VpcConfig = v
+	return s
+}
+
+type CreateAppBlockBuilderOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Describes an app block builder.
+	AppBlockBuilder *AppBlockBuilder `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateAppBlockBuilderOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateAppBlockBuilderOutput) GoString() string {
+	return s.String()
+}
+
+// SetAppBlockBuilder sets the AppBlockBuilder field's value.
+func (s *CreateAppBlockBuilderOutput) SetAppBlockBuilder(v *AppBlockBuilder) *CreateAppBlockBuilderOutput {
+	s.AppBlockBuilder = v
+	return s
+}
+
+type CreateAppBlockBuilderStreamingURLInput struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the app block builder.
+	//
+	// AppBlockBuilderName is a required field
+	AppBlockBuilderName *string `type:"string" required:"true"`
+
+	// The time that the streaming URL will be valid, in seconds. Specify a value
+	// between 1 and 604800 seconds. The default is 3600 seconds.
+	Validity *int64 `type:"long"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateAppBlockBuilderStreamingURLInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateAppBlockBuilderStreamingURLInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateAppBlockBuilderStreamingURLInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateAppBlockBuilderStreamingURLInput"}
+	if s.AppBlockBuilderName == nil {
+		invalidParams.Add(request.NewErrParamRequired("AppBlockBuilderName"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAppBlockBuilderName sets the AppBlockBuilderName field's value.
+func (s *CreateAppBlockBuilderStreamingURLInput) SetAppBlockBuilderName(v string) *CreateAppBlockBuilderStreamingURLInput {
+	s.AppBlockBuilderName = &v
+	return s
+}
+
+// SetValidity sets the Validity field's value.
+func (s *CreateAppBlockBuilderStreamingURLInput) SetValidity(v int64) *CreateAppBlockBuilderStreamingURLInput {
+	s.Validity = &v
+	return s
+}
+
+type CreateAppBlockBuilderStreamingURLOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The elapsed time, in seconds after the Unix epoch, when this URL expires.
+	Expires *time.Time `type:"timestamp"`
+
+	// The URL to start the streaming session.
+	StreamingURL *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateAppBlockBuilderStreamingURLOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateAppBlockBuilderStreamingURLOutput) GoString() string {
+	return s.String()
+}
+
+// SetExpires sets the Expires field's value.
+func (s *CreateAppBlockBuilderStreamingURLOutput) SetExpires(v time.Time) *CreateAppBlockBuilderStreamingURLOutput {
+	s.Expires = &v
+	return s
+}
+
+// SetStreamingURL sets the StreamingURL field's value.
+func (s *CreateAppBlockBuilderStreamingURLOutput) SetStreamingURL(v string) *CreateAppBlockBuilderStreamingURLOutput {
+	s.StreamingURL = &v
+	return s
+}
+
 type CreateAppBlockInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7137,10 +8998,16 @@ type CreateAppBlockInput struct {
 	// Name is a required field
 	Name *string `type:"string" required:"true"`
 
-	// The setup script details of the app block.
-	//
-	// SetupScriptDetails is a required field
-	SetupScriptDetails *ScriptDetails `type:"structure" required:"true"`
+	// The packaging type of the app block.
+	PackagingType *string `type:"string" enum:"PackagingType"`
+
+	// The post setup script details of the app block. This can only be provided
+	// for the APPSTREAM2 PackagingType.
+	PostSetupScriptDetails *ScriptDetails `type:"structure"`
+
+	// The setup script details of the app block. This must be provided for the
+	// CUSTOM PackagingType.
+	SetupScriptDetails *ScriptDetails `type:"structure"`
 
 	// The source S3 location of the app block.
 	//
@@ -7175,14 +9042,16 @@ func (s *CreateAppBlockInput) Validate() error {
 	if s.Name == nil {
 		invalidParams.Add(request.NewErrParamRequired("Name"))
 	}
-	if s.SetupScriptDetails == nil {
-		invalidParams.Add(request.NewErrParamRequired("SetupScriptDetails"))
-	}
 	if s.SourceS3Location == nil {
 		invalidParams.Add(request.NewErrParamRequired("SourceS3Location"))
 	}
 	if s.Tags != nil && len(s.Tags) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("Tags", 1))
+	}
+	if s.PostSetupScriptDetails != nil {
+		if err := s.PostSetupScriptDetails.Validate(); err != nil {
+			invalidParams.AddNested("PostSetupScriptDetails", err.(request.ErrInvalidParams))
+		}
 	}
 	if s.SetupScriptDetails != nil {
 		if err := s.SetupScriptDetails.Validate(); err != nil {
@@ -7216,6 +9085,18 @@ func (s *CreateAppBlockInput) SetDisplayName(v string) *CreateAppBlockInput {
 // SetName sets the Name field's value.
 func (s *CreateAppBlockInput) SetName(v string) *CreateAppBlockInput {
 	s.Name = &v
+	return s
+}
+
+// SetPackagingType sets the PackagingType field's value.
+func (s *CreateAppBlockInput) SetPackagingType(v string) *CreateAppBlockInput {
+	s.PackagingType = &v
+	return s
+}
+
+// SetPostSetupScriptDetails sets the PostSetupScriptDetails field's value.
+func (s *CreateAppBlockInput) SetPostSetupScriptDetails(v *ScriptDetails) *CreateAppBlockInput {
+	s.PostSetupScriptDetails = v
 	return s
 }
 
@@ -7484,6 +9365,17 @@ func (s *CreateApplicationOutput) SetApplication(v *Application) *CreateApplicat
 type CreateDirectoryConfigInput struct {
 	_ struct{} `type:"structure"`
 
+	// The certificate-based authentication properties used to authenticate SAML
+	// 2.0 Identity Provider (IdP) user identities to Active Directory domain-joined
+	// streaming instances. Fallback is turned on by default when certificate-based
+	// authentication is Enabled . Fallback allows users to log in using their AD
+	// domain password if certificate-based authentication is unsuccessful, or to
+	// unlock a desktop lock screen. Enabled_no_directory_login_fallback enables
+	// certificate-based authentication, but does not allow users to log in using
+	// their AD domain password. Users will be disconnected to re-authenticate using
+	// certificates.
+	CertificateBasedAuthProperties *CertificateBasedAuthProperties `type:"structure"`
+
 	// The fully qualified name of the directory (for example, corp.example.com).
 	//
 	// DirectoryName is a required field
@@ -7536,6 +9428,12 @@ func (s *CreateDirectoryConfigInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetCertificateBasedAuthProperties sets the CertificateBasedAuthProperties field's value.
+func (s *CreateDirectoryConfigInput) SetCertificateBasedAuthProperties(v *CertificateBasedAuthProperties) *CreateDirectoryConfigInput {
+	s.CertificateBasedAuthProperties = v
+	return s
 }
 
 // SetDirectoryName sets the DirectoryName field's value.
@@ -7812,7 +9710,7 @@ type CreateFleetInput struct {
 	ImageArn *string `type:"string"`
 
 	// The name of the image used to create the fleet.
-	ImageName *string `min:"1" type:"string"`
+	ImageName *string `type:"string"`
 
 	// The instance type to use when launching fleet instances. The following instance
 	// types are available:
@@ -7822,6 +9720,10 @@ type CreateFleetInput struct {
 	//    * stream.standard.medium
 	//
 	//    * stream.standard.large
+	//
+	//    * stream.standard.xlarge
+	//
+	//    * stream.standard.2xlarge
 	//
 	//    * stream.compute.large
 	//
@@ -7889,6 +9791,12 @@ type CreateFleetInput struct {
 	//
 	//    * stream.standard.medium
 	//
+	//    * stream.standard.large
+	//
+	//    * stream.standard.xlarge
+	//
+	//    * stream.standard.2xlarge
+	//
 	// InstanceType is a required field
 	InstanceType *string `min:"1" type:"string" required:"true"`
 
@@ -7896,13 +9804,17 @@ type CreateFleetInput struct {
 	// Elastic fleets, and not allowed for other fleet types.
 	MaxConcurrentSessions *int64 `type:"integer"`
 
+	// The maximum number of user sessions on an instance. This only applies to
+	// multi-session fleets.
+	MaxSessionsPerInstance *int64 `type:"integer"`
+
 	// The maximum amount of time that a streaming session can remain active, in
 	// seconds. If users are still connected to a streaming instance five minutes
 	// before this limit is reached, they are prompted to save any open documents
 	// before being disconnected. After this time elapses, the instance is terminated
 	// and replaced by a new instance.
 	//
-	// Specify a value between 600 and 360000.
+	// Specify a value between 600 and 432000.
 	MaxUserDurationInSeconds *int64 `type:"integer"`
 
 	// A unique name for the fleet.
@@ -7973,9 +9885,6 @@ func (s CreateFleetInput) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *CreateFleetInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "CreateFleetInput"}
-	if s.ImageName != nil && len(*s.ImageName) < 1 {
-		invalidParams.Add(request.NewErrParamMinLen("ImageName", 1))
-	}
 	if s.InstanceType == nil {
 		invalidParams.Add(request.NewErrParamRequired("InstanceType"))
 	}
@@ -7987,11 +9896,6 @@ func (s *CreateFleetInput) Validate() error {
 	}
 	if s.Tags != nil && len(s.Tags) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("Tags", 1))
-	}
-	if s.ComputeCapacity != nil {
-		if err := s.ComputeCapacity.Validate(); err != nil {
-			invalidParams.AddNested("ComputeCapacity", err.(request.ErrInvalidParams))
-		}
 	}
 	if s.SessionScriptS3Location != nil {
 		if err := s.SessionScriptS3Location.Validate(); err != nil {
@@ -8080,6 +9984,12 @@ func (s *CreateFleetInput) SetInstanceType(v string) *CreateFleetInput {
 // SetMaxConcurrentSessions sets the MaxConcurrentSessions field's value.
 func (s *CreateFleetInput) SetMaxConcurrentSessions(v int64) *CreateFleetInput {
 	s.MaxConcurrentSessions = &v
+	return s
+}
+
+// SetMaxSessionsPerInstance sets the MaxSessionsPerInstance field's value.
+func (s *CreateFleetInput) SetMaxSessionsPerInstance(v int64) *CreateFleetInput {
+	s.MaxSessionsPerInstance = &v
 	return s
 }
 
@@ -8605,6 +10515,10 @@ type CreateStackInput struct {
 	// The storage connectors to enable.
 	StorageConnectors []*StorageConnector `type:"list"`
 
+	// The streaming protocol you want your stack to prefer. This can be UDP or
+	// TCP. Currently, UDP is only supported in the Windows native client.
+	StreamingExperienceSettings *StreamingExperienceSettings `type:"structure"`
+
 	// The tags to associate with the stack. A tag is a key-value pair, and the
 	// value is optional. For example, Environment=Test. If you do not specify a
 	// value, Environment=.
@@ -8754,6 +10668,12 @@ func (s *CreateStackInput) SetRedirectURL(v string) *CreateStackInput {
 // SetStorageConnectors sets the StorageConnectors field's value.
 func (s *CreateStackInput) SetStorageConnectors(v []*StorageConnector) *CreateStackInput {
 	s.StorageConnectors = v
+	return s
+}
+
+// SetStreamingExperienceSettings sets the StreamingExperienceSettings field's value.
+func (s *CreateStackInput) SetStreamingExperienceSettings(v *StreamingExperienceSettings) *CreateStackInput {
+	s.StreamingExperienceSettings = v
 	return s
 }
 
@@ -9319,6 +11239,74 @@ func (s CreateUserOutput) String() string {
 // be included in the string output. The member name will be present, but the
 // value will be replaced with "sensitive".
 func (s CreateUserOutput) GoString() string {
+	return s.String()
+}
+
+type DeleteAppBlockBuilderInput struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the app block builder.
+	//
+	// Name is a required field
+	Name *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteAppBlockBuilderInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteAppBlockBuilderInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteAppBlockBuilderInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteAppBlockBuilderInput"}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetName sets the Name field's value.
+func (s *DeleteAppBlockBuilderInput) SetName(v string) *DeleteAppBlockBuilderInput {
+	s.Name = &v
+	return s
+}
+
+type DeleteAppBlockBuilderOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteAppBlockBuilderOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteAppBlockBuilderOutput) GoString() string {
 	return s.String()
 }
 
@@ -10119,6 +12107,219 @@ func (s DeleteUserOutput) String() string {
 // value will be replaced with "sensitive".
 func (s DeleteUserOutput) GoString() string {
 	return s.String()
+}
+
+type DescribeAppBlockBuilderAppBlockAssociationsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the app block.
+	AppBlockArn *string `type:"string"`
+
+	// The name of the app block builder.
+	AppBlockBuilderName *string `type:"string"`
+
+	// The maximum size of each page of results.
+	MaxResults *int64 `type:"integer"`
+
+	// The pagination token used to retrieve the next page of results for this operation.
+	NextToken *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeAppBlockBuilderAppBlockAssociationsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeAppBlockBuilderAppBlockAssociationsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeAppBlockBuilderAppBlockAssociationsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeAppBlockBuilderAppBlockAssociationsInput"}
+	if s.NextToken != nil && len(*s.NextToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAppBlockArn sets the AppBlockArn field's value.
+func (s *DescribeAppBlockBuilderAppBlockAssociationsInput) SetAppBlockArn(v string) *DescribeAppBlockBuilderAppBlockAssociationsInput {
+	s.AppBlockArn = &v
+	return s
+}
+
+// SetAppBlockBuilderName sets the AppBlockBuilderName field's value.
+func (s *DescribeAppBlockBuilderAppBlockAssociationsInput) SetAppBlockBuilderName(v string) *DescribeAppBlockBuilderAppBlockAssociationsInput {
+	s.AppBlockBuilderName = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *DescribeAppBlockBuilderAppBlockAssociationsInput) SetMaxResults(v int64) *DescribeAppBlockBuilderAppBlockAssociationsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeAppBlockBuilderAppBlockAssociationsInput) SetNextToken(v string) *DescribeAppBlockBuilderAppBlockAssociationsInput {
+	s.NextToken = &v
+	return s
+}
+
+type DescribeAppBlockBuilderAppBlockAssociationsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// This list of app block builders associated with app blocks.
+	AppBlockBuilderAppBlockAssociations []*AppBlockBuilderAppBlockAssociation `min:"1" type:"list"`
+
+	// The pagination token used to retrieve the next page of results for this operation.
+	NextToken *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeAppBlockBuilderAppBlockAssociationsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeAppBlockBuilderAppBlockAssociationsOutput) GoString() string {
+	return s.String()
+}
+
+// SetAppBlockBuilderAppBlockAssociations sets the AppBlockBuilderAppBlockAssociations field's value.
+func (s *DescribeAppBlockBuilderAppBlockAssociationsOutput) SetAppBlockBuilderAppBlockAssociations(v []*AppBlockBuilderAppBlockAssociation) *DescribeAppBlockBuilderAppBlockAssociationsOutput {
+	s.AppBlockBuilderAppBlockAssociations = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeAppBlockBuilderAppBlockAssociationsOutput) SetNextToken(v string) *DescribeAppBlockBuilderAppBlockAssociationsOutput {
+	s.NextToken = &v
+	return s
+}
+
+type DescribeAppBlockBuildersInput struct {
+	_ struct{} `type:"structure"`
+
+	// The maximum size of each page of results. The maximum value is 25.
+	MaxResults *int64 `type:"integer"`
+
+	// The names of the app block builders.
+	Names []*string `type:"list"`
+
+	// The pagination token used to retrieve the next page of results for this operation.
+	NextToken *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeAppBlockBuildersInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeAppBlockBuildersInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeAppBlockBuildersInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeAppBlockBuildersInput"}
+	if s.NextToken != nil && len(*s.NextToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *DescribeAppBlockBuildersInput) SetMaxResults(v int64) *DescribeAppBlockBuildersInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNames sets the Names field's value.
+func (s *DescribeAppBlockBuildersInput) SetNames(v []*string) *DescribeAppBlockBuildersInput {
+	s.Names = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeAppBlockBuildersInput) SetNextToken(v string) *DescribeAppBlockBuildersInput {
+	s.NextToken = &v
+	return s
+}
+
+type DescribeAppBlockBuildersOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The list that describes one or more app block builders.
+	AppBlockBuilders []*AppBlockBuilder `type:"list"`
+
+	// The pagination token used to retrieve the next page of results for this operation.
+	NextToken *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeAppBlockBuildersOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeAppBlockBuildersOutput) GoString() string {
+	return s.String()
+}
+
+// SetAppBlockBuilders sets the AppBlockBuilders field's value.
+func (s *DescribeAppBlockBuildersOutput) SetAppBlockBuilders(v []*AppBlockBuilder) *DescribeAppBlockBuildersOutput {
+	s.AppBlockBuilders = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeAppBlockBuildersOutput) SetNextToken(v string) *DescribeAppBlockBuildersOutput {
+	s.NextToken = &v
+	return s
 }
 
 type DescribeAppBlocksInput struct {
@@ -11122,7 +13323,10 @@ type DescribeSessionsInput struct {
 	// The name of the fleet. This value is case-sensitive.
 	//
 	// FleetName is a required field
-	FleetName *string `min:"1" type:"string" required:"true"`
+	FleetName *string `type:"string" required:"true"`
+
+	// The identifier for the instance hosting the session.
+	InstanceId *string `min:"1" type:"string"`
 
 	// The size of each page of results. The default value is 20 and the maximum
 	// value is 50.
@@ -11135,7 +13339,7 @@ type DescribeSessionsInput struct {
 	// The name of the stack. This value is case-sensitive.
 	//
 	// StackName is a required field
-	StackName *string `min:"1" type:"string" required:"true"`
+	StackName *string `type:"string" required:"true"`
 
 	// The user identifier (ID). If you specify a user ID, you must also specify
 	// the authentication type.
@@ -11166,17 +13370,14 @@ func (s *DescribeSessionsInput) Validate() error {
 	if s.FleetName == nil {
 		invalidParams.Add(request.NewErrParamRequired("FleetName"))
 	}
-	if s.FleetName != nil && len(*s.FleetName) < 1 {
-		invalidParams.Add(request.NewErrParamMinLen("FleetName", 1))
+	if s.InstanceId != nil && len(*s.InstanceId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("InstanceId", 1))
 	}
 	if s.NextToken != nil && len(*s.NextToken) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("NextToken", 1))
 	}
 	if s.StackName == nil {
 		invalidParams.Add(request.NewErrParamRequired("StackName"))
-	}
-	if s.StackName != nil && len(*s.StackName) < 1 {
-		invalidParams.Add(request.NewErrParamMinLen("StackName", 1))
 	}
 	if s.UserId != nil && len(*s.UserId) < 2 {
 		invalidParams.Add(request.NewErrParamMinLen("UserId", 2))
@@ -11197,6 +13398,12 @@ func (s *DescribeSessionsInput) SetAuthenticationType(v string) *DescribeSession
 // SetFleetName sets the FleetName field's value.
 func (s *DescribeSessionsInput) SetFleetName(v string) *DescribeSessionsInput {
 	s.FleetName = &v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *DescribeSessionsInput) SetInstanceId(v string) *DescribeSessionsInput {
+	s.InstanceId = &v
 	return s
 }
 
@@ -11705,6 +13912,17 @@ func (s *DescribeUsersOutput) SetUsers(v []*User) *DescribeUsersOutput {
 type DirectoryConfig struct {
 	_ struct{} `type:"structure"`
 
+	// The certificate-based authentication properties used to authenticate SAML
+	// 2.0 Identity Provider (IdP) user identities to Active Directory domain-joined
+	// streaming instances. Fallback is turned on by default when certificate-based
+	// authentication is Enabled . Fallback allows users to log in using their AD
+	// domain password if certificate-based authentication is unsuccessful, or to
+	// unlock a desktop lock screen. Enabled_no_directory_login_fallback enables
+	// certificate-based authentication, but does not allow users to log in using
+	// their AD domain password. Users will be disconnected to re-authenticate using
+	// certificates.
+	CertificateBasedAuthProperties *CertificateBasedAuthProperties `type:"structure"`
+
 	// The time the directory configuration was created.
 	CreatedTime *time.Time `type:"timestamp"`
 
@@ -11737,6 +13955,12 @@ func (s DirectoryConfig) String() string {
 // value will be replaced with "sensitive".
 func (s DirectoryConfig) GoString() string {
 	return s.String()
+}
+
+// SetCertificateBasedAuthProperties sets the CertificateBasedAuthProperties field's value.
+func (s *DirectoryConfig) SetCertificateBasedAuthProperties(v *CertificateBasedAuthProperties) *DirectoryConfig {
+	s.CertificateBasedAuthProperties = v
+	return s
 }
 
 // SetCreatedTime sets the CreatedTime field's value.
@@ -11851,6 +14075,88 @@ func (s DisableUserOutput) String() string {
 // be included in the string output. The member name will be present, but the
 // value will be replaced with "sensitive".
 func (s DisableUserOutput) GoString() string {
+	return s.String()
+}
+
+type DisassociateAppBlockBuilderAppBlockInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the app block.
+	//
+	// AppBlockArn is a required field
+	AppBlockArn *string `type:"string" required:"true"`
+
+	// The name of the app block builder.
+	//
+	// AppBlockBuilderName is a required field
+	AppBlockBuilderName *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DisassociateAppBlockBuilderAppBlockInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DisassociateAppBlockBuilderAppBlockInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DisassociateAppBlockBuilderAppBlockInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DisassociateAppBlockBuilderAppBlockInput"}
+	if s.AppBlockArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("AppBlockArn"))
+	}
+	if s.AppBlockBuilderName == nil {
+		invalidParams.Add(request.NewErrParamRequired("AppBlockBuilderName"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAppBlockArn sets the AppBlockArn field's value.
+func (s *DisassociateAppBlockBuilderAppBlockInput) SetAppBlockArn(v string) *DisassociateAppBlockBuilderAppBlockInput {
+	s.AppBlockArn = &v
+	return s
+}
+
+// SetAppBlockBuilderName sets the AppBlockBuilderName field's value.
+func (s *DisassociateAppBlockBuilderAppBlockInput) SetAppBlockBuilderName(v string) *DisassociateAppBlockBuilderAppBlockInput {
+	s.AppBlockBuilderName = &v
+	return s
+}
+
+type DisassociateAppBlockBuilderAppBlockOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DisassociateAppBlockBuilderAppBlockOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DisassociateAppBlockBuilderAppBlockOutput) GoString() string {
 	return s.String()
 }
 
@@ -12610,6 +14916,47 @@ func (s *EntitlementNotFoundException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
+// The error details.
+type ErrorDetails struct {
+	_ struct{} `type:"structure"`
+
+	// The error code.
+	ErrorCode *string `min:"1" type:"string"`
+
+	// The error message.
+	ErrorMessage *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ErrorDetails) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ErrorDetails) GoString() string {
+	return s.String()
+}
+
+// SetErrorCode sets the ErrorCode field's value.
+func (s *ErrorDetails) SetErrorCode(v string) *ErrorDetails {
+	s.ErrorCode = &v
+	return s
+}
+
+// SetErrorMessage sets the ErrorMessage field's value.
+func (s *ErrorDetails) SetErrorMessage(v string) *ErrorDetails {
+	s.ErrorMessage = &v
+	return s
+}
+
 type ExpireSessionInput struct {
 	_ struct{} `type:"structure"`
 
@@ -12854,6 +15201,10 @@ type Fleet struct {
 	// The maximum number of concurrent sessions for the fleet.
 	MaxConcurrentSessions *int64 `type:"integer"`
 
+	// The maximum number of user sessions on an instance. This only applies to
+	// multi-session fleets.
+	MaxSessionsPerInstance *int64 `type:"integer"`
+
 	// The maximum amount of time that a streaming session can remain active, in
 	// seconds. If users are still connected to a streaming instance five minutes
 	// before this limit is reached, they are prompted to save any open documents
@@ -13006,6 +15357,12 @@ func (s *Fleet) SetInstanceType(v string) *Fleet {
 // SetMaxConcurrentSessions sets the MaxConcurrentSessions field's value.
 func (s *Fleet) SetMaxConcurrentSessions(v int64) *Fleet {
 	s.MaxConcurrentSessions = &v
+	return s
+}
+
+// SetMaxSessionsPerInstance sets the MaxSessionsPerInstance field's value.
+func (s *Fleet) SetMaxSessionsPerInstance(v int64) *Fleet {
+	s.MaxSessionsPerInstance = &v
 	return s
 }
 
@@ -14940,8 +17297,22 @@ type S3Location struct {
 
 	// The S3 key of the S3 object.
 	//
-	// S3Key is a required field
-	S3Key *string `min:"1" type:"string" required:"true"`
+	// This is required when used for the following:
+	//
+	//    * IconS3Location (Actions: CreateApplication and UpdateApplication)
+	//
+	//    * SessionScriptS3Location (Actions: CreateFleet and UpdateFleet)
+	//
+	//    * ScriptDetails (Actions: CreateAppBlock)
+	//
+	//    * SourceS3Location when creating an app block with CUSTOM PackagingType
+	//    (Actions: CreateAppBlock)
+	//
+	//    * SourceS3Location when creating an app block with APPSTREAM2 PackagingType,
+	//    and using an existing application package (VHD file). In this case, S3Key
+	//    refers to the VHD file. If a new application package is required, then
+	//    S3Key is not required. (Actions: CreateAppBlock)
+	S3Key *string `min:"1" type:"string"`
 }
 
 // String returns the string representation.
@@ -14970,9 +17341,6 @@ func (s *S3Location) Validate() error {
 	}
 	if s.S3Bucket != nil && len(*s.S3Bucket) < 3 {
 		invalidParams.Add(request.NewErrParamMinLen("S3Bucket", 3))
-	}
-	if s.S3Key == nil {
-		invalidParams.Add(request.NewErrParamRequired("S3Key"))
 	}
 	if s.S3Key != nil && len(*s.S3Key) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("S3Key", 1))
@@ -15190,6 +17558,9 @@ type Session struct {
 	// Id is a required field
 	Id *string `min:"1" type:"string" required:"true"`
 
+	// The identifier for the instance hosting the session.
+	InstanceId *string `min:"1" type:"string"`
+
 	// The time when the streaming session is set to expire. This time is based
 	// on the MaxUserDurationinSeconds value, which determines the maximum length
 	// of time that a streaming session can run. A streaming session might end earlier
@@ -15260,6 +17631,12 @@ func (s *Session) SetFleetName(v string) *Session {
 // SetId sets the Id field's value.
 func (s *Session) SetId(v string) *Session {
 	s.Id = &v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *Session) SetInstanceId(v string) *Session {
+	s.InstanceId = &v
 	return s
 }
 
@@ -15391,6 +17768,10 @@ type Stack struct {
 	// The storage connectors to enable.
 	StorageConnectors []*StorageConnector `type:"list"`
 
+	// The streaming protocol you want your stack to prefer. This can be UDP or
+	// TCP. Currently, UDP is only supported in the Windows native client.
+	StreamingExperienceSettings *StreamingExperienceSettings `type:"structure"`
+
 	// The actions that are enabled or disabled for users during their streaming
 	// sessions. By default these actions are enabled.
 	UserSettings []*UserSetting `min:"1" type:"list"`
@@ -15486,6 +17867,12 @@ func (s *Stack) SetStorageConnectors(v []*StorageConnector) *Stack {
 	return s
 }
 
+// SetStreamingExperienceSettings sets the StreamingExperienceSettings field's value.
+func (s *Stack) SetStreamingExperienceSettings(v *StreamingExperienceSettings) *Stack {
+	s.StreamingExperienceSettings = v
+	return s
+}
+
 // SetUserSettings sets the UserSettings field's value.
 func (s *Stack) SetUserSettings(v []*UserSetting) *Stack {
 	s.UserSettings = v
@@ -15530,6 +17917,83 @@ func (s *StackError) SetErrorCode(v string) *StackError {
 // SetErrorMessage sets the ErrorMessage field's value.
 func (s *StackError) SetErrorMessage(v string) *StackError {
 	s.ErrorMessage = &v
+	return s
+}
+
+type StartAppBlockBuilderInput struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the app block builder.
+	//
+	// Name is a required field
+	Name *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StartAppBlockBuilderInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StartAppBlockBuilderInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *StartAppBlockBuilderInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "StartAppBlockBuilderInput"}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetName sets the Name field's value.
+func (s *StartAppBlockBuilderInput) SetName(v string) *StartAppBlockBuilderInput {
+	s.Name = &v
+	return s
+}
+
+type StartAppBlockBuilderOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Describes an app block builder.
+	AppBlockBuilder *AppBlockBuilder `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StartAppBlockBuilderOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StartAppBlockBuilderOutput) GoString() string {
+	return s.String()
+}
+
+// SetAppBlockBuilder sets the AppBlockBuilder field's value.
+func (s *StartAppBlockBuilderOutput) SetAppBlockBuilder(v *AppBlockBuilder) *StartAppBlockBuilderOutput {
+	s.AppBlockBuilder = v
 	return s
 }
 
@@ -15694,6 +18158,83 @@ func (s StartImageBuilderOutput) GoString() string {
 // SetImageBuilder sets the ImageBuilder field's value.
 func (s *StartImageBuilderOutput) SetImageBuilder(v *ImageBuilder) *StartImageBuilderOutput {
 	s.ImageBuilder = v
+	return s
+}
+
+type StopAppBlockBuilderInput struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the app block builder.
+	//
+	// Name is a required field
+	Name *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StopAppBlockBuilderInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StopAppBlockBuilderInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *StopAppBlockBuilderInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "StopAppBlockBuilderInput"}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetName sets the Name field's value.
+func (s *StopAppBlockBuilderInput) SetName(v string) *StopAppBlockBuilderInput {
+	s.Name = &v
+	return s
+}
+
+type StopAppBlockBuilderOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Describes an app block builder.
+	AppBlockBuilder *AppBlockBuilder `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StopAppBlockBuilderOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StopAppBlockBuilderOutput) GoString() string {
+	return s.String()
+}
+
+// SetAppBlockBuilder sets the AppBlockBuilder field's value.
+func (s *StopAppBlockBuilderOutput) SetAppBlockBuilder(v *AppBlockBuilder) *StopAppBlockBuilderOutput {
+	s.AppBlockBuilder = v
 	return s
 }
 
@@ -15916,6 +18457,39 @@ func (s *StorageConnector) SetResourceIdentifier(v string) *StorageConnector {
 	return s
 }
 
+// The streaming protocol you want your stack to prefer. This can be UDP or
+// TCP. Currently, UDP is only supported in the Windows native client.
+type StreamingExperienceSettings struct {
+	_ struct{} `type:"structure"`
+
+	// The preferred protocol that you want to use while streaming your application.
+	PreferredProtocol *string `type:"string" enum:"PreferredProtocol"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StreamingExperienceSettings) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StreamingExperienceSettings) GoString() string {
+	return s.String()
+}
+
+// SetPreferredProtocol sets the PreferredProtocol field's value.
+func (s *StreamingExperienceSettings) SetPreferredProtocol(v string) *StreamingExperienceSettings {
+	s.PreferredProtocol = &v
+	return s
+}
+
 type TagResourceInput struct {
 	_ struct{} `type:"structure"`
 
@@ -16094,6 +18668,206 @@ func (s UntagResourceOutput) GoString() string {
 	return s.String()
 }
 
+type UpdateAppBlockBuilderInput struct {
+	_ struct{} `type:"structure"`
+
+	// The list of interface VPC endpoint (interface endpoint) objects. Administrators
+	// can connect to the app block builder only through the specified endpoints.
+	AccessEndpoints []*AccessEndpoint `min:"1" type:"list"`
+
+	// The attributes to delete from the app block builder.
+	AttributesToDelete []*string `type:"list" enum:"AppBlockBuilderAttribute"`
+
+	// The description of the app block builder.
+	Description *string `type:"string"`
+
+	// The display name of the app block builder.
+	DisplayName *string `type:"string"`
+
+	// Enables or disables default internet access for the app block builder.
+	EnableDefaultInternetAccess *bool `type:"boolean"`
+
+	// The Amazon Resource Name (ARN) of the IAM role to apply to the app block
+	// builder. To assume a role, the app block builder calls the AWS Security Token
+	// Service (STS) AssumeRole API operation and passes the ARN of the role to
+	// use. The operation creates a new session with temporary credentials. AppStream
+	// 2.0 retrieves the temporary credentials and creates the appstream_machine_role
+	// credential profile on the instance.
+	//
+	// For more information, see Using an IAM Role to Grant Permissions to Applications
+	// and Scripts Running on AppStream 2.0 Streaming Instances (https://docs.aws.amazon.com/appstream2/latest/developerguide/using-iam-roles-to-grant-permissions-to-applications-scripts-streaming-instances.html)
+	// in the Amazon AppStream 2.0 Administration Guide.
+	IamRoleArn *string `type:"string"`
+
+	// The instance type to use when launching the app block builder. The following
+	// instance types are available:
+	//
+	//    * stream.standard.small
+	//
+	//    * stream.standard.medium
+	//
+	//    * stream.standard.large
+	//
+	//    * stream.standard.xlarge
+	//
+	//    * stream.standard.2xlarge
+	InstanceType *string `min:"1" type:"string"`
+
+	// The unique name for the app block builder.
+	//
+	// Name is a required field
+	Name *string `type:"string" required:"true"`
+
+	// The platform of the app block builder.
+	//
+	// WINDOWS_SERVER_2019 is the only valid value.
+	Platform *string `type:"string" enum:"PlatformType"`
+
+	// The VPC configuration for the app block builder.
+	//
+	// App block builders require that you specify at least two subnets in different
+	// availability zones.
+	VpcConfig *VpcConfig `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateAppBlockBuilderInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateAppBlockBuilderInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdateAppBlockBuilderInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdateAppBlockBuilderInput"}
+	if s.AccessEndpoints != nil && len(s.AccessEndpoints) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AccessEndpoints", 1))
+	}
+	if s.InstanceType != nil && len(*s.InstanceType) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("InstanceType", 1))
+	}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.AccessEndpoints != nil {
+		for i, v := range s.AccessEndpoints {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "AccessEndpoints", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccessEndpoints sets the AccessEndpoints field's value.
+func (s *UpdateAppBlockBuilderInput) SetAccessEndpoints(v []*AccessEndpoint) *UpdateAppBlockBuilderInput {
+	s.AccessEndpoints = v
+	return s
+}
+
+// SetAttributesToDelete sets the AttributesToDelete field's value.
+func (s *UpdateAppBlockBuilderInput) SetAttributesToDelete(v []*string) *UpdateAppBlockBuilderInput {
+	s.AttributesToDelete = v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *UpdateAppBlockBuilderInput) SetDescription(v string) *UpdateAppBlockBuilderInput {
+	s.Description = &v
+	return s
+}
+
+// SetDisplayName sets the DisplayName field's value.
+func (s *UpdateAppBlockBuilderInput) SetDisplayName(v string) *UpdateAppBlockBuilderInput {
+	s.DisplayName = &v
+	return s
+}
+
+// SetEnableDefaultInternetAccess sets the EnableDefaultInternetAccess field's value.
+func (s *UpdateAppBlockBuilderInput) SetEnableDefaultInternetAccess(v bool) *UpdateAppBlockBuilderInput {
+	s.EnableDefaultInternetAccess = &v
+	return s
+}
+
+// SetIamRoleArn sets the IamRoleArn field's value.
+func (s *UpdateAppBlockBuilderInput) SetIamRoleArn(v string) *UpdateAppBlockBuilderInput {
+	s.IamRoleArn = &v
+	return s
+}
+
+// SetInstanceType sets the InstanceType field's value.
+func (s *UpdateAppBlockBuilderInput) SetInstanceType(v string) *UpdateAppBlockBuilderInput {
+	s.InstanceType = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *UpdateAppBlockBuilderInput) SetName(v string) *UpdateAppBlockBuilderInput {
+	s.Name = &v
+	return s
+}
+
+// SetPlatform sets the Platform field's value.
+func (s *UpdateAppBlockBuilderInput) SetPlatform(v string) *UpdateAppBlockBuilderInput {
+	s.Platform = &v
+	return s
+}
+
+// SetVpcConfig sets the VpcConfig field's value.
+func (s *UpdateAppBlockBuilderInput) SetVpcConfig(v *VpcConfig) *UpdateAppBlockBuilderInput {
+	s.VpcConfig = v
+	return s
+}
+
+type UpdateAppBlockBuilderOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Describes an app block builder.
+	AppBlockBuilder *AppBlockBuilder `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateAppBlockBuilderOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateAppBlockBuilderOutput) GoString() string {
+	return s.String()
+}
+
+// SetAppBlockBuilder sets the AppBlockBuilder field's value.
+func (s *UpdateAppBlockBuilderOutput) SetAppBlockBuilder(v *AppBlockBuilder) *UpdateAppBlockBuilderOutput {
+	s.AppBlockBuilder = v
+	return s
+}
+
 type UpdateApplicationInput struct {
 	_ struct{} `type:"structure"`
 
@@ -16262,6 +19036,17 @@ func (s *UpdateApplicationOutput) SetApplication(v *Application) *UpdateApplicat
 type UpdateDirectoryConfigInput struct {
 	_ struct{} `type:"structure"`
 
+	// The certificate-based authentication properties used to authenticate SAML
+	// 2.0 Identity Provider (IdP) user identities to Active Directory domain-joined
+	// streaming instances. Fallback is turned on by default when certificate-based
+	// authentication is Enabled . Fallback allows users to log in using their AD
+	// domain password if certificate-based authentication is unsuccessful, or to
+	// unlock a desktop lock screen. Enabled_no_directory_login_fallback enables
+	// certificate-based authentication, but does not allow users to log in using
+	// their AD domain password. Users will be disconnected to re-authenticate using
+	// certificates.
+	CertificateBasedAuthProperties *CertificateBasedAuthProperties `type:"structure"`
+
 	// The name of the Directory Config object.
 	//
 	// DirectoryName is a required field
@@ -16309,6 +19094,12 @@ func (s *UpdateDirectoryConfigInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetCertificateBasedAuthProperties sets the CertificateBasedAuthProperties field's value.
+func (s *UpdateDirectoryConfigInput) SetCertificateBasedAuthProperties(v *CertificateBasedAuthProperties) *UpdateDirectoryConfigInput {
+	s.CertificateBasedAuthProperties = v
+	return s
 }
 
 // SetDirectoryName sets the DirectoryName field's value.
@@ -16578,6 +19369,10 @@ type UpdateFleetInput struct {
 	//
 	//    * stream.standard.large
 	//
+	//    * stream.standard.xlarge
+	//
+	//    * stream.standard.2xlarge
+	//
 	//    * stream.compute.large
 	//
 	//    * stream.compute.xlarge
@@ -16643,10 +19438,20 @@ type UpdateFleetInput struct {
 	//    * stream.standard.small
 	//
 	//    * stream.standard.medium
+	//
+	//    * stream.standard.large
+	//
+	//    * stream.standard.xlarge
+	//
+	//    * stream.standard.2xlarge
 	InstanceType *string `min:"1" type:"string"`
 
 	// The maximum number of concurrent sessions for a fleet.
 	MaxConcurrentSessions *int64 `type:"integer"`
+
+	// The maximum number of user sessions on an instance. This only applies to
+	// multi-session fleets.
+	MaxSessionsPerInstance *int64 `type:"integer"`
 
 	// The maximum amount of time that a streaming session can remain active, in
 	// seconds. If users are still connected to a streaming instance five minutes
@@ -16654,11 +19459,11 @@ type UpdateFleetInput struct {
 	// before being disconnected. After this time elapses, the instance is terminated
 	// and replaced by a new instance.
 	//
-	// Specify a value between 600 and 360000.
+	// Specify a value between 600 and 432000.
 	MaxUserDurationInSeconds *int64 `type:"integer"`
 
 	// A unique name for the fleet.
-	Name *string `min:"1" type:"string"`
+	Name *string `type:"string"`
 
 	// The platform of the fleet. WINDOWS_SERVER_2019 and AMAZON_LINUX2 are supported
 	// for Elastic fleets.
@@ -16713,14 +19518,6 @@ func (s *UpdateFleetInput) Validate() error {
 	}
 	if s.InstanceType != nil && len(*s.InstanceType) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("InstanceType", 1))
-	}
-	if s.Name != nil && len(*s.Name) < 1 {
-		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
-	}
-	if s.ComputeCapacity != nil {
-		if err := s.ComputeCapacity.Validate(); err != nil {
-			invalidParams.AddNested("ComputeCapacity", err.(request.ErrInvalidParams))
-		}
 	}
 	if s.SessionScriptS3Location != nil {
 		if err := s.SessionScriptS3Location.Validate(); err != nil {
@@ -16815,6 +19612,12 @@ func (s *UpdateFleetInput) SetInstanceType(v string) *UpdateFleetInput {
 // SetMaxConcurrentSessions sets the MaxConcurrentSessions field's value.
 func (s *UpdateFleetInput) SetMaxConcurrentSessions(v int64) *UpdateFleetInput {
 	s.MaxConcurrentSessions = &v
+	return s
+}
+
+// SetMaxSessionsPerInstance sets the MaxSessionsPerInstance field's value.
+func (s *UpdateFleetInput) SetMaxSessionsPerInstance(v int64) *UpdateFleetInput {
+	s.MaxSessionsPerInstance = &v
 	return s
 }
 
@@ -17034,6 +19837,10 @@ type UpdateStackInput struct {
 	// The storage connectors to enable.
 	StorageConnectors []*StorageConnector `type:"list"`
 
+	// The streaming protocol you want your stack to prefer. This can be UDP or
+	// TCP. Currently, UDP is only supported in the Windows native client.
+	StreamingExperienceSettings *StreamingExperienceSettings `type:"structure"`
+
 	// The actions that are enabled or disabled for users during their streaming
 	// sessions. By default, these actions are enabled.
 	UserSettings []*UserSetting `min:"1" type:"list"`
@@ -17180,6 +19987,12 @@ func (s *UpdateStackInput) SetRedirectURL(v string) *UpdateStackInput {
 // SetStorageConnectors sets the StorageConnectors field's value.
 func (s *UpdateStackInput) SetStorageConnectors(v []*StorageConnector) *UpdateStackInput {
 	s.StorageConnectors = v
+	return s
+}
+
+// SetStreamingExperienceSettings sets the StreamingExperienceSettings field's value.
+func (s *UpdateStackInput) SetStreamingExperienceSettings(v *StreamingExperienceSettings) *UpdateStackInput {
+	s.StreamingExperienceSettings = v
 	return s
 }
 
@@ -17712,6 +20525,90 @@ func Action_Values() []string {
 }
 
 const (
+	// AppBlockBuilderAttributeIamRoleArn is a AppBlockBuilderAttribute enum value
+	AppBlockBuilderAttributeIamRoleArn = "IAM_ROLE_ARN"
+
+	// AppBlockBuilderAttributeAccessEndpoints is a AppBlockBuilderAttribute enum value
+	AppBlockBuilderAttributeAccessEndpoints = "ACCESS_ENDPOINTS"
+
+	// AppBlockBuilderAttributeVpcConfigurationSecurityGroupIds is a AppBlockBuilderAttribute enum value
+	AppBlockBuilderAttributeVpcConfigurationSecurityGroupIds = "VPC_CONFIGURATION_SECURITY_GROUP_IDS"
+)
+
+// AppBlockBuilderAttribute_Values returns all elements of the AppBlockBuilderAttribute enum
+func AppBlockBuilderAttribute_Values() []string {
+	return []string{
+		AppBlockBuilderAttributeIamRoleArn,
+		AppBlockBuilderAttributeAccessEndpoints,
+		AppBlockBuilderAttributeVpcConfigurationSecurityGroupIds,
+	}
+}
+
+const (
+	// AppBlockBuilderPlatformTypeWindowsServer2019 is a AppBlockBuilderPlatformType enum value
+	AppBlockBuilderPlatformTypeWindowsServer2019 = "WINDOWS_SERVER_2019"
+)
+
+// AppBlockBuilderPlatformType_Values returns all elements of the AppBlockBuilderPlatformType enum
+func AppBlockBuilderPlatformType_Values() []string {
+	return []string{
+		AppBlockBuilderPlatformTypeWindowsServer2019,
+	}
+}
+
+const (
+	// AppBlockBuilderStateStarting is a AppBlockBuilderState enum value
+	AppBlockBuilderStateStarting = "STARTING"
+
+	// AppBlockBuilderStateRunning is a AppBlockBuilderState enum value
+	AppBlockBuilderStateRunning = "RUNNING"
+
+	// AppBlockBuilderStateStopping is a AppBlockBuilderState enum value
+	AppBlockBuilderStateStopping = "STOPPING"
+
+	// AppBlockBuilderStateStopped is a AppBlockBuilderState enum value
+	AppBlockBuilderStateStopped = "STOPPED"
+)
+
+// AppBlockBuilderState_Values returns all elements of the AppBlockBuilderState enum
+func AppBlockBuilderState_Values() []string {
+	return []string{
+		AppBlockBuilderStateStarting,
+		AppBlockBuilderStateRunning,
+		AppBlockBuilderStateStopping,
+		AppBlockBuilderStateStopped,
+	}
+}
+
+const (
+	// AppBlockBuilderStateChangeReasonCodeInternalError is a AppBlockBuilderStateChangeReasonCode enum value
+	AppBlockBuilderStateChangeReasonCodeInternalError = "INTERNAL_ERROR"
+)
+
+// AppBlockBuilderStateChangeReasonCode_Values returns all elements of the AppBlockBuilderStateChangeReasonCode enum
+func AppBlockBuilderStateChangeReasonCode_Values() []string {
+	return []string{
+		AppBlockBuilderStateChangeReasonCodeInternalError,
+	}
+}
+
+const (
+	// AppBlockStateInactive is a AppBlockState enum value
+	AppBlockStateInactive = "INACTIVE"
+
+	// AppBlockStateActive is a AppBlockState enum value
+	AppBlockStateActive = "ACTIVE"
+)
+
+// AppBlockState_Values returns all elements of the AppBlockState enum
+func AppBlockState_Values() []string {
+	return []string{
+		AppBlockStateInactive,
+		AppBlockStateActive,
+	}
+}
+
+const (
 	// AppVisibilityAll is a AppVisibility enum value
 	AppVisibilityAll = "ALL"
 
@@ -17752,6 +20649,9 @@ const (
 
 	// AuthenticationTypeUserpool is a AuthenticationType enum value
 	AuthenticationTypeUserpool = "USERPOOL"
+
+	// AuthenticationTypeAwsAd is a AuthenticationType enum value
+	AuthenticationTypeAwsAd = "AWS_AD"
 )
 
 // AuthenticationType_Values returns all elements of the AuthenticationType enum
@@ -17760,6 +20660,27 @@ func AuthenticationType_Values() []string {
 		AuthenticationTypeApi,
 		AuthenticationTypeSaml,
 		AuthenticationTypeUserpool,
+		AuthenticationTypeAwsAd,
+	}
+}
+
+const (
+	// CertificateBasedAuthStatusDisabled is a CertificateBasedAuthStatus enum value
+	CertificateBasedAuthStatusDisabled = "DISABLED"
+
+	// CertificateBasedAuthStatusEnabled is a CertificateBasedAuthStatus enum value
+	CertificateBasedAuthStatusEnabled = "ENABLED"
+
+	// CertificateBasedAuthStatusEnabledNoDirectoryLoginFallback is a CertificateBasedAuthStatus enum value
+	CertificateBasedAuthStatusEnabledNoDirectoryLoginFallback = "ENABLED_NO_DIRECTORY_LOGIN_FALLBACK"
+)
+
+// CertificateBasedAuthStatus_Values returns all elements of the CertificateBasedAuthStatus enum
+func CertificateBasedAuthStatus_Values() []string {
+	return []string{
+		CertificateBasedAuthStatusDisabled,
+		CertificateBasedAuthStatusEnabled,
+		CertificateBasedAuthStatusEnabledNoDirectoryLoginFallback,
 	}
 }
 
@@ -17782,6 +20703,9 @@ const (
 
 	// FleetAttributeSessionScriptS3Location is a FleetAttribute enum value
 	FleetAttributeSessionScriptS3Location = "SESSION_SCRIPT_S3_LOCATION"
+
+	// FleetAttributeMaxSessionsPerInstance is a FleetAttribute enum value
+	FleetAttributeMaxSessionsPerInstance = "MAX_SESSIONS_PER_INSTANCE"
 )
 
 // FleetAttribute_Values returns all elements of the FleetAttribute enum
@@ -17793,6 +20717,7 @@ func FleetAttribute_Values() []string {
 		FleetAttributeIamRoleArn,
 		FleetAttributeUsbDeviceFilterStrings,
 		FleetAttributeSessionScriptS3Location,
+		FleetAttributeMaxSessionsPerInstance,
 	}
 }
 
@@ -18109,6 +21034,22 @@ func MessageAction_Values() []string {
 }
 
 const (
+	// PackagingTypeCustom is a PackagingType enum value
+	PackagingTypeCustom = "CUSTOM"
+
+	// PackagingTypeAppstream2 is a PackagingType enum value
+	PackagingTypeAppstream2 = "APPSTREAM2"
+)
+
+// PackagingType_Values returns all elements of the PackagingType enum
+func PackagingType_Values() []string {
+	return []string{
+		PackagingTypeCustom,
+		PackagingTypeAppstream2,
+	}
+}
+
+const (
 	// PermissionEnabled is a Permission enum value
 	PermissionEnabled = "ENABLED"
 
@@ -18145,6 +21086,22 @@ func PlatformType_Values() []string {
 		PlatformTypeWindowsServer2016,
 		PlatformTypeWindowsServer2019,
 		PlatformTypeAmazonLinux2,
+	}
+}
+
+const (
+	// PreferredProtocolTcp is a PreferredProtocol enum value
+	PreferredProtocolTcp = "TCP"
+
+	// PreferredProtocolUdp is a PreferredProtocol enum value
+	PreferredProtocolUdp = "UDP"
+)
+
+// PreferredProtocol_Values returns all elements of the PreferredProtocol enum
+func PreferredProtocol_Values() []string {
+	return []string{
+		PreferredProtocolTcp,
+		PreferredProtocolUdp,
 	}
 }
 
@@ -18218,6 +21175,9 @@ const (
 
 	// StackAttributeAccessEndpoints is a StackAttribute enum value
 	StackAttributeAccessEndpoints = "ACCESS_ENDPOINTS"
+
+	// StackAttributeStreamingExperienceSettings is a StackAttribute enum value
+	StackAttributeStreamingExperienceSettings = "STREAMING_EXPERIENCE_SETTINGS"
 )
 
 // StackAttribute_Values returns all elements of the StackAttribute enum
@@ -18234,6 +21194,7 @@ func StackAttribute_Values() []string {
 		StackAttributeEmbedHostDomains,
 		StackAttributeIamRoleArn,
 		StackAttributeAccessEndpoints,
+		StackAttributeStreamingExperienceSettings,
 	}
 }
 
