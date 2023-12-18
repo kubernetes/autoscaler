@@ -27,7 +27,7 @@ const (
 	// ErrCodeEc2RequestFailedException for service response error code
 	// "Ec2RequestFailedException".
 	//
-	// Your IAM user lacks the necessary Amazon EC2 permissions to perform the attempted
+	// Your user lacks the necessary Amazon EC2 permissions to perform the attempted
 	// action.
 	ErrCodeEc2RequestFailedException = "Ec2RequestFailedException"
 

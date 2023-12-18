@@ -68,6 +68,10 @@ type KinesisVideoAPI interface {
 	CreateStreamWithContext(aws.Context, *kinesisvideo.CreateStreamInput, ...request.Option) (*kinesisvideo.CreateStreamOutput, error)
 	CreateStreamRequest(*kinesisvideo.CreateStreamInput) (*request.Request, *kinesisvideo.CreateStreamOutput)
 
+	DeleteEdgeConfiguration(*kinesisvideo.DeleteEdgeConfigurationInput) (*kinesisvideo.DeleteEdgeConfigurationOutput, error)
+	DeleteEdgeConfigurationWithContext(aws.Context, *kinesisvideo.DeleteEdgeConfigurationInput, ...request.Option) (*kinesisvideo.DeleteEdgeConfigurationOutput, error)
+	DeleteEdgeConfigurationRequest(*kinesisvideo.DeleteEdgeConfigurationInput) (*request.Request, *kinesisvideo.DeleteEdgeConfigurationOutput)
+
 	DeleteSignalingChannel(*kinesisvideo.DeleteSignalingChannelInput) (*kinesisvideo.DeleteSignalingChannelOutput, error)
 	DeleteSignalingChannelWithContext(aws.Context, *kinesisvideo.DeleteSignalingChannelInput, ...request.Option) (*kinesisvideo.DeleteSignalingChannelOutput, error)
 	DeleteSignalingChannelRequest(*kinesisvideo.DeleteSignalingChannelInput) (*request.Request, *kinesisvideo.DeleteSignalingChannelOutput)
@@ -76,9 +80,24 @@ type KinesisVideoAPI interface {
 	DeleteStreamWithContext(aws.Context, *kinesisvideo.DeleteStreamInput, ...request.Option) (*kinesisvideo.DeleteStreamOutput, error)
 	DeleteStreamRequest(*kinesisvideo.DeleteStreamInput) (*request.Request, *kinesisvideo.DeleteStreamOutput)
 
+	DescribeEdgeConfiguration(*kinesisvideo.DescribeEdgeConfigurationInput) (*kinesisvideo.DescribeEdgeConfigurationOutput, error)
+	DescribeEdgeConfigurationWithContext(aws.Context, *kinesisvideo.DescribeEdgeConfigurationInput, ...request.Option) (*kinesisvideo.DescribeEdgeConfigurationOutput, error)
+	DescribeEdgeConfigurationRequest(*kinesisvideo.DescribeEdgeConfigurationInput) (*request.Request, *kinesisvideo.DescribeEdgeConfigurationOutput)
+
 	DescribeImageGenerationConfiguration(*kinesisvideo.DescribeImageGenerationConfigurationInput) (*kinesisvideo.DescribeImageGenerationConfigurationOutput, error)
 	DescribeImageGenerationConfigurationWithContext(aws.Context, *kinesisvideo.DescribeImageGenerationConfigurationInput, ...request.Option) (*kinesisvideo.DescribeImageGenerationConfigurationOutput, error)
 	DescribeImageGenerationConfigurationRequest(*kinesisvideo.DescribeImageGenerationConfigurationInput) (*request.Request, *kinesisvideo.DescribeImageGenerationConfigurationOutput)
+
+	DescribeMappedResourceConfiguration(*kinesisvideo.DescribeMappedResourceConfigurationInput) (*kinesisvideo.DescribeMappedResourceConfigurationOutput, error)
+	DescribeMappedResourceConfigurationWithContext(aws.Context, *kinesisvideo.DescribeMappedResourceConfigurationInput, ...request.Option) (*kinesisvideo.DescribeMappedResourceConfigurationOutput, error)
+	DescribeMappedResourceConfigurationRequest(*kinesisvideo.DescribeMappedResourceConfigurationInput) (*request.Request, *kinesisvideo.DescribeMappedResourceConfigurationOutput)
+
+	DescribeMappedResourceConfigurationPages(*kinesisvideo.DescribeMappedResourceConfigurationInput, func(*kinesisvideo.DescribeMappedResourceConfigurationOutput, bool) bool) error
+	DescribeMappedResourceConfigurationPagesWithContext(aws.Context, *kinesisvideo.DescribeMappedResourceConfigurationInput, func(*kinesisvideo.DescribeMappedResourceConfigurationOutput, bool) bool, ...request.Option) error
+
+	DescribeMediaStorageConfiguration(*kinesisvideo.DescribeMediaStorageConfigurationInput) (*kinesisvideo.DescribeMediaStorageConfigurationOutput, error)
+	DescribeMediaStorageConfigurationWithContext(aws.Context, *kinesisvideo.DescribeMediaStorageConfigurationInput, ...request.Option) (*kinesisvideo.DescribeMediaStorageConfigurationOutput, error)
+	DescribeMediaStorageConfigurationRequest(*kinesisvideo.DescribeMediaStorageConfigurationInput) (*request.Request, *kinesisvideo.DescribeMediaStorageConfigurationOutput)
 
 	DescribeNotificationConfiguration(*kinesisvideo.DescribeNotificationConfigurationInput) (*kinesisvideo.DescribeNotificationConfigurationOutput, error)
 	DescribeNotificationConfigurationWithContext(aws.Context, *kinesisvideo.DescribeNotificationConfigurationInput, ...request.Option) (*kinesisvideo.DescribeNotificationConfigurationOutput, error)
@@ -99,6 +118,13 @@ type KinesisVideoAPI interface {
 	GetSignalingChannelEndpoint(*kinesisvideo.GetSignalingChannelEndpointInput) (*kinesisvideo.GetSignalingChannelEndpointOutput, error)
 	GetSignalingChannelEndpointWithContext(aws.Context, *kinesisvideo.GetSignalingChannelEndpointInput, ...request.Option) (*kinesisvideo.GetSignalingChannelEndpointOutput, error)
 	GetSignalingChannelEndpointRequest(*kinesisvideo.GetSignalingChannelEndpointInput) (*request.Request, *kinesisvideo.GetSignalingChannelEndpointOutput)
+
+	ListEdgeAgentConfigurations(*kinesisvideo.ListEdgeAgentConfigurationsInput) (*kinesisvideo.ListEdgeAgentConfigurationsOutput, error)
+	ListEdgeAgentConfigurationsWithContext(aws.Context, *kinesisvideo.ListEdgeAgentConfigurationsInput, ...request.Option) (*kinesisvideo.ListEdgeAgentConfigurationsOutput, error)
+	ListEdgeAgentConfigurationsRequest(*kinesisvideo.ListEdgeAgentConfigurationsInput) (*request.Request, *kinesisvideo.ListEdgeAgentConfigurationsOutput)
+
+	ListEdgeAgentConfigurationsPages(*kinesisvideo.ListEdgeAgentConfigurationsInput, func(*kinesisvideo.ListEdgeAgentConfigurationsOutput, bool) bool) error
+	ListEdgeAgentConfigurationsPagesWithContext(aws.Context, *kinesisvideo.ListEdgeAgentConfigurationsInput, func(*kinesisvideo.ListEdgeAgentConfigurationsOutput, bool) bool, ...request.Option) error
 
 	ListSignalingChannels(*kinesisvideo.ListSignalingChannelsInput) (*kinesisvideo.ListSignalingChannelsOutput, error)
 	ListSignalingChannelsWithContext(aws.Context, *kinesisvideo.ListSignalingChannelsInput, ...request.Option) (*kinesisvideo.ListSignalingChannelsOutput, error)
@@ -121,6 +147,10 @@ type KinesisVideoAPI interface {
 	ListTagsForStream(*kinesisvideo.ListTagsForStreamInput) (*kinesisvideo.ListTagsForStreamOutput, error)
 	ListTagsForStreamWithContext(aws.Context, *kinesisvideo.ListTagsForStreamInput, ...request.Option) (*kinesisvideo.ListTagsForStreamOutput, error)
 	ListTagsForStreamRequest(*kinesisvideo.ListTagsForStreamInput) (*request.Request, *kinesisvideo.ListTagsForStreamOutput)
+
+	StartEdgeConfigurationUpdate(*kinesisvideo.StartEdgeConfigurationUpdateInput) (*kinesisvideo.StartEdgeConfigurationUpdateOutput, error)
+	StartEdgeConfigurationUpdateWithContext(aws.Context, *kinesisvideo.StartEdgeConfigurationUpdateInput, ...request.Option) (*kinesisvideo.StartEdgeConfigurationUpdateOutput, error)
+	StartEdgeConfigurationUpdateRequest(*kinesisvideo.StartEdgeConfigurationUpdateInput) (*request.Request, *kinesisvideo.StartEdgeConfigurationUpdateOutput)
 
 	TagResource(*kinesisvideo.TagResourceInput) (*kinesisvideo.TagResourceOutput, error)
 	TagResourceWithContext(aws.Context, *kinesisvideo.TagResourceInput, ...request.Option) (*kinesisvideo.TagResourceOutput, error)
@@ -145,6 +175,10 @@ type KinesisVideoAPI interface {
 	UpdateImageGenerationConfiguration(*kinesisvideo.UpdateImageGenerationConfigurationInput) (*kinesisvideo.UpdateImageGenerationConfigurationOutput, error)
 	UpdateImageGenerationConfigurationWithContext(aws.Context, *kinesisvideo.UpdateImageGenerationConfigurationInput, ...request.Option) (*kinesisvideo.UpdateImageGenerationConfigurationOutput, error)
 	UpdateImageGenerationConfigurationRequest(*kinesisvideo.UpdateImageGenerationConfigurationInput) (*request.Request, *kinesisvideo.UpdateImageGenerationConfigurationOutput)
+
+	UpdateMediaStorageConfiguration(*kinesisvideo.UpdateMediaStorageConfigurationInput) (*kinesisvideo.UpdateMediaStorageConfigurationOutput, error)
+	UpdateMediaStorageConfigurationWithContext(aws.Context, *kinesisvideo.UpdateMediaStorageConfigurationInput, ...request.Option) (*kinesisvideo.UpdateMediaStorageConfigurationOutput, error)
+	UpdateMediaStorageConfigurationRequest(*kinesisvideo.UpdateMediaStorageConfigurationInput) (*request.Request, *kinesisvideo.UpdateMediaStorageConfigurationOutput)
 
 	UpdateNotificationConfiguration(*kinesisvideo.UpdateNotificationConfigurationInput) (*kinesisvideo.UpdateNotificationConfigurationOutput, error)
 	UpdateNotificationConfigurationWithContext(aws.Context, *kinesisvideo.UpdateNotificationConfigurationInput, ...request.Option) (*kinesisvideo.UpdateNotificationConfigurationOutput, error)

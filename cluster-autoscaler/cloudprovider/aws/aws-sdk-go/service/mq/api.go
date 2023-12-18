@@ -87,9 +87,9 @@ func (c *MQ) CreateBrokerRequest(input *CreateBrokerRequest) (req *request.Reque
 //
 //   - ec2:DescribeVpcs
 //
-// For more information, see Create an IAM User and Get Your AWS Credentials
-// (https://docs.aws.amazon.com//amazon-mq/latest/developer-guide/amazon-mq-setting-up.html#create-iam-user)
-// and Never Modify or Delete the Amazon MQ Elastic Network Interface (https://docs.aws.amazon.com/amazon-mq/latest/developer-guide/connecting-to-amazon-mq.html#never-modify-delete-elastic-network-interface)
+// For more information, see Create an IAM User and Get Your Amazon Web Services
+// Credentials (https://docs.aws.amazon.com//amazon-mq/latest/developer-guide/amazon-mq-setting-up.html#create-iam-user)
+// and Never Modify or Delete the Amazon MQ Elastic Network Interface (https://docs.aws.amazon.com//amazon-mq/latest/developer-guide/connecting-to-amazon-mq.html#never-modify-delete-elastic-network-interface)
 // in the Amazon MQ Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -361,6 +361,11 @@ func (c *MQ) CreateUserRequest(input *CreateUserRequest) (req *request.Request, 
 // CreateUser API operation for AmazonMQ.
 //
 // Creates an ActiveMQ user.
+//
+// Do not add personally identifiable information (PII) or other confidential
+// or sensitive information in broker usernames. Broker usernames are accessible
+// to other Amazon Web Services services, including CloudWatch Logs. Broker
+// usernames are not intended to be used for private or sensitive data.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1687,6 +1692,94 @@ func (c *MQ) ListUsersWithContext(ctx aws.Context, input *ListUsersInput, opts .
 	return out, req.Send()
 }
 
+const opPromote = "Promote"
+
+// PromoteRequest generates a "aws/request.Request" representing the
+// client's request for the Promote operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See Promote for more information on using the Promote
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the PromoteRequest method.
+//	req, resp := client.PromoteRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/mq-2017-11-27/Promote
+func (c *MQ) PromoteRequest(input *PromoteInput) (req *request.Request, output *PromoteOutput) {
+	op := &request.Operation{
+		Name:       opPromote,
+		HTTPMethod: "POST",
+		HTTPPath:   "/v1/brokers/{broker-id}/promote",
+	}
+
+	if input == nil {
+		input = &PromoteInput{}
+	}
+
+	output = &PromoteOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// Promote API operation for AmazonMQ.
+//
+// Promotes a data replication replica broker to the primary broker role.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AmazonMQ's
+// API operation Promote for usage and error information.
+//
+// Returned Error Types:
+//
+//   - NotFoundException
+//     Returns information about an error.
+//
+//   - BadRequestException
+//     Returns information about an error.
+//
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/mq-2017-11-27/Promote
+func (c *MQ) Promote(input *PromoteInput) (*PromoteOutput, error) {
+	req, out := c.PromoteRequest(input)
+	return out, req.Send()
+}
+
+// PromoteWithContext is the same as Promote with the addition of
+// the ability to pass a context and additional request options.
+//
+// See Promote for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *MQ) PromoteWithContext(ctx aws.Context, input *PromoteInput, opts ...request.Option) (*PromoteOutput, error) {
+	req, out := c.PromoteRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opRebootBroker = "RebootBroker"
 
 // RebootBrokerRequest generates a "aws/request.Request" representing the
@@ -2050,21 +2143,15 @@ func (c *MQ) UpdateUserWithContext(ctx aws.Context, input *UpdateUserRequest, op
 	return out, req.Send()
 }
 
-// The action required to resolve a broker issue when the broker is in a CRITICAL_ACTION_REQUIRED
-// state.
+// Action required for a broker.
 type ActionRequired struct {
 	_ struct{} `type:"structure"`
 
-	// The code you can use to resolve your broker issue when the broker is in a
-	// CRITICAL_ACTION_REQUIRED state. You can find instructions by choosing the
-	// link for your code from the list of action required codes in Amazon MQ action
-	// required codes (https://docs.aws.amazon.com//latest/developer-guide/troubleshooting-action-required-codes.html).
-	// Each code references a topic with detailed information, instructions, and
-	// recommendations for how to resolve the issue and prevent future occurrences.
+	// The code you can use to find instructions on the action required to resolve
+	// your broker issue.
 	ActionRequiredCode *string `locationName:"actionRequiredCode" type:"string"`
 
-	// Information about the action required to resolve your broker issue when the
-	// broker is in a CRITICAL_ACTION_REQUIRED state.
+	// Information about the action required to resolve your broker issue.
 	ActionRequiredInfo *string `locationName:"actionRequiredInfo" type:"string"`
 }
 
@@ -2375,9 +2462,9 @@ type BrokerSummary struct {
 	// The unique ID that Amazon MQ generates for the broker.
 	BrokerId *string `locationName:"brokerId" type:"string"`
 
-	// The broker's name. This value is unique in your AWS account, 1-50 characters
-	// long, and containing only letters, numbers, dashes, and underscores, and
-	// must not contain white spaces, brackets, wildcard characters, or special
+	// The broker's name. This value is unique in your Amazon Web Services account,
+	// 1-50 characters long, and containing only letters, numbers, dashes, and underscores,
+	// and must not contain white spaces, brackets, wildcard characters, or special
 	// characters.
 	BrokerName *string `locationName:"brokerName" type:"string"`
 
@@ -2604,8 +2691,6 @@ func (s *Configuration) SetTags(v map[string]*string) *Configuration {
 }
 
 // A list of information about the configuration.
-//
-// Does not apply to RabbitMQ brokers.
 type ConfigurationId struct {
 	_ struct{} `type:"structure"`
 
@@ -2845,19 +2930,20 @@ type CreateBrokerRequest struct {
 	BrokerName *string `locationName:"brokerName" type:"string" required:"true"`
 
 	// A list of information about the configuration.
-	//
-	// Does not apply to RabbitMQ brokers.
 	Configuration *ConfigurationId `locationName:"configuration" type:"structure"`
 
 	CreatorRequestId *string `locationName:"creatorRequestId" type:"string" idempotencyToken:"true"`
+
+	// Specifies whether a broker is a part of a data replication pair.
+	DataReplicationMode *string `locationName:"dataReplicationMode" type:"string" enum:"DataReplicationMode"`
+
+	DataReplicationPrimaryBrokerArn *string `locationName:"dataReplicationPrimaryBrokerArn" type:"string"`
 
 	// The broker's deployment mode.
 	//
 	// DeploymentMode is a required field
 	DeploymentMode *string `locationName:"deploymentMode" type:"string" required:"true" enum:"DeploymentMode"`
 
-	// Does not apply to RabbitMQ brokers.
-	//
 	// Encryption options for the broker.
 	EncryptionOptions *EncryptionOptions `locationName:"encryptionOptions" type:"structure"`
 
@@ -3012,6 +3098,18 @@ func (s *CreateBrokerRequest) SetConfiguration(v *ConfigurationId) *CreateBroker
 // SetCreatorRequestId sets the CreatorRequestId field's value.
 func (s *CreateBrokerRequest) SetCreatorRequestId(v string) *CreateBrokerRequest {
 	s.CreatorRequestId = &v
+	return s
+}
+
+// SetDataReplicationMode sets the DataReplicationMode field's value.
+func (s *CreateBrokerRequest) SetDataReplicationMode(v string) *CreateBrokerRequest {
+	s.DataReplicationMode = &v
+	return s
+}
+
+// SetDataReplicationPrimaryBrokerArn sets the DataReplicationPrimaryBrokerArn field's value.
+func (s *CreateBrokerRequest) SetDataReplicationPrimaryBrokerArn(v string) *CreateBrokerRequest {
+	s.DataReplicationPrimaryBrokerArn = &v
 	return s
 }
 
@@ -3410,6 +3508,8 @@ type CreateUserRequest struct {
 	// Password is a required field
 	Password *string `locationName:"password" type:"string" required:"true"`
 
+	ReplicationUser *bool `locationName:"replicationUser" type:"boolean"`
+
 	// Username is a required field
 	Username *string `location:"uri" locationName:"username" type:"string" required:"true"`
 }
@@ -3481,9 +3581,106 @@ func (s *CreateUserRequest) SetPassword(v string) *CreateUserRequest {
 	return s
 }
 
+// SetReplicationUser sets the ReplicationUser field's value.
+func (s *CreateUserRequest) SetReplicationUser(v bool) *CreateUserRequest {
+	s.ReplicationUser = &v
+	return s
+}
+
 // SetUsername sets the Username field's value.
 func (s *CreateUserRequest) SetUsername(v string) *CreateUserRequest {
 	s.Username = &v
+	return s
+}
+
+// Specifies a broker in a data replication pair.
+type DataReplicationCounterpart struct {
+	_ struct{} `type:"structure"`
+
+	// Required. The unique broker id generated by Amazon MQ.
+	//
+	// BrokerId is a required field
+	BrokerId *string `locationName:"brokerId" type:"string" required:"true"`
+
+	// Required. The region of the broker.
+	//
+	// Region is a required field
+	Region *string `locationName:"region" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DataReplicationCounterpart) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DataReplicationCounterpart) GoString() string {
+	return s.String()
+}
+
+// SetBrokerId sets the BrokerId field's value.
+func (s *DataReplicationCounterpart) SetBrokerId(v string) *DataReplicationCounterpart {
+	s.BrokerId = &v
+	return s
+}
+
+// SetRegion sets the Region field's value.
+func (s *DataReplicationCounterpart) SetRegion(v string) *DataReplicationCounterpart {
+	s.Region = &v
+	return s
+}
+
+// The replication details of the data replication-enabled broker. Only returned
+// if dataReplicationMode or pendingDataReplicationMode is set to CRDR.
+type DataReplicationMetadataOutput_ struct {
+	_ struct{} `type:"structure"`
+
+	// Describes the replica/primary broker. Only returned if this broker is currently
+	// set as a primary or replica in the broker's dataReplicationRole property.
+	DataReplicationCounterpart *DataReplicationCounterpart `locationName:"dataReplicationCounterpart" type:"structure"`
+
+	// Defines the role of this broker in a data replication pair. When a replica
+	// broker is promoted to primary, this role is interchanged.
+	//
+	// DataReplicationRole is a required field
+	DataReplicationRole *string `locationName:"dataReplicationRole" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DataReplicationMetadataOutput_) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DataReplicationMetadataOutput_) GoString() string {
+	return s.String()
+}
+
+// SetDataReplicationCounterpart sets the DataReplicationCounterpart field's value.
+func (s *DataReplicationMetadataOutput_) SetDataReplicationCounterpart(v *DataReplicationCounterpart) *DataReplicationMetadataOutput_ {
+	s.DataReplicationCounterpart = v
+	return s
+}
+
+// SetDataReplicationRole sets the DataReplicationRole field's value.
+func (s *DataReplicationMetadataOutput_) SetDataReplicationRole(v string) *DataReplicationMetadataOutput_ {
+	s.DataReplicationRole = &v
 	return s
 }
 
@@ -4029,11 +4226,16 @@ type DescribeBrokerResponse struct {
 
 	Created *time.Time `locationName:"created" type:"timestamp" timestampFormat:"iso8601"`
 
+	// The replication details of the data replication-enabled broker. Only returned
+	// if dataReplicationMode or pendingDataReplicationMode is set to CRDR.
+	DataReplicationMetadata *DataReplicationMetadataOutput_ `locationName:"dataReplicationMetadata" type:"structure"`
+
+	// Specifies whether a broker is a part of a data replication pair.
+	DataReplicationMode *string `locationName:"dataReplicationMode" type:"string" enum:"DataReplicationMode"`
+
 	// The broker's deployment mode.
 	DeploymentMode *string `locationName:"deploymentMode" type:"string" enum:"DeploymentMode"`
 
-	// Does not apply to RabbitMQ brokers.
-	//
 	// Encryption options for the broker.
 	EncryptionOptions *EncryptionOptions `locationName:"encryptionOptions" type:"structure"`
 
@@ -4059,6 +4261,13 @@ type DescribeBrokerResponse struct {
 	// Optional. The authentication strategy used to secure the broker. The default
 	// is SIMPLE.
 	PendingAuthenticationStrategy *string `locationName:"pendingAuthenticationStrategy" type:"string" enum:"AuthenticationStrategy"`
+
+	// The replication details of the data replication-enabled broker. Only returned
+	// if dataReplicationMode or pendingDataReplicationMode is set to CRDR.
+	PendingDataReplicationMetadata *DataReplicationMetadataOutput_ `locationName:"pendingDataReplicationMetadata" type:"structure"`
+
+	// Specifies whether a broker is a part of a data replication pair.
+	PendingDataReplicationMode *string `locationName:"pendingDataReplicationMode" type:"string" enum:"DataReplicationMode"`
 
 	PendingEngineVersion *string `locationName:"pendingEngineVersion" type:"string"`
 
@@ -4164,6 +4373,18 @@ func (s *DescribeBrokerResponse) SetCreated(v time.Time) *DescribeBrokerResponse
 	return s
 }
 
+// SetDataReplicationMetadata sets the DataReplicationMetadata field's value.
+func (s *DescribeBrokerResponse) SetDataReplicationMetadata(v *DataReplicationMetadataOutput_) *DescribeBrokerResponse {
+	s.DataReplicationMetadata = v
+	return s
+}
+
+// SetDataReplicationMode sets the DataReplicationMode field's value.
+func (s *DescribeBrokerResponse) SetDataReplicationMode(v string) *DescribeBrokerResponse {
+	s.DataReplicationMode = &v
+	return s
+}
+
 // SetDeploymentMode sets the DeploymentMode field's value.
 func (s *DescribeBrokerResponse) SetDeploymentMode(v string) *DescribeBrokerResponse {
 	s.DeploymentMode = &v
@@ -4215,6 +4436,18 @@ func (s *DescribeBrokerResponse) SetMaintenanceWindowStartTime(v *WeeklyStartTim
 // SetPendingAuthenticationStrategy sets the PendingAuthenticationStrategy field's value.
 func (s *DescribeBrokerResponse) SetPendingAuthenticationStrategy(v string) *DescribeBrokerResponse {
 	s.PendingAuthenticationStrategy = &v
+	return s
+}
+
+// SetPendingDataReplicationMetadata sets the PendingDataReplicationMetadata field's value.
+func (s *DescribeBrokerResponse) SetPendingDataReplicationMetadata(v *DataReplicationMetadataOutput_) *DescribeBrokerResponse {
+	s.PendingDataReplicationMetadata = v
+	return s
+}
+
+// SetPendingDataReplicationMode sets the PendingDataReplicationMode field's value.
+func (s *DescribeBrokerResponse) SetPendingDataReplicationMode(v string) *DescribeBrokerResponse {
+	s.PendingDataReplicationMode = &v
 	return s
 }
 
@@ -4622,6 +4855,8 @@ type DescribeUserResponse struct {
 	// user.
 	Pending *UserPendingChanges `locationName:"pending" type:"structure"`
 
+	ReplicationUser *bool `locationName:"replicationUser" type:"boolean"`
+
 	Username *string `locationName:"username" type:"string"`
 }
 
@@ -4667,26 +4902,29 @@ func (s *DescribeUserResponse) SetPending(v *UserPendingChanges) *DescribeUserRe
 	return s
 }
 
+// SetReplicationUser sets the ReplicationUser field's value.
+func (s *DescribeUserResponse) SetReplicationUser(v bool) *DescribeUserResponse {
+	s.ReplicationUser = &v
+	return s
+}
+
 // SetUsername sets the Username field's value.
 func (s *DescribeUserResponse) SetUsername(v string) *DescribeUserResponse {
 	s.Username = &v
 	return s
 }
 
-// Does not apply to RabbitMQ brokers.
-//
 // Encryption options for the broker.
 type EncryptionOptions struct {
 	_ struct{} `type:"structure"`
 
-	// The customer master key (CMK) to use for the AWS Key Management Service (KMS).
-	// This key is used to encrypt your data at rest. If not provided, Amazon MQ
-	// will use a default CMK to encrypt your data.
+	// The customer master key (CMK) to use for the A KMS (KMS). This key is used
+	// to encrypt your data at rest. If not provided, Amazon MQ will use a default
+	// CMK to encrypt your data.
 	KmsKeyId *string `locationName:"kmsKeyId" type:"string"`
 
-	// Enables the use of an AWS owned CMK using AWS Key Management Service (KMS).
-	// Set to true by default, if no value is provided, for example, for RabbitMQ
-	// brokers.
+	// Enables the use of an Amazon Web Services owned CMK using KMS (KMS). Set
+	// to true by default, if no value is provided, for example, for RabbitMQ brokers.
 	//
 	// UseAwsOwnedKey is a required field
 	UseAwsOwnedKey *bool `locationName:"useAwsOwnedKey" type:"boolean" required:"true"`
@@ -4906,8 +5144,8 @@ func (s *InternalServerErrorException) RequestID() string {
 type LdapServerMetadataInput struct {
 	_ struct{} `type:"structure"`
 
-	// Specifies the location of the LDAP server such as AWS Directory Service for
-	// Microsoft Active Directory . Optional failover server.
+	// Specifies the location of the LDAP server such as Directory Service for Microsoft
+	// Active Directory. Optional failover server.
 	//
 	// Hosts is a required field
 	Hosts []*string `locationName:"hosts" type:"list" required:"true"`
@@ -5099,8 +5337,8 @@ func (s *LdapServerMetadataInput) SetUserSearchSubtree(v bool) *LdapServerMetada
 type LdapServerMetadataOutput struct {
 	_ struct{} `type:"structure"`
 
-	// Specifies the location of the LDAP server such as AWS Directory Service for
-	// Microsoft Active Directory . Optional failover server.
+	// Specifies the location of the LDAP server such as Directory Service for Microsoft
+	// Active Directory. Optional failover server.
 	//
 	// Hosts is a required field
 	Hosts []*string `locationName:"hosts" type:"list" required:"true"`
@@ -5971,6 +6209,97 @@ func (s *PendingLogs) SetGeneral(v bool) *PendingLogs {
 	return s
 }
 
+type PromoteInput struct {
+	_ struct{} `type:"structure"`
+
+	// BrokerId is a required field
+	BrokerId *string `location:"uri" locationName:"broker-id" type:"string" required:"true"`
+
+	// The Promote mode requested.
+	//
+	// Mode is a required field
+	Mode *string `locationName:"mode" type:"string" required:"true" enum:"PromoteMode"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PromoteInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PromoteInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PromoteInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PromoteInput"}
+	if s.BrokerId == nil {
+		invalidParams.Add(request.NewErrParamRequired("BrokerId"))
+	}
+	if s.BrokerId != nil && len(*s.BrokerId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("BrokerId", 1))
+	}
+	if s.Mode == nil {
+		invalidParams.Add(request.NewErrParamRequired("Mode"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetBrokerId sets the BrokerId field's value.
+func (s *PromoteInput) SetBrokerId(v string) *PromoteInput {
+	s.BrokerId = &v
+	return s
+}
+
+// SetMode sets the Mode field's value.
+func (s *PromoteInput) SetMode(v string) *PromoteInput {
+	s.Mode = &v
+	return s
+}
+
+type PromoteOutput struct {
+	_ struct{} `type:"structure"`
+
+	BrokerId *string `locationName:"brokerId" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PromoteOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PromoteOutput) GoString() string {
+	return s.String()
+}
+
+// SetBrokerId sets the BrokerId field's value.
+func (s *PromoteOutput) SetBrokerId(v string) *PromoteOutput {
+	s.BrokerId = &v
+	return s
+}
+
 type RebootBrokerInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
@@ -6040,18 +6369,18 @@ func (s RebootBrokerOutput) GoString() string {
 	return s.String()
 }
 
-// Returns information about the XML element or attribute that was sanitized
-// in the configuration.
+// Returns information about the configuration element or attribute that was
+// sanitized in the configuration.
 type SanitizationWarning struct {
 	_ struct{} `type:"structure"`
 
-	// The name of the XML attribute that has been sanitized.
+	// The name of the configuration attribute that has been sanitized.
 	AttributeName *string `locationName:"attributeName" type:"string"`
 
-	// The name of the XML element that has been sanitized.
+	// The name of the configuration element that has been sanitized.
 	ElementName *string `locationName:"elementName" type:"string"`
 
-	// Required. The reason for which the XML elements or attributes were sanitized.
+	// The reason for which the configuration elements or attributes were sanitized.
 	//
 	// Reason is a required field
 	Reason *string `locationName:"reason" type:"string" required:"true" enum:"SanitizationWarningReason"`
@@ -6172,9 +6501,10 @@ type UpdateBrokerRequest struct {
 	BrokerId *string `location:"uri" locationName:"broker-id" type:"string" required:"true"`
 
 	// A list of information about the configuration.
-	//
-	// Does not apply to RabbitMQ brokers.
 	Configuration *ConfigurationId `locationName:"configuration" type:"structure"`
+
+	// Specifies whether a broker is a part of a data replication pair.
+	DataReplicationMode *string `locationName:"dataReplicationMode" type:"string" enum:"DataReplicationMode"`
 
 	EngineVersion *string `locationName:"engineVersion" type:"string"`
 
@@ -6269,6 +6599,12 @@ func (s *UpdateBrokerRequest) SetConfiguration(v *ConfigurationId) *UpdateBroker
 	return s
 }
 
+// SetDataReplicationMode sets the DataReplicationMode field's value.
+func (s *UpdateBrokerRequest) SetDataReplicationMode(v string) *UpdateBrokerRequest {
+	s.DataReplicationMode = &v
+	return s
+}
+
 // SetEngineVersion sets the EngineVersion field's value.
 func (s *UpdateBrokerRequest) SetEngineVersion(v string) *UpdateBrokerRequest {
 	s.EngineVersion = &v
@@ -6317,9 +6653,14 @@ type UpdateBrokerResponse struct {
 	BrokerId *string `locationName:"brokerId" type:"string"`
 
 	// A list of information about the configuration.
-	//
-	// Does not apply to RabbitMQ brokers.
 	Configuration *ConfigurationId `locationName:"configuration" type:"structure"`
+
+	// The replication details of the data replication-enabled broker. Only returned
+	// if dataReplicationMode or pendingDataReplicationMode is set to CRDR.
+	DataReplicationMetadata *DataReplicationMetadataOutput_ `locationName:"dataReplicationMetadata" type:"structure"`
+
+	// Specifies whether a broker is a part of a data replication pair.
+	DataReplicationMode *string `locationName:"dataReplicationMode" type:"string" enum:"DataReplicationMode"`
 
 	EngineVersion *string `locationName:"engineVersion" type:"string"`
 
@@ -6335,6 +6676,13 @@ type UpdateBrokerResponse struct {
 	// The scheduled time period relative to UTC during which Amazon MQ begins to
 	// apply pending updates or patches to the broker.
 	MaintenanceWindowStartTime *WeeklyStartTime `locationName:"maintenanceWindowStartTime" type:"structure"`
+
+	// The replication details of the data replication-enabled broker. Only returned
+	// if dataReplicationMode or pendingDataReplicationMode is set to CRDR.
+	PendingDataReplicationMetadata *DataReplicationMetadataOutput_ `locationName:"pendingDataReplicationMetadata" type:"structure"`
+
+	// Specifies whether a broker is a part of a data replication pair.
+	PendingDataReplicationMode *string `locationName:"pendingDataReplicationMode" type:"string" enum:"DataReplicationMode"`
 
 	SecurityGroups []*string `locationName:"securityGroups" type:"list"`
 }
@@ -6381,6 +6729,18 @@ func (s *UpdateBrokerResponse) SetConfiguration(v *ConfigurationId) *UpdateBroke
 	return s
 }
 
+// SetDataReplicationMetadata sets the DataReplicationMetadata field's value.
+func (s *UpdateBrokerResponse) SetDataReplicationMetadata(v *DataReplicationMetadataOutput_) *UpdateBrokerResponse {
+	s.DataReplicationMetadata = v
+	return s
+}
+
+// SetDataReplicationMode sets the DataReplicationMode field's value.
+func (s *UpdateBrokerResponse) SetDataReplicationMode(v string) *UpdateBrokerResponse {
+	s.DataReplicationMode = &v
+	return s
+}
+
 // SetEngineVersion sets the EngineVersion field's value.
 func (s *UpdateBrokerResponse) SetEngineVersion(v string) *UpdateBrokerResponse {
 	s.EngineVersion = &v
@@ -6408,6 +6768,18 @@ func (s *UpdateBrokerResponse) SetLogs(v *Logs) *UpdateBrokerResponse {
 // SetMaintenanceWindowStartTime sets the MaintenanceWindowStartTime field's value.
 func (s *UpdateBrokerResponse) SetMaintenanceWindowStartTime(v *WeeklyStartTime) *UpdateBrokerResponse {
 	s.MaintenanceWindowStartTime = v
+	return s
+}
+
+// SetPendingDataReplicationMetadata sets the PendingDataReplicationMetadata field's value.
+func (s *UpdateBrokerResponse) SetPendingDataReplicationMetadata(v *DataReplicationMetadataOutput_) *UpdateBrokerResponse {
+	s.PendingDataReplicationMetadata = v
+	return s
+}
+
+// SetPendingDataReplicationMode sets the PendingDataReplicationMode field's value.
+func (s *UpdateBrokerResponse) SetPendingDataReplicationMode(v string) *UpdateBrokerResponse {
+	s.PendingDataReplicationMode = &v
 	return s
 }
 
@@ -6589,6 +6961,8 @@ type UpdateUserRequest struct {
 
 	Password *string `locationName:"password" type:"string"`
 
+	ReplicationUser *bool `locationName:"replicationUser" type:"boolean"`
+
 	// Username is a required field
 	Username *string `location:"uri" locationName:"username" type:"string" required:"true"`
 }
@@ -6657,16 +7031,22 @@ func (s *UpdateUserRequest) SetPassword(v string) *UpdateUserRequest {
 	return s
 }
 
+// SetReplicationUser sets the ReplicationUser field's value.
+func (s *UpdateUserRequest) SetReplicationUser(v bool) *UpdateUserRequest {
+	s.ReplicationUser = &v
+	return s
+}
+
 // SetUsername sets the Username field's value.
 func (s *UpdateUserRequest) SetUsername(v string) *UpdateUserRequest {
 	s.Username = &v
 	return s
 }
 
-// A user associated with the broker. For RabbitMQ brokers, one and only one
-// administrative user is accepted and created when a broker is first provisioned.
-// All subsequent broker users are created by making RabbitMQ API calls directly
-// to brokers or via the RabbitMQ web console.
+// A user associated with the broker. For Amazon MQ for RabbitMQ brokers, one
+// and only one administrative user is accepted and created when a broker is
+// first provisioned. All subsequent broker users are created by making RabbitMQ
+// API calls directly to brokers or via the RabbitMQ web console.
 type User struct {
 	_ struct{} `type:"structure"`
 
@@ -6687,14 +7067,25 @@ type User struct {
 	// Password is a required field
 	Password *string `locationName:"password" type:"string" required:"true"`
 
-	// important>Amazon MQ for ActiveMQ For ActiveMQ brokers, this value can contain
-	// only alphanumeric characters, dashes, periods, underscores, and tildes (-
-	// . _ ~). This value must be 2-100 characters long./important> Amazon MQ for
-	// RabbitMQ
-	// For RabbitMQ brokers, this value can contain only alphanumeric characters,
-	// dashes, periods, underscores (- . _). This value must not contain a tilde
-	// (~) character. Amazon MQ prohibts using guest as a valid usename. This value
-	// must be 2-100 characters long.
+	// Defines if this user is intended for CRDR replication purposes.
+	ReplicationUser *bool `locationName:"replicationUser" type:"boolean"`
+
+	// The username of the broker user. The following restrictions apply to broker
+	// usernames:
+	//
+	//    * For Amazon MQ for ActiveMQ brokers, this value can contain only alphanumeric
+	//    characters, dashes, periods, underscores, and tildes (- . _ ~). This value
+	//    must be 2-100 characters long.
+	//
+	//    * para>For Amazon MQ for RabbitMQ brokers, this value can contain only
+	//    alphanumeric characters, dashes, periods, underscores (- . _). This value
+	//    must not contain a tilde (~) character. Amazon MQ prohibts using guest
+	//    as a valid usename. This value must be 2-100 characters long.
+	//
+	// Do not add personally identifiable information (PII) or other confidential
+	// or sensitive information in broker usernames. Broker usernames are accessible
+	// to other Amazon Web Services services, including CloudWatch Logs. Broker
+	// usernames are not intended to be used for private or sensitive data.
 	//
 	// Username is a required field
 	Username *string `locationName:"username" type:"string" required:"true"`
@@ -6749,6 +7140,12 @@ func (s *User) SetGroups(v []*string) *User {
 // SetPassword sets the Password field's value.
 func (s *User) SetPassword(v string) *User {
 	s.Password = &v
+	return s
+}
+
+// SetReplicationUser sets the ReplicationUser field's value.
+func (s *User) SetReplicationUser(v bool) *User {
+	s.ReplicationUser = &v
 	return s
 }
 
@@ -6967,6 +7364,9 @@ const (
 
 	// BrokerStateCriticalActionRequired is a BrokerState enum value
 	BrokerStateCriticalActionRequired = "CRITICAL_ACTION_REQUIRED"
+
+	// BrokerStateReplica is a BrokerState enum value
+	BrokerStateReplica = "REPLICA"
 )
 
 // BrokerState_Values returns all elements of the BrokerState enum
@@ -6978,6 +7378,7 @@ func BrokerState_Values() []string {
 		BrokerStateRunning,
 		BrokerStateRebootInProgress,
 		BrokerStateCriticalActionRequired,
+		BrokerStateReplica,
 	}
 }
 
@@ -7018,6 +7419,23 @@ func ChangeType_Values() []string {
 		ChangeTypeCreate,
 		ChangeTypeUpdate,
 		ChangeTypeDelete,
+	}
+}
+
+// Specifies whether a broker is a part of a data replication pair.
+const (
+	// DataReplicationModeNone is a DataReplicationMode enum value
+	DataReplicationModeNone = "NONE"
+
+	// DataReplicationModeCrdr is a DataReplicationMode enum value
+	DataReplicationModeCrdr = "CRDR"
+)
+
+// DataReplicationMode_Values returns all elements of the DataReplicationMode enum
+func DataReplicationMode_Values() []string {
+	return []string{
+		DataReplicationModeNone,
+		DataReplicationModeCrdr,
 	}
 }
 
@@ -7095,7 +7513,24 @@ func EngineType_Values() []string {
 	}
 }
 
-// The reason for which the XML elements or attributes were sanitized.
+// The Promote mode requested.
+const (
+	// PromoteModeSwitchover is a PromoteMode enum value
+	PromoteModeSwitchover = "SWITCHOVER"
+
+	// PromoteModeFailover is a PromoteMode enum value
+	PromoteModeFailover = "FAILOVER"
+)
+
+// PromoteMode_Values returns all elements of the PromoteMode enum
+func PromoteMode_Values() []string {
+	return []string{
+		PromoteModeSwitchover,
+		PromoteModeFailover,
+	}
+}
+
+// The reason for which the configuration elements or attributes were sanitized.
 const (
 	// SanitizationWarningReasonDisallowedElementRemoved is a SanitizationWarningReason enum value
 	SanitizationWarningReasonDisallowedElementRemoved = "DISALLOWED_ELEMENT_REMOVED"

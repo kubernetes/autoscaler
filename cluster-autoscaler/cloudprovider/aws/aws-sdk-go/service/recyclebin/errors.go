@@ -8,6 +8,12 @@ import (
 
 const (
 
+	// ErrCodeConflictException for service response error code
+	// "ConflictException".
+	//
+	// The specified retention rule lock request can't be completed.
+	ErrCodeConflictException = "ConflictException"
+
 	// ErrCodeInternalServerException for service response error code
 	// "InternalServerException".
 	//
@@ -35,6 +41,7 @@ const (
 )
 
 var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
+	"ConflictException":             newErrorConflictException,
 	"InternalServerException":       newErrorInternalServerException,
 	"ResourceNotFoundException":     newErrorResourceNotFoundException,
 	"ServiceQuotaExceededException": newErrorServiceQuotaExceededException,

@@ -22,6 +22,400 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/private/protocol/restjson"
 )
 
+const opStartCallAnalyticsStreamTranscription = "StartCallAnalyticsStreamTranscription"
+
+// StartCallAnalyticsStreamTranscriptionRequest generates a "aws/request.Request" representing the
+// client's request for the StartCallAnalyticsStreamTranscription operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See StartCallAnalyticsStreamTranscription for more information on using the StartCallAnalyticsStreamTranscription
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the StartCallAnalyticsStreamTranscriptionRequest method.
+//	req, resp := client.StartCallAnalyticsStreamTranscriptionRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-streaming-2017-10-26/StartCallAnalyticsStreamTranscription
+func (c *TranscribeStreamingService) StartCallAnalyticsStreamTranscriptionRequest(input *StartCallAnalyticsStreamTranscriptionInput) (req *request.Request, output *StartCallAnalyticsStreamTranscriptionOutput) {
+	op := &request.Operation{
+		Name:       opStartCallAnalyticsStreamTranscription,
+		HTTPMethod: "POST",
+		HTTPPath:   "/call-analytics-stream-transcription",
+	}
+
+	if input == nil {
+		input = &StartCallAnalyticsStreamTranscriptionInput{}
+	}
+
+	output = &StartCallAnalyticsStreamTranscriptionOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.UnmarshalMeta.PushBack(
+		protocol.RequireHTTPMinProtocol{Major: 2}.Handler,
+	)
+
+	es := NewStartCallAnalyticsStreamTranscriptionEventStream()
+	output.eventStream = es
+
+	req.Handlers.Sign.PushFront(es.setupInputPipe)
+	req.Handlers.UnmarshalError.PushBackNamed(request.NamedHandler{
+		Name: "InputPipeCloser",
+		Fn: func(r *request.Request) {
+			err := es.closeInputPipe()
+			if err != nil {
+				r.Error = awserr.New(eventstreamapi.InputWriterCloseErrorCode, err.Error(), r.Error)
+			}
+		},
+	})
+	req.Handlers.Build.PushBack(request.WithSetRequestHeaders(map[string]string{
+		"Content-Type":         "application/vnd.amazon.eventstream",
+		"X-Amz-Content-Sha256": "STREAMING-AWS4-HMAC-SHA256-EVENTS",
+	}))
+	req.Handlers.Build.Swap(restjson.BuildHandler.Name, rest.BuildHandler)
+	eventstreamapi.ApplyHTTPTransportFixes(req)
+	req.Handlers.Send.Swap(client.LogHTTPRequestHandler.Name, client.LogHTTPRequestHeaderHandler)
+	req.Handlers.Unmarshal.PushBack(es.runInputStream)
+
+	req.Handlers.Send.Swap(client.LogHTTPResponseHandler.Name, client.LogHTTPResponseHeaderHandler)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, rest.UnmarshalHandler)
+	req.Handlers.Unmarshal.PushBack(es.runOutputStream)
+	req.Handlers.Unmarshal.PushBack(es.runOnStreamPartClose)
+	return
+}
+
+// StartCallAnalyticsStreamTranscription API operation for Amazon Transcribe Streaming Service.
+//
+// Starts a bidirectional HTTP/2 or WebSocket stream where audio is streamed
+// to Amazon Transcribe and the transcription results are streamed to your application.
+// Use this operation for Call Analytics (https://docs.aws.amazon.com/transcribe/latest/dg/call-analytics.html)
+// transcriptions.
+//
+// The following parameters are required:
+//
+//   - language-code
+//
+//   - media-encoding
+//
+//   - sample-rate
+//
+// For more information on streaming with Amazon Transcribe, see Transcribing
+// streaming audio (https://docs.aws.amazon.com/transcribe/latest/dg/streaming.html).
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Transcribe Streaming Service's
+// API operation StartCallAnalyticsStreamTranscription for usage and error information.
+//
+// Returned Error Types:
+//
+//   - BadRequestException
+//     One or more arguments to the StartStreamTranscription, StartMedicalStreamTranscription,
+//     or StartCallAnalyticsStreamTranscription operation was not valid. For example,
+//     MediaEncoding or LanguageCode used not valid values. Check the specified
+//     parameters and try your request again.
+//
+//   - LimitExceededException
+//     Your client has exceeded one of the Amazon Transcribe limits. This is typically
+//     the audio length limit. Break your audio stream into smaller chunks and try
+//     your request again.
+//
+//   - InternalFailureException
+//     A problem occurred while processing the audio. Amazon Transcribe terminated
+//     processing.
+//
+//   - ConflictException
+//     A new stream started with the same session ID. The current stream has been
+//     terminated.
+//
+//   - ServiceUnavailableException
+//     The service is currently unavailable. Try your request later.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-streaming-2017-10-26/StartCallAnalyticsStreamTranscription
+func (c *TranscribeStreamingService) StartCallAnalyticsStreamTranscription(input *StartCallAnalyticsStreamTranscriptionInput) (*StartCallAnalyticsStreamTranscriptionOutput, error) {
+	req, out := c.StartCallAnalyticsStreamTranscriptionRequest(input)
+	return out, req.Send()
+}
+
+// StartCallAnalyticsStreamTranscriptionWithContext is the same as StartCallAnalyticsStreamTranscription with the addition of
+// the ability to pass a context and additional request options.
+//
+// See StartCallAnalyticsStreamTranscription for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *TranscribeStreamingService) StartCallAnalyticsStreamTranscriptionWithContext(ctx aws.Context, input *StartCallAnalyticsStreamTranscriptionInput, opts ...request.Option) (*StartCallAnalyticsStreamTranscriptionOutput, error) {
+	req, out := c.StartCallAnalyticsStreamTranscriptionRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+var _ awserr.Error
+var _ time.Time
+
+// StartCallAnalyticsStreamTranscriptionEventStream provides the event stream handling for the StartCallAnalyticsStreamTranscription.
+//
+// For testing and mocking the event stream this type should be initialized via
+// the NewStartCallAnalyticsStreamTranscriptionEventStream constructor function. Using the functional options
+// to pass in nested mock behavior.
+type StartCallAnalyticsStreamTranscriptionEventStream struct {
+
+	// Writer is the EventStream writer for the AudioStream
+	// events. This value is automatically set by the SDK when the API call is made
+	// Use this member when unit testing your code with the SDK to mock out the
+	// EventStream Writer.
+	//
+	// Must not be nil.
+	Writer AudioStreamWriter
+
+	inputWriter io.WriteCloser
+
+	// Reader is the EventStream reader for the CallAnalyticsTranscriptResultStream
+	// events. This value is automatically set by the SDK when the API call is made
+	// Use this member when unit testing your code with the SDK to mock out the
+	// EventStream Reader.
+	//
+	// Must not be nil.
+	Reader CallAnalyticsTranscriptResultStreamReader
+
+	outputReader io.ReadCloser
+
+	done      chan struct{}
+	closeOnce sync.Once
+	err       *eventstreamapi.OnceError
+}
+
+// NewStartCallAnalyticsStreamTranscriptionEventStream initializes an StartCallAnalyticsStreamTranscriptionEventStream.
+// This function should only be used for testing and mocking the StartCallAnalyticsStreamTranscriptionEventStream
+// stream within your application.
+//
+// The Writer member must be set before writing events to the stream.
+//
+// The Reader member must be set before reading events from the stream.
+//
+//	es := NewStartCallAnalyticsStreamTranscriptionEventStream(func(o *StartCallAnalyticsStreamTranscriptionEventStream){
+//	    es.Writer = myMockStreamWriter
+//	    es.Reader = myMockStreamReader
+//	})
+func NewStartCallAnalyticsStreamTranscriptionEventStream(opts ...func(*StartCallAnalyticsStreamTranscriptionEventStream)) *StartCallAnalyticsStreamTranscriptionEventStream {
+	es := &StartCallAnalyticsStreamTranscriptionEventStream{
+		done: make(chan struct{}),
+		err:  eventstreamapi.NewOnceError(),
+	}
+
+	for _, fn := range opts {
+		fn(es)
+	}
+
+	return es
+}
+
+func (es *StartCallAnalyticsStreamTranscriptionEventStream) runOnStreamPartClose(r *request.Request) {
+	if es.done == nil {
+		return
+	}
+	go es.waitStreamPartClose()
+
+}
+
+func (es *StartCallAnalyticsStreamTranscriptionEventStream) waitStreamPartClose() {
+	var inputErrCh <-chan struct{}
+	if v, ok := es.Writer.(interface{ ErrorSet() <-chan struct{} }); ok {
+		inputErrCh = v.ErrorSet()
+	}
+	var outputErrCh <-chan struct{}
+	if v, ok := es.Reader.(interface{ ErrorSet() <-chan struct{} }); ok {
+		outputErrCh = v.ErrorSet()
+	}
+	var outputClosedCh <-chan struct{}
+	if v, ok := es.Reader.(interface{ Closed() <-chan struct{} }); ok {
+		outputClosedCh = v.Closed()
+	}
+
+	select {
+	case <-es.done:
+	case <-inputErrCh:
+		es.err.SetError(es.Writer.Err())
+		es.Close()
+	case <-outputErrCh:
+		es.err.SetError(es.Reader.Err())
+		es.Close()
+	case <-outputClosedCh:
+		if err := es.Reader.Err(); err != nil {
+			es.err.SetError(es.Reader.Err())
+		}
+		es.Close()
+	}
+}
+
+func (es *StartCallAnalyticsStreamTranscriptionEventStream) setupInputPipe(r *request.Request) {
+	inputReader, inputWriter := io.Pipe()
+	r.SetStreamingBody(inputReader)
+	es.inputWriter = inputWriter
+}
+
+// Closes the input-pipe writer
+func (es *StartCallAnalyticsStreamTranscriptionEventStream) closeInputPipe() error {
+	if es.inputWriter != nil {
+		return es.inputWriter.Close()
+	}
+	return nil
+}
+
+// Send writes the event to the stream blocking until the event is written.
+// Returns an error if the event was not written.
+//
+// These events are:
+//
+//   - AudioEvent
+//   - ConfigurationEvent
+func (es *StartCallAnalyticsStreamTranscriptionEventStream) Send(ctx aws.Context, event AudioStreamEvent) error {
+	return es.Writer.Send(ctx, event)
+}
+
+func (es *StartCallAnalyticsStreamTranscriptionEventStream) runInputStream(r *request.Request) {
+	var opts []func(*eventstream.Encoder)
+	if r.Config.Logger != nil && r.Config.LogLevel.Matches(aws.LogDebugWithEventStreamBody) {
+		opts = append(opts, eventstream.EncodeWithLogger(r.Config.Logger))
+	}
+	var encoder eventstreamapi.Encoder = eventstream.NewEncoder(es.inputWriter, opts...)
+
+	var closer aws.MultiCloser
+	sigSeed, err := v4.GetSignedRequestSignature(r.HTTPRequest)
+	if err != nil {
+		r.Error = awserr.New(request.ErrCodeSerialization,
+			"unable to get initial request's signature", err)
+		return
+	}
+	signer := eventstreamapi.NewSignEncoder(
+		v4.NewStreamSigner(r.ClientInfo.SigningRegion, r.ClientInfo.SigningName,
+			sigSeed, r.Config.Credentials),
+		encoder,
+	)
+	encoder = signer
+	closer = append(closer, signer)
+	closer = append(closer, es.inputWriter)
+
+	eventWriter := eventstreamapi.NewEventWriter(encoder,
+		protocol.HandlerPayloadMarshal{
+			Marshalers: r.Handlers.BuildStream,
+		},
+		eventTypeForAudioStreamEvent,
+	)
+
+	es.Writer = &writeAudioStream{
+		StreamWriter: eventstreamapi.NewStreamWriter(eventWriter, closer),
+	}
+}
+
+// Events returns a channel to read events from.
+//
+// These events are:
+//
+//   - CategoryEvent
+//   - UtteranceEvent
+//   - CallAnalyticsTranscriptResultStreamUnknownEvent
+func (es *StartCallAnalyticsStreamTranscriptionEventStream) Events() <-chan CallAnalyticsTranscriptResultStreamEvent {
+	return es.Reader.Events()
+}
+
+func (es *StartCallAnalyticsStreamTranscriptionEventStream) runOutputStream(r *request.Request) {
+	var opts []func(*eventstream.Decoder)
+	if r.Config.Logger != nil && r.Config.LogLevel.Matches(aws.LogDebugWithEventStreamBody) {
+		opts = append(opts, eventstream.DecodeWithLogger(r.Config.Logger))
+	}
+
+	unmarshalerForEvent := unmarshalerForCallAnalyticsTranscriptResultStreamEvent{
+		metadata: protocol.ResponseMetadata{
+			StatusCode: r.HTTPResponse.StatusCode,
+			RequestID:  r.RequestID,
+		},
+	}.UnmarshalerForEventName
+
+	decoder := eventstream.NewDecoder(r.HTTPResponse.Body, opts...)
+	eventReader := eventstreamapi.NewEventReader(decoder,
+		protocol.HandlerPayloadUnmarshal{
+			Unmarshalers: r.Handlers.UnmarshalStream,
+		},
+		unmarshalerForEvent,
+	)
+
+	es.outputReader = r.HTTPResponse.Body
+	es.Reader = newReadCallAnalyticsTranscriptResultStream(eventReader)
+}
+
+// Close closes the stream. This will also cause the stream to be closed.
+// Close must be called when done using the stream API. Not calling Close
+// may result in resource leaks.
+//
+// Will close the underlying EventStream writer, and no more events can be
+// sent.
+//
+// You can use the closing of the Reader's Events channel to terminate your
+// application's read from the API's stream.
+func (es *StartCallAnalyticsStreamTranscriptionEventStream) Close() (err error) {
+	es.closeOnce.Do(es.safeClose)
+	return es.Err()
+}
+
+func (es *StartCallAnalyticsStreamTranscriptionEventStream) safeClose() {
+	if es.done != nil {
+		close(es.done)
+	}
+
+	t := time.NewTicker(time.Second)
+	defer t.Stop()
+	writeCloseDone := make(chan error)
+	go func() {
+		if err := es.Writer.Close(); err != nil {
+			es.err.SetError(err)
+		}
+		close(writeCloseDone)
+	}()
+	select {
+	case <-t.C:
+	case <-writeCloseDone:
+	}
+	if err := es.closeInputPipe(); err != nil {
+		es.err.SetError(err)
+	}
+
+	es.Reader.Close()
+	if es.outputReader != nil {
+		es.outputReader.Close()
+	}
+}
+
+// Err returns any error that occurred while reading or writing EventStream
+// Events from the service API's response. Returns nil if there were no errors.
+func (es *StartCallAnalyticsStreamTranscriptionEventStream) Err() error {
+	if err := es.err.Err(); err != nil {
+		return err
+	}
+	if err := es.Writer.Err(); err != nil {
+		return err
+	}
+	if err := es.Reader.Err(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 const opStartMedicalStreamTranscription = "StartMedicalStreamTranscription"
 
 // StartMedicalStreamTranscriptionRequest generates a "aws/request.Request" representing the
@@ -95,8 +489,20 @@ func (c *TranscribeStreamingService) StartMedicalStreamTranscriptionRequest(inpu
 
 // StartMedicalStreamTranscription API operation for Amazon Transcribe Streaming Service.
 //
-// Starts a bidirectional HTTP/2 stream where audio is streamed to Amazon Transcribe
-// Medical and the transcription results are streamed to your application.
+// Starts a bidirectional HTTP/2 or WebSocket stream where audio is streamed
+// to Amazon Transcribe Medical and the transcription results are streamed to
+// your application.
+//
+// The following parameters are required:
+//
+//   - language-code
+//
+//   - media-encoding
+//
+//   - sample-rate
+//
+// For more information on streaming with Amazon Transcribe Medical, see Transcribing
+// streaming audio (https://docs.aws.amazon.com/transcribe/latest/dg/streaming.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -108,27 +514,26 @@ func (c *TranscribeStreamingService) StartMedicalStreamTranscriptionRequest(inpu
 // Returned Error Types:
 //
 //   - BadRequestException
-//     One or more arguments to the StartStreamTranscription or StartMedicalStreamTranscription
-//     operation was invalid. For example, MediaEncoding was not set to a valid
-//     encoding, or LanguageCode was not set to a valid code. Check the parameters
-//     and try your request again.
+//     One or more arguments to the StartStreamTranscription, StartMedicalStreamTranscription,
+//     or StartCallAnalyticsStreamTranscription operation was not valid. For example,
+//     MediaEncoding or LanguageCode used not valid values. Check the specified
+//     parameters and try your request again.
 //
 //   - LimitExceededException
-//     You have exceeded the maximum number of concurrent transcription streams,
-//     are starting transcription streams too quickly, or the maximum audio length
-//     of 4 hours. Wait until a stream has finished processing, or break your audio
-//     stream into smaller chunks and try your request again.
+//     Your client has exceeded one of the Amazon Transcribe limits. This is typically
+//     the audio length limit. Break your audio stream into smaller chunks and try
+//     your request again.
 //
 //   - InternalFailureException
-//     A problem occurred while processing the audio. Amazon Transcribe or Amazon
-//     Transcribe Medical terminated processing. Try your request again.
+//     A problem occurred while processing the audio. Amazon Transcribe terminated
+//     processing.
 //
 //   - ConflictException
 //     A new stream started with the same session ID. The current stream has been
 //     terminated.
 //
 //   - ServiceUnavailableException
-//     Service is currently unavailable. Try your request later.
+//     The service is currently unavailable. Try your request later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-streaming-2017-10-26/StartMedicalStreamTranscription
 func (c *TranscribeStreamingService) StartMedicalStreamTranscription(input *StartMedicalStreamTranscriptionInput) (*StartMedicalStreamTranscriptionOutput, error) {
@@ -153,6 +558,7 @@ func (c *TranscribeStreamingService) StartMedicalStreamTranscriptionWithContext(
 }
 
 var _ awserr.Error
+var _ time.Time
 
 // StartMedicalStreamTranscriptionEventStream provides the event stream handling for the StartMedicalStreamTranscription.
 //
@@ -269,6 +675,7 @@ func (es *StartMedicalStreamTranscriptionEventStream) closeInputPipe() error {
 // These events are:
 //
 //   - AudioEvent
+//   - ConfigurationEvent
 func (es *StartMedicalStreamTranscriptionEventStream) Send(ctx aws.Context, event AudioStreamEvent) error {
 	return es.Writer.Send(ctx, event)
 }
@@ -474,21 +881,19 @@ func (c *TranscribeStreamingService) StartStreamTranscriptionRequest(input *Star
 
 // StartStreamTranscription API operation for Amazon Transcribe Streaming Service.
 //
-// Starts a bidirectional HTTP/2 stream where audio is streamed to Amazon Transcribe
-// and the transcription results are streamed to your application.
+// Starts a bidirectional HTTP/2 or WebSocket stream where audio is streamed
+// to Amazon Transcribe and the transcription results are streamed to your application.
 //
-// The following are encoded as HTTP/2 headers:
+// The following parameters are required:
 //
-//   - x-amzn-transcribe-language-code
+//   - language-code or identify-language or identify-multiple-language
 //
-//   - x-amzn-transcribe-media-encoding
+//   - media-encoding
 //
-//   - x-amzn-transcribe-sample-rate
+//   - sample-rate
 //
-//   - x-amzn-transcribe-session-id
-//
-// See the SDK for Go API Reference (https://docs.aws.amazon.com/sdk-for-go/api/service/transcribestreamingservice/#TranscribeStreamingService.StartStreamTranscription)
-// for more detail.
+// For more information on streaming with Amazon Transcribe, see Transcribing
+// streaming audio (https://docs.aws.amazon.com/transcribe/latest/dg/streaming.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -500,27 +905,26 @@ func (c *TranscribeStreamingService) StartStreamTranscriptionRequest(input *Star
 // Returned Error Types:
 //
 //   - BadRequestException
-//     One or more arguments to the StartStreamTranscription or StartMedicalStreamTranscription
-//     operation was invalid. For example, MediaEncoding was not set to a valid
-//     encoding, or LanguageCode was not set to a valid code. Check the parameters
-//     and try your request again.
+//     One or more arguments to the StartStreamTranscription, StartMedicalStreamTranscription,
+//     or StartCallAnalyticsStreamTranscription operation was not valid. For example,
+//     MediaEncoding or LanguageCode used not valid values. Check the specified
+//     parameters and try your request again.
 //
 //   - LimitExceededException
-//     You have exceeded the maximum number of concurrent transcription streams,
-//     are starting transcription streams too quickly, or the maximum audio length
-//     of 4 hours. Wait until a stream has finished processing, or break your audio
-//     stream into smaller chunks and try your request again.
+//     Your client has exceeded one of the Amazon Transcribe limits. This is typically
+//     the audio length limit. Break your audio stream into smaller chunks and try
+//     your request again.
 //
 //   - InternalFailureException
-//     A problem occurred while processing the audio. Amazon Transcribe or Amazon
-//     Transcribe Medical terminated processing. Try your request again.
+//     A problem occurred while processing the audio. Amazon Transcribe terminated
+//     processing.
 //
 //   - ConflictException
 //     A new stream started with the same session ID. The current stream has been
 //     terminated.
 //
 //   - ServiceUnavailableException
-//     Service is currently unavailable. Try your request later.
+//     The service is currently unavailable. Try your request later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-streaming-2017-10-26/StartStreamTranscription
 func (c *TranscribeStreamingService) StartStreamTranscription(input *StartStreamTranscriptionInput) (*StartStreamTranscriptionOutput, error) {
@@ -545,6 +949,7 @@ func (c *TranscribeStreamingService) StartStreamTranscriptionWithContext(ctx aws
 }
 
 var _ awserr.Error
+var _ time.Time
 
 // StartStreamTranscriptionEventStream provides the event stream handling for the StartStreamTranscription.
 //
@@ -661,6 +1066,7 @@ func (es *StartStreamTranscriptionEventStream) closeInputPipe() error {
 // These events are:
 //
 //   - AudioEvent
+//   - ConfigurationEvent
 func (es *StartStreamTranscriptionEventStream) Send(ctx aws.Context, event AudioStreamEvent) error {
 	return es.Writer.Send(ctx, event)
 }
@@ -793,18 +1199,19 @@ func (es *StartStreamTranscriptionEventStream) Err() error {
 	return nil
 }
 
-// A list of possible transcriptions for the audio.
+// A list of possible alternative transcriptions for the input audio. Each alternative
+// may contain one or more of Items, Entities, or Transcript.
 type Alternative struct {
 	_ struct{} `type:"structure"`
 
-	// Contains the entities identified as personally identifiable information (PII)
-	// in the transcription output.
+	// Contains entities identified as personally identifiable information (PII)
+	// in your transcription output.
 	Entities []*Entity `type:"list"`
 
-	// One or more alternative interpretations of the input audio.
+	// Contains words, phrases, or punctuation marks in your transcription output.
 	Items []*Item `type:"list"`
 
-	// The text that was transcribed from the audio.
+	// Contains transcribed text.
 	Transcript *string `type:"string"`
 }
 
@@ -844,12 +1251,10 @@ func (s *Alternative) SetTranscript(v string) *Alternative {
 	return s
 }
 
-// Provides a wrapper for the audio chunks that you are sending.
+// A wrapper for your audio chunks. Your audio stream consists of one or more
+// audio events, which consist of one or more audio chunks.
 //
-// For information on audio encoding in Amazon Transcribe, see Speech input
-// (https://docs.aws.amazon.com/transcribe/latest/dg/input.html). For information
-// on audio encoding formats in Amazon Transcribe Medical, see Speech input
-// (https://docs.aws.amazon.com/transcribe/latest/dg/input-med.html).
+// For more information, see Event stream encoding (https://docs.aws.amazon.com/transcribe/latest/dg/event-stream.html).
 type AudioEvent struct {
 	_ struct{} `type:"structure" payload:"AudioChunk"`
 
@@ -912,6 +1317,7 @@ func (s *AudioEvent) MarshalEvent(pm protocol.PayloadMarshaler) (msg eventstream
 // These events are:
 //
 //   - AudioEvent
+//   - ConfigurationEvent
 type AudioStreamEvent interface {
 	eventAudioStream()
 	eventstreamapi.Marshaler
@@ -926,6 +1332,7 @@ type AudioStreamEvent interface {
 // These events are:
 //
 //   - AudioEvent
+//   - ConfigurationEvent
 type AudioStreamWriter interface {
 	// Sends writes events to the stream blocking until the event has been
 	// written. An error is returned if the write fails.
@@ -950,6 +1357,8 @@ func eventTypeForAudioStreamEvent(event eventstreamapi.Marshaler) (string, error
 	switch event.(type) {
 	case *AudioEvent:
 		return "AudioEvent", nil
+	case *ConfigurationEvent:
+		return "ConfigurationEvent", nil
 	default:
 		return "", awserr.New(
 			request.ErrCodeSerialization,
@@ -959,10 +1368,10 @@ func eventTypeForAudioStreamEvent(event eventstreamapi.Marshaler) (string, error
 	}
 }
 
-// One or more arguments to the StartStreamTranscription or StartMedicalStreamTranscription
-// operation was invalid. For example, MediaEncoding was not set to a valid
-// encoding, or LanguageCode was not set to a valid code. Check the parameters
-// and try your request again.
+// One or more arguments to the StartStreamTranscription, StartMedicalStreamTranscription,
+// or StartCallAnalyticsStreamTranscription operation was not valid. For example,
+// MediaEncoding or LanguageCode used not valid values. Check the specified
+// parameters and try your request again.
 type BadRequestException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -987,6 +1396,9 @@ func (s BadRequestException) String() string {
 func (s BadRequestException) GoString() string {
 	return s.String()
 }
+
+// The BadRequestException is and event in the CallAnalyticsTranscriptResultStream group of events.
+func (s *BadRequestException) eventCallAnalyticsTranscriptResultStream() {}
 
 // The BadRequestException is and event in the MedicalTranscriptResultStream group of events.
 func (s *BadRequestException) eventMedicalTranscriptResultStream() {}
@@ -1058,6 +1470,599 @@ func (s *BadRequestException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
+// Contains entities identified as personally identifiable information (PII)
+// in your transcription output, along with various associated attributes. Examples
+// include category, confidence score, content, type, and start and end times.
+type CallAnalyticsEntity struct {
+	_ struct{} `type:"structure"`
+
+	// The time, in milliseconds, from the beginning of the audio stream to the
+	// start of the identified entity.
+	BeginOffsetMillis *int64 `type:"long"`
+
+	// The category of information identified. For example, PII.
+	Category *string `type:"string"`
+
+	// The confidence score associated with the identification of an entity in your
+	// transcript.
+	//
+	// Confidence scores are values between 0 and 1. A larger value indicates a
+	// higher probability that the identified entity correctly matches the entity
+	// spoken in your media.
+	Confidence *float64 `type:"double"`
+
+	// The word or words that represent the identified entity.
+	Content *string `type:"string"`
+
+	// The time, in milliseconds, from the beginning of the audio stream to the
+	// end of the identified entity.
+	EndOffsetMillis *int64 `type:"long"`
+
+	// The type of PII identified. For example, NAME or CREDIT_DEBIT_NUMBER.
+	Type *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CallAnalyticsEntity) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CallAnalyticsEntity) GoString() string {
+	return s.String()
+}
+
+// SetBeginOffsetMillis sets the BeginOffsetMillis field's value.
+func (s *CallAnalyticsEntity) SetBeginOffsetMillis(v int64) *CallAnalyticsEntity {
+	s.BeginOffsetMillis = &v
+	return s
+}
+
+// SetCategory sets the Category field's value.
+func (s *CallAnalyticsEntity) SetCategory(v string) *CallAnalyticsEntity {
+	s.Category = &v
+	return s
+}
+
+// SetConfidence sets the Confidence field's value.
+func (s *CallAnalyticsEntity) SetConfidence(v float64) *CallAnalyticsEntity {
+	s.Confidence = &v
+	return s
+}
+
+// SetContent sets the Content field's value.
+func (s *CallAnalyticsEntity) SetContent(v string) *CallAnalyticsEntity {
+	s.Content = &v
+	return s
+}
+
+// SetEndOffsetMillis sets the EndOffsetMillis field's value.
+func (s *CallAnalyticsEntity) SetEndOffsetMillis(v int64) *CallAnalyticsEntity {
+	s.EndOffsetMillis = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *CallAnalyticsEntity) SetType(v string) *CallAnalyticsEntity {
+	s.Type = &v
+	return s
+}
+
+// A word, phrase, or punctuation mark in your Call Analytics transcription
+// output, along with various associated attributes, such as confidence score,
+// type, and start and end times.
+type CallAnalyticsItem struct {
+	_ struct{} `type:"structure"`
+
+	// The time, in milliseconds, from the beginning of the audio stream to the
+	// start of the identified item.
+	BeginOffsetMillis *int64 `type:"long"`
+
+	// The confidence score associated with a word or phrase in your transcript.
+	//
+	// Confidence scores are values between 0 and 1. A larger value indicates a
+	// higher probability that the identified item correctly matches the item spoken
+	// in your media.
+	Confidence *float64 `type:"double"`
+
+	// The word or punctuation that was transcribed.
+	Content *string `type:"string"`
+
+	// The time, in milliseconds, from the beginning of the audio stream to the
+	// end of the identified item.
+	EndOffsetMillis *int64 `type:"long"`
+
+	// If partial result stabilization is enabled, Stable indicates whether the
+	// specified item is stable (true) or if it may change when the segment is complete
+	// (false).
+	Stable *bool `type:"boolean"`
+
+	// The type of item identified. Options are: PRONUNCIATION (spoken words) and
+	// PUNCTUATION.
+	Type *string `type:"string" enum:"ItemType"`
+
+	// Indicates whether the specified item matches a word in the vocabulary filter
+	// included in your Call Analytics request. If true, there is a vocabulary filter
+	// match.
+	VocabularyFilterMatch *bool `type:"boolean"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CallAnalyticsItem) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CallAnalyticsItem) GoString() string {
+	return s.String()
+}
+
+// SetBeginOffsetMillis sets the BeginOffsetMillis field's value.
+func (s *CallAnalyticsItem) SetBeginOffsetMillis(v int64) *CallAnalyticsItem {
+	s.BeginOffsetMillis = &v
+	return s
+}
+
+// SetConfidence sets the Confidence field's value.
+func (s *CallAnalyticsItem) SetConfidence(v float64) *CallAnalyticsItem {
+	s.Confidence = &v
+	return s
+}
+
+// SetContent sets the Content field's value.
+func (s *CallAnalyticsItem) SetContent(v string) *CallAnalyticsItem {
+	s.Content = &v
+	return s
+}
+
+// SetEndOffsetMillis sets the EndOffsetMillis field's value.
+func (s *CallAnalyticsItem) SetEndOffsetMillis(v int64) *CallAnalyticsItem {
+	s.EndOffsetMillis = &v
+	return s
+}
+
+// SetStable sets the Stable field's value.
+func (s *CallAnalyticsItem) SetStable(v bool) *CallAnalyticsItem {
+	s.Stable = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *CallAnalyticsItem) SetType(v string) *CallAnalyticsItem {
+	s.Type = &v
+	return s
+}
+
+// SetVocabularyFilterMatch sets the VocabularyFilterMatch field's value.
+func (s *CallAnalyticsItem) SetVocabularyFilterMatch(v bool) *CallAnalyticsItem {
+	s.VocabularyFilterMatch = &v
+	return s
+}
+
+// CallAnalyticsTranscriptResultStreamEvent groups together all EventStream
+// events writes for CallAnalyticsTranscriptResultStream.
+//
+// These events are:
+//
+//   - CategoryEvent
+//   - UtteranceEvent
+type CallAnalyticsTranscriptResultStreamEvent interface {
+	eventCallAnalyticsTranscriptResultStream()
+	eventstreamapi.Marshaler
+	eventstreamapi.Unmarshaler
+}
+
+// CallAnalyticsTranscriptResultStreamReader provides the interface for reading to the stream. The
+// default implementation for this interface will be CallAnalyticsTranscriptResultStream.
+//
+// The reader's Close method must allow multiple concurrent calls.
+//
+// These events are:
+//
+//   - CategoryEvent
+//   - UtteranceEvent
+//   - CallAnalyticsTranscriptResultStreamUnknownEvent
+type CallAnalyticsTranscriptResultStreamReader interface {
+	// Returns a channel of events as they are read from the event stream.
+	Events() <-chan CallAnalyticsTranscriptResultStreamEvent
+
+	// Close will stop the reader reading events from the stream.
+	Close() error
+
+	// Returns any error that has occurred while reading from the event stream.
+	Err() error
+}
+
+type readCallAnalyticsTranscriptResultStream struct {
+	eventReader *eventstreamapi.EventReader
+	stream      chan CallAnalyticsTranscriptResultStreamEvent
+	err         *eventstreamapi.OnceError
+
+	done      chan struct{}
+	closeOnce sync.Once
+}
+
+func newReadCallAnalyticsTranscriptResultStream(eventReader *eventstreamapi.EventReader) *readCallAnalyticsTranscriptResultStream {
+	r := &readCallAnalyticsTranscriptResultStream{
+		eventReader: eventReader,
+		stream:      make(chan CallAnalyticsTranscriptResultStreamEvent),
+		done:        make(chan struct{}),
+		err:         eventstreamapi.NewOnceError(),
+	}
+	go r.readEventStream()
+
+	return r
+}
+
+// Close will close the underlying event stream reader.
+func (r *readCallAnalyticsTranscriptResultStream) Close() error {
+	r.closeOnce.Do(r.safeClose)
+	return r.Err()
+}
+
+func (r *readCallAnalyticsTranscriptResultStream) ErrorSet() <-chan struct{} {
+	return r.err.ErrorSet()
+}
+
+func (r *readCallAnalyticsTranscriptResultStream) Closed() <-chan struct{} {
+	return r.done
+}
+
+func (r *readCallAnalyticsTranscriptResultStream) safeClose() {
+	close(r.done)
+}
+
+func (r *readCallAnalyticsTranscriptResultStream) Err() error {
+	return r.err.Err()
+}
+
+func (r *readCallAnalyticsTranscriptResultStream) Events() <-chan CallAnalyticsTranscriptResultStreamEvent {
+	return r.stream
+}
+
+func (r *readCallAnalyticsTranscriptResultStream) readEventStream() {
+	defer r.Close()
+	defer close(r.stream)
+
+	for {
+		event, err := r.eventReader.ReadEvent()
+		if err != nil {
+			if err == io.EOF {
+				return
+			}
+			select {
+			case <-r.done:
+				// If closed already ignore the error
+				return
+			default:
+			}
+			if _, ok := err.(*eventstreamapi.UnknownMessageTypeError); ok {
+				continue
+			}
+			r.err.SetError(err)
+			return
+		}
+
+		select {
+		case r.stream <- event.(CallAnalyticsTranscriptResultStreamEvent):
+		case <-r.done:
+			return
+		}
+	}
+}
+
+type unmarshalerForCallAnalyticsTranscriptResultStreamEvent struct {
+	metadata protocol.ResponseMetadata
+}
+
+func (u unmarshalerForCallAnalyticsTranscriptResultStreamEvent) UnmarshalerForEventName(eventType string) (eventstreamapi.Unmarshaler, error) {
+	switch eventType {
+	case "CategoryEvent":
+		return &CategoryEvent{}, nil
+	case "UtteranceEvent":
+		return &UtteranceEvent{}, nil
+	case "BadRequestException":
+		return newErrorBadRequestException(u.metadata).(eventstreamapi.Unmarshaler), nil
+	case "ConflictException":
+		return newErrorConflictException(u.metadata).(eventstreamapi.Unmarshaler), nil
+	case "InternalFailureException":
+		return newErrorInternalFailureException(u.metadata).(eventstreamapi.Unmarshaler), nil
+	case "LimitExceededException":
+		return newErrorLimitExceededException(u.metadata).(eventstreamapi.Unmarshaler), nil
+	case "ServiceUnavailableException":
+		return newErrorServiceUnavailableException(u.metadata).(eventstreamapi.Unmarshaler), nil
+	default:
+		return &CallAnalyticsTranscriptResultStreamUnknownEvent{Type: eventType}, nil
+	}
+}
+
+// CallAnalyticsTranscriptResultStreamUnknownEvent provides a failsafe event for the
+// CallAnalyticsTranscriptResultStream group of events when an unknown event is received.
+type CallAnalyticsTranscriptResultStreamUnknownEvent struct {
+	Type    string
+	Message eventstream.Message
+}
+
+// The CallAnalyticsTranscriptResultStreamUnknownEvent is and event in the CallAnalyticsTranscriptResultStream
+// group of events.
+func (s *CallAnalyticsTranscriptResultStreamUnknownEvent) eventCallAnalyticsTranscriptResultStream() {
+}
+
+// MarshalEvent marshals the type into an stream event value. This method
+// should only used internally within the SDK's EventStream handling.
+func (e *CallAnalyticsTranscriptResultStreamUnknownEvent) MarshalEvent(pm protocol.PayloadMarshaler) (
+	msg eventstream.Message, err error,
+) {
+	return e.Message.Clone(), nil
+}
+
+// UnmarshalEvent unmarshals the EventStream Message into the CallAnalyticsTranscriptResultStream value.
+// This method is only used internally within the SDK's EventStream handling.
+func (e *CallAnalyticsTranscriptResultStreamUnknownEvent) UnmarshalEvent(
+	payloadUnmarshaler protocol.PayloadUnmarshaler,
+	msg eventstream.Message,
+) error {
+	e.Message = msg.Clone()
+	return nil
+}
+
+// Provides information on any TranscriptFilterType categories that matched
+// your transcription output. Matches are identified for each segment upon completion
+// of that segment.
+type CategoryEvent struct {
+	_ struct{} `type:"structure"`
+
+	// Lists the categories that were matched in your audio segment.
+	MatchedCategories []*string `type:"list"`
+
+	// Contains information about the matched categories, including category names
+	// and timestamps.
+	MatchedDetails map[string]*PointsOfInterest `type:"map"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CategoryEvent) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CategoryEvent) GoString() string {
+	return s.String()
+}
+
+// SetMatchedCategories sets the MatchedCategories field's value.
+func (s *CategoryEvent) SetMatchedCategories(v []*string) *CategoryEvent {
+	s.MatchedCategories = v
+	return s
+}
+
+// SetMatchedDetails sets the MatchedDetails field's value.
+func (s *CategoryEvent) SetMatchedDetails(v map[string]*PointsOfInterest) *CategoryEvent {
+	s.MatchedDetails = v
+	return s
+}
+
+// The CategoryEvent is and event in the CallAnalyticsTranscriptResultStream group of events.
+func (s *CategoryEvent) eventCallAnalyticsTranscriptResultStream() {}
+
+// UnmarshalEvent unmarshals the EventStream Message into the CategoryEvent value.
+// This method is only used internally within the SDK's EventStream handling.
+func (s *CategoryEvent) UnmarshalEvent(
+	payloadUnmarshaler protocol.PayloadUnmarshaler,
+	msg eventstream.Message,
+) error {
+	if err := payloadUnmarshaler.UnmarshalPayload(
+		bytes.NewReader(msg.Payload), s,
+	); err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalEvent marshals the type into an stream event value. This method
+// should only used internally within the SDK's EventStream handling.
+func (s *CategoryEvent) MarshalEvent(pm protocol.PayloadMarshaler) (msg eventstream.Message, err error) {
+	msg.Headers.Set(eventstreamapi.MessageTypeHeader, eventstream.StringValue(eventstreamapi.EventMessageType))
+	var buf bytes.Buffer
+	if err = pm.MarshalPayload(&buf, s); err != nil {
+		return eventstream.Message{}, err
+	}
+	msg.Payload = buf.Bytes()
+	return msg, err
+}
+
+// Makes it possible to specify which speaker is on which audio channel. For
+// example, if your agent is the first participant to speak, you would set ChannelId
+// to 0 (to indicate the first channel) and ParticipantRole to AGENT (to indicate
+// that it's the agent speaking).
+type ChannelDefinition struct {
+	_ struct{} `type:"structure"`
+
+	// Specify the audio channel you want to define.
+	//
+	// ChannelId is a required field
+	ChannelId *int64 `type:"integer" required:"true"`
+
+	// Specify the speaker you want to define. Omitting this parameter is equivalent
+	// to specifying both participants.
+	//
+	// ParticipantRole is a required field
+	ParticipantRole *string `type:"string" required:"true" enum:"ParticipantRole"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ChannelDefinition) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ChannelDefinition) GoString() string {
+	return s.String()
+}
+
+// SetChannelId sets the ChannelId field's value.
+func (s *ChannelDefinition) SetChannelId(v int64) *ChannelDefinition {
+	s.ChannelId = &v
+	return s
+}
+
+// SetParticipantRole sets the ParticipantRole field's value.
+func (s *ChannelDefinition) SetParticipantRole(v string) *ChannelDefinition {
+	s.ParticipantRole = &v
+	return s
+}
+
+// Provides the location, using character count, in your transcript where a
+// match is identified. For example, the location of an issue or a category
+// match within a segment.
+type CharacterOffsets struct {
+	_ struct{} `type:"structure"`
+
+	// Provides the character count of the first character where a match is identified.
+	// For example, the first character associated with an issue or a category match
+	// in a segment transcript.
+	Begin *int64 `type:"integer"`
+
+	// Provides the character count of the last character where a match is identified.
+	// For example, the last character associated with an issue or a category match
+	// in a segment transcript.
+	End *int64 `type:"integer"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CharacterOffsets) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CharacterOffsets) GoString() string {
+	return s.String()
+}
+
+// SetBegin sets the Begin field's value.
+func (s *CharacterOffsets) SetBegin(v int64) *CharacterOffsets {
+	s.Begin = &v
+	return s
+}
+
+// SetEnd sets the End field's value.
+func (s *CharacterOffsets) SetEnd(v int64) *CharacterOffsets {
+	s.End = &v
+	return s
+}
+
+// Allows you to set audio channel definitions and post-call analytics settings.
+type ConfigurationEvent struct {
+	_ struct{} `type:"structure"`
+
+	// Indicates which speaker is on which audio channel.
+	ChannelDefinitions []*ChannelDefinition `min:"2" type:"list"`
+
+	// Provides additional optional settings for your Call Analytics post-call request,
+	// including encryption and output locations for your redacted and unredacted
+	// transcript.
+	PostCallAnalyticsSettings *PostCallAnalyticsSettings `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ConfigurationEvent) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ConfigurationEvent) GoString() string {
+	return s.String()
+}
+
+// SetChannelDefinitions sets the ChannelDefinitions field's value.
+func (s *ConfigurationEvent) SetChannelDefinitions(v []*ChannelDefinition) *ConfigurationEvent {
+	s.ChannelDefinitions = v
+	return s
+}
+
+// SetPostCallAnalyticsSettings sets the PostCallAnalyticsSettings field's value.
+func (s *ConfigurationEvent) SetPostCallAnalyticsSettings(v *PostCallAnalyticsSettings) *ConfigurationEvent {
+	s.PostCallAnalyticsSettings = v
+	return s
+}
+
+// The ConfigurationEvent is and event in the AudioStream group of events.
+func (s *ConfigurationEvent) eventAudioStream() {}
+
+// UnmarshalEvent unmarshals the EventStream Message into the ConfigurationEvent value.
+// This method is only used internally within the SDK's EventStream handling.
+func (s *ConfigurationEvent) UnmarshalEvent(
+	payloadUnmarshaler protocol.PayloadUnmarshaler,
+	msg eventstream.Message,
+) error {
+	if err := payloadUnmarshaler.UnmarshalPayload(
+		bytes.NewReader(msg.Payload), s,
+	); err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalEvent marshals the type into an stream event value. This method
+// should only used internally within the SDK's EventStream handling.
+func (s *ConfigurationEvent) MarshalEvent(pm protocol.PayloadMarshaler) (msg eventstream.Message, err error) {
+	msg.Headers.Set(eventstreamapi.MessageTypeHeader, eventstream.StringValue(eventstreamapi.EventMessageType))
+	var buf bytes.Buffer
+	if err = pm.MarshalPayload(&buf, s); err != nil {
+		return eventstream.Message{}, err
+	}
+	msg.Payload = buf.Bytes()
+	return msg, err
+}
+
 // A new stream started with the same session ID. The current stream has been
 // terminated.
 type ConflictException struct {
@@ -1084,6 +2089,9 @@ func (s ConflictException) String() string {
 func (s ConflictException) GoString() string {
 	return s.String()
 }
+
+// The ConflictException is and event in the CallAnalyticsTranscriptResultStream group of events.
+func (s *ConflictException) eventCallAnalyticsTranscriptResultStream() {}
 
 // The ConflictException is and event in the MedicalTranscriptResultStream group of events.
 func (s *ConflictException) eventMedicalTranscriptResultStream() {}
@@ -1155,29 +2163,34 @@ func (s *ConflictException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
-// The entity identified as personally identifiable information (PII).
+// Contains entities identified as personally identifiable information (PII)
+// in your transcription output, along with various associated attributes. Examples
+// include category, confidence score, type, stability score, and start and
+// end times.
 type Entity struct {
 	_ struct{} `type:"structure"`
 
-	// The category of information identified in this entity; for example, PII.
+	// The category of information identified. The only category is PII.
 	Category *string `type:"string"`
 
-	// A value between zero and one that Amazon Transcribe assigns to PII identified
-	// in the source audio. Larger values indicate a higher confidence in PII identification.
+	// The confidence score associated with the identified PII entity in your audio.
+	//
+	// Confidence scores are values between 0 and 1. A larger value indicates a
+	// higher probability that the identified entity correctly matches the entity
+	// spoken in your media.
 	Confidence *float64 `type:"double"`
 
-	// The words in the transcription output that have been identified as a PII
-	// entity.
+	// The word or words identified as PII.
 	Content *string `type:"string"`
 
-	// The end time of speech that was identified as PII.
+	// The end time, in milliseconds, of the utterance that was identified as PII.
 	EndTime *float64 `type:"double"`
 
-	// The start time of speech that was identified as PII.
+	// The start time, in milliseconds, of the utterance that was identified as
+	// PII.
 	StartTime *float64 `type:"double"`
 
-	// The type of PII identified in this entity; for example, name or credit card
-	// number.
+	// The type of PII identified. For example, NAME or CREDIT_DEBIT_NUMBER.
 	Type *string `type:"string"`
 }
 
@@ -1235,8 +2248,8 @@ func (s *Entity) SetType(v string) *Entity {
 	return s
 }
 
-// A problem occurred while processing the audio. Amazon Transcribe or Amazon
-// Transcribe Medical terminated processing. Try your request again.
+// A problem occurred while processing the audio. Amazon Transcribe terminated
+// processing.
 type InternalFailureException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -1261,6 +2274,9 @@ func (s InternalFailureException) String() string {
 func (s InternalFailureException) GoString() string {
 	return s.String()
 }
+
+// The InternalFailureException is and event in the CallAnalyticsTranscriptResultStream group of events.
+func (s *InternalFailureException) eventCallAnalyticsTranscriptResultStream() {}
 
 // The InternalFailureException is and event in the MedicalTranscriptResultStream group of events.
 func (s *InternalFailureException) eventMedicalTranscriptResultStream() {}
@@ -1332,41 +2348,76 @@ func (s *InternalFailureException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
-// A word, phrase, or punctuation mark that is transcribed from the input audio.
+// Lists the issues that were identified in your audio segment.
+type IssueDetected struct {
+	_ struct{} `type:"structure"`
+
+	// Provides the timestamps that identify when in an audio segment the specified
+	// issue occurs.
+	CharacterOffsets *CharacterOffsets `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s IssueDetected) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s IssueDetected) GoString() string {
+	return s.String()
+}
+
+// SetCharacterOffsets sets the CharacterOffsets field's value.
+func (s *IssueDetected) SetCharacterOffsets(v *CharacterOffsets) *IssueDetected {
+	s.CharacterOffsets = v
+	return s
+}
+
+// A word, phrase, or punctuation mark in your transcription output, along with
+// various associated attributes, such as confidence score, type, and start
+// and end times.
 type Item struct {
 	_ struct{} `type:"structure"`
 
-	// A value between zero and one for an item that is a confidence score that
-	// Amazon Transcribe assigns to each word or phrase that it transcribes.
+	// The confidence score associated with a word or phrase in your transcript.
+	//
+	// Confidence scores are values between 0 and 1. A larger value indicates a
+	// higher probability that the identified item correctly matches the item spoken
+	// in your media.
 	Confidence *float64 `type:"double"`
 
-	// The word or punctuation that was recognized in the input audio.
+	// The word or punctuation that was transcribed.
 	Content *string `type:"string"`
 
-	// The offset from the beginning of the audio stream to the end of the audio
-	// that resulted in the item.
+	// The end time, in milliseconds, of the transcribed item.
 	EndTime *float64 `type:"double"`
 
-	// If speaker identification is enabled, shows the speakers identified in the
-	// media stream.
+	// If speaker partitioning is enabled, Speaker labels the speaker of the specified
+	// item.
 	Speaker *string `type:"string"`
 
-	// If partial result stabilization has been enabled, indicates whether the word
-	// or phrase in the item is stable. If Stable is true, the result is stable.
+	// If partial result stabilization is enabled, Stable indicates whether the
+	// specified item is stable (true) or if it may change when the segment is complete
+	// (false).
 	Stable *bool `type:"boolean"`
 
-	// The offset from the beginning of the audio stream to the beginning of the
-	// audio that resulted in the item.
+	// The start time, in milliseconds, of the transcribed item.
 	StartTime *float64 `type:"double"`
 
-	// The type of the item. PRONUNCIATION indicates that the item is a word that
-	// was recognized in the input audio. PUNCTUATION indicates that the item was
-	// interpreted as a pause in the input audio.
+	// The type of item identified. Options are: PRONUNCIATION (spoken words) and
+	// PUNCTUATION.
 	Type *string `type:"string" enum:"ItemType"`
 
-	// Indicates whether a word in the item matches a word in the vocabulary filter
-	// you've chosen for your media stream. If true then a word in the item matches
-	// your vocabulary filter.
+	// Indicates whether the specified item matches a word in the vocabulary filter
+	// included in your request. If true, there is a vocabulary filter match.
 	VocabularyFilterMatch *bool `type:"boolean"`
 }
 
@@ -1436,17 +2487,18 @@ func (s *Item) SetVocabularyFilterMatch(v bool) *Item {
 	return s
 }
 
-// The language codes of the identified languages and their associated confidence
-// scores. The confidence score is a value between zero and one; a larger value
-// indicates a higher confidence in the identified language.
+// The language code that represents the language identified in your audio,
+// including the associated confidence score. If you enabled channel identification
+// in your request and each channel contained a different language, you will
+// have more than one LanguageWithScore result.
 type LanguageWithScore struct {
 	_ struct{} `type:"structure"`
 
-	// The language code of the language identified by Amazon Transcribe.
+	// The language code of the identified language.
 	LanguageCode *string `type:"string" enum:"LanguageCode"`
 
-	// The confidence score for the associated language code. Confidence scores
-	// are values between zero and one; larger values indicate a higher confidence
+	// The confidence score associated with the identified language code. Confidence
+	// scores are values between zero and one; larger values indicate a higher confidence
 	// in the identified language.
 	Score *float64 `type:"double"`
 }
@@ -1481,10 +2533,9 @@ func (s *LanguageWithScore) SetScore(v float64) *LanguageWithScore {
 	return s
 }
 
-// You have exceeded the maximum number of concurrent transcription streams,
-// are starting transcription streams too quickly, or the maximum audio length
-// of 4 hours. Wait until a stream has finished processing, or break your audio
-// stream into smaller chunks and try your request again.
+// Your client has exceeded one of the Amazon Transcribe limits. This is typically
+// the audio length limit. Break your audio stream into smaller chunks and try
+// your request again.
 type LimitExceededException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -1509,6 +2560,9 @@ func (s LimitExceededException) String() string {
 func (s LimitExceededException) GoString() string {
 	return s.String()
 }
+
+// The LimitExceededException is and event in the CallAnalyticsTranscriptResultStream group of events.
+func (s *LimitExceededException) eventCallAnalyticsTranscriptResultStream() {}
 
 // The LimitExceededException is and event in the MedicalTranscriptResultStream group of events.
 func (s *LimitExceededException) eventMedicalTranscriptResultStream() {}
@@ -1580,19 +2634,19 @@ func (s *LimitExceededException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
-// A list of possible transcriptions for the audio.
+// A list of possible alternative transcriptions for the input audio. Each alternative
+// may contain one or more of Items, Entities, or Transcript.
 type MedicalAlternative struct {
 	_ struct{} `type:"structure"`
 
-	// Contains the medical entities identified as personal health information in
-	// the transcription output.
+	// Contains entities identified as personal health information (PHI) in your
+	// transcription output.
 	Entities []*MedicalEntity `type:"list"`
 
-	// A list of objects that contains words and punctuation marks that represents
-	// one or more interpretations of the input audio.
+	// Contains words, phrases, or punctuation marks in your transcription output.
 	Items []*MedicalItem `type:"list"`
 
-	// The text that was transcribed from the audio.
+	// Contains transcribed text.
 	Transcript *string `type:"string"`
 }
 
@@ -1632,27 +2686,31 @@ func (s *MedicalAlternative) SetTranscript(v string) *MedicalAlternative {
 	return s
 }
 
-// The medical entity identified as personal health information.
+// Contains entities identified as personal health information (PHI) in your
+// transcription output, along with various associated attributes. Examples
+// include category, confidence score, type, stability score, and start and
+// end times.
 type MedicalEntity struct {
 	_ struct{} `type:"structure"`
 
-	// The type of personal health information of the medical entity.
+	// The category of information identified. The only category is PHI.
 	Category *string `type:"string"`
 
-	// A value between zero and one that Amazon Transcribe Medical assigned to the
-	// personal health information that it identified in the source audio. Larger
-	// values indicate that Amazon Transcribe Medical has higher confidence in the
-	// personal health information that it identified.
+	// The confidence score associated with the identified PHI entity in your audio.
+	//
+	// Confidence scores are values between 0 and 1. A larger value indicates a
+	// higher probability that the identified entity correctly matches the entity
+	// spoken in your media.
 	Confidence *float64 `type:"double"`
 
-	// The word or words in the transcription output that have been identified as
-	// a medical entity.
+	// The word or words identified as PHI.
 	Content *string `type:"string"`
 
-	// The end time of the speech that was identified as a medical entity.
+	// The end time, in milliseconds, of the utterance that was identified as PHI.
 	EndTime *float64 `type:"double"`
 
-	// The start time of the speech that was identified as a medical entity.
+	// The start time, in milliseconds, of the utterance that was identified as
+	// PHI.
 	StartTime *float64 `type:"double"`
 }
 
@@ -1704,37 +2762,34 @@ func (s *MedicalEntity) SetStartTime(v float64) *MedicalEntity {
 	return s
 }
 
-// A word, phrase, or punctuation mark that is transcribed from the input audio.
+// A word, phrase, or punctuation mark in your transcription output, along with
+// various associated attributes, such as confidence score, type, and start
+// and end times.
 type MedicalItem struct {
 	_ struct{} `type:"structure"`
 
-	// A value between 0 and 1 for an item that is a confidence score that Amazon
-	// Transcribe Medical assigns to each word that it transcribes.
+	// The confidence score associated with a word or phrase in your transcript.
+	//
+	// Confidence scores are values between 0 and 1. A larger value indicates a
+	// higher probability that the identified item correctly matches the item spoken
+	// in your media.
 	Confidence *float64 `type:"double"`
 
-	// The word or punctuation mark that was recognized in the input audio.
+	// The word or punctuation that was transcribed.
 	Content *string `type:"string"`
 
-	// The number of seconds into an audio stream that indicates the creation time
-	// of an item.
+	// The end time, in milliseconds, of the transcribed item.
 	EndTime *float64 `type:"double"`
 
-	// If speaker identification is enabled, shows the integer values that correspond
-	// to the different speakers identified in the stream. For example, if the value
-	// of Speaker in the stream is either a 0 or a 1, that indicates that Amazon
-	// Transcribe Medical has identified two speakers in the stream. The value of
-	// 0 corresponds to one speaker and the value of 1 corresponds to the other
-	// speaker.
+	// If speaker partitioning is enabled, Speaker labels the speaker of the specified
+	// item.
 	Speaker *string `type:"string"`
 
-	// The number of seconds into an audio stream that indicates the creation time
-	// of an item.
+	// The start time, in milliseconds, of the transcribed item.
 	StartTime *float64 `type:"double"`
 
-	// The type of the item. PRONUNCIATION indicates that the item is a word that
-	// was recognized in the input audio. PUNCTUATION indicates that the item was
-	// interpreted as a pause in the input audio, such as a period to indicate the
-	// end of a sentence.
+	// The type of item identified. Options are: PRONUNCIATION (spoken words) and
+	// PUNCTUATION.
 	Type *string `type:"string" enum:"ItemType"`
 }
 
@@ -1792,39 +2847,36 @@ func (s *MedicalItem) SetType(v string) *MedicalItem {
 	return s
 }
 
-// The results of transcribing a portion of the input audio stream.
+// The Result associated with a .
+//
+// Contains a set of transcription results from one or more audio segments,
+// along with additional information per your request parameters. This can include
+// information relating to alternative transcriptions, channel identification,
+// partial result stabilization, language identification, and other transcription-related
+// data.
 type MedicalResult struct {
 	_ struct{} `type:"structure"`
 
-	// A list of possible transcriptions of the audio. Each alternative typically
-	// contains one Item that contains the result of the transcription.
+	// A list of possible alternative transcriptions for the input audio. Each alternative
+	// may contain one or more of Items, Entities, or Transcript.
 	Alternatives []*MedicalAlternative `type:"list"`
 
-	// When channel identification is enabled, Amazon Transcribe Medical transcribes
-	// the speech from each audio channel separately.
-	//
-	// You can use ChannelId to retrieve the transcription results for a single
-	// channel in your audio stream.
+	// Indicates the channel identified for the Result.
 	ChannelId *string `type:"string"`
 
-	// The time, in seconds, from the beginning of the audio stream to the end of
-	// the result.
+	// The end time, in milliseconds, of the Result.
 	EndTime *float64 `type:"double"`
 
-	// Amazon Transcribe Medical divides the incoming audio stream into segments
-	// at natural points in the audio. Transcription results are returned based
-	// on these segments.
+	// Indicates if the segment is complete.
 	//
-	// The IsPartial field is true to indicate that Amazon Transcribe Medical has
-	// additional transcription data to send. The IsPartial field is false to indicate
-	// that this is the last transcription result for the segment.
+	// If IsPartial is true, the segment is not complete. If IsPartial is false,
+	// the segment is complete.
 	IsPartial *bool `type:"boolean"`
 
-	// A unique identifier for the result.
+	// Provides a unique identifier for the Result.
 	ResultId *string `type:"string"`
 
-	// The time, in seconds, from the beginning of the audio stream to the beginning
-	// of the result.
+	// The start time, in milliseconds, of the Result.
 	StartTime *float64 `type:"double"`
 }
 
@@ -1882,12 +2934,19 @@ func (s *MedicalResult) SetStartTime(v float64) *MedicalResult {
 	return s
 }
 
-// The medical transcript in a MedicalTranscriptEvent.
+// The MedicalTranscript associated with a .
+//
+// MedicalTranscript contains Results, which contains a set of transcription
+// results from one or more audio segments, along with additional information
+// per your request parameters.
 type MedicalTranscript struct {
 	_ struct{} `type:"structure"`
 
-	// MedicalResult objects that contain the results of transcribing a portion
-	// of the input audio stream. The array can be empty.
+	// Contains a set of transcription results from one or more audio segments,
+	// along with additional information per your request parameters. This can include
+	// information relating to alternative transcriptions, channel identification,
+	// partial result stabilization, language identification, and other transcription-related
+	// data.
 	Results []*MedicalResult `type:"list"`
 }
 
@@ -1915,13 +2974,18 @@ func (s *MedicalTranscript) SetResults(v []*MedicalResult) *MedicalTranscript {
 	return s
 }
 
-// Represents a set of transcription results from the server to the client.
-// It contains one or more segments of the transcription.
+// The MedicalTranscriptEvent associated with a MedicalTranscriptResultStream.
+//
+// Contains a set of transcription results from one or more audio segments,
+// along with additional information per your request parameters.
 type MedicalTranscriptEvent struct {
 	_ struct{} `type:"structure"`
 
-	// The transcription of the audio stream. The transcription is composed of all
-	// of the items in the results list.
+	// Contains Results, which contains a set of transcription results from one
+	// or more audio segments, along with additional information per your request
+	// parameters. This can include information relating to alternative transcriptions,
+	// channel identification, partial result stabilization, language identification,
+	// and other transcription-related data.
 	Transcript *MedicalTranscript `type:"structure"`
 }
 
@@ -2140,44 +3204,189 @@ func (e *MedicalTranscriptResultStreamUnknownEvent) UnmarshalEvent(
 	return nil
 }
 
-// The result of transcribing a portion of the input audio stream.
+// Contains the timestamps of matched categories.
+type PointsOfInterest struct {
+	_ struct{} `type:"structure"`
+
+	// Contains the timestamp ranges (start time through end time) of matched categories
+	// and rules.
+	TimestampRanges []*TimestampRange `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PointsOfInterest) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PointsOfInterest) GoString() string {
+	return s.String()
+}
+
+// SetTimestampRanges sets the TimestampRanges field's value.
+func (s *PointsOfInterest) SetTimestampRanges(v []*TimestampRange) *PointsOfInterest {
+	s.TimestampRanges = v
+	return s
+}
+
+// Allows you to specify additional settings for your streaming Call Analytics
+// post-call request, including output locations for your redacted and unredacted
+// transcript, which IAM role to use, and, optionally, which encryption key
+// to use.
+//
+// ContentRedactionOutput, DataAccessRoleArn, and OutputLocation are required
+// fields.
+type PostCallAnalyticsSettings struct {
+	_ struct{} `type:"structure"`
+
+	// Specify whether you want only a redacted transcript or both a redacted and
+	// an unredacted transcript. If you choose redacted and unredacted, two JSON
+	// files are generated and stored in the Amazon S3 output location you specify.
+	//
+	// Note that to include ContentRedactionOutput in your request, you must enable
+	// content redaction (ContentRedactionType).
+	ContentRedactionOutput *string `type:"string" enum:"ContentRedactionOutput_"`
+
+	// The Amazon Resource Name (ARN) of an IAM role that has permissions to access
+	// the Amazon S3 bucket that contains your input files. If the role that you
+	// specify doesn’t have the appropriate permissions to access the specified
+	// Amazon S3 location, your request fails.
+	//
+	// IAM role ARNs have the format arn:partition:iam::account:role/role-name-with-path.
+	// For example: arn:aws:iam::111122223333:role/Admin. For more information,
+	// see IAM ARNs (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html#identifiers-arns).
+	//
+	// DataAccessRoleArn is a required field
+	DataAccessRoleArn *string `type:"string" required:"true"`
+
+	// The KMS key you want to use to encrypt your Call Analytics post-call output.
+	//
+	// If using a key located in the current Amazon Web Services account, you can
+	// specify your KMS key in one of four ways:
+	//
+	// Use the KMS key ID itself. For example, 1234abcd-12ab-34cd-56ef-1234567890ab.
+	//
+	// Use an alias for the KMS key ID. For example, alias/ExampleAlias.
+	//
+	// Use the Amazon Resource Name (ARN) for the KMS key ID. For example, arn:aws:kms:region:account-ID:key/1234abcd-12ab-34cd-56ef-1234567890ab.
+	//
+	// Use the ARN for the KMS key alias. For example, arn:aws:kms:region:account-ID:alias/ExampleAlias.
+	//
+	// If using a key located in a different Amazon Web Services account than the
+	// current Amazon Web Services account, you can specify your KMS key in one
+	// of two ways:
+	//
+	// Use the ARN for the KMS key ID. For example, arn:aws:kms:region:account-ID:key/1234abcd-12ab-34cd-56ef-1234567890ab.
+	//
+	// Use the ARN for the KMS key alias. For example, arn:aws:kms:region:account-ID:alias/ExampleAlias.
+	//
+	// Note that the user making the request must have permission to use the specified
+	// KMS key.
+	OutputEncryptionKMSKeyId *string `type:"string"`
+
+	// The Amazon S3 location where you want your Call Analytics post-call transcription
+	// output stored. You can use any of the following formats to specify the output
+	// location:
+	//
+	// s3://DOC-EXAMPLE-BUCKET
+	//
+	// s3://DOC-EXAMPLE-BUCKET/my-output-folder/
+	//
+	// s3://DOC-EXAMPLE-BUCKET/my-output-folder/my-call-analytics-job.json
+	//
+	// OutputLocation is a required field
+	OutputLocation *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PostCallAnalyticsSettings) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PostCallAnalyticsSettings) GoString() string {
+	return s.String()
+}
+
+// SetContentRedactionOutput sets the ContentRedactionOutput field's value.
+func (s *PostCallAnalyticsSettings) SetContentRedactionOutput(v string) *PostCallAnalyticsSettings {
+	s.ContentRedactionOutput = &v
+	return s
+}
+
+// SetDataAccessRoleArn sets the DataAccessRoleArn field's value.
+func (s *PostCallAnalyticsSettings) SetDataAccessRoleArn(v string) *PostCallAnalyticsSettings {
+	s.DataAccessRoleArn = &v
+	return s
+}
+
+// SetOutputEncryptionKMSKeyId sets the OutputEncryptionKMSKeyId field's value.
+func (s *PostCallAnalyticsSettings) SetOutputEncryptionKMSKeyId(v string) *PostCallAnalyticsSettings {
+	s.OutputEncryptionKMSKeyId = &v
+	return s
+}
+
+// SetOutputLocation sets the OutputLocation field's value.
+func (s *PostCallAnalyticsSettings) SetOutputLocation(v string) *PostCallAnalyticsSettings {
+	s.OutputLocation = &v
+	return s
+}
+
+// The Result associated with a .
+//
+// Contains a set of transcription results from one or more audio segments,
+// along with additional information per your request parameters. This can include
+// information relating to alternative transcriptions, channel identification,
+// partial result stabilization, language identification, and other transcription-related
+// data.
 type Result struct {
 	_ struct{} `type:"structure"`
 
-	// A list of possible transcriptions for the audio. Each alternative typically
-	// contains one item that contains the result of the transcription.
+	// A list of possible alternative transcriptions for the input audio. Each alternative
+	// may contain one or more of Items, Entities, or Transcript.
 	Alternatives []*Alternative `type:"list"`
 
-	// When channel identification is enabled, Amazon Transcribe transcribes the
-	// speech from each audio channel separately.
-	//
-	// You can use ChannelId to retrieve the transcription results for a single
-	// channel in your audio stream.
+	// Indicates which audio channel is associated with the Result.
 	ChannelId *string `type:"string"`
 
-	// The offset in seconds from the beginning of the audio stream to the end of
-	// the result.
+	// The end time, in milliseconds, of the Result.
 	EndTime *float64 `type:"double"`
 
-	// Amazon Transcribe divides the incoming audio stream into segments at natural
-	// points in the audio. Transcription results are returned based on these segments.
+	// Indicates if the segment is complete.
 	//
-	// The IsPartial field is true to indicate that Amazon Transcribe has additional
-	// transcription data to send, false to indicate that this is the last transcription
-	// result for the segment.
+	// If IsPartial is true, the segment is not complete. If IsPartial is false,
+	// the segment is complete.
 	IsPartial *bool `type:"boolean"`
 
-	// The language code of the identified language in your media stream.
+	// The language code that represents the language spoken in your audio stream.
 	LanguageCode *string `type:"string" enum:"LanguageCode"`
 
-	// The language code of the dominant language identified in your media.
+	// The language code of the dominant language identified in your stream.
+	//
+	// If you enabled channel identification and each channel of your audio contains
+	// a different language, you may have more than one result.
 	LanguageIdentification []*LanguageWithScore `type:"list"`
 
-	// A unique identifier for the result.
+	// Provides a unique identifier for the Result.
 	ResultId *string `type:"string"`
 
-	// The offset in seconds from the beginning of the audio stream to the beginning
-	// of the result.
+	// The start time, in milliseconds, of the Result.
 	StartTime *float64 `type:"double"`
 }
 
@@ -2247,7 +3456,7 @@ func (s *Result) SetStartTime(v float64) *Result {
 	return s
 }
 
-// Service is currently unavailable. Try your request later.
+// The service is currently unavailable. Try your request later.
 type ServiceUnavailableException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -2272,6 +3481,9 @@ func (s ServiceUnavailableException) String() string {
 func (s ServiceUnavailableException) GoString() string {
 	return s.String()
 }
+
+// The ServiceUnavailableException is and event in the CallAnalyticsTranscriptResultStream group of events.
+func (s *ServiceUnavailableException) eventCallAnalyticsTranscriptResultStream() {}
 
 // The ServiceUnavailableException is and event in the MedicalTranscriptResultStream group of events.
 func (s *ServiceUnavailableException) eventMedicalTranscriptResultStream() {}
@@ -2343,67 +3555,520 @@ func (s *ServiceUnavailableException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
-type StartMedicalStreamTranscriptionInput struct {
+type StartCallAnalyticsStreamTranscriptionInput struct {
 	_ struct{} `type:"structure" payload:"AudioStream"`
 
-	// Set this field to PHI to identify personal health information in the transcription
-	// output.
-	ContentIdentificationType *string `location:"header" locationName:"x-amzn-transcribe-content-identification-type" type:"string" enum:"MedicalContentIdentificationType"`
-
-	// When true, instructs Amazon Transcribe Medical to process each audio channel
-	// separately and then merge the transcription output of each channel into a
-	// single transcription.
+	// Labels all personally identifiable information (PII) identified in your transcript.
 	//
-	// Amazon Transcribe Medical also produces a transcription of each item. An
-	// item includes the start time, end time, and any alternative transcriptions.
+	// Content identification is performed at the segment level; PII specified in
+	// PiiEntityTypes is flagged upon complete transcription of an audio segment.
 	//
-	// You can't set both ShowSpeakerLabel and EnableChannelIdentification in the
+	// You can’t set ContentIdentificationType and ContentRedactionType in the
 	// same request. If you set both, your request returns a BadRequestException.
-	EnableChannelIdentification *bool `location:"header" locationName:"x-amzn-transcribe-enable-channel-identification" type:"boolean"`
+	//
+	// For more information, see Redacting or identifying personally identifiable
+	// information (https://docs.aws.amazon.com/transcribe/latest/dg/pii-redaction.html).
+	ContentIdentificationType *string `location:"header" locationName:"x-amzn-transcribe-content-identification-type" type:"string" enum:"ContentIdentificationType"`
 
-	// Indicates the source language used in the input audio stream. For Amazon
-	// Transcribe Medical, this is US English (en-US).
+	// Redacts all personally identifiable information (PII) identified in your
+	// transcript.
+	//
+	// Content redaction is performed at the segment level; PII specified in PiiEntityTypes
+	// is redacted upon complete transcription of an audio segment.
+	//
+	// You can’t set ContentRedactionType and ContentIdentificationType in the
+	// same request. If you set both, your request returns a BadRequestException.
+	//
+	// For more information, see Redacting or identifying personally identifiable
+	// information (https://docs.aws.amazon.com/transcribe/latest/dg/pii-redaction.html).
+	ContentRedactionType *string `location:"header" locationName:"x-amzn-transcribe-content-redaction-type" type:"string" enum:"ContentRedactionType"`
+
+	// Enables partial result stabilization for your transcription. Partial result
+	// stabilization can reduce latency in your output, but may impact accuracy.
+	// For more information, see Partial-result stabilization (https://docs.aws.amazon.com/transcribe/latest/dg/streaming.html#streaming-partial-result-stabilization).
+	EnablePartialResultsStabilization *bool `location:"header" locationName:"x-amzn-transcribe-enable-partial-results-stabilization" type:"boolean"`
+
+	// Specify the language code that represents the language spoken in your audio.
+	//
+	// If you're unsure of the language spoken in your audio, consider using IdentifyLanguage
+	// to enable automatic language identification.
+	//
+	// For a list of languages supported with streaming Call Analytics, refer to
+	// the Supported languages (https://docs.aws.amazon.com/transcribe/latest/dg/supported-languages.html)
+	// table.
 	//
 	// LanguageCode is a required field
-	LanguageCode *string `location:"header" locationName:"x-amzn-transcribe-language-code" type:"string" required:"true" enum:"LanguageCode"`
+	LanguageCode *string `location:"header" locationName:"x-amzn-transcribe-language-code" type:"string" required:"true" enum:"CallAnalyticsLanguageCode"`
 
-	// The encoding used for the input audio.
+	// Specify the name of the custom language model that you want to use when processing
+	// your transcription. Note that language model names are case sensitive.
+	//
+	// The language of the specified language model must match the language code
+	// you specify in your transcription request. If the languages don't match,
+	// the custom language model isn't applied. There are no errors or warnings
+	// associated with a language mismatch.
+	//
+	// For more information, see Custom language models (https://docs.aws.amazon.com/transcribe/latest/dg/custom-language-models.html).
+	LanguageModelName *string `location:"header" locationName:"x-amzn-transcribe-language-model-name" min:"1" type:"string"`
+
+	// Specify the encoding of your input audio. Supported formats are:
+	//
+	//    * FLAC
+	//
+	//    * OPUS-encoded audio in an Ogg container
+	//
+	//    * PCM (only signed 16-bit little-endian audio formats, which does not
+	//    include WAV)
+	//
+	// For more information, see Media formats (https://docs.aws.amazon.com/transcribe/latest/dg/how-input.html#how-input-audio).
 	//
 	// MediaEncoding is a required field
 	MediaEncoding *string `location:"header" locationName:"x-amzn-transcribe-media-encoding" type:"string" required:"true" enum:"MediaEncoding"`
 
-	// The sample rate of the input audio (in Hertz). Amazon Transcribe medical
+	// The sample rate of the input audio (in hertz). Low-quality audio, such as
+	// telephone audio, is typically around 8,000 Hz. High-quality audio typically
+	// ranges from 16,000 Hz to 48,000 Hz. Note that the sample rate you specify
+	// must match that of your audio.
+	//
+	// MediaSampleRateHertz is a required field
+	MediaSampleRateHertz *int64 `location:"header" locationName:"x-amzn-transcribe-sample-rate" min:"8000" type:"integer" required:"true"`
+
+	// Specify the level of stability to use when you enable partial results stabilization
+	// (EnablePartialResultsStabilization).
+	//
+	// Low stability provides the highest accuracy. High stability transcribes faster,
+	// but with slightly lower accuracy.
+	//
+	// For more information, see Partial-result stabilization (https://docs.aws.amazon.com/transcribe/latest/dg/streaming.html#streaming-partial-result-stabilization).
+	PartialResultsStability *string `location:"header" locationName:"x-amzn-transcribe-partial-results-stability" type:"string" enum:"PartialResultsStability"`
+
+	// Specify which types of personally identifiable information (PII) you want
+	// to redact in your transcript. You can include as many types as you'd like,
+	// or you can select ALL.
+	//
+	// To include PiiEntityTypes in your Call Analytics request, you must also include
+	// either ContentIdentificationType or ContentRedactionType.
+	//
+	// Values must be comma-separated and can include: BANK_ACCOUNT_NUMBER, BANK_ROUTING,
+	// CREDIT_DEBIT_NUMBER, CREDIT_DEBIT_CVV, CREDIT_DEBIT_EXPIRY, PIN, EMAIL, ADDRESS,
+	// NAME, PHONE, SSN, or ALL.
+	PiiEntityTypes *string `location:"header" locationName:"x-amzn-transcribe-pii-entity-types" min:"1" type:"string"`
+
+	// Specify a name for your Call Analytics transcription session. If you don't
+	// include this parameter in your request, Amazon Transcribe generates an ID
+	// and returns it in the response.
+	//
+	// You can use a session ID to retry a streaming session.
+	SessionId *string `location:"header" locationName:"x-amzn-transcribe-session-id" min:"36" type:"string"`
+
+	// Specify how you want your vocabulary filter applied to your transcript.
+	//
+	// To replace words with ***, choose mask.
+	//
+	// To delete words, choose remove.
+	//
+	// To flag words without changing them, choose tag.
+	VocabularyFilterMethod *string `location:"header" locationName:"x-amzn-transcribe-vocabulary-filter-method" type:"string" enum:"VocabularyFilterMethod"`
+
+	// Specify the name of the custom vocabulary filter that you want to use when
+	// processing your transcription. Note that vocabulary filter names are case
+	// sensitive.
+	//
+	// If the language of the specified custom vocabulary filter doesn't match the
+	// language identified in your media, the vocabulary filter is not applied to
+	// your transcription.
+	//
+	// For more information, see Using vocabulary filtering with unwanted words
+	// (https://docs.aws.amazon.com/transcribe/latest/dg/vocabulary-filtering.html).
+	VocabularyFilterName *string `location:"header" locationName:"x-amzn-transcribe-vocabulary-filter-name" min:"1" type:"string"`
+
+	// Specify the name of the custom vocabulary that you want to use when processing
+	// your transcription. Note that vocabulary names are case sensitive.
+	//
+	// If the language of the specified custom vocabulary doesn't match the language
+	// identified in your media, the custom vocabulary is not applied to your transcription.
+	//
+	// For more information, see Custom vocabularies (https://docs.aws.amazon.com/transcribe/latest/dg/custom-vocabulary.html).
+	VocabularyName *string `location:"header" locationName:"x-amzn-transcribe-vocabulary-name" min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StartCallAnalyticsStreamTranscriptionInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StartCallAnalyticsStreamTranscriptionInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *StartCallAnalyticsStreamTranscriptionInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "StartCallAnalyticsStreamTranscriptionInput"}
+	if s.LanguageCode == nil {
+		invalidParams.Add(request.NewErrParamRequired("LanguageCode"))
+	}
+	if s.LanguageModelName != nil && len(*s.LanguageModelName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("LanguageModelName", 1))
+	}
+	if s.MediaEncoding == nil {
+		invalidParams.Add(request.NewErrParamRequired("MediaEncoding"))
+	}
+	if s.MediaSampleRateHertz == nil {
+		invalidParams.Add(request.NewErrParamRequired("MediaSampleRateHertz"))
+	}
+	if s.MediaSampleRateHertz != nil && *s.MediaSampleRateHertz < 8000 {
+		invalidParams.Add(request.NewErrParamMinValue("MediaSampleRateHertz", 8000))
+	}
+	if s.PiiEntityTypes != nil && len(*s.PiiEntityTypes) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("PiiEntityTypes", 1))
+	}
+	if s.SessionId != nil && len(*s.SessionId) < 36 {
+		invalidParams.Add(request.NewErrParamMinLen("SessionId", 36))
+	}
+	if s.VocabularyFilterName != nil && len(*s.VocabularyFilterName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("VocabularyFilterName", 1))
+	}
+	if s.VocabularyName != nil && len(*s.VocabularyName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("VocabularyName", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetContentIdentificationType sets the ContentIdentificationType field's value.
+func (s *StartCallAnalyticsStreamTranscriptionInput) SetContentIdentificationType(v string) *StartCallAnalyticsStreamTranscriptionInput {
+	s.ContentIdentificationType = &v
+	return s
+}
+
+// SetContentRedactionType sets the ContentRedactionType field's value.
+func (s *StartCallAnalyticsStreamTranscriptionInput) SetContentRedactionType(v string) *StartCallAnalyticsStreamTranscriptionInput {
+	s.ContentRedactionType = &v
+	return s
+}
+
+// SetEnablePartialResultsStabilization sets the EnablePartialResultsStabilization field's value.
+func (s *StartCallAnalyticsStreamTranscriptionInput) SetEnablePartialResultsStabilization(v bool) *StartCallAnalyticsStreamTranscriptionInput {
+	s.EnablePartialResultsStabilization = &v
+	return s
+}
+
+// SetLanguageCode sets the LanguageCode field's value.
+func (s *StartCallAnalyticsStreamTranscriptionInput) SetLanguageCode(v string) *StartCallAnalyticsStreamTranscriptionInput {
+	s.LanguageCode = &v
+	return s
+}
+
+// SetLanguageModelName sets the LanguageModelName field's value.
+func (s *StartCallAnalyticsStreamTranscriptionInput) SetLanguageModelName(v string) *StartCallAnalyticsStreamTranscriptionInput {
+	s.LanguageModelName = &v
+	return s
+}
+
+// SetMediaEncoding sets the MediaEncoding field's value.
+func (s *StartCallAnalyticsStreamTranscriptionInput) SetMediaEncoding(v string) *StartCallAnalyticsStreamTranscriptionInput {
+	s.MediaEncoding = &v
+	return s
+}
+
+// SetMediaSampleRateHertz sets the MediaSampleRateHertz field's value.
+func (s *StartCallAnalyticsStreamTranscriptionInput) SetMediaSampleRateHertz(v int64) *StartCallAnalyticsStreamTranscriptionInput {
+	s.MediaSampleRateHertz = &v
+	return s
+}
+
+// SetPartialResultsStability sets the PartialResultsStability field's value.
+func (s *StartCallAnalyticsStreamTranscriptionInput) SetPartialResultsStability(v string) *StartCallAnalyticsStreamTranscriptionInput {
+	s.PartialResultsStability = &v
+	return s
+}
+
+// SetPiiEntityTypes sets the PiiEntityTypes field's value.
+func (s *StartCallAnalyticsStreamTranscriptionInput) SetPiiEntityTypes(v string) *StartCallAnalyticsStreamTranscriptionInput {
+	s.PiiEntityTypes = &v
+	return s
+}
+
+// SetSessionId sets the SessionId field's value.
+func (s *StartCallAnalyticsStreamTranscriptionInput) SetSessionId(v string) *StartCallAnalyticsStreamTranscriptionInput {
+	s.SessionId = &v
+	return s
+}
+
+// SetVocabularyFilterMethod sets the VocabularyFilterMethod field's value.
+func (s *StartCallAnalyticsStreamTranscriptionInput) SetVocabularyFilterMethod(v string) *StartCallAnalyticsStreamTranscriptionInput {
+	s.VocabularyFilterMethod = &v
+	return s
+}
+
+// SetVocabularyFilterName sets the VocabularyFilterName field's value.
+func (s *StartCallAnalyticsStreamTranscriptionInput) SetVocabularyFilterName(v string) *StartCallAnalyticsStreamTranscriptionInput {
+	s.VocabularyFilterName = &v
+	return s
+}
+
+// SetVocabularyName sets the VocabularyName field's value.
+func (s *StartCallAnalyticsStreamTranscriptionInput) SetVocabularyName(v string) *StartCallAnalyticsStreamTranscriptionInput {
+	s.VocabularyName = &v
+	return s
+}
+
+type StartCallAnalyticsStreamTranscriptionOutput struct {
+	_ struct{} `type:"structure" payload:"CallAnalyticsTranscriptResultStream"`
+
+	eventStream *StartCallAnalyticsStreamTranscriptionEventStream
+
+	// Shows whether content identification was enabled for your Call Analytics
+	// transcription.
+	ContentIdentificationType *string `location:"header" locationName:"x-amzn-transcribe-content-identification-type" type:"string" enum:"ContentIdentificationType"`
+
+	// Shows whether content redaction was enabled for your Call Analytics transcription.
+	ContentRedactionType *string `location:"header" locationName:"x-amzn-transcribe-content-redaction-type" type:"string" enum:"ContentRedactionType"`
+
+	// Shows whether partial results stabilization was enabled for your Call Analytics
+	// transcription.
+	EnablePartialResultsStabilization *bool `location:"header" locationName:"x-amzn-transcribe-enable-partial-results-stabilization" type:"boolean"`
+
+	// Provides the language code that you specified in your Call Analytics request.
+	LanguageCode *string `location:"header" locationName:"x-amzn-transcribe-language-code" type:"string" enum:"CallAnalyticsLanguageCode"`
+
+	// Provides the name of the custom language model that you specified in your
+	// Call Analytics request.
+	LanguageModelName *string `location:"header" locationName:"x-amzn-transcribe-language-model-name" min:"1" type:"string"`
+
+	// Provides the media encoding you specified in your Call Analytics request.
+	MediaEncoding *string `location:"header" locationName:"x-amzn-transcribe-media-encoding" type:"string" enum:"MediaEncoding"`
+
+	// Provides the sample rate that you specified in your Call Analytics request.
+	MediaSampleRateHertz *int64 `location:"header" locationName:"x-amzn-transcribe-sample-rate" min:"8000" type:"integer"`
+
+	// Provides the stabilization level used for your transcription.
+	PartialResultsStability *string `location:"header" locationName:"x-amzn-transcribe-partial-results-stability" type:"string" enum:"PartialResultsStability"`
+
+	// Lists the PII entity types you specified in your Call Analytics request.
+	PiiEntityTypes *string `location:"header" locationName:"x-amzn-transcribe-pii-entity-types" min:"1" type:"string"`
+
+	// Provides the identifier for your Call Analytics streaming request.
+	RequestId *string `location:"header" locationName:"x-amzn-request-id" type:"string"`
+
+	// Provides the identifier for your Call Analytics transcription session.
+	SessionId *string `location:"header" locationName:"x-amzn-transcribe-session-id" min:"36" type:"string"`
+
+	// Provides the vocabulary filtering method used in your Call Analytics transcription.
+	VocabularyFilterMethod *string `location:"header" locationName:"x-amzn-transcribe-vocabulary-filter-method" type:"string" enum:"VocabularyFilterMethod"`
+
+	// Provides the name of the custom vocabulary filter that you specified in your
+	// Call Analytics request.
+	VocabularyFilterName *string `location:"header" locationName:"x-amzn-transcribe-vocabulary-filter-name" min:"1" type:"string"`
+
+	// Provides the name of the custom vocabulary that you specified in your Call
+	// Analytics request.
+	VocabularyName *string `location:"header" locationName:"x-amzn-transcribe-vocabulary-name" min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StartCallAnalyticsStreamTranscriptionOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StartCallAnalyticsStreamTranscriptionOutput) GoString() string {
+	return s.String()
+}
+
+// SetContentIdentificationType sets the ContentIdentificationType field's value.
+func (s *StartCallAnalyticsStreamTranscriptionOutput) SetContentIdentificationType(v string) *StartCallAnalyticsStreamTranscriptionOutput {
+	s.ContentIdentificationType = &v
+	return s
+}
+
+// SetContentRedactionType sets the ContentRedactionType field's value.
+func (s *StartCallAnalyticsStreamTranscriptionOutput) SetContentRedactionType(v string) *StartCallAnalyticsStreamTranscriptionOutput {
+	s.ContentRedactionType = &v
+	return s
+}
+
+// SetEnablePartialResultsStabilization sets the EnablePartialResultsStabilization field's value.
+func (s *StartCallAnalyticsStreamTranscriptionOutput) SetEnablePartialResultsStabilization(v bool) *StartCallAnalyticsStreamTranscriptionOutput {
+	s.EnablePartialResultsStabilization = &v
+	return s
+}
+
+// SetLanguageCode sets the LanguageCode field's value.
+func (s *StartCallAnalyticsStreamTranscriptionOutput) SetLanguageCode(v string) *StartCallAnalyticsStreamTranscriptionOutput {
+	s.LanguageCode = &v
+	return s
+}
+
+// SetLanguageModelName sets the LanguageModelName field's value.
+func (s *StartCallAnalyticsStreamTranscriptionOutput) SetLanguageModelName(v string) *StartCallAnalyticsStreamTranscriptionOutput {
+	s.LanguageModelName = &v
+	return s
+}
+
+// SetMediaEncoding sets the MediaEncoding field's value.
+func (s *StartCallAnalyticsStreamTranscriptionOutput) SetMediaEncoding(v string) *StartCallAnalyticsStreamTranscriptionOutput {
+	s.MediaEncoding = &v
+	return s
+}
+
+// SetMediaSampleRateHertz sets the MediaSampleRateHertz field's value.
+func (s *StartCallAnalyticsStreamTranscriptionOutput) SetMediaSampleRateHertz(v int64) *StartCallAnalyticsStreamTranscriptionOutput {
+	s.MediaSampleRateHertz = &v
+	return s
+}
+
+// SetPartialResultsStability sets the PartialResultsStability field's value.
+func (s *StartCallAnalyticsStreamTranscriptionOutput) SetPartialResultsStability(v string) *StartCallAnalyticsStreamTranscriptionOutput {
+	s.PartialResultsStability = &v
+	return s
+}
+
+// SetPiiEntityTypes sets the PiiEntityTypes field's value.
+func (s *StartCallAnalyticsStreamTranscriptionOutput) SetPiiEntityTypes(v string) *StartCallAnalyticsStreamTranscriptionOutput {
+	s.PiiEntityTypes = &v
+	return s
+}
+
+// SetRequestId sets the RequestId field's value.
+func (s *StartCallAnalyticsStreamTranscriptionOutput) SetRequestId(v string) *StartCallAnalyticsStreamTranscriptionOutput {
+	s.RequestId = &v
+	return s
+}
+
+// SetSessionId sets the SessionId field's value.
+func (s *StartCallAnalyticsStreamTranscriptionOutput) SetSessionId(v string) *StartCallAnalyticsStreamTranscriptionOutput {
+	s.SessionId = &v
+	return s
+}
+
+// SetVocabularyFilterMethod sets the VocabularyFilterMethod field's value.
+func (s *StartCallAnalyticsStreamTranscriptionOutput) SetVocabularyFilterMethod(v string) *StartCallAnalyticsStreamTranscriptionOutput {
+	s.VocabularyFilterMethod = &v
+	return s
+}
+
+// SetVocabularyFilterName sets the VocabularyFilterName field's value.
+func (s *StartCallAnalyticsStreamTranscriptionOutput) SetVocabularyFilterName(v string) *StartCallAnalyticsStreamTranscriptionOutput {
+	s.VocabularyFilterName = &v
+	return s
+}
+
+// SetVocabularyName sets the VocabularyName field's value.
+func (s *StartCallAnalyticsStreamTranscriptionOutput) SetVocabularyName(v string) *StartCallAnalyticsStreamTranscriptionOutput {
+	s.VocabularyName = &v
+	return s
+}
+
+// GetStream returns the type to interact with the event stream.
+func (s *StartCallAnalyticsStreamTranscriptionOutput) GetStream() *StartCallAnalyticsStreamTranscriptionEventStream {
+	return s.eventStream
+}
+
+type StartMedicalStreamTranscriptionInput struct {
+	_ struct{} `type:"structure" payload:"AudioStream"`
+
+	// Labels all personal health information (PHI) identified in your transcript.
+	//
+	// Content identification is performed at the segment level; PHI is flagged
+	// upon complete transcription of an audio segment.
+	//
+	// For more information, see Identifying personal health information (PHI) in
+	// a transcription (https://docs.aws.amazon.com/transcribe/latest/dg/phi-id.html).
+	ContentIdentificationType *string `location:"header" locationName:"x-amzn-transcribe-content-identification-type" type:"string" enum:"MedicalContentIdentificationType"`
+
+	// Enables channel identification in multi-channel audio.
+	//
+	// Channel identification transcribes the audio on each channel independently,
+	// then appends the output for each channel into one transcript.
+	//
+	// If you have multi-channel audio and do not enable channel identification,
+	// your audio is transcribed in a continuous manner and your transcript is not
+	// separated by channel.
+	//
+	// For more information, see Transcribing multi-channel audio (https://docs.aws.amazon.com/transcribe/latest/dg/channel-id.html).
+	EnableChannelIdentification *bool `location:"header" locationName:"x-amzn-transcribe-enable-channel-identification" type:"boolean"`
+
+	// Specify the language code that represents the language spoken in your audio.
+	//
+	// Amazon Transcribe Medical only supports US English (en-US).
+	//
+	// LanguageCode is a required field
+	LanguageCode *string `location:"header" locationName:"x-amzn-transcribe-language-code" type:"string" required:"true" enum:"LanguageCode"`
+
+	// Specify the encoding used for the input audio. Supported formats are:
+	//
+	//    * FLAC
+	//
+	//    * OPUS-encoded audio in an Ogg container
+	//
+	//    * PCM (only signed 16-bit little-endian audio formats, which does not
+	//    include WAV)
+	//
+	// For more information, see Media formats (https://docs.aws.amazon.com/transcribe/latest/dg/how-input.html#how-input-audio).
+	//
+	// MediaEncoding is a required field
+	MediaEncoding *string `location:"header" locationName:"x-amzn-transcribe-media-encoding" type:"string" required:"true" enum:"MediaEncoding"`
+
+	// The sample rate of the input audio (in hertz). Amazon Transcribe Medical
 	// supports a range from 16,000 Hz to 48,000 Hz. Note that the sample rate you
 	// specify must match that of your audio.
 	//
 	// MediaSampleRateHertz is a required field
 	MediaSampleRateHertz *int64 `location:"header" locationName:"x-amzn-transcribe-sample-rate" min:"8000" type:"integer" required:"true"`
 
-	// The number of channels that are in your audio stream.
+	// Specify the number of channels in your audio stream. Up to two channels are
+	// supported.
 	NumberOfChannels *int64 `location:"header" locationName:"x-amzn-transcribe-number-of-channels" min:"2" type:"integer"`
 
-	// Optional. An identifier for the transcription session. If you don't provide
-	// a session ID, Amazon Transcribe generates one for you and returns it in the
-	// response.
+	// Specify a name for your transcription session. If you don't include this
+	// parameter in your request, Amazon Transcribe Medical generates an ID and
+	// returns it in the response.
+	//
+	// You can use a session ID to retry a streaming session.
 	SessionId *string `location:"header" locationName:"x-amzn-transcribe-session-id" min:"36" type:"string"`
 
-	// When true, enables speaker identification in your real-time stream.
+	// Enables speaker partitioning (diarization) in your transcription output.
+	// Speaker partitioning labels the speech from individual speakers in your media
+	// file.
+	//
+	// For more information, see Partitioning speakers (diarization) (https://docs.aws.amazon.com/transcribe/latest/dg/diarization.html).
 	ShowSpeakerLabel *bool `location:"header" locationName:"x-amzn-transcribe-show-speaker-label" type:"boolean"`
 
-	// The medical specialty of the clinician or provider.
+	// Specify the medical specialty contained in your audio.
 	//
 	// Specialty is a required field
 	Specialty *string `location:"header" locationName:"x-amzn-transcribe-specialty" type:"string" required:"true" enum:"Specialty"`
 
-	// The type of input audio. Choose DICTATION for a provider dictating patient
-	// notes. Choose CONVERSATION for a dialogue between a patient and one or more
-	// medical professionanls.
+	// Specify the type of input audio. For example, choose DICTATION for a provider
+	// dictating patient notes and CONVERSATION for a dialogue between a patient
+	// and a medical professional.
 	//
 	// Type is a required field
 	Type *string `location:"header" locationName:"x-amzn-transcribe-type" type:"string" required:"true" enum:"Type"`
 
-	// The name of the medical custom vocabulary to use when processing the real-time
-	// stream.
+	// Specify the name of the custom vocabulary that you want to use when processing
+	// your transcription. Note that vocabulary names are case sensitive.
 	VocabularyName *string `location:"header" locationName:"x-amzn-transcribe-vocabulary-name" min:"1" type:"string"`
 }
 
@@ -2533,44 +4198,41 @@ type StartMedicalStreamTranscriptionOutput struct {
 
 	eventStream *StartMedicalStreamTranscriptionEventStream
 
-	// If the value is PHI, indicates that you've configured your stream to identify
-	// personal health information.
+	// Shows whether content identification was enabled for your transcription.
 	ContentIdentificationType *string `location:"header" locationName:"x-amzn-transcribe-content-identification-type" type:"string" enum:"MedicalContentIdentificationType"`
 
-	// Shows whether channel identification has been enabled in the stream.
+	// Shows whether channel identification was enabled for your transcription.
 	EnableChannelIdentification *bool `location:"header" locationName:"x-amzn-transcribe-enable-channel-identification" type:"boolean"`
 
-	// The language code for the response transcript. For Amazon Transcribe Medical,
-	// this is US English (en-US).
+	// Provides the language code that you specified in your request. This must
+	// be en-US.
 	LanguageCode *string `location:"header" locationName:"x-amzn-transcribe-language-code" type:"string" enum:"LanguageCode"`
 
-	// The encoding used for the input audio stream.
+	// Provides the media encoding you specified in your request.
 	MediaEncoding *string `location:"header" locationName:"x-amzn-transcribe-media-encoding" type:"string" enum:"MediaEncoding"`
 
-	// The sample rate of the input audio, in Hertz (Hz).
+	// Provides the sample rate that you specified in your request.
 	MediaSampleRateHertz *int64 `location:"header" locationName:"x-amzn-transcribe-sample-rate" min:"8000" type:"integer"`
 
-	// The number of channels identified in the stream.
+	// Provides the number of channels that you specified in your request.
 	NumberOfChannels *int64 `location:"header" locationName:"x-amzn-transcribe-number-of-channels" min:"2" type:"integer"`
 
-	// An identifier for the streaming transcription.
+	// Provides the identifier for your streaming request.
 	RequestId *string `location:"header" locationName:"x-amzn-request-id" type:"string"`
 
-	// Optional. An identifier for the transcription session. If you don't provide
-	// a session ID, Amazon Transcribe generates one for you and returns it in the
-	// response.
+	// Provides the identifier for your transcription session.
 	SessionId *string `location:"header" locationName:"x-amzn-transcribe-session-id" min:"36" type:"string"`
 
-	// Shows whether speaker identification was enabled in the stream.
+	// Shows whether speaker partitioning was enabled for your transcription.
 	ShowSpeakerLabel *bool `location:"header" locationName:"x-amzn-transcribe-show-speaker-label" type:"boolean"`
 
-	// The specialty in the medical domain.
+	// Provides the medical specialty that you specified in your request.
 	Specialty *string `location:"header" locationName:"x-amzn-transcribe-specialty" type:"string" enum:"Specialty"`
 
-	// The type of audio that was transcribed.
+	// Provides the type of audio you specified in your request.
 	Type *string `location:"header" locationName:"x-amzn-transcribe-type" type:"string" enum:"Type"`
 
-	// The name of the vocabulary used when processing the stream.
+	// Provides the name of the custom vocabulary that you specified in your request.
 	VocabularyName *string `location:"header" locationName:"x-amzn-transcribe-vocabulary-name" min:"1" type:"string"`
 }
 
@@ -2672,63 +4334,141 @@ func (s *StartMedicalStreamTranscriptionOutput) GetStream() *StartMedicalStreamT
 type StartStreamTranscriptionInput struct {
 	_ struct{} `type:"structure" payload:"AudioStream"`
 
-	// Set this field to PII to identify personally identifiable information (PII)
-	// in the transcription output. Content identification is performed only upon
-	// complete transcription of the audio segments.
+	// Labels all personally identifiable information (PII) identified in your transcript.
 	//
-	// You can’t set both ContentIdentificationType and ContentRedactionType in
-	// the same request. If you set both, your request returns a BadRequestException.
+	// Content identification is performed at the segment level; PII specified in
+	// PiiEntityTypes is flagged upon complete transcription of an audio segment.
+	//
+	// You can’t set ContentIdentificationType and ContentRedactionType in the
+	// same request. If you set both, your request returns a BadRequestException.
+	//
+	// For more information, see Redacting or identifying personally identifiable
+	// information (https://docs.aws.amazon.com/transcribe/latest/dg/pii-redaction.html).
 	ContentIdentificationType *string `location:"header" locationName:"x-amzn-transcribe-content-identification-type" type:"string" enum:"ContentIdentificationType"`
 
-	// Set this field to PII to redact personally identifiable information (PII)
-	// in the transcription output. Content redaction is performed only upon complete
-	// transcription of the audio segments.
+	// Redacts all personally identifiable information (PII) identified in your
+	// transcript.
 	//
-	// You can’t set both ContentRedactionType and ContentIdentificationType in
-	// the same request. If you set both, your request returns a BadRequestException.
+	// Content redaction is performed at the segment level; PII specified in PiiEntityTypes
+	// is redacted upon complete transcription of an audio segment.
+	//
+	// You can’t set ContentRedactionType and ContentIdentificationType in the
+	// same request. If you set both, your request returns a BadRequestException.
+	//
+	// For more information, see Redacting or identifying personally identifiable
+	// information (https://docs.aws.amazon.com/transcribe/latest/dg/pii-redaction.html).
 	ContentRedactionType *string `location:"header" locationName:"x-amzn-transcribe-content-redaction-type" type:"string" enum:"ContentRedactionType"`
 
-	// When true, instructs Amazon Transcribe to process each audio channel separately,
-	// then merges the transcription output of each channel into a single transcription.
+	// Enables channel identification in multi-channel audio.
 	//
-	// Amazon Transcribe also produces a transcription of each item. An item includes
-	// the start time, end time, and any alternative transcriptions.
+	// Channel identification transcribes the audio on each channel independently,
+	// then appends the output for each channel into one transcript.
+	//
+	// If you have multi-channel audio and do not enable channel identification,
+	// your audio is transcribed in a continuous manner and your transcript is not
+	// separated by channel.
+	//
+	// For more information, see Transcribing multi-channel audio (https://docs.aws.amazon.com/transcribe/latest/dg/channel-id.html).
 	EnableChannelIdentification *bool `location:"header" locationName:"x-amzn-transcribe-enable-channel-identification" type:"boolean"`
 
-	// When true, instructs Amazon Transcribe to present transcription results that
-	// have the partial results stabilized. Normally, any word or phrase from one
-	// partial result can change in a subsequent partial result. With partial results
-	// stabilization enabled, only the last few words of one partial result can
-	// change in another partial result.
+	// Enables partial result stabilization for your transcription. Partial result
+	// stabilization can reduce latency in your output, but may impact accuracy.
+	// For more information, see Partial-result stabilization (https://docs.aws.amazon.com/transcribe/latest/dg/streaming.html#streaming-partial-result-stabilization).
 	EnablePartialResultsStabilization *bool `location:"header" locationName:"x-amzn-transcribe-enable-partial-results-stabilization" type:"boolean"`
 
-	// Optional. Set this value to true to enable language identification for your
-	// media stream.
+	// Enables automatic language identification for your transcription.
+	//
+	// If you include IdentifyLanguage, you can optionally include a list of language
+	// codes, using LanguageOptions, that you think may be present in your audio
+	// stream. Including language options can improve transcription accuracy.
+	//
+	// You can also include a preferred language using PreferredLanguage. Adding
+	// a preferred language can help Amazon Transcribe identify the language faster
+	// than if you omit this parameter.
+	//
+	// If you have multi-channel audio that contains different languages on each
+	// channel, and you've enabled channel identification, automatic language identification
+	// identifies the dominant language on each audio channel.
+	//
+	// Note that you must include either LanguageCode or IdentifyLanguage or IdentifyMultipleLanguages
+	// in your request. If you include more than one of these parameters, your transcription
+	// job fails.
+	//
+	// Streaming language identification can't be combined with custom language
+	// models or redaction.
 	IdentifyLanguage *bool `location:"header" locationName:"x-amzn-transcribe-identify-language" type:"boolean"`
 
-	// The language code of the input audio stream.
+	// Enables automatic multi-language identification in your transcription job
+	// request. Use this parameter if your stream contains more than one language.
+	// If your stream contains only one language, use IdentifyLanguage instead.
+	//
+	// If you include IdentifyMultipleLanguages, you can optionally include a list
+	// of language codes, using LanguageOptions, that you think may be present in
+	// your stream. Including LanguageOptions restricts IdentifyMultipleLanguages
+	// to only the language options that you specify, which can improve transcription
+	// accuracy.
+	//
+	// If you want to apply a custom vocabulary or a custom vocabulary filter to
+	// your automatic multiple language identification request, include VocabularyNames
+	// or VocabularyFilterNames.
+	//
+	// Note that you must include one of LanguageCode, IdentifyLanguage, or IdentifyMultipleLanguages
+	// in your request. If you include more than one of these parameters, your transcription
+	// job fails.
+	IdentifyMultipleLanguages *bool `location:"header" locationName:"x-amzn-transcribe-identify-multiple-languages" type:"boolean"`
+
+	// Specify the language code that represents the language spoken in your audio.
+	//
+	// If you're unsure of the language spoken in your audio, consider using IdentifyLanguage
+	// to enable automatic language identification.
+	//
+	// For a list of languages supported with Amazon Transcribe streaming, refer
+	// to the Supported languages (https://docs.aws.amazon.com/transcribe/latest/dg/supported-languages.html)
+	// table.
 	LanguageCode *string `location:"header" locationName:"x-amzn-transcribe-language-code" type:"string" enum:"LanguageCode"`
 
-	// The name of the language model you want to use.
+	// Specify the name of the custom language model that you want to use when processing
+	// your transcription. Note that language model names are case sensitive.
+	//
+	// The language of the specified language model must match the language code
+	// you specify in your transcription request. If the languages don't match,
+	// the custom language model isn't applied. There are no errors or warnings
+	// associated with a language mismatch.
+	//
+	// For more information, see Custom language models (https://docs.aws.amazon.com/transcribe/latest/dg/custom-language-models.html).
 	LanguageModelName *string `location:"header" locationName:"x-amzn-transcribe-language-model-name" min:"1" type:"string"`
 
-	// An object containing a list of languages that might be present in your audio.
+	// Specify two or more language codes that represent the languages you think
+	// may be present in your media; including more than five is not recommended.
+	// If you're unsure what languages are present, do not include this parameter.
 	//
-	// You must provide two or more language codes to help Amazon Transcribe identify
-	// the correct language of your media stream with the highest possible accuracy.
-	// You can only select one variant per language; for example, you can't include
-	// both en-US and en-UK in the same request.
+	// Including language options can improve the accuracy of language identification.
 	//
-	// You can only use this parameter if you've set IdentifyLanguage to truein
-	// your request.
+	// If you include LanguageOptions in your request, you must also include IdentifyLanguage.
+	//
+	// For a list of languages supported with Amazon Transcribe streaming, refer
+	// to the Supported languages (https://docs.aws.amazon.com/transcribe/latest/dg/supported-languages.html)
+	// table.
+	//
+	// You can only include one language dialect per language per stream. For example,
+	// you cannot include en-US and en-AU in the same request.
 	LanguageOptions *string `location:"header" locationName:"x-amzn-transcribe-language-options" min:"1" type:"string"`
 
-	// The encoding used for the input audio.
+	// Specify the encoding of your input audio. Supported formats are:
+	//
+	//    * FLAC
+	//
+	//    * OPUS-encoded audio in an Ogg container
+	//
+	//    * PCM (only signed 16-bit little-endian audio formats, which does not
+	//    include WAV)
+	//
+	// For more information, see Media formats (https://docs.aws.amazon.com/transcribe/latest/dg/how-input.html#how-input-audio).
 	//
 	// MediaEncoding is a required field
 	MediaEncoding *string `location:"header" locationName:"x-amzn-transcribe-media-encoding" type:"string" required:"true" enum:"MediaEncoding"`
 
-	// The sample rate of the input audio (in Hertz). Low-quality audio, such as
+	// The sample rate of the input audio (in hertz). Low-quality audio, such as
 	// telephone audio, is typically around 8,000 Hz. High-quality audio typically
 	// ranges from 16,000 Hz to 48,000 Hz. Note that the sample rate you specify
 	// must match that of your audio.
@@ -2736,84 +4476,120 @@ type StartStreamTranscriptionInput struct {
 	// MediaSampleRateHertz is a required field
 	MediaSampleRateHertz *int64 `location:"header" locationName:"x-amzn-transcribe-sample-rate" min:"8000" type:"integer" required:"true"`
 
-	// The number of channels that are in your audio stream.
+	// Specify the number of channels in your audio stream. Up to two channels are
+	// supported.
 	NumberOfChannels *int64 `location:"header" locationName:"x-amzn-transcribe-number-of-channels" min:"2" type:"integer"`
 
-	// You can use this field to set the stability level of the transcription results.
-	// A higher stability level means that the transcription results are less likely
-	// to change. Higher stability levels can come with lower overall transcription
-	// accuracy.
+	// Specify the level of stability to use when you enable partial results stabilization
+	// (EnablePartialResultsStabilization).
+	//
+	// Low stability provides the highest accuracy. High stability transcribes faster,
+	// but with slightly lower accuracy.
+	//
+	// For more information, see Partial-result stabilization (https://docs.aws.amazon.com/transcribe/latest/dg/streaming.html#streaming-partial-result-stabilization).
 	PartialResultsStability *string `location:"header" locationName:"x-amzn-transcribe-partial-results-stability" type:"string" enum:"PartialResultsStability"`
 
-	// List the PII entity types you want to identify or redact. In order to specify
-	// entity types, you must have either ContentIdentificationType or ContentRedactionType
-	// enabled.
+	// Specify which types of personally identifiable information (PII) you want
+	// to redact in your transcript. You can include as many types as you'd like,
+	// or you can select ALL.
 	//
-	// PIIEntityTypes must be comma-separated; the available values are: BANK_ACCOUNT_NUMBER,
-	// BANK_ROUTING, CREDIT_DEBIT_NUMBER, CREDIT_DEBIT_CVV, CREDIT_DEBIT_EXPIRY,
-	// PIN, EMAIL, ADDRESS, NAME, PHONE, SSN, and ALL.
+	// To include PiiEntityTypes in your request, you must also include either ContentIdentificationType
+	// or ContentRedactionType.
 	//
-	// PiiEntityTypes is an optional parameter with a default value of ALL.
+	// Values must be comma-separated and can include: BANK_ACCOUNT_NUMBER, BANK_ROUTING,
+	// CREDIT_DEBIT_NUMBER, CREDIT_DEBIT_CVV, CREDIT_DEBIT_EXPIRY, PIN, EMAIL, ADDRESS,
+	// NAME, PHONE, SSN, or ALL.
 	PiiEntityTypes *string `location:"header" locationName:"x-amzn-transcribe-pii-entity-types" min:"1" type:"string"`
 
-	// Optional. From the subset of languages codes you provided for LanguageOptions,
-	// you can select one preferred language for your transcription.
+	// Specify a preferred language from the subset of languages codes you specified
+	// in LanguageOptions.
 	//
-	// You can only use this parameter if you've set IdentifyLanguage to truein
-	// your request.
+	// You can only use this parameter if you've included IdentifyLanguage and LanguageOptions
+	// in your request.
 	PreferredLanguage *string `location:"header" locationName:"x-amzn-transcribe-preferred-language" type:"string" enum:"LanguageCode"`
 
-	// A identifier for the transcription session. Use this parameter when you want
-	// to retry a session. If you don't provide a session ID, Amazon Transcribe
-	// will generate one for you and return it in the response.
+	// Specify a name for your transcription session. If you don't include this
+	// parameter in your request, Amazon Transcribe generates an ID and returns
+	// it in the response.
+	//
+	// You can use a session ID to retry a streaming session.
 	SessionId *string `location:"header" locationName:"x-amzn-transcribe-session-id" min:"36" type:"string"`
 
-	// When true, enables speaker identification in your media stream.
+	// Enables speaker partitioning (diarization) in your transcription output.
+	// Speaker partitioning labels the speech from individual speakers in your media
+	// file.
+	//
+	// For more information, see Partitioning speakers (diarization) (https://docs.aws.amazon.com/transcribe/latest/dg/diarization.html).
 	ShowSpeakerLabel *bool `location:"header" locationName:"x-amzn-transcribe-show-speaker-label" type:"boolean"`
 
-	// The manner in which you use your vocabulary filter to filter words in your
-	// transcript. Remove removes filtered words from your transcription results.
-	// Mask masks filtered words with a *** in your transcription results. Tag keeps
-	// the filtered words in your transcription results and tags them. The tag appears
-	// as VocabularyFilterMatch equal to True.
+	// Specify how you want your vocabulary filter applied to your transcript.
+	//
+	// To replace words with ***, choose mask.
+	//
+	// To delete words, choose remove.
+	//
+	// To flag words without changing them, choose tag.
 	VocabularyFilterMethod *string `location:"header" locationName:"x-amzn-transcribe-vocabulary-filter-method" type:"string" enum:"VocabularyFilterMethod"`
 
-	// The name of the vocabulary filter you want to use with your transcription.
+	// Specify the name of the custom vocabulary filter that you want to use when
+	// processing your transcription. Note that vocabulary filter names are case
+	// sensitive.
 	//
-	// This operation is not intended for use in conjunction with the IdentifyLanguage
-	// operation. If you're using IdentifyLanguage in your request and want to use
-	// one or more vocabulary filters with your transcription, use the VocabularyFilterNames
-	// operation instead.
+	// If the language of the specified custom vocabulary filter doesn't match the
+	// language identified in your media, the vocabulary filter is not applied to
+	// your transcription.
+	//
+	// This parameter is not intended for use with the IdentifyLanguage parameter.
+	// If you're including IdentifyLanguage in your request and want to use one
+	// or more vocabulary filters with your transcription, use the VocabularyFilterNames
+	// parameter instead.
+	//
+	// For more information, see Using vocabulary filtering with unwanted words
+	// (https://docs.aws.amazon.com/transcribe/latest/dg/vocabulary-filtering.html).
 	VocabularyFilterName *string `location:"header" locationName:"x-amzn-transcribe-vocabulary-filter-name" min:"1" type:"string"`
 
-	// The names of the vocabulary filters you want to use with your transcription.
+	// Specify the names of the custom vocabulary filters that you want to use when
+	// processing your transcription. Note that vocabulary filter names are case
+	// sensitive.
 	//
-	// Note that if the vocabulary filters you specify are in languages that don't
-	// match the language identified in your media, your job fails.
+	// If none of the languages of the specified custom vocabulary filters match
+	// the language identified in your media, your job fails.
 	//
-	// This operation is only intended for use in conjunction with the IdentifyLanguage
-	// operation. If you're not using IdentifyLanguage in your request and want
-	// to use a vocabulary filter with your transcription, use the VocabularyFilterName
-	// operation instead.
+	// This parameter is only intended for use with the IdentifyLanguage parameter.
+	// If you're not including IdentifyLanguage in your request and want to use
+	// a custom vocabulary filter with your transcription, use the VocabularyFilterName
+	// parameter instead.
+	//
+	// For more information, see Using vocabulary filtering with unwanted words
+	// (https://docs.aws.amazon.com/transcribe/latest/dg/vocabulary-filtering.html).
 	VocabularyFilterNames *string `location:"header" locationName:"x-amzn-transcribe-vocabulary-filter-names" min:"1" type:"string"`
 
-	// The name of the custom vocabulary you want to use with your transcription.
+	// Specify the name of the custom vocabulary that you want to use when processing
+	// your transcription. Note that vocabulary names are case sensitive.
 	//
-	// This operation is not intended for use in conjunction with the IdentifyLanguage
-	// operation. If you're using IdentifyLanguage in your request and want to use
-	// one or more custom vocabularies with your transcription, use the VocabularyNames
-	// operation instead.
+	// If the language of the specified custom vocabulary doesn't match the language
+	// identified in your media, the custom vocabulary is not applied to your transcription.
+	//
+	// This parameter is not intended for use with the IdentifyLanguage parameter.
+	// If you're including IdentifyLanguage in your request and want to use one
+	// or more custom vocabularies with your transcription, use the VocabularyNames
+	// parameter instead.
+	//
+	// For more information, see Custom vocabularies (https://docs.aws.amazon.com/transcribe/latest/dg/custom-vocabulary.html).
 	VocabularyName *string `location:"header" locationName:"x-amzn-transcribe-vocabulary-name" min:"1" type:"string"`
 
-	// The names of the custom vocabularies you want to use with your transcription.
+	// Specify the names of the custom vocabularies that you want to use when processing
+	// your transcription. Note that vocabulary names are case sensitive.
 	//
-	// Note that if the custom vocabularies you specify are in languages that don't
-	// match the language identified in your media, your job fails.
+	// If none of the languages of the specified custom vocabularies match the language
+	// identified in your media, your job fails.
 	//
-	// This operation is only intended for use in conjunction with the IdentifyLanguage
-	// operation. If you're not using IdentifyLanguage in your request and want
-	// to use a custom vocabulary with your transcription, use the VocabularyName
-	// operation instead.
+	// This parameter is only intended for use with the IdentifyLanguage parameter.
+	// If you're not including IdentifyLanguage in your request and want to use
+	// a custom vocabulary with your transcription, use the VocabularyName parameter
+	// instead.
+	//
+	// For more information, see Custom vocabularies (https://docs.aws.amazon.com/transcribe/latest/dg/custom-vocabulary.html).
 	VocabularyNames *string `location:"header" locationName:"x-amzn-transcribe-vocabulary-names" min:"1" type:"string"`
 }
 
@@ -2908,6 +4684,12 @@ func (s *StartStreamTranscriptionInput) SetEnablePartialResultsStabilization(v b
 // SetIdentifyLanguage sets the IdentifyLanguage field's value.
 func (s *StartStreamTranscriptionInput) SetIdentifyLanguage(v bool) *StartStreamTranscriptionInput {
 	s.IdentifyLanguage = &v
+	return s
+}
+
+// SetIdentifyMultipleLanguages sets the IdentifyMultipleLanguages field's value.
+func (s *StartStreamTranscriptionInput) SetIdentifyMultipleLanguages(v bool) *StartStreamTranscriptionInput {
+	s.IdentifyMultipleLanguages = &v
 	return s
 }
 
@@ -3012,72 +4794,78 @@ type StartStreamTranscriptionOutput struct {
 
 	eventStream *StartStreamTranscriptionEventStream
 
-	// Shows whether content identification was enabled in this stream.
+	// Shows whether content identification was enabled for your transcription.
 	ContentIdentificationType *string `location:"header" locationName:"x-amzn-transcribe-content-identification-type" type:"string" enum:"ContentIdentificationType"`
 
-	// Shows whether content redaction was enabled in this stream.
+	// Shows whether content redaction was enabled for your transcription.
 	ContentRedactionType *string `location:"header" locationName:"x-amzn-transcribe-content-redaction-type" type:"string" enum:"ContentRedactionType"`
 
-	// Shows whether channel identification was enabled in the stream.
+	// Shows whether channel identification was enabled for your transcription.
 	EnableChannelIdentification *bool `location:"header" locationName:"x-amzn-transcribe-enable-channel-identification" type:"boolean"`
 
-	// Shows whether partial results stabilization was enabled in the transcription.
+	// Shows whether partial results stabilization was enabled for your transcription.
 	EnablePartialResultsStabilization *bool `location:"header" locationName:"x-amzn-transcribe-enable-partial-results-stabilization" type:"boolean"`
 
-	// The language code of the language identified in your media stream.
+	// Shows whether automatic language identification was enabled for your transcription.
 	IdentifyLanguage *bool `location:"header" locationName:"x-amzn-transcribe-identify-language" type:"boolean"`
 
-	// The language code of the input audio stream.
+	// Shows whether automatic multi-language identification was enabled for your
+	// transcription.
+	IdentifyMultipleLanguages *bool `location:"header" locationName:"x-amzn-transcribe-identify-multiple-languages" type:"boolean"`
+
+	// Provides the language code that you specified in your request.
 	LanguageCode *string `location:"header" locationName:"x-amzn-transcribe-language-code" type:"string" enum:"LanguageCode"`
 
-	// The name of the custom language model used in the transcription.
+	// Provides the name of the custom language model that you specified in your
+	// request.
 	LanguageModelName *string `location:"header" locationName:"x-amzn-transcribe-language-model-name" min:"1" type:"string"`
 
-	// The language codes used in the identification of your media stream's predominant
-	// language.
+	// Provides the language codes that you specified in your request.
 	LanguageOptions *string `location:"header" locationName:"x-amzn-transcribe-language-options" min:"1" type:"string"`
 
-	// The encoding used for the input audio stream.
+	// Provides the media encoding you specified in your request.
 	MediaEncoding *string `location:"header" locationName:"x-amzn-transcribe-media-encoding" type:"string" enum:"MediaEncoding"`
 
-	// The sample rate, in Hertz (Hz), for the input audio stream.
+	// Provides the sample rate that you specified in your request.
 	MediaSampleRateHertz *int64 `location:"header" locationName:"x-amzn-transcribe-sample-rate" min:"8000" type:"integer"`
 
-	// The number of channels identified in the stream.
+	// Provides the number of channels that you specified in your request.
 	NumberOfChannels *int64 `location:"header" locationName:"x-amzn-transcribe-number-of-channels" min:"2" type:"integer"`
 
-	// If partial results stabilization has been enabled in the stream, shows the
-	// stability level.
+	// Provides the stabilization level used for your transcription.
 	PartialResultsStability *string `location:"header" locationName:"x-amzn-transcribe-partial-results-stability" type:"string" enum:"PartialResultsStability"`
 
 	// Lists the PII entity types you specified in your request.
 	PiiEntityTypes *string `location:"header" locationName:"x-amzn-transcribe-pii-entity-types" min:"1" type:"string"`
 
-	// The preferred language you specified in your request.
+	// Provides the preferred language that you specified in your request.
 	PreferredLanguage *string `location:"header" locationName:"x-amzn-transcribe-preferred-language" type:"string" enum:"LanguageCode"`
 
-	// An identifier for the transcription.
+	// Provides the identifier for your streaming request.
 	RequestId *string `location:"header" locationName:"x-amzn-request-id" type:"string"`
 
-	// An identifier for a specific transcription session.
+	// Provides the identifier for your transcription session.
 	SessionId *string `location:"header" locationName:"x-amzn-transcribe-session-id" min:"36" type:"string"`
 
-	// Shows whether speaker identification was enabled in the transcription.
+	// Shows whether speaker partitioning was enabled for your transcription.
 	ShowSpeakerLabel *bool `location:"header" locationName:"x-amzn-transcribe-show-speaker-label" type:"boolean"`
 
-	// The vocabulary filtering method used when processing the stream.
+	// Provides the vocabulary filtering method used in your transcription.
 	VocabularyFilterMethod *string `location:"header" locationName:"x-amzn-transcribe-vocabulary-filter-method" type:"string" enum:"VocabularyFilterMethod"`
 
-	// The name of the vocabulary filter used when processing the stream.
+	// Provides the name of the custom vocabulary filter that you specified in your
+	// request.
 	VocabularyFilterName *string `location:"header" locationName:"x-amzn-transcribe-vocabulary-filter-name" min:"1" type:"string"`
 
-	// The name of the vocabulary filter used when processing the stream.
+	// Provides the names of the custom vocabulary filters that you specified in
+	// your request.
 	VocabularyFilterNames *string `location:"header" locationName:"x-amzn-transcribe-vocabulary-filter-names" min:"1" type:"string"`
 
-	// The name of the custom vocabulary used when processing the stream.
+	// Provides the name of the custom vocabulary that you specified in your request.
 	VocabularyName *string `location:"header" locationName:"x-amzn-transcribe-vocabulary-name" min:"1" type:"string"`
 
-	// The name of the custom vocabulary used when processing the stream.
+	// Provides the names of the custom vocabularies that you specified in your
+	// request.
 	VocabularyNames *string `location:"header" locationName:"x-amzn-transcribe-vocabulary-names" min:"1" type:"string"`
 }
 
@@ -3126,6 +4914,12 @@ func (s *StartStreamTranscriptionOutput) SetEnablePartialResultsStabilization(v 
 // SetIdentifyLanguage sets the IdentifyLanguage field's value.
 func (s *StartStreamTranscriptionOutput) SetIdentifyLanguage(v bool) *StartStreamTranscriptionOutput {
 	s.IdentifyLanguage = &v
+	return s
+}
+
+// SetIdentifyMultipleLanguages sets the IdentifyMultipleLanguages field's value.
+func (s *StartStreamTranscriptionOutput) SetIdentifyMultipleLanguages(v bool) *StartStreamTranscriptionOutput {
+	s.IdentifyMultipleLanguages = &v
 	return s
 }
 
@@ -3236,12 +5030,62 @@ func (s *StartStreamTranscriptionOutput) GetStream() *StartStreamTranscriptionEv
 	return s.eventStream
 }
 
-// The transcription in a TranscriptEvent.
+// Contains the timestamp range (start time through end time) of a matched category.
+type TimestampRange struct {
+	_ struct{} `type:"structure"`
+
+	// The time, in milliseconds, from the beginning of the audio stream to the
+	// start of the category match.
+	BeginOffsetMillis *int64 `type:"long"`
+
+	// The time, in milliseconds, from the beginning of the audio stream to the
+	// end of the category match.
+	EndOffsetMillis *int64 `type:"long"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TimestampRange) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TimestampRange) GoString() string {
+	return s.String()
+}
+
+// SetBeginOffsetMillis sets the BeginOffsetMillis field's value.
+func (s *TimestampRange) SetBeginOffsetMillis(v int64) *TimestampRange {
+	s.BeginOffsetMillis = &v
+	return s
+}
+
+// SetEndOffsetMillis sets the EndOffsetMillis field's value.
+func (s *TimestampRange) SetEndOffsetMillis(v int64) *TimestampRange {
+	s.EndOffsetMillis = &v
+	return s
+}
+
+// The Transcript associated with a .
+//
+// Transcript contains Results, which contains a set of transcription results
+// from one or more audio segments, along with additional information per your
+// request parameters.
 type Transcript struct {
 	_ struct{} `type:"structure"`
 
-	// Result objects that contain the results of transcribing a portion of the
-	// input audio stream. The array can be empty.
+	// Contains a set of transcription results from one or more audio segments,
+	// along with additional information per your request parameters. This can include
+	// information relating to alternative transcriptions, channel identification,
+	// partial result stabilization, language identification, and other transcription-related
+	// data.
 	Results []*Result `type:"list"`
 }
 
@@ -3269,13 +5113,18 @@ func (s *Transcript) SetResults(v []*Result) *Transcript {
 	return s
 }
 
-// Represents a set of transcription results from the server to the client.
-// It contains one or more segments of the transcription.
+// The TranscriptEvent associated with a TranscriptResultStream.
+//
+// Contains a set of transcription results from one or more audio segments,
+// along with additional information per your request parameters.
 type TranscriptEvent struct {
 	_ struct{} `type:"structure"`
 
-	// The transcription of the audio stream. The transcription is composed of all
-	// of the items in the results list.
+	// Contains Results, which contains a set of transcription results from one
+	// or more audio segments, along with additional information per your request
+	// parameters. This can include information relating to alternative transcriptions,
+	// channel identification, partial result stabilization, language identification,
+	// and other transcription-related data.
 	Transcript *Transcript `type:"structure"`
 }
 
@@ -3494,6 +5343,201 @@ func (e *TranscriptResultStreamUnknownEvent) UnmarshalEvent(
 	return nil
 }
 
+// Contains set of transcription results from one or more audio segments, along
+// with additional information about the parameters included in your request.
+// For example, channel definitions, partial result stabilization, sentiment,
+// and issue detection.
+type UtteranceEvent struct {
+	_ struct{} `type:"structure"`
+
+	// The time, in milliseconds, from the beginning of the audio stream to the
+	// start of the UtteranceEvent.
+	BeginOffsetMillis *int64 `type:"long"`
+
+	// The time, in milliseconds, from the beginning of the audio stream to the
+	// start of the UtteranceEvent.
+	EndOffsetMillis *int64 `type:"long"`
+
+	// Contains entities identified as personally identifiable information (PII)
+	// in your transcription output.
+	Entities []*CallAnalyticsEntity `type:"list"`
+
+	// Indicates whether the segment in the UtteranceEvent is complete (FALSE) or
+	// partial (TRUE).
+	IsPartial *bool `type:"boolean"`
+
+	// Provides the issue that was detected in the specified segment.
+	IssuesDetected []*IssueDetected `type:"list"`
+
+	// Contains words, phrases, or punctuation marks that are associated with the
+	// specified UtteranceEvent.
+	Items []*CallAnalyticsItem `type:"list"`
+
+	// Provides the role of the speaker for each audio channel, either CUSTOMER
+	// or AGENT.
+	ParticipantRole *string `type:"string" enum:"ParticipantRole"`
+
+	// Provides the sentiment that was detected in the specified segment.
+	Sentiment *string `type:"string" enum:"Sentiment"`
+
+	// Contains transcribed text.
+	Transcript *string `type:"string"`
+
+	// The unique identifier that is associated with the specified UtteranceEvent.
+	UtteranceId *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UtteranceEvent) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UtteranceEvent) GoString() string {
+	return s.String()
+}
+
+// SetBeginOffsetMillis sets the BeginOffsetMillis field's value.
+func (s *UtteranceEvent) SetBeginOffsetMillis(v int64) *UtteranceEvent {
+	s.BeginOffsetMillis = &v
+	return s
+}
+
+// SetEndOffsetMillis sets the EndOffsetMillis field's value.
+func (s *UtteranceEvent) SetEndOffsetMillis(v int64) *UtteranceEvent {
+	s.EndOffsetMillis = &v
+	return s
+}
+
+// SetEntities sets the Entities field's value.
+func (s *UtteranceEvent) SetEntities(v []*CallAnalyticsEntity) *UtteranceEvent {
+	s.Entities = v
+	return s
+}
+
+// SetIsPartial sets the IsPartial field's value.
+func (s *UtteranceEvent) SetIsPartial(v bool) *UtteranceEvent {
+	s.IsPartial = &v
+	return s
+}
+
+// SetIssuesDetected sets the IssuesDetected field's value.
+func (s *UtteranceEvent) SetIssuesDetected(v []*IssueDetected) *UtteranceEvent {
+	s.IssuesDetected = v
+	return s
+}
+
+// SetItems sets the Items field's value.
+func (s *UtteranceEvent) SetItems(v []*CallAnalyticsItem) *UtteranceEvent {
+	s.Items = v
+	return s
+}
+
+// SetParticipantRole sets the ParticipantRole field's value.
+func (s *UtteranceEvent) SetParticipantRole(v string) *UtteranceEvent {
+	s.ParticipantRole = &v
+	return s
+}
+
+// SetSentiment sets the Sentiment field's value.
+func (s *UtteranceEvent) SetSentiment(v string) *UtteranceEvent {
+	s.Sentiment = &v
+	return s
+}
+
+// SetTranscript sets the Transcript field's value.
+func (s *UtteranceEvent) SetTranscript(v string) *UtteranceEvent {
+	s.Transcript = &v
+	return s
+}
+
+// SetUtteranceId sets the UtteranceId field's value.
+func (s *UtteranceEvent) SetUtteranceId(v string) *UtteranceEvent {
+	s.UtteranceId = &v
+	return s
+}
+
+// The UtteranceEvent is and event in the CallAnalyticsTranscriptResultStream group of events.
+func (s *UtteranceEvent) eventCallAnalyticsTranscriptResultStream() {}
+
+// UnmarshalEvent unmarshals the EventStream Message into the UtteranceEvent value.
+// This method is only used internally within the SDK's EventStream handling.
+func (s *UtteranceEvent) UnmarshalEvent(
+	payloadUnmarshaler protocol.PayloadUnmarshaler,
+	msg eventstream.Message,
+) error {
+	if err := payloadUnmarshaler.UnmarshalPayload(
+		bytes.NewReader(msg.Payload), s,
+	); err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalEvent marshals the type into an stream event value. This method
+// should only used internally within the SDK's EventStream handling.
+func (s *UtteranceEvent) MarshalEvent(pm protocol.PayloadMarshaler) (msg eventstream.Message, err error) {
+	msg.Headers.Set(eventstreamapi.MessageTypeHeader, eventstream.StringValue(eventstreamapi.EventMessageType))
+	var buf bytes.Buffer
+	if err = pm.MarshalPayload(&buf, s); err != nil {
+		return eventstream.Message{}, err
+	}
+	msg.Payload = buf.Bytes()
+	return msg, err
+}
+
+const (
+	// CallAnalyticsLanguageCodeEnUs is a CallAnalyticsLanguageCode enum value
+	CallAnalyticsLanguageCodeEnUs = "en-US"
+
+	// CallAnalyticsLanguageCodeEnGb is a CallAnalyticsLanguageCode enum value
+	CallAnalyticsLanguageCodeEnGb = "en-GB"
+
+	// CallAnalyticsLanguageCodeEsUs is a CallAnalyticsLanguageCode enum value
+	CallAnalyticsLanguageCodeEsUs = "es-US"
+
+	// CallAnalyticsLanguageCodeFrCa is a CallAnalyticsLanguageCode enum value
+	CallAnalyticsLanguageCodeFrCa = "fr-CA"
+
+	// CallAnalyticsLanguageCodeFrFr is a CallAnalyticsLanguageCode enum value
+	CallAnalyticsLanguageCodeFrFr = "fr-FR"
+
+	// CallAnalyticsLanguageCodeEnAu is a CallAnalyticsLanguageCode enum value
+	CallAnalyticsLanguageCodeEnAu = "en-AU"
+
+	// CallAnalyticsLanguageCodeItIt is a CallAnalyticsLanguageCode enum value
+	CallAnalyticsLanguageCodeItIt = "it-IT"
+
+	// CallAnalyticsLanguageCodeDeDe is a CallAnalyticsLanguageCode enum value
+	CallAnalyticsLanguageCodeDeDe = "de-DE"
+
+	// CallAnalyticsLanguageCodePtBr is a CallAnalyticsLanguageCode enum value
+	CallAnalyticsLanguageCodePtBr = "pt-BR"
+)
+
+// CallAnalyticsLanguageCode_Values returns all elements of the CallAnalyticsLanguageCode enum
+func CallAnalyticsLanguageCode_Values() []string {
+	return []string{
+		CallAnalyticsLanguageCodeEnUs,
+		CallAnalyticsLanguageCodeEnGb,
+		CallAnalyticsLanguageCodeEsUs,
+		CallAnalyticsLanguageCodeFrCa,
+		CallAnalyticsLanguageCodeFrFr,
+		CallAnalyticsLanguageCodeEnAu,
+		CallAnalyticsLanguageCodeItIt,
+		CallAnalyticsLanguageCodeDeDe,
+		CallAnalyticsLanguageCodePtBr,
+	}
+}
+
 const (
 	// ContentIdentificationTypePii is a ContentIdentificationType enum value
 	ContentIdentificationTypePii = "PII"
@@ -3503,6 +5547,22 @@ const (
 func ContentIdentificationType_Values() []string {
 	return []string{
 		ContentIdentificationTypePii,
+	}
+}
+
+const (
+	// ContentRedactionOutputRedacted is a ContentRedactionOutput_ enum value
+	ContentRedactionOutputRedacted = "redacted"
+
+	// ContentRedactionOutputRedactedAndUnredacted is a ContentRedactionOutput_ enum value
+	ContentRedactionOutputRedactedAndUnredacted = "redacted_and_unredacted"
+)
+
+// ContentRedactionOutput__Values returns all elements of the ContentRedactionOutput_ enum
+func ContentRedactionOutput__Values() []string {
+	return []string{
+		ContentRedactionOutputRedacted,
+		ContentRedactionOutputRedactedAndUnredacted,
 	}
 }
 
@@ -3570,6 +5630,12 @@ const (
 
 	// LanguageCodeZhCn is a LanguageCode enum value
 	LanguageCodeZhCn = "zh-CN"
+
+	// LanguageCodeHiIn is a LanguageCode enum value
+	LanguageCodeHiIn = "hi-IN"
+
+	// LanguageCodeThTh is a LanguageCode enum value
+	LanguageCodeThTh = "th-TH"
 )
 
 // LanguageCode_Values returns all elements of the LanguageCode enum
@@ -3587,6 +5653,8 @@ func LanguageCode_Values() []string {
 		LanguageCodeJaJp,
 		LanguageCodeKoKr,
 		LanguageCodeZhCn,
+		LanguageCodeHiIn,
+		LanguageCodeThTh,
 	}
 }
 
@@ -3639,6 +5707,46 @@ func PartialResultsStability_Values() []string {
 		PartialResultsStabilityHigh,
 		PartialResultsStabilityMedium,
 		PartialResultsStabilityLow,
+	}
+}
+
+const (
+	// ParticipantRoleAgent is a ParticipantRole enum value
+	ParticipantRoleAgent = "AGENT"
+
+	// ParticipantRoleCustomer is a ParticipantRole enum value
+	ParticipantRoleCustomer = "CUSTOMER"
+)
+
+// ParticipantRole_Values returns all elements of the ParticipantRole enum
+func ParticipantRole_Values() []string {
+	return []string{
+		ParticipantRoleAgent,
+		ParticipantRoleCustomer,
+	}
+}
+
+const (
+	// SentimentPositive is a Sentiment enum value
+	SentimentPositive = "POSITIVE"
+
+	// SentimentNegative is a Sentiment enum value
+	SentimentNegative = "NEGATIVE"
+
+	// SentimentMixed is a Sentiment enum value
+	SentimentMixed = "MIXED"
+
+	// SentimentNeutral is a Sentiment enum value
+	SentimentNeutral = "NEUTRAL"
+)
+
+// Sentiment_Values returns all elements of the Sentiment enum
+func Sentiment_Values() []string {
+	return []string{
+		SentimentPositive,
+		SentimentNegative,
+		SentimentMixed,
+		SentimentNeutral,
 	}
 }
 

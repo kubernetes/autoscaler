@@ -897,6 +897,10 @@ type ChimeAPI interface {
 	UpdateVoiceConnectorGroup(*chime.UpdateVoiceConnectorGroupInput) (*chime.UpdateVoiceConnectorGroupOutput, error)
 	UpdateVoiceConnectorGroupWithContext(aws.Context, *chime.UpdateVoiceConnectorGroupInput, ...request.Option) (*chime.UpdateVoiceConnectorGroupOutput, error)
 	UpdateVoiceConnectorGroupRequest(*chime.UpdateVoiceConnectorGroupInput) (*request.Request, *chime.UpdateVoiceConnectorGroupOutput)
+
+	ValidateE911Address(*chime.ValidateE911AddressInput) (*chime.ValidateE911AddressOutput, error)
+	ValidateE911AddressWithContext(aws.Context, *chime.ValidateE911AddressInput, ...request.Option) (*chime.ValidateE911AddressOutput, error)
+	ValidateE911AddressRequest(*chime.ValidateE911AddressInput) (*request.Request, *chime.ValidateE911AddressOutput)
 }
 
 var _ ChimeAPI = (*chime.Chime)(nil)

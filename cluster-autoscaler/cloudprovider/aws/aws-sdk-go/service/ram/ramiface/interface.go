@@ -72,9 +72,25 @@ type RAMAPI interface {
 	AssociateResourceSharePermissionWithContext(aws.Context, *ram.AssociateResourceSharePermissionInput, ...request.Option) (*ram.AssociateResourceSharePermissionOutput, error)
 	AssociateResourceSharePermissionRequest(*ram.AssociateResourceSharePermissionInput) (*request.Request, *ram.AssociateResourceSharePermissionOutput)
 
+	CreatePermission(*ram.CreatePermissionInput) (*ram.CreatePermissionOutput, error)
+	CreatePermissionWithContext(aws.Context, *ram.CreatePermissionInput, ...request.Option) (*ram.CreatePermissionOutput, error)
+	CreatePermissionRequest(*ram.CreatePermissionInput) (*request.Request, *ram.CreatePermissionOutput)
+
+	CreatePermissionVersion(*ram.CreatePermissionVersionInput) (*ram.CreatePermissionVersionOutput, error)
+	CreatePermissionVersionWithContext(aws.Context, *ram.CreatePermissionVersionInput, ...request.Option) (*ram.CreatePermissionVersionOutput, error)
+	CreatePermissionVersionRequest(*ram.CreatePermissionVersionInput) (*request.Request, *ram.CreatePermissionVersionOutput)
+
 	CreateResourceShare(*ram.CreateResourceShareInput) (*ram.CreateResourceShareOutput, error)
 	CreateResourceShareWithContext(aws.Context, *ram.CreateResourceShareInput, ...request.Option) (*ram.CreateResourceShareOutput, error)
 	CreateResourceShareRequest(*ram.CreateResourceShareInput) (*request.Request, *ram.CreateResourceShareOutput)
+
+	DeletePermission(*ram.DeletePermissionInput) (*ram.DeletePermissionOutput, error)
+	DeletePermissionWithContext(aws.Context, *ram.DeletePermissionInput, ...request.Option) (*ram.DeletePermissionOutput, error)
+	DeletePermissionRequest(*ram.DeletePermissionInput) (*request.Request, *ram.DeletePermissionOutput)
+
+	DeletePermissionVersion(*ram.DeletePermissionVersionInput) (*ram.DeletePermissionVersionOutput, error)
+	DeletePermissionVersionWithContext(aws.Context, *ram.DeletePermissionVersionInput, ...request.Option) (*ram.DeletePermissionVersionOutput, error)
+	DeletePermissionVersionRequest(*ram.DeletePermissionVersionInput) (*request.Request, *ram.DeletePermissionVersionOutput)
 
 	DeleteResourceShare(*ram.DeleteResourceShareInput) (*ram.DeleteResourceShareOutput, error)
 	DeleteResourceShareWithContext(aws.Context, *ram.DeleteResourceShareInput, ...request.Option) (*ram.DeleteResourceShareOutput, error)
@@ -131,6 +147,13 @@ type RAMAPI interface {
 	ListPendingInvitationResourcesPages(*ram.ListPendingInvitationResourcesInput, func(*ram.ListPendingInvitationResourcesOutput, bool) bool) error
 	ListPendingInvitationResourcesPagesWithContext(aws.Context, *ram.ListPendingInvitationResourcesInput, func(*ram.ListPendingInvitationResourcesOutput, bool) bool, ...request.Option) error
 
+	ListPermissionAssociations(*ram.ListPermissionAssociationsInput) (*ram.ListPermissionAssociationsOutput, error)
+	ListPermissionAssociationsWithContext(aws.Context, *ram.ListPermissionAssociationsInput, ...request.Option) (*ram.ListPermissionAssociationsOutput, error)
+	ListPermissionAssociationsRequest(*ram.ListPermissionAssociationsInput) (*request.Request, *ram.ListPermissionAssociationsOutput)
+
+	ListPermissionAssociationsPages(*ram.ListPermissionAssociationsInput, func(*ram.ListPermissionAssociationsOutput, bool) bool) error
+	ListPermissionAssociationsPagesWithContext(aws.Context, *ram.ListPermissionAssociationsInput, func(*ram.ListPermissionAssociationsOutput, bool) bool, ...request.Option) error
+
 	ListPermissionVersions(*ram.ListPermissionVersionsInput) (*ram.ListPermissionVersionsOutput, error)
 	ListPermissionVersionsWithContext(aws.Context, *ram.ListPermissionVersionsInput, ...request.Option) (*ram.ListPermissionVersionsOutput, error)
 	ListPermissionVersionsRequest(*ram.ListPermissionVersionsInput) (*request.Request, *ram.ListPermissionVersionsOutput)
@@ -151,6 +174,13 @@ type RAMAPI interface {
 
 	ListPrincipalsPages(*ram.ListPrincipalsInput, func(*ram.ListPrincipalsOutput, bool) bool) error
 	ListPrincipalsPagesWithContext(aws.Context, *ram.ListPrincipalsInput, func(*ram.ListPrincipalsOutput, bool) bool, ...request.Option) error
+
+	ListReplacePermissionAssociationsWork(*ram.ListReplacePermissionAssociationsWorkInput) (*ram.ListReplacePermissionAssociationsWorkOutput, error)
+	ListReplacePermissionAssociationsWorkWithContext(aws.Context, *ram.ListReplacePermissionAssociationsWorkInput, ...request.Option) (*ram.ListReplacePermissionAssociationsWorkOutput, error)
+	ListReplacePermissionAssociationsWorkRequest(*ram.ListReplacePermissionAssociationsWorkInput) (*request.Request, *ram.ListReplacePermissionAssociationsWorkOutput)
+
+	ListReplacePermissionAssociationsWorkPages(*ram.ListReplacePermissionAssociationsWorkInput, func(*ram.ListReplacePermissionAssociationsWorkOutput, bool) bool) error
+	ListReplacePermissionAssociationsWorkPagesWithContext(aws.Context, *ram.ListReplacePermissionAssociationsWorkInput, func(*ram.ListReplacePermissionAssociationsWorkOutput, bool) bool, ...request.Option) error
 
 	ListResourceSharePermissions(*ram.ListResourceSharePermissionsInput) (*ram.ListResourceSharePermissionsOutput, error)
 	ListResourceSharePermissionsWithContext(aws.Context, *ram.ListResourceSharePermissionsInput, ...request.Option) (*ram.ListResourceSharePermissionsOutput, error)
@@ -173,6 +203,10 @@ type RAMAPI interface {
 	ListResourcesPages(*ram.ListResourcesInput, func(*ram.ListResourcesOutput, bool) bool) error
 	ListResourcesPagesWithContext(aws.Context, *ram.ListResourcesInput, func(*ram.ListResourcesOutput, bool) bool, ...request.Option) error
 
+	PromotePermissionCreatedFromPolicy(*ram.PromotePermissionCreatedFromPolicyInput) (*ram.PromotePermissionCreatedFromPolicyOutput, error)
+	PromotePermissionCreatedFromPolicyWithContext(aws.Context, *ram.PromotePermissionCreatedFromPolicyInput, ...request.Option) (*ram.PromotePermissionCreatedFromPolicyOutput, error)
+	PromotePermissionCreatedFromPolicyRequest(*ram.PromotePermissionCreatedFromPolicyInput) (*request.Request, *ram.PromotePermissionCreatedFromPolicyOutput)
+
 	PromoteResourceShareCreatedFromPolicy(*ram.PromoteResourceShareCreatedFromPolicyInput) (*ram.PromoteResourceShareCreatedFromPolicyOutput, error)
 	PromoteResourceShareCreatedFromPolicyWithContext(aws.Context, *ram.PromoteResourceShareCreatedFromPolicyInput, ...request.Option) (*ram.PromoteResourceShareCreatedFromPolicyOutput, error)
 	PromoteResourceShareCreatedFromPolicyRequest(*ram.PromoteResourceShareCreatedFromPolicyInput) (*request.Request, *ram.PromoteResourceShareCreatedFromPolicyOutput)
@@ -180,6 +214,14 @@ type RAMAPI interface {
 	RejectResourceShareInvitation(*ram.RejectResourceShareInvitationInput) (*ram.RejectResourceShareInvitationOutput, error)
 	RejectResourceShareInvitationWithContext(aws.Context, *ram.RejectResourceShareInvitationInput, ...request.Option) (*ram.RejectResourceShareInvitationOutput, error)
 	RejectResourceShareInvitationRequest(*ram.RejectResourceShareInvitationInput) (*request.Request, *ram.RejectResourceShareInvitationOutput)
+
+	ReplacePermissionAssociations(*ram.ReplacePermissionAssociationsInput) (*ram.ReplacePermissionAssociationsOutput, error)
+	ReplacePermissionAssociationsWithContext(aws.Context, *ram.ReplacePermissionAssociationsInput, ...request.Option) (*ram.ReplacePermissionAssociationsOutput, error)
+	ReplacePermissionAssociationsRequest(*ram.ReplacePermissionAssociationsInput) (*request.Request, *ram.ReplacePermissionAssociationsOutput)
+
+	SetDefaultPermissionVersion(*ram.SetDefaultPermissionVersionInput) (*ram.SetDefaultPermissionVersionOutput, error)
+	SetDefaultPermissionVersionWithContext(aws.Context, *ram.SetDefaultPermissionVersionInput, ...request.Option) (*ram.SetDefaultPermissionVersionOutput, error)
+	SetDefaultPermissionVersionRequest(*ram.SetDefaultPermissionVersionInput) (*request.Request, *ram.SetDefaultPermissionVersionOutput)
 
 	TagResource(*ram.TagResourceInput) (*ram.TagResourceOutput, error)
 	TagResourceWithContext(aws.Context, *ram.TagResourceInput, ...request.Option) (*ram.TagResourceOutput, error)
