@@ -94,7 +94,7 @@ azureUseManagedIdentityExtension: false
 azureUseWorkloadIdentityExtension: false
 
 # azureVMType -- Azure VM type.
-azureVMType: "AKS"
+azureVMType: "vmss"
 
 # cloudConfigPath -- Configuration file for cloud provider.
 cloudConfigPath: ""

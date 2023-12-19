@@ -166,11 +166,6 @@ spec:
                 secretKeyRef:
                   key: VMType
                   name: {{ default (include "cluster-autoscaler.fullname" .) .Values.secretKeyRefNameOverride }}
-            - name: AZURE_CLUSTER_NAME
-              valueFrom:
-                secretKeyRef:
-                  key: ClusterName
-                  name: {{ default (include "cluster-autoscaler.fullname" .) .Values.secretKeyRefNameOverride }}
             {{- if .Values.azureUseWorkloadIdentityExtension }}
             - name: ARM_USE_WORKLOAD_IDENTITY_EXTENSION
               value: "true"
@@ -192,11 +187,6 @@ spec:
               valueFrom:
                 secretKeyRef:
                   key: ClientSecret
-                  name: {{ default (include "cluster-autoscaler.fullname" .) .Values.secretKeyRefNameOverride }}
-            - name: AZURE_NODE_RESOURCE_GROUP
-              valueFrom:
-                secretKeyRef:
-                  key: NodeResourceGroup
                   name: {{ default (include "cluster-autoscaler.fullname" .) .Values.secretKeyRefNameOverride }}
             {{- end }}
           {{- else if eq .Values.cloudProvider "exoscale" }}
