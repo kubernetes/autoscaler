@@ -28,3 +28,9 @@ updates:
   open-pull-requests-limit: 3
   labels:
     - "vertical-pod-autoscaler"
+- package-ecosystem: gomod
+  directory: "/addon-resizer"
+  schedule:
+    interval: daily
+  target-branch: "addon-resizer-release-1.8"
+  open-pull-requests-limit: 3
