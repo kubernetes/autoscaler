@@ -543,7 +543,7 @@ func TestNodeGroup_TemplateNodeInfo(t *testing.T) {
 		assert.Equal(t, len(nodeInfo.Pods), 1, "should have one template pod")
 		assert.Equal(t, nodeInfo.Node().Status.Capacity.Cpu().ToDec().Value(), int64(1000), "should match cpu capacity ")
 		assert.Equal(t, nodeInfo.Node().Status.Capacity.Memory().ToDec().Value(), int64(1073741824), "should match memory capacity")
-		assert.Equal(t, nodeInfo.Node().Status.Capacity.StorageEphemeral().ToDec().Value(), int64(20971520), "should match epheral storage capacity")
+		assert.Equal(t, nodeInfo.Node().Status.Capacity.StorageEphemeral().ToDec().Value(), int64(21474836480), "should match epheral storage capacity")
 		assert.Equal(t, nodeInfo.Node().Labels["id"], "id", "should match labels")
 		assert.Equal(t, nodeInfo.Node().Labels["kubernetes.civo.com/civo-node-pool"], "1", "should match labels")
 		assert.Equal(t, nodeInfo.Node().Labels["kubernetes.io/os"], "linux", "should match labels")
