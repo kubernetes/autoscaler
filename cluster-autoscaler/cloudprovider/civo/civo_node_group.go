@@ -28,6 +28,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	autoscaler "k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/klog/v2"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
@@ -55,6 +56,7 @@ type CivoNodeTemplate struct {
 	DiskGigabytes int               `json:"disk_gb,omitempty"`
 	Labels        map[string]string `json:"labels,omitempty"`
 	Taints        []apiv1.Taint     `json:"taint,omitempty"`
+	GpuCount      int               `json:"gpu_count,omitempty"`
 	Region        string            `json:"region,omitempty"`
 }
 
@@ -301,7 +303,8 @@ func (n *NodeGroup) buildNodeFromTemplate(name string, template *CivoNodeTemplat
 	node.Status.Capacity[apiv1.ResourcePods] = *resource.NewQuantity(110, resource.DecimalSI)
 	node.Status.Capacity[apiv1.ResourceCPU] = *resource.NewQuantity(int64(template.CPUCores*1000), resource.DecimalSI)
 	node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(int64(template.RAMMegabytes*1024*1024), resource.DecimalSI)
-	node.Status.Capacity[apiv1.ResourceEphemeralStorage] = *resource.NewQuantity(int64(template.DiskGigabytes*1024*1024), resource.DecimalSI)
+	node.Status.Capacity[apiv1.ResourceEphemeralStorage] = *resource.NewQuantity(int64(template.DiskGigabytes*1024*1024*1024), resource.DecimalSI)
+	node.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(int64(template.GpuCount), resource.DecimalSI)
 
 	node.Status.Allocatable = node.Status.Capacity
 
