@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"time"
 
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
@@ -220,8 +221,8 @@ var (
 		&k8smetrics.GaugeOpts{
 			Namespace: caNamespace,
 			Name:      "node_group_backoff_status",
-			Help:      "Whether or not node group is backoff for not autoscaling. 1 if it is, 0 otherwise.",
-		}, []string{"node_group", "reason"},
+			Help:      "Whether or not node group is backoff for not autoscaling. 0 if it is not, not-zero otherwise.",
+		}, []string{"node_group"},
 	)
 
 	/**** Metrics related to autoscaler execution ****/
@@ -564,11 +565,11 @@ func UpdateNodeGroupHealthStatus(nodeGroup string, healthy bool) {
 }
 
 // UpdateNodeGroupBackOffStatus records if node group is backoff for not autoscaling
-func UpdateNodeGroupBackOffStatus(nodeGroup string, backOff bool, reason string) {
+func UpdateNodeGroupBackOffStatus(nodeGroup string, backOff bool, errorClass cloudprovider.InstanceErrorClass) {
 	if backOff {
-		nodeGroupBackOffStatus.WithLabelValues(nodeGroup, reason).Set(1)
+		nodeGroupBackOffStatus.WithLabelValues(nodeGroup).Set(float64(errorClass))
 	} else {
-		nodeGroupBackOffStatus.WithLabelValues(nodeGroup, "").Set(0)
+		nodeGroupBackOffStatus.WithLabelValues(nodeGroup).Set(0)
 	}
 }
 

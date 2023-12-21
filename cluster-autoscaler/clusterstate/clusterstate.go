@@ -464,7 +464,7 @@ func (csr *ClusterStateRegistry) UpdateSafeScaleUpMetricsForNodeGroup(now time.T
 		}
 		metrics.UpdateNodeGroupHealthStatus(nodeGroup.Id(), csr.IsNodeGroupHealthy(nodeGroup.Id()))
 		backoffStatus := csr.backoff.BackoffStatus(nodeGroup, csr.nodeInfosForGroups[nodeGroup.Id()], now)
-		metrics.UpdateNodeGroupBackOffStatus(nodeGroup.Id(), backoffStatus.IsBackedOff, backoffStatus.ErrorInfo.ErrorCode)
+		metrics.UpdateNodeGroupBackOffStatus(nodeGroup.Id(), backoffStatus.IsBackedOff, backoffStatus.ErrorInfo.ErrorClass)
 	}
 }
 
