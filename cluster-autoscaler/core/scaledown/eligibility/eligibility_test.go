@@ -66,7 +66,7 @@ func getTestCases(ignoreDaemonSetsUtilization bool, suffix string, now time.Time
 	smallPod := BuildTestPod("smallPod", 100, 0)
 	smallPod.Spec.NodeName = "regular"
 
-	dsPod := BuildDSTestPod("dsPod", 500, 0)
+	dsPod := BuildTestPod("dsPod", 500, 0, WithDSController())
 	dsPod.Spec.NodeName = "regular"
 
 	testCases := []testCase{
