@@ -568,7 +568,7 @@ func UpdateNodeGroupBackOffStatus(nodeGroup string, backOff bool, reason string)
 	if backOff {
 		nodeGroupBackOffStatus.WithLabelValues(nodeGroup, reason).Set(1)
 	} else {
-		nodeGroupBackOffStatus.WithLabelValues(nodeGroup, reason).Set(0)
+		nodeGroupBackOffStatus.WithLabelValues(nodeGroup, "").Set(0)
 	}
 }
 
