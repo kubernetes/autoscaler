@@ -13,4 +13,4 @@ reviewers:
 - v-pap
 
 labels:
-- area/provider/packet
+- area/provider/equinixmetal
