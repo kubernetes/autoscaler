@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Kubernetes Authors.
+Copyright 2023 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,5 +14,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package mockcontainerserviceclient implements the mock client for azure container service.
-package mockcontainerserviceclient // import "sigs.k8s.io/cloud-provider-azure/pkg/azureclients/containerserviceclient/mockcontainerserviceclient"
+package testing
+
+import (
+	kubecontainer "k8s.io/kubernetes/pkg/kubelet/container"
+)
+
+// FakeReadyProvider implements a fake ready provider
+type FakeReadyProvider struct {
+	kubecontainer.SourcesReadyProvider
+}
+
+// AllReady notifies caller that the Fake Provider is ready.
+func (frp *FakeReadyProvider) AllReady() bool {
+	return true
+}
+
+// NewFakeReadyProvider creates a FakeReadyProvider object
+func NewFakeReadyProvider() kubecontainer.SourcesReadyProvider {
+	return &FakeReadyProvider{}
+}
