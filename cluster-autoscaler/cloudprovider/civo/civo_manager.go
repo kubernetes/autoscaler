@@ -234,6 +234,7 @@ func getCivoNodeTemplate(pool civocloud.KubernetesPool, client nodeGroupClient) 
 	template.Labels = pool.Labels
 	template.Region = pool.Region
 	template.Taints = pool.Taints
+	template.GpuCount = size.GPUCount
 
 	return template
 }
