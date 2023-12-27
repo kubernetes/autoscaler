@@ -12,126 +12,150 @@
 //
 // Amazon Rekognition Image
 //
-//    * CompareFaces (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_CompareFaces.html)
+//   - AssociateFaces (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_AssociateFaces.html)
 //
-//    * CreateCollection (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_CreateCollection.html)
+//   - CompareFaces (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_CompareFaces.html)
 //
-//    * DeleteCollection (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_DeleteCollection.html)
+//   - CreateCollection (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_CreateCollection.html)
 //
-//    * DeleteFaces (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_DeleteFaces.html)
+//   - CreateUser (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_CreateUser.html)
 //
-//    * DescribeCollection (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_DescribeCollection.html)
+//   - DeleteCollection (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_DeleteCollection.html)
 //
-//    * DetectFaces (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_DetectFaces.html)
+//   - DeleteFaces (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_DeleteFaces.html)
 //
-//    * DetectLabels (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_DetectLabels.html)
+//   - DeleteUser (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_DeleteUser.html)
 //
-//    * DetectModerationLabels (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_DetectModerationLabels.html)
+//   - DescribeCollection (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_DescribeCollection.html)
 //
-//    * DetectProtectiveEquipment (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_DetectProtectiveEquipment.html)
+//   - DetectFaces (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_DetectFaces.html)
 //
-//    * DetectText (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_DetectText.html)
+//   - DetectLabels (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_DetectLabels.html)
 //
-//    * GetCelebrityInfo (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_GetCelebrityInfo.html)
+//   - DetectModerationLabels (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_DetectModerationLabels.html)
 //
-//    * IndexFaces (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_IndexFaces.html)
+//   - DetectProtectiveEquipment (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_DetectProtectiveEquipment.html)
 //
-//    * ListCollections (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_ListCollections.html)
+//   - DetectText (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_DetectText.html)
 //
-//    * ListFaces (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_ListFaces.html)
+//   - DisassociateFaces (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_DisassociateFaces.html)
 //
-//    * RecognizeCelebrities (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_RecognizeCelebrities.html)
+//   - GetCelebrityInfo (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_GetCelebrityInfo.html)
 //
-//    * SearchFaces (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_SearchFaces.html)
+//   - IndexFaces (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_IndexFaces.html)
 //
-//    * SearchFacesByImage (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_SearchFacesByImage.html)
+//   - ListCollections (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_ListCollections.html)
+//
+//   - ListFaces (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_ListFaces.html)
+//
+//   - ListUsers (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_ListFaces.html)
+//
+//   - RecognizeCelebrities (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_RecognizeCelebrities.html)
+//
+//   - SearchFaces (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_SearchFaces.html)
+//
+//   - SearchFacesByImage (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_SearchFacesByImage.html)
+//
+//   - SearchUsers (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_SearchUsers.html)
+//
+//   - SearchUsersByImage (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_SearchUsersByImage.html)
 //
 // Amazon Rekognition Custom Labels
 //
-//    * CreateDataset (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_CreateDataset.html)
+//   - CopyProjectVersion (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_CopyProjectVersion.html)
 //
-//    * CreateProject (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_CreateProject.html)
+//   - CreateDataset (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_CreateDataset.html)
 //
-//    * CreateProjectVersion (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_CreateProjectVersion.html)
+//   - CreateProject (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_CreateProject.html)
 //
-//    * DeleteDataset (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_DeleteDataset.html)
+//   - CreateProjectVersion (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_CreateProjectVersion.html)
 //
-//    * DeleteProject (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_DeleteProject.html)
+//   - DeleteDataset (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_DeleteDataset.html)
 //
-//    * DeleteProjectVersion (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_DeleteProjectVersion.html)
+//   - DeleteProject (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_DeleteProject.html)
 //
-//    * DescribeDataset (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_DescribeDataset.html)
+//   - DeleteProjectPolicy (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_DeleteProjectPolicy.html)
 //
-//    * DescribeProjects (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_DescribeProjects.html)
+//   - DeleteProjectVersion (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_DeleteProjectVersion.html)
 //
-//    * DescribeProjectVersions (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_DescribeProjectVersions.html)
+//   - DescribeDataset (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_DescribeDataset.html)
 //
-//    * DetectCustomLabels (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_DetectCustomLabels.html)
+//   - DescribeProjects (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_DescribeProjects.html)
 //
-//    * DistributeDatasetEntries (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_DistributeDatasetEntries.html)
+//   - DescribeProjectVersions (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_DescribeProjectVersions.html)
 //
-//    * ListDatasetEntries (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_ListDatasetEntries.html)
+//   - DetectCustomLabels (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_DetectCustomLabels.html)
 //
-//    * ListDatasetLabels (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_ListDatasetLabels.html)
+//   - DistributeDatasetEntries (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_DistributeDatasetEntries.html)
 //
-//    * StartProjectVersion (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_StartProjectVersion.html)
+//   - ListDatasetEntries (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_ListDatasetEntries.html)
 //
-//    * StopProjectVersion (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_StopProjectVersion.html)
+//   - ListDatasetLabels (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_ListDatasetLabels.html)
 //
-//    * UpdateDatasetEntries (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_UpdateDatasetEntries.html)
+//   - ListProjectPolicies (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_ListProjectPolicies.html)
+//
+//   - PutProjectPolicy (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_PutProjectPolicy.html)
+//
+//   - StartProjectVersion (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_StartProjectVersion.html)
+//
+//   - StopProjectVersion (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_StopProjectVersion.html)
+//
+//   - UpdateDatasetEntries (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_UpdateDatasetEntries.html)
 //
 // Amazon Rekognition Video Stored Video
 //
-//    * GetCelebrityRecognition (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_GetCelebrityRecognition.html)
+//   - GetCelebrityRecognition (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_GetCelebrityRecognition.html)
 //
-//    * GetContentModeration (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_GetContentModeration.html)
+//   - GetContentModeration (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_GetContentModeration.html)
 //
-//    * GetFaceDetection (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_GetFaceDetection.html)
+//   - GetFaceDetection (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_GetFaceDetection.html)
 //
-//    * GetFaceSearch (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_GetFaceSearch.html)
+//   - GetFaceSearch (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_GetFaceSearch.html)
 //
-//    * GetLabelDetection (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_GetLabelDetection.html)
+//   - GetLabelDetection (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_GetLabelDetection.html)
 //
-//    * GetPersonTracking (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_GetPersonTracking.html)
+//   - GetPersonTracking (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_GetPersonTracking.html)
 //
-//    * GetSegmentDetection (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_GetSegmentDetection.html)
+//   - GetSegmentDetection (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_GetSegmentDetection.html)
 //
-//    * GetTextDetection (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_GetTextDetection.html)
+//   - GetTextDetection (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_GetTextDetection.html)
 //
-//    * StartCelebrityRecognition (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_StartCelebrityRecognition.html)
+//   - StartCelebrityRecognition (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_StartCelebrityRecognition.html)
 //
-//    * StartContentModeration (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_StartContentModeration.html)
+//   - StartContentModeration (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_StartContentModeration.html)
 //
-//    * StartFaceDetection (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_StartFaceDetection.html)
+//   - StartFaceDetection (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_StartFaceDetection.html)
 //
-//    * StartFaceSearch (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_StartFaceSearch.html)
+//   - StartFaceSearch (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_StartFaceSearch.html)
 //
-//    * StartLabelDetection (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_StartLabelDetection.html)
+//   - StartLabelDetection (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_StartLabelDetection.html)
 //
-//    * StartPersonTracking (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_StartPersonTracking.html)
+//   - StartPersonTracking (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_StartPersonTracking.html)
 //
-//    * StartSegmentDetection (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_StartSegmentDetection.html)
+//   - StartSegmentDetection (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_StartSegmentDetection.html)
 //
-//    * StartTextDetection (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_StartTextDetection.html)
+//   - StartTextDetection (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_StartTextDetection.html)
 //
 // Amazon Rekognition Video Streaming Video
 //
-//    * CreateStreamProcessor (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_CreateStreamProcessor.html)
+//   - CreateStreamProcessor (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_CreateStreamProcessor.html)
 //
-//    * DeleteStreamProcessor (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_DeleteStreamProcessor.html)
+//   - DeleteStreamProcessor (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_DeleteStreamProcessor.html)
 //
-//    * DescribeStreamProcessor (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_DescribeStreamProcessor.html)
+//   - DescribeStreamProcessor (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_DescribeStreamProcessor.html)
 //
-//    * ListStreamProcessors (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_ListStreamProcessors.html)
+//   - ListStreamProcessors (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_ListStreamProcessors.html)
 //
-//    * StartStreamProcessor (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_StartStreamProcessor.html)
+//   - StartStreamProcessor (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_StartStreamProcessor.html)
 //
-//    * StopStreamProcessor (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_StopStreamProcessor.html)
+//   - StopStreamProcessor (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_StopStreamProcessor.html)
+//
+//   - UpdateStreamProcessor (https://docs.aws.amazon.com/rekognition/latest/APIReference/API_UpdateStreamProcessor.html)
 //
 // See rekognition package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/rekognition/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact Amazon Rekognition with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

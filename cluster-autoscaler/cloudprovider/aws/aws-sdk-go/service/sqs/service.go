@@ -8,7 +8,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/client/metadata"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/request"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/signer/v4"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/private/protocol/query"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/private/protocol"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/private/protocol/jsonrpc"
 )
 
 // SQS provides the API operation methods for making requests to
@@ -39,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a SQS client from just a session.
-//     svc := sqs.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a SQS client with additional configuration
-//     svc := sqs.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a SQS client from just a session.
+//	svc := sqs.New(mySession)
+//
+//	// Create a SQS client with additional configuration
+//	svc := sqs.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *SQS {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {
@@ -69,6 +71,8 @@ func newClient(cfg aws.Config, handlers request.Handlers, partitionID, endpoint,
 				Endpoint:       endpoint,
 				APIVersion:     "2012-11-05",
 				ResolvedRegion: resolvedRegion,
+				JSONVersion:    "1.0",
+				TargetPrefix:   "AmazonSQS",
 			},
 			handlers,
 		),
@@ -76,10 +80,12 @@ func newClient(cfg aws.Config, handlers request.Handlers, partitionID, endpoint,
 
 	// Handlers
 	svc.Handlers.Sign.PushBackNamed(v4.SignRequestHandler)
-	svc.Handlers.Build.PushBackNamed(query.BuildHandler)
-	svc.Handlers.Unmarshal.PushBackNamed(query.UnmarshalHandler)
-	svc.Handlers.UnmarshalMeta.PushBackNamed(query.UnmarshalMetaHandler)
-	svc.Handlers.UnmarshalError.PushBackNamed(query.UnmarshalErrorHandler)
+	svc.Handlers.Build.PushBackNamed(jsonrpc.BuildHandler)
+	svc.Handlers.Unmarshal.PushBackNamed(jsonrpc.UnmarshalHandler)
+	svc.Handlers.UnmarshalMeta.PushBackNamed(jsonrpc.UnmarshalMetaHandler)
+	svc.Handlers.UnmarshalError.PushBackNamed(
+		protocol.NewUnmarshalErrorHandler(jsonrpc.NewUnmarshalTypedErrorWithOptions(exceptionFromCode, jsonrpc.WithQueryCompatibility(queryExceptionFromCode))).NamedHandler(),
+	)
 
 	// Run custom client initialization if present
 	if initClient != nil {

@@ -71,6 +71,12 @@ const (
 	// The data repository task or tasks you specified could not be found.
 	ErrCodeDataRepositoryTaskNotFound = "DataRepositoryTaskNotFound"
 
+	// ErrCodeFileCacheNotFound for service response error code
+	// "FileCacheNotFound".
+	//
+	// No caches were found based upon supplied parameters.
+	ErrCodeFileCacheNotFound = "FileCacheNotFound"
+
 	// ErrCodeFileSystemNotFound for service response error code
 	// "FileSystemNotFound".
 	//
@@ -147,6 +153,12 @@ const (
 	//
 	// The Key Management Service (KMS) key of the source backup is not valid.
 	ErrCodeInvalidSourceKmsKey = "InvalidSourceKmsKey"
+
+	// ErrCodeMissingFileCacheConfiguration for service response error code
+	// "MissingFileCacheConfiguration".
+	//
+	// A cache configuration is required for this operation.
+	ErrCodeMissingFileCacheConfiguration = "MissingFileCacheConfiguration"
 
 	// ErrCodeMissingFileSystemConfiguration for service response error code
 	// "MissingFileSystemConfiguration".
@@ -229,6 +241,7 @@ var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
 	"DataRepositoryTaskEnded":           newErrorDataRepositoryTaskEnded,
 	"DataRepositoryTaskExecuting":       newErrorDataRepositoryTaskExecuting,
 	"DataRepositoryTaskNotFound":        newErrorDataRepositoryTaskNotFound,
+	"FileCacheNotFound":                 newErrorFileCacheNotFound,
 	"FileSystemNotFound":                newErrorFileSystemNotFound,
 	"IncompatibleParameterError":        newErrorIncompatibleParameterError,
 	"IncompatibleRegionForMultiAZ":      newErrorIncompatibleRegionForMultiAZ,
@@ -241,6 +254,7 @@ var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
 	"InvalidPerUnitStorageThroughput":   newErrorInvalidPerUnitStorageThroughput,
 	"InvalidRegion":                     newErrorInvalidRegion,
 	"InvalidSourceKmsKey":               newErrorInvalidSourceKmsKey,
+	"MissingFileCacheConfiguration":     newErrorMissingFileCacheConfiguration,
 	"MissingFileSystemConfiguration":    newErrorMissingFileSystemConfiguration,
 	"MissingVolumeConfiguration":        newErrorMissingVolumeConfiguration,
 	"NotServiceResourceError":           newErrorNotServiceResourceError,

@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a AlexaForBusiness client from just a session.
-//     svc := alexaforbusiness.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a AlexaForBusiness client with additional configuration
-//     svc := alexaforbusiness.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a AlexaForBusiness client from just a session.
+//	svc := alexaforbusiness.New(mySession)
+//
+//	// Create a AlexaForBusiness client with additional configuration
+//	svc := alexaforbusiness.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *AlexaForBusiness {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

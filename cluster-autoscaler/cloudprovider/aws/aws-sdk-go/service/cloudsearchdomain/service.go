@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a CloudSearchDomain client from just a session.
-//     svc := cloudsearchdomain.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a CloudSearchDomain client with additional configuration
-//     svc := cloudsearchdomain.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a CloudSearchDomain client from just a session.
+//	svc := cloudsearchdomain.New(mySession)
+//
+//	// Create a CloudSearchDomain client with additional configuration
+//	svc := cloudsearchdomain.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *CloudSearchDomain {
 	var c client.Config
 	if v, ok := p.(client.ConfigNoResolveEndpointProvider); ok {

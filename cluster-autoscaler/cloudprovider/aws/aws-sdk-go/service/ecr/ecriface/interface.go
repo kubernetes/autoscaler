@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // Amazon EC2 Container Registry.
-//    func myFunc(svc ecriface.ECRAPI) bool {
-//        // Make svc.BatchCheckLayerAvailability request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// Amazon EC2 Container Registry.
+//	func myFunc(svc ecriface.ECRAPI) bool {
+//	    // Make svc.BatchCheckLayerAvailability request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := ecr.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := ecr.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockECRClient struct {
-//        ecriface.ECRAPI
-//    }
-//    func (m *mockECRClient) BatchCheckLayerAvailability(input *ecr.BatchCheckLayerAvailabilityInput) (*ecr.BatchCheckLayerAvailabilityOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockECRClient struct {
+//	    ecriface.ECRAPI
+//	}
+//	func (m *mockECRClient) BatchCheckLayerAvailability(input *ecr.BatchCheckLayerAvailabilityInput) (*ecr.BatchCheckLayerAvailabilityOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockECRClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockECRClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,
@@ -238,9 +238,17 @@ type ECRAPI interface {
 	UntagResourceWithContext(aws.Context, *ecr.UntagResourceInput, ...request.Option) (*ecr.UntagResourceOutput, error)
 	UntagResourceRequest(*ecr.UntagResourceInput) (*request.Request, *ecr.UntagResourceOutput)
 
+	UpdatePullThroughCacheRule(*ecr.UpdatePullThroughCacheRuleInput) (*ecr.UpdatePullThroughCacheRuleOutput, error)
+	UpdatePullThroughCacheRuleWithContext(aws.Context, *ecr.UpdatePullThroughCacheRuleInput, ...request.Option) (*ecr.UpdatePullThroughCacheRuleOutput, error)
+	UpdatePullThroughCacheRuleRequest(*ecr.UpdatePullThroughCacheRuleInput) (*request.Request, *ecr.UpdatePullThroughCacheRuleOutput)
+
 	UploadLayerPart(*ecr.UploadLayerPartInput) (*ecr.UploadLayerPartOutput, error)
 	UploadLayerPartWithContext(aws.Context, *ecr.UploadLayerPartInput, ...request.Option) (*ecr.UploadLayerPartOutput, error)
 	UploadLayerPartRequest(*ecr.UploadLayerPartInput) (*request.Request, *ecr.UploadLayerPartOutput)
+
+	ValidatePullThroughCacheRule(*ecr.ValidatePullThroughCacheRuleInput) (*ecr.ValidatePullThroughCacheRuleOutput, error)
+	ValidatePullThroughCacheRuleWithContext(aws.Context, *ecr.ValidatePullThroughCacheRuleInput, ...request.Option) (*ecr.ValidatePullThroughCacheRuleOutput, error)
+	ValidatePullThroughCacheRuleRequest(*ecr.ValidatePullThroughCacheRuleInput) (*request.Request, *ecr.ValidatePullThroughCacheRuleOutput)
 
 	WaitUntilImageScanComplete(*ecr.DescribeImageScanFindingsInput) error
 	WaitUntilImageScanCompleteWithContext(aws.Context, *ecr.DescribeImageScanFindingsInput, ...request.WaiterOption) error

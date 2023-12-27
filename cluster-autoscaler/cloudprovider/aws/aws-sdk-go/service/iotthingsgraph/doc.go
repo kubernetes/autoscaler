@@ -12,12 +12,14 @@
 // For more information about how AWS IoT Things Graph works, see the User Guide
 // (https://docs.aws.amazon.com/thingsgraph/latest/ug/iot-tg-whatis.html).
 //
+// The AWS IoT Things Graph service is discontinued.
+//
 // See https://docs.aws.amazon.com/goto/WebAPI/iotthingsgraph-2018-09-06 for more information on this service.
 //
 // See iotthingsgraph package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/iotthingsgraph/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact AWS IoT Things Graph with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

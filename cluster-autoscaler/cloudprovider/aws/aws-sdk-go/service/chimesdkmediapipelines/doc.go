@@ -4,16 +4,16 @@
 // requests to Amazon Chime SDK Media Pipelines.
 //
 // The Amazon Chime SDK media pipeline APIs in this section allow software developers
-// to create Amazon Chime SDK media pipelines and capture audio, video, events,
-// and data messages from Amazon Chime SDK meetings. For more information about
-// media pipleines, see Amzon Chime SDK media pipelines (https://docs.aws.amazon.com/chime/latest/APIReference/API_Operations_Amazon_Chime_SDK_Media_Pipelines.html).
+// to create Amazon Chime SDK media pipelines that capture, concatenate, or
+// stream your Amazon Chime SDK meetings. For more information about media pipelines,
+// see Amazon Chime SDK media pipelines (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_Operations_Amazon_Chime_SDK_Media_Pipelines.html).
 //
 // See https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-media-pipelines-2021-07-15 for more information on this service.
 //
 // See chimesdkmediapipelines package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/chimesdkmediapipelines/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact Amazon Chime SDK Media Pipelines with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

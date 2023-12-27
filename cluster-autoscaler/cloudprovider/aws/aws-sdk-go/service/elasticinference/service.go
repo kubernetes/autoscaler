@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a ElasticInference client from just a session.
-//     svc := elasticinference.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a ElasticInference client with additional configuration
-//     svc := elasticinference.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a ElasticInference client from just a session.
+//	svc := elasticinference.New(mySession)
+//
+//	// Create a ElasticInference client with additional configuration
+//	svc := elasticinference.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *ElasticInference {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

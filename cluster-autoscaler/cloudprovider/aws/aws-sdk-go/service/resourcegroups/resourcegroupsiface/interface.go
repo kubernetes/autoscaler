@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // AWS Resource Groups.
-//    func myFunc(svc resourcegroupsiface.ResourceGroupsAPI) bool {
-//        // Make svc.CreateGroup request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// AWS Resource Groups.
+//	func myFunc(svc resourcegroupsiface.ResourceGroupsAPI) bool {
+//	    // Make svc.CreateGroup request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := resourcegroups.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := resourcegroups.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockResourceGroupsClient struct {
-//        resourcegroupsiface.ResourceGroupsAPI
-//    }
-//    func (m *mockResourceGroupsClient) CreateGroup(input *resourcegroups.CreateGroupInput) (*resourcegroups.CreateGroupOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockResourceGroupsClient struct {
+//	    resourcegroupsiface.ResourceGroupsAPI
+//	}
+//	func (m *mockResourceGroupsClient) CreateGroup(input *resourcegroups.CreateGroupInput) (*resourcegroups.CreateGroupOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockResourceGroupsClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockResourceGroupsClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,
@@ -67,6 +67,10 @@ type ResourceGroupsAPI interface {
 	DeleteGroup(*resourcegroups.DeleteGroupInput) (*resourcegroups.DeleteGroupOutput, error)
 	DeleteGroupWithContext(aws.Context, *resourcegroups.DeleteGroupInput, ...request.Option) (*resourcegroups.DeleteGroupOutput, error)
 	DeleteGroupRequest(*resourcegroups.DeleteGroupInput) (*request.Request, *resourcegroups.DeleteGroupOutput)
+
+	GetAccountSettings(*resourcegroups.GetAccountSettingsInput) (*resourcegroups.GetAccountSettingsOutput, error)
+	GetAccountSettingsWithContext(aws.Context, *resourcegroups.GetAccountSettingsInput, ...request.Option) (*resourcegroups.GetAccountSettingsOutput, error)
+	GetAccountSettingsRequest(*resourcegroups.GetAccountSettingsInput) (*request.Request, *resourcegroups.GetAccountSettingsOutput)
 
 	GetGroup(*resourcegroups.GetGroupInput) (*resourcegroups.GetGroupOutput, error)
 	GetGroupWithContext(aws.Context, *resourcegroups.GetGroupInput, ...request.Option) (*resourcegroups.GetGroupOutput, error)
@@ -124,6 +128,10 @@ type ResourceGroupsAPI interface {
 	Untag(*resourcegroups.UntagInput) (*resourcegroups.UntagOutput, error)
 	UntagWithContext(aws.Context, *resourcegroups.UntagInput, ...request.Option) (*resourcegroups.UntagOutput, error)
 	UntagRequest(*resourcegroups.UntagInput) (*request.Request, *resourcegroups.UntagOutput)
+
+	UpdateAccountSettings(*resourcegroups.UpdateAccountSettingsInput) (*resourcegroups.UpdateAccountSettingsOutput, error)
+	UpdateAccountSettingsWithContext(aws.Context, *resourcegroups.UpdateAccountSettingsInput, ...request.Option) (*resourcegroups.UpdateAccountSettingsOutput, error)
+	UpdateAccountSettingsRequest(*resourcegroups.UpdateAccountSettingsInput) (*request.Request, *resourcegroups.UpdateAccountSettingsOutput)
 
 	UpdateGroup(*resourcegroups.UpdateGroupInput) (*resourcegroups.UpdateGroupOutput, error)
 	UpdateGroupWithContext(aws.Context, *resourcegroups.UpdateGroupInput, ...request.Option) (*resourcegroups.UpdateGroupOutput, error)

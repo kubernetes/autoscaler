@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a Lambda client from just a session.
-//     svc := lambda.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a Lambda client with additional configuration
-//     svc := lambda.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a Lambda client from just a session.
+//	svc := lambda.New(mySession)
+//
+//	// Create a Lambda client with additional configuration
+//	svc := lambda.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *Lambda {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {
@@ -83,6 +84,9 @@ func newClient(cfg aws.Config, handlers request.Handlers, partitionID, endpoint,
 	svc.Handlers.UnmarshalError.PushBackNamed(
 		protocol.NewUnmarshalErrorHandler(restjson.NewUnmarshalTypedError(exceptionFromCode)).NamedHandler(),
 	)
+
+	svc.Handlers.BuildStream.PushBackNamed(restjson.BuildHandler)
+	svc.Handlers.UnmarshalStream.PushBackNamed(restjson.UnmarshalHandler)
 
 	// Run custom client initialization if present
 	if initClient != nil {

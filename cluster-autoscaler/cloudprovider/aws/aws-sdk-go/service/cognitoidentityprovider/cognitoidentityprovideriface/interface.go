@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // Amazon Cognito Identity Provider.
-//    func myFunc(svc cognitoidentityprovideriface.CognitoIdentityProviderAPI) bool {
-//        // Make svc.AddCustomAttributes request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// Amazon Cognito Identity Provider.
+//	func myFunc(svc cognitoidentityprovideriface.CognitoIdentityProviderAPI) bool {
+//	    // Make svc.AddCustomAttributes request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := cognitoidentityprovider.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := cognitoidentityprovider.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockCognitoIdentityProviderClient struct {
-//        cognitoidentityprovideriface.CognitoIdentityProviderAPI
-//    }
-//    func (m *mockCognitoIdentityProviderClient) AddCustomAttributes(input *cognitoidentityprovider.AddCustomAttributesInput) (*cognitoidentityprovider.AddCustomAttributesOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockCognitoIdentityProviderClient struct {
+//	    cognitoidentityprovideriface.CognitoIdentityProviderAPI
+//	}
+//	func (m *mockCognitoIdentityProviderClient) AddCustomAttributes(input *cognitoidentityprovider.AddCustomAttributesInput) (*cognitoidentityprovider.AddCustomAttributesOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockCognitoIdentityProviderClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockCognitoIdentityProviderClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,
@@ -306,6 +306,10 @@ type CognitoIdentityProviderAPI interface {
 	GetIdentityProviderByIdentifierWithContext(aws.Context, *cognitoidentityprovider.GetIdentityProviderByIdentifierInput, ...request.Option) (*cognitoidentityprovider.GetIdentityProviderByIdentifierOutput, error)
 	GetIdentityProviderByIdentifierRequest(*cognitoidentityprovider.GetIdentityProviderByIdentifierInput) (*request.Request, *cognitoidentityprovider.GetIdentityProviderByIdentifierOutput)
 
+	GetLogDeliveryConfiguration(*cognitoidentityprovider.GetLogDeliveryConfigurationInput) (*cognitoidentityprovider.GetLogDeliveryConfigurationOutput, error)
+	GetLogDeliveryConfigurationWithContext(aws.Context, *cognitoidentityprovider.GetLogDeliveryConfigurationInput, ...request.Option) (*cognitoidentityprovider.GetLogDeliveryConfigurationOutput, error)
+	GetLogDeliveryConfigurationRequest(*cognitoidentityprovider.GetLogDeliveryConfigurationInput) (*request.Request, *cognitoidentityprovider.GetLogDeliveryConfigurationOutput)
+
 	GetSigningCertificate(*cognitoidentityprovider.GetSigningCertificateInput) (*cognitoidentityprovider.GetSigningCertificateOutput, error)
 	GetSigningCertificateWithContext(aws.Context, *cognitoidentityprovider.GetSigningCertificateInput, ...request.Option) (*cognitoidentityprovider.GetSigningCertificateOutput, error)
 	GetSigningCertificateRequest(*cognitoidentityprovider.GetSigningCertificateInput) (*request.Request, *cognitoidentityprovider.GetSigningCertificateOutput)
@@ -406,6 +410,10 @@ type CognitoIdentityProviderAPI interface {
 	RevokeToken(*cognitoidentityprovider.RevokeTokenInput) (*cognitoidentityprovider.RevokeTokenOutput, error)
 	RevokeTokenWithContext(aws.Context, *cognitoidentityprovider.RevokeTokenInput, ...request.Option) (*cognitoidentityprovider.RevokeTokenOutput, error)
 	RevokeTokenRequest(*cognitoidentityprovider.RevokeTokenInput) (*request.Request, *cognitoidentityprovider.RevokeTokenOutput)
+
+	SetLogDeliveryConfiguration(*cognitoidentityprovider.SetLogDeliveryConfigurationInput) (*cognitoidentityprovider.SetLogDeliveryConfigurationOutput, error)
+	SetLogDeliveryConfigurationWithContext(aws.Context, *cognitoidentityprovider.SetLogDeliveryConfigurationInput, ...request.Option) (*cognitoidentityprovider.SetLogDeliveryConfigurationOutput, error)
+	SetLogDeliveryConfigurationRequest(*cognitoidentityprovider.SetLogDeliveryConfigurationInput) (*request.Request, *cognitoidentityprovider.SetLogDeliveryConfigurationOutput)
 
 	SetRiskConfiguration(*cognitoidentityprovider.SetRiskConfigurationInput) (*cognitoidentityprovider.SetRiskConfigurationOutput, error)
 	SetRiskConfigurationWithContext(aws.Context, *cognitoidentityprovider.SetRiskConfigurationInput, ...request.Option) (*cognitoidentityprovider.SetRiskConfigurationOutput, error)

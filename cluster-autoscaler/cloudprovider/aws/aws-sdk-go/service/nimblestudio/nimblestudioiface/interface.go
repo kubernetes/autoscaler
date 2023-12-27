@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // AmazonNimbleStudio.
-//    func myFunc(svc nimblestudioiface.NimbleStudioAPI) bool {
-//        // Make svc.AcceptEulas request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// AmazonNimbleStudio.
+//	func myFunc(svc nimblestudioiface.NimbleStudioAPI) bool {
+//	    // Make svc.AcceptEulas request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := nimblestudio.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := nimblestudio.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockNimbleStudioClient struct {
-//        nimblestudioiface.NimbleStudioAPI
-//    }
-//    func (m *mockNimbleStudioClient) AcceptEulas(input *nimblestudio.AcceptEulasInput) (*nimblestudio.AcceptEulasOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockNimbleStudioClient struct {
+//	    nimblestudioiface.NimbleStudioAPI
+//	}
+//	func (m *mockNimbleStudioClient) AcceptEulas(input *nimblestudio.AcceptEulasInput) (*nimblestudio.AcceptEulasOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockNimbleStudioClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockNimbleStudioClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,
@@ -144,6 +144,10 @@ type NimbleStudioAPI interface {
 	GetStreamingSessionWithContext(aws.Context, *nimblestudio.GetStreamingSessionInput, ...request.Option) (*nimblestudio.GetStreamingSessionOutput, error)
 	GetStreamingSessionRequest(*nimblestudio.GetStreamingSessionInput) (*request.Request, *nimblestudio.GetStreamingSessionOutput)
 
+	GetStreamingSessionBackup(*nimblestudio.GetStreamingSessionBackupInput) (*nimblestudio.GetStreamingSessionBackupOutput, error)
+	GetStreamingSessionBackupWithContext(aws.Context, *nimblestudio.GetStreamingSessionBackupInput, ...request.Option) (*nimblestudio.GetStreamingSessionBackupOutput, error)
+	GetStreamingSessionBackupRequest(*nimblestudio.GetStreamingSessionBackupInput) (*request.Request, *nimblestudio.GetStreamingSessionBackupOutput)
+
 	GetStreamingSessionStream(*nimblestudio.GetStreamingSessionStreamInput) (*nimblestudio.GetStreamingSessionStreamOutput, error)
 	GetStreamingSessionStreamWithContext(aws.Context, *nimblestudio.GetStreamingSessionStreamInput, ...request.Option) (*nimblestudio.GetStreamingSessionStreamOutput, error)
 	GetStreamingSessionStreamRequest(*nimblestudio.GetStreamingSessionStreamInput) (*request.Request, *nimblestudio.GetStreamingSessionStreamOutput)
@@ -194,6 +198,13 @@ type NimbleStudioAPI interface {
 
 	ListStreamingImagesPages(*nimblestudio.ListStreamingImagesInput, func(*nimblestudio.ListStreamingImagesOutput, bool) bool) error
 	ListStreamingImagesPagesWithContext(aws.Context, *nimblestudio.ListStreamingImagesInput, func(*nimblestudio.ListStreamingImagesOutput, bool) bool, ...request.Option) error
+
+	ListStreamingSessionBackups(*nimblestudio.ListStreamingSessionBackupsInput) (*nimblestudio.ListStreamingSessionBackupsOutput, error)
+	ListStreamingSessionBackupsWithContext(aws.Context, *nimblestudio.ListStreamingSessionBackupsInput, ...request.Option) (*nimblestudio.ListStreamingSessionBackupsOutput, error)
+	ListStreamingSessionBackupsRequest(*nimblestudio.ListStreamingSessionBackupsInput) (*request.Request, *nimblestudio.ListStreamingSessionBackupsOutput)
+
+	ListStreamingSessionBackupsPages(*nimblestudio.ListStreamingSessionBackupsInput, func(*nimblestudio.ListStreamingSessionBackupsOutput, bool) bool) error
+	ListStreamingSessionBackupsPagesWithContext(aws.Context, *nimblestudio.ListStreamingSessionBackupsInput, func(*nimblestudio.ListStreamingSessionBackupsOutput, bool) bool, ...request.Option) error
 
 	ListStreamingSessions(*nimblestudio.ListStreamingSessionsInput) (*nimblestudio.ListStreamingSessionsOutput, error)
 	ListStreamingSessionsWithContext(aws.Context, *nimblestudio.ListStreamingSessionsInput, ...request.Option) (*nimblestudio.ListStreamingSessionsOutput, error)

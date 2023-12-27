@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // AWS Amplify.
-//    func myFunc(svc amplifyiface.AmplifyAPI) bool {
-//        // Make svc.CreateApp request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// AWS Amplify.
+//	func myFunc(svc amplifyiface.AmplifyAPI) bool {
+//	    // Make svc.CreateApp request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := amplify.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := amplify.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockAmplifyClient struct {
-//        amplifyiface.AmplifyAPI
-//    }
-//    func (m *mockAmplifyClient) CreateApp(input *amplify.CreateAppInput) (*amplify.CreateAppOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockAmplifyClient struct {
+//	    amplifyiface.AmplifyAPI
+//	}
+//	func (m *mockAmplifyClient) CreateApp(input *amplify.CreateAppInput) (*amplify.CreateAppOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockAmplifyClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockAmplifyClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,
@@ -144,6 +144,9 @@ type AmplifyAPI interface {
 	ListAppsWithContext(aws.Context, *amplify.ListAppsInput, ...request.Option) (*amplify.ListAppsOutput, error)
 	ListAppsRequest(*amplify.ListAppsInput) (*request.Request, *amplify.ListAppsOutput)
 
+	ListAppsPages(*amplify.ListAppsInput, func(*amplify.ListAppsOutput, bool) bool) error
+	ListAppsPagesWithContext(aws.Context, *amplify.ListAppsInput, func(*amplify.ListAppsOutput, bool) bool, ...request.Option) error
+
 	ListArtifacts(*amplify.ListArtifactsInput) (*amplify.ListArtifactsOutput, error)
 	ListArtifactsWithContext(aws.Context, *amplify.ListArtifactsInput, ...request.Option) (*amplify.ListArtifactsOutput, error)
 	ListArtifactsRequest(*amplify.ListArtifactsInput) (*request.Request, *amplify.ListArtifactsOutput)
@@ -156,13 +159,22 @@ type AmplifyAPI interface {
 	ListBranchesWithContext(aws.Context, *amplify.ListBranchesInput, ...request.Option) (*amplify.ListBranchesOutput, error)
 	ListBranchesRequest(*amplify.ListBranchesInput) (*request.Request, *amplify.ListBranchesOutput)
 
+	ListBranchesPages(*amplify.ListBranchesInput, func(*amplify.ListBranchesOutput, bool) bool) error
+	ListBranchesPagesWithContext(aws.Context, *amplify.ListBranchesInput, func(*amplify.ListBranchesOutput, bool) bool, ...request.Option) error
+
 	ListDomainAssociations(*amplify.ListDomainAssociationsInput) (*amplify.ListDomainAssociationsOutput, error)
 	ListDomainAssociationsWithContext(aws.Context, *amplify.ListDomainAssociationsInput, ...request.Option) (*amplify.ListDomainAssociationsOutput, error)
 	ListDomainAssociationsRequest(*amplify.ListDomainAssociationsInput) (*request.Request, *amplify.ListDomainAssociationsOutput)
 
+	ListDomainAssociationsPages(*amplify.ListDomainAssociationsInput, func(*amplify.ListDomainAssociationsOutput, bool) bool) error
+	ListDomainAssociationsPagesWithContext(aws.Context, *amplify.ListDomainAssociationsInput, func(*amplify.ListDomainAssociationsOutput, bool) bool, ...request.Option) error
+
 	ListJobs(*amplify.ListJobsInput) (*amplify.ListJobsOutput, error)
 	ListJobsWithContext(aws.Context, *amplify.ListJobsInput, ...request.Option) (*amplify.ListJobsOutput, error)
 	ListJobsRequest(*amplify.ListJobsInput) (*request.Request, *amplify.ListJobsOutput)
+
+	ListJobsPages(*amplify.ListJobsInput, func(*amplify.ListJobsOutput, bool) bool) error
+	ListJobsPagesWithContext(aws.Context, *amplify.ListJobsInput, func(*amplify.ListJobsOutput, bool) bool, ...request.Option) error
 
 	ListTagsForResource(*amplify.ListTagsForResourceInput) (*amplify.ListTagsForResourceOutput, error)
 	ListTagsForResourceWithContext(aws.Context, *amplify.ListTagsForResourceInput, ...request.Option) (*amplify.ListTagsForResourceOutput, error)

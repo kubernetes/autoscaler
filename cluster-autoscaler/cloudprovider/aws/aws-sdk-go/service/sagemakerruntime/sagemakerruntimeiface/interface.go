@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // Amazon SageMaker Runtime.
-//    func myFunc(svc sagemakerruntimeiface.SageMakerRuntimeAPI) bool {
-//        // Make svc.InvokeEndpoint request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// Amazon SageMaker Runtime.
+//	func myFunc(svc sagemakerruntimeiface.SageMakerRuntimeAPI) bool {
+//	    // Make svc.InvokeEndpoint request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := sagemakerruntime.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := sagemakerruntime.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockSageMakerRuntimeClient struct {
-//        sagemakerruntimeiface.SageMakerRuntimeAPI
-//    }
-//    func (m *mockSageMakerRuntimeClient) InvokeEndpoint(input *sagemakerruntime.InvokeEndpointInput) (*sagemakerruntime.InvokeEndpointOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockSageMakerRuntimeClient struct {
+//	    sagemakerruntimeiface.SageMakerRuntimeAPI
+//	}
+//	func (m *mockSageMakerRuntimeClient) InvokeEndpoint(input *sagemakerruntime.InvokeEndpointInput) (*sagemakerruntime.InvokeEndpointOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockSageMakerRuntimeClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockSageMakerRuntimeClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,
@@ -67,6 +67,10 @@ type SageMakerRuntimeAPI interface {
 	InvokeEndpointAsync(*sagemakerruntime.InvokeEndpointAsyncInput) (*sagemakerruntime.InvokeEndpointAsyncOutput, error)
 	InvokeEndpointAsyncWithContext(aws.Context, *sagemakerruntime.InvokeEndpointAsyncInput, ...request.Option) (*sagemakerruntime.InvokeEndpointAsyncOutput, error)
 	InvokeEndpointAsyncRequest(*sagemakerruntime.InvokeEndpointAsyncInput) (*request.Request, *sagemakerruntime.InvokeEndpointAsyncOutput)
+
+	InvokeEndpointWithResponseStream(*sagemakerruntime.InvokeEndpointWithResponseStreamInput) (*sagemakerruntime.InvokeEndpointWithResponseStreamOutput, error)
+	InvokeEndpointWithResponseStreamWithContext(aws.Context, *sagemakerruntime.InvokeEndpointWithResponseStreamInput, ...request.Option) (*sagemakerruntime.InvokeEndpointWithResponseStreamOutput, error)
+	InvokeEndpointWithResponseStreamRequest(*sagemakerruntime.InvokeEndpointWithResponseStreamInput) (*request.Request, *sagemakerruntime.InvokeEndpointWithResponseStreamOutput)
 }
 
 var _ SageMakerRuntimeAPI = (*sagemakerruntime.SageMakerRuntime)(nil)

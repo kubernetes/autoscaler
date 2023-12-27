@@ -35,7 +35,6 @@ type outpostAccessPointEndpointBuilder arn.OutpostAccessPointARN
 // - example : s3-outposts.us-west-2.amazonaws.com
 //
 // Outpost AccessPoint Endpoint request are signed using "s3-outposts" as signing name.
-//
 func (o outpostAccessPointEndpointBuilder) build(req *request.Request) error {
 	resolveRegion := o.Region
 	resolveService := o.Service
@@ -93,7 +92,6 @@ type outpostBucketResourceEndpointBuilder arn.OutpostBucketARN
 // - example : s3-outposts.us-west-2.amazonaws.com
 //
 // Outpost bucket arn endpoint request are signed using "s3-outposts" as signing name
-//
 func (o outpostBucketResourceEndpointBuilder) build(req *request.Request) error {
 	resolveService := arn.OutpostBucketARN(o).Service
 	resolveRegion := arn.OutpostBucketARN(o).Region

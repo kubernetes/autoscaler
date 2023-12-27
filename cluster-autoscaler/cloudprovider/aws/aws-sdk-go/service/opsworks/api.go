@@ -28,14 +28,13 @@ const opAssignInstance = "AssignInstance"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssignInstanceRequest method.
+//	req, resp := client.AssignInstanceRequest(params)
 //
-//    // Example sending a request using the AssignInstanceRequest method.
-//    req, resp := client.AssignInstanceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/AssignInstance
 func (c *OpsWorks) AssignInstanceRequest(input *AssignInstanceInput) (req *request.Request, output *AssignInstanceOutput) {
@@ -59,12 +58,12 @@ func (c *OpsWorks) AssignInstanceRequest(input *AssignInstanceInput) (req *reque
 //
 // Assign a registered instance to a layer.
 //
-//    * You can assign registered on-premises instances to any layer type.
+//   - You can assign registered on-premises instances to any layer type.
 //
-//    * You can assign registered Amazon EC2 instances only to custom layers.
+//   - You can assign registered Amazon EC2 instances only to custom layers.
 //
-//    * You cannot use this action with instances that were created with AWS
-//    OpsWorks Stacks.
+//   - You cannot use this action with instances that were created with AWS
+//     OpsWorks Stacks.
 //
 // Required Permissions: To use this action, an AWS Identity and Access Management
 // (IAM) user must have a Manage permissions level for the stack or an attached
@@ -79,11 +78,12 @@ func (c *OpsWorks) AssignInstanceRequest(input *AssignInstanceInput) (req *reque
 // API operation AssignInstance for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/AssignInstance
 func (c *OpsWorks) AssignInstance(input *AssignInstanceInput) (*AssignInstanceOutput, error) {
@@ -123,14 +123,13 @@ const opAssignVolume = "AssignVolume"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssignVolumeRequest method.
+//	req, resp := client.AssignVolumeRequest(params)
 //
-//    // Example sending a request using the AssignVolumeRequest method.
-//    req, resp := client.AssignVolumeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/AssignVolume
 func (c *OpsWorks) AssignVolumeRequest(input *AssignVolumeInput) (req *request.Request, output *AssignVolumeOutput) {
@@ -171,11 +170,12 @@ func (c *OpsWorks) AssignVolumeRequest(input *AssignVolumeInput) (req *request.R
 // API operation AssignVolume for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/AssignVolume
 func (c *OpsWorks) AssignVolume(input *AssignVolumeInput) (*AssignVolumeOutput, error) {
@@ -215,14 +215,13 @@ const opAssociateElasticIp = "AssociateElasticIp"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateElasticIpRequest method.
+//	req, resp := client.AssociateElasticIpRequest(params)
 //
-//    // Example sending a request using the AssociateElasticIpRequest method.
-//    req, resp := client.AssociateElasticIpRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/AssociateElasticIp
 func (c *OpsWorks) AssociateElasticIpRequest(input *AssociateElasticIpInput) (req *request.Request, output *AssociateElasticIpOutput) {
@@ -261,11 +260,12 @@ func (c *OpsWorks) AssociateElasticIpRequest(input *AssociateElasticIpInput) (re
 // API operation AssociateElasticIp for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/AssociateElasticIp
 func (c *OpsWorks) AssociateElasticIp(input *AssociateElasticIpInput) (*AssociateElasticIpOutput, error) {
@@ -305,14 +305,13 @@ const opAttachElasticLoadBalancer = "AttachElasticLoadBalancer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AttachElasticLoadBalancerRequest method.
+//	req, resp := client.AttachElasticLoadBalancerRequest(params)
 //
-//    // Example sending a request using the AttachElasticLoadBalancerRequest method.
-//    req, resp := client.AttachElasticLoadBalancerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/AttachElasticLoadBalancer
 func (c *OpsWorks) AttachElasticLoadBalancerRequest(input *AttachElasticLoadBalancerInput) (req *request.Request, output *AttachElasticLoadBalancerOutput) {
@@ -356,11 +355,12 @@ func (c *OpsWorks) AttachElasticLoadBalancerRequest(input *AttachElasticLoadBala
 // API operation AttachElasticLoadBalancer for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/AttachElasticLoadBalancer
 func (c *OpsWorks) AttachElasticLoadBalancer(input *AttachElasticLoadBalancerInput) (*AttachElasticLoadBalancerOutput, error) {
@@ -400,14 +400,13 @@ const opCloneStack = "CloneStack"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CloneStackRequest method.
+//	req, resp := client.CloneStackRequest(params)
 //
-//    // Example sending a request using the CloneStackRequest method.
-//    req, resp := client.CloneStackRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/CloneStack
 func (c *OpsWorks) CloneStackRequest(input *CloneStackInput) (req *request.Request, output *CloneStackOutput) {
@@ -444,11 +443,12 @@ func (c *OpsWorks) CloneStackRequest(input *CloneStackInput) (req *request.Reque
 // API operation CloneStack for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/CloneStack
 func (c *OpsWorks) CloneStack(input *CloneStackInput) (*CloneStackOutput, error) {
@@ -488,14 +488,13 @@ const opCreateApp = "CreateApp"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAppRequest method.
+//	req, resp := client.CreateAppRequest(params)
 //
-//    // Example sending a request using the CreateAppRequest method.
-//    req, resp := client.CreateAppRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/CreateApp
 func (c *OpsWorks) CreateAppRequest(input *CreateAppInput) (req *request.Request, output *CreateAppOutput) {
@@ -532,11 +531,12 @@ func (c *OpsWorks) CreateAppRequest(input *CreateAppInput) (req *request.Request
 // API operation CreateApp for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/CreateApp
 func (c *OpsWorks) CreateApp(input *CreateAppInput) (*CreateAppOutput, error) {
@@ -576,14 +576,13 @@ const opCreateDeployment = "CreateDeployment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDeploymentRequest method.
+//	req, resp := client.CreateDeploymentRequest(params)
 //
-//    // Example sending a request using the CreateDeploymentRequest method.
-//    req, resp := client.CreateDeploymentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/CreateDeployment
 func (c *OpsWorks) CreateDeploymentRequest(input *CreateDeploymentInput) (req *request.Request, output *CreateDeploymentOutput) {
@@ -621,11 +620,12 @@ func (c *OpsWorks) CreateDeploymentRequest(input *CreateDeploymentInput) (req *r
 // API operation CreateDeployment for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/CreateDeployment
 func (c *OpsWorks) CreateDeployment(input *CreateDeploymentInput) (*CreateDeploymentOutput, error) {
@@ -665,14 +665,13 @@ const opCreateInstance = "CreateInstance"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateInstanceRequest method.
+//	req, resp := client.CreateInstanceRequest(params)
 //
-//    // Example sending a request using the CreateInstanceRequest method.
-//    req, resp := client.CreateInstanceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/CreateInstance
 func (c *OpsWorks) CreateInstanceRequest(input *CreateInstanceInput) (req *request.Request, output *CreateInstanceOutput) {
@@ -709,11 +708,12 @@ func (c *OpsWorks) CreateInstanceRequest(input *CreateInstanceInput) (req *reque
 // API operation CreateInstance for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/CreateInstance
 func (c *OpsWorks) CreateInstance(input *CreateInstanceInput) (*CreateInstanceOutput, error) {
@@ -753,14 +753,13 @@ const opCreateLayer = "CreateLayer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateLayerRequest method.
+//	req, resp := client.CreateLayerRequest(params)
 //
-//    // Example sending a request using the CreateLayerRequest method.
-//    req, resp := client.CreateLayerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/CreateLayer
 func (c *OpsWorks) CreateLayerRequest(input *CreateLayerInput) (req *request.Request, output *CreateLayerOutput) {
@@ -803,11 +802,12 @@ func (c *OpsWorks) CreateLayerRequest(input *CreateLayerInput) (req *request.Req
 // API operation CreateLayer for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/CreateLayer
 func (c *OpsWorks) CreateLayer(input *CreateLayerInput) (*CreateLayerOutput, error) {
@@ -847,14 +847,13 @@ const opCreateStack = "CreateStack"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateStackRequest method.
+//	req, resp := client.CreateStackRequest(params)
 //
-//    // Example sending a request using the CreateStackRequest method.
-//    req, resp := client.CreateStackRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/CreateStack
 func (c *OpsWorks) CreateStackRequest(input *CreateStackInput) (req *request.Request, output *CreateStackOutput) {
@@ -889,8 +888,8 @@ func (c *OpsWorks) CreateStackRequest(input *CreateStackInput) (req *request.Req
 // API operation CreateStack for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
+//   - ValidationException
+//     Indicates that a request was not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/CreateStack
 func (c *OpsWorks) CreateStack(input *CreateStackInput) (*CreateStackOutput, error) {
@@ -930,14 +929,13 @@ const opCreateUserProfile = "CreateUserProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateUserProfileRequest method.
+//	req, resp := client.CreateUserProfileRequest(params)
 //
-//    // Example sending a request using the CreateUserProfileRequest method.
-//    req, resp := client.CreateUserProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/CreateUserProfile
 func (c *OpsWorks) CreateUserProfileRequest(input *CreateUserProfileInput) (req *request.Request, output *CreateUserProfileOutput) {
@@ -972,8 +970,8 @@ func (c *OpsWorks) CreateUserProfileRequest(input *CreateUserProfileInput) (req 
 // API operation CreateUserProfile for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
+//   - ValidationException
+//     Indicates that a request was not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/CreateUserProfile
 func (c *OpsWorks) CreateUserProfile(input *CreateUserProfileInput) (*CreateUserProfileOutput, error) {
@@ -1013,14 +1011,13 @@ const opDeleteApp = "DeleteApp"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAppRequest method.
+//	req, resp := client.DeleteAppRequest(params)
 //
-//    // Example sending a request using the DeleteAppRequest method.
-//    req, resp := client.DeleteAppRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeleteApp
 func (c *OpsWorks) DeleteAppRequest(input *DeleteAppInput) (req *request.Request, output *DeleteAppOutput) {
@@ -1057,11 +1054,12 @@ func (c *OpsWorks) DeleteAppRequest(input *DeleteAppInput) (req *request.Request
 // API operation DeleteApp for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeleteApp
 func (c *OpsWorks) DeleteApp(input *DeleteAppInput) (*DeleteAppOutput, error) {
@@ -1101,14 +1099,13 @@ const opDeleteInstance = "DeleteInstance"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteInstanceRequest method.
+//	req, resp := client.DeleteInstanceRequest(params)
 //
-//    // Example sending a request using the DeleteInstanceRequest method.
-//    req, resp := client.DeleteInstanceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeleteInstance
 func (c *OpsWorks) DeleteInstanceRequest(input *DeleteInstanceInput) (req *request.Request, output *DeleteInstanceOutput) {
@@ -1148,11 +1145,12 @@ func (c *OpsWorks) DeleteInstanceRequest(input *DeleteInstanceInput) (req *reque
 // API operation DeleteInstance for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeleteInstance
 func (c *OpsWorks) DeleteInstance(input *DeleteInstanceInput) (*DeleteInstanceOutput, error) {
@@ -1192,14 +1190,13 @@ const opDeleteLayer = "DeleteLayer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteLayerRequest method.
+//	req, resp := client.DeleteLayerRequest(params)
 //
-//    // Example sending a request using the DeleteLayerRequest method.
-//    req, resp := client.DeleteLayerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeleteLayer
 func (c *OpsWorks) DeleteLayerRequest(input *DeleteLayerInput) (req *request.Request, output *DeleteLayerOutput) {
@@ -1238,11 +1235,12 @@ func (c *OpsWorks) DeleteLayerRequest(input *DeleteLayerInput) (req *request.Req
 // API operation DeleteLayer for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeleteLayer
 func (c *OpsWorks) DeleteLayer(input *DeleteLayerInput) (*DeleteLayerOutput, error) {
@@ -1282,14 +1280,13 @@ const opDeleteStack = "DeleteStack"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteStackRequest method.
+//	req, resp := client.DeleteStackRequest(params)
 //
-//    // Example sending a request using the DeleteStackRequest method.
-//    req, resp := client.DeleteStackRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeleteStack
 func (c *OpsWorks) DeleteStackRequest(input *DeleteStackInput) (req *request.Request, output *DeleteStackOutput) {
@@ -1328,11 +1325,12 @@ func (c *OpsWorks) DeleteStackRequest(input *DeleteStackInput) (req *request.Req
 // API operation DeleteStack for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeleteStack
 func (c *OpsWorks) DeleteStack(input *DeleteStackInput) (*DeleteStackOutput, error) {
@@ -1372,14 +1370,13 @@ const opDeleteUserProfile = "DeleteUserProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteUserProfileRequest method.
+//	req, resp := client.DeleteUserProfileRequest(params)
 //
-//    // Example sending a request using the DeleteUserProfileRequest method.
-//    req, resp := client.DeleteUserProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeleteUserProfile
 func (c *OpsWorks) DeleteUserProfileRequest(input *DeleteUserProfileInput) (req *request.Request, output *DeleteUserProfileOutput) {
@@ -1415,11 +1412,12 @@ func (c *OpsWorks) DeleteUserProfileRequest(input *DeleteUserProfileInput) (req 
 // API operation DeleteUserProfile for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeleteUserProfile
 func (c *OpsWorks) DeleteUserProfile(input *DeleteUserProfileInput) (*DeleteUserProfileOutput, error) {
@@ -1459,14 +1457,13 @@ const opDeregisterEcsCluster = "DeregisterEcsCluster"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeregisterEcsClusterRequest method.
+//	req, resp := client.DeregisterEcsClusterRequest(params)
 //
-//    // Example sending a request using the DeregisterEcsClusterRequest method.
-//    req, resp := client.DeregisterEcsClusterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeregisterEcsCluster
 func (c *OpsWorks) DeregisterEcsClusterRequest(input *DeregisterEcsClusterInput) (req *request.Request, output *DeregisterEcsClusterOutput) {
@@ -1504,11 +1501,12 @@ func (c *OpsWorks) DeregisterEcsClusterRequest(input *DeregisterEcsClusterInput)
 // API operation DeregisterEcsCluster for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeregisterEcsCluster
 func (c *OpsWorks) DeregisterEcsCluster(input *DeregisterEcsClusterInput) (*DeregisterEcsClusterOutput, error) {
@@ -1548,14 +1546,13 @@ const opDeregisterElasticIp = "DeregisterElasticIp"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeregisterElasticIpRequest method.
+//	req, resp := client.DeregisterElasticIpRequest(params)
 //
-//    // Example sending a request using the DeregisterElasticIpRequest method.
-//    req, resp := client.DeregisterElasticIpRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeregisterElasticIp
 func (c *OpsWorks) DeregisterElasticIpRequest(input *DeregisterElasticIpInput) (req *request.Request, output *DeregisterElasticIpOutput) {
@@ -1593,11 +1590,12 @@ func (c *OpsWorks) DeregisterElasticIpRequest(input *DeregisterElasticIpInput) (
 // API operation DeregisterElasticIp for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeregisterElasticIp
 func (c *OpsWorks) DeregisterElasticIp(input *DeregisterElasticIpInput) (*DeregisterElasticIpOutput, error) {
@@ -1637,14 +1635,13 @@ const opDeregisterInstance = "DeregisterInstance"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeregisterInstanceRequest method.
+//	req, resp := client.DeregisterInstanceRequest(params)
 //
-//    // Example sending a request using the DeregisterInstanceRequest method.
-//    req, resp := client.DeregisterInstanceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeregisterInstance
 func (c *OpsWorks) DeregisterInstanceRequest(input *DeregisterInstanceInput) (req *request.Request, output *DeregisterInstanceOutput) {
@@ -1683,11 +1680,12 @@ func (c *OpsWorks) DeregisterInstanceRequest(input *DeregisterInstanceInput) (re
 // API operation DeregisterInstance for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeregisterInstance
 func (c *OpsWorks) DeregisterInstance(input *DeregisterInstanceInput) (*DeregisterInstanceOutput, error) {
@@ -1727,14 +1725,13 @@ const opDeregisterRdsDbInstance = "DeregisterRdsDbInstance"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeregisterRdsDbInstanceRequest method.
+//	req, resp := client.DeregisterRdsDbInstanceRequest(params)
 //
-//    // Example sending a request using the DeregisterRdsDbInstanceRequest method.
-//    req, resp := client.DeregisterRdsDbInstanceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeregisterRdsDbInstance
 func (c *OpsWorks) DeregisterRdsDbInstanceRequest(input *DeregisterRdsDbInstanceInput) (req *request.Request, output *DeregisterRdsDbInstanceOutput) {
@@ -1771,11 +1768,12 @@ func (c *OpsWorks) DeregisterRdsDbInstanceRequest(input *DeregisterRdsDbInstance
 // API operation DeregisterRdsDbInstance for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeregisterRdsDbInstance
 func (c *OpsWorks) DeregisterRdsDbInstance(input *DeregisterRdsDbInstanceInput) (*DeregisterRdsDbInstanceOutput, error) {
@@ -1815,14 +1813,13 @@ const opDeregisterVolume = "DeregisterVolume"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeregisterVolumeRequest method.
+//	req, resp := client.DeregisterVolumeRequest(params)
 //
-//    // Example sending a request using the DeregisterVolumeRequest method.
-//    req, resp := client.DeregisterVolumeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeregisterVolume
 func (c *OpsWorks) DeregisterVolumeRequest(input *DeregisterVolumeInput) (req *request.Request, output *DeregisterVolumeOutput) {
@@ -1860,11 +1857,12 @@ func (c *OpsWorks) DeregisterVolumeRequest(input *DeregisterVolumeInput) (req *r
 // API operation DeregisterVolume for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DeregisterVolume
 func (c *OpsWorks) DeregisterVolume(input *DeregisterVolumeInput) (*DeregisterVolumeOutput, error) {
@@ -1904,14 +1902,13 @@ const opDescribeAgentVersions = "DescribeAgentVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAgentVersionsRequest method.
+//	req, resp := client.DescribeAgentVersionsRequest(params)
 //
-//    // Example sending a request using the DescribeAgentVersionsRequest method.
-//    req, resp := client.DescribeAgentVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeAgentVersions
 func (c *OpsWorks) DescribeAgentVersionsRequest(input *DescribeAgentVersionsInput) (req *request.Request, output *DescribeAgentVersionsOutput) {
@@ -1944,11 +1941,12 @@ func (c *OpsWorks) DescribeAgentVersionsRequest(input *DescribeAgentVersionsInpu
 // API operation DescribeAgentVersions for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeAgentVersions
 func (c *OpsWorks) DescribeAgentVersions(input *DescribeAgentVersionsInput) (*DescribeAgentVersionsOutput, error) {
@@ -1988,14 +1986,13 @@ const opDescribeApps = "DescribeApps"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAppsRequest method.
+//	req, resp := client.DescribeAppsRequest(params)
 //
-//    // Example sending a request using the DescribeAppsRequest method.
-//    req, resp := client.DescribeAppsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeApps
 func (c *OpsWorks) DescribeAppsRequest(input *DescribeAppsInput) (req *request.Request, output *DescribeAppsOutput) {
@@ -2033,11 +2030,12 @@ func (c *OpsWorks) DescribeAppsRequest(input *DescribeAppsInput) (req *request.R
 // API operation DescribeApps for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeApps
 func (c *OpsWorks) DescribeApps(input *DescribeAppsInput) (*DescribeAppsOutput, error) {
@@ -2077,14 +2075,13 @@ const opDescribeCommands = "DescribeCommands"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeCommandsRequest method.
+//	req, resp := client.DescribeCommandsRequest(params)
 //
-//    // Example sending a request using the DescribeCommandsRequest method.
-//    req, resp := client.DescribeCommandsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeCommands
 func (c *OpsWorks) DescribeCommandsRequest(input *DescribeCommandsInput) (req *request.Request, output *DescribeCommandsOutput) {
@@ -2122,11 +2119,12 @@ func (c *OpsWorks) DescribeCommandsRequest(input *DescribeCommandsInput) (req *r
 // API operation DescribeCommands for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeCommands
 func (c *OpsWorks) DescribeCommands(input *DescribeCommandsInput) (*DescribeCommandsOutput, error) {
@@ -2166,14 +2164,13 @@ const opDescribeDeployments = "DescribeDeployments"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDeploymentsRequest method.
+//	req, resp := client.DescribeDeploymentsRequest(params)
 //
-//    // Example sending a request using the DescribeDeploymentsRequest method.
-//    req, resp := client.DescribeDeploymentsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeDeployments
 func (c *OpsWorks) DescribeDeploymentsRequest(input *DescribeDeploymentsInput) (req *request.Request, output *DescribeDeploymentsOutput) {
@@ -2211,11 +2208,12 @@ func (c *OpsWorks) DescribeDeploymentsRequest(input *DescribeDeploymentsInput) (
 // API operation DescribeDeployments for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeDeployments
 func (c *OpsWorks) DescribeDeployments(input *DescribeDeploymentsInput) (*DescribeDeploymentsOutput, error) {
@@ -2255,14 +2253,13 @@ const opDescribeEcsClusters = "DescribeEcsClusters"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEcsClustersRequest method.
+//	req, resp := client.DescribeEcsClustersRequest(params)
 //
-//    // Example sending a request using the DescribeEcsClustersRequest method.
-//    req, resp := client.DescribeEcsClustersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeEcsClusters
 func (c *OpsWorks) DescribeEcsClustersRequest(input *DescribeEcsClustersInput) (req *request.Request, output *DescribeEcsClustersOutput) {
@@ -2309,11 +2306,12 @@ func (c *OpsWorks) DescribeEcsClustersRequest(input *DescribeEcsClustersInput) (
 // API operation DescribeEcsClusters for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeEcsClusters
 func (c *OpsWorks) DescribeEcsClusters(input *DescribeEcsClustersInput) (*DescribeEcsClustersOutput, error) {
@@ -2345,15 +2343,14 @@ func (c *OpsWorks) DescribeEcsClustersWithContext(ctx aws.Context, input *Descri
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeEcsClusters operation.
-//    pageNum := 0
-//    err := client.DescribeEcsClustersPages(params,
-//        func(page *opsworks.DescribeEcsClustersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeEcsClusters operation.
+//	pageNum := 0
+//	err := client.DescribeEcsClustersPages(params,
+//	    func(page *opsworks.DescribeEcsClustersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *OpsWorks) DescribeEcsClustersPages(input *DescribeEcsClustersInput, fn func(*DescribeEcsClustersOutput, bool) bool) error {
 	return c.DescribeEcsClustersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2405,14 +2402,13 @@ const opDescribeElasticIps = "DescribeElasticIps"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeElasticIpsRequest method.
+//	req, resp := client.DescribeElasticIpsRequest(params)
 //
-//    // Example sending a request using the DescribeElasticIpsRequest method.
-//    req, resp := client.DescribeElasticIpsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeElasticIps
 func (c *OpsWorks) DescribeElasticIpsRequest(input *DescribeElasticIpsInput) (req *request.Request, output *DescribeElasticIpsOutput) {
@@ -2450,11 +2446,12 @@ func (c *OpsWorks) DescribeElasticIpsRequest(input *DescribeElasticIpsInput) (re
 // API operation DescribeElasticIps for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeElasticIps
 func (c *OpsWorks) DescribeElasticIps(input *DescribeElasticIpsInput) (*DescribeElasticIpsOutput, error) {
@@ -2494,14 +2491,13 @@ const opDescribeElasticLoadBalancers = "DescribeElasticLoadBalancers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeElasticLoadBalancersRequest method.
+//	req, resp := client.DescribeElasticLoadBalancersRequest(params)
 //
-//    // Example sending a request using the DescribeElasticLoadBalancersRequest method.
-//    req, resp := client.DescribeElasticLoadBalancersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeElasticLoadBalancers
 func (c *OpsWorks) DescribeElasticLoadBalancersRequest(input *DescribeElasticLoadBalancersInput) (req *request.Request, output *DescribeElasticLoadBalancersOutput) {
@@ -2539,11 +2535,12 @@ func (c *OpsWorks) DescribeElasticLoadBalancersRequest(input *DescribeElasticLoa
 // API operation DescribeElasticLoadBalancers for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeElasticLoadBalancers
 func (c *OpsWorks) DescribeElasticLoadBalancers(input *DescribeElasticLoadBalancersInput) (*DescribeElasticLoadBalancersOutput, error) {
@@ -2583,14 +2580,13 @@ const opDescribeInstances = "DescribeInstances"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeInstancesRequest method.
+//	req, resp := client.DescribeInstancesRequest(params)
 //
-//    // Example sending a request using the DescribeInstancesRequest method.
-//    req, resp := client.DescribeInstancesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeInstances
 func (c *OpsWorks) DescribeInstancesRequest(input *DescribeInstancesInput) (req *request.Request, output *DescribeInstancesOutput) {
@@ -2628,11 +2624,12 @@ func (c *OpsWorks) DescribeInstancesRequest(input *DescribeInstancesInput) (req 
 // API operation DescribeInstances for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeInstances
 func (c *OpsWorks) DescribeInstances(input *DescribeInstancesInput) (*DescribeInstancesOutput, error) {
@@ -2672,14 +2669,13 @@ const opDescribeLayers = "DescribeLayers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeLayersRequest method.
+//	req, resp := client.DescribeLayersRequest(params)
 //
-//    // Example sending a request using the DescribeLayersRequest method.
-//    req, resp := client.DescribeLayersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeLayers
 func (c *OpsWorks) DescribeLayersRequest(input *DescribeLayersInput) (req *request.Request, output *DescribeLayersOutput) {
@@ -2717,11 +2713,12 @@ func (c *OpsWorks) DescribeLayersRequest(input *DescribeLayersInput) (req *reque
 // API operation DescribeLayers for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeLayers
 func (c *OpsWorks) DescribeLayers(input *DescribeLayersInput) (*DescribeLayersOutput, error) {
@@ -2761,14 +2758,13 @@ const opDescribeLoadBasedAutoScaling = "DescribeLoadBasedAutoScaling"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeLoadBasedAutoScalingRequest method.
+//	req, resp := client.DescribeLoadBasedAutoScalingRequest(params)
 //
-//    // Example sending a request using the DescribeLoadBasedAutoScalingRequest method.
-//    req, resp := client.DescribeLoadBasedAutoScalingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeLoadBasedAutoScaling
 func (c *OpsWorks) DescribeLoadBasedAutoScalingRequest(input *DescribeLoadBasedAutoScalingInput) (req *request.Request, output *DescribeLoadBasedAutoScalingOutput) {
@@ -2806,11 +2802,12 @@ func (c *OpsWorks) DescribeLoadBasedAutoScalingRequest(input *DescribeLoadBasedA
 // API operation DescribeLoadBasedAutoScaling for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeLoadBasedAutoScaling
 func (c *OpsWorks) DescribeLoadBasedAutoScaling(input *DescribeLoadBasedAutoScalingInput) (*DescribeLoadBasedAutoScalingOutput, error) {
@@ -2850,14 +2847,13 @@ const opDescribeMyUserProfile = "DescribeMyUserProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeMyUserProfileRequest method.
+//	req, resp := client.DescribeMyUserProfileRequest(params)
 //
-//    // Example sending a request using the DescribeMyUserProfileRequest method.
-//    req, resp := client.DescribeMyUserProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeMyUserProfile
 func (c *OpsWorks) DescribeMyUserProfileRequest(input *DescribeMyUserProfileInput) (req *request.Request, output *DescribeMyUserProfileOutput) {
@@ -2928,14 +2924,13 @@ const opDescribeOperatingSystems = "DescribeOperatingSystems"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeOperatingSystemsRequest method.
+//	req, resp := client.DescribeOperatingSystemsRequest(params)
 //
-//    // Example sending a request using the DescribeOperatingSystemsRequest method.
-//    req, resp := client.DescribeOperatingSystemsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeOperatingSystems
 func (c *OpsWorks) DescribeOperatingSystemsRequest(input *DescribeOperatingSystemsInput) (req *request.Request, output *DescribeOperatingSystemsOutput) {
@@ -3002,14 +2997,13 @@ const opDescribePermissions = "DescribePermissions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribePermissionsRequest method.
+//	req, resp := client.DescribePermissionsRequest(params)
 //
-//    // Example sending a request using the DescribePermissionsRequest method.
-//    req, resp := client.DescribePermissionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribePermissions
 func (c *OpsWorks) DescribePermissionsRequest(input *DescribePermissionsInput) (req *request.Request, output *DescribePermissionsOutput) {
@@ -3045,11 +3039,12 @@ func (c *OpsWorks) DescribePermissionsRequest(input *DescribePermissionsInput) (
 // API operation DescribePermissions for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribePermissions
 func (c *OpsWorks) DescribePermissions(input *DescribePermissionsInput) (*DescribePermissionsOutput, error) {
@@ -3089,14 +3084,13 @@ const opDescribeRaidArrays = "DescribeRaidArrays"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeRaidArraysRequest method.
+//	req, resp := client.DescribeRaidArraysRequest(params)
 //
-//    // Example sending a request using the DescribeRaidArraysRequest method.
-//    req, resp := client.DescribeRaidArraysRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeRaidArrays
 func (c *OpsWorks) DescribeRaidArraysRequest(input *DescribeRaidArraysInput) (req *request.Request, output *DescribeRaidArraysOutput) {
@@ -3134,11 +3128,12 @@ func (c *OpsWorks) DescribeRaidArraysRequest(input *DescribeRaidArraysInput) (re
 // API operation DescribeRaidArrays for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeRaidArrays
 func (c *OpsWorks) DescribeRaidArrays(input *DescribeRaidArraysInput) (*DescribeRaidArraysOutput, error) {
@@ -3178,14 +3173,13 @@ const opDescribeRdsDbInstances = "DescribeRdsDbInstances"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeRdsDbInstancesRequest method.
+//	req, resp := client.DescribeRdsDbInstancesRequest(params)
 //
-//    // Example sending a request using the DescribeRdsDbInstancesRequest method.
-//    req, resp := client.DescribeRdsDbInstancesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeRdsDbInstances
 func (c *OpsWorks) DescribeRdsDbInstancesRequest(input *DescribeRdsDbInstancesInput) (req *request.Request, output *DescribeRdsDbInstancesOutput) {
@@ -3223,11 +3217,12 @@ func (c *OpsWorks) DescribeRdsDbInstancesRequest(input *DescribeRdsDbInstancesIn
 // API operation DescribeRdsDbInstances for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeRdsDbInstances
 func (c *OpsWorks) DescribeRdsDbInstances(input *DescribeRdsDbInstancesInput) (*DescribeRdsDbInstancesOutput, error) {
@@ -3267,14 +3262,13 @@ const opDescribeServiceErrors = "DescribeServiceErrors"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeServiceErrorsRequest method.
+//	req, resp := client.DescribeServiceErrorsRequest(params)
 //
-//    // Example sending a request using the DescribeServiceErrorsRequest method.
-//    req, resp := client.DescribeServiceErrorsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeServiceErrors
 func (c *OpsWorks) DescribeServiceErrorsRequest(input *DescribeServiceErrorsInput) (req *request.Request, output *DescribeServiceErrorsOutput) {
@@ -3312,11 +3306,12 @@ func (c *OpsWorks) DescribeServiceErrorsRequest(input *DescribeServiceErrorsInpu
 // API operation DescribeServiceErrors for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeServiceErrors
 func (c *OpsWorks) DescribeServiceErrors(input *DescribeServiceErrorsInput) (*DescribeServiceErrorsOutput, error) {
@@ -3356,14 +3351,13 @@ const opDescribeStackProvisioningParameters = "DescribeStackProvisioningParamete
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeStackProvisioningParametersRequest method.
+//	req, resp := client.DescribeStackProvisioningParametersRequest(params)
 //
-//    // Example sending a request using the DescribeStackProvisioningParametersRequest method.
-//    req, resp := client.DescribeStackProvisioningParametersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeStackProvisioningParameters
 func (c *OpsWorks) DescribeStackProvisioningParametersRequest(input *DescribeStackProvisioningParametersInput) (req *request.Request, output *DescribeStackProvisioningParametersOutput) {
@@ -3399,11 +3393,12 @@ func (c *OpsWorks) DescribeStackProvisioningParametersRequest(input *DescribeSta
 // API operation DescribeStackProvisioningParameters for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeStackProvisioningParameters
 func (c *OpsWorks) DescribeStackProvisioningParameters(input *DescribeStackProvisioningParametersInput) (*DescribeStackProvisioningParametersOutput, error) {
@@ -3443,14 +3438,13 @@ const opDescribeStackSummary = "DescribeStackSummary"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeStackSummaryRequest method.
+//	req, resp := client.DescribeStackSummaryRequest(params)
 //
-//    // Example sending a request using the DescribeStackSummaryRequest method.
-//    req, resp := client.DescribeStackSummaryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeStackSummary
 func (c *OpsWorks) DescribeStackSummaryRequest(input *DescribeStackSummaryInput) (req *request.Request, output *DescribeStackSummaryOutput) {
@@ -3487,11 +3481,12 @@ func (c *OpsWorks) DescribeStackSummaryRequest(input *DescribeStackSummaryInput)
 // API operation DescribeStackSummary for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeStackSummary
 func (c *OpsWorks) DescribeStackSummary(input *DescribeStackSummaryInput) (*DescribeStackSummaryOutput, error) {
@@ -3531,14 +3526,13 @@ const opDescribeStacks = "DescribeStacks"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeStacksRequest method.
+//	req, resp := client.DescribeStacksRequest(params)
 //
-//    // Example sending a request using the DescribeStacksRequest method.
-//    req, resp := client.DescribeStacksRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeStacks
 func (c *OpsWorks) DescribeStacksRequest(input *DescribeStacksInput) (req *request.Request, output *DescribeStacksOutput) {
@@ -3574,11 +3568,12 @@ func (c *OpsWorks) DescribeStacksRequest(input *DescribeStacksInput) (req *reque
 // API operation DescribeStacks for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeStacks
 func (c *OpsWorks) DescribeStacks(input *DescribeStacksInput) (*DescribeStacksOutput, error) {
@@ -3618,14 +3613,13 @@ const opDescribeTimeBasedAutoScaling = "DescribeTimeBasedAutoScaling"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeTimeBasedAutoScalingRequest method.
+//	req, resp := client.DescribeTimeBasedAutoScalingRequest(params)
 //
-//    // Example sending a request using the DescribeTimeBasedAutoScalingRequest method.
-//    req, resp := client.DescribeTimeBasedAutoScalingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeTimeBasedAutoScaling
 func (c *OpsWorks) DescribeTimeBasedAutoScalingRequest(input *DescribeTimeBasedAutoScalingInput) (req *request.Request, output *DescribeTimeBasedAutoScalingOutput) {
@@ -3663,11 +3657,12 @@ func (c *OpsWorks) DescribeTimeBasedAutoScalingRequest(input *DescribeTimeBasedA
 // API operation DescribeTimeBasedAutoScaling for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeTimeBasedAutoScaling
 func (c *OpsWorks) DescribeTimeBasedAutoScaling(input *DescribeTimeBasedAutoScalingInput) (*DescribeTimeBasedAutoScalingOutput, error) {
@@ -3707,14 +3702,13 @@ const opDescribeUserProfiles = "DescribeUserProfiles"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeUserProfilesRequest method.
+//	req, resp := client.DescribeUserProfilesRequest(params)
 //
-//    // Example sending a request using the DescribeUserProfilesRequest method.
-//    req, resp := client.DescribeUserProfilesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeUserProfiles
 func (c *OpsWorks) DescribeUserProfilesRequest(input *DescribeUserProfilesInput) (req *request.Request, output *DescribeUserProfilesOutput) {
@@ -3749,11 +3743,12 @@ func (c *OpsWorks) DescribeUserProfilesRequest(input *DescribeUserProfilesInput)
 // API operation DescribeUserProfiles for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeUserProfiles
 func (c *OpsWorks) DescribeUserProfiles(input *DescribeUserProfilesInput) (*DescribeUserProfilesOutput, error) {
@@ -3793,14 +3788,13 @@ const opDescribeVolumes = "DescribeVolumes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeVolumesRequest method.
+//	req, resp := client.DescribeVolumesRequest(params)
 //
-//    // Example sending a request using the DescribeVolumesRequest method.
-//    req, resp := client.DescribeVolumesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeVolumes
 func (c *OpsWorks) DescribeVolumesRequest(input *DescribeVolumesInput) (req *request.Request, output *DescribeVolumesOutput) {
@@ -3838,11 +3832,12 @@ func (c *OpsWorks) DescribeVolumesRequest(input *DescribeVolumesInput) (req *req
 // API operation DescribeVolumes for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DescribeVolumes
 func (c *OpsWorks) DescribeVolumes(input *DescribeVolumesInput) (*DescribeVolumesOutput, error) {
@@ -3882,14 +3877,13 @@ const opDetachElasticLoadBalancer = "DetachElasticLoadBalancer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DetachElasticLoadBalancerRequest method.
+//	req, resp := client.DetachElasticLoadBalancerRequest(params)
 //
-//    // Example sending a request using the DetachElasticLoadBalancerRequest method.
-//    req, resp := client.DetachElasticLoadBalancerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DetachElasticLoadBalancer
 func (c *OpsWorks) DetachElasticLoadBalancerRequest(input *DetachElasticLoadBalancerInput) (req *request.Request, output *DetachElasticLoadBalancerOutput) {
@@ -3926,8 +3920,8 @@ func (c *OpsWorks) DetachElasticLoadBalancerRequest(input *DetachElasticLoadBala
 // API operation DetachElasticLoadBalancer for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DetachElasticLoadBalancer
 func (c *OpsWorks) DetachElasticLoadBalancer(input *DetachElasticLoadBalancerInput) (*DetachElasticLoadBalancerOutput, error) {
@@ -3967,14 +3961,13 @@ const opDisassociateElasticIp = "DisassociateElasticIp"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateElasticIpRequest method.
+//	req, resp := client.DisassociateElasticIpRequest(params)
 //
-//    // Example sending a request using the DisassociateElasticIpRequest method.
-//    req, resp := client.DisassociateElasticIpRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DisassociateElasticIp
 func (c *OpsWorks) DisassociateElasticIpRequest(input *DisassociateElasticIpInput) (req *request.Request, output *DisassociateElasticIpOutput) {
@@ -4013,11 +4006,12 @@ func (c *OpsWorks) DisassociateElasticIpRequest(input *DisassociateElasticIpInpu
 // API operation DisassociateElasticIp for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/DisassociateElasticIp
 func (c *OpsWorks) DisassociateElasticIp(input *DisassociateElasticIpInput) (*DisassociateElasticIpOutput, error) {
@@ -4057,14 +4051,13 @@ const opGetHostnameSuggestion = "GetHostnameSuggestion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetHostnameSuggestionRequest method.
+//	req, resp := client.GetHostnameSuggestionRequest(params)
 //
-//    // Example sending a request using the GetHostnameSuggestionRequest method.
-//    req, resp := client.GetHostnameSuggestionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/GetHostnameSuggestion
 func (c *OpsWorks) GetHostnameSuggestionRequest(input *GetHostnameSuggestionInput) (req *request.Request, output *GetHostnameSuggestionOutput) {
@@ -4101,11 +4094,12 @@ func (c *OpsWorks) GetHostnameSuggestionRequest(input *GetHostnameSuggestionInpu
 // API operation GetHostnameSuggestion for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/GetHostnameSuggestion
 func (c *OpsWorks) GetHostnameSuggestion(input *GetHostnameSuggestionInput) (*GetHostnameSuggestionOutput, error) {
@@ -4145,14 +4139,13 @@ const opGrantAccess = "GrantAccess"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GrantAccessRequest method.
+//	req, resp := client.GrantAccessRequest(params)
 //
-//    // Example sending a request using the GrantAccessRequest method.
-//    req, resp := client.GrantAccessRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/GrantAccess
 func (c *OpsWorks) GrantAccessRequest(input *GrantAccessInput) (req *request.Request, output *GrantAccessOutput) {
@@ -4173,7 +4166,6 @@ func (c *OpsWorks) GrantAccessRequest(input *GrantAccessInput) (req *request.Req
 
 // GrantAccess API operation for AWS OpsWorks.
 //
-//
 // This action can be used only with Windows stacks.
 //
 // Grants RDP access to a Windows instance for a specified time period.
@@ -4186,11 +4178,12 @@ func (c *OpsWorks) GrantAccessRequest(input *GrantAccessInput) (req *request.Req
 // API operation GrantAccess for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/GrantAccess
 func (c *OpsWorks) GrantAccess(input *GrantAccessInput) (*GrantAccessOutput, error) {
@@ -4230,14 +4223,13 @@ const opListTags = "ListTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsRequest method.
+//	req, resp := client.ListTagsRequest(params)
 //
-//    // Example sending a request using the ListTagsRequest method.
-//    req, resp := client.ListTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/ListTags
 func (c *OpsWorks) ListTagsRequest(input *ListTagsInput) (req *request.Request, output *ListTagsOutput) {
@@ -4268,11 +4260,12 @@ func (c *OpsWorks) ListTagsRequest(input *ListTagsInput) (req *request.Request, 
 // API operation ListTags for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/ListTags
 func (c *OpsWorks) ListTags(input *ListTagsInput) (*ListTagsOutput, error) {
@@ -4312,14 +4305,13 @@ const opRebootInstance = "RebootInstance"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RebootInstanceRequest method.
+//	req, resp := client.RebootInstanceRequest(params)
 //
-//    // Example sending a request using the RebootInstanceRequest method.
-//    req, resp := client.RebootInstanceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/RebootInstance
 func (c *OpsWorks) RebootInstanceRequest(input *RebootInstanceInput) (req *request.Request, output *RebootInstanceOutput) {
@@ -4357,11 +4349,12 @@ func (c *OpsWorks) RebootInstanceRequest(input *RebootInstanceInput) (req *reque
 // API operation RebootInstance for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/RebootInstance
 func (c *OpsWorks) RebootInstance(input *RebootInstanceInput) (*RebootInstanceOutput, error) {
@@ -4401,14 +4394,13 @@ const opRegisterEcsCluster = "RegisterEcsCluster"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RegisterEcsClusterRequest method.
+//	req, resp := client.RegisterEcsClusterRequest(params)
 //
-//    // Example sending a request using the RegisterEcsClusterRequest method.
-//    req, resp := client.RegisterEcsClusterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/RegisterEcsCluster
 func (c *OpsWorks) RegisterEcsClusterRequest(input *RegisterEcsClusterInput) (req *request.Request, output *RegisterEcsClusterOutput) {
@@ -4446,11 +4438,12 @@ func (c *OpsWorks) RegisterEcsClusterRequest(input *RegisterEcsClusterInput) (re
 // API operation RegisterEcsCluster for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/RegisterEcsCluster
 func (c *OpsWorks) RegisterEcsCluster(input *RegisterEcsClusterInput) (*RegisterEcsClusterOutput, error) {
@@ -4490,14 +4483,13 @@ const opRegisterElasticIp = "RegisterElasticIp"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RegisterElasticIpRequest method.
+//	req, resp := client.RegisterElasticIpRequest(params)
 //
-//    // Example sending a request using the RegisterElasticIpRequest method.
-//    req, resp := client.RegisterElasticIpRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/RegisterElasticIp
 func (c *OpsWorks) RegisterElasticIpRequest(input *RegisterElasticIpInput) (req *request.Request, output *RegisterElasticIpOutput) {
@@ -4536,11 +4528,12 @@ func (c *OpsWorks) RegisterElasticIpRequest(input *RegisterElasticIpInput) (req 
 // API operation RegisterElasticIp for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/RegisterElasticIp
 func (c *OpsWorks) RegisterElasticIp(input *RegisterElasticIpInput) (*RegisterElasticIpOutput, error) {
@@ -4580,14 +4573,13 @@ const opRegisterInstance = "RegisterInstance"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RegisterInstanceRequest method.
+//	req, resp := client.RegisterInstanceRequest(params)
 //
-//    // Example sending a request using the RegisterInstanceRequest method.
-//    req, resp := client.RegisterInstanceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/RegisterInstance
 func (c *OpsWorks) RegisterInstanceRequest(input *RegisterInstanceInput) (req *request.Request, output *RegisterInstanceOutput) {
@@ -4637,11 +4629,12 @@ func (c *OpsWorks) RegisterInstanceRequest(input *RegisterInstanceInput) (req *r
 // API operation RegisterInstance for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/RegisterInstance
 func (c *OpsWorks) RegisterInstance(input *RegisterInstanceInput) (*RegisterInstanceOutput, error) {
@@ -4681,14 +4674,13 @@ const opRegisterRdsDbInstance = "RegisterRdsDbInstance"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RegisterRdsDbInstanceRequest method.
+//	req, resp := client.RegisterRdsDbInstanceRequest(params)
 //
-//    // Example sending a request using the RegisterRdsDbInstanceRequest method.
-//    req, resp := client.RegisterRdsDbInstanceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/RegisterRdsDbInstance
 func (c *OpsWorks) RegisterRdsDbInstanceRequest(input *RegisterRdsDbInstanceInput) (req *request.Request, output *RegisterRdsDbInstanceOutput) {
@@ -4725,11 +4717,12 @@ func (c *OpsWorks) RegisterRdsDbInstanceRequest(input *RegisterRdsDbInstanceInpu
 // API operation RegisterRdsDbInstance for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/RegisterRdsDbInstance
 func (c *OpsWorks) RegisterRdsDbInstance(input *RegisterRdsDbInstanceInput) (*RegisterRdsDbInstanceOutput, error) {
@@ -4769,14 +4762,13 @@ const opRegisterVolume = "RegisterVolume"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RegisterVolumeRequest method.
+//	req, resp := client.RegisterVolumeRequest(params)
 //
-//    // Example sending a request using the RegisterVolumeRequest method.
-//    req, resp := client.RegisterVolumeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/RegisterVolume
 func (c *OpsWorks) RegisterVolumeRequest(input *RegisterVolumeInput) (req *request.Request, output *RegisterVolumeOutput) {
@@ -4815,11 +4807,12 @@ func (c *OpsWorks) RegisterVolumeRequest(input *RegisterVolumeInput) (req *reque
 // API operation RegisterVolume for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/RegisterVolume
 func (c *OpsWorks) RegisterVolume(input *RegisterVolumeInput) (*RegisterVolumeOutput, error) {
@@ -4859,14 +4852,13 @@ const opSetLoadBasedAutoScaling = "SetLoadBasedAutoScaling"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SetLoadBasedAutoScalingRequest method.
+//	req, resp := client.SetLoadBasedAutoScalingRequest(params)
 //
-//    // Example sending a request using the SetLoadBasedAutoScalingRequest method.
-//    req, resp := client.SetLoadBasedAutoScalingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/SetLoadBasedAutoScaling
 func (c *OpsWorks) SetLoadBasedAutoScalingRequest(input *SetLoadBasedAutoScalingInput) (req *request.Request, output *SetLoadBasedAutoScalingOutput) {
@@ -4910,11 +4902,12 @@ func (c *OpsWorks) SetLoadBasedAutoScalingRequest(input *SetLoadBasedAutoScaling
 // API operation SetLoadBasedAutoScaling for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/SetLoadBasedAutoScaling
 func (c *OpsWorks) SetLoadBasedAutoScaling(input *SetLoadBasedAutoScalingInput) (*SetLoadBasedAutoScalingOutput, error) {
@@ -4954,14 +4947,13 @@ const opSetPermission = "SetPermission"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SetPermissionRequest method.
+//	req, resp := client.SetPermissionRequest(params)
 //
-//    // Example sending a request using the SetPermissionRequest method.
-//    req, resp := client.SetPermissionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/SetPermission
 func (c *OpsWorks) SetPermissionRequest(input *SetPermissionInput) (req *request.Request, output *SetPermissionOutput) {
@@ -4999,11 +4991,12 @@ func (c *OpsWorks) SetPermissionRequest(input *SetPermissionInput) (req *request
 // API operation SetPermission for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/SetPermission
 func (c *OpsWorks) SetPermission(input *SetPermissionInput) (*SetPermissionOutput, error) {
@@ -5043,14 +5036,13 @@ const opSetTimeBasedAutoScaling = "SetTimeBasedAutoScaling"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SetTimeBasedAutoScalingRequest method.
+//	req, resp := client.SetTimeBasedAutoScalingRequest(params)
 //
-//    // Example sending a request using the SetTimeBasedAutoScalingRequest method.
-//    req, resp := client.SetTimeBasedAutoScalingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/SetTimeBasedAutoScaling
 func (c *OpsWorks) SetTimeBasedAutoScalingRequest(input *SetTimeBasedAutoScalingInput) (req *request.Request, output *SetTimeBasedAutoScalingOutput) {
@@ -5089,11 +5081,12 @@ func (c *OpsWorks) SetTimeBasedAutoScalingRequest(input *SetTimeBasedAutoScaling
 // API operation SetTimeBasedAutoScaling for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/SetTimeBasedAutoScaling
 func (c *OpsWorks) SetTimeBasedAutoScaling(input *SetTimeBasedAutoScalingInput) (*SetTimeBasedAutoScalingOutput, error) {
@@ -5133,14 +5126,13 @@ const opStartInstance = "StartInstance"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartInstanceRequest method.
+//	req, resp := client.StartInstanceRequest(params)
 //
-//    // Example sending a request using the StartInstanceRequest method.
-//    req, resp := client.StartInstanceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/StartInstance
 func (c *OpsWorks) StartInstanceRequest(input *StartInstanceInput) (req *request.Request, output *StartInstanceOutput) {
@@ -5178,11 +5170,12 @@ func (c *OpsWorks) StartInstanceRequest(input *StartInstanceInput) (req *request
 // API operation StartInstance for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/StartInstance
 func (c *OpsWorks) StartInstance(input *StartInstanceInput) (*StartInstanceOutput, error) {
@@ -5222,14 +5215,13 @@ const opStartStack = "StartStack"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartStackRequest method.
+//	req, resp := client.StartStackRequest(params)
 //
-//    // Example sending a request using the StartStackRequest method.
-//    req, resp := client.StartStackRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/StartStack
 func (c *OpsWorks) StartStackRequest(input *StartStackInput) (req *request.Request, output *StartStackOutput) {
@@ -5266,11 +5258,12 @@ func (c *OpsWorks) StartStackRequest(input *StartStackInput) (req *request.Reque
 // API operation StartStack for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/StartStack
 func (c *OpsWorks) StartStack(input *StartStackInput) (*StartStackOutput, error) {
@@ -5310,14 +5303,13 @@ const opStopInstance = "StopInstance"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopInstanceRequest method.
+//	req, resp := client.StopInstanceRequest(params)
 //
-//    // Example sending a request using the StopInstanceRequest method.
-//    req, resp := client.StopInstanceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/StopInstance
 func (c *OpsWorks) StopInstanceRequest(input *StopInstanceInput) (req *request.Request, output *StopInstanceOutput) {
@@ -5357,11 +5349,12 @@ func (c *OpsWorks) StopInstanceRequest(input *StopInstanceInput) (req *request.R
 // API operation StopInstance for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/StopInstance
 func (c *OpsWorks) StopInstance(input *StopInstanceInput) (*StopInstanceOutput, error) {
@@ -5401,14 +5394,13 @@ const opStopStack = "StopStack"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopStackRequest method.
+//	req, resp := client.StopStackRequest(params)
 //
-//    // Example sending a request using the StopStackRequest method.
-//    req, resp := client.StopStackRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/StopStack
 func (c *OpsWorks) StopStackRequest(input *StopStackInput) (req *request.Request, output *StopStackOutput) {
@@ -5445,11 +5437,12 @@ func (c *OpsWorks) StopStackRequest(input *StopStackInput) (req *request.Request
 // API operation StopStack for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/StopStack
 func (c *OpsWorks) StopStack(input *StopStackInput) (*StopStackOutput, error) {
@@ -5489,14 +5482,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/TagResource
 func (c *OpsWorks) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -5530,11 +5522,12 @@ func (c *OpsWorks) TagResourceRequest(input *TagResourceInput) (req *request.Req
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/TagResource
 func (c *OpsWorks) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -5574,14 +5567,13 @@ const opUnassignInstance = "UnassignInstance"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UnassignInstanceRequest method.
+//	req, resp := client.UnassignInstanceRequest(params)
 //
-//    // Example sending a request using the UnassignInstanceRequest method.
-//    req, resp := client.UnassignInstanceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UnassignInstance
 func (c *OpsWorks) UnassignInstanceRequest(input *UnassignInstanceInput) (req *request.Request, output *UnassignInstanceOutput) {
@@ -5621,11 +5613,12 @@ func (c *OpsWorks) UnassignInstanceRequest(input *UnassignInstanceInput) (req *r
 // API operation UnassignInstance for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UnassignInstance
 func (c *OpsWorks) UnassignInstance(input *UnassignInstanceInput) (*UnassignInstanceOutput, error) {
@@ -5665,14 +5658,13 @@ const opUnassignVolume = "UnassignVolume"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UnassignVolumeRequest method.
+//	req, resp := client.UnassignVolumeRequest(params)
 //
-//    // Example sending a request using the UnassignVolumeRequest method.
-//    req, resp := client.UnassignVolumeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UnassignVolume
 func (c *OpsWorks) UnassignVolumeRequest(input *UnassignVolumeInput) (req *request.Request, output *UnassignVolumeOutput) {
@@ -5710,11 +5702,12 @@ func (c *OpsWorks) UnassignVolumeRequest(input *UnassignVolumeInput) (req *reque
 // API operation UnassignVolume for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UnassignVolume
 func (c *OpsWorks) UnassignVolume(input *UnassignVolumeInput) (*UnassignVolumeOutput, error) {
@@ -5754,14 +5747,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UntagResource
 func (c *OpsWorks) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -5793,11 +5785,12 @@ func (c *OpsWorks) UntagResourceRequest(input *UntagResourceInput) (req *request
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UntagResource
 func (c *OpsWorks) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -5837,14 +5830,13 @@ const opUpdateApp = "UpdateApp"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateAppRequest method.
+//	req, resp := client.UpdateAppRequest(params)
 //
-//    // Example sending a request using the UpdateAppRequest method.
-//    req, resp := client.UpdateAppRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateApp
 func (c *OpsWorks) UpdateAppRequest(input *UpdateAppInput) (req *request.Request, output *UpdateAppOutput) {
@@ -5881,11 +5873,12 @@ func (c *OpsWorks) UpdateAppRequest(input *UpdateAppInput) (req *request.Request
 // API operation UpdateApp for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateApp
 func (c *OpsWorks) UpdateApp(input *UpdateAppInput) (*UpdateAppOutput, error) {
@@ -5925,14 +5918,13 @@ const opUpdateElasticIp = "UpdateElasticIp"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateElasticIpRequest method.
+//	req, resp := client.UpdateElasticIpRequest(params)
 //
-//    // Example sending a request using the UpdateElasticIpRequest method.
-//    req, resp := client.UpdateElasticIpRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateElasticIp
 func (c *OpsWorks) UpdateElasticIpRequest(input *UpdateElasticIpInput) (req *request.Request, output *UpdateElasticIpOutput) {
@@ -5970,11 +5962,12 @@ func (c *OpsWorks) UpdateElasticIpRequest(input *UpdateElasticIpInput) (req *req
 // API operation UpdateElasticIp for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateElasticIp
 func (c *OpsWorks) UpdateElasticIp(input *UpdateElasticIpInput) (*UpdateElasticIpOutput, error) {
@@ -6014,14 +6007,13 @@ const opUpdateInstance = "UpdateInstance"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateInstanceRequest method.
+//	req, resp := client.UpdateInstanceRequest(params)
 //
-//    // Example sending a request using the UpdateInstanceRequest method.
-//    req, resp := client.UpdateInstanceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateInstance
 func (c *OpsWorks) UpdateInstanceRequest(input *UpdateInstanceInput) (req *request.Request, output *UpdateInstanceOutput) {
@@ -6058,11 +6050,12 @@ func (c *OpsWorks) UpdateInstanceRequest(input *UpdateInstanceInput) (req *reque
 // API operation UpdateInstance for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateInstance
 func (c *OpsWorks) UpdateInstance(input *UpdateInstanceInput) (*UpdateInstanceOutput, error) {
@@ -6102,14 +6095,13 @@ const opUpdateLayer = "UpdateLayer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateLayerRequest method.
+//	req, resp := client.UpdateLayerRequest(params)
 //
-//    // Example sending a request using the UpdateLayerRequest method.
-//    req, resp := client.UpdateLayerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateLayer
 func (c *OpsWorks) UpdateLayerRequest(input *UpdateLayerInput) (req *request.Request, output *UpdateLayerOutput) {
@@ -6146,11 +6138,12 @@ func (c *OpsWorks) UpdateLayerRequest(input *UpdateLayerInput) (req *request.Req
 // API operation UpdateLayer for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateLayer
 func (c *OpsWorks) UpdateLayer(input *UpdateLayerInput) (*UpdateLayerOutput, error) {
@@ -6190,14 +6183,13 @@ const opUpdateMyUserProfile = "UpdateMyUserProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateMyUserProfileRequest method.
+//	req, resp := client.UpdateMyUserProfileRequest(params)
 //
-//    // Example sending a request using the UpdateMyUserProfileRequest method.
-//    req, resp := client.UpdateMyUserProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateMyUserProfile
 func (c *OpsWorks) UpdateMyUserProfileRequest(input *UpdateMyUserProfileInput) (req *request.Request, output *UpdateMyUserProfileOutput) {
@@ -6233,8 +6225,8 @@ func (c *OpsWorks) UpdateMyUserProfileRequest(input *UpdateMyUserProfileInput) (
 // API operation UpdateMyUserProfile for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
+//   - ValidationException
+//     Indicates that a request was not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateMyUserProfile
 func (c *OpsWorks) UpdateMyUserProfile(input *UpdateMyUserProfileInput) (*UpdateMyUserProfileOutput, error) {
@@ -6274,14 +6266,13 @@ const opUpdateRdsDbInstance = "UpdateRdsDbInstance"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateRdsDbInstanceRequest method.
+//	req, resp := client.UpdateRdsDbInstanceRequest(params)
 //
-//    // Example sending a request using the UpdateRdsDbInstanceRequest method.
-//    req, resp := client.UpdateRdsDbInstanceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateRdsDbInstance
 func (c *OpsWorks) UpdateRdsDbInstanceRequest(input *UpdateRdsDbInstanceInput) (req *request.Request, output *UpdateRdsDbInstanceOutput) {
@@ -6318,11 +6309,12 @@ func (c *OpsWorks) UpdateRdsDbInstanceRequest(input *UpdateRdsDbInstanceInput) (
 // API operation UpdateRdsDbInstance for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateRdsDbInstance
 func (c *OpsWorks) UpdateRdsDbInstance(input *UpdateRdsDbInstanceInput) (*UpdateRdsDbInstanceOutput, error) {
@@ -6362,14 +6354,13 @@ const opUpdateStack = "UpdateStack"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateStackRequest method.
+//	req, resp := client.UpdateStackRequest(params)
 //
-//    // Example sending a request using the UpdateStackRequest method.
-//    req, resp := client.UpdateStackRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateStack
 func (c *OpsWorks) UpdateStackRequest(input *UpdateStackInput) (req *request.Request, output *UpdateStackOutput) {
@@ -6406,11 +6397,12 @@ func (c *OpsWorks) UpdateStackRequest(input *UpdateStackInput) (req *request.Req
 // API operation UpdateStack for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateStack
 func (c *OpsWorks) UpdateStack(input *UpdateStackInput) (*UpdateStackOutput, error) {
@@ -6450,14 +6442,13 @@ const opUpdateUserProfile = "UpdateUserProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateUserProfileRequest method.
+//	req, resp := client.UpdateUserProfileRequest(params)
 //
-//    // Example sending a request using the UpdateUserProfileRequest method.
-//    req, resp := client.UpdateUserProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateUserProfile
 func (c *OpsWorks) UpdateUserProfileRequest(input *UpdateUserProfileInput) (req *request.Request, output *UpdateUserProfileOutput) {
@@ -6493,11 +6484,12 @@ func (c *OpsWorks) UpdateUserProfileRequest(input *UpdateUserProfileInput) (req 
 // API operation UpdateUserProfile for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateUserProfile
 func (c *OpsWorks) UpdateUserProfile(input *UpdateUserProfileInput) (*UpdateUserProfileOutput, error) {
@@ -6537,14 +6529,13 @@ const opUpdateVolume = "UpdateVolume"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateVolumeRequest method.
+//	req, resp := client.UpdateVolumeRequest(params)
 //
-//    // Example sending a request using the UpdateVolumeRequest method.
-//    req, resp := client.UpdateVolumeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateVolume
 func (c *OpsWorks) UpdateVolumeRequest(input *UpdateVolumeInput) (req *request.Request, output *UpdateVolumeOutput) {
@@ -6582,11 +6573,12 @@ func (c *OpsWorks) UpdateVolumeRequest(input *UpdateVolumeInput) (req *request.R
 // API operation UpdateVolume for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Indicates that a request was not valid.
 //
-//   * ResourceNotFoundException
-//   Indicates that a resource was not found.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - ResourceNotFoundException
+//     Indicates that a resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opsworks-2013-02-18/UpdateVolume
 func (c *OpsWorks) UpdateVolume(input *UpdateVolumeInput) (*UpdateVolumeOutput, error) {
@@ -19046,11 +19038,11 @@ func (s *VolumeConfiguration) SetVolumeType(v string) *VolumeConfiguration {
 // Describes a time-based instance's auto scaling schedule. The schedule consists
 // of a set of key-value pairs.
 //
-//    * The key is the time period (a UTC hour) and must be an integer from
-//    0 - 23.
+//   - The key is the time period (a UTC hour) and must be an integer from
+//     0 - 23.
 //
-//    * The value indicates whether the instance should be online or offline
-//    for the specified period, and must be set to "on" or "off"
+//   - The value indicates whether the instance should be online or offline
+//     for the specified period, and must be set to "on" or "off"
 //
 // The default setting for all time periods is off, so you use the following
 // parameters primarily to specify the online periods. You don't have to explicitly

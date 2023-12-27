@@ -23,43 +23,47 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // AWS Systems Manager Incident Manager.
-//    func myFunc(svc ssmincidentsiface.SSMIncidentsAPI) bool {
-//        // Make svc.CreateReplicationSet request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// AWS Systems Manager Incident Manager.
+//	func myFunc(svc ssmincidentsiface.SSMIncidentsAPI) bool {
+//	    // Make svc.BatchGetIncidentFindings request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := ssmincidents.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := ssmincidents.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockSSMIncidentsClient struct {
-//        ssmincidentsiface.SSMIncidentsAPI
-//    }
-//    func (m *mockSSMIncidentsClient) CreateReplicationSet(input *ssmincidents.CreateReplicationSetInput) (*ssmincidents.CreateReplicationSetOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockSSMIncidentsClient struct {
+//	    ssmincidentsiface.SSMIncidentsAPI
+//	}
+//	func (m *mockSSMIncidentsClient) BatchGetIncidentFindings(input *ssmincidents.BatchGetIncidentFindingsInput) (*ssmincidents.BatchGetIncidentFindingsOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockSSMIncidentsClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockSSMIncidentsClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,
 // and waiters. Its suggested to use the pattern above for testing, or using
 // tooling to generate mocks to satisfy the interfaces.
 type SSMIncidentsAPI interface {
+	BatchGetIncidentFindings(*ssmincidents.BatchGetIncidentFindingsInput) (*ssmincidents.BatchGetIncidentFindingsOutput, error)
+	BatchGetIncidentFindingsWithContext(aws.Context, *ssmincidents.BatchGetIncidentFindingsInput, ...request.Option) (*ssmincidents.BatchGetIncidentFindingsOutput, error)
+	BatchGetIncidentFindingsRequest(*ssmincidents.BatchGetIncidentFindingsInput) (*request.Request, *ssmincidents.BatchGetIncidentFindingsOutput)
+
 	CreateReplicationSet(*ssmincidents.CreateReplicationSetInput) (*ssmincidents.CreateReplicationSetOutput, error)
 	CreateReplicationSetWithContext(aws.Context, *ssmincidents.CreateReplicationSetInput, ...request.Option) (*ssmincidents.CreateReplicationSetOutput, error)
 	CreateReplicationSetRequest(*ssmincidents.CreateReplicationSetInput) (*request.Request, *ssmincidents.CreateReplicationSetOutput)
@@ -114,6 +118,13 @@ type SSMIncidentsAPI interface {
 	GetTimelineEvent(*ssmincidents.GetTimelineEventInput) (*ssmincidents.GetTimelineEventOutput, error)
 	GetTimelineEventWithContext(aws.Context, *ssmincidents.GetTimelineEventInput, ...request.Option) (*ssmincidents.GetTimelineEventOutput, error)
 	GetTimelineEventRequest(*ssmincidents.GetTimelineEventInput) (*request.Request, *ssmincidents.GetTimelineEventOutput)
+
+	ListIncidentFindings(*ssmincidents.ListIncidentFindingsInput) (*ssmincidents.ListIncidentFindingsOutput, error)
+	ListIncidentFindingsWithContext(aws.Context, *ssmincidents.ListIncidentFindingsInput, ...request.Option) (*ssmincidents.ListIncidentFindingsOutput, error)
+	ListIncidentFindingsRequest(*ssmincidents.ListIncidentFindingsInput) (*request.Request, *ssmincidents.ListIncidentFindingsOutput)
+
+	ListIncidentFindingsPages(*ssmincidents.ListIncidentFindingsInput, func(*ssmincidents.ListIncidentFindingsOutput, bool) bool) error
+	ListIncidentFindingsPagesWithContext(aws.Context, *ssmincidents.ListIncidentFindingsInput, func(*ssmincidents.ListIncidentFindingsOutput, bool) bool, ...request.Option) error
 
 	ListIncidentRecords(*ssmincidents.ListIncidentRecordsInput) (*ssmincidents.ListIncidentRecordsOutput, error)
 	ListIncidentRecordsWithContext(aws.Context, *ssmincidents.ListIncidentRecordsInput, ...request.Option) (*ssmincidents.ListIncidentRecordsOutput, error)

@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // AWS Signer.
-//    func myFunc(svc signeriface.SignerAPI) bool {
-//        // Make svc.AddProfilePermission request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// AWS Signer.
+//	func myFunc(svc signeriface.SignerAPI) bool {
+//	    // Make svc.AddProfilePermission request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := signer.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := signer.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockSignerClient struct {
-//        signeriface.SignerAPI
-//    }
-//    func (m *mockSignerClient) AddProfilePermission(input *signer.AddProfilePermissionInput) (*signer.AddProfilePermissionOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockSignerClient struct {
+//	    signeriface.SignerAPI
+//	}
+//	func (m *mockSignerClient) AddProfilePermission(input *signer.AddProfilePermissionInput) (*signer.AddProfilePermissionOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockSignerClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockSignerClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,
@@ -71,6 +71,10 @@ type SignerAPI interface {
 	DescribeSigningJob(*signer.DescribeSigningJobInput) (*signer.DescribeSigningJobOutput, error)
 	DescribeSigningJobWithContext(aws.Context, *signer.DescribeSigningJobInput, ...request.Option) (*signer.DescribeSigningJobOutput, error)
 	DescribeSigningJobRequest(*signer.DescribeSigningJobInput) (*request.Request, *signer.DescribeSigningJobOutput)
+
+	GetRevocationStatus(*signer.GetRevocationStatusInput) (*signer.GetRevocationStatusOutput, error)
+	GetRevocationStatusWithContext(aws.Context, *signer.GetRevocationStatusInput, ...request.Option) (*signer.GetRevocationStatusOutput, error)
+	GetRevocationStatusRequest(*signer.GetRevocationStatusInput) (*request.Request, *signer.GetRevocationStatusOutput)
 
 	GetSigningPlatform(*signer.GetSigningPlatformInput) (*signer.GetSigningPlatformOutput, error)
 	GetSigningPlatformWithContext(aws.Context, *signer.GetSigningPlatformInput, ...request.Option) (*signer.GetSigningPlatformOutput, error)
@@ -124,6 +128,10 @@ type SignerAPI interface {
 	RevokeSigningProfile(*signer.RevokeSigningProfileInput) (*signer.RevokeSigningProfileOutput, error)
 	RevokeSigningProfileWithContext(aws.Context, *signer.RevokeSigningProfileInput, ...request.Option) (*signer.RevokeSigningProfileOutput, error)
 	RevokeSigningProfileRequest(*signer.RevokeSigningProfileInput) (*request.Request, *signer.RevokeSigningProfileOutput)
+
+	SignPayload(*signer.SignPayloadInput) (*signer.SignPayloadOutput, error)
+	SignPayloadWithContext(aws.Context, *signer.SignPayloadInput, ...request.Option) (*signer.SignPayloadOutput, error)
+	SignPayloadRequest(*signer.SignPayloadInput) (*request.Request, *signer.SignPayloadOutput)
 
 	StartSigningJob(*signer.StartSigningJobInput) (*signer.StartSigningJobOutput, error)
 	StartSigningJobWithContext(aws.Context, *signer.StartSigningJobInput, ...request.Option) (*signer.StartSigningJobOutput, error)

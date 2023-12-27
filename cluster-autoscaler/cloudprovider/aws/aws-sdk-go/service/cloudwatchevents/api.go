@@ -29,14 +29,13 @@ const opActivateEventSource = "ActivateEventSource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ActivateEventSourceRequest method.
+//	req, resp := client.ActivateEventSourceRequest(params)
 //
-//    // Example sending a request using the ActivateEventSourceRequest method.
-//    req, resp := client.ActivateEventSourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/ActivateEventSource
 func (c *CloudWatchEvents) ActivateEventSourceRequest(input *ActivateEventSourceInput) (req *request.Request, output *ActivateEventSourceOutput) {
@@ -69,20 +68,21 @@ func (c *CloudWatchEvents) ActivateEventSourceRequest(input *ActivateEventSource
 // API operation ActivateEventSource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
 //
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
-//   * InvalidStateException
-//   The specified state is not a valid state for an event source.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - InvalidStateException
+//     The specified state is not a valid state for an event source.
 //
-//   * OperationDisabledException
-//   The operation you are attempting is not available in this region.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
+//
+//   - OperationDisabledException
+//     The operation you are attempting is not available in this region.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/ActivateEventSource
 func (c *CloudWatchEvents) ActivateEventSource(input *ActivateEventSourceInput) (*ActivateEventSourceOutput, error) {
@@ -122,14 +122,13 @@ const opCancelReplay = "CancelReplay"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CancelReplayRequest method.
+//	req, resp := client.CancelReplayRequest(params)
 //
-//    // Example sending a request using the CancelReplayRequest method.
-//    req, resp := client.CancelReplayRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/CancelReplay
 func (c *CloudWatchEvents) CancelReplayRequest(input *CancelReplayInput) (req *request.Request, output *CancelReplayOutput) {
@@ -160,18 +159,19 @@ func (c *CloudWatchEvents) CancelReplayRequest(input *CancelReplayInput) (req *r
 // API operation CancelReplay for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
 //
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
-//   * IllegalStatusException
-//   An error occurred because a replay can be canceled only when the state is
-//   Running or Starting.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - IllegalStatusException
+//     An error occurred because a replay can be canceled only when the state is
+//     Running or Starting.
+//
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/CancelReplay
 func (c *CloudWatchEvents) CancelReplay(input *CancelReplayInput) (*CancelReplayOutput, error) {
@@ -211,14 +211,13 @@ const opCreateApiDestination = "CreateApiDestination"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateApiDestinationRequest method.
+//	req, resp := client.CreateApiDestinationRequest(params)
 //
-//    // Example sending a request using the CreateApiDestinationRequest method.
-//    req, resp := client.CreateApiDestinationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/CreateApiDestination
 func (c *CloudWatchEvents) CreateApiDestinationRequest(input *CreateApiDestinationInput) (req *request.Request, output *CreateApiDestinationOutput) {
@@ -250,18 +249,19 @@ func (c *CloudWatchEvents) CreateApiDestinationRequest(input *CreateApiDestinati
 // API operation CreateApiDestination for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceAlreadyExistsException
-//   The resource you are trying to create already exists.
 //
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
+//   - ResourceAlreadyExistsException
+//     The resource you are trying to create already exists.
 //
-//   * LimitExceededException
-//   The request failed because it attempted to create resource beyond the allowed
-//   service quota.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - LimitExceededException
+//     The request failed because it attempted to create resource beyond the allowed
+//     service quota.
+//
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/CreateApiDestination
 func (c *CloudWatchEvents) CreateApiDestination(input *CreateApiDestinationInput) (*CreateApiDestinationOutput, error) {
@@ -301,14 +301,13 @@ const opCreateArchive = "CreateArchive"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateArchiveRequest method.
+//	req, resp := client.CreateArchiveRequest(params)
 //
-//    // Example sending a request using the CreateArchiveRequest method.
-//    req, resp := client.CreateArchiveRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/CreateArchive
 func (c *CloudWatchEvents) CreateArchiveRequest(input *CreateArchiveInput) (req *request.Request, output *CreateArchiveOutput) {
@@ -344,24 +343,25 @@ func (c *CloudWatchEvents) CreateArchiveRequest(input *CreateArchiveInput) (req 
 // API operation CreateArchive for usage and error information.
 //
 // Returned Error Types:
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * ResourceAlreadyExistsException
-//   The resource you are trying to create already exists.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
+//   - ResourceAlreadyExistsException
+//     The resource you are trying to create already exists.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
-//   * LimitExceededException
-//   The request failed because it attempted to create resource beyond the allowed
-//   service quota.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
-//   * InvalidEventPatternException
-//   The event pattern is not valid.
+//   - LimitExceededException
+//     The request failed because it attempted to create resource beyond the allowed
+//     service quota.
+//
+//   - InvalidEventPatternException
+//     The event pattern is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/CreateArchive
 func (c *CloudWatchEvents) CreateArchive(input *CreateArchiveInput) (*CreateArchiveOutput, error) {
@@ -401,14 +401,13 @@ const opCreateConnection = "CreateConnection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateConnectionRequest method.
+//	req, resp := client.CreateConnectionRequest(params)
 //
-//    // Example sending a request using the CreateConnectionRequest method.
-//    req, resp := client.CreateConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/CreateConnection
 func (c *CloudWatchEvents) CreateConnectionRequest(input *CreateConnectionInput) (req *request.Request, output *CreateConnectionOutput) {
@@ -440,15 +439,16 @@ func (c *CloudWatchEvents) CreateConnectionRequest(input *CreateConnectionInput)
 // API operation CreateConnection for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceAlreadyExistsException
-//   The resource you are trying to create already exists.
 //
-//   * LimitExceededException
-//   The request failed because it attempted to create resource beyond the allowed
-//   service quota.
+//   - ResourceAlreadyExistsException
+//     The resource you are trying to create already exists.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - LimitExceededException
+//     The request failed because it attempted to create resource beyond the allowed
+//     service quota.
+//
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/CreateConnection
 func (c *CloudWatchEvents) CreateConnection(input *CreateConnectionInput) (*CreateConnectionOutput, error) {
@@ -488,14 +488,13 @@ const opCreateEventBus = "CreateEventBus"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateEventBusRequest method.
+//	req, resp := client.CreateEventBusRequest(params)
 //
-//    // Example sending a request using the CreateEventBusRequest method.
-//    req, resp := client.CreateEventBusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/CreateEventBus
 func (c *CloudWatchEvents) CreateEventBusRequest(input *CreateEventBusInput) (req *request.Request, output *CreateEventBusOutput) {
@@ -529,27 +528,28 @@ func (c *CloudWatchEvents) CreateEventBusRequest(input *CreateEventBusInput) (re
 // API operation CreateEventBus for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceAlreadyExistsException
-//   The resource you are trying to create already exists.
 //
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
+//   - ResourceAlreadyExistsException
+//     The resource you are trying to create already exists.
 //
-//   * InvalidStateException
-//   The specified state is not a valid state for an event source.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - InvalidStateException
+//     The specified state is not a valid state for an event source.
 //
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
-//   * LimitExceededException
-//   The request failed because it attempted to create resource beyond the allowed
-//   service quota.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * OperationDisabledException
-//   The operation you are attempting is not available in this region.
+//   - LimitExceededException
+//     The request failed because it attempted to create resource beyond the allowed
+//     service quota.
+//
+//   - OperationDisabledException
+//     The operation you are attempting is not available in this region.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/CreateEventBus
 func (c *CloudWatchEvents) CreateEventBus(input *CreateEventBusInput) (*CreateEventBusOutput, error) {
@@ -589,14 +589,13 @@ const opCreatePartnerEventSource = "CreatePartnerEventSource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreatePartnerEventSourceRequest method.
+//	req, resp := client.CreatePartnerEventSourceRequest(params)
 //
-//    // Example sending a request using the CreatePartnerEventSourceRequest method.
-//    req, resp := client.CreatePartnerEventSourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/CreatePartnerEventSource
 func (c *CloudWatchEvents) CreatePartnerEventSourceRequest(input *CreatePartnerEventSourceInput) (req *request.Request, output *CreatePartnerEventSourceOutput) {
@@ -653,21 +652,22 @@ func (c *CloudWatchEvents) CreatePartnerEventSourceRequest(input *CreatePartnerE
 // API operation CreatePartnerEventSource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceAlreadyExistsException
-//   The resource you are trying to create already exists.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ResourceAlreadyExistsException
+//     The resource you are trying to create already exists.
 //
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
-//   * LimitExceededException
-//   The request failed because it attempted to create resource beyond the allowed
-//   service quota.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * OperationDisabledException
-//   The operation you are attempting is not available in this region.
+//   - LimitExceededException
+//     The request failed because it attempted to create resource beyond the allowed
+//     service quota.
+//
+//   - OperationDisabledException
+//     The operation you are attempting is not available in this region.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/CreatePartnerEventSource
 func (c *CloudWatchEvents) CreatePartnerEventSource(input *CreatePartnerEventSourceInput) (*CreatePartnerEventSourceOutput, error) {
@@ -707,14 +707,13 @@ const opDeactivateEventSource = "DeactivateEventSource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeactivateEventSourceRequest method.
+//	req, resp := client.DeactivateEventSourceRequest(params)
 //
-//    // Example sending a request using the DeactivateEventSourceRequest method.
-//    req, resp := client.DeactivateEventSourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/DeactivateEventSource
 func (c *CloudWatchEvents) DeactivateEventSourceRequest(input *DeactivateEventSourceInput) (req *request.Request, output *DeactivateEventSourceOutput) {
@@ -752,20 +751,21 @@ func (c *CloudWatchEvents) DeactivateEventSourceRequest(input *DeactivateEventSo
 // API operation DeactivateEventSource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
 //
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
-//   * InvalidStateException
-//   The specified state is not a valid state for an event source.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - InvalidStateException
+//     The specified state is not a valid state for an event source.
 //
-//   * OperationDisabledException
-//   The operation you are attempting is not available in this region.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
+//
+//   - OperationDisabledException
+//     The operation you are attempting is not available in this region.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/DeactivateEventSource
 func (c *CloudWatchEvents) DeactivateEventSource(input *DeactivateEventSourceInput) (*DeactivateEventSourceOutput, error) {
@@ -805,14 +805,13 @@ const opDeauthorizeConnection = "DeauthorizeConnection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeauthorizeConnectionRequest method.
+//	req, resp := client.DeauthorizeConnectionRequest(params)
 //
-//    // Example sending a request using the DeauthorizeConnectionRequest method.
-//    req, resp := client.DeauthorizeConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/DeauthorizeConnection
 func (c *CloudWatchEvents) DeauthorizeConnectionRequest(input *DeauthorizeConnectionInput) (req *request.Request, output *DeauthorizeConnectionOutput) {
@@ -845,14 +844,15 @@ func (c *CloudWatchEvents) DeauthorizeConnectionRequest(input *DeauthorizeConnec
 // API operation DeauthorizeConnection for usage and error information.
 //
 // Returned Error Types:
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
+//
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/DeauthorizeConnection
 func (c *CloudWatchEvents) DeauthorizeConnection(input *DeauthorizeConnectionInput) (*DeauthorizeConnectionOutput, error) {
@@ -892,14 +892,13 @@ const opDeleteApiDestination = "DeleteApiDestination"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteApiDestinationRequest method.
+//	req, resp := client.DeleteApiDestinationRequest(params)
 //
-//    // Example sending a request using the DeleteApiDestinationRequest method.
-//    req, resp := client.DeleteApiDestinationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/DeleteApiDestination
 func (c *CloudWatchEvents) DeleteApiDestinationRequest(input *DeleteApiDestinationInput) (req *request.Request, output *DeleteApiDestinationOutput) {
@@ -931,14 +930,15 @@ func (c *CloudWatchEvents) DeleteApiDestinationRequest(input *DeleteApiDestinati
 // API operation DeleteApiDestination for usage and error information.
 //
 // Returned Error Types:
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
+//
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/DeleteApiDestination
 func (c *CloudWatchEvents) DeleteApiDestination(input *DeleteApiDestinationInput) (*DeleteApiDestinationOutput, error) {
@@ -978,14 +978,13 @@ const opDeleteArchive = "DeleteArchive"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteArchiveRequest method.
+//	req, resp := client.DeleteArchiveRequest(params)
 //
-//    // Example sending a request using the DeleteArchiveRequest method.
-//    req, resp := client.DeleteArchiveRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/DeleteArchive
 func (c *CloudWatchEvents) DeleteArchiveRequest(input *DeleteArchiveInput) (req *request.Request, output *DeleteArchiveOutput) {
@@ -1017,14 +1016,15 @@ func (c *CloudWatchEvents) DeleteArchiveRequest(input *DeleteArchiveInput) (req 
 // API operation DeleteArchive for usage and error information.
 //
 // Returned Error Types:
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
+//
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/DeleteArchive
 func (c *CloudWatchEvents) DeleteArchive(input *DeleteArchiveInput) (*DeleteArchiveOutput, error) {
@@ -1064,14 +1064,13 @@ const opDeleteConnection = "DeleteConnection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteConnectionRequest method.
+//	req, resp := client.DeleteConnectionRequest(params)
 //
-//    // Example sending a request using the DeleteConnectionRequest method.
-//    req, resp := client.DeleteConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/DeleteConnection
 func (c *CloudWatchEvents) DeleteConnectionRequest(input *DeleteConnectionInput) (req *request.Request, output *DeleteConnectionOutput) {
@@ -1102,14 +1101,15 @@ func (c *CloudWatchEvents) DeleteConnectionRequest(input *DeleteConnectionInput)
 // API operation DeleteConnection for usage and error information.
 //
 // Returned Error Types:
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
+//
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/DeleteConnection
 func (c *CloudWatchEvents) DeleteConnection(input *DeleteConnectionInput) (*DeleteConnectionOutput, error) {
@@ -1149,14 +1149,13 @@ const opDeleteEventBus = "DeleteEventBus"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteEventBusRequest method.
+//	req, resp := client.DeleteEventBusRequest(params)
 //
-//    // Example sending a request using the DeleteEventBusRequest method.
-//    req, resp := client.DeleteEventBusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/DeleteEventBus
 func (c *CloudWatchEvents) DeleteEventBusRequest(input *DeleteEventBusInput) (req *request.Request, output *DeleteEventBusOutput) {
@@ -1190,11 +1189,12 @@ func (c *CloudWatchEvents) DeleteEventBusRequest(input *DeleteEventBusInput) (re
 // API operation DeleteEventBus for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   This exception occurs due to unexpected causes.
 //
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
+//
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/DeleteEventBus
 func (c *CloudWatchEvents) DeleteEventBus(input *DeleteEventBusInput) (*DeleteEventBusOutput, error) {
@@ -1234,14 +1234,13 @@ const opDeletePartnerEventSource = "DeletePartnerEventSource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeletePartnerEventSourceRequest method.
+//	req, resp := client.DeletePartnerEventSourceRequest(params)
 //
-//    // Example sending a request using the DeletePartnerEventSourceRequest method.
-//    req, resp := client.DeletePartnerEventSourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/DeletePartnerEventSource
 func (c *CloudWatchEvents) DeletePartnerEventSourceRequest(input *DeletePartnerEventSourceInput) (req *request.Request, output *DeletePartnerEventSourceOutput) {
@@ -1277,14 +1276,15 @@ func (c *CloudWatchEvents) DeletePartnerEventSourceRequest(input *DeletePartnerE
 // API operation DeletePartnerEventSource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   This exception occurs due to unexpected causes.
 //
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
-//   * OperationDisabledException
-//   The operation you are attempting is not available in this region.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
+//
+//   - OperationDisabledException
+//     The operation you are attempting is not available in this region.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/DeletePartnerEventSource
 func (c *CloudWatchEvents) DeletePartnerEventSource(input *DeletePartnerEventSourceInput) (*DeletePartnerEventSourceOutput, error) {
@@ -1324,14 +1324,13 @@ const opDeleteRule = "DeleteRule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteRuleRequest method.
+//	req, resp := client.DeleteRuleRequest(params)
 //
-//    // Example sending a request using the DeleteRuleRequest method.
-//    req, resp := client.DeleteRuleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/DeleteRule
 func (c *CloudWatchEvents) DeleteRuleRequest(input *DeleteRuleInput) (req *request.Request, output *DeleteRuleOutput) {
@@ -1379,22 +1378,23 @@ func (c *CloudWatchEvents) DeleteRuleRequest(input *DeleteRuleInput) (req *reque
 // API operation DeleteRule for usage and error information.
 //
 // Returned Error Types:
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * ManagedRuleException
-//   This rule was created by an Amazon Web Services service on behalf of your
-//   account. It is managed by that service. If you see this error in response
-//   to DeleteRule or RemoveTargets, you can use the Force parameter in those
-//   calls to delete the rule or remove targets from the rule. You cannot modify
-//   these managed rules by using DisableRule, EnableRule, PutTargets, PutRule,
-//   TagResource, or UntagResource.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ManagedRuleException
+//     This rule was created by an Amazon Web Services service on behalf of your
+//     account. It is managed by that service. If you see this error in response
+//     to DeleteRule or RemoveTargets, you can use the Force parameter in those
+//     calls to delete the rule or remove targets from the rule. You cannot modify
+//     these managed rules by using DisableRule, EnableRule, PutTargets, PutRule,
+//     TagResource, or UntagResource.
 //
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
+//
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/DeleteRule
 func (c *CloudWatchEvents) DeleteRule(input *DeleteRuleInput) (*DeleteRuleOutput, error) {
@@ -1434,14 +1434,13 @@ const opDescribeApiDestination = "DescribeApiDestination"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeApiDestinationRequest method.
+//	req, resp := client.DescribeApiDestinationRequest(params)
 //
-//    // Example sending a request using the DescribeApiDestinationRequest method.
-//    req, resp := client.DescribeApiDestinationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/DescribeApiDestination
 func (c *CloudWatchEvents) DescribeApiDestinationRequest(input *DescribeApiDestinationInput) (req *request.Request, output *DescribeApiDestinationOutput) {
@@ -1472,11 +1471,12 @@ func (c *CloudWatchEvents) DescribeApiDestinationRequest(input *DescribeApiDesti
 // API operation DescribeApiDestination for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
+//
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/DescribeApiDestination
 func (c *CloudWatchEvents) DescribeApiDestination(input *DescribeApiDestinationInput) (*DescribeApiDestinationOutput, error) {
@@ -1516,14 +1516,13 @@ const opDescribeArchive = "DescribeArchive"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeArchiveRequest method.
+//	req, resp := client.DescribeArchiveRequest(params)
 //
-//    // Example sending a request using the DescribeArchiveRequest method.
-//    req, resp := client.DescribeArchiveRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/DescribeArchive
 func (c *CloudWatchEvents) DescribeArchiveRequest(input *DescribeArchiveInput) (req *request.Request, output *DescribeArchiveOutput) {
@@ -1554,14 +1553,15 @@ func (c *CloudWatchEvents) DescribeArchiveRequest(input *DescribeArchiveInput) (
 // API operation DescribeArchive for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceAlreadyExistsException
-//   The resource you are trying to create already exists.
 //
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
+//   - ResourceAlreadyExistsException
+//     The resource you are trying to create already exists.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
+//
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/DescribeArchive
 func (c *CloudWatchEvents) DescribeArchive(input *DescribeArchiveInput) (*DescribeArchiveOutput, error) {
@@ -1601,14 +1601,13 @@ const opDescribeConnection = "DescribeConnection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeConnectionRequest method.
+//	req, resp := client.DescribeConnectionRequest(params)
 //
-//    // Example sending a request using the DescribeConnectionRequest method.
-//    req, resp := client.DescribeConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/DescribeConnection
 func (c *CloudWatchEvents) DescribeConnectionRequest(input *DescribeConnectionInput) (req *request.Request, output *DescribeConnectionOutput) {
@@ -1639,11 +1638,12 @@ func (c *CloudWatchEvents) DescribeConnectionRequest(input *DescribeConnectionIn
 // API operation DescribeConnection for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
+//
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/DescribeConnection
 func (c *CloudWatchEvents) DescribeConnection(input *DescribeConnectionInput) (*DescribeConnectionOutput, error) {
@@ -1683,14 +1683,13 @@ const opDescribeEventBus = "DescribeEventBus"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEventBusRequest method.
+//	req, resp := client.DescribeEventBusRequest(params)
 //
-//    // Example sending a request using the DescribeEventBusRequest method.
-//    req, resp := client.DescribeEventBusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/DescribeEventBus
 func (c *CloudWatchEvents) DescribeEventBusRequest(input *DescribeEventBusInput) (req *request.Request, output *DescribeEventBusOutput) {
@@ -1730,11 +1729,12 @@ func (c *CloudWatchEvents) DescribeEventBusRequest(input *DescribeEventBusInput)
 // API operation DescribeEventBus for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
+//
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/DescribeEventBus
 func (c *CloudWatchEvents) DescribeEventBus(input *DescribeEventBusInput) (*DescribeEventBusOutput, error) {
@@ -1774,14 +1774,13 @@ const opDescribeEventSource = "DescribeEventSource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEventSourceRequest method.
+//	req, resp := client.DescribeEventSourceRequest(params)
 //
-//    // Example sending a request using the DescribeEventSourceRequest method.
-//    req, resp := client.DescribeEventSourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/DescribeEventSource
 func (c *CloudWatchEvents) DescribeEventSourceRequest(input *DescribeEventSourceInput) (req *request.Request, output *DescribeEventSourceOutput) {
@@ -1813,14 +1812,15 @@ func (c *CloudWatchEvents) DescribeEventSourceRequest(input *DescribeEventSource
 // API operation DescribeEventSource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
-//   * OperationDisabledException
-//   The operation you are attempting is not available in this region.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
+//
+//   - OperationDisabledException
+//     The operation you are attempting is not available in this region.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/DescribeEventSource
 func (c *CloudWatchEvents) DescribeEventSource(input *DescribeEventSourceInput) (*DescribeEventSourceOutput, error) {
@@ -1860,14 +1860,13 @@ const opDescribePartnerEventSource = "DescribePartnerEventSource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribePartnerEventSourceRequest method.
+//	req, resp := client.DescribePartnerEventSourceRequest(params)
 //
-//    // Example sending a request using the DescribePartnerEventSourceRequest method.
-//    req, resp := client.DescribePartnerEventSourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/DescribePartnerEventSource
 func (c *CloudWatchEvents) DescribePartnerEventSourceRequest(input *DescribePartnerEventSourceInput) (req *request.Request, output *DescribePartnerEventSourceOutput) {
@@ -1902,14 +1901,15 @@ func (c *CloudWatchEvents) DescribePartnerEventSourceRequest(input *DescribePart
 // API operation DescribePartnerEventSource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
-//   * OperationDisabledException
-//   The operation you are attempting is not available in this region.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
+//
+//   - OperationDisabledException
+//     The operation you are attempting is not available in this region.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/DescribePartnerEventSource
 func (c *CloudWatchEvents) DescribePartnerEventSource(input *DescribePartnerEventSourceInput) (*DescribePartnerEventSourceOutput, error) {
@@ -1949,14 +1949,13 @@ const opDescribeReplay = "DescribeReplay"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeReplayRequest method.
+//	req, resp := client.DescribeReplayRequest(params)
 //
-//    // Example sending a request using the DescribeReplayRequest method.
-//    req, resp := client.DescribeReplayRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/DescribeReplay
 func (c *CloudWatchEvents) DescribeReplayRequest(input *DescribeReplayInput) (req *request.Request, output *DescribeReplayOutput) {
@@ -1995,11 +1994,12 @@ func (c *CloudWatchEvents) DescribeReplayRequest(input *DescribeReplayInput) (re
 // API operation DescribeReplay for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
+//
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/DescribeReplay
 func (c *CloudWatchEvents) DescribeReplay(input *DescribeReplayInput) (*DescribeReplayOutput, error) {
@@ -2039,14 +2039,13 @@ const opDescribeRule = "DescribeRule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeRuleRequest method.
+//	req, resp := client.DescribeRuleRequest(params)
 //
-//    // Example sending a request using the DescribeRuleRequest method.
-//    req, resp := client.DescribeRuleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/DescribeRule
 func (c *CloudWatchEvents) DescribeRuleRequest(input *DescribeRuleInput) (req *request.Request, output *DescribeRuleOutput) {
@@ -2080,11 +2079,12 @@ func (c *CloudWatchEvents) DescribeRuleRequest(input *DescribeRuleInput) (req *r
 // API operation DescribeRule for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
+//
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/DescribeRule
 func (c *CloudWatchEvents) DescribeRule(input *DescribeRuleInput) (*DescribeRuleOutput, error) {
@@ -2124,14 +2124,13 @@ const opDisableRule = "DisableRule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisableRuleRequest method.
+//	req, resp := client.DisableRuleRequest(params)
 //
-//    // Example sending a request using the DisableRuleRequest method.
-//    req, resp := client.DisableRuleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/DisableRule
 func (c *CloudWatchEvents) DisableRuleRequest(input *DisableRuleInput) (req *request.Request, output *DisableRuleOutput) {
@@ -2167,22 +2166,23 @@ func (c *CloudWatchEvents) DisableRuleRequest(input *DisableRuleInput) (req *req
 // API operation DisableRule for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
 //
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
-//   * ManagedRuleException
-//   This rule was created by an Amazon Web Services service on behalf of your
-//   account. It is managed by that service. If you see this error in response
-//   to DeleteRule or RemoveTargets, you can use the Force parameter in those
-//   calls to delete the rule or remove targets from the rule. You cannot modify
-//   these managed rules by using DisableRule, EnableRule, PutTargets, PutRule,
-//   TagResource, or UntagResource.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ManagedRuleException
+//     This rule was created by an Amazon Web Services service on behalf of your
+//     account. It is managed by that service. If you see this error in response
+//     to DeleteRule or RemoveTargets, you can use the Force parameter in those
+//     calls to delete the rule or remove targets from the rule. You cannot modify
+//     these managed rules by using DisableRule, EnableRule, PutTargets, PutRule,
+//     TagResource, or UntagResource.
+//
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/DisableRule
 func (c *CloudWatchEvents) DisableRule(input *DisableRuleInput) (*DisableRuleOutput, error) {
@@ -2222,14 +2222,13 @@ const opEnableRule = "EnableRule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the EnableRuleRequest method.
+//	req, resp := client.EnableRuleRequest(params)
 //
-//    // Example sending a request using the EnableRuleRequest method.
-//    req, resp := client.EnableRuleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/EnableRule
 func (c *CloudWatchEvents) EnableRuleRequest(input *EnableRuleInput) (req *request.Request, output *EnableRuleOutput) {
@@ -2265,22 +2264,23 @@ func (c *CloudWatchEvents) EnableRuleRequest(input *EnableRuleInput) (req *reque
 // API operation EnableRule for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
 //
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
-//   * ManagedRuleException
-//   This rule was created by an Amazon Web Services service on behalf of your
-//   account. It is managed by that service. If you see this error in response
-//   to DeleteRule or RemoveTargets, you can use the Force parameter in those
-//   calls to delete the rule or remove targets from the rule. You cannot modify
-//   these managed rules by using DisableRule, EnableRule, PutTargets, PutRule,
-//   TagResource, or UntagResource.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ManagedRuleException
+//     This rule was created by an Amazon Web Services service on behalf of your
+//     account. It is managed by that service. If you see this error in response
+//     to DeleteRule or RemoveTargets, you can use the Force parameter in those
+//     calls to delete the rule or remove targets from the rule. You cannot modify
+//     these managed rules by using DisableRule, EnableRule, PutTargets, PutRule,
+//     TagResource, or UntagResource.
+//
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/EnableRule
 func (c *CloudWatchEvents) EnableRule(input *EnableRuleInput) (*EnableRuleOutput, error) {
@@ -2320,14 +2320,13 @@ const opListApiDestinations = "ListApiDestinations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListApiDestinationsRequest method.
+//	req, resp := client.ListApiDestinationsRequest(params)
 //
-//    // Example sending a request using the ListApiDestinationsRequest method.
-//    req, resp := client.ListApiDestinationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/ListApiDestinations
 func (c *CloudWatchEvents) ListApiDestinationsRequest(input *ListApiDestinationsInput) (req *request.Request, output *ListApiDestinationsOutput) {
@@ -2358,8 +2357,8 @@ func (c *CloudWatchEvents) ListApiDestinationsRequest(input *ListApiDestinations
 // API operation ListApiDestinations for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/ListApiDestinations
 func (c *CloudWatchEvents) ListApiDestinations(input *ListApiDestinationsInput) (*ListApiDestinationsOutput, error) {
@@ -2399,14 +2398,13 @@ const opListArchives = "ListArchives"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListArchivesRequest method.
+//	req, resp := client.ListArchivesRequest(params)
 //
-//    // Example sending a request using the ListArchivesRequest method.
-//    req, resp := client.ListArchivesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/ListArchives
 func (c *CloudWatchEvents) ListArchivesRequest(input *ListArchivesInput) (req *request.Request, output *ListArchivesOutput) {
@@ -2438,11 +2436,12 @@ func (c *CloudWatchEvents) ListArchivesRequest(input *ListArchivesInput) (req *r
 // API operation ListArchives for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
+//
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/ListArchives
 func (c *CloudWatchEvents) ListArchives(input *ListArchivesInput) (*ListArchivesOutput, error) {
@@ -2482,14 +2481,13 @@ const opListConnections = "ListConnections"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListConnectionsRequest method.
+//	req, resp := client.ListConnectionsRequest(params)
 //
-//    // Example sending a request using the ListConnectionsRequest method.
-//    req, resp := client.ListConnectionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/ListConnections
 func (c *CloudWatchEvents) ListConnectionsRequest(input *ListConnectionsInput) (req *request.Request, output *ListConnectionsOutput) {
@@ -2520,8 +2518,8 @@ func (c *CloudWatchEvents) ListConnectionsRequest(input *ListConnectionsInput) (
 // API operation ListConnections for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/ListConnections
 func (c *CloudWatchEvents) ListConnections(input *ListConnectionsInput) (*ListConnectionsOutput, error) {
@@ -2561,14 +2559,13 @@ const opListEventBuses = "ListEventBuses"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListEventBusesRequest method.
+//	req, resp := client.ListEventBusesRequest(params)
 //
-//    // Example sending a request using the ListEventBusesRequest method.
-//    req, resp := client.ListEventBusesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/ListEventBuses
 func (c *CloudWatchEvents) ListEventBusesRequest(input *ListEventBusesInput) (req *request.Request, output *ListEventBusesOutput) {
@@ -2600,8 +2597,8 @@ func (c *CloudWatchEvents) ListEventBusesRequest(input *ListEventBusesInput) (re
 // API operation ListEventBuses for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/ListEventBuses
 func (c *CloudWatchEvents) ListEventBuses(input *ListEventBusesInput) (*ListEventBusesOutput, error) {
@@ -2641,14 +2638,13 @@ const opListEventSources = "ListEventSources"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListEventSourcesRequest method.
+//	req, resp := client.ListEventSourcesRequest(params)
 //
-//    // Example sending a request using the ListEventSourcesRequest method.
-//    req, resp := client.ListEventSourcesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/ListEventSources
 func (c *CloudWatchEvents) ListEventSourcesRequest(input *ListEventSourcesInput) (req *request.Request, output *ListEventSourcesOutput) {
@@ -2681,11 +2677,12 @@ func (c *CloudWatchEvents) ListEventSourcesRequest(input *ListEventSourcesInput)
 // API operation ListEventSources for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   This exception occurs due to unexpected causes.
 //
-//   * OperationDisabledException
-//   The operation you are attempting is not available in this region.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
+//
+//   - OperationDisabledException
+//     The operation you are attempting is not available in this region.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/ListEventSources
 func (c *CloudWatchEvents) ListEventSources(input *ListEventSourcesInput) (*ListEventSourcesOutput, error) {
@@ -2725,14 +2722,13 @@ const opListPartnerEventSourceAccounts = "ListPartnerEventSourceAccounts"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPartnerEventSourceAccountsRequest method.
+//	req, resp := client.ListPartnerEventSourceAccountsRequest(params)
 //
-//    // Example sending a request using the ListPartnerEventSourceAccountsRequest method.
-//    req, resp := client.ListPartnerEventSourceAccountsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/ListPartnerEventSourceAccounts
 func (c *CloudWatchEvents) ListPartnerEventSourceAccountsRequest(input *ListPartnerEventSourceAccountsInput) (req *request.Request, output *ListPartnerEventSourceAccountsOutput) {
@@ -2765,14 +2761,15 @@ func (c *CloudWatchEvents) ListPartnerEventSourceAccountsRequest(input *ListPart
 // API operation ListPartnerEventSourceAccounts for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
-//   * OperationDisabledException
-//   The operation you are attempting is not available in this region.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
+//
+//   - OperationDisabledException
+//     The operation you are attempting is not available in this region.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/ListPartnerEventSourceAccounts
 func (c *CloudWatchEvents) ListPartnerEventSourceAccounts(input *ListPartnerEventSourceAccountsInput) (*ListPartnerEventSourceAccountsOutput, error) {
@@ -2812,14 +2809,13 @@ const opListPartnerEventSources = "ListPartnerEventSources"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPartnerEventSourcesRequest method.
+//	req, resp := client.ListPartnerEventSourcesRequest(params)
 //
-//    // Example sending a request using the ListPartnerEventSourcesRequest method.
-//    req, resp := client.ListPartnerEventSourcesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/ListPartnerEventSources
 func (c *CloudWatchEvents) ListPartnerEventSourcesRequest(input *ListPartnerEventSourcesInput) (req *request.Request, output *ListPartnerEventSourcesOutput) {
@@ -2852,11 +2848,12 @@ func (c *CloudWatchEvents) ListPartnerEventSourcesRequest(input *ListPartnerEven
 // API operation ListPartnerEventSources for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   This exception occurs due to unexpected causes.
 //
-//   * OperationDisabledException
-//   The operation you are attempting is not available in this region.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
+//
+//   - OperationDisabledException
+//     The operation you are attempting is not available in this region.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/ListPartnerEventSources
 func (c *CloudWatchEvents) ListPartnerEventSources(input *ListPartnerEventSourcesInput) (*ListPartnerEventSourcesOutput, error) {
@@ -2896,14 +2893,13 @@ const opListReplays = "ListReplays"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListReplaysRequest method.
+//	req, resp := client.ListReplaysRequest(params)
 //
-//    // Example sending a request using the ListReplaysRequest method.
-//    req, resp := client.ListReplaysRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/ListReplays
 func (c *CloudWatchEvents) ListReplaysRequest(input *ListReplaysInput) (req *request.Request, output *ListReplaysOutput) {
@@ -2935,8 +2931,8 @@ func (c *CloudWatchEvents) ListReplaysRequest(input *ListReplaysInput) (req *req
 // API operation ListReplays for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/ListReplays
 func (c *CloudWatchEvents) ListReplays(input *ListReplaysInput) (*ListReplaysOutput, error) {
@@ -2976,14 +2972,13 @@ const opListRuleNamesByTarget = "ListRuleNamesByTarget"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRuleNamesByTargetRequest method.
+//	req, resp := client.ListRuleNamesByTargetRequest(params)
 //
-//    // Example sending a request using the ListRuleNamesByTargetRequest method.
-//    req, resp := client.ListRuleNamesByTargetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/ListRuleNamesByTarget
 func (c *CloudWatchEvents) ListRuleNamesByTargetRequest(input *ListRuleNamesByTargetInput) (req *request.Request, output *ListRuleNamesByTargetOutput) {
@@ -3015,11 +3010,12 @@ func (c *CloudWatchEvents) ListRuleNamesByTargetRequest(input *ListRuleNamesByTa
 // API operation ListRuleNamesByTarget for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   This exception occurs due to unexpected causes.
 //
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
+//
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/ListRuleNamesByTarget
 func (c *CloudWatchEvents) ListRuleNamesByTarget(input *ListRuleNamesByTargetInput) (*ListRuleNamesByTargetOutput, error) {
@@ -3059,14 +3055,13 @@ const opListRules = "ListRules"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRulesRequest method.
+//	req, resp := client.ListRulesRequest(params)
 //
-//    // Example sending a request using the ListRulesRequest method.
-//    req, resp := client.ListRulesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/ListRules
 func (c *CloudWatchEvents) ListRulesRequest(input *ListRulesInput) (req *request.Request, output *ListRulesOutput) {
@@ -3101,11 +3096,12 @@ func (c *CloudWatchEvents) ListRulesRequest(input *ListRulesInput) (req *request
 // API operation ListRules for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   This exception occurs due to unexpected causes.
 //
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
+//
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/ListRules
 func (c *CloudWatchEvents) ListRules(input *ListRulesInput) (*ListRulesOutput, error) {
@@ -3145,14 +3141,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/ListTagsForResource
 func (c *CloudWatchEvents) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -3184,11 +3179,12 @@ func (c *CloudWatchEvents) ListTagsForResourceRequest(input *ListTagsForResource
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
+//
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/ListTagsForResource
 func (c *CloudWatchEvents) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -3228,14 +3224,13 @@ const opListTargetsByRule = "ListTargetsByRule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTargetsByRuleRequest method.
+//	req, resp := client.ListTargetsByRuleRequest(params)
 //
-//    // Example sending a request using the ListTargetsByRuleRequest method.
-//    req, resp := client.ListTargetsByRuleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/ListTargetsByRule
 func (c *CloudWatchEvents) ListTargetsByRuleRequest(input *ListTargetsByRuleInput) (req *request.Request, output *ListTargetsByRuleOutput) {
@@ -3266,11 +3261,12 @@ func (c *CloudWatchEvents) ListTargetsByRuleRequest(input *ListTargetsByRuleInpu
 // API operation ListTargetsByRule for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
+//
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/ListTargetsByRule
 func (c *CloudWatchEvents) ListTargetsByRule(input *ListTargetsByRuleInput) (*ListTargetsByRuleOutput, error) {
@@ -3310,14 +3306,13 @@ const opPutEvents = "PutEvents"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutEventsRequest method.
+//	req, resp := client.PutEventsRequest(params)
 //
-//    // Example sending a request using the PutEventsRequest method.
-//    req, resp := client.PutEventsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/PutEvents
 func (c *CloudWatchEvents) PutEventsRequest(input *PutEventsInput) (req *request.Request, output *PutEventsOutput) {
@@ -3349,8 +3344,8 @@ func (c *CloudWatchEvents) PutEventsRequest(input *PutEventsInput) (req *request
 // API operation PutEvents for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/PutEvents
 func (c *CloudWatchEvents) PutEvents(input *PutEventsInput) (*PutEventsOutput, error) {
@@ -3390,14 +3385,13 @@ const opPutPartnerEvents = "PutPartnerEvents"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutPartnerEventsRequest method.
+//	req, resp := client.PutPartnerEventsRequest(params)
 //
-//    // Example sending a request using the PutPartnerEventsRequest method.
-//    req, resp := client.PutPartnerEventsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/PutPartnerEvents
 func (c *CloudWatchEvents) PutPartnerEventsRequest(input *PutPartnerEventsInput) (req *request.Request, output *PutPartnerEventsOutput) {
@@ -3429,11 +3423,12 @@ func (c *CloudWatchEvents) PutPartnerEventsRequest(input *PutPartnerEventsInput)
 // API operation PutPartnerEvents for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   This exception occurs due to unexpected causes.
 //
-//   * OperationDisabledException
-//   The operation you are attempting is not available in this region.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
+//
+//   - OperationDisabledException
+//     The operation you are attempting is not available in this region.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/PutPartnerEvents
 func (c *CloudWatchEvents) PutPartnerEvents(input *PutPartnerEventsInput) (*PutPartnerEventsOutput, error) {
@@ -3473,14 +3468,13 @@ const opPutPermission = "PutPermission"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutPermissionRequest method.
+//	req, resp := client.PutPermissionRequest(params)
 //
-//    // Example sending a request using the PutPermissionRequest method.
-//    req, resp := client.PutPermissionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/PutPermission
 func (c *CloudWatchEvents) PutPermissionRequest(input *PutPermissionInput) (req *request.Request, output *PutPermissionOutput) {
@@ -3532,20 +3526,21 @@ func (c *CloudWatchEvents) PutPermissionRequest(input *PutPermissionInput) (req 
 // API operation PutPermission for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
 //
-//   * PolicyLengthExceededException
-//   The event bus policy is too long. For more information, see the limits.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - PolicyLengthExceededException
+//     The event bus policy is too long. For more information, see the limits.
 //
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
-//   * OperationDisabledException
-//   The operation you are attempting is not available in this region.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
+//
+//   - OperationDisabledException
+//     The operation you are attempting is not available in this region.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/PutPermission
 func (c *CloudWatchEvents) PutPermission(input *PutPermissionInput) (*PutPermissionOutput, error) {
@@ -3585,14 +3580,13 @@ const opPutRule = "PutRule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutRuleRequest method.
+//	req, resp := client.PutRuleRequest(params)
 //
-//    // Example sending a request using the PutRuleRequest method.
-//    req, resp := client.PutRuleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/PutRule
 func (c *CloudWatchEvents) PutRuleRequest(input *PutRuleInput) (req *request.Request, output *PutRuleOutput) {
@@ -3678,29 +3672,30 @@ func (c *CloudWatchEvents) PutRuleRequest(input *PutRuleInput) (req *request.Req
 // API operation PutRule for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidEventPatternException
-//   The event pattern is not valid.
 //
-//   * LimitExceededException
-//   The request failed because it attempted to create resource beyond the allowed
-//   service quota.
+//   - InvalidEventPatternException
+//     The event pattern is not valid.
 //
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
+//   - LimitExceededException
+//     The request failed because it attempted to create resource beyond the allowed
+//     service quota.
 //
-//   * ManagedRuleException
-//   This rule was created by an Amazon Web Services service on behalf of your
-//   account. It is managed by that service. If you see this error in response
-//   to DeleteRule or RemoveTargets, you can use the Force parameter in those
-//   calls to delete the rule or remove targets from the rule. You cannot modify
-//   these managed rules by using DisableRule, EnableRule, PutTargets, PutRule,
-//   TagResource, or UntagResource.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ManagedRuleException
+//     This rule was created by an Amazon Web Services service on behalf of your
+//     account. It is managed by that service. If you see this error in response
+//     to DeleteRule or RemoveTargets, you can use the Force parameter in those
+//     calls to delete the rule or remove targets from the rule. You cannot modify
+//     these managed rules by using DisableRule, EnableRule, PutTargets, PutRule,
+//     TagResource, or UntagResource.
 //
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
+//
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/PutRule
 func (c *CloudWatchEvents) PutRule(input *PutRuleInput) (*PutRuleOutput, error) {
@@ -3740,14 +3735,13 @@ const opPutTargets = "PutTargets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutTargetsRequest method.
+//	req, resp := client.PutTargetsRequest(params)
 //
-//    // Example sending a request using the PutTargetsRequest method.
-//    req, resp := client.PutTargetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/PutTargets
 func (c *CloudWatchEvents) PutTargetsRequest(input *PutTargetsInput) (req *request.Request, output *PutTargetsOutput) {
@@ -3775,59 +3769,60 @@ func (c *CloudWatchEvents) PutTargetsRequest(input *PutTargetsInput) (req *reque
 //
 // You can configure the following as targets for Events:
 //
-//    * API destination (https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-api-destinations.html)
+//   - API destination (https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-api-destinations.html)
 //
-//    * Amazon API Gateway REST API endpoints
+//   - Amazon API Gateway REST API endpoints
 //
-//    * API Gateway
+//   - API Gateway
 //
-//    * Batch job queue
+//   - Batch job queue
 //
-//    * CloudWatch Logs group
+//   - CloudWatch Logs group
 //
-//    * CodeBuild project
+//   - CodeBuild project
 //
-//    * CodePipeline
+//   - CodePipeline
 //
-//    * Amazon EC2 CreateSnapshot API call
+//   - Amazon EC2 CreateSnapshot API call
 //
-//    * Amazon EC2 RebootInstances API call
+//   - Amazon EC2 RebootInstances API call
 //
-//    * Amazon EC2 StopInstances API call
+//   - Amazon EC2 StopInstances API call
 //
-//    * Amazon EC2 TerminateInstances API call
+//   - Amazon EC2 TerminateInstances API call
 //
-//    * Amazon ECS tasks
+//   - Amazon ECS tasks
 //
-//    * Event bus in a different Amazon Web Services account or Region. You
-//    can use an event bus in the US East (N. Virginia) us-east-1, US West (Oregon)
-//    us-west-2, or Europe (Ireland) eu-west-1 Regions as a target for a rule.
+//   - Event bus in a different Amazon Web Services account or Region. You
+//     can use an event bus in the US East (N. Virginia) us-east-1, US West (Oregon)
+//     us-west-2, or Europe (Ireland) eu-west-1 Regions as a target for a rule.
 //
-//    * Firehose delivery stream (Kinesis Data Firehose)
+//   - Firehose delivery stream (Kinesis Data Firehose)
 //
-//    * Inspector assessment template (Amazon Inspector)
+//   - Inspector assessment template (Amazon Inspector)
 //
-//    * Kinesis stream (Kinesis Data Stream)
+//   - Kinesis stream (Kinesis Data Stream)
 //
-//    * Lambda function
+//   - Lambda function
 //
-//    * Redshift clusters (Data API statement execution)
+//   - Redshift clusters (Data API statement execution)
 //
-//    * Amazon SNS topic
+//   - Amazon SNS topic
 //
-//    * Amazon SQS queues (includes FIFO queues
+//   - Amazon SQS queues (includes FIFO queues
 //
-//    * SSM Automation
+//   - SSM Automation
 //
-//    * SSM OpsItem
+//   - SSM OpsItem
 //
-//    * SSM Run Command
+//   - SSM Run Command
 //
-//    * Step Functions state machines
+//   - Step Functions state machines
 //
-// Creating rules with built-in targets is supported only in the Management
-// Console. The built-in targets are EC2 CreateSnapshot API call, EC2 RebootInstances
-// API call, EC2 StopInstances API call, and EC2 TerminateInstances API call.
+// Creating rules with built-in targets is supported only in the Amazon Web
+// Services Management Console. The built-in targets are EC2 CreateSnapshot
+// API call, EC2 RebootInstances API call, EC2 StopInstances API call, and EC2
+// TerminateInstances API call.
 //
 // For some target types, PutTargets provides target-specific parameters. If
 // the target is a Kinesis data stream, you can optionally specify which shard
@@ -3869,21 +3864,21 @@ func (c *CloudWatchEvents) PutTargetsRequest(input *PutTargetsInput) (req *reque
 // Input, InputPath, and InputTransformer are mutually exclusive and optional
 // parameters of a target. When a rule is triggered due to a matched event:
 //
-//    * If none of the following arguments are specified for a target, then
-//    the entire event is passed to the target in JSON format (unless the target
-//    is Amazon EC2 Run Command or Amazon ECS task, in which case nothing from
-//    the event is passed to the target).
+//   - If none of the following arguments are specified for a target, then
+//     the entire event is passed to the target in JSON format (unless the target
+//     is Amazon EC2 Run Command or Amazon ECS task, in which case nothing from
+//     the event is passed to the target).
 //
-//    * If Input is specified in the form of valid JSON, then the matched event
-//    is overridden with this constant.
+//   - If Input is specified in the form of valid JSON, then the matched event
+//     is overridden with this constant.
 //
-//    * If InputPath is specified in the form of JSONPath (for example, $.detail),
-//    then only the part of the event specified in the path is passed to the
-//    target (for example, only the detail part of the event is passed).
+//   - If InputPath is specified in the form of JSONPath (for example, $.detail),
+//     then only the part of the event specified in the path is passed to the
+//     target (for example, only the detail part of the event is passed).
 //
-//    * If InputTransformer is specified, then one or more specified JSONPaths
-//    are extracted from the event and used as values in a template that you
-//    specify as the input to the target.
+//   - If InputTransformer is specified, then one or more specified JSONPaths
+//     are extracted from the event and used as values in a template that you
+//     specify as the input to the target.
 //
 // When you specify InputPath or InputTransformer, you must use JSON dot notation,
 // not bracket notation.
@@ -3905,26 +3900,27 @@ func (c *CloudWatchEvents) PutTargetsRequest(input *PutTargetsInput) (req *reque
 // API operation PutTargets for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
 //
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
-//   * LimitExceededException
-//   The request failed because it attempted to create resource beyond the allowed
-//   service quota.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * ManagedRuleException
-//   This rule was created by an Amazon Web Services service on behalf of your
-//   account. It is managed by that service. If you see this error in response
-//   to DeleteRule or RemoveTargets, you can use the Force parameter in those
-//   calls to delete the rule or remove targets from the rule. You cannot modify
-//   these managed rules by using DisableRule, EnableRule, PutTargets, PutRule,
-//   TagResource, or UntagResource.
+//   - LimitExceededException
+//     The request failed because it attempted to create resource beyond the allowed
+//     service quota.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ManagedRuleException
+//     This rule was created by an Amazon Web Services service on behalf of your
+//     account. It is managed by that service. If you see this error in response
+//     to DeleteRule or RemoveTargets, you can use the Force parameter in those
+//     calls to delete the rule or remove targets from the rule. You cannot modify
+//     these managed rules by using DisableRule, EnableRule, PutTargets, PutRule,
+//     TagResource, or UntagResource.
+//
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/PutTargets
 func (c *CloudWatchEvents) PutTargets(input *PutTargetsInput) (*PutTargetsOutput, error) {
@@ -3964,14 +3960,13 @@ const opRemovePermission = "RemovePermission"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RemovePermissionRequest method.
+//	req, resp := client.RemovePermissionRequest(params)
 //
-//    // Example sending a request using the RemovePermissionRequest method.
-//    req, resp := client.RemovePermissionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/RemovePermission
 func (c *CloudWatchEvents) RemovePermissionRequest(input *RemovePermissionInput) (req *request.Request, output *RemovePermissionOutput) {
@@ -4007,17 +4002,18 @@ func (c *CloudWatchEvents) RemovePermissionRequest(input *RemovePermissionInput)
 // API operation RemovePermission for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
-//   * OperationDisabledException
-//   The operation you are attempting is not available in this region.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
+//
+//   - OperationDisabledException
+//     The operation you are attempting is not available in this region.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/RemovePermission
 func (c *CloudWatchEvents) RemovePermission(input *RemovePermissionInput) (*RemovePermissionOutput, error) {
@@ -4057,14 +4053,13 @@ const opRemoveTargets = "RemoveTargets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RemoveTargetsRequest method.
+//	req, resp := client.RemoveTargetsRequest(params)
 //
-//    // Example sending a request using the RemoveTargetsRequest method.
-//    req, resp := client.RemoveTargetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/RemoveTargets
 func (c *CloudWatchEvents) RemoveTargetsRequest(input *RemoveTargetsInput) (req *request.Request, output *RemoveTargetsOutput) {
@@ -4105,22 +4100,23 @@ func (c *CloudWatchEvents) RemoveTargetsRequest(input *RemoveTargetsInput) (req 
 // API operation RemoveTargets for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
 //
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
-//   * ManagedRuleException
-//   This rule was created by an Amazon Web Services service on behalf of your
-//   account. It is managed by that service. If you see this error in response
-//   to DeleteRule or RemoveTargets, you can use the Force parameter in those
-//   calls to delete the rule or remove targets from the rule. You cannot modify
-//   these managed rules by using DisableRule, EnableRule, PutTargets, PutRule,
-//   TagResource, or UntagResource.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ManagedRuleException
+//     This rule was created by an Amazon Web Services service on behalf of your
+//     account. It is managed by that service. If you see this error in response
+//     to DeleteRule or RemoveTargets, you can use the Force parameter in those
+//     calls to delete the rule or remove targets from the rule. You cannot modify
+//     these managed rules by using DisableRule, EnableRule, PutTargets, PutRule,
+//     TagResource, or UntagResource.
+//
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/RemoveTargets
 func (c *CloudWatchEvents) RemoveTargets(input *RemoveTargetsInput) (*RemoveTargetsOutput, error) {
@@ -4160,14 +4156,13 @@ const opStartReplay = "StartReplay"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartReplayRequest method.
+//	req, resp := client.StartReplayRequest(params)
 //
-//    // Example sending a request using the StartReplayRequest method.
-//    req, resp := client.StartReplayRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/StartReplay
 func (c *CloudWatchEvents) StartReplayRequest(input *StartReplayInput) (req *request.Request, output *StartReplayOutput) {
@@ -4206,21 +4201,22 @@ func (c *CloudWatchEvents) StartReplayRequest(input *StartReplayInput) (req *req
 // API operation StartReplay for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
 //
-//   * ResourceAlreadyExistsException
-//   The resource you are trying to create already exists.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
-//   * InvalidEventPatternException
-//   The event pattern is not valid.
+//   - ResourceAlreadyExistsException
+//     The resource you are trying to create already exists.
 //
-//   * LimitExceededException
-//   The request failed because it attempted to create resource beyond the allowed
-//   service quota.
+//   - InvalidEventPatternException
+//     The event pattern is not valid.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - LimitExceededException
+//     The request failed because it attempted to create resource beyond the allowed
+//     service quota.
+//
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/StartReplay
 func (c *CloudWatchEvents) StartReplay(input *StartReplayInput) (*StartReplayOutput, error) {
@@ -4260,14 +4256,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/TagResource
 func (c *CloudWatchEvents) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -4314,22 +4309,23 @@ func (c *CloudWatchEvents) TagResourceRequest(input *TagResourceInput) (req *req
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
 //
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * ManagedRuleException
-//   This rule was created by an Amazon Web Services service on behalf of your
-//   account. It is managed by that service. If you see this error in response
-//   to DeleteRule or RemoveTargets, you can use the Force parameter in those
-//   calls to delete the rule or remove targets from the rule. You cannot modify
-//   these managed rules by using DisableRule, EnableRule, PutTargets, PutRule,
-//   TagResource, or UntagResource.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
+//
+//   - ManagedRuleException
+//     This rule was created by an Amazon Web Services service on behalf of your
+//     account. It is managed by that service. If you see this error in response
+//     to DeleteRule or RemoveTargets, you can use the Force parameter in those
+//     calls to delete the rule or remove targets from the rule. You cannot modify
+//     these managed rules by using DisableRule, EnableRule, PutTargets, PutRule,
+//     TagResource, or UntagResource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/TagResource
 func (c *CloudWatchEvents) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -4369,14 +4365,13 @@ const opTestEventPattern = "TestEventPattern"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TestEventPatternRequest method.
+//	req, resp := client.TestEventPatternRequest(params)
 //
-//    // Example sending a request using the TestEventPatternRequest method.
-//    req, resp := client.TestEventPatternRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/TestEventPattern
 func (c *CloudWatchEvents) TestEventPatternRequest(input *TestEventPatternInput) (req *request.Request, output *TestEventPatternOutput) {
@@ -4413,11 +4408,12 @@ func (c *CloudWatchEvents) TestEventPatternRequest(input *TestEventPatternInput)
 // API operation TestEventPattern for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidEventPatternException
-//   The event pattern is not valid.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - InvalidEventPatternException
+//     The event pattern is not valid.
+//
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/TestEventPattern
 func (c *CloudWatchEvents) TestEventPattern(input *TestEventPatternInput) (*TestEventPatternOutput, error) {
@@ -4457,14 +4453,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/UntagResource
 func (c *CloudWatchEvents) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -4497,22 +4492,23 @@ func (c *CloudWatchEvents) UntagResourceRequest(input *UntagResourceInput) (req 
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
-//   * ManagedRuleException
-//   This rule was created by an Amazon Web Services service on behalf of your
-//   account. It is managed by that service. If you see this error in response
-//   to DeleteRule or RemoveTargets, you can use the Force parameter in those
-//   calls to delete the rule or remove targets from the rule. You cannot modify
-//   these managed rules by using DisableRule, EnableRule, PutTargets, PutRule,
-//   TagResource, or UntagResource.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
+//
+//   - ManagedRuleException
+//     This rule was created by an Amazon Web Services service on behalf of your
+//     account. It is managed by that service. If you see this error in response
+//     to DeleteRule or RemoveTargets, you can use the Force parameter in those
+//     calls to delete the rule or remove targets from the rule. You cannot modify
+//     these managed rules by using DisableRule, EnableRule, PutTargets, PutRule,
+//     TagResource, or UntagResource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/UntagResource
 func (c *CloudWatchEvents) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -4552,14 +4548,13 @@ const opUpdateApiDestination = "UpdateApiDestination"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateApiDestinationRequest method.
+//	req, resp := client.UpdateApiDestinationRequest(params)
 //
-//    // Example sending a request using the UpdateApiDestinationRequest method.
-//    req, resp := client.UpdateApiDestinationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/UpdateApiDestination
 func (c *CloudWatchEvents) UpdateApiDestinationRequest(input *UpdateApiDestinationInput) (req *request.Request, output *UpdateApiDestinationOutput) {
@@ -4590,18 +4585,19 @@ func (c *CloudWatchEvents) UpdateApiDestinationRequest(input *UpdateApiDestinati
 // API operation UpdateApiDestination for usage and error information.
 //
 // Returned Error Types:
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
-//   * LimitExceededException
-//   The request failed because it attempted to create resource beyond the allowed
-//   service quota.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
+//
+//   - LimitExceededException
+//     The request failed because it attempted to create resource beyond the allowed
+//     service quota.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/UpdateApiDestination
 func (c *CloudWatchEvents) UpdateApiDestination(input *UpdateApiDestinationInput) (*UpdateApiDestinationOutput, error) {
@@ -4641,14 +4637,13 @@ const opUpdateArchive = "UpdateArchive"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateArchiveRequest method.
+//	req, resp := client.UpdateArchiveRequest(params)
 //
-//    // Example sending a request using the UpdateArchiveRequest method.
-//    req, resp := client.UpdateArchiveRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/UpdateArchive
 func (c *CloudWatchEvents) UpdateArchiveRequest(input *UpdateArchiveInput) (req *request.Request, output *UpdateArchiveOutput) {
@@ -4679,21 +4674,22 @@ func (c *CloudWatchEvents) UpdateArchiveRequest(input *UpdateArchiveInput) (req 
 // API operation UpdateArchive for usage and error information.
 //
 // Returned Error Types:
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
-//   * LimitExceededException
-//   The request failed because it attempted to create resource beyond the allowed
-//   service quota.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
 //
-//   * InvalidEventPatternException
-//   The event pattern is not valid.
+//   - LimitExceededException
+//     The request failed because it attempted to create resource beyond the allowed
+//     service quota.
+//
+//   - InvalidEventPatternException
+//     The event pattern is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/UpdateArchive
 func (c *CloudWatchEvents) UpdateArchive(input *UpdateArchiveInput) (*UpdateArchiveOutput, error) {
@@ -4733,14 +4729,13 @@ const opUpdateConnection = "UpdateConnection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateConnectionRequest method.
+//	req, resp := client.UpdateConnectionRequest(params)
 //
-//    // Example sending a request using the UpdateConnectionRequest method.
-//    req, resp := client.UpdateConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/UpdateConnection
 func (c *CloudWatchEvents) UpdateConnectionRequest(input *UpdateConnectionInput) (req *request.Request, output *UpdateConnectionOutput) {
@@ -4771,18 +4766,19 @@ func (c *CloudWatchEvents) UpdateConnectionRequest(input *UpdateConnectionInput)
 // API operation UpdateConnection for usage and error information.
 //
 // Returned Error Types:
-//   * ConcurrentModificationException
-//   There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * ResourceNotFoundException
-//   An entity that you specified does not exist.
+//   - ConcurrentModificationException
+//     There is concurrent modification on a rule, target, archive, or replay.
 //
-//   * InternalException
-//   This exception occurs due to unexpected causes.
+//   - ResourceNotFoundException
+//     An entity that you specified does not exist.
 //
-//   * LimitExceededException
-//   The request failed because it attempted to create resource beyond the allowed
-//   service quota.
+//   - InternalException
+//     This exception occurs due to unexpected causes.
+//
+//   - LimitExceededException
+//     The request failed because it attempted to create resource beyond the allowed
+//     service quota.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/events-2015-10-07/UpdateConnection
 func (c *CloudWatchEvents) UpdateConnection(input *UpdateConnectionInput) (*UpdateConnectionOutput, error) {
@@ -5861,7 +5857,11 @@ type ConnectionBodyParameter struct {
 	Key *string `type:"string"`
 
 	// The value associated with the key.
-	Value *string `type:"string"`
+	//
+	// Value is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by ConnectionBodyParameter's
+	// String and GoString methods.
+	Value *string `type:"string" sensitive:"true"`
 }
 
 // String returns the string representation.
@@ -5912,7 +5912,11 @@ type ConnectionHeaderParameter struct {
 	Key *string `type:"string"`
 
 	// The value associated with the key.
-	Value *string `type:"string"`
+	//
+	// Value is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by ConnectionHeaderParameter's
+	// String and GoString methods.
+	Value *string `type:"string" sensitive:"true"`
 }
 
 // String returns the string representation.
@@ -6109,7 +6113,11 @@ type ConnectionQueryStringParameter struct {
 	Key *string `type:"string"`
 
 	// The value associated with the key for the query string parameter.
-	Value *string `type:"string"`
+	//
+	// Value is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by ConnectionQueryStringParameter's
+	// String and GoString methods.
+	Value *string `type:"string" sensitive:"true"`
 }
 
 // String returns the string representation.
@@ -6489,8 +6497,12 @@ type CreateConnectionApiKeyAuthRequestParameters struct {
 
 	// The value for the API key to use for authorization.
 	//
+	// ApiKeyValue is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by CreateConnectionApiKeyAuthRequestParameters's
+	// String and GoString methods.
+	//
 	// ApiKeyValue is a required field
-	ApiKeyValue *string `min:"1" type:"string" required:"true"`
+	ApiKeyValue *string `min:"1" type:"string" required:"true" sensitive:"true"`
 }
 
 // String returns the string representation.
@@ -6641,8 +6653,12 @@ type CreateConnectionBasicAuthRequestParameters struct {
 
 	// The password associated with the user name to use for Basic authorization.
 	//
+	// Password is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by CreateConnectionBasicAuthRequestParameters's
+	// String and GoString methods.
+	//
 	// Password is a required field
-	Password *string `min:"1" type:"string" required:"true"`
+	Password *string `min:"1" type:"string" required:"true" sensitive:"true"`
 
 	// The user name to use for Basic authorization.
 	//
@@ -6806,8 +6822,12 @@ type CreateConnectionOAuthClientRequestParameters struct {
 	// The client secret associated with the client ID to use for OAuth authorization
 	// for the connection.
 	//
+	// ClientSecret is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by CreateConnectionOAuthClientRequestParameters's
+	// String and GoString methods.
+	//
 	// ClientSecret is a required field
-	ClientSecret *string `min:"1" type:"string" required:"true"`
+	ClientSecret *string `min:"1" type:"string" required:"true" sensitive:"true"`
 }
 
 // String returns the string representation.
@@ -15384,7 +15404,11 @@ type UpdateConnectionApiKeyAuthRequestParameters struct {
 	ApiKeyName *string `min:"1" type:"string"`
 
 	// The value associated with teh API key to use for authorization.
-	ApiKeyValue *string `min:"1" type:"string"`
+	//
+	// ApiKeyValue is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by UpdateConnectionApiKeyAuthRequestParameters's
+	// String and GoString methods.
+	ApiKeyValue *string `min:"1" type:"string" sensitive:"true"`
 }
 
 // String returns the string representation.
@@ -15526,7 +15550,11 @@ type UpdateConnectionBasicAuthRequestParameters struct {
 	_ struct{} `type:"structure"`
 
 	// The password associated with the user name to use for Basic authorization.
-	Password *string `min:"1" type:"string"`
+	//
+	// Password is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by UpdateConnectionBasicAuthRequestParameters's
+	// String and GoString methods.
+	Password *string `min:"1" type:"string" sensitive:"true"`
 
 	// The user name to use for Basic authorization.
 	Username *string `min:"1" type:"string"`
@@ -15667,7 +15695,11 @@ type UpdateConnectionOAuthClientRequestParameters struct {
 	ClientID *string `min:"1" type:"string"`
 
 	// The client secret assciated with the client ID to use for OAuth authorization.
-	ClientSecret *string `min:"1" type:"string"`
+	//
+	// ClientSecret is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by UpdateConnectionOAuthClientRequestParameters's
+	// String and GoString methods.
+	ClientSecret *string `min:"1" type:"string" sensitive:"true"`
 }
 
 // String returns the string representation.

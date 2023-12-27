@@ -29,14 +29,13 @@ const opCreateGatewayRoute = "CreateGatewayRoute"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateGatewayRouteRequest method.
+//	req, resp := client.CreateGatewayRouteRequest(params)
 //
-//    // Example sending a request using the CreateGatewayRouteRequest method.
-//    req, resp := client.CreateGatewayRouteRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/CreateGatewayRoute
 func (c *AppMesh) CreateGatewayRouteRequest(input *CreateGatewayRouteInput) (req *request.Request, output *CreateGatewayRouteOutput) {
@@ -73,36 +72,37 @@ func (c *AppMesh) CreateGatewayRouteRequest(input *CreateGatewayRouteInput) (req
 // API operation CreateGatewayRoute for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * BadRequestException
-//   The request syntax was malformed. Check your request syntax and try again.
+//   - NotFoundException
+//     The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * ConflictException
-//   The request contains a client token that was used for a previous update resource
-//   call with different specifications. Try the request again with a new client
-//   token.
+//   - BadRequestException
+//     The request syntax was malformed. Check your request syntax and try again.
 //
-//   * TooManyRequestsException
-//   The maximum request rate permitted by the App Mesh APIs has been exceeded
-//   for your account. For best results, use an increasing or variable sleep interval
-//   between requests.
+//   - ConflictException
+//     The request contains a client token that was used for a previous update resource
+//     call with different specifications. Try the request again with a new client
+//     token.
 //
-//   * ForbiddenException
-//   You don't have permissions to perform this action.
+//   - TooManyRequestsException
+//     The maximum request rate permitted by the App Mesh APIs has been exceeded
+//     for your account. For best results, use an increasing or variable sleep interval
+//     between requests.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the service.
+//   - ForbiddenException
+//     You don't have permissions to perform this action.
 //
-//   * InternalServerErrorException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the service.
 //
-//   * LimitExceededException
-//   You have exceeded a service limit for your account. For more information,
-//   see Service Limits (https://docs.aws.amazon.com/app-mesh/latest/userguide/service-quotas.html)
-//   in the App Mesh User Guide.
+//   - InternalServerErrorException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
+//
+//   - LimitExceededException
+//     You have exceeded a service limit for your account. For more information,
+//     see Service Limits (https://docs.aws.amazon.com/app-mesh/latest/userguide/service-quotas.html)
+//     in the App Mesh User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/CreateGatewayRoute
 func (c *AppMesh) CreateGatewayRoute(input *CreateGatewayRouteInput) (*CreateGatewayRouteOutput, error) {
@@ -142,14 +142,13 @@ const opCreateMesh = "CreateMesh"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateMeshRequest method.
+//	req, resp := client.CreateMeshRequest(params)
 //
-//    // Example sending a request using the CreateMeshRequest method.
-//    req, resp := client.CreateMeshRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/CreateMesh
 func (c *AppMesh) CreateMeshRequest(input *CreateMeshInput) (req *request.Request, output *CreateMeshOutput) {
@@ -187,36 +186,37 @@ func (c *AppMesh) CreateMeshRequest(input *CreateMeshInput) (req *request.Reques
 // API operation CreateMesh for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * BadRequestException
-//   The request syntax was malformed. Check your request syntax and try again.
+//   - NotFoundException
+//     The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * ConflictException
-//   The request contains a client token that was used for a previous update resource
-//   call with different specifications. Try the request again with a new client
-//   token.
+//   - BadRequestException
+//     The request syntax was malformed. Check your request syntax and try again.
 //
-//   * TooManyRequestsException
-//   The maximum request rate permitted by the App Mesh APIs has been exceeded
-//   for your account. For best results, use an increasing or variable sleep interval
-//   between requests.
+//   - ConflictException
+//     The request contains a client token that was used for a previous update resource
+//     call with different specifications. Try the request again with a new client
+//     token.
 //
-//   * ForbiddenException
-//   You don't have permissions to perform this action.
+//   - TooManyRequestsException
+//     The maximum request rate permitted by the App Mesh APIs has been exceeded
+//     for your account. For best results, use an increasing or variable sleep interval
+//     between requests.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the service.
+//   - ForbiddenException
+//     You don't have permissions to perform this action.
 //
-//   * InternalServerErrorException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the service.
 //
-//   * LimitExceededException
-//   You have exceeded a service limit for your account. For more information,
-//   see Service Limits (https://docs.aws.amazon.com/app-mesh/latest/userguide/service-quotas.html)
-//   in the App Mesh User Guide.
+//   - InternalServerErrorException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
+//
+//   - LimitExceededException
+//     You have exceeded a service limit for your account. For more information,
+//     see Service Limits (https://docs.aws.amazon.com/app-mesh/latest/userguide/service-quotas.html)
+//     in the App Mesh User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/CreateMesh
 func (c *AppMesh) CreateMesh(input *CreateMeshInput) (*CreateMeshOutput, error) {
@@ -256,14 +256,13 @@ const opCreateRoute = "CreateRoute"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateRouteRequest method.
+//	req, resp := client.CreateRouteRequest(params)
 //
-//    // Example sending a request using the CreateRouteRequest method.
-//    req, resp := client.CreateRouteRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/CreateRoute
 func (c *AppMesh) CreateRouteRequest(input *CreateRouteInput) (req *request.Request, output *CreateRouteOutput) {
@@ -299,36 +298,37 @@ func (c *AppMesh) CreateRouteRequest(input *CreateRouteInput) (req *request.Requ
 // API operation CreateRoute for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * BadRequestException
-//   The request syntax was malformed. Check your request syntax and try again.
+//   - NotFoundException
+//     The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * ConflictException
-//   The request contains a client token that was used for a previous update resource
-//   call with different specifications. Try the request again with a new client
-//   token.
+//   - BadRequestException
+//     The request syntax was malformed. Check your request syntax and try again.
 //
-//   * TooManyRequestsException
-//   The maximum request rate permitted by the App Mesh APIs has been exceeded
-//   for your account. For best results, use an increasing or variable sleep interval
-//   between requests.
+//   - ConflictException
+//     The request contains a client token that was used for a previous update resource
+//     call with different specifications. Try the request again with a new client
+//     token.
 //
-//   * ForbiddenException
-//   You don't have permissions to perform this action.
+//   - TooManyRequestsException
+//     The maximum request rate permitted by the App Mesh APIs has been exceeded
+//     for your account. For best results, use an increasing or variable sleep interval
+//     between requests.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the service.
+//   - ForbiddenException
+//     You don't have permissions to perform this action.
 //
-//   * InternalServerErrorException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the service.
 //
-//   * LimitExceededException
-//   You have exceeded a service limit for your account. For more information,
-//   see Service Limits (https://docs.aws.amazon.com/app-mesh/latest/userguide/service-quotas.html)
-//   in the App Mesh User Guide.
+//   - InternalServerErrorException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
+//
+//   - LimitExceededException
+//     You have exceeded a service limit for your account. For more information,
+//     see Service Limits (https://docs.aws.amazon.com/app-mesh/latest/userguide/service-quotas.html)
+//     in the App Mesh User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/CreateRoute
 func (c *AppMesh) CreateRoute(input *CreateRouteInput) (*CreateRouteOutput, error) {
@@ -368,14 +368,13 @@ const opCreateVirtualGateway = "CreateVirtualGateway"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateVirtualGatewayRequest method.
+//	req, resp := client.CreateVirtualGatewayRequest(params)
 //
-//    // Example sending a request using the CreateVirtualGatewayRequest method.
-//    req, resp := client.CreateVirtualGatewayRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/CreateVirtualGateway
 func (c *AppMesh) CreateVirtualGatewayRequest(input *CreateVirtualGatewayInput) (req *request.Request, output *CreateVirtualGatewayOutput) {
@@ -414,36 +413,37 @@ func (c *AppMesh) CreateVirtualGatewayRequest(input *CreateVirtualGatewayInput) 
 // API operation CreateVirtualGateway for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * BadRequestException
-//   The request syntax was malformed. Check your request syntax and try again.
+//   - NotFoundException
+//     The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * ConflictException
-//   The request contains a client token that was used for a previous update resource
-//   call with different specifications. Try the request again with a new client
-//   token.
+//   - BadRequestException
+//     The request syntax was malformed. Check your request syntax and try again.
 //
-//   * TooManyRequestsException
-//   The maximum request rate permitted by the App Mesh APIs has been exceeded
-//   for your account. For best results, use an increasing or variable sleep interval
-//   between requests.
+//   - ConflictException
+//     The request contains a client token that was used for a previous update resource
+//     call with different specifications. Try the request again with a new client
+//     token.
 //
-//   * ForbiddenException
-//   You don't have permissions to perform this action.
+//   - TooManyRequestsException
+//     The maximum request rate permitted by the App Mesh APIs has been exceeded
+//     for your account. For best results, use an increasing or variable sleep interval
+//     between requests.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the service.
+//   - ForbiddenException
+//     You don't have permissions to perform this action.
 //
-//   * InternalServerErrorException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the service.
 //
-//   * LimitExceededException
-//   You have exceeded a service limit for your account. For more information,
-//   see Service Limits (https://docs.aws.amazon.com/app-mesh/latest/userguide/service-quotas.html)
-//   in the App Mesh User Guide.
+//   - InternalServerErrorException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
+//
+//   - LimitExceededException
+//     You have exceeded a service limit for your account. For more information,
+//     see Service Limits (https://docs.aws.amazon.com/app-mesh/latest/userguide/service-quotas.html)
+//     in the App Mesh User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/CreateVirtualGateway
 func (c *AppMesh) CreateVirtualGateway(input *CreateVirtualGatewayInput) (*CreateVirtualGatewayOutput, error) {
@@ -483,14 +483,13 @@ const opCreateVirtualNode = "CreateVirtualNode"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateVirtualNodeRequest method.
+//	req, resp := client.CreateVirtualNodeRequest(params)
 //
-//    // Example sending a request using the CreateVirtualNodeRequest method.
-//    req, resp := client.CreateVirtualNodeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/CreateVirtualNode
 func (c *AppMesh) CreateVirtualNodeRequest(input *CreateVirtualNodeInput) (req *request.Request, output *CreateVirtualNodeOutput) {
@@ -548,36 +547,37 @@ func (c *AppMesh) CreateVirtualNodeRequest(input *CreateVirtualNodeInput) (req *
 // API operation CreateVirtualNode for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * BadRequestException
-//   The request syntax was malformed. Check your request syntax and try again.
+//   - NotFoundException
+//     The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * ConflictException
-//   The request contains a client token that was used for a previous update resource
-//   call with different specifications. Try the request again with a new client
-//   token.
+//   - BadRequestException
+//     The request syntax was malformed. Check your request syntax and try again.
 //
-//   * TooManyRequestsException
-//   The maximum request rate permitted by the App Mesh APIs has been exceeded
-//   for your account. For best results, use an increasing or variable sleep interval
-//   between requests.
+//   - ConflictException
+//     The request contains a client token that was used for a previous update resource
+//     call with different specifications. Try the request again with a new client
+//     token.
 //
-//   * ForbiddenException
-//   You don't have permissions to perform this action.
+//   - TooManyRequestsException
+//     The maximum request rate permitted by the App Mesh APIs has been exceeded
+//     for your account. For best results, use an increasing or variable sleep interval
+//     between requests.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the service.
+//   - ForbiddenException
+//     You don't have permissions to perform this action.
 //
-//   * InternalServerErrorException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the service.
 //
-//   * LimitExceededException
-//   You have exceeded a service limit for your account. For more information,
-//   see Service Limits (https://docs.aws.amazon.com/app-mesh/latest/userguide/service-quotas.html)
-//   in the App Mesh User Guide.
+//   - InternalServerErrorException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
+//
+//   - LimitExceededException
+//     You have exceeded a service limit for your account. For more information,
+//     see Service Limits (https://docs.aws.amazon.com/app-mesh/latest/userguide/service-quotas.html)
+//     in the App Mesh User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/CreateVirtualNode
 func (c *AppMesh) CreateVirtualNode(input *CreateVirtualNodeInput) (*CreateVirtualNodeOutput, error) {
@@ -617,14 +617,13 @@ const opCreateVirtualRouter = "CreateVirtualRouter"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateVirtualRouterRequest method.
+//	req, resp := client.CreateVirtualRouterRequest(params)
 //
-//    // Example sending a request using the CreateVirtualRouterRequest method.
-//    req, resp := client.CreateVirtualRouterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/CreateVirtualRouter
 func (c *AppMesh) CreateVirtualRouterRequest(input *CreateVirtualRouterInput) (req *request.Request, output *CreateVirtualRouterOutput) {
@@ -663,36 +662,37 @@ func (c *AppMesh) CreateVirtualRouterRequest(input *CreateVirtualRouterInput) (r
 // API operation CreateVirtualRouter for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * BadRequestException
-//   The request syntax was malformed. Check your request syntax and try again.
+//   - NotFoundException
+//     The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * ConflictException
-//   The request contains a client token that was used for a previous update resource
-//   call with different specifications. Try the request again with a new client
-//   token.
+//   - BadRequestException
+//     The request syntax was malformed. Check your request syntax and try again.
 //
-//   * TooManyRequestsException
-//   The maximum request rate permitted by the App Mesh APIs has been exceeded
-//   for your account. For best results, use an increasing or variable sleep interval
-//   between requests.
+//   - ConflictException
+//     The request contains a client token that was used for a previous update resource
+//     call with different specifications. Try the request again with a new client
+//     token.
 //
-//   * ForbiddenException
-//   You don't have permissions to perform this action.
+//   - TooManyRequestsException
+//     The maximum request rate permitted by the App Mesh APIs has been exceeded
+//     for your account. For best results, use an increasing or variable sleep interval
+//     between requests.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the service.
+//   - ForbiddenException
+//     You don't have permissions to perform this action.
 //
-//   * InternalServerErrorException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the service.
 //
-//   * LimitExceededException
-//   You have exceeded a service limit for your account. For more information,
-//   see Service Limits (https://docs.aws.amazon.com/app-mesh/latest/userguide/service-quotas.html)
-//   in the App Mesh User Guide.
+//   - InternalServerErrorException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
+//
+//   - LimitExceededException
+//     You have exceeded a service limit for your account. For more information,
+//     see Service Limits (https://docs.aws.amazon.com/app-mesh/latest/userguide/service-quotas.html)
+//     in the App Mesh User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/CreateVirtualRouter
 func (c *AppMesh) CreateVirtualRouter(input *CreateVirtualRouterInput) (*CreateVirtualRouterOutput, error) {
@@ -732,14 +732,13 @@ const opCreateVirtualService = "CreateVirtualService"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateVirtualServiceRequest method.
+//	req, resp := client.CreateVirtualServiceRequest(params)
 //
-//    // Example sending a request using the CreateVirtualServiceRequest method.
-//    req, resp := client.CreateVirtualServiceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/CreateVirtualService
 func (c *AppMesh) CreateVirtualServiceRequest(input *CreateVirtualServiceInput) (req *request.Request, output *CreateVirtualServiceOutput) {
@@ -778,36 +777,37 @@ func (c *AppMesh) CreateVirtualServiceRequest(input *CreateVirtualServiceInput) 
 // API operation CreateVirtualService for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * BadRequestException
-//   The request syntax was malformed. Check your request syntax and try again.
+//   - NotFoundException
+//     The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * ConflictException
-//   The request contains a client token that was used for a previous update resource
-//   call with different specifications. Try the request again with a new client
-//   token.
+//   - BadRequestException
+//     The request syntax was malformed. Check your request syntax and try again.
 //
-//   * TooManyRequestsException
-//   The maximum request rate permitted by the App Mesh APIs has been exceeded
-//   for your account. For best results, use an increasing or variable sleep interval
-//   between requests.
+//   - ConflictException
+//     The request contains a client token that was used for a previous update resource
+//     call with different specifications. Try the request again with a new client
+//     token.
 //
-//   * ForbiddenException
-//   You don't have permissions to perform this action.
+//   - TooManyRequestsException
+//     The maximum request rate permitted by the App Mesh APIs has been exceeded
+//     for your account. For best results, use an increasing or variable sleep interval
+//     between requests.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the service.
+//   - ForbiddenException
+//     You don't have permissions to perform this action.
 //
-//   * InternalServerErrorException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the service.
 //
-//   * LimitExceededException
-//   You have exceeded a service limit for your account. For more information,
-//   see Service Limits (https://docs.aws.amazon.com/app-mesh/latest/userguide/service-quotas.html)
-//   in the App Mesh User Guide.
+//   - InternalServerErrorException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
+//
+//   - LimitExceededException
+//     You have exceeded a service limit for your account. For more information,
+//     see Service Limits (https://docs.aws.amazon.com/app-mesh/latest/userguide/service-quotas.html)
+//     in the App Mesh User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/CreateVirtualService
 func (c *AppMesh) CreateVirtualService(input *CreateVirtualServiceInput) (*CreateVirtualServiceOutput, error) {
@@ -847,14 +847,13 @@ const opDeleteGatewayRoute = "DeleteGatewayRoute"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteGatewayRouteRequest method.
+//	req, resp := client.DeleteGatewayRouteRequest(params)
 //
-//    // Example sending a request using the DeleteGatewayRouteRequest method.
-//    req, resp := client.DeleteGatewayRouteRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/DeleteGatewayRoute
 func (c *AppMesh) DeleteGatewayRouteRequest(input *DeleteGatewayRouteInput) (req *request.Request, output *DeleteGatewayRouteOutput) {
@@ -885,30 +884,31 @@ func (c *AppMesh) DeleteGatewayRouteRequest(input *DeleteGatewayRouteInput) (req
 // API operation DeleteGatewayRoute for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * BadRequestException
-//   The request syntax was malformed. Check your request syntax and try again.
+//   - NotFoundException
+//     The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * TooManyRequestsException
-//   The maximum request rate permitted by the App Mesh APIs has been exceeded
-//   for your account. For best results, use an increasing or variable sleep interval
-//   between requests.
+//   - BadRequestException
+//     The request syntax was malformed. Check your request syntax and try again.
 //
-//   * ForbiddenException
-//   You don't have permissions to perform this action.
+//   - TooManyRequestsException
+//     The maximum request rate permitted by the App Mesh APIs has been exceeded
+//     for your account. For best results, use an increasing or variable sleep interval
+//     between requests.
 //
-//   * ResourceInUseException
-//   You can't delete the specified resource because it's in use or required by
-//   another resource.
+//   - ForbiddenException
+//     You don't have permissions to perform this action.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the service.
+//   - ResourceInUseException
+//     You can't delete the specified resource because it's in use or required by
+//     another resource.
 //
-//   * InternalServerErrorException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the service.
+//
+//   - InternalServerErrorException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/DeleteGatewayRoute
 func (c *AppMesh) DeleteGatewayRoute(input *DeleteGatewayRouteInput) (*DeleteGatewayRouteOutput, error) {
@@ -948,14 +948,13 @@ const opDeleteMesh = "DeleteMesh"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteMeshRequest method.
+//	req, resp := client.DeleteMeshRequest(params)
 //
-//    // Example sending a request using the DeleteMeshRequest method.
-//    req, resp := client.DeleteMeshRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/DeleteMesh
 func (c *AppMesh) DeleteMeshRequest(input *DeleteMeshInput) (req *request.Request, output *DeleteMeshOutput) {
@@ -989,30 +988,31 @@ func (c *AppMesh) DeleteMeshRequest(input *DeleteMeshInput) (req *request.Reques
 // API operation DeleteMesh for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * BadRequestException
-//   The request syntax was malformed. Check your request syntax and try again.
+//   - NotFoundException
+//     The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * TooManyRequestsException
-//   The maximum request rate permitted by the App Mesh APIs has been exceeded
-//   for your account. For best results, use an increasing or variable sleep interval
-//   between requests.
+//   - BadRequestException
+//     The request syntax was malformed. Check your request syntax and try again.
 //
-//   * ForbiddenException
-//   You don't have permissions to perform this action.
+//   - TooManyRequestsException
+//     The maximum request rate permitted by the App Mesh APIs has been exceeded
+//     for your account. For best results, use an increasing or variable sleep interval
+//     between requests.
 //
-//   * ResourceInUseException
-//   You can't delete the specified resource because it's in use or required by
-//   another resource.
+//   - ForbiddenException
+//     You don't have permissions to perform this action.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the service.
+//   - ResourceInUseException
+//     You can't delete the specified resource because it's in use or required by
+//     another resource.
 //
-//   * InternalServerErrorException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the service.
+//
+//   - InternalServerErrorException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/DeleteMesh
 func (c *AppMesh) DeleteMesh(input *DeleteMeshInput) (*DeleteMeshOutput, error) {
@@ -1052,14 +1052,13 @@ const opDeleteRoute = "DeleteRoute"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteRouteRequest method.
+//	req, resp := client.DeleteRouteRequest(params)
 //
-//    // Example sending a request using the DeleteRouteRequest method.
-//    req, resp := client.DeleteRouteRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/DeleteRoute
 func (c *AppMesh) DeleteRouteRequest(input *DeleteRouteInput) (req *request.Request, output *DeleteRouteOutput) {
@@ -1090,30 +1089,31 @@ func (c *AppMesh) DeleteRouteRequest(input *DeleteRouteInput) (req *request.Requ
 // API operation DeleteRoute for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * BadRequestException
-//   The request syntax was malformed. Check your request syntax and try again.
+//   - NotFoundException
+//     The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * TooManyRequestsException
-//   The maximum request rate permitted by the App Mesh APIs has been exceeded
-//   for your account. For best results, use an increasing or variable sleep interval
-//   between requests.
+//   - BadRequestException
+//     The request syntax was malformed. Check your request syntax and try again.
 //
-//   * ForbiddenException
-//   You don't have permissions to perform this action.
+//   - TooManyRequestsException
+//     The maximum request rate permitted by the App Mesh APIs has been exceeded
+//     for your account. For best results, use an increasing or variable sleep interval
+//     between requests.
 //
-//   * ResourceInUseException
-//   You can't delete the specified resource because it's in use or required by
-//   another resource.
+//   - ForbiddenException
+//     You don't have permissions to perform this action.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the service.
+//   - ResourceInUseException
+//     You can't delete the specified resource because it's in use or required by
+//     another resource.
 //
-//   * InternalServerErrorException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the service.
+//
+//   - InternalServerErrorException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/DeleteRoute
 func (c *AppMesh) DeleteRoute(input *DeleteRouteInput) (*DeleteRouteOutput, error) {
@@ -1153,14 +1153,13 @@ const opDeleteVirtualGateway = "DeleteVirtualGateway"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteVirtualGatewayRequest method.
+//	req, resp := client.DeleteVirtualGatewayRequest(params)
 //
-//    // Example sending a request using the DeleteVirtualGatewayRequest method.
-//    req, resp := client.DeleteVirtualGatewayRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/DeleteVirtualGateway
 func (c *AppMesh) DeleteVirtualGatewayRequest(input *DeleteVirtualGatewayInput) (req *request.Request, output *DeleteVirtualGatewayOutput) {
@@ -1192,30 +1191,31 @@ func (c *AppMesh) DeleteVirtualGatewayRequest(input *DeleteVirtualGatewayInput) 
 // API operation DeleteVirtualGateway for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * BadRequestException
-//   The request syntax was malformed. Check your request syntax and try again.
+//   - NotFoundException
+//     The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * TooManyRequestsException
-//   The maximum request rate permitted by the App Mesh APIs has been exceeded
-//   for your account. For best results, use an increasing or variable sleep interval
-//   between requests.
+//   - BadRequestException
+//     The request syntax was malformed. Check your request syntax and try again.
 //
-//   * ForbiddenException
-//   You don't have permissions to perform this action.
+//   - TooManyRequestsException
+//     The maximum request rate permitted by the App Mesh APIs has been exceeded
+//     for your account. For best results, use an increasing or variable sleep interval
+//     between requests.
 //
-//   * ResourceInUseException
-//   You can't delete the specified resource because it's in use or required by
-//   another resource.
+//   - ForbiddenException
+//     You don't have permissions to perform this action.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the service.
+//   - ResourceInUseException
+//     You can't delete the specified resource because it's in use or required by
+//     another resource.
 //
-//   * InternalServerErrorException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the service.
+//
+//   - InternalServerErrorException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/DeleteVirtualGateway
 func (c *AppMesh) DeleteVirtualGateway(input *DeleteVirtualGatewayInput) (*DeleteVirtualGatewayOutput, error) {
@@ -1255,14 +1255,13 @@ const opDeleteVirtualNode = "DeleteVirtualNode"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteVirtualNodeRequest method.
+//	req, resp := client.DeleteVirtualNodeRequest(params)
 //
-//    // Example sending a request using the DeleteVirtualNodeRequest method.
-//    req, resp := client.DeleteVirtualNodeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/DeleteVirtualNode
 func (c *AppMesh) DeleteVirtualNodeRequest(input *DeleteVirtualNodeInput) (req *request.Request, output *DeleteVirtualNodeOutput) {
@@ -1296,30 +1295,31 @@ func (c *AppMesh) DeleteVirtualNodeRequest(input *DeleteVirtualNodeInput) (req *
 // API operation DeleteVirtualNode for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * BadRequestException
-//   The request syntax was malformed. Check your request syntax and try again.
+//   - NotFoundException
+//     The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * TooManyRequestsException
-//   The maximum request rate permitted by the App Mesh APIs has been exceeded
-//   for your account. For best results, use an increasing or variable sleep interval
-//   between requests.
+//   - BadRequestException
+//     The request syntax was malformed. Check your request syntax and try again.
 //
-//   * ForbiddenException
-//   You don't have permissions to perform this action.
+//   - TooManyRequestsException
+//     The maximum request rate permitted by the App Mesh APIs has been exceeded
+//     for your account. For best results, use an increasing or variable sleep interval
+//     between requests.
 //
-//   * ResourceInUseException
-//   You can't delete the specified resource because it's in use or required by
-//   another resource.
+//   - ForbiddenException
+//     You don't have permissions to perform this action.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the service.
+//   - ResourceInUseException
+//     You can't delete the specified resource because it's in use or required by
+//     another resource.
 //
-//   * InternalServerErrorException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the service.
+//
+//   - InternalServerErrorException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/DeleteVirtualNode
 func (c *AppMesh) DeleteVirtualNode(input *DeleteVirtualNodeInput) (*DeleteVirtualNodeOutput, error) {
@@ -1359,14 +1359,13 @@ const opDeleteVirtualRouter = "DeleteVirtualRouter"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteVirtualRouterRequest method.
+//	req, resp := client.DeleteVirtualRouterRequest(params)
 //
-//    // Example sending a request using the DeleteVirtualRouterRequest method.
-//    req, resp := client.DeleteVirtualRouterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/DeleteVirtualRouter
 func (c *AppMesh) DeleteVirtualRouterRequest(input *DeleteVirtualRouterInput) (req *request.Request, output *DeleteVirtualRouterOutput) {
@@ -1400,30 +1399,31 @@ func (c *AppMesh) DeleteVirtualRouterRequest(input *DeleteVirtualRouterInput) (r
 // API operation DeleteVirtualRouter for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * BadRequestException
-//   The request syntax was malformed. Check your request syntax and try again.
+//   - NotFoundException
+//     The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * TooManyRequestsException
-//   The maximum request rate permitted by the App Mesh APIs has been exceeded
-//   for your account. For best results, use an increasing or variable sleep interval
-//   between requests.
+//   - BadRequestException
+//     The request syntax was malformed. Check your request syntax and try again.
 //
-//   * ForbiddenException
-//   You don't have permissions to perform this action.
+//   - TooManyRequestsException
+//     The maximum request rate permitted by the App Mesh APIs has been exceeded
+//     for your account. For best results, use an increasing or variable sleep interval
+//     between requests.
 //
-//   * ResourceInUseException
-//   You can't delete the specified resource because it's in use or required by
-//   another resource.
+//   - ForbiddenException
+//     You don't have permissions to perform this action.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the service.
+//   - ResourceInUseException
+//     You can't delete the specified resource because it's in use or required by
+//     another resource.
 //
-//   * InternalServerErrorException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the service.
+//
+//   - InternalServerErrorException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/DeleteVirtualRouter
 func (c *AppMesh) DeleteVirtualRouter(input *DeleteVirtualRouterInput) (*DeleteVirtualRouterOutput, error) {
@@ -1463,14 +1463,13 @@ const opDeleteVirtualService = "DeleteVirtualService"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteVirtualServiceRequest method.
+//	req, resp := client.DeleteVirtualServiceRequest(params)
 //
-//    // Example sending a request using the DeleteVirtualServiceRequest method.
-//    req, resp := client.DeleteVirtualServiceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/DeleteVirtualService
 func (c *AppMesh) DeleteVirtualServiceRequest(input *DeleteVirtualServiceInput) (req *request.Request, output *DeleteVirtualServiceOutput) {
@@ -1501,30 +1500,31 @@ func (c *AppMesh) DeleteVirtualServiceRequest(input *DeleteVirtualServiceInput) 
 // API operation DeleteVirtualService for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * BadRequestException
-//   The request syntax was malformed. Check your request syntax and try again.
+//   - NotFoundException
+//     The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * TooManyRequestsException
-//   The maximum request rate permitted by the App Mesh APIs has been exceeded
-//   for your account. For best results, use an increasing or variable sleep interval
-//   between requests.
+//   - BadRequestException
+//     The request syntax was malformed. Check your request syntax and try again.
 //
-//   * ForbiddenException
-//   You don't have permissions to perform this action.
+//   - TooManyRequestsException
+//     The maximum request rate permitted by the App Mesh APIs has been exceeded
+//     for your account. For best results, use an increasing or variable sleep interval
+//     between requests.
 //
-//   * ResourceInUseException
-//   You can't delete the specified resource because it's in use or required by
-//   another resource.
+//   - ForbiddenException
+//     You don't have permissions to perform this action.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the service.
+//   - ResourceInUseException
+//     You can't delete the specified resource because it's in use or required by
+//     another resource.
 //
-//   * InternalServerErrorException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the service.
+//
+//   - InternalServerErrorException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/DeleteVirtualService
 func (c *AppMesh) DeleteVirtualService(input *DeleteVirtualServiceInput) (*DeleteVirtualServiceOutput, error) {
@@ -1564,14 +1564,13 @@ const opDescribeGatewayRoute = "DescribeGatewayRoute"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeGatewayRouteRequest method.
+//	req, resp := client.DescribeGatewayRouteRequest(params)
 //
-//    // Example sending a request using the DescribeGatewayRouteRequest method.
-//    req, resp := client.DescribeGatewayRouteRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/DescribeGatewayRoute
 func (c *AppMesh) DescribeGatewayRouteRequest(input *DescribeGatewayRouteInput) (req *request.Request, output *DescribeGatewayRouteOutput) {
@@ -1602,26 +1601,27 @@ func (c *AppMesh) DescribeGatewayRouteRequest(input *DescribeGatewayRouteInput) 
 // API operation DescribeGatewayRoute for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * BadRequestException
-//   The request syntax was malformed. Check your request syntax and try again.
+//   - NotFoundException
+//     The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * TooManyRequestsException
-//   The maximum request rate permitted by the App Mesh APIs has been exceeded
-//   for your account. For best results, use an increasing or variable sleep interval
-//   between requests.
+//   - BadRequestException
+//     The request syntax was malformed. Check your request syntax and try again.
 //
-//   * ForbiddenException
-//   You don't have permissions to perform this action.
+//   - TooManyRequestsException
+//     The maximum request rate permitted by the App Mesh APIs has been exceeded
+//     for your account. For best results, use an increasing or variable sleep interval
+//     between requests.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the service.
+//   - ForbiddenException
+//     You don't have permissions to perform this action.
 //
-//   * InternalServerErrorException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the service.
+//
+//   - InternalServerErrorException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/DescribeGatewayRoute
 func (c *AppMesh) DescribeGatewayRoute(input *DescribeGatewayRouteInput) (*DescribeGatewayRouteOutput, error) {
@@ -1661,14 +1661,13 @@ const opDescribeMesh = "DescribeMesh"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeMeshRequest method.
+//	req, resp := client.DescribeMeshRequest(params)
 //
-//    // Example sending a request using the DescribeMeshRequest method.
-//    req, resp := client.DescribeMeshRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/DescribeMesh
 func (c *AppMesh) DescribeMeshRequest(input *DescribeMeshInput) (req *request.Request, output *DescribeMeshOutput) {
@@ -1699,26 +1698,27 @@ func (c *AppMesh) DescribeMeshRequest(input *DescribeMeshInput) (req *request.Re
 // API operation DescribeMesh for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * BadRequestException
-//   The request syntax was malformed. Check your request syntax and try again.
+//   - NotFoundException
+//     The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * TooManyRequestsException
-//   The maximum request rate permitted by the App Mesh APIs has been exceeded
-//   for your account. For best results, use an increasing or variable sleep interval
-//   between requests.
+//   - BadRequestException
+//     The request syntax was malformed. Check your request syntax and try again.
 //
-//   * ForbiddenException
-//   You don't have permissions to perform this action.
+//   - TooManyRequestsException
+//     The maximum request rate permitted by the App Mesh APIs has been exceeded
+//     for your account. For best results, use an increasing or variable sleep interval
+//     between requests.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the service.
+//   - ForbiddenException
+//     You don't have permissions to perform this action.
 //
-//   * InternalServerErrorException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the service.
+//
+//   - InternalServerErrorException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/DescribeMesh
 func (c *AppMesh) DescribeMesh(input *DescribeMeshInput) (*DescribeMeshOutput, error) {
@@ -1758,14 +1758,13 @@ const opDescribeRoute = "DescribeRoute"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeRouteRequest method.
+//	req, resp := client.DescribeRouteRequest(params)
 //
-//    // Example sending a request using the DescribeRouteRequest method.
-//    req, resp := client.DescribeRouteRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/DescribeRoute
 func (c *AppMesh) DescribeRouteRequest(input *DescribeRouteInput) (req *request.Request, output *DescribeRouteOutput) {
@@ -1796,26 +1795,27 @@ func (c *AppMesh) DescribeRouteRequest(input *DescribeRouteInput) (req *request.
 // API operation DescribeRoute for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * BadRequestException
-//   The request syntax was malformed. Check your request syntax and try again.
+//   - NotFoundException
+//     The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * TooManyRequestsException
-//   The maximum request rate permitted by the App Mesh APIs has been exceeded
-//   for your account. For best results, use an increasing or variable sleep interval
-//   between requests.
+//   - BadRequestException
+//     The request syntax was malformed. Check your request syntax and try again.
 //
-//   * ForbiddenException
-//   You don't have permissions to perform this action.
+//   - TooManyRequestsException
+//     The maximum request rate permitted by the App Mesh APIs has been exceeded
+//     for your account. For best results, use an increasing or variable sleep interval
+//     between requests.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the service.
+//   - ForbiddenException
+//     You don't have permissions to perform this action.
 //
-//   * InternalServerErrorException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the service.
+//
+//   - InternalServerErrorException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/DescribeRoute
 func (c *AppMesh) DescribeRoute(input *DescribeRouteInput) (*DescribeRouteOutput, error) {
@@ -1855,14 +1855,13 @@ const opDescribeVirtualGateway = "DescribeVirtualGateway"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeVirtualGatewayRequest method.
+//	req, resp := client.DescribeVirtualGatewayRequest(params)
 //
-//    // Example sending a request using the DescribeVirtualGatewayRequest method.
-//    req, resp := client.DescribeVirtualGatewayRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/DescribeVirtualGateway
 func (c *AppMesh) DescribeVirtualGatewayRequest(input *DescribeVirtualGatewayInput) (req *request.Request, output *DescribeVirtualGatewayOutput) {
@@ -1893,26 +1892,27 @@ func (c *AppMesh) DescribeVirtualGatewayRequest(input *DescribeVirtualGatewayInp
 // API operation DescribeVirtualGateway for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * BadRequestException
-//   The request syntax was malformed. Check your request syntax and try again.
+//   - NotFoundException
+//     The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * TooManyRequestsException
-//   The maximum request rate permitted by the App Mesh APIs has been exceeded
-//   for your account. For best results, use an increasing or variable sleep interval
-//   between requests.
+//   - BadRequestException
+//     The request syntax was malformed. Check your request syntax and try again.
 //
-//   * ForbiddenException
-//   You don't have permissions to perform this action.
+//   - TooManyRequestsException
+//     The maximum request rate permitted by the App Mesh APIs has been exceeded
+//     for your account. For best results, use an increasing or variable sleep interval
+//     between requests.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the service.
+//   - ForbiddenException
+//     You don't have permissions to perform this action.
 //
-//   * InternalServerErrorException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the service.
+//
+//   - InternalServerErrorException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/DescribeVirtualGateway
 func (c *AppMesh) DescribeVirtualGateway(input *DescribeVirtualGatewayInput) (*DescribeVirtualGatewayOutput, error) {
@@ -1952,14 +1952,13 @@ const opDescribeVirtualNode = "DescribeVirtualNode"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeVirtualNodeRequest method.
+//	req, resp := client.DescribeVirtualNodeRequest(params)
 //
-//    // Example sending a request using the DescribeVirtualNodeRequest method.
-//    req, resp := client.DescribeVirtualNodeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/DescribeVirtualNode
 func (c *AppMesh) DescribeVirtualNodeRequest(input *DescribeVirtualNodeInput) (req *request.Request, output *DescribeVirtualNodeOutput) {
@@ -1990,26 +1989,27 @@ func (c *AppMesh) DescribeVirtualNodeRequest(input *DescribeVirtualNodeInput) (r
 // API operation DescribeVirtualNode for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * BadRequestException
-//   The request syntax was malformed. Check your request syntax and try again.
+//   - NotFoundException
+//     The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * TooManyRequestsException
-//   The maximum request rate permitted by the App Mesh APIs has been exceeded
-//   for your account. For best results, use an increasing or variable sleep interval
-//   between requests.
+//   - BadRequestException
+//     The request syntax was malformed. Check your request syntax and try again.
 //
-//   * ForbiddenException
-//   You don't have permissions to perform this action.
+//   - TooManyRequestsException
+//     The maximum request rate permitted by the App Mesh APIs has been exceeded
+//     for your account. For best results, use an increasing or variable sleep interval
+//     between requests.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the service.
+//   - ForbiddenException
+//     You don't have permissions to perform this action.
 //
-//   * InternalServerErrorException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the service.
+//
+//   - InternalServerErrorException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/DescribeVirtualNode
 func (c *AppMesh) DescribeVirtualNode(input *DescribeVirtualNodeInput) (*DescribeVirtualNodeOutput, error) {
@@ -2049,14 +2049,13 @@ const opDescribeVirtualRouter = "DescribeVirtualRouter"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeVirtualRouterRequest method.
+//	req, resp := client.DescribeVirtualRouterRequest(params)
 //
-//    // Example sending a request using the DescribeVirtualRouterRequest method.
-//    req, resp := client.DescribeVirtualRouterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/DescribeVirtualRouter
 func (c *AppMesh) DescribeVirtualRouterRequest(input *DescribeVirtualRouterInput) (req *request.Request, output *DescribeVirtualRouterOutput) {
@@ -2087,26 +2086,27 @@ func (c *AppMesh) DescribeVirtualRouterRequest(input *DescribeVirtualRouterInput
 // API operation DescribeVirtualRouter for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * BadRequestException
-//   The request syntax was malformed. Check your request syntax and try again.
+//   - NotFoundException
+//     The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * TooManyRequestsException
-//   The maximum request rate permitted by the App Mesh APIs has been exceeded
-//   for your account. For best results, use an increasing or variable sleep interval
-//   between requests.
+//   - BadRequestException
+//     The request syntax was malformed. Check your request syntax and try again.
 //
-//   * ForbiddenException
-//   You don't have permissions to perform this action.
+//   - TooManyRequestsException
+//     The maximum request rate permitted by the App Mesh APIs has been exceeded
+//     for your account. For best results, use an increasing or variable sleep interval
+//     between requests.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the service.
+//   - ForbiddenException
+//     You don't have permissions to perform this action.
 //
-//   * InternalServerErrorException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the service.
+//
+//   - InternalServerErrorException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/DescribeVirtualRouter
 func (c *AppMesh) DescribeVirtualRouter(input *DescribeVirtualRouterInput) (*DescribeVirtualRouterOutput, error) {
@@ -2146,14 +2146,13 @@ const opDescribeVirtualService = "DescribeVirtualService"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeVirtualServiceRequest method.
+//	req, resp := client.DescribeVirtualServiceRequest(params)
 //
-//    // Example sending a request using the DescribeVirtualServiceRequest method.
-//    req, resp := client.DescribeVirtualServiceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/DescribeVirtualService
 func (c *AppMesh) DescribeVirtualServiceRequest(input *DescribeVirtualServiceInput) (req *request.Request, output *DescribeVirtualServiceOutput) {
@@ -2184,26 +2183,27 @@ func (c *AppMesh) DescribeVirtualServiceRequest(input *DescribeVirtualServiceInp
 // API operation DescribeVirtualService for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * BadRequestException
-//   The request syntax was malformed. Check your request syntax and try again.
+//   - NotFoundException
+//     The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * TooManyRequestsException
-//   The maximum request rate permitted by the App Mesh APIs has been exceeded
-//   for your account. For best results, use an increasing or variable sleep interval
-//   between requests.
+//   - BadRequestException
+//     The request syntax was malformed. Check your request syntax and try again.
 //
-//   * ForbiddenException
-//   You don't have permissions to perform this action.
+//   - TooManyRequestsException
+//     The maximum request rate permitted by the App Mesh APIs has been exceeded
+//     for your account. For best results, use an increasing or variable sleep interval
+//     between requests.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the service.
+//   - ForbiddenException
+//     You don't have permissions to perform this action.
 //
-//   * InternalServerErrorException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the service.
+//
+//   - InternalServerErrorException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/DescribeVirtualService
 func (c *AppMesh) DescribeVirtualService(input *DescribeVirtualServiceInput) (*DescribeVirtualServiceOutput, error) {
@@ -2243,14 +2243,13 @@ const opListGatewayRoutes = "ListGatewayRoutes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListGatewayRoutesRequest method.
+//	req, resp := client.ListGatewayRoutesRequest(params)
 //
-//    // Example sending a request using the ListGatewayRoutesRequest method.
-//    req, resp := client.ListGatewayRoutesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/ListGatewayRoutes
 func (c *AppMesh) ListGatewayRoutesRequest(input *ListGatewayRoutesInput) (req *request.Request, output *ListGatewayRoutesOutput) {
@@ -2288,26 +2287,27 @@ func (c *AppMesh) ListGatewayRoutesRequest(input *ListGatewayRoutesInput) (req *
 // API operation ListGatewayRoutes for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * BadRequestException
-//   The request syntax was malformed. Check your request syntax and try again.
+//   - NotFoundException
+//     The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * TooManyRequestsException
-//   The maximum request rate permitted by the App Mesh APIs has been exceeded
-//   for your account. For best results, use an increasing or variable sleep interval
-//   between requests.
+//   - BadRequestException
+//     The request syntax was malformed. Check your request syntax and try again.
 //
-//   * ForbiddenException
-//   You don't have permissions to perform this action.
+//   - TooManyRequestsException
+//     The maximum request rate permitted by the App Mesh APIs has been exceeded
+//     for your account. For best results, use an increasing or variable sleep interval
+//     between requests.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the service.
+//   - ForbiddenException
+//     You don't have permissions to perform this action.
 //
-//   * InternalServerErrorException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the service.
+//
+//   - InternalServerErrorException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/ListGatewayRoutes
 func (c *AppMesh) ListGatewayRoutes(input *ListGatewayRoutesInput) (*ListGatewayRoutesOutput, error) {
@@ -2339,15 +2339,14 @@ func (c *AppMesh) ListGatewayRoutesWithContext(ctx aws.Context, input *ListGatew
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListGatewayRoutes operation.
-//    pageNum := 0
-//    err := client.ListGatewayRoutesPages(params,
-//        func(page *appmesh.ListGatewayRoutesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListGatewayRoutes operation.
+//	pageNum := 0
+//	err := client.ListGatewayRoutesPages(params,
+//	    func(page *appmesh.ListGatewayRoutesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AppMesh) ListGatewayRoutesPages(input *ListGatewayRoutesInput, fn func(*ListGatewayRoutesOutput, bool) bool) error {
 	return c.ListGatewayRoutesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2399,14 +2398,13 @@ const opListMeshes = "ListMeshes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListMeshesRequest method.
+//	req, resp := client.ListMeshesRequest(params)
 //
-//    // Example sending a request using the ListMeshesRequest method.
-//    req, resp := client.ListMeshesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/ListMeshes
 func (c *AppMesh) ListMeshesRequest(input *ListMeshesInput) (req *request.Request, output *ListMeshesOutput) {
@@ -2443,26 +2441,27 @@ func (c *AppMesh) ListMeshesRequest(input *ListMeshesInput) (req *request.Reques
 // API operation ListMeshes for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * BadRequestException
-//   The request syntax was malformed. Check your request syntax and try again.
+//   - NotFoundException
+//     The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * TooManyRequestsException
-//   The maximum request rate permitted by the App Mesh APIs has been exceeded
-//   for your account. For best results, use an increasing or variable sleep interval
-//   between requests.
+//   - BadRequestException
+//     The request syntax was malformed. Check your request syntax and try again.
 //
-//   * ForbiddenException
-//   You don't have permissions to perform this action.
+//   - TooManyRequestsException
+//     The maximum request rate permitted by the App Mesh APIs has been exceeded
+//     for your account. For best results, use an increasing or variable sleep interval
+//     between requests.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the service.
+//   - ForbiddenException
+//     You don't have permissions to perform this action.
 //
-//   * InternalServerErrorException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the service.
+//
+//   - InternalServerErrorException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/ListMeshes
 func (c *AppMesh) ListMeshes(input *ListMeshesInput) (*ListMeshesOutput, error) {
@@ -2494,15 +2493,14 @@ func (c *AppMesh) ListMeshesWithContext(ctx aws.Context, input *ListMeshesInput,
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListMeshes operation.
-//    pageNum := 0
-//    err := client.ListMeshesPages(params,
-//        func(page *appmesh.ListMeshesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListMeshes operation.
+//	pageNum := 0
+//	err := client.ListMeshesPages(params,
+//	    func(page *appmesh.ListMeshesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AppMesh) ListMeshesPages(input *ListMeshesInput, fn func(*ListMeshesOutput, bool) bool) error {
 	return c.ListMeshesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2554,14 +2552,13 @@ const opListRoutes = "ListRoutes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRoutesRequest method.
+//	req, resp := client.ListRoutesRequest(params)
 //
-//    // Example sending a request using the ListRoutesRequest method.
-//    req, resp := client.ListRoutesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/ListRoutes
 func (c *AppMesh) ListRoutesRequest(input *ListRoutesInput) (req *request.Request, output *ListRoutesOutput) {
@@ -2598,26 +2595,27 @@ func (c *AppMesh) ListRoutesRequest(input *ListRoutesInput) (req *request.Reques
 // API operation ListRoutes for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * BadRequestException
-//   The request syntax was malformed. Check your request syntax and try again.
+//   - NotFoundException
+//     The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * TooManyRequestsException
-//   The maximum request rate permitted by the App Mesh APIs has been exceeded
-//   for your account. For best results, use an increasing or variable sleep interval
-//   between requests.
+//   - BadRequestException
+//     The request syntax was malformed. Check your request syntax and try again.
 //
-//   * ForbiddenException
-//   You don't have permissions to perform this action.
+//   - TooManyRequestsException
+//     The maximum request rate permitted by the App Mesh APIs has been exceeded
+//     for your account. For best results, use an increasing or variable sleep interval
+//     between requests.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the service.
+//   - ForbiddenException
+//     You don't have permissions to perform this action.
 //
-//   * InternalServerErrorException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the service.
+//
+//   - InternalServerErrorException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/ListRoutes
 func (c *AppMesh) ListRoutes(input *ListRoutesInput) (*ListRoutesOutput, error) {
@@ -2649,15 +2647,14 @@ func (c *AppMesh) ListRoutesWithContext(ctx aws.Context, input *ListRoutesInput,
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListRoutes operation.
-//    pageNum := 0
-//    err := client.ListRoutesPages(params,
-//        func(page *appmesh.ListRoutesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListRoutes operation.
+//	pageNum := 0
+//	err := client.ListRoutesPages(params,
+//	    func(page *appmesh.ListRoutesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AppMesh) ListRoutesPages(input *ListRoutesInput, fn func(*ListRoutesOutput, bool) bool) error {
 	return c.ListRoutesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2709,14 +2706,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/ListTagsForResource
 func (c *AppMesh) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -2753,26 +2749,27 @@ func (c *AppMesh) ListTagsForResourceRequest(input *ListTagsForResourceInput) (r
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * BadRequestException
-//   The request syntax was malformed. Check your request syntax and try again.
+//   - NotFoundException
+//     The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * TooManyRequestsException
-//   The maximum request rate permitted by the App Mesh APIs has been exceeded
-//   for your account. For best results, use an increasing or variable sleep interval
-//   between requests.
+//   - BadRequestException
+//     The request syntax was malformed. Check your request syntax and try again.
 //
-//   * ForbiddenException
-//   You don't have permissions to perform this action.
+//   - TooManyRequestsException
+//     The maximum request rate permitted by the App Mesh APIs has been exceeded
+//     for your account. For best results, use an increasing or variable sleep interval
+//     between requests.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the service.
+//   - ForbiddenException
+//     You don't have permissions to perform this action.
 //
-//   * InternalServerErrorException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the service.
+//
+//   - InternalServerErrorException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/ListTagsForResource
 func (c *AppMesh) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -2804,15 +2801,14 @@ func (c *AppMesh) ListTagsForResourceWithContext(ctx aws.Context, input *ListTag
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListTagsForResource operation.
-//    pageNum := 0
-//    err := client.ListTagsForResourcePages(params,
-//        func(page *appmesh.ListTagsForResourceOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListTagsForResource operation.
+//	pageNum := 0
+//	err := client.ListTagsForResourcePages(params,
+//	    func(page *appmesh.ListTagsForResourceOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AppMesh) ListTagsForResourcePages(input *ListTagsForResourceInput, fn func(*ListTagsForResourceOutput, bool) bool) error {
 	return c.ListTagsForResourcePagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2864,14 +2860,13 @@ const opListVirtualGateways = "ListVirtualGateways"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListVirtualGatewaysRequest method.
+//	req, resp := client.ListVirtualGatewaysRequest(params)
 //
-//    // Example sending a request using the ListVirtualGatewaysRequest method.
-//    req, resp := client.ListVirtualGatewaysRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/ListVirtualGateways
 func (c *AppMesh) ListVirtualGatewaysRequest(input *ListVirtualGatewaysInput) (req *request.Request, output *ListVirtualGatewaysOutput) {
@@ -2908,26 +2903,27 @@ func (c *AppMesh) ListVirtualGatewaysRequest(input *ListVirtualGatewaysInput) (r
 // API operation ListVirtualGateways for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * BadRequestException
-//   The request syntax was malformed. Check your request syntax and try again.
+//   - NotFoundException
+//     The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * TooManyRequestsException
-//   The maximum request rate permitted by the App Mesh APIs has been exceeded
-//   for your account. For best results, use an increasing or variable sleep interval
-//   between requests.
+//   - BadRequestException
+//     The request syntax was malformed. Check your request syntax and try again.
 //
-//   * ForbiddenException
-//   You don't have permissions to perform this action.
+//   - TooManyRequestsException
+//     The maximum request rate permitted by the App Mesh APIs has been exceeded
+//     for your account. For best results, use an increasing or variable sleep interval
+//     between requests.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the service.
+//   - ForbiddenException
+//     You don't have permissions to perform this action.
 //
-//   * InternalServerErrorException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the service.
+//
+//   - InternalServerErrorException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/ListVirtualGateways
 func (c *AppMesh) ListVirtualGateways(input *ListVirtualGatewaysInput) (*ListVirtualGatewaysOutput, error) {
@@ -2959,15 +2955,14 @@ func (c *AppMesh) ListVirtualGatewaysWithContext(ctx aws.Context, input *ListVir
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListVirtualGateways operation.
-//    pageNum := 0
-//    err := client.ListVirtualGatewaysPages(params,
-//        func(page *appmesh.ListVirtualGatewaysOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListVirtualGateways operation.
+//	pageNum := 0
+//	err := client.ListVirtualGatewaysPages(params,
+//	    func(page *appmesh.ListVirtualGatewaysOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AppMesh) ListVirtualGatewaysPages(input *ListVirtualGatewaysInput, fn func(*ListVirtualGatewaysOutput, bool) bool) error {
 	return c.ListVirtualGatewaysPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3019,14 +3014,13 @@ const opListVirtualNodes = "ListVirtualNodes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListVirtualNodesRequest method.
+//	req, resp := client.ListVirtualNodesRequest(params)
 //
-//    // Example sending a request using the ListVirtualNodesRequest method.
-//    req, resp := client.ListVirtualNodesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/ListVirtualNodes
 func (c *AppMesh) ListVirtualNodesRequest(input *ListVirtualNodesInput) (req *request.Request, output *ListVirtualNodesOutput) {
@@ -3063,26 +3057,27 @@ func (c *AppMesh) ListVirtualNodesRequest(input *ListVirtualNodesInput) (req *re
 // API operation ListVirtualNodes for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * BadRequestException
-//   The request syntax was malformed. Check your request syntax and try again.
+//   - NotFoundException
+//     The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * TooManyRequestsException
-//   The maximum request rate permitted by the App Mesh APIs has been exceeded
-//   for your account. For best results, use an increasing or variable sleep interval
-//   between requests.
+//   - BadRequestException
+//     The request syntax was malformed. Check your request syntax and try again.
 //
-//   * ForbiddenException
-//   You don't have permissions to perform this action.
+//   - TooManyRequestsException
+//     The maximum request rate permitted by the App Mesh APIs has been exceeded
+//     for your account. For best results, use an increasing or variable sleep interval
+//     between requests.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the service.
+//   - ForbiddenException
+//     You don't have permissions to perform this action.
 //
-//   * InternalServerErrorException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the service.
+//
+//   - InternalServerErrorException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/ListVirtualNodes
 func (c *AppMesh) ListVirtualNodes(input *ListVirtualNodesInput) (*ListVirtualNodesOutput, error) {
@@ -3114,15 +3109,14 @@ func (c *AppMesh) ListVirtualNodesWithContext(ctx aws.Context, input *ListVirtua
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListVirtualNodes operation.
-//    pageNum := 0
-//    err := client.ListVirtualNodesPages(params,
-//        func(page *appmesh.ListVirtualNodesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListVirtualNodes operation.
+//	pageNum := 0
+//	err := client.ListVirtualNodesPages(params,
+//	    func(page *appmesh.ListVirtualNodesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AppMesh) ListVirtualNodesPages(input *ListVirtualNodesInput, fn func(*ListVirtualNodesOutput, bool) bool) error {
 	return c.ListVirtualNodesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3174,14 +3168,13 @@ const opListVirtualRouters = "ListVirtualRouters"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListVirtualRoutersRequest method.
+//	req, resp := client.ListVirtualRoutersRequest(params)
 //
-//    // Example sending a request using the ListVirtualRoutersRequest method.
-//    req, resp := client.ListVirtualRoutersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/ListVirtualRouters
 func (c *AppMesh) ListVirtualRoutersRequest(input *ListVirtualRoutersInput) (req *request.Request, output *ListVirtualRoutersOutput) {
@@ -3218,26 +3211,27 @@ func (c *AppMesh) ListVirtualRoutersRequest(input *ListVirtualRoutersInput) (req
 // API operation ListVirtualRouters for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * BadRequestException
-//   The request syntax was malformed. Check your request syntax and try again.
+//   - NotFoundException
+//     The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * TooManyRequestsException
-//   The maximum request rate permitted by the App Mesh APIs has been exceeded
-//   for your account. For best results, use an increasing or variable sleep interval
-//   between requests.
+//   - BadRequestException
+//     The request syntax was malformed. Check your request syntax and try again.
 //
-//   * ForbiddenException
-//   You don't have permissions to perform this action.
+//   - TooManyRequestsException
+//     The maximum request rate permitted by the App Mesh APIs has been exceeded
+//     for your account. For best results, use an increasing or variable sleep interval
+//     between requests.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the service.
+//   - ForbiddenException
+//     You don't have permissions to perform this action.
 //
-//   * InternalServerErrorException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the service.
+//
+//   - InternalServerErrorException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/ListVirtualRouters
 func (c *AppMesh) ListVirtualRouters(input *ListVirtualRoutersInput) (*ListVirtualRoutersOutput, error) {
@@ -3269,15 +3263,14 @@ func (c *AppMesh) ListVirtualRoutersWithContext(ctx aws.Context, input *ListVirt
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListVirtualRouters operation.
-//    pageNum := 0
-//    err := client.ListVirtualRoutersPages(params,
-//        func(page *appmesh.ListVirtualRoutersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListVirtualRouters operation.
+//	pageNum := 0
+//	err := client.ListVirtualRoutersPages(params,
+//	    func(page *appmesh.ListVirtualRoutersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AppMesh) ListVirtualRoutersPages(input *ListVirtualRoutersInput, fn func(*ListVirtualRoutersOutput, bool) bool) error {
 	return c.ListVirtualRoutersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3329,14 +3322,13 @@ const opListVirtualServices = "ListVirtualServices"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListVirtualServicesRequest method.
+//	req, resp := client.ListVirtualServicesRequest(params)
 //
-//    // Example sending a request using the ListVirtualServicesRequest method.
-//    req, resp := client.ListVirtualServicesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/ListVirtualServices
 func (c *AppMesh) ListVirtualServicesRequest(input *ListVirtualServicesInput) (req *request.Request, output *ListVirtualServicesOutput) {
@@ -3373,26 +3365,27 @@ func (c *AppMesh) ListVirtualServicesRequest(input *ListVirtualServicesInput) (r
 // API operation ListVirtualServices for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * BadRequestException
-//   The request syntax was malformed. Check your request syntax and try again.
+//   - NotFoundException
+//     The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * TooManyRequestsException
-//   The maximum request rate permitted by the App Mesh APIs has been exceeded
-//   for your account. For best results, use an increasing or variable sleep interval
-//   between requests.
+//   - BadRequestException
+//     The request syntax was malformed. Check your request syntax and try again.
 //
-//   * ForbiddenException
-//   You don't have permissions to perform this action.
+//   - TooManyRequestsException
+//     The maximum request rate permitted by the App Mesh APIs has been exceeded
+//     for your account. For best results, use an increasing or variable sleep interval
+//     between requests.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the service.
+//   - ForbiddenException
+//     You don't have permissions to perform this action.
 //
-//   * InternalServerErrorException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the service.
+//
+//   - InternalServerErrorException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/ListVirtualServices
 func (c *AppMesh) ListVirtualServices(input *ListVirtualServicesInput) (*ListVirtualServicesOutput, error) {
@@ -3424,15 +3417,14 @@ func (c *AppMesh) ListVirtualServicesWithContext(ctx aws.Context, input *ListVir
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListVirtualServices operation.
-//    pageNum := 0
-//    err := client.ListVirtualServicesPages(params,
-//        func(page *appmesh.ListVirtualServicesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListVirtualServices operation.
+//	pageNum := 0
+//	err := client.ListVirtualServicesPages(params,
+//	    func(page *appmesh.ListVirtualServicesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AppMesh) ListVirtualServicesPages(input *ListVirtualServicesInput, fn func(*ListVirtualServicesOutput, bool) bool) error {
 	return c.ListVirtualServicesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3484,14 +3476,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/TagResource
 func (c *AppMesh) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -3526,31 +3517,32 @@ func (c *AppMesh) TagResourceRequest(input *TagResourceInput) (req *request.Requ
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * BadRequestException
-//   The request syntax was malformed. Check your request syntax and try again.
+//   - NotFoundException
+//     The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * TooManyTagsException
-//   The request exceeds the maximum allowed number of tags allowed per resource.
-//   The current limit is 50 user tags per resource. You must reduce the number
-//   of tags in the request. None of the tags in this request were applied.
+//   - BadRequestException
+//     The request syntax was malformed. Check your request syntax and try again.
 //
-//   * TooManyRequestsException
-//   The maximum request rate permitted by the App Mesh APIs has been exceeded
-//   for your account. For best results, use an increasing or variable sleep interval
-//   between requests.
+//   - TooManyTagsException
+//     The request exceeds the maximum allowed number of tags allowed per resource.
+//     The current limit is 50 user tags per resource. You must reduce the number
+//     of tags in the request. None of the tags in this request were applied.
 //
-//   * ForbiddenException
-//   You don't have permissions to perform this action.
+//   - TooManyRequestsException
+//     The maximum request rate permitted by the App Mesh APIs has been exceeded
+//     for your account. For best results, use an increasing or variable sleep interval
+//     between requests.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the service.
+//   - ForbiddenException
+//     You don't have permissions to perform this action.
 //
-//   * InternalServerErrorException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the service.
+//
+//   - InternalServerErrorException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/TagResource
 func (c *AppMesh) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -3590,14 +3582,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/UntagResource
 func (c *AppMesh) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -3629,26 +3620,27 @@ func (c *AppMesh) UntagResourceRequest(input *UntagResourceInput) (req *request.
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * BadRequestException
-//   The request syntax was malformed. Check your request syntax and try again.
+//   - NotFoundException
+//     The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * TooManyRequestsException
-//   The maximum request rate permitted by the App Mesh APIs has been exceeded
-//   for your account. For best results, use an increasing or variable sleep interval
-//   between requests.
+//   - BadRequestException
+//     The request syntax was malformed. Check your request syntax and try again.
 //
-//   * ForbiddenException
-//   You don't have permissions to perform this action.
+//   - TooManyRequestsException
+//     The maximum request rate permitted by the App Mesh APIs has been exceeded
+//     for your account. For best results, use an increasing or variable sleep interval
+//     between requests.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the service.
+//   - ForbiddenException
+//     You don't have permissions to perform this action.
 //
-//   * InternalServerErrorException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the service.
+//
+//   - InternalServerErrorException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/UntagResource
 func (c *AppMesh) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -3688,14 +3680,13 @@ const opUpdateGatewayRoute = "UpdateGatewayRoute"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateGatewayRouteRequest method.
+//	req, resp := client.UpdateGatewayRouteRequest(params)
 //
-//    // Example sending a request using the UpdateGatewayRouteRequest method.
-//    req, resp := client.UpdateGatewayRouteRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/UpdateGatewayRoute
 func (c *AppMesh) UpdateGatewayRouteRequest(input *UpdateGatewayRouteInput) (req *request.Request, output *UpdateGatewayRouteOutput) {
@@ -3727,36 +3718,37 @@ func (c *AppMesh) UpdateGatewayRouteRequest(input *UpdateGatewayRouteInput) (req
 // API operation UpdateGatewayRoute for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * BadRequestException
-//   The request syntax was malformed. Check your request syntax and try again.
+//   - NotFoundException
+//     The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * ConflictException
-//   The request contains a client token that was used for a previous update resource
-//   call with different specifications. Try the request again with a new client
-//   token.
+//   - BadRequestException
+//     The request syntax was malformed. Check your request syntax and try again.
 //
-//   * TooManyRequestsException
-//   The maximum request rate permitted by the App Mesh APIs has been exceeded
-//   for your account. For best results, use an increasing or variable sleep interval
-//   between requests.
+//   - ConflictException
+//     The request contains a client token that was used for a previous update resource
+//     call with different specifications. Try the request again with a new client
+//     token.
 //
-//   * ForbiddenException
-//   You don't have permissions to perform this action.
+//   - TooManyRequestsException
+//     The maximum request rate permitted by the App Mesh APIs has been exceeded
+//     for your account. For best results, use an increasing or variable sleep interval
+//     between requests.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the service.
+//   - ForbiddenException
+//     You don't have permissions to perform this action.
 //
-//   * InternalServerErrorException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the service.
 //
-//   * LimitExceededException
-//   You have exceeded a service limit for your account. For more information,
-//   see Service Limits (https://docs.aws.amazon.com/app-mesh/latest/userguide/service-quotas.html)
-//   in the App Mesh User Guide.
+//   - InternalServerErrorException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
+//
+//   - LimitExceededException
+//     You have exceeded a service limit for your account. For more information,
+//     see Service Limits (https://docs.aws.amazon.com/app-mesh/latest/userguide/service-quotas.html)
+//     in the App Mesh User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/UpdateGatewayRoute
 func (c *AppMesh) UpdateGatewayRoute(input *UpdateGatewayRouteInput) (*UpdateGatewayRouteOutput, error) {
@@ -3796,14 +3788,13 @@ const opUpdateMesh = "UpdateMesh"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateMeshRequest method.
+//	req, resp := client.UpdateMeshRequest(params)
 //
-//    // Example sending a request using the UpdateMeshRequest method.
-//    req, resp := client.UpdateMeshRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/UpdateMesh
 func (c *AppMesh) UpdateMeshRequest(input *UpdateMeshInput) (req *request.Request, output *UpdateMeshOutput) {
@@ -3834,31 +3825,32 @@ func (c *AppMesh) UpdateMeshRequest(input *UpdateMeshInput) (req *request.Reques
 // API operation UpdateMesh for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * BadRequestException
-//   The request syntax was malformed. Check your request syntax and try again.
+//   - NotFoundException
+//     The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * ConflictException
-//   The request contains a client token that was used for a previous update resource
-//   call with different specifications. Try the request again with a new client
-//   token.
+//   - BadRequestException
+//     The request syntax was malformed. Check your request syntax and try again.
 //
-//   * TooManyRequestsException
-//   The maximum request rate permitted by the App Mesh APIs has been exceeded
-//   for your account. For best results, use an increasing or variable sleep interval
-//   between requests.
+//   - ConflictException
+//     The request contains a client token that was used for a previous update resource
+//     call with different specifications. Try the request again with a new client
+//     token.
 //
-//   * ForbiddenException
-//   You don't have permissions to perform this action.
+//   - TooManyRequestsException
+//     The maximum request rate permitted by the App Mesh APIs has been exceeded
+//     for your account. For best results, use an increasing or variable sleep interval
+//     between requests.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the service.
+//   - ForbiddenException
+//     You don't have permissions to perform this action.
 //
-//   * InternalServerErrorException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the service.
+//
+//   - InternalServerErrorException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/UpdateMesh
 func (c *AppMesh) UpdateMesh(input *UpdateMeshInput) (*UpdateMeshOutput, error) {
@@ -3898,14 +3890,13 @@ const opUpdateRoute = "UpdateRoute"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateRouteRequest method.
+//	req, resp := client.UpdateRouteRequest(params)
 //
-//    // Example sending a request using the UpdateRouteRequest method.
-//    req, resp := client.UpdateRouteRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/UpdateRoute
 func (c *AppMesh) UpdateRouteRequest(input *UpdateRouteInput) (req *request.Request, output *UpdateRouteOutput) {
@@ -3936,36 +3927,37 @@ func (c *AppMesh) UpdateRouteRequest(input *UpdateRouteInput) (req *request.Requ
 // API operation UpdateRoute for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * BadRequestException
-//   The request syntax was malformed. Check your request syntax and try again.
+//   - NotFoundException
+//     The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * ConflictException
-//   The request contains a client token that was used for a previous update resource
-//   call with different specifications. Try the request again with a new client
-//   token.
+//   - BadRequestException
+//     The request syntax was malformed. Check your request syntax and try again.
 //
-//   * TooManyRequestsException
-//   The maximum request rate permitted by the App Mesh APIs has been exceeded
-//   for your account. For best results, use an increasing or variable sleep interval
-//   between requests.
+//   - ConflictException
+//     The request contains a client token that was used for a previous update resource
+//     call with different specifications. Try the request again with a new client
+//     token.
 //
-//   * ForbiddenException
-//   You don't have permissions to perform this action.
+//   - TooManyRequestsException
+//     The maximum request rate permitted by the App Mesh APIs has been exceeded
+//     for your account. For best results, use an increasing or variable sleep interval
+//     between requests.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the service.
+//   - ForbiddenException
+//     You don't have permissions to perform this action.
 //
-//   * InternalServerErrorException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the service.
 //
-//   * LimitExceededException
-//   You have exceeded a service limit for your account. For more information,
-//   see Service Limits (https://docs.aws.amazon.com/app-mesh/latest/userguide/service-quotas.html)
-//   in the App Mesh User Guide.
+//   - InternalServerErrorException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
+//
+//   - LimitExceededException
+//     You have exceeded a service limit for your account. For more information,
+//     see Service Limits (https://docs.aws.amazon.com/app-mesh/latest/userguide/service-quotas.html)
+//     in the App Mesh User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/UpdateRoute
 func (c *AppMesh) UpdateRoute(input *UpdateRouteInput) (*UpdateRouteOutput, error) {
@@ -4005,14 +3997,13 @@ const opUpdateVirtualGateway = "UpdateVirtualGateway"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateVirtualGatewayRequest method.
+//	req, resp := client.UpdateVirtualGatewayRequest(params)
 //
-//    // Example sending a request using the UpdateVirtualGatewayRequest method.
-//    req, resp := client.UpdateVirtualGatewayRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/UpdateVirtualGateway
 func (c *AppMesh) UpdateVirtualGatewayRequest(input *UpdateVirtualGatewayInput) (req *request.Request, output *UpdateVirtualGatewayOutput) {
@@ -4043,36 +4034,37 @@ func (c *AppMesh) UpdateVirtualGatewayRequest(input *UpdateVirtualGatewayInput) 
 // API operation UpdateVirtualGateway for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * BadRequestException
-//   The request syntax was malformed. Check your request syntax and try again.
+//   - NotFoundException
+//     The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * ConflictException
-//   The request contains a client token that was used for a previous update resource
-//   call with different specifications. Try the request again with a new client
-//   token.
+//   - BadRequestException
+//     The request syntax was malformed. Check your request syntax and try again.
 //
-//   * TooManyRequestsException
-//   The maximum request rate permitted by the App Mesh APIs has been exceeded
-//   for your account. For best results, use an increasing or variable sleep interval
-//   between requests.
+//   - ConflictException
+//     The request contains a client token that was used for a previous update resource
+//     call with different specifications. Try the request again with a new client
+//     token.
 //
-//   * ForbiddenException
-//   You don't have permissions to perform this action.
+//   - TooManyRequestsException
+//     The maximum request rate permitted by the App Mesh APIs has been exceeded
+//     for your account. For best results, use an increasing or variable sleep interval
+//     between requests.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the service.
+//   - ForbiddenException
+//     You don't have permissions to perform this action.
 //
-//   * InternalServerErrorException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the service.
 //
-//   * LimitExceededException
-//   You have exceeded a service limit for your account. For more information,
-//   see Service Limits (https://docs.aws.amazon.com/app-mesh/latest/userguide/service-quotas.html)
-//   in the App Mesh User Guide.
+//   - InternalServerErrorException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
+//
+//   - LimitExceededException
+//     You have exceeded a service limit for your account. For more information,
+//     see Service Limits (https://docs.aws.amazon.com/app-mesh/latest/userguide/service-quotas.html)
+//     in the App Mesh User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/UpdateVirtualGateway
 func (c *AppMesh) UpdateVirtualGateway(input *UpdateVirtualGatewayInput) (*UpdateVirtualGatewayOutput, error) {
@@ -4112,14 +4104,13 @@ const opUpdateVirtualNode = "UpdateVirtualNode"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateVirtualNodeRequest method.
+//	req, resp := client.UpdateVirtualNodeRequest(params)
 //
-//    // Example sending a request using the UpdateVirtualNodeRequest method.
-//    req, resp := client.UpdateVirtualNodeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/UpdateVirtualNode
 func (c *AppMesh) UpdateVirtualNodeRequest(input *UpdateVirtualNodeInput) (req *request.Request, output *UpdateVirtualNodeOutput) {
@@ -4150,36 +4141,37 @@ func (c *AppMesh) UpdateVirtualNodeRequest(input *UpdateVirtualNodeInput) (req *
 // API operation UpdateVirtualNode for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * BadRequestException
-//   The request syntax was malformed. Check your request syntax and try again.
+//   - NotFoundException
+//     The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * ConflictException
-//   The request contains a client token that was used for a previous update resource
-//   call with different specifications. Try the request again with a new client
-//   token.
+//   - BadRequestException
+//     The request syntax was malformed. Check your request syntax and try again.
 //
-//   * TooManyRequestsException
-//   The maximum request rate permitted by the App Mesh APIs has been exceeded
-//   for your account. For best results, use an increasing or variable sleep interval
-//   between requests.
+//   - ConflictException
+//     The request contains a client token that was used for a previous update resource
+//     call with different specifications. Try the request again with a new client
+//     token.
 //
-//   * ForbiddenException
-//   You don't have permissions to perform this action.
+//   - TooManyRequestsException
+//     The maximum request rate permitted by the App Mesh APIs has been exceeded
+//     for your account. For best results, use an increasing or variable sleep interval
+//     between requests.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the service.
+//   - ForbiddenException
+//     You don't have permissions to perform this action.
 //
-//   * InternalServerErrorException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the service.
 //
-//   * LimitExceededException
-//   You have exceeded a service limit for your account. For more information,
-//   see Service Limits (https://docs.aws.amazon.com/app-mesh/latest/userguide/service-quotas.html)
-//   in the App Mesh User Guide.
+//   - InternalServerErrorException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
+//
+//   - LimitExceededException
+//     You have exceeded a service limit for your account. For more information,
+//     see Service Limits (https://docs.aws.amazon.com/app-mesh/latest/userguide/service-quotas.html)
+//     in the App Mesh User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/UpdateVirtualNode
 func (c *AppMesh) UpdateVirtualNode(input *UpdateVirtualNodeInput) (*UpdateVirtualNodeOutput, error) {
@@ -4219,14 +4211,13 @@ const opUpdateVirtualRouter = "UpdateVirtualRouter"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateVirtualRouterRequest method.
+//	req, resp := client.UpdateVirtualRouterRequest(params)
 //
-//    // Example sending a request using the UpdateVirtualRouterRequest method.
-//    req, resp := client.UpdateVirtualRouterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/UpdateVirtualRouter
 func (c *AppMesh) UpdateVirtualRouterRequest(input *UpdateVirtualRouterInput) (req *request.Request, output *UpdateVirtualRouterOutput) {
@@ -4257,36 +4248,37 @@ func (c *AppMesh) UpdateVirtualRouterRequest(input *UpdateVirtualRouterInput) (r
 // API operation UpdateVirtualRouter for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * BadRequestException
-//   The request syntax was malformed. Check your request syntax and try again.
+//   - NotFoundException
+//     The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * ConflictException
-//   The request contains a client token that was used for a previous update resource
-//   call with different specifications. Try the request again with a new client
-//   token.
+//   - BadRequestException
+//     The request syntax was malformed. Check your request syntax and try again.
 //
-//   * TooManyRequestsException
-//   The maximum request rate permitted by the App Mesh APIs has been exceeded
-//   for your account. For best results, use an increasing or variable sleep interval
-//   between requests.
+//   - ConflictException
+//     The request contains a client token that was used for a previous update resource
+//     call with different specifications. Try the request again with a new client
+//     token.
 //
-//   * ForbiddenException
-//   You don't have permissions to perform this action.
+//   - TooManyRequestsException
+//     The maximum request rate permitted by the App Mesh APIs has been exceeded
+//     for your account. For best results, use an increasing or variable sleep interval
+//     between requests.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the service.
+//   - ForbiddenException
+//     You don't have permissions to perform this action.
 //
-//   * InternalServerErrorException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the service.
 //
-//   * LimitExceededException
-//   You have exceeded a service limit for your account. For more information,
-//   see Service Limits (https://docs.aws.amazon.com/app-mesh/latest/userguide/service-quotas.html)
-//   in the App Mesh User Guide.
+//   - InternalServerErrorException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
+//
+//   - LimitExceededException
+//     You have exceeded a service limit for your account. For more information,
+//     see Service Limits (https://docs.aws.amazon.com/app-mesh/latest/userguide/service-quotas.html)
+//     in the App Mesh User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/UpdateVirtualRouter
 func (c *AppMesh) UpdateVirtualRouter(input *UpdateVirtualRouterInput) (*UpdateVirtualRouterOutput, error) {
@@ -4326,14 +4318,13 @@ const opUpdateVirtualService = "UpdateVirtualService"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateVirtualServiceRequest method.
+//	req, resp := client.UpdateVirtualServiceRequest(params)
 //
-//    // Example sending a request using the UpdateVirtualServiceRequest method.
-//    req, resp := client.UpdateVirtualServiceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/UpdateVirtualService
 func (c *AppMesh) UpdateVirtualServiceRequest(input *UpdateVirtualServiceInput) (req *request.Request, output *UpdateVirtualServiceOutput) {
@@ -4364,36 +4355,37 @@ func (c *AppMesh) UpdateVirtualServiceRequest(input *UpdateVirtualServiceInput) 
 // API operation UpdateVirtualService for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * BadRequestException
-//   The request syntax was malformed. Check your request syntax and try again.
+//   - NotFoundException
+//     The specified resource doesn't exist. Check your request syntax and try again.
 //
-//   * ConflictException
-//   The request contains a client token that was used for a previous update resource
-//   call with different specifications. Try the request again with a new client
-//   token.
+//   - BadRequestException
+//     The request syntax was malformed. Check your request syntax and try again.
 //
-//   * TooManyRequestsException
-//   The maximum request rate permitted by the App Mesh APIs has been exceeded
-//   for your account. For best results, use an increasing or variable sleep interval
-//   between requests.
+//   - ConflictException
+//     The request contains a client token that was used for a previous update resource
+//     call with different specifications. Try the request again with a new client
+//     token.
 //
-//   * ForbiddenException
-//   You don't have permissions to perform this action.
+//   - TooManyRequestsException
+//     The maximum request rate permitted by the App Mesh APIs has been exceeded
+//     for your account. For best results, use an increasing or variable sleep interval
+//     between requests.
 //
-//   * ServiceUnavailableException
-//   The request has failed due to a temporary failure of the service.
+//   - ForbiddenException
+//     You don't have permissions to perform this action.
 //
-//   * InternalServerErrorException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure.
+//   - ServiceUnavailableException
+//     The request has failed due to a temporary failure of the service.
 //
-//   * LimitExceededException
-//   You have exceeded a service limit for your account. For more information,
-//   see Service Limits (https://docs.aws.amazon.com/app-mesh/latest/userguide/service-quotas.html)
-//   in the App Mesh User Guide.
+//   - InternalServerErrorException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure.
+//
+//   - LimitExceededException
+//     You have exceeded a service limit for your account. For more information,
+//     see Service Limits (https://docs.aws.amazon.com/app-mesh/latest/userguide/service-quotas.html)
+//     in the App Mesh User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appmesh-2019-01-25/UpdateVirtualService
 func (c *AppMesh) UpdateVirtualService(input *UpdateVirtualServiceInput) (*UpdateVirtualServiceOutput, error) {
@@ -4549,7 +4541,9 @@ type AwsCloudMapServiceDiscovery struct {
 	// will be returned.
 	Attributes []*AwsCloudMapInstanceAttribute `locationName:"attributes" type:"list"`
 
-	// The IP version to use to control traffic within the mesh.
+	// The preferred IP version that this virtual node uses. Setting the IP preference
+	// on the virtual node only overrides the IP preference set for the mesh on
+	// this specific node.
 	IpPreference *string `locationName:"ipPreference" type:"string" enum:"IpPreference"`
 
 	// The name of the Cloud Map namespace to use.
@@ -7844,7 +7838,9 @@ type DnsServiceDiscovery struct {
 	// Hostname is a required field
 	Hostname *string `locationName:"hostname" type:"string" required:"true"`
 
-	// The IP version to use to control traffic within the mesh.
+	// The preferred IP version that this virtual node uses. Setting the IP preference
+	// on the virtual node only overrides the IP preference set for the mesh on
+	// this specific node.
 	IpPreference *string `locationName:"ipPreference" type:"string" enum:"IpPreference"`
 
 	// Specifies the DNS response type for the virtual node.
@@ -7996,14 +7992,17 @@ func (s *EgressFilter) SetType(v string) *EgressFilter {
 type FileAccessLog struct {
 	_ struct{} `type:"structure"`
 
+	// The specified format for the logs. The format is either json_format or text_format.
+	Format *LoggingFormat `locationName:"format" type:"structure"`
+
 	// The file path to write access logs to. You can use /dev/stdout to send access
 	// logs to standard out and configure your Envoy container to use a log driver,
 	// such as awslogs, to export the access logs to a log storage service such
 	// as Amazon CloudWatch Logs. You can also specify a path in the Envoy container's
 	// file system to write the files to disk.
 	//
-	//    <note> <p>The Envoy process must have write permissions to the path that
-	//    you specify here. Otherwise, Envoy fails to bootstrap properly.</p> </note>
+	// The Envoy process must have write permissions to the path that you specify
+	// here. Otherwise, Envoy fails to bootstrap properly.
 	//
 	// Path is a required field
 	Path *string `locationName:"path" min:"1" type:"string" required:"true"`
@@ -8036,11 +8035,22 @@ func (s *FileAccessLog) Validate() error {
 	if s.Path != nil && len(*s.Path) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("Path", 1))
 	}
+	if s.Format != nil {
+		if err := s.Format.Validate(); err != nil {
+			invalidParams.AddNested("Format", err.(request.ErrInvalidParams))
+		}
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetFormat sets the Format field's value.
+func (s *FileAccessLog) SetFormat(v *LoggingFormat) *FileAccessLog {
+	s.Format = v
+	return s
 }
 
 // SetPath sets the Path field's value.
@@ -8543,6 +8553,9 @@ func (s *GatewayRouteStatus) SetStatus(v string) *GatewayRouteStatus {
 type GatewayRouteTarget struct {
 	_ struct{} `type:"structure"`
 
+	// The port number of the gateway route target.
+	Port *int64 `locationName:"port" min:"1" type:"integer"`
+
 	// An object that represents a virtual service gateway route target.
 	//
 	// VirtualService is a required field
@@ -8570,6 +8583,9 @@ func (s GatewayRouteTarget) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *GatewayRouteTarget) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "GatewayRouteTarget"}
+	if s.Port != nil && *s.Port < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("Port", 1))
+	}
 	if s.VirtualService == nil {
 		invalidParams.Add(request.NewErrParamRequired("VirtualService"))
 	}
@@ -8583,6 +8599,12 @@ func (s *GatewayRouteTarget) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetPort sets the Port field's value.
+func (s *GatewayRouteTarget) SetPort(v int64) *GatewayRouteTarget {
+	s.Port = &v
+	return s
 }
 
 // SetVirtualService sets the VirtualService field's value.
@@ -8784,6 +8806,9 @@ type GrpcGatewayRouteMatch struct {
 	// The gateway route metadata to be matched on.
 	Metadata []*GrpcGatewayRouteMetadata `locationName:"metadata" min:"1" type:"list"`
 
+	// The gateway route port to be matched on.
+	Port *int64 `locationName:"port" min:"1" type:"integer"`
+
 	// The fully qualified domain name for the service to match from the request.
 	ServiceName *string `locationName:"serviceName" type:"string"`
 }
@@ -8811,6 +8836,9 @@ func (s *GrpcGatewayRouteMatch) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "GrpcGatewayRouteMatch"}
 	if s.Metadata != nil && len(s.Metadata) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("Metadata", 1))
+	}
+	if s.Port != nil && *s.Port < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("Port", 1))
 	}
 	if s.Hostname != nil {
 		if err := s.Hostname.Validate(); err != nil {
@@ -8843,6 +8871,12 @@ func (s *GrpcGatewayRouteMatch) SetHostname(v *GatewayRouteHostnameMatch) *GrpcG
 // SetMetadata sets the Metadata field's value.
 func (s *GrpcGatewayRouteMatch) SetMetadata(v []*GrpcGatewayRouteMetadata) *GrpcGatewayRouteMatch {
 	s.Metadata = v
+	return s
+}
+
+// SetPort sets the Port field's value.
+func (s *GrpcGatewayRouteMatch) SetPort(v int64) *GrpcGatewayRouteMatch {
+	s.Port = &v
 	return s
 }
 
@@ -9334,6 +9368,9 @@ type GrpcRouteMatch struct {
 	// also specify a serviceName.
 	MethodName *string `locationName:"methodName" min:"1" type:"string"`
 
+	// The port number to match on.
+	Port *int64 `locationName:"port" min:"1" type:"integer"`
+
 	// The fully qualified domain name for the service to match from the request.
 	ServiceName *string `locationName:"serviceName" type:"string"`
 }
@@ -9365,6 +9402,9 @@ func (s *GrpcRouteMatch) Validate() error {
 	if s.MethodName != nil && len(*s.MethodName) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("MethodName", 1))
 	}
+	if s.Port != nil && *s.Port < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("Port", 1))
+	}
 	if s.Metadata != nil {
 		for i, v := range s.Metadata {
 			if v == nil {
@@ -9391,6 +9431,12 @@ func (s *GrpcRouteMatch) SetMetadata(v []*GrpcRouteMetadata) *GrpcRouteMatch {
 // SetMethodName sets the MethodName field's value.
 func (s *GrpcRouteMatch) SetMethodName(v string) *GrpcRouteMatch {
 	s.MethodName = &v
+	return s
+}
+
+// SetPort sets the Port field's value.
+func (s *GrpcRouteMatch) SetPort(v int64) *GrpcRouteMatch {
+	s.Port = &v
 	return s
 }
 
@@ -10084,6 +10130,9 @@ type HttpGatewayRouteMatch struct {
 	// The path to match on.
 	Path *HttpPathMatch `locationName:"path" type:"structure"`
 
+	// The port number to match on.
+	Port *int64 `locationName:"port" min:"1" type:"integer"`
+
 	// Specifies the path to match requests with. This parameter must always start
 	// with /, which by itself matches all requests to the virtual service name.
 	// You can also match for path-based routing of requests. For example, if your
@@ -10118,6 +10167,9 @@ func (s *HttpGatewayRouteMatch) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "HttpGatewayRouteMatch"}
 	if s.Headers != nil && len(s.Headers) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("Headers", 1))
+	}
+	if s.Port != nil && *s.Port < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("Port", 1))
 	}
 	if s.QueryParameters != nil && len(s.QueryParameters) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("QueryParameters", 1))
@@ -10180,6 +10232,12 @@ func (s *HttpGatewayRouteMatch) SetMethod(v string) *HttpGatewayRouteMatch {
 // SetPath sets the Path field's value.
 func (s *HttpGatewayRouteMatch) SetPath(v *HttpPathMatch) *HttpGatewayRouteMatch {
 	s.Path = v
+	return s
+}
+
+// SetPort sets the Port field's value.
+func (s *HttpGatewayRouteMatch) SetPort(v int64) *HttpGatewayRouteMatch {
+	s.Port = &v
 	return s
 }
 
@@ -10820,6 +10878,9 @@ type HttpRouteMatch struct {
 	// The client request path to match on.
 	Path *HttpPathMatch `locationName:"path" type:"structure"`
 
+	// The port number to match on.
+	Port *int64 `locationName:"port" min:"1" type:"integer"`
+
 	// Specifies the path to match requests with. This parameter must always start
 	// with /, which by itself matches all requests to the virtual service name.
 	// You can also match for path-based routing of requests. For example, if your
@@ -10858,6 +10919,9 @@ func (s *HttpRouteMatch) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "HttpRouteMatch"}
 	if s.Headers != nil && len(s.Headers) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("Headers", 1))
+	}
+	if s.Port != nil && *s.Port < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("Port", 1))
 	}
 	if s.QueryParameters != nil && len(s.QueryParameters) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("QueryParameters", 1))
@@ -10909,6 +10973,12 @@ func (s *HttpRouteMatch) SetMethod(v string) *HttpRouteMatch {
 // SetPath sets the Path field's value.
 func (s *HttpRouteMatch) SetPath(v *HttpPathMatch) *HttpRouteMatch {
 	s.Path = v
+	return s
+}
+
+// SetPort sets the Port field's value.
+func (s *HttpRouteMatch) SetPort(v int64) *HttpRouteMatch {
+	s.Port = &v
 	return s
 }
 
@@ -11040,6 +11110,73 @@ func (s *InternalServerErrorException) StatusCode() int {
 // RequestID returns the service's response RequestID for request.
 func (s *InternalServerErrorException) RequestID() string {
 	return s.RespMetadata.RequestID
+}
+
+// An object that represents the key value pairs for the JSON.
+type JsonFormatRef struct {
+	_ struct{} `type:"structure"`
+
+	// The specified key for the JSON.
+	//
+	// Key is a required field
+	Key *string `locationName:"key" min:"1" type:"string" required:"true"`
+
+	// The specified value for the JSON.
+	//
+	// Value is a required field
+	Value *string `locationName:"value" min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s JsonFormatRef) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s JsonFormatRef) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *JsonFormatRef) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "JsonFormatRef"}
+	if s.Key == nil {
+		invalidParams.Add(request.NewErrParamRequired("Key"))
+	}
+	if s.Key != nil && len(*s.Key) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Key", 1))
+	}
+	if s.Value == nil {
+		invalidParams.Add(request.NewErrParamRequired("Value"))
+	}
+	if s.Value != nil && len(*s.Value) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Value", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetKey sets the Key field's value.
+func (s *JsonFormatRef) SetKey(v string) *JsonFormatRef {
+	s.Key = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *JsonFormatRef) SetValue(v string) *JsonFormatRef {
+	s.Value = &v
+	return s
 }
 
 // You have exceeded a service limit for your account. For more information,
@@ -12902,6 +13039,68 @@ func (s *Logging) SetAccessLog(v *AccessLog) *Logging {
 	return s
 }
 
+// An object that represents the format for the logs.
+type LoggingFormat struct {
+	_ struct{} `type:"structure"`
+
+	Json []*JsonFormatRef `locationName:"json" type:"list"`
+
+	Text *string `locationName:"text" min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LoggingFormat) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LoggingFormat) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *LoggingFormat) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "LoggingFormat"}
+	if s.Text != nil && len(*s.Text) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Text", 1))
+	}
+	if s.Json != nil {
+		for i, v := range s.Json {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Json", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetJson sets the Json field's value.
+func (s *LoggingFormat) SetJson(v []*JsonFormatRef) *LoggingFormat {
+	s.Json = v
+	return s
+}
+
+// SetText sets the Text field's value.
+func (s *LoggingFormat) SetText(v string) *LoggingFormat {
+	s.Text = &v
+	return s
+}
+
 // An object that represents the range of values to match on. The first character
 // of the range is included in the range, though the last character is not.
 // For example, if the range specified were 1-100, only values 1-99 would be
@@ -14436,6 +14635,9 @@ type TcpRoute struct {
 	// Action is a required field
 	Action *TcpRouteAction `locationName:"action" type:"structure" required:"true"`
 
+	// An object that represents the criteria for determining a request match.
+	Match *TcpRouteMatch `locationName:"match" type:"structure"`
+
 	// An object that represents types of timeouts.
 	Timeout *TcpTimeout `locationName:"timeout" type:"structure"`
 }
@@ -14469,6 +14671,11 @@ func (s *TcpRoute) Validate() error {
 			invalidParams.AddNested("Action", err.(request.ErrInvalidParams))
 		}
 	}
+	if s.Match != nil {
+		if err := s.Match.Validate(); err != nil {
+			invalidParams.AddNested("Match", err.(request.ErrInvalidParams))
+		}
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -14479,6 +14686,12 @@ func (s *TcpRoute) Validate() error {
 // SetAction sets the Action field's value.
 func (s *TcpRoute) SetAction(v *TcpRouteAction) *TcpRoute {
 	s.Action = v
+	return s
+}
+
+// SetMatch sets the Match field's value.
+func (s *TcpRoute) SetMatch(v *TcpRouteMatch) *TcpRoute {
+	s.Match = v
 	return s
 }
 
@@ -14549,6 +14762,51 @@ func (s *TcpRouteAction) SetWeightedTargets(v []*WeightedTarget) *TcpRouteAction
 	return s
 }
 
+// An object representing the TCP route to match.
+type TcpRouteMatch struct {
+	_ struct{} `type:"structure"`
+
+	// The port number to match on.
+	Port *int64 `locationName:"port" min:"1" type:"integer"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TcpRouteMatch) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TcpRouteMatch) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *TcpRouteMatch) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "TcpRouteMatch"}
+	if s.Port != nil && *s.Port < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("Port", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetPort sets the Port field's value.
+func (s *TcpRouteMatch) SetPort(v int64) *TcpRouteMatch {
+	s.Port = &v
+	return s
+}
+
 // An object that represents types of timeouts.
 type TcpTimeout struct {
 	_ struct{} `type:"structure"`
@@ -14588,7 +14846,13 @@ type TlsValidationContext struct {
 	_ struct{} `type:"structure"`
 
 	// A reference to an object that represents the SANs for a Transport Layer Security
-	// (TLS) validation context.
+	// (TLS) validation context. If you don't specify SANs on the terminating mesh
+	// endpoint, the Envoy proxy for that node doesn't verify the SAN on a peer
+	// client certificate. If you don't specify SANs on the originating mesh endpoint,
+	// the SAN on the certificate provided by the terminating endpoint must match
+	// the mesh endpoint service discovery configuration. Since SPIRE vended certificates
+	// have a SPIFFE ID as a name, you must set the SAN since the name doesn't match
+	// the service discovery name.
 	SubjectAlternativeNames *SubjectAlternativeNames `locationName:"subjectAlternativeNames" type:"structure"`
 
 	// A reference to where to retrieve the trust chain when validating a peer’s
@@ -16556,6 +16820,10 @@ func (s *VirtualGatewayData) SetVirtualGatewayName(v string) *VirtualGatewayData
 type VirtualGatewayFileAccessLog struct {
 	_ struct{} `type:"structure"`
 
+	// The specified format for the virtual gateway access logs. It can be either
+	// json_format or text_format.
+	Format *LoggingFormat `locationName:"format" type:"structure"`
+
 	// The file path to write access logs to. You can use /dev/stdout to send access
 	// logs to standard out and configure your Envoy container to use a log driver,
 	// such as awslogs, to export the access logs to a log storage service such
@@ -16593,11 +16861,22 @@ func (s *VirtualGatewayFileAccessLog) Validate() error {
 	if s.Path != nil && len(*s.Path) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("Path", 1))
 	}
+	if s.Format != nil {
+		if err := s.Format.Validate(); err != nil {
+			invalidParams.AddNested("Format", err.(request.ErrInvalidParams))
+		}
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetFormat sets the Format field's value.
+func (s *VirtualGatewayFileAccessLog) SetFormat(v *LoggingFormat) *VirtualGatewayFileAccessLog {
+	s.Format = v
+	return s
 }
 
 // SetPath sets the Path field's value.
@@ -19631,6 +19910,9 @@ func (s *VirtualServiceStatus) SetStatus(v string) *VirtualServiceStatus {
 type WeightedTarget struct {
 	_ struct{} `type:"structure"`
 
+	// The targeted port of the weighted object.
+	Port *int64 `locationName:"port" min:"1" type:"integer"`
+
 	// The virtual node to associate with the weighted target.
 	//
 	// VirtualNode is a required field
@@ -19663,6 +19945,9 @@ func (s WeightedTarget) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *WeightedTarget) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "WeightedTarget"}
+	if s.Port != nil && *s.Port < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("Port", 1))
+	}
 	if s.VirtualNode == nil {
 		invalidParams.Add(request.NewErrParamRequired("VirtualNode"))
 	}
@@ -19677,6 +19962,12 @@ func (s *WeightedTarget) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetPort sets the Port field's value.
+func (s *WeightedTarget) SetPort(v int64) *WeightedTarget {
+	s.Port = &v
+	return s
 }
 
 // SetVirtualNode sets the VirtualNode field's value.

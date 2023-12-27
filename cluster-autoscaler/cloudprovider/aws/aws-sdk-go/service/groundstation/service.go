@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a GroundStation client from just a session.
-//     svc := groundstation.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a GroundStation client with additional configuration
-//     svc := groundstation.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a GroundStation client from just a session.
+//	svc := groundstation.New(mySession)
+//
+//	// Create a GroundStation client with additional configuration
+//	svc := groundstation.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *GroundStation {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

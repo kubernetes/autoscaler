@@ -6,15 +6,15 @@
 // Amazon Connect Wisdom delivers agents the information they need to solve
 // customer issues as they're actively speaking with customers. Agents can search
 // across connected repositories from within their agent desktop to find answers
-// quickly. Use the Amazon Connect Wisdom APIs to create an assistant and a
-// knowledge base, for example, or manage content by uploading custom files.
+// quickly. Use Amazon Connect Wisdom to create an assistant and a knowledge
+// base, for example, or manage content by uploading custom files.
 //
 // See https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19 for more information on this service.
 //
 // See connectwisdomservice package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/connectwisdomservice/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact Amazon Connect Wisdom Service with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

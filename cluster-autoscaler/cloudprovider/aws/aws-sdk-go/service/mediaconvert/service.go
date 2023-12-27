@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a MediaConvert client from just a session.
-//     svc := mediaconvert.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a MediaConvert client with additional configuration
-//     svc := mediaconvert.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a MediaConvert client from just a session.
+//	svc := mediaconvert.New(mySession)
+//
+//	// Create a MediaConvert client with additional configuration
+//	svc := mediaconvert.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *MediaConvert {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

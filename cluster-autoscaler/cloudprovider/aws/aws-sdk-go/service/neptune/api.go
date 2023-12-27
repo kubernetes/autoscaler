@@ -29,14 +29,13 @@ const opAddRoleToDBCluster = "AddRoleToDBCluster"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AddRoleToDBClusterRequest method.
+//	req, resp := client.AddRoleToDBClusterRequest(params)
 //
-//    // Example sending a request using the AddRoleToDBClusterRequest method.
-//    req, resp := client.AddRoleToDBClusterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/AddRoleToDBCluster
 func (c *Neptune) AddRoleToDBClusterRequest(input *AddRoleToDBClusterInput) (req *request.Request, output *AddRoleToDBClusterOutput) {
@@ -69,19 +68,20 @@ func (c *Neptune) AddRoleToDBClusterRequest(input *AddRoleToDBClusterInput) (req
 // API operation AddRoleToDBCluster for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeDBClusterNotFoundFault "DBClusterNotFoundFault"
-//   DBClusterIdentifier does not refer to an existing DB cluster.
 //
-//   * ErrCodeDBClusterRoleAlreadyExistsFault "DBClusterRoleAlreadyExists"
-//   The specified IAM role Amazon Resource Name (ARN) is already associated with
-//   the specified DB cluster.
+//   - ErrCodeDBClusterNotFoundFault "DBClusterNotFoundFault"
+//     DBClusterIdentifier does not refer to an existing DB cluster.
 //
-//   * ErrCodeInvalidDBClusterStateFault "InvalidDBClusterStateFault"
-//   The DB cluster is not in a valid state.
+//   - ErrCodeDBClusterRoleAlreadyExistsFault "DBClusterRoleAlreadyExists"
+//     The specified IAM role Amazon Resource Name (ARN) is already associated with
+//     the specified DB cluster.
 //
-//   * ErrCodeDBClusterRoleQuotaExceededFault "DBClusterRoleQuotaExceeded"
-//   You have exceeded the maximum number of IAM roles that can be associated
-//   with the specified DB cluster.
+//   - ErrCodeInvalidDBClusterStateFault "InvalidDBClusterStateFault"
+//     The DB cluster is not in a valid state.
+//
+//   - ErrCodeDBClusterRoleQuotaExceededFault "DBClusterRoleQuotaExceeded"
+//     You have exceeded the maximum number of IAM roles that can be associated
+//     with the specified DB cluster.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/AddRoleToDBCluster
 func (c *Neptune) AddRoleToDBCluster(input *AddRoleToDBClusterInput) (*AddRoleToDBClusterOutput, error) {
@@ -121,14 +121,13 @@ const opAddSourceIdentifierToSubscription = "AddSourceIdentifierToSubscription"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AddSourceIdentifierToSubscriptionRequest method.
+//	req, resp := client.AddSourceIdentifierToSubscriptionRequest(params)
 //
-//    // Example sending a request using the AddSourceIdentifierToSubscriptionRequest method.
-//    req, resp := client.AddSourceIdentifierToSubscriptionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/AddSourceIdentifierToSubscription
 func (c *Neptune) AddSourceIdentifierToSubscriptionRequest(input *AddSourceIdentifierToSubscriptionInput) (req *request.Request, output *AddSourceIdentifierToSubscriptionOutput) {
@@ -159,11 +158,12 @@ func (c *Neptune) AddSourceIdentifierToSubscriptionRequest(input *AddSourceIdent
 // API operation AddSourceIdentifierToSubscription for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeSubscriptionNotFoundFault "SubscriptionNotFound"
-//   The designated subscription could not be found.
 //
-//   * ErrCodeSourceNotFoundFault "SourceNotFound"
-//   The source could not be found.
+//   - ErrCodeSubscriptionNotFoundFault "SubscriptionNotFound"
+//     The designated subscription could not be found.
+//
+//   - ErrCodeSourceNotFoundFault "SourceNotFound"
+//     The source could not be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/AddSourceIdentifierToSubscription
 func (c *Neptune) AddSourceIdentifierToSubscription(input *AddSourceIdentifierToSubscriptionInput) (*AddSourceIdentifierToSubscriptionOutput, error) {
@@ -203,14 +203,13 @@ const opAddTagsToResource = "AddTagsToResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AddTagsToResourceRequest method.
+//	req, resp := client.AddTagsToResourceRequest(params)
 //
-//    // Example sending a request using the AddTagsToResourceRequest method.
-//    req, resp := client.AddTagsToResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/AddTagsToResource
 func (c *Neptune) AddTagsToResourceRequest(input *AddTagsToResourceInput) (req *request.Request, output *AddTagsToResourceOutput) {
@@ -245,14 +244,15 @@ func (c *Neptune) AddTagsToResourceRequest(input *AddTagsToResourceInput) (req *
 // API operation AddTagsToResource for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeDBInstanceNotFoundFault "DBInstanceNotFound"
-//   DBInstanceIdentifier does not refer to an existing DB instance.
 //
-//   * ErrCodeDBSnapshotNotFoundFault "DBSnapshotNotFound"
-//   DBSnapshotIdentifier does not refer to an existing DB snapshot.
+//   - ErrCodeDBInstanceNotFoundFault "DBInstanceNotFound"
+//     DBInstanceIdentifier does not refer to an existing DB instance.
 //
-//   * ErrCodeDBClusterNotFoundFault "DBClusterNotFoundFault"
-//   DBClusterIdentifier does not refer to an existing DB cluster.
+//   - ErrCodeDBSnapshotNotFoundFault "DBSnapshotNotFound"
+//     DBSnapshotIdentifier does not refer to an existing DB snapshot.
+//
+//   - ErrCodeDBClusterNotFoundFault "DBClusterNotFoundFault"
+//     DBClusterIdentifier does not refer to an existing DB cluster.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/AddTagsToResource
 func (c *Neptune) AddTagsToResource(input *AddTagsToResourceInput) (*AddTagsToResourceOutput, error) {
@@ -292,14 +292,13 @@ const opApplyPendingMaintenanceAction = "ApplyPendingMaintenanceAction"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ApplyPendingMaintenanceActionRequest method.
+//	req, resp := client.ApplyPendingMaintenanceActionRequest(params)
 //
-//    // Example sending a request using the ApplyPendingMaintenanceActionRequest method.
-//    req, resp := client.ApplyPendingMaintenanceActionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/ApplyPendingMaintenanceAction
 func (c *Neptune) ApplyPendingMaintenanceActionRequest(input *ApplyPendingMaintenanceActionInput) (req *request.Request, output *ApplyPendingMaintenanceActionOutput) {
@@ -331,8 +330,8 @@ func (c *Neptune) ApplyPendingMaintenanceActionRequest(input *ApplyPendingMainte
 // API operation ApplyPendingMaintenanceAction for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeResourceNotFoundFault "ResourceNotFoundFault"
-//   The specified resource ID was not found.
+//   - ErrCodeResourceNotFoundFault "ResourceNotFoundFault"
+//     The specified resource ID was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/ApplyPendingMaintenanceAction
 func (c *Neptune) ApplyPendingMaintenanceAction(input *ApplyPendingMaintenanceActionInput) (*ApplyPendingMaintenanceActionOutput, error) {
@@ -372,14 +371,13 @@ const opCopyDBClusterParameterGroup = "CopyDBClusterParameterGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CopyDBClusterParameterGroupRequest method.
+//	req, resp := client.CopyDBClusterParameterGroupRequest(params)
 //
-//    // Example sending a request using the CopyDBClusterParameterGroupRequest method.
-//    req, resp := client.CopyDBClusterParameterGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/CopyDBClusterParameterGroup
 func (c *Neptune) CopyDBClusterParameterGroupRequest(input *CopyDBClusterParameterGroupInput) (req *request.Request, output *CopyDBClusterParameterGroupOutput) {
@@ -410,15 +408,16 @@ func (c *Neptune) CopyDBClusterParameterGroupRequest(input *CopyDBClusterParamet
 // API operation CopyDBClusterParameterGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeDBParameterGroupNotFoundFault "DBParameterGroupNotFound"
-//   DBParameterGroupName does not refer to an existing DB parameter group.
 //
-//   * ErrCodeDBParameterGroupQuotaExceededFault "DBParameterGroupQuotaExceeded"
-//   Request would result in user exceeding the allowed number of DB parameter
-//   groups.
+//   - ErrCodeDBParameterGroupNotFoundFault "DBParameterGroupNotFound"
+//     DBParameterGroupName does not refer to an existing DB parameter group.
 //
-//   * ErrCodeDBParameterGroupAlreadyExistsFault "DBParameterGroupAlreadyExists"
-//   A DB parameter group with the same name exists.
+//   - ErrCodeDBParameterGroupQuotaExceededFault "DBParameterGroupQuotaExceeded"
+//     Request would result in user exceeding the allowed number of DB parameter
+//     groups.
+//
+//   - ErrCodeDBParameterGroupAlreadyExistsFault "DBParameterGroupAlreadyExists"
+//     A DB parameter group with the same name exists.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/CopyDBClusterParameterGroup
 func (c *Neptune) CopyDBClusterParameterGroup(input *CopyDBClusterParameterGroupInput) (*CopyDBClusterParameterGroupOutput, error) {
@@ -458,14 +457,13 @@ const opCopyDBClusterSnapshot = "CopyDBClusterSnapshot"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CopyDBClusterSnapshotRequest method.
+//	req, resp := client.CopyDBClusterSnapshotRequest(params)
 //
-//    // Example sending a request using the CopyDBClusterSnapshotRequest method.
-//    req, resp := client.CopyDBClusterSnapshotRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/CopyDBClusterSnapshot
 func (c *Neptune) CopyDBClusterSnapshotRequest(input *CopyDBClusterSnapshotInput) (req *request.Request, output *CopyDBClusterSnapshotOutput) {
@@ -499,23 +497,24 @@ func (c *Neptune) CopyDBClusterSnapshotRequest(input *CopyDBClusterSnapshotInput
 // API operation CopyDBClusterSnapshot for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeDBClusterSnapshotAlreadyExistsFault "DBClusterSnapshotAlreadyExistsFault"
-//   User already has a DB cluster snapshot with the given identifier.
 //
-//   * ErrCodeDBClusterSnapshotNotFoundFault "DBClusterSnapshotNotFoundFault"
-//   DBClusterSnapshotIdentifier does not refer to an existing DB cluster snapshot.
+//   - ErrCodeDBClusterSnapshotAlreadyExistsFault "DBClusterSnapshotAlreadyExistsFault"
+//     User already has a DB cluster snapshot with the given identifier.
 //
-//   * ErrCodeInvalidDBClusterStateFault "InvalidDBClusterStateFault"
-//   The DB cluster is not in a valid state.
+//   - ErrCodeDBClusterSnapshotNotFoundFault "DBClusterSnapshotNotFoundFault"
+//     DBClusterSnapshotIdentifier does not refer to an existing DB cluster snapshot.
 //
-//   * ErrCodeInvalidDBClusterSnapshotStateFault "InvalidDBClusterSnapshotStateFault"
-//   The supplied value is not a valid DB cluster snapshot state.
+//   - ErrCodeInvalidDBClusterStateFault "InvalidDBClusterStateFault"
+//     The DB cluster is not in a valid state.
 //
-//   * ErrCodeSnapshotQuotaExceededFault "SnapshotQuotaExceeded"
-//   Request would result in user exceeding the allowed number of DB snapshots.
+//   - ErrCodeInvalidDBClusterSnapshotStateFault "InvalidDBClusterSnapshotStateFault"
+//     The supplied value is not a valid DB cluster snapshot state.
 //
-//   * ErrCodeKMSKeyNotAccessibleFault "KMSKeyNotAccessibleFault"
-//   Error accessing KMS key.
+//   - ErrCodeSnapshotQuotaExceededFault "SnapshotQuotaExceeded"
+//     Request would result in user exceeding the allowed number of DB snapshots.
+//
+//   - ErrCodeKMSKeyNotAccessibleFault "KMSKeyNotAccessibleFault"
+//     Error accessing KMS key.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/CopyDBClusterSnapshot
 func (c *Neptune) CopyDBClusterSnapshot(input *CopyDBClusterSnapshotInput) (*CopyDBClusterSnapshotOutput, error) {
@@ -555,14 +554,13 @@ const opCopyDBParameterGroup = "CopyDBParameterGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CopyDBParameterGroupRequest method.
+//	req, resp := client.CopyDBParameterGroupRequest(params)
 //
-//    // Example sending a request using the CopyDBParameterGroupRequest method.
-//    req, resp := client.CopyDBParameterGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/CopyDBParameterGroup
 func (c *Neptune) CopyDBParameterGroupRequest(input *CopyDBParameterGroupInput) (req *request.Request, output *CopyDBParameterGroupOutput) {
@@ -593,15 +591,16 @@ func (c *Neptune) CopyDBParameterGroupRequest(input *CopyDBParameterGroupInput) 
 // API operation CopyDBParameterGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeDBParameterGroupNotFoundFault "DBParameterGroupNotFound"
-//   DBParameterGroupName does not refer to an existing DB parameter group.
 //
-//   * ErrCodeDBParameterGroupAlreadyExistsFault "DBParameterGroupAlreadyExists"
-//   A DB parameter group with the same name exists.
+//   - ErrCodeDBParameterGroupNotFoundFault "DBParameterGroupNotFound"
+//     DBParameterGroupName does not refer to an existing DB parameter group.
 //
-//   * ErrCodeDBParameterGroupQuotaExceededFault "DBParameterGroupQuotaExceeded"
-//   Request would result in user exceeding the allowed number of DB parameter
-//   groups.
+//   - ErrCodeDBParameterGroupAlreadyExistsFault "DBParameterGroupAlreadyExists"
+//     A DB parameter group with the same name exists.
+//
+//   - ErrCodeDBParameterGroupQuotaExceededFault "DBParameterGroupQuotaExceeded"
+//     Request would result in user exceeding the allowed number of DB parameter
+//     groups.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/CopyDBParameterGroup
 func (c *Neptune) CopyDBParameterGroup(input *CopyDBParameterGroupInput) (*CopyDBParameterGroupOutput, error) {
@@ -641,14 +640,13 @@ const opCreateDBCluster = "CreateDBCluster"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDBClusterRequest method.
+//	req, resp := client.CreateDBClusterRequest(params)
 //
-//    // Example sending a request using the CreateDBClusterRequest method.
-//    req, resp := client.CreateDBClusterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/CreateDBCluster
 func (c *Neptune) CreateDBClusterRequest(input *CreateDBClusterInput) (req *request.Request, output *CreateDBClusterOutput) {
@@ -687,58 +685,67 @@ func (c *Neptune) CreateDBClusterRequest(input *CreateDBClusterInput) (req *requ
 // API operation CreateDBCluster for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeDBClusterAlreadyExistsFault "DBClusterAlreadyExistsFault"
-//   User already has a DB cluster with the given identifier.
 //
-//   * ErrCodeInsufficientStorageClusterCapacityFault "InsufficientStorageClusterCapacity"
-//   There is insufficient storage available for the current action. You may be
-//   able to resolve this error by updating your subnet group to use different
-//   Availability Zones that have more storage available.
+//   - ErrCodeDBClusterAlreadyExistsFault "DBClusterAlreadyExistsFault"
+//     User already has a DB cluster with the given identifier.
 //
-//   * ErrCodeDBClusterQuotaExceededFault "DBClusterQuotaExceededFault"
-//   User attempted to create a new DB cluster and the user has already reached
-//   the maximum allowed DB cluster quota.
+//   - ErrCodeInsufficientStorageClusterCapacityFault "InsufficientStorageClusterCapacity"
+//     There is insufficient storage available for the current action. You may be
+//     able to resolve this error by updating your subnet group to use different
+//     Availability Zones that have more storage available.
 //
-//   * ErrCodeStorageQuotaExceededFault "StorageQuotaExceeded"
-//   Request would result in user exceeding the allowed amount of storage available
-//   across all DB instances.
+//   - ErrCodeDBClusterQuotaExceededFault "DBClusterQuotaExceededFault"
+//     User attempted to create a new DB cluster and the user has already reached
+//     the maximum allowed DB cluster quota.
 //
-//   * ErrCodeDBSubnetGroupNotFoundFault "DBSubnetGroupNotFoundFault"
-//   DBSubnetGroupName does not refer to an existing DB subnet group.
+//   - ErrCodeStorageQuotaExceededFault "StorageQuotaExceeded"
+//     Request would result in user exceeding the allowed amount of storage available
+//     across all DB instances.
 //
-//   * ErrCodeInvalidVPCNetworkStateFault "InvalidVPCNetworkStateFault"
-//   DB subnet group does not cover all Availability Zones after it is created
-//   because users' change.
+//   - ErrCodeDBSubnetGroupNotFoundFault "DBSubnetGroupNotFoundFault"
+//     DBSubnetGroupName does not refer to an existing DB subnet group.
 //
-//   * ErrCodeInvalidDBClusterStateFault "InvalidDBClusterStateFault"
-//   The DB cluster is not in a valid state.
+//   - ErrCodeInvalidVPCNetworkStateFault "InvalidVPCNetworkStateFault"
+//     DB subnet group does not cover all Availability Zones after it is created
+//     because users' change.
 //
-//   * ErrCodeInvalidDBSubnetGroupStateFault "InvalidDBSubnetGroupStateFault"
-//   The DB subnet group cannot be deleted because it is in use.
+//   - ErrCodeInvalidDBClusterStateFault "InvalidDBClusterStateFault"
+//     The DB cluster is not in a valid state.
 //
-//   * ErrCodeInvalidSubnet "InvalidSubnet"
-//   The requested subnet is invalid, or multiple subnets were requested that
-//   are not all in a common VPC.
+//   - ErrCodeInvalidDBSubnetGroupStateFault "InvalidDBSubnetGroupStateFault"
+//     The DB subnet group cannot be deleted because it is in use.
 //
-//   * ErrCodeInvalidDBInstanceStateFault "InvalidDBInstanceState"
-//   The specified DB instance is not in the available state.
+//   - ErrCodeInvalidSubnet "InvalidSubnet"
+//     The requested subnet is invalid, or multiple subnets were requested that
+//     are not all in a common VPC.
 //
-//   * ErrCodeDBClusterParameterGroupNotFoundFault "DBClusterParameterGroupNotFound"
-//   DBClusterParameterGroupName does not refer to an existing DB Cluster parameter
-//   group.
+//   - ErrCodeInvalidDBInstanceStateFault "InvalidDBInstanceState"
+//     The specified DB instance is not in the available state.
 //
-//   * ErrCodeKMSKeyNotAccessibleFault "KMSKeyNotAccessibleFault"
-//   Error accessing KMS key.
+//   - ErrCodeDBClusterParameterGroupNotFoundFault "DBClusterParameterGroupNotFound"
+//     DBClusterParameterGroupName does not refer to an existing DB Cluster parameter
+//     group.
 //
-//   * ErrCodeDBClusterNotFoundFault "DBClusterNotFoundFault"
-//   DBClusterIdentifier does not refer to an existing DB cluster.
+//   - ErrCodeKMSKeyNotAccessibleFault "KMSKeyNotAccessibleFault"
+//     Error accessing KMS key.
 //
-//   * ErrCodeDBInstanceNotFoundFault "DBInstanceNotFound"
-//   DBInstanceIdentifier does not refer to an existing DB instance.
+//   - ErrCodeDBClusterNotFoundFault "DBClusterNotFoundFault"
+//     DBClusterIdentifier does not refer to an existing DB cluster.
 //
-//   * ErrCodeDBSubnetGroupDoesNotCoverEnoughAZs "DBSubnetGroupDoesNotCoverEnoughAZs"
-//   Subnets in the DB subnet group should cover at least two Availability Zones
-//   unless there is only one Availability Zone.
+//   - ErrCodeDBInstanceNotFoundFault "DBInstanceNotFound"
+//     DBInstanceIdentifier does not refer to an existing DB instance.
+//
+//   - ErrCodeDBSubnetGroupDoesNotCoverEnoughAZs "DBSubnetGroupDoesNotCoverEnoughAZs"
+//     Subnets in the DB subnet group should cover at least two Availability Zones
+//     unless there is only one Availability Zone.
+//
+//   - ErrCodeGlobalClusterNotFoundFault "GlobalClusterNotFoundFault"
+//     The GlobalClusterIdentifier doesn't refer to an existing global database
+//     cluster.
+//
+//   - ErrCodeInvalidGlobalClusterStateFault "InvalidGlobalClusterStateFault"
+//     The global cluster is in an invalid state and can't perform the requested
+//     operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/CreateDBCluster
 func (c *Neptune) CreateDBCluster(input *CreateDBClusterInput) (*CreateDBClusterOutput, error) {
@@ -778,14 +785,13 @@ const opCreateDBClusterEndpoint = "CreateDBClusterEndpoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDBClusterEndpointRequest method.
+//	req, resp := client.CreateDBClusterEndpointRequest(params)
 //
-//    // Example sending a request using the CreateDBClusterEndpointRequest method.
-//    req, resp := client.CreateDBClusterEndpointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/CreateDBClusterEndpoint
 func (c *Neptune) CreateDBClusterEndpointRequest(input *CreateDBClusterEndpointInput) (req *request.Request, output *CreateDBClusterEndpointOutput) {
@@ -817,23 +823,24 @@ func (c *Neptune) CreateDBClusterEndpointRequest(input *CreateDBClusterEndpointI
 // API operation CreateDBClusterEndpoint for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeDBClusterEndpointQuotaExceededFault "DBClusterEndpointQuotaExceededFault"
-//   The cluster already has the maximum number of custom endpoints.
 //
-//   * ErrCodeDBClusterEndpointAlreadyExistsFault "DBClusterEndpointAlreadyExistsFault"
-//   The specified custom endpoint cannot be created because it already exists.
+//   - ErrCodeDBClusterEndpointQuotaExceededFault "DBClusterEndpointQuotaExceededFault"
+//     The cluster already has the maximum number of custom endpoints.
 //
-//   * ErrCodeDBClusterNotFoundFault "DBClusterNotFoundFault"
-//   DBClusterIdentifier does not refer to an existing DB cluster.
+//   - ErrCodeDBClusterEndpointAlreadyExistsFault "DBClusterEndpointAlreadyExistsFault"
+//     The specified custom endpoint cannot be created because it already exists.
 //
-//   * ErrCodeInvalidDBClusterStateFault "InvalidDBClusterStateFault"
-//   The DB cluster is not in a valid state.
+//   - ErrCodeDBClusterNotFoundFault "DBClusterNotFoundFault"
+//     DBClusterIdentifier does not refer to an existing DB cluster.
 //
-//   * ErrCodeDBInstanceNotFoundFault "DBInstanceNotFound"
-//   DBInstanceIdentifier does not refer to an existing DB instance.
+//   - ErrCodeInvalidDBClusterStateFault "InvalidDBClusterStateFault"
+//     The DB cluster is not in a valid state.
 //
-//   * ErrCodeInvalidDBInstanceStateFault "InvalidDBInstanceState"
-//   The specified DB instance is not in the available state.
+//   - ErrCodeDBInstanceNotFoundFault "DBInstanceNotFound"
+//     DBInstanceIdentifier does not refer to an existing DB instance.
+//
+//   - ErrCodeInvalidDBInstanceStateFault "InvalidDBInstanceState"
+//     The specified DB instance is not in the available state.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/CreateDBClusterEndpoint
 func (c *Neptune) CreateDBClusterEndpoint(input *CreateDBClusterEndpointInput) (*CreateDBClusterEndpointOutput, error) {
@@ -873,14 +880,13 @@ const opCreateDBClusterParameterGroup = "CreateDBClusterParameterGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDBClusterParameterGroupRequest method.
+//	req, resp := client.CreateDBClusterParameterGroupRequest(params)
 //
-//    // Example sending a request using the CreateDBClusterParameterGroupRequest method.
-//    req, resp := client.CreateDBClusterParameterGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/CreateDBClusterParameterGroup
 func (c *Neptune) CreateDBClusterParameterGroupRequest(input *CreateDBClusterParameterGroupInput) (req *request.Request, output *CreateDBClusterParameterGroupOutput) {
@@ -935,12 +941,13 @@ func (c *Neptune) CreateDBClusterParameterGroupRequest(input *CreateDBClusterPar
 // API operation CreateDBClusterParameterGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeDBParameterGroupQuotaExceededFault "DBParameterGroupQuotaExceeded"
-//   Request would result in user exceeding the allowed number of DB parameter
-//   groups.
 //
-//   * ErrCodeDBParameterGroupAlreadyExistsFault "DBParameterGroupAlreadyExists"
-//   A DB parameter group with the same name exists.
+//   - ErrCodeDBParameterGroupQuotaExceededFault "DBParameterGroupQuotaExceeded"
+//     Request would result in user exceeding the allowed number of DB parameter
+//     groups.
+//
+//   - ErrCodeDBParameterGroupAlreadyExistsFault "DBParameterGroupAlreadyExists"
+//     A DB parameter group with the same name exists.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/CreateDBClusterParameterGroup
 func (c *Neptune) CreateDBClusterParameterGroup(input *CreateDBClusterParameterGroupInput) (*CreateDBClusterParameterGroupOutput, error) {
@@ -980,14 +987,13 @@ const opCreateDBClusterSnapshot = "CreateDBClusterSnapshot"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDBClusterSnapshotRequest method.
+//	req, resp := client.CreateDBClusterSnapshotRequest(params)
 //
-//    // Example sending a request using the CreateDBClusterSnapshotRequest method.
-//    req, resp := client.CreateDBClusterSnapshotRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/CreateDBClusterSnapshot
 func (c *Neptune) CreateDBClusterSnapshotRequest(input *CreateDBClusterSnapshotInput) (req *request.Request, output *CreateDBClusterSnapshotOutput) {
@@ -1018,20 +1024,21 @@ func (c *Neptune) CreateDBClusterSnapshotRequest(input *CreateDBClusterSnapshotI
 // API operation CreateDBClusterSnapshot for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeDBClusterSnapshotAlreadyExistsFault "DBClusterSnapshotAlreadyExistsFault"
-//   User already has a DB cluster snapshot with the given identifier.
 //
-//   * ErrCodeInvalidDBClusterStateFault "InvalidDBClusterStateFault"
-//   The DB cluster is not in a valid state.
+//   - ErrCodeDBClusterSnapshotAlreadyExistsFault "DBClusterSnapshotAlreadyExistsFault"
+//     User already has a DB cluster snapshot with the given identifier.
 //
-//   * ErrCodeDBClusterNotFoundFault "DBClusterNotFoundFault"
-//   DBClusterIdentifier does not refer to an existing DB cluster.
+//   - ErrCodeInvalidDBClusterStateFault "InvalidDBClusterStateFault"
+//     The DB cluster is not in a valid state.
 //
-//   * ErrCodeSnapshotQuotaExceededFault "SnapshotQuotaExceeded"
-//   Request would result in user exceeding the allowed number of DB snapshots.
+//   - ErrCodeDBClusterNotFoundFault "DBClusterNotFoundFault"
+//     DBClusterIdentifier does not refer to an existing DB cluster.
 //
-//   * ErrCodeInvalidDBClusterSnapshotStateFault "InvalidDBClusterSnapshotStateFault"
-//   The supplied value is not a valid DB cluster snapshot state.
+//   - ErrCodeSnapshotQuotaExceededFault "SnapshotQuotaExceeded"
+//     Request would result in user exceeding the allowed number of DB snapshots.
+//
+//   - ErrCodeInvalidDBClusterSnapshotStateFault "InvalidDBClusterSnapshotStateFault"
+//     The supplied value is not a valid DB cluster snapshot state.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/CreateDBClusterSnapshot
 func (c *Neptune) CreateDBClusterSnapshot(input *CreateDBClusterSnapshotInput) (*CreateDBClusterSnapshotOutput, error) {
@@ -1071,14 +1078,13 @@ const opCreateDBInstance = "CreateDBInstance"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDBInstanceRequest method.
+//	req, resp := client.CreateDBInstanceRequest(params)
 //
-//    // Example sending a request using the CreateDBInstanceRequest method.
-//    req, resp := client.CreateDBInstanceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/CreateDBInstance
 func (c *Neptune) CreateDBInstanceRequest(input *CreateDBInstanceInput) (req *request.Request, output *CreateDBInstanceOutput) {
@@ -1109,68 +1115,69 @@ func (c *Neptune) CreateDBInstanceRequest(input *CreateDBInstanceInput) (req *re
 // API operation CreateDBInstance for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeDBInstanceAlreadyExistsFault "DBInstanceAlreadyExists"
-//   User already has a DB instance with the given identifier.
 //
-//   * ErrCodeInsufficientDBInstanceCapacityFault "InsufficientDBInstanceCapacity"
-//   Specified DB instance class is not available in the specified Availability
-//   Zone.
+//   - ErrCodeDBInstanceAlreadyExistsFault "DBInstanceAlreadyExists"
+//     User already has a DB instance with the given identifier.
 //
-//   * ErrCodeDBParameterGroupNotFoundFault "DBParameterGroupNotFound"
-//   DBParameterGroupName does not refer to an existing DB parameter group.
+//   - ErrCodeInsufficientDBInstanceCapacityFault "InsufficientDBInstanceCapacity"
+//     Specified DB instance class is not available in the specified Availability
+//     Zone.
 //
-//   * ErrCodeDBSecurityGroupNotFoundFault "DBSecurityGroupNotFound"
-//   DBSecurityGroupName does not refer to an existing DB security group.
+//   - ErrCodeDBParameterGroupNotFoundFault "DBParameterGroupNotFound"
+//     DBParameterGroupName does not refer to an existing DB parameter group.
 //
-//   * ErrCodeInstanceQuotaExceededFault "InstanceQuotaExceeded"
-//   Request would result in user exceeding the allowed number of DB instances.
+//   - ErrCodeDBSecurityGroupNotFoundFault "DBSecurityGroupNotFound"
+//     DBSecurityGroupName does not refer to an existing DB security group.
 //
-//   * ErrCodeStorageQuotaExceededFault "StorageQuotaExceeded"
-//   Request would result in user exceeding the allowed amount of storage available
-//   across all DB instances.
+//   - ErrCodeInstanceQuotaExceededFault "InstanceQuotaExceeded"
+//     Request would result in user exceeding the allowed number of DB instances.
 //
-//   * ErrCodeDBSubnetGroupNotFoundFault "DBSubnetGroupNotFoundFault"
-//   DBSubnetGroupName does not refer to an existing DB subnet group.
+//   - ErrCodeStorageQuotaExceededFault "StorageQuotaExceeded"
+//     Request would result in user exceeding the allowed amount of storage available
+//     across all DB instances.
 //
-//   * ErrCodeDBSubnetGroupDoesNotCoverEnoughAZs "DBSubnetGroupDoesNotCoverEnoughAZs"
-//   Subnets in the DB subnet group should cover at least two Availability Zones
-//   unless there is only one Availability Zone.
+//   - ErrCodeDBSubnetGroupNotFoundFault "DBSubnetGroupNotFoundFault"
+//     DBSubnetGroupName does not refer to an existing DB subnet group.
 //
-//   * ErrCodeInvalidDBClusterStateFault "InvalidDBClusterStateFault"
-//   The DB cluster is not in a valid state.
+//   - ErrCodeDBSubnetGroupDoesNotCoverEnoughAZs "DBSubnetGroupDoesNotCoverEnoughAZs"
+//     Subnets in the DB subnet group should cover at least two Availability Zones
+//     unless there is only one Availability Zone.
 //
-//   * ErrCodeInvalidSubnet "InvalidSubnet"
-//   The requested subnet is invalid, or multiple subnets were requested that
-//   are not all in a common VPC.
+//   - ErrCodeInvalidDBClusterStateFault "InvalidDBClusterStateFault"
+//     The DB cluster is not in a valid state.
 //
-//   * ErrCodeInvalidVPCNetworkStateFault "InvalidVPCNetworkStateFault"
-//   DB subnet group does not cover all Availability Zones after it is created
-//   because users' change.
+//   - ErrCodeInvalidSubnet "InvalidSubnet"
+//     The requested subnet is invalid, or multiple subnets were requested that
+//     are not all in a common VPC.
 //
-//   * ErrCodeProvisionedIopsNotAvailableInAZFault "ProvisionedIopsNotAvailableInAZFault"
-//   Provisioned IOPS not available in the specified Availability Zone.
+//   - ErrCodeInvalidVPCNetworkStateFault "InvalidVPCNetworkStateFault"
+//     DB subnet group does not cover all Availability Zones after it is created
+//     because users' change.
 //
-//   * ErrCodeOptionGroupNotFoundFault "OptionGroupNotFoundFault"
-//   The designated option group could not be found.
+//   - ErrCodeProvisionedIopsNotAvailableInAZFault "ProvisionedIopsNotAvailableInAZFault"
+//     Provisioned IOPS not available in the specified Availability Zone.
 //
-//   * ErrCodeDBClusterNotFoundFault "DBClusterNotFoundFault"
-//   DBClusterIdentifier does not refer to an existing DB cluster.
+//   - ErrCodeOptionGroupNotFoundFault "OptionGroupNotFoundFault"
+//     The designated option group could not be found.
 //
-//   * ErrCodeStorageTypeNotSupportedFault "StorageTypeNotSupported"
-//   StorageType specified cannot be associated with the DB Instance.
+//   - ErrCodeDBClusterNotFoundFault "DBClusterNotFoundFault"
+//     DBClusterIdentifier does not refer to an existing DB cluster.
 //
-//   * ErrCodeAuthorizationNotFoundFault "AuthorizationNotFound"
-//   Specified CIDRIP or EC2 security group is not authorized for the specified
-//   DB security group.
+//   - ErrCodeStorageTypeNotSupportedFault "StorageTypeNotSupported"
+//     StorageType specified cannot be associated with the DB Instance.
 //
-//   Neptune may not also be authorized via IAM to perform necessary actions on
-//   your behalf.
+//   - ErrCodeAuthorizationNotFoundFault "AuthorizationNotFound"
+//     Specified CIDRIP or EC2 security group is not authorized for the specified
+//     DB security group.
 //
-//   * ErrCodeKMSKeyNotAccessibleFault "KMSKeyNotAccessibleFault"
-//   Error accessing KMS key.
+//     Neptune may not also be authorized via IAM to perform necessary actions on
+//     your behalf.
 //
-//   * ErrCodeDomainNotFoundFault "DomainNotFoundFault"
-//   Domain does not refer to an existing Active Directory Domain.
+//   - ErrCodeKMSKeyNotAccessibleFault "KMSKeyNotAccessibleFault"
+//     Error accessing KMS key.
+//
+//   - ErrCodeDomainNotFoundFault "DomainNotFoundFault"
+//     Domain does not refer to an existing Active Directory Domain.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/CreateDBInstance
 func (c *Neptune) CreateDBInstance(input *CreateDBInstanceInput) (*CreateDBInstanceOutput, error) {
@@ -1210,14 +1217,13 @@ const opCreateDBParameterGroup = "CreateDBParameterGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDBParameterGroupRequest method.
+//	req, resp := client.CreateDBParameterGroupRequest(params)
 //
-//    // Example sending a request using the CreateDBParameterGroupRequest method.
-//    req, resp := client.CreateDBParameterGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/CreateDBParameterGroup
 func (c *Neptune) CreateDBParameterGroupRequest(input *CreateDBParameterGroupInput) (req *request.Request, output *CreateDBParameterGroupOutput) {
@@ -1268,12 +1274,13 @@ func (c *Neptune) CreateDBParameterGroupRequest(input *CreateDBParameterGroupInp
 // API operation CreateDBParameterGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeDBParameterGroupQuotaExceededFault "DBParameterGroupQuotaExceeded"
-//   Request would result in user exceeding the allowed number of DB parameter
-//   groups.
 //
-//   * ErrCodeDBParameterGroupAlreadyExistsFault "DBParameterGroupAlreadyExists"
-//   A DB parameter group with the same name exists.
+//   - ErrCodeDBParameterGroupQuotaExceededFault "DBParameterGroupQuotaExceeded"
+//     Request would result in user exceeding the allowed number of DB parameter
+//     groups.
+//
+//   - ErrCodeDBParameterGroupAlreadyExistsFault "DBParameterGroupAlreadyExists"
+//     A DB parameter group with the same name exists.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/CreateDBParameterGroup
 func (c *Neptune) CreateDBParameterGroup(input *CreateDBParameterGroupInput) (*CreateDBParameterGroupOutput, error) {
@@ -1313,14 +1320,13 @@ const opCreateDBSubnetGroup = "CreateDBSubnetGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDBSubnetGroupRequest method.
+//	req, resp := client.CreateDBSubnetGroupRequest(params)
 //
-//    // Example sending a request using the CreateDBSubnetGroupRequest method.
-//    req, resp := client.CreateDBSubnetGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/CreateDBSubnetGroup
 func (c *Neptune) CreateDBSubnetGroupRequest(input *CreateDBSubnetGroupInput) (req *request.Request, output *CreateDBSubnetGroupOutput) {
@@ -1352,23 +1358,24 @@ func (c *Neptune) CreateDBSubnetGroupRequest(input *CreateDBSubnetGroupInput) (r
 // API operation CreateDBSubnetGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeDBSubnetGroupAlreadyExistsFault "DBSubnetGroupAlreadyExists"
-//   DBSubnetGroupName is already used by an existing DB subnet group.
 //
-//   * ErrCodeDBSubnetGroupQuotaExceededFault "DBSubnetGroupQuotaExceeded"
-//   Request would result in user exceeding the allowed number of DB subnet groups.
+//   - ErrCodeDBSubnetGroupAlreadyExistsFault "DBSubnetGroupAlreadyExists"
+//     DBSubnetGroupName is already used by an existing DB subnet group.
 //
-//   * ErrCodeDBSubnetQuotaExceededFault "DBSubnetQuotaExceededFault"
-//   Request would result in user exceeding the allowed number of subnets in a
-//   DB subnet groups.
+//   - ErrCodeDBSubnetGroupQuotaExceededFault "DBSubnetGroupQuotaExceeded"
+//     Request would result in user exceeding the allowed number of DB subnet groups.
 //
-//   * ErrCodeDBSubnetGroupDoesNotCoverEnoughAZs "DBSubnetGroupDoesNotCoverEnoughAZs"
-//   Subnets in the DB subnet group should cover at least two Availability Zones
-//   unless there is only one Availability Zone.
+//   - ErrCodeDBSubnetQuotaExceededFault "DBSubnetQuotaExceededFault"
+//     Request would result in user exceeding the allowed number of subnets in a
+//     DB subnet groups.
 //
-//   * ErrCodeInvalidSubnet "InvalidSubnet"
-//   The requested subnet is invalid, or multiple subnets were requested that
-//   are not all in a common VPC.
+//   - ErrCodeDBSubnetGroupDoesNotCoverEnoughAZs "DBSubnetGroupDoesNotCoverEnoughAZs"
+//     Subnets in the DB subnet group should cover at least two Availability Zones
+//     unless there is only one Availability Zone.
+//
+//   - ErrCodeInvalidSubnet "InvalidSubnet"
+//     The requested subnet is invalid, or multiple subnets were requested that
+//     are not all in a common VPC.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/CreateDBSubnetGroup
 func (c *Neptune) CreateDBSubnetGroup(input *CreateDBSubnetGroupInput) (*CreateDBSubnetGroupOutput, error) {
@@ -1408,14 +1415,13 @@ const opCreateEventSubscription = "CreateEventSubscription"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateEventSubscriptionRequest method.
+//	req, resp := client.CreateEventSubscriptionRequest(params)
 //
-//    // Example sending a request using the CreateEventSubscriptionRequest method.
-//    req, resp := client.CreateEventSubscriptionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/CreateEventSubscription
 func (c *Neptune) CreateEventSubscriptionRequest(input *CreateEventSubscriptionInput) (req *request.Request, output *CreateEventSubscriptionOutput) {
@@ -1465,26 +1471,27 @@ func (c *Neptune) CreateEventSubscriptionRequest(input *CreateEventSubscriptionI
 // API operation CreateEventSubscription for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeEventSubscriptionQuotaExceededFault "EventSubscriptionQuotaExceeded"
-//   You have exceeded the number of events you can subscribe to.
 //
-//   * ErrCodeSubscriptionAlreadyExistFault "SubscriptionAlreadyExist"
-//   This subscription already exists.
+//   - ErrCodeEventSubscriptionQuotaExceededFault "EventSubscriptionQuotaExceeded"
+//     You have exceeded the number of events you can subscribe to.
 //
-//   * ErrCodeSNSInvalidTopicFault "SNSInvalidTopic"
-//   The SNS topic is invalid.
+//   - ErrCodeSubscriptionAlreadyExistFault "SubscriptionAlreadyExist"
+//     This subscription already exists.
 //
-//   * ErrCodeSNSNoAuthorizationFault "SNSNoAuthorization"
-//   There is no SNS authorization.
+//   - ErrCodeSNSInvalidTopicFault "SNSInvalidTopic"
+//     The SNS topic is invalid.
 //
-//   * ErrCodeSNSTopicArnNotFoundFault "SNSTopicArnNotFound"
-//   The ARN of the SNS topic could not be found.
+//   - ErrCodeSNSNoAuthorizationFault "SNSNoAuthorization"
+//     There is no SNS authorization.
 //
-//   * ErrCodeSubscriptionCategoryNotFoundFault "SubscriptionCategoryNotFound"
-//   The designated subscription category could not be found.
+//   - ErrCodeSNSTopicArnNotFoundFault "SNSTopicArnNotFound"
+//     The ARN of the SNS topic could not be found.
 //
-//   * ErrCodeSourceNotFoundFault "SourceNotFound"
-//   The source could not be found.
+//   - ErrCodeSubscriptionCategoryNotFoundFault "SubscriptionCategoryNotFound"
+//     The designated subscription category could not be found.
+//
+//   - ErrCodeSourceNotFoundFault "SourceNotFound"
+//     The source could not be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/CreateEventSubscription
 func (c *Neptune) CreateEventSubscription(input *CreateEventSubscriptionInput) (*CreateEventSubscriptionOutput, error) {
@@ -1508,6 +1515,104 @@ func (c *Neptune) CreateEventSubscriptionWithContext(ctx aws.Context, input *Cre
 	return out, req.Send()
 }
 
+const opCreateGlobalCluster = "CreateGlobalCluster"
+
+// CreateGlobalClusterRequest generates a "aws/request.Request" representing the
+// client's request for the CreateGlobalCluster operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateGlobalCluster for more information on using the CreateGlobalCluster
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreateGlobalClusterRequest method.
+//	req, resp := client.CreateGlobalClusterRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/CreateGlobalCluster
+func (c *Neptune) CreateGlobalClusterRequest(input *CreateGlobalClusterInput) (req *request.Request, output *CreateGlobalClusterOutput) {
+	op := &request.Operation{
+		Name:       opCreateGlobalCluster,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &CreateGlobalClusterInput{}
+	}
+
+	output = &CreateGlobalClusterOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateGlobalCluster API operation for Amazon Neptune.
+//
+// Creates a Neptune global database spread across multiple Amazon Regions.
+// The global database contains a single primary cluster with read-write capability,
+// and read-only secondary clusters that receive data from the primary cluster
+// through high-speed replication performed by the Neptune storage subsystem.
+//
+// You can create a global database that is initially empty, and then add a
+// primary cluster and secondary clusters to it, or you can specify an existing
+// Neptune cluster during the create operation to become the primary cluster
+// of the global database.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Neptune's
+// API operation CreateGlobalCluster for usage and error information.
+//
+// Returned Error Codes:
+//
+//   - ErrCodeGlobalClusterAlreadyExistsFault "GlobalClusterAlreadyExistsFault"
+//     The GlobalClusterIdentifier already exists. Choose a new global database
+//     identifier (unique name) to create a new global database cluster.
+//
+//   - ErrCodeGlobalClusterQuotaExceededFault "GlobalClusterQuotaExceededFault"
+//     The number of global database clusters for this account is already at the
+//     maximum allowed.
+//
+//   - ErrCodeInvalidDBClusterStateFault "InvalidDBClusterStateFault"
+//     The DB cluster is not in a valid state.
+//
+//   - ErrCodeDBClusterNotFoundFault "DBClusterNotFoundFault"
+//     DBClusterIdentifier does not refer to an existing DB cluster.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/CreateGlobalCluster
+func (c *Neptune) CreateGlobalCluster(input *CreateGlobalClusterInput) (*CreateGlobalClusterOutput, error) {
+	req, out := c.CreateGlobalClusterRequest(input)
+	return out, req.Send()
+}
+
+// CreateGlobalClusterWithContext is the same as CreateGlobalCluster with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateGlobalCluster for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Neptune) CreateGlobalClusterWithContext(ctx aws.Context, input *CreateGlobalClusterInput, opts ...request.Option) (*CreateGlobalClusterOutput, error) {
+	req, out := c.CreateGlobalClusterRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opDeleteDBCluster = "DeleteDBCluster"
 
 // DeleteDBClusterRequest generates a "aws/request.Request" representing the
@@ -1524,14 +1629,13 @@ const opDeleteDBCluster = "DeleteDBCluster"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDBClusterRequest method.
+//	req, resp := client.DeleteDBClusterRequest(params)
 //
-//    // Example sending a request using the DeleteDBClusterRequest method.
-//    req, resp := client.DeleteDBClusterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DeleteDBCluster
 func (c *Neptune) DeleteDBClusterRequest(input *DeleteDBClusterInput) (req *request.Request, output *DeleteDBClusterOutput) {
@@ -1568,20 +1672,21 @@ func (c *Neptune) DeleteDBClusterRequest(input *DeleteDBClusterInput) (req *requ
 // API operation DeleteDBCluster for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeDBClusterNotFoundFault "DBClusterNotFoundFault"
-//   DBClusterIdentifier does not refer to an existing DB cluster.
 //
-//   * ErrCodeInvalidDBClusterStateFault "InvalidDBClusterStateFault"
-//   The DB cluster is not in a valid state.
+//   - ErrCodeDBClusterNotFoundFault "DBClusterNotFoundFault"
+//     DBClusterIdentifier does not refer to an existing DB cluster.
 //
-//   * ErrCodeDBClusterSnapshotAlreadyExistsFault "DBClusterSnapshotAlreadyExistsFault"
-//   User already has a DB cluster snapshot with the given identifier.
+//   - ErrCodeInvalidDBClusterStateFault "InvalidDBClusterStateFault"
+//     The DB cluster is not in a valid state.
 //
-//   * ErrCodeSnapshotQuotaExceededFault "SnapshotQuotaExceeded"
-//   Request would result in user exceeding the allowed number of DB snapshots.
+//   - ErrCodeDBClusterSnapshotAlreadyExistsFault "DBClusterSnapshotAlreadyExistsFault"
+//     User already has a DB cluster snapshot with the given identifier.
 //
-//   * ErrCodeInvalidDBClusterSnapshotStateFault "InvalidDBClusterSnapshotStateFault"
-//   The supplied value is not a valid DB cluster snapshot state.
+//   - ErrCodeSnapshotQuotaExceededFault "SnapshotQuotaExceeded"
+//     Request would result in user exceeding the allowed number of DB snapshots.
+//
+//   - ErrCodeInvalidDBClusterSnapshotStateFault "InvalidDBClusterSnapshotStateFault"
+//     The supplied value is not a valid DB cluster snapshot state.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DeleteDBCluster
 func (c *Neptune) DeleteDBCluster(input *DeleteDBClusterInput) (*DeleteDBClusterOutput, error) {
@@ -1621,14 +1726,13 @@ const opDeleteDBClusterEndpoint = "DeleteDBClusterEndpoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDBClusterEndpointRequest method.
+//	req, resp := client.DeleteDBClusterEndpointRequest(params)
 //
-//    // Example sending a request using the DeleteDBClusterEndpointRequest method.
-//    req, resp := client.DeleteDBClusterEndpointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DeleteDBClusterEndpoint
 func (c *Neptune) DeleteDBClusterEndpointRequest(input *DeleteDBClusterEndpointInput) (req *request.Request, output *DeleteDBClusterEndpointOutput) {
@@ -1659,15 +1763,16 @@ func (c *Neptune) DeleteDBClusterEndpointRequest(input *DeleteDBClusterEndpointI
 // API operation DeleteDBClusterEndpoint for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidDBClusterEndpointStateFault "InvalidDBClusterEndpointStateFault"
-//   The requested operation cannot be performed on the endpoint while the endpoint
-//   is in this state.
 //
-//   * ErrCodeDBClusterEndpointNotFoundFault "DBClusterEndpointNotFoundFault"
-//   The specified custom endpoint doesn't exist.
+//   - ErrCodeInvalidDBClusterEndpointStateFault "InvalidDBClusterEndpointStateFault"
+//     The requested operation cannot be performed on the endpoint while the endpoint
+//     is in this state.
 //
-//   * ErrCodeInvalidDBClusterStateFault "InvalidDBClusterStateFault"
-//   The DB cluster is not in a valid state.
+//   - ErrCodeDBClusterEndpointNotFoundFault "DBClusterEndpointNotFoundFault"
+//     The specified custom endpoint doesn't exist.
+//
+//   - ErrCodeInvalidDBClusterStateFault "InvalidDBClusterStateFault"
+//     The DB cluster is not in a valid state.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DeleteDBClusterEndpoint
 func (c *Neptune) DeleteDBClusterEndpoint(input *DeleteDBClusterEndpointInput) (*DeleteDBClusterEndpointOutput, error) {
@@ -1707,14 +1812,13 @@ const opDeleteDBClusterParameterGroup = "DeleteDBClusterParameterGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDBClusterParameterGroupRequest method.
+//	req, resp := client.DeleteDBClusterParameterGroupRequest(params)
 //
-//    // Example sending a request using the DeleteDBClusterParameterGroupRequest method.
-//    req, resp := client.DeleteDBClusterParameterGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DeleteDBClusterParameterGroup
 func (c *Neptune) DeleteDBClusterParameterGroupRequest(input *DeleteDBClusterParameterGroupInput) (req *request.Request, output *DeleteDBClusterParameterGroupOutput) {
@@ -1747,13 +1851,14 @@ func (c *Neptune) DeleteDBClusterParameterGroupRequest(input *DeleteDBClusterPar
 // API operation DeleteDBClusterParameterGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidDBParameterGroupStateFault "InvalidDBParameterGroupState"
-//   The DB parameter group is in use or is in an invalid state. If you are attempting
-//   to delete the parameter group, you cannot delete it when the parameter group
-//   is in this state.
 //
-//   * ErrCodeDBParameterGroupNotFoundFault "DBParameterGroupNotFound"
-//   DBParameterGroupName does not refer to an existing DB parameter group.
+//   - ErrCodeInvalidDBParameterGroupStateFault "InvalidDBParameterGroupState"
+//     The DB parameter group is in use or is in an invalid state. If you are attempting
+//     to delete the parameter group, you cannot delete it when the parameter group
+//     is in this state.
+//
+//   - ErrCodeDBParameterGroupNotFoundFault "DBParameterGroupNotFound"
+//     DBParameterGroupName does not refer to an existing DB parameter group.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DeleteDBClusterParameterGroup
 func (c *Neptune) DeleteDBClusterParameterGroup(input *DeleteDBClusterParameterGroupInput) (*DeleteDBClusterParameterGroupOutput, error) {
@@ -1793,14 +1898,13 @@ const opDeleteDBClusterSnapshot = "DeleteDBClusterSnapshot"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDBClusterSnapshotRequest method.
+//	req, resp := client.DeleteDBClusterSnapshotRequest(params)
 //
-//    // Example sending a request using the DeleteDBClusterSnapshotRequest method.
-//    req, resp := client.DeleteDBClusterSnapshotRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DeleteDBClusterSnapshot
 func (c *Neptune) DeleteDBClusterSnapshotRequest(input *DeleteDBClusterSnapshotInput) (req *request.Request, output *DeleteDBClusterSnapshotOutput) {
@@ -1834,11 +1938,12 @@ func (c *Neptune) DeleteDBClusterSnapshotRequest(input *DeleteDBClusterSnapshotI
 // API operation DeleteDBClusterSnapshot for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidDBClusterSnapshotStateFault "InvalidDBClusterSnapshotStateFault"
-//   The supplied value is not a valid DB cluster snapshot state.
 //
-//   * ErrCodeDBClusterSnapshotNotFoundFault "DBClusterSnapshotNotFoundFault"
-//   DBClusterSnapshotIdentifier does not refer to an existing DB cluster snapshot.
+//   - ErrCodeInvalidDBClusterSnapshotStateFault "InvalidDBClusterSnapshotStateFault"
+//     The supplied value is not a valid DB cluster snapshot state.
+//
+//   - ErrCodeDBClusterSnapshotNotFoundFault "DBClusterSnapshotNotFoundFault"
+//     DBClusterSnapshotIdentifier does not refer to an existing DB cluster snapshot.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DeleteDBClusterSnapshot
 func (c *Neptune) DeleteDBClusterSnapshot(input *DeleteDBClusterSnapshotInput) (*DeleteDBClusterSnapshotOutput, error) {
@@ -1878,14 +1983,13 @@ const opDeleteDBInstance = "DeleteDBInstance"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDBInstanceRequest method.
+//	req, resp := client.DeleteDBInstanceRequest(params)
 //
-//    // Example sending a request using the DeleteDBInstanceRequest method.
-//    req, resp := client.DeleteDBInstanceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DeleteDBInstance
 func (c *Neptune) DeleteDBInstanceRequest(input *DeleteDBInstanceInput) (req *request.Request, output *DeleteDBInstanceOutput) {
@@ -1931,20 +2035,21 @@ func (c *Neptune) DeleteDBInstanceRequest(input *DeleteDBInstanceInput) (req *re
 // API operation DeleteDBInstance for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeDBInstanceNotFoundFault "DBInstanceNotFound"
-//   DBInstanceIdentifier does not refer to an existing DB instance.
 //
-//   * ErrCodeInvalidDBInstanceStateFault "InvalidDBInstanceState"
-//   The specified DB instance is not in the available state.
+//   - ErrCodeDBInstanceNotFoundFault "DBInstanceNotFound"
+//     DBInstanceIdentifier does not refer to an existing DB instance.
 //
-//   * ErrCodeDBSnapshotAlreadyExistsFault "DBSnapshotAlreadyExists"
-//   DBSnapshotIdentifier is already used by an existing snapshot.
+//   - ErrCodeInvalidDBInstanceStateFault "InvalidDBInstanceState"
+//     The specified DB instance is not in the available state.
 //
-//   * ErrCodeSnapshotQuotaExceededFault "SnapshotQuotaExceeded"
-//   Request would result in user exceeding the allowed number of DB snapshots.
+//   - ErrCodeDBSnapshotAlreadyExistsFault "DBSnapshotAlreadyExists"
+//     DBSnapshotIdentifier is already used by an existing snapshot.
 //
-//   * ErrCodeInvalidDBClusterStateFault "InvalidDBClusterStateFault"
-//   The DB cluster is not in a valid state.
+//   - ErrCodeSnapshotQuotaExceededFault "SnapshotQuotaExceeded"
+//     Request would result in user exceeding the allowed number of DB snapshots.
+//
+//   - ErrCodeInvalidDBClusterStateFault "InvalidDBClusterStateFault"
+//     The DB cluster is not in a valid state.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DeleteDBInstance
 func (c *Neptune) DeleteDBInstance(input *DeleteDBInstanceInput) (*DeleteDBInstanceOutput, error) {
@@ -1984,14 +2089,13 @@ const opDeleteDBParameterGroup = "DeleteDBParameterGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDBParameterGroupRequest method.
+//	req, resp := client.DeleteDBParameterGroupRequest(params)
 //
-//    // Example sending a request using the DeleteDBParameterGroupRequest method.
-//    req, resp := client.DeleteDBParameterGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DeleteDBParameterGroup
 func (c *Neptune) DeleteDBParameterGroupRequest(input *DeleteDBParameterGroupInput) (req *request.Request, output *DeleteDBParameterGroupOutput) {
@@ -2024,13 +2128,14 @@ func (c *Neptune) DeleteDBParameterGroupRequest(input *DeleteDBParameterGroupInp
 // API operation DeleteDBParameterGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidDBParameterGroupStateFault "InvalidDBParameterGroupState"
-//   The DB parameter group is in use or is in an invalid state. If you are attempting
-//   to delete the parameter group, you cannot delete it when the parameter group
-//   is in this state.
 //
-//   * ErrCodeDBParameterGroupNotFoundFault "DBParameterGroupNotFound"
-//   DBParameterGroupName does not refer to an existing DB parameter group.
+//   - ErrCodeInvalidDBParameterGroupStateFault "InvalidDBParameterGroupState"
+//     The DB parameter group is in use or is in an invalid state. If you are attempting
+//     to delete the parameter group, you cannot delete it when the parameter group
+//     is in this state.
+//
+//   - ErrCodeDBParameterGroupNotFoundFault "DBParameterGroupNotFound"
+//     DBParameterGroupName does not refer to an existing DB parameter group.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DeleteDBParameterGroup
 func (c *Neptune) DeleteDBParameterGroup(input *DeleteDBParameterGroupInput) (*DeleteDBParameterGroupOutput, error) {
@@ -2070,14 +2175,13 @@ const opDeleteDBSubnetGroup = "DeleteDBSubnetGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDBSubnetGroupRequest method.
+//	req, resp := client.DeleteDBSubnetGroupRequest(params)
 //
-//    // Example sending a request using the DeleteDBSubnetGroupRequest method.
-//    req, resp := client.DeleteDBSubnetGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DeleteDBSubnetGroup
 func (c *Neptune) DeleteDBSubnetGroupRequest(input *DeleteDBSubnetGroupInput) (req *request.Request, output *DeleteDBSubnetGroupOutput) {
@@ -2111,14 +2215,15 @@ func (c *Neptune) DeleteDBSubnetGroupRequest(input *DeleteDBSubnetGroupInput) (r
 // API operation DeleteDBSubnetGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidDBSubnetGroupStateFault "InvalidDBSubnetGroupStateFault"
-//   The DB subnet group cannot be deleted because it is in use.
 //
-//   * ErrCodeInvalidDBSubnetStateFault "InvalidDBSubnetStateFault"
-//   The DB subnet is not in the available state.
+//   - ErrCodeInvalidDBSubnetGroupStateFault "InvalidDBSubnetGroupStateFault"
+//     The DB subnet group cannot be deleted because it is in use.
 //
-//   * ErrCodeDBSubnetGroupNotFoundFault "DBSubnetGroupNotFoundFault"
-//   DBSubnetGroupName does not refer to an existing DB subnet group.
+//   - ErrCodeInvalidDBSubnetStateFault "InvalidDBSubnetStateFault"
+//     The DB subnet is not in the available state.
+//
+//   - ErrCodeDBSubnetGroupNotFoundFault "DBSubnetGroupNotFoundFault"
+//     DBSubnetGroupName does not refer to an existing DB subnet group.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DeleteDBSubnetGroup
 func (c *Neptune) DeleteDBSubnetGroup(input *DeleteDBSubnetGroupInput) (*DeleteDBSubnetGroupOutput, error) {
@@ -2158,14 +2263,13 @@ const opDeleteEventSubscription = "DeleteEventSubscription"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteEventSubscriptionRequest method.
+//	req, resp := client.DeleteEventSubscriptionRequest(params)
 //
-//    // Example sending a request using the DeleteEventSubscriptionRequest method.
-//    req, resp := client.DeleteEventSubscriptionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DeleteEventSubscription
 func (c *Neptune) DeleteEventSubscriptionRequest(input *DeleteEventSubscriptionInput) (req *request.Request, output *DeleteEventSubscriptionOutput) {
@@ -2196,11 +2300,12 @@ func (c *Neptune) DeleteEventSubscriptionRequest(input *DeleteEventSubscriptionI
 // API operation DeleteEventSubscription for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeSubscriptionNotFoundFault "SubscriptionNotFound"
-//   The designated subscription could not be found.
 //
-//   * ErrCodeInvalidEventSubscriptionStateFault "InvalidEventSubscriptionState"
-//   The event subscription is in an invalid state.
+//   - ErrCodeSubscriptionNotFoundFault "SubscriptionNotFound"
+//     The designated subscription could not be found.
+//
+//   - ErrCodeInvalidEventSubscriptionStateFault "InvalidEventSubscriptionState"
+//     The event subscription is in an invalid state.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DeleteEventSubscription
 func (c *Neptune) DeleteEventSubscription(input *DeleteEventSubscriptionInput) (*DeleteEventSubscriptionOutput, error) {
@@ -2224,6 +2329,91 @@ func (c *Neptune) DeleteEventSubscriptionWithContext(ctx aws.Context, input *Del
 	return out, req.Send()
 }
 
+const opDeleteGlobalCluster = "DeleteGlobalCluster"
+
+// DeleteGlobalClusterRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteGlobalCluster operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteGlobalCluster for more information on using the DeleteGlobalCluster
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteGlobalClusterRequest method.
+//	req, resp := client.DeleteGlobalClusterRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DeleteGlobalCluster
+func (c *Neptune) DeleteGlobalClusterRequest(input *DeleteGlobalClusterInput) (req *request.Request, output *DeleteGlobalClusterOutput) {
+	op := &request.Operation{
+		Name:       opDeleteGlobalCluster,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DeleteGlobalClusterInput{}
+	}
+
+	output = &DeleteGlobalClusterOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DeleteGlobalCluster API operation for Amazon Neptune.
+//
+// Deletes a global database. The primary and all secondary clusters must already
+// be detached or deleted first.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Neptune's
+// API operation DeleteGlobalCluster for usage and error information.
+//
+// Returned Error Codes:
+//
+//   - ErrCodeGlobalClusterNotFoundFault "GlobalClusterNotFoundFault"
+//     The GlobalClusterIdentifier doesn't refer to an existing global database
+//     cluster.
+//
+//   - ErrCodeInvalidGlobalClusterStateFault "InvalidGlobalClusterStateFault"
+//     The global cluster is in an invalid state and can't perform the requested
+//     operation.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DeleteGlobalCluster
+func (c *Neptune) DeleteGlobalCluster(input *DeleteGlobalClusterInput) (*DeleteGlobalClusterOutput, error) {
+	req, out := c.DeleteGlobalClusterRequest(input)
+	return out, req.Send()
+}
+
+// DeleteGlobalClusterWithContext is the same as DeleteGlobalCluster with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteGlobalCluster for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Neptune) DeleteGlobalClusterWithContext(ctx aws.Context, input *DeleteGlobalClusterInput, opts ...request.Option) (*DeleteGlobalClusterOutput, error) {
+	req, out := c.DeleteGlobalClusterRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opDescribeDBClusterEndpoints = "DescribeDBClusterEndpoints"
 
 // DescribeDBClusterEndpointsRequest generates a "aws/request.Request" representing the
@@ -2240,14 +2430,13 @@ const opDescribeDBClusterEndpoints = "DescribeDBClusterEndpoints"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDBClusterEndpointsRequest method.
+//	req, resp := client.DescribeDBClusterEndpointsRequest(params)
 //
-//    // Example sending a request using the DescribeDBClusterEndpointsRequest method.
-//    req, resp := client.DescribeDBClusterEndpointsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DescribeDBClusterEndpoints
 func (c *Neptune) DescribeDBClusterEndpointsRequest(input *DescribeDBClusterEndpointsInput) (req *request.Request, output *DescribeDBClusterEndpointsOutput) {
@@ -2287,8 +2476,8 @@ func (c *Neptune) DescribeDBClusterEndpointsRequest(input *DescribeDBClusterEndp
 // API operation DescribeDBClusterEndpoints for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeDBClusterNotFoundFault "DBClusterNotFoundFault"
-//   DBClusterIdentifier does not refer to an existing DB cluster.
+//   - ErrCodeDBClusterNotFoundFault "DBClusterNotFoundFault"
+//     DBClusterIdentifier does not refer to an existing DB cluster.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DescribeDBClusterEndpoints
 func (c *Neptune) DescribeDBClusterEndpoints(input *DescribeDBClusterEndpointsInput) (*DescribeDBClusterEndpointsOutput, error) {
@@ -2320,15 +2509,14 @@ func (c *Neptune) DescribeDBClusterEndpointsWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeDBClusterEndpoints operation.
-//    pageNum := 0
-//    err := client.DescribeDBClusterEndpointsPages(params,
-//        func(page *neptune.DescribeDBClusterEndpointsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeDBClusterEndpoints operation.
+//	pageNum := 0
+//	err := client.DescribeDBClusterEndpointsPages(params,
+//	    func(page *neptune.DescribeDBClusterEndpointsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Neptune) DescribeDBClusterEndpointsPages(input *DescribeDBClusterEndpointsInput, fn func(*DescribeDBClusterEndpointsOutput, bool) bool) error {
 	return c.DescribeDBClusterEndpointsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2380,14 +2568,13 @@ const opDescribeDBClusterParameterGroups = "DescribeDBClusterParameterGroups"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDBClusterParameterGroupsRequest method.
+//	req, resp := client.DescribeDBClusterParameterGroupsRequest(params)
 //
-//    // Example sending a request using the DescribeDBClusterParameterGroupsRequest method.
-//    req, resp := client.DescribeDBClusterParameterGroupsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DescribeDBClusterParameterGroups
 func (c *Neptune) DescribeDBClusterParameterGroupsRequest(input *DescribeDBClusterParameterGroupsInput) (req *request.Request, output *DescribeDBClusterParameterGroupsOutput) {
@@ -2426,8 +2613,8 @@ func (c *Neptune) DescribeDBClusterParameterGroupsRequest(input *DescribeDBClust
 // API operation DescribeDBClusterParameterGroups for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeDBParameterGroupNotFoundFault "DBParameterGroupNotFound"
-//   DBParameterGroupName does not refer to an existing DB parameter group.
+//   - ErrCodeDBParameterGroupNotFoundFault "DBParameterGroupNotFound"
+//     DBParameterGroupName does not refer to an existing DB parameter group.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DescribeDBClusterParameterGroups
 func (c *Neptune) DescribeDBClusterParameterGroups(input *DescribeDBClusterParameterGroupsInput) (*DescribeDBClusterParameterGroupsOutput, error) {
@@ -2459,15 +2646,14 @@ func (c *Neptune) DescribeDBClusterParameterGroupsWithContext(ctx aws.Context, i
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeDBClusterParameterGroups operation.
-//    pageNum := 0
-//    err := client.DescribeDBClusterParameterGroupsPages(params,
-//        func(page *neptune.DescribeDBClusterParameterGroupsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeDBClusterParameterGroups operation.
+//	pageNum := 0
+//	err := client.DescribeDBClusterParameterGroupsPages(params,
+//	    func(page *neptune.DescribeDBClusterParameterGroupsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Neptune) DescribeDBClusterParameterGroupsPages(input *DescribeDBClusterParameterGroupsInput, fn func(*DescribeDBClusterParameterGroupsOutput, bool) bool) error {
 	return c.DescribeDBClusterParameterGroupsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2519,14 +2705,13 @@ const opDescribeDBClusterParameters = "DescribeDBClusterParameters"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDBClusterParametersRequest method.
+//	req, resp := client.DescribeDBClusterParametersRequest(params)
 //
-//    // Example sending a request using the DescribeDBClusterParametersRequest method.
-//    req, resp := client.DescribeDBClusterParametersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DescribeDBClusterParameters
 func (c *Neptune) DescribeDBClusterParametersRequest(input *DescribeDBClusterParametersInput) (req *request.Request, output *DescribeDBClusterParametersOutput) {
@@ -2564,8 +2749,8 @@ func (c *Neptune) DescribeDBClusterParametersRequest(input *DescribeDBClusterPar
 // API operation DescribeDBClusterParameters for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeDBParameterGroupNotFoundFault "DBParameterGroupNotFound"
-//   DBParameterGroupName does not refer to an existing DB parameter group.
+//   - ErrCodeDBParameterGroupNotFoundFault "DBParameterGroupNotFound"
+//     DBParameterGroupName does not refer to an existing DB parameter group.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DescribeDBClusterParameters
 func (c *Neptune) DescribeDBClusterParameters(input *DescribeDBClusterParametersInput) (*DescribeDBClusterParametersOutput, error) {
@@ -2597,15 +2782,14 @@ func (c *Neptune) DescribeDBClusterParametersWithContext(ctx aws.Context, input 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeDBClusterParameters operation.
-//    pageNum := 0
-//    err := client.DescribeDBClusterParametersPages(params,
-//        func(page *neptune.DescribeDBClusterParametersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeDBClusterParameters operation.
+//	pageNum := 0
+//	err := client.DescribeDBClusterParametersPages(params,
+//	    func(page *neptune.DescribeDBClusterParametersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Neptune) DescribeDBClusterParametersPages(input *DescribeDBClusterParametersInput, fn func(*DescribeDBClusterParametersOutput, bool) bool) error {
 	return c.DescribeDBClusterParametersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2657,14 +2841,13 @@ const opDescribeDBClusterSnapshotAttributes = "DescribeDBClusterSnapshotAttribut
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDBClusterSnapshotAttributesRequest method.
+//	req, resp := client.DescribeDBClusterSnapshotAttributesRequest(params)
 //
-//    // Example sending a request using the DescribeDBClusterSnapshotAttributesRequest method.
-//    req, resp := client.DescribeDBClusterSnapshotAttributesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DescribeDBClusterSnapshotAttributes
 func (c *Neptune) DescribeDBClusterSnapshotAttributesRequest(input *DescribeDBClusterSnapshotAttributesInput) (req *request.Request, output *DescribeDBClusterSnapshotAttributesOutput) {
@@ -2707,8 +2890,8 @@ func (c *Neptune) DescribeDBClusterSnapshotAttributesRequest(input *DescribeDBCl
 // API operation DescribeDBClusterSnapshotAttributes for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeDBClusterSnapshotNotFoundFault "DBClusterSnapshotNotFoundFault"
-//   DBClusterSnapshotIdentifier does not refer to an existing DB cluster snapshot.
+//   - ErrCodeDBClusterSnapshotNotFoundFault "DBClusterSnapshotNotFoundFault"
+//     DBClusterSnapshotIdentifier does not refer to an existing DB cluster snapshot.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DescribeDBClusterSnapshotAttributes
 func (c *Neptune) DescribeDBClusterSnapshotAttributes(input *DescribeDBClusterSnapshotAttributesInput) (*DescribeDBClusterSnapshotAttributesOutput, error) {
@@ -2748,14 +2931,13 @@ const opDescribeDBClusterSnapshots = "DescribeDBClusterSnapshots"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDBClusterSnapshotsRequest method.
+//	req, resp := client.DescribeDBClusterSnapshotsRequest(params)
 //
-//    // Example sending a request using the DescribeDBClusterSnapshotsRequest method.
-//    req, resp := client.DescribeDBClusterSnapshotsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DescribeDBClusterSnapshots
 func (c *Neptune) DescribeDBClusterSnapshotsRequest(input *DescribeDBClusterSnapshotsInput) (req *request.Request, output *DescribeDBClusterSnapshotsOutput) {
@@ -2793,8 +2975,8 @@ func (c *Neptune) DescribeDBClusterSnapshotsRequest(input *DescribeDBClusterSnap
 // API operation DescribeDBClusterSnapshots for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeDBClusterSnapshotNotFoundFault "DBClusterSnapshotNotFoundFault"
-//   DBClusterSnapshotIdentifier does not refer to an existing DB cluster snapshot.
+//   - ErrCodeDBClusterSnapshotNotFoundFault "DBClusterSnapshotNotFoundFault"
+//     DBClusterSnapshotIdentifier does not refer to an existing DB cluster snapshot.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DescribeDBClusterSnapshots
 func (c *Neptune) DescribeDBClusterSnapshots(input *DescribeDBClusterSnapshotsInput) (*DescribeDBClusterSnapshotsOutput, error) {
@@ -2826,15 +3008,14 @@ func (c *Neptune) DescribeDBClusterSnapshotsWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeDBClusterSnapshots operation.
-//    pageNum := 0
-//    err := client.DescribeDBClusterSnapshotsPages(params,
-//        func(page *neptune.DescribeDBClusterSnapshotsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeDBClusterSnapshots operation.
+//	pageNum := 0
+//	err := client.DescribeDBClusterSnapshotsPages(params,
+//	    func(page *neptune.DescribeDBClusterSnapshotsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Neptune) DescribeDBClusterSnapshotsPages(input *DescribeDBClusterSnapshotsInput, fn func(*DescribeDBClusterSnapshotsOutput, bool) bool) error {
 	return c.DescribeDBClusterSnapshotsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2886,14 +3067,13 @@ const opDescribeDBClusters = "DescribeDBClusters"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDBClustersRequest method.
+//	req, resp := client.DescribeDBClustersRequest(params)
 //
-//    // Example sending a request using the DescribeDBClustersRequest method.
-//    req, resp := client.DescribeDBClustersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DescribeDBClusters
 func (c *Neptune) DescribeDBClustersRequest(input *DescribeDBClustersInput) (req *request.Request, output *DescribeDBClustersOutput) {
@@ -2933,8 +3113,8 @@ func (c *Neptune) DescribeDBClustersRequest(input *DescribeDBClustersInput) (req
 // API operation DescribeDBClusters for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeDBClusterNotFoundFault "DBClusterNotFoundFault"
-//   DBClusterIdentifier does not refer to an existing DB cluster.
+//   - ErrCodeDBClusterNotFoundFault "DBClusterNotFoundFault"
+//     DBClusterIdentifier does not refer to an existing DB cluster.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DescribeDBClusters
 func (c *Neptune) DescribeDBClusters(input *DescribeDBClustersInput) (*DescribeDBClustersOutput, error) {
@@ -2966,15 +3146,14 @@ func (c *Neptune) DescribeDBClustersWithContext(ctx aws.Context, input *Describe
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeDBClusters operation.
-//    pageNum := 0
-//    err := client.DescribeDBClustersPages(params,
-//        func(page *neptune.DescribeDBClustersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeDBClusters operation.
+//	pageNum := 0
+//	err := client.DescribeDBClustersPages(params,
+//	    func(page *neptune.DescribeDBClustersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Neptune) DescribeDBClustersPages(input *DescribeDBClustersInput, fn func(*DescribeDBClustersOutput, bool) bool) error {
 	return c.DescribeDBClustersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3026,14 +3205,13 @@ const opDescribeDBEngineVersions = "DescribeDBEngineVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDBEngineVersionsRequest method.
+//	req, resp := client.DescribeDBEngineVersionsRequest(params)
 //
-//    // Example sending a request using the DescribeDBEngineVersionsRequest method.
-//    req, resp := client.DescribeDBEngineVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DescribeDBEngineVersions
 func (c *Neptune) DescribeDBEngineVersionsRequest(input *DescribeDBEngineVersionsInput) (req *request.Request, output *DescribeDBEngineVersionsOutput) {
@@ -3098,15 +3276,14 @@ func (c *Neptune) DescribeDBEngineVersionsWithContext(ctx aws.Context, input *De
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeDBEngineVersions operation.
-//    pageNum := 0
-//    err := client.DescribeDBEngineVersionsPages(params,
-//        func(page *neptune.DescribeDBEngineVersionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeDBEngineVersions operation.
+//	pageNum := 0
+//	err := client.DescribeDBEngineVersionsPages(params,
+//	    func(page *neptune.DescribeDBEngineVersionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Neptune) DescribeDBEngineVersionsPages(input *DescribeDBEngineVersionsInput, fn func(*DescribeDBEngineVersionsOutput, bool) bool) error {
 	return c.DescribeDBEngineVersionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3158,14 +3335,13 @@ const opDescribeDBInstances = "DescribeDBInstances"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDBInstancesRequest method.
+//	req, resp := client.DescribeDBInstancesRequest(params)
 //
-//    // Example sending a request using the DescribeDBInstancesRequest method.
-//    req, resp := client.DescribeDBInstancesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DescribeDBInstances
 func (c *Neptune) DescribeDBInstancesRequest(input *DescribeDBInstancesInput) (req *request.Request, output *DescribeDBInstancesOutput) {
@@ -3205,8 +3381,8 @@ func (c *Neptune) DescribeDBInstancesRequest(input *DescribeDBInstancesInput) (r
 // API operation DescribeDBInstances for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeDBInstanceNotFoundFault "DBInstanceNotFound"
-//   DBInstanceIdentifier does not refer to an existing DB instance.
+//   - ErrCodeDBInstanceNotFoundFault "DBInstanceNotFound"
+//     DBInstanceIdentifier does not refer to an existing DB instance.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DescribeDBInstances
 func (c *Neptune) DescribeDBInstances(input *DescribeDBInstancesInput) (*DescribeDBInstancesOutput, error) {
@@ -3238,15 +3414,14 @@ func (c *Neptune) DescribeDBInstancesWithContext(ctx aws.Context, input *Describ
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeDBInstances operation.
-//    pageNum := 0
-//    err := client.DescribeDBInstancesPages(params,
-//        func(page *neptune.DescribeDBInstancesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeDBInstances operation.
+//	pageNum := 0
+//	err := client.DescribeDBInstancesPages(params,
+//	    func(page *neptune.DescribeDBInstancesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Neptune) DescribeDBInstancesPages(input *DescribeDBInstancesInput, fn func(*DescribeDBInstancesOutput, bool) bool) error {
 	return c.DescribeDBInstancesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3298,14 +3473,13 @@ const opDescribeDBParameterGroups = "DescribeDBParameterGroups"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDBParameterGroupsRequest method.
+//	req, resp := client.DescribeDBParameterGroupsRequest(params)
 //
-//    // Example sending a request using the DescribeDBParameterGroupsRequest method.
-//    req, resp := client.DescribeDBParameterGroupsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DescribeDBParameterGroups
 func (c *Neptune) DescribeDBParameterGroupsRequest(input *DescribeDBParameterGroupsInput) (req *request.Request, output *DescribeDBParameterGroupsOutput) {
@@ -3344,8 +3518,8 @@ func (c *Neptune) DescribeDBParameterGroupsRequest(input *DescribeDBParameterGro
 // API operation DescribeDBParameterGroups for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeDBParameterGroupNotFoundFault "DBParameterGroupNotFound"
-//   DBParameterGroupName does not refer to an existing DB parameter group.
+//   - ErrCodeDBParameterGroupNotFoundFault "DBParameterGroupNotFound"
+//     DBParameterGroupName does not refer to an existing DB parameter group.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DescribeDBParameterGroups
 func (c *Neptune) DescribeDBParameterGroups(input *DescribeDBParameterGroupsInput) (*DescribeDBParameterGroupsOutput, error) {
@@ -3377,15 +3551,14 @@ func (c *Neptune) DescribeDBParameterGroupsWithContext(ctx aws.Context, input *D
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeDBParameterGroups operation.
-//    pageNum := 0
-//    err := client.DescribeDBParameterGroupsPages(params,
-//        func(page *neptune.DescribeDBParameterGroupsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeDBParameterGroups operation.
+//	pageNum := 0
+//	err := client.DescribeDBParameterGroupsPages(params,
+//	    func(page *neptune.DescribeDBParameterGroupsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Neptune) DescribeDBParameterGroupsPages(input *DescribeDBParameterGroupsInput, fn func(*DescribeDBParameterGroupsOutput, bool) bool) error {
 	return c.DescribeDBParameterGroupsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3437,14 +3610,13 @@ const opDescribeDBParameters = "DescribeDBParameters"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDBParametersRequest method.
+//	req, resp := client.DescribeDBParametersRequest(params)
 //
-//    // Example sending a request using the DescribeDBParametersRequest method.
-//    req, resp := client.DescribeDBParametersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DescribeDBParameters
 func (c *Neptune) DescribeDBParametersRequest(input *DescribeDBParametersInput) (req *request.Request, output *DescribeDBParametersOutput) {
@@ -3481,8 +3653,8 @@ func (c *Neptune) DescribeDBParametersRequest(input *DescribeDBParametersInput) 
 // API operation DescribeDBParameters for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeDBParameterGroupNotFoundFault "DBParameterGroupNotFound"
-//   DBParameterGroupName does not refer to an existing DB parameter group.
+//   - ErrCodeDBParameterGroupNotFoundFault "DBParameterGroupNotFound"
+//     DBParameterGroupName does not refer to an existing DB parameter group.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DescribeDBParameters
 func (c *Neptune) DescribeDBParameters(input *DescribeDBParametersInput) (*DescribeDBParametersOutput, error) {
@@ -3514,15 +3686,14 @@ func (c *Neptune) DescribeDBParametersWithContext(ctx aws.Context, input *Descri
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeDBParameters operation.
-//    pageNum := 0
-//    err := client.DescribeDBParametersPages(params,
-//        func(page *neptune.DescribeDBParametersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeDBParameters operation.
+//	pageNum := 0
+//	err := client.DescribeDBParametersPages(params,
+//	    func(page *neptune.DescribeDBParametersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Neptune) DescribeDBParametersPages(input *DescribeDBParametersInput, fn func(*DescribeDBParametersOutput, bool) bool) error {
 	return c.DescribeDBParametersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3574,14 +3745,13 @@ const opDescribeDBSubnetGroups = "DescribeDBSubnetGroups"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDBSubnetGroupsRequest method.
+//	req, resp := client.DescribeDBSubnetGroupsRequest(params)
 //
-//    // Example sending a request using the DescribeDBSubnetGroupsRequest method.
-//    req, resp := client.DescribeDBSubnetGroupsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DescribeDBSubnetGroups
 func (c *Neptune) DescribeDBSubnetGroupsRequest(input *DescribeDBSubnetGroupsInput) (req *request.Request, output *DescribeDBSubnetGroupsOutput) {
@@ -3621,8 +3791,8 @@ func (c *Neptune) DescribeDBSubnetGroupsRequest(input *DescribeDBSubnetGroupsInp
 // API operation DescribeDBSubnetGroups for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeDBSubnetGroupNotFoundFault "DBSubnetGroupNotFoundFault"
-//   DBSubnetGroupName does not refer to an existing DB subnet group.
+//   - ErrCodeDBSubnetGroupNotFoundFault "DBSubnetGroupNotFoundFault"
+//     DBSubnetGroupName does not refer to an existing DB subnet group.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DescribeDBSubnetGroups
 func (c *Neptune) DescribeDBSubnetGroups(input *DescribeDBSubnetGroupsInput) (*DescribeDBSubnetGroupsOutput, error) {
@@ -3654,15 +3824,14 @@ func (c *Neptune) DescribeDBSubnetGroupsWithContext(ctx aws.Context, input *Desc
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeDBSubnetGroups operation.
-//    pageNum := 0
-//    err := client.DescribeDBSubnetGroupsPages(params,
-//        func(page *neptune.DescribeDBSubnetGroupsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeDBSubnetGroups operation.
+//	pageNum := 0
+//	err := client.DescribeDBSubnetGroupsPages(params,
+//	    func(page *neptune.DescribeDBSubnetGroupsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Neptune) DescribeDBSubnetGroupsPages(input *DescribeDBSubnetGroupsInput, fn func(*DescribeDBSubnetGroupsOutput, bool) bool) error {
 	return c.DescribeDBSubnetGroupsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3714,14 +3883,13 @@ const opDescribeEngineDefaultClusterParameters = "DescribeEngineDefaultClusterPa
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEngineDefaultClusterParametersRequest method.
+//	req, resp := client.DescribeEngineDefaultClusterParametersRequest(params)
 //
-//    // Example sending a request using the DescribeEngineDefaultClusterParametersRequest method.
-//    req, resp := client.DescribeEngineDefaultClusterParametersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DescribeEngineDefaultClusterParameters
 func (c *Neptune) DescribeEngineDefaultClusterParametersRequest(input *DescribeEngineDefaultClusterParametersInput) (req *request.Request, output *DescribeEngineDefaultClusterParametersOutput) {
@@ -3789,14 +3957,13 @@ const opDescribeEngineDefaultParameters = "DescribeEngineDefaultParameters"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEngineDefaultParametersRequest method.
+//	req, resp := client.DescribeEngineDefaultParametersRequest(params)
 //
-//    // Example sending a request using the DescribeEngineDefaultParametersRequest method.
-//    req, resp := client.DescribeEngineDefaultParametersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DescribeEngineDefaultParameters
 func (c *Neptune) DescribeEngineDefaultParametersRequest(input *DescribeEngineDefaultParametersInput) (req *request.Request, output *DescribeEngineDefaultParametersOutput) {
@@ -3862,15 +4029,14 @@ func (c *Neptune) DescribeEngineDefaultParametersWithContext(ctx aws.Context, in
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeEngineDefaultParameters operation.
-//    pageNum := 0
-//    err := client.DescribeEngineDefaultParametersPages(params,
-//        func(page *neptune.DescribeEngineDefaultParametersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeEngineDefaultParameters operation.
+//	pageNum := 0
+//	err := client.DescribeEngineDefaultParametersPages(params,
+//	    func(page *neptune.DescribeEngineDefaultParametersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Neptune) DescribeEngineDefaultParametersPages(input *DescribeEngineDefaultParametersInput, fn func(*DescribeEngineDefaultParametersOutput, bool) bool) error {
 	return c.DescribeEngineDefaultParametersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3922,14 +4088,13 @@ const opDescribeEventCategories = "DescribeEventCategories"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEventCategoriesRequest method.
+//	req, resp := client.DescribeEventCategoriesRequest(params)
 //
-//    // Example sending a request using the DescribeEventCategoriesRequest method.
-//    req, resp := client.DescribeEventCategoriesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DescribeEventCategories
 func (c *Neptune) DescribeEventCategoriesRequest(input *DescribeEventCategoriesInput) (req *request.Request, output *DescribeEventCategoriesOutput) {
@@ -3997,14 +4162,13 @@ const opDescribeEventSubscriptions = "DescribeEventSubscriptions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEventSubscriptionsRequest method.
+//	req, resp := client.DescribeEventSubscriptionsRequest(params)
 //
-//    // Example sending a request using the DescribeEventSubscriptionsRequest method.
-//    req, resp := client.DescribeEventSubscriptionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DescribeEventSubscriptions
 func (c *Neptune) DescribeEventSubscriptionsRequest(input *DescribeEventSubscriptionsInput) (req *request.Request, output *DescribeEventSubscriptionsOutput) {
@@ -4045,8 +4209,8 @@ func (c *Neptune) DescribeEventSubscriptionsRequest(input *DescribeEventSubscrip
 // API operation DescribeEventSubscriptions for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeSubscriptionNotFoundFault "SubscriptionNotFound"
-//   The designated subscription could not be found.
+//   - ErrCodeSubscriptionNotFoundFault "SubscriptionNotFound"
+//     The designated subscription could not be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DescribeEventSubscriptions
 func (c *Neptune) DescribeEventSubscriptions(input *DescribeEventSubscriptionsInput) (*DescribeEventSubscriptionsOutput, error) {
@@ -4078,15 +4242,14 @@ func (c *Neptune) DescribeEventSubscriptionsWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeEventSubscriptions operation.
-//    pageNum := 0
-//    err := client.DescribeEventSubscriptionsPages(params,
-//        func(page *neptune.DescribeEventSubscriptionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeEventSubscriptions operation.
+//	pageNum := 0
+//	err := client.DescribeEventSubscriptionsPages(params,
+//	    func(page *neptune.DescribeEventSubscriptionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Neptune) DescribeEventSubscriptionsPages(input *DescribeEventSubscriptionsInput, fn func(*DescribeEventSubscriptionsOutput, bool) bool) error {
 	return c.DescribeEventSubscriptionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4138,14 +4301,13 @@ const opDescribeEvents = "DescribeEvents"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEventsRequest method.
+//	req, resp := client.DescribeEventsRequest(params)
 //
-//    // Example sending a request using the DescribeEventsRequest method.
-//    req, resp := client.DescribeEventsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DescribeEvents
 func (c *Neptune) DescribeEventsRequest(input *DescribeEventsInput) (req *request.Request, output *DescribeEventsOutput) {
@@ -4214,15 +4376,14 @@ func (c *Neptune) DescribeEventsWithContext(ctx aws.Context, input *DescribeEven
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeEvents operation.
-//    pageNum := 0
-//    err := client.DescribeEventsPages(params,
-//        func(page *neptune.DescribeEventsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeEvents operation.
+//	pageNum := 0
+//	err := client.DescribeEventsPages(params,
+//	    func(page *neptune.DescribeEventsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Neptune) DescribeEventsPages(input *DescribeEventsInput, fn func(*DescribeEventsOutput, bool) bool) error {
 	return c.DescribeEventsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4258,6 +4419,143 @@ func (c *Neptune) DescribeEventsPagesWithContext(ctx aws.Context, input *Describ
 	return p.Err()
 }
 
+const opDescribeGlobalClusters = "DescribeGlobalClusters"
+
+// DescribeGlobalClustersRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeGlobalClusters operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeGlobalClusters for more information on using the DescribeGlobalClusters
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribeGlobalClustersRequest method.
+//	req, resp := client.DescribeGlobalClustersRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DescribeGlobalClusters
+func (c *Neptune) DescribeGlobalClustersRequest(input *DescribeGlobalClustersInput) (req *request.Request, output *DescribeGlobalClustersOutput) {
+	op := &request.Operation{
+		Name:       opDescribeGlobalClusters,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"Marker"},
+			OutputTokens:    []string{"Marker"},
+			LimitToken:      "MaxRecords",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &DescribeGlobalClustersInput{}
+	}
+
+	output = &DescribeGlobalClustersOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeGlobalClusters API operation for Amazon Neptune.
+//
+// Returns information about Neptune global database clusters. This API supports
+// pagination.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Neptune's
+// API operation DescribeGlobalClusters for usage and error information.
+//
+// Returned Error Codes:
+//   - ErrCodeGlobalClusterNotFoundFault "GlobalClusterNotFoundFault"
+//     The GlobalClusterIdentifier doesn't refer to an existing global database
+//     cluster.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DescribeGlobalClusters
+func (c *Neptune) DescribeGlobalClusters(input *DescribeGlobalClustersInput) (*DescribeGlobalClustersOutput, error) {
+	req, out := c.DescribeGlobalClustersRequest(input)
+	return out, req.Send()
+}
+
+// DescribeGlobalClustersWithContext is the same as DescribeGlobalClusters with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeGlobalClusters for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Neptune) DescribeGlobalClustersWithContext(ctx aws.Context, input *DescribeGlobalClustersInput, opts ...request.Option) (*DescribeGlobalClustersOutput, error) {
+	req, out := c.DescribeGlobalClustersRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// DescribeGlobalClustersPages iterates over the pages of a DescribeGlobalClusters operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeGlobalClusters method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeGlobalClusters operation.
+//	pageNum := 0
+//	err := client.DescribeGlobalClustersPages(params,
+//	    func(page *neptune.DescribeGlobalClustersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *Neptune) DescribeGlobalClustersPages(input *DescribeGlobalClustersInput, fn func(*DescribeGlobalClustersOutput, bool) bool) error {
+	return c.DescribeGlobalClustersPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeGlobalClustersPagesWithContext same as DescribeGlobalClustersPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Neptune) DescribeGlobalClustersPagesWithContext(ctx aws.Context, input *DescribeGlobalClustersInput, fn func(*DescribeGlobalClustersOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeGlobalClustersInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeGlobalClustersRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeGlobalClustersOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opDescribeOrderableDBInstanceOptions = "DescribeOrderableDBInstanceOptions"
 
 // DescribeOrderableDBInstanceOptionsRequest generates a "aws/request.Request" representing the
@@ -4274,14 +4572,13 @@ const opDescribeOrderableDBInstanceOptions = "DescribeOrderableDBInstanceOptions
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeOrderableDBInstanceOptionsRequest method.
+//	req, resp := client.DescribeOrderableDBInstanceOptionsRequest(params)
 //
-//    // Example sending a request using the DescribeOrderableDBInstanceOptionsRequest method.
-//    req, resp := client.DescribeOrderableDBInstanceOptionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DescribeOrderableDBInstanceOptions
 func (c *Neptune) DescribeOrderableDBInstanceOptionsRequest(input *DescribeOrderableDBInstanceOptionsInput) (req *request.Request, output *DescribeOrderableDBInstanceOptionsOutput) {
@@ -4346,15 +4643,14 @@ func (c *Neptune) DescribeOrderableDBInstanceOptionsWithContext(ctx aws.Context,
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeOrderableDBInstanceOptions operation.
-//    pageNum := 0
-//    err := client.DescribeOrderableDBInstanceOptionsPages(params,
-//        func(page *neptune.DescribeOrderableDBInstanceOptionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeOrderableDBInstanceOptions operation.
+//	pageNum := 0
+//	err := client.DescribeOrderableDBInstanceOptionsPages(params,
+//	    func(page *neptune.DescribeOrderableDBInstanceOptionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Neptune) DescribeOrderableDBInstanceOptionsPages(input *DescribeOrderableDBInstanceOptionsInput, fn func(*DescribeOrderableDBInstanceOptionsOutput, bool) bool) error {
 	return c.DescribeOrderableDBInstanceOptionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4406,14 +4702,13 @@ const opDescribePendingMaintenanceActions = "DescribePendingMaintenanceActions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribePendingMaintenanceActionsRequest method.
+//	req, resp := client.DescribePendingMaintenanceActionsRequest(params)
 //
-//    // Example sending a request using the DescribePendingMaintenanceActionsRequest method.
-//    req, resp := client.DescribePendingMaintenanceActionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DescribePendingMaintenanceActions
 func (c *Neptune) DescribePendingMaintenanceActionsRequest(input *DescribePendingMaintenanceActionsInput) (req *request.Request, output *DescribePendingMaintenanceActionsOutput) {
@@ -4451,8 +4746,8 @@ func (c *Neptune) DescribePendingMaintenanceActionsRequest(input *DescribePendin
 // API operation DescribePendingMaintenanceActions for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeResourceNotFoundFault "ResourceNotFoundFault"
-//   The specified resource ID was not found.
+//   - ErrCodeResourceNotFoundFault "ResourceNotFoundFault"
+//     The specified resource ID was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DescribePendingMaintenanceActions
 func (c *Neptune) DescribePendingMaintenanceActions(input *DescribePendingMaintenanceActionsInput) (*DescribePendingMaintenanceActionsOutput, error) {
@@ -4484,15 +4779,14 @@ func (c *Neptune) DescribePendingMaintenanceActionsWithContext(ctx aws.Context, 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribePendingMaintenanceActions operation.
-//    pageNum := 0
-//    err := client.DescribePendingMaintenanceActionsPages(params,
-//        func(page *neptune.DescribePendingMaintenanceActionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribePendingMaintenanceActions operation.
+//	pageNum := 0
+//	err := client.DescribePendingMaintenanceActionsPages(params,
+//	    func(page *neptune.DescribePendingMaintenanceActionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Neptune) DescribePendingMaintenanceActionsPages(input *DescribePendingMaintenanceActionsInput, fn func(*DescribePendingMaintenanceActionsOutput, bool) bool) error {
 	return c.DescribePendingMaintenanceActionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4544,14 +4838,13 @@ const opDescribeValidDBInstanceModifications = "DescribeValidDBInstanceModificat
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeValidDBInstanceModificationsRequest method.
+//	req, resp := client.DescribeValidDBInstanceModificationsRequest(params)
 //
-//    // Example sending a request using the DescribeValidDBInstanceModificationsRequest method.
-//    req, resp := client.DescribeValidDBInstanceModificationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DescribeValidDBInstanceModifications
 func (c *Neptune) DescribeValidDBInstanceModificationsRequest(input *DescribeValidDBInstanceModificationsInput) (req *request.Request, output *DescribeValidDBInstanceModificationsOutput) {
@@ -4584,11 +4877,12 @@ func (c *Neptune) DescribeValidDBInstanceModificationsRequest(input *DescribeVal
 // API operation DescribeValidDBInstanceModifications for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeDBInstanceNotFoundFault "DBInstanceNotFound"
-//   DBInstanceIdentifier does not refer to an existing DB instance.
 //
-//   * ErrCodeInvalidDBInstanceStateFault "InvalidDBInstanceState"
-//   The specified DB instance is not in the available state.
+//   - ErrCodeDBInstanceNotFoundFault "DBInstanceNotFound"
+//     DBInstanceIdentifier does not refer to an existing DB instance.
+//
+//   - ErrCodeInvalidDBInstanceStateFault "InvalidDBInstanceState"
+//     The specified DB instance is not in the available state.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DescribeValidDBInstanceModifications
 func (c *Neptune) DescribeValidDBInstanceModifications(input *DescribeValidDBInstanceModificationsInput) (*DescribeValidDBInstanceModificationsOutput, error) {
@@ -4628,14 +4922,13 @@ const opFailoverDBCluster = "FailoverDBCluster"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the FailoverDBClusterRequest method.
+//	req, resp := client.FailoverDBClusterRequest(params)
 //
-//    // Example sending a request using the FailoverDBClusterRequest method.
-//    req, resp := client.FailoverDBClusterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/FailoverDBCluster
 func (c *Neptune) FailoverDBClusterRequest(input *FailoverDBClusterInput) (req *request.Request, output *FailoverDBClusterOutput) {
@@ -4676,14 +4969,15 @@ func (c *Neptune) FailoverDBClusterRequest(input *FailoverDBClusterInput) (req *
 // API operation FailoverDBCluster for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeDBClusterNotFoundFault "DBClusterNotFoundFault"
-//   DBClusterIdentifier does not refer to an existing DB cluster.
 //
-//   * ErrCodeInvalidDBClusterStateFault "InvalidDBClusterStateFault"
-//   The DB cluster is not in a valid state.
+//   - ErrCodeDBClusterNotFoundFault "DBClusterNotFoundFault"
+//     DBClusterIdentifier does not refer to an existing DB cluster.
 //
-//   * ErrCodeInvalidDBInstanceStateFault "InvalidDBInstanceState"
-//   The specified DB instance is not in the available state.
+//   - ErrCodeInvalidDBClusterStateFault "InvalidDBClusterStateFault"
+//     The DB cluster is not in a valid state.
+//
+//   - ErrCodeInvalidDBInstanceStateFault "InvalidDBInstanceState"
+//     The specified DB instance is not in the available state.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/FailoverDBCluster
 func (c *Neptune) FailoverDBCluster(input *FailoverDBClusterInput) (*FailoverDBClusterOutput, error) {
@@ -4707,6 +5001,108 @@ func (c *Neptune) FailoverDBClusterWithContext(ctx aws.Context, input *FailoverD
 	return out, req.Send()
 }
 
+const opFailoverGlobalCluster = "FailoverGlobalCluster"
+
+// FailoverGlobalClusterRequest generates a "aws/request.Request" representing the
+// client's request for the FailoverGlobalCluster operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See FailoverGlobalCluster for more information on using the FailoverGlobalCluster
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the FailoverGlobalClusterRequest method.
+//	req, resp := client.FailoverGlobalClusterRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/FailoverGlobalCluster
+func (c *Neptune) FailoverGlobalClusterRequest(input *FailoverGlobalClusterInput) (req *request.Request, output *FailoverGlobalClusterOutput) {
+	op := &request.Operation{
+		Name:       opFailoverGlobalCluster,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &FailoverGlobalClusterInput{}
+	}
+
+	output = &FailoverGlobalClusterOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// FailoverGlobalCluster API operation for Amazon Neptune.
+//
+// Initiates the failover process for a Neptune global database.
+//
+// A failover for a Neptune global database promotes one of secondary read-only
+// DB clusters to be the primary DB cluster and demotes the primary DB cluster
+// to being a secondary (read-only) DB cluster. In other words, the role of
+// the current primary DB cluster and the selected target secondary DB cluster
+// are switched. The selected secondary DB cluster assumes full read/write capabilities
+// for the Neptune global database.
+//
+// This action applies only to Neptune global databases. This action is only
+// intended for use on healthy Neptune global databases with healthy Neptune
+// DB clusters and no region-wide outages, to test disaster recovery scenarios
+// or to reconfigure the global database topology.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Neptune's
+// API operation FailoverGlobalCluster for usage and error information.
+//
+// Returned Error Codes:
+//
+//   - ErrCodeGlobalClusterNotFoundFault "GlobalClusterNotFoundFault"
+//     The GlobalClusterIdentifier doesn't refer to an existing global database
+//     cluster.
+//
+//   - ErrCodeInvalidGlobalClusterStateFault "InvalidGlobalClusterStateFault"
+//     The global cluster is in an invalid state and can't perform the requested
+//     operation.
+//
+//   - ErrCodeInvalidDBClusterStateFault "InvalidDBClusterStateFault"
+//     The DB cluster is not in a valid state.
+//
+//   - ErrCodeDBClusterNotFoundFault "DBClusterNotFoundFault"
+//     DBClusterIdentifier does not refer to an existing DB cluster.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/FailoverGlobalCluster
+func (c *Neptune) FailoverGlobalCluster(input *FailoverGlobalClusterInput) (*FailoverGlobalClusterOutput, error) {
+	req, out := c.FailoverGlobalClusterRequest(input)
+	return out, req.Send()
+}
+
+// FailoverGlobalClusterWithContext is the same as FailoverGlobalCluster with the addition of
+// the ability to pass a context and additional request options.
+//
+// See FailoverGlobalCluster for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Neptune) FailoverGlobalClusterWithContext(ctx aws.Context, input *FailoverGlobalClusterInput, opts ...request.Option) (*FailoverGlobalClusterOutput, error) {
+	req, out := c.FailoverGlobalClusterRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opListTagsForResource = "ListTagsForResource"
 
 // ListTagsForResourceRequest generates a "aws/request.Request" representing the
@@ -4723,14 +5119,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/ListTagsForResource
 func (c *Neptune) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -4761,14 +5156,15 @@ func (c *Neptune) ListTagsForResourceRequest(input *ListTagsForResourceInput) (r
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeDBInstanceNotFoundFault "DBInstanceNotFound"
-//   DBInstanceIdentifier does not refer to an existing DB instance.
 //
-//   * ErrCodeDBSnapshotNotFoundFault "DBSnapshotNotFound"
-//   DBSnapshotIdentifier does not refer to an existing DB snapshot.
+//   - ErrCodeDBInstanceNotFoundFault "DBInstanceNotFound"
+//     DBInstanceIdentifier does not refer to an existing DB instance.
 //
-//   * ErrCodeDBClusterNotFoundFault "DBClusterNotFoundFault"
-//   DBClusterIdentifier does not refer to an existing DB cluster.
+//   - ErrCodeDBSnapshotNotFoundFault "DBSnapshotNotFound"
+//     DBSnapshotIdentifier does not refer to an existing DB snapshot.
+//
+//   - ErrCodeDBClusterNotFoundFault "DBClusterNotFoundFault"
+//     DBClusterIdentifier does not refer to an existing DB cluster.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/ListTagsForResource
 func (c *Neptune) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -4808,14 +5204,13 @@ const opModifyDBCluster = "ModifyDBCluster"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyDBClusterRequest method.
+//	req, resp := client.ModifyDBClusterRequest(params)
 //
-//    // Example sending a request using the ModifyDBClusterRequest method.
-//    req, resp := client.ModifyDBClusterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/ModifyDBCluster
 func (c *Neptune) ModifyDBClusterRequest(input *ModifyDBClusterInput) (req *request.Request, output *ModifyDBClusterOutput) {
@@ -4847,42 +5242,43 @@ func (c *Neptune) ModifyDBClusterRequest(input *ModifyDBClusterInput) (req *requ
 // API operation ModifyDBCluster for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeDBClusterNotFoundFault "DBClusterNotFoundFault"
-//   DBClusterIdentifier does not refer to an existing DB cluster.
 //
-//   * ErrCodeInvalidDBClusterStateFault "InvalidDBClusterStateFault"
-//   The DB cluster is not in a valid state.
+//   - ErrCodeDBClusterNotFoundFault "DBClusterNotFoundFault"
+//     DBClusterIdentifier does not refer to an existing DB cluster.
 //
-//   * ErrCodeStorageQuotaExceededFault "StorageQuotaExceeded"
-//   Request would result in user exceeding the allowed amount of storage available
-//   across all DB instances.
+//   - ErrCodeInvalidDBClusterStateFault "InvalidDBClusterStateFault"
+//     The DB cluster is not in a valid state.
 //
-//   * ErrCodeDBSubnetGroupNotFoundFault "DBSubnetGroupNotFoundFault"
-//   DBSubnetGroupName does not refer to an existing DB subnet group.
+//   - ErrCodeStorageQuotaExceededFault "StorageQuotaExceeded"
+//     Request would result in user exceeding the allowed amount of storage available
+//     across all DB instances.
 //
-//   * ErrCodeInvalidVPCNetworkStateFault "InvalidVPCNetworkStateFault"
-//   DB subnet group does not cover all Availability Zones after it is created
-//   because users' change.
+//   - ErrCodeDBSubnetGroupNotFoundFault "DBSubnetGroupNotFoundFault"
+//     DBSubnetGroupName does not refer to an existing DB subnet group.
 //
-//   * ErrCodeInvalidDBSubnetGroupStateFault "InvalidDBSubnetGroupStateFault"
-//   The DB subnet group cannot be deleted because it is in use.
+//   - ErrCodeInvalidVPCNetworkStateFault "InvalidVPCNetworkStateFault"
+//     DB subnet group does not cover all Availability Zones after it is created
+//     because users' change.
 //
-//   * ErrCodeInvalidSubnet "InvalidSubnet"
-//   The requested subnet is invalid, or multiple subnets were requested that
-//   are not all in a common VPC.
+//   - ErrCodeInvalidDBSubnetGroupStateFault "InvalidDBSubnetGroupStateFault"
+//     The DB subnet group cannot be deleted because it is in use.
 //
-//   * ErrCodeDBClusterParameterGroupNotFoundFault "DBClusterParameterGroupNotFound"
-//   DBClusterParameterGroupName does not refer to an existing DB Cluster parameter
-//   group.
+//   - ErrCodeInvalidSubnet "InvalidSubnet"
+//     The requested subnet is invalid, or multiple subnets were requested that
+//     are not all in a common VPC.
 //
-//   * ErrCodeInvalidDBSecurityGroupStateFault "InvalidDBSecurityGroupState"
-//   The state of the DB security group does not allow deletion.
+//   - ErrCodeDBClusterParameterGroupNotFoundFault "DBClusterParameterGroupNotFound"
+//     DBClusterParameterGroupName does not refer to an existing DB Cluster parameter
+//     group.
 //
-//   * ErrCodeInvalidDBInstanceStateFault "InvalidDBInstanceState"
-//   The specified DB instance is not in the available state.
+//   - ErrCodeInvalidDBSecurityGroupStateFault "InvalidDBSecurityGroupState"
+//     The state of the DB security group does not allow deletion.
 //
-//   * ErrCodeDBClusterAlreadyExistsFault "DBClusterAlreadyExistsFault"
-//   User already has a DB cluster with the given identifier.
+//   - ErrCodeInvalidDBInstanceStateFault "InvalidDBInstanceState"
+//     The specified DB instance is not in the available state.
+//
+//   - ErrCodeDBClusterAlreadyExistsFault "DBClusterAlreadyExistsFault"
+//     User already has a DB cluster with the given identifier.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/ModifyDBCluster
 func (c *Neptune) ModifyDBCluster(input *ModifyDBClusterInput) (*ModifyDBClusterOutput, error) {
@@ -4922,14 +5318,13 @@ const opModifyDBClusterEndpoint = "ModifyDBClusterEndpoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyDBClusterEndpointRequest method.
+//	req, resp := client.ModifyDBClusterEndpointRequest(params)
 //
-//    // Example sending a request using the ModifyDBClusterEndpointRequest method.
-//    req, resp := client.ModifyDBClusterEndpointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/ModifyDBClusterEndpoint
 func (c *Neptune) ModifyDBClusterEndpointRequest(input *ModifyDBClusterEndpointInput) (req *request.Request, output *ModifyDBClusterEndpointOutput) {
@@ -4960,21 +5355,22 @@ func (c *Neptune) ModifyDBClusterEndpointRequest(input *ModifyDBClusterEndpointI
 // API operation ModifyDBClusterEndpoint for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidDBClusterStateFault "InvalidDBClusterStateFault"
-//   The DB cluster is not in a valid state.
 //
-//   * ErrCodeInvalidDBClusterEndpointStateFault "InvalidDBClusterEndpointStateFault"
-//   The requested operation cannot be performed on the endpoint while the endpoint
-//   is in this state.
+//   - ErrCodeInvalidDBClusterStateFault "InvalidDBClusterStateFault"
+//     The DB cluster is not in a valid state.
 //
-//   * ErrCodeDBClusterEndpointNotFoundFault "DBClusterEndpointNotFoundFault"
-//   The specified custom endpoint doesn't exist.
+//   - ErrCodeInvalidDBClusterEndpointStateFault "InvalidDBClusterEndpointStateFault"
+//     The requested operation cannot be performed on the endpoint while the endpoint
+//     is in this state.
 //
-//   * ErrCodeDBInstanceNotFoundFault "DBInstanceNotFound"
-//   DBInstanceIdentifier does not refer to an existing DB instance.
+//   - ErrCodeDBClusterEndpointNotFoundFault "DBClusterEndpointNotFoundFault"
+//     The specified custom endpoint doesn't exist.
 //
-//   * ErrCodeInvalidDBInstanceStateFault "InvalidDBInstanceState"
-//   The specified DB instance is not in the available state.
+//   - ErrCodeDBInstanceNotFoundFault "DBInstanceNotFound"
+//     DBInstanceIdentifier does not refer to an existing DB instance.
+//
+//   - ErrCodeInvalidDBInstanceStateFault "InvalidDBInstanceState"
+//     The specified DB instance is not in the available state.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/ModifyDBClusterEndpoint
 func (c *Neptune) ModifyDBClusterEndpoint(input *ModifyDBClusterEndpointInput) (*ModifyDBClusterEndpointOutput, error) {
@@ -5014,14 +5410,13 @@ const opModifyDBClusterParameterGroup = "ModifyDBClusterParameterGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyDBClusterParameterGroupRequest method.
+//	req, resp := client.ModifyDBClusterParameterGroupRequest(params)
 //
-//    // Example sending a request using the ModifyDBClusterParameterGroupRequest method.
-//    req, resp := client.ModifyDBClusterParameterGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/ModifyDBClusterParameterGroup
 func (c *Neptune) ModifyDBClusterParameterGroupRequest(input *ModifyDBClusterParameterGroupInput) (req *request.Request, output *ResetDBClusterParameterGroupOutput) {
@@ -5069,13 +5464,14 @@ func (c *Neptune) ModifyDBClusterParameterGroupRequest(input *ModifyDBClusterPar
 // API operation ModifyDBClusterParameterGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeDBParameterGroupNotFoundFault "DBParameterGroupNotFound"
-//   DBParameterGroupName does not refer to an existing DB parameter group.
 //
-//   * ErrCodeInvalidDBParameterGroupStateFault "InvalidDBParameterGroupState"
-//   The DB parameter group is in use or is in an invalid state. If you are attempting
-//   to delete the parameter group, you cannot delete it when the parameter group
-//   is in this state.
+//   - ErrCodeDBParameterGroupNotFoundFault "DBParameterGroupNotFound"
+//     DBParameterGroupName does not refer to an existing DB parameter group.
+//
+//   - ErrCodeInvalidDBParameterGroupStateFault "InvalidDBParameterGroupState"
+//     The DB parameter group is in use or is in an invalid state. If you are attempting
+//     to delete the parameter group, you cannot delete it when the parameter group
+//     is in this state.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/ModifyDBClusterParameterGroup
 func (c *Neptune) ModifyDBClusterParameterGroup(input *ModifyDBClusterParameterGroupInput) (*ResetDBClusterParameterGroupOutput, error) {
@@ -5115,14 +5511,13 @@ const opModifyDBClusterSnapshotAttribute = "ModifyDBClusterSnapshotAttribute"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyDBClusterSnapshotAttributeRequest method.
+//	req, resp := client.ModifyDBClusterSnapshotAttributeRequest(params)
 //
-//    // Example sending a request using the ModifyDBClusterSnapshotAttributeRequest method.
-//    req, resp := client.ModifyDBClusterSnapshotAttributeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/ModifyDBClusterSnapshotAttribute
 func (c *Neptune) ModifyDBClusterSnapshotAttributeRequest(input *ModifyDBClusterSnapshotAttributeInput) (req *request.Request, output *ModifyDBClusterSnapshotAttributeOutput) {
@@ -5169,15 +5564,16 @@ func (c *Neptune) ModifyDBClusterSnapshotAttributeRequest(input *ModifyDBCluster
 // API operation ModifyDBClusterSnapshotAttribute for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeDBClusterSnapshotNotFoundFault "DBClusterSnapshotNotFoundFault"
-//   DBClusterSnapshotIdentifier does not refer to an existing DB cluster snapshot.
 //
-//   * ErrCodeInvalidDBClusterSnapshotStateFault "InvalidDBClusterSnapshotStateFault"
-//   The supplied value is not a valid DB cluster snapshot state.
+//   - ErrCodeDBClusterSnapshotNotFoundFault "DBClusterSnapshotNotFoundFault"
+//     DBClusterSnapshotIdentifier does not refer to an existing DB cluster snapshot.
 //
-//   * ErrCodeSharedSnapshotQuotaExceededFault "SharedSnapshotQuotaExceeded"
-//   You have exceeded the maximum number of accounts that you can share a manual
-//   DB snapshot with.
+//   - ErrCodeInvalidDBClusterSnapshotStateFault "InvalidDBClusterSnapshotStateFault"
+//     The supplied value is not a valid DB cluster snapshot state.
+//
+//   - ErrCodeSharedSnapshotQuotaExceededFault "SharedSnapshotQuotaExceeded"
+//     You have exceeded the maximum number of accounts that you can share a manual
+//     DB snapshot with.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/ModifyDBClusterSnapshotAttribute
 func (c *Neptune) ModifyDBClusterSnapshotAttribute(input *ModifyDBClusterSnapshotAttributeInput) (*ModifyDBClusterSnapshotAttributeOutput, error) {
@@ -5217,14 +5613,13 @@ const opModifyDBInstance = "ModifyDBInstance"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyDBInstanceRequest method.
+//	req, resp := client.ModifyDBInstanceRequest(params)
 //
-//    // Example sending a request using the ModifyDBInstanceRequest method.
-//    req, resp := client.ModifyDBInstanceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/ModifyDBInstance
 func (c *Neptune) ModifyDBInstanceRequest(input *ModifyDBInstanceInput) (req *request.Request, output *ModifyDBInstanceOutput) {
@@ -5258,60 +5653,61 @@ func (c *Neptune) ModifyDBInstanceRequest(input *ModifyDBInstanceInput) (req *re
 // API operation ModifyDBInstance for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidDBInstanceStateFault "InvalidDBInstanceState"
-//   The specified DB instance is not in the available state.
 //
-//   * ErrCodeInvalidDBSecurityGroupStateFault "InvalidDBSecurityGroupState"
-//   The state of the DB security group does not allow deletion.
+//   - ErrCodeInvalidDBInstanceStateFault "InvalidDBInstanceState"
+//     The specified DB instance is not in the available state.
 //
-//   * ErrCodeDBInstanceAlreadyExistsFault "DBInstanceAlreadyExists"
-//   User already has a DB instance with the given identifier.
+//   - ErrCodeInvalidDBSecurityGroupStateFault "InvalidDBSecurityGroupState"
+//     The state of the DB security group does not allow deletion.
 //
-//   * ErrCodeDBInstanceNotFoundFault "DBInstanceNotFound"
-//   DBInstanceIdentifier does not refer to an existing DB instance.
+//   - ErrCodeDBInstanceAlreadyExistsFault "DBInstanceAlreadyExists"
+//     User already has a DB instance with the given identifier.
 //
-//   * ErrCodeDBSecurityGroupNotFoundFault "DBSecurityGroupNotFound"
-//   DBSecurityGroupName does not refer to an existing DB security group.
+//   - ErrCodeDBInstanceNotFoundFault "DBInstanceNotFound"
+//     DBInstanceIdentifier does not refer to an existing DB instance.
 //
-//   * ErrCodeDBParameterGroupNotFoundFault "DBParameterGroupNotFound"
-//   DBParameterGroupName does not refer to an existing DB parameter group.
+//   - ErrCodeDBSecurityGroupNotFoundFault "DBSecurityGroupNotFound"
+//     DBSecurityGroupName does not refer to an existing DB security group.
 //
-//   * ErrCodeInsufficientDBInstanceCapacityFault "InsufficientDBInstanceCapacity"
-//   Specified DB instance class is not available in the specified Availability
-//   Zone.
+//   - ErrCodeDBParameterGroupNotFoundFault "DBParameterGroupNotFound"
+//     DBParameterGroupName does not refer to an existing DB parameter group.
 //
-//   * ErrCodeStorageQuotaExceededFault "StorageQuotaExceeded"
-//   Request would result in user exceeding the allowed amount of storage available
-//   across all DB instances.
+//   - ErrCodeInsufficientDBInstanceCapacityFault "InsufficientDBInstanceCapacity"
+//     Specified DB instance class is not available in the specified Availability
+//     Zone.
 //
-//   * ErrCodeInvalidVPCNetworkStateFault "InvalidVPCNetworkStateFault"
-//   DB subnet group does not cover all Availability Zones after it is created
-//   because users' change.
+//   - ErrCodeStorageQuotaExceededFault "StorageQuotaExceeded"
+//     Request would result in user exceeding the allowed amount of storage available
+//     across all DB instances.
 //
-//   * ErrCodeProvisionedIopsNotAvailableInAZFault "ProvisionedIopsNotAvailableInAZFault"
-//   Provisioned IOPS not available in the specified Availability Zone.
+//   - ErrCodeInvalidVPCNetworkStateFault "InvalidVPCNetworkStateFault"
+//     DB subnet group does not cover all Availability Zones after it is created
+//     because users' change.
 //
-//   * ErrCodeOptionGroupNotFoundFault "OptionGroupNotFoundFault"
-//   The designated option group could not be found.
+//   - ErrCodeProvisionedIopsNotAvailableInAZFault "ProvisionedIopsNotAvailableInAZFault"
+//     Provisioned IOPS not available in the specified Availability Zone.
 //
-//   * ErrCodeDBUpgradeDependencyFailureFault "DBUpgradeDependencyFailure"
-//   The DB upgrade failed because a resource the DB depends on could not be modified.
+//   - ErrCodeOptionGroupNotFoundFault "OptionGroupNotFoundFault"
+//     The designated option group could not be found.
 //
-//   * ErrCodeStorageTypeNotSupportedFault "StorageTypeNotSupported"
-//   StorageType specified cannot be associated with the DB Instance.
+//   - ErrCodeDBUpgradeDependencyFailureFault "DBUpgradeDependencyFailure"
+//     The DB upgrade failed because a resource the DB depends on could not be modified.
 //
-//   * ErrCodeAuthorizationNotFoundFault "AuthorizationNotFound"
-//   Specified CIDRIP or EC2 security group is not authorized for the specified
-//   DB security group.
+//   - ErrCodeStorageTypeNotSupportedFault "StorageTypeNotSupported"
+//     StorageType specified cannot be associated with the DB Instance.
 //
-//   Neptune may not also be authorized via IAM to perform necessary actions on
-//   your behalf.
+//   - ErrCodeAuthorizationNotFoundFault "AuthorizationNotFound"
+//     Specified CIDRIP or EC2 security group is not authorized for the specified
+//     DB security group.
 //
-//   * ErrCodeCertificateNotFoundFault "CertificateNotFound"
-//   CertificateIdentifier does not refer to an existing certificate.
+//     Neptune may not also be authorized via IAM to perform necessary actions on
+//     your behalf.
 //
-//   * ErrCodeDomainNotFoundFault "DomainNotFoundFault"
-//   Domain does not refer to an existing Active Directory Domain.
+//   - ErrCodeCertificateNotFoundFault "CertificateNotFound"
+//     CertificateIdentifier does not refer to an existing certificate.
+//
+//   - ErrCodeDomainNotFoundFault "DomainNotFoundFault"
+//     Domain does not refer to an existing Active Directory Domain.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/ModifyDBInstance
 func (c *Neptune) ModifyDBInstance(input *ModifyDBInstanceInput) (*ModifyDBInstanceOutput, error) {
@@ -5351,14 +5747,13 @@ const opModifyDBParameterGroup = "ModifyDBParameterGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyDBParameterGroupRequest method.
+//	req, resp := client.ModifyDBParameterGroupRequest(params)
 //
-//    // Example sending a request using the ModifyDBParameterGroupRequest method.
-//    req, resp := client.ModifyDBParameterGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/ModifyDBParameterGroup
 func (c *Neptune) ModifyDBParameterGroupRequest(input *ModifyDBParameterGroupInput) (req *request.Request, output *ResetDBParameterGroupOutput) {
@@ -5406,13 +5801,14 @@ func (c *Neptune) ModifyDBParameterGroupRequest(input *ModifyDBParameterGroupInp
 // API operation ModifyDBParameterGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeDBParameterGroupNotFoundFault "DBParameterGroupNotFound"
-//   DBParameterGroupName does not refer to an existing DB parameter group.
 //
-//   * ErrCodeInvalidDBParameterGroupStateFault "InvalidDBParameterGroupState"
-//   The DB parameter group is in use or is in an invalid state. If you are attempting
-//   to delete the parameter group, you cannot delete it when the parameter group
-//   is in this state.
+//   - ErrCodeDBParameterGroupNotFoundFault "DBParameterGroupNotFound"
+//     DBParameterGroupName does not refer to an existing DB parameter group.
+//
+//   - ErrCodeInvalidDBParameterGroupStateFault "InvalidDBParameterGroupState"
+//     The DB parameter group is in use or is in an invalid state. If you are attempting
+//     to delete the parameter group, you cannot delete it when the parameter group
+//     is in this state.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/ModifyDBParameterGroup
 func (c *Neptune) ModifyDBParameterGroup(input *ModifyDBParameterGroupInput) (*ResetDBParameterGroupOutput, error) {
@@ -5452,14 +5848,13 @@ const opModifyDBSubnetGroup = "ModifyDBSubnetGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyDBSubnetGroupRequest method.
+//	req, resp := client.ModifyDBSubnetGroupRequest(params)
 //
-//    // Example sending a request using the ModifyDBSubnetGroupRequest method.
-//    req, resp := client.ModifyDBSubnetGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/ModifyDBSubnetGroup
 func (c *Neptune) ModifyDBSubnetGroupRequest(input *ModifyDBSubnetGroupInput) (req *request.Request, output *ModifyDBSubnetGroupOutput) {
@@ -5491,23 +5886,24 @@ func (c *Neptune) ModifyDBSubnetGroupRequest(input *ModifyDBSubnetGroupInput) (r
 // API operation ModifyDBSubnetGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeDBSubnetGroupNotFoundFault "DBSubnetGroupNotFoundFault"
-//   DBSubnetGroupName does not refer to an existing DB subnet group.
 //
-//   * ErrCodeDBSubnetQuotaExceededFault "DBSubnetQuotaExceededFault"
-//   Request would result in user exceeding the allowed number of subnets in a
-//   DB subnet groups.
+//   - ErrCodeDBSubnetGroupNotFoundFault "DBSubnetGroupNotFoundFault"
+//     DBSubnetGroupName does not refer to an existing DB subnet group.
 //
-//   * ErrCodeSubnetAlreadyInUse "SubnetAlreadyInUse"
-//   The DB subnet is already in use in the Availability Zone.
+//   - ErrCodeDBSubnetQuotaExceededFault "DBSubnetQuotaExceededFault"
+//     Request would result in user exceeding the allowed number of subnets in a
+//     DB subnet groups.
 //
-//   * ErrCodeDBSubnetGroupDoesNotCoverEnoughAZs "DBSubnetGroupDoesNotCoverEnoughAZs"
-//   Subnets in the DB subnet group should cover at least two Availability Zones
-//   unless there is only one Availability Zone.
+//   - ErrCodeSubnetAlreadyInUse "SubnetAlreadyInUse"
+//     The DB subnet is already in use in the Availability Zone.
 //
-//   * ErrCodeInvalidSubnet "InvalidSubnet"
-//   The requested subnet is invalid, or multiple subnets were requested that
-//   are not all in a common VPC.
+//   - ErrCodeDBSubnetGroupDoesNotCoverEnoughAZs "DBSubnetGroupDoesNotCoverEnoughAZs"
+//     Subnets in the DB subnet group should cover at least two Availability Zones
+//     unless there is only one Availability Zone.
+//
+//   - ErrCodeInvalidSubnet "InvalidSubnet"
+//     The requested subnet is invalid, or multiple subnets were requested that
+//     are not all in a common VPC.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/ModifyDBSubnetGroup
 func (c *Neptune) ModifyDBSubnetGroup(input *ModifyDBSubnetGroupInput) (*ModifyDBSubnetGroupOutput, error) {
@@ -5547,14 +5943,13 @@ const opModifyEventSubscription = "ModifyEventSubscription"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyEventSubscriptionRequest method.
+//	req, resp := client.ModifyEventSubscriptionRequest(params)
 //
-//    // Example sending a request using the ModifyEventSubscriptionRequest method.
-//    req, resp := client.ModifyEventSubscriptionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/ModifyEventSubscription
 func (c *Neptune) ModifyEventSubscriptionRequest(input *ModifyEventSubscriptionInput) (req *request.Request, output *ModifyEventSubscriptionOutput) {
@@ -5591,23 +5986,24 @@ func (c *Neptune) ModifyEventSubscriptionRequest(input *ModifyEventSubscriptionI
 // API operation ModifyEventSubscription for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeEventSubscriptionQuotaExceededFault "EventSubscriptionQuotaExceeded"
-//   You have exceeded the number of events you can subscribe to.
 //
-//   * ErrCodeSubscriptionNotFoundFault "SubscriptionNotFound"
-//   The designated subscription could not be found.
+//   - ErrCodeEventSubscriptionQuotaExceededFault "EventSubscriptionQuotaExceeded"
+//     You have exceeded the number of events you can subscribe to.
 //
-//   * ErrCodeSNSInvalidTopicFault "SNSInvalidTopic"
-//   The SNS topic is invalid.
+//   - ErrCodeSubscriptionNotFoundFault "SubscriptionNotFound"
+//     The designated subscription could not be found.
 //
-//   * ErrCodeSNSNoAuthorizationFault "SNSNoAuthorization"
-//   There is no SNS authorization.
+//   - ErrCodeSNSInvalidTopicFault "SNSInvalidTopic"
+//     The SNS topic is invalid.
 //
-//   * ErrCodeSNSTopicArnNotFoundFault "SNSTopicArnNotFound"
-//   The ARN of the SNS topic could not be found.
+//   - ErrCodeSNSNoAuthorizationFault "SNSNoAuthorization"
+//     There is no SNS authorization.
 //
-//   * ErrCodeSubscriptionCategoryNotFoundFault "SubscriptionCategoryNotFound"
-//   The designated subscription category could not be found.
+//   - ErrCodeSNSTopicArnNotFoundFault "SNSTopicArnNotFound"
+//     The ARN of the SNS topic could not be found.
+//
+//   - ErrCodeSubscriptionCategoryNotFoundFault "SubscriptionCategoryNotFound"
+//     The designated subscription category could not be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/ModifyEventSubscription
 func (c *Neptune) ModifyEventSubscription(input *ModifyEventSubscriptionInput) (*ModifyEventSubscriptionOutput, error) {
@@ -5631,6 +6027,92 @@ func (c *Neptune) ModifyEventSubscriptionWithContext(ctx aws.Context, input *Mod
 	return out, req.Send()
 }
 
+const opModifyGlobalCluster = "ModifyGlobalCluster"
+
+// ModifyGlobalClusterRequest generates a "aws/request.Request" representing the
+// client's request for the ModifyGlobalCluster operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ModifyGlobalCluster for more information on using the ModifyGlobalCluster
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ModifyGlobalClusterRequest method.
+//	req, resp := client.ModifyGlobalClusterRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/ModifyGlobalCluster
+func (c *Neptune) ModifyGlobalClusterRequest(input *ModifyGlobalClusterInput) (req *request.Request, output *ModifyGlobalClusterOutput) {
+	op := &request.Operation{
+		Name:       opModifyGlobalCluster,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &ModifyGlobalClusterInput{}
+	}
+
+	output = &ModifyGlobalClusterOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ModifyGlobalCluster API operation for Amazon Neptune.
+//
+// Modify a setting for an Amazon Neptune global cluster. You can change one
+// or more database configuration parameters by specifying these parameters
+// and their new values in the request.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Neptune's
+// API operation ModifyGlobalCluster for usage and error information.
+//
+// Returned Error Codes:
+//
+//   - ErrCodeGlobalClusterNotFoundFault "GlobalClusterNotFoundFault"
+//     The GlobalClusterIdentifier doesn't refer to an existing global database
+//     cluster.
+//
+//   - ErrCodeInvalidGlobalClusterStateFault "InvalidGlobalClusterStateFault"
+//     The global cluster is in an invalid state and can't perform the requested
+//     operation.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/ModifyGlobalCluster
+func (c *Neptune) ModifyGlobalCluster(input *ModifyGlobalClusterInput) (*ModifyGlobalClusterOutput, error) {
+	req, out := c.ModifyGlobalClusterRequest(input)
+	return out, req.Send()
+}
+
+// ModifyGlobalClusterWithContext is the same as ModifyGlobalCluster with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ModifyGlobalCluster for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Neptune) ModifyGlobalClusterWithContext(ctx aws.Context, input *ModifyGlobalClusterInput, opts ...request.Option) (*ModifyGlobalClusterOutput, error) {
+	req, out := c.ModifyGlobalClusterRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opPromoteReadReplicaDBCluster = "PromoteReadReplicaDBCluster"
 
 // PromoteReadReplicaDBClusterRequest generates a "aws/request.Request" representing the
@@ -5647,14 +6129,13 @@ const opPromoteReadReplicaDBCluster = "PromoteReadReplicaDBCluster"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PromoteReadReplicaDBClusterRequest method.
+//	req, resp := client.PromoteReadReplicaDBClusterRequest(params)
 //
-//    // Example sending a request using the PromoteReadReplicaDBClusterRequest method.
-//    req, resp := client.PromoteReadReplicaDBClusterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/PromoteReadReplicaDBCluster
 func (c *Neptune) PromoteReadReplicaDBClusterRequest(input *PromoteReadReplicaDBClusterInput) (req *request.Request, output *PromoteReadReplicaDBClusterOutput) {
@@ -5685,11 +6166,12 @@ func (c *Neptune) PromoteReadReplicaDBClusterRequest(input *PromoteReadReplicaDB
 // API operation PromoteReadReplicaDBCluster for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeDBClusterNotFoundFault "DBClusterNotFoundFault"
-//   DBClusterIdentifier does not refer to an existing DB cluster.
 //
-//   * ErrCodeInvalidDBClusterStateFault "InvalidDBClusterStateFault"
-//   The DB cluster is not in a valid state.
+//   - ErrCodeDBClusterNotFoundFault "DBClusterNotFoundFault"
+//     DBClusterIdentifier does not refer to an existing DB cluster.
+//
+//   - ErrCodeInvalidDBClusterStateFault "InvalidDBClusterStateFault"
+//     The DB cluster is not in a valid state.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/PromoteReadReplicaDBCluster
 func (c *Neptune) PromoteReadReplicaDBCluster(input *PromoteReadReplicaDBClusterInput) (*PromoteReadReplicaDBClusterOutput, error) {
@@ -5729,14 +6211,13 @@ const opRebootDBInstance = "RebootDBInstance"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RebootDBInstanceRequest method.
+//	req, resp := client.RebootDBInstanceRequest(params)
 //
-//    // Example sending a request using the RebootDBInstanceRequest method.
-//    req, resp := client.RebootDBInstanceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/RebootDBInstance
 func (c *Neptune) RebootDBInstanceRequest(input *RebootDBInstanceInput) (req *request.Request, output *RebootDBInstanceOutput) {
@@ -5774,11 +6255,12 @@ func (c *Neptune) RebootDBInstanceRequest(input *RebootDBInstanceInput) (req *re
 // API operation RebootDBInstance for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidDBInstanceStateFault "InvalidDBInstanceState"
-//   The specified DB instance is not in the available state.
 //
-//   * ErrCodeDBInstanceNotFoundFault "DBInstanceNotFound"
-//   DBInstanceIdentifier does not refer to an existing DB instance.
+//   - ErrCodeInvalidDBInstanceStateFault "InvalidDBInstanceState"
+//     The specified DB instance is not in the available state.
+//
+//   - ErrCodeDBInstanceNotFoundFault "DBInstanceNotFound"
+//     DBInstanceIdentifier does not refer to an existing DB instance.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/RebootDBInstance
 func (c *Neptune) RebootDBInstance(input *RebootDBInstanceInput) (*RebootDBInstanceOutput, error) {
@@ -5802,6 +6284,95 @@ func (c *Neptune) RebootDBInstanceWithContext(ctx aws.Context, input *RebootDBIn
 	return out, req.Send()
 }
 
+const opRemoveFromGlobalCluster = "RemoveFromGlobalCluster"
+
+// RemoveFromGlobalClusterRequest generates a "aws/request.Request" representing the
+// client's request for the RemoveFromGlobalCluster operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See RemoveFromGlobalCluster for more information on using the RemoveFromGlobalCluster
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the RemoveFromGlobalClusterRequest method.
+//	req, resp := client.RemoveFromGlobalClusterRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/RemoveFromGlobalCluster
+func (c *Neptune) RemoveFromGlobalClusterRequest(input *RemoveFromGlobalClusterInput) (req *request.Request, output *RemoveFromGlobalClusterOutput) {
+	op := &request.Operation{
+		Name:       opRemoveFromGlobalCluster,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &RemoveFromGlobalClusterInput{}
+	}
+
+	output = &RemoveFromGlobalClusterOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// RemoveFromGlobalCluster API operation for Amazon Neptune.
+//
+// Detaches a Neptune DB cluster from a Neptune global database. A secondary
+// cluster becomes a normal standalone cluster with read-write capability instead
+// of being read-only, and no longer receives data from a the primary cluster.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Neptune's
+// API operation RemoveFromGlobalCluster for usage and error information.
+//
+// Returned Error Codes:
+//
+//   - ErrCodeGlobalClusterNotFoundFault "GlobalClusterNotFoundFault"
+//     The GlobalClusterIdentifier doesn't refer to an existing global database
+//     cluster.
+//
+//   - ErrCodeInvalidGlobalClusterStateFault "InvalidGlobalClusterStateFault"
+//     The global cluster is in an invalid state and can't perform the requested
+//     operation.
+//
+//   - ErrCodeDBClusterNotFoundFault "DBClusterNotFoundFault"
+//     DBClusterIdentifier does not refer to an existing DB cluster.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/RemoveFromGlobalCluster
+func (c *Neptune) RemoveFromGlobalCluster(input *RemoveFromGlobalClusterInput) (*RemoveFromGlobalClusterOutput, error) {
+	req, out := c.RemoveFromGlobalClusterRequest(input)
+	return out, req.Send()
+}
+
+// RemoveFromGlobalClusterWithContext is the same as RemoveFromGlobalCluster with the addition of
+// the ability to pass a context and additional request options.
+//
+// See RemoveFromGlobalCluster for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Neptune) RemoveFromGlobalClusterWithContext(ctx aws.Context, input *RemoveFromGlobalClusterInput, opts ...request.Option) (*RemoveFromGlobalClusterOutput, error) {
+	req, out := c.RemoveFromGlobalClusterRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opRemoveRoleFromDBCluster = "RemoveRoleFromDBCluster"
 
 // RemoveRoleFromDBClusterRequest generates a "aws/request.Request" representing the
@@ -5818,14 +6389,13 @@ const opRemoveRoleFromDBCluster = "RemoveRoleFromDBCluster"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RemoveRoleFromDBClusterRequest method.
+//	req, resp := client.RemoveRoleFromDBClusterRequest(params)
 //
-//    // Example sending a request using the RemoveRoleFromDBClusterRequest method.
-//    req, resp := client.RemoveRoleFromDBClusterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/RemoveRoleFromDBCluster
 func (c *Neptune) RemoveRoleFromDBClusterRequest(input *RemoveRoleFromDBClusterInput) (req *request.Request, output *RemoveRoleFromDBClusterOutput) {
@@ -5857,15 +6427,16 @@ func (c *Neptune) RemoveRoleFromDBClusterRequest(input *RemoveRoleFromDBClusterI
 // API operation RemoveRoleFromDBCluster for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeDBClusterNotFoundFault "DBClusterNotFoundFault"
-//   DBClusterIdentifier does not refer to an existing DB cluster.
 //
-//   * ErrCodeDBClusterRoleNotFoundFault "DBClusterRoleNotFound"
-//   The specified IAM role Amazon Resource Name (ARN) is not associated with
-//   the specified DB cluster.
+//   - ErrCodeDBClusterNotFoundFault "DBClusterNotFoundFault"
+//     DBClusterIdentifier does not refer to an existing DB cluster.
 //
-//   * ErrCodeInvalidDBClusterStateFault "InvalidDBClusterStateFault"
-//   The DB cluster is not in a valid state.
+//   - ErrCodeDBClusterRoleNotFoundFault "DBClusterRoleNotFound"
+//     The specified IAM role Amazon Resource Name (ARN) is not associated with
+//     the specified DB cluster.
+//
+//   - ErrCodeInvalidDBClusterStateFault "InvalidDBClusterStateFault"
+//     The DB cluster is not in a valid state.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/RemoveRoleFromDBCluster
 func (c *Neptune) RemoveRoleFromDBCluster(input *RemoveRoleFromDBClusterInput) (*RemoveRoleFromDBClusterOutput, error) {
@@ -5905,14 +6476,13 @@ const opRemoveSourceIdentifierFromSubscription = "RemoveSourceIdentifierFromSubs
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RemoveSourceIdentifierFromSubscriptionRequest method.
+//	req, resp := client.RemoveSourceIdentifierFromSubscriptionRequest(params)
 //
-//    // Example sending a request using the RemoveSourceIdentifierFromSubscriptionRequest method.
-//    req, resp := client.RemoveSourceIdentifierFromSubscriptionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/RemoveSourceIdentifierFromSubscription
 func (c *Neptune) RemoveSourceIdentifierFromSubscriptionRequest(input *RemoveSourceIdentifierFromSubscriptionInput) (req *request.Request, output *RemoveSourceIdentifierFromSubscriptionOutput) {
@@ -5943,11 +6513,12 @@ func (c *Neptune) RemoveSourceIdentifierFromSubscriptionRequest(input *RemoveSou
 // API operation RemoveSourceIdentifierFromSubscription for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeSubscriptionNotFoundFault "SubscriptionNotFound"
-//   The designated subscription could not be found.
 //
-//   * ErrCodeSourceNotFoundFault "SourceNotFound"
-//   The source could not be found.
+//   - ErrCodeSubscriptionNotFoundFault "SubscriptionNotFound"
+//     The designated subscription could not be found.
+//
+//   - ErrCodeSourceNotFoundFault "SourceNotFound"
+//     The source could not be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/RemoveSourceIdentifierFromSubscription
 func (c *Neptune) RemoveSourceIdentifierFromSubscription(input *RemoveSourceIdentifierFromSubscriptionInput) (*RemoveSourceIdentifierFromSubscriptionOutput, error) {
@@ -5987,14 +6558,13 @@ const opRemoveTagsFromResource = "RemoveTagsFromResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RemoveTagsFromResourceRequest method.
+//	req, resp := client.RemoveTagsFromResourceRequest(params)
 //
-//    // Example sending a request using the RemoveTagsFromResourceRequest method.
-//    req, resp := client.RemoveTagsFromResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/RemoveTagsFromResource
 func (c *Neptune) RemoveTagsFromResourceRequest(input *RemoveTagsFromResourceInput) (req *request.Request, output *RemoveTagsFromResourceOutput) {
@@ -6026,14 +6596,15 @@ func (c *Neptune) RemoveTagsFromResourceRequest(input *RemoveTagsFromResourceInp
 // API operation RemoveTagsFromResource for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeDBInstanceNotFoundFault "DBInstanceNotFound"
-//   DBInstanceIdentifier does not refer to an existing DB instance.
 //
-//   * ErrCodeDBSnapshotNotFoundFault "DBSnapshotNotFound"
-//   DBSnapshotIdentifier does not refer to an existing DB snapshot.
+//   - ErrCodeDBInstanceNotFoundFault "DBInstanceNotFound"
+//     DBInstanceIdentifier does not refer to an existing DB instance.
 //
-//   * ErrCodeDBClusterNotFoundFault "DBClusterNotFoundFault"
-//   DBClusterIdentifier does not refer to an existing DB cluster.
+//   - ErrCodeDBSnapshotNotFoundFault "DBSnapshotNotFound"
+//     DBSnapshotIdentifier does not refer to an existing DB snapshot.
+//
+//   - ErrCodeDBClusterNotFoundFault "DBClusterNotFoundFault"
+//     DBClusterIdentifier does not refer to an existing DB cluster.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/RemoveTagsFromResource
 func (c *Neptune) RemoveTagsFromResource(input *RemoveTagsFromResourceInput) (*RemoveTagsFromResourceOutput, error) {
@@ -6073,14 +6644,13 @@ const opResetDBClusterParameterGroup = "ResetDBClusterParameterGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ResetDBClusterParameterGroupRequest method.
+//	req, resp := client.ResetDBClusterParameterGroupRequest(params)
 //
-//    // Example sending a request using the ResetDBClusterParameterGroupRequest method.
-//    req, resp := client.ResetDBClusterParameterGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/ResetDBClusterParameterGroup
 func (c *Neptune) ResetDBClusterParameterGroupRequest(input *ResetDBClusterParameterGroupInput) (req *request.Request, output *ResetDBClusterParameterGroupOutput) {
@@ -6120,13 +6690,14 @@ func (c *Neptune) ResetDBClusterParameterGroupRequest(input *ResetDBClusterParam
 // API operation ResetDBClusterParameterGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidDBParameterGroupStateFault "InvalidDBParameterGroupState"
-//   The DB parameter group is in use or is in an invalid state. If you are attempting
-//   to delete the parameter group, you cannot delete it when the parameter group
-//   is in this state.
 //
-//   * ErrCodeDBParameterGroupNotFoundFault "DBParameterGroupNotFound"
-//   DBParameterGroupName does not refer to an existing DB parameter group.
+//   - ErrCodeInvalidDBParameterGroupStateFault "InvalidDBParameterGroupState"
+//     The DB parameter group is in use or is in an invalid state. If you are attempting
+//     to delete the parameter group, you cannot delete it when the parameter group
+//     is in this state.
+//
+//   - ErrCodeDBParameterGroupNotFoundFault "DBParameterGroupNotFound"
+//     DBParameterGroupName does not refer to an existing DB parameter group.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/ResetDBClusterParameterGroup
 func (c *Neptune) ResetDBClusterParameterGroup(input *ResetDBClusterParameterGroupInput) (*ResetDBClusterParameterGroupOutput, error) {
@@ -6166,14 +6737,13 @@ const opResetDBParameterGroup = "ResetDBParameterGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ResetDBParameterGroupRequest method.
+//	req, resp := client.ResetDBParameterGroupRequest(params)
 //
-//    // Example sending a request using the ResetDBParameterGroupRequest method.
-//    req, resp := client.ResetDBParameterGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/ResetDBParameterGroup
 func (c *Neptune) ResetDBParameterGroupRequest(input *ResetDBParameterGroupInput) (req *request.Request, output *ResetDBParameterGroupOutput) {
@@ -6210,13 +6780,14 @@ func (c *Neptune) ResetDBParameterGroupRequest(input *ResetDBParameterGroupInput
 // API operation ResetDBParameterGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidDBParameterGroupStateFault "InvalidDBParameterGroupState"
-//   The DB parameter group is in use or is in an invalid state. If you are attempting
-//   to delete the parameter group, you cannot delete it when the parameter group
-//   is in this state.
 //
-//   * ErrCodeDBParameterGroupNotFoundFault "DBParameterGroupNotFound"
-//   DBParameterGroupName does not refer to an existing DB parameter group.
+//   - ErrCodeInvalidDBParameterGroupStateFault "InvalidDBParameterGroupState"
+//     The DB parameter group is in use or is in an invalid state. If you are attempting
+//     to delete the parameter group, you cannot delete it when the parameter group
+//     is in this state.
+//
+//   - ErrCodeDBParameterGroupNotFoundFault "DBParameterGroupNotFound"
+//     DBParameterGroupName does not refer to an existing DB parameter group.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/ResetDBParameterGroup
 func (c *Neptune) ResetDBParameterGroup(input *ResetDBParameterGroupInput) (*ResetDBParameterGroupOutput, error) {
@@ -6256,14 +6827,13 @@ const opRestoreDBClusterFromSnapshot = "RestoreDBClusterFromSnapshot"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RestoreDBClusterFromSnapshotRequest method.
+//	req, resp := client.RestoreDBClusterFromSnapshotRequest(params)
 //
-//    // Example sending a request using the RestoreDBClusterFromSnapshotRequest method.
-//    req, resp := client.RestoreDBClusterFromSnapshotRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/RestoreDBClusterFromSnapshot
 func (c *Neptune) RestoreDBClusterFromSnapshotRequest(input *RestoreDBClusterFromSnapshotInput) (req *request.Request, output *RestoreDBClusterFromSnapshotOutput) {
@@ -6302,67 +6872,68 @@ func (c *Neptune) RestoreDBClusterFromSnapshotRequest(input *RestoreDBClusterFro
 // API operation RestoreDBClusterFromSnapshot for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeDBClusterAlreadyExistsFault "DBClusterAlreadyExistsFault"
-//   User already has a DB cluster with the given identifier.
 //
-//   * ErrCodeDBClusterQuotaExceededFault "DBClusterQuotaExceededFault"
-//   User attempted to create a new DB cluster and the user has already reached
-//   the maximum allowed DB cluster quota.
+//   - ErrCodeDBClusterAlreadyExistsFault "DBClusterAlreadyExistsFault"
+//     User already has a DB cluster with the given identifier.
 //
-//   * ErrCodeStorageQuotaExceededFault "StorageQuotaExceeded"
-//   Request would result in user exceeding the allowed amount of storage available
-//   across all DB instances.
+//   - ErrCodeDBClusterQuotaExceededFault "DBClusterQuotaExceededFault"
+//     User attempted to create a new DB cluster and the user has already reached
+//     the maximum allowed DB cluster quota.
 //
-//   * ErrCodeDBSubnetGroupNotFoundFault "DBSubnetGroupNotFoundFault"
-//   DBSubnetGroupName does not refer to an existing DB subnet group.
+//   - ErrCodeStorageQuotaExceededFault "StorageQuotaExceeded"
+//     Request would result in user exceeding the allowed amount of storage available
+//     across all DB instances.
 //
-//   * ErrCodeDBSnapshotNotFoundFault "DBSnapshotNotFound"
-//   DBSnapshotIdentifier does not refer to an existing DB snapshot.
+//   - ErrCodeDBSubnetGroupNotFoundFault "DBSubnetGroupNotFoundFault"
+//     DBSubnetGroupName does not refer to an existing DB subnet group.
 //
-//   * ErrCodeDBClusterSnapshotNotFoundFault "DBClusterSnapshotNotFoundFault"
-//   DBClusterSnapshotIdentifier does not refer to an existing DB cluster snapshot.
+//   - ErrCodeDBSnapshotNotFoundFault "DBSnapshotNotFound"
+//     DBSnapshotIdentifier does not refer to an existing DB snapshot.
 //
-//   * ErrCodeInsufficientDBClusterCapacityFault "InsufficientDBClusterCapacityFault"
-//   The DB cluster does not have enough capacity for the current operation.
+//   - ErrCodeDBClusterSnapshotNotFoundFault "DBClusterSnapshotNotFoundFault"
+//     DBClusterSnapshotIdentifier does not refer to an existing DB cluster snapshot.
 //
-//   * ErrCodeInsufficientStorageClusterCapacityFault "InsufficientStorageClusterCapacity"
-//   There is insufficient storage available for the current action. You may be
-//   able to resolve this error by updating your subnet group to use different
-//   Availability Zones that have more storage available.
+//   - ErrCodeInsufficientDBClusterCapacityFault "InsufficientDBClusterCapacityFault"
+//     The DB cluster does not have enough capacity for the current operation.
 //
-//   * ErrCodeInvalidDBSnapshotStateFault "InvalidDBSnapshotState"
-//   The state of the DB snapshot does not allow deletion.
+//   - ErrCodeInsufficientStorageClusterCapacityFault "InsufficientStorageClusterCapacity"
+//     There is insufficient storage available for the current action. You may be
+//     able to resolve this error by updating your subnet group to use different
+//     Availability Zones that have more storage available.
 //
-//   * ErrCodeInvalidDBClusterSnapshotStateFault "InvalidDBClusterSnapshotStateFault"
-//   The supplied value is not a valid DB cluster snapshot state.
+//   - ErrCodeInvalidDBSnapshotStateFault "InvalidDBSnapshotState"
+//     The state of the DB snapshot does not allow deletion.
 //
-//   * ErrCodeStorageQuotaExceededFault "StorageQuotaExceeded"
-//   Request would result in user exceeding the allowed amount of storage available
-//   across all DB instances.
+//   - ErrCodeInvalidDBClusterSnapshotStateFault "InvalidDBClusterSnapshotStateFault"
+//     The supplied value is not a valid DB cluster snapshot state.
 //
-//   * ErrCodeInvalidVPCNetworkStateFault "InvalidVPCNetworkStateFault"
-//   DB subnet group does not cover all Availability Zones after it is created
-//   because users' change.
+//   - ErrCodeStorageQuotaExceededFault "StorageQuotaExceeded"
+//     Request would result in user exceeding the allowed amount of storage available
+//     across all DB instances.
 //
-//   * ErrCodeInvalidRestoreFault "InvalidRestoreFault"
-//   Cannot restore from vpc backup to non-vpc DB instance.
+//   - ErrCodeInvalidVPCNetworkStateFault "InvalidVPCNetworkStateFault"
+//     DB subnet group does not cover all Availability Zones after it is created
+//     because users' change.
 //
-//   * ErrCodeDBSubnetGroupNotFoundFault "DBSubnetGroupNotFoundFault"
-//   DBSubnetGroupName does not refer to an existing DB subnet group.
+//   - ErrCodeInvalidRestoreFault "InvalidRestoreFault"
+//     Cannot restore from vpc backup to non-vpc DB instance.
 //
-//   * ErrCodeInvalidSubnet "InvalidSubnet"
-//   The requested subnet is invalid, or multiple subnets were requested that
-//   are not all in a common VPC.
+//   - ErrCodeDBSubnetGroupNotFoundFault "DBSubnetGroupNotFoundFault"
+//     DBSubnetGroupName does not refer to an existing DB subnet group.
 //
-//   * ErrCodeOptionGroupNotFoundFault "OptionGroupNotFoundFault"
-//   The designated option group could not be found.
+//   - ErrCodeInvalidSubnet "InvalidSubnet"
+//     The requested subnet is invalid, or multiple subnets were requested that
+//     are not all in a common VPC.
 //
-//   * ErrCodeKMSKeyNotAccessibleFault "KMSKeyNotAccessibleFault"
-//   Error accessing KMS key.
+//   - ErrCodeOptionGroupNotFoundFault "OptionGroupNotFoundFault"
+//     The designated option group could not be found.
 //
-//   * ErrCodeDBClusterParameterGroupNotFoundFault "DBClusterParameterGroupNotFound"
-//   DBClusterParameterGroupName does not refer to an existing DB Cluster parameter
-//   group.
+//   - ErrCodeKMSKeyNotAccessibleFault "KMSKeyNotAccessibleFault"
+//     Error accessing KMS key.
+//
+//   - ErrCodeDBClusterParameterGroupNotFoundFault "DBClusterParameterGroupNotFound"
+//     DBClusterParameterGroupName does not refer to an existing DB Cluster parameter
+//     group.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/RestoreDBClusterFromSnapshot
 func (c *Neptune) RestoreDBClusterFromSnapshot(input *RestoreDBClusterFromSnapshotInput) (*RestoreDBClusterFromSnapshotOutput, error) {
@@ -6402,14 +6973,13 @@ const opRestoreDBClusterToPointInTime = "RestoreDBClusterToPointInTime"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RestoreDBClusterToPointInTimeRequest method.
+//	req, resp := client.RestoreDBClusterToPointInTimeRequest(params)
 //
-//    // Example sending a request using the RestoreDBClusterToPointInTimeRequest method.
-//    req, resp := client.RestoreDBClusterToPointInTimeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/RestoreDBClusterToPointInTime
 func (c *Neptune) RestoreDBClusterToPointInTimeRequest(input *RestoreDBClusterToPointInTimeInput) (req *request.Request, output *RestoreDBClusterToPointInTimeOutput) {
@@ -6451,63 +7021,64 @@ func (c *Neptune) RestoreDBClusterToPointInTimeRequest(input *RestoreDBClusterTo
 // API operation RestoreDBClusterToPointInTime for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeDBClusterAlreadyExistsFault "DBClusterAlreadyExistsFault"
-//   User already has a DB cluster with the given identifier.
 //
-//   * ErrCodeDBClusterNotFoundFault "DBClusterNotFoundFault"
-//   DBClusterIdentifier does not refer to an existing DB cluster.
+//   - ErrCodeDBClusterAlreadyExistsFault "DBClusterAlreadyExistsFault"
+//     User already has a DB cluster with the given identifier.
 //
-//   * ErrCodeDBClusterQuotaExceededFault "DBClusterQuotaExceededFault"
-//   User attempted to create a new DB cluster and the user has already reached
-//   the maximum allowed DB cluster quota.
+//   - ErrCodeDBClusterNotFoundFault "DBClusterNotFoundFault"
+//     DBClusterIdentifier does not refer to an existing DB cluster.
 //
-//   * ErrCodeDBClusterSnapshotNotFoundFault "DBClusterSnapshotNotFoundFault"
-//   DBClusterSnapshotIdentifier does not refer to an existing DB cluster snapshot.
+//   - ErrCodeDBClusterQuotaExceededFault "DBClusterQuotaExceededFault"
+//     User attempted to create a new DB cluster and the user has already reached
+//     the maximum allowed DB cluster quota.
 //
-//   * ErrCodeDBSubnetGroupNotFoundFault "DBSubnetGroupNotFoundFault"
-//   DBSubnetGroupName does not refer to an existing DB subnet group.
+//   - ErrCodeDBClusterSnapshotNotFoundFault "DBClusterSnapshotNotFoundFault"
+//     DBClusterSnapshotIdentifier does not refer to an existing DB cluster snapshot.
 //
-//   * ErrCodeInsufficientDBClusterCapacityFault "InsufficientDBClusterCapacityFault"
-//   The DB cluster does not have enough capacity for the current operation.
+//   - ErrCodeDBSubnetGroupNotFoundFault "DBSubnetGroupNotFoundFault"
+//     DBSubnetGroupName does not refer to an existing DB subnet group.
 //
-//   * ErrCodeInsufficientStorageClusterCapacityFault "InsufficientStorageClusterCapacity"
-//   There is insufficient storage available for the current action. You may be
-//   able to resolve this error by updating your subnet group to use different
-//   Availability Zones that have more storage available.
+//   - ErrCodeInsufficientDBClusterCapacityFault "InsufficientDBClusterCapacityFault"
+//     The DB cluster does not have enough capacity for the current operation.
 //
-//   * ErrCodeInvalidDBClusterSnapshotStateFault "InvalidDBClusterSnapshotStateFault"
-//   The supplied value is not a valid DB cluster snapshot state.
+//   - ErrCodeInsufficientStorageClusterCapacityFault "InsufficientStorageClusterCapacity"
+//     There is insufficient storage available for the current action. You may be
+//     able to resolve this error by updating your subnet group to use different
+//     Availability Zones that have more storage available.
 //
-//   * ErrCodeInvalidDBClusterStateFault "InvalidDBClusterStateFault"
-//   The DB cluster is not in a valid state.
+//   - ErrCodeInvalidDBClusterSnapshotStateFault "InvalidDBClusterSnapshotStateFault"
+//     The supplied value is not a valid DB cluster snapshot state.
 //
-//   * ErrCodeInvalidDBSnapshotStateFault "InvalidDBSnapshotState"
-//   The state of the DB snapshot does not allow deletion.
+//   - ErrCodeInvalidDBClusterStateFault "InvalidDBClusterStateFault"
+//     The DB cluster is not in a valid state.
 //
-//   * ErrCodeInvalidRestoreFault "InvalidRestoreFault"
-//   Cannot restore from vpc backup to non-vpc DB instance.
+//   - ErrCodeInvalidDBSnapshotStateFault "InvalidDBSnapshotState"
+//     The state of the DB snapshot does not allow deletion.
 //
-//   * ErrCodeInvalidSubnet "InvalidSubnet"
-//   The requested subnet is invalid, or multiple subnets were requested that
-//   are not all in a common VPC.
+//   - ErrCodeInvalidRestoreFault "InvalidRestoreFault"
+//     Cannot restore from vpc backup to non-vpc DB instance.
 //
-//   * ErrCodeInvalidVPCNetworkStateFault "InvalidVPCNetworkStateFault"
-//   DB subnet group does not cover all Availability Zones after it is created
-//   because users' change.
+//   - ErrCodeInvalidSubnet "InvalidSubnet"
+//     The requested subnet is invalid, or multiple subnets were requested that
+//     are not all in a common VPC.
 //
-//   * ErrCodeKMSKeyNotAccessibleFault "KMSKeyNotAccessibleFault"
-//   Error accessing KMS key.
+//   - ErrCodeInvalidVPCNetworkStateFault "InvalidVPCNetworkStateFault"
+//     DB subnet group does not cover all Availability Zones after it is created
+//     because users' change.
 //
-//   * ErrCodeOptionGroupNotFoundFault "OptionGroupNotFoundFault"
-//   The designated option group could not be found.
+//   - ErrCodeKMSKeyNotAccessibleFault "KMSKeyNotAccessibleFault"
+//     Error accessing KMS key.
 //
-//   * ErrCodeStorageQuotaExceededFault "StorageQuotaExceeded"
-//   Request would result in user exceeding the allowed amount of storage available
-//   across all DB instances.
+//   - ErrCodeOptionGroupNotFoundFault "OptionGroupNotFoundFault"
+//     The designated option group could not be found.
 //
-//   * ErrCodeDBClusterParameterGroupNotFoundFault "DBClusterParameterGroupNotFound"
-//   DBClusterParameterGroupName does not refer to an existing DB Cluster parameter
-//   group.
+//   - ErrCodeStorageQuotaExceededFault "StorageQuotaExceeded"
+//     Request would result in user exceeding the allowed amount of storage available
+//     across all DB instances.
+//
+//   - ErrCodeDBClusterParameterGroupNotFoundFault "DBClusterParameterGroupNotFound"
+//     DBClusterParameterGroupName does not refer to an existing DB Cluster parameter
+//     group.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/RestoreDBClusterToPointInTime
 func (c *Neptune) RestoreDBClusterToPointInTime(input *RestoreDBClusterToPointInTimeInput) (*RestoreDBClusterToPointInTimeOutput, error) {
@@ -6547,14 +7118,13 @@ const opStartDBCluster = "StartDBCluster"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartDBClusterRequest method.
+//	req, resp := client.StartDBClusterRequest(params)
 //
-//    // Example sending a request using the StartDBClusterRequest method.
-//    req, resp := client.StartDBClusterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/StartDBCluster
 func (c *Neptune) StartDBClusterRequest(input *StartDBClusterInput) (req *request.Request, output *StartDBClusterOutput) {
@@ -6586,14 +7156,15 @@ func (c *Neptune) StartDBClusterRequest(input *StartDBClusterInput) (req *reques
 // API operation StartDBCluster for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeDBClusterNotFoundFault "DBClusterNotFoundFault"
-//   DBClusterIdentifier does not refer to an existing DB cluster.
 //
-//   * ErrCodeInvalidDBClusterStateFault "InvalidDBClusterStateFault"
-//   The DB cluster is not in a valid state.
+//   - ErrCodeDBClusterNotFoundFault "DBClusterNotFoundFault"
+//     DBClusterIdentifier does not refer to an existing DB cluster.
 //
-//   * ErrCodeInvalidDBInstanceStateFault "InvalidDBInstanceState"
-//   The specified DB instance is not in the available state.
+//   - ErrCodeInvalidDBClusterStateFault "InvalidDBClusterStateFault"
+//     The DB cluster is not in a valid state.
+//
+//   - ErrCodeInvalidDBInstanceStateFault "InvalidDBInstanceState"
+//     The specified DB instance is not in the available state.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/StartDBCluster
 func (c *Neptune) StartDBCluster(input *StartDBClusterInput) (*StartDBClusterOutput, error) {
@@ -6633,14 +7204,13 @@ const opStopDBCluster = "StopDBCluster"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopDBClusterRequest method.
+//	req, resp := client.StopDBClusterRequest(params)
 //
-//    // Example sending a request using the StopDBClusterRequest method.
-//    req, resp := client.StopDBClusterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/StopDBCluster
 func (c *Neptune) StopDBClusterRequest(input *StopDBClusterInput) (req *request.Request, output *StopDBClusterOutput) {
@@ -6675,14 +7245,15 @@ func (c *Neptune) StopDBClusterRequest(input *StopDBClusterInput) (req *request.
 // API operation StopDBCluster for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeDBClusterNotFoundFault "DBClusterNotFoundFault"
-//   DBClusterIdentifier does not refer to an existing DB cluster.
 //
-//   * ErrCodeInvalidDBClusterStateFault "InvalidDBClusterStateFault"
-//   The DB cluster is not in a valid state.
+//   - ErrCodeDBClusterNotFoundFault "DBClusterNotFoundFault"
+//     DBClusterIdentifier does not refer to an existing DB cluster.
 //
-//   * ErrCodeInvalidDBInstanceStateFault "InvalidDBInstanceState"
-//   The specified DB instance is not in the available state.
+//   - ErrCodeInvalidDBClusterStateFault "InvalidDBClusterStateFault"
+//     The DB cluster is not in a valid state.
+//
+//   - ErrCodeInvalidDBInstanceStateFault "InvalidDBInstanceState"
+//     The specified DB instance is not in the available state.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/StopDBCluster
 func (c *Neptune) StopDBCluster(input *StopDBClusterInput) (*StopDBClusterOutput, error) {
@@ -6715,8 +7286,7 @@ type AddRoleToDBClusterInput struct {
 	DBClusterIdentifier *string `type:"string" required:"true"`
 
 	// The name of the feature for the Neptune DB cluster that the IAM role is to
-	// be associated with. For the list of supported feature names, see DBEngineVersion
-	// (neptune/latest/userguide/api-other-apis.html#DBEngineVersion).
+	// be associated with. For the list of supported feature names, see DBEngineVersion.
 	FeatureName *string `type:"string"`
 
 	// The Amazon Resource Name (ARN) of the IAM role to associate with the Neptune
@@ -7225,6 +7795,98 @@ func (s *CloudwatchLogsExportConfiguration) SetDisableLogTypes(v []*string) *Clo
 // SetEnableLogTypes sets the EnableLogTypes field's value.
 func (s *CloudwatchLogsExportConfiguration) SetEnableLogTypes(v []*string) *CloudwatchLogsExportConfiguration {
 	s.EnableLogTypes = v
+	return s
+}
+
+// This data type is used as a response element in the ModifyDBCluster operation
+// and contains changes that will be applied during the next maintenance window.
+type ClusterPendingModifiedValues struct {
+	_ struct{} `type:"structure"`
+
+	// The allocated storage size in gibibytes (GiB) for database engines. For Neptune,
+	// AllocatedStorage always returns 1, because Neptune DB cluster storage size
+	// isn't fixed, but instead automatically adjusts as needed.
+	AllocatedStorage *int64 `type:"integer"`
+
+	// The number of days for which automatic DB snapshots are retained.
+	BackupRetentionPeriod *int64 `type:"integer"`
+
+	// The DBClusterIdentifier value for the DB cluster.
+	DBClusterIdentifier *string `type:"string"`
+
+	// The database engine version.
+	EngineVersion *string `type:"string"`
+
+	// A value that indicates whether mapping of Amazon Web Services Identity and
+	// Access Management (IAM) accounts to database accounts is enabled.
+	IAMDatabaseAuthenticationEnabled *bool `type:"boolean"`
+
+	// The Provisioned IOPS (I/O operations per second) value. This setting is only
+	// for non-Aurora Multi-AZ DB clusters.
+	Iops *int64 `type:"integer"`
+
+	// This PendingCloudwatchLogsExports structure specifies pending changes to
+	// which CloudWatch logs are enabled and which are disabled.
+	PendingCloudwatchLogsExports *PendingCloudwatchLogsExports `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ClusterPendingModifiedValues) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ClusterPendingModifiedValues) GoString() string {
+	return s.String()
+}
+
+// SetAllocatedStorage sets the AllocatedStorage field's value.
+func (s *ClusterPendingModifiedValues) SetAllocatedStorage(v int64) *ClusterPendingModifiedValues {
+	s.AllocatedStorage = &v
+	return s
+}
+
+// SetBackupRetentionPeriod sets the BackupRetentionPeriod field's value.
+func (s *ClusterPendingModifiedValues) SetBackupRetentionPeriod(v int64) *ClusterPendingModifiedValues {
+	s.BackupRetentionPeriod = &v
+	return s
+}
+
+// SetDBClusterIdentifier sets the DBClusterIdentifier field's value.
+func (s *ClusterPendingModifiedValues) SetDBClusterIdentifier(v string) *ClusterPendingModifiedValues {
+	s.DBClusterIdentifier = &v
+	return s
+}
+
+// SetEngineVersion sets the EngineVersion field's value.
+func (s *ClusterPendingModifiedValues) SetEngineVersion(v string) *ClusterPendingModifiedValues {
+	s.EngineVersion = &v
+	return s
+}
+
+// SetIAMDatabaseAuthenticationEnabled sets the IAMDatabaseAuthenticationEnabled field's value.
+func (s *ClusterPendingModifiedValues) SetIAMDatabaseAuthenticationEnabled(v bool) *ClusterPendingModifiedValues {
+	s.IAMDatabaseAuthenticationEnabled = &v
+	return s
+}
+
+// SetIops sets the Iops field's value.
+func (s *ClusterPendingModifiedValues) SetIops(v int64) *ClusterPendingModifiedValues {
+	s.Iops = &v
+	return s
+}
+
+// SetPendingCloudwatchLogsExports sets the PendingCloudwatchLogsExports field's value.
+func (s *ClusterPendingModifiedValues) SetPendingCloudwatchLogsExports(v *PendingCloudwatchLogsExports) *ClusterPendingModifiedValues {
+	s.PendingCloudwatchLogsExports = v
 	return s
 }
 
@@ -7806,13 +8468,13 @@ func (s *CreateDBClusterEndpointInput) SetTags(v []*Tag) *CreateDBClusterEndpoin
 // Neptune DB cluster. This data type is used as a response element in the following
 // actions:
 //
-//    * CreateDBClusterEndpoint
+//   - CreateDBClusterEndpoint
 //
-//    * DescribeDBClusterEndpoints
+//   - DescribeDBClusterEndpoints
 //
-//    * ModifyDBClusterEndpoint
+//   - ModifyDBClusterEndpoint
 //
-//    * DeleteDBClusterEndpoint
+//   - DeleteDBClusterEndpoint
 //
 // For the data structure that represents Amazon Neptune DB instance endpoints,
 // see Endpoint.
@@ -8026,6 +8688,10 @@ type CreateDBClusterInput struct {
 	// Example: 1.0.2.1
 	EngineVersion *string `type:"string"`
 
+	// The ID of the Neptune global database to which this new DB cluster should
+	// be added.
+	GlobalClusterIdentifier *string `min:"1" type:"string"`
+
 	// The Amazon KMS key identifier for an encrypted DB cluster.
 	//
 	// The KMS key identifier is the Amazon Resource Name (ARN) for the KMS encryption
@@ -8073,8 +8739,8 @@ type CreateDBClusterInput struct {
 	// backups are enabled using the BackupRetentionPeriod parameter.
 	//
 	// The default is a 30-minute window selected at random from an 8-hour block
-	// of time for each Amazon Region. To see the time blocks available, see Adjusting
-	// the Preferred Maintenance Window (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/AdjustingTheMaintenanceWindow.html)
+	// of time for each Amazon Region. To see the time blocks available, see Neptune
+	// Maintenance Window (https://docs.aws.amazon.com/neptune/latest/userguide/manage-console-maintaining.html#manage-console-maintaining-window)
 	// in the Amazon Neptune User Guide.
 	//
 	// Constraints:
@@ -8095,8 +8761,7 @@ type CreateDBClusterInput struct {
 	//
 	// The default is a 30-minute window selected at random from an 8-hour block
 	// of time for each Amazon Region, occurring on a random day of the week. To
-	// see the time blocks available, see Adjusting the Preferred Maintenance Window
-	// (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/AdjustingTheMaintenanceWindow.html)
+	// see the time blocks available, see Neptune Maintenance Window (https://docs.aws.amazon.com/neptune/latest/userguide/manage-console-maintaining.html#manage-console-maintaining-window)
 	// in the Amazon Neptune User Guide.
 	//
 	// Valid Days: Mon, Tue, Wed, Thu, Fri, Sat, Sun.
@@ -8107,6 +8772,12 @@ type CreateDBClusterInput struct {
 	// The Amazon Resource Name (ARN) of the source DB instance or DB cluster if
 	// this DB cluster is created as a Read Replica.
 	ReplicationSourceIdentifier *string `type:"string"`
+
+	// Contains the scaling configuration of a Neptune Serverless DB cluster.
+	//
+	// For more information, see Using Amazon Neptune Serverless (https://docs.aws.amazon.com/neptune/latest/userguide/neptune-serverless-using.html)
+	// in the Amazon Neptune User Guide.
+	ServerlessV2ScalingConfiguration *ServerlessV2ScalingConfiguration `type:"structure"`
 
 	// SourceRegion is the source region where the resource exists. This is not
 	// sent over the wire and is only used for presigning. This value should always
@@ -8149,6 +8820,9 @@ func (s *CreateDBClusterInput) Validate() error {
 	}
 	if s.Engine == nil {
 		invalidParams.Add(request.NewErrParamRequired("Engine"))
+	}
+	if s.GlobalClusterIdentifier != nil && len(*s.GlobalClusterIdentifier) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("GlobalClusterIdentifier", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -8241,6 +8915,12 @@ func (s *CreateDBClusterInput) SetEngineVersion(v string) *CreateDBClusterInput 
 	return s
 }
 
+// SetGlobalClusterIdentifier sets the GlobalClusterIdentifier field's value.
+func (s *CreateDBClusterInput) SetGlobalClusterIdentifier(v string) *CreateDBClusterInput {
+	s.GlobalClusterIdentifier = &v
+	return s
+}
+
 // SetKmsKeyId sets the KmsKeyId field's value.
 func (s *CreateDBClusterInput) SetKmsKeyId(v string) *CreateDBClusterInput {
 	s.KmsKeyId = &v
@@ -8295,6 +8975,12 @@ func (s *CreateDBClusterInput) SetReplicationSourceIdentifier(v string) *CreateD
 	return s
 }
 
+// SetServerlessV2ScalingConfiguration sets the ServerlessV2ScalingConfiguration field's value.
+func (s *CreateDBClusterInput) SetServerlessV2ScalingConfiguration(v *ServerlessV2ScalingConfiguration) *CreateDBClusterInput {
+	s.ServerlessV2ScalingConfiguration = v
+	return s
+}
+
 // SetSourceRegion sets the SourceRegion field's value.
 func (s *CreateDBClusterInput) SetSourceRegion(v string) *CreateDBClusterInput {
 	s.SourceRegion = &v
@@ -8324,7 +9010,7 @@ type CreateDBClusterOutput struct {
 
 	// Contains the details of an Amazon Neptune DB cluster.
 	//
-	// This data type is used as a response element in the DescribeDBClusters action.
+	// This data type is used as a response element in the DescribeDBClusters.
 	DBCluster *DBCluster `type:"structure"`
 }
 
@@ -8649,7 +9335,9 @@ type CreateDBInstanceInput struct {
 	// For information on creating a DB cluster, see CreateDBCluster.
 	//
 	// Type: String
-	DBClusterIdentifier *string `type:"string"`
+	//
+	// DBClusterIdentifier is a required field
+	DBClusterIdentifier *string `type:"string" required:"true"`
 
 	// The compute and memory capacity of the DB instance, for example, db.m4.large.
 	// Not all DB instance classes are available in all Amazon Regions.
@@ -8856,7 +9544,11 @@ type CreateDBInstanceInput struct {
 
 	// The password for the given ARN from the key store in order to access the
 	// device.
-	TdeCredentialPassword *string `type:"string"`
+	//
+	// TdeCredentialPassword is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by CreateDBInstanceInput's
+	// String and GoString methods.
+	TdeCredentialPassword *string `type:"string" sensitive:"true"`
 
 	// The time zone of the DB instance.
 	Timezone *string `type:"string"`
@@ -8891,6 +9583,9 @@ func (s CreateDBInstanceInput) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *CreateDBInstanceInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "CreateDBInstanceInput"}
+	if s.DBClusterIdentifier == nil {
+		invalidParams.Add(request.NewErrParamRequired("DBClusterIdentifier"))
+	}
 	if s.DBInstanceClass == nil {
 		invalidParams.Add(request.NewErrParamRequired("DBInstanceClass"))
 	}
@@ -9618,9 +10313,144 @@ func (s *CreateEventSubscriptionOutput) SetEventSubscription(v *EventSubscriptio
 	return s
 }
 
+type CreateGlobalClusterInput struct {
+	_ struct{} `type:"structure"`
+
+	// The deletion protection setting for the new global database. The global database
+	// can't be deleted when deletion protection is enabled.
+	DeletionProtection *bool `type:"boolean"`
+
+	// The name of the database engine to be used in the global database.
+	//
+	// Valid values: neptune
+	Engine *string `type:"string"`
+
+	// The Neptune engine version to be used by the global database.
+	//
+	// Valid values: 1.2.0.0 or above.
+	EngineVersion *string `type:"string"`
+
+	// The cluster identifier of the new global database cluster.
+	//
+	// GlobalClusterIdentifier is a required field
+	GlobalClusterIdentifier *string `min:"1" type:"string" required:"true"`
+
+	// (Optional) The Amazon Resource Name (ARN) of an existing Neptune DB cluster
+	// to use as the primary cluster of the new global database.
+	SourceDBClusterIdentifier *string `type:"string"`
+
+	// The storage encryption setting for the new global database cluster.
+	StorageEncrypted *bool `type:"boolean"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateGlobalClusterInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateGlobalClusterInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateGlobalClusterInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateGlobalClusterInput"}
+	if s.GlobalClusterIdentifier == nil {
+		invalidParams.Add(request.NewErrParamRequired("GlobalClusterIdentifier"))
+	}
+	if s.GlobalClusterIdentifier != nil && len(*s.GlobalClusterIdentifier) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("GlobalClusterIdentifier", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDeletionProtection sets the DeletionProtection field's value.
+func (s *CreateGlobalClusterInput) SetDeletionProtection(v bool) *CreateGlobalClusterInput {
+	s.DeletionProtection = &v
+	return s
+}
+
+// SetEngine sets the Engine field's value.
+func (s *CreateGlobalClusterInput) SetEngine(v string) *CreateGlobalClusterInput {
+	s.Engine = &v
+	return s
+}
+
+// SetEngineVersion sets the EngineVersion field's value.
+func (s *CreateGlobalClusterInput) SetEngineVersion(v string) *CreateGlobalClusterInput {
+	s.EngineVersion = &v
+	return s
+}
+
+// SetGlobalClusterIdentifier sets the GlobalClusterIdentifier field's value.
+func (s *CreateGlobalClusterInput) SetGlobalClusterIdentifier(v string) *CreateGlobalClusterInput {
+	s.GlobalClusterIdentifier = &v
+	return s
+}
+
+// SetSourceDBClusterIdentifier sets the SourceDBClusterIdentifier field's value.
+func (s *CreateGlobalClusterInput) SetSourceDBClusterIdentifier(v string) *CreateGlobalClusterInput {
+	s.SourceDBClusterIdentifier = &v
+	return s
+}
+
+// SetStorageEncrypted sets the StorageEncrypted field's value.
+func (s *CreateGlobalClusterInput) SetStorageEncrypted(v bool) *CreateGlobalClusterInput {
+	s.StorageEncrypted = &v
+	return s
+}
+
+type CreateGlobalClusterOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Contains the details of an Amazon Neptune global database.
+	//
+	// This data type is used as a response element for the CreateGlobalCluster,
+	// DescribeGlobalClusters, ModifyGlobalCluster, DeleteGlobalCluster, FailoverGlobalCluster,
+	// and RemoveFromGlobalCluster actions.
+	GlobalCluster *GlobalCluster `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateGlobalClusterOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateGlobalClusterOutput) GoString() string {
+	return s.String()
+}
+
+// SetGlobalCluster sets the GlobalCluster field's value.
+func (s *CreateGlobalClusterOutput) SetGlobalCluster(v *GlobalCluster) *CreateGlobalClusterOutput {
+	s.GlobalCluster = v
+	return s
+}
+
 // Contains the details of an Amazon Neptune DB cluster.
 //
-// This data type is used as a response element in the DescribeDBClusters action.
+// This data type is used as a response element in the DescribeDBClusters.
 type DBCluster struct {
 	_ struct{} `type:"structure"`
 
@@ -9712,6 +10542,10 @@ type DBCluster struct {
 	// Indicates the database engine version.
 	EngineVersion *string `type:"string"`
 
+	// Contains a user-supplied global database cluster identifier. This identifier
+	// is the unique key that identifies a global database.
+	GlobalClusterIdentifier *string `min:"1" type:"string"`
+
 	// Specifies the ID that Amazon Route 53 assigns when you create a hosted zone.
 	HostedZoneId *string `type:"string"`
 
@@ -9732,6 +10566,10 @@ type DBCluster struct {
 
 	// Specifies whether the DB cluster has instances in multiple Availability Zones.
 	MultiAZ *bool `type:"boolean"`
+
+	// This data type is used as a response element in the ModifyDBCluster operation
+	// and contains changes that will be applied during the next maintenance window.
+	PendingModifiedValues *ClusterPendingModifiedValues `type:"structure"`
 
 	// Specifies the progress of the operation as a percentage.
 	PercentProgress *string `type:"string"`
@@ -9766,6 +10604,12 @@ type DBCluster struct {
 
 	// Not supported by Neptune.
 	ReplicationSourceIdentifier *string `type:"string"`
+
+	// Shows the scaling configuration for a Neptune Serverless DB cluster.
+	//
+	// For more information, see Using Amazon Neptune Serverless (https://docs.aws.amazon.com/neptune/latest/userguide/neptune-serverless-using.html)
+	// in the Amazon Neptune User Guide.
+	ServerlessV2ScalingConfiguration *ServerlessV2ScalingConfigurationInfo `type:"structure"`
 
 	// Specifies the current state of this DB cluster.
 	Status *string `type:"string"`
@@ -9939,6 +10783,12 @@ func (s *DBCluster) SetEngineVersion(v string) *DBCluster {
 	return s
 }
 
+// SetGlobalClusterIdentifier sets the GlobalClusterIdentifier field's value.
+func (s *DBCluster) SetGlobalClusterIdentifier(v string) *DBCluster {
+	s.GlobalClusterIdentifier = &v
+	return s
+}
+
 // SetHostedZoneId sets the HostedZoneId field's value.
 func (s *DBCluster) SetHostedZoneId(v string) *DBCluster {
 	s.HostedZoneId = &v
@@ -9972,6 +10822,12 @@ func (s *DBCluster) SetMasterUsername(v string) *DBCluster {
 // SetMultiAZ sets the MultiAZ field's value.
 func (s *DBCluster) SetMultiAZ(v bool) *DBCluster {
 	s.MultiAZ = &v
+	return s
+}
+
+// SetPendingModifiedValues sets the PendingModifiedValues field's value.
+func (s *DBCluster) SetPendingModifiedValues(v *ClusterPendingModifiedValues) *DBCluster {
+	s.PendingModifiedValues = v
 	return s
 }
 
@@ -10017,6 +10873,12 @@ func (s *DBCluster) SetReplicationSourceIdentifier(v string) *DBCluster {
 	return s
 }
 
+// SetServerlessV2ScalingConfiguration sets the ServerlessV2ScalingConfiguration field's value.
+func (s *DBCluster) SetServerlessV2ScalingConfiguration(v *ServerlessV2ScalingConfigurationInfo) *DBCluster {
+	s.ServerlessV2ScalingConfiguration = v
+	return s
+}
+
 // SetStatus sets the Status field's value.
 func (s *DBCluster) SetStatus(v string) *DBCluster {
 	s.Status = &v
@@ -10039,13 +10901,13 @@ func (s *DBCluster) SetVpcSecurityGroups(v []*VpcSecurityGroupMembership) *DBClu
 // Neptune DB cluster. This data type is used as a response element in the following
 // actions:
 //
-//    * CreateDBClusterEndpoint
+//   - CreateDBClusterEndpoint
 //
-//    * DescribeDBClusterEndpoints
+//   - DescribeDBClusterEndpoints
 //
-//    * ModifyDBClusterEndpoint
+//   - ModifyDBClusterEndpoint
 //
-//    * DeleteDBClusterEndpoint
+//   - DeleteDBClusterEndpoint
 //
 // For the data structure that represents Amazon Neptune DB instance endpoints,
 // see Endpoint.
@@ -10342,8 +11204,7 @@ type DBClusterRole struct {
 	_ struct{} `type:"structure"`
 
 	// The name of the feature associated with the Amazon Identity and Access Management
-	// (IAM) role. For the list of supported feature names, see DescribeDBEngineVersions
-	// (https://docs.aws.amazon.com/neptune/latest/userguide/api-other-apis.html#DescribeDBEngineVersions).
+	// (IAM) role. For the list of supported feature names, see DescribeDBEngineVersions.
 	FeatureName *string `type:"string"`
 
 	// The Amazon Resource Name (ARN) of the IAM role that is associated with the
@@ -10763,6 +11624,10 @@ type DBEngineVersion struct {
 	// of the CreateDBInstance action.
 	SupportedTimezones []*Timezone `locationNameList:"Timezone" type:"list"`
 
+	// A value that indicates whether you can use Aurora global databases with a
+	// specific DB engine version.
+	SupportsGlobalDatabases *bool `type:"boolean"`
+
 	// A value that indicates whether the engine version supports exporting the
 	// log types specified by ExportableLogTypes to CloudWatch Logs.
 	SupportsLogExportsToCloudwatchLogs *bool `type:"boolean"`
@@ -10844,6 +11709,12 @@ func (s *DBEngineVersion) SetSupportedCharacterSets(v []*CharacterSet) *DBEngine
 // SetSupportedTimezones sets the SupportedTimezones field's value.
 func (s *DBEngineVersion) SetSupportedTimezones(v []*Timezone) *DBEngineVersion {
 	s.SupportedTimezones = v
+	return s
+}
+
+// SetSupportsGlobalDatabases sets the SupportsGlobalDatabases field's value.
+func (s *DBEngineVersion) SetSupportsGlobalDatabases(v bool) *DBEngineVersion {
+	s.SupportsGlobalDatabases = &v
 	return s
 }
 
@@ -11525,13 +12396,13 @@ func (s *DBParameterGroup) SetDescription(v string) *DBParameterGroup {
 //
 // This data type is used as a response element in the following actions:
 //
-//    * CreateDBInstance
+//   - CreateDBInstance
 //
-//    * DeleteDBInstance
+//   - DeleteDBInstance
 //
-//    * ModifyDBInstance
+//   - ModifyDBInstance
 //
-//    * RebootDBInstance
+//   - RebootDBInstance
 type DBParameterGroupStatus struct {
 	_ struct{} `type:"structure"`
 
@@ -11744,13 +12615,13 @@ func (s *DeleteDBClusterEndpointInput) SetDBClusterEndpointIdentifier(v string) 
 // Neptune DB cluster. This data type is used as a response element in the following
 // actions:
 //
-//    * CreateDBClusterEndpoint
+//   - CreateDBClusterEndpoint
 //
-//    * DescribeDBClusterEndpoints
+//   - DescribeDBClusterEndpoints
 //
-//    * ModifyDBClusterEndpoint
+//   - ModifyDBClusterEndpoint
 //
-//    * DeleteDBClusterEndpoint
+//   - DeleteDBClusterEndpoint
 //
 // For the data structure that represents Amazon RDS DB instance endpoints,
 // see Endpoint.
@@ -11967,7 +12838,7 @@ type DeleteDBClusterOutput struct {
 
 	// Contains the details of an Amazon Neptune DB cluster.
 	//
-	// This data type is used as a response element in the DescribeDBClusters action.
+	// This data type is used as a response element in the DescribeDBClusters.
 	DBCluster *DBCluster `type:"structure"`
 }
 
@@ -12511,6 +13382,90 @@ func (s DeleteEventSubscriptionOutput) GoString() string {
 // SetEventSubscription sets the EventSubscription field's value.
 func (s *DeleteEventSubscriptionOutput) SetEventSubscription(v *EventSubscription) *DeleteEventSubscriptionOutput {
 	s.EventSubscription = v
+	return s
+}
+
+type DeleteGlobalClusterInput struct {
+	_ struct{} `type:"structure"`
+
+	// The cluster identifier of the global database cluster being deleted.
+	//
+	// GlobalClusterIdentifier is a required field
+	GlobalClusterIdentifier *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteGlobalClusterInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteGlobalClusterInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteGlobalClusterInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteGlobalClusterInput"}
+	if s.GlobalClusterIdentifier == nil {
+		invalidParams.Add(request.NewErrParamRequired("GlobalClusterIdentifier"))
+	}
+	if s.GlobalClusterIdentifier != nil && len(*s.GlobalClusterIdentifier) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("GlobalClusterIdentifier", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetGlobalClusterIdentifier sets the GlobalClusterIdentifier field's value.
+func (s *DeleteGlobalClusterInput) SetGlobalClusterIdentifier(v string) *DeleteGlobalClusterInput {
+	s.GlobalClusterIdentifier = &v
+	return s
+}
+
+type DeleteGlobalClusterOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Contains the details of an Amazon Neptune global database.
+	//
+	// This data type is used as a response element for the CreateGlobalCluster,
+	// DescribeGlobalClusters, ModifyGlobalCluster, DeleteGlobalCluster, FailoverGlobalCluster,
+	// and RemoveFromGlobalCluster actions.
+	GlobalCluster *GlobalCluster `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteGlobalClusterOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteGlobalClusterOutput) GoString() string {
+	return s.String()
+}
+
+// SetGlobalCluster sets the GlobalCluster field's value.
+func (s *DeleteGlobalClusterOutput) SetGlobalCluster(v *GlobalCluster) *DeleteGlobalClusterOutput {
+	s.GlobalCluster = v
 	return s
 }
 
@@ -14790,6 +15745,122 @@ func (s *DescribeEventsOutput) SetMarker(v string) *DescribeEventsOutput {
 	return s
 }
 
+type DescribeGlobalClustersInput struct {
+	_ struct{} `type:"structure"`
+
+	// The user-supplied DB cluster identifier. If this parameter is specified,
+	// only information about the specified DB cluster is returned. This parameter
+	// is not case-sensitive.
+	//
+	// Constraints: If supplied, must match an existing DB cluster identifier.
+	GlobalClusterIdentifier *string `min:"1" type:"string"`
+
+	// (Optional) A pagination token returned by a previous call to DescribeGlobalClusters.
+	// If this parameter is specified, the response will only include records beyond
+	// the marker, up to the number specified by MaxRecords.
+	Marker *string `type:"string"`
+
+	// The maximum number of records to include in the response. If more records
+	// exist than the specified MaxRecords value, a pagination marker token is included
+	// in the response that you can use to retrieve the remaining results.
+	//
+	// Default: 100
+	//
+	// Constraints: Minimum 20, maximum 100.
+	MaxRecords *int64 `type:"integer"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeGlobalClustersInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeGlobalClustersInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeGlobalClustersInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeGlobalClustersInput"}
+	if s.GlobalClusterIdentifier != nil && len(*s.GlobalClusterIdentifier) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("GlobalClusterIdentifier", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetGlobalClusterIdentifier sets the GlobalClusterIdentifier field's value.
+func (s *DescribeGlobalClustersInput) SetGlobalClusterIdentifier(v string) *DescribeGlobalClustersInput {
+	s.GlobalClusterIdentifier = &v
+	return s
+}
+
+// SetMarker sets the Marker field's value.
+func (s *DescribeGlobalClustersInput) SetMarker(v string) *DescribeGlobalClustersInput {
+	s.Marker = &v
+	return s
+}
+
+// SetMaxRecords sets the MaxRecords field's value.
+func (s *DescribeGlobalClustersInput) SetMaxRecords(v int64) *DescribeGlobalClustersInput {
+	s.MaxRecords = &v
+	return s
+}
+
+type DescribeGlobalClustersOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The list of global clusters and instances returned by this request.
+	GlobalClusters []*GlobalCluster `locationNameList:"GlobalClusterMember" type:"list"`
+
+	// A pagination token. If this parameter is returned in the response, more records
+	// are available, which can be retrieved by one or more additional calls to
+	// DescribeGlobalClusters.
+	Marker *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeGlobalClustersOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeGlobalClustersOutput) GoString() string {
+	return s.String()
+}
+
+// SetGlobalClusters sets the GlobalClusters field's value.
+func (s *DescribeGlobalClustersOutput) SetGlobalClusters(v []*GlobalCluster) *DescribeGlobalClustersOutput {
+	s.GlobalClusters = v
+	return s
+}
+
+// SetMarker sets the Marker field's value.
+func (s *DescribeGlobalClustersOutput) SetMarker(v string) *DescribeGlobalClustersOutput {
+	s.Marker = &v
+	return s
+}
+
 type DescribeOrderableDBInstanceOptionsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -15686,7 +16757,7 @@ type FailoverDBClusterOutput struct {
 
 	// Contains the details of an Amazon Neptune DB cluster.
 	//
-	// This data type is used as a response element in the DescribeDBClusters action.
+	// This data type is used as a response element in the DescribeDBClusters.
 	DBCluster *DBCluster `type:"structure"`
 }
 
@@ -15711,6 +16782,110 @@ func (s FailoverDBClusterOutput) GoString() string {
 // SetDBCluster sets the DBCluster field's value.
 func (s *FailoverDBClusterOutput) SetDBCluster(v *DBCluster) *FailoverDBClusterOutput {
 	s.DBCluster = v
+	return s
+}
+
+type FailoverGlobalClusterInput struct {
+	_ struct{} `type:"structure"`
+
+	// Identifier of the Neptune global database that should be failed over. The
+	// identifier is the unique key assigned by the user when the Neptune global
+	// database was created. In other words, it's the name of the global database
+	// that you want to fail over.
+	//
+	// Constraints: Must match the identifier of an existing Neptune global database.
+	//
+	// GlobalClusterIdentifier is a required field
+	GlobalClusterIdentifier *string `min:"1" type:"string" required:"true"`
+
+	// The Amazon Resource Name (ARN) of the secondary Neptune DB cluster that you
+	// want to promote to primary for the global database.
+	//
+	// TargetDbClusterIdentifier is a required field
+	TargetDbClusterIdentifier *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FailoverGlobalClusterInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FailoverGlobalClusterInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *FailoverGlobalClusterInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "FailoverGlobalClusterInput"}
+	if s.GlobalClusterIdentifier == nil {
+		invalidParams.Add(request.NewErrParamRequired("GlobalClusterIdentifier"))
+	}
+	if s.GlobalClusterIdentifier != nil && len(*s.GlobalClusterIdentifier) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("GlobalClusterIdentifier", 1))
+	}
+	if s.TargetDbClusterIdentifier == nil {
+		invalidParams.Add(request.NewErrParamRequired("TargetDbClusterIdentifier"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetGlobalClusterIdentifier sets the GlobalClusterIdentifier field's value.
+func (s *FailoverGlobalClusterInput) SetGlobalClusterIdentifier(v string) *FailoverGlobalClusterInput {
+	s.GlobalClusterIdentifier = &v
+	return s
+}
+
+// SetTargetDbClusterIdentifier sets the TargetDbClusterIdentifier field's value.
+func (s *FailoverGlobalClusterInput) SetTargetDbClusterIdentifier(v string) *FailoverGlobalClusterInput {
+	s.TargetDbClusterIdentifier = &v
+	return s
+}
+
+type FailoverGlobalClusterOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Contains the details of an Amazon Neptune global database.
+	//
+	// This data type is used as a response element for the CreateGlobalCluster,
+	// DescribeGlobalClusters, ModifyGlobalCluster, DeleteGlobalCluster, FailoverGlobalCluster,
+	// and RemoveFromGlobalCluster actions.
+	GlobalCluster *GlobalCluster `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FailoverGlobalClusterOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FailoverGlobalClusterOutput) GoString() string {
+	return s.String()
+}
+
+// SetGlobalCluster sets the GlobalCluster field's value.
+func (s *FailoverGlobalClusterOutput) SetGlobalCluster(v *GlobalCluster) *FailoverGlobalClusterOutput {
+	s.GlobalCluster = v
 	return s
 }
 
@@ -15772,6 +16947,171 @@ func (s *Filter) SetName(v string) *Filter {
 // SetValues sets the Values field's value.
 func (s *Filter) SetValues(v []*string) *Filter {
 	s.Values = v
+	return s
+}
+
+// Contains the details of an Amazon Neptune global database.
+//
+// This data type is used as a response element for the CreateGlobalCluster,
+// DescribeGlobalClusters, ModifyGlobalCluster, DeleteGlobalCluster, FailoverGlobalCluster,
+// and RemoveFromGlobalCluster actions.
+type GlobalCluster struct {
+	_ struct{} `type:"structure"`
+
+	// The deletion protection setting for the global database.
+	DeletionProtection *bool `type:"boolean"`
+
+	// The Neptune database engine used by the global database ("neptune").
+	Engine *string `type:"string"`
+
+	// The Neptune engine version used by the global database.
+	EngineVersion *string `type:"string"`
+
+	// The Amazon Resource Name (ARN) for the global database.
+	GlobalClusterArn *string `type:"string"`
+
+	// Contains a user-supplied global database cluster identifier. This identifier
+	// is the unique key that identifies a global database.
+	GlobalClusterIdentifier *string `min:"1" type:"string"`
+
+	// A list of cluster ARNs and instance ARNs for all the DB clusters that are
+	// part of the global database.
+	GlobalClusterMembers []*GlobalClusterMember `locationNameList:"GlobalClusterMember" type:"list"`
+
+	// An immutable identifier for the global database that is unique within in
+	// all regions. This identifier is found in CloudTrail log entries whenever
+	// the KMS key for the DB cluster is accessed.
+	GlobalClusterResourceId *string `type:"string"`
+
+	// Specifies the current state of this global database.
+	Status *string `type:"string"`
+
+	// The storage encryption setting for the global database.
+	StorageEncrypted *bool `type:"boolean"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GlobalCluster) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GlobalCluster) GoString() string {
+	return s.String()
+}
+
+// SetDeletionProtection sets the DeletionProtection field's value.
+func (s *GlobalCluster) SetDeletionProtection(v bool) *GlobalCluster {
+	s.DeletionProtection = &v
+	return s
+}
+
+// SetEngine sets the Engine field's value.
+func (s *GlobalCluster) SetEngine(v string) *GlobalCluster {
+	s.Engine = &v
+	return s
+}
+
+// SetEngineVersion sets the EngineVersion field's value.
+func (s *GlobalCluster) SetEngineVersion(v string) *GlobalCluster {
+	s.EngineVersion = &v
+	return s
+}
+
+// SetGlobalClusterArn sets the GlobalClusterArn field's value.
+func (s *GlobalCluster) SetGlobalClusterArn(v string) *GlobalCluster {
+	s.GlobalClusterArn = &v
+	return s
+}
+
+// SetGlobalClusterIdentifier sets the GlobalClusterIdentifier field's value.
+func (s *GlobalCluster) SetGlobalClusterIdentifier(v string) *GlobalCluster {
+	s.GlobalClusterIdentifier = &v
+	return s
+}
+
+// SetGlobalClusterMembers sets the GlobalClusterMembers field's value.
+func (s *GlobalCluster) SetGlobalClusterMembers(v []*GlobalClusterMember) *GlobalCluster {
+	s.GlobalClusterMembers = v
+	return s
+}
+
+// SetGlobalClusterResourceId sets the GlobalClusterResourceId field's value.
+func (s *GlobalCluster) SetGlobalClusterResourceId(v string) *GlobalCluster {
+	s.GlobalClusterResourceId = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *GlobalCluster) SetStatus(v string) *GlobalCluster {
+	s.Status = &v
+	return s
+}
+
+// SetStorageEncrypted sets the StorageEncrypted field's value.
+func (s *GlobalCluster) SetStorageEncrypted(v bool) *GlobalCluster {
+	s.StorageEncrypted = &v
+	return s
+}
+
+// A data structure with information about any primary and secondary clusters
+// associated with an Neptune global database.
+type GlobalClusterMember struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) for each Neptune cluster.
+	DBClusterArn *string `type:"string"`
+
+	// Specifies whether the Neptune cluster is the primary cluster (that is, has
+	// read-write capability) for the Neptune global database with which it is associated.
+	IsWriter *bool `type:"boolean"`
+
+	// The Amazon Resource Name (ARN) for each read-only secondary cluster associated
+	// with the Neptune global database.
+	Readers []*string `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GlobalClusterMember) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GlobalClusterMember) GoString() string {
+	return s.String()
+}
+
+// SetDBClusterArn sets the DBClusterArn field's value.
+func (s *GlobalClusterMember) SetDBClusterArn(v string) *GlobalClusterMember {
+	s.DBClusterArn = &v
+	return s
+}
+
+// SetIsWriter sets the IsWriter field's value.
+func (s *GlobalClusterMember) SetIsWriter(v bool) *GlobalClusterMember {
+	s.IsWriter = &v
+	return s
+}
+
+// SetReaders sets the Readers field's value.
+func (s *GlobalClusterMember) SetReaders(v []*string) *GlobalClusterMember {
+	s.Readers = v
 	return s
 }
 
@@ -15950,16 +17290,16 @@ func (s *ModifyDBClusterEndpointInput) SetStaticMembers(v []*string) *ModifyDBCl
 }
 
 // This data type represents the information you need to connect to an Amazon
-// Aurora DB cluster. This data type is used as a response element in the following
+// Neptune DB cluster. This data type is used as a response element in the following
 // actions:
 //
-//    * CreateDBClusterEndpoint
+//   - CreateDBClusterEndpoint
 //
-//    * DescribeDBClusterEndpoints
+//   - DescribeDBClusterEndpoints
 //
-//    * ModifyDBClusterEndpoint
+//   - ModifyDBClusterEndpoint
 //
-//    * DeleteDBClusterEndpoint
+//   - DeleteDBClusterEndpoint
 //
 // For the data structure that represents Amazon RDS DB instance endpoints,
 // see Endpoint.
@@ -16174,7 +17514,7 @@ type ModifyDBClusterInput struct {
 	//
 	// For a list of valid engine versions, see Engine Releases for Amazon Neptune
 	// (https://docs.aws.amazon.com/neptune/latest/userguide/engine-releases.html),
-	// or call DescribeDBEngineVersions (https://docs.aws.amazon.com/neptune/latest/userguide/api-other-apis.html#DescribeDBEngineVersions).
+	// or call DescribeDBEngineVersions.
 	EngineVersion *string `type:"string"`
 
 	// Not supported by Neptune.
@@ -16233,6 +17573,12 @@ type ModifyDBClusterInput struct {
 	//
 	// Constraints: Minimum 30-minute window.
 	PreferredMaintenanceWindow *string `type:"string"`
+
+	// Contains the scaling configuration of a Neptune Serverless DB cluster.
+	//
+	// For more information, see Using Amazon Neptune Serverless (https://docs.aws.amazon.com/neptune/latest/userguide/neptune-serverless-using.html)
+	// in the Amazon Neptune User Guide.
+	ServerlessV2ScalingConfiguration *ServerlessV2ScalingConfiguration `type:"structure"`
 
 	// A list of VPC security groups that the DB cluster will belong to.
 	VpcSecurityGroupIds []*string `locationNameList:"VpcSecurityGroupId" type:"list"`
@@ -16371,6 +17717,12 @@ func (s *ModifyDBClusterInput) SetPreferredMaintenanceWindow(v string) *ModifyDB
 	return s
 }
 
+// SetServerlessV2ScalingConfiguration sets the ServerlessV2ScalingConfiguration field's value.
+func (s *ModifyDBClusterInput) SetServerlessV2ScalingConfiguration(v *ServerlessV2ScalingConfiguration) *ModifyDBClusterInput {
+	s.ServerlessV2ScalingConfiguration = v
+	return s
+}
+
 // SetVpcSecurityGroupIds sets the VpcSecurityGroupIds field's value.
 func (s *ModifyDBClusterInput) SetVpcSecurityGroupIds(v []*string) *ModifyDBClusterInput {
 	s.VpcSecurityGroupIds = v
@@ -16382,7 +17734,7 @@ type ModifyDBClusterOutput struct {
 
 	// Contains the details of an Amazon Neptune DB cluster.
 	//
-	// This data type is used as a response element in the DescribeDBClusters action.
+	// This data type is used as a response element in the DescribeDBClusters.
 	DBCluster *DBCluster `type:"structure"`
 }
 
@@ -16860,7 +18212,11 @@ type ModifyDBInstanceInput struct {
 
 	// The password for the given ARN from the key store in order to access the
 	// device.
-	TdeCredentialPassword *string `type:"string"`
+	//
+	// TdeCredentialPassword is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by ModifyDBInstanceInput's
+	// String and GoString methods.
+	TdeCredentialPassword *string `type:"string" sensitive:"true"`
 
 	// A list of EC2 VPC security groups to authorize on this DB instance. This
 	// change is asynchronously applied as soon as possible.
@@ -17464,6 +18820,157 @@ func (s *ModifyEventSubscriptionOutput) SetEventSubscription(v *EventSubscriptio
 	return s
 }
 
+type ModifyGlobalClusterInput struct {
+	_ struct{} `type:"structure"`
+
+	// A value that indicates whether major version upgrades are allowed.
+	//
+	// Constraints: You must allow major version upgrades if you specify a value
+	// for the EngineVersion parameter that is a different major version than the
+	// DB cluster's current version.
+	//
+	// If you upgrade the major version of a global database, the cluster and DB
+	// instance parameter groups are set to the default parameter groups for the
+	// new version, so you will need to apply any custom parameter groups after
+	// completing the upgrade.
+	AllowMajorVersionUpgrade *bool `type:"boolean"`
+
+	// Indicates whether the global database has deletion protection enabled. The
+	// global database cannot be deleted when deletion protection is enabled.
+	DeletionProtection *bool `type:"boolean"`
+
+	// The version number of the database engine to which you want to upgrade. Changing
+	// this parameter will result in an outage. The change is applied during the
+	// next maintenance window unless ApplyImmediately is enabled.
+	//
+	// To list all of the available Neptune engine versions, use the following command:
+	EngineVersion *string `type:"string"`
+
+	// The DB cluster identifier for the global cluster being modified. This parameter
+	// is not case-sensitive.
+	//
+	// Constraints: Must match the identifier of an existing global database cluster.
+	//
+	// GlobalClusterIdentifier is a required field
+	GlobalClusterIdentifier *string `min:"1" type:"string" required:"true"`
+
+	// A new cluster identifier to assign to the global database. This value is
+	// stored as a lowercase string.
+	//
+	// Constraints:
+	//
+	//    * Must contain from 1 to 63 letters, numbers, or hyphens.
+	//
+	//    * The first character must be a letter.
+	//
+	//    * Can't end with a hyphen or contain two consecutive hyphens
+	//
+	// Example: my-cluster2
+	NewGlobalClusterIdentifier *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyGlobalClusterInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyGlobalClusterInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ModifyGlobalClusterInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ModifyGlobalClusterInput"}
+	if s.GlobalClusterIdentifier == nil {
+		invalidParams.Add(request.NewErrParamRequired("GlobalClusterIdentifier"))
+	}
+	if s.GlobalClusterIdentifier != nil && len(*s.GlobalClusterIdentifier) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("GlobalClusterIdentifier", 1))
+	}
+	if s.NewGlobalClusterIdentifier != nil && len(*s.NewGlobalClusterIdentifier) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NewGlobalClusterIdentifier", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAllowMajorVersionUpgrade sets the AllowMajorVersionUpgrade field's value.
+func (s *ModifyGlobalClusterInput) SetAllowMajorVersionUpgrade(v bool) *ModifyGlobalClusterInput {
+	s.AllowMajorVersionUpgrade = &v
+	return s
+}
+
+// SetDeletionProtection sets the DeletionProtection field's value.
+func (s *ModifyGlobalClusterInput) SetDeletionProtection(v bool) *ModifyGlobalClusterInput {
+	s.DeletionProtection = &v
+	return s
+}
+
+// SetEngineVersion sets the EngineVersion field's value.
+func (s *ModifyGlobalClusterInput) SetEngineVersion(v string) *ModifyGlobalClusterInput {
+	s.EngineVersion = &v
+	return s
+}
+
+// SetGlobalClusterIdentifier sets the GlobalClusterIdentifier field's value.
+func (s *ModifyGlobalClusterInput) SetGlobalClusterIdentifier(v string) *ModifyGlobalClusterInput {
+	s.GlobalClusterIdentifier = &v
+	return s
+}
+
+// SetNewGlobalClusterIdentifier sets the NewGlobalClusterIdentifier field's value.
+func (s *ModifyGlobalClusterInput) SetNewGlobalClusterIdentifier(v string) *ModifyGlobalClusterInput {
+	s.NewGlobalClusterIdentifier = &v
+	return s
+}
+
+type ModifyGlobalClusterOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Contains the details of an Amazon Neptune global database.
+	//
+	// This data type is used as a response element for the CreateGlobalCluster,
+	// DescribeGlobalClusters, ModifyGlobalCluster, DeleteGlobalCluster, FailoverGlobalCluster,
+	// and RemoveFromGlobalCluster actions.
+	GlobalCluster *GlobalCluster `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyGlobalClusterOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyGlobalClusterOutput) GoString() string {
+	return s.String()
+}
+
+// SetGlobalCluster sets the GlobalCluster field's value.
+func (s *ModifyGlobalClusterOutput) SetGlobalCluster(v *GlobalCluster) *ModifyGlobalClusterOutput {
+	s.GlobalCluster = v
+	return s
+}
+
 // Not supported by Neptune.
 type OptionGroupMembership struct {
 	_ struct{} `type:"structure"`
@@ -17557,6 +19064,10 @@ type OrderableDBInstanceOption struct {
 	// Indicates whether a DB instance supports Enhanced Monitoring at intervals
 	// from 1 to 60 seconds.
 	SupportsEnhancedMonitoring *bool `type:"boolean"`
+
+	// A value that indicates whether you can use Neptune global databases with
+	// a specific combination of other DB engine attributes.
+	SupportsGlobalDatabases *bool `type:"boolean"`
 
 	// Indicates whether a DB instance supports IAM database authentication.
 	SupportsIAMDatabaseAuthentication *bool `type:"boolean"`
@@ -17679,6 +19190,12 @@ func (s *OrderableDBInstanceOption) SetStorageType(v string) *OrderableDBInstanc
 // SetSupportsEnhancedMonitoring sets the SupportsEnhancedMonitoring field's value.
 func (s *OrderableDBInstanceOption) SetSupportsEnhancedMonitoring(v bool) *OrderableDBInstanceOption {
 	s.SupportsEnhancedMonitoring = &v
+	return s
+}
+
+// SetSupportsGlobalDatabases sets the SupportsGlobalDatabases field's value.
+func (s *OrderableDBInstanceOption) SetSupportsGlobalDatabases(v bool) *OrderableDBInstanceOption {
+	s.SupportsGlobalDatabases = &v
 	return s
 }
 
@@ -18163,7 +19680,7 @@ type PromoteReadReplicaDBClusterOutput struct {
 
 	// Contains the details of an Amazon Neptune DB cluster.
 	//
-	// This data type is used as a response element in the DescribeDBClusters action.
+	// This data type is used as a response element in the DescribeDBClusters.
 	DBCluster *DBCluster `type:"structure"`
 }
 
@@ -18339,6 +19856,106 @@ func (s *RebootDBInstanceOutput) SetDBInstance(v *DBInstance) *RebootDBInstanceO
 	return s
 }
 
+type RemoveFromGlobalClusterInput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) identifying the cluster to be detached from
+	// the Neptune global database cluster.
+	//
+	// DbClusterIdentifier is a required field
+	DbClusterIdentifier *string `type:"string" required:"true"`
+
+	// The identifier of the Neptune global database from which to detach the specified
+	// Neptune DB cluster.
+	//
+	// GlobalClusterIdentifier is a required field
+	GlobalClusterIdentifier *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RemoveFromGlobalClusterInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RemoveFromGlobalClusterInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *RemoveFromGlobalClusterInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "RemoveFromGlobalClusterInput"}
+	if s.DbClusterIdentifier == nil {
+		invalidParams.Add(request.NewErrParamRequired("DbClusterIdentifier"))
+	}
+	if s.GlobalClusterIdentifier == nil {
+		invalidParams.Add(request.NewErrParamRequired("GlobalClusterIdentifier"))
+	}
+	if s.GlobalClusterIdentifier != nil && len(*s.GlobalClusterIdentifier) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("GlobalClusterIdentifier", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDbClusterIdentifier sets the DbClusterIdentifier field's value.
+func (s *RemoveFromGlobalClusterInput) SetDbClusterIdentifier(v string) *RemoveFromGlobalClusterInput {
+	s.DbClusterIdentifier = &v
+	return s
+}
+
+// SetGlobalClusterIdentifier sets the GlobalClusterIdentifier field's value.
+func (s *RemoveFromGlobalClusterInput) SetGlobalClusterIdentifier(v string) *RemoveFromGlobalClusterInput {
+	s.GlobalClusterIdentifier = &v
+	return s
+}
+
+type RemoveFromGlobalClusterOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Contains the details of an Amazon Neptune global database.
+	//
+	// This data type is used as a response element for the CreateGlobalCluster,
+	// DescribeGlobalClusters, ModifyGlobalCluster, DeleteGlobalCluster, FailoverGlobalCluster,
+	// and RemoveFromGlobalCluster actions.
+	GlobalCluster *GlobalCluster `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RemoveFromGlobalClusterOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RemoveFromGlobalClusterOutput) GoString() string {
+	return s.String()
+}
+
+// SetGlobalCluster sets the GlobalCluster field's value.
+func (s *RemoveFromGlobalClusterOutput) SetGlobalCluster(v *GlobalCluster) *RemoveFromGlobalClusterOutput {
+	s.GlobalCluster = v
+	return s
+}
+
 type RemoveRoleFromDBClusterInput struct {
 	_ struct{} `type:"structure"`
 
@@ -18348,8 +19965,7 @@ type RemoveRoleFromDBClusterInput struct {
 	DBClusterIdentifier *string `type:"string" required:"true"`
 
 	// The name of the feature for the DB cluster that the IAM role is to be disassociated
-	// from. For the list of supported feature names, see DescribeDBEngineVersions
-	// (https://docs.aws.amazon.com/neptune/latest/userguide/api-other-apis.html#DescribeDBEngineVersions).
+	// from. For the list of supported feature names, see DescribeDBEngineVersions.
 	FeatureName *string `type:"string"`
 
 	// The Amazon Resource Name (ARN) of the IAM role to disassociate from the DB
@@ -18969,6 +20585,12 @@ type RestoreDBClusterFromSnapshotInput struct {
 	// Default: The same port as the original DB cluster.
 	Port *int64 `type:"integer"`
 
+	// Contains the scaling configuration of a Neptune Serverless DB cluster.
+	//
+	// For more information, see Using Amazon Neptune Serverless (https://docs.aws.amazon.com/neptune/latest/userguide/neptune-serverless-using.html)
+	// in the Amazon Neptune User Guide.
+	ServerlessV2ScalingConfiguration *ServerlessV2ScalingConfiguration `type:"structure"`
+
 	// The identifier for the DB snapshot or DB cluster snapshot to restore from.
 	//
 	// You can use either the name or the Amazon Resource Name (ARN) to specify
@@ -19110,6 +20732,12 @@ func (s *RestoreDBClusterFromSnapshotInput) SetPort(v int64) *RestoreDBClusterFr
 	return s
 }
 
+// SetServerlessV2ScalingConfiguration sets the ServerlessV2ScalingConfiguration field's value.
+func (s *RestoreDBClusterFromSnapshotInput) SetServerlessV2ScalingConfiguration(v *ServerlessV2ScalingConfiguration) *RestoreDBClusterFromSnapshotInput {
+	s.ServerlessV2ScalingConfiguration = v
+	return s
+}
+
 // SetSnapshotIdentifier sets the SnapshotIdentifier field's value.
 func (s *RestoreDBClusterFromSnapshotInput) SetSnapshotIdentifier(v string) *RestoreDBClusterFromSnapshotInput {
 	s.SnapshotIdentifier = &v
@@ -19133,7 +20761,7 @@ type RestoreDBClusterFromSnapshotOutput struct {
 
 	// Contains the details of an Amazon Neptune DB cluster.
 	//
-	// This data type is used as a response element in the DescribeDBClusters action.
+	// This data type is used as a response element in the DescribeDBClusters.
 	DBCluster *DBCluster `type:"structure"`
 }
 
@@ -19272,6 +20900,12 @@ type RestoreDBClusterToPointInTimeInput struct {
 	// as a full copy of the source DB cluster.
 	RestoreType *string `type:"string"`
 
+	// Contains the scaling configuration of a Neptune Serverless DB cluster.
+	//
+	// For more information, see Using Amazon Neptune Serverless (https://docs.aws.amazon.com/neptune/latest/userguide/neptune-serverless-using.html)
+	// in the Amazon Neptune User Guide.
+	ServerlessV2ScalingConfiguration *ServerlessV2ScalingConfiguration `type:"structure"`
+
 	// The identifier of the source DB cluster from which to restore.
 	//
 	// Constraints:
@@ -19396,6 +21030,12 @@ func (s *RestoreDBClusterToPointInTimeInput) SetRestoreType(v string) *RestoreDB
 	return s
 }
 
+// SetServerlessV2ScalingConfiguration sets the ServerlessV2ScalingConfiguration field's value.
+func (s *RestoreDBClusterToPointInTimeInput) SetServerlessV2ScalingConfiguration(v *ServerlessV2ScalingConfiguration) *RestoreDBClusterToPointInTimeInput {
+	s.ServerlessV2ScalingConfiguration = v
+	return s
+}
+
 // SetSourceDBClusterIdentifier sets the SourceDBClusterIdentifier field's value.
 func (s *RestoreDBClusterToPointInTimeInput) SetSourceDBClusterIdentifier(v string) *RestoreDBClusterToPointInTimeInput {
 	s.SourceDBClusterIdentifier = &v
@@ -19425,7 +21065,7 @@ type RestoreDBClusterToPointInTimeOutput struct {
 
 	// Contains the details of an Amazon Neptune DB cluster.
 	//
-	// This data type is used as a response element in the DescribeDBClusters action.
+	// This data type is used as a response element in the DescribeDBClusters.
 	DBCluster *DBCluster `type:"structure"`
 }
 
@@ -19450,6 +21090,102 @@ func (s RestoreDBClusterToPointInTimeOutput) GoString() string {
 // SetDBCluster sets the DBCluster field's value.
 func (s *RestoreDBClusterToPointInTimeOutput) SetDBCluster(v *DBCluster) *RestoreDBClusterToPointInTimeOutput {
 	s.DBCluster = v
+	return s
+}
+
+// Contains the scaling configuration of a Neptune Serverless DB cluster.
+//
+// For more information, see Using Amazon Neptune Serverless (https://docs.aws.amazon.com/neptune/latest/userguide/neptune-serverless-using.html)
+// in the Amazon Neptune User Guide.
+type ServerlessV2ScalingConfiguration struct {
+	_ struct{} `type:"structure"`
+
+	// The maximum number of Neptune capacity units (NCUs) for a DB instance in
+	// a Neptune Serverless cluster. You can specify NCU values in half-step increments,
+	// such as 40, 40.5, 41, and so on.
+	MaxCapacity *float64 `type:"double"`
+
+	// The minimum number of Neptune capacity units (NCUs) for a DB instance in
+	// a Neptune Serverless cluster. You can specify NCU values in half-step increments,
+	// such as 8, 8.5, 9, and so on.
+	MinCapacity *float64 `type:"double"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ServerlessV2ScalingConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ServerlessV2ScalingConfiguration) GoString() string {
+	return s.String()
+}
+
+// SetMaxCapacity sets the MaxCapacity field's value.
+func (s *ServerlessV2ScalingConfiguration) SetMaxCapacity(v float64) *ServerlessV2ScalingConfiguration {
+	s.MaxCapacity = &v
+	return s
+}
+
+// SetMinCapacity sets the MinCapacity field's value.
+func (s *ServerlessV2ScalingConfiguration) SetMinCapacity(v float64) *ServerlessV2ScalingConfiguration {
+	s.MinCapacity = &v
+	return s
+}
+
+// Shows the scaling configuration for a Neptune Serverless DB cluster.
+//
+// For more information, see Using Amazon Neptune Serverless (https://docs.aws.amazon.com/neptune/latest/userguide/neptune-serverless-using.html)
+// in the Amazon Neptune User Guide.
+type ServerlessV2ScalingConfigurationInfo struct {
+	_ struct{} `type:"structure"`
+
+	// The maximum number of Neptune capacity units (NCUs) for a DB instance in
+	// a Neptune Serverless cluster. You can specify NCU values in half-step increments,
+	// such as 40, 40.5, 41, and so on.
+	MaxCapacity *float64 `type:"double"`
+
+	// The minimum number of Neptune capacity units (NCUs) for a DB instance in
+	// a Neptune Serverless cluster. You can specify NCU values in half-step increments,
+	// such as 8, 8.5, 9, and so on.
+	MinCapacity *float64 `type:"double"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ServerlessV2ScalingConfigurationInfo) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ServerlessV2ScalingConfigurationInfo) GoString() string {
+	return s.String()
+}
+
+// SetMaxCapacity sets the MaxCapacity field's value.
+func (s *ServerlessV2ScalingConfigurationInfo) SetMaxCapacity(v float64) *ServerlessV2ScalingConfigurationInfo {
+	s.MaxCapacity = &v
+	return s
+}
+
+// SetMinCapacity sets the MinCapacity field's value.
+func (s *ServerlessV2ScalingConfigurationInfo) SetMinCapacity(v float64) *ServerlessV2ScalingConfigurationInfo {
+	s.MinCapacity = &v
 	return s
 }
 
@@ -19505,7 +21241,7 @@ type StartDBClusterOutput struct {
 
 	// Contains the details of an Amazon Neptune DB cluster.
 	//
-	// This data type is used as a response element in the DescribeDBClusters action.
+	// This data type is used as a response element in the DescribeDBClusters.
 	DBCluster *DBCluster `type:"structure"`
 }
 
@@ -19585,7 +21321,7 @@ type StopDBClusterOutput struct {
 
 	// Contains the details of an Amazon Neptune DB cluster.
 	//
-	// This data type is used as a response element in the DescribeDBClusters action.
+	// This data type is used as a response element in the DescribeDBClusters.
 	DBCluster *DBCluster `type:"structure"`
 }
 
@@ -19765,6 +21501,10 @@ type UpgradeTarget struct {
 
 	// A value that indicates whether a database engine is upgraded to a major version.
 	IsMajorVersionUpgrade *bool `type:"boolean"`
+
+	// A value that indicates whether you can use Neptune global databases with
+	// the target engine version.
+	SupportsGlobalDatabases *bool `type:"boolean"`
 }
 
 // String returns the string representation.
@@ -19812,6 +21552,12 @@ func (s *UpgradeTarget) SetEngineVersion(v string) *UpgradeTarget {
 // SetIsMajorVersionUpgrade sets the IsMajorVersionUpgrade field's value.
 func (s *UpgradeTarget) SetIsMajorVersionUpgrade(v bool) *UpgradeTarget {
 	s.IsMajorVersionUpgrade = &v
+	return s
+}
+
+// SetSupportsGlobalDatabases sets the SupportsGlobalDatabases field's value.
+func (s *UpgradeTarget) SetSupportsGlobalDatabases(v bool) *UpgradeTarget {
+	s.SupportsGlobalDatabases = &v
 	return s
 }
 

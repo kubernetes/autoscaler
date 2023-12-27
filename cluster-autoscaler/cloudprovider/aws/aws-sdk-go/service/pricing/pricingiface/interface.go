@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // AWS Price List Service.
-//    func myFunc(svc pricingiface.PricingAPI) bool {
-//        // Make svc.DescribeServices request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// AWS Price List Service.
+//	func myFunc(svc pricingiface.PricingAPI) bool {
+//	    // Make svc.DescribeServices request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := pricing.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := pricing.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockPricingClient struct {
-//        pricingiface.PricingAPI
-//    }
-//    func (m *mockPricingClient) DescribeServices(input *pricing.DescribeServicesInput) (*pricing.DescribeServicesOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockPricingClient struct {
+//	    pricingiface.PricingAPI
+//	}
+//	func (m *mockPricingClient) DescribeServices(input *pricing.DescribeServicesInput) (*pricing.DescribeServicesOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockPricingClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockPricingClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,
@@ -74,12 +74,23 @@ type PricingAPI interface {
 	GetAttributeValuesPages(*pricing.GetAttributeValuesInput, func(*pricing.GetAttributeValuesOutput, bool) bool) error
 	GetAttributeValuesPagesWithContext(aws.Context, *pricing.GetAttributeValuesInput, func(*pricing.GetAttributeValuesOutput, bool) bool, ...request.Option) error
 
+	GetPriceListFileUrl(*pricing.GetPriceListFileUrlInput) (*pricing.GetPriceListFileUrlOutput, error)
+	GetPriceListFileUrlWithContext(aws.Context, *pricing.GetPriceListFileUrlInput, ...request.Option) (*pricing.GetPriceListFileUrlOutput, error)
+	GetPriceListFileUrlRequest(*pricing.GetPriceListFileUrlInput) (*request.Request, *pricing.GetPriceListFileUrlOutput)
+
 	GetProducts(*pricing.GetProductsInput) (*pricing.GetProductsOutput, error)
 	GetProductsWithContext(aws.Context, *pricing.GetProductsInput, ...request.Option) (*pricing.GetProductsOutput, error)
 	GetProductsRequest(*pricing.GetProductsInput) (*request.Request, *pricing.GetProductsOutput)
 
 	GetProductsPages(*pricing.GetProductsInput, func(*pricing.GetProductsOutput, bool) bool) error
 	GetProductsPagesWithContext(aws.Context, *pricing.GetProductsInput, func(*pricing.GetProductsOutput, bool) bool, ...request.Option) error
+
+	ListPriceLists(*pricing.ListPriceListsInput) (*pricing.ListPriceListsOutput, error)
+	ListPriceListsWithContext(aws.Context, *pricing.ListPriceListsInput, ...request.Option) (*pricing.ListPriceListsOutput, error)
+	ListPriceListsRequest(*pricing.ListPriceListsInput) (*request.Request, *pricing.ListPriceListsOutput)
+
+	ListPriceListsPages(*pricing.ListPriceListsInput, func(*pricing.ListPriceListsOutput, bool) bool) error
+	ListPriceListsPagesWithContext(aws.Context, *pricing.ListPriceListsInput, func(*pricing.ListPriceListsOutput, bool) bool, ...request.Option) error
 }
 
 var _ PricingAPI = (*pricing.Pricing)(nil)

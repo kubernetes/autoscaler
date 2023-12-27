@@ -3,17 +3,17 @@
 // Package comprehend provides the client and types for making API
 // requests to Amazon Comprehend.
 //
-// Amazon Comprehend is an AWS service for gaining insight into the content
-// of documents. Use these actions to determine the topics contained in your
-// documents, the topics they discuss, the predominant sentiment expressed in
-// them, the predominant language used, and more.
+// Amazon Comprehend is an Amazon Web Services service for gaining insight into
+// the content of documents. Use these actions to determine the topics contained
+// in your documents, the topics they discuss, the predominant sentiment expressed
+// in them, the predominant language used, and more.
 //
 // See https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27 for more information on this service.
 //
 // See comprehend package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/comprehend/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact Amazon Comprehend with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a EMRServerless client from just a session.
-//     svc := emrserverless.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a EMRServerless client with additional configuration
-//     svc := emrserverless.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a EMRServerless client from just a session.
+//	svc := emrserverless.New(mySession)
+//
+//	// Create a EMRServerless client with additional configuration
+//	svc := emrserverless.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *EMRServerless {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

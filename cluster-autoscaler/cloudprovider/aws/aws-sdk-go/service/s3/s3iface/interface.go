@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // Amazon Simple Storage Service.
-//    func myFunc(svc s3iface.S3API) bool {
-//        // Make svc.AbortMultipartUpload request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// Amazon Simple Storage Service.
+//	func myFunc(svc s3iface.S3API) bool {
+//	    // Make svc.AbortMultipartUpload request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := s3.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := s3.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockS3Client struct {
-//        s3iface.S3API
-//    }
-//    func (m *mockS3Client) AbortMultipartUpload(input *s3.AbortMultipartUploadInput) (*s3.AbortMultipartUploadOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockS3Client struct {
+//	    s3iface.S3API
+//	}
+//	func (m *mockS3Client) AbortMultipartUpload(input *s3.AbortMultipartUploadInput) (*s3.AbortMultipartUploadOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockS3Client{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockS3Client{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,
@@ -79,6 +79,10 @@ type S3API interface {
 	CreateMultipartUpload(*s3.CreateMultipartUploadInput) (*s3.CreateMultipartUploadOutput, error)
 	CreateMultipartUploadWithContext(aws.Context, *s3.CreateMultipartUploadInput, ...request.Option) (*s3.CreateMultipartUploadOutput, error)
 	CreateMultipartUploadRequest(*s3.CreateMultipartUploadInput) (*request.Request, *s3.CreateMultipartUploadOutput)
+
+	CreateSession(*s3.CreateSessionInput) (*s3.CreateSessionOutput, error)
+	CreateSessionWithContext(aws.Context, *s3.CreateSessionInput, ...request.Option) (*s3.CreateSessionOutput, error)
+	CreateSessionRequest(*s3.CreateSessionInput) (*request.Request, *s3.CreateSessionOutput)
 
 	DeleteBucket(*s3.DeleteBucketInput) (*s3.DeleteBucketOutput, error)
 	DeleteBucketWithContext(aws.Context, *s3.DeleteBucketInput, ...request.Option) (*s3.DeleteBucketOutput, error)
@@ -299,6 +303,13 @@ type S3API interface {
 	ListBuckets(*s3.ListBucketsInput) (*s3.ListBucketsOutput, error)
 	ListBucketsWithContext(aws.Context, *s3.ListBucketsInput, ...request.Option) (*s3.ListBucketsOutput, error)
 	ListBucketsRequest(*s3.ListBucketsInput) (*request.Request, *s3.ListBucketsOutput)
+
+	ListDirectoryBuckets(*s3.ListDirectoryBucketsInput) (*s3.ListDirectoryBucketsOutput, error)
+	ListDirectoryBucketsWithContext(aws.Context, *s3.ListDirectoryBucketsInput, ...request.Option) (*s3.ListDirectoryBucketsOutput, error)
+	ListDirectoryBucketsRequest(*s3.ListDirectoryBucketsInput) (*request.Request, *s3.ListDirectoryBucketsOutput)
+
+	ListDirectoryBucketsPages(*s3.ListDirectoryBucketsInput, func(*s3.ListDirectoryBucketsOutput, bool) bool) error
+	ListDirectoryBucketsPagesWithContext(aws.Context, *s3.ListDirectoryBucketsInput, func(*s3.ListDirectoryBucketsOutput, bool) bool, ...request.Option) error
 
 	ListMultipartUploads(*s3.ListMultipartUploadsInput) (*s3.ListMultipartUploadsOutput, error)
 	ListMultipartUploadsWithContext(aws.Context, *s3.ListMultipartUploadsInput, ...request.Option) (*s3.ListMultipartUploadsOutput, error)

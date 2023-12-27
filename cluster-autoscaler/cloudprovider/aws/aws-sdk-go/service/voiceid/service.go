@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a VoiceID client from just a session.
-//     svc := voiceid.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a VoiceID client with additional configuration
-//     svc := voiceid.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a VoiceID client from just a session.
+//	svc := voiceid.New(mySession)
+//
+//	// Create a VoiceID client with additional configuration
+//	svc := voiceid.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *VoiceID {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

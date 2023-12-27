@@ -4,14 +4,15 @@
 // requests to Amazon Voice ID.
 //
 // Amazon Connect Voice ID provides real-time caller authentication and fraud
-// screening. This guide describes the APIs used for this service.
+// risk detection, which make voice interactions in contact centers more secure
+// and efficient.
 //
 // See https://docs.aws.amazon.com/goto/WebAPI/voice-id-2021-09-27 for more information on this service.
 //
 // See voiceid package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/voiceid/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact Amazon Voice ID with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

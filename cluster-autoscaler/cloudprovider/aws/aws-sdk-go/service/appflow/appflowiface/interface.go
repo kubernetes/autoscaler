@@ -23,43 +23,47 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // Amazon Appflow.
-//    func myFunc(svc appflowiface.AppflowAPI) bool {
-//        // Make svc.CreateConnectorProfile request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// Amazon Appflow.
+//	func myFunc(svc appflowiface.AppflowAPI) bool {
+//	    // Make svc.CancelFlowExecutions request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := appflow.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := appflow.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockAppflowClient struct {
-//        appflowiface.AppflowAPI
-//    }
-//    func (m *mockAppflowClient) CreateConnectorProfile(input *appflow.CreateConnectorProfileInput) (*appflow.CreateConnectorProfileOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockAppflowClient struct {
+//	    appflowiface.AppflowAPI
+//	}
+//	func (m *mockAppflowClient) CancelFlowExecutions(input *appflow.CancelFlowExecutionsInput) (*appflow.CancelFlowExecutionsOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockAppflowClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockAppflowClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,
 // and waiters. Its suggested to use the pattern above for testing, or using
 // tooling to generate mocks to satisfy the interfaces.
 type AppflowAPI interface {
+	CancelFlowExecutions(*appflow.CancelFlowExecutionsInput) (*appflow.CancelFlowExecutionsOutput, error)
+	CancelFlowExecutionsWithContext(aws.Context, *appflow.CancelFlowExecutionsInput, ...request.Option) (*appflow.CancelFlowExecutionsOutput, error)
+	CancelFlowExecutionsRequest(*appflow.CancelFlowExecutionsInput) (*request.Request, *appflow.CancelFlowExecutionsOutput)
+
 	CreateConnectorProfile(*appflow.CreateConnectorProfileInput) (*appflow.CreateConnectorProfileOutput, error)
 	CreateConnectorProfileWithContext(aws.Context, *appflow.CreateConnectorProfileInput, ...request.Option) (*appflow.CreateConnectorProfileOutput, error)
 	CreateConnectorProfileRequest(*appflow.CreateConnectorProfileInput) (*request.Request, *appflow.CreateConnectorProfileOutput)
@@ -135,6 +139,10 @@ type AppflowAPI interface {
 	RegisterConnectorWithContext(aws.Context, *appflow.RegisterConnectorInput, ...request.Option) (*appflow.RegisterConnectorOutput, error)
 	RegisterConnectorRequest(*appflow.RegisterConnectorInput) (*request.Request, *appflow.RegisterConnectorOutput)
 
+	ResetConnectorMetadataCache(*appflow.ResetConnectorMetadataCacheInput) (*appflow.ResetConnectorMetadataCacheOutput, error)
+	ResetConnectorMetadataCacheWithContext(aws.Context, *appflow.ResetConnectorMetadataCacheInput, ...request.Option) (*appflow.ResetConnectorMetadataCacheOutput, error)
+	ResetConnectorMetadataCacheRequest(*appflow.ResetConnectorMetadataCacheInput) (*request.Request, *appflow.ResetConnectorMetadataCacheOutput)
+
 	StartFlow(*appflow.StartFlowInput) (*appflow.StartFlowOutput, error)
 	StartFlowWithContext(aws.Context, *appflow.StartFlowInput, ...request.Option) (*appflow.StartFlowOutput, error)
 	StartFlowRequest(*appflow.StartFlowInput) (*request.Request, *appflow.StartFlowOutput)
@@ -158,6 +166,10 @@ type AppflowAPI interface {
 	UpdateConnectorProfile(*appflow.UpdateConnectorProfileInput) (*appflow.UpdateConnectorProfileOutput, error)
 	UpdateConnectorProfileWithContext(aws.Context, *appflow.UpdateConnectorProfileInput, ...request.Option) (*appflow.UpdateConnectorProfileOutput, error)
 	UpdateConnectorProfileRequest(*appflow.UpdateConnectorProfileInput) (*request.Request, *appflow.UpdateConnectorProfileOutput)
+
+	UpdateConnectorRegistration(*appflow.UpdateConnectorRegistrationInput) (*appflow.UpdateConnectorRegistrationOutput, error)
+	UpdateConnectorRegistrationWithContext(aws.Context, *appflow.UpdateConnectorRegistrationInput, ...request.Option) (*appflow.UpdateConnectorRegistrationOutput, error)
+	UpdateConnectorRegistrationRequest(*appflow.UpdateConnectorRegistrationInput) (*request.Request, *appflow.UpdateConnectorRegistrationOutput)
 
 	UpdateFlow(*appflow.UpdateFlowInput) (*appflow.UpdateFlowOutput, error)
 	UpdateFlowWithContext(aws.Context, *appflow.UpdateFlowInput, ...request.Option) (*appflow.UpdateFlowOutput, error)

@@ -37,14 +37,13 @@ const opEmptyStream = "EmptyStream"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the EmptyStreamRequest method.
+//	req, resp := client.EmptyStreamRequest(params)
 //
-//    // Example sending a request using the EmptyStreamRequest method.
-//    req, resp := client.EmptyStreamRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/RESTXMLService-0000-00-00/EmptyStream
 func (c *RESTXMLService) EmptyStreamRequest(input *EmptyStreamInput) (req *request.Request, output *EmptyStreamOutput) {
@@ -102,6 +101,7 @@ func (c *RESTXMLService) EmptyStreamWithContext(ctx aws.Context, input *EmptyStr
 }
 
 var _ awserr.Error
+var _ time.Time
 
 // EmptyStreamEventStream provides the event stream handling for the EmptyStream.
 //
@@ -131,9 +131,9 @@ type EmptyStreamEventStream struct {
 //
 // The Reader member must be set before reading events from the stream.
 //
-//   es := NewEmptyStreamEventStream(func(o *EmptyStreamEventStream){
-//       es.Reader = myMockStreamReader
-//   })
+//	es := NewEmptyStreamEventStream(func(o *EmptyStreamEventStream){
+//	    es.Reader = myMockStreamReader
+//	})
 func NewEmptyStreamEventStream(opts ...func(*EmptyStreamEventStream)) *EmptyStreamEventStream {
 	es := &EmptyStreamEventStream{
 		done: make(chan struct{}),
@@ -182,7 +182,7 @@ func (es *EmptyStreamEventStream) waitStreamPartClose() {
 //
 // These events are:
 //
-//     * EmptyEventStreamUnknownEvent
+//   - EmptyEventStreamUnknownEvent
 func (es *EmptyStreamEventStream) Events() <-chan EmptyEventStreamEvent {
 	return es.Reader.Events()
 }
@@ -218,7 +218,6 @@ func (es *EmptyStreamEventStream) runOutputStream(r *request.Request) {
 //
 // You can use the closing of the Reader's Events channel to terminate your
 // application's read from the API's stream.
-//
 func (es *EmptyStreamEventStream) Close() (err error) {
 	es.closeOnce.Do(es.safeClose)
 	return es.Err()
@@ -264,14 +263,13 @@ const opGetEventStream = "GetEventStream"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetEventStreamRequest method.
+//	req, resp := client.GetEventStreamRequest(params)
 //
-//    // Example sending a request using the GetEventStreamRequest method.
-//    req, resp := client.GetEventStreamRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/RESTXMLService-0000-00-00/GetEventStream
 func (c *RESTXMLService) GetEventStreamRequest(input *GetEventStreamInput) (req *request.Request, output *GetEventStreamOutput) {
@@ -329,6 +327,7 @@ func (c *RESTXMLService) GetEventStreamWithContext(ctx aws.Context, input *GetEv
 }
 
 var _ awserr.Error
+var _ time.Time
 
 // GetEventStreamEventStream provides the event stream handling for the GetEventStream.
 //
@@ -358,9 +357,9 @@ type GetEventStreamEventStream struct {
 //
 // The Reader member must be set before reading events from the stream.
 //
-//   es := NewGetEventStreamEventStream(func(o *GetEventStreamEventStream){
-//       es.Reader = myMockStreamReader
-//   })
+//	es := NewGetEventStreamEventStream(func(o *GetEventStreamEventStream){
+//	    es.Reader = myMockStreamReader
+//	})
 func NewGetEventStreamEventStream(opts ...func(*GetEventStreamEventStream)) *GetEventStreamEventStream {
 	es := &GetEventStreamEventStream{
 		done: make(chan struct{}),
@@ -409,14 +408,14 @@ func (es *GetEventStreamEventStream) waitStreamPartClose() {
 //
 // These events are:
 //
-//     * EmptyEvent
-//     * ExplicitPayloadEvent
-//     * HeaderOnlyEvent
-//     * ImplicitPayloadEvent
-//     * PayloadOnlyEvent
-//     * PayloadOnlyBlobEvent
-//     * PayloadOnlyStringEvent
-//     * EventStreamUnknownEvent
+//   - EmptyEvent
+//   - ExplicitPayloadEvent
+//   - HeaderOnlyEvent
+//   - ImplicitPayloadEvent
+//   - PayloadOnlyEvent
+//   - PayloadOnlyBlobEvent
+//   - PayloadOnlyStringEvent
+//   - EventStreamUnknownEvent
 func (es *GetEventStreamEventStream) Events() <-chan EventStreamEvent {
 	return es.Reader.Events()
 }
@@ -452,7 +451,6 @@ func (es *GetEventStreamEventStream) runOutputStream(r *request.Request) {
 //
 // You can use the closing of the Reader's Events channel to terminate your
 // application's read from the API's stream.
-//
 func (es *GetEventStreamEventStream) Close() (err error) {
 	es.closeOnce.Do(es.safeClose)
 	return es.Err()
@@ -498,14 +496,13 @@ const opOtherOperation = "OtherOperation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the OtherOperationRequest method.
+//	req, resp := client.OtherOperationRequest(params)
 //
-//    // Example sending a request using the OtherOperationRequest method.
-//    req, resp := client.OtherOperationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/RESTXMLService-0000-00-00/OtherOperation
 func (c *RESTXMLService) OtherOperationRequest(input *OtherOperationInput) (req *request.Request, output *OtherOperationOutput) {
@@ -535,7 +532,7 @@ func (c *RESTXMLService) OtherOperationRequest(input *OtherOperationInput) (req 
 // API operation OtherOperation for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeExceptionEvent2 "ExceptionEvent2"
+//   - ErrCodeExceptionEvent2 "ExceptionEvent2"
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/RESTXMLService-0000-00-00/OtherOperation
 func (c *RESTXMLService) OtherOperation(input *OtherOperationInput) (*OtherOperationOutput, error) {
@@ -604,7 +601,6 @@ func (s *EmptyEvent) MarshalEvent(pm protocol.PayloadMarshaler) (msg eventstream
 // events writes for EmptyEventStream.
 //
 // These events are:
-//
 type EmptyEventStreamEvent interface {
 	eventEmptyEventStream()
 	eventstreamapi.Marshaler
@@ -618,7 +614,7 @@ type EmptyEventStreamEvent interface {
 //
 // These events are:
 //
-//     * EmptyEventStreamUnknownEvent
+//   - EmptyEventStreamUnknownEvent
 type EmptyEventStreamReader interface {
 	// Returns a channel of events as they are read from the event stream.
 	Events() <-chan EmptyEventStreamEvent
@@ -804,13 +800,13 @@ func (s *EmptyStreamOutput) GetStream() *EmptyStreamEventStream {
 //
 // These events are:
 //
-//     * EmptyEvent
-//     * ExplicitPayloadEvent
-//     * HeaderOnlyEvent
-//     * ImplicitPayloadEvent
-//     * PayloadOnlyEvent
-//     * PayloadOnlyBlobEvent
-//     * PayloadOnlyStringEvent
+//   - EmptyEvent
+//   - ExplicitPayloadEvent
+//   - HeaderOnlyEvent
+//   - ImplicitPayloadEvent
+//   - PayloadOnlyEvent
+//   - PayloadOnlyBlobEvent
+//   - PayloadOnlyStringEvent
 type EventStreamEvent interface {
 	eventEventStream()
 	eventstreamapi.Marshaler
@@ -824,14 +820,14 @@ type EventStreamEvent interface {
 //
 // These events are:
 //
-//     * EmptyEvent
-//     * ExplicitPayloadEvent
-//     * HeaderOnlyEvent
-//     * ImplicitPayloadEvent
-//     * PayloadOnlyEvent
-//     * PayloadOnlyBlobEvent
-//     * PayloadOnlyStringEvent
-//     * EventStreamUnknownEvent
+//   - EmptyEvent
+//   - ExplicitPayloadEvent
+//   - HeaderOnlyEvent
+//   - ImplicitPayloadEvent
+//   - PayloadOnlyEvent
+//   - PayloadOnlyBlobEvent
+//   - PayloadOnlyStringEvent
+//   - EventStreamUnknownEvent
 type EventStreamReader interface {
 	// Returns a channel of events as they are read from the event stream.
 	Events() <-chan EventStreamEvent

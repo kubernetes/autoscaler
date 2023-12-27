@@ -29,14 +29,13 @@ const opCreateCertificateAuthority = "CreateCertificateAuthority"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateCertificateAuthorityRequest method.
+//	req, resp := client.CreateCertificateAuthorityRequest(params)
 //
-//    // Example sending a request using the CreateCertificateAuthorityRequest method.
-//    req, resp := client.CreateCertificateAuthorityRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-pca-2017-08-22/CreateCertificateAuthority
 func (c *ACMPCA) CreateCertificateAuthorityRequest(input *CreateCertificateAuthorityInput) (req *request.Request, output *CreateCertificateAuthorityOutput) {
@@ -70,13 +69,14 @@ func (c *ACMPCA) CreateCertificateAuthorityRequest(input *CreateCertificateAutho
 // that is included in certificates issued by the CA. If successful, this action
 // returns the Amazon Resource Name (ARN) of the CA.
 //
-// ACM Private CA assets that are stored in Amazon S3 can be protected with
-// encryption. For more information, see Encrypting Your CRLs (https://docs.aws.amazon.com/acm-pca/latest/userguide/PcaCreateCa.html#crl-encryption).
+// Both Amazon Web Services Private CA and the IAM principal must have permission
+// to write to the S3 bucket that you specify. If the IAM principal making the
+// call does not have permission to write to the bucket, then an exception is
+// thrown. For more information, see Access policies for CRLs in Amazon S3 (https://docs.aws.amazon.com/privateca/latest/userguide/crl-planning.html#s3-policies).
 //
-// Both PCA and the IAM principal must have permission to write to the S3 bucket
-// that you specify. If the IAM principal making the call does not have permission
-// to write to the bucket, then an exception is thrown. For more information,
-// see Access policies for CRLs in Amazon S3 (https://docs.aws.amazon.com/acm-pca/latest/userguide/crl-planning.html#s3-policies).
+// Amazon Web Services Private CA assets that are stored in Amazon S3 can be
+// protected with encryption. For more information, see Encrypting Your CRLs
+// (https://docs.aws.amazon.com/privateca/latest/userguide/PcaCreateCa.html#crl-encryption).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -86,21 +86,22 @@ func (c *ACMPCA) CreateCertificateAuthorityRequest(input *CreateCertificateAutho
 // API operation CreateCertificateAuthority for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgsException
-//   One or more of the specified arguments was not valid.
 //
-//   * InvalidPolicyException
-//   The resource policy is invalid or is missing a required statement. For general
-//   information about IAM policy and statement structure, see Overview of JSON
-//   Policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies.html#access_policies-json).
+//   - InvalidArgsException
+//     One or more of the specified arguments was not valid.
 //
-//   * InvalidTagException
-//   The tag associated with the CA is not valid. The invalid argument is contained
-//   in the message field.
+//   - InvalidPolicyException
+//     The resource policy is invalid or is missing a required statement. For general
+//     information about IAM policy and statement structure, see Overview of JSON
+//     Policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies.html#access_policies-json).
 //
-//   * LimitExceededException
-//   An ACM Private CA quota has been exceeded. See the exception message returned
-//   to determine the quota that was exceeded.
+//   - InvalidTagException
+//     The tag associated with the CA is not valid. The invalid argument is contained
+//     in the message field.
+//
+//   - LimitExceededException
+//     An Amazon Web Services Private CA quota has been exceeded. See the exception
+//     message returned to determine the quota that was exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-pca-2017-08-22/CreateCertificateAuthority
 func (c *ACMPCA) CreateCertificateAuthority(input *CreateCertificateAuthorityInput) (*CreateCertificateAuthorityOutput, error) {
@@ -140,14 +141,13 @@ const opCreateCertificateAuthorityAuditReport = "CreateCertificateAuthorityAudit
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateCertificateAuthorityAuditReportRequest method.
+//	req, resp := client.CreateCertificateAuthorityAuditReportRequest(params)
 //
-//    // Example sending a request using the CreateCertificateAuthorityAuditReportRequest method.
-//    req, resp := client.CreateCertificateAuthorityAuditReportRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-pca-2017-08-22/CreateCertificateAuthorityAuditReport
 func (c *ACMPCA) CreateCertificateAuthorityAuditReportRequest(input *CreateCertificateAuthorityAuditReportInput) (req *request.Request, output *CreateCertificateAuthorityAuditReportOutput) {
@@ -170,17 +170,18 @@ func (c *ACMPCA) CreateCertificateAuthorityAuditReportRequest(input *CreateCerti
 //
 // Creates an audit report that lists every time that your CA private key is
 // used. The report is saved in the Amazon S3 bucket that you specify on input.
-// The IssueCertificate (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_IssueCertificate.html)
-// and RevokeCertificate (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_RevokeCertificate.html)
+// The IssueCertificate (https://docs.aws.amazon.com/privateca/latest/APIReference/API_IssueCertificate.html)
+// and RevokeCertificate (https://docs.aws.amazon.com/privateca/latest/APIReference/API_RevokeCertificate.html)
 // actions use the private key.
 //
-// Both PCA and the IAM principal must have permission to write to the S3 bucket
-// that you specify. If the IAM principal making the call does not have permission
-// to write to the bucket, then an exception is thrown. For more information,
-// see Access policies for CRLs in Amazon S3 (https://docs.aws.amazon.com/acm-pca/latest/userguide/crl-planning.html#s3-policies).
+// Both Amazon Web Services Private CA and the IAM principal must have permission
+// to write to the S3 bucket that you specify. If the IAM principal making the
+// call does not have permission to write to the bucket, then an exception is
+// thrown. For more information, see Access policies for CRLs in Amazon S3 (https://docs.aws.amazon.com/privateca/latest/userguide/crl-planning.html#s3-policies).
 //
-// ACM Private CA assets that are stored in Amazon S3 can be protected with
-// encryption. For more information, see Encrypting Your Audit Reports (https://docs.aws.amazon.com/acm-pca/latest/userguide/PcaAuditReport.html#audit-report-encryption).
+// Amazon Web Services Private CA assets that are stored in Amazon S3 can be
+// protected with encryption. For more information, see Encrypting Your Audit
+// Reports (https://docs.aws.amazon.com/privateca/latest/userguide/PcaAuditReport.html#audit-report-encryption).
 //
 // You can generate a maximum of one report every 30 minutes.
 //
@@ -192,24 +193,25 @@ func (c *ACMPCA) CreateCertificateAuthorityAuditReportRequest(input *CreateCerti
 // API operation CreateCertificateAuthorityAuditReport for usage and error information.
 //
 // Returned Error Types:
-//   * RequestInProgressException
-//   Your request is already in progress.
 //
-//   * RequestFailedException
-//   The request has failed for an unspecified reason.
+//   - RequestInProgressException
+//     Your request is already in progress.
 //
-//   * ResourceNotFoundException
-//   A resource such as a private CA, S3 bucket, certificate, audit report, or
-//   policy cannot be found.
+//   - RequestFailedException
+//     The request has failed for an unspecified reason.
 //
-//   * InvalidArnException
-//   The requested Amazon Resource Name (ARN) does not refer to an existing resource.
+//   - ResourceNotFoundException
+//     A resource such as a private CA, S3 bucket, certificate, audit report, or
+//     policy cannot be found.
 //
-//   * InvalidArgsException
-//   One or more of the specified arguments was not valid.
+//   - InvalidArnException
+//     The requested Amazon Resource Name (ARN) does not refer to an existing resource.
 //
-//   * InvalidStateException
-//   The state of the private CA does not allow this action to occur.
+//   - InvalidArgsException
+//     One or more of the specified arguments was not valid.
+//
+//   - InvalidStateException
+//     The state of the private CA does not allow this action to occur.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-pca-2017-08-22/CreateCertificateAuthorityAuditReport
 func (c *ACMPCA) CreateCertificateAuthorityAuditReport(input *CreateCertificateAuthorityAuditReportInput) (*CreateCertificateAuthorityAuditReportOutput, error) {
@@ -249,14 +251,13 @@ const opCreatePermission = "CreatePermission"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreatePermissionRequest method.
+//	req, resp := client.CreatePermissionRequest(params)
 //
-//    // Example sending a request using the CreatePermissionRequest method.
-//    req, resp := client.CreatePermissionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-pca-2017-08-22/CreatePermission
 func (c *ACMPCA) CreatePermissionRequest(input *CreatePermissionInput) (req *request.Request, output *CreatePermissionOutput) {
@@ -283,24 +284,24 @@ func (c *ACMPCA) CreatePermissionRequest(input *CreatePermissionInput) (req *req
 // to issue and renew ACM certificates that reside in the same Amazon Web Services
 // account as the CA.
 //
-// You can list current permissions with the ListPermissions (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_ListPermissions.html)
-// action and revoke them with the DeletePermission (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_DeletePermission.html)
+// You can list current permissions with the ListPermissions (https://docs.aws.amazon.com/privateca/latest/APIReference/API_ListPermissions.html)
+// action and revoke them with the DeletePermission (https://docs.aws.amazon.com/privateca/latest/APIReference/API_DeletePermission.html)
 // action.
 //
 // About Permissions
 //
-//    * If the private CA and the certificates it issues reside in the same
-//    account, you can use CreatePermission to grant permissions for ACM to
-//    carry out automatic certificate renewals.
+//   - If the private CA and the certificates it issues reside in the same
+//     account, you can use CreatePermission to grant permissions for ACM to
+//     carry out automatic certificate renewals.
 //
-//    * For automatic certificate renewal to succeed, the ACM service principal
-//    needs permissions to create, retrieve, and list certificates.
+//   - For automatic certificate renewal to succeed, the ACM service principal
+//     needs permissions to create, retrieve, and list certificates.
 //
-//    * If the private CA and the ACM certificates reside in different accounts,
-//    then permissions cannot be used to enable automatic renewals. Instead,
-//    the ACM certificate owner must set up a resource-based policy to enable
-//    cross-account issuance and renewals. For more information, see Using a
-//    Resource Based Policy with ACM Private CA (https://docs.aws.amazon.com/acm-pca/latest/userguide/pca-rbp.html).
+//   - If the private CA and the ACM certificates reside in different accounts,
+//     then permissions cannot be used to enable automatic renewals. Instead,
+//     the ACM certificate owner must set up a resource-based policy to enable
+//     cross-account issuance and renewals. For more information, see Using a
+//     Resource Based Policy with Amazon Web Services Private CA (https://docs.aws.amazon.com/privateca/latest/userguide/pca-rbp.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -310,25 +311,26 @@ func (c *ACMPCA) CreatePermissionRequest(input *CreatePermissionInput) (req *req
 // API operation CreatePermission for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource such as a private CA, S3 bucket, certificate, audit report, or
-//   policy cannot be found.
 //
-//   * InvalidArnException
-//   The requested Amazon Resource Name (ARN) does not refer to an existing resource.
+//   - ResourceNotFoundException
+//     A resource such as a private CA, S3 bucket, certificate, audit report, or
+//     policy cannot be found.
 //
-//   * PermissionAlreadyExistsException
-//   The designated permission has already been given to the user.
+//   - InvalidArnException
+//     The requested Amazon Resource Name (ARN) does not refer to an existing resource.
 //
-//   * LimitExceededException
-//   An ACM Private CA quota has been exceeded. See the exception message returned
-//   to determine the quota that was exceeded.
+//   - PermissionAlreadyExistsException
+//     The designated permission has already been given to the user.
 //
-//   * InvalidStateException
-//   The state of the private CA does not allow this action to occur.
+//   - LimitExceededException
+//     An Amazon Web Services Private CA quota has been exceeded. See the exception
+//     message returned to determine the quota that was exceeded.
 //
-//   * RequestFailedException
-//   The request has failed for an unspecified reason.
+//   - InvalidStateException
+//     The state of the private CA does not allow this action to occur.
+//
+//   - RequestFailedException
+//     The request has failed for an unspecified reason.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-pca-2017-08-22/CreatePermission
 func (c *ACMPCA) CreatePermission(input *CreatePermissionInput) (*CreatePermissionOutput, error) {
@@ -368,14 +370,13 @@ const opDeleteCertificateAuthority = "DeleteCertificateAuthority"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteCertificateAuthorityRequest method.
+//	req, resp := client.DeleteCertificateAuthorityRequest(params)
 //
-//    // Example sending a request using the DeleteCertificateAuthorityRequest method.
-//    req, resp := client.DeleteCertificateAuthorityRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-pca-2017-08-22/DeleteCertificateAuthority
 func (c *ACMPCA) DeleteCertificateAuthorityRequest(input *DeleteCertificateAuthorityInput) (req *request.Request, output *DeleteCertificateAuthorityOutput) {
@@ -399,30 +400,30 @@ func (c *ACMPCA) DeleteCertificateAuthorityRequest(input *DeleteCertificateAutho
 //
 // Deletes a private certificate authority (CA). You must provide the Amazon
 // Resource Name (ARN) of the private CA that you want to delete. You can find
-// the ARN by calling the ListCertificateAuthorities (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_ListCertificateAuthorities.html)
+// the ARN by calling the ListCertificateAuthorities (https://docs.aws.amazon.com/privateca/latest/APIReference/API_ListCertificateAuthorities.html)
 // action.
 //
 // Deleting a CA will invalidate other CAs and certificates below it in your
 // CA hierarchy.
 //
 // Before you can delete a CA that you have created and activated, you must
-// disable it. To do this, call the UpdateCertificateAuthority (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_UpdateCertificateAuthority.html)
+// disable it. To do this, call the UpdateCertificateAuthority (https://docs.aws.amazon.com/privateca/latest/APIReference/API_UpdateCertificateAuthority.html)
 // action and set the CertificateAuthorityStatus parameter to DISABLED.
 //
 // Additionally, you can delete a CA if you are waiting for it to be created
 // (that is, the status of the CA is CREATING). You can also delete it if the
 // CA has been created but you haven't yet imported the signed certificate into
-// ACM Private CA (that is, the status of the CA is PENDING_CERTIFICATE).
+// Amazon Web Services Private CA (that is, the status of the CA is PENDING_CERTIFICATE).
 //
-// When you successfully call DeleteCertificateAuthority (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_DeleteCertificateAuthority.html),
+// When you successfully call DeleteCertificateAuthority (https://docs.aws.amazon.com/privateca/latest/APIReference/API_DeleteCertificateAuthority.html),
 // the CA's status changes to DELETED. However, the CA won't be permanently
 // deleted until the restoration period has passed. By default, if you do not
 // set the PermanentDeletionTimeInDays parameter, the CA remains restorable
 // for 30 days. You can set the parameter from 7 to 30 days. The DescribeCertificateAuthority
-// (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_DescribeCertificateAuthority.html)
+// (https://docs.aws.amazon.com/privateca/latest/APIReference/API_DescribeCertificateAuthority.html)
 // action returns the time remaining in the restoration window of a private
 // CA in the DELETED state. To restore an eligible CA, call the RestoreCertificateAuthority
-// (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_RestoreCertificateAuthority.html)
+// (https://docs.aws.amazon.com/privateca/latest/APIReference/API_RestoreCertificateAuthority.html)
 // action.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -433,18 +434,19 @@ func (c *ACMPCA) DeleteCertificateAuthorityRequest(input *DeleteCertificateAutho
 // API operation DeleteCertificateAuthority for usage and error information.
 //
 // Returned Error Types:
-//   * ConcurrentModificationException
-//   A previous update to your private CA is still ongoing.
 //
-//   * ResourceNotFoundException
-//   A resource such as a private CA, S3 bucket, certificate, audit report, or
-//   policy cannot be found.
+//   - ConcurrentModificationException
+//     A previous update to your private CA is still ongoing.
 //
-//   * InvalidArnException
-//   The requested Amazon Resource Name (ARN) does not refer to an existing resource.
+//   - ResourceNotFoundException
+//     A resource such as a private CA, S3 bucket, certificate, audit report, or
+//     policy cannot be found.
 //
-//   * InvalidStateException
-//   The state of the private CA does not allow this action to occur.
+//   - InvalidArnException
+//     The requested Amazon Resource Name (ARN) does not refer to an existing resource.
+//
+//   - InvalidStateException
+//     The state of the private CA does not allow this action to occur.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-pca-2017-08-22/DeleteCertificateAuthority
 func (c *ACMPCA) DeleteCertificateAuthority(input *DeleteCertificateAuthorityInput) (*DeleteCertificateAuthorityOutput, error) {
@@ -484,14 +486,13 @@ const opDeletePermission = "DeletePermission"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeletePermissionRequest method.
+//	req, resp := client.DeletePermissionRequest(params)
 //
-//    // Example sending a request using the DeletePermissionRequest method.
-//    req, resp := client.DeletePermissionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-pca-2017-08-22/DeletePermission
 func (c *ACMPCA) DeletePermissionRequest(input *DeletePermissionInput) (req *request.Request, output *DeletePermissionOutput) {
@@ -520,24 +521,24 @@ func (c *ACMPCA) DeletePermissionRequest(input *DeletePermissionInput) (req *req
 // in the same Amazon Web Services account as the CA. If you revoke these permissions,
 // ACM will no longer renew the affected certificates automatically.
 //
-// Permissions can be granted with the CreatePermission (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_CreatePermission.html)
-// action and listed with the ListPermissions (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_ListPermissions.html)
+// Permissions can be granted with the CreatePermission (https://docs.aws.amazon.com/privateca/latest/APIReference/API_CreatePermission.html)
+// action and listed with the ListPermissions (https://docs.aws.amazon.com/privateca/latest/APIReference/API_ListPermissions.html)
 // action.
 //
 // About Permissions
 //
-//    * If the private CA and the certificates it issues reside in the same
-//    account, you can use CreatePermission to grant permissions for ACM to
-//    carry out automatic certificate renewals.
+//   - If the private CA and the certificates it issues reside in the same
+//     account, you can use CreatePermission to grant permissions for ACM to
+//     carry out automatic certificate renewals.
 //
-//    * For automatic certificate renewal to succeed, the ACM service principal
-//    needs permissions to create, retrieve, and list certificates.
+//   - For automatic certificate renewal to succeed, the ACM service principal
+//     needs permissions to create, retrieve, and list certificates.
 //
-//    * If the private CA and the ACM certificates reside in different accounts,
-//    then permissions cannot be used to enable automatic renewals. Instead,
-//    the ACM certificate owner must set up a resource-based policy to enable
-//    cross-account issuance and renewals. For more information, see Using a
-//    Resource Based Policy with ACM Private CA (https://docs.aws.amazon.com/acm-pca/latest/userguide/pca-rbp.html).
+//   - If the private CA and the ACM certificates reside in different accounts,
+//     then permissions cannot be used to enable automatic renewals. Instead,
+//     the ACM certificate owner must set up a resource-based policy to enable
+//     cross-account issuance and renewals. For more information, see Using a
+//     Resource Based Policy with Amazon Web Services Private CA (https://docs.aws.amazon.com/privateca/latest/userguide/pca-rbp.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -547,18 +548,19 @@ func (c *ACMPCA) DeletePermissionRequest(input *DeletePermissionInput) (req *req
 // API operation DeletePermission for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource such as a private CA, S3 bucket, certificate, audit report, or
-//   policy cannot be found.
 //
-//   * InvalidArnException
-//   The requested Amazon Resource Name (ARN) does not refer to an existing resource.
+//   - ResourceNotFoundException
+//     A resource such as a private CA, S3 bucket, certificate, audit report, or
+//     policy cannot be found.
 //
-//   * InvalidStateException
-//   The state of the private CA does not allow this action to occur.
+//   - InvalidArnException
+//     The requested Amazon Resource Name (ARN) does not refer to an existing resource.
 //
-//   * RequestFailedException
-//   The request has failed for an unspecified reason.
+//   - InvalidStateException
+//     The state of the private CA does not allow this action to occur.
+//
+//   - RequestFailedException
+//     The request has failed for an unspecified reason.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-pca-2017-08-22/DeletePermission
 func (c *ACMPCA) DeletePermission(input *DeletePermissionInput) (*DeletePermissionOutput, error) {
@@ -598,14 +600,13 @@ const opDeletePolicy = "DeletePolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeletePolicyRequest method.
+//	req, resp := client.DeletePolicyRequest(params)
 //
-//    // Example sending a request using the DeletePolicyRequest method.
-//    req, resp := client.DeletePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-pca-2017-08-22/DeletePolicy
 func (c *ACMPCA) DeletePolicyRequest(input *DeletePolicyInput) (req *request.Request, output *DeletePolicyOutput) {
@@ -638,29 +639,29 @@ func (c *ACMPCA) DeletePolicyRequest(input *DeletePolicyInput) (req *request.Req
 // The Certificate Manager Service Linked Role that the policy supports is not
 // affected when you delete the policy.
 //
-// The current policy can be shown with GetPolicy (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_GetPolicy.html)
-// and updated with PutPolicy (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_PutPolicy.html).
+// The current policy can be shown with GetPolicy (https://docs.aws.amazon.com/privateca/latest/APIReference/API_GetPolicy.html)
+// and updated with PutPolicy (https://docs.aws.amazon.com/privateca/latest/APIReference/API_PutPolicy.html).
 //
 // About Policies
 //
-//    * A policy grants access on a private CA to an Amazon Web Services customer
-//    account, to Amazon Web Services Organizations, or to an Amazon Web Services
-//    Organizations unit. Policies are under the control of a CA administrator.
-//    For more information, see Using a Resource Based Policy with ACM Private
-//    CA (https://docs.aws.amazon.com/acm-pca/latest/userguide/pca-rbp.html).
+//   - A policy grants access on a private CA to an Amazon Web Services customer
+//     account, to Amazon Web Services Organizations, or to an Amazon Web Services
+//     Organizations unit. Policies are under the control of a CA administrator.
+//     For more information, see Using a Resource Based Policy with Amazon Web
+//     Services Private CA (https://docs.aws.amazon.com/privateca/latest/userguide/pca-rbp.html).
 //
-//    * A policy permits a user of Certificate Manager (ACM) to issue ACM certificates
-//    signed by a CA in another account.
+//   - A policy permits a user of Certificate Manager (ACM) to issue ACM certificates
+//     signed by a CA in another account.
 //
-//    * For ACM to manage automatic renewal of these certificates, the ACM user
-//    must configure a Service Linked Role (SLR). The SLR allows the ACM service
-//    to assume the identity of the user, subject to confirmation against the
-//    ACM Private CA policy. For more information, see Using a Service Linked
-//    Role with ACM (https://docs.aws.amazon.com/acm/latest/userguide/acm-slr.html).
+//   - For ACM to manage automatic renewal of these certificates, the ACM user
+//     must configure a Service Linked Role (SLR). The SLR allows the ACM service
+//     to assume the identity of the user, subject to confirmation against the
+//     Amazon Web Services Private CA policy. For more information, see Using
+//     a Service Linked Role with ACM (https://docs.aws.amazon.com/acm/latest/userguide/acm-slr.html).
 //
-//    * Updates made in Amazon Web Services Resource Manager (RAM) are reflected
-//    in policies. For more information, see Attach a Policy for Cross-Account
-//    Access (https://docs.aws.amazon.com/acm-pca/latest/userguide/pca-ram.html).
+//   - Updates made in Amazon Web Services Resource Manager (RAM) are reflected
+//     in policies. For more information, see Attach a Policy for Cross-Account
+//     Access (https://docs.aws.amazon.com/privateca/latest/userguide/pca-ram.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -670,26 +671,27 @@ func (c *ACMPCA) DeletePolicyRequest(input *DeletePolicyInput) (req *request.Req
 // API operation DeletePolicy for usage and error information.
 //
 // Returned Error Types:
-//   * ConcurrentModificationException
-//   A previous update to your private CA is still ongoing.
 //
-//   * InvalidArnException
-//   The requested Amazon Resource Name (ARN) does not refer to an existing resource.
+//   - ConcurrentModificationException
+//     A previous update to your private CA is still ongoing.
 //
-//   * InvalidStateException
-//   The state of the private CA does not allow this action to occur.
+//   - InvalidArnException
+//     The requested Amazon Resource Name (ARN) does not refer to an existing resource.
 //
-//   * LockoutPreventedException
-//   The current action was prevented because it would lock the caller out from
-//   performing subsequent actions. Verify that the specified parameters would
-//   not result in the caller being denied access to the resource.
+//   - InvalidStateException
+//     The state of the private CA does not allow this action to occur.
 //
-//   * RequestFailedException
-//   The request has failed for an unspecified reason.
+//   - LockoutPreventedException
+//     The current action was prevented because it would lock the caller out from
+//     performing subsequent actions. Verify that the specified parameters would
+//     not result in the caller being denied access to the resource.
 //
-//   * ResourceNotFoundException
-//   A resource such as a private CA, S3 bucket, certificate, audit report, or
-//   policy cannot be found.
+//   - RequestFailedException
+//     The request has failed for an unspecified reason.
+//
+//   - ResourceNotFoundException
+//     A resource such as a private CA, S3 bucket, certificate, audit report, or
+//     policy cannot be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-pca-2017-08-22/DeletePolicy
 func (c *ACMPCA) DeletePolicy(input *DeletePolicyInput) (*DeletePolicyOutput, error) {
@@ -729,14 +731,13 @@ const opDescribeCertificateAuthority = "DescribeCertificateAuthority"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeCertificateAuthorityRequest method.
+//	req, resp := client.DescribeCertificateAuthorityRequest(params)
 //
-//    // Example sending a request using the DescribeCertificateAuthorityRequest method.
-//    req, resp := client.DescribeCertificateAuthorityRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-pca-2017-08-22/DescribeCertificateAuthority
 func (c *ACMPCA) DescribeCertificateAuthorityRequest(input *DescribeCertificateAuthorityInput) (req *request.Request, output *DescribeCertificateAuthorityOutput) {
@@ -762,26 +763,28 @@ func (c *ACMPCA) DescribeCertificateAuthorityRequest(input *DescribeCertificateA
 // (Amazon Resource Name). The output contains the status of your CA. This can
 // be any of the following:
 //
-//    * CREATING - ACM Private CA is creating your private certificate authority.
+//   - CREATING - Amazon Web Services Private CA is creating your private certificate
+//     authority.
 //
-//    * PENDING_CERTIFICATE - The certificate is pending. You must use your
-//    ACM Private CA-hosted or on-premises root or subordinate CA to sign your
-//    private CA CSR and then import it into PCA.
+//   - PENDING_CERTIFICATE - The certificate is pending. You must use your
+//     Amazon Web Services Private CA-hosted or on-premises root or subordinate
+//     CA to sign your private CA CSR and then import it into Amazon Web Services
+//     Private CA.
 //
-//    * ACTIVE - Your private CA is active.
+//   - ACTIVE - Your private CA is active.
 //
-//    * DISABLED - Your private CA has been disabled.
+//   - DISABLED - Your private CA has been disabled.
 //
-//    * EXPIRED - Your private CA certificate has expired.
+//   - EXPIRED - Your private CA certificate has expired.
 //
-//    * FAILED - Your private CA has failed. Your CA can fail because of problems
-//    such a network outage or back-end Amazon Web Services failure or other
-//    errors. A failed CA can never return to the pending state. You must create
-//    a new CA.
+//   - FAILED - Your private CA has failed. Your CA can fail because of problems
+//     such a network outage or back-end Amazon Web Services failure or other
+//     errors. A failed CA can never return to the pending state. You must create
+//     a new CA.
 //
-//    * DELETED - Your private CA is within the restoration period, after which
-//    it is permanently deleted. The length of time remaining in the CA's restoration
-//    period is also included in this action's output.
+//   - DELETED - Your private CA is within the restoration period, after which
+//     it is permanently deleted. The length of time remaining in the CA's restoration
+//     period is also included in this action's output.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -791,12 +794,13 @@ func (c *ACMPCA) DescribeCertificateAuthorityRequest(input *DescribeCertificateA
 // API operation DescribeCertificateAuthority for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource such as a private CA, S3 bucket, certificate, audit report, or
-//   policy cannot be found.
 //
-//   * InvalidArnException
-//   The requested Amazon Resource Name (ARN) does not refer to an existing resource.
+//   - ResourceNotFoundException
+//     A resource such as a private CA, S3 bucket, certificate, audit report, or
+//     policy cannot be found.
+//
+//   - InvalidArnException
+//     The requested Amazon Resource Name (ARN) does not refer to an existing resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-pca-2017-08-22/DescribeCertificateAuthority
 func (c *ACMPCA) DescribeCertificateAuthority(input *DescribeCertificateAuthorityInput) (*DescribeCertificateAuthorityOutput, error) {
@@ -836,14 +840,13 @@ const opDescribeCertificateAuthorityAuditReport = "DescribeCertificateAuthorityA
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeCertificateAuthorityAuditReportRequest method.
+//	req, resp := client.DescribeCertificateAuthorityAuditReportRequest(params)
 //
-//    // Example sending a request using the DescribeCertificateAuthorityAuditReportRequest method.
-//    req, resp := client.DescribeCertificateAuthorityAuditReportRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-pca-2017-08-22/DescribeCertificateAuthorityAuditReport
 func (c *ACMPCA) DescribeCertificateAuthorityAuditReportRequest(input *DescribeCertificateAuthorityAuditReportInput) (req *request.Request, output *DescribeCertificateAuthorityAuditReportOutput) {
@@ -865,11 +868,11 @@ func (c *ACMPCA) DescribeCertificateAuthorityAuditReportRequest(input *DescribeC
 // DescribeCertificateAuthorityAuditReport API operation for AWS Certificate Manager Private Certificate Authority.
 //
 // Lists information about a specific audit report created by calling the CreateCertificateAuthorityAuditReport
-// (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_CreateCertificateAuthorityAuditReport.html)
+// (https://docs.aws.amazon.com/privateca/latest/APIReference/API_CreateCertificateAuthorityAuditReport.html)
 // action. Audit information is created every time the certificate authority
 // (CA) private key is used. The private key is used when you call the IssueCertificate
-// (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_IssueCertificate.html)
-// action or the RevokeCertificate (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_RevokeCertificate.html)
+// (https://docs.aws.amazon.com/privateca/latest/APIReference/API_IssueCertificate.html)
+// action or the RevokeCertificate (https://docs.aws.amazon.com/privateca/latest/APIReference/API_RevokeCertificate.html)
 // action.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -880,15 +883,16 @@ func (c *ACMPCA) DescribeCertificateAuthorityAuditReportRequest(input *DescribeC
 // API operation DescribeCertificateAuthorityAuditReport for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource such as a private CA, S3 bucket, certificate, audit report, or
-//   policy cannot be found.
 //
-//   * InvalidArnException
-//   The requested Amazon Resource Name (ARN) does not refer to an existing resource.
+//   - ResourceNotFoundException
+//     A resource such as a private CA, S3 bucket, certificate, audit report, or
+//     policy cannot be found.
 //
-//   * InvalidArgsException
-//   One or more of the specified arguments was not valid.
+//   - InvalidArnException
+//     The requested Amazon Resource Name (ARN) does not refer to an existing resource.
+//
+//   - InvalidArgsException
+//     One or more of the specified arguments was not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-pca-2017-08-22/DescribeCertificateAuthorityAuditReport
 func (c *ACMPCA) DescribeCertificateAuthorityAuditReport(input *DescribeCertificateAuthorityAuditReportInput) (*DescribeCertificateAuthorityAuditReportOutput, error) {
@@ -928,14 +932,13 @@ const opGetCertificate = "GetCertificate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCertificateRequest method.
+//	req, resp := client.GetCertificateRequest(params)
 //
-//    // Example sending a request using the GetCertificateRequest method.
-//    req, resp := client.GetCertificateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-pca-2017-08-22/GetCertificate
 func (c *ACMPCA) GetCertificateRequest(input *GetCertificateInput) (req *request.Request, output *GetCertificateOutput) {
@@ -958,11 +961,11 @@ func (c *ACMPCA) GetCertificateRequest(input *GetCertificateInput) (req *request
 //
 // Retrieves a certificate from your private CA or one that has been shared
 // with you. The ARN of the certificate is returned when you call the IssueCertificate
-// (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_IssueCertificate.html)
+// (https://docs.aws.amazon.com/privateca/latest/APIReference/API_IssueCertificate.html)
 // action. You must specify both the ARN of your private CA and the ARN of the
 // issued certificate when calling the GetCertificate action. You can retrieve
 // the certificate if it is in the ISSUED state. You can call the CreateCertificateAuthorityAuditReport
-// (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_CreateCertificateAuthorityAuditReport.html)
+// (https://docs.aws.amazon.com/privateca/latest/APIReference/API_CreateCertificateAuthorityAuditReport.html)
 // action to create a report that contains information about all of the certificates
 // issued and revoked by your private CA.
 //
@@ -974,21 +977,22 @@ func (c *ACMPCA) GetCertificateRequest(input *GetCertificateInput) (req *request
 // API operation GetCertificate for usage and error information.
 //
 // Returned Error Types:
-//   * RequestInProgressException
-//   Your request is already in progress.
 //
-//   * RequestFailedException
-//   The request has failed for an unspecified reason.
+//   - RequestInProgressException
+//     Your request is already in progress.
 //
-//   * ResourceNotFoundException
-//   A resource such as a private CA, S3 bucket, certificate, audit report, or
-//   policy cannot be found.
+//   - RequestFailedException
+//     The request has failed for an unspecified reason.
 //
-//   * InvalidArnException
-//   The requested Amazon Resource Name (ARN) does not refer to an existing resource.
+//   - ResourceNotFoundException
+//     A resource such as a private CA, S3 bucket, certificate, audit report, or
+//     policy cannot be found.
 //
-//   * InvalidStateException
-//   The state of the private CA does not allow this action to occur.
+//   - InvalidArnException
+//     The requested Amazon Resource Name (ARN) does not refer to an existing resource.
+//
+//   - InvalidStateException
+//     The state of the private CA does not allow this action to occur.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-pca-2017-08-22/GetCertificate
 func (c *ACMPCA) GetCertificate(input *GetCertificateInput) (*GetCertificateOutput, error) {
@@ -1028,14 +1032,13 @@ const opGetCertificateAuthorityCertificate = "GetCertificateAuthorityCertificate
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCertificateAuthorityCertificateRequest method.
+//	req, resp := client.GetCertificateAuthorityCertificateRequest(params)
 //
-//    // Example sending a request using the GetCertificateAuthorityCertificateRequest method.
-//    req, resp := client.GetCertificateAuthorityCertificateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-pca-2017-08-22/GetCertificateAuthorityCertificate
 func (c *ACMPCA) GetCertificateAuthorityCertificateRequest(input *GetCertificateAuthorityCertificateInput) (req *request.Request, output *GetCertificateAuthorityCertificateOutput) {
@@ -1069,15 +1072,16 @@ func (c *ACMPCA) GetCertificateAuthorityCertificateRequest(input *GetCertificate
 // API operation GetCertificateAuthorityCertificate for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource such as a private CA, S3 bucket, certificate, audit report, or
-//   policy cannot be found.
 //
-//   * InvalidStateException
-//   The state of the private CA does not allow this action to occur.
+//   - ResourceNotFoundException
+//     A resource such as a private CA, S3 bucket, certificate, audit report, or
+//     policy cannot be found.
 //
-//   * InvalidArnException
-//   The requested Amazon Resource Name (ARN) does not refer to an existing resource.
+//   - InvalidStateException
+//     The state of the private CA does not allow this action to occur.
+//
+//   - InvalidArnException
+//     The requested Amazon Resource Name (ARN) does not refer to an existing resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-pca-2017-08-22/GetCertificateAuthorityCertificate
 func (c *ACMPCA) GetCertificateAuthorityCertificate(input *GetCertificateAuthorityCertificateInput) (*GetCertificateAuthorityCertificateOutput, error) {
@@ -1117,14 +1121,13 @@ const opGetCertificateAuthorityCsr = "GetCertificateAuthorityCsr"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCertificateAuthorityCsrRequest method.
+//	req, resp := client.GetCertificateAuthorityCsrRequest(params)
 //
-//    // Example sending a request using the GetCertificateAuthorityCsrRequest method.
-//    req, resp := client.GetCertificateAuthorityCsrRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-pca-2017-08-22/GetCertificateAuthorityCsr
 func (c *ACMPCA) GetCertificateAuthorityCsrRequest(input *GetCertificateAuthorityCsrInput) (req *request.Request, output *GetCertificateAuthorityCsrOutput) {
@@ -1147,10 +1150,11 @@ func (c *ACMPCA) GetCertificateAuthorityCsrRequest(input *GetCertificateAuthorit
 //
 // Retrieves the certificate signing request (CSR) for your private certificate
 // authority (CA). The CSR is created when you call the CreateCertificateAuthority
-// (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_CreateCertificateAuthority.html)
-// action. Sign the CSR with your ACM Private CA-hosted or on-premises root
-// or subordinate CA. Then import the signed certificate back into ACM Private
-// CA by calling the ImportCertificateAuthorityCertificate (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_ImportCertificateAuthorityCertificate.html)
+// (https://docs.aws.amazon.com/privateca/latest/APIReference/API_CreateCertificateAuthority.html)
+// action. Sign the CSR with your Amazon Web Services Private CA-hosted or on-premises
+// root or subordinate CA. Then import the signed certificate back into Amazon
+// Web Services Private CA by calling the ImportCertificateAuthorityCertificate
+// (https://docs.aws.amazon.com/privateca/latest/APIReference/API_ImportCertificateAuthorityCertificate.html)
 // action. The CSR is returned as a base64 PEM-encoded string.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -1161,21 +1165,22 @@ func (c *ACMPCA) GetCertificateAuthorityCsrRequest(input *GetCertificateAuthorit
 // API operation GetCertificateAuthorityCsr for usage and error information.
 //
 // Returned Error Types:
-//   * RequestInProgressException
-//   Your request is already in progress.
 //
-//   * RequestFailedException
-//   The request has failed for an unspecified reason.
+//   - RequestInProgressException
+//     Your request is already in progress.
 //
-//   * ResourceNotFoundException
-//   A resource such as a private CA, S3 bucket, certificate, audit report, or
-//   policy cannot be found.
+//   - RequestFailedException
+//     The request has failed for an unspecified reason.
 //
-//   * InvalidArnException
-//   The requested Amazon Resource Name (ARN) does not refer to an existing resource.
+//   - ResourceNotFoundException
+//     A resource such as a private CA, S3 bucket, certificate, audit report, or
+//     policy cannot be found.
 //
-//   * InvalidStateException
-//   The state of the private CA does not allow this action to occur.
+//   - InvalidArnException
+//     The requested Amazon Resource Name (ARN) does not refer to an existing resource.
+//
+//   - InvalidStateException
+//     The state of the private CA does not allow this action to occur.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-pca-2017-08-22/GetCertificateAuthorityCsr
 func (c *ACMPCA) GetCertificateAuthorityCsr(input *GetCertificateAuthorityCsrInput) (*GetCertificateAuthorityCsrOutput, error) {
@@ -1215,14 +1220,13 @@ const opGetPolicy = "GetPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetPolicyRequest method.
+//	req, resp := client.GetPolicyRequest(params)
 //
-//    // Example sending a request using the GetPolicyRequest method.
-//    req, resp := client.GetPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-pca-2017-08-22/GetPolicy
 func (c *ACMPCA) GetPolicyRequest(input *GetPolicyInput) (req *request.Request, output *GetPolicyOutput) {
@@ -1247,29 +1251,29 @@ func (c *ACMPCA) GetPolicyRequest(input *GetPolicyInput) (req *request.Request, 
 // private CA resource or the policy cannot be found, this action returns a
 // ResourceNotFoundException.
 //
-// The policy can be attached or updated with PutPolicy (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_PutPolicy.html)
-// and removed with DeletePolicy (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_DeletePolicy.html).
+// The policy can be attached or updated with PutPolicy (https://docs.aws.amazon.com/privateca/latest/APIReference/API_PutPolicy.html)
+// and removed with DeletePolicy (https://docs.aws.amazon.com/privateca/latest/APIReference/API_DeletePolicy.html).
 //
 // About Policies
 //
-//    * A policy grants access on a private CA to an Amazon Web Services customer
-//    account, to Amazon Web Services Organizations, or to an Amazon Web Services
-//    Organizations unit. Policies are under the control of a CA administrator.
-//    For more information, see Using a Resource Based Policy with ACM Private
-//    CA (https://docs.aws.amazon.com/acm-pca/latest/userguide/pca-rbp.html).
+//   - A policy grants access on a private CA to an Amazon Web Services customer
+//     account, to Amazon Web Services Organizations, or to an Amazon Web Services
+//     Organizations unit. Policies are under the control of a CA administrator.
+//     For more information, see Using a Resource Based Policy with Amazon Web
+//     Services Private CA (https://docs.aws.amazon.com/privateca/latest/userguide/pca-rbp.html).
 //
-//    * A policy permits a user of Certificate Manager (ACM) to issue ACM certificates
-//    signed by a CA in another account.
+//   - A policy permits a user of Certificate Manager (ACM) to issue ACM certificates
+//     signed by a CA in another account.
 //
-//    * For ACM to manage automatic renewal of these certificates, the ACM user
-//    must configure a Service Linked Role (SLR). The SLR allows the ACM service
-//    to assume the identity of the user, subject to confirmation against the
-//    ACM Private CA policy. For more information, see Using a Service Linked
-//    Role with ACM (https://docs.aws.amazon.com/acm/latest/userguide/acm-slr.html).
+//   - For ACM to manage automatic renewal of these certificates, the ACM user
+//     must configure a Service Linked Role (SLR). The SLR allows the ACM service
+//     to assume the identity of the user, subject to confirmation against the
+//     Amazon Web Services Private CA policy. For more information, see Using
+//     a Service Linked Role with ACM (https://docs.aws.amazon.com/acm/latest/userguide/acm-slr.html).
 //
-//    * Updates made in Amazon Web Services Resource Manager (RAM) are reflected
-//    in policies. For more information, see Attach a Policy for Cross-Account
-//    Access (https://docs.aws.amazon.com/acm-pca/latest/userguide/pca-ram.html).
+//   - Updates made in Amazon Web Services Resource Manager (RAM) are reflected
+//     in policies. For more information, see Attach a Policy for Cross-Account
+//     Access (https://docs.aws.amazon.com/privateca/latest/userguide/pca-ram.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1279,18 +1283,19 @@ func (c *ACMPCA) GetPolicyRequest(input *GetPolicyInput) (req *request.Request, 
 // API operation GetPolicy for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArnException
-//   The requested Amazon Resource Name (ARN) does not refer to an existing resource.
 //
-//   * InvalidStateException
-//   The state of the private CA does not allow this action to occur.
+//   - InvalidArnException
+//     The requested Amazon Resource Name (ARN) does not refer to an existing resource.
 //
-//   * RequestFailedException
-//   The request has failed for an unspecified reason.
+//   - InvalidStateException
+//     The state of the private CA does not allow this action to occur.
 //
-//   * ResourceNotFoundException
-//   A resource such as a private CA, S3 bucket, certificate, audit report, or
-//   policy cannot be found.
+//   - RequestFailedException
+//     The request has failed for an unspecified reason.
+//
+//   - ResourceNotFoundException
+//     A resource such as a private CA, S3 bucket, certificate, audit report, or
+//     policy cannot be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-pca-2017-08-22/GetPolicy
 func (c *ACMPCA) GetPolicy(input *GetPolicyInput) (*GetPolicyOutput, error) {
@@ -1330,14 +1335,13 @@ const opImportCertificateAuthorityCertificate = "ImportCertificateAuthorityCerti
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ImportCertificateAuthorityCertificateRequest method.
+//	req, resp := client.ImportCertificateAuthorityCertificateRequest(params)
 //
-//    // Example sending a request using the ImportCertificateAuthorityCertificateRequest method.
-//    req, resp := client.ImportCertificateAuthorityCertificateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-pca-2017-08-22/ImportCertificateAuthorityCertificate
 func (c *ACMPCA) ImportCertificateAuthorityCertificateRequest(input *ImportCertificateAuthorityCertificateInput) (req *request.Request, output *ImportCertificateAuthorityCertificateOutput) {
@@ -1359,15 +1363,15 @@ func (c *ACMPCA) ImportCertificateAuthorityCertificateRequest(input *ImportCerti
 
 // ImportCertificateAuthorityCertificate API operation for AWS Certificate Manager Private Certificate Authority.
 //
-// Imports a signed private CA certificate into ACM Private CA. This action
-// is used when you are using a chain of trust whose root is located outside
-// ACM Private CA. Before you can call this action, the following preparations
-// must in place:
+// Imports a signed private CA certificate into Amazon Web Services Private
+// CA. This action is used when you are using a chain of trust whose root is
+// located outside Amazon Web Services Private CA. Before you can call this
+// action, the following preparations must in place:
 //
-// In ACM Private CA, call the CreateCertificateAuthority (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_CreateCertificateAuthority.html)
+// In Amazon Web Services Private CA, call the CreateCertificateAuthority (https://docs.aws.amazon.com/privateca/latest/APIReference/API_CreateCertificateAuthority.html)
 // action to create the private CA that you plan to back with the imported certificate.
 //
-// Call the GetCertificateAuthorityCsr (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_GetCertificateAuthorityCsr.html)
+// Call the GetCertificateAuthorityCsr (https://docs.aws.amazon.com/privateca/latest/APIReference/API_GetCertificateAuthorityCsr.html)
 // action to generate a certificate signing request (CSR).
 //
 // Sign the CSR using a root or intermediate CA hosted by either an on-premises
@@ -1376,79 +1380,81 @@ func (c *ACMPCA) ImportCertificateAuthorityCertificateRequest(input *ImportCerti
 // Create a certificate chain and copy the signed certificate and the certificate
 // chain to your working directory.
 //
-// ACM Private CA supports three scenarios for installing a CA certificate:
+// Amazon Web Services Private CA supports three scenarios for installing a
+// CA certificate:
 //
-//    * Installing a certificate for a root CA hosted by ACM Private CA.
+//   - Installing a certificate for a root CA hosted by Amazon Web Services
+//     Private CA.
 //
-//    * Installing a subordinate CA certificate whose parent authority is hosted
-//    by ACM Private CA.
+//   - Installing a subordinate CA certificate whose parent authority is hosted
+//     by Amazon Web Services Private CA.
 //
-//    * Installing a subordinate CA certificate whose parent authority is externally
-//    hosted.
+//   - Installing a subordinate CA certificate whose parent authority is externally
+//     hosted.
 //
 // The following additional requirements apply when you import a CA certificate.
 //
-//    * Only a self-signed certificate can be imported as a root CA.
+//   - Only a self-signed certificate can be imported as a root CA.
 //
-//    * A self-signed certificate cannot be imported as a subordinate CA.
+//   - A self-signed certificate cannot be imported as a subordinate CA.
 //
-//    * Your certificate chain must not include the private CA certificate that
-//    you are importing.
+//   - Your certificate chain must not include the private CA certificate that
+//     you are importing.
 //
-//    * Your root CA must be the last certificate in your chain. The subordinate
-//    certificate, if any, that your root CA signed must be next to last. The
-//    subordinate certificate signed by the preceding subordinate CA must come
-//    next, and so on until your chain is built.
+//   - Your root CA must be the last certificate in your chain. The subordinate
+//     certificate, if any, that your root CA signed must be next to last. The
+//     subordinate certificate signed by the preceding subordinate CA must come
+//     next, and so on until your chain is built.
 //
-//    * The chain must be PEM-encoded.
+//   - The chain must be PEM-encoded.
 //
-//    * The maximum allowed size of a certificate is 32 KB.
+//   - The maximum allowed size of a certificate is 32 KB.
 //
-//    * The maximum allowed size of a certificate chain is 2 MB.
+//   - The maximum allowed size of a certificate chain is 2 MB.
 //
-// Enforcement of Critical Constraints
+// # Enforcement of Critical Constraints
 //
-// ACM Private CA allows the following extensions to be marked critical in the
-// imported CA certificate or chain.
+// Amazon Web Services Private CA allows the following extensions to be marked
+// critical in the imported CA certificate or chain.
 //
-//    * Basic constraints (must be marked critical)
+//   - Basic constraints (must be marked critical)
 //
-//    * Subject alternative names
+//   - Subject alternative names
 //
-//    * Key usage
+//   - Key usage
 //
-//    * Extended key usage
+//   - Extended key usage
 //
-//    * Authority key identifier
+//   - Authority key identifier
 //
-//    * Subject key identifier
+//   - Subject key identifier
 //
-//    * Issuer alternative name
+//   - Issuer alternative name
 //
-//    * Subject directory attributes
+//   - Subject directory attributes
 //
-//    * Subject information access
+//   - Subject information access
 //
-//    * Certificate policies
+//   - Certificate policies
 //
-//    * Policy mappings
+//   - Policy mappings
 //
-//    * Inhibit anyPolicy
+//   - Inhibit anyPolicy
 //
-// ACM Private CA rejects the following extensions when they are marked critical
-// in an imported CA certificate or chain.
+// Amazon Web Services Private CA rejects the following extensions when they
+// are marked critical in an imported CA certificate or chain.
 //
-//    * Name constraints
+//   - Name constraints
 //
-//    * Policy constraints
+//   - Policy constraints
 //
-//    * CRL distribution points
+//   - CRL distribution points
 //
-//    * Authority information access
+//   - Authority information access
 //
-//    * Freshest CRL
+//   - Freshest CRL
 //
-//    * Any other extension
+//   - Any other extension
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1458,34 +1464,35 @@ func (c *ACMPCA) ImportCertificateAuthorityCertificateRequest(input *ImportCerti
 // API operation ImportCertificateAuthorityCertificate for usage and error information.
 //
 // Returned Error Types:
-//   * ConcurrentModificationException
-//   A previous update to your private CA is still ongoing.
 //
-//   * RequestInProgressException
-//   Your request is already in progress.
+//   - ConcurrentModificationException
+//     A previous update to your private CA is still ongoing.
 //
-//   * RequestFailedException
-//   The request has failed for an unspecified reason.
+//   - RequestInProgressException
+//     Your request is already in progress.
 //
-//   * ResourceNotFoundException
-//   A resource such as a private CA, S3 bucket, certificate, audit report, or
-//   policy cannot be found.
+//   - RequestFailedException
+//     The request has failed for an unspecified reason.
 //
-//   * InvalidArnException
-//   The requested Amazon Resource Name (ARN) does not refer to an existing resource.
+//   - ResourceNotFoundException
+//     A resource such as a private CA, S3 bucket, certificate, audit report, or
+//     policy cannot be found.
 //
-//   * InvalidRequestException
-//   The request action cannot be performed or is prohibited.
+//   - InvalidArnException
+//     The requested Amazon Resource Name (ARN) does not refer to an existing resource.
 //
-//   * InvalidStateException
-//   The state of the private CA does not allow this action to occur.
+//   - InvalidRequestException
+//     The request action cannot be performed or is prohibited.
 //
-//   * MalformedCertificateException
-//   One or more fields in the certificate are invalid.
+//   - InvalidStateException
+//     The state of the private CA does not allow this action to occur.
 //
-//   * CertificateMismatchException
-//   The certificate authority certificate you are importing does not comply with
-//   conditions specified in the certificate that signed it.
+//   - MalformedCertificateException
+//     One or more fields in the certificate are invalid.
+//
+//   - CertificateMismatchException
+//     The certificate authority certificate you are importing does not comply with
+//     conditions specified in the certificate that signed it.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-pca-2017-08-22/ImportCertificateAuthorityCertificate
 func (c *ACMPCA) ImportCertificateAuthorityCertificate(input *ImportCertificateAuthorityCertificateInput) (*ImportCertificateAuthorityCertificateOutput, error) {
@@ -1525,14 +1532,13 @@ const opIssueCertificate = "IssueCertificate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the IssueCertificateRequest method.
+//	req, resp := client.IssueCertificateRequest(params)
 //
-//    // Example sending a request using the IssueCertificateRequest method.
-//    req, resp := client.IssueCertificateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-pca-2017-08-22/IssueCertificate
 func (c *ACMPCA) IssueCertificateRequest(input *IssueCertificateInput) (req *request.Request, output *IssueCertificateOutput) {
@@ -1556,11 +1562,12 @@ func (c *ACMPCA) IssueCertificateRequest(input *IssueCertificateInput) (req *req
 // Uses your private certificate authority (CA), or one that has been shared
 // with you, to issue a client certificate. This action returns the Amazon Resource
 // Name (ARN) of the certificate. You can retrieve the certificate by calling
-// the GetCertificate (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_GetCertificate.html)
+// the GetCertificate (https://docs.aws.amazon.com/privateca/latest/APIReference/API_GetCertificate.html)
 // action and specifying the ARN.
 //
 // You cannot use the ACM ListCertificateAuthorities action to retrieve the
-// ARNs of the certificates that you issue by using ACM Private CA.
+// ARNs of the certificates that you issue by using Amazon Web Services Private
+// CA.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1570,25 +1577,26 @@ func (c *ACMPCA) IssueCertificateRequest(input *IssueCertificateInput) (req *req
 // API operation IssueCertificate for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   An ACM Private CA quota has been exceeded. See the exception message returned
-//   to determine the quota that was exceeded.
 //
-//   * ResourceNotFoundException
-//   A resource such as a private CA, S3 bucket, certificate, audit report, or
-//   policy cannot be found.
+//   - LimitExceededException
+//     An Amazon Web Services Private CA quota has been exceeded. See the exception
+//     message returned to determine the quota that was exceeded.
 //
-//   * InvalidStateException
-//   The state of the private CA does not allow this action to occur.
+//   - ResourceNotFoundException
+//     A resource such as a private CA, S3 bucket, certificate, audit report, or
+//     policy cannot be found.
 //
-//   * InvalidArnException
-//   The requested Amazon Resource Name (ARN) does not refer to an existing resource.
+//   - InvalidStateException
+//     The state of the private CA does not allow this action to occur.
 //
-//   * InvalidArgsException
-//   One or more of the specified arguments was not valid.
+//   - InvalidArnException
+//     The requested Amazon Resource Name (ARN) does not refer to an existing resource.
 //
-//   * MalformedCSRException
-//   The certificate signing request is invalid.
+//   - InvalidArgsException
+//     One or more of the specified arguments was not valid.
+//
+//   - MalformedCSRException
+//     The certificate signing request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-pca-2017-08-22/IssueCertificate
 func (c *ACMPCA) IssueCertificate(input *IssueCertificateInput) (*IssueCertificateOutput, error) {
@@ -1628,14 +1636,13 @@ const opListCertificateAuthorities = "ListCertificateAuthorities"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListCertificateAuthoritiesRequest method.
+//	req, resp := client.ListCertificateAuthoritiesRequest(params)
 //
-//    // Example sending a request using the ListCertificateAuthoritiesRequest method.
-//    req, resp := client.ListCertificateAuthoritiesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-pca-2017-08-22/ListCertificateAuthorities
 func (c *ACMPCA) ListCertificateAuthoritiesRequest(input *ListCertificateAuthoritiesInput) (req *request.Request, output *ListCertificateAuthoritiesOutput) {
@@ -1663,7 +1670,7 @@ func (c *ACMPCA) ListCertificateAuthoritiesRequest(input *ListCertificateAuthori
 // ListCertificateAuthorities API operation for AWS Certificate Manager Private Certificate Authority.
 //
 // Lists the private certificate authorities that you created by using the CreateCertificateAuthority
-// (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_CreateCertificateAuthority.html)
+// (https://docs.aws.amazon.com/privateca/latest/APIReference/API_CreateCertificateAuthority.html)
 // action.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -1674,9 +1681,9 @@ func (c *ACMPCA) ListCertificateAuthoritiesRequest(input *ListCertificateAuthori
 // API operation ListCertificateAuthorities for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidNextTokenException
-//   The token specified in the NextToken argument is not valid. Use the token
-//   returned from your previous call to ListCertificateAuthorities (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_ListCertificateAuthorities.html).
+//   - InvalidNextTokenException
+//     The token specified in the NextToken argument is not valid. Use the token
+//     returned from your previous call to ListCertificateAuthorities (https://docs.aws.amazon.com/privateca/latest/APIReference/API_ListCertificateAuthorities.html).
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-pca-2017-08-22/ListCertificateAuthorities
 func (c *ACMPCA) ListCertificateAuthorities(input *ListCertificateAuthoritiesInput) (*ListCertificateAuthoritiesOutput, error) {
@@ -1708,15 +1715,14 @@ func (c *ACMPCA) ListCertificateAuthoritiesWithContext(ctx aws.Context, input *L
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListCertificateAuthorities operation.
-//    pageNum := 0
-//    err := client.ListCertificateAuthoritiesPages(params,
-//        func(page *acmpca.ListCertificateAuthoritiesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListCertificateAuthorities operation.
+//	pageNum := 0
+//	err := client.ListCertificateAuthoritiesPages(params,
+//	    func(page *acmpca.ListCertificateAuthoritiesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ACMPCA) ListCertificateAuthoritiesPages(input *ListCertificateAuthoritiesInput, fn func(*ListCertificateAuthoritiesOutput, bool) bool) error {
 	return c.ListCertificateAuthoritiesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1768,14 +1774,13 @@ const opListPermissions = "ListPermissions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPermissionsRequest method.
+//	req, resp := client.ListPermissionsRequest(params)
 //
-//    // Example sending a request using the ListPermissionsRequest method.
-//    req, resp := client.ListPermissionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-pca-2017-08-22/ListPermissions
 func (c *ACMPCA) ListPermissionsRequest(input *ListPermissionsInput) (req *request.Request, output *ListPermissionsOutput) {
@@ -1808,24 +1813,24 @@ func (c *ACMPCA) ListPermissionsRequest(input *ListPermissionsInput) (req *reque
 // These permissions allow ACM to issue and renew ACM certificates that reside
 // in the same Amazon Web Services account as the CA.
 //
-// Permissions can be granted with the CreatePermission (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_CreatePermission.html)
-// action and revoked with the DeletePermission (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_DeletePermission.html)
+// Permissions can be granted with the CreatePermission (https://docs.aws.amazon.com/privateca/latest/APIReference/API_CreatePermission.html)
+// action and revoked with the DeletePermission (https://docs.aws.amazon.com/privateca/latest/APIReference/API_DeletePermission.html)
 // action.
 //
 // About Permissions
 //
-//    * If the private CA and the certificates it issues reside in the same
-//    account, you can use CreatePermission to grant permissions for ACM to
-//    carry out automatic certificate renewals.
+//   - If the private CA and the certificates it issues reside in the same
+//     account, you can use CreatePermission to grant permissions for ACM to
+//     carry out automatic certificate renewals.
 //
-//    * For automatic certificate renewal to succeed, the ACM service principal
-//    needs permissions to create, retrieve, and list certificates.
+//   - For automatic certificate renewal to succeed, the ACM service principal
+//     needs permissions to create, retrieve, and list certificates.
 //
-//    * If the private CA and the ACM certificates reside in different accounts,
-//    then permissions cannot be used to enable automatic renewals. Instead,
-//    the ACM certificate owner must set up a resource-based policy to enable
-//    cross-account issuance and renewals. For more information, see Using a
-//    Resource Based Policy with ACM Private CA (https://docs.aws.amazon.com/acm-pca/latest/userguide/pca-rbp.html).
+//   - If the private CA and the ACM certificates reside in different accounts,
+//     then permissions cannot be used to enable automatic renewals. Instead,
+//     the ACM certificate owner must set up a resource-based policy to enable
+//     cross-account issuance and renewals. For more information, see Using a
+//     Resource Based Policy with Amazon Web Services Private CA (https://docs.aws.amazon.com/privateca/latest/userguide/pca-rbp.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1835,22 +1840,23 @@ func (c *ACMPCA) ListPermissionsRequest(input *ListPermissionsInput) (req *reque
 // API operation ListPermissions for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource such as a private CA, S3 bucket, certificate, audit report, or
-//   policy cannot be found.
 //
-//   * InvalidArnException
-//   The requested Amazon Resource Name (ARN) does not refer to an existing resource.
+//   - ResourceNotFoundException
+//     A resource such as a private CA, S3 bucket, certificate, audit report, or
+//     policy cannot be found.
 //
-//   * InvalidNextTokenException
-//   The token specified in the NextToken argument is not valid. Use the token
-//   returned from your previous call to ListCertificateAuthorities (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_ListCertificateAuthorities.html).
+//   - InvalidArnException
+//     The requested Amazon Resource Name (ARN) does not refer to an existing resource.
 //
-//   * InvalidStateException
-//   The state of the private CA does not allow this action to occur.
+//   - InvalidNextTokenException
+//     The token specified in the NextToken argument is not valid. Use the token
+//     returned from your previous call to ListCertificateAuthorities (https://docs.aws.amazon.com/privateca/latest/APIReference/API_ListCertificateAuthorities.html).
 //
-//   * RequestFailedException
-//   The request has failed for an unspecified reason.
+//   - InvalidStateException
+//     The state of the private CA does not allow this action to occur.
+//
+//   - RequestFailedException
+//     The request has failed for an unspecified reason.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-pca-2017-08-22/ListPermissions
 func (c *ACMPCA) ListPermissions(input *ListPermissionsInput) (*ListPermissionsOutput, error) {
@@ -1882,15 +1888,14 @@ func (c *ACMPCA) ListPermissionsWithContext(ctx aws.Context, input *ListPermissi
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListPermissions operation.
-//    pageNum := 0
-//    err := client.ListPermissionsPages(params,
-//        func(page *acmpca.ListPermissionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListPermissions operation.
+//	pageNum := 0
+//	err := client.ListPermissionsPages(params,
+//	    func(page *acmpca.ListPermissionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ACMPCA) ListPermissionsPages(input *ListPermissionsInput, fn func(*ListPermissionsOutput, bool) bool) error {
 	return c.ListPermissionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1942,14 +1947,13 @@ const opListTags = "ListTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsRequest method.
+//	req, resp := client.ListTagsRequest(params)
 //
-//    // Example sending a request using the ListTagsRequest method.
-//    req, resp := client.ListTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-pca-2017-08-22/ListTags
 func (c *ACMPCA) ListTagsRequest(input *ListTagsInput) (req *request.Request, output *ListTagsOutput) {
@@ -1979,9 +1983,9 @@ func (c *ACMPCA) ListTagsRequest(input *ListTagsInput) (req *request.Request, ou
 // Lists the tags, if any, that are associated with your private CA or one that
 // has been shared with you. Tags are labels that you can use to identify and
 // organize your CAs. Each tag consists of a key and an optional value. Call
-// the TagCertificateAuthority (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_TagCertificateAuthority.html)
+// the TagCertificateAuthority (https://docs.aws.amazon.com/privateca/latest/APIReference/API_TagCertificateAuthority.html)
 // action to add one or more tags to your CA. Call the UntagCertificateAuthority
-// (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_UntagCertificateAuthority.html)
+// (https://docs.aws.amazon.com/privateca/latest/APIReference/API_UntagCertificateAuthority.html)
 // action to remove tags.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -1992,15 +1996,16 @@ func (c *ACMPCA) ListTagsRequest(input *ListTagsInput) (req *request.Request, ou
 // API operation ListTags for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource such as a private CA, S3 bucket, certificate, audit report, or
-//   policy cannot be found.
 //
-//   * InvalidArnException
-//   The requested Amazon Resource Name (ARN) does not refer to an existing resource.
+//   - ResourceNotFoundException
+//     A resource such as a private CA, S3 bucket, certificate, audit report, or
+//     policy cannot be found.
 //
-//   * InvalidStateException
-//   The state of the private CA does not allow this action to occur.
+//   - InvalidArnException
+//     The requested Amazon Resource Name (ARN) does not refer to an existing resource.
+//
+//   - InvalidStateException
+//     The state of the private CA does not allow this action to occur.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-pca-2017-08-22/ListTags
 func (c *ACMPCA) ListTags(input *ListTagsInput) (*ListTagsOutput, error) {
@@ -2032,15 +2037,14 @@ func (c *ACMPCA) ListTagsWithContext(ctx aws.Context, input *ListTagsInput, opts
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListTags operation.
-//    pageNum := 0
-//    err := client.ListTagsPages(params,
-//        func(page *acmpca.ListTagsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListTags operation.
+//	pageNum := 0
+//	err := client.ListTagsPages(params,
+//	    func(page *acmpca.ListTagsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ACMPCA) ListTagsPages(input *ListTagsInput, fn func(*ListTagsOutput, bool) bool) error {
 	return c.ListTagsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2092,14 +2096,13 @@ const opPutPolicy = "PutPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutPolicyRequest method.
+//	req, resp := client.PutPolicyRequest(params)
 //
-//    // Example sending a request using the PutPolicyRequest method.
-//    req, resp := client.PutPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-pca-2017-08-22/PutPolicy
 func (c *ACMPCA) PutPolicyRequest(input *PutPolicyInput) (req *request.Request, output *PutPolicyOutput) {
@@ -2125,31 +2128,31 @@ func (c *ACMPCA) PutPolicyRequest(input *PutPolicyInput) (req *request.Request, 
 //
 // A policy can also be applied by sharing a private CA through Amazon Web Services
 // Resource Access Manager (RAM). For more information, see Attach a Policy
-// for Cross-Account Access (https://docs.aws.amazon.com/acm-pca/latest/userguide/pca-ram.html).
+// for Cross-Account Access (https://docs.aws.amazon.com/privateca/latest/userguide/pca-ram.html).
 //
-// The policy can be displayed with GetPolicy (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_GetPolicy.html)
-// and removed with DeletePolicy (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_DeletePolicy.html).
+// The policy can be displayed with GetPolicy (https://docs.aws.amazon.com/privateca/latest/APIReference/API_GetPolicy.html)
+// and removed with DeletePolicy (https://docs.aws.amazon.com/privateca/latest/APIReference/API_DeletePolicy.html).
 //
 // About Policies
 //
-//    * A policy grants access on a private CA to an Amazon Web Services customer
-//    account, to Amazon Web Services Organizations, or to an Amazon Web Services
-//    Organizations unit. Policies are under the control of a CA administrator.
-//    For more information, see Using a Resource Based Policy with ACM Private
-//    CA (https://docs.aws.amazon.com/acm-pca/latest/userguide/pca-rbp.html).
+//   - A policy grants access on a private CA to an Amazon Web Services customer
+//     account, to Amazon Web Services Organizations, or to an Amazon Web Services
+//     Organizations unit. Policies are under the control of a CA administrator.
+//     For more information, see Using a Resource Based Policy with Amazon Web
+//     Services Private CA (https://docs.aws.amazon.com/privateca/latest/userguide/pca-rbp.html).
 //
-//    * A policy permits a user of Certificate Manager (ACM) to issue ACM certificates
-//    signed by a CA in another account.
+//   - A policy permits a user of Certificate Manager (ACM) to issue ACM certificates
+//     signed by a CA in another account.
 //
-//    * For ACM to manage automatic renewal of these certificates, the ACM user
-//    must configure a Service Linked Role (SLR). The SLR allows the ACM service
-//    to assume the identity of the user, subject to confirmation against the
-//    ACM Private CA policy. For more information, see Using a Service Linked
-//    Role with ACM (https://docs.aws.amazon.com/acm/latest/userguide/acm-slr.html).
+//   - For ACM to manage automatic renewal of these certificates, the ACM user
+//     must configure a Service Linked Role (SLR). The SLR allows the ACM service
+//     to assume the identity of the user, subject to confirmation against the
+//     Amazon Web Services Private CA policy. For more information, see Using
+//     a Service Linked Role with ACM (https://docs.aws.amazon.com/acm/latest/userguide/acm-slr.html).
 //
-//    * Updates made in Amazon Web Services Resource Manager (RAM) are reflected
-//    in policies. For more information, see Attach a Policy for Cross-Account
-//    Access (https://docs.aws.amazon.com/acm-pca/latest/userguide/pca-ram.html).
+//   - Updates made in Amazon Web Services Resource Manager (RAM) are reflected
+//     in policies. For more information, see Attach a Policy for Cross-Account
+//     Access (https://docs.aws.amazon.com/privateca/latest/userguide/pca-ram.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2159,31 +2162,32 @@ func (c *ACMPCA) PutPolicyRequest(input *PutPolicyInput) (req *request.Request, 
 // API operation PutPolicy for usage and error information.
 //
 // Returned Error Types:
-//   * ConcurrentModificationException
-//   A previous update to your private CA is still ongoing.
 //
-//   * InvalidArnException
-//   The requested Amazon Resource Name (ARN) does not refer to an existing resource.
+//   - ConcurrentModificationException
+//     A previous update to your private CA is still ongoing.
 //
-//   * InvalidStateException
-//   The state of the private CA does not allow this action to occur.
+//   - InvalidArnException
+//     The requested Amazon Resource Name (ARN) does not refer to an existing resource.
 //
-//   * InvalidPolicyException
-//   The resource policy is invalid or is missing a required statement. For general
-//   information about IAM policy and statement structure, see Overview of JSON
-//   Policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies.html#access_policies-json).
+//   - InvalidStateException
+//     The state of the private CA does not allow this action to occur.
 //
-//   * LockoutPreventedException
-//   The current action was prevented because it would lock the caller out from
-//   performing subsequent actions. Verify that the specified parameters would
-//   not result in the caller being denied access to the resource.
+//   - InvalidPolicyException
+//     The resource policy is invalid or is missing a required statement. For general
+//     information about IAM policy and statement structure, see Overview of JSON
+//     Policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies.html#access_policies-json).
 //
-//   * RequestFailedException
-//   The request has failed for an unspecified reason.
+//   - LockoutPreventedException
+//     The current action was prevented because it would lock the caller out from
+//     performing subsequent actions. Verify that the specified parameters would
+//     not result in the caller being denied access to the resource.
 //
-//   * ResourceNotFoundException
-//   A resource such as a private CA, S3 bucket, certificate, audit report, or
-//   policy cannot be found.
+//   - RequestFailedException
+//     The request has failed for an unspecified reason.
+//
+//   - ResourceNotFoundException
+//     A resource such as a private CA, S3 bucket, certificate, audit report, or
+//     policy cannot be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-pca-2017-08-22/PutPolicy
 func (c *ACMPCA) PutPolicy(input *PutPolicyInput) (*PutPolicyOutput, error) {
@@ -2223,14 +2227,13 @@ const opRestoreCertificateAuthority = "RestoreCertificateAuthority"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RestoreCertificateAuthorityRequest method.
+//	req, resp := client.RestoreCertificateAuthorityRequest(params)
 //
-//    // Example sending a request using the RestoreCertificateAuthorityRequest method.
-//    req, resp := client.RestoreCertificateAuthorityRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-pca-2017-08-22/RestoreCertificateAuthority
 func (c *ACMPCA) RestoreCertificateAuthorityRequest(input *RestoreCertificateAuthorityInput) (req *request.Request, output *RestoreCertificateAuthorityOutput) {
@@ -2254,18 +2257,18 @@ func (c *ACMPCA) RestoreCertificateAuthorityRequest(input *RestoreCertificateAut
 //
 // Restores a certificate authority (CA) that is in the DELETED state. You can
 // restore a CA during the period that you defined in the PermanentDeletionTimeInDays
-// parameter of the DeleteCertificateAuthority (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_DeleteCertificateAuthority.html)
+// parameter of the DeleteCertificateAuthority (https://docs.aws.amazon.com/privateca/latest/APIReference/API_DeleteCertificateAuthority.html)
 // action. Currently, you can specify 7 to 30 days. If you did not specify a
 // PermanentDeletionTimeInDays value, by default you can restore the CA at any
 // time in a 30 day period. You can check the time remaining in the restoration
 // period of a private CA in the DELETED state by calling the DescribeCertificateAuthority
-// (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_DescribeCertificateAuthority.html)
-// or ListCertificateAuthorities (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_ListCertificateAuthorities.html)
+// (https://docs.aws.amazon.com/privateca/latest/APIReference/API_DescribeCertificateAuthority.html)
+// or ListCertificateAuthorities (https://docs.aws.amazon.com/privateca/latest/APIReference/API_ListCertificateAuthorities.html)
 // actions. The status of a restored CA is set to its pre-deletion status when
 // the RestoreCertificateAuthority action returns. To change its status to ACTIVE,
-// call the UpdateCertificateAuthority (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_UpdateCertificateAuthority.html)
+// call the UpdateCertificateAuthority (https://docs.aws.amazon.com/privateca/latest/APIReference/API_UpdateCertificateAuthority.html)
 // action. If the private CA was in the PENDING_CERTIFICATE state at deletion,
-// you must use the ImportCertificateAuthorityCertificate (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_ImportCertificateAuthorityCertificate.html)
+// you must use the ImportCertificateAuthorityCertificate (https://docs.aws.amazon.com/privateca/latest/APIReference/API_ImportCertificateAuthorityCertificate.html)
 // action to import a certificate authority into the private CA before it can
 // be activated. You cannot restore a CA after the restoration period has ended.
 //
@@ -2277,15 +2280,16 @@ func (c *ACMPCA) RestoreCertificateAuthorityRequest(input *RestoreCertificateAut
 // API operation RestoreCertificateAuthority for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource such as a private CA, S3 bucket, certificate, audit report, or
-//   policy cannot be found.
 //
-//   * InvalidStateException
-//   The state of the private CA does not allow this action to occur.
+//   - ResourceNotFoundException
+//     A resource such as a private CA, S3 bucket, certificate, audit report, or
+//     policy cannot be found.
 //
-//   * InvalidArnException
-//   The requested Amazon Resource Name (ARN) does not refer to an existing resource.
+//   - InvalidStateException
+//     The state of the private CA does not allow this action to occur.
+//
+//   - InvalidArnException
+//     The requested Amazon Resource Name (ARN) does not refer to an existing resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-pca-2017-08-22/RestoreCertificateAuthority
 func (c *ACMPCA) RestoreCertificateAuthority(input *RestoreCertificateAuthorityInput) (*RestoreCertificateAuthorityOutput, error) {
@@ -2325,14 +2329,13 @@ const opRevokeCertificate = "RevokeCertificate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RevokeCertificateRequest method.
+//	req, resp := client.RevokeCertificateRequest(params)
 //
-//    // Example sending a request using the RevokeCertificateRequest method.
-//    req, resp := client.RevokeCertificateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-pca-2017-08-22/RevokeCertificate
 func (c *ACMPCA) RevokeCertificateRequest(input *RevokeCertificateInput) (req *request.Request, output *RevokeCertificateOutput) {
@@ -2354,23 +2357,25 @@ func (c *ACMPCA) RevokeCertificateRequest(input *RevokeCertificateInput) (req *r
 
 // RevokeCertificate API operation for AWS Certificate Manager Private Certificate Authority.
 //
-// Revokes a certificate that was issued inside ACM Private CA. If you enable
-// a certificate revocation list (CRL) when you create or update your private
-// CA, information about the revoked certificates will be included in the CRL.
-// ACM Private CA writes the CRL to an S3 bucket that you specify. A CRL is
-// typically updated approximately 30 minutes after a certificate is revoked.
-// If for any reason the CRL update fails, ACM Private CA attempts makes further
-// attempts every 15 minutes. With Amazon CloudWatch, you can create alarms
-// for the metrics CRLGenerated and MisconfiguredCRLBucket. For more information,
-// see Supported CloudWatch Metrics (https://docs.aws.amazon.com/acm-pca/latest/userguide/PcaCloudWatch.html).
+// Revokes a certificate that was issued inside Amazon Web Services Private
+// CA. If you enable a certificate revocation list (CRL) when you create or
+// update your private CA, information about the revoked certificates will be
+// included in the CRL. Amazon Web Services Private CA writes the CRL to an
+// S3 bucket that you specify. A CRL is typically updated approximately 30 minutes
+// after a certificate is revoked. If for any reason the CRL update fails, Amazon
+// Web Services Private CA attempts makes further attempts every 15 minutes.
+// With Amazon CloudWatch, you can create alarms for the metrics CRLGenerated
+// and MisconfiguredCRLBucket. For more information, see Supported CloudWatch
+// Metrics (https://docs.aws.amazon.com/privateca/latest/userguide/PcaCloudWatch.html).
 //
-// Both PCA and the IAM principal must have permission to write to the S3 bucket
-// that you specify. If the IAM principal making the call does not have permission
-// to write to the bucket, then an exception is thrown. For more information,
-// see Access policies for CRLs in Amazon S3 (https://docs.aws.amazon.com/acm-pca/latest/userguide/crl-planning.html#s3-policies).
+// Both Amazon Web Services Private CA and the IAM principal must have permission
+// to write to the S3 bucket that you specify. If the IAM principal making the
+// call does not have permission to write to the bucket, then an exception is
+// thrown. For more information, see Access policies for CRLs in Amazon S3 (https://docs.aws.amazon.com/privateca/latest/userguide/crl-planning.html#s3-policies).
 //
-// ACM Private CA also writes revocation information to the audit report. For
-// more information, see CreateCertificateAuthorityAuditReport (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_CreateCertificateAuthorityAuditReport.html).
+// Amazon Web Services Private CA also writes revocation information to the
+// audit report. For more information, see CreateCertificateAuthorityAuditReport
+// (https://docs.aws.amazon.com/privateca/latest/APIReference/API_CreateCertificateAuthorityAuditReport.html).
 //
 // You cannot revoke a root CA self-signed certificate.
 //
@@ -2382,34 +2387,35 @@ func (c *ACMPCA) RevokeCertificateRequest(input *RevokeCertificateInput) (req *r
 // API operation RevokeCertificate for usage and error information.
 //
 // Returned Error Types:
-//   * ConcurrentModificationException
-//   A previous update to your private CA is still ongoing.
 //
-//   * InvalidArnException
-//   The requested Amazon Resource Name (ARN) does not refer to an existing resource.
+//   - ConcurrentModificationException
+//     A previous update to your private CA is still ongoing.
 //
-//   * InvalidRequestException
-//   The request action cannot be performed or is prohibited.
+//   - InvalidArnException
+//     The requested Amazon Resource Name (ARN) does not refer to an existing resource.
 //
-//   * InvalidStateException
-//   The state of the private CA does not allow this action to occur.
+//   - InvalidRequestException
+//     The request action cannot be performed or is prohibited.
 //
-//   * LimitExceededException
-//   An ACM Private CA quota has been exceeded. See the exception message returned
-//   to determine the quota that was exceeded.
+//   - InvalidStateException
+//     The state of the private CA does not allow this action to occur.
 //
-//   * ResourceNotFoundException
-//   A resource such as a private CA, S3 bucket, certificate, audit report, or
-//   policy cannot be found.
+//   - LimitExceededException
+//     An Amazon Web Services Private CA quota has been exceeded. See the exception
+//     message returned to determine the quota that was exceeded.
 //
-//   * RequestAlreadyProcessedException
-//   Your request has already been completed.
+//   - ResourceNotFoundException
+//     A resource such as a private CA, S3 bucket, certificate, audit report, or
+//     policy cannot be found.
 //
-//   * RequestInProgressException
-//   Your request is already in progress.
+//   - RequestAlreadyProcessedException
+//     Your request has already been completed.
 //
-//   * RequestFailedException
-//   The request has failed for an unspecified reason.
+//   - RequestInProgressException
+//     Your request is already in progress.
+//
+//   - RequestFailedException
+//     The request has failed for an unspecified reason.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-pca-2017-08-22/RevokeCertificate
 func (c *ACMPCA) RevokeCertificate(input *RevokeCertificateInput) (*RevokeCertificateOutput, error) {
@@ -2449,14 +2455,13 @@ const opTagCertificateAuthority = "TagCertificateAuthority"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagCertificateAuthorityRequest method.
+//	req, resp := client.TagCertificateAuthorityRequest(params)
 //
-//    // Example sending a request using the TagCertificateAuthorityRequest method.
-//    req, resp := client.TagCertificateAuthorityRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-pca-2017-08-22/TagCertificateAuthority
 func (c *ACMPCA) TagCertificateAuthorityRequest(input *TagCertificateAuthorityInput) (req *request.Request, output *TagCertificateAuthorityOutput) {
@@ -2485,9 +2490,14 @@ func (c *ACMPCA) TagCertificateAuthorityRequest(input *TagCertificateAuthorityIn
 // You can apply a tag to just one private CA if you want to identify a specific
 // characteristic of that CA, or you can apply the same tag to multiple private
 // CAs if you want to filter for a common relationship among those CAs. To remove
-// one or more tags, use the UntagCertificateAuthority (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_UntagCertificateAuthority.html)
-// action. Call the ListTags (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_ListTags.html)
+// one or more tags, use the UntagCertificateAuthority (https://docs.aws.amazon.com/privateca/latest/APIReference/API_UntagCertificateAuthority.html)
+// action. Call the ListTags (https://docs.aws.amazon.com/privateca/latest/APIReference/API_ListTags.html)
 // action to see what tags are associated with your CA.
+//
+// To attach tags to a private CA during the creation procedure, a CA administrator
+// must first associate an inline IAM policy with the CreateCertificateAuthority
+// action and explicitly allow tagging. For more information, see Attaching
+// tags to a CA at the time of creation (https://docs.aws.amazon.com/privateca/latest/userguide/auth-InlinePolicies.html#policy-tag-ca).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2497,23 +2507,24 @@ func (c *ACMPCA) TagCertificateAuthorityRequest(input *TagCertificateAuthorityIn
 // API operation TagCertificateAuthority for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource such as a private CA, S3 bucket, certificate, audit report, or
-//   policy cannot be found.
 //
-//   * InvalidArnException
-//   The requested Amazon Resource Name (ARN) does not refer to an existing resource.
+//   - ResourceNotFoundException
+//     A resource such as a private CA, S3 bucket, certificate, audit report, or
+//     policy cannot be found.
 //
-//   * InvalidStateException
-//   The state of the private CA does not allow this action to occur.
+//   - InvalidArnException
+//     The requested Amazon Resource Name (ARN) does not refer to an existing resource.
 //
-//   * InvalidTagException
-//   The tag associated with the CA is not valid. The invalid argument is contained
-//   in the message field.
+//   - InvalidStateException
+//     The state of the private CA does not allow this action to occur.
 //
-//   * TooManyTagsException
-//   You can associate up to 50 tags with a private CA. Exception information
-//   is contained in the exception message field.
+//   - InvalidTagException
+//     The tag associated with the CA is not valid. The invalid argument is contained
+//     in the message field.
+//
+//   - TooManyTagsException
+//     You can associate up to 50 tags with a private CA. Exception information
+//     is contained in the exception message field.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-pca-2017-08-22/TagCertificateAuthority
 func (c *ACMPCA) TagCertificateAuthority(input *TagCertificateAuthorityInput) (*TagCertificateAuthorityOutput, error) {
@@ -2553,14 +2564,13 @@ const opUntagCertificateAuthority = "UntagCertificateAuthority"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagCertificateAuthorityRequest method.
+//	req, resp := client.UntagCertificateAuthorityRequest(params)
 //
-//    // Example sending a request using the UntagCertificateAuthorityRequest method.
-//    req, resp := client.UntagCertificateAuthorityRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-pca-2017-08-22/UntagCertificateAuthority
 func (c *ACMPCA) UntagCertificateAuthorityRequest(input *UntagCertificateAuthorityInput) (req *request.Request, output *UntagCertificateAuthorityOutput) {
@@ -2586,8 +2596,8 @@ func (c *ACMPCA) UntagCertificateAuthorityRequest(input *UntagCertificateAuthori
 // pair. If you do not specify the value portion of the tag when calling this
 // action, the tag will be removed regardless of value. If you specify a value,
 // the tag is removed only if it is associated with the specified value. To
-// add tags to a private CA, use the TagCertificateAuthority (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_TagCertificateAuthority.html).
-// Call the ListTags (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_ListTags.html)
+// add tags to a private CA, use the TagCertificateAuthority (https://docs.aws.amazon.com/privateca/latest/APIReference/API_TagCertificateAuthority.html).
+// Call the ListTags (https://docs.aws.amazon.com/privateca/latest/APIReference/API_ListTags.html)
 // action to see what tags are associated with your CA.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -2598,19 +2608,20 @@ func (c *ACMPCA) UntagCertificateAuthorityRequest(input *UntagCertificateAuthori
 // API operation UntagCertificateAuthority for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource such as a private CA, S3 bucket, certificate, audit report, or
-//   policy cannot be found.
 //
-//   * InvalidArnException
-//   The requested Amazon Resource Name (ARN) does not refer to an existing resource.
+//   - ResourceNotFoundException
+//     A resource such as a private CA, S3 bucket, certificate, audit report, or
+//     policy cannot be found.
 //
-//   * InvalidStateException
-//   The state of the private CA does not allow this action to occur.
+//   - InvalidArnException
+//     The requested Amazon Resource Name (ARN) does not refer to an existing resource.
 //
-//   * InvalidTagException
-//   The tag associated with the CA is not valid. The invalid argument is contained
-//   in the message field.
+//   - InvalidStateException
+//     The state of the private CA does not allow this action to occur.
+//
+//   - InvalidTagException
+//     The tag associated with the CA is not valid. The invalid argument is contained
+//     in the message field.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-pca-2017-08-22/UntagCertificateAuthority
 func (c *ACMPCA) UntagCertificateAuthority(input *UntagCertificateAuthorityInput) (*UntagCertificateAuthorityOutput, error) {
@@ -2650,14 +2661,13 @@ const opUpdateCertificateAuthority = "UpdateCertificateAuthority"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateCertificateAuthorityRequest method.
+//	req, resp := client.UpdateCertificateAuthorityRequest(params)
 //
-//    // Example sending a request using the UpdateCertificateAuthorityRequest method.
-//    req, resp := client.UpdateCertificateAuthorityRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-pca-2017-08-22/UpdateCertificateAuthority
 func (c *ACMPCA) UpdateCertificateAuthorityRequest(input *UpdateCertificateAuthorityInput) (req *request.Request, output *UpdateCertificateAuthorityOutput) {
@@ -2684,10 +2694,10 @@ func (c *ACMPCA) UpdateCertificateAuthorityRequest(input *UpdateCertificateAutho
 // it. You can disable a private CA that is in the ACTIVE state or make a CA
 // that is in the DISABLED state active again.
 //
-// Both PCA and the IAM principal must have permission to write to the S3 bucket
-// that you specify. If the IAM principal making the call does not have permission
-// to write to the bucket, then an exception is thrown. For more information,
-// see Access policies for CRLs in Amazon S3 (https://docs.aws.amazon.com/acm-pca/latest/userguide/crl-planning.html#s3-policies).
+// Both Amazon Web Services Private CA and the IAM principal must have permission
+// to write to the S3 bucket that you specify. If the IAM principal making the
+// call does not have permission to write to the bucket, then an exception is
+// thrown. For more information, see Access policies for CRLs in Amazon S3 (https://docs.aws.amazon.com/privateca/latest/userguide/crl-planning.html#s3-policies).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2697,26 +2707,27 @@ func (c *ACMPCA) UpdateCertificateAuthorityRequest(input *UpdateCertificateAutho
 // API operation UpdateCertificateAuthority for usage and error information.
 //
 // Returned Error Types:
-//   * ConcurrentModificationException
-//   A previous update to your private CA is still ongoing.
 //
-//   * ResourceNotFoundException
-//   A resource such as a private CA, S3 bucket, certificate, audit report, or
-//   policy cannot be found.
+//   - ConcurrentModificationException
+//     A previous update to your private CA is still ongoing.
 //
-//   * InvalidArgsException
-//   One or more of the specified arguments was not valid.
+//   - ResourceNotFoundException
+//     A resource such as a private CA, S3 bucket, certificate, audit report, or
+//     policy cannot be found.
 //
-//   * InvalidArnException
-//   The requested Amazon Resource Name (ARN) does not refer to an existing resource.
+//   - InvalidArgsException
+//     One or more of the specified arguments was not valid.
 //
-//   * InvalidStateException
-//   The state of the private CA does not allow this action to occur.
+//   - InvalidArnException
+//     The requested Amazon Resource Name (ARN) does not refer to an existing resource.
 //
-//   * InvalidPolicyException
-//   The resource policy is invalid or is missing a required statement. For general
-//   information about IAM policy and statement structure, see Overview of JSON
-//   Policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies.html#access_policies-json).
+//   - InvalidStateException
+//     The state of the private CA does not allow this action to occur.
+//
+//   - InvalidPolicyException
+//     The resource policy is invalid or is missing a required statement. For general
+//     information about IAM policy and statement structure, see Overview of JSON
+//     Policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies.html#access_policies-json).
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-pca-2017-08-22/UpdateCertificateAuthority
 func (c *ACMPCA) UpdateCertificateAuthority(input *UpdateCertificateAuthorityInput) (*UpdateCertificateAuthorityOutput, error) {
@@ -3063,7 +3074,8 @@ func (s *AccessMethod) SetCustomObjectIdentifier(v string) *AccessMethod {
 // or else this parameter is ignored.
 //
 // If conflicting or duplicate certificate information is supplied from other
-// sources, ACM Private CA applies order of operation rules (https://docs.aws.amazon.com/acm-pca/latest/userguide/UsingTemplates.html#template-order-of-operations)
+// sources, Amazon Web Services Private CA applies order of operation rules
+// (https://docs.aws.amazon.com/privateca/latest/userguide/UsingTemplates.html#template-order-of-operations)
 // to determine what information is used.
 type ApiPassthrough struct {
 	_ struct{} `type:"structure"`
@@ -3134,12 +3146,13 @@ func (s *ApiPassthrough) SetSubject(v *ASN1Subject) *ApiPassthrough {
 // private CA can issue and revoke X.509 digital certificates. Digital certificates
 // verify that the entity named in the certificate Subject field owns or controls
 // the public key contained in the Subject Public Key Info field. Call the CreateCertificateAuthority
-// (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_CreateCertificateAuthority.html)
+// (https://docs.aws.amazon.com/privateca/latest/APIReference/API_CreateCertificateAuthority.html)
 // action to create your private CA. You must then call the GetCertificateAuthorityCertificate
-// (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_GetCertificateAuthorityCertificate.html)
+// (https://docs.aws.amazon.com/privateca/latest/APIReference/API_GetCertificateAuthorityCertificate.html)
 // action to retrieve a private CA certificate signing request (CSR). Sign the
-// CSR with your ACM Private CA-hosted or on-premises root or subordinate CA
-// certificate. Call the ImportCertificateAuthorityCertificate (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_ImportCertificateAuthorityCertificate.html)
+// CSR with your Amazon Web Services Private CA-hosted or on-premises root or
+// subordinate CA certificate. Call the ImportCertificateAuthorityCertificate
+// (https://docs.aws.amazon.com/privateca/latest/APIReference/API_ImportCertificateAuthorityCertificate.html)
 // action to import the signed certificate into Certificate Manager (ACM).
 type CertificateAuthority struct {
 	_ struct{} `type:"structure"`
@@ -3183,7 +3196,7 @@ type CertificateAuthority struct {
 
 	// The period during which a deleted CA can be restored. For more information,
 	// see the PermanentDeletionTimeInDays parameter of the DeleteCertificateAuthorityRequest
-	// (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_DeleteCertificateAuthorityRequest.html)
+	// (https://docs.aws.amazon.com/privateca/latest/APIReference/API_DeleteCertificateAuthorityRequest.html)
 	// action.
 	RestorableUntil *time.Time `type:"timestamp"`
 
@@ -3200,6 +3213,14 @@ type CertificateAuthority struct {
 
 	// Type of your private CA.
 	Type *string `type:"string" enum:"CertificateAuthorityType"`
+
+	// Specifies whether the CA issues general-purpose certificates that typically
+	// require a revocation mechanism, or short-lived certificates that may optionally
+	// omit revocation because they expire quickly. Short-lived certificate validity
+	// is limited to seven days.
+	//
+	// The default value is GENERAL_PURPOSE.
+	UsageMode *string `type:"string" enum:"CertificateAuthorityUsageMode"`
 }
 
 // String returns the string representation.
@@ -3304,12 +3325,18 @@ func (s *CertificateAuthority) SetType(v string) *CertificateAuthority {
 	return s
 }
 
+// SetUsageMode sets the UsageMode field's value.
+func (s *CertificateAuthority) SetUsageMode(v string) *CertificateAuthority {
+	s.UsageMode = &v
+	return s
+}
+
 // Contains configuration information for your private certificate authority
 // (CA). This includes information about the class of public key algorithm and
 // the key pair that your private CA creates when it issues a certificate. It
 // also includes the signature algorithm that it uses when issuing certificates,
 // and its X.500 distinguished name. You must specify this information when
-// you call the CreateCertificateAuthority (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_CreateCertificateAuthority.html)
+// you call the CreateCertificateAuthority (https://docs.aws.amazon.com/privateca/latest/APIReference/API_CreateCertificateAuthority.html)
 // action.
 type CertificateAuthorityConfiguration struct {
 	_ struct{} `type:"structure"`
@@ -3679,10 +3706,11 @@ type CreateCertificateAuthorityInput struct {
 	// Custom string that can be used to distinguish between calls to the CreateCertificateAuthority
 	// action. Idempotency tokens for CreateCertificateAuthority time out after
 	// five minutes. Therefore, if you call CreateCertificateAuthority multiple
-	// times with the same idempotency token within five minutes, ACM Private CA
-	// recognizes that you are requesting only certificate authority and will issue
-	// only one. If you change the idempotency token for each call, PCA recognizes
-	// that you are requesting multiple certificate authorities.
+	// times with the same idempotency token within five minutes, Amazon Web Services
+	// Private CA recognizes that you are requesting only certificate authority
+	// and will issue only one. If you change the idempotency token for each call,
+	// Amazon Web Services Private CA recognizes that you are requesting multiple
+	// certificate authorities.
 	IdempotencyToken *string `min:"1" type:"string"`
 
 	// Specifies a cryptographic key management compliance standard used for handling
@@ -3690,18 +3718,39 @@ type CreateCertificateAuthorityInput struct {
 	//
 	// Default: FIPS_140_2_LEVEL_3_OR_HIGHER
 	//
-	// Note: FIPS_140_2_LEVEL_3_OR_HIGHER is not supported in Region ap-northeast-3.
-	// When creating a CA in the ap-northeast-3, you must provide FIPS_140_2_LEVEL_2_OR_HIGHER
-	// as the argument for KeyStorageSecurityStandard. Failure to do this results
-	// in an InvalidArgsException with the message, "A certificate authority cannot
-	// be created in this region with the specified security standard."
+	// Some Amazon Web Services Regions do not support the default. When creating
+	// a CA in these Regions, you must provide FIPS_140_2_LEVEL_2_OR_HIGHER as the
+	// argument for KeyStorageSecurityStandard. Failure to do this results in an
+	// InvalidArgsException with the message, "A certificate authority cannot be
+	// created in this region with the specified security standard."
+	//
+	// For information about security standard support in various Regions, see Storage
+	// and security compliance of Amazon Web Services Private CA private keys (https://docs.aws.amazon.com/privateca/latest/userguide/data-protection.html#private-keys).
 	KeyStorageSecurityStandard *string `type:"string" enum:"KeyStorageSecurityStandard"`
 
 	// Contains information to enable Online Certificate Status Protocol (OCSP)
 	// support, to enable a certificate revocation list (CRL), to enable both, or
 	// to enable neither. The default is for both certificate validation mechanisms
-	// to be disabled. For more information, see the OcspConfiguration (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_OcspConfiguration.html)
-	// and CrlConfiguration (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_CrlConfiguration.html)
+	// to be disabled.
+	//
+	// The following requirements apply to revocation configurations.
+	//
+	//    * A configuration disabling CRLs or OCSP must contain only the Enabled=False
+	//    parameter, and will fail if other parameters such as CustomCname or ExpirationInDays
+	//    are included.
+	//
+	//    * In a CRL configuration, the S3BucketName parameter must conform to Amazon
+	//    S3 bucket naming rules (https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html).
+	//
+	//    * A configuration containing a custom Canonical Name (CNAME) parameter
+	//    for CRLs or OCSP must conform to RFC2396 (https://www.ietf.org/rfc/rfc2396.txt)
+	//    restrictions on the use of special characters in a CNAME.
+	//
+	//    * In a CRL or OCSP configuration, the value of a CNAME parameter must
+	//    not include a protocol prefix such as "http://" or "https://".
+	//
+	// For more information, see the OcspConfiguration (https://docs.aws.amazon.com/privateca/latest/APIReference/API_OcspConfiguration.html)
+	// and CrlConfiguration (https://docs.aws.amazon.com/privateca/latest/APIReference/API_CrlConfiguration.html)
 	// types.
 	RevocationConfiguration *RevocationConfiguration `type:"structure"`
 
@@ -3709,6 +3758,14 @@ type CreateCertificateAuthorityInput struct {
 	// up to 50 tags with a private CA. For information using tags with IAM to manage
 	// permissions, see Controlling Access Using IAM Tags (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_iam-tags.html).
 	Tags []*Tag `min:"1" type:"list"`
+
+	// Specifies whether the CA issues general-purpose certificates that typically
+	// require a revocation mechanism, or short-lived certificates that may optionally
+	// omit revocation because they expire quickly. Short-lived certificate validity
+	// is limited to seven days.
+	//
+	// The default value is GENERAL_PURPOSE.
+	UsageMode *string `type:"string" enum:"CertificateAuthorityUsageMode"`
 }
 
 // String returns the string representation.
@@ -3807,6 +3864,12 @@ func (s *CreateCertificateAuthorityInput) SetTags(v []*Tag) *CreateCertificateAu
 	return s
 }
 
+// SetUsageMode sets the UsageMode field's value.
+func (s *CreateCertificateAuthorityInput) SetUsageMode(v string) *CreateCertificateAuthorityInput {
+	s.UsageMode = &v
+	return s
+}
+
 type CreateCertificateAuthorityOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3851,7 +3914,7 @@ type CreatePermissionInput struct {
 	Actions []*string `min:"1" type:"list" required:"true" enum:"ActionType"`
 
 	// The Amazon Resource Name (ARN) of the CA that grants the permissions. You
-	// can find the ARN by calling the ListCertificateAuthorities (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_ListCertificateAuthorities.html)
+	// can find the ARN by calling the ListCertificateAuthorities (https://docs.aws.amazon.com/privateca/latest/APIReference/API_ListCertificateAuthorities.html)
 	// action. This must have the following form:
 	//
 	// arn:aws:acm-pca:region:account:certificate-authority/12345678-1234-1234-1234-123456789012 .
@@ -3969,10 +4032,11 @@ func (s CreatePermissionOutput) GoString() string {
 // the name of your bucket by specifying a value for the CustomCname parameter.
 // Your private CA copies the CNAME or the S3 bucket name to the CRL Distribution
 // Points extension of each certificate it issues. Your S3 bucket policy must
-// give write permission to ACM Private CA.
+// give write permission to Amazon Web Services Private CA.
 //
-// ACM Private CA assets that are stored in Amazon S3 can be protected with
-// encryption. For more information, see Encrypting Your CRLs (https://docs.aws.amazon.com/acm-pca/latest/userguide/PcaCreateCa.html#crl-encryption).
+// Amazon Web Services Private CA assets that are stored in Amazon S3 can be
+// protected with encryption. For more information, see Encrypting Your CRLs
+// (https://docs.aws.amazon.com/privateca/latest/userguide/PcaCreateCa.html#crl-encryption).
 //
 // Your private CA uses the value in the ExpirationInDays parameter to calculate
 // the nextUpdate field in the CRL. The CRL is refreshed prior to a certificate's
@@ -3981,58 +4045,63 @@ func (s CreatePermissionOutput) GoString() string {
 // CRL after expiration, and it always appears in the audit report.
 //
 // A CRL is typically updated approximately 30 minutes after a certificate is
-// revoked. If for any reason a CRL update fails, ACM Private CA makes further
-// attempts every 15 minutes.
+// revoked. If for any reason a CRL update fails, Amazon Web Services Private
+// CA makes further attempts every 15 minutes.
 //
 // CRLs contain the following fields:
 //
-//    * Version: The current version number defined in RFC 5280 is V2. The integer
-//    value is 0x1.
+//   - Version: The current version number defined in RFC 5280 is V2. The integer
+//     value is 0x1.
 //
-//    * Signature Algorithm: The name of the algorithm used to sign the CRL.
+//   - Signature Algorithm: The name of the algorithm used to sign the CRL.
 //
-//    * Issuer: The X.500 distinguished name of your private CA that issued
-//    the CRL.
+//   - Issuer: The X.500 distinguished name of your private CA that issued
+//     the CRL.
 //
-//    * Last Update: The issue date and time of this CRL.
+//   - Last Update: The issue date and time of this CRL.
 //
-//    * Next Update: The day and time by which the next CRL will be issued.
+//   - Next Update: The day and time by which the next CRL will be issued.
 //
-//    * Revoked Certificates: List of revoked certificates. Each list item contains
-//    the following information. Serial Number: The serial number, in hexadecimal
-//    format, of the revoked certificate. Revocation Date: Date and time the
-//    certificate was revoked. CRL Entry Extensions: Optional extensions for
-//    the CRL entry. X509v3 CRL Reason Code: Reason the certificate was revoked.
+//   - Revoked Certificates: List of revoked certificates. Each list item contains
+//     the following information. Serial Number: The serial number, in hexadecimal
+//     format, of the revoked certificate. Revocation Date: Date and time the
+//     certificate was revoked. CRL Entry Extensions: Optional extensions for
+//     the CRL entry. X509v3 CRL Reason Code: Reason the certificate was revoked.
 //
-//    * CRL Extensions: Optional extensions for the CRL. X509v3 Authority Key
-//    Identifier: Identifies the public key associated with the private key
-//    used to sign the certificate. X509v3 CRL Number:: Decimal sequence number
-//    for the CRL.
+//   - CRL Extensions: Optional extensions for the CRL. X509v3 Authority Key
+//     Identifier: Identifies the public key associated with the private key
+//     used to sign the certificate. X509v3 CRL Number:: Decimal sequence number
+//     for the CRL.
 //
-//    * Signature Algorithm: Algorithm used by your private CA to sign the CRL.
+//   - Signature Algorithm: Algorithm used by your private CA to sign the CRL.
 //
-//    * Signature Value: Signature computed over the CRL.
+//   - Signature Value: Signature computed over the CRL.
 //
-// Certificate revocation lists created by ACM Private CA are DER-encoded. You
-// can use the following OpenSSL command to list a CRL.
+// Certificate revocation lists created by Amazon Web Services Private CA are
+// DER-encoded. You can use the following OpenSSL command to list a CRL.
 //
 // openssl crl -inform DER -text -in crl_path -noout
 //
-// For more information, see Planning a certificate revocation list (CRL) (https://docs.aws.amazon.com/acm-pca/latest/userguide/crl-planning.html)
-// in the Certificate Manager Private Certificate Authority (PCA) User Guide
+// For more information, see Planning a certificate revocation list (CRL) (https://docs.aws.amazon.com/privateca/latest/userguide/crl-planning.html)
+// in the Amazon Web Services Private Certificate Authority User Guide
 type CrlConfiguration struct {
 	_ struct{} `type:"structure"`
 
 	// Name inserted into the certificate CRL Distribution Points extension that
 	// enables the use of an alias for the CRL distribution point. Use this value
 	// if you don't want the name of your S3 bucket to be public.
+	//
+	// The content of a Canonical Name (CNAME) record must conform to RFC2396 (https://www.ietf.org/rfc/rfc2396.txt)
+	// restrictions on the use of special characters in URIs. Additionally, the
+	// value of the CNAME must not include a protocol prefix such as "http://" or
+	// "https://".
 	CustomCname *string `type:"string"`
 
 	// Boolean value that specifies whether certificate revocation lists (CRLs)
 	// are enabled. You can use this value to enable certificate revocation for
-	// a new CA when you call the CreateCertificateAuthority (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_CreateCertificateAuthority.html)
+	// a new CA when you call the CreateCertificateAuthority (https://docs.aws.amazon.com/privateca/latest/APIReference/API_CreateCertificateAuthority.html)
 	// action or for an existing CA when you call the UpdateCertificateAuthority
-	// (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_UpdateCertificateAuthority.html)
+	// (https://docs.aws.amazon.com/privateca/latest/APIReference/API_UpdateCertificateAuthority.html)
 	// action.
 	//
 	// Enabled is a required field
@@ -4044,9 +4113,11 @@ type CrlConfiguration struct {
 	// Name of the S3 bucket that contains the CRL. If you do not provide a value
 	// for the CustomCname argument, the name of your S3 bucket is placed into the
 	// CRL Distribution Points extension of the issued certificate. You can change
-	// the name of your bucket by calling the UpdateCertificateAuthority (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_UpdateCertificateAuthority.html)
-	// operation. You must specify a bucket policy (https://docs.aws.amazon.com/acm-pca/latest/userguide/PcaCreateCa.html#s3-policies)
-	// that allows ACM Private CA to write the CRL to your bucket.
+	// the name of your bucket by calling the UpdateCertificateAuthority (https://docs.aws.amazon.com/privateca/latest/APIReference/API_UpdateCertificateAuthority.html)
+	// operation. You must specify a bucket policy (https://docs.aws.amazon.com/privateca/latest/userguide/PcaCreateCa.html#s3-policies)
+	// that allows Amazon Web Services Private CA to write the CRL to your bucket.
+	//
+	// The S3BucketName parameter must conform to the S3 bucket naming rules (https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html).
 	S3BucketName *string `min:"3" type:"string"`
 
 	// Determines whether the CRL will be publicly readable or privately held in
@@ -4063,7 +4134,7 @@ type CrlConfiguration struct {
 	// and not doing so results in an error. If you have disabled BPA in S3, then
 	// you can specify either BUCKET_OWNER_FULL_CONTROL or PUBLIC_READ as the value.
 	//
-	// For more information, see Blocking public access to the S3 bucket (https://docs.aws.amazon.com/acm-pca/latest/userguide/PcaCreateCa.html#s3-bpa).
+	// For more information, see Blocking public access to the S3 bucket (https://docs.aws.amazon.com/privateca/latest/userguide/PcaCreateCa.html#s3-bpa).
 	S3ObjectAcl *string `type:"string" enum:"S3ObjectAcl"`
 }
 
@@ -4268,7 +4339,7 @@ func (s *CustomAttribute) SetValue(v string) *CustomAttribute {
 // Specifies the X.509 extension information for a certificate.
 //
 // Extensions present in CustomExtensions follow the ApiPassthrough template
-// rules (https://docs.aws.amazon.com/acm-pca/latest/userguide/UsingTemplates.html#template-order-of-operations).
+// rules (https://docs.aws.amazon.com/privateca/latest/userguide/UsingTemplates.html#template-order-of-operations).
 type CustomExtension struct {
 	_ struct{} `type:"structure"`
 
@@ -4346,7 +4417,7 @@ type DeleteCertificateAuthorityInput struct {
 	_ struct{} `type:"structure"`
 
 	// The Amazon Resource Name (ARN) that was returned when you called CreateCertificateAuthority
-	// (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_CreateCertificateAuthority.html).
+	// (https://docs.aws.amazon.com/privateca/latest/APIReference/API_CreateCertificateAuthority.html).
 	// This must have the following form:
 	//
 	// arn:aws:acm-pca:region:account:certificate-authority/12345678-1234-1234-1234-123456789012 .
@@ -4434,7 +4505,7 @@ type DeletePermissionInput struct {
 	_ struct{} `type:"structure"`
 
 	// The Amazon Resource Number (ARN) of the private CA that issued the permissions.
-	// You can find the CA's ARN by calling the ListCertificateAuthorities (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_ListCertificateAuthorities.html)
+	// You can find the CA's ARN by calling the ListCertificateAuthorities (https://docs.aws.amazon.com/privateca/latest/APIReference/API_ListCertificateAuthorities.html)
 	// action. This must have the following form:
 	//
 	// arn:aws:acm-pca:region:account:certificate-authority/12345678-1234-1234-1234-123456789012 .
@@ -4537,7 +4608,7 @@ type DeletePolicyInput struct {
 
 	// The Amazon Resource Number (ARN) of the private CA that will have its policy
 	// deleted. You can find the CA's ARN by calling the ListCertificateAuthorities
-	// (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_ListCertificateAuthorities.html)
+	// (https://docs.aws.amazon.com/privateca/latest/APIReference/API_ListCertificateAuthorities.html)
 	// action. The ARN value must have the form arn:aws:acm-pca:region:account:certificate-authority/01234567-89ab-cdef-0123-0123456789ab.
 	//
 	// ResourceArn is a required field
@@ -4610,7 +4681,7 @@ type DescribeCertificateAuthorityAuditReportInput struct {
 	_ struct{} `type:"structure"`
 
 	// The report ID returned by calling the CreateCertificateAuthorityAuditReport
-	// (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_CreateCertificateAuthorityAuditReport.html)
+	// (https://docs.aws.amazon.com/privateca/latest/APIReference/API_CreateCertificateAuthorityAuditReport.html)
 	// action.
 	//
 	// AuditReportId is a required field
@@ -4738,7 +4809,7 @@ type DescribeCertificateAuthorityInput struct {
 	_ struct{} `type:"structure"`
 
 	// The Amazon Resource Name (ARN) that was returned when you called CreateCertificateAuthority
-	// (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_CreateCertificateAuthority.html).
+	// (https://docs.aws.amazon.com/privateca/latest/APIReference/API_CreateCertificateAuthority.html).
 	// This must be of the form:
 	//
 	// arn:aws:acm-pca:region:account:certificate-authority/12345678-1234-1234-1234-123456789012 .
@@ -4790,7 +4861,7 @@ func (s *DescribeCertificateAuthorityInput) SetCertificateAuthorityArn(v string)
 type DescribeCertificateAuthorityOutput struct {
 	_ struct{} `type:"structure"`
 
-	// A CertificateAuthority (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_CertificateAuthority.html)
+	// A CertificateAuthority (https://docs.aws.amazon.com/privateca/latest/APIReference/API_CertificateAuthority.html)
 	// structure that contains information about your private CA.
 	CertificateAuthority *CertificateAuthority `type:"structure"`
 }
@@ -4936,9 +5007,6 @@ type Extensions struct {
 	// Contains a sequence of one or more X.509 extensions, each of which consists
 	// of an object identifier (OID), a base64-encoded value, and the critical flag.
 	// For more information, see the Global OID reference database. (https://oidref.com/2.5.29)
-	//
-	// The OID value of a CustomExtension (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_CustomExtension.html)
-	// must not match the OID of a predefined extension.
 	CustomExtensions []*CustomExtension `min:"1" type:"list"`
 
 	// Specifies additional purposes for which the certified public key may be used
@@ -5281,7 +5349,7 @@ type GetCertificateAuthorityCsrInput struct {
 	_ struct{} `type:"structure"`
 
 	// The Amazon Resource Name (ARN) that was returned when you called the CreateCertificateAuthority
-	// (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_CreateCertificateAuthority.html)
+	// (https://docs.aws.amazon.com/privateca/latest/APIReference/API_CreateCertificateAuthority.html)
 	// action. This must be of the form:
 	//
 	// arn:aws:acm-pca:region:account:certificate-authority/12345678-1234-1234-1234-123456789012
@@ -5374,7 +5442,7 @@ type GetCertificateInput struct {
 	CertificateArn *string `min:"5" type:"string" required:"true"`
 
 	// The Amazon Resource Name (ARN) that was returned when you called CreateCertificateAuthority
-	// (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_CreateCertificateAuthority.html).
+	// (https://docs.aws.amazon.com/privateca/latest/APIReference/API_CreateCertificateAuthority.html).
 	// This must be of the form:
 	//
 	// arn:aws:acm-pca:region:account:certificate-authority/12345678-1234-1234-1234-123456789012 .
@@ -5569,7 +5637,7 @@ type ImportCertificateAuthorityCertificateInput struct {
 	Certificate []byte `min:"1" type:"blob" required:"true"`
 
 	// The Amazon Resource Name (ARN) that was returned when you called CreateCertificateAuthority
-	// (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_CreateCertificateAuthority.html).
+	// (https://docs.aws.amazon.com/privateca/latest/APIReference/API_CreateCertificateAuthority.html).
 	// This must be of the form:
 	//
 	// arn:aws:acm-pca:region:account:certificate-authority/12345678-1234-1234-1234-123456789012
@@ -5578,9 +5646,9 @@ type ImportCertificateAuthorityCertificateInput struct {
 	CertificateAuthorityArn *string `min:"5" type:"string" required:"true"`
 
 	// A PEM-encoded file that contains all of your certificates, other than the
-	// certificate you're importing, chaining up to your root CA. Your ACM Private
-	// CA-hosted or on-premises root certificate is the last in the chain, and each
-	// certificate in the chain signs the one preceding.
+	// certificate you're importing, chaining up to your root CA. Your Amazon Web
+	// Services Private CA-hosted or on-premises root certificate is the last in
+	// the chain, and each certificate in the chain signs the one preceding.
 	//
 	// This parameter must be supplied when you import a subordinate CA. When you
 	// import a root CA, there is no chain.
@@ -5797,7 +5865,7 @@ func (s *InvalidArnException) RequestID() string {
 }
 
 // The token specified in the NextToken argument is not valid. Use the token
-// returned from your previous call to ListCertificateAuthorities (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_ListCertificateAuthorities.html).
+// returned from your previous call to ListCertificateAuthorities (https://docs.aws.amazon.com/privateca/latest/APIReference/API_ListCertificateAuthorities.html).
 type InvalidNextTokenException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -6126,15 +6194,16 @@ type IssueCertificateInput struct {
 	// Specifies X.509 certificate information to be included in the issued certificate.
 	// An APIPassthrough or APICSRPassthrough template variant must be selected,
 	// or else this parameter is ignored. For more information about using these
-	// templates, see Understanding Certificate Templates (https://docs.aws.amazon.com/acm-pca/latest/userguide/UsingTemplates.html).
+	// templates, see Understanding Certificate Templates (https://docs.aws.amazon.com/privateca/latest/userguide/UsingTemplates.html).
 	//
 	// If conflicting or duplicate certificate information is supplied during certificate
-	// issuance, ACM Private CA applies order of operation rules (https://docs.aws.amazon.com/acm-pca/latest/userguide/UsingTemplates.html#template-order-of-operations)
+	// issuance, Amazon Web Services Private CA applies order of operation rules
+	// (https://docs.aws.amazon.com/privateca/latest/userguide/UsingTemplates.html#template-order-of-operations)
 	// to determine what information is used.
 	ApiPassthrough *ApiPassthrough `type:"structure"`
 
 	// The Amazon Resource Name (ARN) that was returned when you called CreateCertificateAuthority
-	// (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_CreateCertificateAuthority.html).
+	// (https://docs.aws.amazon.com/privateca/latest/APIReference/API_CreateCertificateAuthority.html).
 	// This must be of the form:
 	//
 	// arn:aws:acm-pca:region:account:certificate-authority/12345678-1234-1234-1234-123456789012
@@ -6165,11 +6234,11 @@ type IssueCertificateInput struct {
 
 	// Alphanumeric string that can be used to distinguish between calls to the
 	// IssueCertificate action. Idempotency tokens for IssueCertificate time out
-	// after one minute. Therefore, if you call IssueCertificate multiple times
-	// with the same idempotency token within one minute, ACM Private CA recognizes
-	// that you are requesting only one certificate and will issue only one. If
-	// you change the idempotency token for each call, PCA recognizes that you are
-	// requesting multiple certificates.
+	// after five minutes. Therefore, if you call IssueCertificate multiple times
+	// with the same idempotency token within five minutes, Amazon Web Services
+	// Private CA recognizes that you are requesting only one certificate and will
+	// issue only one. If you change the idempotency token for each call, Amazon
+	// Web Services Private CA recognizes that you are requesting multiple certificates.
 	IdempotencyToken *string `min:"1" type:"string"`
 
 	// The name of the algorithm that will be used to sign the certificate to be
@@ -6178,23 +6247,23 @@ type IssueCertificateInput struct {
 	// This parameter should not be confused with the SigningAlgorithm parameter
 	// used to sign a CSR in the CreateCertificateAuthority action.
 	//
-	// The specified signing algorithm family (RSA or ECDSA) much match the algorithm
+	// The specified signing algorithm family (RSA or ECDSA) must match the algorithm
 	// family of the CA's secret key.
 	//
 	// SigningAlgorithm is a required field
 	SigningAlgorithm *string `type:"string" required:"true" enum:"SigningAlgorithm"`
 
 	// Specifies a custom configuration template to use when issuing a certificate.
-	// If this parameter is not provided, ACM Private CA defaults to the EndEntityCertificate/V1
-	// template. For CA certificates, you should choose the shortest path length
-	// that meets your needs. The path length is indicated by the PathLenN portion
-	// of the ARN, where N is the CA depth (https://docs.aws.amazon.com/acm-pca/latest/userguide/PcaTerms.html#terms-cadepth).
+	// If this parameter is not provided, Amazon Web Services Private CA defaults
+	// to the EndEntityCertificate/V1 template. For CA certificates, you should
+	// choose the shortest path length that meets your needs. The path length is
+	// indicated by the PathLenN portion of the ARN, where N is the CA depth (https://docs.aws.amazon.com/privateca/latest/userguide/PcaTerms.html#terms-cadepth).
 	//
 	// Note: The CA depth configured on a subordinate CA certificate must not exceed
 	// the limit set by its parents in the CA hierarchy.
 	//
-	// For a list of TemplateArn values supported by ACM Private CA, see Understanding
-	// Certificate Templates (https://docs.aws.amazon.com/acm-pca/latest/userguide/UsingTemplates.html).
+	// For a list of TemplateArn values supported by Amazon Web Services Private
+	// CA, see Understanding Certificate Templates (https://docs.aws.amazon.com/privateca/latest/userguide/UsingTemplates.html).
 	TemplateArn *string `min:"5" type:"string"`
 
 	// Information describing the end of the validity period of the certificate.
@@ -6219,15 +6288,15 @@ type IssueCertificateInput struct {
 	// Information describing the start of the validity period of the certificate.
 	// This parameter sets the “Not Before" date for the certificate.
 	//
-	// By default, when issuing a certificate, ACM Private CA sets the "Not Before"
-	// date to the issuance time minus 60 minutes. This compensates for clock inconsistencies
-	// across computer systems. The ValidityNotBefore parameter can be used to customize
-	// the “Not Before” value.
+	// By default, when issuing a certificate, Amazon Web Services Private CA sets
+	// the "Not Before" date to the issuance time minus 60 minutes. This compensates
+	// for clock inconsistencies across computer systems. The ValidityNotBefore
+	// parameter can be used to customize the “Not Before” value.
 	//
 	// Unlike the Validity parameter, the ValidityNotBefore parameter is optional.
 	//
 	// The ValidityNotBefore value is expressed as an explicit date and time, using
-	// the Validity type value ABSOLUTE. For more information, see Validity (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_Validity.html)
+	// the Validity type value ABSOLUTE. For more information, see Validity (https://docs.aws.amazon.com/privateca/latest/APIReference/API_Validity.html)
 	// in this API reference and Validity (https://datatracker.ietf.org/doc/html/rfc5280#section-4.1.2.5)
 	// in RFC 5280.
 	ValidityNotBefore *Validity `type:"structure"`
@@ -6487,8 +6556,8 @@ func (s *KeyUsage) SetNonRepudiation(v bool) *KeyUsage {
 	return s
 }
 
-// An ACM Private CA quota has been exceeded. See the exception message returned
-// to determine the quota that was exceeded.
+// An Amazon Web Services Private CA quota has been exceeded. See the exception
+// message returned to determine the quota that was exceeded.
 type LimitExceededException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -6668,10 +6737,10 @@ type ListPermissionsInput struct {
 	_ struct{} `type:"structure"`
 
 	// The Amazon Resource Number (ARN) of the private CA to inspect. You can find
-	// the ARN by calling the ListCertificateAuthorities (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_ListCertificateAuthorities.html)
+	// the ARN by calling the ListCertificateAuthorities (https://docs.aws.amazon.com/privateca/latest/APIReference/API_ListCertificateAuthorities.html)
 	// action. This must be of the form: arn:aws:acm-pca:region:account:certificate-authority/12345678-1234-1234-1234-123456789012
 	// You can get a private CA's ARN by running the ListCertificateAuthorities
-	// (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_ListCertificateAuthorities.html)
+	// (https://docs.aws.amazon.com/privateca/latest/APIReference/API_ListCertificateAuthorities.html)
 	// action.
 	//
 	// CertificateAuthorityArn is a required field
@@ -6793,7 +6862,7 @@ type ListTagsInput struct {
 	_ struct{} `type:"structure"`
 
 	// The Amazon Resource Name (ARN) that was returned when you called the CreateCertificateAuthority
-	// (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_CreateCertificateAuthority.html)
+	// (https://docs.aws.amazon.com/privateca/latest/APIReference/API_CreateCertificateAuthority.html)
 	// action. This must be of the form:
 	//
 	// arn:aws:acm-pca:region:account:certificate-authority/12345678-1234-1234-1234-123456789012
@@ -7120,17 +7189,19 @@ type OcspConfiguration struct {
 	// Enabled is a required field
 	Enabled *bool `type:"boolean" required:"true"`
 
-	// By default, ACM Private CA injects an Amazon Web Services domain into certificates
-	// being validated by the Online Certificate Status Protocol (OCSP). A customer
-	// can alternatively use this object to define a CNAME specifying a customized
-	// OCSP domain.
+	// By default, Amazon Web Services Private CA injects an Amazon Web Services
+	// domain into certificates being validated by the Online Certificate Status
+	// Protocol (OCSP). A customer can alternatively use this object to define a
+	// CNAME specifying a customized OCSP domain.
 	//
-	// Note: The value of the CNAME must not include a protocol prefix such as "http://"
-	// or "https://".
+	// The content of a Canonical Name (CNAME) record must conform to RFC2396 (https://www.ietf.org/rfc/rfc2396.txt)
+	// restrictions on the use of special characters in URIs. Additionally, the
+	// value of the CNAME must not include a protocol prefix such as "http://" or
+	// "https://".
 	//
 	// For more information, see Customizing Online Certificate Status Protocol
-	// (OCSP) (https://docs.aws.amazon.com/acm-pca/latest/userguide/ocsp-customize.html)
-	// in the Certificate Manager Private Certificate Authority (PCA) User Guide.
+	// (OCSP) (https://docs.aws.amazon.com/privateca/latest/userguide/ocsp-customize.html)
+	// in the Amazon Web Services Private Certificate Authority User Guide.
 	OcspCustomCname *string `type:"string"`
 }
 
@@ -7244,9 +7315,9 @@ func (s *OtherName) SetValue(v string) *OtherName {
 // Web Services service or entity. In order for ACM to automatically renew private
 // certificates, you must give the ACM service principal all available permissions
 // (IssueCertificate, GetCertificate, and ListPermissions). Permissions can
-// be assigned with the CreatePermission (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_CreatePermission.html)
-// action, removed with the DeletePermission (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_DeletePermission.html)
-// action, and listed with the ListPermissions (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_ListPermissions.html)
+// be assigned with the CreatePermission (https://docs.aws.amazon.com/privateca/latest/APIReference/API_CreatePermission.html)
+// action, removed with the DeletePermission (https://docs.aws.amazon.com/privateca/latest/APIReference/API_DeletePermission.html)
+// action, and listed with the ListPermissions (https://docs.aws.amazon.com/privateca/latest/APIReference/API_ListPermissions.html)
 // action.
 type Permission struct {
 	_ struct{} `type:"structure"`
@@ -7402,8 +7473,8 @@ type PolicyInformation struct {
 	// CertPolicyId is a required field
 	CertPolicyId *string `type:"string" required:"true"`
 
-	// Modifies the given CertPolicyId with a qualifier. ACM Private CA supports
-	// the certification practice statement (CPS) qualifier.
+	// Modifies the given CertPolicyId with a qualifier. Amazon Web Services Private
+	// CA supports the certification practice statement (CPS) qualifier.
 	PolicyQualifiers []*PolicyQualifierInfo `min:"1" type:"list"`
 }
 
@@ -7464,7 +7535,8 @@ func (s *PolicyInformation) SetPolicyQualifiers(v []*PolicyQualifierInfo) *Polic
 }
 
 // Modifies the CertPolicyId of a PolicyInformation object with a qualifier.
-// ACM Private CA supports the certification practice statement (CPS) qualifier.
+// Amazon Web Services Private CA supports the certification practice statement
+// (CPS) qualifier.
 type PolicyQualifierInfo struct {
 	_ struct{} `type:"structure"`
 
@@ -7473,8 +7545,8 @@ type PolicyQualifierInfo struct {
 	// PolicyQualifierId is a required field
 	PolicyQualifierId *string `type:"string" required:"true" enum:"PolicyQualifierId"`
 
-	// Defines the qualifier type. ACM Private CA supports the use of a URI for
-	// a CPS qualifier in this field.
+	// Defines the qualifier type. Amazon Web Services Private CA supports the use
+	// of a URI for a CPS qualifier in this field.
 	//
 	// Qualifier is a required field
 	Qualifier *Qualifier `type:"structure" required:"true"`
@@ -7545,7 +7617,7 @@ type PutPolicyInput struct {
 
 	// The Amazon Resource Number (ARN) of the private CA to associate with the
 	// policy. The ARN of the CA can be found by calling the ListCertificateAuthorities
-	// (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_ListCertificateAuthorities.html)
+	// (https://docs.aws.amazon.com/privateca/latest/APIReference/API_ListCertificateAuthorities.html)
 	// action.
 	//
 	// ResourceArn is a required field
@@ -7626,8 +7698,8 @@ func (s PutPolicyOutput) GoString() string {
 	return s.String()
 }
 
-// Defines a PolicyInformation qualifier. ACM Private CA supports the certification
-// practice statement (CPS) qualifier (https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.4)
+// Defines a PolicyInformation qualifier. Amazon Web Services Private CA supports
+// the certification practice statement (CPS) qualifier (https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.4)
 // defined in RFC 5280.
 type Qualifier struct {
 	_ struct{} `type:"structure"`
@@ -7937,7 +8009,7 @@ type RestoreCertificateAuthorityInput struct {
 	_ struct{} `type:"structure"`
 
 	// The Amazon Resource Name (ARN) that was returned when you called the CreateCertificateAuthority
-	// (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_CreateCertificateAuthority.html)
+	// (https://docs.aws.amazon.com/privateca/latest/APIReference/API_CreateCertificateAuthority.html)
 	// action. This must be of the form:
 	//
 	// arn:aws:acm-pca:region:account:certificate-authority/12345678-1234-1234-1234-123456789012
@@ -8009,22 +8081,22 @@ func (s RestoreCertificateAuthorityOutput) GoString() string {
 }
 
 // Certificate revocation information used by the CreateCertificateAuthority
-// (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_CreateCertificateAuthority.html)
-// and UpdateCertificateAuthority (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_UpdateCertificateAuthority.html)
+// (https://docs.aws.amazon.com/privateca/latest/APIReference/API_CreateCertificateAuthority.html)
+// and UpdateCertificateAuthority (https://docs.aws.amazon.com/privateca/latest/APIReference/API_UpdateCertificateAuthority.html)
 // actions. Your private certificate authority (CA) can configure Online Certificate
 // Status Protocol (OCSP) support and/or maintain a certificate revocation list
 // (CRL). OCSP returns validation information about certificates as requested
 // by clients, and a CRL contains an updated list of certificates revoked by
-// your CA. For more information, see RevokeCertificate (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_RevokeCertificate.html)
-// and Setting up a certificate revocation method (https://docs.aws.amazon.com/acm-pca/latest/userguide/revocation-setup.html)
-// in the Certificate Manager Private Certificate Authority (PCA) User Guide.
+// your CA. For more information, see RevokeCertificate (https://docs.aws.amazon.com/privateca/latest/APIReference/API_RevokeCertificate.html)
+// and Setting up a certificate revocation method (https://docs.aws.amazon.com/privateca/latest/userguide/revocation-setup.html)
+// in the Amazon Web Services Private Certificate Authority User Guide.
 type RevocationConfiguration struct {
 	_ struct{} `type:"structure"`
 
 	// Configuration of the certificate revocation list (CRL), if any, maintained
 	// by your private CA. A CRL is typically updated approximately 30 minutes after
-	// a certificate is revoked. If for any reason a CRL update fails, ACM Private
-	// CA makes further attempts every 15 minutes.
+	// a certificate is revoked. If for any reason a CRL update fails, Amazon Web
+	// Services Private CA makes further attempts every 15 minutes.
 	CrlConfiguration *CrlConfiguration `type:"structure"`
 
 	// Configuration of Online Certificate Status Protocol (OCSP) support, if any,
@@ -8095,7 +8167,7 @@ type RevokeCertificateInput struct {
 	CertificateAuthorityArn *string `min:"5" type:"string" required:"true"`
 
 	// Serial number of the certificate to be revoked. This must be in hexadecimal
-	// format. You can retrieve the serial number by calling GetCertificate (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_GetCertificate.html)
+	// format. You can retrieve the serial number by calling GetCertificate (https://docs.aws.amazon.com/privateca/latest/APIReference/API_GetCertificate.html)
 	// with the Amazon Resource Name (ARN) of the certificate you want and the ARN
 	// of your private CA. The GetCertificate action retrieves the certificate in
 	// the PEM format. You can use the following OpenSSL command to list the certificate
@@ -8199,8 +8271,8 @@ func (s RevokeCertificateOutput) GoString() string {
 // Tags are labels that you can use to identify and organize your private CAs.
 // Each tag consists of a key and an optional value. You can associate up to
 // 50 tags with a private CA. To add one or more tags to a private CA, call
-// the TagCertificateAuthority (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_TagCertificateAuthority.html)
-// action. To remove a tag, call the UntagCertificateAuthority (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_UntagCertificateAuthority.html)
+// the TagCertificateAuthority (https://docs.aws.amazon.com/privateca/latest/APIReference/API_TagCertificateAuthority.html)
+// action. To remove a tag, call the UntagCertificateAuthority (https://docs.aws.amazon.com/privateca/latest/APIReference/API_UntagCertificateAuthority.html)
 // action.
 type Tag struct {
 	_ struct{} `type:"structure"`
@@ -8264,7 +8336,7 @@ type TagCertificateAuthorityInput struct {
 	_ struct{} `type:"structure"`
 
 	// The Amazon Resource Name (ARN) that was returned when you called CreateCertificateAuthority
-	// (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_CreateCertificateAuthority.html).
+	// (https://docs.aws.amazon.com/privateca/latest/APIReference/API_CreateCertificateAuthority.html).
 	// This must be of the form:
 	//
 	// arn:aws:acm-pca:region:account:certificate-authority/12345678-1234-1234-1234-123456789012
@@ -8431,7 +8503,7 @@ type UntagCertificateAuthorityInput struct {
 	_ struct{} `type:"structure"`
 
 	// The Amazon Resource Name (ARN) that was returned when you called CreateCertificateAuthority
-	// (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_CreateCertificateAuthority.html).
+	// (https://docs.aws.amazon.com/privateca/latest/APIReference/API_CreateCertificateAuthority.html).
 	// This must be of the form:
 	//
 	// arn:aws:acm-pca:region:account:certificate-authority/12345678-1234-1234-1234-123456789012
@@ -8543,9 +8615,25 @@ type UpdateCertificateAuthorityInput struct {
 	// Contains information to enable Online Certificate Status Protocol (OCSP)
 	// support, to enable a certificate revocation list (CRL), to enable both, or
 	// to enable neither. If this parameter is not supplied, existing capibilites
-	// remain unchanged. For more information, see the OcspConfiguration (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_OcspConfiguration.html)
-	// and CrlConfiguration (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_CrlConfiguration.html)
+	// remain unchanged. For more information, see the OcspConfiguration (https://docs.aws.amazon.com/privateca/latest/APIReference/API_OcspConfiguration.html)
+	// and CrlConfiguration (https://docs.aws.amazon.com/privateca/latest/APIReference/API_CrlConfiguration.html)
 	// types.
+	//
+	// The following requirements apply to revocation configurations.
+	//
+	//    * A configuration disabling CRLs or OCSP must contain only the Enabled=False
+	//    parameter, and will fail if other parameters such as CustomCname or ExpirationInDays
+	//    are included.
+	//
+	//    * In a CRL configuration, the S3BucketName parameter must conform to Amazon
+	//    S3 bucket naming rules (https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html).
+	//
+	//    * A configuration containing a custom Canonical Name (CNAME) parameter
+	//    for CRLs or OCSP must conform to RFC2396 (https://www.ietf.org/rfc/rfc2396.txt)
+	//    restrictions on the use of special characters in a CNAME.
+	//
+	//    * In a CRL or OCSP configuration, the value of a CNAME parameter must
+	//    not include a protocol prefix such as "http://" or "https://".
 	RevocationConfiguration *RevocationConfiguration `type:"structure"`
 
 	// Status of your private CA.
@@ -8634,20 +8722,20 @@ func (s UpdateCertificateAuthorityOutput) GoString() string {
 // Validity specifies the period of time during which a certificate is valid.
 // Validity can be expressed as an explicit date and time when the validity
 // of a certificate starts or expires, or as a span of time after issuance,
-// stated in days, months, or years. For more information, see Validity (https://datatracker.ietf.org/doc/html/rfc5280#section-4.1.2.5)
+// stated in days, months, or years. For more information, see Validity (https://tools.ietf.org/html/rfc5280#section-4.1.2.5)
 // in RFC 5280.
 //
-// ACM Private CA API consumes the Validity data type differently in two distinct
-// parameters of the IssueCertificate action. The required parameter IssueCertificate:Validity
-// specifies the end of a certificate's validity period. The optional parameter
-// IssueCertificate:ValidityNotBefore specifies a customized starting time for
-// the validity period.
+// Amazon Web Services Private CA API consumes the Validity data type differently
+// in two distinct parameters of the IssueCertificate action. The required parameter
+// IssueCertificate:Validity specifies the end of a certificate's validity period.
+// The optional parameter IssueCertificate:ValidityNotBefore specifies a customized
+// starting time for the validity period.
 type Validity struct {
 	_ struct{} `type:"structure"`
 
-	// Determines how ACM Private CA interprets the Value parameter, an integer.
-	// Supported validity types include those listed below. Type definitions with
-	// values include a sample input value and the resulting output.
+	// Determines how Amazon Web Services Private CA interprets the Value parameter,
+	// an integer. Supported validity types include those listed below. Type definitions
+	// with values include a sample input value and the resulting output.
 	//
 	// END_DATE: The specific date and time when the certificate will expire, expressed
 	// using UTCTime (YYMMDDHHMMSS) or GeneralizedTime (YYYYMMDDHHMMSS) format.
@@ -8862,6 +8950,22 @@ func CertificateAuthorityType_Values() []string {
 	return []string{
 		CertificateAuthorityTypeRoot,
 		CertificateAuthorityTypeSubordinate,
+	}
+}
+
+const (
+	// CertificateAuthorityUsageModeGeneralPurpose is a CertificateAuthorityUsageMode enum value
+	CertificateAuthorityUsageModeGeneralPurpose = "GENERAL_PURPOSE"
+
+	// CertificateAuthorityUsageModeShortLivedCertificate is a CertificateAuthorityUsageMode enum value
+	CertificateAuthorityUsageModeShortLivedCertificate = "SHORT_LIVED_CERTIFICATE"
+)
+
+// CertificateAuthorityUsageMode_Values returns all elements of the CertificateAuthorityUsageMode enum
+func CertificateAuthorityUsageMode_Values() []string {
+	return []string{
+		CertificateAuthorityUsageModeGeneralPurpose,
+		CertificateAuthorityUsageModeShortLivedCertificate,
 	}
 }
 

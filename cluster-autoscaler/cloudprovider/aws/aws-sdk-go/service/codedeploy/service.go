@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a CodeDeploy client from just a session.
-//     svc := codedeploy.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a CodeDeploy client with additional configuration
-//     svc := codedeploy.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a CodeDeploy client from just a session.
+//	svc := codedeploy.New(mySession)
+//
+//	// Create a CodeDeploy client with additional configuration
+//	svc := codedeploy.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *CodeDeploy {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

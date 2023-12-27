@@ -28,14 +28,13 @@ const opDeleteThingShadow = "DeleteThingShadow"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteThingShadowRequest method.
+//	req, resp := client.DeleteThingShadowRequest(params)
 //
-//    // Example sending a request using the DeleteThingShadowRequest method.
-//    req, resp := client.DeleteThingShadowRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *IoTDataPlane) DeleteThingShadowRequest(input *DeleteThingShadowInput) (req *request.Request, output *DeleteThingShadowOutput) {
 	op := &request.Operation{
 		Name:       opDeleteThingShadow,
@@ -70,30 +69,30 @@ func (c *IoTDataPlane) DeleteThingShadowRequest(input *DeleteThingShadowInput) (
 // API operation DeleteThingShadow for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
-//   * ThrottlingException
-//   The rate exceeds the limit.
+//   - InvalidRequestException
+//     The request is not valid.
 //
-//   * UnauthorizedException
-//   You are not authorized to perform this operation.
+//   - ThrottlingException
+//     The rate exceeds the limit.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - UnauthorizedException
+//     You are not authorized to perform this operation.
 //
-//   * InternalFailureException
-//   An unexpected error has occurred.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
 //
-//   * MethodNotAllowedException
-//   The specified combination of HTTP verb and URI is not supported.
+//   - InternalFailureException
+//     An unexpected error has occurred.
 //
-//   * UnsupportedDocumentEncodingException
-//   The document encoding is not supported.
+//   - MethodNotAllowedException
+//     The specified combination of HTTP verb and URI is not supported.
 //
+//   - UnsupportedDocumentEncodingException
+//     The document encoding is not supported.
 func (c *IoTDataPlane) DeleteThingShadow(input *DeleteThingShadowInput) (*DeleteThingShadowOutput, error) {
 	req, out := c.DeleteThingShadowRequest(input)
 	return out, req.Send()
@@ -131,14 +130,13 @@ const opGetRetainedMessage = "GetRetainedMessage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetRetainedMessageRequest method.
+//	req, resp := client.GetRetainedMessageRequest(params)
 //
-//    // Example sending a request using the GetRetainedMessageRequest method.
-//    req, resp := client.GetRetainedMessageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *IoTDataPlane) GetRetainedMessageRequest(input *GetRetainedMessageInput) (req *request.Request, output *GetRetainedMessageOutput) {
 	op := &request.Operation{
 		Name:       opGetRetainedMessage,
@@ -161,7 +159,7 @@ func (c *IoTDataPlane) GetRetainedMessageRequest(input *GetRetainedMessageInput)
 //
 // This action returns the message payload of the retained message, which can
 // incur messaging costs. To list only the topic names of the retained messages,
-// call ListRetainedMessages (/iot/latest/developerguide/API_iotdata_ListRetainedMessages.html).
+// call ListRetainedMessages (https://docs.aws.amazon.com/iot/latest/apireference/API_iotdata_ListRetainedMessages.html).
 //
 // Requires permission to access the GetRetainedMessage (https://docs.aws.amazon.com/service-authorization/latest/reference/list_awsiotfleethubfordevicemanagement.html#awsiotfleethubfordevicemanagement-actions-as-permissions)
 // action.
@@ -177,27 +175,27 @@ func (c *IoTDataPlane) GetRetainedMessageRequest(input *GetRetainedMessageInput)
 // API operation GetRetainedMessage for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is not valid.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - InvalidRequestException
+//     The request is not valid.
 //
-//   * ThrottlingException
-//   The rate exceeds the limit.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
-//   * UnauthorizedException
-//   You are not authorized to perform this operation.
+//   - ThrottlingException
+//     The rate exceeds the limit.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - UnauthorizedException
+//     You are not authorized to perform this operation.
 //
-//   * InternalFailureException
-//   An unexpected error has occurred.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
 //
-//   * MethodNotAllowedException
-//   The specified combination of HTTP verb and URI is not supported.
+//   - InternalFailureException
+//     An unexpected error has occurred.
 //
+//   - MethodNotAllowedException
+//     The specified combination of HTTP verb and URI is not supported.
 func (c *IoTDataPlane) GetRetainedMessage(input *GetRetainedMessageInput) (*GetRetainedMessageOutput, error) {
 	req, out := c.GetRetainedMessageRequest(input)
 	return out, req.Send()
@@ -235,14 +233,13 @@ const opGetThingShadow = "GetThingShadow"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetThingShadowRequest method.
+//	req, resp := client.GetThingShadowRequest(params)
 //
-//    // Example sending a request using the GetThingShadowRequest method.
-//    req, resp := client.GetThingShadowRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *IoTDataPlane) GetThingShadowRequest(input *GetThingShadowInput) (req *request.Request, output *GetThingShadowOutput) {
 	op := &request.Operation{
 		Name:       opGetThingShadow,
@@ -277,30 +274,30 @@ func (c *IoTDataPlane) GetThingShadowRequest(input *GetThingShadowInput) (req *r
 // API operation GetThingShadow for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is not valid.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - InvalidRequestException
+//     The request is not valid.
 //
-//   * ThrottlingException
-//   The rate exceeds the limit.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
-//   * UnauthorizedException
-//   You are not authorized to perform this operation.
+//   - ThrottlingException
+//     The rate exceeds the limit.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - UnauthorizedException
+//     You are not authorized to perform this operation.
 //
-//   * InternalFailureException
-//   An unexpected error has occurred.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
 //
-//   * MethodNotAllowedException
-//   The specified combination of HTTP verb and URI is not supported.
+//   - InternalFailureException
+//     An unexpected error has occurred.
 //
-//   * UnsupportedDocumentEncodingException
-//   The document encoding is not supported.
+//   - MethodNotAllowedException
+//     The specified combination of HTTP verb and URI is not supported.
 //
+//   - UnsupportedDocumentEncodingException
+//     The document encoding is not supported.
 func (c *IoTDataPlane) GetThingShadow(input *GetThingShadowInput) (*GetThingShadowOutput, error) {
 	req, out := c.GetThingShadowRequest(input)
 	return out, req.Send()
@@ -338,14 +335,13 @@ const opListNamedShadowsForThing = "ListNamedShadowsForThing"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListNamedShadowsForThingRequest method.
+//	req, resp := client.ListNamedShadowsForThingRequest(params)
 //
-//    // Example sending a request using the ListNamedShadowsForThingRequest method.
-//    req, resp := client.ListNamedShadowsForThingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *IoTDataPlane) ListNamedShadowsForThingRequest(input *ListNamedShadowsForThingInput) (req *request.Request, output *ListNamedShadowsForThingOutput) {
 	op := &request.Operation{
 		Name:       opListNamedShadowsForThing,
@@ -377,27 +373,27 @@ func (c *IoTDataPlane) ListNamedShadowsForThingRequest(input *ListNamedShadowsFo
 // API operation ListNamedShadowsForThing for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
-//   * ThrottlingException
-//   The rate exceeds the limit.
+//   - InvalidRequestException
+//     The request is not valid.
 //
-//   * UnauthorizedException
-//   You are not authorized to perform this operation.
+//   - ThrottlingException
+//     The rate exceeds the limit.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - UnauthorizedException
+//     You are not authorized to perform this operation.
 //
-//   * InternalFailureException
-//   An unexpected error has occurred.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
 //
-//   * MethodNotAllowedException
-//   The specified combination of HTTP verb and URI is not supported.
+//   - InternalFailureException
+//     An unexpected error has occurred.
 //
+//   - MethodNotAllowedException
+//     The specified combination of HTTP verb and URI is not supported.
 func (c *IoTDataPlane) ListNamedShadowsForThing(input *ListNamedShadowsForThingInput) (*ListNamedShadowsForThingOutput, error) {
 	req, out := c.ListNamedShadowsForThingRequest(input)
 	return out, req.Send()
@@ -435,14 +431,13 @@ const opListRetainedMessages = "ListRetainedMessages"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRetainedMessagesRequest method.
+//	req, resp := client.ListRetainedMessagesRequest(params)
 //
-//    // Example sending a request using the ListRetainedMessagesRequest method.
-//    req, resp := client.ListRetainedMessagesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *IoTDataPlane) ListRetainedMessagesRequest(input *ListRetainedMessagesInput) (req *request.Request, output *ListRetainedMessagesOutput) {
 	op := &request.Operation{
 		Name:       opListRetainedMessages,
@@ -474,7 +469,7 @@ func (c *IoTDataPlane) ListRetainedMessagesRequest(input *ListRetainedMessagesIn
 // payload, it can still incur messaging costs.
 //
 // To get the message payload of a retained message, call GetRetainedMessage
-// (https://docs.aws.amazon.com/iot/latest/developerguide/API_iotdata_GetRetainedMessage.html)
+// (https://docs.aws.amazon.com/iot/latest/apireference/API_iotdata_GetRetainedMessage.html)
 // with the topic name of the retained message.
 //
 // Requires permission to access the ListRetainedMessages (https://docs.aws.amazon.com/service-authorization/latest/reference/list_awsiotfleethubfordevicemanagement.html#awsiotfleethubfordevicemanagement-actions-as-permissions)
@@ -491,24 +486,24 @@ func (c *IoTDataPlane) ListRetainedMessagesRequest(input *ListRetainedMessagesIn
 // API operation ListRetainedMessages for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is not valid.
 //
-//   * ThrottlingException
-//   The rate exceeds the limit.
+//   - InvalidRequestException
+//     The request is not valid.
 //
-//   * UnauthorizedException
-//   You are not authorized to perform this operation.
+//   - ThrottlingException
+//     The rate exceeds the limit.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - UnauthorizedException
+//     You are not authorized to perform this operation.
 //
-//   * InternalFailureException
-//   An unexpected error has occurred.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
 //
-//   * MethodNotAllowedException
-//   The specified combination of HTTP verb and URI is not supported.
+//   - InternalFailureException
+//     An unexpected error has occurred.
 //
+//   - MethodNotAllowedException
+//     The specified combination of HTTP verb and URI is not supported.
 func (c *IoTDataPlane) ListRetainedMessages(input *ListRetainedMessagesInput) (*ListRetainedMessagesOutput, error) {
 	req, out := c.ListRetainedMessagesRequest(input)
 	return out, req.Send()
@@ -538,15 +533,14 @@ func (c *IoTDataPlane) ListRetainedMessagesWithContext(ctx aws.Context, input *L
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListRetainedMessages operation.
-//    pageNum := 0
-//    err := client.ListRetainedMessagesPages(params,
-//        func(page *iotdataplane.ListRetainedMessagesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListRetainedMessages operation.
+//	pageNum := 0
+//	err := client.ListRetainedMessagesPages(params,
+//	    func(page *iotdataplane.ListRetainedMessagesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IoTDataPlane) ListRetainedMessagesPages(input *ListRetainedMessagesInput, fn func(*ListRetainedMessagesOutput, bool) bool) error {
 	return c.ListRetainedMessagesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -598,14 +592,13 @@ const opPublish = "Publish"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PublishRequest method.
+//	req, resp := client.PublishRequest(params)
 //
-//    // Example sending a request using the PublishRequest method.
-//    req, resp := client.PublishRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *IoTDataPlane) PublishRequest(input *PublishInput) (req *request.Request, output *PublishOutput) {
 	op := &request.Operation{
 		Name:       opPublish,
@@ -644,18 +637,21 @@ func (c *IoTDataPlane) PublishRequest(input *PublishInput) (req *request.Request
 // API operation Publish for usage and error information.
 //
 // Returned Error Types:
-//   * InternalFailureException
-//   An unexpected error has occurred.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - InternalFailureException
+//     An unexpected error has occurred.
 //
-//   * UnauthorizedException
-//   You are not authorized to perform this operation.
+//   - InvalidRequestException
+//     The request is not valid.
 //
-//   * MethodNotAllowedException
-//   The specified combination of HTTP verb and URI is not supported.
+//   - UnauthorizedException
+//     You are not authorized to perform this operation.
 //
+//   - MethodNotAllowedException
+//     The specified combination of HTTP verb and URI is not supported.
+//
+//   - ThrottlingException
+//     The rate exceeds the limit.
 func (c *IoTDataPlane) Publish(input *PublishInput) (*PublishOutput, error) {
 	req, out := c.PublishRequest(input)
 	return out, req.Send()
@@ -693,14 +689,13 @@ const opUpdateThingShadow = "UpdateThingShadow"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateThingShadowRequest method.
+//	req, resp := client.UpdateThingShadowRequest(params)
 //
-//    // Example sending a request using the UpdateThingShadowRequest method.
-//    req, resp := client.UpdateThingShadowRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *IoTDataPlane) UpdateThingShadowRequest(input *UpdateThingShadowInput) (req *request.Request, output *UpdateThingShadowOutput) {
 	op := &request.Operation{
 		Name:       opUpdateThingShadow,
@@ -735,33 +730,33 @@ func (c *IoTDataPlane) UpdateThingShadowRequest(input *UpdateThingShadowInput) (
 // API operation UpdateThingShadow for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   The specified version does not match the version of the document.
 //
-//   * RequestEntityTooLargeException
-//   The payload exceeds the maximum size allowed.
+//   - ConflictException
+//     The specified version does not match the version of the document.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - RequestEntityTooLargeException
+//     The payload exceeds the maximum size allowed.
 //
-//   * ThrottlingException
-//   The rate exceeds the limit.
+//   - InvalidRequestException
+//     The request is not valid.
 //
-//   * UnauthorizedException
-//   You are not authorized to perform this operation.
+//   - ThrottlingException
+//     The rate exceeds the limit.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - UnauthorizedException
+//     You are not authorized to perform this operation.
 //
-//   * InternalFailureException
-//   An unexpected error has occurred.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
 //
-//   * MethodNotAllowedException
-//   The specified combination of HTTP verb and URI is not supported.
+//   - InternalFailureException
+//     An unexpected error has occurred.
 //
-//   * UnsupportedDocumentEncodingException
-//   The document encoding is not supported.
+//   - MethodNotAllowedException
+//     The specified combination of HTTP verb and URI is not supported.
 //
+//   - UnsupportedDocumentEncodingException
+//     The document encoding is not supported.
 func (c *IoTDataPlane) UpdateThingShadow(input *UpdateThingShadowInput) (*UpdateThingShadowOutput, error) {
 	req, out := c.UpdateThingShadowRequest(input)
 	return out, req.Send()
@@ -1011,6 +1006,16 @@ type GetRetainedMessageOutput struct {
 
 	// The topic name to which the retained message was published.
 	Topic *string `locationName:"topic" type:"string"`
+
+	// A base64-encoded JSON string that includes an array of JSON objects, or null
+	// if the retained message doesn't include any user properties.
+	//
+	// The following example userProperties parameter is a JSON string that represents
+	// two user properties. Note that it will be base64-encoded:
+	//
+	// [{"deviceName": "alpha"}, {"deviceCnt": "45"}]
+	// UserProperties is automatically base64 encoded/decoded by the SDK.
+	UserProperties []byte `locationName:"userProperties" type:"blob"`
 }
 
 // String returns the string representation.
@@ -1052,6 +1057,12 @@ func (s *GetRetainedMessageOutput) SetQos(v int64) *GetRetainedMessageOutput {
 // SetTopic sets the Topic field's value.
 func (s *GetRetainedMessageOutput) SetTopic(v string) *GetRetainedMessageOutput {
 	s.Topic = &v
+	return s
+}
+
+// SetUserProperties sets the UserProperties field's value.
+func (s *GetRetainedMessageOutput) SetUserProperties(v []byte) *GetRetainedMessageOutput {
+	s.UserProperties = v
 	return s
 }
 
@@ -1564,14 +1575,39 @@ func (s *MethodNotAllowedException) RequestID() string {
 type PublishInput struct {
 	_ struct{} `type:"structure" payload:"Payload"`
 
+	// A UTF-8 encoded string that describes the content of the publishing message.
+	ContentType *string `location:"querystring" locationName:"contentType" type:"string"`
+
+	// The base64-encoded binary data used by the sender of the request message
+	// to identify which request the response message is for when it's received.
+	// correlationData is an HTTP header value in the API.
+	CorrelationData *string `location:"header" locationName:"x-amz-mqtt5-correlation-data" type:"string"`
+
+	// A user-defined integer value that represents the message expiry interval
+	// in seconds. If absent, the message doesn't expire. For more information about
+	// the limits of messageExpiry, see Amazon Web Services IoT Core message broker
+	// and protocol limits and quotas (https://docs.aws.amazon.com/general/latest/gr/iot-core.html#message-broker-limits)
+	// from the Amazon Web Services Reference Guide.
+	MessageExpiry *int64 `location:"querystring" locationName:"messageExpiry" type:"long"`
+
 	// The message body. MQTT accepts text, binary, and empty (null) message payloads.
 	//
 	// Publishing an empty (null) payload with retain = true deletes the retained
 	// message identified by topic from Amazon Web Services IoT Core.
 	Payload []byte `locationName:"payload" type:"blob"`
 
-	// The Quality of Service (QoS) level.
+	// An Enum string value that indicates whether the payload is formatted as UTF-8.
+	// payloadFormatIndicator is an HTTP header value in the API.
+	PayloadFormatIndicator *string `location:"header" locationName:"x-amz-mqtt5-payload-format-indicator" type:"string" enum:"PayloadFormatIndicator"`
+
+	// The Quality of Service (QoS) level. The default QoS level is 0.
 	Qos *int64 `location:"querystring" locationName:"qos" type:"integer"`
+
+	// A UTF-8 encoded string that's used as the topic name for a response message.
+	// The response topic is used to describe the topic which the receiver should
+	// publish to as part of the request-response flow. The topic must not contain
+	// wildcard characters.
+	ResponseTopic *string `location:"querystring" locationName:"responseTopic" type:"string"`
 
 	// A Boolean value that determines whether to set the RETAIN flag when the message
 	// is published.
@@ -1588,6 +1624,17 @@ type PublishInput struct {
 	//
 	// Topic is a required field
 	Topic *string `location:"uri" locationName:"topic" type:"string" required:"true"`
+
+	// A JSON string that contains an array of JSON objects. If you don’t use
+	// Amazon Web Services SDK or CLI, you must encode the JSON string to base64
+	// format before adding it to the HTTP header. userProperties is an HTTP header
+	// value in the API.
+	//
+	// The following example userProperties parameter is a JSON string which represents
+	// two User Properties. Note that it needs to be base64-encoded:
+	//
+	// [{"deviceName": "alpha"}, {"deviceCnt": "45"}]
+	UserProperties *string `location:"header" locationName:"x-amz-mqtt5-user-properties" type:"string" suppressedJSONValue:"true"`
 }
 
 // String returns the string representation.
@@ -1624,15 +1671,45 @@ func (s *PublishInput) Validate() error {
 	return nil
 }
 
+// SetContentType sets the ContentType field's value.
+func (s *PublishInput) SetContentType(v string) *PublishInput {
+	s.ContentType = &v
+	return s
+}
+
+// SetCorrelationData sets the CorrelationData field's value.
+func (s *PublishInput) SetCorrelationData(v string) *PublishInput {
+	s.CorrelationData = &v
+	return s
+}
+
+// SetMessageExpiry sets the MessageExpiry field's value.
+func (s *PublishInput) SetMessageExpiry(v int64) *PublishInput {
+	s.MessageExpiry = &v
+	return s
+}
+
 // SetPayload sets the Payload field's value.
 func (s *PublishInput) SetPayload(v []byte) *PublishInput {
 	s.Payload = v
 	return s
 }
 
+// SetPayloadFormatIndicator sets the PayloadFormatIndicator field's value.
+func (s *PublishInput) SetPayloadFormatIndicator(v string) *PublishInput {
+	s.PayloadFormatIndicator = &v
+	return s
+}
+
 // SetQos sets the Qos field's value.
 func (s *PublishInput) SetQos(v int64) *PublishInput {
 	s.Qos = &v
+	return s
+}
+
+// SetResponseTopic sets the ResponseTopic field's value.
+func (s *PublishInput) SetResponseTopic(v string) *PublishInput {
+	s.ResponseTopic = &v
 	return s
 }
 
@@ -1645,6 +1722,12 @@ func (s *PublishInput) SetRetain(v bool) *PublishInput {
 // SetTopic sets the Topic field's value.
 func (s *PublishInput) SetTopic(v string) *PublishInput {
 	s.Topic = &v
+	return s
+}
+
+// SetUserProperties sets the UserProperties field's value.
+func (s *PublishInput) SetUserProperties(v string) *PublishInput {
+	s.UserProperties = &v
 	return s
 }
 
@@ -2226,4 +2309,20 @@ func (s UpdateThingShadowOutput) GoString() string {
 func (s *UpdateThingShadowOutput) SetPayload(v []byte) *UpdateThingShadowOutput {
 	s.Payload = v
 	return s
+}
+
+const (
+	// PayloadFormatIndicatorUnspecifiedBytes is a PayloadFormatIndicator enum value
+	PayloadFormatIndicatorUnspecifiedBytes = "UNSPECIFIED_BYTES"
+
+	// PayloadFormatIndicatorUtf8Data is a PayloadFormatIndicator enum value
+	PayloadFormatIndicatorUtf8Data = "UTF8_DATA"
+)
+
+// PayloadFormatIndicator_Values returns all elements of the PayloadFormatIndicator enum
+func PayloadFormatIndicator_Values() []string {
+	return []string{
+		PayloadFormatIndicatorUnspecifiedBytes,
+		PayloadFormatIndicatorUtf8Data,
+	}
 }

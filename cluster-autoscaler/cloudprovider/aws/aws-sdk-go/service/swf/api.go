@@ -29,14 +29,13 @@ const opCountClosedWorkflowExecutions = "CountClosedWorkflowExecutions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CountClosedWorkflowExecutionsRequest method.
+//	req, resp := client.CountClosedWorkflowExecutionsRequest(params)
 //
-//    // Example sending a request using the CountClosedWorkflowExecutionsRequest method.
-//    req, resp := client.CountClosedWorkflowExecutionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *SWF) CountClosedWorkflowExecutionsRequest(input *CountClosedWorkflowExecutionsInput) (req *request.Request, output *WorkflowExecutionCount) {
 	op := &request.Operation{
 		Name:       opCountClosedWorkflowExecutions,
@@ -61,20 +60,20 @@ func (c *SWF) CountClosedWorkflowExecutionsRequest(input *CountClosedWorkflowExe
 // This operation is eventually consistent. The results are best effort and
 // may not exactly reflect recent updates and changes.
 //
-// Access Control
+// # Access Control
 //
 // You can use IAM policies to control this action's access to Amazon SWF resources
 // as follows:
 //
-//    * Use a Resource element with the domain name to limit the action to only
-//    specified domains.
+//   - Use a Resource element with the domain name to limit the action to only
+//     specified domains.
 //
-//    * Use an Action element to allow or deny permission to call this action.
+//   - Use an Action element to allow or deny permission to call this action.
 //
-//    * Constrain the following parameters by using a Condition element with
-//    the appropriate keys. tagFilter.tag: String constraint. The key is swf:tagFilter.tag.
-//    typeFilter.name: String constraint. The key is swf:typeFilter.name. typeFilter.version:
-//    String constraint. The key is swf:typeFilter.version.
+//   - Constrain the following parameters by using a Condition element with
+//     the appropriate keys. tagFilter.tag: String constraint. The key is swf:tagFilter.tag.
+//     typeFilter.name: String constraint. The key is swf:typeFilter.name. typeFilter.version:
+//     String constraint. The key is swf:typeFilter.version.
 //
 // If the caller doesn't have sufficient permissions to invoke the action, or
 // the parameter values fall outside the specified constraints, the action fails.
@@ -91,15 +90,15 @@ func (c *SWF) CountClosedWorkflowExecutionsRequest(input *CountClosedWorkflowExe
 // API operation CountClosedWorkflowExecutions for usage and error information.
 //
 // Returned Error Types:
-//   * UnknownResourceFault
-//   Returned when the named resource cannot be found with in the scope of this
-//   operation (region or domain). This could happen if the named resource was
-//   never created or is no longer available for this operation.
 //
-//   * OperationNotPermittedFault
-//   Returned when the caller doesn't have sufficient permissions to invoke the
-//   action.
+//   - UnknownResourceFault
+//     Returned when the named resource cannot be found with in the scope of this
+//     operation (region or domain). This could happen if the named resource was
+//     never created or is no longer available for this operation.
 //
+//   - OperationNotPermittedFault
+//     Returned when the caller doesn't have sufficient permissions to invoke the
+//     action.
 func (c *SWF) CountClosedWorkflowExecutions(input *CountClosedWorkflowExecutionsInput) (*WorkflowExecutionCount, error) {
 	req, out := c.CountClosedWorkflowExecutionsRequest(input)
 	return out, req.Send()
@@ -137,14 +136,13 @@ const opCountOpenWorkflowExecutions = "CountOpenWorkflowExecutions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CountOpenWorkflowExecutionsRequest method.
+//	req, resp := client.CountOpenWorkflowExecutionsRequest(params)
 //
-//    // Example sending a request using the CountOpenWorkflowExecutionsRequest method.
-//    req, resp := client.CountOpenWorkflowExecutionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *SWF) CountOpenWorkflowExecutionsRequest(input *CountOpenWorkflowExecutionsInput) (req *request.Request, output *WorkflowExecutionCount) {
 	op := &request.Operation{
 		Name:       opCountOpenWorkflowExecutions,
@@ -169,20 +167,20 @@ func (c *SWF) CountOpenWorkflowExecutionsRequest(input *CountOpenWorkflowExecuti
 // This operation is eventually consistent. The results are best effort and
 // may not exactly reflect recent updates and changes.
 //
-// Access Control
+// # Access Control
 //
 // You can use IAM policies to control this action's access to Amazon SWF resources
 // as follows:
 //
-//    * Use a Resource element with the domain name to limit the action to only
-//    specified domains.
+//   - Use a Resource element with the domain name to limit the action to only
+//     specified domains.
 //
-//    * Use an Action element to allow or deny permission to call this action.
+//   - Use an Action element to allow or deny permission to call this action.
 //
-//    * Constrain the following parameters by using a Condition element with
-//    the appropriate keys. tagFilter.tag: String constraint. The key is swf:tagFilter.tag.
-//    typeFilter.name: String constraint. The key is swf:typeFilter.name. typeFilter.version:
-//    String constraint. The key is swf:typeFilter.version.
+//   - Constrain the following parameters by using a Condition element with
+//     the appropriate keys. tagFilter.tag: String constraint. The key is swf:tagFilter.tag.
+//     typeFilter.name: String constraint. The key is swf:typeFilter.name. typeFilter.version:
+//     String constraint. The key is swf:typeFilter.version.
 //
 // If the caller doesn't have sufficient permissions to invoke the action, or
 // the parameter values fall outside the specified constraints, the action fails.
@@ -199,15 +197,15 @@ func (c *SWF) CountOpenWorkflowExecutionsRequest(input *CountOpenWorkflowExecuti
 // API operation CountOpenWorkflowExecutions for usage and error information.
 //
 // Returned Error Types:
-//   * UnknownResourceFault
-//   Returned when the named resource cannot be found with in the scope of this
-//   operation (region or domain). This could happen if the named resource was
-//   never created or is no longer available for this operation.
 //
-//   * OperationNotPermittedFault
-//   Returned when the caller doesn't have sufficient permissions to invoke the
-//   action.
+//   - UnknownResourceFault
+//     Returned when the named resource cannot be found with in the scope of this
+//     operation (region or domain). This could happen if the named resource was
+//     never created or is no longer available for this operation.
 //
+//   - OperationNotPermittedFault
+//     Returned when the caller doesn't have sufficient permissions to invoke the
+//     action.
 func (c *SWF) CountOpenWorkflowExecutions(input *CountOpenWorkflowExecutionsInput) (*WorkflowExecutionCount, error) {
 	req, out := c.CountOpenWorkflowExecutionsRequest(input)
 	return out, req.Send()
@@ -245,14 +243,13 @@ const opCountPendingActivityTasks = "CountPendingActivityTasks"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CountPendingActivityTasksRequest method.
+//	req, resp := client.CountPendingActivityTasksRequest(params)
 //
-//    // Example sending a request using the CountPendingActivityTasksRequest method.
-//    req, resp := client.CountPendingActivityTasksRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *SWF) CountPendingActivityTasksRequest(input *CountPendingActivityTasksInput) (req *request.Request, output *PendingTaskCount) {
 	op := &request.Operation{
 		Name:       opCountPendingActivityTasks,
@@ -276,19 +273,19 @@ func (c *SWF) CountPendingActivityTasksRequest(input *CountPendingActivityTasksI
 // If you specify a task list that no activity task was ever scheduled in then
 // 0 is returned.
 //
-// Access Control
+// # Access Control
 //
 // You can use IAM policies to control this action's access to Amazon SWF resources
 // as follows:
 //
-//    * Use a Resource element with the domain name to limit the action to only
-//    specified domains.
+//   - Use a Resource element with the domain name to limit the action to only
+//     specified domains.
 //
-//    * Use an Action element to allow or deny permission to call this action.
+//   - Use an Action element to allow or deny permission to call this action.
 //
-//    * Constrain the taskList.name parameter by using a Condition element with
-//    the swf:taskList.name key to allow the action to access only certain task
-//    lists.
+//   - Constrain the taskList.name parameter by using a Condition element with
+//     the swf:taskList.name key to allow the action to access only certain task
+//     lists.
 //
 // If the caller doesn't have sufficient permissions to invoke the action, or
 // the parameter values fall outside the specified constraints, the action fails.
@@ -305,15 +302,15 @@ func (c *SWF) CountPendingActivityTasksRequest(input *CountPendingActivityTasksI
 // API operation CountPendingActivityTasks for usage and error information.
 //
 // Returned Error Types:
-//   * UnknownResourceFault
-//   Returned when the named resource cannot be found with in the scope of this
-//   operation (region or domain). This could happen if the named resource was
-//   never created or is no longer available for this operation.
 //
-//   * OperationNotPermittedFault
-//   Returned when the caller doesn't have sufficient permissions to invoke the
-//   action.
+//   - UnknownResourceFault
+//     Returned when the named resource cannot be found with in the scope of this
+//     operation (region or domain). This could happen if the named resource was
+//     never created or is no longer available for this operation.
 //
+//   - OperationNotPermittedFault
+//     Returned when the caller doesn't have sufficient permissions to invoke the
+//     action.
 func (c *SWF) CountPendingActivityTasks(input *CountPendingActivityTasksInput) (*PendingTaskCount, error) {
 	req, out := c.CountPendingActivityTasksRequest(input)
 	return out, req.Send()
@@ -351,14 +348,13 @@ const opCountPendingDecisionTasks = "CountPendingDecisionTasks"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CountPendingDecisionTasksRequest method.
+//	req, resp := client.CountPendingDecisionTasksRequest(params)
 //
-//    // Example sending a request using the CountPendingDecisionTasksRequest method.
-//    req, resp := client.CountPendingDecisionTasksRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *SWF) CountPendingDecisionTasksRequest(input *CountPendingDecisionTasksInput) (req *request.Request, output *PendingTaskCount) {
 	op := &request.Operation{
 		Name:       opCountPendingDecisionTasks,
@@ -382,19 +378,19 @@ func (c *SWF) CountPendingDecisionTasksRequest(input *CountPendingDecisionTasksI
 // If you specify a task list that no decision task was ever scheduled in then
 // 0 is returned.
 //
-// Access Control
+// # Access Control
 //
 // You can use IAM policies to control this action's access to Amazon SWF resources
 // as follows:
 //
-//    * Use a Resource element with the domain name to limit the action to only
-//    specified domains.
+//   - Use a Resource element with the domain name to limit the action to only
+//     specified domains.
 //
-//    * Use an Action element to allow or deny permission to call this action.
+//   - Use an Action element to allow or deny permission to call this action.
 //
-//    * Constrain the taskList.name parameter by using a Condition element with
-//    the swf:taskList.name key to allow the action to access only certain task
-//    lists.
+//   - Constrain the taskList.name parameter by using a Condition element with
+//     the swf:taskList.name key to allow the action to access only certain task
+//     lists.
 //
 // If the caller doesn't have sufficient permissions to invoke the action, or
 // the parameter values fall outside the specified constraints, the action fails.
@@ -411,15 +407,15 @@ func (c *SWF) CountPendingDecisionTasksRequest(input *CountPendingDecisionTasksI
 // API operation CountPendingDecisionTasks for usage and error information.
 //
 // Returned Error Types:
-//   * UnknownResourceFault
-//   Returned when the named resource cannot be found with in the scope of this
-//   operation (region or domain). This could happen if the named resource was
-//   never created or is no longer available for this operation.
 //
-//   * OperationNotPermittedFault
-//   Returned when the caller doesn't have sufficient permissions to invoke the
-//   action.
+//   - UnknownResourceFault
+//     Returned when the named resource cannot be found with in the scope of this
+//     operation (region or domain). This could happen if the named resource was
+//     never created or is no longer available for this operation.
 //
+//   - OperationNotPermittedFault
+//     Returned when the caller doesn't have sufficient permissions to invoke the
+//     action.
 func (c *SWF) CountPendingDecisionTasks(input *CountPendingDecisionTasksInput) (*PendingTaskCount, error) {
 	req, out := c.CountPendingDecisionTasksRequest(input)
 	return out, req.Send()
@@ -457,14 +453,13 @@ const opDeprecateActivityType = "DeprecateActivityType"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeprecateActivityTypeRequest method.
+//	req, resp := client.DeprecateActivityTypeRequest(params)
 //
-//    // Example sending a request using the DeprecateActivityTypeRequest method.
-//    req, resp := client.DeprecateActivityTypeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *SWF) DeprecateActivityTypeRequest(input *DeprecateActivityTypeInput) (req *request.Request, output *DeprecateActivityTypeOutput) {
 	op := &request.Operation{
 		Name:       opDeprecateActivityType,
@@ -491,20 +486,20 @@ func (c *SWF) DeprecateActivityTypeRequest(input *DeprecateActivityTypeInput) (r
 // This operation is eventually consistent. The results are best effort and
 // may not exactly reflect recent updates and changes.
 //
-// Access Control
+// # Access Control
 //
 // You can use IAM policies to control this action's access to Amazon SWF resources
 // as follows:
 //
-//    * Use a Resource element with the domain name to limit the action to only
-//    specified domains.
+//   - Use a Resource element with the domain name to limit the action to only
+//     specified domains.
 //
-//    * Use an Action element to allow or deny permission to call this action.
+//   - Use an Action element to allow or deny permission to call this action.
 //
-//    * Constrain the following parameters by using a Condition element with
-//    the appropriate keys. activityType.name: String constraint. The key is
-//    swf:activityType.name. activityType.version: String constraint. The key
-//    is swf:activityType.version.
+//   - Constrain the following parameters by using a Condition element with
+//     the appropriate keys. activityType.name: String constraint. The key is
+//     swf:activityType.name. activityType.version: String constraint. The key
+//     is swf:activityType.version.
 //
 // If the caller doesn't have sufficient permissions to invoke the action, or
 // the parameter values fall outside the specified constraints, the action fails.
@@ -521,18 +516,18 @@ func (c *SWF) DeprecateActivityTypeRequest(input *DeprecateActivityTypeInput) (r
 // API operation DeprecateActivityType for usage and error information.
 //
 // Returned Error Types:
-//   * UnknownResourceFault
-//   Returned when the named resource cannot be found with in the scope of this
-//   operation (region or domain). This could happen if the named resource was
-//   never created or is no longer available for this operation.
 //
-//   * TypeDeprecatedFault
-//   Returned when the specified activity or workflow type was already deprecated.
+//   - UnknownResourceFault
+//     Returned when the named resource cannot be found with in the scope of this
+//     operation (region or domain). This could happen if the named resource was
+//     never created or is no longer available for this operation.
 //
-//   * OperationNotPermittedFault
-//   Returned when the caller doesn't have sufficient permissions to invoke the
-//   action.
+//   - TypeDeprecatedFault
+//     Returned when the specified activity or workflow type was already deprecated.
 //
+//   - OperationNotPermittedFault
+//     Returned when the caller doesn't have sufficient permissions to invoke the
+//     action.
 func (c *SWF) DeprecateActivityType(input *DeprecateActivityTypeInput) (*DeprecateActivityTypeOutput, error) {
 	req, out := c.DeprecateActivityTypeRequest(input)
 	return out, req.Send()
@@ -570,14 +565,13 @@ const opDeprecateDomain = "DeprecateDomain"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeprecateDomainRequest method.
+//	req, resp := client.DeprecateDomainRequest(params)
 //
-//    // Example sending a request using the DeprecateDomainRequest method.
-//    req, resp := client.DeprecateDomainRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *SWF) DeprecateDomainRequest(input *DeprecateDomainInput) (req *request.Request, output *DeprecateDomainOutput) {
 	op := &request.Operation{
 		Name:       opDeprecateDomain,
@@ -607,17 +601,17 @@ func (c *SWF) DeprecateDomainRequest(input *DeprecateDomainInput) (req *request.
 // This operation is eventually consistent. The results are best effort and
 // may not exactly reflect recent updates and changes.
 //
-// Access Control
+// # Access Control
 //
 // You can use IAM policies to control this action's access to Amazon SWF resources
 // as follows:
 //
-//    * Use a Resource element with the domain name to limit the action to only
-//    specified domains.
+//   - Use a Resource element with the domain name to limit the action to only
+//     specified domains.
 //
-//    * Use an Action element to allow or deny permission to call this action.
+//   - Use an Action element to allow or deny permission to call this action.
 //
-//    * You cannot use an IAM policy to constrain this action's parameters.
+//   - You cannot use an IAM policy to constrain this action's parameters.
 //
 // If the caller doesn't have sufficient permissions to invoke the action, or
 // the parameter values fall outside the specified constraints, the action fails.
@@ -634,18 +628,18 @@ func (c *SWF) DeprecateDomainRequest(input *DeprecateDomainInput) (req *request.
 // API operation DeprecateDomain for usage and error information.
 //
 // Returned Error Types:
-//   * UnknownResourceFault
-//   Returned when the named resource cannot be found with in the scope of this
-//   operation (region or domain). This could happen if the named resource was
-//   never created or is no longer available for this operation.
 //
-//   * DomainDeprecatedFault
-//   Returned when the specified domain has been deprecated.
+//   - UnknownResourceFault
+//     Returned when the named resource cannot be found with in the scope of this
+//     operation (region or domain). This could happen if the named resource was
+//     never created or is no longer available for this operation.
 //
-//   * OperationNotPermittedFault
-//   Returned when the caller doesn't have sufficient permissions to invoke the
-//   action.
+//   - DomainDeprecatedFault
+//     Returned when the specified domain has been deprecated.
 //
+//   - OperationNotPermittedFault
+//     Returned when the caller doesn't have sufficient permissions to invoke the
+//     action.
 func (c *SWF) DeprecateDomain(input *DeprecateDomainInput) (*DeprecateDomainOutput, error) {
 	req, out := c.DeprecateDomainRequest(input)
 	return out, req.Send()
@@ -683,14 +677,13 @@ const opDeprecateWorkflowType = "DeprecateWorkflowType"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeprecateWorkflowTypeRequest method.
+//	req, resp := client.DeprecateWorkflowTypeRequest(params)
 //
-//    // Example sending a request using the DeprecateWorkflowTypeRequest method.
-//    req, resp := client.DeprecateWorkflowTypeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *SWF) DeprecateWorkflowTypeRequest(input *DeprecateWorkflowTypeInput) (req *request.Request, output *DeprecateWorkflowTypeOutput) {
 	op := &request.Operation{
 		Name:       opDeprecateWorkflowType,
@@ -718,20 +711,20 @@ func (c *SWF) DeprecateWorkflowTypeRequest(input *DeprecateWorkflowTypeInput) (r
 // This operation is eventually consistent. The results are best effort and
 // may not exactly reflect recent updates and changes.
 //
-// Access Control
+// # Access Control
 //
 // You can use IAM policies to control this action's access to Amazon SWF resources
 // as follows:
 //
-//    * Use a Resource element with the domain name to limit the action to only
-//    specified domains.
+//   - Use a Resource element with the domain name to limit the action to only
+//     specified domains.
 //
-//    * Use an Action element to allow or deny permission to call this action.
+//   - Use an Action element to allow or deny permission to call this action.
 //
-//    * Constrain the following parameters by using a Condition element with
-//    the appropriate keys. workflowType.name: String constraint. The key is
-//    swf:workflowType.name. workflowType.version: String constraint. The key
-//    is swf:workflowType.version.
+//   - Constrain the following parameters by using a Condition element with
+//     the appropriate keys. workflowType.name: String constraint. The key is
+//     swf:workflowType.name. workflowType.version: String constraint. The key
+//     is swf:workflowType.version.
 //
 // If the caller doesn't have sufficient permissions to invoke the action, or
 // the parameter values fall outside the specified constraints, the action fails.
@@ -748,18 +741,18 @@ func (c *SWF) DeprecateWorkflowTypeRequest(input *DeprecateWorkflowTypeInput) (r
 // API operation DeprecateWorkflowType for usage and error information.
 //
 // Returned Error Types:
-//   * UnknownResourceFault
-//   Returned when the named resource cannot be found with in the scope of this
-//   operation (region or domain). This could happen if the named resource was
-//   never created or is no longer available for this operation.
 //
-//   * TypeDeprecatedFault
-//   Returned when the specified activity or workflow type was already deprecated.
+//   - UnknownResourceFault
+//     Returned when the named resource cannot be found with in the scope of this
+//     operation (region or domain). This could happen if the named resource was
+//     never created or is no longer available for this operation.
 //
-//   * OperationNotPermittedFault
-//   Returned when the caller doesn't have sufficient permissions to invoke the
-//   action.
+//   - TypeDeprecatedFault
+//     Returned when the specified activity or workflow type was already deprecated.
 //
+//   - OperationNotPermittedFault
+//     Returned when the caller doesn't have sufficient permissions to invoke the
+//     action.
 func (c *SWF) DeprecateWorkflowType(input *DeprecateWorkflowTypeInput) (*DeprecateWorkflowTypeOutput, error) {
 	req, out := c.DeprecateWorkflowTypeRequest(input)
 	return out, req.Send()
@@ -797,14 +790,13 @@ const opDescribeActivityType = "DescribeActivityType"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeActivityTypeRequest method.
+//	req, resp := client.DescribeActivityTypeRequest(params)
 //
-//    // Example sending a request using the DescribeActivityTypeRequest method.
-//    req, resp := client.DescribeActivityTypeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *SWF) DescribeActivityTypeRequest(input *DescribeActivityTypeInput) (req *request.Request, output *DescribeActivityTypeOutput) {
 	op := &request.Operation{
 		Name:       opDescribeActivityType,
@@ -827,20 +819,20 @@ func (c *SWF) DescribeActivityTypeRequest(input *DescribeActivityTypeInput) (req
 // settings provided when the type was registered and other general information
 // about the type.
 //
-// Access Control
+// # Access Control
 //
 // You can use IAM policies to control this action's access to Amazon SWF resources
 // as follows:
 //
-//    * Use a Resource element with the domain name to limit the action to only
-//    specified domains.
+//   - Use a Resource element with the domain name to limit the action to only
+//     specified domains.
 //
-//    * Use an Action element to allow or deny permission to call this action.
+//   - Use an Action element to allow or deny permission to call this action.
 //
-//    * Constrain the following parameters by using a Condition element with
-//    the appropriate keys. activityType.name: String constraint. The key is
-//    swf:activityType.name. activityType.version: String constraint. The key
-//    is swf:activityType.version.
+//   - Constrain the following parameters by using a Condition element with
+//     the appropriate keys. activityType.name: String constraint. The key is
+//     swf:activityType.name. activityType.version: String constraint. The key
+//     is swf:activityType.version.
 //
 // If the caller doesn't have sufficient permissions to invoke the action, or
 // the parameter values fall outside the specified constraints, the action fails.
@@ -857,15 +849,15 @@ func (c *SWF) DescribeActivityTypeRequest(input *DescribeActivityTypeInput) (req
 // API operation DescribeActivityType for usage and error information.
 //
 // Returned Error Types:
-//   * UnknownResourceFault
-//   Returned when the named resource cannot be found with in the scope of this
-//   operation (region or domain). This could happen if the named resource was
-//   never created or is no longer available for this operation.
 //
-//   * OperationNotPermittedFault
-//   Returned when the caller doesn't have sufficient permissions to invoke the
-//   action.
+//   - UnknownResourceFault
+//     Returned when the named resource cannot be found with in the scope of this
+//     operation (region or domain). This could happen if the named resource was
+//     never created or is no longer available for this operation.
 //
+//   - OperationNotPermittedFault
+//     Returned when the caller doesn't have sufficient permissions to invoke the
+//     action.
 func (c *SWF) DescribeActivityType(input *DescribeActivityTypeInput) (*DescribeActivityTypeOutput, error) {
 	req, out := c.DescribeActivityTypeRequest(input)
 	return out, req.Send()
@@ -903,14 +895,13 @@ const opDescribeDomain = "DescribeDomain"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDomainRequest method.
+//	req, resp := client.DescribeDomainRequest(params)
 //
-//    // Example sending a request using the DescribeDomainRequest method.
-//    req, resp := client.DescribeDomainRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *SWF) DescribeDomainRequest(input *DescribeDomainInput) (req *request.Request, output *DescribeDomainOutput) {
 	op := &request.Operation{
 		Name:       opDescribeDomain,
@@ -932,17 +923,17 @@ func (c *SWF) DescribeDomainRequest(input *DescribeDomainInput) (req *request.Re
 // Returns information about the specified domain, including description and
 // status.
 //
-// Access Control
+// # Access Control
 //
 // You can use IAM policies to control this action's access to Amazon SWF resources
 // as follows:
 //
-//    * Use a Resource element with the domain name to limit the action to only
-//    specified domains.
+//   - Use a Resource element with the domain name to limit the action to only
+//     specified domains.
 //
-//    * Use an Action element to allow or deny permission to call this action.
+//   - Use an Action element to allow or deny permission to call this action.
 //
-//    * You cannot use an IAM policy to constrain this action's parameters.
+//   - You cannot use an IAM policy to constrain this action's parameters.
 //
 // If the caller doesn't have sufficient permissions to invoke the action, or
 // the parameter values fall outside the specified constraints, the action fails.
@@ -959,15 +950,15 @@ func (c *SWF) DescribeDomainRequest(input *DescribeDomainInput) (req *request.Re
 // API operation DescribeDomain for usage and error information.
 //
 // Returned Error Types:
-//   * UnknownResourceFault
-//   Returned when the named resource cannot be found with in the scope of this
-//   operation (region or domain). This could happen if the named resource was
-//   never created or is no longer available for this operation.
 //
-//   * OperationNotPermittedFault
-//   Returned when the caller doesn't have sufficient permissions to invoke the
-//   action.
+//   - UnknownResourceFault
+//     Returned when the named resource cannot be found with in the scope of this
+//     operation (region or domain). This could happen if the named resource was
+//     never created or is no longer available for this operation.
 //
+//   - OperationNotPermittedFault
+//     Returned when the caller doesn't have sufficient permissions to invoke the
+//     action.
 func (c *SWF) DescribeDomain(input *DescribeDomainInput) (*DescribeDomainOutput, error) {
 	req, out := c.DescribeDomainRequest(input)
 	return out, req.Send()
@@ -1005,14 +996,13 @@ const opDescribeWorkflowExecution = "DescribeWorkflowExecution"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeWorkflowExecutionRequest method.
+//	req, resp := client.DescribeWorkflowExecutionRequest(params)
 //
-//    // Example sending a request using the DescribeWorkflowExecutionRequest method.
-//    req, resp := client.DescribeWorkflowExecutionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *SWF) DescribeWorkflowExecutionRequest(input *DescribeWorkflowExecutionInput) (req *request.Request, output *DescribeWorkflowExecutionOutput) {
 	op := &request.Operation{
 		Name:       opDescribeWorkflowExecution,
@@ -1037,17 +1027,17 @@ func (c *SWF) DescribeWorkflowExecutionRequest(input *DescribeWorkflowExecutionI
 // This operation is eventually consistent. The results are best effort and
 // may not exactly reflect recent updates and changes.
 //
-// Access Control
+// # Access Control
 //
 // You can use IAM policies to control this action's access to Amazon SWF resources
 // as follows:
 //
-//    * Use a Resource element with the domain name to limit the action to only
-//    specified domains.
+//   - Use a Resource element with the domain name to limit the action to only
+//     specified domains.
 //
-//    * Use an Action element to allow or deny permission to call this action.
+//   - Use an Action element to allow or deny permission to call this action.
 //
-//    * You cannot use an IAM policy to constrain this action's parameters.
+//   - You cannot use an IAM policy to constrain this action's parameters.
 //
 // If the caller doesn't have sufficient permissions to invoke the action, or
 // the parameter values fall outside the specified constraints, the action fails.
@@ -1064,15 +1054,15 @@ func (c *SWF) DescribeWorkflowExecutionRequest(input *DescribeWorkflowExecutionI
 // API operation DescribeWorkflowExecution for usage and error information.
 //
 // Returned Error Types:
-//   * UnknownResourceFault
-//   Returned when the named resource cannot be found with in the scope of this
-//   operation (region or domain). This could happen if the named resource was
-//   never created or is no longer available for this operation.
 //
-//   * OperationNotPermittedFault
-//   Returned when the caller doesn't have sufficient permissions to invoke the
-//   action.
+//   - UnknownResourceFault
+//     Returned when the named resource cannot be found with in the scope of this
+//     operation (region or domain). This could happen if the named resource was
+//     never created or is no longer available for this operation.
 //
+//   - OperationNotPermittedFault
+//     Returned when the caller doesn't have sufficient permissions to invoke the
+//     action.
 func (c *SWF) DescribeWorkflowExecution(input *DescribeWorkflowExecutionInput) (*DescribeWorkflowExecutionOutput, error) {
 	req, out := c.DescribeWorkflowExecutionRequest(input)
 	return out, req.Send()
@@ -1110,14 +1100,13 @@ const opDescribeWorkflowType = "DescribeWorkflowType"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeWorkflowTypeRequest method.
+//	req, resp := client.DescribeWorkflowTypeRequest(params)
 //
-//    // Example sending a request using the DescribeWorkflowTypeRequest method.
-//    req, resp := client.DescribeWorkflowTypeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *SWF) DescribeWorkflowTypeRequest(input *DescribeWorkflowTypeInput) (req *request.Request, output *DescribeWorkflowTypeOutput) {
 	op := &request.Operation{
 		Name:       opDescribeWorkflowType,
@@ -1140,20 +1129,20 @@ func (c *SWF) DescribeWorkflowTypeRequest(input *DescribeWorkflowTypeInput) (req
 // settings specified when the type was registered and other information such
 // as creation date, current status, etc.
 //
-// Access Control
+// # Access Control
 //
 // You can use IAM policies to control this action's access to Amazon SWF resources
 // as follows:
 //
-//    * Use a Resource element with the domain name to limit the action to only
-//    specified domains.
+//   - Use a Resource element with the domain name to limit the action to only
+//     specified domains.
 //
-//    * Use an Action element to allow or deny permission to call this action.
+//   - Use an Action element to allow or deny permission to call this action.
 //
-//    * Constrain the following parameters by using a Condition element with
-//    the appropriate keys. workflowType.name: String constraint. The key is
-//    swf:workflowType.name. workflowType.version: String constraint. The key
-//    is swf:workflowType.version.
+//   - Constrain the following parameters by using a Condition element with
+//     the appropriate keys. workflowType.name: String constraint. The key is
+//     swf:workflowType.name. workflowType.version: String constraint. The key
+//     is swf:workflowType.version.
 //
 // If the caller doesn't have sufficient permissions to invoke the action, or
 // the parameter values fall outside the specified constraints, the action fails.
@@ -1170,15 +1159,15 @@ func (c *SWF) DescribeWorkflowTypeRequest(input *DescribeWorkflowTypeInput) (req
 // API operation DescribeWorkflowType for usage and error information.
 //
 // Returned Error Types:
-//   * UnknownResourceFault
-//   Returned when the named resource cannot be found with in the scope of this
-//   operation (region or domain). This could happen if the named resource was
-//   never created or is no longer available for this operation.
 //
-//   * OperationNotPermittedFault
-//   Returned when the caller doesn't have sufficient permissions to invoke the
-//   action.
+//   - UnknownResourceFault
+//     Returned when the named resource cannot be found with in the scope of this
+//     operation (region or domain). This could happen if the named resource was
+//     never created or is no longer available for this operation.
 //
+//   - OperationNotPermittedFault
+//     Returned when the caller doesn't have sufficient permissions to invoke the
+//     action.
 func (c *SWF) DescribeWorkflowType(input *DescribeWorkflowTypeInput) (*DescribeWorkflowTypeOutput, error) {
 	req, out := c.DescribeWorkflowTypeRequest(input)
 	return out, req.Send()
@@ -1216,14 +1205,13 @@ const opGetWorkflowExecutionHistory = "GetWorkflowExecutionHistory"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetWorkflowExecutionHistoryRequest method.
+//	req, resp := client.GetWorkflowExecutionHistoryRequest(params)
 //
-//    // Example sending a request using the GetWorkflowExecutionHistoryRequest method.
-//    req, resp := client.GetWorkflowExecutionHistoryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *SWF) GetWorkflowExecutionHistoryRequest(input *GetWorkflowExecutionHistoryInput) (req *request.Request, output *GetWorkflowExecutionHistoryOutput) {
 	op := &request.Operation{
 		Name:       opGetWorkflowExecutionHistory,
@@ -1255,17 +1243,17 @@ func (c *SWF) GetWorkflowExecutionHistoryRequest(input *GetWorkflowExecutionHist
 // This operation is eventually consistent. The results are best effort and
 // may not exactly reflect recent updates and changes.
 //
-// Access Control
+// # Access Control
 //
 // You can use IAM policies to control this action's access to Amazon SWF resources
 // as follows:
 //
-//    * Use a Resource element with the domain name to limit the action to only
-//    specified domains.
+//   - Use a Resource element with the domain name to limit the action to only
+//     specified domains.
 //
-//    * Use an Action element to allow or deny permission to call this action.
+//   - Use an Action element to allow or deny permission to call this action.
 //
-//    * You cannot use an IAM policy to constrain this action's parameters.
+//   - You cannot use an IAM policy to constrain this action's parameters.
 //
 // If the caller doesn't have sufficient permissions to invoke the action, or
 // the parameter values fall outside the specified constraints, the action fails.
@@ -1282,15 +1270,15 @@ func (c *SWF) GetWorkflowExecutionHistoryRequest(input *GetWorkflowExecutionHist
 // API operation GetWorkflowExecutionHistory for usage and error information.
 //
 // Returned Error Types:
-//   * UnknownResourceFault
-//   Returned when the named resource cannot be found with in the scope of this
-//   operation (region or domain). This could happen if the named resource was
-//   never created or is no longer available for this operation.
 //
-//   * OperationNotPermittedFault
-//   Returned when the caller doesn't have sufficient permissions to invoke the
-//   action.
+//   - UnknownResourceFault
+//     Returned when the named resource cannot be found with in the scope of this
+//     operation (region or domain). This could happen if the named resource was
+//     never created or is no longer available for this operation.
 //
+//   - OperationNotPermittedFault
+//     Returned when the caller doesn't have sufficient permissions to invoke the
+//     action.
 func (c *SWF) GetWorkflowExecutionHistory(input *GetWorkflowExecutionHistoryInput) (*GetWorkflowExecutionHistoryOutput, error) {
 	req, out := c.GetWorkflowExecutionHistoryRequest(input)
 	return out, req.Send()
@@ -1320,15 +1308,14 @@ func (c *SWF) GetWorkflowExecutionHistoryWithContext(ctx aws.Context, input *Get
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetWorkflowExecutionHistory operation.
-//    pageNum := 0
-//    err := client.GetWorkflowExecutionHistoryPages(params,
-//        func(page *swf.GetWorkflowExecutionHistoryOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetWorkflowExecutionHistory operation.
+//	pageNum := 0
+//	err := client.GetWorkflowExecutionHistoryPages(params,
+//	    func(page *swf.GetWorkflowExecutionHistoryOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SWF) GetWorkflowExecutionHistoryPages(input *GetWorkflowExecutionHistoryInput, fn func(*GetWorkflowExecutionHistoryOutput, bool) bool) error {
 	return c.GetWorkflowExecutionHistoryPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1380,14 +1367,13 @@ const opListActivityTypes = "ListActivityTypes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListActivityTypesRequest method.
+//	req, resp := client.ListActivityTypesRequest(params)
 //
-//    // Example sending a request using the ListActivityTypesRequest method.
-//    req, resp := client.ListActivityTypesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *SWF) ListActivityTypesRequest(input *ListActivityTypesInput) (req *request.Request, output *ListActivityTypesOutput) {
 	op := &request.Operation{
 		Name:       opListActivityTypes,
@@ -1418,17 +1404,17 @@ func (c *SWF) ListActivityTypesRequest(input *ListActivityTypesInput) (req *requ
 // results may be split into multiple pages. To retrieve subsequent pages, make
 // the call again using the nextPageToken returned by the initial call.
 //
-// Access Control
+// # Access Control
 //
 // You can use IAM policies to control this action's access to Amazon SWF resources
 // as follows:
 //
-//    * Use a Resource element with the domain name to limit the action to only
-//    specified domains.
+//   - Use a Resource element with the domain name to limit the action to only
+//     specified domains.
 //
-//    * Use an Action element to allow or deny permission to call this action.
+//   - Use an Action element to allow or deny permission to call this action.
 //
-//    * You cannot use an IAM policy to constrain this action's parameters.
+//   - You cannot use an IAM policy to constrain this action's parameters.
 //
 // If the caller doesn't have sufficient permissions to invoke the action, or
 // the parameter values fall outside the specified constraints, the action fails.
@@ -1445,15 +1431,15 @@ func (c *SWF) ListActivityTypesRequest(input *ListActivityTypesInput) (req *requ
 // API operation ListActivityTypes for usage and error information.
 //
 // Returned Error Types:
-//   * OperationNotPermittedFault
-//   Returned when the caller doesn't have sufficient permissions to invoke the
-//   action.
 //
-//   * UnknownResourceFault
-//   Returned when the named resource cannot be found with in the scope of this
-//   operation (region or domain). This could happen if the named resource was
-//   never created or is no longer available for this operation.
+//   - OperationNotPermittedFault
+//     Returned when the caller doesn't have sufficient permissions to invoke the
+//     action.
 //
+//   - UnknownResourceFault
+//     Returned when the named resource cannot be found with in the scope of this
+//     operation (region or domain). This could happen if the named resource was
+//     never created or is no longer available for this operation.
 func (c *SWF) ListActivityTypes(input *ListActivityTypesInput) (*ListActivityTypesOutput, error) {
 	req, out := c.ListActivityTypesRequest(input)
 	return out, req.Send()
@@ -1483,15 +1469,14 @@ func (c *SWF) ListActivityTypesWithContext(ctx aws.Context, input *ListActivityT
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListActivityTypes operation.
-//    pageNum := 0
-//    err := client.ListActivityTypesPages(params,
-//        func(page *swf.ListActivityTypesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListActivityTypes operation.
+//	pageNum := 0
+//	err := client.ListActivityTypesPages(params,
+//	    func(page *swf.ListActivityTypesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SWF) ListActivityTypesPages(input *ListActivityTypesInput, fn func(*ListActivityTypesOutput, bool) bool) error {
 	return c.ListActivityTypesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1543,14 +1528,13 @@ const opListClosedWorkflowExecutions = "ListClosedWorkflowExecutions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListClosedWorkflowExecutionsRequest method.
+//	req, resp := client.ListClosedWorkflowExecutionsRequest(params)
 //
-//    // Example sending a request using the ListClosedWorkflowExecutionsRequest method.
-//    req, resp := client.ListClosedWorkflowExecutionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *SWF) ListClosedWorkflowExecutionsRequest(input *ListClosedWorkflowExecutionsInput) (req *request.Request, output *WorkflowExecutionInfos) {
 	op := &request.Operation{
 		Name:       opListClosedWorkflowExecutions,
@@ -1583,20 +1567,20 @@ func (c *SWF) ListClosedWorkflowExecutionsRequest(input *ListClosedWorkflowExecu
 // This operation is eventually consistent. The results are best effort and
 // may not exactly reflect recent updates and changes.
 //
-// Access Control
+// # Access Control
 //
 // You can use IAM policies to control this action's access to Amazon SWF resources
 // as follows:
 //
-//    * Use a Resource element with the domain name to limit the action to only
-//    specified domains.
+//   - Use a Resource element with the domain name to limit the action to only
+//     specified domains.
 //
-//    * Use an Action element to allow or deny permission to call this action.
+//   - Use an Action element to allow or deny permission to call this action.
 //
-//    * Constrain the following parameters by using a Condition element with
-//    the appropriate keys. tagFilter.tag: String constraint. The key is swf:tagFilter.tag.
-//    typeFilter.name: String constraint. The key is swf:typeFilter.name. typeFilter.version:
-//    String constraint. The key is swf:typeFilter.version.
+//   - Constrain the following parameters by using a Condition element with
+//     the appropriate keys. tagFilter.tag: String constraint. The key is swf:tagFilter.tag.
+//     typeFilter.name: String constraint. The key is swf:typeFilter.name. typeFilter.version:
+//     String constraint. The key is swf:typeFilter.version.
 //
 // If the caller doesn't have sufficient permissions to invoke the action, or
 // the parameter values fall outside the specified constraints, the action fails.
@@ -1613,15 +1597,15 @@ func (c *SWF) ListClosedWorkflowExecutionsRequest(input *ListClosedWorkflowExecu
 // API operation ListClosedWorkflowExecutions for usage and error information.
 //
 // Returned Error Types:
-//   * UnknownResourceFault
-//   Returned when the named resource cannot be found with in the scope of this
-//   operation (region or domain). This could happen if the named resource was
-//   never created or is no longer available for this operation.
 //
-//   * OperationNotPermittedFault
-//   Returned when the caller doesn't have sufficient permissions to invoke the
-//   action.
+//   - UnknownResourceFault
+//     Returned when the named resource cannot be found with in the scope of this
+//     operation (region or domain). This could happen if the named resource was
+//     never created or is no longer available for this operation.
 //
+//   - OperationNotPermittedFault
+//     Returned when the caller doesn't have sufficient permissions to invoke the
+//     action.
 func (c *SWF) ListClosedWorkflowExecutions(input *ListClosedWorkflowExecutionsInput) (*WorkflowExecutionInfos, error) {
 	req, out := c.ListClosedWorkflowExecutionsRequest(input)
 	return out, req.Send()
@@ -1651,15 +1635,14 @@ func (c *SWF) ListClosedWorkflowExecutionsWithContext(ctx aws.Context, input *Li
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListClosedWorkflowExecutions operation.
-//    pageNum := 0
-//    err := client.ListClosedWorkflowExecutionsPages(params,
-//        func(page *swf.WorkflowExecutionInfos, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListClosedWorkflowExecutions operation.
+//	pageNum := 0
+//	err := client.ListClosedWorkflowExecutionsPages(params,
+//	    func(page *swf.WorkflowExecutionInfos, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SWF) ListClosedWorkflowExecutionsPages(input *ListClosedWorkflowExecutionsInput, fn func(*WorkflowExecutionInfos, bool) bool) error {
 	return c.ListClosedWorkflowExecutionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1711,14 +1694,13 @@ const opListDomains = "ListDomains"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDomainsRequest method.
+//	req, resp := client.ListDomainsRequest(params)
 //
-//    // Example sending a request using the ListDomainsRequest method.
-//    req, resp := client.ListDomainsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *SWF) ListDomainsRequest(input *ListDomainsInput) (req *request.Request, output *ListDomainsOutput) {
 	op := &request.Operation{
 		Name:       opListDomains,
@@ -1750,18 +1732,18 @@ func (c *SWF) ListDomainsRequest(input *ListDomainsInput) (req *request.Request,
 // This operation is eventually consistent. The results are best effort and
 // may not exactly reflect recent updates and changes.
 //
-// Access Control
+// # Access Control
 //
 // You can use IAM policies to control this action's access to Amazon SWF resources
 // as follows:
 //
-//    * Use a Resource element with the domain name to limit the action to only
-//    specified domains. The element must be set to arn:aws:swf::AccountID:domain/*,
-//    where AccountID is the account ID, with no dashes.
+//   - Use a Resource element with the domain name to limit the action to only
+//     specified domains. The element must be set to arn:aws:swf::AccountID:domain/*,
+//     where AccountID is the account ID, with no dashes.
 //
-//    * Use an Action element to allow or deny permission to call this action.
+//   - Use an Action element to allow or deny permission to call this action.
 //
-//    * You cannot use an IAM policy to constrain this action's parameters.
+//   - You cannot use an IAM policy to constrain this action's parameters.
 //
 // If the caller doesn't have sufficient permissions to invoke the action, or
 // the parameter values fall outside the specified constraints, the action fails.
@@ -1778,10 +1760,9 @@ func (c *SWF) ListDomainsRequest(input *ListDomainsInput) (req *request.Request,
 // API operation ListDomains for usage and error information.
 //
 // Returned Error Types:
-//   * OperationNotPermittedFault
-//   Returned when the caller doesn't have sufficient permissions to invoke the
-//   action.
-//
+//   - OperationNotPermittedFault
+//     Returned when the caller doesn't have sufficient permissions to invoke the
+//     action.
 func (c *SWF) ListDomains(input *ListDomainsInput) (*ListDomainsOutput, error) {
 	req, out := c.ListDomainsRequest(input)
 	return out, req.Send()
@@ -1811,15 +1792,14 @@ func (c *SWF) ListDomainsWithContext(ctx aws.Context, input *ListDomainsInput, o
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListDomains operation.
-//    pageNum := 0
-//    err := client.ListDomainsPages(params,
-//        func(page *swf.ListDomainsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListDomains operation.
+//	pageNum := 0
+//	err := client.ListDomainsPages(params,
+//	    func(page *swf.ListDomainsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SWF) ListDomainsPages(input *ListDomainsInput, fn func(*ListDomainsOutput, bool) bool) error {
 	return c.ListDomainsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1871,14 +1851,13 @@ const opListOpenWorkflowExecutions = "ListOpenWorkflowExecutions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListOpenWorkflowExecutionsRequest method.
+//	req, resp := client.ListOpenWorkflowExecutionsRequest(params)
 //
-//    // Example sending a request using the ListOpenWorkflowExecutionsRequest method.
-//    req, resp := client.ListOpenWorkflowExecutionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *SWF) ListOpenWorkflowExecutionsRequest(input *ListOpenWorkflowExecutionsInput) (req *request.Request, output *WorkflowExecutionInfos) {
 	op := &request.Operation{
 		Name:       opListOpenWorkflowExecutions,
@@ -1911,20 +1890,20 @@ func (c *SWF) ListOpenWorkflowExecutionsRequest(input *ListOpenWorkflowExecution
 // This operation is eventually consistent. The results are best effort and
 // may not exactly reflect recent updates and changes.
 //
-// Access Control
+// # Access Control
 //
 // You can use IAM policies to control this action's access to Amazon SWF resources
 // as follows:
 //
-//    * Use a Resource element with the domain name to limit the action to only
-//    specified domains.
+//   - Use a Resource element with the domain name to limit the action to only
+//     specified domains.
 //
-//    * Use an Action element to allow or deny permission to call this action.
+//   - Use an Action element to allow or deny permission to call this action.
 //
-//    * Constrain the following parameters by using a Condition element with
-//    the appropriate keys. tagFilter.tag: String constraint. The key is swf:tagFilter.tag.
-//    typeFilter.name: String constraint. The key is swf:typeFilter.name. typeFilter.version:
-//    String constraint. The key is swf:typeFilter.version.
+//   - Constrain the following parameters by using a Condition element with
+//     the appropriate keys. tagFilter.tag: String constraint. The key is swf:tagFilter.tag.
+//     typeFilter.name: String constraint. The key is swf:typeFilter.name. typeFilter.version:
+//     String constraint. The key is swf:typeFilter.version.
 //
 // If the caller doesn't have sufficient permissions to invoke the action, or
 // the parameter values fall outside the specified constraints, the action fails.
@@ -1941,15 +1920,15 @@ func (c *SWF) ListOpenWorkflowExecutionsRequest(input *ListOpenWorkflowExecution
 // API operation ListOpenWorkflowExecutions for usage and error information.
 //
 // Returned Error Types:
-//   * UnknownResourceFault
-//   Returned when the named resource cannot be found with in the scope of this
-//   operation (region or domain). This could happen if the named resource was
-//   never created or is no longer available for this operation.
 //
-//   * OperationNotPermittedFault
-//   Returned when the caller doesn't have sufficient permissions to invoke the
-//   action.
+//   - UnknownResourceFault
+//     Returned when the named resource cannot be found with in the scope of this
+//     operation (region or domain). This could happen if the named resource was
+//     never created or is no longer available for this operation.
 //
+//   - OperationNotPermittedFault
+//     Returned when the caller doesn't have sufficient permissions to invoke the
+//     action.
 func (c *SWF) ListOpenWorkflowExecutions(input *ListOpenWorkflowExecutionsInput) (*WorkflowExecutionInfos, error) {
 	req, out := c.ListOpenWorkflowExecutionsRequest(input)
 	return out, req.Send()
@@ -1979,15 +1958,14 @@ func (c *SWF) ListOpenWorkflowExecutionsWithContext(ctx aws.Context, input *List
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListOpenWorkflowExecutions operation.
-//    pageNum := 0
-//    err := client.ListOpenWorkflowExecutionsPages(params,
-//        func(page *swf.WorkflowExecutionInfos, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListOpenWorkflowExecutions operation.
+//	pageNum := 0
+//	err := client.ListOpenWorkflowExecutionsPages(params,
+//	    func(page *swf.WorkflowExecutionInfos, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SWF) ListOpenWorkflowExecutionsPages(input *ListOpenWorkflowExecutionsInput, fn func(*WorkflowExecutionInfos, bool) bool) error {
 	return c.ListOpenWorkflowExecutionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2039,14 +2017,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *SWF) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
 	op := &request.Operation{
 		Name:       opListTagsForResource,
@@ -2075,20 +2052,20 @@ func (c *SWF) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * UnknownResourceFault
-//   Returned when the named resource cannot be found with in the scope of this
-//   operation (region or domain). This could happen if the named resource was
-//   never created or is no longer available for this operation.
 //
-//   * LimitExceededFault
-//   Returned by any operation if a system imposed limitation has been reached.
-//   To address this fault you should either clean up unused resources or increase
-//   the limit by contacting AWS.
+//   - UnknownResourceFault
+//     Returned when the named resource cannot be found with in the scope of this
+//     operation (region or domain). This could happen if the named resource was
+//     never created or is no longer available for this operation.
 //
-//   * OperationNotPermittedFault
-//   Returned when the caller doesn't have sufficient permissions to invoke the
-//   action.
+//   - LimitExceededFault
+//     Returned by any operation if a system imposed limitation has been reached.
+//     To address this fault you should either clean up unused resources or increase
+//     the limit by contacting AWS.
 //
+//   - OperationNotPermittedFault
+//     Returned when the caller doesn't have sufficient permissions to invoke the
+//     action.
 func (c *SWF) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
 	req, out := c.ListTagsForResourceRequest(input)
 	return out, req.Send()
@@ -2126,14 +2103,13 @@ const opListWorkflowTypes = "ListWorkflowTypes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListWorkflowTypesRequest method.
+//	req, resp := client.ListWorkflowTypesRequest(params)
 //
-//    // Example sending a request using the ListWorkflowTypesRequest method.
-//    req, resp := client.ListWorkflowTypesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *SWF) ListWorkflowTypesRequest(input *ListWorkflowTypesInput) (req *request.Request, output *ListWorkflowTypesOutput) {
 	op := &request.Operation{
 		Name:       opListWorkflowTypes,
@@ -2162,17 +2138,17 @@ func (c *SWF) ListWorkflowTypesRequest(input *ListWorkflowTypesInput) (req *requ
 // may be split into multiple pages that can be retrieved by making the call
 // repeatedly.
 //
-// Access Control
+// # Access Control
 //
 // You can use IAM policies to control this action's access to Amazon SWF resources
 // as follows:
 //
-//    * Use a Resource element with the domain name to limit the action to only
-//    specified domains.
+//   - Use a Resource element with the domain name to limit the action to only
+//     specified domains.
 //
-//    * Use an Action element to allow or deny permission to call this action.
+//   - Use an Action element to allow or deny permission to call this action.
 //
-//    * You cannot use an IAM policy to constrain this action's parameters.
+//   - You cannot use an IAM policy to constrain this action's parameters.
 //
 // If the caller doesn't have sufficient permissions to invoke the action, or
 // the parameter values fall outside the specified constraints, the action fails.
@@ -2189,15 +2165,15 @@ func (c *SWF) ListWorkflowTypesRequest(input *ListWorkflowTypesInput) (req *requ
 // API operation ListWorkflowTypes for usage and error information.
 //
 // Returned Error Types:
-//   * OperationNotPermittedFault
-//   Returned when the caller doesn't have sufficient permissions to invoke the
-//   action.
 //
-//   * UnknownResourceFault
-//   Returned when the named resource cannot be found with in the scope of this
-//   operation (region or domain). This could happen if the named resource was
-//   never created or is no longer available for this operation.
+//   - OperationNotPermittedFault
+//     Returned when the caller doesn't have sufficient permissions to invoke the
+//     action.
 //
+//   - UnknownResourceFault
+//     Returned when the named resource cannot be found with in the scope of this
+//     operation (region or domain). This could happen if the named resource was
+//     never created or is no longer available for this operation.
 func (c *SWF) ListWorkflowTypes(input *ListWorkflowTypesInput) (*ListWorkflowTypesOutput, error) {
 	req, out := c.ListWorkflowTypesRequest(input)
 	return out, req.Send()
@@ -2227,15 +2203,14 @@ func (c *SWF) ListWorkflowTypesWithContext(ctx aws.Context, input *ListWorkflowT
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListWorkflowTypes operation.
-//    pageNum := 0
-//    err := client.ListWorkflowTypesPages(params,
-//        func(page *swf.ListWorkflowTypesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListWorkflowTypes operation.
+//	pageNum := 0
+//	err := client.ListWorkflowTypesPages(params,
+//	    func(page *swf.ListWorkflowTypesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SWF) ListWorkflowTypesPages(input *ListWorkflowTypesInput, fn func(*ListWorkflowTypesOutput, bool) bool) error {
 	return c.ListWorkflowTypesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2287,14 +2262,13 @@ const opPollForActivityTask = "PollForActivityTask"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PollForActivityTaskRequest method.
+//	req, resp := client.PollForActivityTaskRequest(params)
 //
-//    // Example sending a request using the PollForActivityTaskRequest method.
-//    req, resp := client.PollForActivityTaskRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *SWF) PollForActivityTaskRequest(input *PollForActivityTaskInput) (req *request.Request, output *PollForActivityTaskOutput) {
 	op := &request.Operation{
 		Name:       opPollForActivityTask,
@@ -2325,19 +2299,19 @@ func (c *SWF) PollForActivityTaskRequest(input *PollForActivityTaskInput) (req *
 // Workers should set their client side socket timeout to at least 70 seconds
 // (10 seconds higher than the maximum time service may hold the poll request).
 //
-// Access Control
+// # Access Control
 //
 // You can use IAM policies to control this action's access to Amazon SWF resources
 // as follows:
 //
-//    * Use a Resource element with the domain name to limit the action to only
-//    specified domains.
+//   - Use a Resource element with the domain name to limit the action to only
+//     specified domains.
 //
-//    * Use an Action element to allow or deny permission to call this action.
+//   - Use an Action element to allow or deny permission to call this action.
 //
-//    * Constrain the taskList.name parameter by using a Condition element with
-//    the swf:taskList.name key to allow the action to access only certain task
-//    lists.
+//   - Constrain the taskList.name parameter by using a Condition element with
+//     the swf:taskList.name key to allow the action to access only certain task
+//     lists.
 //
 // If the caller doesn't have sufficient permissions to invoke the action, or
 // the parameter values fall outside the specified constraints, the action fails.
@@ -2354,20 +2328,20 @@ func (c *SWF) PollForActivityTaskRequest(input *PollForActivityTaskInput) (req *
 // API operation PollForActivityTask for usage and error information.
 //
 // Returned Error Types:
-//   * UnknownResourceFault
-//   Returned when the named resource cannot be found with in the scope of this
-//   operation (region or domain). This could happen if the named resource was
-//   never created or is no longer available for this operation.
 //
-//   * OperationNotPermittedFault
-//   Returned when the caller doesn't have sufficient permissions to invoke the
-//   action.
+//   - UnknownResourceFault
+//     Returned when the named resource cannot be found with in the scope of this
+//     operation (region or domain). This could happen if the named resource was
+//     never created or is no longer available for this operation.
 //
-//   * LimitExceededFault
-//   Returned by any operation if a system imposed limitation has been reached.
-//   To address this fault you should either clean up unused resources or increase
-//   the limit by contacting AWS.
+//   - OperationNotPermittedFault
+//     Returned when the caller doesn't have sufficient permissions to invoke the
+//     action.
 //
+//   - LimitExceededFault
+//     Returned by any operation if a system imposed limitation has been reached.
+//     To address this fault you should either clean up unused resources or increase
+//     the limit by contacting AWS.
 func (c *SWF) PollForActivityTask(input *PollForActivityTaskInput) (*PollForActivityTaskOutput, error) {
 	req, out := c.PollForActivityTaskRequest(input)
 	return out, req.Send()
@@ -2405,14 +2379,13 @@ const opPollForDecisionTask = "PollForDecisionTask"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PollForDecisionTaskRequest method.
+//	req, resp := client.PollForDecisionTaskRequest(params)
 //
-//    // Example sending a request using the PollForDecisionTaskRequest method.
-//    req, resp := client.PollForDecisionTaskRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *SWF) PollForDecisionTaskRequest(input *PollForDecisionTaskInput) (req *request.Request, output *PollForDecisionTaskOutput) {
 	op := &request.Operation{
 		Name:       opPollForDecisionTask,
@@ -2459,19 +2432,19 @@ func (c *SWF) PollForDecisionTaskRequest(input *PollForDecisionTaskInput) (req *
 // call GetWorkflowExecutionHistory with this nextPageToken. Instead, call PollForDecisionTask
 // again.
 //
-// Access Control
+// # Access Control
 //
 // You can use IAM policies to control this action's access to Amazon SWF resources
 // as follows:
 //
-//    * Use a Resource element with the domain name to limit the action to only
-//    specified domains.
+//   - Use a Resource element with the domain name to limit the action to only
+//     specified domains.
 //
-//    * Use an Action element to allow or deny permission to call this action.
+//   - Use an Action element to allow or deny permission to call this action.
 //
-//    * Constrain the taskList.name parameter by using a Condition element with
-//    the swf:taskList.name key to allow the action to access only certain task
-//    lists.
+//   - Constrain the taskList.name parameter by using a Condition element with
+//     the swf:taskList.name key to allow the action to access only certain task
+//     lists.
 //
 // If the caller doesn't have sufficient permissions to invoke the action, or
 // the parameter values fall outside the specified constraints, the action fails.
@@ -2488,20 +2461,20 @@ func (c *SWF) PollForDecisionTaskRequest(input *PollForDecisionTaskInput) (req *
 // API operation PollForDecisionTask for usage and error information.
 //
 // Returned Error Types:
-//   * UnknownResourceFault
-//   Returned when the named resource cannot be found with in the scope of this
-//   operation (region or domain). This could happen if the named resource was
-//   never created or is no longer available for this operation.
 //
-//   * OperationNotPermittedFault
-//   Returned when the caller doesn't have sufficient permissions to invoke the
-//   action.
+//   - UnknownResourceFault
+//     Returned when the named resource cannot be found with in the scope of this
+//     operation (region or domain). This could happen if the named resource was
+//     never created or is no longer available for this operation.
 //
-//   * LimitExceededFault
-//   Returned by any operation if a system imposed limitation has been reached.
-//   To address this fault you should either clean up unused resources or increase
-//   the limit by contacting AWS.
+//   - OperationNotPermittedFault
+//     Returned when the caller doesn't have sufficient permissions to invoke the
+//     action.
 //
+//   - LimitExceededFault
+//     Returned by any operation if a system imposed limitation has been reached.
+//     To address this fault you should either clean up unused resources or increase
+//     the limit by contacting AWS.
 func (c *SWF) PollForDecisionTask(input *PollForDecisionTaskInput) (*PollForDecisionTaskOutput, error) {
 	req, out := c.PollForDecisionTaskRequest(input)
 	return out, req.Send()
@@ -2531,15 +2504,14 @@ func (c *SWF) PollForDecisionTaskWithContext(ctx aws.Context, input *PollForDeci
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a PollForDecisionTask operation.
-//    pageNum := 0
-//    err := client.PollForDecisionTaskPages(params,
-//        func(page *swf.PollForDecisionTaskOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a PollForDecisionTask operation.
+//	pageNum := 0
+//	err := client.PollForDecisionTaskPages(params,
+//	    func(page *swf.PollForDecisionTaskOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SWF) PollForDecisionTaskPages(input *PollForDecisionTaskInput, fn func(*PollForDecisionTaskOutput, bool) bool) error {
 	return c.PollForDecisionTaskPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2591,14 +2563,13 @@ const opRecordActivityTaskHeartbeat = "RecordActivityTaskHeartbeat"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RecordActivityTaskHeartbeatRequest method.
+//	req, resp := client.RecordActivityTaskHeartbeatRequest(params)
 //
-//    // Example sending a request using the RecordActivityTaskHeartbeatRequest method.
-//    req, resp := client.RecordActivityTaskHeartbeatRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *SWF) RecordActivityTaskHeartbeatRequest(input *RecordActivityTaskHeartbeatInput) (req *request.Request, output *RecordActivityTaskHeartbeatOutput) {
 	op := &request.Operation{
 		Name:       opRecordActivityTaskHeartbeat,
@@ -2644,17 +2615,17 @@ func (c *SWF) RecordActivityTaskHeartbeatRequest(input *RecordActivityTaskHeartb
 // If the worker can cancel the activity, it should respond with RespondActivityTaskCanceled.
 // Otherwise, it should ignore the cancellation request.
 //
-// Access Control
+// # Access Control
 //
 // You can use IAM policies to control this action's access to Amazon SWF resources
 // as follows:
 //
-//    * Use a Resource element with the domain name to limit the action to only
-//    specified domains.
+//   - Use a Resource element with the domain name to limit the action to only
+//     specified domains.
 //
-//    * Use an Action element to allow or deny permission to call this action.
+//   - Use an Action element to allow or deny permission to call this action.
 //
-//    * You cannot use an IAM policy to constrain this action's parameters.
+//   - You cannot use an IAM policy to constrain this action's parameters.
 //
 // If the caller doesn't have sufficient permissions to invoke the action, or
 // the parameter values fall outside the specified constraints, the action fails.
@@ -2671,15 +2642,15 @@ func (c *SWF) RecordActivityTaskHeartbeatRequest(input *RecordActivityTaskHeartb
 // API operation RecordActivityTaskHeartbeat for usage and error information.
 //
 // Returned Error Types:
-//   * UnknownResourceFault
-//   Returned when the named resource cannot be found with in the scope of this
-//   operation (region or domain). This could happen if the named resource was
-//   never created or is no longer available for this operation.
 //
-//   * OperationNotPermittedFault
-//   Returned when the caller doesn't have sufficient permissions to invoke the
-//   action.
+//   - UnknownResourceFault
+//     Returned when the named resource cannot be found with in the scope of this
+//     operation (region or domain). This could happen if the named resource was
+//     never created or is no longer available for this operation.
 //
+//   - OperationNotPermittedFault
+//     Returned when the caller doesn't have sufficient permissions to invoke the
+//     action.
 func (c *SWF) RecordActivityTaskHeartbeat(input *RecordActivityTaskHeartbeatInput) (*RecordActivityTaskHeartbeatOutput, error) {
 	req, out := c.RecordActivityTaskHeartbeatRequest(input)
 	return out, req.Send()
@@ -2717,14 +2688,13 @@ const opRegisterActivityType = "RegisterActivityType"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RegisterActivityTypeRequest method.
+//	req, resp := client.RegisterActivityTypeRequest(params)
 //
-//    // Example sending a request using the RegisterActivityTypeRequest method.
-//    req, resp := client.RegisterActivityTypeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *SWF) RegisterActivityTypeRequest(input *RegisterActivityTypeInput) (req *request.Request, output *RegisterActivityTypeOutput) {
 	op := &request.Operation{
 		Name:       opRegisterActivityType,
@@ -2751,20 +2721,20 @@ func (c *SWF) RegisterActivityTypeRequest(input *RegisterActivityTypeInput) (req
 // You cannot change any configuration settings of the type after its registration,
 // and it must be registered as a new version.
 //
-// Access Control
+// # Access Control
 //
 // You can use IAM policies to control this action's access to Amazon SWF resources
 // as follows:
 //
-//    * Use a Resource element with the domain name to limit the action to only
-//    specified domains.
+//   - Use a Resource element with the domain name to limit the action to only
+//     specified domains.
 //
-//    * Use an Action element to allow or deny permission to call this action.
+//   - Use an Action element to allow or deny permission to call this action.
 //
-//    * Constrain the following parameters by using a Condition element with
-//    the appropriate keys. defaultTaskList.name: String constraint. The key
-//    is swf:defaultTaskList.name. name: String constraint. The key is swf:name.
-//    version: String constraint. The key is swf:version.
+//   - Constrain the following parameters by using a Condition element with
+//     the appropriate keys. defaultTaskList.name: String constraint. The key
+//     is swf:defaultTaskList.name. name: String constraint. The key is swf:name.
+//     version: String constraint. The key is swf:version.
 //
 // If the caller doesn't have sufficient permissions to invoke the action, or
 // the parameter values fall outside the specified constraints, the action fails.
@@ -2781,25 +2751,25 @@ func (c *SWF) RegisterActivityTypeRequest(input *RegisterActivityTypeInput) (req
 // API operation RegisterActivityType for usage and error information.
 //
 // Returned Error Types:
-//   * TypeAlreadyExistsFault
-//   Returned if the type already exists in the specified domain. You may get
-//   this fault if you are registering a type that is either already registered
-//   or deprecated, or if you undeprecate a type that is currently registered.
 //
-//   * LimitExceededFault
-//   Returned by any operation if a system imposed limitation has been reached.
-//   To address this fault you should either clean up unused resources or increase
-//   the limit by contacting AWS.
+//   - TypeAlreadyExistsFault
+//     Returned if the type already exists in the specified domain. You may get
+//     this fault if you are registering a type that is either already registered
+//     or deprecated, or if you undeprecate a type that is currently registered.
 //
-//   * UnknownResourceFault
-//   Returned when the named resource cannot be found with in the scope of this
-//   operation (region or domain). This could happen if the named resource was
-//   never created or is no longer available for this operation.
+//   - LimitExceededFault
+//     Returned by any operation if a system imposed limitation has been reached.
+//     To address this fault you should either clean up unused resources or increase
+//     the limit by contacting AWS.
 //
-//   * OperationNotPermittedFault
-//   Returned when the caller doesn't have sufficient permissions to invoke the
-//   action.
+//   - UnknownResourceFault
+//     Returned when the named resource cannot be found with in the scope of this
+//     operation (region or domain). This could happen if the named resource was
+//     never created or is no longer available for this operation.
 //
+//   - OperationNotPermittedFault
+//     Returned when the caller doesn't have sufficient permissions to invoke the
+//     action.
 func (c *SWF) RegisterActivityType(input *RegisterActivityTypeInput) (*RegisterActivityTypeOutput, error) {
 	req, out := c.RegisterActivityTypeRequest(input)
 	return out, req.Send()
@@ -2837,14 +2807,13 @@ const opRegisterDomain = "RegisterDomain"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RegisterDomainRequest method.
+//	req, resp := client.RegisterDomainRequest(params)
 //
-//    // Example sending a request using the RegisterDomainRequest method.
-//    req, resp := client.RegisterDomainRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *SWF) RegisterDomainRequest(input *RegisterDomainInput) (req *request.Request, output *RegisterDomainOutput) {
 	op := &request.Operation{
 		Name:       opRegisterDomain,
@@ -2866,18 +2835,18 @@ func (c *SWF) RegisterDomainRequest(input *RegisterDomainInput) (req *request.Re
 //
 // Registers a new domain.
 //
-// Access Control
+// # Access Control
 //
 // You can use IAM policies to control this action's access to Amazon SWF resources
 // as follows:
 //
-//    * You cannot use an IAM policy to control domain access for this action.
-//    The name of the domain being registered is available as the resource of
-//    this action.
+//   - You cannot use an IAM policy to control domain access for this action.
+//     The name of the domain being registered is available as the resource of
+//     this action.
 //
-//    * Use an Action element to allow or deny permission to call this action.
+//   - Use an Action element to allow or deny permission to call this action.
 //
-//    * You cannot use an IAM policy to constrain this action's parameters.
+//   - You cannot use an IAM policy to constrain this action's parameters.
 //
 // If the caller doesn't have sufficient permissions to invoke the action, or
 // the parameter values fall outside the specified constraints, the action fails.
@@ -2894,23 +2863,23 @@ func (c *SWF) RegisterDomainRequest(input *RegisterDomainInput) (req *request.Re
 // API operation RegisterDomain for usage and error information.
 //
 // Returned Error Types:
-//   * DomainAlreadyExistsFault
-//   Returned if the domain already exists. You may get this fault if you are
-//   registering a domain that is either already registered or deprecated, or
-//   if you undeprecate a domain that is currently registered.
 //
-//   * LimitExceededFault
-//   Returned by any operation if a system imposed limitation has been reached.
-//   To address this fault you should either clean up unused resources or increase
-//   the limit by contacting AWS.
+//   - DomainAlreadyExistsFault
+//     Returned if the domain already exists. You may get this fault if you are
+//     registering a domain that is either already registered or deprecated, or
+//     if you undeprecate a domain that is currently registered.
 //
-//   * OperationNotPermittedFault
-//   Returned when the caller doesn't have sufficient permissions to invoke the
-//   action.
+//   - LimitExceededFault
+//     Returned by any operation if a system imposed limitation has been reached.
+//     To address this fault you should either clean up unused resources or increase
+//     the limit by contacting AWS.
 //
-//   * TooManyTagsFault
-//   You've exceeded the number of tags allowed for a domain.
+//   - OperationNotPermittedFault
+//     Returned when the caller doesn't have sufficient permissions to invoke the
+//     action.
 //
+//   - TooManyTagsFault
+//     You've exceeded the number of tags allowed for a domain.
 func (c *SWF) RegisterDomain(input *RegisterDomainInput) (*RegisterDomainOutput, error) {
 	req, out := c.RegisterDomainRequest(input)
 	return out, req.Send()
@@ -2948,14 +2917,13 @@ const opRegisterWorkflowType = "RegisterWorkflowType"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RegisterWorkflowTypeRequest method.
+//	req, resp := client.RegisterWorkflowTypeRequest(params)
 //
-//    // Example sending a request using the RegisterWorkflowTypeRequest method.
-//    req, resp := client.RegisterWorkflowTypeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *SWF) RegisterWorkflowTypeRequest(input *RegisterWorkflowTypeInput) (req *request.Request, output *RegisterWorkflowTypeOutput) {
 	op := &request.Operation{
 		Name:       opRegisterWorkflowType,
@@ -2985,20 +2953,20 @@ func (c *SWF) RegisterWorkflowTypeRequest(input *RegisterWorkflowTypeInput) (req
 // cannot change the configuration settings of a workflow type once it is registered
 // and it must be registered as a new version.
 //
-// Access Control
+// # Access Control
 //
 // You can use IAM policies to control this action's access to Amazon SWF resources
 // as follows:
 //
-//    * Use a Resource element with the domain name to limit the action to only
-//    specified domains.
+//   - Use a Resource element with the domain name to limit the action to only
+//     specified domains.
 //
-//    * Use an Action element to allow or deny permission to call this action.
+//   - Use an Action element to allow or deny permission to call this action.
 //
-//    * Constrain the following parameters by using a Condition element with
-//    the appropriate keys. defaultTaskList.name: String constraint. The key
-//    is swf:defaultTaskList.name. name: String constraint. The key is swf:name.
-//    version: String constraint. The key is swf:version.
+//   - Constrain the following parameters by using a Condition element with
+//     the appropriate keys. defaultTaskList.name: String constraint. The key
+//     is swf:defaultTaskList.name. name: String constraint. The key is swf:name.
+//     version: String constraint. The key is swf:version.
 //
 // If the caller doesn't have sufficient permissions to invoke the action, or
 // the parameter values fall outside the specified constraints, the action fails.
@@ -3015,25 +2983,25 @@ func (c *SWF) RegisterWorkflowTypeRequest(input *RegisterWorkflowTypeInput) (req
 // API operation RegisterWorkflowType for usage and error information.
 //
 // Returned Error Types:
-//   * TypeAlreadyExistsFault
-//   Returned if the type already exists in the specified domain. You may get
-//   this fault if you are registering a type that is either already registered
-//   or deprecated, or if you undeprecate a type that is currently registered.
 //
-//   * LimitExceededFault
-//   Returned by any operation if a system imposed limitation has been reached.
-//   To address this fault you should either clean up unused resources or increase
-//   the limit by contacting AWS.
+//   - TypeAlreadyExistsFault
+//     Returned if the type already exists in the specified domain. You may get
+//     this fault if you are registering a type that is either already registered
+//     or deprecated, or if you undeprecate a type that is currently registered.
 //
-//   * UnknownResourceFault
-//   Returned when the named resource cannot be found with in the scope of this
-//   operation (region or domain). This could happen if the named resource was
-//   never created or is no longer available for this operation.
+//   - LimitExceededFault
+//     Returned by any operation if a system imposed limitation has been reached.
+//     To address this fault you should either clean up unused resources or increase
+//     the limit by contacting AWS.
 //
-//   * OperationNotPermittedFault
-//   Returned when the caller doesn't have sufficient permissions to invoke the
-//   action.
+//   - UnknownResourceFault
+//     Returned when the named resource cannot be found with in the scope of this
+//     operation (region or domain). This could happen if the named resource was
+//     never created or is no longer available for this operation.
 //
+//   - OperationNotPermittedFault
+//     Returned when the caller doesn't have sufficient permissions to invoke the
+//     action.
 func (c *SWF) RegisterWorkflowType(input *RegisterWorkflowTypeInput) (*RegisterWorkflowTypeOutput, error) {
 	req, out := c.RegisterWorkflowTypeRequest(input)
 	return out, req.Send()
@@ -3071,14 +3039,13 @@ const opRequestCancelWorkflowExecution = "RequestCancelWorkflowExecution"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RequestCancelWorkflowExecutionRequest method.
+//	req, resp := client.RequestCancelWorkflowExecutionRequest(params)
 //
-//    // Example sending a request using the RequestCancelWorkflowExecutionRequest method.
-//    req, resp := client.RequestCancelWorkflowExecutionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *SWF) RequestCancelWorkflowExecutionRequest(input *RequestCancelWorkflowExecutionInput) (req *request.Request, output *RequestCancelWorkflowExecutionOutput) {
 	op := &request.Operation{
 		Name:       opRequestCancelWorkflowExecution,
@@ -3111,17 +3078,17 @@ func (c *SWF) RequestCancelWorkflowExecutionRequest(input *RequestCancelWorkflow
 // Because this action allows the workflow to properly clean up and gracefully
 // close, it should be used instead of TerminateWorkflowExecution when possible.
 //
-// Access Control
+// # Access Control
 //
 // You can use IAM policies to control this action's access to Amazon SWF resources
 // as follows:
 //
-//    * Use a Resource element with the domain name to limit the action to only
-//    specified domains.
+//   - Use a Resource element with the domain name to limit the action to only
+//     specified domains.
 //
-//    * Use an Action element to allow or deny permission to call this action.
+//   - Use an Action element to allow or deny permission to call this action.
 //
-//    * You cannot use an IAM policy to constrain this action's parameters.
+//   - You cannot use an IAM policy to constrain this action's parameters.
 //
 // If the caller doesn't have sufficient permissions to invoke the action, or
 // the parameter values fall outside the specified constraints, the action fails.
@@ -3138,15 +3105,15 @@ func (c *SWF) RequestCancelWorkflowExecutionRequest(input *RequestCancelWorkflow
 // API operation RequestCancelWorkflowExecution for usage and error information.
 //
 // Returned Error Types:
-//   * UnknownResourceFault
-//   Returned when the named resource cannot be found with in the scope of this
-//   operation (region or domain). This could happen if the named resource was
-//   never created or is no longer available for this operation.
 //
-//   * OperationNotPermittedFault
-//   Returned when the caller doesn't have sufficient permissions to invoke the
-//   action.
+//   - UnknownResourceFault
+//     Returned when the named resource cannot be found with in the scope of this
+//     operation (region or domain). This could happen if the named resource was
+//     never created or is no longer available for this operation.
 //
+//   - OperationNotPermittedFault
+//     Returned when the caller doesn't have sufficient permissions to invoke the
+//     action.
 func (c *SWF) RequestCancelWorkflowExecution(input *RequestCancelWorkflowExecutionInput) (*RequestCancelWorkflowExecutionOutput, error) {
 	req, out := c.RequestCancelWorkflowExecutionRequest(input)
 	return out, req.Send()
@@ -3184,14 +3151,13 @@ const opRespondActivityTaskCanceled = "RespondActivityTaskCanceled"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RespondActivityTaskCanceledRequest method.
+//	req, resp := client.RespondActivityTaskCanceledRequest(params)
 //
-//    // Example sending a request using the RespondActivityTaskCanceledRequest method.
-//    req, resp := client.RespondActivityTaskCanceledRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *SWF) RespondActivityTaskCanceledRequest(input *RespondActivityTaskCanceledInput) (req *request.Request, output *RespondActivityTaskCanceledOutput) {
 	op := &request.Operation{
 		Name:       opRespondActivityTaskCanceled,
@@ -3227,17 +3193,17 @@ func (c *SWF) RespondActivityTaskCanceledRequest(input *RespondActivityTaskCance
 // RespondActivityTaskCanceled, RespondActivityTaskFailed, or the task has timed
 // out (https://docs.aws.amazon.com/amazonswf/latest/developerguide/swf-dg-basic.html#swf-dev-timeout-types).
 //
-// Access Control
+// # Access Control
 //
 // You can use IAM policies to control this action's access to Amazon SWF resources
 // as follows:
 //
-//    * Use a Resource element with the domain name to limit the action to only
-//    specified domains.
+//   - Use a Resource element with the domain name to limit the action to only
+//     specified domains.
 //
-//    * Use an Action element to allow or deny permission to call this action.
+//   - Use an Action element to allow or deny permission to call this action.
 //
-//    * You cannot use an IAM policy to constrain this action's parameters.
+//   - You cannot use an IAM policy to constrain this action's parameters.
 //
 // If the caller doesn't have sufficient permissions to invoke the action, or
 // the parameter values fall outside the specified constraints, the action fails.
@@ -3254,15 +3220,15 @@ func (c *SWF) RespondActivityTaskCanceledRequest(input *RespondActivityTaskCance
 // API operation RespondActivityTaskCanceled for usage and error information.
 //
 // Returned Error Types:
-//   * UnknownResourceFault
-//   Returned when the named resource cannot be found with in the scope of this
-//   operation (region or domain). This could happen if the named resource was
-//   never created or is no longer available for this operation.
 //
-//   * OperationNotPermittedFault
-//   Returned when the caller doesn't have sufficient permissions to invoke the
-//   action.
+//   - UnknownResourceFault
+//     Returned when the named resource cannot be found with in the scope of this
+//     operation (region or domain). This could happen if the named resource was
+//     never created or is no longer available for this operation.
 //
+//   - OperationNotPermittedFault
+//     Returned when the caller doesn't have sufficient permissions to invoke the
+//     action.
 func (c *SWF) RespondActivityTaskCanceled(input *RespondActivityTaskCanceledInput) (*RespondActivityTaskCanceledOutput, error) {
 	req, out := c.RespondActivityTaskCanceledRequest(input)
 	return out, req.Send()
@@ -3300,14 +3266,13 @@ const opRespondActivityTaskCompleted = "RespondActivityTaskCompleted"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RespondActivityTaskCompletedRequest method.
+//	req, resp := client.RespondActivityTaskCompletedRequest(params)
 //
-//    // Example sending a request using the RespondActivityTaskCompletedRequest method.
-//    req, resp := client.RespondActivityTaskCompletedRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *SWF) RespondActivityTaskCompletedRequest(input *RespondActivityTaskCompletedInput) (req *request.Request, output *RespondActivityTaskCompletedOutput) {
 	op := &request.Operation{
 		Name:       opRespondActivityTaskCompleted,
@@ -3342,17 +3307,17 @@ func (c *SWF) RespondActivityTaskCompletedRequest(input *RespondActivityTaskComp
 // RespondActivityTaskCanceled, RespondActivityTaskFailed, or the task has timed
 // out (https://docs.aws.amazon.com/amazonswf/latest/developerguide/swf-dg-basic.html#swf-dev-timeout-types).
 //
-// Access Control
+// # Access Control
 //
 // You can use IAM policies to control this action's access to Amazon SWF resources
 // as follows:
 //
-//    * Use a Resource element with the domain name to limit the action to only
-//    specified domains.
+//   - Use a Resource element with the domain name to limit the action to only
+//     specified domains.
 //
-//    * Use an Action element to allow or deny permission to call this action.
+//   - Use an Action element to allow or deny permission to call this action.
 //
-//    * You cannot use an IAM policy to constrain this action's parameters.
+//   - You cannot use an IAM policy to constrain this action's parameters.
 //
 // If the caller doesn't have sufficient permissions to invoke the action, or
 // the parameter values fall outside the specified constraints, the action fails.
@@ -3369,15 +3334,15 @@ func (c *SWF) RespondActivityTaskCompletedRequest(input *RespondActivityTaskComp
 // API operation RespondActivityTaskCompleted for usage and error information.
 //
 // Returned Error Types:
-//   * UnknownResourceFault
-//   Returned when the named resource cannot be found with in the scope of this
-//   operation (region or domain). This could happen if the named resource was
-//   never created or is no longer available for this operation.
 //
-//   * OperationNotPermittedFault
-//   Returned when the caller doesn't have sufficient permissions to invoke the
-//   action.
+//   - UnknownResourceFault
+//     Returned when the named resource cannot be found with in the scope of this
+//     operation (region or domain). This could happen if the named resource was
+//     never created or is no longer available for this operation.
 //
+//   - OperationNotPermittedFault
+//     Returned when the caller doesn't have sufficient permissions to invoke the
+//     action.
 func (c *SWF) RespondActivityTaskCompleted(input *RespondActivityTaskCompletedInput) (*RespondActivityTaskCompletedOutput, error) {
 	req, out := c.RespondActivityTaskCompletedRequest(input)
 	return out, req.Send()
@@ -3415,14 +3380,13 @@ const opRespondActivityTaskFailed = "RespondActivityTaskFailed"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RespondActivityTaskFailedRequest method.
+//	req, resp := client.RespondActivityTaskFailedRequest(params)
 //
-//    // Example sending a request using the RespondActivityTaskFailedRequest method.
-//    req, resp := client.RespondActivityTaskFailedRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *SWF) RespondActivityTaskFailedRequest(input *RespondActivityTaskFailedInput) (req *request.Request, output *RespondActivityTaskFailedOutput) {
 	op := &request.Operation{
 		Name:       opRespondActivityTaskFailed,
@@ -3452,17 +3416,17 @@ func (c *SWF) RespondActivityTaskFailedRequest(input *RespondActivityTaskFailedI
 // RespondActivityTaskCanceled, RespondActivityTaskFailed, or the task has timed
 // out (https://docs.aws.amazon.com/amazonswf/latest/developerguide/swf-dg-basic.html#swf-dev-timeout-types).
 //
-// Access Control
+// # Access Control
 //
 // You can use IAM policies to control this action's access to Amazon SWF resources
 // as follows:
 //
-//    * Use a Resource element with the domain name to limit the action to only
-//    specified domains.
+//   - Use a Resource element with the domain name to limit the action to only
+//     specified domains.
 //
-//    * Use an Action element to allow or deny permission to call this action.
+//   - Use an Action element to allow or deny permission to call this action.
 //
-//    * You cannot use an IAM policy to constrain this action's parameters.
+//   - You cannot use an IAM policy to constrain this action's parameters.
 //
 // If the caller doesn't have sufficient permissions to invoke the action, or
 // the parameter values fall outside the specified constraints, the action fails.
@@ -3479,15 +3443,15 @@ func (c *SWF) RespondActivityTaskFailedRequest(input *RespondActivityTaskFailedI
 // API operation RespondActivityTaskFailed for usage and error information.
 //
 // Returned Error Types:
-//   * UnknownResourceFault
-//   Returned when the named resource cannot be found with in the scope of this
-//   operation (region or domain). This could happen if the named resource was
-//   never created or is no longer available for this operation.
 //
-//   * OperationNotPermittedFault
-//   Returned when the caller doesn't have sufficient permissions to invoke the
-//   action.
+//   - UnknownResourceFault
+//     Returned when the named resource cannot be found with in the scope of this
+//     operation (region or domain). This could happen if the named resource was
+//     never created or is no longer available for this operation.
 //
+//   - OperationNotPermittedFault
+//     Returned when the caller doesn't have sufficient permissions to invoke the
+//     action.
 func (c *SWF) RespondActivityTaskFailed(input *RespondActivityTaskFailedInput) (*RespondActivityTaskFailedOutput, error) {
 	req, out := c.RespondActivityTaskFailedRequest(input)
 	return out, req.Send()
@@ -3525,14 +3489,13 @@ const opRespondDecisionTaskCompleted = "RespondDecisionTaskCompleted"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RespondDecisionTaskCompletedRequest method.
+//	req, resp := client.RespondDecisionTaskCompletedRequest(params)
 //
-//    // Example sending a request using the RespondDecisionTaskCompletedRequest method.
-//    req, resp := client.RespondDecisionTaskCompletedRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *SWF) RespondDecisionTaskCompletedRequest(input *RespondDecisionTaskCompletedInput) (req *request.Request, output *RespondDecisionTaskCompletedOutput) {
 	op := &request.Operation{
 		Name:       opRespondDecisionTaskCompleted,
@@ -3559,7 +3522,7 @@ func (c *SWF) RespondDecisionTaskCompletedRequest(input *RespondDecisionTaskComp
 // A DecisionTaskCompleted event is added to the workflow history. The executionContext
 // specified is attached to the event in the workflow execution history.
 //
-// Access Control
+// # Access Control
 //
 // If an IAM policy grants permission to use RespondDecisionTaskCompleted, it
 // can express permissions for the list of decisions in the decisions parameter.
@@ -3578,15 +3541,15 @@ func (c *SWF) RespondDecisionTaskCompletedRequest(input *RespondDecisionTaskComp
 // API operation RespondDecisionTaskCompleted for usage and error information.
 //
 // Returned Error Types:
-//   * UnknownResourceFault
-//   Returned when the named resource cannot be found with in the scope of this
-//   operation (region or domain). This could happen if the named resource was
-//   never created or is no longer available for this operation.
 //
-//   * OperationNotPermittedFault
-//   Returned when the caller doesn't have sufficient permissions to invoke the
-//   action.
+//   - UnknownResourceFault
+//     Returned when the named resource cannot be found with in the scope of this
+//     operation (region or domain). This could happen if the named resource was
+//     never created or is no longer available for this operation.
 //
+//   - OperationNotPermittedFault
+//     Returned when the caller doesn't have sufficient permissions to invoke the
+//     action.
 func (c *SWF) RespondDecisionTaskCompleted(input *RespondDecisionTaskCompletedInput) (*RespondDecisionTaskCompletedOutput, error) {
 	req, out := c.RespondDecisionTaskCompletedRequest(input)
 	return out, req.Send()
@@ -3624,14 +3587,13 @@ const opSignalWorkflowExecution = "SignalWorkflowExecution"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SignalWorkflowExecutionRequest method.
+//	req, resp := client.SignalWorkflowExecutionRequest(params)
 //
-//    // Example sending a request using the SignalWorkflowExecutionRequest method.
-//    req, resp := client.SignalWorkflowExecutionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *SWF) SignalWorkflowExecutionRequest(input *SignalWorkflowExecutionInput) (req *request.Request, output *SignalWorkflowExecutionOutput) {
 	op := &request.Operation{
 		Name:       opSignalWorkflowExecution,
@@ -3662,17 +3624,17 @@ func (c *SWF) SignalWorkflowExecutionRequest(input *SignalWorkflowExecutionInput
 //
 // If the specified workflow execution isn't open, this method fails with UnknownResource.
 //
-// Access Control
+// # Access Control
 //
 // You can use IAM policies to control this action's access to Amazon SWF resources
 // as follows:
 //
-//    * Use a Resource element with the domain name to limit the action to only
-//    specified domains.
+//   - Use a Resource element with the domain name to limit the action to only
+//     specified domains.
 //
-//    * Use an Action element to allow or deny permission to call this action.
+//   - Use an Action element to allow or deny permission to call this action.
 //
-//    * You cannot use an IAM policy to constrain this action's parameters.
+//   - You cannot use an IAM policy to constrain this action's parameters.
 //
 // If the caller doesn't have sufficient permissions to invoke the action, or
 // the parameter values fall outside the specified constraints, the action fails.
@@ -3689,15 +3651,15 @@ func (c *SWF) SignalWorkflowExecutionRequest(input *SignalWorkflowExecutionInput
 // API operation SignalWorkflowExecution for usage and error information.
 //
 // Returned Error Types:
-//   * UnknownResourceFault
-//   Returned when the named resource cannot be found with in the scope of this
-//   operation (region or domain). This could happen if the named resource was
-//   never created or is no longer available for this operation.
 //
-//   * OperationNotPermittedFault
-//   Returned when the caller doesn't have sufficient permissions to invoke the
-//   action.
+//   - UnknownResourceFault
+//     Returned when the named resource cannot be found with in the scope of this
+//     operation (region or domain). This could happen if the named resource was
+//     never created or is no longer available for this operation.
 //
+//   - OperationNotPermittedFault
+//     Returned when the caller doesn't have sufficient permissions to invoke the
+//     action.
 func (c *SWF) SignalWorkflowExecution(input *SignalWorkflowExecutionInput) (*SignalWorkflowExecutionOutput, error) {
 	req, out := c.SignalWorkflowExecutionRequest(input)
 	return out, req.Send()
@@ -3735,14 +3697,13 @@ const opStartWorkflowExecution = "StartWorkflowExecution"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartWorkflowExecutionRequest method.
+//	req, resp := client.StartWorkflowExecutionRequest(params)
 //
-//    // Example sending a request using the StartWorkflowExecutionRequest method.
-//    req, resp := client.StartWorkflowExecutionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *SWF) StartWorkflowExecutionRequest(input *StartWorkflowExecutionInput) (req *request.Request, output *StartWorkflowExecutionOutput) {
 	op := &request.Operation{
 		Name:       opStartWorkflowExecution,
@@ -3766,24 +3727,24 @@ func (c *SWF) StartWorkflowExecutionRequest(input *StartWorkflowExecutionInput) 
 //
 // This action returns the newly started workflow execution.
 //
-// Access Control
+// # Access Control
 //
 // You can use IAM policies to control this action's access to Amazon SWF resources
 // as follows:
 //
-//    * Use a Resource element with the domain name to limit the action to only
-//    specified domains.
+//   - Use a Resource element with the domain name to limit the action to only
+//     specified domains.
 //
-//    * Use an Action element to allow or deny permission to call this action.
+//   - Use an Action element to allow or deny permission to call this action.
 //
-//    * Constrain the following parameters by using a Condition element with
-//    the appropriate keys. tagList.member.0: The key is swf:tagList.member.0.
-//    tagList.member.1: The key is swf:tagList.member.1. tagList.member.2: The
-//    key is swf:tagList.member.2. tagList.member.3: The key is swf:tagList.member.3.
-//    tagList.member.4: The key is swf:tagList.member.4. taskList: String constraint.
-//    The key is swf:taskList.name. workflowType.name: String constraint. The
-//    key is swf:workflowType.name. workflowType.version: String constraint.
-//    The key is swf:workflowType.version.
+//   - Constrain the following parameters by using a Condition element with
+//     the appropriate keys. tagList.member.0: The key is swf:tagList.member.0.
+//     tagList.member.1: The key is swf:tagList.member.1. tagList.member.2: The
+//     key is swf:tagList.member.2. tagList.member.3: The key is swf:tagList.member.3.
+//     tagList.member.4: The key is swf:tagList.member.4. taskList: String constraint.
+//     The key is swf:taskList.name. workflowType.name: String constraint. The
+//     key is swf:workflowType.name. workflowType.version: String constraint.
+//     The key is swf:workflowType.version.
 //
 // If the caller doesn't have sufficient permissions to invoke the action, or
 // the parameter values fall outside the specified constraints, the action fails.
@@ -3800,40 +3761,40 @@ func (c *SWF) StartWorkflowExecutionRequest(input *StartWorkflowExecutionInput) 
 // API operation StartWorkflowExecution for usage and error information.
 //
 // Returned Error Types:
-//   * UnknownResourceFault
-//   Returned when the named resource cannot be found with in the scope of this
-//   operation (region or domain). This could happen if the named resource was
-//   never created or is no longer available for this operation.
 //
-//   * TypeDeprecatedFault
-//   Returned when the specified activity or workflow type was already deprecated.
+//   - UnknownResourceFault
+//     Returned when the named resource cannot be found with in the scope of this
+//     operation (region or domain). This could happen if the named resource was
+//     never created or is no longer available for this operation.
 //
-//   * WorkflowExecutionAlreadyStartedFault
-//   Returned by StartWorkflowExecution when an open execution with the same workflowId
-//   is already running in the specified domain.
+//   - TypeDeprecatedFault
+//     Returned when the specified activity or workflow type was already deprecated.
 //
-//   * LimitExceededFault
-//   Returned by any operation if a system imposed limitation has been reached.
-//   To address this fault you should either clean up unused resources or increase
-//   the limit by contacting AWS.
+//   - WorkflowExecutionAlreadyStartedFault
+//     Returned by StartWorkflowExecution when an open execution with the same workflowId
+//     is already running in the specified domain.
 //
-//   * OperationNotPermittedFault
-//   Returned when the caller doesn't have sufficient permissions to invoke the
-//   action.
+//   - LimitExceededFault
+//     Returned by any operation if a system imposed limitation has been reached.
+//     To address this fault you should either clean up unused resources or increase
+//     the limit by contacting AWS.
 //
-//   * DefaultUndefinedFault
-//   The StartWorkflowExecution API action was called without the required parameters
-//   set.
+//   - OperationNotPermittedFault
+//     Returned when the caller doesn't have sufficient permissions to invoke the
+//     action.
 //
-//   Some workflow execution parameters, such as the decision taskList, must be
-//   set to start the execution. However, these parameters might have been set
-//   as defaults when the workflow type was registered. In this case, you can
-//   omit these parameters from the StartWorkflowExecution call and Amazon SWF
-//   uses the values defined in the workflow type.
+//   - DefaultUndefinedFault
+//     The StartWorkflowExecution API action was called without the required parameters
+//     set.
 //
-//   If these parameters aren't set and no default parameters were defined in
-//   the workflow type, this error is displayed.
+//     Some workflow execution parameters, such as the decision taskList, must be
+//     set to start the execution. However, these parameters might have been set
+//     as defaults when the workflow type was registered. In this case, you can
+//     omit these parameters from the StartWorkflowExecution call and Amazon SWF
+//     uses the values defined in the workflow type.
 //
+//     If these parameters aren't set and no default parameters were defined in
+//     the workflow type, this error is displayed.
 func (c *SWF) StartWorkflowExecution(input *StartWorkflowExecutionInput) (*StartWorkflowExecutionOutput, error) {
 	req, out := c.StartWorkflowExecutionRequest(input)
 	return out, req.Send()
@@ -3871,14 +3832,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *SWF) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
 	op := &request.Operation{
 		Name:       opTagResource,
@@ -3910,23 +3870,23 @@ func (c *SWF) TagResourceRequest(input *TagResourceInput) (req *request.Request,
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * UnknownResourceFault
-//   Returned when the named resource cannot be found with in the scope of this
-//   operation (region or domain). This could happen if the named resource was
-//   never created or is no longer available for this operation.
 //
-//   * TooManyTagsFault
-//   You've exceeded the number of tags allowed for a domain.
+//   - UnknownResourceFault
+//     Returned when the named resource cannot be found with in the scope of this
+//     operation (region or domain). This could happen if the named resource was
+//     never created or is no longer available for this operation.
 //
-//   * LimitExceededFault
-//   Returned by any operation if a system imposed limitation has been reached.
-//   To address this fault you should either clean up unused resources or increase
-//   the limit by contacting AWS.
+//   - TooManyTagsFault
+//     You've exceeded the number of tags allowed for a domain.
 //
-//   * OperationNotPermittedFault
-//   Returned when the caller doesn't have sufficient permissions to invoke the
-//   action.
+//   - LimitExceededFault
+//     Returned by any operation if a system imposed limitation has been reached.
+//     To address this fault you should either clean up unused resources or increase
+//     the limit by contacting AWS.
 //
+//   - OperationNotPermittedFault
+//     Returned when the caller doesn't have sufficient permissions to invoke the
+//     action.
 func (c *SWF) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
 	req, out := c.TagResourceRequest(input)
 	return out, req.Send()
@@ -3964,14 +3924,13 @@ const opTerminateWorkflowExecution = "TerminateWorkflowExecution"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TerminateWorkflowExecutionRequest method.
+//	req, resp := client.TerminateWorkflowExecutionRequest(params)
 //
-//    // Example sending a request using the TerminateWorkflowExecutionRequest method.
-//    req, resp := client.TerminateWorkflowExecutionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *SWF) TerminateWorkflowExecutionRequest(input *TerminateWorkflowExecutionInput) (req *request.Request, output *TerminateWorkflowExecutionOutput) {
 	op := &request.Operation{
 		Name:       opTerminateWorkflowExecution,
@@ -4007,17 +3966,17 @@ func (c *SWF) TerminateWorkflowExecutionRequest(input *TerminateWorkflowExecutio
 // it allows the workflow to gracefully close while TerminateWorkflowExecution
 // doesn't.
 //
-// Access Control
+// # Access Control
 //
 // You can use IAM policies to control this action's access to Amazon SWF resources
 // as follows:
 //
-//    * Use a Resource element with the domain name to limit the action to only
-//    specified domains.
+//   - Use a Resource element with the domain name to limit the action to only
+//     specified domains.
 //
-//    * Use an Action element to allow or deny permission to call this action.
+//   - Use an Action element to allow or deny permission to call this action.
 //
-//    * You cannot use an IAM policy to constrain this action's parameters.
+//   - You cannot use an IAM policy to constrain this action's parameters.
 //
 // If the caller doesn't have sufficient permissions to invoke the action, or
 // the parameter values fall outside the specified constraints, the action fails.
@@ -4034,15 +3993,15 @@ func (c *SWF) TerminateWorkflowExecutionRequest(input *TerminateWorkflowExecutio
 // API operation TerminateWorkflowExecution for usage and error information.
 //
 // Returned Error Types:
-//   * UnknownResourceFault
-//   Returned when the named resource cannot be found with in the scope of this
-//   operation (region or domain). This could happen if the named resource was
-//   never created or is no longer available for this operation.
 //
-//   * OperationNotPermittedFault
-//   Returned when the caller doesn't have sufficient permissions to invoke the
-//   action.
+//   - UnknownResourceFault
+//     Returned when the named resource cannot be found with in the scope of this
+//     operation (region or domain). This could happen if the named resource was
+//     never created or is no longer available for this operation.
 //
+//   - OperationNotPermittedFault
+//     Returned when the caller doesn't have sufficient permissions to invoke the
+//     action.
 func (c *SWF) TerminateWorkflowExecution(input *TerminateWorkflowExecutionInput) (*TerminateWorkflowExecutionOutput, error) {
 	req, out := c.TerminateWorkflowExecutionRequest(input)
 	return out, req.Send()
@@ -4080,14 +4039,13 @@ const opUndeprecateActivityType = "UndeprecateActivityType"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UndeprecateActivityTypeRequest method.
+//	req, resp := client.UndeprecateActivityTypeRequest(params)
 //
-//    // Example sending a request using the UndeprecateActivityTypeRequest method.
-//    req, resp := client.UndeprecateActivityTypeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *SWF) UndeprecateActivityTypeRequest(input *UndeprecateActivityTypeInput) (req *request.Request, output *UndeprecateActivityTypeOutput) {
 	op := &request.Operation{
 		Name:       opUndeprecateActivityType,
@@ -4113,20 +4071,20 @@ func (c *SWF) UndeprecateActivityTypeRequest(input *UndeprecateActivityTypeInput
 // This operation is eventually consistent. The results are best effort and
 // may not exactly reflect recent updates and changes.
 //
-// Access Control
+// # Access Control
 //
 // You can use IAM policies to control this action's access to Amazon SWF resources
 // as follows:
 //
-//    * Use a Resource element with the domain name to limit the action to only
-//    specified domains.
+//   - Use a Resource element with the domain name to limit the action to only
+//     specified domains.
 //
-//    * Use an Action element to allow or deny permission to call this action.
+//   - Use an Action element to allow or deny permission to call this action.
 //
-//    * Constrain the following parameters by using a Condition element with
-//    the appropriate keys. activityType.name: String constraint. The key is
-//    swf:activityType.name. activityType.version: String constraint. The key
-//    is swf:activityType.version.
+//   - Constrain the following parameters by using a Condition element with
+//     the appropriate keys. activityType.name: String constraint. The key is
+//     swf:activityType.name. activityType.version: String constraint. The key
+//     is swf:activityType.version.
 //
 // If the caller doesn't have sufficient permissions to invoke the action, or
 // the parameter values fall outside the specified constraints, the action fails.
@@ -4143,20 +4101,20 @@ func (c *SWF) UndeprecateActivityTypeRequest(input *UndeprecateActivityTypeInput
 // API operation UndeprecateActivityType for usage and error information.
 //
 // Returned Error Types:
-//   * UnknownResourceFault
-//   Returned when the named resource cannot be found with in the scope of this
-//   operation (region or domain). This could happen if the named resource was
-//   never created or is no longer available for this operation.
 //
-//   * TypeAlreadyExistsFault
-//   Returned if the type already exists in the specified domain. You may get
-//   this fault if you are registering a type that is either already registered
-//   or deprecated, or if you undeprecate a type that is currently registered.
+//   - UnknownResourceFault
+//     Returned when the named resource cannot be found with in the scope of this
+//     operation (region or domain). This could happen if the named resource was
+//     never created or is no longer available for this operation.
 //
-//   * OperationNotPermittedFault
-//   Returned when the caller doesn't have sufficient permissions to invoke the
-//   action.
+//   - TypeAlreadyExistsFault
+//     Returned if the type already exists in the specified domain. You may get
+//     this fault if you are registering a type that is either already registered
+//     or deprecated, or if you undeprecate a type that is currently registered.
 //
+//   - OperationNotPermittedFault
+//     Returned when the caller doesn't have sufficient permissions to invoke the
+//     action.
 func (c *SWF) UndeprecateActivityType(input *UndeprecateActivityTypeInput) (*UndeprecateActivityTypeOutput, error) {
 	req, out := c.UndeprecateActivityTypeRequest(input)
 	return out, req.Send()
@@ -4194,14 +4152,13 @@ const opUndeprecateDomain = "UndeprecateDomain"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UndeprecateDomainRequest method.
+//	req, resp := client.UndeprecateDomainRequest(params)
 //
-//    // Example sending a request using the UndeprecateDomainRequest method.
-//    req, resp := client.UndeprecateDomainRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *SWF) UndeprecateDomainRequest(input *UndeprecateDomainInput) (req *request.Request, output *UndeprecateDomainOutput) {
 	op := &request.Operation{
 		Name:       opUndeprecateDomain,
@@ -4227,17 +4184,17 @@ func (c *SWF) UndeprecateDomainRequest(input *UndeprecateDomainInput) (req *requ
 // This operation is eventually consistent. The results are best effort and
 // may not exactly reflect recent updates and changes.
 //
-// Access Control
+// # Access Control
 //
 // You can use IAM policies to control this action's access to Amazon SWF resources
 // as follows:
 //
-//    * Use a Resource element with the domain name to limit the action to only
-//    specified domains.
+//   - Use a Resource element with the domain name to limit the action to only
+//     specified domains.
 //
-//    * Use an Action element to allow or deny permission to call this action.
+//   - Use an Action element to allow or deny permission to call this action.
 //
-//    * You cannot use an IAM policy to constrain this action's parameters.
+//   - You cannot use an IAM policy to constrain this action's parameters.
 //
 // If the caller doesn't have sufficient permissions to invoke the action, or
 // the parameter values fall outside the specified constraints, the action fails.
@@ -4254,20 +4211,20 @@ func (c *SWF) UndeprecateDomainRequest(input *UndeprecateDomainInput) (req *requ
 // API operation UndeprecateDomain for usage and error information.
 //
 // Returned Error Types:
-//   * UnknownResourceFault
-//   Returned when the named resource cannot be found with in the scope of this
-//   operation (region or domain). This could happen if the named resource was
-//   never created or is no longer available for this operation.
 //
-//   * DomainAlreadyExistsFault
-//   Returned if the domain already exists. You may get this fault if you are
-//   registering a domain that is either already registered or deprecated, or
-//   if you undeprecate a domain that is currently registered.
+//   - UnknownResourceFault
+//     Returned when the named resource cannot be found with in the scope of this
+//     operation (region or domain). This could happen if the named resource was
+//     never created or is no longer available for this operation.
 //
-//   * OperationNotPermittedFault
-//   Returned when the caller doesn't have sufficient permissions to invoke the
-//   action.
+//   - DomainAlreadyExistsFault
+//     Returned if the domain already exists. You may get this fault if you are
+//     registering a domain that is either already registered or deprecated, or
+//     if you undeprecate a domain that is currently registered.
 //
+//   - OperationNotPermittedFault
+//     Returned when the caller doesn't have sufficient permissions to invoke the
+//     action.
 func (c *SWF) UndeprecateDomain(input *UndeprecateDomainInput) (*UndeprecateDomainOutput, error) {
 	req, out := c.UndeprecateDomainRequest(input)
 	return out, req.Send()
@@ -4305,14 +4262,13 @@ const opUndeprecateWorkflowType = "UndeprecateWorkflowType"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UndeprecateWorkflowTypeRequest method.
+//	req, resp := client.UndeprecateWorkflowTypeRequest(params)
 //
-//    // Example sending a request using the UndeprecateWorkflowTypeRequest method.
-//    req, resp := client.UndeprecateWorkflowTypeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *SWF) UndeprecateWorkflowTypeRequest(input *UndeprecateWorkflowTypeInput) (req *request.Request, output *UndeprecateWorkflowTypeOutput) {
 	op := &request.Operation{
 		Name:       opUndeprecateWorkflowType,
@@ -4338,20 +4294,20 @@ func (c *SWF) UndeprecateWorkflowTypeRequest(input *UndeprecateWorkflowTypeInput
 // This operation is eventually consistent. The results are best effort and
 // may not exactly reflect recent updates and changes.
 //
-// Access Control
+// # Access Control
 //
 // You can use IAM policies to control this action's access to Amazon SWF resources
 // as follows:
 //
-//    * Use a Resource element with the domain name to limit the action to only
-//    specified domains.
+//   - Use a Resource element with the domain name to limit the action to only
+//     specified domains.
 //
-//    * Use an Action element to allow or deny permission to call this action.
+//   - Use an Action element to allow or deny permission to call this action.
 //
-//    * Constrain the following parameters by using a Condition element with
-//    the appropriate keys. workflowType.name: String constraint. The key is
-//    swf:workflowType.name. workflowType.version: String constraint. The key
-//    is swf:workflowType.version.
+//   - Constrain the following parameters by using a Condition element with
+//     the appropriate keys. workflowType.name: String constraint. The key is
+//     swf:workflowType.name. workflowType.version: String constraint. The key
+//     is swf:workflowType.version.
 //
 // If the caller doesn't have sufficient permissions to invoke the action, or
 // the parameter values fall outside the specified constraints, the action fails.
@@ -4368,20 +4324,20 @@ func (c *SWF) UndeprecateWorkflowTypeRequest(input *UndeprecateWorkflowTypeInput
 // API operation UndeprecateWorkflowType for usage and error information.
 //
 // Returned Error Types:
-//   * UnknownResourceFault
-//   Returned when the named resource cannot be found with in the scope of this
-//   operation (region or domain). This could happen if the named resource was
-//   never created or is no longer available for this operation.
 //
-//   * TypeAlreadyExistsFault
-//   Returned if the type already exists in the specified domain. You may get
-//   this fault if you are registering a type that is either already registered
-//   or deprecated, or if you undeprecate a type that is currently registered.
+//   - UnknownResourceFault
+//     Returned when the named resource cannot be found with in the scope of this
+//     operation (region or domain). This could happen if the named resource was
+//     never created or is no longer available for this operation.
 //
-//   * OperationNotPermittedFault
-//   Returned when the caller doesn't have sufficient permissions to invoke the
-//   action.
+//   - TypeAlreadyExistsFault
+//     Returned if the type already exists in the specified domain. You may get
+//     this fault if you are registering a type that is either already registered
+//     or deprecated, or if you undeprecate a type that is currently registered.
 //
+//   - OperationNotPermittedFault
+//     Returned when the caller doesn't have sufficient permissions to invoke the
+//     action.
 func (c *SWF) UndeprecateWorkflowType(input *UndeprecateWorkflowTypeInput) (*UndeprecateWorkflowTypeOutput, error) {
 	req, out := c.UndeprecateWorkflowTypeRequest(input)
 	return out, req.Send()
@@ -4419,14 +4375,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *SWF) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
 	op := &request.Operation{
 		Name:       opUntagResource,
@@ -4456,20 +4411,20 @@ func (c *SWF) UntagResourceRequest(input *UntagResourceInput) (req *request.Requ
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * UnknownResourceFault
-//   Returned when the named resource cannot be found with in the scope of this
-//   operation (region or domain). This could happen if the named resource was
-//   never created or is no longer available for this operation.
 //
-//   * LimitExceededFault
-//   Returned by any operation if a system imposed limitation has been reached.
-//   To address this fault you should either clean up unused resources or increase
-//   the limit by contacting AWS.
+//   - UnknownResourceFault
+//     Returned when the named resource cannot be found with in the scope of this
+//     operation (region or domain). This could happen if the named resource was
+//     never created or is no longer available for this operation.
 //
-//   * OperationNotPermittedFault
-//   Returned when the caller doesn't have sufficient permissions to invoke the
-//   action.
+//   - LimitExceededFault
+//     Returned by any operation if a system imposed limitation has been reached.
+//     To address this fault you should either clean up unused resources or increase
+//     the limit by contacting AWS.
 //
+//   - OperationNotPermittedFault
+//     Returned when the caller doesn't have sufficient permissions to invoke the
+//     action.
 func (c *SWF) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
 	req, out := c.UntagResourceRequest(input)
 	return out, req.Send()
@@ -5260,17 +5215,17 @@ func (s *ActivityTypeInfo) SetStatus(v string) *ActivityTypeInfo {
 
 // Provides the details of the CancelTimer decision.
 //
-// Access Control
+// # Access Control
 //
 // You can use IAM policies to control this decision's access to Amazon SWF
 // resources as follows:
 //
-//    * Use a Resource element with the domain name to limit the action to only
-//    specified domains.
+//   - Use a Resource element with the domain name to limit the action to only
+//     specified domains.
 //
-//    * Use an Action element to allow or deny permission to call this action.
+//   - Use an Action element to allow or deny permission to call this action.
 //
-//    * You cannot use an IAM policy to constrain this action's parameters.
+//   - You cannot use an IAM policy to constrain this action's parameters.
 //
 // If the caller doesn't have sufficient permissions to invoke the action, or
 // the parameter values fall outside the specified constraints, the action fails.
@@ -5394,17 +5349,17 @@ func (s *CancelTimerFailedEventAttributes) SetTimerId(v string) *CancelTimerFail
 
 // Provides the details of the CancelWorkflowExecution decision.
 //
-// Access Control
+// # Access Control
 //
 // You can use IAM policies to control this decision's access to Amazon SWF
 // resources as follows:
 //
-//    * Use a Resource element with the domain name to limit the action to only
-//    specified domains.
+//   - Use a Resource element with the domain name to limit the action to only
+//     specified domains.
 //
-//    * Use an Action element to allow or deny permission to call this action.
+//   - Use an Action element to allow or deny permission to call this action.
 //
-//    * You cannot use an IAM policy to constrain this action's parameters.
+//   - You cannot use an IAM policy to constrain this action's parameters.
 //
 // If the caller doesn't have sufficient permissions to invoke the action, or
 // the parameter values fall outside the specified constraints, the action fails.
@@ -6015,17 +5970,17 @@ func (s *CloseStatusFilter) SetStatus(v string) *CloseStatusFilter {
 
 // Provides the details of the CompleteWorkflowExecution decision.
 //
-// Access Control
+// # Access Control
 //
 // You can use IAM policies to control this decision's access to Amazon SWF
 // resources as follows:
 //
-//    * Use a Resource element with the domain name to limit the action to only
-//    specified domains.
+//   - Use a Resource element with the domain name to limit the action to only
+//     specified domains.
 //
-//    * Use an Action element to allow or deny permission to call this action.
+//   - Use an Action element to allow or deny permission to call this action.
 //
-//    * You cannot use an IAM policy to constrain this action's parameters.
+//   - You cannot use an IAM policy to constrain this action's parameters.
 //
 // If the caller doesn't have sufficient permissions to invoke the action, or
 // the parameter values fall outside the specified constraints, the action fails.
@@ -6121,20 +6076,20 @@ func (s *CompleteWorkflowExecutionFailedEventAttributes) SetDecisionTaskComplete
 
 // Provides the details of the ContinueAsNewWorkflowExecution decision.
 //
-// Access Control
+// # Access Control
 //
 // You can use IAM policies to control this decision's access to Amazon SWF
 // resources as follows:
 //
-//    * Use a Resource element with the domain name to limit the action to only
-//    specified domains.
+//   - Use a Resource element with the domain name to limit the action to only
+//     specified domains.
 //
-//    * Use an Action element to allow or deny permission to call this action.
+//   - Use an Action element to allow or deny permission to call this action.
 //
-//    * Constrain the following parameters by using a Condition element with
-//    the appropriate keys. tag – A tag used to identify the workflow execution
-//    taskList – String constraint. The key is swf:taskList.name. workflowType.version
-//    – String constraint. The key is swf:workflowType.version.
+//   - Constrain the following parameters by using a Condition element with
+//     the appropriate keys. tag – A tag used to identify the workflow execution
+//     taskList – String constraint. The key is swf:taskList.name. workflowType.version
+//     – String constraint. The key is swf:workflowType.version.
 //
 // If the caller doesn't have sufficient permissions to invoke the action, or
 // the parameter values fall outside the specified constraints, the action fails.
@@ -6787,54 +6742,54 @@ func (s *CountPendingDecisionTasksInput) SetTaskList(v *TaskList) *CountPendingD
 // Specifies a decision made by the decider. A decision can be one of these
 // types:
 //
-//    * CancelTimer – Cancels a previously started timer and records a TimerCanceled
-//    event in the history.
+//   - CancelTimer – Cancels a previously started timer and records a TimerCanceled
+//     event in the history.
 //
-//    * CancelWorkflowExecution – Closes the workflow execution and records
-//    a WorkflowExecutionCanceled event in the history.
+//   - CancelWorkflowExecution – Closes the workflow execution and records
+//     a WorkflowExecutionCanceled event in the history.
 //
-//    * CompleteWorkflowExecution – Closes the workflow execution and records
-//    a WorkflowExecutionCompleted event in the history .
+//   - CompleteWorkflowExecution – Closes the workflow execution and records
+//     a WorkflowExecutionCompleted event in the history .
 //
-//    * ContinueAsNewWorkflowExecution – Closes the workflow execution and
-//    starts a new workflow execution of the same type using the same workflow
-//    ID and a unique run Id. A WorkflowExecutionContinuedAsNew event is recorded
-//    in the history.
+//   - ContinueAsNewWorkflowExecution – Closes the workflow execution and
+//     starts a new workflow execution of the same type using the same workflow
+//     ID and a unique run Id. A WorkflowExecutionContinuedAsNew event is recorded
+//     in the history.
 //
-//    * FailWorkflowExecution – Closes the workflow execution and records
-//    a WorkflowExecutionFailed event in the history.
+//   - FailWorkflowExecution – Closes the workflow execution and records
+//     a WorkflowExecutionFailed event in the history.
 //
-//    * RecordMarker – Records a MarkerRecorded event in the history. Markers
-//    can be used for adding custom information in the history for instance
-//    to let deciders know that they don't need to look at the history beyond
-//    the marker event.
+//   - RecordMarker – Records a MarkerRecorded event in the history. Markers
+//     can be used for adding custom information in the history for instance
+//     to let deciders know that they don't need to look at the history beyond
+//     the marker event.
 //
-//    * RequestCancelActivityTask – Attempts to cancel a previously scheduled
-//    activity task. If the activity task was scheduled but has not been assigned
-//    to a worker, then it is canceled. If the activity task was already assigned
-//    to a worker, then the worker is informed that cancellation has been requested
-//    in the response to RecordActivityTaskHeartbeat.
+//   - RequestCancelActivityTask – Attempts to cancel a previously scheduled
+//     activity task. If the activity task was scheduled but has not been assigned
+//     to a worker, then it is canceled. If the activity task was already assigned
+//     to a worker, then the worker is informed that cancellation has been requested
+//     in the response to RecordActivityTaskHeartbeat.
 //
-//    * RequestCancelExternalWorkflowExecution – Requests that a request be
-//    made to cancel the specified external workflow execution and records a
-//    RequestCancelExternalWorkflowExecutionInitiated event in the history.
+//   - RequestCancelExternalWorkflowExecution – Requests that a request be
+//     made to cancel the specified external workflow execution and records a
+//     RequestCancelExternalWorkflowExecutionInitiated event in the history.
 //
-//    * ScheduleActivityTask – Schedules an activity task.
+//   - ScheduleActivityTask – Schedules an activity task.
 //
-//    * SignalExternalWorkflowExecution – Requests a signal to be delivered
-//    to the specified external workflow execution and records a SignalExternalWorkflowExecutionInitiated
-//    event in the history.
+//   - SignalExternalWorkflowExecution – Requests a signal to be delivered
+//     to the specified external workflow execution and records a SignalExternalWorkflowExecutionInitiated
+//     event in the history.
 //
-//    * StartChildWorkflowExecution – Requests that a child workflow execution
-//    be started and records a StartChildWorkflowExecutionInitiated event in
-//    the history. The child workflow execution is a separate workflow execution
-//    with its own history.
+//   - StartChildWorkflowExecution – Requests that a child workflow execution
+//     be started and records a StartChildWorkflowExecutionInitiated event in
+//     the history. The child workflow execution is a separate workflow execution
+//     with its own history.
 //
-//    * StartTimer – Starts a timer for this workflow execution and records
-//    a TimerStarted event in the history. This timer fires after the specified
-//    delay and record a TimerFired event.
+//   - StartTimer – Starts a timer for this workflow execution and records
+//     a TimerStarted event in the history. This timer fires after the specified
+//     delay and record a TimerFired event.
 //
-// Access Control
+// # Access Control
 //
 // If you grant permission to use RespondDecisionTaskCompleted, you can use
 // IAM policies to express permissions for the list of decisions returned by
@@ -6844,17 +6799,17 @@ func (s *CountPendingDecisionTasksInput) SetTaskList(v *TaskList) *CountPendingD
 // SWF Workflows (https://docs.aws.amazon.com/amazonswf/latest/developerguide/swf-dev-iam.html)
 // in the Amazon SWF Developer Guide.
 //
-// Decision Failure
+// # Decision Failure
 //
 // Decisions can fail for several reasons
 //
-//    * The ordering of decisions should follow a logical flow. Some decisions
-//    might not make sense in the current context of the workflow execution
-//    and therefore fails.
+//   - The ordering of decisions should follow a logical flow. Some decisions
+//     might not make sense in the current context of the workflow execution
+//     and therefore fails.
 //
-//    * A limit on your account was reached.
+//   - A limit on your account was reached.
 //
-//    * The decision lacks sufficient permissions.
+//   - The decision lacks sufficient permissions.
 //
 // One of the following events might be added to the history to indicate an
 // error. The event attribute's cause parameter indicates the cause. If cause
@@ -6863,48 +6818,48 @@ func (s *CountPendingDecisionTasksInput) SetTaskList(v *TaskList) *CountPendingD
 // to Manage Access to Amazon SWF Workflows (https://docs.aws.amazon.com/amazonswf/latest/developerguide/swf-dev-iam.html)
 // in the Amazon SWF Developer Guide.
 //
-//    * ScheduleActivityTaskFailed – A ScheduleActivityTask decision failed.
-//    This could happen if the activity type specified in the decision isn't
-//    registered, is in a deprecated state, or the decision isn't properly configured.
+//   - ScheduleActivityTaskFailed – A ScheduleActivityTask decision failed.
+//     This could happen if the activity type specified in the decision isn't
+//     registered, is in a deprecated state, or the decision isn't properly configured.
 //
-//    * RequestCancelActivityTaskFailed – A RequestCancelActivityTask decision
-//    failed. This could happen if there is no open activity task with the specified
-//    activityId.
+//   - RequestCancelActivityTaskFailed – A RequestCancelActivityTask decision
+//     failed. This could happen if there is no open activity task with the specified
+//     activityId.
 //
-//    * StartTimerFailed – A StartTimer decision failed. This could happen
-//    if there is another open timer with the same timerId.
+//   - StartTimerFailed – A StartTimer decision failed. This could happen
+//     if there is another open timer with the same timerId.
 //
-//    * CancelTimerFailed – A CancelTimer decision failed. This could happen
-//    if there is no open timer with the specified timerId.
+//   - CancelTimerFailed – A CancelTimer decision failed. This could happen
+//     if there is no open timer with the specified timerId.
 //
-//    * StartChildWorkflowExecutionFailed – A StartChildWorkflowExecution
-//    decision failed. This could happen if the workflow type specified isn't
-//    registered, is deprecated, or the decision isn't properly configured.
+//   - StartChildWorkflowExecutionFailed – A StartChildWorkflowExecution
+//     decision failed. This could happen if the workflow type specified isn't
+//     registered, is deprecated, or the decision isn't properly configured.
 //
-//    * SignalExternalWorkflowExecutionFailed – A SignalExternalWorkflowExecution
-//    decision failed. This could happen if the workflowID specified in the
-//    decision was incorrect.
+//   - SignalExternalWorkflowExecutionFailed – A SignalExternalWorkflowExecution
+//     decision failed. This could happen if the workflowID specified in the
+//     decision was incorrect.
 //
-//    * RequestCancelExternalWorkflowExecutionFailed – A RequestCancelExternalWorkflowExecution
-//    decision failed. This could happen if the workflowID specified in the
-//    decision was incorrect.
+//   - RequestCancelExternalWorkflowExecutionFailed – A RequestCancelExternalWorkflowExecution
+//     decision failed. This could happen if the workflowID specified in the
+//     decision was incorrect.
 //
-//    * CancelWorkflowExecutionFailed – A CancelWorkflowExecution decision
-//    failed. This could happen if there is an unhandled decision task pending
-//    in the workflow execution.
+//   - CancelWorkflowExecutionFailed – A CancelWorkflowExecution decision
+//     failed. This could happen if there is an unhandled decision task pending
+//     in the workflow execution.
 //
-//    * CompleteWorkflowExecutionFailed – A CompleteWorkflowExecution decision
-//    failed. This could happen if there is an unhandled decision task pending
-//    in the workflow execution.
+//   - CompleteWorkflowExecutionFailed – A CompleteWorkflowExecution decision
+//     failed. This could happen if there is an unhandled decision task pending
+//     in the workflow execution.
 //
-//    * ContinueAsNewWorkflowExecutionFailed – A ContinueAsNewWorkflowExecution
-//    decision failed. This could happen if there is an unhandled decision task
-//    pending in the workflow execution or the ContinueAsNewWorkflowExecution
-//    decision was not configured correctly.
+//   - ContinueAsNewWorkflowExecutionFailed – A ContinueAsNewWorkflowExecution
+//     decision failed. This could happen if there is an unhandled decision task
+//     pending in the workflow execution or the ContinueAsNewWorkflowExecution
+//     decision was not configured correctly.
 //
-//    * FailWorkflowExecutionFailed – A FailWorkflowExecution decision failed.
-//    This could happen if there is an unhandled decision task pending in the
-//    workflow execution.
+//   - FailWorkflowExecutionFailed – A FailWorkflowExecution decision failed.
+//     This could happen if there is an unhandled decision task pending in the
+//     workflow execution.
 //
 // The preceding error events might occur due to an error in the decider logic,
 // which might put the workflow execution in an unstable state The cause field
@@ -6922,35 +6877,35 @@ func (s *CountPendingDecisionTasksInput) SetTaskList(v *TaskList) *CountPendingD
 // new events included in the history. The decider should handle the new events
 // and may decide to close the workflow execution.
 //
-// How to Code a Decision
+// # How to Code a Decision
 //
 // You code a decision by first setting the decision type field to one of the
 // above decision values, and then set the corresponding attributes field shown
 // below:
 //
-//    * ScheduleActivityTaskDecisionAttributes
+//   - ScheduleActivityTaskDecisionAttributes
 //
-//    * RequestCancelActivityTaskDecisionAttributes
+//   - RequestCancelActivityTaskDecisionAttributes
 //
-//    * CompleteWorkflowExecutionDecisionAttributes
+//   - CompleteWorkflowExecutionDecisionAttributes
 //
-//    * FailWorkflowExecutionDecisionAttributes
+//   - FailWorkflowExecutionDecisionAttributes
 //
-//    * CancelWorkflowExecutionDecisionAttributes
+//   - CancelWorkflowExecutionDecisionAttributes
 //
-//    * ContinueAsNewWorkflowExecutionDecisionAttributes
+//   - ContinueAsNewWorkflowExecutionDecisionAttributes
 //
-//    * RecordMarkerDecisionAttributes
+//   - RecordMarkerDecisionAttributes
 //
-//    * StartTimerDecisionAttributes
+//   - StartTimerDecisionAttributes
 //
-//    * CancelTimerDecisionAttributes
+//   - CancelTimerDecisionAttributes
 //
-//    * SignalExternalWorkflowExecutionDecisionAttributes
+//   - SignalExternalWorkflowExecutionDecisionAttributes
 //
-//    * RequestCancelExternalWorkflowExecutionDecisionAttributes
+//   - RequestCancelExternalWorkflowExecutionDecisionAttributes
 //
-//    * StartChildWorkflowExecutionDecisionAttributes
+//   - StartChildWorkflowExecutionDecisionAttributes
 type Decision struct {
 	_ struct{} `type:"structure"`
 
@@ -7197,6 +7152,13 @@ type DecisionTaskCompletedEventAttributes struct {
 	//
 	// StartedEventId is a required field
 	StartedEventId *int64 `locationName:"startedEventId" type:"long" required:"true"`
+
+	// Represents a task list.
+	TaskList *TaskList `locationName:"taskList" type:"structure"`
+
+	// The maximum amount of time the decision task can wait to be assigned to a
+	// worker.
+	TaskListScheduleToStartTimeout *string `locationName:"taskListScheduleToStartTimeout" type:"string"`
 }
 
 // String returns the string representation.
@@ -7235,9 +7197,25 @@ func (s *DecisionTaskCompletedEventAttributes) SetStartedEventId(v int64) *Decis
 	return s
 }
 
+// SetTaskList sets the TaskList field's value.
+func (s *DecisionTaskCompletedEventAttributes) SetTaskList(v *TaskList) *DecisionTaskCompletedEventAttributes {
+	s.TaskList = v
+	return s
+}
+
+// SetTaskListScheduleToStartTimeout sets the TaskListScheduleToStartTimeout field's value.
+func (s *DecisionTaskCompletedEventAttributes) SetTaskListScheduleToStartTimeout(v string) *DecisionTaskCompletedEventAttributes {
+	s.TaskListScheduleToStartTimeout = &v
+	return s
+}
+
 // Provides details about the DecisionTaskScheduled event.
 type DecisionTaskScheduledEventAttributes struct {
 	_ struct{} `type:"structure"`
+
+	// The maximum amount of time the decision task can wait to be assigned to a
+	// worker.
+	ScheduleToStartTimeout *string `locationName:"scheduleToStartTimeout" type:"string"`
 
 	// The maximum duration for this decision task. The task is considered timed
 	// out if it doesn't completed within this duration.
@@ -7277,6 +7255,12 @@ func (s DecisionTaskScheduledEventAttributes) String() string {
 // value will be replaced with "sensitive".
 func (s DecisionTaskScheduledEventAttributes) GoString() string {
 	return s.String()
+}
+
+// SetScheduleToStartTimeout sets the ScheduleToStartTimeout field's value.
+func (s *DecisionTaskScheduledEventAttributes) SetScheduleToStartTimeout(v string) *DecisionTaskScheduledEventAttributes {
+	s.ScheduleToStartTimeout = &v
+	return s
 }
 
 // SetStartToCloseTimeout sets the StartToCloseTimeout field's value.
@@ -8612,17 +8596,17 @@ func (s *ExternalWorkflowExecutionSignaledEventAttributes) SetWorkflowExecution(
 
 // Provides the details of the FailWorkflowExecution decision.
 //
-// Access Control
+// # Access Control
 //
 // You can use IAM policies to control this decision's access to Amazon SWF
 // resources as follows:
 //
-//    * Use a Resource element with the domain name to limit the action to only
-//    specified domains.
+//   - Use a Resource element with the domain name to limit the action to only
+//     specified domains.
 //
-//    * Use an Action element to allow or deny permission to call this action.
+//   - Use an Action element to allow or deny permission to call this action.
 //
-//    * You cannot use an IAM policy to constrain this action's parameters.
+//   - You cannot use an IAM policy to constrain this action's parameters.
 //
 // If the caller doesn't have sufficient permissions to invoke the action, or
 // the parameter values fall outside the specified constraints, the action fails.
@@ -8744,7 +8728,7 @@ type GetWorkflowExecutionHistoryInput struct {
 	// If NextPageToken is returned there are more results available. The value
 	// of NextPageToken is a unique pagination token for each page. Make the call
 	// again using the returned token to retrieve the next page. Keep all other
-	// arguments unchanged. Each pagination token expires after 60 seconds. Using
+	// arguments unchanged. Each pagination token expires after 24 hours. Using
 	// an expired pagination token will return a 400 error: "Specified token has
 	// exceeded its maximum lifetime".
 	//
@@ -8881,144 +8865,144 @@ func (s *GetWorkflowExecutionHistoryOutput) SetNextPageToken(v string) *GetWorkf
 
 // Event within a workflow execution. A history event can be one of these types:
 //
-//    * ActivityTaskCancelRequested – A RequestCancelActivityTask decision
-//    was received by the system.
+//   - ActivityTaskCancelRequested – A RequestCancelActivityTask decision
+//     was received by the system.
 //
-//    * ActivityTaskCanceled – The activity task was successfully canceled.
+//   - ActivityTaskCanceled – The activity task was successfully canceled.
 //
-//    * ActivityTaskCompleted – An activity worker successfully completed
-//    an activity task by calling RespondActivityTaskCompleted.
+//   - ActivityTaskCompleted – An activity worker successfully completed
+//     an activity task by calling RespondActivityTaskCompleted.
 //
-//    * ActivityTaskFailed – An activity worker failed an activity task by
-//    calling RespondActivityTaskFailed.
+//   - ActivityTaskFailed – An activity worker failed an activity task by
+//     calling RespondActivityTaskFailed.
 //
-//    * ActivityTaskScheduled – An activity task was scheduled for execution.
+//   - ActivityTaskScheduled – An activity task was scheduled for execution.
 //
-//    * ActivityTaskStarted – The scheduled activity task was dispatched to
-//    a worker.
+//   - ActivityTaskStarted – The scheduled activity task was dispatched to
+//     a worker.
 //
-//    * ActivityTaskTimedOut – The activity task timed out.
+//   - ActivityTaskTimedOut – The activity task timed out.
 //
-//    * CancelTimerFailed – Failed to process CancelTimer decision. This happens
-//    when the decision isn't configured properly, for example no timer exists
-//    with the specified timer Id.
+//   - CancelTimerFailed – Failed to process CancelTimer decision. This happens
+//     when the decision isn't configured properly, for example no timer exists
+//     with the specified timer Id.
 //
-//    * CancelWorkflowExecutionFailed – A request to cancel a workflow execution
-//    failed.
+//   - CancelWorkflowExecutionFailed – A request to cancel a workflow execution
+//     failed.
 //
-//    * ChildWorkflowExecutionCanceled – A child workflow execution, started
-//    by this workflow execution, was canceled and closed.
+//   - ChildWorkflowExecutionCanceled – A child workflow execution, started
+//     by this workflow execution, was canceled and closed.
 //
-//    * ChildWorkflowExecutionCompleted – A child workflow execution, started
-//    by this workflow execution, completed successfully and was closed.
+//   - ChildWorkflowExecutionCompleted – A child workflow execution, started
+//     by this workflow execution, completed successfully and was closed.
 //
-//    * ChildWorkflowExecutionFailed – A child workflow execution, started
-//    by this workflow execution, failed to complete successfully and was closed.
+//   - ChildWorkflowExecutionFailed – A child workflow execution, started
+//     by this workflow execution, failed to complete successfully and was closed.
 //
-//    * ChildWorkflowExecutionStarted – A child workflow execution was successfully
-//    started.
+//   - ChildWorkflowExecutionStarted – A child workflow execution was successfully
+//     started.
 //
-//    * ChildWorkflowExecutionTerminated – A child workflow execution, started
-//    by this workflow execution, was terminated.
+//   - ChildWorkflowExecutionTerminated – A child workflow execution, started
+//     by this workflow execution, was terminated.
 //
-//    * ChildWorkflowExecutionTimedOut – A child workflow execution, started
-//    by this workflow execution, timed out and was closed.
+//   - ChildWorkflowExecutionTimedOut – A child workflow execution, started
+//     by this workflow execution, timed out and was closed.
 //
-//    * CompleteWorkflowExecutionFailed – The workflow execution failed to
-//    complete.
+//   - CompleteWorkflowExecutionFailed – The workflow execution failed to
+//     complete.
 //
-//    * ContinueAsNewWorkflowExecutionFailed – The workflow execution failed
-//    to complete after being continued as a new workflow execution.
+//   - ContinueAsNewWorkflowExecutionFailed – The workflow execution failed
+//     to complete after being continued as a new workflow execution.
 //
-//    * DecisionTaskCompleted – The decider successfully completed a decision
-//    task by calling RespondDecisionTaskCompleted.
+//   - DecisionTaskCompleted – The decider successfully completed a decision
+//     task by calling RespondDecisionTaskCompleted.
 //
-//    * DecisionTaskScheduled – A decision task was scheduled for the workflow
-//    execution.
+//   - DecisionTaskScheduled – A decision task was scheduled for the workflow
+//     execution.
 //
-//    * DecisionTaskStarted – The decision task was dispatched to a decider.
+//   - DecisionTaskStarted – The decision task was dispatched to a decider.
 //
-//    * DecisionTaskTimedOut – The decision task timed out.
+//   - DecisionTaskTimedOut – The decision task timed out.
 //
-//    * ExternalWorkflowExecutionCancelRequested – Request to cancel an external
-//    workflow execution was successfully delivered to the target execution.
+//   - ExternalWorkflowExecutionCancelRequested – Request to cancel an external
+//     workflow execution was successfully delivered to the target execution.
 //
-//    * ExternalWorkflowExecutionSignaled – A signal, requested by this workflow
-//    execution, was successfully delivered to the target external workflow
-//    execution.
+//   - ExternalWorkflowExecutionSignaled – A signal, requested by this workflow
+//     execution, was successfully delivered to the target external workflow
+//     execution.
 //
-//    * FailWorkflowExecutionFailed – A request to mark a workflow execution
-//    as failed, itself failed.
+//   - FailWorkflowExecutionFailed – A request to mark a workflow execution
+//     as failed, itself failed.
 //
-//    * MarkerRecorded – A marker was recorded in the workflow history as
-//    the result of a RecordMarker decision.
+//   - MarkerRecorded – A marker was recorded in the workflow history as
+//     the result of a RecordMarker decision.
 //
-//    * RecordMarkerFailed – A RecordMarker decision was returned as failed.
+//   - RecordMarkerFailed – A RecordMarker decision was returned as failed.
 //
-//    * RequestCancelActivityTaskFailed – Failed to process RequestCancelActivityTask
-//    decision. This happens when the decision isn't configured properly.
+//   - RequestCancelActivityTaskFailed – Failed to process RequestCancelActivityTask
+//     decision. This happens when the decision isn't configured properly.
 //
-//    * RequestCancelExternalWorkflowExecutionFailed – Request to cancel an
-//    external workflow execution failed.
+//   - RequestCancelExternalWorkflowExecutionFailed – Request to cancel an
+//     external workflow execution failed.
 //
-//    * RequestCancelExternalWorkflowExecutionInitiated – A request was made
-//    to request the cancellation of an external workflow execution.
+//   - RequestCancelExternalWorkflowExecutionInitiated – A request was made
+//     to request the cancellation of an external workflow execution.
 //
-//    * ScheduleActivityTaskFailed – Failed to process ScheduleActivityTask
-//    decision. This happens when the decision isn't configured properly, for
-//    example the activity type specified isn't registered.
+//   - ScheduleActivityTaskFailed – Failed to process ScheduleActivityTask
+//     decision. This happens when the decision isn't configured properly, for
+//     example the activity type specified isn't registered.
 //
-//    * SignalExternalWorkflowExecutionFailed – The request to signal an external
-//    workflow execution failed.
+//   - SignalExternalWorkflowExecutionFailed – The request to signal an external
+//     workflow execution failed.
 //
-//    * SignalExternalWorkflowExecutionInitiated – A request to signal an
-//    external workflow was made.
+//   - SignalExternalWorkflowExecutionInitiated – A request to signal an
+//     external workflow was made.
 //
-//    * StartActivityTaskFailed – A scheduled activity task failed to start.
+//   - StartActivityTaskFailed – A scheduled activity task failed to start.
 //
-//    * StartChildWorkflowExecutionFailed – Failed to process StartChildWorkflowExecution
-//    decision. This happens when the decision isn't configured properly, for
-//    example the workflow type specified isn't registered.
+//   - StartChildWorkflowExecutionFailed – Failed to process StartChildWorkflowExecution
+//     decision. This happens when the decision isn't configured properly, for
+//     example the workflow type specified isn't registered.
 //
-//    * StartChildWorkflowExecutionInitiated – A request was made to start
-//    a child workflow execution.
+//   - StartChildWorkflowExecutionInitiated – A request was made to start
+//     a child workflow execution.
 //
-//    * StartTimerFailed – Failed to process StartTimer decision. This happens
-//    when the decision isn't configured properly, for example a timer already
-//    exists with the specified timer Id.
+//   - StartTimerFailed – Failed to process StartTimer decision. This happens
+//     when the decision isn't configured properly, for example a timer already
+//     exists with the specified timer Id.
 //
-//    * TimerCanceled – A timer, previously started for this workflow execution,
-//    was successfully canceled.
+//   - TimerCanceled – A timer, previously started for this workflow execution,
+//     was successfully canceled.
 //
-//    * TimerFired – A timer, previously started for this workflow execution,
-//    fired.
+//   - TimerFired – A timer, previously started for this workflow execution,
+//     fired.
 //
-//    * TimerStarted – A timer was started for the workflow execution due
-//    to a StartTimer decision.
+//   - TimerStarted – A timer was started for the workflow execution due
+//     to a StartTimer decision.
 //
-//    * WorkflowExecutionCancelRequested – A request to cancel this workflow
-//    execution was made.
+//   - WorkflowExecutionCancelRequested – A request to cancel this workflow
+//     execution was made.
 //
-//    * WorkflowExecutionCanceled – The workflow execution was successfully
-//    canceled and closed.
+//   - WorkflowExecutionCanceled – The workflow execution was successfully
+//     canceled and closed.
 //
-//    * WorkflowExecutionCompleted – The workflow execution was closed due
-//    to successful completion.
+//   - WorkflowExecutionCompleted – The workflow execution was closed due
+//     to successful completion.
 //
-//    * WorkflowExecutionContinuedAsNew – The workflow execution was closed
-//    and a new execution of the same type was created with the same workflowId.
+//   - WorkflowExecutionContinuedAsNew – The workflow execution was closed
+//     and a new execution of the same type was created with the same workflowId.
 //
-//    * WorkflowExecutionFailed – The workflow execution closed due to a failure.
+//   - WorkflowExecutionFailed – The workflow execution closed due to a failure.
 //
-//    * WorkflowExecutionSignaled – An external signal was received for the
-//    workflow execution.
+//   - WorkflowExecutionSignaled – An external signal was received for the
+//     workflow execution.
 //
-//    * WorkflowExecutionStarted – The workflow execution was started.
+//   - WorkflowExecutionStarted – The workflow execution was started.
 //
-//    * WorkflowExecutionTerminated – The workflow execution was terminated.
+//   - WorkflowExecutionTerminated – The workflow execution was terminated.
 //
-//    * WorkflowExecutionTimedOut – The workflow execution was closed because
-//    a time out was exceeded.
+//   - WorkflowExecutionTimedOut – The workflow execution was closed because
+//     a time out was exceeded.
 type HistoryEvent struct {
 	_ struct{} `type:"structure"`
 
@@ -10047,7 +10031,7 @@ type ListActivityTypesInput struct {
 	// If NextPageToken is returned there are more results available. The value
 	// of NextPageToken is a unique pagination token for each page. Make the call
 	// again using the returned token to retrieve the next page. Keep all other
-	// arguments unchanged. Each pagination token expires after 60 seconds. Using
+	// arguments unchanged. Each pagination token expires after 24 hours. Using
 	// an expired pagination token will return a 400 error: "Specified token has
 	// exceeded its maximum lifetime".
 	//
@@ -10228,7 +10212,7 @@ type ListClosedWorkflowExecutionsInput struct {
 	// If NextPageToken is returned there are more results available. The value
 	// of NextPageToken is a unique pagination token for each page. Make the call
 	// again using the returned token to retrieve the next page. Keep all other
-	// arguments unchanged. Each pagination token expires after 60 seconds. Using
+	// arguments unchanged. Each pagination token expires after 24 hours. Using
 	// an expired pagination token will return a 400 error: "Specified token has
 	// exceeded its maximum lifetime".
 	//
@@ -10396,7 +10380,7 @@ type ListDomainsInput struct {
 	// If NextPageToken is returned there are more results available. The value
 	// of NextPageToken is a unique pagination token for each page. Make the call
 	// again using the returned token to retrieve the next page. Keep all other
-	// arguments unchanged. Each pagination token expires after 60 seconds. Using
+	// arguments unchanged. Each pagination token expires after 24 hours. Using
 	// an expired pagination token will return a 400 error: "Specified token has
 	// exceeded its maximum lifetime".
 	//
@@ -10539,7 +10523,7 @@ type ListOpenWorkflowExecutionsInput struct {
 	// If NextPageToken is returned there are more results available. The value
 	// of NextPageToken is a unique pagination token for each page. Make the call
 	// again using the returned token to retrieve the next page. Keep all other
-	// arguments unchanged. Each pagination token expires after 60 seconds. Using
+	// arguments unchanged. Each pagination token expires after 24 hours. Using
 	// an expired pagination token will return a 400 error: "Specified token has
 	// exceeded its maximum lifetime".
 	//
@@ -10773,7 +10757,7 @@ type ListWorkflowTypesInput struct {
 	// If NextPageToken is returned there are more results available. The value
 	// of NextPageToken is a unique pagination token for each page. Make the call
 	// again using the returned token to retrieve the next page. Keep all other
-	// arguments unchanged. Each pagination token expires after 60 seconds. Using
+	// arguments unchanged. Each pagination token expires after 24 hours. Using
 	// an expired pagination token will return a 400 error: "Specified token has
 	// exceeded its maximum lifetime".
 	//
@@ -11279,7 +11263,7 @@ type PollForDecisionTaskInput struct {
 	// If NextPageToken is returned there are more results available. The value
 	// of NextPageToken is a unique pagination token for each page. Make the call
 	// again using the returned token to retrieve the next page. Keep all other
-	// arguments unchanged. Each pagination token expires after 60 seconds. Using
+	// arguments unchanged. Each pagination token expires after 24 hours. Using
 	// an expired pagination token will return a 400 error: "Specified token has
 	// exceeded its maximum lifetime".
 	//
@@ -11296,11 +11280,16 @@ type PollForDecisionTaskInput struct {
 	// are returned in ascending order of the eventTimestamp of the events.
 	ReverseOrder *bool `locationName:"reverseOrder" type:"boolean"`
 
+	// When set to true, returns the events with eventTimestamp greater than or
+	// equal to eventTimestamp of the most recent DecisionTaskStarted event. By
+	// default, this parameter is set to false.
+	StartAtPreviousStartedEvent *bool `locationName:"startAtPreviousStartedEvent" type:"boolean"`
+
 	// Specifies the task list to poll for decision tasks.
 	//
-	// The specified string must not start or end with whitespace. It must not contain
-	// a : (colon), / (slash), | (vertical bar), or any control characters (\u0000-\u001f
-	// | \u007f-\u009f). Also, it must not be the literal string arn.
+	// The specified string must not contain a : (colon), / (slash), | (vertical
+	// bar), or any control characters (\u0000-\u001f | \u007f-\u009f). Also, it
+	// must not be the literal string arn.
 	//
 	// TaskList is a required field
 	TaskList *TaskList `locationName:"taskList" type:"structure" required:"true"`
@@ -11375,6 +11364,12 @@ func (s *PollForDecisionTaskInput) SetNextPageToken(v string) *PollForDecisionTa
 // SetReverseOrder sets the ReverseOrder field's value.
 func (s *PollForDecisionTaskInput) SetReverseOrder(v bool) *PollForDecisionTaskInput {
 	s.ReverseOrder = &v
+	return s
+}
+
+// SetStartAtPreviousStartedEvent sets the StartAtPreviousStartedEvent field's value.
+func (s *PollForDecisionTaskInput) SetStartAtPreviousStartedEvent(v bool) *PollForDecisionTaskInput {
+	s.StartAtPreviousStartedEvent = &v
 	return s
 }
 
@@ -11590,17 +11585,17 @@ func (s *RecordActivityTaskHeartbeatOutput) SetCancelRequested(v bool) *RecordAc
 
 // Provides the details of the RecordMarker decision.
 //
-// Access Control
+// # Access Control
 //
 // You can use IAM policies to control this decision's access to Amazon SWF
 // resources as follows:
 //
-//    * Use a Resource element with the domain name to limit the action to only
-//    specified domains.
+//   - Use a Resource element with the domain name to limit the action to only
+//     specified domains.
 //
-//    * Use an Action element to allow or deny permission to call this action.
+//   - Use an Action element to allow or deny permission to call this action.
 //
-//    * You cannot use an IAM policy to constrain this action's parameters.
+//   - You cannot use an IAM policy to constrain this action's parameters.
 //
 // If the caller doesn't have sufficient permissions to invoke the action, or
 // the parameter values fall outside the specified constraints, the action fails.
@@ -11796,9 +11791,9 @@ type RegisterActivityTypeInput struct {
 
 	// The name of the activity type within the domain.
 	//
-	// The specified string must not start or end with whitespace. It must not contain
-	// a : (colon), / (slash), | (vertical bar), or any control characters (\u0000-\u001f
-	// | \u007f-\u009f). Also, it must not be the literal string arn.
+	// The specified string must not contain a : (colon), / (slash), | (vertical
+	// bar), or any control characters (\u0000-\u001f | \u007f-\u009f). Also, it
+	// must not be the literal string arn.
 	//
 	// Name is a required field
 	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
@@ -11808,9 +11803,9 @@ type RegisterActivityTypeInput struct {
 	// The activity type consists of the name and version, the combination of which
 	// must be unique within the domain.
 	//
-	// The specified string must not start or end with whitespace. It must not contain
-	// a : (colon), / (slash), | (vertical bar), or any control characters (\u0000-\u001f
-	// | \u007f-\u009f). Also, it must not be the literal string arn.
+	// The specified string must not contain a : (colon), / (slash), | (vertical
+	// bar), or any control characters (\u0000-\u001f | \u007f-\u009f). Also, it
+	// must not be the literal string arn.
 	//
 	// Version is a required field
 	Version *string `locationName:"version" min:"1" type:"string" required:"true"`
@@ -12159,9 +12154,9 @@ type RegisterWorkflowTypeInput struct {
 
 	// The name of the workflow type.
 	//
-	// The specified string must not start or end with whitespace. It must not contain
-	// a : (colon), / (slash), | (vertical bar), or any control characters (\u0000-\u001f
-	// | \u007f-\u009f). Also, it must not be the literal string arn.
+	// The specified string must not contain a : (colon), / (slash), | (vertical
+	// bar), or any control characters (\u0000-\u001f | \u007f-\u009f). Also, it
+	// must not be the literal string arn.
 	//
 	// Name is a required field
 	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
@@ -12172,9 +12167,9 @@ type RegisterWorkflowTypeInput struct {
 	// must be unique within the domain. To get a list of all currently registered
 	// workflow types, use the ListWorkflowTypes action.
 	//
-	// The specified string must not start or end with whitespace. It must not contain
-	// a : (colon), / (slash), | (vertical bar), or any control characters (\u0000-\u001f
-	// | \u007f-\u009f). Also, it must not be the literal string arn.
+	// The specified string must not contain a : (colon), / (slash), | (vertical
+	// bar), or any control characters (\u0000-\u001f | \u007f-\u009f). Also, it
+	// must not be the literal string arn.
 	//
 	// Version is a required field
 	Version *string `locationName:"version" min:"1" type:"string" required:"true"`
@@ -12318,17 +12313,17 @@ func (s RegisterWorkflowTypeOutput) GoString() string {
 
 // Provides the details of the RequestCancelActivityTask decision.
 //
-// Access Control
+// # Access Control
 //
 // You can use IAM policies to control this decision's access to Amazon SWF
 // resources as follows:
 //
-//    * Use a Resource element with the domain name to limit the action to only
-//    specified domains.
+//   - Use a Resource element with the domain name to limit the action to only
+//     specified domains.
 //
-//    * Use an Action element to allow or deny permission to call this action.
+//   - Use an Action element to allow or deny permission to call this action.
 //
-//    * You cannot use an IAM policy to constrain this action's parameters.
+//   - You cannot use an IAM policy to constrain this action's parameters.
 //
 // If the caller doesn't have sufficient permissions to invoke the action, or
 // the parameter values fall outside the specified constraints, the action fails.
@@ -12452,17 +12447,17 @@ func (s *RequestCancelActivityTaskFailedEventAttributes) SetDecisionTaskComplete
 
 // Provides the details of the RequestCancelExternalWorkflowExecution decision.
 //
-// Access Control
+// # Access Control
 //
 // You can use IAM policies to control this decision's access to Amazon SWF
 // resources as follows:
 //
-//    * Use a Resource element with the domain name to limit the action to only
-//    specified domains.
+//   - Use a Resource element with the domain name to limit the action to only
+//     specified domains.
 //
-//    * Use an Action element to allow or deny permission to call this action.
+//   - Use an Action element to allow or deny permission to call this action.
 //
-//    * You cannot use an IAM policy to constrain this action's parameters.
+//   - You cannot use an IAM policy to constrain this action's parameters.
 //
 // If the caller doesn't have sufficient permissions to invoke the action, or
 // the parameter values fall outside the specified constraints, the action fails.
@@ -13139,6 +13134,24 @@ type RespondDecisionTaskCompletedInput struct {
 	// User defined context to add to workflow execution.
 	ExecutionContext *string `locationName:"executionContext" type:"string"`
 
+	// The task list to use for the future decision tasks of this workflow execution.
+	// This list overrides the original task list you specified while starting the
+	// workflow execution.
+	TaskList *TaskList `locationName:"taskList" type:"structure"`
+
+	// Specifies a timeout (in seconds) for the task list override. When this parameter
+	// is missing, the task list override is permanent. This parameter makes it
+	// possible to temporarily override the task list. If a decision task scheduled
+	// on the override task list is not started within the timeout, the decision
+	// task will time out. Amazon SWF will revert the override and schedule a new
+	// decision task to the original task list.
+	//
+	// If a decision task scheduled on the override task list is started within
+	// the timeout, but not completed within the start-to-close timeout, Amazon
+	// SWF will also revert the override and schedule a new decision task to the
+	// original task list.
+	TaskListScheduleToStartTimeout *string `locationName:"taskListScheduleToStartTimeout" type:"string"`
+
 	// The taskToken from the DecisionTask.
 	//
 	// taskToken is generated by the service and should be treated as an opaque
@@ -13186,6 +13199,11 @@ func (s *RespondDecisionTaskCompletedInput) Validate() error {
 			}
 		}
 	}
+	if s.TaskList != nil {
+		if err := s.TaskList.Validate(); err != nil {
+			invalidParams.AddNested("TaskList", err.(request.ErrInvalidParams))
+		}
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -13202,6 +13220,18 @@ func (s *RespondDecisionTaskCompletedInput) SetDecisions(v []*Decision) *Respond
 // SetExecutionContext sets the ExecutionContext field's value.
 func (s *RespondDecisionTaskCompletedInput) SetExecutionContext(v string) *RespondDecisionTaskCompletedInput {
 	s.ExecutionContext = &v
+	return s
+}
+
+// SetTaskList sets the TaskList field's value.
+func (s *RespondDecisionTaskCompletedInput) SetTaskList(v *TaskList) *RespondDecisionTaskCompletedInput {
+	s.TaskList = v
+	return s
+}
+
+// SetTaskListScheduleToStartTimeout sets the TaskListScheduleToStartTimeout field's value.
+func (s *RespondDecisionTaskCompletedInput) SetTaskListScheduleToStartTimeout(v string) *RespondDecisionTaskCompletedInput {
+	s.TaskListScheduleToStartTimeout = &v
 	return s
 }
 
@@ -13235,21 +13265,21 @@ func (s RespondDecisionTaskCompletedOutput) GoString() string {
 
 // Provides the details of the ScheduleActivityTask decision.
 //
-// Access Control
+// # Access Control
 //
 // You can use IAM policies to control this decision's access to Amazon SWF
 // resources as follows:
 //
-//    * Use a Resource element with the domain name to limit the action to only
-//    specified domains.
+//   - Use a Resource element with the domain name to limit the action to only
+//     specified domains.
 //
-//    * Use an Action element to allow or deny permission to call this action.
+//   - Use an Action element to allow or deny permission to call this action.
 //
-//    * Constrain the following parameters by using a Condition element with
-//    the appropriate keys. activityType.name – String constraint. The key
-//    is swf:activityType.name. activityType.version – String constraint.
-//    The key is swf:activityType.version. taskList – String constraint. The
-//    key is swf:taskList.name.
+//   - Constrain the following parameters by using a Condition element with
+//     the appropriate keys. activityType.name – String constraint. The key
+//     is swf:activityType.name. activityType.version – String constraint.
+//     The key is swf:activityType.version. taskList – String constraint. The
+//     key is swf:taskList.name.
 //
 // If the caller doesn't have sufficient permissions to invoke the action, or
 // the parameter values fall outside the specified constraints, the action fails.
@@ -13262,9 +13292,9 @@ type ScheduleActivityTaskDecisionAttributes struct {
 
 	// The activityId of the activity task.
 	//
-	// The specified string must not start or end with whitespace. It must not contain
-	// a : (colon), / (slash), | (vertical bar), or any control characters (\u0000-\u001f
-	// | \u007f-\u009f). Also, it must not contain the literal string arn.
+	// The specified string must not contain a : (colon), / (slash), | (vertical
+	// bar), or any control characters (\u0000-\u001f | \u007f-\u009f). Also, it
+	// must not be the literal string arn.
 	//
 	// ActivityId is a required field
 	ActivityId *string `locationName:"activityId" min:"1" type:"string" required:"true"`
@@ -13338,9 +13368,9 @@ type ScheduleActivityTaskDecisionAttributes struct {
 	// nor a default task list was specified at registration time then a fault is
 	// returned.
 	//
-	// The specified string must not start or end with whitespace. It must not contain
-	// a : (colon), / (slash), | (vertical bar), or any control characters (\u0000-\u001f
-	// | \u007f-\u009f). Also, it must not contain the literal string arn.
+	// The specified string must not contain a : (colon), / (slash), | (vertical
+	// bar), or any control characters (\u0000-\u001f | \u007f-\u009f). Also, it
+	// must not be the literal string arn.
 	TaskList *TaskList `locationName:"taskList" type:"structure"`
 
 	// If set, specifies the priority with which the activity task is to be assigned
@@ -13561,8 +13591,9 @@ type ScheduleLambdaFunctionDecisionAttributes struct {
 	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
 
 	// The timeout value, in seconds, after which the Lambda function is considered
-	// to be failed once it has started. This can be any integer from 1-300 (1s-5m).
-	// If no value is supplied, than a default value of 300s is assumed.
+	// to be failed once it has started. This can be any integer from 1-900 (1s-15m).
+	//
+	// If no value is supplied, then a default value of 900s is assumed.
 	StartToCloseTimeout *string `locationName:"startToCloseTimeout" type:"string"`
 }
 
@@ -13714,17 +13745,17 @@ func (s *ScheduleLambdaFunctionFailedEventAttributes) SetName(v string) *Schedul
 
 // Provides the details of the SignalExternalWorkflowExecution decision.
 //
-// Access Control
+// # Access Control
 //
 // You can use IAM policies to control this decision's access to Amazon SWF
 // resources as follows:
 //
-//    * Use a Resource element with the domain name to limit the action to only
-//    specified domains.
+//   - Use a Resource element with the domain name to limit the action to only
+//     specified domains.
 //
-//    * Use an Action element to allow or deny permission to call this action.
+//   - Use an Action element to allow or deny permission to call this action.
 //
-//    * You cannot use an IAM policy to constrain this action's parameters.
+//   - You cannot use an IAM policy to constrain this action's parameters.
 //
 // If the caller doesn't have sufficient permissions to invoke the action, or
 // the parameter values fall outside the specified constraints, the action fails.
@@ -14141,22 +14172,22 @@ func (s SignalWorkflowExecutionOutput) GoString() string {
 
 // Provides the details of the StartChildWorkflowExecution decision.
 //
-// Access Control
+// # Access Control
 //
 // You can use IAM policies to control this decision's access to Amazon SWF
 // resources as follows:
 //
-//    * Use a Resource element with the domain name to limit the action to only
-//    specified domains.
+//   - Use a Resource element with the domain name to limit the action to only
+//     specified domains.
 //
-//    * Use an Action element to allow or deny permission to call this action.
+//   - Use an Action element to allow or deny permission to call this action.
 //
-//    * Constrain the following parameters by using a Condition element with
-//    the appropriate keys. tagList.member.N – The key is "swf:tagList.N"
-//    where N is the tag number from 0 to 4, inclusive. taskList – String
-//    constraint. The key is swf:taskList.name. workflowType.name – String
-//    constraint. The key is swf:workflowType.name. workflowType.version –
-//    String constraint. The key is swf:workflowType.version.
+//   - Constrain the following parameters by using a Condition element with
+//     the appropriate keys. tagList.member.N – The key is "swf:tagList.N"
+//     where N is the tag number from 0 to 4, inclusive. taskList – String
+//     constraint. The key is swf:taskList.name. workflowType.name – String
+//     constraint. The key is swf:workflowType.name. workflowType.version –
+//     String constraint. The key is swf:workflowType.version.
 //
 // If the caller doesn't have sufficient permissions to invoke the action, or
 // the parameter values fall outside the specified constraints, the action fails.
@@ -14227,7 +14258,7 @@ type StartChildWorkflowExecutionDecisionAttributes struct {
 	//
 	// The specified string must not start or end with whitespace. It must not contain
 	// a : (colon), / (slash), | (vertical bar), or any control characters (\u0000-\u001f
-	// | \u007f-\u009f). Also, it must not contain the literal string arn.
+	// | \u007f-\u009f). Also, it must not be the literal string arn.
 	TaskList *TaskList `locationName:"taskList" type:"structure"`
 
 	// A task priority that, if set, specifies the priority for a decision task
@@ -14256,9 +14287,9 @@ type StartChildWorkflowExecutionDecisionAttributes struct {
 
 	// The workflowId of the workflow execution.
 	//
-	// The specified string must not start or end with whitespace. It must not contain
-	// a : (colon), / (slash), | (vertical bar), or any control characters (\u0000-\u001f
-	// | \u007f-\u009f). Also, it must not contain the literal string arn.
+	// The specified string must not contain a : (colon), / (slash), | (vertical
+	// bar), or any control characters (\u0000-\u001f | \u007f-\u009f). Also, it
+	// must not be the literal string arn.
 	//
 	// WorkflowId is a required field
 	WorkflowId *string `locationName:"workflowId" min:"1" type:"string" required:"true"`
@@ -14723,17 +14754,17 @@ func (s *StartLambdaFunctionFailedEventAttributes) SetScheduledEventId(v int64) 
 
 // Provides the details of the StartTimer decision.
 //
-// Access Control
+// # Access Control
 //
 // You can use IAM policies to control this decision's access to Amazon SWF
 // resources as follows:
 //
-//    * Use a Resource element with the domain name to limit the action to only
-//    specified domains.
+//   - Use a Resource element with the domain name to limit the action to only
+//     specified domains.
 //
-//    * Use an Action element to allow or deny permission to call this action.
+//   - Use an Action element to allow or deny permission to call this action.
 //
-//    * You cannot use an IAM policy to constrain this action's parameters.
+//   - You cannot use an IAM policy to constrain this action's parameters.
 //
 // If the caller doesn't have sufficient permissions to invoke the action, or
 // the parameter values fall outside the specified constraints, the action fails.
@@ -14758,9 +14789,9 @@ type StartTimerDecisionAttributes struct {
 
 	// The unique ID of the timer.
 	//
-	// The specified string must not start or end with whitespace. It must not contain
-	// a : (colon), / (slash), | (vertical bar), or any control characters (\u0000-\u001f
-	// | \u007f-\u009f). Also, it must not contain the literal string arn.
+	// The specified string must not contain a : (colon), / (slash), | (vertical
+	// bar), or any control characters (\u0000-\u001f | \u007f-\u009f). Also, it
+	// must not be the literal string arn.
 	//
 	// TimerId is a required field
 	TimerId *string `locationName:"timerId" min:"1" type:"string" required:"true"`
@@ -14916,6 +14947,10 @@ type StartWorkflowExecutionInput struct {
 
 	// The name of the domain in which the workflow execution is created.
 	//
+	// The specified string must not contain a : (colon), / (slash), | (vertical
+	// bar), or any control characters (\u0000-\u001f | \u007f-\u009f). Also, it
+	// must not be the literal string arn.
+	//
 	// Domain is a required field
 	Domain *string `locationName:"domain" min:"1" type:"string" required:"true"`
 
@@ -14964,9 +14999,9 @@ type StartWorkflowExecutionInput struct {
 	// is set nor a default task list was specified at registration time then a
 	// fault is returned.
 	//
-	// The specified string must not start or end with whitespace. It must not contain
-	// a : (colon), / (slash), | (vertical bar), or any control characters (\u0000-\u001f
-	// | \u007f-\u009f). Also, it must not be the literal string arn.
+	// The specified string must not contain a : (colon), / (slash), | (vertical
+	// bar), or any control characters (\u0000-\u001f | \u007f-\u009f). Also, it
+	// must not be the literal string arn.
 	TaskList *TaskList `locationName:"taskList" type:"structure"`
 
 	// The task priority to use for this workflow execution. This overrides any
@@ -14999,9 +15034,9 @@ type StartWorkflowExecutionInput struct {
 	// of a previous execution. You cannot have two open workflow executions with
 	// the same workflowId at the same time within the same domain.
 	//
-	// The specified string must not start or end with whitespace. It must not contain
-	// a : (colon), / (slash), | (vertical bar), or any control characters (\u0000-\u001f
-	// | \u007f-\u009f). Also, it must not be the literal string arn.
+	// The specified string must not contain a : (colon), / (slash), | (vertical
+	// bar), or any control characters (\u0000-\u001f | \u007f-\u009f). Also, it
+	// must not be the literal string arn.
 	//
 	// WorkflowId is a required field
 	WorkflowId *string `locationName:"workflowId" min:"1" type:"string" required:"true"`
@@ -18116,12 +18151,16 @@ func ContinueAsNewWorkflowExecutionFailedCause_Values() []string {
 const (
 	// DecisionTaskTimeoutTypeStartToClose is a DecisionTaskTimeoutType enum value
 	DecisionTaskTimeoutTypeStartToClose = "START_TO_CLOSE"
+
+	// DecisionTaskTimeoutTypeScheduleToStart is a DecisionTaskTimeoutType enum value
+	DecisionTaskTimeoutTypeScheduleToStart = "SCHEDULE_TO_START"
 )
 
 // DecisionTaskTimeoutType_Values returns all elements of the DecisionTaskTimeoutType enum
 func DecisionTaskTimeoutType_Values() []string {
 	return []string{
 		DecisionTaskTimeoutTypeStartToClose,
+		DecisionTaskTimeoutTypeScheduleToStart,
 	}
 }
 

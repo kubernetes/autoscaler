@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // Amazon EC2 Container Service.
-//    func myFunc(svc ecsiface.ECSAPI) bool {
-//        // Make svc.CreateCapacityProvider request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// Amazon EC2 Container Service.
+//	func myFunc(svc ecsiface.ECSAPI) bool {
+//	    // Make svc.CreateCapacityProvider request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := ecs.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := ecs.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockECSClient struct {
-//        ecsiface.ECSAPI
-//    }
-//    func (m *mockECSClient) CreateCapacityProvider(input *ecs.CreateCapacityProviderInput) (*ecs.CreateCapacityProviderOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockECSClient struct {
+//	    ecsiface.ECSAPI
+//	}
+//	func (m *mockECSClient) CreateCapacityProvider(input *ecs.CreateCapacityProviderInput) (*ecs.CreateCapacityProviderOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockECSClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockECSClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,
@@ -95,6 +95,10 @@ type ECSAPI interface {
 	DeleteService(*ecs.DeleteServiceInput) (*ecs.DeleteServiceOutput, error)
 	DeleteServiceWithContext(aws.Context, *ecs.DeleteServiceInput, ...request.Option) (*ecs.DeleteServiceOutput, error)
 	DeleteServiceRequest(*ecs.DeleteServiceInput) (*request.Request, *ecs.DeleteServiceOutput)
+
+	DeleteTaskDefinitions(*ecs.DeleteTaskDefinitionsInput) (*ecs.DeleteTaskDefinitionsOutput, error)
+	DeleteTaskDefinitionsWithContext(aws.Context, *ecs.DeleteTaskDefinitionsInput, ...request.Option) (*ecs.DeleteTaskDefinitionsOutput, error)
+	DeleteTaskDefinitionsRequest(*ecs.DeleteTaskDefinitionsInput) (*request.Request, *ecs.DeleteTaskDefinitionsOutput)
 
 	DeleteTaskSet(*ecs.DeleteTaskSetInput) (*ecs.DeleteTaskSetOutput, error)
 	DeleteTaskSetWithContext(aws.Context, *ecs.DeleteTaskSetInput, ...request.Option) (*ecs.DeleteTaskSetOutput, error)
@@ -144,6 +148,10 @@ type ECSAPI interface {
 	ExecuteCommandWithContext(aws.Context, *ecs.ExecuteCommandInput, ...request.Option) (*ecs.ExecuteCommandOutput, error)
 	ExecuteCommandRequest(*ecs.ExecuteCommandInput) (*request.Request, *ecs.ExecuteCommandOutput)
 
+	GetTaskProtection(*ecs.GetTaskProtectionInput) (*ecs.GetTaskProtectionOutput, error)
+	GetTaskProtectionWithContext(aws.Context, *ecs.GetTaskProtectionInput, ...request.Option) (*ecs.GetTaskProtectionOutput, error)
+	GetTaskProtectionRequest(*ecs.GetTaskProtectionInput) (*request.Request, *ecs.GetTaskProtectionOutput)
+
 	ListAccountSettings(*ecs.ListAccountSettingsInput) (*ecs.ListAccountSettingsOutput, error)
 	ListAccountSettingsWithContext(aws.Context, *ecs.ListAccountSettingsInput, ...request.Option) (*ecs.ListAccountSettingsOutput, error)
 	ListAccountSettingsRequest(*ecs.ListAccountSettingsInput) (*request.Request, *ecs.ListAccountSettingsOutput)
@@ -178,6 +186,13 @@ type ECSAPI interface {
 
 	ListServicesPages(*ecs.ListServicesInput, func(*ecs.ListServicesOutput, bool) bool) error
 	ListServicesPagesWithContext(aws.Context, *ecs.ListServicesInput, func(*ecs.ListServicesOutput, bool) bool, ...request.Option) error
+
+	ListServicesByNamespace(*ecs.ListServicesByNamespaceInput) (*ecs.ListServicesByNamespaceOutput, error)
+	ListServicesByNamespaceWithContext(aws.Context, *ecs.ListServicesByNamespaceInput, ...request.Option) (*ecs.ListServicesByNamespaceOutput, error)
+	ListServicesByNamespaceRequest(*ecs.ListServicesByNamespaceInput) (*request.Request, *ecs.ListServicesByNamespaceOutput)
+
+	ListServicesByNamespacePages(*ecs.ListServicesByNamespaceInput, func(*ecs.ListServicesByNamespaceOutput, bool) bool) error
+	ListServicesByNamespacePagesWithContext(aws.Context, *ecs.ListServicesByNamespaceInput, func(*ecs.ListServicesByNamespaceOutput, bool) bool, ...request.Option) error
 
 	ListTagsForResource(*ecs.ListTagsForResourceInput) (*ecs.ListTagsForResourceOutput, error)
 	ListTagsForResourceWithContext(aws.Context, *ecs.ListTagsForResourceInput, ...request.Option) (*ecs.ListTagsForResourceOutput, error)
@@ -287,6 +302,10 @@ type ECSAPI interface {
 	UpdateServicePrimaryTaskSet(*ecs.UpdateServicePrimaryTaskSetInput) (*ecs.UpdateServicePrimaryTaskSetOutput, error)
 	UpdateServicePrimaryTaskSetWithContext(aws.Context, *ecs.UpdateServicePrimaryTaskSetInput, ...request.Option) (*ecs.UpdateServicePrimaryTaskSetOutput, error)
 	UpdateServicePrimaryTaskSetRequest(*ecs.UpdateServicePrimaryTaskSetInput) (*request.Request, *ecs.UpdateServicePrimaryTaskSetOutput)
+
+	UpdateTaskProtection(*ecs.UpdateTaskProtectionInput) (*ecs.UpdateTaskProtectionOutput, error)
+	UpdateTaskProtectionWithContext(aws.Context, *ecs.UpdateTaskProtectionInput, ...request.Option) (*ecs.UpdateTaskProtectionOutput, error)
+	UpdateTaskProtectionRequest(*ecs.UpdateTaskProtectionInput) (*request.Request, *ecs.UpdateTaskProtectionOutput)
 
 	UpdateTaskSet(*ecs.UpdateTaskSetInput) (*ecs.UpdateTaskSetOutput, error)
 	UpdateTaskSetWithContext(aws.Context, *ecs.UpdateTaskSetInput, ...request.Option) (*ecs.UpdateTaskSetOutput, error)

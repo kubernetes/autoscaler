@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a ApplicationAutoScaling client from just a session.
-//     svc := applicationautoscaling.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a ApplicationAutoScaling client with additional configuration
-//     svc := applicationautoscaling.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a ApplicationAutoScaling client from just a session.
+//	svc := applicationautoscaling.New(mySession)
+//
+//	// Create a ApplicationAutoScaling client with additional configuration
+//	svc := applicationautoscaling.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *ApplicationAutoScaling {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

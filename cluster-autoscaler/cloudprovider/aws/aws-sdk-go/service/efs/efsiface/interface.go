@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // Amazon Elastic File System.
-//    func myFunc(svc efsiface.EFSAPI) bool {
-//        // Make svc.CreateAccessPoint request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// Amazon Elastic File System.
+//	func myFunc(svc efsiface.EFSAPI) bool {
+//	    // Make svc.CreateAccessPoint request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := efs.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := efs.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockEFSClient struct {
-//        efsiface.EFSAPI
-//    }
-//    func (m *mockEFSClient) CreateAccessPoint(input *efs.CreateAccessPointInput) (*efs.CreateAccessPointOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockEFSClient struct {
+//	    efsiface.EFSAPI
+//	}
+//	func (m *mockEFSClient) CreateAccessPoint(input *efs.CreateAccessPointInput) (*efs.CreateAccessPointOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockEFSClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockEFSClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,
@@ -142,9 +142,15 @@ type EFSAPI interface {
 	DescribeMountTargetsWithContext(aws.Context, *efs.DescribeMountTargetsInput, ...request.Option) (*efs.DescribeMountTargetsOutput, error)
 	DescribeMountTargetsRequest(*efs.DescribeMountTargetsInput) (*request.Request, *efs.DescribeMountTargetsOutput)
 
+	DescribeMountTargetsPages(*efs.DescribeMountTargetsInput, func(*efs.DescribeMountTargetsOutput, bool) bool) error
+	DescribeMountTargetsPagesWithContext(aws.Context, *efs.DescribeMountTargetsInput, func(*efs.DescribeMountTargetsOutput, bool) bool, ...request.Option) error
+
 	DescribeReplicationConfigurations(*efs.DescribeReplicationConfigurationsInput) (*efs.DescribeReplicationConfigurationsOutput, error)
 	DescribeReplicationConfigurationsWithContext(aws.Context, *efs.DescribeReplicationConfigurationsInput, ...request.Option) (*efs.DescribeReplicationConfigurationsOutput, error)
 	DescribeReplicationConfigurationsRequest(*efs.DescribeReplicationConfigurationsInput) (*request.Request, *efs.DescribeReplicationConfigurationsOutput)
+
+	DescribeReplicationConfigurationsPages(*efs.DescribeReplicationConfigurationsInput, func(*efs.DescribeReplicationConfigurationsOutput, bool) bool) error
+	DescribeReplicationConfigurationsPagesWithContext(aws.Context, *efs.DescribeReplicationConfigurationsInput, func(*efs.DescribeReplicationConfigurationsOutput, bool) bool, ...request.Option) error
 
 	DescribeTags(*efs.DescribeTagsInput) (*efs.DescribeTagsOutput, error)
 	DescribeTagsWithContext(aws.Context, *efs.DescribeTagsInput, ...request.Option) (*efs.DescribeTagsOutput, error)
@@ -191,6 +197,10 @@ type EFSAPI interface {
 	UpdateFileSystem(*efs.UpdateFileSystemInput) (*efs.UpdateFileSystemOutput, error)
 	UpdateFileSystemWithContext(aws.Context, *efs.UpdateFileSystemInput, ...request.Option) (*efs.UpdateFileSystemOutput, error)
 	UpdateFileSystemRequest(*efs.UpdateFileSystemInput) (*request.Request, *efs.UpdateFileSystemOutput)
+
+	UpdateFileSystemProtection(*efs.UpdateFileSystemProtectionInput) (*efs.UpdateFileSystemProtectionOutput, error)
+	UpdateFileSystemProtectionWithContext(aws.Context, *efs.UpdateFileSystemProtectionInput, ...request.Option) (*efs.UpdateFileSystemProtectionOutput, error)
+	UpdateFileSystemProtectionRequest(*efs.UpdateFileSystemProtectionInput) (*request.Request, *efs.UpdateFileSystemProtectionOutput)
 }
 
 var _ EFSAPI = (*efs.EFS)(nil)

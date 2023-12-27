@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // Migration Hub Strategy Recommendations.
-//    func myFunc(svc migrationhubstrategyrecommendationsiface.MigrationHubStrategyRecommendationsAPI) bool {
-//        // Make svc.GetApplicationComponentDetails request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// Migration Hub Strategy Recommendations.
+//	func myFunc(svc migrationhubstrategyrecommendationsiface.MigrationHubStrategyRecommendationsAPI) bool {
+//	    // Make svc.GetApplicationComponentDetails request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := migrationhubstrategyrecommendations.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := migrationhubstrategyrecommendations.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockMigrationHubStrategyRecommendationsClient struct {
-//        migrationhubstrategyrecommendationsiface.MigrationHubStrategyRecommendationsAPI
-//    }
-//    func (m *mockMigrationHubStrategyRecommendationsClient) GetApplicationComponentDetails(input *migrationhubstrategyrecommendations.GetApplicationComponentDetailsInput) (*migrationhubstrategyrecommendations.GetApplicationComponentDetailsOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockMigrationHubStrategyRecommendationsClient struct {
+//	    migrationhubstrategyrecommendationsiface.MigrationHubStrategyRecommendationsAPI
+//	}
+//	func (m *mockMigrationHubStrategyRecommendationsClient) GetApplicationComponentDetails(input *migrationhubstrategyrecommendations.GetApplicationComponentDetailsInput) (*migrationhubstrategyrecommendations.GetApplicationComponentDetailsOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockMigrationHubStrategyRecommendationsClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockMigrationHubStrategyRecommendationsClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,
@@ -75,6 +75,10 @@ type MigrationHubStrategyRecommendationsAPI interface {
 	GetImportFileTask(*migrationhubstrategyrecommendations.GetImportFileTaskInput) (*migrationhubstrategyrecommendations.GetImportFileTaskOutput, error)
 	GetImportFileTaskWithContext(aws.Context, *migrationhubstrategyrecommendations.GetImportFileTaskInput, ...request.Option) (*migrationhubstrategyrecommendations.GetImportFileTaskOutput, error)
 	GetImportFileTaskRequest(*migrationhubstrategyrecommendations.GetImportFileTaskInput) (*request.Request, *migrationhubstrategyrecommendations.GetImportFileTaskOutput)
+
+	GetLatestAssessmentId(*migrationhubstrategyrecommendations.GetLatestAssessmentIdInput) (*migrationhubstrategyrecommendations.GetLatestAssessmentIdOutput, error)
+	GetLatestAssessmentIdWithContext(aws.Context, *migrationhubstrategyrecommendations.GetLatestAssessmentIdInput, ...request.Option) (*migrationhubstrategyrecommendations.GetLatestAssessmentIdOutput, error)
+	GetLatestAssessmentIdRequest(*migrationhubstrategyrecommendations.GetLatestAssessmentIdInput) (*request.Request, *migrationhubstrategyrecommendations.GetLatestAssessmentIdOutput)
 
 	GetPortfolioPreferences(*migrationhubstrategyrecommendations.GetPortfolioPreferencesInput) (*migrationhubstrategyrecommendations.GetPortfolioPreferencesOutput, error)
 	GetPortfolioPreferencesWithContext(aws.Context, *migrationhubstrategyrecommendations.GetPortfolioPreferencesInput, ...request.Option) (*migrationhubstrategyrecommendations.GetPortfolioPreferencesOutput, error)
@@ -98,6 +102,13 @@ type MigrationHubStrategyRecommendationsAPI interface {
 	GetServerStrategies(*migrationhubstrategyrecommendations.GetServerStrategiesInput) (*migrationhubstrategyrecommendations.GetServerStrategiesOutput, error)
 	GetServerStrategiesWithContext(aws.Context, *migrationhubstrategyrecommendations.GetServerStrategiesInput, ...request.Option) (*migrationhubstrategyrecommendations.GetServerStrategiesOutput, error)
 	GetServerStrategiesRequest(*migrationhubstrategyrecommendations.GetServerStrategiesInput) (*request.Request, *migrationhubstrategyrecommendations.GetServerStrategiesOutput)
+
+	ListAnalyzableServers(*migrationhubstrategyrecommendations.ListAnalyzableServersInput) (*migrationhubstrategyrecommendations.ListAnalyzableServersOutput, error)
+	ListAnalyzableServersWithContext(aws.Context, *migrationhubstrategyrecommendations.ListAnalyzableServersInput, ...request.Option) (*migrationhubstrategyrecommendations.ListAnalyzableServersOutput, error)
+	ListAnalyzableServersRequest(*migrationhubstrategyrecommendations.ListAnalyzableServersInput) (*request.Request, *migrationhubstrategyrecommendations.ListAnalyzableServersOutput)
+
+	ListAnalyzableServersPages(*migrationhubstrategyrecommendations.ListAnalyzableServersInput, func(*migrationhubstrategyrecommendations.ListAnalyzableServersOutput, bool) bool) error
+	ListAnalyzableServersPagesWithContext(aws.Context, *migrationhubstrategyrecommendations.ListAnalyzableServersInput, func(*migrationhubstrategyrecommendations.ListAnalyzableServersOutput, bool) bool, ...request.Option) error
 
 	ListApplicationComponents(*migrationhubstrategyrecommendations.ListApplicationComponentsInput) (*migrationhubstrategyrecommendations.ListApplicationComponentsOutput, error)
 	ListApplicationComponentsWithContext(aws.Context, *migrationhubstrategyrecommendations.ListApplicationComponentsInput, ...request.Option) (*migrationhubstrategyrecommendations.ListApplicationComponentsOutput, error)

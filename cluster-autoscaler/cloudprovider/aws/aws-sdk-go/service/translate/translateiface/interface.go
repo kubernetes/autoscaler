@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // Amazon Translate.
-//    func myFunc(svc translateiface.TranslateAPI) bool {
-//        // Make svc.CreateParallelData request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// Amazon Translate.
+//	func myFunc(svc translateiface.TranslateAPI) bool {
+//	    // Make svc.CreateParallelData request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := translate.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := translate.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockTranslateClient struct {
-//        translateiface.TranslateAPI
-//    }
-//    func (m *mockTranslateClient) CreateParallelData(input *translate.CreateParallelDataInput) (*translate.CreateParallelDataOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockTranslateClient struct {
+//	    translateiface.TranslateAPI
+//	}
+//	func (m *mockTranslateClient) CreateParallelData(input *translate.CreateParallelDataInput) (*translate.CreateParallelDataOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockTranslateClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockTranslateClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,
@@ -88,12 +88,23 @@ type TranslateAPI interface {
 	ImportTerminologyWithContext(aws.Context, *translate.ImportTerminologyInput, ...request.Option) (*translate.ImportTerminologyOutput, error)
 	ImportTerminologyRequest(*translate.ImportTerminologyInput) (*request.Request, *translate.ImportTerminologyOutput)
 
+	ListLanguages(*translate.ListLanguagesInput) (*translate.ListLanguagesOutput, error)
+	ListLanguagesWithContext(aws.Context, *translate.ListLanguagesInput, ...request.Option) (*translate.ListLanguagesOutput, error)
+	ListLanguagesRequest(*translate.ListLanguagesInput) (*request.Request, *translate.ListLanguagesOutput)
+
+	ListLanguagesPages(*translate.ListLanguagesInput, func(*translate.ListLanguagesOutput, bool) bool) error
+	ListLanguagesPagesWithContext(aws.Context, *translate.ListLanguagesInput, func(*translate.ListLanguagesOutput, bool) bool, ...request.Option) error
+
 	ListParallelData(*translate.ListParallelDataInput) (*translate.ListParallelDataOutput, error)
 	ListParallelDataWithContext(aws.Context, *translate.ListParallelDataInput, ...request.Option) (*translate.ListParallelDataOutput, error)
 	ListParallelDataRequest(*translate.ListParallelDataInput) (*request.Request, *translate.ListParallelDataOutput)
 
 	ListParallelDataPages(*translate.ListParallelDataInput, func(*translate.ListParallelDataOutput, bool) bool) error
 	ListParallelDataPagesWithContext(aws.Context, *translate.ListParallelDataInput, func(*translate.ListParallelDataOutput, bool) bool, ...request.Option) error
+
+	ListTagsForResource(*translate.ListTagsForResourceInput) (*translate.ListTagsForResourceOutput, error)
+	ListTagsForResourceWithContext(aws.Context, *translate.ListTagsForResourceInput, ...request.Option) (*translate.ListTagsForResourceOutput, error)
+	ListTagsForResourceRequest(*translate.ListTagsForResourceInput) (*request.Request, *translate.ListTagsForResourceOutput)
 
 	ListTerminologies(*translate.ListTerminologiesInput) (*translate.ListTerminologiesOutput, error)
 	ListTerminologiesWithContext(aws.Context, *translate.ListTerminologiesInput, ...request.Option) (*translate.ListTerminologiesOutput, error)
@@ -117,9 +128,21 @@ type TranslateAPI interface {
 	StopTextTranslationJobWithContext(aws.Context, *translate.StopTextTranslationJobInput, ...request.Option) (*translate.StopTextTranslationJobOutput, error)
 	StopTextTranslationJobRequest(*translate.StopTextTranslationJobInput) (*request.Request, *translate.StopTextTranslationJobOutput)
 
+	TagResource(*translate.TagResourceInput) (*translate.TagResourceOutput, error)
+	TagResourceWithContext(aws.Context, *translate.TagResourceInput, ...request.Option) (*translate.TagResourceOutput, error)
+	TagResourceRequest(*translate.TagResourceInput) (*request.Request, *translate.TagResourceOutput)
+
 	Text(*translate.TextInput) (*translate.TextOutput, error)
 	TextWithContext(aws.Context, *translate.TextInput, ...request.Option) (*translate.TextOutput, error)
 	TextRequest(*translate.TextInput) (*request.Request, *translate.TextOutput)
+
+	TranslateDocument(*translate.TranslateDocumentInput) (*translate.TranslateDocumentOutput, error)
+	TranslateDocumentWithContext(aws.Context, *translate.TranslateDocumentInput, ...request.Option) (*translate.TranslateDocumentOutput, error)
+	TranslateDocumentRequest(*translate.TranslateDocumentInput) (*request.Request, *translate.TranslateDocumentOutput)
+
+	UntagResource(*translate.UntagResourceInput) (*translate.UntagResourceOutput, error)
+	UntagResourceWithContext(aws.Context, *translate.UntagResourceInput, ...request.Option) (*translate.UntagResourceOutput, error)
+	UntagResourceRequest(*translate.UntagResourceInput) (*request.Request, *translate.UntagResourceOutput)
 
 	UpdateParallelData(*translate.UpdateParallelDataInput) (*translate.UpdateParallelDataOutput, error)
 	UpdateParallelDataWithContext(aws.Context, *translate.UpdateParallelDataInput, ...request.Option) (*translate.UpdateParallelDataOutput, error)

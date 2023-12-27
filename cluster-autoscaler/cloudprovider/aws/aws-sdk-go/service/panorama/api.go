@@ -29,14 +29,13 @@ const opCreateApplicationInstance = "CreateApplicationInstance"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateApplicationInstanceRequest method.
+//	req, resp := client.CreateApplicationInstanceRequest(params)
 //
-//    // Example sending a request using the CreateApplicationInstanceRequest method.
-//    req, resp := client.CreateApplicationInstanceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/CreateApplicationInstance
 func (c *Panorama) CreateApplicationInstanceRequest(input *CreateApplicationInstanceInput) (req *request.Request, output *CreateApplicationInstanceOutput) {
@@ -67,17 +66,18 @@ func (c *Panorama) CreateApplicationInstanceRequest(input *CreateApplicationInst
 // API operation CreateApplicationInstance for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request contains an invalid parameter value.
 //
-//   * AccessDeniedException
-//   The requestor does not have permission to access the target action or resource.
+//   - ValidationException
+//     The request contains an invalid parameter value.
 //
-//   * ServiceQuotaExceededException
-//   The request would cause a limit to be exceeded.
+//   - AccessDeniedException
+//     The requestor does not have permission to access the target action or resource.
 //
-//   * InternalServerException
-//   An internal error occurred.
+//   - ServiceQuotaExceededException
+//     The request would cause a limit to be exceeded.
+//
+//   - InternalServerException
+//     An internal error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/CreateApplicationInstance
 func (c *Panorama) CreateApplicationInstance(input *CreateApplicationInstanceInput) (*CreateApplicationInstanceOutput, error) {
@@ -117,14 +117,13 @@ const opCreateJobForDevices = "CreateJobForDevices"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateJobForDevicesRequest method.
+//	req, resp := client.CreateJobForDevicesRequest(params)
 //
-//    // Example sending a request using the CreateJobForDevicesRequest method.
-//    req, resp := client.CreateJobForDevicesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/CreateJobForDevices
 func (c *Panorama) CreateJobForDevicesRequest(input *CreateJobForDevicesInput) (req *request.Request, output *CreateJobForDevicesOutput) {
@@ -145,7 +144,8 @@ func (c *Panorama) CreateJobForDevicesRequest(input *CreateJobForDevicesInput) (
 
 // CreateJobForDevices API operation for AWS Panorama.
 //
-// Creates a job to run on one or more devices.
+// Creates a job to run on a device. A job can update a device's software or
+// reboot it.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -155,20 +155,21 @@ func (c *Panorama) CreateJobForDevicesRequest(input *CreateJobForDevicesInput) (
 // API operation CreateJobForDevices for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   The target resource is in use.
 //
-//   * ValidationException
-//   The request contains an invalid parameter value.
+//   - ConflictException
+//     The target resource is in use.
 //
-//   * AccessDeniedException
-//   The requestor does not have permission to access the target action or resource.
+//   - ValidationException
+//     The request contains an invalid parameter value.
 //
-//   * ResourceNotFoundException
-//   The target resource was not found.
+//   - AccessDeniedException
+//     The requestor does not have permission to access the target action or resource.
 //
-//   * InternalServerException
-//   An internal error occurred.
+//   - ResourceNotFoundException
+//     The target resource was not found.
+//
+//   - InternalServerException
+//     An internal error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/CreateJobForDevices
 func (c *Panorama) CreateJobForDevices(input *CreateJobForDevicesInput) (*CreateJobForDevicesOutput, error) {
@@ -208,14 +209,13 @@ const opCreateNodeFromTemplateJob = "CreateNodeFromTemplateJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateNodeFromTemplateJobRequest method.
+//	req, resp := client.CreateNodeFromTemplateJobRequest(params)
 //
-//    // Example sending a request using the CreateNodeFromTemplateJobRequest method.
-//    req, resp := client.CreateNodeFromTemplateJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/CreateNodeFromTemplateJob
 func (c *Panorama) CreateNodeFromTemplateJobRequest(input *CreateNodeFromTemplateJobInput) (req *request.Request, output *CreateNodeFromTemplateJobOutput) {
@@ -246,17 +246,18 @@ func (c *Panorama) CreateNodeFromTemplateJobRequest(input *CreateNodeFromTemplat
 // API operation CreateNodeFromTemplateJob for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   The target resource is in use.
 //
-//   * ValidationException
-//   The request contains an invalid parameter value.
+//   - ConflictException
+//     The target resource is in use.
 //
-//   * AccessDeniedException
-//   The requestor does not have permission to access the target action or resource.
+//   - ValidationException
+//     The request contains an invalid parameter value.
 //
-//   * InternalServerException
-//   An internal error occurred.
+//   - AccessDeniedException
+//     The requestor does not have permission to access the target action or resource.
+//
+//   - InternalServerException
+//     An internal error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/CreateNodeFromTemplateJob
 func (c *Panorama) CreateNodeFromTemplateJob(input *CreateNodeFromTemplateJobInput) (*CreateNodeFromTemplateJobOutput, error) {
@@ -296,14 +297,13 @@ const opCreatePackage = "CreatePackage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreatePackageRequest method.
+//	req, resp := client.CreatePackageRequest(params)
 //
-//    // Example sending a request using the CreatePackageRequest method.
-//    req, resp := client.CreatePackageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/CreatePackage
 func (c *Panorama) CreatePackageRequest(input *CreatePackageInput) (req *request.Request, output *CreatePackageOutput) {
@@ -334,17 +334,18 @@ func (c *Panorama) CreatePackageRequest(input *CreatePackageInput) (req *request
 // API operation CreatePackage for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   The target resource is in use.
 //
-//   * ValidationException
-//   The request contains an invalid parameter value.
+//   - ConflictException
+//     The target resource is in use.
 //
-//   * AccessDeniedException
-//   The requestor does not have permission to access the target action or resource.
+//   - ValidationException
+//     The request contains an invalid parameter value.
 //
-//   * InternalServerException
-//   An internal error occurred.
+//   - AccessDeniedException
+//     The requestor does not have permission to access the target action or resource.
+//
+//   - InternalServerException
+//     An internal error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/CreatePackage
 func (c *Panorama) CreatePackage(input *CreatePackageInput) (*CreatePackageOutput, error) {
@@ -384,14 +385,13 @@ const opCreatePackageImportJob = "CreatePackageImportJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreatePackageImportJobRequest method.
+//	req, resp := client.CreatePackageImportJobRequest(params)
 //
-//    // Example sending a request using the CreatePackageImportJobRequest method.
-//    req, resp := client.CreatePackageImportJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/CreatePackageImportJob
 func (c *Panorama) CreatePackageImportJobRequest(input *CreatePackageImportJobInput) (req *request.Request, output *CreatePackageImportJobOutput) {
@@ -422,17 +422,18 @@ func (c *Panorama) CreatePackageImportJobRequest(input *CreatePackageImportJobIn
 // API operation CreatePackageImportJob for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   The target resource is in use.
 //
-//   * ValidationException
-//   The request contains an invalid parameter value.
+//   - ConflictException
+//     The target resource is in use.
 //
-//   * AccessDeniedException
-//   The requestor does not have permission to access the target action or resource.
+//   - ValidationException
+//     The request contains an invalid parameter value.
 //
-//   * InternalServerException
-//   An internal error occurred.
+//   - AccessDeniedException
+//     The requestor does not have permission to access the target action or resource.
+//
+//   - InternalServerException
+//     An internal error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/CreatePackageImportJob
 func (c *Panorama) CreatePackageImportJob(input *CreatePackageImportJobInput) (*CreatePackageImportJobOutput, error) {
@@ -472,14 +473,13 @@ const opDeleteDevice = "DeleteDevice"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDeviceRequest method.
+//	req, resp := client.DeleteDeviceRequest(params)
 //
-//    // Example sending a request using the DeleteDeviceRequest method.
-//    req, resp := client.DeleteDeviceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/DeleteDevice
 func (c *Panorama) DeleteDeviceRequest(input *DeleteDeviceInput) (req *request.Request, output *DeleteDeviceOutput) {
@@ -510,20 +510,21 @@ func (c *Panorama) DeleteDeviceRequest(input *DeleteDeviceInput) (req *request.R
 // API operation DeleteDevice for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   The target resource is in use.
 //
-//   * ValidationException
-//   The request contains an invalid parameter value.
+//   - ConflictException
+//     The target resource is in use.
 //
-//   * AccessDeniedException
-//   The requestor does not have permission to access the target action or resource.
+//   - ValidationException
+//     The request contains an invalid parameter value.
 //
-//   * ResourceNotFoundException
-//   The target resource was not found.
+//   - AccessDeniedException
+//     The requestor does not have permission to access the target action or resource.
 //
-//   * InternalServerException
-//   An internal error occurred.
+//   - ResourceNotFoundException
+//     The target resource was not found.
+//
+//   - InternalServerException
+//     An internal error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/DeleteDevice
 func (c *Panorama) DeleteDevice(input *DeleteDeviceInput) (*DeleteDeviceOutput, error) {
@@ -563,14 +564,13 @@ const opDeletePackage = "DeletePackage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeletePackageRequest method.
+//	req, resp := client.DeletePackageRequest(params)
 //
-//    // Example sending a request using the DeletePackageRequest method.
-//    req, resp := client.DeletePackageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/DeletePackage
 func (c *Panorama) DeletePackageRequest(input *DeletePackageInput) (req *request.Request, output *DeletePackageOutput) {
@@ -605,20 +605,21 @@ func (c *Panorama) DeletePackageRequest(input *DeletePackageInput) (req *request
 // API operation DeletePackage for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   The target resource is in use.
 //
-//   * ValidationException
-//   The request contains an invalid parameter value.
+//   - ConflictException
+//     The target resource is in use.
 //
-//   * AccessDeniedException
-//   The requestor does not have permission to access the target action or resource.
+//   - ValidationException
+//     The request contains an invalid parameter value.
 //
-//   * ResourceNotFoundException
-//   The target resource was not found.
+//   - AccessDeniedException
+//     The requestor does not have permission to access the target action or resource.
 //
-//   * InternalServerException
-//   An internal error occurred.
+//   - ResourceNotFoundException
+//     The target resource was not found.
+//
+//   - InternalServerException
+//     An internal error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/DeletePackage
 func (c *Panorama) DeletePackage(input *DeletePackageInput) (*DeletePackageOutput, error) {
@@ -658,14 +659,13 @@ const opDeregisterPackageVersion = "DeregisterPackageVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeregisterPackageVersionRequest method.
+//	req, resp := client.DeregisterPackageVersionRequest(params)
 //
-//    // Example sending a request using the DeregisterPackageVersionRequest method.
-//    req, resp := client.DeregisterPackageVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/DeregisterPackageVersion
 func (c *Panorama) DeregisterPackageVersionRequest(input *DeregisterPackageVersionInput) (req *request.Request, output *DeregisterPackageVersionOutput) {
@@ -697,20 +697,21 @@ func (c *Panorama) DeregisterPackageVersionRequest(input *DeregisterPackageVersi
 // API operation DeregisterPackageVersion for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   The target resource is in use.
 //
-//   * ValidationException
-//   The request contains an invalid parameter value.
+//   - ConflictException
+//     The target resource is in use.
 //
-//   * AccessDeniedException
-//   The requestor does not have permission to access the target action or resource.
+//   - ValidationException
+//     The request contains an invalid parameter value.
 //
-//   * ResourceNotFoundException
-//   The target resource was not found.
+//   - AccessDeniedException
+//     The requestor does not have permission to access the target action or resource.
 //
-//   * InternalServerException
-//   An internal error occurred.
+//   - ResourceNotFoundException
+//     The target resource was not found.
+//
+//   - InternalServerException
+//     An internal error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/DeregisterPackageVersion
 func (c *Panorama) DeregisterPackageVersion(input *DeregisterPackageVersionInput) (*DeregisterPackageVersionOutput, error) {
@@ -750,14 +751,13 @@ const opDescribeApplicationInstance = "DescribeApplicationInstance"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeApplicationInstanceRequest method.
+//	req, resp := client.DescribeApplicationInstanceRequest(params)
 //
-//    // Example sending a request using the DescribeApplicationInstanceRequest method.
-//    req, resp := client.DescribeApplicationInstanceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/DescribeApplicationInstance
 func (c *Panorama) DescribeApplicationInstanceRequest(input *DescribeApplicationInstanceInput) (req *request.Request, output *DescribeApplicationInstanceOutput) {
@@ -788,20 +788,21 @@ func (c *Panorama) DescribeApplicationInstanceRequest(input *DescribeApplication
 // API operation DescribeApplicationInstance for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   The target resource is in use.
 //
-//   * ValidationException
-//   The request contains an invalid parameter value.
+//   - ConflictException
+//     The target resource is in use.
 //
-//   * AccessDeniedException
-//   The requestor does not have permission to access the target action or resource.
+//   - ValidationException
+//     The request contains an invalid parameter value.
 //
-//   * ResourceNotFoundException
-//   The target resource was not found.
+//   - AccessDeniedException
+//     The requestor does not have permission to access the target action or resource.
 //
-//   * InternalServerException
-//   An internal error occurred.
+//   - ResourceNotFoundException
+//     The target resource was not found.
+//
+//   - InternalServerException
+//     An internal error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/DescribeApplicationInstance
 func (c *Panorama) DescribeApplicationInstance(input *DescribeApplicationInstanceInput) (*DescribeApplicationInstanceOutput, error) {
@@ -841,14 +842,13 @@ const opDescribeApplicationInstanceDetails = "DescribeApplicationInstanceDetails
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeApplicationInstanceDetailsRequest method.
+//	req, resp := client.DescribeApplicationInstanceDetailsRequest(params)
 //
-//    // Example sending a request using the DescribeApplicationInstanceDetailsRequest method.
-//    req, resp := client.DescribeApplicationInstanceDetailsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/DescribeApplicationInstanceDetails
 func (c *Panorama) DescribeApplicationInstanceDetailsRequest(input *DescribeApplicationInstanceDetailsInput) (req *request.Request, output *DescribeApplicationInstanceDetailsOutput) {
@@ -879,20 +879,21 @@ func (c *Panorama) DescribeApplicationInstanceDetailsRequest(input *DescribeAppl
 // API operation DescribeApplicationInstanceDetails for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   The target resource is in use.
 //
-//   * ValidationException
-//   The request contains an invalid parameter value.
+//   - ConflictException
+//     The target resource is in use.
 //
-//   * AccessDeniedException
-//   The requestor does not have permission to access the target action or resource.
+//   - ValidationException
+//     The request contains an invalid parameter value.
 //
-//   * ResourceNotFoundException
-//   The target resource was not found.
+//   - AccessDeniedException
+//     The requestor does not have permission to access the target action or resource.
 //
-//   * InternalServerException
-//   An internal error occurred.
+//   - ResourceNotFoundException
+//     The target resource was not found.
+//
+//   - InternalServerException
+//     An internal error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/DescribeApplicationInstanceDetails
 func (c *Panorama) DescribeApplicationInstanceDetails(input *DescribeApplicationInstanceDetailsInput) (*DescribeApplicationInstanceDetailsOutput, error) {
@@ -932,14 +933,13 @@ const opDescribeDevice = "DescribeDevice"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDeviceRequest method.
+//	req, resp := client.DescribeDeviceRequest(params)
 //
-//    // Example sending a request using the DescribeDeviceRequest method.
-//    req, resp := client.DescribeDeviceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/DescribeDevice
 func (c *Panorama) DescribeDeviceRequest(input *DescribeDeviceInput) (req *request.Request, output *DescribeDeviceOutput) {
@@ -970,17 +970,18 @@ func (c *Panorama) DescribeDeviceRequest(input *DescribeDeviceInput) (req *reque
 // API operation DescribeDevice for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request contains an invalid parameter value.
 //
-//   * AccessDeniedException
-//   The requestor does not have permission to access the target action or resource.
+//   - ValidationException
+//     The request contains an invalid parameter value.
 //
-//   * ResourceNotFoundException
-//   The target resource was not found.
+//   - AccessDeniedException
+//     The requestor does not have permission to access the target action or resource.
 //
-//   * InternalServerException
-//   An internal error occurred.
+//   - ResourceNotFoundException
+//     The target resource was not found.
+//
+//   - InternalServerException
+//     An internal error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/DescribeDevice
 func (c *Panorama) DescribeDevice(input *DescribeDeviceInput) (*DescribeDeviceOutput, error) {
@@ -1020,14 +1021,13 @@ const opDescribeDeviceJob = "DescribeDeviceJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDeviceJobRequest method.
+//	req, resp := client.DescribeDeviceJobRequest(params)
 //
-//    // Example sending a request using the DescribeDeviceJobRequest method.
-//    req, resp := client.DescribeDeviceJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/DescribeDeviceJob
 func (c *Panorama) DescribeDeviceJobRequest(input *DescribeDeviceJobInput) (req *request.Request, output *DescribeDeviceJobOutput) {
@@ -1058,20 +1058,21 @@ func (c *Panorama) DescribeDeviceJobRequest(input *DescribeDeviceJobInput) (req 
 // API operation DescribeDeviceJob for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   The target resource is in use.
 //
-//   * ValidationException
-//   The request contains an invalid parameter value.
+//   - ConflictException
+//     The target resource is in use.
 //
-//   * AccessDeniedException
-//   The requestor does not have permission to access the target action or resource.
+//   - ValidationException
+//     The request contains an invalid parameter value.
 //
-//   * ResourceNotFoundException
-//   The target resource was not found.
+//   - AccessDeniedException
+//     The requestor does not have permission to access the target action or resource.
 //
-//   * InternalServerException
-//   An internal error occurred.
+//   - ResourceNotFoundException
+//     The target resource was not found.
+//
+//   - InternalServerException
+//     An internal error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/DescribeDeviceJob
 func (c *Panorama) DescribeDeviceJob(input *DescribeDeviceJobInput) (*DescribeDeviceJobOutput, error) {
@@ -1111,14 +1112,13 @@ const opDescribeNode = "DescribeNode"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeNodeRequest method.
+//	req, resp := client.DescribeNodeRequest(params)
 //
-//    // Example sending a request using the DescribeNodeRequest method.
-//    req, resp := client.DescribeNodeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/DescribeNode
 func (c *Panorama) DescribeNodeRequest(input *DescribeNodeInput) (req *request.Request, output *DescribeNodeOutput) {
@@ -1149,20 +1149,21 @@ func (c *Panorama) DescribeNodeRequest(input *DescribeNodeInput) (req *request.R
 // API operation DescribeNode for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   The target resource is in use.
 //
-//   * ValidationException
-//   The request contains an invalid parameter value.
+//   - ConflictException
+//     The target resource is in use.
 //
-//   * AccessDeniedException
-//   The requestor does not have permission to access the target action or resource.
+//   - ValidationException
+//     The request contains an invalid parameter value.
 //
-//   * ResourceNotFoundException
-//   The target resource was not found.
+//   - AccessDeniedException
+//     The requestor does not have permission to access the target action or resource.
 //
-//   * InternalServerException
-//   An internal error occurred.
+//   - ResourceNotFoundException
+//     The target resource was not found.
+//
+//   - InternalServerException
+//     An internal error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/DescribeNode
 func (c *Panorama) DescribeNode(input *DescribeNodeInput) (*DescribeNodeOutput, error) {
@@ -1202,14 +1203,13 @@ const opDescribeNodeFromTemplateJob = "DescribeNodeFromTemplateJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeNodeFromTemplateJobRequest method.
+//	req, resp := client.DescribeNodeFromTemplateJobRequest(params)
 //
-//    // Example sending a request using the DescribeNodeFromTemplateJobRequest method.
-//    req, resp := client.DescribeNodeFromTemplateJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/DescribeNodeFromTemplateJob
 func (c *Panorama) DescribeNodeFromTemplateJobRequest(input *DescribeNodeFromTemplateJobInput) (req *request.Request, output *DescribeNodeFromTemplateJobOutput) {
@@ -1240,17 +1240,18 @@ func (c *Panorama) DescribeNodeFromTemplateJobRequest(input *DescribeNodeFromTem
 // API operation DescribeNodeFromTemplateJob for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   The target resource is in use.
 //
-//   * ValidationException
-//   The request contains an invalid parameter value.
+//   - ConflictException
+//     The target resource is in use.
 //
-//   * AccessDeniedException
-//   The requestor does not have permission to access the target action or resource.
+//   - ValidationException
+//     The request contains an invalid parameter value.
 //
-//   * InternalServerException
-//   An internal error occurred.
+//   - AccessDeniedException
+//     The requestor does not have permission to access the target action or resource.
+//
+//   - InternalServerException
+//     An internal error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/DescribeNodeFromTemplateJob
 func (c *Panorama) DescribeNodeFromTemplateJob(input *DescribeNodeFromTemplateJobInput) (*DescribeNodeFromTemplateJobOutput, error) {
@@ -1290,14 +1291,13 @@ const opDescribePackage = "DescribePackage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribePackageRequest method.
+//	req, resp := client.DescribePackageRequest(params)
 //
-//    // Example sending a request using the DescribePackageRequest method.
-//    req, resp := client.DescribePackageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/DescribePackage
 func (c *Panorama) DescribePackageRequest(input *DescribePackageInput) (req *request.Request, output *DescribePackageOutput) {
@@ -1328,20 +1328,21 @@ func (c *Panorama) DescribePackageRequest(input *DescribePackageInput) (req *req
 // API operation DescribePackage for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   The target resource is in use.
 //
-//   * ValidationException
-//   The request contains an invalid parameter value.
+//   - ConflictException
+//     The target resource is in use.
 //
-//   * AccessDeniedException
-//   The requestor does not have permission to access the target action or resource.
+//   - ValidationException
+//     The request contains an invalid parameter value.
 //
-//   * ResourceNotFoundException
-//   The target resource was not found.
+//   - AccessDeniedException
+//     The requestor does not have permission to access the target action or resource.
 //
-//   * InternalServerException
-//   An internal error occurred.
+//   - ResourceNotFoundException
+//     The target resource was not found.
+//
+//   - InternalServerException
+//     An internal error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/DescribePackage
 func (c *Panorama) DescribePackage(input *DescribePackageInput) (*DescribePackageOutput, error) {
@@ -1381,14 +1382,13 @@ const opDescribePackageImportJob = "DescribePackageImportJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribePackageImportJobRequest method.
+//	req, resp := client.DescribePackageImportJobRequest(params)
 //
-//    // Example sending a request using the DescribePackageImportJobRequest method.
-//    req, resp := client.DescribePackageImportJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/DescribePackageImportJob
 func (c *Panorama) DescribePackageImportJobRequest(input *DescribePackageImportJobInput) (req *request.Request, output *DescribePackageImportJobOutput) {
@@ -1419,17 +1419,18 @@ func (c *Panorama) DescribePackageImportJobRequest(input *DescribePackageImportJ
 // API operation DescribePackageImportJob for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   The target resource is in use.
 //
-//   * ValidationException
-//   The request contains an invalid parameter value.
+//   - ConflictException
+//     The target resource is in use.
 //
-//   * AccessDeniedException
-//   The requestor does not have permission to access the target action or resource.
+//   - ValidationException
+//     The request contains an invalid parameter value.
 //
-//   * InternalServerException
-//   An internal error occurred.
+//   - AccessDeniedException
+//     The requestor does not have permission to access the target action or resource.
+//
+//   - InternalServerException
+//     An internal error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/DescribePackageImportJob
 func (c *Panorama) DescribePackageImportJob(input *DescribePackageImportJobInput) (*DescribePackageImportJobOutput, error) {
@@ -1469,14 +1470,13 @@ const opDescribePackageVersion = "DescribePackageVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribePackageVersionRequest method.
+//	req, resp := client.DescribePackageVersionRequest(params)
 //
-//    // Example sending a request using the DescribePackageVersionRequest method.
-//    req, resp := client.DescribePackageVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/DescribePackageVersion
 func (c *Panorama) DescribePackageVersionRequest(input *DescribePackageVersionInput) (req *request.Request, output *DescribePackageVersionOutput) {
@@ -1507,20 +1507,21 @@ func (c *Panorama) DescribePackageVersionRequest(input *DescribePackageVersionIn
 // API operation DescribePackageVersion for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   The target resource is in use.
 //
-//   * ValidationException
-//   The request contains an invalid parameter value.
+//   - ConflictException
+//     The target resource is in use.
 //
-//   * AccessDeniedException
-//   The requestor does not have permission to access the target action or resource.
+//   - ValidationException
+//     The request contains an invalid parameter value.
 //
-//   * ResourceNotFoundException
-//   The target resource was not found.
+//   - AccessDeniedException
+//     The requestor does not have permission to access the target action or resource.
 //
-//   * InternalServerException
-//   An internal error occurred.
+//   - ResourceNotFoundException
+//     The target resource was not found.
+//
+//   - InternalServerException
+//     An internal error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/DescribePackageVersion
 func (c *Panorama) DescribePackageVersion(input *DescribePackageVersionInput) (*DescribePackageVersionOutput, error) {
@@ -1560,14 +1561,13 @@ const opListApplicationInstanceDependencies = "ListApplicationInstanceDependenci
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListApplicationInstanceDependenciesRequest method.
+//	req, resp := client.ListApplicationInstanceDependenciesRequest(params)
 //
-//    // Example sending a request using the ListApplicationInstanceDependenciesRequest method.
-//    req, resp := client.ListApplicationInstanceDependenciesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/ListApplicationInstanceDependencies
 func (c *Panorama) ListApplicationInstanceDependenciesRequest(input *ListApplicationInstanceDependenciesInput) (req *request.Request, output *ListApplicationInstanceDependenciesOutput) {
@@ -1604,11 +1604,12 @@ func (c *Panorama) ListApplicationInstanceDependenciesRequest(input *ListApplica
 // API operation ListApplicationInstanceDependencies for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   The requestor does not have permission to access the target action or resource.
 //
-//   * InternalServerException
-//   An internal error occurred.
+//   - AccessDeniedException
+//     The requestor does not have permission to access the target action or resource.
+//
+//   - InternalServerException
+//     An internal error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/ListApplicationInstanceDependencies
 func (c *Panorama) ListApplicationInstanceDependencies(input *ListApplicationInstanceDependenciesInput) (*ListApplicationInstanceDependenciesOutput, error) {
@@ -1640,15 +1641,14 @@ func (c *Panorama) ListApplicationInstanceDependenciesWithContext(ctx aws.Contex
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListApplicationInstanceDependencies operation.
-//    pageNum := 0
-//    err := client.ListApplicationInstanceDependenciesPages(params,
-//        func(page *panorama.ListApplicationInstanceDependenciesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListApplicationInstanceDependencies operation.
+//	pageNum := 0
+//	err := client.ListApplicationInstanceDependenciesPages(params,
+//	    func(page *panorama.ListApplicationInstanceDependenciesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Panorama) ListApplicationInstanceDependenciesPages(input *ListApplicationInstanceDependenciesInput, fn func(*ListApplicationInstanceDependenciesOutput, bool) bool) error {
 	return c.ListApplicationInstanceDependenciesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1700,14 +1700,13 @@ const opListApplicationInstanceNodeInstances = "ListApplicationInstanceNodeInsta
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListApplicationInstanceNodeInstancesRequest method.
+//	req, resp := client.ListApplicationInstanceNodeInstancesRequest(params)
 //
-//    // Example sending a request using the ListApplicationInstanceNodeInstancesRequest method.
-//    req, resp := client.ListApplicationInstanceNodeInstancesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/ListApplicationInstanceNodeInstances
 func (c *Panorama) ListApplicationInstanceNodeInstancesRequest(input *ListApplicationInstanceNodeInstancesInput) (req *request.Request, output *ListApplicationInstanceNodeInstancesOutput) {
@@ -1744,11 +1743,12 @@ func (c *Panorama) ListApplicationInstanceNodeInstancesRequest(input *ListApplic
 // API operation ListApplicationInstanceNodeInstances for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   The requestor does not have permission to access the target action or resource.
 //
-//   * InternalServerException
-//   An internal error occurred.
+//   - AccessDeniedException
+//     The requestor does not have permission to access the target action or resource.
+//
+//   - InternalServerException
+//     An internal error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/ListApplicationInstanceNodeInstances
 func (c *Panorama) ListApplicationInstanceNodeInstances(input *ListApplicationInstanceNodeInstancesInput) (*ListApplicationInstanceNodeInstancesOutput, error) {
@@ -1780,15 +1780,14 @@ func (c *Panorama) ListApplicationInstanceNodeInstancesWithContext(ctx aws.Conte
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListApplicationInstanceNodeInstances operation.
-//    pageNum := 0
-//    err := client.ListApplicationInstanceNodeInstancesPages(params,
-//        func(page *panorama.ListApplicationInstanceNodeInstancesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListApplicationInstanceNodeInstances operation.
+//	pageNum := 0
+//	err := client.ListApplicationInstanceNodeInstancesPages(params,
+//	    func(page *panorama.ListApplicationInstanceNodeInstancesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Panorama) ListApplicationInstanceNodeInstancesPages(input *ListApplicationInstanceNodeInstancesInput, fn func(*ListApplicationInstanceNodeInstancesOutput, bool) bool) error {
 	return c.ListApplicationInstanceNodeInstancesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1840,14 +1839,13 @@ const opListApplicationInstances = "ListApplicationInstances"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListApplicationInstancesRequest method.
+//	req, resp := client.ListApplicationInstancesRequest(params)
 //
-//    // Example sending a request using the ListApplicationInstancesRequest method.
-//    req, resp := client.ListApplicationInstancesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/ListApplicationInstances
 func (c *Panorama) ListApplicationInstancesRequest(input *ListApplicationInstancesInput) (req *request.Request, output *ListApplicationInstancesOutput) {
@@ -1884,11 +1882,12 @@ func (c *Panorama) ListApplicationInstancesRequest(input *ListApplicationInstanc
 // API operation ListApplicationInstances for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   The requestor does not have permission to access the target action or resource.
 //
-//   * InternalServerException
-//   An internal error occurred.
+//   - AccessDeniedException
+//     The requestor does not have permission to access the target action or resource.
+//
+//   - InternalServerException
+//     An internal error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/ListApplicationInstances
 func (c *Panorama) ListApplicationInstances(input *ListApplicationInstancesInput) (*ListApplicationInstancesOutput, error) {
@@ -1920,15 +1919,14 @@ func (c *Panorama) ListApplicationInstancesWithContext(ctx aws.Context, input *L
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListApplicationInstances operation.
-//    pageNum := 0
-//    err := client.ListApplicationInstancesPages(params,
-//        func(page *panorama.ListApplicationInstancesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListApplicationInstances operation.
+//	pageNum := 0
+//	err := client.ListApplicationInstancesPages(params,
+//	    func(page *panorama.ListApplicationInstancesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Panorama) ListApplicationInstancesPages(input *ListApplicationInstancesInput, fn func(*ListApplicationInstancesOutput, bool) bool) error {
 	return c.ListApplicationInstancesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1980,14 +1978,13 @@ const opListDevices = "ListDevices"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDevicesRequest method.
+//	req, resp := client.ListDevicesRequest(params)
 //
-//    // Example sending a request using the ListDevicesRequest method.
-//    req, resp := client.ListDevicesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/ListDevices
 func (c *Panorama) ListDevicesRequest(input *ListDevicesInput) (req *request.Request, output *ListDevicesOutput) {
@@ -2024,17 +2021,18 @@ func (c *Panorama) ListDevicesRequest(input *ListDevicesInput) (req *request.Req
 // API operation ListDevices for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   The target resource is in use.
 //
-//   * ValidationException
-//   The request contains an invalid parameter value.
+//   - ConflictException
+//     The target resource is in use.
 //
-//   * AccessDeniedException
-//   The requestor does not have permission to access the target action or resource.
+//   - ValidationException
+//     The request contains an invalid parameter value.
 //
-//   * InternalServerException
-//   An internal error occurred.
+//   - AccessDeniedException
+//     The requestor does not have permission to access the target action or resource.
+//
+//   - InternalServerException
+//     An internal error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/ListDevices
 func (c *Panorama) ListDevices(input *ListDevicesInput) (*ListDevicesOutput, error) {
@@ -2066,15 +2064,14 @@ func (c *Panorama) ListDevicesWithContext(ctx aws.Context, input *ListDevicesInp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListDevices operation.
-//    pageNum := 0
-//    err := client.ListDevicesPages(params,
-//        func(page *panorama.ListDevicesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListDevices operation.
+//	pageNum := 0
+//	err := client.ListDevicesPages(params,
+//	    func(page *panorama.ListDevicesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Panorama) ListDevicesPages(input *ListDevicesInput, fn func(*ListDevicesOutput, bool) bool) error {
 	return c.ListDevicesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2126,14 +2123,13 @@ const opListDevicesJobs = "ListDevicesJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDevicesJobsRequest method.
+//	req, resp := client.ListDevicesJobsRequest(params)
 //
-//    // Example sending a request using the ListDevicesJobsRequest method.
-//    req, resp := client.ListDevicesJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/ListDevicesJobs
 func (c *Panorama) ListDevicesJobsRequest(input *ListDevicesJobsInput) (req *request.Request, output *ListDevicesJobsOutput) {
@@ -2170,20 +2166,21 @@ func (c *Panorama) ListDevicesJobsRequest(input *ListDevicesJobsInput) (req *req
 // API operation ListDevicesJobs for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   The target resource is in use.
 //
-//   * ValidationException
-//   The request contains an invalid parameter value.
+//   - ConflictException
+//     The target resource is in use.
 //
-//   * AccessDeniedException
-//   The requestor does not have permission to access the target action or resource.
+//   - ValidationException
+//     The request contains an invalid parameter value.
 //
-//   * ResourceNotFoundException
-//   The target resource was not found.
+//   - AccessDeniedException
+//     The requestor does not have permission to access the target action or resource.
 //
-//   * InternalServerException
-//   An internal error occurred.
+//   - ResourceNotFoundException
+//     The target resource was not found.
+//
+//   - InternalServerException
+//     An internal error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/ListDevicesJobs
 func (c *Panorama) ListDevicesJobs(input *ListDevicesJobsInput) (*ListDevicesJobsOutput, error) {
@@ -2215,15 +2212,14 @@ func (c *Panorama) ListDevicesJobsWithContext(ctx aws.Context, input *ListDevice
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListDevicesJobs operation.
-//    pageNum := 0
-//    err := client.ListDevicesJobsPages(params,
-//        func(page *panorama.ListDevicesJobsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListDevicesJobs operation.
+//	pageNum := 0
+//	err := client.ListDevicesJobsPages(params,
+//	    func(page *panorama.ListDevicesJobsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Panorama) ListDevicesJobsPages(input *ListDevicesJobsInput, fn func(*ListDevicesJobsOutput, bool) bool) error {
 	return c.ListDevicesJobsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2275,14 +2271,13 @@ const opListNodeFromTemplateJobs = "ListNodeFromTemplateJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListNodeFromTemplateJobsRequest method.
+//	req, resp := client.ListNodeFromTemplateJobsRequest(params)
 //
-//    // Example sending a request using the ListNodeFromTemplateJobsRequest method.
-//    req, resp := client.ListNodeFromTemplateJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/ListNodeFromTemplateJobs
 func (c *Panorama) ListNodeFromTemplateJobsRequest(input *ListNodeFromTemplateJobsInput) (req *request.Request, output *ListNodeFromTemplateJobsOutput) {
@@ -2319,17 +2314,18 @@ func (c *Panorama) ListNodeFromTemplateJobsRequest(input *ListNodeFromTemplateJo
 // API operation ListNodeFromTemplateJobs for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   The target resource is in use.
 //
-//   * ValidationException
-//   The request contains an invalid parameter value.
+//   - ConflictException
+//     The target resource is in use.
 //
-//   * AccessDeniedException
-//   The requestor does not have permission to access the target action or resource.
+//   - ValidationException
+//     The request contains an invalid parameter value.
 //
-//   * InternalServerException
-//   An internal error occurred.
+//   - AccessDeniedException
+//     The requestor does not have permission to access the target action or resource.
+//
+//   - InternalServerException
+//     An internal error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/ListNodeFromTemplateJobs
 func (c *Panorama) ListNodeFromTemplateJobs(input *ListNodeFromTemplateJobsInput) (*ListNodeFromTemplateJobsOutput, error) {
@@ -2361,15 +2357,14 @@ func (c *Panorama) ListNodeFromTemplateJobsWithContext(ctx aws.Context, input *L
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListNodeFromTemplateJobs operation.
-//    pageNum := 0
-//    err := client.ListNodeFromTemplateJobsPages(params,
-//        func(page *panorama.ListNodeFromTemplateJobsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListNodeFromTemplateJobs operation.
+//	pageNum := 0
+//	err := client.ListNodeFromTemplateJobsPages(params,
+//	    func(page *panorama.ListNodeFromTemplateJobsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Panorama) ListNodeFromTemplateJobsPages(input *ListNodeFromTemplateJobsInput, fn func(*ListNodeFromTemplateJobsOutput, bool) bool) error {
 	return c.ListNodeFromTemplateJobsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2421,14 +2416,13 @@ const opListNodes = "ListNodes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListNodesRequest method.
+//	req, resp := client.ListNodesRequest(params)
 //
-//    // Example sending a request using the ListNodesRequest method.
-//    req, resp := client.ListNodesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/ListNodes
 func (c *Panorama) ListNodesRequest(input *ListNodesInput) (req *request.Request, output *ListNodesOutput) {
@@ -2465,14 +2459,15 @@ func (c *Panorama) ListNodesRequest(input *ListNodesInput) (req *request.Request
 // API operation ListNodes for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   The target resource is in use.
 //
-//   * ValidationException
-//   The request contains an invalid parameter value.
+//   - ConflictException
+//     The target resource is in use.
 //
-//   * InternalServerException
-//   An internal error occurred.
+//   - ValidationException
+//     The request contains an invalid parameter value.
+//
+//   - InternalServerException
+//     An internal error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/ListNodes
 func (c *Panorama) ListNodes(input *ListNodesInput) (*ListNodesOutput, error) {
@@ -2504,15 +2499,14 @@ func (c *Panorama) ListNodesWithContext(ctx aws.Context, input *ListNodesInput, 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListNodes operation.
-//    pageNum := 0
-//    err := client.ListNodesPages(params,
-//        func(page *panorama.ListNodesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListNodes operation.
+//	pageNum := 0
+//	err := client.ListNodesPages(params,
+//	    func(page *panorama.ListNodesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Panorama) ListNodesPages(input *ListNodesInput, fn func(*ListNodesOutput, bool) bool) error {
 	return c.ListNodesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2564,14 +2558,13 @@ const opListPackageImportJobs = "ListPackageImportJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPackageImportJobsRequest method.
+//	req, resp := client.ListPackageImportJobsRequest(params)
 //
-//    // Example sending a request using the ListPackageImportJobsRequest method.
-//    req, resp := client.ListPackageImportJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/ListPackageImportJobs
 func (c *Panorama) ListPackageImportJobsRequest(input *ListPackageImportJobsInput) (req *request.Request, output *ListPackageImportJobsOutput) {
@@ -2608,17 +2601,18 @@ func (c *Panorama) ListPackageImportJobsRequest(input *ListPackageImportJobsInpu
 // API operation ListPackageImportJobs for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   The target resource is in use.
 //
-//   * ValidationException
-//   The request contains an invalid parameter value.
+//   - ConflictException
+//     The target resource is in use.
 //
-//   * AccessDeniedException
-//   The requestor does not have permission to access the target action or resource.
+//   - ValidationException
+//     The request contains an invalid parameter value.
 //
-//   * InternalServerException
-//   An internal error occurred.
+//   - AccessDeniedException
+//     The requestor does not have permission to access the target action or resource.
+//
+//   - InternalServerException
+//     An internal error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/ListPackageImportJobs
 func (c *Panorama) ListPackageImportJobs(input *ListPackageImportJobsInput) (*ListPackageImportJobsOutput, error) {
@@ -2650,15 +2644,14 @@ func (c *Panorama) ListPackageImportJobsWithContext(ctx aws.Context, input *List
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListPackageImportJobs operation.
-//    pageNum := 0
-//    err := client.ListPackageImportJobsPages(params,
-//        func(page *panorama.ListPackageImportJobsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListPackageImportJobs operation.
+//	pageNum := 0
+//	err := client.ListPackageImportJobsPages(params,
+//	    func(page *panorama.ListPackageImportJobsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Panorama) ListPackageImportJobsPages(input *ListPackageImportJobsInput, fn func(*ListPackageImportJobsOutput, bool) bool) error {
 	return c.ListPackageImportJobsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2710,14 +2703,13 @@ const opListPackages = "ListPackages"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPackagesRequest method.
+//	req, resp := client.ListPackagesRequest(params)
 //
-//    // Example sending a request using the ListPackagesRequest method.
-//    req, resp := client.ListPackagesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/ListPackages
 func (c *Panorama) ListPackagesRequest(input *ListPackagesInput) (req *request.Request, output *ListPackagesOutput) {
@@ -2754,20 +2746,21 @@ func (c *Panorama) ListPackagesRequest(input *ListPackagesInput) (req *request.R
 // API operation ListPackages for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   The target resource is in use.
 //
-//   * ValidationException
-//   The request contains an invalid parameter value.
+//   - ConflictException
+//     The target resource is in use.
 //
-//   * AccessDeniedException
-//   The requestor does not have permission to access the target action or resource.
+//   - ValidationException
+//     The request contains an invalid parameter value.
 //
-//   * ResourceNotFoundException
-//   The target resource was not found.
+//   - AccessDeniedException
+//     The requestor does not have permission to access the target action or resource.
 //
-//   * InternalServerException
-//   An internal error occurred.
+//   - ResourceNotFoundException
+//     The target resource was not found.
+//
+//   - InternalServerException
+//     An internal error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/ListPackages
 func (c *Panorama) ListPackages(input *ListPackagesInput) (*ListPackagesOutput, error) {
@@ -2799,15 +2792,14 @@ func (c *Panorama) ListPackagesWithContext(ctx aws.Context, input *ListPackagesI
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListPackages operation.
-//    pageNum := 0
-//    err := client.ListPackagesPages(params,
-//        func(page *panorama.ListPackagesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListPackages operation.
+//	pageNum := 0
+//	err := client.ListPackagesPages(params,
+//	    func(page *panorama.ListPackagesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Panorama) ListPackagesPages(input *ListPackagesInput, fn func(*ListPackagesOutput, bool) bool) error {
 	return c.ListPackagesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2859,14 +2851,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/ListTagsForResource
 func (c *Panorama) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -2897,14 +2888,15 @@ func (c *Panorama) ListTagsForResourceRequest(input *ListTagsForResourceInput) (
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request contains an invalid parameter value.
 //
-//   * ResourceNotFoundException
-//   The target resource was not found.
+//   - ValidationException
+//     The request contains an invalid parameter value.
 //
-//   * InternalServerException
-//   An internal error occurred.
+//   - ResourceNotFoundException
+//     The target resource was not found.
+//
+//   - InternalServerException
+//     An internal error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/ListTagsForResource
 func (c *Panorama) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -2944,14 +2936,13 @@ const opProvisionDevice = "ProvisionDevice"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ProvisionDeviceRequest method.
+//	req, resp := client.ProvisionDeviceRequest(params)
 //
-//    // Example sending a request using the ProvisionDeviceRequest method.
-//    req, resp := client.ProvisionDeviceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/ProvisionDevice
 func (c *Panorama) ProvisionDeviceRequest(input *ProvisionDeviceInput) (req *request.Request, output *ProvisionDeviceOutput) {
@@ -2986,20 +2977,21 @@ func (c *Panorama) ProvisionDeviceRequest(input *ProvisionDeviceInput) (req *req
 // API operation ProvisionDevice for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   The target resource is in use.
 //
-//   * ValidationException
-//   The request contains an invalid parameter value.
+//   - ConflictException
+//     The target resource is in use.
 //
-//   * AccessDeniedException
-//   The requestor does not have permission to access the target action or resource.
+//   - ValidationException
+//     The request contains an invalid parameter value.
 //
-//   * ServiceQuotaExceededException
-//   The request would cause a limit to be exceeded.
+//   - AccessDeniedException
+//     The requestor does not have permission to access the target action or resource.
 //
-//   * InternalServerException
-//   An internal error occurred.
+//   - ServiceQuotaExceededException
+//     The request would cause a limit to be exceeded.
+//
+//   - InternalServerException
+//     An internal error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/ProvisionDevice
 func (c *Panorama) ProvisionDevice(input *ProvisionDeviceInput) (*ProvisionDeviceOutput, error) {
@@ -3039,14 +3031,13 @@ const opRegisterPackageVersion = "RegisterPackageVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RegisterPackageVersionRequest method.
+//	req, resp := client.RegisterPackageVersionRequest(params)
 //
-//    // Example sending a request using the RegisterPackageVersionRequest method.
-//    req, resp := client.RegisterPackageVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/RegisterPackageVersion
 func (c *Panorama) RegisterPackageVersionRequest(input *RegisterPackageVersionInput) (req *request.Request, output *RegisterPackageVersionOutput) {
@@ -3078,17 +3069,18 @@ func (c *Panorama) RegisterPackageVersionRequest(input *RegisterPackageVersionIn
 // API operation RegisterPackageVersion for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   The target resource is in use.
 //
-//   * ValidationException
-//   The request contains an invalid parameter value.
+//   - ConflictException
+//     The target resource is in use.
 //
-//   * AccessDeniedException
-//   The requestor does not have permission to access the target action or resource.
+//   - ValidationException
+//     The request contains an invalid parameter value.
 //
-//   * InternalServerException
-//   An internal error occurred.
+//   - AccessDeniedException
+//     The requestor does not have permission to access the target action or resource.
+//
+//   - InternalServerException
+//     An internal error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/RegisterPackageVersion
 func (c *Panorama) RegisterPackageVersion(input *RegisterPackageVersionInput) (*RegisterPackageVersionOutput, error) {
@@ -3128,14 +3120,13 @@ const opRemoveApplicationInstance = "RemoveApplicationInstance"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RemoveApplicationInstanceRequest method.
+//	req, resp := client.RemoveApplicationInstanceRequest(params)
 //
-//    // Example sending a request using the RemoveApplicationInstanceRequest method.
-//    req, resp := client.RemoveApplicationInstanceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/RemoveApplicationInstance
 func (c *Panorama) RemoveApplicationInstanceRequest(input *RemoveApplicationInstanceInput) (req *request.Request, output *RemoveApplicationInstanceOutput) {
@@ -3167,20 +3158,21 @@ func (c *Panorama) RemoveApplicationInstanceRequest(input *RemoveApplicationInst
 // API operation RemoveApplicationInstance for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   The target resource is in use.
 //
-//   * ValidationException
-//   The request contains an invalid parameter value.
+//   - ConflictException
+//     The target resource is in use.
 //
-//   * AccessDeniedException
-//   The requestor does not have permission to access the target action or resource.
+//   - ValidationException
+//     The request contains an invalid parameter value.
 //
-//   * ResourceNotFoundException
-//   The target resource was not found.
+//   - AccessDeniedException
+//     The requestor does not have permission to access the target action or resource.
 //
-//   * InternalServerException
-//   An internal error occurred.
+//   - ResourceNotFoundException
+//     The target resource was not found.
+//
+//   - InternalServerException
+//     An internal error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/RemoveApplicationInstance
 func (c *Panorama) RemoveApplicationInstance(input *RemoveApplicationInstanceInput) (*RemoveApplicationInstanceOutput, error) {
@@ -3204,6 +3196,94 @@ func (c *Panorama) RemoveApplicationInstanceWithContext(ctx aws.Context, input *
 	return out, req.Send()
 }
 
+const opSignalApplicationInstanceNodeInstances = "SignalApplicationInstanceNodeInstances"
+
+// SignalApplicationInstanceNodeInstancesRequest generates a "aws/request.Request" representing the
+// client's request for the SignalApplicationInstanceNodeInstances operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See SignalApplicationInstanceNodeInstances for more information on using the SignalApplicationInstanceNodeInstances
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the SignalApplicationInstanceNodeInstancesRequest method.
+//	req, resp := client.SignalApplicationInstanceNodeInstancesRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/SignalApplicationInstanceNodeInstances
+func (c *Panorama) SignalApplicationInstanceNodeInstancesRequest(input *SignalApplicationInstanceNodeInstancesInput) (req *request.Request, output *SignalApplicationInstanceNodeInstancesOutput) {
+	op := &request.Operation{
+		Name:       opSignalApplicationInstanceNodeInstances,
+		HTTPMethod: "PUT",
+		HTTPPath:   "/application-instances/{ApplicationInstanceId}/node-signals",
+	}
+
+	if input == nil {
+		input = &SignalApplicationInstanceNodeInstancesInput{}
+	}
+
+	output = &SignalApplicationInstanceNodeInstancesOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// SignalApplicationInstanceNodeInstances API operation for AWS Panorama.
+//
+// Signal camera nodes to stop or resume.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Panorama's
+// API operation SignalApplicationInstanceNodeInstances for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ValidationException
+//     The request contains an invalid parameter value.
+//
+//   - AccessDeniedException
+//     The requestor does not have permission to access the target action or resource.
+//
+//   - ServiceQuotaExceededException
+//     The request would cause a limit to be exceeded.
+//
+//   - InternalServerException
+//     An internal error occurred.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/SignalApplicationInstanceNodeInstances
+func (c *Panorama) SignalApplicationInstanceNodeInstances(input *SignalApplicationInstanceNodeInstancesInput) (*SignalApplicationInstanceNodeInstancesOutput, error) {
+	req, out := c.SignalApplicationInstanceNodeInstancesRequest(input)
+	return out, req.Send()
+}
+
+// SignalApplicationInstanceNodeInstancesWithContext is the same as SignalApplicationInstanceNodeInstances with the addition of
+// the ability to pass a context and additional request options.
+//
+// See SignalApplicationInstanceNodeInstances for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Panorama) SignalApplicationInstanceNodeInstancesWithContext(ctx aws.Context, input *SignalApplicationInstanceNodeInstancesInput, opts ...request.Option) (*SignalApplicationInstanceNodeInstancesOutput, error) {
+	req, out := c.SignalApplicationInstanceNodeInstancesRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opTagResource = "TagResource"
 
 // TagResourceRequest generates a "aws/request.Request" representing the
@@ -3220,14 +3300,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/TagResource
 func (c *Panorama) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -3259,14 +3338,15 @@ func (c *Panorama) TagResourceRequest(input *TagResourceInput) (req *request.Req
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request contains an invalid parameter value.
 //
-//   * ResourceNotFoundException
-//   The target resource was not found.
+//   - ValidationException
+//     The request contains an invalid parameter value.
 //
-//   * InternalServerException
-//   An internal error occurred.
+//   - ResourceNotFoundException
+//     The target resource was not found.
+//
+//   - InternalServerException
+//     An internal error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/TagResource
 func (c *Panorama) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -3306,14 +3386,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/UntagResource
 func (c *Panorama) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -3345,14 +3424,15 @@ func (c *Panorama) UntagResourceRequest(input *UntagResourceInput) (req *request
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The request contains an invalid parameter value.
 //
-//   * ResourceNotFoundException
-//   The target resource was not found.
+//   - ValidationException
+//     The request contains an invalid parameter value.
 //
-//   * InternalServerException
-//   An internal error occurred.
+//   - ResourceNotFoundException
+//     The target resource was not found.
+//
+//   - InternalServerException
+//     An internal error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/UntagResource
 func (c *Panorama) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -3392,14 +3472,13 @@ const opUpdateDeviceMetadata = "UpdateDeviceMetadata"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateDeviceMetadataRequest method.
+//	req, resp := client.UpdateDeviceMetadataRequest(params)
 //
-//    // Example sending a request using the UpdateDeviceMetadataRequest method.
-//    req, resp := client.UpdateDeviceMetadataRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/UpdateDeviceMetadata
 func (c *Panorama) UpdateDeviceMetadataRequest(input *UpdateDeviceMetadataInput) (req *request.Request, output *UpdateDeviceMetadataOutput) {
@@ -3430,20 +3509,21 @@ func (c *Panorama) UpdateDeviceMetadataRequest(input *UpdateDeviceMetadataInput)
 // API operation UpdateDeviceMetadata for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   The target resource is in use.
 //
-//   * ValidationException
-//   The request contains an invalid parameter value.
+//   - ConflictException
+//     The target resource is in use.
 //
-//   * AccessDeniedException
-//   The requestor does not have permission to access the target action or resource.
+//   - ValidationException
+//     The request contains an invalid parameter value.
 //
-//   * ResourceNotFoundException
-//   The target resource was not found.
+//   - AccessDeniedException
+//     The requestor does not have permission to access the target action or resource.
 //
-//   * InternalServerException
-//   An internal error occurred.
+//   - ResourceNotFoundException
+//     The target resource was not found.
+//
+//   - InternalServerException
+//     An internal error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/panorama-2019-07-24/UpdateDeviceMetadata
 func (c *Panorama) UpdateDeviceMetadata(input *UpdateDeviceMetadataInput) (*UpdateDeviceMetadataOutput, error) {
@@ -3591,6 +3671,9 @@ type ApplicationInstance struct {
 	// The application instance's name.
 	Name *string `min:"1" type:"string"`
 
+	// The application's state.
+	RuntimeContextStates []*ReportedRuntimeContextState `type:"list"`
+
 	// The application instance's status.
 	Status *string `type:"string" enum:"ApplicationInstanceStatus"`
 
@@ -3664,6 +3747,12 @@ func (s *ApplicationInstance) SetHealthStatus(v string) *ApplicationInstance {
 // SetName sets the Name field's value.
 func (s *ApplicationInstance) SetName(v string) *ApplicationInstance {
 	s.Name = &v
+	return s
+}
+
+// SetRuntimeContextStates sets the RuntimeContextStates field's value.
+func (s *ApplicationInstance) SetRuntimeContextStates(v []*ReportedRuntimeContextState) *ApplicationInstance {
+	s.RuntimeContextStates = v
 	return s
 }
 
@@ -3977,15 +4066,13 @@ func (s *CreateApplicationInstanceOutput) SetApplicationInstanceId(v string) *Cr
 type CreateJobForDevicesInput struct {
 	_ struct{} `type:"structure"`
 
-	// IDs of target devices.
+	// ID of target device.
 	//
 	// DeviceIds is a required field
 	DeviceIds []*string `min:"1" type:"list" required:"true"`
 
-	// Configuration settings for the job.
-	//
-	// DeviceJobConfig is a required field
-	DeviceJobConfig *DeviceJobConfig `type:"structure" required:"true"`
+	// Configuration settings for a software update job.
+	DeviceJobConfig *DeviceJobConfig `type:"structure"`
 
 	// The type of job to run.
 	//
@@ -4019,9 +4106,6 @@ func (s *CreateJobForDevicesInput) Validate() error {
 	}
 	if s.DeviceIds != nil && len(s.DeviceIds) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("DeviceIds", 1))
-	}
-	if s.DeviceJobConfig == nil {
-		invalidParams.Add(request.NewErrParamRequired("DeviceJobConfig"))
 	}
 	if s.JobType == nil {
 		invalidParams.Add(request.NewErrParamRequired("JobType"))
@@ -5038,6 +5122,9 @@ type DescribeApplicationInstanceOutput struct {
 	// The application instance's name.
 	Name *string `min:"1" type:"string"`
 
+	// The application instance's state.
+	RuntimeContextStates []*ReportedRuntimeContextState `type:"list"`
+
 	// The application instance's runtime role ARN.
 	RuntimeRoleArn *string `min:"1" type:"string"`
 
@@ -5126,6 +5213,12 @@ func (s *DescribeApplicationInstanceOutput) SetLastUpdatedTime(v time.Time) *Des
 // SetName sets the Name field's value.
 func (s *DescribeApplicationInstanceOutput) SetName(v string) *DescribeApplicationInstanceOutput {
 	s.Name = &v
+	return s
+}
+
+// SetRuntimeContextStates sets the RuntimeContextStates field's value.
+func (s *DescribeApplicationInstanceOutput) SetRuntimeContextStates(v []*ReportedRuntimeContextState) *DescribeApplicationInstanceOutput {
+	s.RuntimeContextStates = v
 	return s
 }
 
@@ -5275,6 +5368,9 @@ type DescribeDeviceJobOutput struct {
 	// The job's ID.
 	JobId *string `min:"1" type:"string"`
 
+	// The job's type.
+	JobType *string `type:"string" enum:"JobType"`
+
 	// The job's status.
 	Status *string `type:"string" enum:"UpdateProgress"`
 }
@@ -5339,6 +5435,12 @@ func (s *DescribeDeviceJobOutput) SetJobId(v string) *DescribeDeviceJobOutput {
 	return s
 }
 
+// SetJobType sets the JobType field's value.
+func (s *DescribeDeviceJobOutput) SetJobType(v string) *DescribeDeviceJobOutput {
+	s.JobType = &v
+	return s
+}
+
 // SetStatus sets the Status field's value.
 func (s *DescribeDeviceJobOutput) SetStatus(v string) *DescribeDeviceJobOutput {
 	s.Status = &v
@@ -5369,6 +5471,10 @@ type DescribeDeviceOutput struct {
 	// The device's description.
 	Description *string `type:"string"`
 
+	// A device's aggregated status. Including the device's connection status, provisioning
+	// status, and lease status.
+	DeviceAggregatedStatus *string `type:"string" enum:"DeviceAggregatedStatus"`
+
 	// The device's connection status.
 	DeviceConnectionStatus *string `type:"string" enum:"DeviceConnectionStatus"`
 
@@ -5377,6 +5483,9 @@ type DescribeDeviceOutput struct {
 
 	// The most recent beta software release.
 	LatestAlternateSoftware *string `min:"1" type:"string"`
+
+	// A device's latest job. Includes the target image version, and the job status.
+	LatestDeviceJob *LatestDeviceJob `type:"structure"`
 
 	// The latest software version available for the device.
 	LatestSoftware *string `min:"1" type:"string"`
@@ -5463,6 +5572,12 @@ func (s *DescribeDeviceOutput) SetDescription(v string) *DescribeDeviceOutput {
 	return s
 }
 
+// SetDeviceAggregatedStatus sets the DeviceAggregatedStatus field's value.
+func (s *DescribeDeviceOutput) SetDeviceAggregatedStatus(v string) *DescribeDeviceOutput {
+	s.DeviceAggregatedStatus = &v
+	return s
+}
+
 // SetDeviceConnectionStatus sets the DeviceConnectionStatus field's value.
 func (s *DescribeDeviceOutput) SetDeviceConnectionStatus(v string) *DescribeDeviceOutput {
 	s.DeviceConnectionStatus = &v
@@ -5478,6 +5593,12 @@ func (s *DescribeDeviceOutput) SetDeviceId(v string) *DescribeDeviceOutput {
 // SetLatestAlternateSoftware sets the LatestAlternateSoftware field's value.
 func (s *DescribeDeviceOutput) SetLatestAlternateSoftware(v string) *DescribeDeviceOutput {
 	s.LatestAlternateSoftware = &v
+	return s
+}
+
+// SetLatestDeviceJob sets the LatestDeviceJob field's value.
+func (s *DescribeDeviceOutput) SetLatestDeviceJob(v *LatestDeviceJob) *DescribeDeviceOutput {
+	s.LatestDeviceJob = v
 	return s
 }
 
@@ -6528,11 +6649,25 @@ type Device struct {
 	// When the device was created.
 	CreatedTime *time.Time `type:"timestamp"`
 
+	// A device's current software.
+	CurrentSoftware *string `min:"1" type:"string"`
+
+	// A description for the device.
+	Description *string `type:"string"`
+
+	// A device's aggregated status. Including the device's connection status, provisioning
+	// status, and lease status.
+	DeviceAggregatedStatus *string `type:"string" enum:"DeviceAggregatedStatus"`
+
 	// The device's ID.
 	DeviceId *string `min:"1" type:"string"`
 
 	// When the device was updated.
 	LastUpdatedTime *time.Time `type:"timestamp"`
+
+	// A device's latest job. Includes the target image version, and the update
+	// job status.
+	LatestDeviceJob *LatestDeviceJob `type:"structure"`
 
 	// The device's lease expiration time.
 	LeaseExpirationTime *time.Time `type:"timestamp"`
@@ -6542,6 +6677,12 @@ type Device struct {
 
 	// The device's provisioning status.
 	ProvisioningStatus *string `type:"string" enum:"DeviceStatus"`
+
+	// The device's tags.
+	Tags map[string]*string `type:"map"`
+
+	// The device's type.
+	Type *string `type:"string" enum:"DeviceType"`
 }
 
 // String returns the string representation.
@@ -6574,6 +6715,24 @@ func (s *Device) SetCreatedTime(v time.Time) *Device {
 	return s
 }
 
+// SetCurrentSoftware sets the CurrentSoftware field's value.
+func (s *Device) SetCurrentSoftware(v string) *Device {
+	s.CurrentSoftware = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *Device) SetDescription(v string) *Device {
+	s.Description = &v
+	return s
+}
+
+// SetDeviceAggregatedStatus sets the DeviceAggregatedStatus field's value.
+func (s *Device) SetDeviceAggregatedStatus(v string) *Device {
+	s.DeviceAggregatedStatus = &v
+	return s
+}
+
 // SetDeviceId sets the DeviceId field's value.
 func (s *Device) SetDeviceId(v string) *Device {
 	s.DeviceId = &v
@@ -6583,6 +6742,12 @@ func (s *Device) SetDeviceId(v string) *Device {
 // SetLastUpdatedTime sets the LastUpdatedTime field's value.
 func (s *Device) SetLastUpdatedTime(v time.Time) *Device {
 	s.LastUpdatedTime = &v
+	return s
+}
+
+// SetLatestDeviceJob sets the LatestDeviceJob field's value.
+func (s *Device) SetLatestDeviceJob(v *LatestDeviceJob) *Device {
+	s.LatestDeviceJob = v
 	return s
 }
 
@@ -6604,6 +6769,18 @@ func (s *Device) SetProvisioningStatus(v string) *Device {
 	return s
 }
 
+// SetTags sets the Tags field's value.
+func (s *Device) SetTags(v map[string]*string) *Device {
+	s.Tags = v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *Device) SetType(v string) *Device {
+	s.Type = &v
+	return s
+}
+
 // A job that runs on a device.
 type DeviceJob struct {
 	_ struct{} `type:"structure"`
@@ -6619,6 +6796,9 @@ type DeviceJob struct {
 
 	// The job's ID.
 	JobId *string `min:"1" type:"string"`
+
+	// The job's type.
+	JobType *string `type:"string" enum:"JobType"`
 }
 
 // String returns the string representation.
@@ -6660,6 +6840,12 @@ func (s *DeviceJob) SetDeviceName(v string) *DeviceJob {
 // SetJobId sets the JobId field's value.
 func (s *DeviceJob) SetJobId(v string) *DeviceJob {
 	s.JobId = &v
+	return s
+}
+
+// SetJobType sets the JobType field's value.
+func (s *DeviceJob) SetJobType(v string) *DeviceJob {
+	s.JobType = &v
 	return s
 }
 
@@ -6987,6 +7173,56 @@ func (s *JobResourceTags) SetResourceType(v string) *JobResourceTags {
 // SetTags sets the Tags field's value.
 func (s *JobResourceTags) SetTags(v map[string]*string) *JobResourceTags {
 	s.Tags = v
+	return s
+}
+
+// Returns information about the latest device job.
+type LatestDeviceJob struct {
+	_ struct{} `type:"structure"`
+
+	// The target version of the device software.
+	ImageVersion *string `min:"1" type:"string"`
+
+	// The job's type.
+	JobType *string `type:"string" enum:"JobType"`
+
+	// Status of the latest device job.
+	Status *string `type:"string" enum:"UpdateProgress"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LatestDeviceJob) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LatestDeviceJob) GoString() string {
+	return s.String()
+}
+
+// SetImageVersion sets the ImageVersion field's value.
+func (s *LatestDeviceJob) SetImageVersion(v string) *LatestDeviceJob {
+	s.ImageVersion = &v
+	return s
+}
+
+// SetJobType sets the JobType field's value.
+func (s *LatestDeviceJob) SetJobType(v string) *LatestDeviceJob {
+	s.JobType = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *LatestDeviceJob) SetStatus(v string) *LatestDeviceJob {
+	s.Status = &v
 	return s
 }
 
@@ -7331,12 +7567,25 @@ func (s *ListApplicationInstancesOutput) SetNextToken(v string) *ListApplication
 type ListDevicesInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
+	// Filter based on a device's status.
+	DeviceAggregatedStatusFilter *string `location:"querystring" locationName:"DeviceAggregatedStatusFilter" type:"string" enum:"DeviceAggregatedStatus"`
+
 	// The maximum number of devices to return in one page of results.
 	MaxResults *int64 `location:"querystring" locationName:"MaxResults" type:"integer"`
+
+	// Filter based on device's name. Prefixes supported.
+	NameFilter *string `location:"querystring" locationName:"NameFilter" type:"string"`
 
 	// Specify the pagination token from a previous request to retrieve the next
 	// page of results.
 	NextToken *string `location:"querystring" locationName:"NextToken" min:"1" type:"string"`
+
+	// The target column to be sorted on. Default column sort is CREATED_TIME.
+	SortBy *string `location:"querystring" locationName:"SortBy" type:"string" enum:"ListDevicesSortBy"`
+
+	// The sorting order for the returned list. SortOrder is DESCENDING by default
+	// based on CREATED_TIME. Otherwise, SortOrder is ASCENDING.
+	SortOrder *string `location:"querystring" locationName:"SortOrder" type:"string" enum:"SortOrder"`
 }
 
 // String returns the string representation.
@@ -7370,15 +7619,39 @@ func (s *ListDevicesInput) Validate() error {
 	return nil
 }
 
+// SetDeviceAggregatedStatusFilter sets the DeviceAggregatedStatusFilter field's value.
+func (s *ListDevicesInput) SetDeviceAggregatedStatusFilter(v string) *ListDevicesInput {
+	s.DeviceAggregatedStatusFilter = &v
+	return s
+}
+
 // SetMaxResults sets the MaxResults field's value.
 func (s *ListDevicesInput) SetMaxResults(v int64) *ListDevicesInput {
 	s.MaxResults = &v
 	return s
 }
 
+// SetNameFilter sets the NameFilter field's value.
+func (s *ListDevicesInput) SetNameFilter(v string) *ListDevicesInput {
+	s.NameFilter = &v
+	return s
+}
+
 // SetNextToken sets the NextToken field's value.
 func (s *ListDevicesInput) SetNextToken(v string) *ListDevicesInput {
 	s.NextToken = &v
+	return s
+}
+
+// SetSortBy sets the SortBy field's value.
+func (s *ListDevicesInput) SetSortBy(v string) *ListDevicesInput {
+	s.SortBy = &v
+	return s
+}
+
+// SetSortOrder sets the SortOrder field's value.
+func (s *ListDevicesInput) SetSortOrder(v string) *ListDevicesInput {
+	s.SortOrder = &v
 	return s
 }
 
@@ -8731,6 +9004,70 @@ func (s *NodeOutputPort) SetType(v string) *NodeOutputPort {
 	return s
 }
 
+// A signal to a camera node to start or stop processing video.
+type NodeSignal struct {
+	_ struct{} `type:"structure"`
+
+	// The camera node's name, from the application manifest.
+	//
+	// NodeInstanceId is a required field
+	NodeInstanceId *string `min:"1" type:"string" required:"true"`
+
+	// The signal value.
+	//
+	// Signal is a required field
+	Signal *string `type:"string" required:"true" enum:"NodeSignalValue"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s NodeSignal) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s NodeSignal) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *NodeSignal) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "NodeSignal"}
+	if s.NodeInstanceId == nil {
+		invalidParams.Add(request.NewErrParamRequired("NodeInstanceId"))
+	}
+	if s.NodeInstanceId != nil && len(*s.NodeInstanceId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NodeInstanceId", 1))
+	}
+	if s.Signal == nil {
+		invalidParams.Add(request.NewErrParamRequired("Signal"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetNodeInstanceId sets the NodeInstanceId field's value.
+func (s *NodeSignal) SetNodeInstanceId(v string) *NodeSignal {
+	s.NodeInstanceId = &v
+	return s
+}
+
+// SetSignal sets the Signal field's value.
+func (s *NodeSignal) SetSignal(v string) *NodeSignal {
+	s.Signal = &v
+	return s
+}
+
 // Network time protocol (NTP) server settings. Use this option to connect to
 // local NTP servers instead of pool.ntp.org.
 type NtpPayload struct {
@@ -8833,6 +9170,9 @@ func (s *NtpStatus) SetNtpServerName(v string) *NtpStatus {
 type OTAJobConfig struct {
 	_ struct{} `type:"structure"`
 
+	// Whether to apply the update if it is a major version change.
+	AllowMajorVersionUpdate *bool `type:"boolean"`
+
 	// The target version of the device software.
 	//
 	// ImageVersion is a required field
@@ -8871,6 +9211,12 @@ func (s *OTAJobConfig) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetAllowMajorVersionUpdate sets the AllowMajorVersionUpdate field's value.
+func (s *OTAJobConfig) SetAllowMajorVersionUpdate(v bool) *OTAJobConfig {
+	s.AllowMajorVersionUpdate = &v
+	return s
 }
 
 // SetImageVersion sets the ImageVersion field's value.
@@ -9764,6 +10110,73 @@ func (s RemoveApplicationInstanceOutput) GoString() string {
 	return s.String()
 }
 
+// An application instance's state.
+type ReportedRuntimeContextState struct {
+	_ struct{} `type:"structure"`
+
+	// The application's desired state.
+	//
+	// DesiredState is a required field
+	DesiredState *string `type:"string" required:"true" enum:"DesiredState"`
+
+	// The application's reported status.
+	//
+	// DeviceReportedStatus is a required field
+	DeviceReportedStatus *string `type:"string" required:"true" enum:"DeviceReportedStatus"`
+
+	// When the device reported the application's state.
+	//
+	// DeviceReportedTime is a required field
+	DeviceReportedTime *time.Time `type:"timestamp" required:"true"`
+
+	// The device's name.
+	//
+	// RuntimeContextName is a required field
+	RuntimeContextName *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReportedRuntimeContextState) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReportedRuntimeContextState) GoString() string {
+	return s.String()
+}
+
+// SetDesiredState sets the DesiredState field's value.
+func (s *ReportedRuntimeContextState) SetDesiredState(v string) *ReportedRuntimeContextState {
+	s.DesiredState = &v
+	return s
+}
+
+// SetDeviceReportedStatus sets the DeviceReportedStatus field's value.
+func (s *ReportedRuntimeContextState) SetDeviceReportedStatus(v string) *ReportedRuntimeContextState {
+	s.DeviceReportedStatus = &v
+	return s
+}
+
+// SetDeviceReportedTime sets the DeviceReportedTime field's value.
+func (s *ReportedRuntimeContextState) SetDeviceReportedTime(v time.Time) *ReportedRuntimeContextState {
+	s.DeviceReportedTime = &v
+	return s
+}
+
+// SetRuntimeContextName sets the RuntimeContextName field's value.
+func (s *ReportedRuntimeContextState) SetRuntimeContextName(v string) *ReportedRuntimeContextState {
+	s.RuntimeContextName = &v
+	return s
+}
+
 // The target resource was not found.
 type ResourceNotFoundException struct {
 	_            struct{}                  `type:"structure"`
@@ -9995,6 +10408,115 @@ func (s *ServiceQuotaExceededException) StatusCode() int {
 // RequestID returns the service's response RequestID for request.
 func (s *ServiceQuotaExceededException) RequestID() string {
 	return s.RespMetadata.RequestID
+}
+
+type SignalApplicationInstanceNodeInstancesInput struct {
+	_ struct{} `type:"structure"`
+
+	// An application instance ID.
+	//
+	// ApplicationInstanceId is a required field
+	ApplicationInstanceId *string `location:"uri" locationName:"ApplicationInstanceId" min:"1" type:"string" required:"true"`
+
+	// A list of signals.
+	//
+	// NodeSignals is a required field
+	NodeSignals []*NodeSignal `min:"1" type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SignalApplicationInstanceNodeInstancesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SignalApplicationInstanceNodeInstancesInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *SignalApplicationInstanceNodeInstancesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "SignalApplicationInstanceNodeInstancesInput"}
+	if s.ApplicationInstanceId == nil {
+		invalidParams.Add(request.NewErrParamRequired("ApplicationInstanceId"))
+	}
+	if s.ApplicationInstanceId != nil && len(*s.ApplicationInstanceId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ApplicationInstanceId", 1))
+	}
+	if s.NodeSignals == nil {
+		invalidParams.Add(request.NewErrParamRequired("NodeSignals"))
+	}
+	if s.NodeSignals != nil && len(s.NodeSignals) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NodeSignals", 1))
+	}
+	if s.NodeSignals != nil {
+		for i, v := range s.NodeSignals {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "NodeSignals", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetApplicationInstanceId sets the ApplicationInstanceId field's value.
+func (s *SignalApplicationInstanceNodeInstancesInput) SetApplicationInstanceId(v string) *SignalApplicationInstanceNodeInstancesInput {
+	s.ApplicationInstanceId = &v
+	return s
+}
+
+// SetNodeSignals sets the NodeSignals field's value.
+func (s *SignalApplicationInstanceNodeInstancesInput) SetNodeSignals(v []*NodeSignal) *SignalApplicationInstanceNodeInstancesInput {
+	s.NodeSignals = v
+	return s
+}
+
+type SignalApplicationInstanceNodeInstancesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// An application instance ID.
+	//
+	// ApplicationInstanceId is a required field
+	ApplicationInstanceId *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SignalApplicationInstanceNodeInstancesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SignalApplicationInstanceNodeInstancesOutput) GoString() string {
+	return s.String()
+}
+
+// SetApplicationInstanceId sets the ApplicationInstanceId field's value.
+func (s *SignalApplicationInstanceNodeInstancesOutput) SetApplicationInstanceId(v string) *SignalApplicationInstanceNodeInstancesOutput {
+	s.ApplicationInstanceId = &v
+	return s
 }
 
 // A static IP configuration.
@@ -10690,6 +11212,74 @@ func ConnectionType_Values() []string {
 }
 
 const (
+	// DesiredStateRunning is a DesiredState enum value
+	DesiredStateRunning = "RUNNING"
+
+	// DesiredStateStopped is a DesiredState enum value
+	DesiredStateStopped = "STOPPED"
+
+	// DesiredStateRemoved is a DesiredState enum value
+	DesiredStateRemoved = "REMOVED"
+)
+
+// DesiredState_Values returns all elements of the DesiredState enum
+func DesiredState_Values() []string {
+	return []string{
+		DesiredStateRunning,
+		DesiredStateStopped,
+		DesiredStateRemoved,
+	}
+}
+
+const (
+	// DeviceAggregatedStatusError is a DeviceAggregatedStatus enum value
+	DeviceAggregatedStatusError = "ERROR"
+
+	// DeviceAggregatedStatusAwaitingProvisioning is a DeviceAggregatedStatus enum value
+	DeviceAggregatedStatusAwaitingProvisioning = "AWAITING_PROVISIONING"
+
+	// DeviceAggregatedStatusPending is a DeviceAggregatedStatus enum value
+	DeviceAggregatedStatusPending = "PENDING"
+
+	// DeviceAggregatedStatusFailed is a DeviceAggregatedStatus enum value
+	DeviceAggregatedStatusFailed = "FAILED"
+
+	// DeviceAggregatedStatusDeleting is a DeviceAggregatedStatus enum value
+	DeviceAggregatedStatusDeleting = "DELETING"
+
+	// DeviceAggregatedStatusOnline is a DeviceAggregatedStatus enum value
+	DeviceAggregatedStatusOnline = "ONLINE"
+
+	// DeviceAggregatedStatusOffline is a DeviceAggregatedStatus enum value
+	DeviceAggregatedStatusOffline = "OFFLINE"
+
+	// DeviceAggregatedStatusLeaseExpired is a DeviceAggregatedStatus enum value
+	DeviceAggregatedStatusLeaseExpired = "LEASE_EXPIRED"
+
+	// DeviceAggregatedStatusUpdateNeeded is a DeviceAggregatedStatus enum value
+	DeviceAggregatedStatusUpdateNeeded = "UPDATE_NEEDED"
+
+	// DeviceAggregatedStatusRebooting is a DeviceAggregatedStatus enum value
+	DeviceAggregatedStatusRebooting = "REBOOTING"
+)
+
+// DeviceAggregatedStatus_Values returns all elements of the DeviceAggregatedStatus enum
+func DeviceAggregatedStatus_Values() []string {
+	return []string{
+		DeviceAggregatedStatusError,
+		DeviceAggregatedStatusAwaitingProvisioning,
+		DeviceAggregatedStatusPending,
+		DeviceAggregatedStatusFailed,
+		DeviceAggregatedStatusDeleting,
+		DeviceAggregatedStatusOnline,
+		DeviceAggregatedStatusOffline,
+		DeviceAggregatedStatusLeaseExpired,
+		DeviceAggregatedStatusUpdateNeeded,
+		DeviceAggregatedStatusRebooting,
+	}
+}
+
+const (
 	// DeviceBrandAwsPanorama is a DeviceBrand enum value
 	DeviceBrandAwsPanorama = "AWS_PANORAMA"
 
@@ -10730,6 +11320,58 @@ func DeviceConnectionStatus_Values() []string {
 		DeviceConnectionStatusAwaitingCredentials,
 		DeviceConnectionStatusNotAvailable,
 		DeviceConnectionStatusError,
+	}
+}
+
+const (
+	// DeviceReportedStatusStopping is a DeviceReportedStatus enum value
+	DeviceReportedStatusStopping = "STOPPING"
+
+	// DeviceReportedStatusStopped is a DeviceReportedStatus enum value
+	DeviceReportedStatusStopped = "STOPPED"
+
+	// DeviceReportedStatusStopError is a DeviceReportedStatus enum value
+	DeviceReportedStatusStopError = "STOP_ERROR"
+
+	// DeviceReportedStatusRemovalFailed is a DeviceReportedStatus enum value
+	DeviceReportedStatusRemovalFailed = "REMOVAL_FAILED"
+
+	// DeviceReportedStatusRemovalInProgress is a DeviceReportedStatus enum value
+	DeviceReportedStatusRemovalInProgress = "REMOVAL_IN_PROGRESS"
+
+	// DeviceReportedStatusStarting is a DeviceReportedStatus enum value
+	DeviceReportedStatusStarting = "STARTING"
+
+	// DeviceReportedStatusRunning is a DeviceReportedStatus enum value
+	DeviceReportedStatusRunning = "RUNNING"
+
+	// DeviceReportedStatusInstallError is a DeviceReportedStatus enum value
+	DeviceReportedStatusInstallError = "INSTALL_ERROR"
+
+	// DeviceReportedStatusLaunched is a DeviceReportedStatus enum value
+	DeviceReportedStatusLaunched = "LAUNCHED"
+
+	// DeviceReportedStatusLaunchError is a DeviceReportedStatus enum value
+	DeviceReportedStatusLaunchError = "LAUNCH_ERROR"
+
+	// DeviceReportedStatusInstallInProgress is a DeviceReportedStatus enum value
+	DeviceReportedStatusInstallInProgress = "INSTALL_IN_PROGRESS"
+)
+
+// DeviceReportedStatus_Values returns all elements of the DeviceReportedStatus enum
+func DeviceReportedStatus_Values() []string {
+	return []string{
+		DeviceReportedStatusStopping,
+		DeviceReportedStatusStopped,
+		DeviceReportedStatusStopError,
+		DeviceReportedStatusRemovalFailed,
+		DeviceReportedStatusRemovalInProgress,
+		DeviceReportedStatusStarting,
+		DeviceReportedStatusRunning,
+		DeviceReportedStatusInstallError,
+		DeviceReportedStatusLaunched,
+		DeviceReportedStatusLaunchError,
+		DeviceReportedStatusInstallInProgress,
 	}
 }
 
@@ -10796,12 +11438,40 @@ func JobResourceType_Values() []string {
 const (
 	// JobTypeOta is a JobType enum value
 	JobTypeOta = "OTA"
+
+	// JobTypeReboot is a JobType enum value
+	JobTypeReboot = "REBOOT"
 )
 
 // JobType_Values returns all elements of the JobType enum
 func JobType_Values() []string {
 	return []string{
 		JobTypeOta,
+		JobTypeReboot,
+	}
+}
+
+const (
+	// ListDevicesSortByDeviceId is a ListDevicesSortBy enum value
+	ListDevicesSortByDeviceId = "DEVICE_ID"
+
+	// ListDevicesSortByCreatedTime is a ListDevicesSortBy enum value
+	ListDevicesSortByCreatedTime = "CREATED_TIME"
+
+	// ListDevicesSortByName is a ListDevicesSortBy enum value
+	ListDevicesSortByName = "NAME"
+
+	// ListDevicesSortByDeviceAggregatedStatus is a ListDevicesSortBy enum value
+	ListDevicesSortByDeviceAggregatedStatus = "DEVICE_AGGREGATED_STATUS"
+)
+
+// ListDevicesSortBy_Values returns all elements of the ListDevicesSortBy enum
+func ListDevicesSortBy_Values() []string {
+	return []string{
+		ListDevicesSortByDeviceId,
+		ListDevicesSortByCreatedTime,
+		ListDevicesSortByName,
+		ListDevicesSortByDeviceAggregatedStatus,
 	}
 }
 
@@ -10878,6 +11548,9 @@ const (
 
 	// NodeInstanceStatusNotAvailable is a NodeInstanceStatus enum value
 	NodeInstanceStatusNotAvailable = "NOT_AVAILABLE"
+
+	// NodeInstanceStatusPaused is a NodeInstanceStatus enum value
+	NodeInstanceStatusPaused = "PAUSED"
 )
 
 // NodeInstanceStatus_Values returns all elements of the NodeInstanceStatus enum
@@ -10886,6 +11559,23 @@ func NodeInstanceStatus_Values() []string {
 		NodeInstanceStatusRunning,
 		NodeInstanceStatusError,
 		NodeInstanceStatusNotAvailable,
+		NodeInstanceStatusPaused,
+	}
+}
+
+const (
+	// NodeSignalValuePause is a NodeSignalValue enum value
+	NodeSignalValuePause = "PAUSE"
+
+	// NodeSignalValueResume is a NodeSignalValue enum value
+	NodeSignalValueResume = "RESUME"
+)
+
+// NodeSignalValue_Values returns all elements of the NodeSignalValue enum
+func NodeSignalValue_Values() []string {
+	return []string{
+		NodeSignalValuePause,
+		NodeSignalValueResume,
 	}
 }
 
@@ -10974,6 +11664,22 @@ func PortType_Values() []string {
 		PortTypeInt32,
 		PortTypeFloat32,
 		PortTypeMedia,
+	}
+}
+
+const (
+	// SortOrderAscending is a SortOrder enum value
+	SortOrderAscending = "ASCENDING"
+
+	// SortOrderDescending is a SortOrder enum value
+	SortOrderDescending = "DESCENDING"
+)
+
+// SortOrder_Values returns all elements of the SortOrder enum
+func SortOrder_Values() []string {
+	return []string{
+		SortOrderAscending,
+		SortOrderDescending,
 	}
 }
 

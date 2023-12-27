@@ -28,14 +28,13 @@ const opGetRoutingControlState = "GetRoutingControlState"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetRoutingControlStateRequest method.
+//	req, resp := client.GetRoutingControlStateRequest(params)
 //
-//    // Example sending a request using the GetRoutingControlStateRequest method.
-//    req, resp := client.GetRoutingControlStateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-cluster-2019-12-02/GetRoutingControlState
 func (c *Route53RecoveryCluster) GetRoutingControlStateRequest(input *GetRoutingControlStateInput) (req *request.Request, output *GetRoutingControlStateOutput) {
@@ -58,8 +57,8 @@ func (c *Route53RecoveryCluster) GetRoutingControlStateRequest(input *GetRouting
 //
 // Get the state for a routing control. A routing control is a simple on/off
 // switch that you can use to route traffic to cells. When a routing control
-// state is On, traffic flows to a cell. When the state is Off, traffic does
-// not flow.
+// state is set to ON, traffic flows to a cell. When the state is set to OFF,
+// traffic does not flow.
 //
 // Before you can create a routing control, you must first create a cluster,
 // and then host the control in a control panel on the cluster. For more information,
@@ -78,9 +77,9 @@ func (c *Route53RecoveryCluster) GetRoutingControlStateRequest(input *GetRouting
 // Learn more about working with routing controls in the following topics in
 // the Amazon Route 53 Application Recovery Controller Developer Guide:
 //
-//    * Viewing and updating routing control states (https://docs.aws.amazon.com/r53recovery/latest/dg/routing-control.update.html)
+//   - Viewing and updating routing control states (https://docs.aws.amazon.com/r53recovery/latest/dg/routing-control.update.html)
 //
-//    * Working with routing controls in Route 53 ARC (https://docs.aws.amazon.com/r53recovery/latest/dg/routing-control.html)
+//   - Working with routing controls in Route 53 ARC (https://docs.aws.amazon.com/r53recovery/latest/dg/routing-control.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -90,23 +89,24 @@ func (c *Route53RecoveryCluster) GetRoutingControlStateRequest(input *GetRouting
 // API operation GetRoutingControlState for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You don't have sufficient permissions to perform this action.
 //
-//   * InternalServerException
-//   There was an unexpected error during processing of the request.
+//   - AccessDeniedException
+//     You don't have sufficient permissions to perform this action.
 //
-//   * ResourceNotFoundException
-//   The request references a routing control or control panel that was not found.
+//   - InternalServerException
+//     There was an unexpected error during processing of the request.
 //
-//   * ValidationException
-//   There was a validation error on the request.
+//   - ResourceNotFoundException
+//     The request references a routing control or control panel that was not found.
 //
-//   * ThrottlingException
-//   The request was denied because of request throttling.
+//   - ValidationException
+//     There was a validation error on the request.
 //
-//   * EndpointTemporarilyUnavailableException
-//   The cluster endpoint isn't available. Try another cluster endpoint.
+//   - ThrottlingException
+//     The request was denied because of request throttling.
+//
+//   - EndpointTemporarilyUnavailableException
+//     The cluster endpoint isn't available. Try another cluster endpoint.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-cluster-2019-12-02/GetRoutingControlState
 func (c *Route53RecoveryCluster) GetRoutingControlState(input *GetRoutingControlStateInput) (*GetRoutingControlStateOutput, error) {
@@ -146,14 +146,13 @@ const opListRoutingControls = "ListRoutingControls"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRoutingControlsRequest method.
+//	req, resp := client.ListRoutingControlsRequest(params)
 //
-//    // Example sending a request using the ListRoutingControlsRequest method.
-//    req, resp := client.ListRoutingControlsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-cluster-2019-12-02/ListRoutingControls
 func (c *Route53RecoveryCluster) ListRoutingControlsRequest(input *ListRoutingControlsInput) (req *request.Request, output *ListRoutingControlsOutput) {
@@ -187,8 +186,8 @@ func (c *Route53RecoveryCluster) ListRoutingControlsRequest(input *ListRoutingCo
 // it lists all the routing controls in the cluster.
 //
 // A routing control is a simple on/off switch in Route 53 ARC that you can
-// use to route traffic to cells. When a routing control state is On, traffic
-// flows to a cell. When the state is Off, traffic does not flow.
+// use to route traffic to cells. When a routing control state is set to ON,
+// traffic flows to a cell. When the state is set to OFF, traffic does not flow.
 //
 // Before you can create a routing control, you must first create a cluster,
 // and then host the control in a control panel on the cluster. For more information,
@@ -203,9 +202,9 @@ func (c *Route53RecoveryCluster) ListRoutingControlsRequest(input *ListRoutingCo
 // Learn more about working with routing controls in the following topics in
 // the Amazon Route 53 Application Recovery Controller Developer Guide:
 //
-//    * Viewing and updating routing control states (https://docs.aws.amazon.com/r53recovery/latest/dg/routing-control.update.html)
+//   - Viewing and updating routing control states (https://docs.aws.amazon.com/r53recovery/latest/dg/routing-control.update.html)
 //
-//    * Working with routing controls in Route 53 ARC (https://docs.aws.amazon.com/r53recovery/latest/dg/routing-control.html)
+//   - Working with routing controls in Route 53 ARC (https://docs.aws.amazon.com/r53recovery/latest/dg/routing-control.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -215,23 +214,24 @@ func (c *Route53RecoveryCluster) ListRoutingControlsRequest(input *ListRoutingCo
 // API operation ListRoutingControls for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You don't have sufficient permissions to perform this action.
 //
-//   * InternalServerException
-//   There was an unexpected error during processing of the request.
+//   - AccessDeniedException
+//     You don't have sufficient permissions to perform this action.
 //
-//   * ResourceNotFoundException
-//   The request references a routing control or control panel that was not found.
+//   - InternalServerException
+//     There was an unexpected error during processing of the request.
 //
-//   * ValidationException
-//   There was a validation error on the request.
+//   - ResourceNotFoundException
+//     The request references a routing control or control panel that was not found.
 //
-//   * ThrottlingException
-//   The request was denied because of request throttling.
+//   - ValidationException
+//     There was a validation error on the request.
 //
-//   * EndpointTemporarilyUnavailableException
-//   The cluster endpoint isn't available. Try another cluster endpoint.
+//   - ThrottlingException
+//     The request was denied because of request throttling.
+//
+//   - EndpointTemporarilyUnavailableException
+//     The cluster endpoint isn't available. Try another cluster endpoint.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-cluster-2019-12-02/ListRoutingControls
 func (c *Route53RecoveryCluster) ListRoutingControls(input *ListRoutingControlsInput) (*ListRoutingControlsOutput, error) {
@@ -263,15 +263,14 @@ func (c *Route53RecoveryCluster) ListRoutingControlsWithContext(ctx aws.Context,
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListRoutingControls operation.
-//    pageNum := 0
-//    err := client.ListRoutingControlsPages(params,
-//        func(page *route53recoverycluster.ListRoutingControlsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListRoutingControls operation.
+//	pageNum := 0
+//	err := client.ListRoutingControlsPages(params,
+//	    func(page *route53recoverycluster.ListRoutingControlsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Route53RecoveryCluster) ListRoutingControlsPages(input *ListRoutingControlsInput, fn func(*ListRoutingControlsOutput, bool) bool) error {
 	return c.ListRoutingControlsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -323,14 +322,13 @@ const opUpdateRoutingControlState = "UpdateRoutingControlState"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateRoutingControlStateRequest method.
+//	req, resp := client.UpdateRoutingControlStateRequest(params)
 //
-//    // Example sending a request using the UpdateRoutingControlStateRequest method.
-//    req, resp := client.UpdateRoutingControlStateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-cluster-2019-12-02/UpdateRoutingControlState
 func (c *Route53RecoveryCluster) UpdateRoutingControlStateRequest(input *UpdateRoutingControlStateInput) (req *request.Request, output *UpdateRoutingControlStateOutput) {
@@ -353,8 +351,8 @@ func (c *Route53RecoveryCluster) UpdateRoutingControlStateRequest(input *UpdateR
 // UpdateRoutingControlState API operation for Route53 Recovery Cluster.
 //
 // Set the state of the routing control to reroute traffic. You can set the
-// value to be On or Off. When the state is On, traffic flows to a cell. When
-// the state is Off, traffic does not flow.
+// value to ON or OFF. When the state is ON, traffic flows to a cell. When the
+// state is OFF, traffic does not flow.
 //
 // With Route 53 ARC, you can add safety rules for routing controls, which are
 // safeguards for routing control state updates that help prevent unexpected
@@ -378,9 +376,9 @@ func (c *Route53RecoveryCluster) UpdateRoutingControlStateRequest(input *UpdateR
 // Regional cluster endpoints in sequence, see API examples (https://docs.aws.amazon.com/r53recovery/latest/dg/service_code_examples_actions.html)
 // in the Amazon Route 53 Application Recovery Controller Developer Guide.
 //
-//    * Viewing and updating routing control states (https://docs.aws.amazon.com/r53recovery/latest/dg/routing-control.update.html)
+//   - Viewing and updating routing control states (https://docs.aws.amazon.com/r53recovery/latest/dg/routing-control.update.html)
 //
-//    * Working with routing controls overall (https://docs.aws.amazon.com/r53recovery/latest/dg/routing-control.html)
+//   - Working with routing controls overall (https://docs.aws.amazon.com/r53recovery/latest/dg/routing-control.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -390,26 +388,27 @@ func (c *Route53RecoveryCluster) UpdateRoutingControlStateRequest(input *UpdateR
 // API operation UpdateRoutingControlState for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You don't have sufficient permissions to perform this action.
 //
-//   * InternalServerException
-//   There was an unexpected error during processing of the request.
+//   - AccessDeniedException
+//     You don't have sufficient permissions to perform this action.
 //
-//   * ResourceNotFoundException
-//   The request references a routing control or control panel that was not found.
+//   - InternalServerException
+//     There was an unexpected error during processing of the request.
 //
-//   * ValidationException
-//   There was a validation error on the request.
+//   - ResourceNotFoundException
+//     The request references a routing control or control panel that was not found.
 //
-//   * ThrottlingException
-//   The request was denied because of request throttling.
+//   - ValidationException
+//     There was a validation error on the request.
 //
-//   * EndpointTemporarilyUnavailableException
-//   The cluster endpoint isn't available. Try another cluster endpoint.
+//   - ThrottlingException
+//     The request was denied because of request throttling.
 //
-//   * ConflictException
-//   There was a conflict with this request. Try again.
+//   - EndpointTemporarilyUnavailableException
+//     The cluster endpoint isn't available. Try another cluster endpoint.
+//
+//   - ConflictException
+//     There was a conflict with this request. Try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-cluster-2019-12-02/UpdateRoutingControlState
 func (c *Route53RecoveryCluster) UpdateRoutingControlState(input *UpdateRoutingControlStateInput) (*UpdateRoutingControlStateOutput, error) {
@@ -449,14 +448,13 @@ const opUpdateRoutingControlStates = "UpdateRoutingControlStates"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateRoutingControlStatesRequest method.
+//	req, resp := client.UpdateRoutingControlStatesRequest(params)
 //
-//    // Example sending a request using the UpdateRoutingControlStatesRequest method.
-//    req, resp := client.UpdateRoutingControlStatesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-cluster-2019-12-02/UpdateRoutingControlStates
 func (c *Route53RecoveryCluster) UpdateRoutingControlStatesRequest(input *UpdateRoutingControlStatesInput) (req *request.Request, output *UpdateRoutingControlStatesOutput) {
@@ -479,8 +477,8 @@ func (c *Route53RecoveryCluster) UpdateRoutingControlStatesRequest(input *Update
 // UpdateRoutingControlStates API operation for Route53 Recovery Cluster.
 //
 // Set multiple routing control states. You can set the value for each state
-// to be On or Off. When the state is On, traffic flows to a cell. When it's
-// Off, traffic does not flow.
+// to be ON or OFF. When the state is ON, traffic flows to a cell. When it's
+// OFF, traffic does not flow.
 //
 // With Route 53 ARC, you can add safety rules for routing controls, which are
 // safeguards for routing control state updates that help prevent unexpected
@@ -504,9 +502,9 @@ func (c *Route53RecoveryCluster) UpdateRoutingControlStatesRequest(input *Update
 // Regional cluster endpoints in sequence, see API examples (https://docs.aws.amazon.com/r53recovery/latest/dg/service_code_examples_actions.html)
 // in the Amazon Route 53 Application Recovery Controller Developer Guide.
 //
-//    * Viewing and updating routing control states (https://docs.aws.amazon.com/r53recovery/latest/dg/routing-control.update.html)
+//   - Viewing and updating routing control states (https://docs.aws.amazon.com/r53recovery/latest/dg/routing-control.update.html)
 //
-//    * Working with routing controls overall (https://docs.aws.amazon.com/r53recovery/latest/dg/routing-control.html)
+//   - Working with routing controls overall (https://docs.aws.amazon.com/r53recovery/latest/dg/routing-control.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -516,30 +514,31 @@ func (c *Route53RecoveryCluster) UpdateRoutingControlStatesRequest(input *Update
 // API operation UpdateRoutingControlStates for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You don't have sufficient permissions to perform this action.
 //
-//   * InternalServerException
-//   There was an unexpected error during processing of the request.
+//   - AccessDeniedException
+//     You don't have sufficient permissions to perform this action.
 //
-//   * ResourceNotFoundException
-//   The request references a routing control or control panel that was not found.
+//   - InternalServerException
+//     There was an unexpected error during processing of the request.
 //
-//   * ValidationException
-//   There was a validation error on the request.
+//   - ResourceNotFoundException
+//     The request references a routing control or control panel that was not found.
 //
-//   * ThrottlingException
-//   The request was denied because of request throttling.
+//   - ValidationException
+//     There was a validation error on the request.
 //
-//   * EndpointTemporarilyUnavailableException
-//   The cluster endpoint isn't available. Try another cluster endpoint.
+//   - ThrottlingException
+//     The request was denied because of request throttling.
 //
-//   * ConflictException
-//   There was a conflict with this request. Try again.
+//   - EndpointTemporarilyUnavailableException
+//     The cluster endpoint isn't available. Try another cluster endpoint.
 //
-//   * ServiceLimitExceededException
-//   The request can't update that many routing control states at the same time.
-//   Try again with fewer routing control states.
+//   - ConflictException
+//     There was a conflict with this request. Try again.
+//
+//   - ServiceLimitExceededException
+//     The request can't update that many routing control states at the same time.
+//     Try again with fewer routing control states.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-cluster-2019-12-02/UpdateRoutingControlStates
 func (c *Route53RecoveryCluster) UpdateRoutingControlStates(input *UpdateRoutingControlStatesInput) (*UpdateRoutingControlStatesOutput, error) {
@@ -1125,8 +1124,8 @@ func (s *ResourceNotFoundException) RequestID() string {
 }
 
 // A routing control, which is a simple on/off switch that you can use to route
-// traffic to cells. When a routing control state is On, traffic flows to a
-// cell. When the state is Off, traffic does not flow.
+// traffic to cells. When a routing control state is set to ON, traffic flows
+// to a cell. When the state is set to OFF, traffic does not flow.
 type RoutingControl struct {
 	_ struct{} `type:"structure"`
 
@@ -1134,8 +1133,12 @@ type RoutingControl struct {
 	// is located.
 	ControlPanelArn *string `min:"1" type:"string"`
 
-	// The name of the control panel where the routing control is located.
+	// The name of the control panel where the routing control is located. Only
+	// ASCII characters are supported for control panel names.
 	ControlPanelName *string `min:"1" type:"string"`
+
+	// The Amazon Web Services account ID of the routing control owner.
+	Owner *string `min:"12" type:"string"`
 
 	// The Amazon Resource Name (ARN) of the routing control.
 	RoutingControlArn *string `min:"1" type:"string"`
@@ -1144,7 +1147,8 @@ type RoutingControl struct {
 	RoutingControlName *string `min:"1" type:"string"`
 
 	// The current state of the routing control. When a routing control state is
-	// On, traffic flows to a cell. When the state is Off, traffic does not flow.
+	// set to ON, traffic flows to a cell. When the state is set to OFF, traffic
+	// does not flow.
 	RoutingControlState *string `type:"string" enum:"RoutingControlState"`
 }
 
@@ -1175,6 +1179,12 @@ func (s *RoutingControl) SetControlPanelArn(v string) *RoutingControl {
 // SetControlPanelName sets the ControlPanelName field's value.
 func (s *RoutingControl) SetControlPanelName(v string) *RoutingControl {
 	s.ControlPanelName = &v
+	return s
+}
+
+// SetOwner sets the Owner field's value.
+func (s *RoutingControl) SetOwner(v string) *RoutingControl {
+	s.Owner = &v
 	return s
 }
 
@@ -1417,7 +1427,7 @@ type UpdateRoutingControlStateInput struct {
 	// RoutingControlArn is a required field
 	RoutingControlArn *string `min:"1" type:"string" required:"true"`
 
-	// The state of the routing control. You can set the value to be On or Off.
+	// The state of the routing control. You can set the value to ON or OFF.
 	//
 	// RoutingControlState is a required field
 	RoutingControlState *string `type:"string" required:"true" enum:"RoutingControlState"`

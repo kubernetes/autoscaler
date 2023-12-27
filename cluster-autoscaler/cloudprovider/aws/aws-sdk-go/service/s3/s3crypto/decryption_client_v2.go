@@ -11,12 +11,12 @@ import (
 // DecryptionClientV2 is an S3 crypto client. The decryption client
 // will handle all get object requests from Amazon S3.
 // Supported key wrapping algorithms:
-//	* AWS KMS
-//	* AWS KMS + Context
+//   - AWS KMS
+//   - AWS KMS + Context
 //
 // Supported content ciphers:
-//	* AES/GCM
-//	* AES/CBC
+//   - AES/GCM
+//   - AES/CBC
 type DecryptionClientV2 struct {
 	options DecryptionClientOptions
 }
@@ -39,9 +39,10 @@ type DecryptionClientOptions struct {
 // NewDecryptionClientV2 will return an error if no key wrapping or content encryption algorithms have been provided.
 //
 // Example:
+//
 //	sess := session.Must(session.NewSession())
 //	cr := s3crypto.NewCryptoRegistry()
-// 	if err := s3crypto.RegisterKMSContextWrapWithAnyCMK(cr, kms.New(sess)); err != nil {
+//	if err := s3crypto.RegisterKMSContextWrapWithAnyCMK(cr, kms.New(sess)); err != nil {
 //		panic(err) // handle error
 //	}
 //	if err := s3crypto.RegisterAESGCMContentCipher(cr); err != nil {
@@ -85,6 +86,7 @@ func NewDecryptionClientV2(
 // decryption will be done. The SDK only supports V2 reads of KMS and GCM.
 //
 // Example:
+//
 //	req, out := svc.GetObjectRequest(&s3.GetObjectInput {
 //	  Key: aws.String("testKey"),
 //	  Bucket: aws.String("testBucket"),

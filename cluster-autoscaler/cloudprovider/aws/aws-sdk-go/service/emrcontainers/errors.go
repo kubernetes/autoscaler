@@ -14,6 +14,12 @@ const (
 	// This is an internal server exception.
 	ErrCodeInternalServerException = "InternalServerException"
 
+	// ErrCodeRequestThrottledException for service response error code
+	// "RequestThrottledException".
+	//
+	// The request throttled.
+	ErrCodeRequestThrottledException = "RequestThrottledException"
+
 	// ErrCodeResourceNotFoundException for service response error code
 	// "ResourceNotFoundException".
 	//
@@ -29,6 +35,7 @@ const (
 
 var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
 	"InternalServerException":   newErrorInternalServerException,
+	"RequestThrottledException": newErrorRequestThrottledException,
 	"ResourceNotFoundException": newErrorResourceNotFoundException,
 	"ValidationException":       newErrorValidationException,
 }

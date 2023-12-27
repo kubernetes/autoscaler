@@ -3,14 +3,17 @@
 // Package docdb provides the client and types for making API
 // requests to Amazon DocumentDB with MongoDB compatibility.
 //
-// Amazon DocumentDB API documentation
+// Amazon DocumentDB is a fast, reliable, and fully managed database service.
+// Amazon DocumentDB makes it easy to set up, operate, and scale MongoDB-compatible
+// databases in the cloud. With Amazon DocumentDB, you can run the same application
+// code and use the same drivers and tools that you use with MongoDB.
 //
 // See https://docs.aws.amazon.com/goto/WebAPI/docdb-2014-10-31 for more information on this service.
 //
 // See docdb package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/docdb/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact Amazon DocumentDB with MongoDB compatibility with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

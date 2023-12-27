@@ -18,7 +18,7 @@ const DefaultMinFileSize = 1024 * 512 * 5
 // AES GCM will load all data into memory. However, the rest of the content algorithms
 // do not load the entire contents into memory.
 //
-// deprecated: This feature is in maintenance mode, no new updates will be released. Please see https://docs.aws.amazon.com/general/latest/gr/aws_sdk_cryptography.html for more information.
+// Deprecated: This feature is in maintenance mode, no new updates will be released. Please see https://docs.aws.amazon.com/general/latest/gr/aws_sdk_cryptography.html for more information.
 type EncryptionClient struct {
 	S3Client             s3iface.S3API
 	ContentCipherBuilder ContentCipherBuilder
@@ -50,12 +50,13 @@ func validateV1EncryptionClientConstruction(c *EncryptionClient) error {
 // NewEncryptionClient instantiates a new S3 crypto client
 //
 // Example:
-//	cmkID := "arn:aws:kms:region:000000000000:key/00000000-0000-0000-0000-000000000000"
-//  sess := session.Must(session.NewSession())
-//	handler := s3crypto.NewKMSKeyGenerator(kms.New(sess), cmkID)
-//	svc := s3crypto.NewEncryptionClient(sess, s3crypto.AESGCMContentCipherBuilder(handler))
 //
-// deprecated: This feature is in maintenance mode, no new updates will be released. Please see https://docs.aws.amazon.com/general/latest/gr/aws_sdk_cryptography.html for more information.
+//		cmkID := "arn:aws:kms:region:000000000000:key/00000000-0000-0000-0000-000000000000"
+//	 sess := session.Must(session.NewSession())
+//		handler := s3crypto.NewKMSKeyGenerator(kms.New(sess), cmkID)
+//		svc := s3crypto.NewEncryptionClient(sess, s3crypto.AESGCMContentCipherBuilder(handler))
+//
+// Deprecated: This feature is in maintenance mode, no new updates will be released. Please see https://docs.aws.amazon.com/general/latest/gr/aws_sdk_cryptography.html for more information.
 func NewEncryptionClient(prov client.ConfigProvider, builder ContentCipherBuilder, options ...func(*EncryptionClient)) *EncryptionClient {
 	s3client := s3.New(prov)
 
@@ -81,6 +82,7 @@ func NewEncryptionClient(prov client.ConfigProvider, builder ContentCipherBuilde
 // that data to S3.
 //
 // Example:
+//
 //	svc := s3crypto.NewEncryptionClient(session.Must(session.NewSession()), s3crypto.AESGCMContentCipherBuilder(handler))
 //	req, out := svc.PutObjectRequest(&s3.PutObjectInput {
 //	  Key: aws.String("testKey"),
@@ -89,7 +91,7 @@ func NewEncryptionClient(prov client.ConfigProvider, builder ContentCipherBuilde
 //	})
 //	err := req.Send()
 //
-// deprecated: This feature is in maintenance mode, no new updates will be released. Please see https://docs.aws.amazon.com/general/latest/gr/aws_sdk_cryptography.html for more information.
+// Deprecated: This feature is in maintenance mode, no new updates will be released. Please see https://docs.aws.amazon.com/general/latest/gr/aws_sdk_cryptography.html for more information.
 func (c *EncryptionClient) PutObjectRequest(input *s3.PutObjectInput) (*request.Request, *s3.PutObjectOutput) {
 	req, out := putObjectRequest(c.getClientOptions(), input)
 	if err := validateV1EncryptionClientConstruction(c); err != nil {
@@ -112,7 +114,7 @@ func setReqError(err error) func(*request.Request) {
 
 // PutObject is a wrapper for PutObjectRequest
 //
-// deprecated: This feature is in maintenance mode, no new updates will be released. Please see https://docs.aws.amazon.com/general/latest/gr/aws_sdk_cryptography.html for more information.
+// Deprecated: This feature is in maintenance mode, no new updates will be released. Please see https://docs.aws.amazon.com/general/latest/gr/aws_sdk_cryptography.html for more information.
 func (c *EncryptionClient) PutObject(input *s3.PutObjectInput) (*s3.PutObjectOutput, error) {
 	if err := validateV1EncryptionClientConstruction(c); err != nil {
 		return nil, err
@@ -129,7 +131,7 @@ func (c *EncryptionClient) PutObject(input *s3.PutObjectInput) (*s3.PutObjectOut
 // this may create sub-contexts for individual underlying requests.
 // PutObject is a wrapper for PutObjectRequest
 //
-// deprecated: This feature is in maintenance mode, no new updates will be released. Please see https://docs.aws.amazon.com/general/latest/gr/aws_sdk_cryptography.html for more information.
+// Deprecated: This feature is in maintenance mode, no new updates will be released. Please see https://docs.aws.amazon.com/general/latest/gr/aws_sdk_cryptography.html for more information.
 func (c *EncryptionClient) PutObjectWithContext(ctx aws.Context, input *s3.PutObjectInput, opts ...request.Option) (*s3.PutObjectOutput, error) {
 	if err := validateV1EncryptionClientConstruction(c); err != nil {
 		return nil, err

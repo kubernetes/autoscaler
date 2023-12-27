@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // Amazon CloudHSM.
-//    func myFunc(svc cloudhsmiface.CloudHSMAPI) bool {
-//        // Make svc.AddTagsToResource request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// Amazon CloudHSM.
+//	func myFunc(svc cloudhsmiface.CloudHSMAPI) bool {
+//	    // Make svc.AddTagsToResource request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := cloudhsm.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := cloudhsm.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockCloudHSMClient struct {
-//        cloudhsmiface.CloudHSMAPI
-//    }
-//    func (m *mockCloudHSMClient) AddTagsToResource(input *cloudhsm.AddTagsToResourceInput) (*cloudhsm.AddTagsToResourceOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockCloudHSMClient struct {
+//	    cloudhsmiface.CloudHSMAPI
+//	}
+//	func (m *mockCloudHSMClient) AddTagsToResource(input *cloudhsm.AddTagsToResourceInput) (*cloudhsm.AddTagsToResourceOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockCloudHSMClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockCloudHSMClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,

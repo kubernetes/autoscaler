@@ -4,6 +4,7 @@ package imagebuilder
 
 import (
 	"fmt"
+	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/awsutil"
@@ -28,14 +29,13 @@ const opCancelImageCreation = "CancelImageCreation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CancelImageCreationRequest method.
+//	req, resp := client.CancelImageCreationRequest(params)
 //
-//    // Example sending a request using the CancelImageCreationRequest method.
-//    req, resp := client.CancelImageCreationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/CancelImageCreation
 func (c *Imagebuilder) CancelImageCreationRequest(input *CancelImageCreationInput) (req *request.Request, output *CancelImageCreationOutput) {
@@ -67,33 +67,34 @@ func (c *Imagebuilder) CancelImageCreationRequest(input *CancelImageCreationInpu
 // API operation CancelImageCreation for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * IdempotentParameterMismatchException
-//   You have specified a client token for an operation using parameter values
-//   that differ from a previous request that used the same client token.
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - IdempotentParameterMismatchException
+//     You have specified a client token for an operation using parameter values
+//     that differ from a previous request that used the same client token.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
 //
-//   * ResourceInUseException
-//   The resource that you are trying to operate on is currently in use. Review
-//   the message details and retry later.
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
+//
+//   - ResourceInUseException
+//     The resource that you are trying to operate on is currently in use. Review
+//     the message details and retry later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/CancelImageCreation
 func (c *Imagebuilder) CancelImageCreation(input *CancelImageCreationInput) (*CancelImageCreationOutput, error) {
@@ -117,6 +118,110 @@ func (c *Imagebuilder) CancelImageCreationWithContext(ctx aws.Context, input *Ca
 	return out, req.Send()
 }
 
+const opCancelLifecycleExecution = "CancelLifecycleExecution"
+
+// CancelLifecycleExecutionRequest generates a "aws/request.Request" representing the
+// client's request for the CancelLifecycleExecution operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CancelLifecycleExecution for more information on using the CancelLifecycleExecution
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CancelLifecycleExecutionRequest method.
+//	req, resp := client.CancelLifecycleExecutionRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/CancelLifecycleExecution
+func (c *Imagebuilder) CancelLifecycleExecutionRequest(input *CancelLifecycleExecutionInput) (req *request.Request, output *CancelLifecycleExecutionOutput) {
+	op := &request.Operation{
+		Name:       opCancelLifecycleExecution,
+		HTTPMethod: "PUT",
+		HTTPPath:   "/CancelLifecycleExecution",
+	}
+
+	if input == nil {
+		input = &CancelLifecycleExecutionInput{}
+	}
+
+	output = &CancelLifecycleExecutionOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CancelLifecycleExecution API operation for EC2 Image Builder.
+//
+// Cancel a specific image lifecycle policy runtime instance.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for EC2 Image Builder's
+// API operation CancelLifecycleExecution for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
+//
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
+//
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
+//
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
+//
+//   - IdempotentParameterMismatchException
+//     You have specified a client token for an operation using parameter values
+//     that differ from a previous request that used the same client token.
+//
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
+//
+//   - ResourceInUseException
+//     The resource that you are trying to operate on is currently in use. Review
+//     the message details and retry later.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/CancelLifecycleExecution
+func (c *Imagebuilder) CancelLifecycleExecution(input *CancelLifecycleExecutionInput) (*CancelLifecycleExecutionOutput, error) {
+	req, out := c.CancelLifecycleExecutionRequest(input)
+	return out, req.Send()
+}
+
+// CancelLifecycleExecutionWithContext is the same as CancelLifecycleExecution with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CancelLifecycleExecution for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Imagebuilder) CancelLifecycleExecutionWithContext(ctx aws.Context, input *CancelLifecycleExecutionInput, opts ...request.Option) (*CancelLifecycleExecutionOutput, error) {
+	req, out := c.CancelLifecycleExecutionRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opCreateComponent = "CreateComponent"
 
 // CreateComponentRequest generates a "aws/request.Request" representing the
@@ -133,14 +238,13 @@ const opCreateComponent = "CreateComponent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateComponentRequest method.
+//	req, resp := client.CreateComponentRequest(params)
 //
-//    // Example sending a request using the CreateComponentRequest method.
-//    req, resp := client.CreateComponentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/CreateComponent
 func (c *Imagebuilder) CreateComponentRequest(input *CreateComponentInput) (req *request.Request, output *CreateComponentOutput) {
@@ -165,10 +269,10 @@ func (c *Imagebuilder) CreateComponentRequest(input *CreateComponentInput) (req 
 // your image. The component is based on a YAML document that you specify using
 // exactly one of the following methods:
 //
-//    * Inline, using the data property in the request body.
+//   - Inline, using the data property in the request body.
 //
-//    * A URL that points to a YAML document file stored in Amazon S3, using
-//    the uri property in the request body.
+//   - A URL that points to a YAML document file stored in Amazon S3, using
+//     the uri property in the request body.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -178,44 +282,45 @@ func (c *Imagebuilder) CreateComponentRequest(input *CreateComponentInput) (req 
 // API operation CreateComponent for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * IdempotentParameterMismatchException
-//   You have specified a client token for an operation using parameter values
-//   that differ from a previous request that used the same client token.
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - IdempotentParameterMismatchException
+//     You have specified a client token for an operation using parameter values
+//     that differ from a previous request that used the same client token.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
 //
-//   * InvalidVersionNumberException
-//   Your version number is out of bounds or does not follow the required syntax.
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
-//   * ResourceInUseException
-//   The resource that you are trying to operate on is currently in use. Review
-//   the message details and retry later.
+//   - InvalidVersionNumberException
+//     Your version number is out of bounds or does not follow the required syntax.
 //
-//   * InvalidParameterCombinationException
-//   You have specified two or more mutually exclusive parameters. Review the
-//   error message for details.
+//   - ResourceInUseException
+//     The resource that you are trying to operate on is currently in use. Review
+//     the message details and retry later.
 //
-//   * ServiceQuotaExceededException
-//   You have exceeded the number of permitted resources or operations for this
-//   service. For service quotas, see EC2 Image Builder endpoints and quotas (https://docs.aws.amazon.com/general/latest/gr/imagebuilder.html#limits_imagebuilder).
+//   - InvalidParameterCombinationException
+//     You have specified two or more mutually exclusive parameters. Review the
+//     error message for details.
+//
+//   - ServiceQuotaExceededException
+//     You have exceeded the number of permitted resources or operations for this
+//     service. For service quotas, see EC2 Image Builder endpoints and quotas (https://docs.aws.amazon.com/general/latest/gr/imagebuilder.html#limits_imagebuilder).
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/CreateComponent
 func (c *Imagebuilder) CreateComponent(input *CreateComponentInput) (*CreateComponentOutput, error) {
@@ -255,14 +360,13 @@ const opCreateContainerRecipe = "CreateContainerRecipe"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateContainerRecipeRequest method.
+//	req, resp := client.CreateContainerRecipeRequest(params)
 //
-//    // Example sending a request using the CreateContainerRecipeRequest method.
-//    req, resp := client.CreateContainerRecipeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/CreateContainerRecipe
 func (c *Imagebuilder) CreateContainerRecipeRequest(input *CreateContainerRecipeInput) (req *request.Request, output *CreateContainerRecipeOutput) {
@@ -294,43 +398,44 @@ func (c *Imagebuilder) CreateContainerRecipeRequest(input *CreateContainerRecipe
 // API operation CreateContainerRecipe for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * IdempotentParameterMismatchException
-//   You have specified a client token for an operation using parameter values
-//   that differ from a previous request that used the same client token.
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - IdempotentParameterMismatchException
+//     You have specified a client token for an operation using parameter values
+//     that differ from a previous request that used the same client token.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
 //
-//   * InvalidVersionNumberException
-//   Your version number is out of bounds or does not follow the required syntax.
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
-//   * ResourceInUseException
-//   The resource that you are trying to operate on is currently in use. Review
-//   the message details and retry later.
+//   - InvalidVersionNumberException
+//     Your version number is out of bounds or does not follow the required syntax.
 //
-//   * ResourceAlreadyExistsException
-//   The resource that you are trying to create already exists.
+//   - ResourceInUseException
+//     The resource that you are trying to operate on is currently in use. Review
+//     the message details and retry later.
 //
-//   * ServiceQuotaExceededException
-//   You have exceeded the number of permitted resources or operations for this
-//   service. For service quotas, see EC2 Image Builder endpoints and quotas (https://docs.aws.amazon.com/general/latest/gr/imagebuilder.html#limits_imagebuilder).
+//   - ResourceAlreadyExistsException
+//     The resource that you are trying to create already exists.
+//
+//   - ServiceQuotaExceededException
+//     You have exceeded the number of permitted resources or operations for this
+//     service. For service quotas, see EC2 Image Builder endpoints and quotas (https://docs.aws.amazon.com/general/latest/gr/imagebuilder.html#limits_imagebuilder).
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/CreateContainerRecipe
 func (c *Imagebuilder) CreateContainerRecipe(input *CreateContainerRecipeInput) (*CreateContainerRecipeOutput, error) {
@@ -370,14 +475,13 @@ const opCreateDistributionConfiguration = "CreateDistributionConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDistributionConfigurationRequest method.
+//	req, resp := client.CreateDistributionConfigurationRequest(params)
 //
-//    // Example sending a request using the CreateDistributionConfigurationRequest method.
-//    req, resp := client.CreateDistributionConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/CreateDistributionConfiguration
 func (c *Imagebuilder) CreateDistributionConfigurationRequest(input *CreateDistributionConfigurationInput) (req *request.Request, output *CreateDistributionConfigurationOutput) {
@@ -409,44 +513,45 @@ func (c *Imagebuilder) CreateDistributionConfigurationRequest(input *CreateDistr
 // API operation CreateDistributionConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * IdempotentParameterMismatchException
-//   You have specified a client token for an operation using parameter values
-//   that differ from a previous request that used the same client token.
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - IdempotentParameterMismatchException
+//     You have specified a client token for an operation using parameter values
+//     that differ from a previous request that used the same client token.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
 //
-//   * ResourceInUseException
-//   The resource that you are trying to operate on is currently in use. Review
-//   the message details and retry later.
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
-//   * ResourceAlreadyExistsException
-//   The resource that you are trying to create already exists.
+//   - ResourceInUseException
+//     The resource that you are trying to operate on is currently in use. Review
+//     the message details and retry later.
 //
-//   * InvalidParameterCombinationException
-//   You have specified two or more mutually exclusive parameters. Review the
-//   error message for details.
+//   - ResourceAlreadyExistsException
+//     The resource that you are trying to create already exists.
 //
-//   * ServiceQuotaExceededException
-//   You have exceeded the number of permitted resources or operations for this
-//   service. For service quotas, see EC2 Image Builder endpoints and quotas (https://docs.aws.amazon.com/general/latest/gr/imagebuilder.html#limits_imagebuilder).
+//   - InvalidParameterCombinationException
+//     You have specified two or more mutually exclusive parameters. Review the
+//     error message for details.
+//
+//   - ServiceQuotaExceededException
+//     You have exceeded the number of permitted resources or operations for this
+//     service. For service quotas, see EC2 Image Builder endpoints and quotas (https://docs.aws.amazon.com/general/latest/gr/imagebuilder.html#limits_imagebuilder).
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/CreateDistributionConfiguration
 func (c *Imagebuilder) CreateDistributionConfiguration(input *CreateDistributionConfigurationInput) (*CreateDistributionConfigurationOutput, error) {
@@ -486,14 +591,13 @@ const opCreateImage = "CreateImage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateImageRequest method.
+//	req, resp := client.CreateImageRequest(params)
 //
-//    // Example sending a request using the CreateImageRequest method.
-//    req, resp := client.CreateImageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/CreateImage
 func (c *Imagebuilder) CreateImageRequest(input *CreateImageInput) (req *request.Request, output *CreateImageOutput) {
@@ -527,37 +631,38 @@ func (c *Imagebuilder) CreateImageRequest(input *CreateImageInput) (req *request
 // API operation CreateImage for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * IdempotentParameterMismatchException
-//   You have specified a client token for an operation using parameter values
-//   that differ from a previous request that used the same client token.
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - IdempotentParameterMismatchException
+//     You have specified a client token for an operation using parameter values
+//     that differ from a previous request that used the same client token.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
 //
-//   * ResourceInUseException
-//   The resource that you are trying to operate on is currently in use. Review
-//   the message details and retry later.
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
-//   * ServiceQuotaExceededException
-//   You have exceeded the number of permitted resources or operations for this
-//   service. For service quotas, see EC2 Image Builder endpoints and quotas (https://docs.aws.amazon.com/general/latest/gr/imagebuilder.html#limits_imagebuilder).
+//   - ResourceInUseException
+//     The resource that you are trying to operate on is currently in use. Review
+//     the message details and retry later.
+//
+//   - ServiceQuotaExceededException
+//     You have exceeded the number of permitted resources or operations for this
+//     service. For service quotas, see EC2 Image Builder endpoints and quotas (https://docs.aws.amazon.com/general/latest/gr/imagebuilder.html#limits_imagebuilder).
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/CreateImage
 func (c *Imagebuilder) CreateImage(input *CreateImageInput) (*CreateImageOutput, error) {
@@ -597,14 +702,13 @@ const opCreateImagePipeline = "CreateImagePipeline"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateImagePipelineRequest method.
+//	req, resp := client.CreateImagePipelineRequest(params)
 //
-//    // Example sending a request using the CreateImagePipelineRequest method.
-//    req, resp := client.CreateImagePipelineRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/CreateImagePipeline
 func (c *Imagebuilder) CreateImagePipelineRequest(input *CreateImagePipelineInput) (req *request.Request, output *CreateImagePipelineOutput) {
@@ -636,40 +740,41 @@ func (c *Imagebuilder) CreateImagePipelineRequest(input *CreateImagePipelineInpu
 // API operation CreateImagePipeline for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * IdempotentParameterMismatchException
-//   You have specified a client token for an operation using parameter values
-//   that differ from a previous request that used the same client token.
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - IdempotentParameterMismatchException
+//     You have specified a client token for an operation using parameter values
+//     that differ from a previous request that used the same client token.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
 //
-//   * ResourceInUseException
-//   The resource that you are trying to operate on is currently in use. Review
-//   the message details and retry later.
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
-//   * ResourceAlreadyExistsException
-//   The resource that you are trying to create already exists.
+//   - ResourceInUseException
+//     The resource that you are trying to operate on is currently in use. Review
+//     the message details and retry later.
 //
-//   * ServiceQuotaExceededException
-//   You have exceeded the number of permitted resources or operations for this
-//   service. For service quotas, see EC2 Image Builder endpoints and quotas (https://docs.aws.amazon.com/general/latest/gr/imagebuilder.html#limits_imagebuilder).
+//   - ResourceAlreadyExistsException
+//     The resource that you are trying to create already exists.
+//
+//   - ServiceQuotaExceededException
+//     You have exceeded the number of permitted resources or operations for this
+//     service. For service quotas, see EC2 Image Builder endpoints and quotas (https://docs.aws.amazon.com/general/latest/gr/imagebuilder.html#limits_imagebuilder).
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/CreateImagePipeline
 func (c *Imagebuilder) CreateImagePipeline(input *CreateImagePipelineInput) (*CreateImagePipelineOutput, error) {
@@ -709,14 +814,13 @@ const opCreateImageRecipe = "CreateImageRecipe"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateImageRecipeRequest method.
+//	req, resp := client.CreateImageRecipeRequest(params)
 //
-//    // Example sending a request using the CreateImageRecipeRequest method.
-//    req, resp := client.CreateImageRecipeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/CreateImageRecipe
 func (c *Imagebuilder) CreateImageRecipeRequest(input *CreateImageRecipeInput) (req *request.Request, output *CreateImageRecipeOutput) {
@@ -748,43 +852,44 @@ func (c *Imagebuilder) CreateImageRecipeRequest(input *CreateImageRecipeInput) (
 // API operation CreateImageRecipe for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * IdempotentParameterMismatchException
-//   You have specified a client token for an operation using parameter values
-//   that differ from a previous request that used the same client token.
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - IdempotentParameterMismatchException
+//     You have specified a client token for an operation using parameter values
+//     that differ from a previous request that used the same client token.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
 //
-//   * InvalidVersionNumberException
-//   Your version number is out of bounds or does not follow the required syntax.
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
-//   * ResourceInUseException
-//   The resource that you are trying to operate on is currently in use. Review
-//   the message details and retry later.
+//   - InvalidVersionNumberException
+//     Your version number is out of bounds or does not follow the required syntax.
 //
-//   * ResourceAlreadyExistsException
-//   The resource that you are trying to create already exists.
+//   - ResourceInUseException
+//     The resource that you are trying to operate on is currently in use. Review
+//     the message details and retry later.
 //
-//   * ServiceQuotaExceededException
-//   You have exceeded the number of permitted resources or operations for this
-//   service. For service quotas, see EC2 Image Builder endpoints and quotas (https://docs.aws.amazon.com/general/latest/gr/imagebuilder.html#limits_imagebuilder).
+//   - ResourceAlreadyExistsException
+//     The resource that you are trying to create already exists.
+//
+//   - ServiceQuotaExceededException
+//     You have exceeded the number of permitted resources or operations for this
+//     service. For service quotas, see EC2 Image Builder endpoints and quotas (https://docs.aws.amazon.com/general/latest/gr/imagebuilder.html#limits_imagebuilder).
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/CreateImageRecipe
 func (c *Imagebuilder) CreateImageRecipe(input *CreateImageRecipeInput) (*CreateImageRecipeOutput, error) {
@@ -824,14 +929,13 @@ const opCreateInfrastructureConfiguration = "CreateInfrastructureConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateInfrastructureConfigurationRequest method.
+//	req, resp := client.CreateInfrastructureConfigurationRequest(params)
 //
-//    // Example sending a request using the CreateInfrastructureConfigurationRequest method.
-//    req, resp := client.CreateInfrastructureConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/CreateInfrastructureConfiguration
 func (c *Imagebuilder) CreateInfrastructureConfigurationRequest(input *CreateInfrastructureConfigurationInput) (req *request.Request, output *CreateInfrastructureConfigurationOutput) {
@@ -863,40 +967,41 @@ func (c *Imagebuilder) CreateInfrastructureConfigurationRequest(input *CreateInf
 // API operation CreateInfrastructureConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * IdempotentParameterMismatchException
-//   You have specified a client token for an operation using parameter values
-//   that differ from a previous request that used the same client token.
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - IdempotentParameterMismatchException
+//     You have specified a client token for an operation using parameter values
+//     that differ from a previous request that used the same client token.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
 //
-//   * ResourceInUseException
-//   The resource that you are trying to operate on is currently in use. Review
-//   the message details and retry later.
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
-//   * ResourceAlreadyExistsException
-//   The resource that you are trying to create already exists.
+//   - ResourceInUseException
+//     The resource that you are trying to operate on is currently in use. Review
+//     the message details and retry later.
 //
-//   * ServiceQuotaExceededException
-//   You have exceeded the number of permitted resources or operations for this
-//   service. For service quotas, see EC2 Image Builder endpoints and quotas (https://docs.aws.amazon.com/general/latest/gr/imagebuilder.html#limits_imagebuilder).
+//   - ResourceAlreadyExistsException
+//     The resource that you are trying to create already exists.
+//
+//   - ServiceQuotaExceededException
+//     You have exceeded the number of permitted resources or operations for this
+//     service. For service quotas, see EC2 Image Builder endpoints and quotas (https://docs.aws.amazon.com/general/latest/gr/imagebuilder.html#limits_imagebuilder).
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/CreateInfrastructureConfiguration
 func (c *Imagebuilder) CreateInfrastructureConfiguration(input *CreateInfrastructureConfigurationInput) (*CreateInfrastructureConfigurationOutput, error) {
@@ -920,6 +1025,117 @@ func (c *Imagebuilder) CreateInfrastructureConfigurationWithContext(ctx aws.Cont
 	return out, req.Send()
 }
 
+const opCreateLifecyclePolicy = "CreateLifecyclePolicy"
+
+// CreateLifecyclePolicyRequest generates a "aws/request.Request" representing the
+// client's request for the CreateLifecyclePolicy operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateLifecyclePolicy for more information on using the CreateLifecyclePolicy
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreateLifecyclePolicyRequest method.
+//	req, resp := client.CreateLifecyclePolicyRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/CreateLifecyclePolicy
+func (c *Imagebuilder) CreateLifecyclePolicyRequest(input *CreateLifecyclePolicyInput) (req *request.Request, output *CreateLifecyclePolicyOutput) {
+	op := &request.Operation{
+		Name:       opCreateLifecyclePolicy,
+		HTTPMethod: "PUT",
+		HTTPPath:   "/CreateLifecyclePolicy",
+	}
+
+	if input == nil {
+		input = &CreateLifecyclePolicyInput{}
+	}
+
+	output = &CreateLifecyclePolicyOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateLifecyclePolicy API operation for EC2 Image Builder.
+//
+// Create a lifecycle policy resource.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for EC2 Image Builder's
+// API operation CreateLifecyclePolicy for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
+//
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
+//
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
+//
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
+//
+//   - IdempotentParameterMismatchException
+//     You have specified a client token for an operation using parameter values
+//     that differ from a previous request that used the same client token.
+//
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
+//
+//   - ResourceInUseException
+//     The resource that you are trying to operate on is currently in use. Review
+//     the message details and retry later.
+//
+//   - ResourceAlreadyExistsException
+//     The resource that you are trying to create already exists.
+//
+//   - ServiceQuotaExceededException
+//     You have exceeded the number of permitted resources or operations for this
+//     service. For service quotas, see EC2 Image Builder endpoints and quotas (https://docs.aws.amazon.com/general/latest/gr/imagebuilder.html#limits_imagebuilder).
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/CreateLifecyclePolicy
+func (c *Imagebuilder) CreateLifecyclePolicy(input *CreateLifecyclePolicyInput) (*CreateLifecyclePolicyOutput, error) {
+	req, out := c.CreateLifecyclePolicyRequest(input)
+	return out, req.Send()
+}
+
+// CreateLifecyclePolicyWithContext is the same as CreateLifecyclePolicy with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateLifecyclePolicy for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Imagebuilder) CreateLifecyclePolicyWithContext(ctx aws.Context, input *CreateLifecyclePolicyInput, opts ...request.Option) (*CreateLifecyclePolicyOutput, error) {
+	req, out := c.CreateLifecyclePolicyRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opDeleteComponent = "DeleteComponent"
 
 // DeleteComponentRequest generates a "aws/request.Request" representing the
@@ -936,14 +1152,13 @@ const opDeleteComponent = "DeleteComponent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteComponentRequest method.
+//	req, resp := client.DeleteComponentRequest(params)
 //
-//    // Example sending a request using the DeleteComponentRequest method.
-//    req, resp := client.DeleteComponentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/DeleteComponent
 func (c *Imagebuilder) DeleteComponentRequest(input *DeleteComponentInput) (req *request.Request, output *DeleteComponentOutput) {
@@ -974,29 +1189,30 @@ func (c *Imagebuilder) DeleteComponentRequest(input *DeleteComponentInput) (req 
 // API operation DeleteComponent for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
 //
-//   * ResourceDependencyException
-//   You have attempted to mutate or delete a resource with a dependency that
-//   prohibits this action. See the error message for more details.
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
+//
+//   - ResourceDependencyException
+//     You have attempted to mutate or delete a resource with a dependency that
+//     prohibits this action. See the error message for more details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/DeleteComponent
 func (c *Imagebuilder) DeleteComponent(input *DeleteComponentInput) (*DeleteComponentOutput, error) {
@@ -1036,14 +1252,13 @@ const opDeleteContainerRecipe = "DeleteContainerRecipe"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteContainerRecipeRequest method.
+//	req, resp := client.DeleteContainerRecipeRequest(params)
 //
-//    // Example sending a request using the DeleteContainerRecipeRequest method.
-//    req, resp := client.DeleteContainerRecipeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/DeleteContainerRecipe
 func (c *Imagebuilder) DeleteContainerRecipeRequest(input *DeleteContainerRecipeInput) (req *request.Request, output *DeleteContainerRecipeOutput) {
@@ -1074,29 +1289,30 @@ func (c *Imagebuilder) DeleteContainerRecipeRequest(input *DeleteContainerRecipe
 // API operation DeleteContainerRecipe for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
 //
-//   * ResourceDependencyException
-//   You have attempted to mutate or delete a resource with a dependency that
-//   prohibits this action. See the error message for more details.
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
+//
+//   - ResourceDependencyException
+//     You have attempted to mutate or delete a resource with a dependency that
+//     prohibits this action. See the error message for more details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/DeleteContainerRecipe
 func (c *Imagebuilder) DeleteContainerRecipe(input *DeleteContainerRecipeInput) (*DeleteContainerRecipeOutput, error) {
@@ -1136,14 +1352,13 @@ const opDeleteDistributionConfiguration = "DeleteDistributionConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDistributionConfigurationRequest method.
+//	req, resp := client.DeleteDistributionConfigurationRequest(params)
 //
-//    // Example sending a request using the DeleteDistributionConfigurationRequest method.
-//    req, resp := client.DeleteDistributionConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/DeleteDistributionConfiguration
 func (c *Imagebuilder) DeleteDistributionConfigurationRequest(input *DeleteDistributionConfigurationInput) (req *request.Request, output *DeleteDistributionConfigurationOutput) {
@@ -1174,29 +1389,30 @@ func (c *Imagebuilder) DeleteDistributionConfigurationRequest(input *DeleteDistr
 // API operation DeleteDistributionConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
 //
-//   * ResourceDependencyException
-//   You have attempted to mutate or delete a resource with a dependency that
-//   prohibits this action. See the error message for more details.
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
+//
+//   - ResourceDependencyException
+//     You have attempted to mutate or delete a resource with a dependency that
+//     prohibits this action. See the error message for more details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/DeleteDistributionConfiguration
 func (c *Imagebuilder) DeleteDistributionConfiguration(input *DeleteDistributionConfigurationInput) (*DeleteDistributionConfigurationOutput, error) {
@@ -1236,14 +1452,13 @@ const opDeleteImage = "DeleteImage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteImageRequest method.
+//	req, resp := client.DeleteImageRequest(params)
 //
-//    // Example sending a request using the DeleteImageRequest method.
-//    req, resp := client.DeleteImageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/DeleteImage
 func (c *Imagebuilder) DeleteImageRequest(input *DeleteImageInput) (req *request.Request, output *DeleteImageOutput) {
@@ -1269,14 +1484,14 @@ func (c *Imagebuilder) DeleteImageRequest(input *DeleteImageInput) (req *request
 // You must clean those up separately, using the appropriate Amazon EC2 or Amazon
 // ECR console actions, or API or CLI commands.
 //
-//    * To deregister an EC2 Linux AMI, see Deregister your Linux AMI (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/deregister-ami.html)
-//    in the Amazon EC2 User Guide .
+//   - To deregister an EC2 Linux AMI, see Deregister your Linux AMI (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/deregister-ami.html)
+//     in the Amazon EC2 User Guide .
 //
-//    * To deregister an EC2 Windows AMI, see Deregister your Windows AMI (https://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/deregister-ami.html)
-//    in the Amazon EC2 Windows Guide .
+//   - To deregister an EC2 Windows AMI, see Deregister your Windows AMI (https://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/deregister-ami.html)
+//     in the Amazon EC2 Windows Guide .
 //
-//    * To delete a container image from Amazon ECR, see Deleting an image (https://docs.aws.amazon.com/AmazonECR/latest/userguide/delete_image.html)
-//    in the Amazon ECR User Guide.
+//   - To delete a container image from Amazon ECR, see Deleting an image (https://docs.aws.amazon.com/AmazonECR/latest/userguide/delete_image.html)
+//     in the Amazon ECR User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1286,29 +1501,30 @@ func (c *Imagebuilder) DeleteImageRequest(input *DeleteImageInput) (req *request
 // API operation DeleteImage for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
 //
-//   * ResourceDependencyException
-//   You have attempted to mutate or delete a resource with a dependency that
-//   prohibits this action. See the error message for more details.
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
+//
+//   - ResourceDependencyException
+//     You have attempted to mutate or delete a resource with a dependency that
+//     prohibits this action. See the error message for more details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/DeleteImage
 func (c *Imagebuilder) DeleteImage(input *DeleteImageInput) (*DeleteImageOutput, error) {
@@ -1348,14 +1564,13 @@ const opDeleteImagePipeline = "DeleteImagePipeline"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteImagePipelineRequest method.
+//	req, resp := client.DeleteImagePipelineRequest(params)
 //
-//    // Example sending a request using the DeleteImagePipelineRequest method.
-//    req, resp := client.DeleteImagePipelineRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/DeleteImagePipeline
 func (c *Imagebuilder) DeleteImagePipelineRequest(input *DeleteImagePipelineInput) (req *request.Request, output *DeleteImagePipelineOutput) {
@@ -1386,29 +1601,30 @@ func (c *Imagebuilder) DeleteImagePipelineRequest(input *DeleteImagePipelineInpu
 // API operation DeleteImagePipeline for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
 //
-//   * ResourceDependencyException
-//   You have attempted to mutate or delete a resource with a dependency that
-//   prohibits this action. See the error message for more details.
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
+//
+//   - ResourceDependencyException
+//     You have attempted to mutate or delete a resource with a dependency that
+//     prohibits this action. See the error message for more details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/DeleteImagePipeline
 func (c *Imagebuilder) DeleteImagePipeline(input *DeleteImagePipelineInput) (*DeleteImagePipelineOutput, error) {
@@ -1448,14 +1664,13 @@ const opDeleteImageRecipe = "DeleteImageRecipe"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteImageRecipeRequest method.
+//	req, resp := client.DeleteImageRecipeRequest(params)
 //
-//    // Example sending a request using the DeleteImageRecipeRequest method.
-//    req, resp := client.DeleteImageRecipeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/DeleteImageRecipe
 func (c *Imagebuilder) DeleteImageRecipeRequest(input *DeleteImageRecipeInput) (req *request.Request, output *DeleteImageRecipeOutput) {
@@ -1486,29 +1701,30 @@ func (c *Imagebuilder) DeleteImageRecipeRequest(input *DeleteImageRecipeInput) (
 // API operation DeleteImageRecipe for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
 //
-//   * ResourceDependencyException
-//   You have attempted to mutate or delete a resource with a dependency that
-//   prohibits this action. See the error message for more details.
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
+//
+//   - ResourceDependencyException
+//     You have attempted to mutate or delete a resource with a dependency that
+//     prohibits this action. See the error message for more details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/DeleteImageRecipe
 func (c *Imagebuilder) DeleteImageRecipe(input *DeleteImageRecipeInput) (*DeleteImageRecipeOutput, error) {
@@ -1548,14 +1764,13 @@ const opDeleteInfrastructureConfiguration = "DeleteInfrastructureConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteInfrastructureConfigurationRequest method.
+//	req, resp := client.DeleteInfrastructureConfigurationRequest(params)
 //
-//    // Example sending a request using the DeleteInfrastructureConfigurationRequest method.
-//    req, resp := client.DeleteInfrastructureConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/DeleteInfrastructureConfiguration
 func (c *Imagebuilder) DeleteInfrastructureConfigurationRequest(input *DeleteInfrastructureConfigurationInput) (req *request.Request, output *DeleteInfrastructureConfigurationOutput) {
@@ -1586,29 +1801,30 @@ func (c *Imagebuilder) DeleteInfrastructureConfigurationRequest(input *DeleteInf
 // API operation DeleteInfrastructureConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
 //
-//   * ResourceDependencyException
-//   You have attempted to mutate or delete a resource with a dependency that
-//   prohibits this action. See the error message for more details.
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
+//
+//   - ResourceDependencyException
+//     You have attempted to mutate or delete a resource with a dependency that
+//     prohibits this action. See the error message for more details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/DeleteInfrastructureConfiguration
 func (c *Imagebuilder) DeleteInfrastructureConfiguration(input *DeleteInfrastructureConfigurationInput) (*DeleteInfrastructureConfigurationOutput, error) {
@@ -1632,6 +1848,106 @@ func (c *Imagebuilder) DeleteInfrastructureConfigurationWithContext(ctx aws.Cont
 	return out, req.Send()
 }
 
+const opDeleteLifecyclePolicy = "DeleteLifecyclePolicy"
+
+// DeleteLifecyclePolicyRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteLifecyclePolicy operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteLifecyclePolicy for more information on using the DeleteLifecyclePolicy
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteLifecyclePolicyRequest method.
+//	req, resp := client.DeleteLifecyclePolicyRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/DeleteLifecyclePolicy
+func (c *Imagebuilder) DeleteLifecyclePolicyRequest(input *DeleteLifecyclePolicyInput) (req *request.Request, output *DeleteLifecyclePolicyOutput) {
+	op := &request.Operation{
+		Name:       opDeleteLifecyclePolicy,
+		HTTPMethod: "DELETE",
+		HTTPPath:   "/DeleteLifecyclePolicy",
+	}
+
+	if input == nil {
+		input = &DeleteLifecyclePolicyInput{}
+	}
+
+	output = &DeleteLifecyclePolicyOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DeleteLifecyclePolicy API operation for EC2 Image Builder.
+//
+// Delete the specified lifecycle policy resource.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for EC2 Image Builder's
+// API operation DeleteLifecyclePolicy for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
+//
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
+//
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
+//
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
+//
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
+//
+//   - ResourceDependencyException
+//     You have attempted to mutate or delete a resource with a dependency that
+//     prohibits this action. See the error message for more details.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/DeleteLifecyclePolicy
+func (c *Imagebuilder) DeleteLifecyclePolicy(input *DeleteLifecyclePolicyInput) (*DeleteLifecyclePolicyOutput, error) {
+	req, out := c.DeleteLifecyclePolicyRequest(input)
+	return out, req.Send()
+}
+
+// DeleteLifecyclePolicyWithContext is the same as DeleteLifecyclePolicy with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteLifecyclePolicy for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Imagebuilder) DeleteLifecyclePolicyWithContext(ctx aws.Context, input *DeleteLifecyclePolicyInput, opts ...request.Option) (*DeleteLifecyclePolicyOutput, error) {
+	req, out := c.DeleteLifecyclePolicyRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opGetComponent = "GetComponent"
 
 // GetComponentRequest generates a "aws/request.Request" representing the
@@ -1648,14 +1964,13 @@ const opGetComponent = "GetComponent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetComponentRequest method.
+//	req, resp := client.GetComponentRequest(params)
 //
-//    // Example sending a request using the GetComponentRequest method.
-//    req, resp := client.GetComponentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetComponent
 func (c *Imagebuilder) GetComponentRequest(input *GetComponentInput) (req *request.Request, output *GetComponentOutput) {
@@ -1686,25 +2001,26 @@ func (c *Imagebuilder) GetComponentRequest(input *GetComponentInput) (req *reque
 // API operation GetComponent for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetComponent
 func (c *Imagebuilder) GetComponent(input *GetComponentInput) (*GetComponentOutput, error) {
@@ -1744,14 +2060,13 @@ const opGetComponentPolicy = "GetComponentPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetComponentPolicyRequest method.
+//	req, resp := client.GetComponentPolicyRequest(params)
 //
-//    // Example sending a request using the GetComponentPolicyRequest method.
-//    req, resp := client.GetComponentPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetComponentPolicy
 func (c *Imagebuilder) GetComponentPolicyRequest(input *GetComponentPolicyInput) (req *request.Request, output *GetComponentPolicyOutput) {
@@ -1782,23 +2097,24 @@ func (c *Imagebuilder) GetComponentPolicyRequest(input *GetComponentPolicyInput)
 // API operation GetComponentPolicy for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ResourceNotFoundException
-//   At least one of the resources referenced by your request does not exist.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ResourceNotFoundException
+//     At least one of the resources referenced by your request does not exist.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetComponentPolicy
 func (c *Imagebuilder) GetComponentPolicy(input *GetComponentPolicyInput) (*GetComponentPolicyOutput, error) {
@@ -1838,14 +2154,13 @@ const opGetContainerRecipe = "GetContainerRecipe"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetContainerRecipeRequest method.
+//	req, resp := client.GetContainerRecipeRequest(params)
 //
-//    // Example sending a request using the GetContainerRecipeRequest method.
-//    req, resp := client.GetContainerRecipeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetContainerRecipe
 func (c *Imagebuilder) GetContainerRecipeRequest(input *GetContainerRecipeInput) (req *request.Request, output *GetContainerRecipeOutput) {
@@ -1876,25 +2191,26 @@ func (c *Imagebuilder) GetContainerRecipeRequest(input *GetContainerRecipeInput)
 // API operation GetContainerRecipe for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetContainerRecipe
 func (c *Imagebuilder) GetContainerRecipe(input *GetContainerRecipeInput) (*GetContainerRecipeOutput, error) {
@@ -1934,14 +2250,13 @@ const opGetContainerRecipePolicy = "GetContainerRecipePolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetContainerRecipePolicyRequest method.
+//	req, resp := client.GetContainerRecipePolicyRequest(params)
 //
-//    // Example sending a request using the GetContainerRecipePolicyRequest method.
-//    req, resp := client.GetContainerRecipePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetContainerRecipePolicy
 func (c *Imagebuilder) GetContainerRecipePolicyRequest(input *GetContainerRecipePolicyInput) (req *request.Request, output *GetContainerRecipePolicyOutput) {
@@ -1972,23 +2287,24 @@ func (c *Imagebuilder) GetContainerRecipePolicyRequest(input *GetContainerRecipe
 // API operation GetContainerRecipePolicy for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * ResourceNotFoundException
-//   At least one of the resources referenced by your request does not exist.
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - ResourceNotFoundException
+//     At least one of the resources referenced by your request does not exist.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetContainerRecipePolicy
 func (c *Imagebuilder) GetContainerRecipePolicy(input *GetContainerRecipePolicyInput) (*GetContainerRecipePolicyOutput, error) {
@@ -2028,14 +2344,13 @@ const opGetDistributionConfiguration = "GetDistributionConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDistributionConfigurationRequest method.
+//	req, resp := client.GetDistributionConfigurationRequest(params)
 //
-//    // Example sending a request using the GetDistributionConfigurationRequest method.
-//    req, resp := client.GetDistributionConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetDistributionConfiguration
 func (c *Imagebuilder) GetDistributionConfigurationRequest(input *GetDistributionConfigurationInput) (req *request.Request, output *GetDistributionConfigurationOutput) {
@@ -2066,25 +2381,26 @@ func (c *Imagebuilder) GetDistributionConfigurationRequest(input *GetDistributio
 // API operation GetDistributionConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetDistributionConfiguration
 func (c *Imagebuilder) GetDistributionConfiguration(input *GetDistributionConfigurationInput) (*GetDistributionConfigurationOutput, error) {
@@ -2124,14 +2440,13 @@ const opGetImage = "GetImage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetImageRequest method.
+//	req, resp := client.GetImageRequest(params)
 //
-//    // Example sending a request using the GetImageRequest method.
-//    req, resp := client.GetImageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetImage
 func (c *Imagebuilder) GetImageRequest(input *GetImageInput) (req *request.Request, output *GetImageOutput) {
@@ -2162,25 +2477,26 @@ func (c *Imagebuilder) GetImageRequest(input *GetImageInput) (req *request.Reque
 // API operation GetImage for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetImage
 func (c *Imagebuilder) GetImage(input *GetImageInput) (*GetImageOutput, error) {
@@ -2220,14 +2536,13 @@ const opGetImagePipeline = "GetImagePipeline"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetImagePipelineRequest method.
+//	req, resp := client.GetImagePipelineRequest(params)
 //
-//    // Example sending a request using the GetImagePipelineRequest method.
-//    req, resp := client.GetImagePipelineRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetImagePipeline
 func (c *Imagebuilder) GetImagePipelineRequest(input *GetImagePipelineInput) (req *request.Request, output *GetImagePipelineOutput) {
@@ -2258,25 +2573,26 @@ func (c *Imagebuilder) GetImagePipelineRequest(input *GetImagePipelineInput) (re
 // API operation GetImagePipeline for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetImagePipeline
 func (c *Imagebuilder) GetImagePipeline(input *GetImagePipelineInput) (*GetImagePipelineOutput, error) {
@@ -2316,14 +2632,13 @@ const opGetImagePolicy = "GetImagePolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetImagePolicyRequest method.
+//	req, resp := client.GetImagePolicyRequest(params)
 //
-//    // Example sending a request using the GetImagePolicyRequest method.
-//    req, resp := client.GetImagePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetImagePolicy
 func (c *Imagebuilder) GetImagePolicyRequest(input *GetImagePolicyInput) (req *request.Request, output *GetImagePolicyOutput) {
@@ -2354,23 +2669,24 @@ func (c *Imagebuilder) GetImagePolicyRequest(input *GetImagePolicyInput) (req *r
 // API operation GetImagePolicy for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ResourceNotFoundException
-//   At least one of the resources referenced by your request does not exist.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ResourceNotFoundException
+//     At least one of the resources referenced by your request does not exist.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetImagePolicy
 func (c *Imagebuilder) GetImagePolicy(input *GetImagePolicyInput) (*GetImagePolicyOutput, error) {
@@ -2410,14 +2726,13 @@ const opGetImageRecipe = "GetImageRecipe"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetImageRecipeRequest method.
+//	req, resp := client.GetImageRecipeRequest(params)
 //
-//    // Example sending a request using the GetImageRecipeRequest method.
-//    req, resp := client.GetImageRecipeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetImageRecipe
 func (c *Imagebuilder) GetImageRecipeRequest(input *GetImageRecipeInput) (req *request.Request, output *GetImageRecipeOutput) {
@@ -2448,25 +2763,26 @@ func (c *Imagebuilder) GetImageRecipeRequest(input *GetImageRecipeInput) (req *r
 // API operation GetImageRecipe for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetImageRecipe
 func (c *Imagebuilder) GetImageRecipe(input *GetImageRecipeInput) (*GetImageRecipeOutput, error) {
@@ -2506,14 +2822,13 @@ const opGetImageRecipePolicy = "GetImageRecipePolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetImageRecipePolicyRequest method.
+//	req, resp := client.GetImageRecipePolicyRequest(params)
 //
-//    // Example sending a request using the GetImageRecipePolicyRequest method.
-//    req, resp := client.GetImageRecipePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetImageRecipePolicy
 func (c *Imagebuilder) GetImageRecipePolicyRequest(input *GetImageRecipePolicyInput) (req *request.Request, output *GetImageRecipePolicyOutput) {
@@ -2544,23 +2859,24 @@ func (c *Imagebuilder) GetImageRecipePolicyRequest(input *GetImageRecipePolicyIn
 // API operation GetImageRecipePolicy for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * ResourceNotFoundException
-//   At least one of the resources referenced by your request does not exist.
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - ResourceNotFoundException
+//     At least one of the resources referenced by your request does not exist.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetImageRecipePolicy
 func (c *Imagebuilder) GetImageRecipePolicy(input *GetImageRecipePolicyInput) (*GetImageRecipePolicyOutput, error) {
@@ -2600,14 +2916,13 @@ const opGetInfrastructureConfiguration = "GetInfrastructureConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetInfrastructureConfigurationRequest method.
+//	req, resp := client.GetInfrastructureConfigurationRequest(params)
 //
-//    // Example sending a request using the GetInfrastructureConfigurationRequest method.
-//    req, resp := client.GetInfrastructureConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetInfrastructureConfiguration
 func (c *Imagebuilder) GetInfrastructureConfigurationRequest(input *GetInfrastructureConfigurationInput) (req *request.Request, output *GetInfrastructureConfigurationOutput) {
@@ -2638,25 +2953,26 @@ func (c *Imagebuilder) GetInfrastructureConfigurationRequest(input *GetInfrastru
 // API operation GetInfrastructureConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetInfrastructureConfiguration
 func (c *Imagebuilder) GetInfrastructureConfiguration(input *GetInfrastructureConfigurationInput) (*GetInfrastructureConfigurationOutput, error) {
@@ -2680,6 +2996,393 @@ func (c *Imagebuilder) GetInfrastructureConfigurationWithContext(ctx aws.Context
 	return out, req.Send()
 }
 
+const opGetLifecycleExecution = "GetLifecycleExecution"
+
+// GetLifecycleExecutionRequest generates a "aws/request.Request" representing the
+// client's request for the GetLifecycleExecution operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetLifecycleExecution for more information on using the GetLifecycleExecution
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetLifecycleExecutionRequest method.
+//	req, resp := client.GetLifecycleExecutionRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetLifecycleExecution
+func (c *Imagebuilder) GetLifecycleExecutionRequest(input *GetLifecycleExecutionInput) (req *request.Request, output *GetLifecycleExecutionOutput) {
+	op := &request.Operation{
+		Name:       opGetLifecycleExecution,
+		HTTPMethod: "GET",
+		HTTPPath:   "/GetLifecycleExecution",
+	}
+
+	if input == nil {
+		input = &GetLifecycleExecutionInput{}
+	}
+
+	output = &GetLifecycleExecutionOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetLifecycleExecution API operation for EC2 Image Builder.
+//
+// Get the runtime information that was logged for a specific runtime instance
+// of the lifecycle policy.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for EC2 Image Builder's
+// API operation GetLifecycleExecution for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
+//
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
+//
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
+//
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
+//
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetLifecycleExecution
+func (c *Imagebuilder) GetLifecycleExecution(input *GetLifecycleExecutionInput) (*GetLifecycleExecutionOutput, error) {
+	req, out := c.GetLifecycleExecutionRequest(input)
+	return out, req.Send()
+}
+
+// GetLifecycleExecutionWithContext is the same as GetLifecycleExecution with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetLifecycleExecution for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Imagebuilder) GetLifecycleExecutionWithContext(ctx aws.Context, input *GetLifecycleExecutionInput, opts ...request.Option) (*GetLifecycleExecutionOutput, error) {
+	req, out := c.GetLifecycleExecutionRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opGetLifecyclePolicy = "GetLifecyclePolicy"
+
+// GetLifecyclePolicyRequest generates a "aws/request.Request" representing the
+// client's request for the GetLifecyclePolicy operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetLifecyclePolicy for more information on using the GetLifecyclePolicy
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetLifecyclePolicyRequest method.
+//	req, resp := client.GetLifecyclePolicyRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetLifecyclePolicy
+func (c *Imagebuilder) GetLifecyclePolicyRequest(input *GetLifecyclePolicyInput) (req *request.Request, output *GetLifecyclePolicyOutput) {
+	op := &request.Operation{
+		Name:       opGetLifecyclePolicy,
+		HTTPMethod: "GET",
+		HTTPPath:   "/GetLifecyclePolicy",
+	}
+
+	if input == nil {
+		input = &GetLifecyclePolicyInput{}
+	}
+
+	output = &GetLifecyclePolicyOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetLifecyclePolicy API operation for EC2 Image Builder.
+//
+// Get details for the specified image lifecycle policy.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for EC2 Image Builder's
+// API operation GetLifecyclePolicy for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
+//
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
+//
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
+//
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
+//
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetLifecyclePolicy
+func (c *Imagebuilder) GetLifecyclePolicy(input *GetLifecyclePolicyInput) (*GetLifecyclePolicyOutput, error) {
+	req, out := c.GetLifecyclePolicyRequest(input)
+	return out, req.Send()
+}
+
+// GetLifecyclePolicyWithContext is the same as GetLifecyclePolicy with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetLifecyclePolicy for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Imagebuilder) GetLifecyclePolicyWithContext(ctx aws.Context, input *GetLifecyclePolicyInput, opts ...request.Option) (*GetLifecyclePolicyOutput, error) {
+	req, out := c.GetLifecyclePolicyRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opGetWorkflowExecution = "GetWorkflowExecution"
+
+// GetWorkflowExecutionRequest generates a "aws/request.Request" representing the
+// client's request for the GetWorkflowExecution operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetWorkflowExecution for more information on using the GetWorkflowExecution
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetWorkflowExecutionRequest method.
+//	req, resp := client.GetWorkflowExecutionRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetWorkflowExecution
+func (c *Imagebuilder) GetWorkflowExecutionRequest(input *GetWorkflowExecutionInput) (req *request.Request, output *GetWorkflowExecutionOutput) {
+	op := &request.Operation{
+		Name:       opGetWorkflowExecution,
+		HTTPMethod: "GET",
+		HTTPPath:   "/GetWorkflowExecution",
+	}
+
+	if input == nil {
+		input = &GetWorkflowExecutionInput{}
+	}
+
+	output = &GetWorkflowExecutionOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetWorkflowExecution API operation for EC2 Image Builder.
+//
+// Get the runtime information that was logged for a specific runtime instance
+// of the workflow.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for EC2 Image Builder's
+// API operation GetWorkflowExecution for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
+//
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
+//
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
+//
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
+//
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetWorkflowExecution
+func (c *Imagebuilder) GetWorkflowExecution(input *GetWorkflowExecutionInput) (*GetWorkflowExecutionOutput, error) {
+	req, out := c.GetWorkflowExecutionRequest(input)
+	return out, req.Send()
+}
+
+// GetWorkflowExecutionWithContext is the same as GetWorkflowExecution with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetWorkflowExecution for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Imagebuilder) GetWorkflowExecutionWithContext(ctx aws.Context, input *GetWorkflowExecutionInput, opts ...request.Option) (*GetWorkflowExecutionOutput, error) {
+	req, out := c.GetWorkflowExecutionRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opGetWorkflowStepExecution = "GetWorkflowStepExecution"
+
+// GetWorkflowStepExecutionRequest generates a "aws/request.Request" representing the
+// client's request for the GetWorkflowStepExecution operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetWorkflowStepExecution for more information on using the GetWorkflowStepExecution
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetWorkflowStepExecutionRequest method.
+//	req, resp := client.GetWorkflowStepExecutionRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetWorkflowStepExecution
+func (c *Imagebuilder) GetWorkflowStepExecutionRequest(input *GetWorkflowStepExecutionInput) (req *request.Request, output *GetWorkflowStepExecutionOutput) {
+	op := &request.Operation{
+		Name:       opGetWorkflowStepExecution,
+		HTTPMethod: "GET",
+		HTTPPath:   "/GetWorkflowStepExecution",
+	}
+
+	if input == nil {
+		input = &GetWorkflowStepExecutionInput{}
+	}
+
+	output = &GetWorkflowStepExecutionOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetWorkflowStepExecution API operation for EC2 Image Builder.
+//
+// Get the runtime information that was logged for a specific runtime instance
+// of the workflow step.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for EC2 Image Builder's
+// API operation GetWorkflowStepExecution for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
+//
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
+//
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
+//
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
+//
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/GetWorkflowStepExecution
+func (c *Imagebuilder) GetWorkflowStepExecution(input *GetWorkflowStepExecutionInput) (*GetWorkflowStepExecutionOutput, error) {
+	req, out := c.GetWorkflowStepExecutionRequest(input)
+	return out, req.Send()
+}
+
+// GetWorkflowStepExecutionWithContext is the same as GetWorkflowStepExecution with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetWorkflowStepExecution for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Imagebuilder) GetWorkflowStepExecutionWithContext(ctx aws.Context, input *GetWorkflowStepExecutionInput, opts ...request.Option) (*GetWorkflowStepExecutionOutput, error) {
+	req, out := c.GetWorkflowStepExecutionRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opImportComponent = "ImportComponent"
 
 // ImportComponentRequest generates a "aws/request.Request" representing the
@@ -2696,14 +3399,13 @@ const opImportComponent = "ImportComponent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ImportComponentRequest method.
+//	req, resp := client.ImportComponentRequest(params)
 //
-//    // Example sending a request using the ImportComponentRequest method.
-//    req, resp := client.ImportComponentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ImportComponent
 func (c *Imagebuilder) ImportComponentRequest(input *ImportComponentInput) (req *request.Request, output *ImportComponentOutput) {
@@ -2734,40 +3436,41 @@ func (c *Imagebuilder) ImportComponentRequest(input *ImportComponentInput) (req 
 // API operation ImportComponent for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * IdempotentParameterMismatchException
-//   You have specified a client token for an operation using parameter values
-//   that differ from a previous request that used the same client token.
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - IdempotentParameterMismatchException
+//     You have specified a client token for an operation using parameter values
+//     that differ from a previous request that used the same client token.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
 //
-//   * InvalidVersionNumberException
-//   Your version number is out of bounds or does not follow the required syntax.
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
-//   * ResourceInUseException
-//   The resource that you are trying to operate on is currently in use. Review
-//   the message details and retry later.
+//   - InvalidVersionNumberException
+//     Your version number is out of bounds or does not follow the required syntax.
 //
-//   * InvalidParameterCombinationException
-//   You have specified two or more mutually exclusive parameters. Review the
-//   error message for details.
+//   - ResourceInUseException
+//     The resource that you are trying to operate on is currently in use. Review
+//     the message details and retry later.
+//
+//   - InvalidParameterCombinationException
+//     You have specified two or more mutually exclusive parameters. Review the
+//     error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ImportComponent
 func (c *Imagebuilder) ImportComponent(input *ImportComponentInput) (*ImportComponentOutput, error) {
@@ -2807,14 +3510,13 @@ const opImportVmImage = "ImportVmImage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ImportVmImageRequest method.
+//	req, resp := client.ImportVmImageRequest(params)
 //
-//    // Example sending a request using the ImportVmImageRequest method.
-//    req, resp := client.ImportVmImageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ImportVmImage
 func (c *Imagebuilder) ImportVmImageRequest(input *ImportVmImageInput) (req *request.Request, output *ImportVmImageOutput) {
@@ -2853,16 +3555,17 @@ func (c *Imagebuilder) ImportVmImageRequest(input *ImportVmImageInput) (req *req
 // API operation ImportVmImage for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
+//
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ImportVmImage
 func (c *Imagebuilder) ImportVmImage(input *ImportVmImageInput) (*ImportVmImageOutput, error) {
@@ -2902,14 +3605,13 @@ const opListComponentBuildVersions = "ListComponentBuildVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListComponentBuildVersionsRequest method.
+//	req, resp := client.ListComponentBuildVersionsRequest(params)
 //
-//    // Example sending a request using the ListComponentBuildVersionsRequest method.
-//    req, resp := client.ListComponentBuildVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListComponentBuildVersions
 func (c *Imagebuilder) ListComponentBuildVersionsRequest(input *ListComponentBuildVersionsInput) (req *request.Request, output *ListComponentBuildVersionsOutput) {
@@ -2954,28 +3656,29 @@ func (c *Imagebuilder) ListComponentBuildVersionsRequest(input *ListComponentBui
 // API operation ListComponentBuildVersions for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * InvalidPaginationTokenException
-//   You have provided an invalid pagination token in your request.
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - InvalidPaginationTokenException
+//     You have provided an invalid pagination token in your request.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListComponentBuildVersions
 func (c *Imagebuilder) ListComponentBuildVersions(input *ListComponentBuildVersionsInput) (*ListComponentBuildVersionsOutput, error) {
@@ -3007,15 +3710,14 @@ func (c *Imagebuilder) ListComponentBuildVersionsWithContext(ctx aws.Context, in
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListComponentBuildVersions operation.
-//    pageNum := 0
-//    err := client.ListComponentBuildVersionsPages(params,
-//        func(page *imagebuilder.ListComponentBuildVersionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListComponentBuildVersions operation.
+//	pageNum := 0
+//	err := client.ListComponentBuildVersionsPages(params,
+//	    func(page *imagebuilder.ListComponentBuildVersionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Imagebuilder) ListComponentBuildVersionsPages(input *ListComponentBuildVersionsInput, fn func(*ListComponentBuildVersionsOutput, bool) bool) error {
 	return c.ListComponentBuildVersionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3067,14 +3769,13 @@ const opListComponents = "ListComponents"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListComponentsRequest method.
+//	req, resp := client.ListComponentsRequest(params)
 //
-//    // Example sending a request using the ListComponentsRequest method.
-//    req, resp := client.ListComponentsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListComponents
 func (c *Imagebuilder) ListComponentsRequest(input *ListComponentsInput) (req *request.Request, output *ListComponentsOutput) {
@@ -3101,7 +3802,9 @@ func (c *Imagebuilder) ListComponentsRequest(input *ListComponentsInput) (req *r
 
 // ListComponents API operation for EC2 Image Builder.
 //
-// Returns the list of component build versions for the specified semantic version.
+// Returns the list of components that can be filtered by name, or by using
+// the listed filters to streamline results. Newly created components can take
+// up to two minutes to appear in the ListComponents API Results.
 //
 // The semantic version has four nodes: <major>.<minor>.<patch>/<build>. You
 // can assign values for the first three, and can filter on all of them.
@@ -3119,28 +3822,29 @@ func (c *Imagebuilder) ListComponentsRequest(input *ListComponentsInput) (req *r
 // API operation ListComponents for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * InvalidPaginationTokenException
-//   You have provided an invalid pagination token in your request.
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - InvalidPaginationTokenException
+//     You have provided an invalid pagination token in your request.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListComponents
 func (c *Imagebuilder) ListComponents(input *ListComponentsInput) (*ListComponentsOutput, error) {
@@ -3172,15 +3876,14 @@ func (c *Imagebuilder) ListComponentsWithContext(ctx aws.Context, input *ListCom
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListComponents operation.
-//    pageNum := 0
-//    err := client.ListComponentsPages(params,
-//        func(page *imagebuilder.ListComponentsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListComponents operation.
+//	pageNum := 0
+//	err := client.ListComponentsPages(params,
+//	    func(page *imagebuilder.ListComponentsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Imagebuilder) ListComponentsPages(input *ListComponentsInput, fn func(*ListComponentsOutput, bool) bool) error {
 	return c.ListComponentsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3232,14 +3935,13 @@ const opListContainerRecipes = "ListContainerRecipes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListContainerRecipesRequest method.
+//	req, resp := client.ListContainerRecipesRequest(params)
 //
-//    // Example sending a request using the ListContainerRecipesRequest method.
-//    req, resp := client.ListContainerRecipesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListContainerRecipes
 func (c *Imagebuilder) ListContainerRecipesRequest(input *ListContainerRecipesInput) (req *request.Request, output *ListContainerRecipesOutput) {
@@ -3276,28 +3978,29 @@ func (c *Imagebuilder) ListContainerRecipesRequest(input *ListContainerRecipesIn
 // API operation ListContainerRecipes for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * InvalidPaginationTokenException
-//   You have provided an invalid pagination token in your request.
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - InvalidPaginationTokenException
+//     You have provided an invalid pagination token in your request.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListContainerRecipes
 func (c *Imagebuilder) ListContainerRecipes(input *ListContainerRecipesInput) (*ListContainerRecipesOutput, error) {
@@ -3329,15 +4032,14 @@ func (c *Imagebuilder) ListContainerRecipesWithContext(ctx aws.Context, input *L
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListContainerRecipes operation.
-//    pageNum := 0
-//    err := client.ListContainerRecipesPages(params,
-//        func(page *imagebuilder.ListContainerRecipesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListContainerRecipes operation.
+//	pageNum := 0
+//	err := client.ListContainerRecipesPages(params,
+//	    func(page *imagebuilder.ListContainerRecipesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Imagebuilder) ListContainerRecipesPages(input *ListContainerRecipesInput, fn func(*ListContainerRecipesOutput, bool) bool) error {
 	return c.ListContainerRecipesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3389,14 +4091,13 @@ const opListDistributionConfigurations = "ListDistributionConfigurations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDistributionConfigurationsRequest method.
+//	req, resp := client.ListDistributionConfigurationsRequest(params)
 //
-//    // Example sending a request using the ListDistributionConfigurationsRequest method.
-//    req, resp := client.ListDistributionConfigurationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListDistributionConfigurations
 func (c *Imagebuilder) ListDistributionConfigurationsRequest(input *ListDistributionConfigurationsInput) (req *request.Request, output *ListDistributionConfigurationsOutput) {
@@ -3433,28 +4134,29 @@ func (c *Imagebuilder) ListDistributionConfigurationsRequest(input *ListDistribu
 // API operation ListDistributionConfigurations for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * InvalidPaginationTokenException
-//   You have provided an invalid pagination token in your request.
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - InvalidPaginationTokenException
+//     You have provided an invalid pagination token in your request.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListDistributionConfigurations
 func (c *Imagebuilder) ListDistributionConfigurations(input *ListDistributionConfigurationsInput) (*ListDistributionConfigurationsOutput, error) {
@@ -3486,15 +4188,14 @@ func (c *Imagebuilder) ListDistributionConfigurationsWithContext(ctx aws.Context
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListDistributionConfigurations operation.
-//    pageNum := 0
-//    err := client.ListDistributionConfigurationsPages(params,
-//        func(page *imagebuilder.ListDistributionConfigurationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListDistributionConfigurations operation.
+//	pageNum := 0
+//	err := client.ListDistributionConfigurationsPages(params,
+//	    func(page *imagebuilder.ListDistributionConfigurationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Imagebuilder) ListDistributionConfigurationsPages(input *ListDistributionConfigurationsInput, fn func(*ListDistributionConfigurationsOutput, bool) bool) error {
 	return c.ListDistributionConfigurationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3546,14 +4247,13 @@ const opListImageBuildVersions = "ListImageBuildVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListImageBuildVersionsRequest method.
+//	req, resp := client.ListImageBuildVersionsRequest(params)
 //
-//    // Example sending a request using the ListImageBuildVersionsRequest method.
-//    req, resp := client.ListImageBuildVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListImageBuildVersions
 func (c *Imagebuilder) ListImageBuildVersionsRequest(input *ListImageBuildVersionsInput) (req *request.Request, output *ListImageBuildVersionsOutput) {
@@ -3590,28 +4290,29 @@ func (c *Imagebuilder) ListImageBuildVersionsRequest(input *ListImageBuildVersio
 // API operation ListImageBuildVersions for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * InvalidPaginationTokenException
-//   You have provided an invalid pagination token in your request.
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - InvalidPaginationTokenException
+//     You have provided an invalid pagination token in your request.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListImageBuildVersions
 func (c *Imagebuilder) ListImageBuildVersions(input *ListImageBuildVersionsInput) (*ListImageBuildVersionsOutput, error) {
@@ -3643,15 +4344,14 @@ func (c *Imagebuilder) ListImageBuildVersionsWithContext(ctx aws.Context, input 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListImageBuildVersions operation.
-//    pageNum := 0
-//    err := client.ListImageBuildVersionsPages(params,
-//        func(page *imagebuilder.ListImageBuildVersionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListImageBuildVersions operation.
+//	pageNum := 0
+//	err := client.ListImageBuildVersionsPages(params,
+//	    func(page *imagebuilder.ListImageBuildVersionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Imagebuilder) ListImageBuildVersionsPages(input *ListImageBuildVersionsInput, fn func(*ListImageBuildVersionsOutput, bool) bool) error {
 	return c.ListImageBuildVersionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3703,14 +4403,13 @@ const opListImagePackages = "ListImagePackages"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListImagePackagesRequest method.
+//	req, resp := client.ListImagePackagesRequest(params)
 //
-//    // Example sending a request using the ListImagePackagesRequest method.
-//    req, resp := client.ListImagePackagesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListImagePackages
 func (c *Imagebuilder) ListImagePackagesRequest(input *ListImagePackagesInput) (req *request.Request, output *ListImagePackagesOutput) {
@@ -3748,31 +4447,32 @@ func (c *Imagebuilder) ListImagePackagesRequest(input *ListImagePackagesInput) (
 // API operation ListImagePackages for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * InvalidPaginationTokenException
-//   You have provided an invalid pagination token in your request.
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
 //
-//   * ResourceNotFoundException
-//   At least one of the resources referenced by your request does not exist.
+//   - InvalidPaginationTokenException
+//     You have provided an invalid pagination token in your request.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - ResourceNotFoundException
+//     At least one of the resources referenced by your request does not exist.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListImagePackages
 func (c *Imagebuilder) ListImagePackages(input *ListImagePackagesInput) (*ListImagePackagesOutput, error) {
@@ -3804,15 +4504,14 @@ func (c *Imagebuilder) ListImagePackagesWithContext(ctx aws.Context, input *List
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListImagePackages operation.
-//    pageNum := 0
-//    err := client.ListImagePackagesPages(params,
-//        func(page *imagebuilder.ListImagePackagesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListImagePackages operation.
+//	pageNum := 0
+//	err := client.ListImagePackagesPages(params,
+//	    func(page *imagebuilder.ListImagePackagesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Imagebuilder) ListImagePackagesPages(input *ListImagePackagesInput, fn func(*ListImagePackagesOutput, bool) bool) error {
 	return c.ListImagePackagesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3864,14 +4563,13 @@ const opListImagePipelineImages = "ListImagePipelineImages"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListImagePipelineImagesRequest method.
+//	req, resp := client.ListImagePipelineImagesRequest(params)
 //
-//    // Example sending a request using the ListImagePipelineImagesRequest method.
-//    req, resp := client.ListImagePipelineImagesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListImagePipelineImages
 func (c *Imagebuilder) ListImagePipelineImagesRequest(input *ListImagePipelineImagesInput) (req *request.Request, output *ListImagePipelineImagesOutput) {
@@ -3908,31 +4606,32 @@ func (c *Imagebuilder) ListImagePipelineImagesRequest(input *ListImagePipelineIm
 // API operation ListImagePipelineImages for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * InvalidPaginationTokenException
-//   You have provided an invalid pagination token in your request.
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
 //
-//   * ResourceNotFoundException
-//   At least one of the resources referenced by your request does not exist.
+//   - InvalidPaginationTokenException
+//     You have provided an invalid pagination token in your request.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - ResourceNotFoundException
+//     At least one of the resources referenced by your request does not exist.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListImagePipelineImages
 func (c *Imagebuilder) ListImagePipelineImages(input *ListImagePipelineImagesInput) (*ListImagePipelineImagesOutput, error) {
@@ -3964,15 +4663,14 @@ func (c *Imagebuilder) ListImagePipelineImagesWithContext(ctx aws.Context, input
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListImagePipelineImages operation.
-//    pageNum := 0
-//    err := client.ListImagePipelineImagesPages(params,
-//        func(page *imagebuilder.ListImagePipelineImagesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListImagePipelineImages operation.
+//	pageNum := 0
+//	err := client.ListImagePipelineImagesPages(params,
+//	    func(page *imagebuilder.ListImagePipelineImagesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Imagebuilder) ListImagePipelineImagesPages(input *ListImagePipelineImagesInput, fn func(*ListImagePipelineImagesOutput, bool) bool) error {
 	return c.ListImagePipelineImagesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4024,14 +4722,13 @@ const opListImagePipelines = "ListImagePipelines"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListImagePipelinesRequest method.
+//	req, resp := client.ListImagePipelinesRequest(params)
 //
-//    // Example sending a request using the ListImagePipelinesRequest method.
-//    req, resp := client.ListImagePipelinesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListImagePipelines
 func (c *Imagebuilder) ListImagePipelinesRequest(input *ListImagePipelinesInput) (req *request.Request, output *ListImagePipelinesOutput) {
@@ -4068,28 +4765,29 @@ func (c *Imagebuilder) ListImagePipelinesRequest(input *ListImagePipelinesInput)
 // API operation ListImagePipelines for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * InvalidPaginationTokenException
-//   You have provided an invalid pagination token in your request.
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - InvalidPaginationTokenException
+//     You have provided an invalid pagination token in your request.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListImagePipelines
 func (c *Imagebuilder) ListImagePipelines(input *ListImagePipelinesInput) (*ListImagePipelinesOutput, error) {
@@ -4121,15 +4819,14 @@ func (c *Imagebuilder) ListImagePipelinesWithContext(ctx aws.Context, input *Lis
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListImagePipelines operation.
-//    pageNum := 0
-//    err := client.ListImagePipelinesPages(params,
-//        func(page *imagebuilder.ListImagePipelinesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListImagePipelines operation.
+//	pageNum := 0
+//	err := client.ListImagePipelinesPages(params,
+//	    func(page *imagebuilder.ListImagePipelinesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Imagebuilder) ListImagePipelinesPages(input *ListImagePipelinesInput, fn func(*ListImagePipelinesOutput, bool) bool) error {
 	return c.ListImagePipelinesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4181,14 +4878,13 @@ const opListImageRecipes = "ListImageRecipes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListImageRecipesRequest method.
+//	req, resp := client.ListImageRecipesRequest(params)
 //
-//    // Example sending a request using the ListImageRecipesRequest method.
-//    req, resp := client.ListImageRecipesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListImageRecipes
 func (c *Imagebuilder) ListImageRecipesRequest(input *ListImageRecipesInput) (req *request.Request, output *ListImageRecipesOutput) {
@@ -4225,28 +4921,29 @@ func (c *Imagebuilder) ListImageRecipesRequest(input *ListImageRecipesInput) (re
 // API operation ListImageRecipes for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * InvalidPaginationTokenException
-//   You have provided an invalid pagination token in your request.
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - InvalidPaginationTokenException
+//     You have provided an invalid pagination token in your request.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListImageRecipes
 func (c *Imagebuilder) ListImageRecipes(input *ListImageRecipesInput) (*ListImageRecipesOutput, error) {
@@ -4278,15 +4975,14 @@ func (c *Imagebuilder) ListImageRecipesWithContext(ctx aws.Context, input *ListI
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListImageRecipes operation.
-//    pageNum := 0
-//    err := client.ListImageRecipesPages(params,
-//        func(page *imagebuilder.ListImageRecipesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListImageRecipes operation.
+//	pageNum := 0
+//	err := client.ListImageRecipesPages(params,
+//	    func(page *imagebuilder.ListImageRecipesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Imagebuilder) ListImageRecipesPages(input *ListImageRecipesInput, fn func(*ListImageRecipesOutput, bool) bool) error {
 	return c.ListImageRecipesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4322,6 +5018,332 @@ func (c *Imagebuilder) ListImageRecipesPagesWithContext(ctx aws.Context, input *
 	return p.Err()
 }
 
+const opListImageScanFindingAggregations = "ListImageScanFindingAggregations"
+
+// ListImageScanFindingAggregationsRequest generates a "aws/request.Request" representing the
+// client's request for the ListImageScanFindingAggregations operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListImageScanFindingAggregations for more information on using the ListImageScanFindingAggregations
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListImageScanFindingAggregationsRequest method.
+//	req, resp := client.ListImageScanFindingAggregationsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListImageScanFindingAggregations
+func (c *Imagebuilder) ListImageScanFindingAggregationsRequest(input *ListImageScanFindingAggregationsInput) (req *request.Request, output *ListImageScanFindingAggregationsOutput) {
+	op := &request.Operation{
+		Name:       opListImageScanFindingAggregations,
+		HTTPMethod: "POST",
+		HTTPPath:   "/ListImageScanFindingAggregations",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"nextToken"},
+			OutputTokens:    []string{"nextToken"},
+			LimitToken:      "",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListImageScanFindingAggregationsInput{}
+	}
+
+	output = &ListImageScanFindingAggregationsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListImageScanFindingAggregations API operation for EC2 Image Builder.
+//
+// Returns a list of image scan aggregations for your account. You can filter
+// by the type of key that Image Builder uses to group results. For example,
+// if you want to get a list of findings by severity level for one of your pipelines,
+// you might specify your pipeline with the imagePipelineArn filter. If you
+// don't specify a filter, Image Builder returns an aggregation for your account.
+//
+// To streamline results, you can use the following filters in your request:
+//
+//   - accountId
+//
+//   - imageBuildVersionArn
+//
+//   - imagePipelineArn
+//
+//   - vulnerabilityId
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for EC2 Image Builder's
+// API operation ListImageScanFindingAggregations for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
+//
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
+//
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
+//
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
+//
+//   - InvalidPaginationTokenException
+//     You have provided an invalid pagination token in your request.
+//
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListImageScanFindingAggregations
+func (c *Imagebuilder) ListImageScanFindingAggregations(input *ListImageScanFindingAggregationsInput) (*ListImageScanFindingAggregationsOutput, error) {
+	req, out := c.ListImageScanFindingAggregationsRequest(input)
+	return out, req.Send()
+}
+
+// ListImageScanFindingAggregationsWithContext is the same as ListImageScanFindingAggregations with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListImageScanFindingAggregations for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Imagebuilder) ListImageScanFindingAggregationsWithContext(ctx aws.Context, input *ListImageScanFindingAggregationsInput, opts ...request.Option) (*ListImageScanFindingAggregationsOutput, error) {
+	req, out := c.ListImageScanFindingAggregationsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListImageScanFindingAggregationsPages iterates over the pages of a ListImageScanFindingAggregations operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListImageScanFindingAggregations method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListImageScanFindingAggregations operation.
+//	pageNum := 0
+//	err := client.ListImageScanFindingAggregationsPages(params,
+//	    func(page *imagebuilder.ListImageScanFindingAggregationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *Imagebuilder) ListImageScanFindingAggregationsPages(input *ListImageScanFindingAggregationsInput, fn func(*ListImageScanFindingAggregationsOutput, bool) bool) error {
+	return c.ListImageScanFindingAggregationsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListImageScanFindingAggregationsPagesWithContext same as ListImageScanFindingAggregationsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Imagebuilder) ListImageScanFindingAggregationsPagesWithContext(ctx aws.Context, input *ListImageScanFindingAggregationsInput, fn func(*ListImageScanFindingAggregationsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListImageScanFindingAggregationsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListImageScanFindingAggregationsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListImageScanFindingAggregationsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opListImageScanFindings = "ListImageScanFindings"
+
+// ListImageScanFindingsRequest generates a "aws/request.Request" representing the
+// client's request for the ListImageScanFindings operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListImageScanFindings for more information on using the ListImageScanFindings
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListImageScanFindingsRequest method.
+//	req, resp := client.ListImageScanFindingsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListImageScanFindings
+func (c *Imagebuilder) ListImageScanFindingsRequest(input *ListImageScanFindingsInput) (req *request.Request, output *ListImageScanFindingsOutput) {
+	op := &request.Operation{
+		Name:       opListImageScanFindings,
+		HTTPMethod: "POST",
+		HTTPPath:   "/ListImageScanFindings",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"nextToken"},
+			OutputTokens:    []string{"nextToken"},
+			LimitToken:      "maxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListImageScanFindingsInput{}
+	}
+
+	output = &ListImageScanFindingsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListImageScanFindings API operation for EC2 Image Builder.
+//
+// Returns a list of image scan findings for your account.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for EC2 Image Builder's
+// API operation ListImageScanFindings for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
+//
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
+//
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
+//
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
+//
+//   - InvalidPaginationTokenException
+//     You have provided an invalid pagination token in your request.
+//
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListImageScanFindings
+func (c *Imagebuilder) ListImageScanFindings(input *ListImageScanFindingsInput) (*ListImageScanFindingsOutput, error) {
+	req, out := c.ListImageScanFindingsRequest(input)
+	return out, req.Send()
+}
+
+// ListImageScanFindingsWithContext is the same as ListImageScanFindings with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListImageScanFindings for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Imagebuilder) ListImageScanFindingsWithContext(ctx aws.Context, input *ListImageScanFindingsInput, opts ...request.Option) (*ListImageScanFindingsOutput, error) {
+	req, out := c.ListImageScanFindingsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListImageScanFindingsPages iterates over the pages of a ListImageScanFindings operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListImageScanFindings method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListImageScanFindings operation.
+//	pageNum := 0
+//	err := client.ListImageScanFindingsPages(params,
+//	    func(page *imagebuilder.ListImageScanFindingsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *Imagebuilder) ListImageScanFindingsPages(input *ListImageScanFindingsInput, fn func(*ListImageScanFindingsOutput, bool) bool) error {
+	return c.ListImageScanFindingsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListImageScanFindingsPagesWithContext same as ListImageScanFindingsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Imagebuilder) ListImageScanFindingsPagesWithContext(ctx aws.Context, input *ListImageScanFindingsInput, fn func(*ListImageScanFindingsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListImageScanFindingsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListImageScanFindingsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListImageScanFindingsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opListImages = "ListImages"
 
 // ListImagesRequest generates a "aws/request.Request" representing the
@@ -4338,14 +5360,13 @@ const opListImages = "ListImages"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListImagesRequest method.
+//	req, resp := client.ListImagesRequest(params)
 //
-//    // Example sending a request using the ListImagesRequest method.
-//    req, resp := client.ListImagesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListImages
 func (c *Imagebuilder) ListImagesRequest(input *ListImagesInput) (req *request.Request, output *ListImagesOutput) {
@@ -4372,7 +5393,8 @@ func (c *Imagebuilder) ListImagesRequest(input *ListImagesInput) (req *request.R
 
 // ListImages API operation for EC2 Image Builder.
 //
-// Returns the list of images that you have access to.
+// Returns the list of images that you have access to. Newly created images
+// can take up to two minutes to appear in the ListImages API Results.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4382,28 +5404,29 @@ func (c *Imagebuilder) ListImagesRequest(input *ListImagesInput) (req *request.R
 // API operation ListImages for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * InvalidPaginationTokenException
-//   You have provided an invalid pagination token in your request.
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - InvalidPaginationTokenException
+//     You have provided an invalid pagination token in your request.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListImages
 func (c *Imagebuilder) ListImages(input *ListImagesInput) (*ListImagesOutput, error) {
@@ -4435,15 +5458,14 @@ func (c *Imagebuilder) ListImagesWithContext(ctx aws.Context, input *ListImagesI
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListImages operation.
-//    pageNum := 0
-//    err := client.ListImagesPages(params,
-//        func(page *imagebuilder.ListImagesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListImages operation.
+//	pageNum := 0
+//	err := client.ListImagesPages(params,
+//	    func(page *imagebuilder.ListImagesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Imagebuilder) ListImagesPages(input *ListImagesInput, fn func(*ListImagesOutput, bool) bool) error {
 	return c.ListImagesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4495,14 +5517,13 @@ const opListInfrastructureConfigurations = "ListInfrastructureConfigurations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListInfrastructureConfigurationsRequest method.
+//	req, resp := client.ListInfrastructureConfigurationsRequest(params)
 //
-//    // Example sending a request using the ListInfrastructureConfigurationsRequest method.
-//    req, resp := client.ListInfrastructureConfigurationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListInfrastructureConfigurations
 func (c *Imagebuilder) ListInfrastructureConfigurationsRequest(input *ListInfrastructureConfigurationsInput) (req *request.Request, output *ListInfrastructureConfigurationsOutput) {
@@ -4539,28 +5560,29 @@ func (c *Imagebuilder) ListInfrastructureConfigurationsRequest(input *ListInfras
 // API operation ListInfrastructureConfigurations for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * InvalidPaginationTokenException
-//   You have provided an invalid pagination token in your request.
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - InvalidPaginationTokenException
+//     You have provided an invalid pagination token in your request.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListInfrastructureConfigurations
 func (c *Imagebuilder) ListInfrastructureConfigurations(input *ListInfrastructureConfigurationsInput) (*ListInfrastructureConfigurationsOutput, error) {
@@ -4592,15 +5614,14 @@ func (c *Imagebuilder) ListInfrastructureConfigurationsWithContext(ctx aws.Conte
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListInfrastructureConfigurations operation.
-//    pageNum := 0
-//    err := client.ListInfrastructureConfigurationsPages(params,
-//        func(page *imagebuilder.ListInfrastructureConfigurationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListInfrastructureConfigurations operation.
+//	pageNum := 0
+//	err := client.ListInfrastructureConfigurationsPages(params,
+//	    func(page *imagebuilder.ListInfrastructureConfigurationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Imagebuilder) ListInfrastructureConfigurationsPages(input *ListInfrastructureConfigurationsInput, fn func(*ListInfrastructureConfigurationsOutput, bool) bool) error {
 	return c.ListInfrastructureConfigurationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4636,6 +5657,475 @@ func (c *Imagebuilder) ListInfrastructureConfigurationsPagesWithContext(ctx aws.
 	return p.Err()
 }
 
+const opListLifecycleExecutionResources = "ListLifecycleExecutionResources"
+
+// ListLifecycleExecutionResourcesRequest generates a "aws/request.Request" representing the
+// client's request for the ListLifecycleExecutionResources operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListLifecycleExecutionResources for more information on using the ListLifecycleExecutionResources
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListLifecycleExecutionResourcesRequest method.
+//	req, resp := client.ListLifecycleExecutionResourcesRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListLifecycleExecutionResources
+func (c *Imagebuilder) ListLifecycleExecutionResourcesRequest(input *ListLifecycleExecutionResourcesInput) (req *request.Request, output *ListLifecycleExecutionResourcesOutput) {
+	op := &request.Operation{
+		Name:       opListLifecycleExecutionResources,
+		HTTPMethod: "POST",
+		HTTPPath:   "/ListLifecycleExecutionResources",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"nextToken"},
+			OutputTokens:    []string{"nextToken"},
+			LimitToken:      "maxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListLifecycleExecutionResourcesInput{}
+	}
+
+	output = &ListLifecycleExecutionResourcesOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListLifecycleExecutionResources API operation for EC2 Image Builder.
+//
+// List resources that the runtime instance of the image lifecycle identified
+// for lifecycle actions.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for EC2 Image Builder's
+// API operation ListLifecycleExecutionResources for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
+//
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
+//
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
+//
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
+//
+//   - InvalidPaginationTokenException
+//     You have provided an invalid pagination token in your request.
+//
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListLifecycleExecutionResources
+func (c *Imagebuilder) ListLifecycleExecutionResources(input *ListLifecycleExecutionResourcesInput) (*ListLifecycleExecutionResourcesOutput, error) {
+	req, out := c.ListLifecycleExecutionResourcesRequest(input)
+	return out, req.Send()
+}
+
+// ListLifecycleExecutionResourcesWithContext is the same as ListLifecycleExecutionResources with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListLifecycleExecutionResources for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Imagebuilder) ListLifecycleExecutionResourcesWithContext(ctx aws.Context, input *ListLifecycleExecutionResourcesInput, opts ...request.Option) (*ListLifecycleExecutionResourcesOutput, error) {
+	req, out := c.ListLifecycleExecutionResourcesRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListLifecycleExecutionResourcesPages iterates over the pages of a ListLifecycleExecutionResources operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListLifecycleExecutionResources method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListLifecycleExecutionResources operation.
+//	pageNum := 0
+//	err := client.ListLifecycleExecutionResourcesPages(params,
+//	    func(page *imagebuilder.ListLifecycleExecutionResourcesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *Imagebuilder) ListLifecycleExecutionResourcesPages(input *ListLifecycleExecutionResourcesInput, fn func(*ListLifecycleExecutionResourcesOutput, bool) bool) error {
+	return c.ListLifecycleExecutionResourcesPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListLifecycleExecutionResourcesPagesWithContext same as ListLifecycleExecutionResourcesPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Imagebuilder) ListLifecycleExecutionResourcesPagesWithContext(ctx aws.Context, input *ListLifecycleExecutionResourcesInput, fn func(*ListLifecycleExecutionResourcesOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListLifecycleExecutionResourcesInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListLifecycleExecutionResourcesRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListLifecycleExecutionResourcesOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opListLifecycleExecutions = "ListLifecycleExecutions"
+
+// ListLifecycleExecutionsRequest generates a "aws/request.Request" representing the
+// client's request for the ListLifecycleExecutions operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListLifecycleExecutions for more information on using the ListLifecycleExecutions
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListLifecycleExecutionsRequest method.
+//	req, resp := client.ListLifecycleExecutionsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListLifecycleExecutions
+func (c *Imagebuilder) ListLifecycleExecutionsRequest(input *ListLifecycleExecutionsInput) (req *request.Request, output *ListLifecycleExecutionsOutput) {
+	op := &request.Operation{
+		Name:       opListLifecycleExecutions,
+		HTTPMethod: "POST",
+		HTTPPath:   "/ListLifecycleExecutions",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"nextToken"},
+			OutputTokens:    []string{"nextToken"},
+			LimitToken:      "maxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListLifecycleExecutionsInput{}
+	}
+
+	output = &ListLifecycleExecutionsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListLifecycleExecutions API operation for EC2 Image Builder.
+//
+// Get the lifecycle runtime history for the specified resource.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for EC2 Image Builder's
+// API operation ListLifecycleExecutions for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
+//
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
+//
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
+//
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
+//
+//   - InvalidPaginationTokenException
+//     You have provided an invalid pagination token in your request.
+//
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListLifecycleExecutions
+func (c *Imagebuilder) ListLifecycleExecutions(input *ListLifecycleExecutionsInput) (*ListLifecycleExecutionsOutput, error) {
+	req, out := c.ListLifecycleExecutionsRequest(input)
+	return out, req.Send()
+}
+
+// ListLifecycleExecutionsWithContext is the same as ListLifecycleExecutions with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListLifecycleExecutions for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Imagebuilder) ListLifecycleExecutionsWithContext(ctx aws.Context, input *ListLifecycleExecutionsInput, opts ...request.Option) (*ListLifecycleExecutionsOutput, error) {
+	req, out := c.ListLifecycleExecutionsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListLifecycleExecutionsPages iterates over the pages of a ListLifecycleExecutions operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListLifecycleExecutions method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListLifecycleExecutions operation.
+//	pageNum := 0
+//	err := client.ListLifecycleExecutionsPages(params,
+//	    func(page *imagebuilder.ListLifecycleExecutionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *Imagebuilder) ListLifecycleExecutionsPages(input *ListLifecycleExecutionsInput, fn func(*ListLifecycleExecutionsOutput, bool) bool) error {
+	return c.ListLifecycleExecutionsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListLifecycleExecutionsPagesWithContext same as ListLifecycleExecutionsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Imagebuilder) ListLifecycleExecutionsPagesWithContext(ctx aws.Context, input *ListLifecycleExecutionsInput, fn func(*ListLifecycleExecutionsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListLifecycleExecutionsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListLifecycleExecutionsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListLifecycleExecutionsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opListLifecyclePolicies = "ListLifecyclePolicies"
+
+// ListLifecyclePoliciesRequest generates a "aws/request.Request" representing the
+// client's request for the ListLifecyclePolicies operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListLifecyclePolicies for more information on using the ListLifecyclePolicies
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListLifecyclePoliciesRequest method.
+//	req, resp := client.ListLifecyclePoliciesRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListLifecyclePolicies
+func (c *Imagebuilder) ListLifecyclePoliciesRequest(input *ListLifecyclePoliciesInput) (req *request.Request, output *ListLifecyclePoliciesOutput) {
+	op := &request.Operation{
+		Name:       opListLifecyclePolicies,
+		HTTPMethod: "POST",
+		HTTPPath:   "/ListLifecyclePolicies",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"nextToken"},
+			OutputTokens:    []string{"nextToken"},
+			LimitToken:      "maxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListLifecyclePoliciesInput{}
+	}
+
+	output = &ListLifecyclePoliciesOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListLifecyclePolicies API operation for EC2 Image Builder.
+//
+// Get a list of lifecycle policies in your Amazon Web Services account.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for EC2 Image Builder's
+// API operation ListLifecyclePolicies for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
+//
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
+//
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
+//
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
+//
+//   - InvalidPaginationTokenException
+//     You have provided an invalid pagination token in your request.
+//
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListLifecyclePolicies
+func (c *Imagebuilder) ListLifecyclePolicies(input *ListLifecyclePoliciesInput) (*ListLifecyclePoliciesOutput, error) {
+	req, out := c.ListLifecyclePoliciesRequest(input)
+	return out, req.Send()
+}
+
+// ListLifecyclePoliciesWithContext is the same as ListLifecyclePolicies with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListLifecyclePolicies for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Imagebuilder) ListLifecyclePoliciesWithContext(ctx aws.Context, input *ListLifecyclePoliciesInput, opts ...request.Option) (*ListLifecyclePoliciesOutput, error) {
+	req, out := c.ListLifecyclePoliciesRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListLifecyclePoliciesPages iterates over the pages of a ListLifecyclePolicies operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListLifecyclePolicies method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListLifecyclePolicies operation.
+//	pageNum := 0
+//	err := client.ListLifecyclePoliciesPages(params,
+//	    func(page *imagebuilder.ListLifecyclePoliciesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *Imagebuilder) ListLifecyclePoliciesPages(input *ListLifecyclePoliciesInput, fn func(*ListLifecyclePoliciesOutput, bool) bool) error {
+	return c.ListLifecyclePoliciesPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListLifecyclePoliciesPagesWithContext same as ListLifecyclePoliciesPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Imagebuilder) ListLifecyclePoliciesPagesWithContext(ctx aws.Context, input *ListLifecyclePoliciesInput, fn func(*ListLifecyclePoliciesOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListLifecyclePoliciesInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListLifecyclePoliciesRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListLifecyclePoliciesOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opListTagsForResource = "ListTagsForResource"
 
 // ListTagsForResourceRequest generates a "aws/request.Request" representing the
@@ -4652,14 +6142,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListTagsForResource
 func (c *Imagebuilder) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -4690,15 +6179,16 @@ func (c *Imagebuilder) ListTagsForResourceRequest(input *ListTagsForResourceInpu
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * InvalidParameterException
-//   The specified parameter is invalid. Review the available parameters for the
-//   API request.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ResourceNotFoundException
-//   At least one of the resources referenced by your request does not exist.
+//   - InvalidParameterException
+//     The specified parameter is invalid. Review the available parameters for the
+//     API request.
+//
+//   - ResourceNotFoundException
+//     At least one of the resources referenced by your request does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListTagsForResource
 func (c *Imagebuilder) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -4722,6 +6212,320 @@ func (c *Imagebuilder) ListTagsForResourceWithContext(ctx aws.Context, input *Li
 	return out, req.Send()
 }
 
+const opListWorkflowExecutions = "ListWorkflowExecutions"
+
+// ListWorkflowExecutionsRequest generates a "aws/request.Request" representing the
+// client's request for the ListWorkflowExecutions operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListWorkflowExecutions for more information on using the ListWorkflowExecutions
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListWorkflowExecutionsRequest method.
+//	req, resp := client.ListWorkflowExecutionsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListWorkflowExecutions
+func (c *Imagebuilder) ListWorkflowExecutionsRequest(input *ListWorkflowExecutionsInput) (req *request.Request, output *ListWorkflowExecutionsOutput) {
+	op := &request.Operation{
+		Name:       opListWorkflowExecutions,
+		HTTPMethod: "POST",
+		HTTPPath:   "/ListWorkflowExecutions",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"nextToken"},
+			OutputTokens:    []string{"nextToken"},
+			LimitToken:      "maxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListWorkflowExecutionsInput{}
+	}
+
+	output = &ListWorkflowExecutionsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListWorkflowExecutions API operation for EC2 Image Builder.
+//
+// Returns a list of workflow runtime instance metadata objects for a specific
+// image build version.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for EC2 Image Builder's
+// API operation ListWorkflowExecutions for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
+//
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
+//
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
+//
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
+//
+//   - InvalidPaginationTokenException
+//     You have provided an invalid pagination token in your request.
+//
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListWorkflowExecutions
+func (c *Imagebuilder) ListWorkflowExecutions(input *ListWorkflowExecutionsInput) (*ListWorkflowExecutionsOutput, error) {
+	req, out := c.ListWorkflowExecutionsRequest(input)
+	return out, req.Send()
+}
+
+// ListWorkflowExecutionsWithContext is the same as ListWorkflowExecutions with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListWorkflowExecutions for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Imagebuilder) ListWorkflowExecutionsWithContext(ctx aws.Context, input *ListWorkflowExecutionsInput, opts ...request.Option) (*ListWorkflowExecutionsOutput, error) {
+	req, out := c.ListWorkflowExecutionsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListWorkflowExecutionsPages iterates over the pages of a ListWorkflowExecutions operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListWorkflowExecutions method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListWorkflowExecutions operation.
+//	pageNum := 0
+//	err := client.ListWorkflowExecutionsPages(params,
+//	    func(page *imagebuilder.ListWorkflowExecutionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *Imagebuilder) ListWorkflowExecutionsPages(input *ListWorkflowExecutionsInput, fn func(*ListWorkflowExecutionsOutput, bool) bool) error {
+	return c.ListWorkflowExecutionsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListWorkflowExecutionsPagesWithContext same as ListWorkflowExecutionsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Imagebuilder) ListWorkflowExecutionsPagesWithContext(ctx aws.Context, input *ListWorkflowExecutionsInput, fn func(*ListWorkflowExecutionsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListWorkflowExecutionsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListWorkflowExecutionsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListWorkflowExecutionsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opListWorkflowStepExecutions = "ListWorkflowStepExecutions"
+
+// ListWorkflowStepExecutionsRequest generates a "aws/request.Request" representing the
+// client's request for the ListWorkflowStepExecutions operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListWorkflowStepExecutions for more information on using the ListWorkflowStepExecutions
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListWorkflowStepExecutionsRequest method.
+//	req, resp := client.ListWorkflowStepExecutionsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListWorkflowStepExecutions
+func (c *Imagebuilder) ListWorkflowStepExecutionsRequest(input *ListWorkflowStepExecutionsInput) (req *request.Request, output *ListWorkflowStepExecutionsOutput) {
+	op := &request.Operation{
+		Name:       opListWorkflowStepExecutions,
+		HTTPMethod: "POST",
+		HTTPPath:   "/ListWorkflowStepExecutions",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"nextToken"},
+			OutputTokens:    []string{"nextToken"},
+			LimitToken:      "maxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListWorkflowStepExecutionsInput{}
+	}
+
+	output = &ListWorkflowStepExecutionsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListWorkflowStepExecutions API operation for EC2 Image Builder.
+//
+// Shows runtime data for each step in a runtime instance of the workflow that
+// you specify in the request.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for EC2 Image Builder's
+// API operation ListWorkflowStepExecutions for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
+//
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
+//
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
+//
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
+//
+//   - InvalidPaginationTokenException
+//     You have provided an invalid pagination token in your request.
+//
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/ListWorkflowStepExecutions
+func (c *Imagebuilder) ListWorkflowStepExecutions(input *ListWorkflowStepExecutionsInput) (*ListWorkflowStepExecutionsOutput, error) {
+	req, out := c.ListWorkflowStepExecutionsRequest(input)
+	return out, req.Send()
+}
+
+// ListWorkflowStepExecutionsWithContext is the same as ListWorkflowStepExecutions with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListWorkflowStepExecutions for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Imagebuilder) ListWorkflowStepExecutionsWithContext(ctx aws.Context, input *ListWorkflowStepExecutionsInput, opts ...request.Option) (*ListWorkflowStepExecutionsOutput, error) {
+	req, out := c.ListWorkflowStepExecutionsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListWorkflowStepExecutionsPages iterates over the pages of a ListWorkflowStepExecutions operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListWorkflowStepExecutions method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListWorkflowStepExecutions operation.
+//	pageNum := 0
+//	err := client.ListWorkflowStepExecutionsPages(params,
+//	    func(page *imagebuilder.ListWorkflowStepExecutionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *Imagebuilder) ListWorkflowStepExecutionsPages(input *ListWorkflowStepExecutionsInput, fn func(*ListWorkflowStepExecutionsOutput, bool) bool) error {
+	return c.ListWorkflowStepExecutionsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListWorkflowStepExecutionsPagesWithContext same as ListWorkflowStepExecutionsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Imagebuilder) ListWorkflowStepExecutionsPagesWithContext(ctx aws.Context, input *ListWorkflowStepExecutionsInput, fn func(*ListWorkflowStepExecutionsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListWorkflowStepExecutionsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListWorkflowStepExecutionsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListWorkflowStepExecutionsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opPutComponentPolicy = "PutComponentPolicy"
 
 // PutComponentPolicyRequest generates a "aws/request.Request" representing the
@@ -4738,14 +6542,13 @@ const opPutComponentPolicy = "PutComponentPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutComponentPolicyRequest method.
+//	req, resp := client.PutComponentPolicyRequest(params)
 //
-//    // Example sending a request using the PutComponentPolicyRequest method.
-//    req, resp := client.PutComponentPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/PutComponentPolicy
 func (c *Imagebuilder) PutComponentPolicyRequest(input *PutComponentPolicyInput) (req *request.Request, output *PutComponentPolicyOutput) {
@@ -4781,31 +6584,32 @@ func (c *Imagebuilder) PutComponentPolicyRequest(input *PutComponentPolicyInput)
 // API operation PutComponentPolicy for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * InvalidParameterValueException
-//   The value that you provided for the specified parameter is invalid.
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
 //
-//   * ResourceNotFoundException
-//   At least one of the resources referenced by your request does not exist.
+//   - InvalidParameterValueException
+//     The value that you provided for the specified parameter is invalid.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - ResourceNotFoundException
+//     At least one of the resources referenced by your request does not exist.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/PutComponentPolicy
 func (c *Imagebuilder) PutComponentPolicy(input *PutComponentPolicyInput) (*PutComponentPolicyOutput, error) {
@@ -4845,14 +6649,13 @@ const opPutContainerRecipePolicy = "PutContainerRecipePolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutContainerRecipePolicyRequest method.
+//	req, resp := client.PutContainerRecipePolicyRequest(params)
 //
-//    // Example sending a request using the PutContainerRecipePolicyRequest method.
-//    req, resp := client.PutContainerRecipePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/PutContainerRecipePolicy
 func (c *Imagebuilder) PutContainerRecipePolicyRequest(input *PutContainerRecipePolicyInput) (req *request.Request, output *PutContainerRecipePolicyOutput) {
@@ -4888,31 +6691,32 @@ func (c *Imagebuilder) PutContainerRecipePolicyRequest(input *PutContainerRecipe
 // API operation PutContainerRecipePolicy for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * InvalidParameterValueException
-//   The value that you provided for the specified parameter is invalid.
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
 //
-//   * ResourceNotFoundException
-//   At least one of the resources referenced by your request does not exist.
+//   - InvalidParameterValueException
+//     The value that you provided for the specified parameter is invalid.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - ResourceNotFoundException
+//     At least one of the resources referenced by your request does not exist.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/PutContainerRecipePolicy
 func (c *Imagebuilder) PutContainerRecipePolicy(input *PutContainerRecipePolicyInput) (*PutContainerRecipePolicyOutput, error) {
@@ -4952,14 +6756,13 @@ const opPutImagePolicy = "PutImagePolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutImagePolicyRequest method.
+//	req, resp := client.PutImagePolicyRequest(params)
 //
-//    // Example sending a request using the PutImagePolicyRequest method.
-//    req, resp := client.PutImagePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/PutImagePolicy
 func (c *Imagebuilder) PutImagePolicyRequest(input *PutImagePolicyInput) (req *request.Request, output *PutImagePolicyOutput) {
@@ -4995,31 +6798,32 @@ func (c *Imagebuilder) PutImagePolicyRequest(input *PutImagePolicyInput) (req *r
 // API operation PutImagePolicy for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * InvalidParameterValueException
-//   The value that you provided for the specified parameter is invalid.
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
 //
-//   * ResourceNotFoundException
-//   At least one of the resources referenced by your request does not exist.
+//   - InvalidParameterValueException
+//     The value that you provided for the specified parameter is invalid.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - ResourceNotFoundException
+//     At least one of the resources referenced by your request does not exist.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/PutImagePolicy
 func (c *Imagebuilder) PutImagePolicy(input *PutImagePolicyInput) (*PutImagePolicyOutput, error) {
@@ -5059,14 +6863,13 @@ const opPutImageRecipePolicy = "PutImageRecipePolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutImageRecipePolicyRequest method.
+//	req, resp := client.PutImageRecipePolicyRequest(params)
 //
-//    // Example sending a request using the PutImageRecipePolicyRequest method.
-//    req, resp := client.PutImageRecipePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/PutImageRecipePolicy
 func (c *Imagebuilder) PutImageRecipePolicyRequest(input *PutImageRecipePolicyInput) (req *request.Request, output *PutImageRecipePolicyOutput) {
@@ -5102,31 +6905,32 @@ func (c *Imagebuilder) PutImageRecipePolicyRequest(input *PutImageRecipePolicyIn
 // API operation PutImageRecipePolicy for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * InvalidParameterValueException
-//   The value that you provided for the specified parameter is invalid.
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
 //
-//   * ResourceNotFoundException
-//   At least one of the resources referenced by your request does not exist.
+//   - InvalidParameterValueException
+//     The value that you provided for the specified parameter is invalid.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - ResourceNotFoundException
+//     At least one of the resources referenced by your request does not exist.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/PutImageRecipePolicy
 func (c *Imagebuilder) PutImageRecipePolicy(input *PutImageRecipePolicyInput) (*PutImageRecipePolicyOutput, error) {
@@ -5166,14 +6970,13 @@ const opStartImagePipelineExecution = "StartImagePipelineExecution"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartImagePipelineExecutionRequest method.
+//	req, resp := client.StartImagePipelineExecutionRequest(params)
 //
-//    // Example sending a request using the StartImagePipelineExecutionRequest method.
-//    req, resp := client.StartImagePipelineExecutionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/StartImagePipelineExecution
 func (c *Imagebuilder) StartImagePipelineExecutionRequest(input *StartImagePipelineExecutionInput) (req *request.Request, output *StartImagePipelineExecutionOutput) {
@@ -5204,36 +7007,37 @@ func (c *Imagebuilder) StartImagePipelineExecutionRequest(input *StartImagePipel
 // API operation StartImagePipelineExecution for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * ResourceNotFoundException
-//   At least one of the resources referenced by your request does not exist.
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
 //
-//   * IdempotentParameterMismatchException
-//   You have specified a client token for an operation using parameter values
-//   that differ from a previous request that used the same client token.
+//   - ResourceNotFoundException
+//     At least one of the resources referenced by your request does not exist.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - IdempotentParameterMismatchException
+//     You have specified a client token for an operation using parameter values
+//     that differ from a previous request that used the same client token.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
 //
-//   * ResourceInUseException
-//   The resource that you are trying to operate on is currently in use. Review
-//   the message details and retry later.
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
+//
+//   - ResourceInUseException
+//     The resource that you are trying to operate on is currently in use. Review
+//     the message details and retry later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/StartImagePipelineExecution
 func (c *Imagebuilder) StartImagePipelineExecution(input *StartImagePipelineExecutionInput) (*StartImagePipelineExecutionOutput, error) {
@@ -5257,6 +7061,114 @@ func (c *Imagebuilder) StartImagePipelineExecutionWithContext(ctx aws.Context, i
 	return out, req.Send()
 }
 
+const opStartResourceStateUpdate = "StartResourceStateUpdate"
+
+// StartResourceStateUpdateRequest generates a "aws/request.Request" representing the
+// client's request for the StartResourceStateUpdate operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See StartResourceStateUpdate for more information on using the StartResourceStateUpdate
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the StartResourceStateUpdateRequest method.
+//	req, resp := client.StartResourceStateUpdateRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/StartResourceStateUpdate
+func (c *Imagebuilder) StartResourceStateUpdateRequest(input *StartResourceStateUpdateInput) (req *request.Request, output *StartResourceStateUpdateOutput) {
+	op := &request.Operation{
+		Name:       opStartResourceStateUpdate,
+		HTTPMethod: "PUT",
+		HTTPPath:   "/StartResourceStateUpdate",
+	}
+
+	if input == nil {
+		input = &StartResourceStateUpdateInput{}
+	}
+
+	output = &StartResourceStateUpdateOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// StartResourceStateUpdate API operation for EC2 Image Builder.
+//
+// Begin asynchronous resource state update for lifecycle changes to the specified
+// image resources.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for EC2 Image Builder's
+// API operation StartResourceStateUpdate for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
+//
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
+//
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
+//
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
+//
+//   - ResourceNotFoundException
+//     At least one of the resources referenced by your request does not exist.
+//
+//   - IdempotentParameterMismatchException
+//     You have specified a client token for an operation using parameter values
+//     that differ from a previous request that used the same client token.
+//
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
+//
+//   - ResourceInUseException
+//     The resource that you are trying to operate on is currently in use. Review
+//     the message details and retry later.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/StartResourceStateUpdate
+func (c *Imagebuilder) StartResourceStateUpdate(input *StartResourceStateUpdateInput) (*StartResourceStateUpdateOutput, error) {
+	req, out := c.StartResourceStateUpdateRequest(input)
+	return out, req.Send()
+}
+
+// StartResourceStateUpdateWithContext is the same as StartResourceStateUpdate with the addition of
+// the ability to pass a context and additional request options.
+//
+// See StartResourceStateUpdate for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Imagebuilder) StartResourceStateUpdateWithContext(ctx aws.Context, input *StartResourceStateUpdateInput, opts ...request.Option) (*StartResourceStateUpdateOutput, error) {
+	req, out := c.StartResourceStateUpdateRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opTagResource = "TagResource"
 
 // TagResourceRequest generates a "aws/request.Request" representing the
@@ -5273,14 +7185,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/TagResource
 func (c *Imagebuilder) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -5312,15 +7223,16 @@ func (c *Imagebuilder) TagResourceRequest(input *TagResourceInput) (req *request
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * InvalidParameterException
-//   The specified parameter is invalid. Review the available parameters for the
-//   API request.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ResourceNotFoundException
-//   At least one of the resources referenced by your request does not exist.
+//   - InvalidParameterException
+//     The specified parameter is invalid. Review the available parameters for the
+//     API request.
+//
+//   - ResourceNotFoundException
+//     At least one of the resources referenced by your request does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/TagResource
 func (c *Imagebuilder) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -5360,14 +7272,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/UntagResource
 func (c *Imagebuilder) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -5399,15 +7310,16 @@ func (c *Imagebuilder) UntagResourceRequest(input *UntagResourceInput) (req *req
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * InvalidParameterException
-//   The specified parameter is invalid. Review the available parameters for the
-//   API request.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ResourceNotFoundException
-//   At least one of the resources referenced by your request does not exist.
+//   - InvalidParameterException
+//     The specified parameter is invalid. Review the available parameters for the
+//     API request.
+//
+//   - ResourceNotFoundException
+//     At least one of the resources referenced by your request does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/UntagResource
 func (c *Imagebuilder) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -5447,14 +7359,13 @@ const opUpdateDistributionConfiguration = "UpdateDistributionConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateDistributionConfigurationRequest method.
+//	req, resp := client.UpdateDistributionConfigurationRequest(params)
 //
-//    // Example sending a request using the UpdateDistributionConfigurationRequest method.
-//    req, resp := client.UpdateDistributionConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/UpdateDistributionConfiguration
 func (c *Imagebuilder) UpdateDistributionConfigurationRequest(input *UpdateDistributionConfigurationInput) (req *request.Request, output *UpdateDistributionConfigurationOutput) {
@@ -5486,37 +7397,38 @@ func (c *Imagebuilder) UpdateDistributionConfigurationRequest(input *UpdateDistr
 // API operation UpdateDistributionConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * IdempotentParameterMismatchException
-//   You have specified a client token for an operation using parameter values
-//   that differ from a previous request that used the same client token.
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - IdempotentParameterMismatchException
+//     You have specified a client token for an operation using parameter values
+//     that differ from a previous request that used the same client token.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
 //
-//   * ResourceInUseException
-//   The resource that you are trying to operate on is currently in use. Review
-//   the message details and retry later.
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
 //
-//   * InvalidParameterCombinationException
-//   You have specified two or more mutually exclusive parameters. Review the
-//   error message for details.
+//   - ResourceInUseException
+//     The resource that you are trying to operate on is currently in use. Review
+//     the message details and retry later.
+//
+//   - InvalidParameterCombinationException
+//     You have specified two or more mutually exclusive parameters. Review the
+//     error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/UpdateDistributionConfiguration
 func (c *Imagebuilder) UpdateDistributionConfiguration(input *UpdateDistributionConfigurationInput) (*UpdateDistributionConfigurationOutput, error) {
@@ -5556,14 +7468,13 @@ const opUpdateImagePipeline = "UpdateImagePipeline"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateImagePipelineRequest method.
+//	req, resp := client.UpdateImagePipelineRequest(params)
 //
-//    // Example sending a request using the UpdateImagePipelineRequest method.
-//    req, resp := client.UpdateImagePipelineRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/UpdateImagePipeline
 func (c *Imagebuilder) UpdateImagePipelineRequest(input *UpdateImagePipelineInput) (req *request.Request, output *UpdateImagePipelineOutput) {
@@ -5599,33 +7510,34 @@ func (c *Imagebuilder) UpdateImagePipelineRequest(input *UpdateImagePipelineInpu
 // API operation UpdateImagePipeline for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * IdempotentParameterMismatchException
-//   You have specified a client token for an operation using parameter values
-//   that differ from a previous request that used the same client token.
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - IdempotentParameterMismatchException
+//     You have specified a client token for an operation using parameter values
+//     that differ from a previous request that used the same client token.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
 //
-//   * ResourceInUseException
-//   The resource that you are trying to operate on is currently in use. Review
-//   the message details and retry later.
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
+//
+//   - ResourceInUseException
+//     The resource that you are trying to operate on is currently in use. Review
+//     the message details and retry later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/UpdateImagePipeline
 func (c *Imagebuilder) UpdateImagePipeline(input *UpdateImagePipelineInput) (*UpdateImagePipelineOutput, error) {
@@ -5665,14 +7577,13 @@ const opUpdateInfrastructureConfiguration = "UpdateInfrastructureConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateInfrastructureConfigurationRequest method.
+//	req, resp := client.UpdateInfrastructureConfigurationRequest(params)
 //
-//    // Example sending a request using the UpdateInfrastructureConfigurationRequest method.
-//    req, resp := client.UpdateInfrastructureConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/UpdateInfrastructureConfiguration
 func (c *Imagebuilder) UpdateInfrastructureConfigurationRequest(input *UpdateInfrastructureConfigurationInput) (req *request.Request, output *UpdateInfrastructureConfigurationOutput) {
@@ -5704,33 +7615,34 @@ func (c *Imagebuilder) UpdateInfrastructureConfigurationRequest(input *UpdateInf
 // API operation UpdateInfrastructureConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ClientException
-//   These errors are usually caused by a client action, such as using an action
-//   or resource on behalf of a user that doesn't have permissions to use the
-//   action or resource, or specifying an invalid resource identifier.
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
 //
-//   * ServiceUnavailableException
-//   The service is unable to process your request at this time.
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
 //
-//   * InvalidRequestException
-//   You have made a request for an action that is not supported by the service.
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
 //
-//   * IdempotentParameterMismatchException
-//   You have specified a client token for an operation using parameter values
-//   that differ from a previous request that used the same client token.
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
 //
-//   * ForbiddenException
-//   You are not authorized to perform the requested operation.
+//   - IdempotentParameterMismatchException
+//     You have specified a client token for an operation using parameter values
+//     that differ from a previous request that used the same client token.
 //
-//   * CallRateLimitExceededException
-//   You have exceeded the permitted request rate for the specific operation.
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
 //
-//   * ResourceInUseException
-//   The resource that you are trying to operate on is currently in use. Review
-//   the message details and retry later.
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
+//
+//   - ResourceInUseException
+//     The resource that you are trying to operate on is currently in use. Review
+//     the message details and retry later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/UpdateInfrastructureConfiguration
 func (c *Imagebuilder) UpdateInfrastructureConfiguration(input *UpdateInfrastructureConfigurationInput) (*UpdateInfrastructureConfigurationOutput, error) {
@@ -5754,11 +7666,170 @@ func (c *Imagebuilder) UpdateInfrastructureConfigurationWithContext(ctx aws.Cont
 	return out, req.Send()
 }
 
-// In addition to your infrastruction configuration, these settings provide
-// an extra layer of control over your build instances. For instances where
-// Image Builder installs the Systems Manager agent, you can choose whether
-// to keep it for the AMI that you create. You can also specify commands to
-// run on launch for all of your build instances.
+const opUpdateLifecyclePolicy = "UpdateLifecyclePolicy"
+
+// UpdateLifecyclePolicyRequest generates a "aws/request.Request" representing the
+// client's request for the UpdateLifecyclePolicy operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UpdateLifecyclePolicy for more information on using the UpdateLifecyclePolicy
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UpdateLifecyclePolicyRequest method.
+//	req, resp := client.UpdateLifecyclePolicyRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/UpdateLifecyclePolicy
+func (c *Imagebuilder) UpdateLifecyclePolicyRequest(input *UpdateLifecyclePolicyInput) (req *request.Request, output *UpdateLifecyclePolicyOutput) {
+	op := &request.Operation{
+		Name:       opUpdateLifecyclePolicy,
+		HTTPMethod: "PUT",
+		HTTPPath:   "/UpdateLifecyclePolicy",
+	}
+
+	if input == nil {
+		input = &UpdateLifecyclePolicyInput{}
+	}
+
+	output = &UpdateLifecyclePolicyOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// UpdateLifecyclePolicy API operation for EC2 Image Builder.
+//
+// Update the specified lifecycle policy.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for EC2 Image Builder's
+// API operation UpdateLifecyclePolicy for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ServiceException
+//     This exception is thrown when the service encounters an unrecoverable exception.
+//
+//   - ClientException
+//     These errors are usually caused by a client action, such as using an action
+//     or resource on behalf of a user that doesn't have permissions to use the
+//     action or resource, or specifying an invalid resource identifier.
+//
+//   - ServiceUnavailableException
+//     The service is unable to process your request at this time.
+//
+//   - InvalidRequestException
+//     You have requested an action that that the service doesn't support.
+//
+//   - IdempotentParameterMismatchException
+//     You have specified a client token for an operation using parameter values
+//     that differ from a previous request that used the same client token.
+//
+//   - ForbiddenException
+//     You are not authorized to perform the requested operation.
+//
+//   - CallRateLimitExceededException
+//     You have exceeded the permitted request rate for the specific operation.
+//
+//   - ResourceInUseException
+//     The resource that you are trying to operate on is currently in use. Review
+//     the message details and retry later.
+//
+//   - InvalidParameterCombinationException
+//     You have specified two or more mutually exclusive parameters. Review the
+//     error message for details.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/imagebuilder-2019-12-02/UpdateLifecyclePolicy
+func (c *Imagebuilder) UpdateLifecyclePolicy(input *UpdateLifecyclePolicyInput) (*UpdateLifecyclePolicyOutput, error) {
+	req, out := c.UpdateLifecyclePolicyRequest(input)
+	return out, req.Send()
+}
+
+// UpdateLifecyclePolicyWithContext is the same as UpdateLifecyclePolicy with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UpdateLifecyclePolicy for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Imagebuilder) UpdateLifecyclePolicyWithContext(ctx aws.Context, input *UpdateLifecyclePolicyInput, opts ...request.Option) (*UpdateLifecyclePolicyOutput, error) {
+	req, out := c.UpdateLifecyclePolicyRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// Contains counts of vulnerability findings from image scans that run when
+// you create new Image Builder images, or build new versions of existing images.
+// The vulnerability counts are grouped by severity level. The counts are aggregated
+// across resources to create the final tally for the account that owns them.
+type AccountAggregation struct {
+	_ struct{} `type:"structure"`
+
+	// Identifies the account that owns the aggregated resource findings.
+	AccountId *string `locationName:"accountId" min:"1" type:"string"`
+
+	// Counts by severity level for medium severity and higher level findings, plus
+	// a total for all of the findings.
+	SeverityCounts *SeverityCounts `locationName:"severityCounts" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AccountAggregation) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AccountAggregation) GoString() string {
+	return s.String()
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *AccountAggregation) SetAccountId(v string) *AccountAggregation {
+	s.AccountId = &v
+	return s
+}
+
+// SetSeverityCounts sets the SeverityCounts field's value.
+func (s *AccountAggregation) SetSeverityCounts(v *SeverityCounts) *AccountAggregation {
+	s.SeverityCounts = v
+	return s
+}
+
+// In addition to your infrastructure configuration, these settings provide
+// an extra layer of control over your build instances. You can also specify
+// commands to run on launch for all of your build instances.
+//
+// Image Builder does not automatically install the Systems Manager agent on
+// Windows instances. If your base image includes the Systems Manager agent,
+// then the AMI that you create will also include the agent. For Linux instances,
+// if the base image does not already include the Systems Manager agent, Image
+// Builder installs it. For Linux instances where Image Builder installs the
+// Systems Manager agent, you can choose whether to keep it for the AMI that
+// you create.
 type AdditionalInstanceConfiguration struct {
 	_ struct{} `type:"structure"`
 
@@ -5847,7 +7918,7 @@ type Ami struct {
 	// The Amazon Web Services Region of the Amazon EC2 AMI.
 	Region *string `locationName:"region" min:"1" type:"string"`
 
-	// Image state shows the image status and the reason for that status.
+	// Image status and the reason for that status.
 	State *ImageState `locationName:"state" type:"structure"`
 }
 
@@ -6086,7 +8157,8 @@ type CancelImageCreationInput struct {
 	// in the Amazon EC2 API Reference.
 	ClientToken *string `locationName:"clientToken" min:"1" type:"string" idempotencyToken:"true"`
 
-	// The Amazon Resource Name (ARN) of the image whose creation you want to cancel.
+	// The Amazon Resource Name (ARN) of the image that you want to cancel creation
+	// for.
 	//
 	// ImageBuildVersionArn is a required field
 	ImageBuildVersionArn *string `locationName:"imageBuildVersionArn" type:"string" required:"true"`
@@ -6141,10 +8213,10 @@ func (s *CancelImageCreationInput) SetImageBuildVersionArn(v string) *CancelImag
 type CancelImageCreationOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The idempotency token that was used for this request.
+	// The client token that uniquely identifies the request.
 	ClientToken *string `locationName:"clientToken" min:"1" type:"string"`
 
-	// The Amazon Resource Name (ARN) of the image whose creation has been cancelled.
+	// The ARN of the image whose creation this request canceled.
 	ImageBuildVersionArn *string `locationName:"imageBuildVersionArn" type:"string"`
 
 	// The request ID that uniquely identifies this request.
@@ -6184,6 +8256,97 @@ func (s *CancelImageCreationOutput) SetImageBuildVersionArn(v string) *CancelIma
 // SetRequestId sets the RequestId field's value.
 func (s *CancelImageCreationOutput) SetRequestId(v string) *CancelImageCreationOutput {
 	s.RequestId = &v
+	return s
+}
+
+type CancelLifecycleExecutionInput struct {
+	_ struct{} `type:"structure"`
+
+	// Unique, case-sensitive identifier you provide to ensure idempotency of the
+	// request. For more information, see Ensuring idempotency (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html)
+	// in the Amazon EC2 API Reference.
+	ClientToken *string `locationName:"clientToken" min:"1" type:"string" idempotencyToken:"true"`
+
+	// Identifies the specific runtime instance of the image lifecycle to cancel.
+	//
+	// LifecycleExecutionId is a required field
+	LifecycleExecutionId *string `locationName:"lifecycleExecutionId" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CancelLifecycleExecutionInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CancelLifecycleExecutionInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CancelLifecycleExecutionInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CancelLifecycleExecutionInput"}
+	if s.ClientToken != nil && len(*s.ClientToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClientToken", 1))
+	}
+	if s.LifecycleExecutionId == nil {
+		invalidParams.Add(request.NewErrParamRequired("LifecycleExecutionId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *CancelLifecycleExecutionInput) SetClientToken(v string) *CancelLifecycleExecutionInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetLifecycleExecutionId sets the LifecycleExecutionId field's value.
+func (s *CancelLifecycleExecutionInput) SetLifecycleExecutionId(v string) *CancelLifecycleExecutionInput {
+	s.LifecycleExecutionId = &v
+	return s
+}
+
+type CancelLifecycleExecutionOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The unique identifier for the image lifecycle runtime instance that was canceled.
+	LifecycleExecutionId *string `locationName:"lifecycleExecutionId" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CancelLifecycleExecutionOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CancelLifecycleExecutionOutput) GoString() string {
+	return s.String()
+}
+
+// SetLifecycleExecutionId sets the LifecycleExecutionId field's value.
+func (s *CancelLifecycleExecutionOutput) SetLifecycleExecutionId(v string) *CancelLifecycleExecutionOutput {
+	s.LifecycleExecutionId = &v
 	return s
 }
 
@@ -6266,7 +8429,7 @@ type Component struct {
 	// Component data contains the YAML document content for the component.
 	Data *string `locationName:"data" type:"string"`
 
-	// The date that the component was created.
+	// The date that Image Builder created the component.
 	DateCreated *string `locationName:"dateCreated" type:"string"`
 
 	// The description of the component.
@@ -6281,30 +8444,38 @@ type Component struct {
 	// The name of the component.
 	Name *string `locationName:"name" type:"string"`
 
+	// Indicates whether component source is hidden from view in the console, and
+	// from component detail results for API, CLI, or SDK operations.
+	Obfuscate *bool `locationName:"obfuscate" type:"boolean"`
+
 	// The owner of the component.
 	Owner *string `locationName:"owner" min:"1" type:"string"`
 
-	// Contains parameter details for each of the parameters that are defined for
-	// the component.
+	// Contains parameter details for each of the parameters that the component
+	// document defined for the component.
 	Parameters []*ComponentParameterDetail `locationName:"parameters" type:"list"`
 
-	// The platform of the component.
+	// The operating system platform of the component.
 	Platform *string `locationName:"platform" type:"string" enum:"Platform"`
+
+	// Contains the name of the publisher if this is a third-party component. Otherwise,
+	// this property is empty.
+	Publisher *string `locationName:"publisher" min:"1" type:"string"`
 
 	// Describes the current status of the component. This is used for components
 	// that are no longer active.
 	State *ComponentState `locationName:"state" type:"structure"`
 
 	// The operating system (OS) version supported by the component. If the OS information
-	// is available, a prefix match is performed against the base image OS version
-	// during image recipe creation.
+	// is available, Image Builder performs a prefix match against the base image
+	// OS version during image recipe creation.
 	SupportedOsVersions []*string `locationName:"supportedOsVersions" min:"1" type:"list"`
 
-	// The tags associated with the component.
+	// The tags that apply to the component.
 	Tags map[string]*string `locationName:"tags" min:"1" type:"map"`
 
-	// The type of the component denotes whether the component is used to build
-	// the image or only to test it.
+	// The component type specifies whether Image Builder uses the component to
+	// build the image or only to test it.
 	Type *string `locationName:"type" type:"string" enum:"ComponentType"`
 
 	// The version of the component.
@@ -6377,6 +8548,12 @@ func (s *Component) SetName(v string) *Component {
 	return s
 }
 
+// SetObfuscate sets the Obfuscate field's value.
+func (s *Component) SetObfuscate(v bool) *Component {
+	s.Obfuscate = &v
+	return s
+}
+
 // SetOwner sets the Owner field's value.
 func (s *Component) SetOwner(v string) *Component {
 	s.Owner = &v
@@ -6392,6 +8569,12 @@ func (s *Component) SetParameters(v []*ComponentParameterDetail) *Component {
 // SetPlatform sets the Platform field's value.
 func (s *Component) SetPlatform(v string) *Component {
 	s.Platform = &v
+	return s
+}
+
+// SetPublisher sets the Publisher field's value.
+func (s *Component) SetPublisher(v string) *Component {
+	s.Publisher = &v
 	return s
 }
 
@@ -6434,8 +8617,8 @@ type ComponentConfiguration struct {
 	// ComponentArn is a required field
 	ComponentArn *string `locationName:"componentArn" type:"string" required:"true"`
 
-	// A group of parameter settings that are used to configure the component for
-	// a specific recipe.
+	// A group of parameter settings that Image Builder uses to configure the component
+	// for a specific recipe.
 	Parameters []*ComponentParameter `locationName:"parameters" min:"1" type:"list"`
 }
 
@@ -6673,10 +8856,10 @@ type ComponentSummary struct {
 	// The Amazon Resource Name (ARN) of the component.
 	Arn *string `locationName:"arn" type:"string"`
 
-	// The change description of the component.
+	// The change description for the current version of the component.
 	ChangeDescription *string `locationName:"changeDescription" min:"1" type:"string"`
 
-	// The date that the component was created.
+	// The original creation date of the component.
 	DateCreated *string `locationName:"dateCreated" type:"string"`
 
 	// The description of the component.
@@ -6685,25 +8868,33 @@ type ComponentSummary struct {
 	// The name of the component.
 	Name *string `locationName:"name" type:"string"`
 
+	// Indicates whether component source is hidden from view in the console, and
+	// from component detail results for API, CLI, or SDK operations.
+	Obfuscate *bool `locationName:"obfuscate" type:"boolean"`
+
 	// The owner of the component.
 	Owner *string `locationName:"owner" min:"1" type:"string"`
 
-	// The platform of the component.
+	// The operating system platform of the component.
 	Platform *string `locationName:"platform" type:"string" enum:"Platform"`
+
+	// Contains the name of the publisher if this is a third-party component. Otherwise,
+	// this property is empty.
+	Publisher *string `locationName:"publisher" min:"1" type:"string"`
 
 	// Describes the current status of the component.
 	State *ComponentState `locationName:"state" type:"structure"`
 
-	// The operating system (OS) version supported by the component. If the OS information
-	// is available, a prefix match is performed against the base image OS version
-	// during image recipe creation.
+	// The operating system (OS) version that the component supports. If the OS
+	// information is available, Image Builder performs a prefix match against the
+	// base image OS version during image recipe creation.
 	SupportedOsVersions []*string `locationName:"supportedOsVersions" min:"1" type:"list"`
 
-	// The tags associated with the component.
+	// The tags that apply to the component.
 	Tags map[string]*string `locationName:"tags" min:"1" type:"map"`
 
-	// The type of the component denotes whether the component is used to build
-	// the image or only to test it.
+	// The component type specifies whether Image Builder uses the component to
+	// build the image or only to test it.
 	Type *string `locationName:"type" type:"string" enum:"ComponentType"`
 
 	// The version of the component.
@@ -6758,6 +8949,12 @@ func (s *ComponentSummary) SetName(v string) *ComponentSummary {
 	return s
 }
 
+// SetObfuscate sets the Obfuscate field's value.
+func (s *ComponentSummary) SetObfuscate(v bool) *ComponentSummary {
+	s.Obfuscate = &v
+	return s
+}
+
 // SetOwner sets the Owner field's value.
 func (s *ComponentSummary) SetOwner(v string) *ComponentSummary {
 	s.Owner = &v
@@ -6767,6 +8964,12 @@ func (s *ComponentSummary) SetOwner(v string) *ComponentSummary {
 // SetPlatform sets the Platform field's value.
 func (s *ComponentSummary) SetPlatform(v string) *ComponentSummary {
 	s.Platform = &v
+	return s
+}
+
+// SetPublisher sets the Publisher field's value.
+func (s *ComponentSummary) SetPublisher(v string) *ComponentSummary {
+	s.Publisher = &v
 	return s
 }
 
@@ -7072,7 +9275,9 @@ type ContainerRecipe struct {
 	// a specific version of an object.
 	Arn *string `locationName:"arn" type:"string"`
 
-	// Components for build and test that are included in the container recipe.
+	// Build and test components that are included in the container recipe. Recipes
+	// require a minimum of one build component, and can have a maximum of 20 build
+	// and test components in any combination.
 	Components []*ComponentConfiguration `locationName:"components" min:"1" type:"list"`
 
 	// Specifies the type of container, such as Docker.
@@ -7367,7 +9572,9 @@ type CreateComponentInput struct {
 	// of this component.
 	ChangeDescription *string `locationName:"changeDescription" min:"1" type:"string"`
 
-	// The idempotency token of the component.
+	// Unique, case-sensitive identifier you provide to ensure idempotency of the
+	// request. For more information, see Ensuring idempotency (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html)
+	// in the Amazon EC2 API Reference.
 	ClientToken *string `locationName:"clientToken" min:"1" type:"string" idempotencyToken:"true"`
 
 	// Component data contains inline YAML document content for the component. Alternatively,
@@ -7375,10 +9582,10 @@ type CreateComponentInput struct {
 	// you cannot specify both properties.
 	Data *string `locationName:"data" min:"1" type:"string"`
 
-	// The description of the component. Describes the contents of the component.
+	// Describes the contents of the component.
 	Description *string `locationName:"description" min:"1" type:"string"`
 
-	// The ID of the KMS key that should be used to encrypt this component.
+	// The ID of the KMS key that is used to encrypt this component.
 	KmsKeyId *string `locationName:"kmsKeyId" min:"1" type:"string"`
 
 	// The name of the component.
@@ -7386,7 +9593,7 @@ type CreateComponentInput struct {
 	// Name is a required field
 	Name *string `locationName:"name" type:"string" required:"true"`
 
-	// The platform of the component.
+	// The operating system platform of the component.
 	//
 	// Platform is a required field
 	Platform *string `locationName:"platform" type:"string" required:"true" enum:"Platform"`
@@ -7414,7 +9621,7 @@ type CreateComponentInput struct {
 	// during image recipe creation.
 	SupportedOsVersions []*string `locationName:"supportedOsVersions" min:"1" type:"list"`
 
-	// The tags of the component.
+	// The tags that apply to the component.
 	Tags map[string]*string `locationName:"tags" min:"1" type:"map"`
 
 	// The uri of a YAML component document file. This must be an S3 URL (s3://bucket/key),
@@ -7554,11 +9761,10 @@ func (s *CreateComponentInput) SetUri(v string) *CreateComponentInput {
 type CreateComponentOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The idempotency token used to make this request idempotent.
+	// The client token that uniquely identifies the request.
 	ClientToken *string `locationName:"clientToken" min:"1" type:"string"`
 
-	// The Amazon Resource Name (ARN) of the component that was created by this
-	// request.
+	// The Amazon Resource Name (ARN) of the component that the request created.
 	ComponentBuildVersionArn *string `locationName:"componentBuildVersionArn" type:"string"`
 
 	// The request ID that uniquely identifies this request.
@@ -7604,10 +9810,14 @@ func (s *CreateComponentOutput) SetRequestId(v string) *CreateComponentOutput {
 type CreateContainerRecipeInput struct {
 	_ struct{} `type:"structure"`
 
-	// The client token used to make this request idempotent.
+	// Unique, case-sensitive identifier you provide to ensure idempotency of the
+	// request. For more information, see Ensuring idempotency (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html)
+	// in the Amazon EC2 API Reference.
 	ClientToken *string `locationName:"clientToken" min:"1" type:"string" idempotencyToken:"true"`
 
 	// Components for build and test that are included in the container recipe.
+	// Recipes require a minimum of one build component, and can have a maximum
+	// of 20 build and test components in any combination.
 	//
 	// Components is a required field
 	Components []*ComponentConfiguration `locationName:"components" min:"1" type:"list" required:"true"`
@@ -7872,7 +10082,7 @@ func (s *CreateContainerRecipeInput) SetWorkingDirectory(v string) *CreateContai
 type CreateContainerRecipeOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The client token used to make this request idempotent.
+	// The client token that uniquely identifies the request.
 	ClientToken *string `locationName:"clientToken" min:"1" type:"string"`
 
 	// Returns the Amazon Resource Name (ARN) of the container recipe that the request
@@ -7922,7 +10132,9 @@ func (s *CreateContainerRecipeOutput) SetRequestId(v string) *CreateContainerRec
 type CreateDistributionConfigurationInput struct {
 	_ struct{} `type:"structure"`
 
-	// The idempotency token of the distribution configuration.
+	// Unique, case-sensitive identifier you provide to ensure idempotency of the
+	// request. For more information, see Ensuring idempotency (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html)
+	// in the Amazon EC2 API Reference.
 	ClientToken *string `locationName:"clientToken" min:"1" type:"string" idempotencyToken:"true"`
 
 	// The description of the distribution configuration.
@@ -8028,7 +10240,7 @@ func (s *CreateDistributionConfigurationInput) SetTags(v map[string]*string) *Cr
 type CreateDistributionConfigurationOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The idempotency token used to make this request idempotent.
+	// The client token that uniquely identifies the request.
 	ClientToken *string `locationName:"clientToken" min:"1" type:"string"`
 
 	// The Amazon Resource Name (ARN) of the distribution configuration that was
@@ -8078,7 +10290,9 @@ func (s *CreateDistributionConfigurationOutput) SetRequestId(v string) *CreateDi
 type CreateImageInput struct {
 	_ struct{} `type:"structure"`
 
-	// The idempotency token used to make this request idempotent.
+	// Unique, case-sensitive identifier you provide to ensure idempotency of the
+	// request. For more information, see Ensuring idempotency (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html)
+	// in the Amazon EC2 API Reference.
 	ClientToken *string `locationName:"clientToken" min:"1" type:"string" idempotencyToken:"true"`
 
 	// The Amazon Resource Name (ARN) of the container recipe that defines how images
@@ -8098,6 +10312,9 @@ type CreateImageInput struct {
 	// The Amazon Resource Name (ARN) of the image recipe that defines how images
 	// are configured, tested, and assessed.
 	ImageRecipeArn *string `locationName:"imageRecipeArn" type:"string"`
+
+	// Contains settings for vulnerability scans.
+	ImageScanningConfiguration *ImageScanningConfiguration `locationName:"imageScanningConfiguration" type:"structure"`
 
 	// The image tests configuration of the image.
 	ImageTestsConfiguration *ImageTestsConfiguration `locationName:"imageTestsConfiguration" type:"structure"`
@@ -8142,6 +10359,11 @@ func (s *CreateImageInput) Validate() error {
 	if s.Tags != nil && len(s.Tags) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("Tags", 1))
 	}
+	if s.ImageScanningConfiguration != nil {
+		if err := s.ImageScanningConfiguration.Validate(); err != nil {
+			invalidParams.AddNested("ImageScanningConfiguration", err.(request.ErrInvalidParams))
+		}
+	}
 	if s.ImageTestsConfiguration != nil {
 		if err := s.ImageTestsConfiguration.Validate(); err != nil {
 			invalidParams.AddNested("ImageTestsConfiguration", err.(request.ErrInvalidParams))
@@ -8184,6 +10406,12 @@ func (s *CreateImageInput) SetImageRecipeArn(v string) *CreateImageInput {
 	return s
 }
 
+// SetImageScanningConfiguration sets the ImageScanningConfiguration field's value.
+func (s *CreateImageInput) SetImageScanningConfiguration(v *ImageScanningConfiguration) *CreateImageInput {
+	s.ImageScanningConfiguration = v
+	return s
+}
+
 // SetImageTestsConfiguration sets the ImageTestsConfiguration field's value.
 func (s *CreateImageInput) SetImageTestsConfiguration(v *ImageTestsConfiguration) *CreateImageInput {
 	s.ImageTestsConfiguration = v
@@ -8205,10 +10433,10 @@ func (s *CreateImageInput) SetTags(v map[string]*string) *CreateImageInput {
 type CreateImageOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The idempotency token used to make this request idempotent.
+	// The client token that uniquely identifies the request.
 	ClientToken *string `locationName:"clientToken" min:"1" type:"string"`
 
-	// The Amazon Resource Name (ARN) of the image that was created by this request.
+	// The Amazon Resource Name (ARN) of the image that the request created.
 	ImageBuildVersionArn *string `locationName:"imageBuildVersionArn" type:"string"`
 
 	// The request ID that uniquely identifies this request.
@@ -8254,7 +10482,9 @@ func (s *CreateImageOutput) SetRequestId(v string) *CreateImageOutput {
 type CreateImagePipelineInput struct {
 	_ struct{} `type:"structure"`
 
-	// The idempotency token used to make this request idempotent.
+	// Unique, case-sensitive identifier you provide to ensure idempotency of the
+	// request. For more information, see Ensuring idempotency (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html)
+	// in the Amazon EC2 API Reference.
 	ClientToken *string `locationName:"clientToken" min:"1" type:"string" idempotencyToken:"true"`
 
 	// The Amazon Resource Name (ARN) of the container recipe that is used to configure
@@ -8277,6 +10507,9 @@ type CreateImagePipelineInput struct {
 	// The Amazon Resource Name (ARN) of the image recipe that will be used to configure
 	// images created by this image pipeline.
 	ImageRecipeArn *string `locationName:"imageRecipeArn" type:"string"`
+
+	// Contains settings for vulnerability scans.
+	ImageScanningConfiguration *ImageScanningConfiguration `locationName:"imageScanningConfiguration" type:"structure"`
 
 	// The image test configuration of the image pipeline.
 	ImageTestsConfiguration *ImageTestsConfiguration `locationName:"imageTestsConfiguration" type:"structure"`
@@ -8338,6 +10571,11 @@ func (s *CreateImagePipelineInput) Validate() error {
 	if s.Tags != nil && len(s.Tags) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("Tags", 1))
 	}
+	if s.ImageScanningConfiguration != nil {
+		if err := s.ImageScanningConfiguration.Validate(); err != nil {
+			invalidParams.AddNested("ImageScanningConfiguration", err.(request.ErrInvalidParams))
+		}
+	}
 	if s.ImageTestsConfiguration != nil {
 		if err := s.ImageTestsConfiguration.Validate(); err != nil {
 			invalidParams.AddNested("ImageTestsConfiguration", err.(request.ErrInvalidParams))
@@ -8391,6 +10629,12 @@ func (s *CreateImagePipelineInput) SetImageRecipeArn(v string) *CreateImagePipel
 	return s
 }
 
+// SetImageScanningConfiguration sets the ImageScanningConfiguration field's value.
+func (s *CreateImagePipelineInput) SetImageScanningConfiguration(v *ImageScanningConfiguration) *CreateImagePipelineInput {
+	s.ImageScanningConfiguration = v
+	return s
+}
+
 // SetImageTestsConfiguration sets the ImageTestsConfiguration field's value.
 func (s *CreateImagePipelineInput) SetImageTestsConfiguration(v *ImageTestsConfiguration) *CreateImagePipelineInput {
 	s.ImageTestsConfiguration = v
@@ -8430,7 +10674,7 @@ func (s *CreateImagePipelineInput) SetTags(v map[string]*string) *CreateImagePip
 type CreateImagePipelineOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The idempotency token used to make this request idempotent.
+	// The client token that uniquely identifies the request.
 	ClientToken *string `locationName:"clientToken" min:"1" type:"string"`
 
 	// The Amazon Resource Name (ARN) of the image pipeline that was created by
@@ -8486,10 +10730,12 @@ type CreateImageRecipeInput struct {
 	// The block device mappings of the image recipe.
 	BlockDeviceMappings []*InstanceBlockDeviceMapping `locationName:"blockDeviceMappings" type:"list"`
 
-	// The idempotency token used to make this request idempotent.
+	// Unique, case-sensitive identifier you provide to ensure idempotency of the
+	// request. For more information, see Ensuring idempotency (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html)
+	// in the Amazon EC2 API Reference.
 	ClientToken *string `locationName:"clientToken" min:"1" type:"string" idempotencyToken:"true"`
 
-	// The components of the image recipe.
+	// The components included in the image recipe.
 	//
 	// Components is a required field
 	Components []*ComponentConfiguration `locationName:"components" min:"1" type:"list" required:"true"`
@@ -8684,7 +10930,7 @@ func (s *CreateImageRecipeInput) SetWorkingDirectory(v string) *CreateImageRecip
 type CreateImageRecipeOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The idempotency token used to make this request idempotent.
+	// The client token that uniquely identifies the request.
 	ClientToken *string `locationName:"clientToken" min:"1" type:"string"`
 
 	// The Amazon Resource Name (ARN) of the image recipe that was created by this
@@ -8734,7 +10980,9 @@ func (s *CreateImageRecipeOutput) SetRequestId(v string) *CreateImageRecipeOutpu
 type CreateInfrastructureConfigurationInput struct {
 	_ struct{} `type:"structure"`
 
-	// The idempotency token used to make this request idempotent.
+	// Unique, case-sensitive identifier you provide to ensure idempotency of the
+	// request. For more information, see Ensuring idempotency (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html)
+	// in the Amazon EC2 API Reference.
 	ClientToken *string `locationName:"clientToken" min:"1" type:"string" idempotencyToken:"true"`
 
 	// The description of the infrastructure configuration.
@@ -8948,7 +11196,7 @@ func (s *CreateInfrastructureConfigurationInput) SetTerminateInstanceOnFailure(v
 type CreateInfrastructureConfigurationOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The idempotency token used to make this request idempotent.
+	// The client token that uniquely identifies the request.
 	ClientToken *string `locationName:"clientToken" min:"1" type:"string"`
 
 	// The Amazon Resource Name (ARN) of the infrastructure configuration that was
@@ -8992,6 +11240,404 @@ func (s *CreateInfrastructureConfigurationOutput) SetInfrastructureConfiguration
 // SetRequestId sets the RequestId field's value.
 func (s *CreateInfrastructureConfigurationOutput) SetRequestId(v string) *CreateInfrastructureConfigurationOutput {
 	s.RequestId = &v
+	return s
+}
+
+type CreateLifecyclePolicyInput struct {
+	_ struct{} `type:"structure"`
+
+	// Unique, case-sensitive identifier you provide to ensure idempotency of the
+	// request. For more information, see Ensuring idempotency (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html)
+	// in the Amazon EC2 API Reference.
+	ClientToken *string `locationName:"clientToken" min:"1" type:"string" idempotencyToken:"true"`
+
+	// Optional description for the lifecycle policy.
+	Description *string `locationName:"description" min:"1" type:"string"`
+
+	// The role name or Amazon Resource Name (ARN) for the IAM role that grants
+	// Image Builder access to run lifecycle actions.
+	//
+	// ExecutionRole is a required field
+	ExecutionRole *string `locationName:"executionRole" min:"1" type:"string" required:"true"`
+
+	// The name of the lifecycle policy to create.
+	//
+	// Name is a required field
+	Name *string `locationName:"name" type:"string" required:"true"`
+
+	// Configuration details for the lifecycle policy rules.
+	//
+	// PolicyDetails is a required field
+	PolicyDetails []*LifecyclePolicyDetail `locationName:"policyDetails" min:"1" type:"list" required:"true"`
+
+	// Selection criteria for the resources that the lifecycle policy applies to.
+	//
+	// ResourceSelection is a required field
+	ResourceSelection *LifecyclePolicyResourceSelection `locationName:"resourceSelection" type:"structure" required:"true"`
+
+	// The type of Image Builder resource that the lifecycle policy applies to.
+	//
+	// ResourceType is a required field
+	ResourceType *string `locationName:"resourceType" type:"string" required:"true" enum:"LifecyclePolicyResourceType"`
+
+	// Indicates whether the lifecycle policy resource is enabled.
+	Status *string `locationName:"status" type:"string" enum:"LifecyclePolicyStatus"`
+
+	// Tags to apply to the lifecycle policy resource.
+	Tags map[string]*string `locationName:"tags" min:"1" type:"map"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateLifecyclePolicyInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateLifecyclePolicyInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateLifecyclePolicyInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateLifecyclePolicyInput"}
+	if s.ClientToken != nil && len(*s.ClientToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClientToken", 1))
+	}
+	if s.Description != nil && len(*s.Description) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Description", 1))
+	}
+	if s.ExecutionRole == nil {
+		invalidParams.Add(request.NewErrParamRequired("ExecutionRole"))
+	}
+	if s.ExecutionRole != nil && len(*s.ExecutionRole) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ExecutionRole", 1))
+	}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.PolicyDetails == nil {
+		invalidParams.Add(request.NewErrParamRequired("PolicyDetails"))
+	}
+	if s.PolicyDetails != nil && len(s.PolicyDetails) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("PolicyDetails", 1))
+	}
+	if s.ResourceSelection == nil {
+		invalidParams.Add(request.NewErrParamRequired("ResourceSelection"))
+	}
+	if s.ResourceType == nil {
+		invalidParams.Add(request.NewErrParamRequired("ResourceType"))
+	}
+	if s.Tags != nil && len(s.Tags) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Tags", 1))
+	}
+	if s.PolicyDetails != nil {
+		for i, v := range s.PolicyDetails {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "PolicyDetails", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.ResourceSelection != nil {
+		if err := s.ResourceSelection.Validate(); err != nil {
+			invalidParams.AddNested("ResourceSelection", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *CreateLifecyclePolicyInput) SetClientToken(v string) *CreateLifecyclePolicyInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *CreateLifecyclePolicyInput) SetDescription(v string) *CreateLifecyclePolicyInput {
+	s.Description = &v
+	return s
+}
+
+// SetExecutionRole sets the ExecutionRole field's value.
+func (s *CreateLifecyclePolicyInput) SetExecutionRole(v string) *CreateLifecyclePolicyInput {
+	s.ExecutionRole = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CreateLifecyclePolicyInput) SetName(v string) *CreateLifecyclePolicyInput {
+	s.Name = &v
+	return s
+}
+
+// SetPolicyDetails sets the PolicyDetails field's value.
+func (s *CreateLifecyclePolicyInput) SetPolicyDetails(v []*LifecyclePolicyDetail) *CreateLifecyclePolicyInput {
+	s.PolicyDetails = v
+	return s
+}
+
+// SetResourceSelection sets the ResourceSelection field's value.
+func (s *CreateLifecyclePolicyInput) SetResourceSelection(v *LifecyclePolicyResourceSelection) *CreateLifecyclePolicyInput {
+	s.ResourceSelection = v
+	return s
+}
+
+// SetResourceType sets the ResourceType field's value.
+func (s *CreateLifecyclePolicyInput) SetResourceType(v string) *CreateLifecyclePolicyInput {
+	s.ResourceType = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *CreateLifecyclePolicyInput) SetStatus(v string) *CreateLifecyclePolicyInput {
+	s.Status = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CreateLifecyclePolicyInput) SetTags(v map[string]*string) *CreateLifecyclePolicyInput {
+	s.Tags = v
+	return s
+}
+
+type CreateLifecyclePolicyOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The client token that uniquely identifies the request.
+	ClientToken *string `locationName:"clientToken" min:"1" type:"string"`
+
+	// The Amazon Resource Name (ARN) of the lifecycle policy that the request created.
+	LifecyclePolicyArn *string `locationName:"lifecyclePolicyArn" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateLifecyclePolicyOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateLifecyclePolicyOutput) GoString() string {
+	return s.String()
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *CreateLifecyclePolicyOutput) SetClientToken(v string) *CreateLifecyclePolicyOutput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetLifecyclePolicyArn sets the LifecyclePolicyArn field's value.
+func (s *CreateLifecyclePolicyOutput) SetLifecyclePolicyArn(v string) *CreateLifecyclePolicyOutput {
+	s.LifecyclePolicyArn = &v
+	return s
+}
+
+// Amazon Inspector generates a risk score for each finding. This score helps
+// you to prioritize findings, to focus on the most critical findings and the
+// most vulnerable resources. The score uses the Common Vulnerability Scoring
+// System (CVSS) format. This format is a modification of the base CVSS score
+// that the National Vulnerability Database (NVD) provides. For more information
+// about severity levels, see Severity levels for Amazon Inspector findings
+// (https://docs.aws.amazon.com/inspector/latest/user/findings-understanding-severity.html)
+// in the Amazon Inspector User Guide.
+type CvssScore struct {
+	_ struct{} `type:"structure"`
+
+	// The CVSS base score.
+	BaseScore *float64 `locationName:"baseScore" type:"double"`
+
+	// The vector string of the CVSS score.
+	ScoringVector *string `locationName:"scoringVector" min:"1" type:"string"`
+
+	// The source of the CVSS score.
+	Source *string `locationName:"source" min:"1" type:"string"`
+
+	// The CVSS version that generated the score.
+	Version *string `locationName:"version" min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CvssScore) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CvssScore) GoString() string {
+	return s.String()
+}
+
+// SetBaseScore sets the BaseScore field's value.
+func (s *CvssScore) SetBaseScore(v float64) *CvssScore {
+	s.BaseScore = &v
+	return s
+}
+
+// SetScoringVector sets the ScoringVector field's value.
+func (s *CvssScore) SetScoringVector(v string) *CvssScore {
+	s.ScoringVector = &v
+	return s
+}
+
+// SetSource sets the Source field's value.
+func (s *CvssScore) SetSource(v string) *CvssScore {
+	s.Source = &v
+	return s
+}
+
+// SetVersion sets the Version field's value.
+func (s *CvssScore) SetVersion(v string) *CvssScore {
+	s.Version = &v
+	return s
+}
+
+// Details about an adjustment that Amazon Inspector made to the CVSS score
+// for a finding.
+type CvssScoreAdjustment struct {
+	_ struct{} `type:"structure"`
+
+	// The metric that Amazon Inspector used to adjust the CVSS score.
+	Metric *string `locationName:"metric" min:"1" type:"string"`
+
+	// The reason for the CVSS score adjustment.
+	Reason *string `locationName:"reason" min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CvssScoreAdjustment) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CvssScoreAdjustment) GoString() string {
+	return s.String()
+}
+
+// SetMetric sets the Metric field's value.
+func (s *CvssScoreAdjustment) SetMetric(v string) *CvssScoreAdjustment {
+	s.Metric = &v
+	return s
+}
+
+// SetReason sets the Reason field's value.
+func (s *CvssScoreAdjustment) SetReason(v string) *CvssScoreAdjustment {
+	s.Reason = &v
+	return s
+}
+
+// Details about the source of the score, and the factors that determined the
+// adjustments to create the final score.
+type CvssScoreDetails struct {
+	_ struct{} `type:"structure"`
+
+	// An object that contains details about an adjustment that Amazon Inspector
+	// made to the CVSS score for the finding.
+	Adjustments []*CvssScoreAdjustment `locationName:"adjustments" type:"list"`
+
+	// The source of the finding.
+	CvssSource *string `locationName:"cvssSource" min:"1" type:"string"`
+
+	// The CVSS score.
+	Score *float64 `locationName:"score" type:"double"`
+
+	// The source for the CVSS score.
+	ScoreSource *string `locationName:"scoreSource" min:"1" type:"string"`
+
+	// A vector that measures the severity of the vulnerability.
+	ScoringVector *string `locationName:"scoringVector" min:"1" type:"string"`
+
+	// The CVSS version that generated the score.
+	Version *string `locationName:"version" min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CvssScoreDetails) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CvssScoreDetails) GoString() string {
+	return s.String()
+}
+
+// SetAdjustments sets the Adjustments field's value.
+func (s *CvssScoreDetails) SetAdjustments(v []*CvssScoreAdjustment) *CvssScoreDetails {
+	s.Adjustments = v
+	return s
+}
+
+// SetCvssSource sets the CvssSource field's value.
+func (s *CvssScoreDetails) SetCvssSource(v string) *CvssScoreDetails {
+	s.CvssSource = &v
+	return s
+}
+
+// SetScore sets the Score field's value.
+func (s *CvssScoreDetails) SetScore(v float64) *CvssScoreDetails {
+	s.Score = &v
+	return s
+}
+
+// SetScoreSource sets the ScoreSource field's value.
+func (s *CvssScoreDetails) SetScoreSource(v string) *CvssScoreDetails {
+	s.ScoreSource = &v
+	return s
+}
+
+// SetScoringVector sets the ScoringVector field's value.
+func (s *CvssScoreDetails) SetScoringVector(v string) *CvssScoreDetails {
+	s.ScoringVector = &v
+	return s
+}
+
+// SetVersion sets the Version field's value.
+func (s *CvssScoreDetails) SetVersion(v string) *CvssScoreDetails {
+	s.Version = &v
 	return s
 }
 
@@ -9044,7 +11690,7 @@ func (s *DeleteComponentInput) SetComponentBuildVersionArn(v string) *DeleteComp
 type DeleteComponentOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The Amazon Resource Name (ARN) of the component build version that was deleted.
+	// The ARN of the component build version that this request deleted.
 	ComponentBuildVersionArn *string `locationName:"componentBuildVersionArn" type:"string"`
 
 	// The request ID that uniquely identifies this request.
@@ -9303,8 +11949,7 @@ func (s *DeleteImageInput) SetImageBuildVersionArn(v string) *DeleteImageInput {
 type DeleteImageOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The Amazon Resource Name (ARN) of the Image Builder image resource that was
-	// deleted.
+	// The ARN of the Image Builder image resource that this request deleted.
 	ImageBuildVersionArn *string `locationName:"imageBuildVersionArn" type:"string"`
 
 	// The request ID that uniquely identifies this request.
@@ -9597,6 +12242,83 @@ func (s *DeleteInfrastructureConfigurationOutput) SetInfrastructureConfiguration
 // SetRequestId sets the RequestId field's value.
 func (s *DeleteInfrastructureConfigurationOutput) SetRequestId(v string) *DeleteInfrastructureConfigurationOutput {
 	s.RequestId = &v
+	return s
+}
+
+type DeleteLifecyclePolicyInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The Amazon Resource Name (ARN) of the lifecycle policy resource to delete.
+	//
+	// LifecyclePolicyArn is a required field
+	LifecyclePolicyArn *string `location:"querystring" locationName:"lifecyclePolicyArn" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteLifecyclePolicyInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteLifecyclePolicyInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteLifecyclePolicyInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteLifecyclePolicyInput"}
+	if s.LifecyclePolicyArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("LifecyclePolicyArn"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetLifecyclePolicyArn sets the LifecyclePolicyArn field's value.
+func (s *DeleteLifecyclePolicyInput) SetLifecyclePolicyArn(v string) *DeleteLifecyclePolicyInput {
+	s.LifecyclePolicyArn = &v
+	return s
+}
+
+type DeleteLifecyclePolicyOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the lifecycle policy that was deleted.
+	LifecyclePolicyArn *string `locationName:"lifecyclePolicyArn" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteLifecyclePolicyOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteLifecyclePolicyOutput) GoString() string {
+	return s.String()
+}
+
+// SetLifecyclePolicyArn sets the LifecyclePolicyArn field's value.
+func (s *DeleteLifecyclePolicyOutput) SetLifecyclePolicyArn(v string) *DeleteLifecyclePolicyOutput {
+	s.LifecyclePolicyArn = &v
 	return s
 }
 
@@ -10056,6 +12778,66 @@ func (s *EbsInstanceBlockDeviceSpecification) SetVolumeType(v string) *EbsInstan
 	return s
 }
 
+// Settings that Image Builder uses to configure the ECR repository and the
+// output container images that Amazon Inspector scans.
+type EcrConfiguration struct {
+	_ struct{} `type:"structure"`
+
+	// Tags for Image Builder to apply to the output container image that &INS;
+	// scans. Tags can help you identify and manage your scanned images.
+	ContainerTags []*string `locationName:"containerTags" type:"list"`
+
+	// The name of the container repository that Amazon Inspector scans to identify
+	// findings for your container images. The name includes the path for the repository
+	// location. If you don’t provide this information, Image Builder creates
+	// a repository in your account named image-builder-image-scanning-repository
+	// for vulnerability scans of your output container images.
+	RepositoryName *string `locationName:"repositoryName" min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EcrConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EcrConfiguration) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *EcrConfiguration) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "EcrConfiguration"}
+	if s.RepositoryName != nil && len(*s.RepositoryName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RepositoryName", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetContainerTags sets the ContainerTags field's value.
+func (s *EcrConfiguration) SetContainerTags(v []*string) *EcrConfiguration {
+	s.ContainerTags = v
+	return s
+}
+
+// SetRepositoryName sets the RepositoryName field's value.
+func (s *EcrConfiguration) SetRepositoryName(v string) *EcrConfiguration {
+	s.RepositoryName = &v
+	return s
+}
+
 // Define and configure faster launching for output Windows AMIs.
 type FastLaunchConfiguration struct {
 	_ struct{} `type:"structure"`
@@ -10399,8 +13181,8 @@ func (s *ForbiddenException) RequestID() string {
 type GetComponentInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
-	// The Amazon Resource Name (ARN) of the component that you want to retrieve.
-	// Regex requires "/\d+$" suffix.
+	// The Amazon Resource Name (ARN) of the component that you want to get. Regex
+	// requires the suffix /\d+$.
 	//
 	// ComponentBuildVersionArn is a required field
 	ComponentBuildVersionArn *string `location:"querystring" locationName:"componentBuildVersionArn" type:"string" required:"true"`
@@ -10833,7 +13615,7 @@ func (s *GetDistributionConfigurationOutput) SetRequestId(v string) *GetDistribu
 type GetImageInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
-	// The Amazon Resource Name (ARN) of the image that you want to retrieve.
+	// The Amazon Resource Name (ARN) of the image that you want to get.
 	//
 	// ImageBuildVersionArn is a required field
 	ImageBuildVersionArn *string `location:"querystring" locationName:"imageBuildVersionArn" type:"string" required:"true"`
@@ -11350,6 +14132,588 @@ func (s *GetInfrastructureConfigurationOutput) SetRequestId(v string) *GetInfras
 	return s
 }
 
+type GetLifecycleExecutionInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// Use the unique identifier for a runtime instance of the lifecycle policy
+	// to get runtime details.
+	//
+	// LifecycleExecutionId is a required field
+	LifecycleExecutionId *string `location:"querystring" locationName:"lifecycleExecutionId" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetLifecycleExecutionInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetLifecycleExecutionInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetLifecycleExecutionInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetLifecycleExecutionInput"}
+	if s.LifecycleExecutionId == nil {
+		invalidParams.Add(request.NewErrParamRequired("LifecycleExecutionId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetLifecycleExecutionId sets the LifecycleExecutionId field's value.
+func (s *GetLifecycleExecutionInput) SetLifecycleExecutionId(v string) *GetLifecycleExecutionInput {
+	s.LifecycleExecutionId = &v
+	return s
+}
+
+type GetLifecycleExecutionOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Runtime details for the specified runtime instance of the lifecycle policy.
+	LifecycleExecution *LifecycleExecution `locationName:"lifecycleExecution" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetLifecycleExecutionOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetLifecycleExecutionOutput) GoString() string {
+	return s.String()
+}
+
+// SetLifecycleExecution sets the LifecycleExecution field's value.
+func (s *GetLifecycleExecutionOutput) SetLifecycleExecution(v *LifecycleExecution) *GetLifecycleExecutionOutput {
+	s.LifecycleExecution = v
+	return s
+}
+
+type GetLifecyclePolicyInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// Specifies the Amazon Resource Name (ARN) of the image lifecycle policy resource
+	// to get.
+	//
+	// LifecyclePolicyArn is a required field
+	LifecyclePolicyArn *string `location:"querystring" locationName:"lifecyclePolicyArn" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetLifecyclePolicyInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetLifecyclePolicyInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetLifecyclePolicyInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetLifecyclePolicyInput"}
+	if s.LifecyclePolicyArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("LifecyclePolicyArn"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetLifecyclePolicyArn sets the LifecyclePolicyArn field's value.
+func (s *GetLifecyclePolicyInput) SetLifecyclePolicyArn(v string) *GetLifecyclePolicyInput {
+	s.LifecyclePolicyArn = &v
+	return s
+}
+
+type GetLifecyclePolicyOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the image lifecycle policy resource that was returned.
+	LifecyclePolicy *LifecyclePolicy `locationName:"lifecyclePolicy" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetLifecyclePolicyOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetLifecyclePolicyOutput) GoString() string {
+	return s.String()
+}
+
+// SetLifecyclePolicy sets the LifecyclePolicy field's value.
+func (s *GetLifecyclePolicyOutput) SetLifecyclePolicy(v *LifecyclePolicy) *GetLifecyclePolicyOutput {
+	s.LifecyclePolicy = v
+	return s
+}
+
+type GetWorkflowExecutionInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// Use the unique identifier for a runtime instance of the workflow to get runtime
+	// details.
+	//
+	// WorkflowExecutionId is a required field
+	WorkflowExecutionId *string `location:"querystring" locationName:"workflowExecutionId" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetWorkflowExecutionInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetWorkflowExecutionInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetWorkflowExecutionInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetWorkflowExecutionInput"}
+	if s.WorkflowExecutionId == nil {
+		invalidParams.Add(request.NewErrParamRequired("WorkflowExecutionId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetWorkflowExecutionId sets the WorkflowExecutionId field's value.
+func (s *GetWorkflowExecutionInput) SetWorkflowExecutionId(v string) *GetWorkflowExecutionInput {
+	s.WorkflowExecutionId = &v
+	return s
+}
+
+type GetWorkflowExecutionOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The timestamp when the specified runtime instance of the workflow finished.
+	EndTime *string `locationName:"endTime" type:"string"`
+
+	// The Amazon Resource Name (ARN) of the image resource build version that the
+	// specified runtime instance of the workflow created.
+	ImageBuildVersionArn *string `locationName:"imageBuildVersionArn" type:"string"`
+
+	// The output message from the specified runtime instance of the workflow, if
+	// applicable.
+	Message *string `locationName:"message" type:"string"`
+
+	// The request ID that uniquely identifies this request.
+	RequestId *string `locationName:"requestId" min:"1" type:"string"`
+
+	// The timestamp when the specified runtime instance of the workflow started.
+	StartTime *string `locationName:"startTime" type:"string"`
+
+	// The current runtime status for the specified runtime instance of the workflow.
+	Status *string `locationName:"status" type:"string" enum:"WorkflowExecutionStatus"`
+
+	// The total number of steps in the specified runtime instance of the workflow
+	// that ran. This number should equal the sum of the step counts for steps that
+	// succeeded, were skipped, and failed.
+	TotalStepCount *int64 `locationName:"totalStepCount" type:"integer"`
+
+	// A runtime count for the number of steps that failed in the specified runtime
+	// instance of the workflow.
+	TotalStepsFailed *int64 `locationName:"totalStepsFailed" type:"integer"`
+
+	// A runtime count for the number of steps that were skipped in the specified
+	// runtime instance of the workflow.
+	TotalStepsSkipped *int64 `locationName:"totalStepsSkipped" type:"integer"`
+
+	// A runtime count for the number of steps that ran successfully in the specified
+	// runtime instance of the workflow.
+	TotalStepsSucceeded *int64 `locationName:"totalStepsSucceeded" type:"integer"`
+
+	// The type of workflow that Image Builder ran for the specified runtime instance
+	// of the workflow.
+	Type *string `locationName:"type" type:"string" enum:"WorkflowType"`
+
+	// The Amazon Resource Name (ARN) of the build version for the Image Builder
+	// workflow resource that defines the specified runtime instance of the workflow.
+	WorkflowBuildVersionArn *string `locationName:"workflowBuildVersionArn" type:"string"`
+
+	// The unique identifier that Image Builder assigned to keep track of runtime
+	// details when it ran the workflow.
+	WorkflowExecutionId *string `locationName:"workflowExecutionId" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetWorkflowExecutionOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetWorkflowExecutionOutput) GoString() string {
+	return s.String()
+}
+
+// SetEndTime sets the EndTime field's value.
+func (s *GetWorkflowExecutionOutput) SetEndTime(v string) *GetWorkflowExecutionOutput {
+	s.EndTime = &v
+	return s
+}
+
+// SetImageBuildVersionArn sets the ImageBuildVersionArn field's value.
+func (s *GetWorkflowExecutionOutput) SetImageBuildVersionArn(v string) *GetWorkflowExecutionOutput {
+	s.ImageBuildVersionArn = &v
+	return s
+}
+
+// SetMessage sets the Message field's value.
+func (s *GetWorkflowExecutionOutput) SetMessage(v string) *GetWorkflowExecutionOutput {
+	s.Message = &v
+	return s
+}
+
+// SetRequestId sets the RequestId field's value.
+func (s *GetWorkflowExecutionOutput) SetRequestId(v string) *GetWorkflowExecutionOutput {
+	s.RequestId = &v
+	return s
+}
+
+// SetStartTime sets the StartTime field's value.
+func (s *GetWorkflowExecutionOutput) SetStartTime(v string) *GetWorkflowExecutionOutput {
+	s.StartTime = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *GetWorkflowExecutionOutput) SetStatus(v string) *GetWorkflowExecutionOutput {
+	s.Status = &v
+	return s
+}
+
+// SetTotalStepCount sets the TotalStepCount field's value.
+func (s *GetWorkflowExecutionOutput) SetTotalStepCount(v int64) *GetWorkflowExecutionOutput {
+	s.TotalStepCount = &v
+	return s
+}
+
+// SetTotalStepsFailed sets the TotalStepsFailed field's value.
+func (s *GetWorkflowExecutionOutput) SetTotalStepsFailed(v int64) *GetWorkflowExecutionOutput {
+	s.TotalStepsFailed = &v
+	return s
+}
+
+// SetTotalStepsSkipped sets the TotalStepsSkipped field's value.
+func (s *GetWorkflowExecutionOutput) SetTotalStepsSkipped(v int64) *GetWorkflowExecutionOutput {
+	s.TotalStepsSkipped = &v
+	return s
+}
+
+// SetTotalStepsSucceeded sets the TotalStepsSucceeded field's value.
+func (s *GetWorkflowExecutionOutput) SetTotalStepsSucceeded(v int64) *GetWorkflowExecutionOutput {
+	s.TotalStepsSucceeded = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *GetWorkflowExecutionOutput) SetType(v string) *GetWorkflowExecutionOutput {
+	s.Type = &v
+	return s
+}
+
+// SetWorkflowBuildVersionArn sets the WorkflowBuildVersionArn field's value.
+func (s *GetWorkflowExecutionOutput) SetWorkflowBuildVersionArn(v string) *GetWorkflowExecutionOutput {
+	s.WorkflowBuildVersionArn = &v
+	return s
+}
+
+// SetWorkflowExecutionId sets the WorkflowExecutionId field's value.
+func (s *GetWorkflowExecutionOutput) SetWorkflowExecutionId(v string) *GetWorkflowExecutionOutput {
+	s.WorkflowExecutionId = &v
+	return s
+}
+
+type GetWorkflowStepExecutionInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// Use the unique identifier for a specific runtime instance of the workflow
+	// step to get runtime details for that step.
+	//
+	// StepExecutionId is a required field
+	StepExecutionId *string `location:"querystring" locationName:"stepExecutionId" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetWorkflowStepExecutionInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetWorkflowStepExecutionInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetWorkflowStepExecutionInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetWorkflowStepExecutionInput"}
+	if s.StepExecutionId == nil {
+		invalidParams.Add(request.NewErrParamRequired("StepExecutionId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetStepExecutionId sets the StepExecutionId field's value.
+func (s *GetWorkflowStepExecutionInput) SetStepExecutionId(v string) *GetWorkflowStepExecutionInput {
+	s.StepExecutionId = &v
+	return s
+}
+
+type GetWorkflowStepExecutionOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the action that the specified step performs.
+	Action *string `locationName:"action" type:"string"`
+
+	// Describes the specified workflow step.
+	Description *string `locationName:"description" type:"string"`
+
+	// The timestamp when the specified runtime instance of the workflow step finished.
+	EndTime *string `locationName:"endTime" type:"string"`
+
+	// The Amazon Resource Name (ARN) of the image resource build version that the
+	// specified runtime instance of the workflow step creates.
+	ImageBuildVersionArn *string `locationName:"imageBuildVersionArn" type:"string"`
+
+	// Input parameters that Image Builder provided for the specified runtime instance
+	// of the workflow step.
+	Inputs *string `locationName:"inputs" type:"string"`
+
+	// The output message from the specified runtime instance of the workflow step,
+	// if applicable.
+	Message *string `locationName:"message" type:"string"`
+
+	// The name of the specified runtime instance of the workflow step.
+	Name *string `locationName:"name" type:"string"`
+
+	// The action to perform if the workflow step fails.
+	OnFailure *string `locationName:"onFailure" min:"1" type:"string"`
+
+	// The file names that the specified runtime version of the workflow step created
+	// as output.
+	Outputs *string `locationName:"outputs" type:"string"`
+
+	// The request ID that uniquely identifies this request.
+	RequestId *string `locationName:"requestId" min:"1" type:"string"`
+
+	// Reports on the rollback status of the specified runtime version of the workflow
+	// step, if applicable.
+	RollbackStatus *string `locationName:"rollbackStatus" type:"string" enum:"WorkflowStepExecutionRollbackStatus"`
+
+	// The timestamp when the specified runtime version of the workflow step started.
+	StartTime *string `locationName:"startTime" type:"string"`
+
+	// The current status for the specified runtime version of the workflow step.
+	Status *string `locationName:"status" type:"string" enum:"WorkflowStepExecutionStatus"`
+
+	// The unique identifier for the runtime version of the workflow step that you
+	// specified in the request.
+	StepExecutionId *string `locationName:"stepExecutionId" type:"string"`
+
+	// The maximum duration in seconds for this step to complete its action.
+	TimeoutSeconds *int64 `locationName:"timeoutSeconds" type:"integer"`
+
+	// The Amazon Resource Name (ARN) of the build version for the Image Builder
+	// workflow resource that defines this workflow step.
+	WorkflowBuildVersionArn *string `locationName:"workflowBuildVersionArn" type:"string"`
+
+	// The unique identifier that Image Builder assigned to keep track of runtime
+	// details when it ran the workflow.
+	WorkflowExecutionId *string `locationName:"workflowExecutionId" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetWorkflowStepExecutionOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetWorkflowStepExecutionOutput) GoString() string {
+	return s.String()
+}
+
+// SetAction sets the Action field's value.
+func (s *GetWorkflowStepExecutionOutput) SetAction(v string) *GetWorkflowStepExecutionOutput {
+	s.Action = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *GetWorkflowStepExecutionOutput) SetDescription(v string) *GetWorkflowStepExecutionOutput {
+	s.Description = &v
+	return s
+}
+
+// SetEndTime sets the EndTime field's value.
+func (s *GetWorkflowStepExecutionOutput) SetEndTime(v string) *GetWorkflowStepExecutionOutput {
+	s.EndTime = &v
+	return s
+}
+
+// SetImageBuildVersionArn sets the ImageBuildVersionArn field's value.
+func (s *GetWorkflowStepExecutionOutput) SetImageBuildVersionArn(v string) *GetWorkflowStepExecutionOutput {
+	s.ImageBuildVersionArn = &v
+	return s
+}
+
+// SetInputs sets the Inputs field's value.
+func (s *GetWorkflowStepExecutionOutput) SetInputs(v string) *GetWorkflowStepExecutionOutput {
+	s.Inputs = &v
+	return s
+}
+
+// SetMessage sets the Message field's value.
+func (s *GetWorkflowStepExecutionOutput) SetMessage(v string) *GetWorkflowStepExecutionOutput {
+	s.Message = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *GetWorkflowStepExecutionOutput) SetName(v string) *GetWorkflowStepExecutionOutput {
+	s.Name = &v
+	return s
+}
+
+// SetOnFailure sets the OnFailure field's value.
+func (s *GetWorkflowStepExecutionOutput) SetOnFailure(v string) *GetWorkflowStepExecutionOutput {
+	s.OnFailure = &v
+	return s
+}
+
+// SetOutputs sets the Outputs field's value.
+func (s *GetWorkflowStepExecutionOutput) SetOutputs(v string) *GetWorkflowStepExecutionOutput {
+	s.Outputs = &v
+	return s
+}
+
+// SetRequestId sets the RequestId field's value.
+func (s *GetWorkflowStepExecutionOutput) SetRequestId(v string) *GetWorkflowStepExecutionOutput {
+	s.RequestId = &v
+	return s
+}
+
+// SetRollbackStatus sets the RollbackStatus field's value.
+func (s *GetWorkflowStepExecutionOutput) SetRollbackStatus(v string) *GetWorkflowStepExecutionOutput {
+	s.RollbackStatus = &v
+	return s
+}
+
+// SetStartTime sets the StartTime field's value.
+func (s *GetWorkflowStepExecutionOutput) SetStartTime(v string) *GetWorkflowStepExecutionOutput {
+	s.StartTime = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *GetWorkflowStepExecutionOutput) SetStatus(v string) *GetWorkflowStepExecutionOutput {
+	s.Status = &v
+	return s
+}
+
+// SetStepExecutionId sets the StepExecutionId field's value.
+func (s *GetWorkflowStepExecutionOutput) SetStepExecutionId(v string) *GetWorkflowStepExecutionOutput {
+	s.StepExecutionId = &v
+	return s
+}
+
+// SetTimeoutSeconds sets the TimeoutSeconds field's value.
+func (s *GetWorkflowStepExecutionOutput) SetTimeoutSeconds(v int64) *GetWorkflowStepExecutionOutput {
+	s.TimeoutSeconds = &v
+	return s
+}
+
+// SetWorkflowBuildVersionArn sets the WorkflowBuildVersionArn field's value.
+func (s *GetWorkflowStepExecutionOutput) SetWorkflowBuildVersionArn(v string) *GetWorkflowStepExecutionOutput {
+	s.WorkflowBuildVersionArn = &v
+	return s
+}
+
+// SetWorkflowExecutionId sets the WorkflowExecutionId field's value.
+func (s *GetWorkflowStepExecutionOutput) SetWorkflowExecutionId(v string) *GetWorkflowStepExecutionOutput {
+	s.WorkflowExecutionId = &v
+	return s
+}
+
 // You have specified a client token for an operation using parameter values
 // that differ from a previous request that used the same client token.
 type IdempotentParameterMismatchException struct {
@@ -11448,42 +14812,59 @@ type Image struct {
 	//    the recipe.
 	BuildType *string `locationName:"buildType" type:"string" enum:"BuildType"`
 
-	// The recipe that is used to create an Image Builder container image.
+	// For container images, this is the container recipe that Image Builder used
+	// to create the image. For images that distribute an AMI, this is empty.
 	ContainerRecipe *ContainerRecipe `locationName:"containerRecipe" type:"structure"`
 
-	// The date on which this image was created.
+	// The date on which Image Builder created this image.
 	DateCreated *string `locationName:"dateCreated" type:"string"`
 
-	// The distribution configuration used when creating this image.
+	// The time when deprecation occurs for an image resource. This can be a past
+	// or future date.
+	DeprecationTime *time.Time `locationName:"deprecationTime" type:"timestamp"`
+
+	// The distribution configuration that Image Builder used to create this image.
 	DistributionConfiguration *DistributionConfiguration `locationName:"distributionConfiguration" type:"structure"`
 
-	// Collects additional information about the image being created, including
-	// the operating system (OS) version and package list. This information is used
-	// to enhance the overall experience of using EC2 Image Builder. Enabled by
-	// default.
+	// Indicates whether Image Builder collects additional information about the
+	// image, such as the operating system (OS) version and package list.
 	EnhancedImageMetadataEnabled *bool `locationName:"enhancedImageMetadataEnabled" type:"boolean"`
 
-	// The image recipe used when creating the image.
+	// For images that distribute an AMI, this is the image recipe that Image Builder
+	// used to create the image. For container images, this is empty.
 	ImageRecipe *ImageRecipe `locationName:"imageRecipe" type:"structure"`
 
-	// The image tests configuration used when creating this image.
+	// Contains settings for vulnerability scans.
+	ImageScanningConfiguration *ImageScanningConfiguration `locationName:"imageScanningConfiguration" type:"structure"`
+
+	// The origin of the base image that Image Builder used to build this image.
+	ImageSource *string `locationName:"imageSource" type:"string" enum:"ImageSource"`
+
+	// The image tests that ran when that Image Builder created this image.
 	ImageTestsConfiguration *ImageTestsConfiguration `locationName:"imageTestsConfiguration" type:"structure"`
 
-	// The infrastructure used when creating this image.
+	// The infrastructure that Image Builder used to create this image.
 	InfrastructureConfiguration *InfrastructureConfiguration `locationName:"infrastructureConfiguration" type:"structure"`
+
+	// Identifies the last runtime instance of the lifecycle policy to take action
+	// on the image.
+	LifecycleExecutionId *string `locationName:"lifecycleExecutionId" type:"string"`
 
 	// The name of the image.
 	Name *string `locationName:"name" type:"string"`
 
-	// The operating system version of the instance. For example, Amazon Linux 2,
-	// Ubuntu 18, or Microsoft Windows Server 2019.
+	// The operating system version for instances that launch from this image. For
+	// example, Amazon Linux 2, Ubuntu 18, or Microsoft Windows Server 2019.
 	OsVersion *string `locationName:"osVersion" min:"1" type:"string"`
 
-	// The output resources produced when creating this image.
+	// The output resources that Image Builder produces for this image.
 	OutputResources *OutputResources `locationName:"outputResources" type:"structure"`
 
-	// The platform of the image.
+	// The image operating system platform, such as Linux or Windows.
 	Platform *string `locationName:"platform" type:"string" enum:"Platform"`
+
+	// Contains information about the current state of scans for this image.
+	ScanState *ImageScanState `locationName:"scanState" type:"structure"`
 
 	// The Amazon Resource Name (ARN) of the image pipeline that created this image.
 	SourcePipelineArn *string `locationName:"sourcePipelineArn" type:"string"`
@@ -11494,10 +14875,10 @@ type Image struct {
 	// The state of the image.
 	State *ImageState `locationName:"state" type:"structure"`
 
-	// The tags of the image.
+	// The tags that apply to this image.
 	Tags map[string]*string `locationName:"tags" min:"1" type:"map"`
 
-	// Specifies whether this is an AMI or container image.
+	// Specifies whether this image produces an AMI or a container image.
 	Type *string `locationName:"type" type:"string" enum:"ImageType"`
 
 	// The semantic version of the image.
@@ -11563,6 +14944,12 @@ func (s *Image) SetDateCreated(v string) *Image {
 	return s
 }
 
+// SetDeprecationTime sets the DeprecationTime field's value.
+func (s *Image) SetDeprecationTime(v time.Time) *Image {
+	s.DeprecationTime = &v
+	return s
+}
+
 // SetDistributionConfiguration sets the DistributionConfiguration field's value.
 func (s *Image) SetDistributionConfiguration(v *DistributionConfiguration) *Image {
 	s.DistributionConfiguration = v
@@ -11581,6 +14968,18 @@ func (s *Image) SetImageRecipe(v *ImageRecipe) *Image {
 	return s
 }
 
+// SetImageScanningConfiguration sets the ImageScanningConfiguration field's value.
+func (s *Image) SetImageScanningConfiguration(v *ImageScanningConfiguration) *Image {
+	s.ImageScanningConfiguration = v
+	return s
+}
+
+// SetImageSource sets the ImageSource field's value.
+func (s *Image) SetImageSource(v string) *Image {
+	s.ImageSource = &v
+	return s
+}
+
 // SetImageTestsConfiguration sets the ImageTestsConfiguration field's value.
 func (s *Image) SetImageTestsConfiguration(v *ImageTestsConfiguration) *Image {
 	s.ImageTestsConfiguration = v
@@ -11590,6 +14989,12 @@ func (s *Image) SetImageTestsConfiguration(v *ImageTestsConfiguration) *Image {
 // SetInfrastructureConfiguration sets the InfrastructureConfiguration field's value.
 func (s *Image) SetInfrastructureConfiguration(v *InfrastructureConfiguration) *Image {
 	s.InfrastructureConfiguration = v
+	return s
+}
+
+// SetLifecycleExecutionId sets the LifecycleExecutionId field's value.
+func (s *Image) SetLifecycleExecutionId(v string) *Image {
+	s.LifecycleExecutionId = &v
 	return s
 }
 
@@ -11614,6 +15019,12 @@ func (s *Image) SetOutputResources(v *OutputResources) *Image {
 // SetPlatform sets the Platform field's value.
 func (s *Image) SetPlatform(v string) *Image {
 	s.Platform = &v
+	return s
+}
+
+// SetScanState sets the ScanState field's value.
+func (s *Image) SetScanState(v *ImageScanState) *Image {
+	s.ScanState = v
 	return s
 }
 
@@ -11650,6 +15061,48 @@ func (s *Image) SetType(v string) *Image {
 // SetVersion sets the Version field's value.
 func (s *Image) SetVersion(v string) *Image {
 	s.Version = &v
+	return s
+}
+
+// Contains vulnerability counts for a specific image.
+type ImageAggregation struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) that identifies the image for this aggregation.
+	ImageBuildVersionArn *string `locationName:"imageBuildVersionArn" type:"string"`
+
+	// Counts by severity level for medium severity and higher level findings, plus
+	// a total for all of the findings for the specified image.
+	SeverityCounts *SeverityCounts `locationName:"severityCounts" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ImageAggregation) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ImageAggregation) GoString() string {
+	return s.String()
+}
+
+// SetImageBuildVersionArn sets the ImageBuildVersionArn field's value.
+func (s *ImageAggregation) SetImageBuildVersionArn(v string) *ImageAggregation {
+	s.ImageBuildVersionArn = &v
+	return s
+}
+
+// SetSeverityCounts sets the SeverityCounts field's value.
+func (s *ImageAggregation) SetSeverityCounts(v *SeverityCounts) *ImageAggregation {
+	s.SeverityCounts = v
 	return s
 }
 
@@ -11708,10 +15161,10 @@ type ImagePipeline struct {
 	// The date on which this image pipeline was created.
 	DateCreated *string `locationName:"dateCreated" type:"string"`
 
-	// The date on which this image pipeline was last run.
+	// This is no longer supported, and does not return a value.
 	DateLastRun *string `locationName:"dateLastRun" type:"string"`
 
-	// The date on which this image pipeline will next be run.
+	// The next date when the pipeline is scheduled to run.
 	DateNextRun *string `locationName:"dateNextRun" type:"string"`
 
 	// The date on which this image pipeline was last updated.
@@ -11733,6 +15186,9 @@ type ImagePipeline struct {
 	// The Amazon Resource Name (ARN) of the image recipe associated with this image
 	// pipeline.
 	ImageRecipeArn *string `locationName:"imageRecipeArn" type:"string"`
+
+	// Contains settings for vulnerability scans.
+	ImageScanningConfiguration *ImageScanningConfiguration `locationName:"imageScanningConfiguration" type:"structure"`
 
 	// The image tests configuration of the image pipeline.
 	ImageTestsConfiguration *ImageTestsConfiguration `locationName:"imageTestsConfiguration" type:"structure"`
@@ -11835,6 +15291,12 @@ func (s *ImagePipeline) SetImageRecipeArn(v string) *ImagePipeline {
 	return s
 }
 
+// SetImageScanningConfiguration sets the ImageScanningConfiguration field's value.
+func (s *ImagePipeline) SetImageScanningConfiguration(v *ImageScanningConfiguration) *ImagePipeline {
+	s.ImageScanningConfiguration = v
+	return s
+}
+
 // SetImageTestsConfiguration sets the ImageTestsConfiguration field's value.
 func (s *ImagePipeline) SetImageTestsConfiguration(v *ImageTestsConfiguration) *ImagePipeline {
 	s.ImageTestsConfiguration = v
@@ -11877,6 +15339,49 @@ func (s *ImagePipeline) SetTags(v map[string]*string) *ImagePipeline {
 	return s
 }
 
+// Contains vulnerability counts for a specific image pipeline.
+type ImagePipelineAggregation struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) that identifies the image pipeline for this
+	// aggregation.
+	ImagePipelineArn *string `locationName:"imagePipelineArn" type:"string"`
+
+	// Counts by severity level for medium severity and higher level findings, plus
+	// a total for all of the findings for the specified image pipeline.
+	SeverityCounts *SeverityCounts `locationName:"severityCounts" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ImagePipelineAggregation) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ImagePipelineAggregation) GoString() string {
+	return s.String()
+}
+
+// SetImagePipelineArn sets the ImagePipelineArn field's value.
+func (s *ImagePipelineAggregation) SetImagePipelineArn(v string) *ImagePipelineAggregation {
+	s.ImagePipelineArn = &v
+	return s
+}
+
+// SetSeverityCounts sets the SeverityCounts field's value.
+func (s *ImagePipelineAggregation) SetSeverityCounts(v *SeverityCounts) *ImagePipelineAggregation {
+	s.SeverityCounts = v
+	return s
+}
+
 // An image recipe.
 type ImageRecipe struct {
 	_ struct{} `type:"structure"`
@@ -11893,7 +15398,9 @@ type ImageRecipe struct {
 	// The block device mappings to apply when creating images from this recipe.
 	BlockDeviceMappings []*InstanceBlockDeviceMapping `locationName:"blockDeviceMappings" type:"list"`
 
-	// The components of the image recipe.
+	// The components that are included in the image recipe. Recipes require a minimum
+	// of one build component, and can have a maximum of 20 build and test components
+	// in any combination.
 	Components []*ComponentConfiguration `locationName:"components" min:"1" type:"list"`
 
 	// The date on which this image recipe was created.
@@ -12116,11 +15623,381 @@ func (s *ImageRecipeSummary) SetTags(v map[string]*string) *ImageRecipeSummary {
 	return s
 }
 
-// Image state shows the image status and the reason for that status.
+// Contains details about a vulnerability scan finding.
+type ImageScanFinding struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Web Services account ID that's associated with the finding.
+	AwsAccountId *string `locationName:"awsAccountId" min:"1" type:"string"`
+
+	// The description of the finding.
+	Description *string `locationName:"description" min:"1" type:"string"`
+
+	// The date and time when the finding was first observed.
+	FirstObservedAt *time.Time `locationName:"firstObservedAt" type:"timestamp"`
+
+	// Details about whether a fix is available for any of the packages that are
+	// identified in the finding through a version update.
+	FixAvailable *string `locationName:"fixAvailable" min:"1" type:"string"`
+
+	// The Amazon Resource Name (ARN) of the image build version that's associated
+	// with the finding.
+	ImageBuildVersionArn *string `locationName:"imageBuildVersionArn" type:"string"`
+
+	// The Amazon Resource Name (ARN) of the image pipeline that's associated with
+	// the finding.
+	ImagePipelineArn *string `locationName:"imagePipelineArn" type:"string"`
+
+	// The score that Amazon Inspector assigned for the finding.
+	InspectorScore *float64 `locationName:"inspectorScore" type:"double"`
+
+	// An object that contains details of the Amazon Inspector score.
+	InspectorScoreDetails *InspectorScoreDetails `locationName:"inspectorScoreDetails" type:"structure"`
+
+	// An object that contains the details of a package vulnerability finding.
+	PackageVulnerabilityDetails *PackageVulnerabilityDetails `locationName:"packageVulnerabilityDetails" type:"structure"`
+
+	// An object that contains the details about how to remediate the finding.
+	Remediation *Remediation `locationName:"remediation" type:"structure"`
+
+	// The severity of the finding.
+	Severity *string `locationName:"severity" min:"1" type:"string"`
+
+	// The title of the finding.
+	Title *string `locationName:"title" min:"1" type:"string"`
+
+	// The type of the finding. Image Builder looks for findings of the type PACKAGE_VULNERABILITY
+	// that apply to output images, and excludes other types.
+	Type *string `locationName:"type" min:"1" type:"string"`
+
+	// The timestamp when the finding was last updated.
+	UpdatedAt *time.Time `locationName:"updatedAt" type:"timestamp"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ImageScanFinding) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ImageScanFinding) GoString() string {
+	return s.String()
+}
+
+// SetAwsAccountId sets the AwsAccountId field's value.
+func (s *ImageScanFinding) SetAwsAccountId(v string) *ImageScanFinding {
+	s.AwsAccountId = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *ImageScanFinding) SetDescription(v string) *ImageScanFinding {
+	s.Description = &v
+	return s
+}
+
+// SetFirstObservedAt sets the FirstObservedAt field's value.
+func (s *ImageScanFinding) SetFirstObservedAt(v time.Time) *ImageScanFinding {
+	s.FirstObservedAt = &v
+	return s
+}
+
+// SetFixAvailable sets the FixAvailable field's value.
+func (s *ImageScanFinding) SetFixAvailable(v string) *ImageScanFinding {
+	s.FixAvailable = &v
+	return s
+}
+
+// SetImageBuildVersionArn sets the ImageBuildVersionArn field's value.
+func (s *ImageScanFinding) SetImageBuildVersionArn(v string) *ImageScanFinding {
+	s.ImageBuildVersionArn = &v
+	return s
+}
+
+// SetImagePipelineArn sets the ImagePipelineArn field's value.
+func (s *ImageScanFinding) SetImagePipelineArn(v string) *ImageScanFinding {
+	s.ImagePipelineArn = &v
+	return s
+}
+
+// SetInspectorScore sets the InspectorScore field's value.
+func (s *ImageScanFinding) SetInspectorScore(v float64) *ImageScanFinding {
+	s.InspectorScore = &v
+	return s
+}
+
+// SetInspectorScoreDetails sets the InspectorScoreDetails field's value.
+func (s *ImageScanFinding) SetInspectorScoreDetails(v *InspectorScoreDetails) *ImageScanFinding {
+	s.InspectorScoreDetails = v
+	return s
+}
+
+// SetPackageVulnerabilityDetails sets the PackageVulnerabilityDetails field's value.
+func (s *ImageScanFinding) SetPackageVulnerabilityDetails(v *PackageVulnerabilityDetails) *ImageScanFinding {
+	s.PackageVulnerabilityDetails = v
+	return s
+}
+
+// SetRemediation sets the Remediation field's value.
+func (s *ImageScanFinding) SetRemediation(v *Remediation) *ImageScanFinding {
+	s.Remediation = v
+	return s
+}
+
+// SetSeverity sets the Severity field's value.
+func (s *ImageScanFinding) SetSeverity(v string) *ImageScanFinding {
+	s.Severity = &v
+	return s
+}
+
+// SetTitle sets the Title field's value.
+func (s *ImageScanFinding) SetTitle(v string) *ImageScanFinding {
+	s.Title = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *ImageScanFinding) SetType(v string) *ImageScanFinding {
+	s.Type = &v
+	return s
+}
+
+// SetUpdatedAt sets the UpdatedAt field's value.
+func (s *ImageScanFinding) SetUpdatedAt(v time.Time) *ImageScanFinding {
+	s.UpdatedAt = &v
+	return s
+}
+
+// This returns exactly one type of aggregation, based on the filter that Image
+// Builder applies in its API action.
+type ImageScanFindingAggregation struct {
+	_ struct{} `type:"structure"`
+
+	// Returns an object that contains severity counts based on an account ID.
+	AccountAggregation *AccountAggregation `locationName:"accountAggregation" type:"structure"`
+
+	// Returns an object that contains severity counts based on the Amazon Resource
+	// Name (ARN) for a specific image.
+	ImageAggregation *ImageAggregation `locationName:"imageAggregation" type:"structure"`
+
+	// Returns an object that contains severity counts based on an image pipeline
+	// ARN.
+	ImagePipelineAggregation *ImagePipelineAggregation `locationName:"imagePipelineAggregation" type:"structure"`
+
+	// Returns an object that contains severity counts based on vulnerability ID.
+	VulnerabilityIdAggregation *VulnerabilityIdAggregation `locationName:"vulnerabilityIdAggregation" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ImageScanFindingAggregation) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ImageScanFindingAggregation) GoString() string {
+	return s.String()
+}
+
+// SetAccountAggregation sets the AccountAggregation field's value.
+func (s *ImageScanFindingAggregation) SetAccountAggregation(v *AccountAggregation) *ImageScanFindingAggregation {
+	s.AccountAggregation = v
+	return s
+}
+
+// SetImageAggregation sets the ImageAggregation field's value.
+func (s *ImageScanFindingAggregation) SetImageAggregation(v *ImageAggregation) *ImageScanFindingAggregation {
+	s.ImageAggregation = v
+	return s
+}
+
+// SetImagePipelineAggregation sets the ImagePipelineAggregation field's value.
+func (s *ImageScanFindingAggregation) SetImagePipelineAggregation(v *ImagePipelineAggregation) *ImageScanFindingAggregation {
+	s.ImagePipelineAggregation = v
+	return s
+}
+
+// SetVulnerabilityIdAggregation sets the VulnerabilityIdAggregation field's value.
+func (s *ImageScanFindingAggregation) SetVulnerabilityIdAggregation(v *VulnerabilityIdAggregation) *ImageScanFindingAggregation {
+	s.VulnerabilityIdAggregation = v
+	return s
+}
+
+// A name value pair that Image Builder applies to streamline results from the
+// vulnerability scan findings list action.
+type ImageScanFindingsFilter struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the image scan finding filter. Filter names are case-sensitive.
+	Name *string `locationName:"name" type:"string"`
+
+	// The filter values. Filter values are case-sensitive.
+	Values []*string `locationName:"values" min:"1" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ImageScanFindingsFilter) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ImageScanFindingsFilter) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ImageScanFindingsFilter) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ImageScanFindingsFilter"}
+	if s.Values != nil && len(s.Values) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Values", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetName sets the Name field's value.
+func (s *ImageScanFindingsFilter) SetName(v string) *ImageScanFindingsFilter {
+	s.Name = &v
+	return s
+}
+
+// SetValues sets the Values field's value.
+func (s *ImageScanFindingsFilter) SetValues(v []*string) *ImageScanFindingsFilter {
+	s.Values = v
+	return s
+}
+
+// Shows the vulnerability scan status for a specific image, and the reason
+// for that status.
+type ImageScanState struct {
+	_ struct{} `type:"structure"`
+
+	// The reason for the scan status for the image.
+	Reason *string `locationName:"reason" min:"1" type:"string"`
+
+	// The current state of vulnerability scans for the image.
+	Status *string `locationName:"status" type:"string" enum:"ImageScanStatus"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ImageScanState) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ImageScanState) GoString() string {
+	return s.String()
+}
+
+// SetReason sets the Reason field's value.
+func (s *ImageScanState) SetReason(v string) *ImageScanState {
+	s.Reason = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *ImageScanState) SetStatus(v string) *ImageScanState {
+	s.Status = &v
+	return s
+}
+
+// Contains settings for Image Builder image resource and container image scans.
+type ImageScanningConfiguration struct {
+	_ struct{} `type:"structure"`
+
+	// Contains Amazon ECR settings for vulnerability scans.
+	EcrConfiguration *EcrConfiguration `locationName:"ecrConfiguration" type:"structure"`
+
+	// A setting that indicates whether Image Builder keeps a snapshot of the vulnerability
+	// scans that Amazon Inspector runs against the build instance when you create
+	// a new image.
+	ImageScanningEnabled *bool `locationName:"imageScanningEnabled" type:"boolean"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ImageScanningConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ImageScanningConfiguration) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ImageScanningConfiguration) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ImageScanningConfiguration"}
+	if s.EcrConfiguration != nil {
+		if err := s.EcrConfiguration.Validate(); err != nil {
+			invalidParams.AddNested("EcrConfiguration", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetEcrConfiguration sets the EcrConfiguration field's value.
+func (s *ImageScanningConfiguration) SetEcrConfiguration(v *EcrConfiguration) *ImageScanningConfiguration {
+	s.EcrConfiguration = v
+	return s
+}
+
+// SetImageScanningEnabled sets the ImageScanningEnabled field's value.
+func (s *ImageScanningConfiguration) SetImageScanningEnabled(v bool) *ImageScanningConfiguration {
+	s.ImageScanningEnabled = &v
+	return s
+}
+
+// Image status and the reason for that status.
 type ImageState struct {
 	_ struct{} `type:"structure"`
 
-	// The reason for the image's status.
+	// The reason for the status of the image.
 	Reason *string `locationName:"reason" min:"1" type:"string"`
 
 	// The status of the image.
@@ -12176,32 +16053,43 @@ type ImageSummary struct {
 	//    the recipe.
 	BuildType *string `locationName:"buildType" type:"string" enum:"BuildType"`
 
-	// The date on which this image was created.
+	// The date on which Image Builder created this image.
 	DateCreated *string `locationName:"dateCreated" type:"string"`
+
+	// The time when deprecation occurs for an image resource. This can be a past
+	// or future date.
+	DeprecationTime *time.Time `locationName:"deprecationTime" type:"timestamp"`
+
+	// The origin of the base image that Image Builder used to build this image.
+	ImageSource *string `locationName:"imageSource" type:"string" enum:"ImageSource"`
+
+	// Identifies the last runtime instance of the lifecycle policy to take action
+	// on the image.
+	LifecycleExecutionId *string `locationName:"lifecycleExecutionId" type:"string"`
 
 	// The name of the image.
 	Name *string `locationName:"name" type:"string"`
 
-	// The operating system version of the instance. For example, Amazon Linux 2,
-	// Ubuntu 18, or Microsoft Windows Server 2019.
+	// The operating system version of the instances that launch from this image.
+	// For example, Amazon Linux 2, Ubuntu 18, or Microsoft Windows Server 2019.
 	OsVersion *string `locationName:"osVersion" min:"1" type:"string"`
 
-	// The output resources produced when creating this image.
+	// The output resources that Image Builder produced when it created this image.
 	OutputResources *OutputResources `locationName:"outputResources" type:"structure"`
 
 	// The owner of the image.
 	Owner *string `locationName:"owner" min:"1" type:"string"`
 
-	// The platform of the image.
+	// The image operating system platform, such as Linux or Windows.
 	Platform *string `locationName:"platform" type:"string" enum:"Platform"`
 
 	// The state of the image.
 	State *ImageState `locationName:"state" type:"structure"`
 
-	// The tags of the image.
+	// The tags that apply to this image.
 	Tags map[string]*string `locationName:"tags" min:"1" type:"map"`
 
-	// Specifies whether this is an AMI or container image.
+	// Specifies whether this image produces an AMI or a container image.
 	Type *string `locationName:"type" type:"string" enum:"ImageType"`
 
 	// The version of the image.
@@ -12241,6 +16129,24 @@ func (s *ImageSummary) SetBuildType(v string) *ImageSummary {
 // SetDateCreated sets the DateCreated field's value.
 func (s *ImageSummary) SetDateCreated(v string) *ImageSummary {
 	s.DateCreated = &v
+	return s
+}
+
+// SetDeprecationTime sets the DeprecationTime field's value.
+func (s *ImageSummary) SetDeprecationTime(v time.Time) *ImageSummary {
+	s.DeprecationTime = &v
+	return s
+}
+
+// SetImageSource sets the ImageSource field's value.
+func (s *ImageSummary) SetImageSource(v string) *ImageSummary {
+	s.ImageSource = &v
+	return s
+}
+
+// SetLifecycleExecutionId sets the LifecycleExecutionId field's value.
+func (s *ImageSummary) SetLifecycleExecutionId(v string) *ImageSummary {
+	s.LifecycleExecutionId = &v
 	return s
 }
 
@@ -12309,6 +16215,8 @@ type ImageTestsConfiguration struct {
 	ImageTestsEnabled *bool `locationName:"imageTestsEnabled" type:"boolean"`
 
 	// The maximum time in minutes that tests are permitted to run.
+	//
+	// The timeoutMinutes attribute is not currently active. This value is ignored.
 	TimeoutMinutes *int64 `locationName:"timeoutMinutes" min:"60" type:"integer"`
 }
 
@@ -12390,6 +16298,9 @@ type ImageVersion struct {
 	// The date on which this specific version of the Image Builder image was created.
 	DateCreated *string `locationName:"dateCreated" type:"string"`
 
+	// The origin of the base image that Image Builder used to build this image.
+	ImageSource *string `locationName:"imageSource" type:"string" enum:"ImageSource"`
+
 	// The name of this specific version of an Image Builder image.
 	Name *string `locationName:"name" type:"string"`
 
@@ -12400,10 +16311,11 @@ type ImageVersion struct {
 	// The owner of the image version.
 	Owner *string `locationName:"owner" min:"1" type:"string"`
 
-	// The platform of the image version, for example "Windows" or "Linux".
+	// The operating system platform of the image version, for example "Windows"
+	// or "Linux".
 	Platform *string `locationName:"platform" type:"string" enum:"Platform"`
 
-	// Specifies whether this image is an AMI or a container image.
+	// Specifies whether this image produces an AMI or a container image.
 	Type *string `locationName:"type" type:"string" enum:"ImageType"`
 
 	// Details for a specific version of an Image Builder image. This version follows
@@ -12464,6 +16376,12 @@ func (s *ImageVersion) SetDateCreated(v string) *ImageVersion {
 	return s
 }
 
+// SetImageSource sets the ImageSource field's value.
+func (s *ImageVersion) SetImageSource(v string) *ImageVersion {
+	s.ImageSource = &v
+	return s
+}
+
 // SetName sets the Name field's value.
 func (s *ImageVersion) SetName(v string) *ImageVersion {
 	s.Name = &v
@@ -12503,12 +16421,14 @@ func (s *ImageVersion) SetVersion(v string) *ImageVersion {
 type ImportComponentInput struct {
 	_ struct{} `type:"structure"`
 
-	// The change description of the component. Describes what change has been made
-	// in this version, or what makes this version different from other versions
-	// of this component.
+	// The change description of the component. This description indicates the change
+	// that has been made in this version, or what makes this version different
+	// from other versions of this component.
 	ChangeDescription *string `locationName:"changeDescription" min:"1" type:"string"`
 
-	// The idempotency token of the component.
+	// Unique, case-sensitive identifier you provide to ensure idempotency of the
+	// request. For more information, see Ensuring idempotency (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html)
+	// in the Amazon EC2 API Reference.
 	ClientToken *string `locationName:"clientToken" min:"1" type:"string" idempotencyToken:"true"`
 
 	// The data of the component. Used to specify the data inline. Either data or
@@ -12702,7 +16622,7 @@ func (s *ImportComponentInput) SetUri(v string) *ImportComponentInput {
 type ImportComponentOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The idempotency token used to make this request idempotent.
+	// The client token that uniquely identifies the request.
 	ClientToken *string `locationName:"clientToken" min:"1" type:"string"`
 
 	// The Amazon Resource Name (ARN) of the imported component.
@@ -12911,7 +16831,7 @@ func (s *ImportVmImageInput) SetVmImportTaskId(v string) *ImportVmImageInput {
 type ImportVmImageOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The idempotency token that was used for this request.
+	// The client token that uniquely identifies the request.
 	ClientToken *string `locationName:"clientToken" min:"1" type:"string"`
 
 	// The Amazon Resource Name (ARN) of the AMI that was created during the VM
@@ -13236,6 +17156,40 @@ func (s *InfrastructureConfigurationSummary) SetTags(v map[string]*string) *Infr
 	return s
 }
 
+// Information about the factors that influenced the score that Amazon Inspector
+// assigned for a finding.
+type InspectorScoreDetails struct {
+	_ struct{} `type:"structure"`
+
+	// An object that contains details about an adjustment that Amazon Inspector
+	// made to the CVSS score for the finding.
+	AdjustedCvss *CvssScoreDetails `locationName:"adjustedCvss" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s InspectorScoreDetails) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s InspectorScoreDetails) GoString() string {
+	return s.String()
+}
+
+// SetAdjustedCvss sets the AdjustedCvss field's value.
+func (s *InspectorScoreDetails) SetAdjustedCvss(v *CvssScoreDetails) *InspectorScoreDetails {
+	s.AdjustedCvss = v
+	return s
+}
+
 // Defines block device mappings for the instance used to configure your image.
 type InstanceBlockDeviceMapping struct {
 	_ struct{} `type:"structure"`
@@ -13394,7 +17348,8 @@ type InstanceMetadataOptions struct {
 	_ struct{} `type:"structure"`
 
 	// Limit the number of hops that an instance metadata request can traverse to
-	// reach its destination.
+	// reach its destination. The default is one hop. However, if HTTP tokens are
+	// required, container image builds need a minimum of two hops.
 	HttpPutResponseHopLimit *int64 `locationName:"httpPutResponseHopLimit" min:"1" type:"integer"`
 
 	// Indicates whether a signed token header is required for instance metadata
@@ -13713,7 +17668,7 @@ func (s *InvalidParameterValueException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
-// You have made a request for an action that is not supported by the service.
+// You have requested an action that that the service doesn't support.
 type InvalidRequestException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -13993,6 +17948,1271 @@ func (s *LaunchTemplateConfiguration) SetSetDefaultVersion(v bool) *LaunchTempla
 	return s
 }
 
+// Contains metadata from a runtime instance of a lifecycle policy.
+type LifecycleExecution struct {
+	_ struct{} `type:"structure"`
+
+	// The timestamp when the lifecycle runtime instance completed.
+	EndTime *time.Time `locationName:"endTime" type:"timestamp"`
+
+	// Identifies the lifecycle policy runtime instance.
+	LifecycleExecutionId *string `locationName:"lifecycleExecutionId" type:"string"`
+
+	// The Amazon Resource Name (ARN) of the lifecycle policy that ran.
+	LifecyclePolicyArn *string `locationName:"lifecyclePolicyArn" type:"string"`
+
+	// Contains information about associated resources that are identified for action
+	// by the runtime instance of the lifecycle policy.
+	ResourcesImpactedSummary *LifecycleExecutionResourcesImpactedSummary `locationName:"resourcesImpactedSummary" type:"structure"`
+
+	// The timestamp when the lifecycle runtime instance started.
+	StartTime *time.Time `locationName:"startTime" type:"timestamp"`
+
+	// Runtime state that reports if the policy action ran successfully, failed,
+	// or was skipped.
+	State *LifecycleExecutionState `locationName:"state" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LifecycleExecution) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LifecycleExecution) GoString() string {
+	return s.String()
+}
+
+// SetEndTime sets the EndTime field's value.
+func (s *LifecycleExecution) SetEndTime(v time.Time) *LifecycleExecution {
+	s.EndTime = &v
+	return s
+}
+
+// SetLifecycleExecutionId sets the LifecycleExecutionId field's value.
+func (s *LifecycleExecution) SetLifecycleExecutionId(v string) *LifecycleExecution {
+	s.LifecycleExecutionId = &v
+	return s
+}
+
+// SetLifecyclePolicyArn sets the LifecyclePolicyArn field's value.
+func (s *LifecycleExecution) SetLifecyclePolicyArn(v string) *LifecycleExecution {
+	s.LifecyclePolicyArn = &v
+	return s
+}
+
+// SetResourcesImpactedSummary sets the ResourcesImpactedSummary field's value.
+func (s *LifecycleExecution) SetResourcesImpactedSummary(v *LifecycleExecutionResourcesImpactedSummary) *LifecycleExecution {
+	s.ResourcesImpactedSummary = v
+	return s
+}
+
+// SetStartTime sets the StartTime field's value.
+func (s *LifecycleExecution) SetStartTime(v time.Time) *LifecycleExecution {
+	s.StartTime = &v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *LifecycleExecution) SetState(v *LifecycleExecutionState) *LifecycleExecution {
+	s.State = v
+	return s
+}
+
+// Contains details for a resource that the runtime instance of the lifecycle
+// policy identified for action.
+type LifecycleExecutionResource struct {
+	_ struct{} `type:"structure"`
+
+	// The account that owns the impacted resource.
+	AccountId *string `locationName:"accountId" min:"1" type:"string"`
+
+	// The action to take for the identified resource.
+	Action *LifecycleExecutionResourceAction `locationName:"action" type:"structure"`
+
+	// For an impacted container image, this identifies a list of URIs for associated
+	// container images distributed to ECR repositories.
+	ImageUris []*string `locationName:"imageUris" type:"list"`
+
+	// The Amazon Web Services Region where the lifecycle execution resource is
+	// stored.
+	Region *string `locationName:"region" min:"1" type:"string"`
+
+	// Identifies the impacted resource. The resource ID depends on the type of
+	// resource, as follows.
+	//
+	//    * Image Builder image resources: Amazon Resource Name (ARN)
+	//
+	//    * Distributed AMIs: AMI ID
+	//
+	//    * Container images distributed to an ECR repository: image URI or SHA
+	//    Digest
+	ResourceId *string `locationName:"resourceId" min:"1" type:"string"`
+
+	// A list of associated resource snapshots for the impacted resource if it’s
+	// an AMI.
+	Snapshots []*LifecycleExecutionSnapshotResource `locationName:"snapshots" type:"list"`
+
+	// The runtime state for the lifecycle execution.
+	State *LifecycleExecutionResourceState `locationName:"state" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LifecycleExecutionResource) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LifecycleExecutionResource) GoString() string {
+	return s.String()
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *LifecycleExecutionResource) SetAccountId(v string) *LifecycleExecutionResource {
+	s.AccountId = &v
+	return s
+}
+
+// SetAction sets the Action field's value.
+func (s *LifecycleExecutionResource) SetAction(v *LifecycleExecutionResourceAction) *LifecycleExecutionResource {
+	s.Action = v
+	return s
+}
+
+// SetImageUris sets the ImageUris field's value.
+func (s *LifecycleExecutionResource) SetImageUris(v []*string) *LifecycleExecutionResource {
+	s.ImageUris = v
+	return s
+}
+
+// SetRegion sets the Region field's value.
+func (s *LifecycleExecutionResource) SetRegion(v string) *LifecycleExecutionResource {
+	s.Region = &v
+	return s
+}
+
+// SetResourceId sets the ResourceId field's value.
+func (s *LifecycleExecutionResource) SetResourceId(v string) *LifecycleExecutionResource {
+	s.ResourceId = &v
+	return s
+}
+
+// SetSnapshots sets the Snapshots field's value.
+func (s *LifecycleExecutionResource) SetSnapshots(v []*LifecycleExecutionSnapshotResource) *LifecycleExecutionResource {
+	s.Snapshots = v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *LifecycleExecutionResource) SetState(v *LifecycleExecutionResourceState) *LifecycleExecutionResource {
+	s.State = v
+	return s
+}
+
+// The lifecycle policy action that was identified for the impacted resource.
+type LifecycleExecutionResourceAction struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the resource that was identified for a lifecycle policy action.
+	Name *string `locationName:"name" type:"string" enum:"LifecycleExecutionResourceActionName"`
+
+	// The reason why the lifecycle policy action is taken.
+	Reason *string `locationName:"reason" min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LifecycleExecutionResourceAction) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LifecycleExecutionResourceAction) GoString() string {
+	return s.String()
+}
+
+// SetName sets the Name field's value.
+func (s *LifecycleExecutionResourceAction) SetName(v string) *LifecycleExecutionResourceAction {
+	s.Name = &v
+	return s
+}
+
+// SetReason sets the Reason field's value.
+func (s *LifecycleExecutionResourceAction) SetReason(v string) *LifecycleExecutionResourceAction {
+	s.Reason = &v
+	return s
+}
+
+// Contains the state of an impacted resource that the runtime instance of the
+// lifecycle policy identified for action.
+type LifecycleExecutionResourceState struct {
+	_ struct{} `type:"structure"`
+
+	// Messaging that clarifies the reason for the assigned status.
+	Reason *string `locationName:"reason" min:"1" type:"string"`
+
+	// The runtime status of the lifecycle action taken for the impacted resource.
+	Status *string `locationName:"status" type:"string" enum:"LifecycleExecutionResourceStatus"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LifecycleExecutionResourceState) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LifecycleExecutionResourceState) GoString() string {
+	return s.String()
+}
+
+// SetReason sets the Reason field's value.
+func (s *LifecycleExecutionResourceState) SetReason(v string) *LifecycleExecutionResourceState {
+	s.Reason = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *LifecycleExecutionResourceState) SetStatus(v string) *LifecycleExecutionResourceState {
+	s.Status = &v
+	return s
+}
+
+// Contains details for an image resource that was identified for a lifecycle
+// action.
+type LifecycleExecutionResourcesImpactedSummary struct {
+	_ struct{} `type:"structure"`
+
+	// Indicates whether an image resource that was identified for a lifecycle action
+	// has associated resources that are also impacted.
+	HasImpactedResources *bool `locationName:"hasImpactedResources" type:"boolean"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LifecycleExecutionResourcesImpactedSummary) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LifecycleExecutionResourcesImpactedSummary) GoString() string {
+	return s.String()
+}
+
+// SetHasImpactedResources sets the HasImpactedResources field's value.
+func (s *LifecycleExecutionResourcesImpactedSummary) SetHasImpactedResources(v bool) *LifecycleExecutionResourcesImpactedSummary {
+	s.HasImpactedResources = &v
+	return s
+}
+
+// Contains the state of an impacted snapshot resource that the runtime instance
+// of the lifecycle policy identified for action.
+type LifecycleExecutionSnapshotResource struct {
+	_ struct{} `type:"structure"`
+
+	// Identifies the impacted snapshot resource.
+	SnapshotId *string `locationName:"snapshotId" min:"1" type:"string"`
+
+	// The runtime status of the lifecycle action taken for the snapshot.
+	State *LifecycleExecutionResourceState `locationName:"state" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LifecycleExecutionSnapshotResource) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LifecycleExecutionSnapshotResource) GoString() string {
+	return s.String()
+}
+
+// SetSnapshotId sets the SnapshotId field's value.
+func (s *LifecycleExecutionSnapshotResource) SetSnapshotId(v string) *LifecycleExecutionSnapshotResource {
+	s.SnapshotId = &v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *LifecycleExecutionSnapshotResource) SetState(v *LifecycleExecutionResourceState) *LifecycleExecutionSnapshotResource {
+	s.State = v
+	return s
+}
+
+// The current state of the runtime instance of the lifecycle policy.
+type LifecycleExecutionState struct {
+	_ struct{} `type:"structure"`
+
+	// The reason for the current status.
+	Reason *string `locationName:"reason" min:"1" type:"string"`
+
+	// The runtime status of the lifecycle execution.
+	Status *string `locationName:"status" type:"string" enum:"LifecycleExecutionStatus"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LifecycleExecutionState) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LifecycleExecutionState) GoString() string {
+	return s.String()
+}
+
+// SetReason sets the Reason field's value.
+func (s *LifecycleExecutionState) SetReason(v string) *LifecycleExecutionState {
+	s.Reason = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *LifecycleExecutionState) SetStatus(v string) *LifecycleExecutionState {
+	s.Status = &v
+	return s
+}
+
+// The configuration details for a lifecycle policy resource.
+type LifecyclePolicy struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the lifecycle policy resource.
+	Arn *string `locationName:"arn" type:"string"`
+
+	// The timestamp when Image Builder created the lifecycle policy resource.
+	DateCreated *time.Time `locationName:"dateCreated" type:"timestamp"`
+
+	// The timestamp for the last time Image Builder ran the lifecycle policy.
+	DateLastRun *time.Time `locationName:"dateLastRun" type:"timestamp"`
+
+	// The timestamp when Image Builder updated the lifecycle policy resource.
+	DateUpdated *time.Time `locationName:"dateUpdated" type:"timestamp"`
+
+	// Optional description for the lifecycle policy.
+	Description *string `locationName:"description" min:"1" type:"string"`
+
+	// The name of the IAM role that Image Builder uses to run the lifecycle policy.
+	// This is a custom role that you create.
+	ExecutionRole *string `locationName:"executionRole" min:"1" type:"string"`
+
+	// The name of the lifecycle policy.
+	Name *string `locationName:"name" type:"string"`
+
+	// The configuration details for a lifecycle policy resource.
+	PolicyDetails []*LifecyclePolicyDetail `locationName:"policyDetails" min:"1" type:"list"`
+
+	// Resource selection criteria used to run the lifecycle policy.
+	ResourceSelection *LifecyclePolicyResourceSelection `locationName:"resourceSelection" type:"structure"`
+
+	// The type of resources the lifecycle policy targets.
+	ResourceType *string `locationName:"resourceType" type:"string" enum:"LifecyclePolicyResourceType"`
+
+	// Indicates whether the lifecycle policy resource is enabled.
+	Status *string `locationName:"status" type:"string" enum:"LifecyclePolicyStatus"`
+
+	// To help manage your lifecycle policy resources, you can assign your own metadata
+	// to each resource in the form of tags. Each tag consists of a key and an optional
+	// value, both of which you define.
+	Tags map[string]*string `locationName:"tags" min:"1" type:"map"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LifecyclePolicy) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LifecyclePolicy) GoString() string {
+	return s.String()
+}
+
+// SetArn sets the Arn field's value.
+func (s *LifecyclePolicy) SetArn(v string) *LifecyclePolicy {
+	s.Arn = &v
+	return s
+}
+
+// SetDateCreated sets the DateCreated field's value.
+func (s *LifecyclePolicy) SetDateCreated(v time.Time) *LifecyclePolicy {
+	s.DateCreated = &v
+	return s
+}
+
+// SetDateLastRun sets the DateLastRun field's value.
+func (s *LifecyclePolicy) SetDateLastRun(v time.Time) *LifecyclePolicy {
+	s.DateLastRun = &v
+	return s
+}
+
+// SetDateUpdated sets the DateUpdated field's value.
+func (s *LifecyclePolicy) SetDateUpdated(v time.Time) *LifecyclePolicy {
+	s.DateUpdated = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *LifecyclePolicy) SetDescription(v string) *LifecyclePolicy {
+	s.Description = &v
+	return s
+}
+
+// SetExecutionRole sets the ExecutionRole field's value.
+func (s *LifecyclePolicy) SetExecutionRole(v string) *LifecyclePolicy {
+	s.ExecutionRole = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *LifecyclePolicy) SetName(v string) *LifecyclePolicy {
+	s.Name = &v
+	return s
+}
+
+// SetPolicyDetails sets the PolicyDetails field's value.
+func (s *LifecyclePolicy) SetPolicyDetails(v []*LifecyclePolicyDetail) *LifecyclePolicy {
+	s.PolicyDetails = v
+	return s
+}
+
+// SetResourceSelection sets the ResourceSelection field's value.
+func (s *LifecyclePolicy) SetResourceSelection(v *LifecyclePolicyResourceSelection) *LifecyclePolicy {
+	s.ResourceSelection = v
+	return s
+}
+
+// SetResourceType sets the ResourceType field's value.
+func (s *LifecyclePolicy) SetResourceType(v string) *LifecyclePolicy {
+	s.ResourceType = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *LifecyclePolicy) SetStatus(v string) *LifecyclePolicy {
+	s.Status = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *LifecyclePolicy) SetTags(v map[string]*string) *LifecyclePolicy {
+	s.Tags = v
+	return s
+}
+
+// The configuration details for a lifecycle policy resource.
+type LifecyclePolicyDetail struct {
+	_ struct{} `type:"structure"`
+
+	// Configuration details for the policy action.
+	//
+	// Action is a required field
+	Action *LifecyclePolicyDetailAction `locationName:"action" type:"structure" required:"true"`
+
+	// Additional rules to specify resources that should be exempt from policy actions.
+	ExclusionRules *LifecyclePolicyDetailExclusionRules `locationName:"exclusionRules" type:"structure"`
+
+	// Specifies the resources that the lifecycle policy applies to.
+	//
+	// Filter is a required field
+	Filter *LifecyclePolicyDetailFilter `locationName:"filter" type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LifecyclePolicyDetail) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LifecyclePolicyDetail) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *LifecyclePolicyDetail) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "LifecyclePolicyDetail"}
+	if s.Action == nil {
+		invalidParams.Add(request.NewErrParamRequired("Action"))
+	}
+	if s.Filter == nil {
+		invalidParams.Add(request.NewErrParamRequired("Filter"))
+	}
+	if s.Action != nil {
+		if err := s.Action.Validate(); err != nil {
+			invalidParams.AddNested("Action", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.ExclusionRules != nil {
+		if err := s.ExclusionRules.Validate(); err != nil {
+			invalidParams.AddNested("ExclusionRules", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.Filter != nil {
+		if err := s.Filter.Validate(); err != nil {
+			invalidParams.AddNested("Filter", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAction sets the Action field's value.
+func (s *LifecyclePolicyDetail) SetAction(v *LifecyclePolicyDetailAction) *LifecyclePolicyDetail {
+	s.Action = v
+	return s
+}
+
+// SetExclusionRules sets the ExclusionRules field's value.
+func (s *LifecyclePolicyDetail) SetExclusionRules(v *LifecyclePolicyDetailExclusionRules) *LifecyclePolicyDetail {
+	s.ExclusionRules = v
+	return s
+}
+
+// SetFilter sets the Filter field's value.
+func (s *LifecyclePolicyDetail) SetFilter(v *LifecyclePolicyDetailFilter) *LifecyclePolicyDetail {
+	s.Filter = v
+	return s
+}
+
+// Contains selection criteria for the lifecycle policy.
+type LifecyclePolicyDetailAction struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the resources that the lifecycle policy applies to.
+	IncludeResources *LifecyclePolicyDetailActionIncludeResources `locationName:"includeResources" type:"structure"`
+
+	// Specifies the lifecycle action to take.
+	//
+	// Type is a required field
+	Type *string `locationName:"type" type:"string" required:"true" enum:"LifecyclePolicyDetailActionType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LifecyclePolicyDetailAction) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LifecyclePolicyDetailAction) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *LifecyclePolicyDetailAction) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "LifecyclePolicyDetailAction"}
+	if s.Type == nil {
+		invalidParams.Add(request.NewErrParamRequired("Type"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetIncludeResources sets the IncludeResources field's value.
+func (s *LifecyclePolicyDetailAction) SetIncludeResources(v *LifecyclePolicyDetailActionIncludeResources) *LifecyclePolicyDetailAction {
+	s.IncludeResources = v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *LifecyclePolicyDetailAction) SetType(v string) *LifecyclePolicyDetailAction {
+	s.Type = &v
+	return s
+}
+
+// Specifies how the lifecycle policy should apply actions to selected resources.
+type LifecyclePolicyDetailActionIncludeResources struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies whether the lifecycle action should apply to distributed AMIs.
+	Amis *bool `locationName:"amis" type:"boolean"`
+
+	// Specifies whether the lifecycle action should apply to distributed containers.
+	Containers *bool `locationName:"containers" type:"boolean"`
+
+	// Specifies whether the lifecycle action should apply to snapshots associated
+	// with distributed AMIs.
+	Snapshots *bool `locationName:"snapshots" type:"boolean"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LifecyclePolicyDetailActionIncludeResources) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LifecyclePolicyDetailActionIncludeResources) GoString() string {
+	return s.String()
+}
+
+// SetAmis sets the Amis field's value.
+func (s *LifecyclePolicyDetailActionIncludeResources) SetAmis(v bool) *LifecyclePolicyDetailActionIncludeResources {
+	s.Amis = &v
+	return s
+}
+
+// SetContainers sets the Containers field's value.
+func (s *LifecyclePolicyDetailActionIncludeResources) SetContainers(v bool) *LifecyclePolicyDetailActionIncludeResources {
+	s.Containers = &v
+	return s
+}
+
+// SetSnapshots sets the Snapshots field's value.
+func (s *LifecyclePolicyDetailActionIncludeResources) SetSnapshots(v bool) *LifecyclePolicyDetailActionIncludeResources {
+	s.Snapshots = &v
+	return s
+}
+
+// Specifies resources that lifecycle policy actions should not apply to.
+type LifecyclePolicyDetailExclusionRules struct {
+	_ struct{} `type:"structure"`
+
+	// Lists configuration values that apply to AMIs that Image Builder should exclude
+	// from the lifecycle action.
+	Amis *LifecyclePolicyDetailExclusionRulesAmis `locationName:"amis" type:"structure"`
+
+	// Contains a list of tags that Image Builder uses to skip lifecycle actions
+	// for AMIs that have them.
+	TagMap map[string]*string `locationName:"tagMap" min:"1" type:"map"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LifecyclePolicyDetailExclusionRules) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LifecyclePolicyDetailExclusionRules) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *LifecyclePolicyDetailExclusionRules) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "LifecyclePolicyDetailExclusionRules"}
+	if s.TagMap != nil && len(s.TagMap) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("TagMap", 1))
+	}
+	if s.Amis != nil {
+		if err := s.Amis.Validate(); err != nil {
+			invalidParams.AddNested("Amis", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAmis sets the Amis field's value.
+func (s *LifecyclePolicyDetailExclusionRules) SetAmis(v *LifecyclePolicyDetailExclusionRulesAmis) *LifecyclePolicyDetailExclusionRules {
+	s.Amis = v
+	return s
+}
+
+// SetTagMap sets the TagMap field's value.
+func (s *LifecyclePolicyDetailExclusionRules) SetTagMap(v map[string]*string) *LifecyclePolicyDetailExclusionRules {
+	s.TagMap = v
+	return s
+}
+
+// Defines criteria for AMIs that are excluded from lifecycle actions.
+type LifecyclePolicyDetailExclusionRulesAmis struct {
+	_ struct{} `type:"structure"`
+
+	// Configures whether public AMIs are excluded from the lifecycle action.
+	IsPublic *bool `locationName:"isPublic" type:"boolean"`
+
+	// Configures Amazon Web Services Regions that are excluded from the lifecycle
+	// action.
+	LastLaunched *LifecyclePolicyDetailExclusionRulesAmisLastLaunched `locationName:"lastLaunched" type:"structure"`
+
+	// Specifies Amazon Web Services accounts whose resources are excluded from
+	// the lifecycle action.
+	Regions []*string `locationName:"regions" type:"list"`
+
+	// Specifies configuration details for Image Builder to exclude the most recent
+	// resources from lifecycle actions.
+	SharedAccounts []*string `locationName:"sharedAccounts" min:"1" type:"list"`
+
+	// Lists tags that should be excluded from lifecycle actions for the AMIs that
+	// have them.
+	TagMap map[string]*string `locationName:"tagMap" min:"1" type:"map"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LifecyclePolicyDetailExclusionRulesAmis) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LifecyclePolicyDetailExclusionRulesAmis) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *LifecyclePolicyDetailExclusionRulesAmis) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "LifecyclePolicyDetailExclusionRulesAmis"}
+	if s.SharedAccounts != nil && len(s.SharedAccounts) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("SharedAccounts", 1))
+	}
+	if s.TagMap != nil && len(s.TagMap) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("TagMap", 1))
+	}
+	if s.LastLaunched != nil {
+		if err := s.LastLaunched.Validate(); err != nil {
+			invalidParams.AddNested("LastLaunched", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetIsPublic sets the IsPublic field's value.
+func (s *LifecyclePolicyDetailExclusionRulesAmis) SetIsPublic(v bool) *LifecyclePolicyDetailExclusionRulesAmis {
+	s.IsPublic = &v
+	return s
+}
+
+// SetLastLaunched sets the LastLaunched field's value.
+func (s *LifecyclePolicyDetailExclusionRulesAmis) SetLastLaunched(v *LifecyclePolicyDetailExclusionRulesAmisLastLaunched) *LifecyclePolicyDetailExclusionRulesAmis {
+	s.LastLaunched = v
+	return s
+}
+
+// SetRegions sets the Regions field's value.
+func (s *LifecyclePolicyDetailExclusionRulesAmis) SetRegions(v []*string) *LifecyclePolicyDetailExclusionRulesAmis {
+	s.Regions = v
+	return s
+}
+
+// SetSharedAccounts sets the SharedAccounts field's value.
+func (s *LifecyclePolicyDetailExclusionRulesAmis) SetSharedAccounts(v []*string) *LifecyclePolicyDetailExclusionRulesAmis {
+	s.SharedAccounts = v
+	return s
+}
+
+// SetTagMap sets the TagMap field's value.
+func (s *LifecyclePolicyDetailExclusionRulesAmis) SetTagMap(v map[string]*string) *LifecyclePolicyDetailExclusionRulesAmis {
+	s.TagMap = v
+	return s
+}
+
+// Defines criteria to exclude AMIs from lifecycle actions based on the last
+// time they were used to launch an instance.
+type LifecyclePolicyDetailExclusionRulesAmisLastLaunched struct {
+	_ struct{} `type:"structure"`
+
+	// Defines the unit of time that the lifecycle policy uses to calculate elapsed
+	// time since the last instance launched from the AMI. For example: days, weeks,
+	// months, or years.
+	//
+	// Unit is a required field
+	Unit *string `locationName:"unit" type:"string" required:"true" enum:"LifecyclePolicyTimeUnit"`
+
+	// The integer number of units for the time period. For example 6 (months).
+	//
+	// Value is a required field
+	Value *int64 `locationName:"value" min:"1" type:"integer" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LifecyclePolicyDetailExclusionRulesAmisLastLaunched) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LifecyclePolicyDetailExclusionRulesAmisLastLaunched) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *LifecyclePolicyDetailExclusionRulesAmisLastLaunched) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "LifecyclePolicyDetailExclusionRulesAmisLastLaunched"}
+	if s.Unit == nil {
+		invalidParams.Add(request.NewErrParamRequired("Unit"))
+	}
+	if s.Value == nil {
+		invalidParams.Add(request.NewErrParamRequired("Value"))
+	}
+	if s.Value != nil && *s.Value < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("Value", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetUnit sets the Unit field's value.
+func (s *LifecyclePolicyDetailExclusionRulesAmisLastLaunched) SetUnit(v string) *LifecyclePolicyDetailExclusionRulesAmisLastLaunched {
+	s.Unit = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *LifecyclePolicyDetailExclusionRulesAmisLastLaunched) SetValue(v int64) *LifecyclePolicyDetailExclusionRulesAmisLastLaunched {
+	s.Value = &v
+	return s
+}
+
+// Defines filters that the lifecycle policy uses to determine impacted resource.
+type LifecyclePolicyDetailFilter struct {
+	_ struct{} `type:"structure"`
+
+	// For age-based filters, this is the number of resources to keep on hand after
+	// the lifecycle DELETE action is applied. Impacted resources are only deleted
+	// if you have more than this number of resources. If you have fewer resources
+	// than this number, the impacted resource is not deleted.
+	RetainAtLeast *int64 `locationName:"retainAtLeast" min:"1" type:"integer"`
+
+	// Filter resources based on either age or count.
+	//
+	// Type is a required field
+	Type *string `locationName:"type" type:"string" required:"true" enum:"LifecyclePolicyDetailFilterType"`
+
+	// Defines the unit of time that the lifecycle policy uses to determine impacted
+	// resources. This is required for age-based rules.
+	Unit *string `locationName:"unit" type:"string" enum:"LifecyclePolicyTimeUnit"`
+
+	// The number of units for the time period or for the count. For example, a
+	// value of 6 might refer to six months or six AMIs.
+	//
+	// For count-based filters, this value represents the minimum number of resources
+	// to keep on hand. If you have fewer resources than this number, the resource
+	// is excluded from lifecycle actions.
+	//
+	// Value is a required field
+	Value *int64 `locationName:"value" min:"1" type:"integer" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LifecyclePolicyDetailFilter) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LifecyclePolicyDetailFilter) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *LifecyclePolicyDetailFilter) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "LifecyclePolicyDetailFilter"}
+	if s.RetainAtLeast != nil && *s.RetainAtLeast < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("RetainAtLeast", 1))
+	}
+	if s.Type == nil {
+		invalidParams.Add(request.NewErrParamRequired("Type"))
+	}
+	if s.Value == nil {
+		invalidParams.Add(request.NewErrParamRequired("Value"))
+	}
+	if s.Value != nil && *s.Value < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("Value", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetRetainAtLeast sets the RetainAtLeast field's value.
+func (s *LifecyclePolicyDetailFilter) SetRetainAtLeast(v int64) *LifecyclePolicyDetailFilter {
+	s.RetainAtLeast = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *LifecyclePolicyDetailFilter) SetType(v string) *LifecyclePolicyDetailFilter {
+	s.Type = &v
+	return s
+}
+
+// SetUnit sets the Unit field's value.
+func (s *LifecyclePolicyDetailFilter) SetUnit(v string) *LifecyclePolicyDetailFilter {
+	s.Unit = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *LifecyclePolicyDetailFilter) SetValue(v int64) *LifecyclePolicyDetailFilter {
+	s.Value = &v
+	return s
+}
+
+// Resource selection criteria for the lifecycle policy.
+type LifecyclePolicyResourceSelection struct {
+	_ struct{} `type:"structure"`
+
+	// A list of recipes that are used as selection criteria for the output images
+	// that the lifecycle policy applies to.
+	Recipes []*LifecyclePolicyResourceSelectionRecipe `locationName:"recipes" min:"1" type:"list"`
+
+	// A list of tags that are used as selection criteria for the resources that
+	// the lifecycle policy applies to.
+	TagMap map[string]*string `locationName:"tagMap" min:"1" type:"map"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LifecyclePolicyResourceSelection) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LifecyclePolicyResourceSelection) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *LifecyclePolicyResourceSelection) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "LifecyclePolicyResourceSelection"}
+	if s.Recipes != nil && len(s.Recipes) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Recipes", 1))
+	}
+	if s.TagMap != nil && len(s.TagMap) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("TagMap", 1))
+	}
+	if s.Recipes != nil {
+		for i, v := range s.Recipes {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Recipes", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetRecipes sets the Recipes field's value.
+func (s *LifecyclePolicyResourceSelection) SetRecipes(v []*LifecyclePolicyResourceSelectionRecipe) *LifecyclePolicyResourceSelection {
+	s.Recipes = v
+	return s
+}
+
+// SetTagMap sets the TagMap field's value.
+func (s *LifecyclePolicyResourceSelection) SetTagMap(v map[string]*string) *LifecyclePolicyResourceSelection {
+	s.TagMap = v
+	return s
+}
+
+// Specifies an Image Builder recipe that the lifecycle policy uses for resource
+// selection.
+type LifecyclePolicyResourceSelectionRecipe struct {
+	_ struct{} `type:"structure"`
+
+	// The name of an Image Builder recipe that the lifecycle policy uses for resource
+	// selection.
+	//
+	// Name is a required field
+	Name *string `locationName:"name" type:"string" required:"true"`
+
+	// The version of the Image Builder recipe specified by the name field.
+	//
+	// SemanticVersion is a required field
+	SemanticVersion *string `locationName:"semanticVersion" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LifecyclePolicyResourceSelectionRecipe) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LifecyclePolicyResourceSelectionRecipe) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *LifecyclePolicyResourceSelectionRecipe) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "LifecyclePolicyResourceSelectionRecipe"}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.SemanticVersion == nil {
+		invalidParams.Add(request.NewErrParamRequired("SemanticVersion"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetName sets the Name field's value.
+func (s *LifecyclePolicyResourceSelectionRecipe) SetName(v string) *LifecyclePolicyResourceSelectionRecipe {
+	s.Name = &v
+	return s
+}
+
+// SetSemanticVersion sets the SemanticVersion field's value.
+func (s *LifecyclePolicyResourceSelectionRecipe) SetSemanticVersion(v string) *LifecyclePolicyResourceSelectionRecipe {
+	s.SemanticVersion = &v
+	return s
+}
+
+// Contains a summary of lifecycle policy resources.
+type LifecyclePolicySummary struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the lifecycle policy summary resource.
+	Arn *string `locationName:"arn" type:"string"`
+
+	// The timestamp when Image Builder created the lifecycle policy resource.
+	DateCreated *time.Time `locationName:"dateCreated" type:"timestamp"`
+
+	// The timestamp for the last time Image Builder ran the lifecycle policy.
+	DateLastRun *time.Time `locationName:"dateLastRun" type:"timestamp"`
+
+	// The timestamp when Image Builder updated the lifecycle policy resource.
+	DateUpdated *time.Time `locationName:"dateUpdated" type:"timestamp"`
+
+	// Optional description for the lifecycle policy.
+	Description *string `locationName:"description" min:"1" type:"string"`
+
+	// The name of the IAM role that Image Builder uses to run the lifecycle policy.
+	ExecutionRole *string `locationName:"executionRole" min:"1" type:"string"`
+
+	// The name of the lifecycle policy.
+	Name *string `locationName:"name" type:"string"`
+
+	// The type of resources the lifecycle policy targets.
+	ResourceType *string `locationName:"resourceType" type:"string" enum:"LifecyclePolicyResourceType"`
+
+	// The lifecycle policy resource status.
+	Status *string `locationName:"status" type:"string" enum:"LifecyclePolicyStatus"`
+
+	// To help manage your lifecycle policy resources, you can assign your own metadata
+	// to each resource in the form of tags. Each tag consists of a key and an optional
+	// value, both of which you define.
+	Tags map[string]*string `locationName:"tags" min:"1" type:"map"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LifecyclePolicySummary) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LifecyclePolicySummary) GoString() string {
+	return s.String()
+}
+
+// SetArn sets the Arn field's value.
+func (s *LifecyclePolicySummary) SetArn(v string) *LifecyclePolicySummary {
+	s.Arn = &v
+	return s
+}
+
+// SetDateCreated sets the DateCreated field's value.
+func (s *LifecyclePolicySummary) SetDateCreated(v time.Time) *LifecyclePolicySummary {
+	s.DateCreated = &v
+	return s
+}
+
+// SetDateLastRun sets the DateLastRun field's value.
+func (s *LifecyclePolicySummary) SetDateLastRun(v time.Time) *LifecyclePolicySummary {
+	s.DateLastRun = &v
+	return s
+}
+
+// SetDateUpdated sets the DateUpdated field's value.
+func (s *LifecyclePolicySummary) SetDateUpdated(v time.Time) *LifecyclePolicySummary {
+	s.DateUpdated = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *LifecyclePolicySummary) SetDescription(v string) *LifecyclePolicySummary {
+	s.Description = &v
+	return s
+}
+
+// SetExecutionRole sets the ExecutionRole field's value.
+func (s *LifecyclePolicySummary) SetExecutionRole(v string) *LifecyclePolicySummary {
+	s.ExecutionRole = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *LifecyclePolicySummary) SetName(v string) *LifecyclePolicySummary {
+	s.Name = &v
+	return s
+}
+
+// SetResourceType sets the ResourceType field's value.
+func (s *LifecyclePolicySummary) SetResourceType(v string) *LifecyclePolicySummary {
+	s.ResourceType = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *LifecyclePolicySummary) SetStatus(v string) *LifecyclePolicySummary {
+	s.Status = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *LifecyclePolicySummary) SetTags(v map[string]*string) *LifecyclePolicySummary {
+	s.Tags = v
+	return s
+}
+
 type ListComponentBuildVersionsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -14005,7 +19225,7 @@ type ListComponentBuildVersionsInput struct {
 	// The maximum items to return in a request.
 	MaxResults *int64 `locationName:"maxResults" min:"1" type:"integer"`
 
-	// A token to specify where to start paginating. This is the NextToken from
+	// A token to specify where to start paginating. This is the nextToken from
 	// a previously truncated response.
 	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
 }
@@ -14071,8 +19291,8 @@ type ListComponentBuildVersionsOutput struct {
 	// The list of component summaries for the specified semantic version.
 	ComponentSummaryList []*ComponentSummary `locationName:"componentSummaryList" type:"list"`
 
-	// The next token used for paginated responses. When this is not empty, there
-	// are additional elements that the service has not included in this request.
+	// The next token used for paginated responses. When this field isn't empty,
+	// there are additional elements that the service hasn't included in this request.
 	// Use this token with the next request to retrieve additional objects.
 	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
 
@@ -14119,7 +19339,7 @@ func (s *ListComponentBuildVersionsOutput) SetRequestId(v string) *ListComponent
 type ListComponentsInput struct {
 	_ struct{} `type:"structure"`
 
-	// Returns the list of component build versions for the specified name.
+	// Returns the list of components for the specified name.
 	ByName *bool `locationName:"byName" type:"boolean"`
 
 	// Use the following filters to streamline results:
@@ -14140,14 +19360,15 @@ type ListComponentsInput struct {
 	// The maximum items to return in a request.
 	MaxResults *int64 `locationName:"maxResults" min:"1" type:"integer"`
 
-	// A token to specify where to start paginating. This is the NextToken from
+	// A token to specify where to start paginating. This is the nextToken from
 	// a previously truncated response.
 	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
 
-	// The owner defines which components you want to list. By default, this request
-	// will only show components owned by your account. You can use this field to
-	// specify if you want to view components owned by yourself, by Amazon, or those
-	// components that have been shared with you by other customers.
+	// Filters results based on the type of owner for the component. By default,
+	// this request returns a list of components that your account owns. To see
+	// results for other types of owners, you can specify components that Amazon
+	// manages, third party components, or components that other accounts have shared
+	// with you.
 	Owner *string `locationName:"owner" type:"string" enum:"Ownership"`
 }
 
@@ -14237,8 +19458,8 @@ type ListComponentsOutput struct {
 	// can assign values for the first three, and can filter on all of them.
 	ComponentVersionList []*ComponentVersion `locationName:"componentVersionList" type:"list"`
 
-	// The next token used for paginated responses. When this is not empty, there
-	// are additional elements that the service has not included in this request.
+	// The next token used for paginated responses. When this field isn't empty,
+	// there are additional elements that the service hasn't included in this request.
 	// Use this token with the next request to retrieve additional objects.
 	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
 
@@ -14296,11 +19517,11 @@ type ListContainerRecipesInput struct {
 	//    * platform
 	Filters []*Filter `locationName:"filters" min:"1" type:"list"`
 
-	// The maximum number of results to return in the list.
+	// The maximum items to return in a request.
 	MaxResults *int64 `locationName:"maxResults" min:"1" type:"integer"`
 
-	// Provides a token for pagination, which determines where to begin the next
-	// set of results when the current set reaches the maximum for one request.
+	// A token to specify where to start paginating. This is the nextToken from
+	// a previously truncated response.
 	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
 
 	// Returns container recipes belonging to the specified owner, that have been
@@ -14386,10 +19607,9 @@ type ListContainerRecipesOutput struct {
 	// The list of container recipes returned for the request.
 	ContainerRecipeSummaryList []*ContainerRecipeSummary `locationName:"containerRecipeSummaryList" type:"list"`
 
-	// The next token field is used for paginated responses. When this is not empty,
-	// there are additional container recipes that the service has not included
-	// in this response. Use this token with the next request to retrieve additional
-	// list items.
+	// The next token used for paginated responses. When this field isn't empty,
+	// there are additional elements that the service hasn't included in this request.
+	// Use this token with the next request to retrieve additional objects.
 	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
 
 	// The request ID that uniquely identifies this request.
@@ -14441,7 +19661,7 @@ type ListDistributionConfigurationsInput struct {
 	// The maximum items to return in a request.
 	MaxResults *int64 `locationName:"maxResults" min:"1" type:"integer"`
 
-	// A token to specify where to start paginating. This is the NextToken from
+	// A token to specify where to start paginating. This is the nextToken from
 	// a previously truncated response.
 	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
 }
@@ -14517,8 +19737,8 @@ type ListDistributionConfigurationsOutput struct {
 	// The list of distributions.
 	DistributionConfigurationSummaryList []*DistributionConfigurationSummary `locationName:"distributionConfigurationSummaryList" type:"list"`
 
-	// The next token used for paginated responses. When this is not empty, there
-	// are additional elements that the service has not included in this request.
+	// The next token used for paginated responses. When this field isn't empty,
+	// there are additional elements that the service hasn't included in this request.
 	// Use this token with the next request to retrieve additional objects.
 	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
 
@@ -14587,7 +19807,7 @@ type ListImageBuildVersionsInput struct {
 	// The maximum items to return in a request.
 	MaxResults *int64 `locationName:"maxResults" min:"1" type:"integer"`
 
-	// A token to specify where to start paginating. This is the NextToken from
+	// A token to specify where to start paginating. This is the nextToken from
 	// a previously truncated response.
 	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
 }
@@ -14672,8 +19892,8 @@ type ListImageBuildVersionsOutput struct {
 	// The list of image build versions.
 	ImageSummaryList []*ImageSummary `locationName:"imageSummaryList" type:"list"`
 
-	// The next token used for paginated responses. When this is not empty, there
-	// are additional elements that the service has not included in this request.
+	// The next token used for paginated responses. When this field isn't empty,
+	// there are additional elements that the service hasn't included in this request.
 	// Use this token with the next request to retrieve additional objects.
 	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
 
@@ -14726,10 +19946,10 @@ type ListImagePackagesInput struct {
 	// ImageBuildVersionArn is a required field
 	ImageBuildVersionArn *string `locationName:"imageBuildVersionArn" type:"string" required:"true"`
 
-	// The maxiumum number of results to return from the ListImagePackages request.
+	// The maximum items to return in a request.
 	MaxResults *int64 `locationName:"maxResults" min:"1" type:"integer"`
 
-	// A token to specify where to start paginating. This is the NextToken from
+	// A token to specify where to start paginating. This is the nextToken from
 	// a previously truncated response.
 	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
 }
@@ -14795,8 +20015,9 @@ type ListImagePackagesOutput struct {
 	// The list of Image Packages returned in the response.
 	ImagePackageList []*ImagePackage `locationName:"imagePackageList" type:"list"`
 
-	// A token to specify where to start paginating. This is the NextToken from
-	// a previously truncated response.
+	// The next token used for paginated responses. When this field isn't empty,
+	// there are additional elements that the service hasn't included in this request.
+	// Use this token with the next request to retrieve additional objects.
 	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
 
 	// The request ID that uniquely identifies this request.
@@ -14858,7 +20079,7 @@ type ListImagePipelineImagesInput struct {
 	// The maximum items to return in a request.
 	MaxResults *int64 `locationName:"maxResults" min:"1" type:"integer"`
 
-	// A token to specify where to start paginating. This is the NextToken from
+	// A token to specify where to start paginating. This is the nextToken from
 	// a previously truncated response.
 	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
 }
@@ -14943,8 +20164,8 @@ type ListImagePipelineImagesOutput struct {
 	// The list of images built by this pipeline.
 	ImageSummaryList []*ImageSummary `locationName:"imageSummaryList" type:"list"`
 
-	// The next token used for paginated responses. When this is not empty, there
-	// are additional elements that the service has not included in this request.
+	// The next token used for paginated responses. When this field isn't empty,
+	// there are additional elements that the service hasn't included in this request.
 	// Use this token with the next request to retrieve additional objects.
 	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
 
@@ -15009,7 +20230,7 @@ type ListImagePipelinesInput struct {
 	// The maximum items to return in a request.
 	MaxResults *int64 `locationName:"maxResults" min:"1" type:"integer"`
 
-	// A token to specify where to start paginating. This is the NextToken from
+	// A token to specify where to start paginating. This is the nextToken from
 	// a previously truncated response.
 	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
 }
@@ -15085,8 +20306,8 @@ type ListImagePipelinesOutput struct {
 	// The list of image pipelines.
 	ImagePipelineList []*ImagePipeline `locationName:"imagePipelineList" type:"list"`
 
-	// The next token used for paginated responses. When this is not empty, there
-	// are additional elements that the service has not included in this request.
+	// The next token used for paginated responses. When this field isn't empty,
+	// there are additional elements that the service hasn't included in this request.
 	// Use this token with the next request to retrieve additional objects.
 	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
 
@@ -15145,7 +20366,7 @@ type ListImageRecipesInput struct {
 	// The maximum items to return in a request.
 	MaxResults *int64 `locationName:"maxResults" min:"1" type:"integer"`
 
-	// A token to specify where to start paginating. This is the NextToken from
+	// A token to specify where to start paginating. This is the nextToken from
 	// a previously truncated response.
 	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
 
@@ -15233,8 +20454,8 @@ type ListImageRecipesOutput struct {
 	// The list of image pipelines.
 	ImageRecipeSummaryList []*ImageRecipeSummary `locationName:"imageRecipeSummaryList" type:"list"`
 
-	// The next token used for paginated responses. When this is not empty, there
-	// are additional elements that the service has not included in this request.
+	// The next token used for paginated responses. When this field isn't empty,
+	// there are additional elements that the service hasn't included in this request.
 	// Use this token with the next request to retrieve additional objects.
 	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
 
@@ -15278,6 +20499,284 @@ func (s *ListImageRecipesOutput) SetRequestId(v string) *ListImageRecipesOutput 
 	return s
 }
 
+type ListImageScanFindingAggregationsInput struct {
+	_ struct{} `type:"structure"`
+
+	// A filter name and value pair that is used to return a more specific list
+	// of results from a list operation. Filters can be used to match a set of resources
+	// by specific criteria, such as tags, attributes, or IDs.
+	Filter *Filter `locationName:"filter" type:"structure"`
+
+	// A token to specify where to start paginating. This is the nextToken from
+	// a previously truncated response.
+	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListImageScanFindingAggregationsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListImageScanFindingAggregationsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListImageScanFindingAggregationsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListImageScanFindingAggregationsInput"}
+	if s.NextToken != nil && len(*s.NextToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 1))
+	}
+	if s.Filter != nil {
+		if err := s.Filter.Validate(); err != nil {
+			invalidParams.AddNested("Filter", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetFilter sets the Filter field's value.
+func (s *ListImageScanFindingAggregationsInput) SetFilter(v *Filter) *ListImageScanFindingAggregationsInput {
+	s.Filter = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListImageScanFindingAggregationsInput) SetNextToken(v string) *ListImageScanFindingAggregationsInput {
+	s.NextToken = &v
+	return s
+}
+
+type ListImageScanFindingAggregationsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The aggregation type specifies what type of key is used to group the image
+	// scan findings. Image Builder returns results based on the request filter.
+	// If you didn't specify a filter in the request, the type defaults to accountId.
+	//
+	// Aggregation types
+	//
+	//    * accountId
+	//
+	//    * imageBuildVersionArn
+	//
+	//    * imagePipelineArn
+	//
+	//    * vulnerabilityId
+	//
+	// Each aggregation includes counts by severity level for medium severity and
+	// higher level findings, plus a total for all of the findings for each key
+	// value.
+	AggregationType *string `locationName:"aggregationType" min:"1" type:"string"`
+
+	// The next token used for paginated responses. When this field isn't empty,
+	// there are additional elements that the service hasn't included in this request.
+	// Use this token with the next request to retrieve additional objects.
+	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
+
+	// The request ID that uniquely identifies this request.
+	RequestId *string `locationName:"requestId" min:"1" type:"string"`
+
+	// An array of image scan finding aggregations that match the filter criteria.
+	Responses []*ImageScanFindingAggregation `locationName:"responses" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListImageScanFindingAggregationsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListImageScanFindingAggregationsOutput) GoString() string {
+	return s.String()
+}
+
+// SetAggregationType sets the AggregationType field's value.
+func (s *ListImageScanFindingAggregationsOutput) SetAggregationType(v string) *ListImageScanFindingAggregationsOutput {
+	s.AggregationType = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListImageScanFindingAggregationsOutput) SetNextToken(v string) *ListImageScanFindingAggregationsOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetRequestId sets the RequestId field's value.
+func (s *ListImageScanFindingAggregationsOutput) SetRequestId(v string) *ListImageScanFindingAggregationsOutput {
+	s.RequestId = &v
+	return s
+}
+
+// SetResponses sets the Responses field's value.
+func (s *ListImageScanFindingAggregationsOutput) SetResponses(v []*ImageScanFindingAggregation) *ListImageScanFindingAggregationsOutput {
+	s.Responses = v
+	return s
+}
+
+type ListImageScanFindingsInput struct {
+	_ struct{} `type:"structure"`
+
+	// An array of name value pairs that you can use to filter your results. You
+	// can use the following filters to streamline results:
+	//
+	//    * imageBuildVersionArn
+	//
+	//    * imagePipelineArn
+	//
+	//    * vulnerabilityId
+	//
+	//    * severity
+	//
+	// If you don't request a filter, then all findings in your account are listed.
+	Filters []*ImageScanFindingsFilter `locationName:"filters" min:"1" type:"list"`
+
+	// The maximum items to return in a request.
+	MaxResults *int64 `locationName:"maxResults" min:"1" type:"integer"`
+
+	// A token to specify where to start paginating. This is the nextToken from
+	// a previously truncated response.
+	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListImageScanFindingsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListImageScanFindingsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListImageScanFindingsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListImageScanFindingsInput"}
+	if s.Filters != nil && len(s.Filters) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Filters", 1))
+	}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+	if s.NextToken != nil && len(*s.NextToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 1))
+	}
+	if s.Filters != nil {
+		for i, v := range s.Filters {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Filters", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetFilters sets the Filters field's value.
+func (s *ListImageScanFindingsInput) SetFilters(v []*ImageScanFindingsFilter) *ListImageScanFindingsInput {
+	s.Filters = v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListImageScanFindingsInput) SetMaxResults(v int64) *ListImageScanFindingsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListImageScanFindingsInput) SetNextToken(v string) *ListImageScanFindingsInput {
+	s.NextToken = &v
+	return s
+}
+
+type ListImageScanFindingsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The image scan findings for your account that meet your request filter criteria.
+	Findings []*ImageScanFinding `locationName:"findings" type:"list"`
+
+	// The next token used for paginated responses. When this field isn't empty,
+	// there are additional elements that the service hasn't included in this request.
+	// Use this token with the next request to retrieve additional objects.
+	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
+
+	// The request ID that uniquely identifies this request.
+	RequestId *string `locationName:"requestId" min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListImageScanFindingsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListImageScanFindingsOutput) GoString() string {
+	return s.String()
+}
+
+// SetFindings sets the Findings field's value.
+func (s *ListImageScanFindingsOutput) SetFindings(v []*ImageScanFinding) *ListImageScanFindingsOutput {
+	s.Findings = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListImageScanFindingsOutput) SetNextToken(v string) *ListImageScanFindingsOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetRequestId sets the RequestId field's value.
+func (s *ListImageScanFindingsOutput) SetRequestId(v string) *ListImageScanFindingsOutput {
+	s.RequestId = &v
+	return s
+}
+
 type ListImagesInput struct {
 	_ struct{} `type:"structure"`
 
@@ -15303,7 +20802,7 @@ type ListImagesInput struct {
 	// The maximum items to return in a request.
 	MaxResults *int64 `locationName:"maxResults" min:"1" type:"integer"`
 
-	// A token to specify where to start paginating. This is the NextToken from
+	// A token to specify where to start paginating. This is the nextToken from
 	// a previously truncated response.
 	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
 
@@ -15411,8 +20910,8 @@ type ListImagesOutput struct {
 	// all nodes to the right of the first wildcard must also be wildcards.
 	ImageVersionList []*ImageVersion `locationName:"imageVersionList" type:"list"`
 
-	// The next token used for paginated responses. When this is not empty, there
-	// are additional elements that the service has not included in this request.
+	// The next token used for paginated responses. When this field isn't empty,
+	// there are additional elements that the service hasn't included in this request.
 	// Use this token with the next request to retrieve additional objects.
 	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
 
@@ -15465,7 +20964,7 @@ type ListInfrastructureConfigurationsInput struct {
 	// The maximum items to return in a request.
 	MaxResults *int64 `locationName:"maxResults" min:"1" type:"integer"`
 
-	// A token to specify where to start paginating. This is the NextToken from
+	// A token to specify where to start paginating. This is the nextToken from
 	// a previously truncated response.
 	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
 }
@@ -15541,8 +21040,8 @@ type ListInfrastructureConfigurationsOutput struct {
 	// The list of infrastructure configurations.
 	InfrastructureConfigurationSummaryList []*InfrastructureConfigurationSummary `locationName:"infrastructureConfigurationSummaryList" type:"list"`
 
-	// The next token used for paginated responses. When this is not empty, there
-	// are additional elements that the service has not included in this request.
+	// The next token used for paginated responses. When this field isn't empty,
+	// there are additional elements that the service hasn't included in this request.
 	// Use this token with the next request to retrieve additional objects.
 	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
 
@@ -15583,6 +21082,392 @@ func (s *ListInfrastructureConfigurationsOutput) SetNextToken(v string) *ListInf
 // SetRequestId sets the RequestId field's value.
 func (s *ListInfrastructureConfigurationsOutput) SetRequestId(v string) *ListInfrastructureConfigurationsOutput {
 	s.RequestId = &v
+	return s
+}
+
+type ListLifecycleExecutionResourcesInput struct {
+	_ struct{} `type:"structure"`
+
+	// Use the unique identifier for a runtime instance of the lifecycle policy
+	// to get runtime details.
+	//
+	// LifecycleExecutionId is a required field
+	LifecycleExecutionId *string `locationName:"lifecycleExecutionId" type:"string" required:"true"`
+
+	// The maximum items to return in a request.
+	MaxResults *int64 `locationName:"maxResults" min:"1" type:"integer"`
+
+	// A token to specify where to start paginating. This is the nextToken from
+	// a previously truncated response.
+	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
+
+	// You can leave this empty to get a list of Image Builder resources that were
+	// identified for lifecycle actions.
+	//
+	// To get a list of associated resources that are impacted for an individual
+	// resource (the parent), specify its Amazon Resource Name (ARN). Associated
+	// resources are produced from your image and distributed when you run a build,
+	// such as AMIs or container images stored in ECR repositories.
+	ParentResourceId *string `locationName:"parentResourceId" min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListLifecycleExecutionResourcesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListLifecycleExecutionResourcesInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListLifecycleExecutionResourcesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListLifecycleExecutionResourcesInput"}
+	if s.LifecycleExecutionId == nil {
+		invalidParams.Add(request.NewErrParamRequired("LifecycleExecutionId"))
+	}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+	if s.NextToken != nil && len(*s.NextToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 1))
+	}
+	if s.ParentResourceId != nil && len(*s.ParentResourceId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ParentResourceId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetLifecycleExecutionId sets the LifecycleExecutionId field's value.
+func (s *ListLifecycleExecutionResourcesInput) SetLifecycleExecutionId(v string) *ListLifecycleExecutionResourcesInput {
+	s.LifecycleExecutionId = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListLifecycleExecutionResourcesInput) SetMaxResults(v int64) *ListLifecycleExecutionResourcesInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListLifecycleExecutionResourcesInput) SetNextToken(v string) *ListLifecycleExecutionResourcesInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetParentResourceId sets the ParentResourceId field's value.
+func (s *ListLifecycleExecutionResourcesInput) SetParentResourceId(v string) *ListLifecycleExecutionResourcesInput {
+	s.ParentResourceId = &v
+	return s
+}
+
+type ListLifecycleExecutionResourcesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Runtime details for the specified runtime instance of the lifecycle policy.
+	LifecycleExecutionId *string `locationName:"lifecycleExecutionId" type:"string"`
+
+	// The current state of the lifecycle runtime instance.
+	LifecycleExecutionState *LifecycleExecutionState `locationName:"lifecycleExecutionState" type:"structure"`
+
+	// The next token used for paginated responses. When this field isn't empty,
+	// there are additional elements that the service hasn't included in this request.
+	// Use this token with the next request to retrieve additional objects.
+	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
+
+	// A list of resources that were identified for lifecycle actions.
+	Resources []*LifecycleExecutionResource `locationName:"resources" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListLifecycleExecutionResourcesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListLifecycleExecutionResourcesOutput) GoString() string {
+	return s.String()
+}
+
+// SetLifecycleExecutionId sets the LifecycleExecutionId field's value.
+func (s *ListLifecycleExecutionResourcesOutput) SetLifecycleExecutionId(v string) *ListLifecycleExecutionResourcesOutput {
+	s.LifecycleExecutionId = &v
+	return s
+}
+
+// SetLifecycleExecutionState sets the LifecycleExecutionState field's value.
+func (s *ListLifecycleExecutionResourcesOutput) SetLifecycleExecutionState(v *LifecycleExecutionState) *ListLifecycleExecutionResourcesOutput {
+	s.LifecycleExecutionState = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListLifecycleExecutionResourcesOutput) SetNextToken(v string) *ListLifecycleExecutionResourcesOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetResources sets the Resources field's value.
+func (s *ListLifecycleExecutionResourcesOutput) SetResources(v []*LifecycleExecutionResource) *ListLifecycleExecutionResourcesOutput {
+	s.Resources = v
+	return s
+}
+
+type ListLifecycleExecutionsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The maximum items to return in a request.
+	MaxResults *int64 `locationName:"maxResults" min:"1" type:"integer"`
+
+	// A token to specify where to start paginating. This is the nextToken from
+	// a previously truncated response.
+	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
+
+	// The Amazon Resource Name (ARN) of the resource for which to get a list of
+	// lifecycle runtime instances.
+	//
+	// ResourceArn is a required field
+	ResourceArn *string `locationName:"resourceArn" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListLifecycleExecutionsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListLifecycleExecutionsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListLifecycleExecutionsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListLifecycleExecutionsInput"}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+	if s.NextToken != nil && len(*s.NextToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 1))
+	}
+	if s.ResourceArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ResourceArn"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListLifecycleExecutionsInput) SetMaxResults(v int64) *ListLifecycleExecutionsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListLifecycleExecutionsInput) SetNextToken(v string) *ListLifecycleExecutionsInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetResourceArn sets the ResourceArn field's value.
+func (s *ListLifecycleExecutionsInput) SetResourceArn(v string) *ListLifecycleExecutionsInput {
+	s.ResourceArn = &v
+	return s
+}
+
+type ListLifecycleExecutionsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A list of lifecycle runtime instances for the specified resource.
+	LifecycleExecutions []*LifecycleExecution `locationName:"lifecycleExecutions" type:"list"`
+
+	// The next token used for paginated responses. When this field isn't empty,
+	// there are additional elements that the service hasn't included in this request.
+	// Use this token with the next request to retrieve additional objects.
+	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListLifecycleExecutionsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListLifecycleExecutionsOutput) GoString() string {
+	return s.String()
+}
+
+// SetLifecycleExecutions sets the LifecycleExecutions field's value.
+func (s *ListLifecycleExecutionsOutput) SetLifecycleExecutions(v []*LifecycleExecution) *ListLifecycleExecutionsOutput {
+	s.LifecycleExecutions = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListLifecycleExecutionsOutput) SetNextToken(v string) *ListLifecycleExecutionsOutput {
+	s.NextToken = &v
+	return s
+}
+
+type ListLifecyclePoliciesInput struct {
+	_ struct{} `type:"structure"`
+
+	// Streamline results based on one of the following values: Name, Status.
+	Filters []*Filter `locationName:"filters" min:"1" type:"list"`
+
+	// The maximum items to return in a request.
+	MaxResults *int64 `locationName:"maxResults" min:"1" type:"integer"`
+
+	// A token to specify where to start paginating. This is the nextToken from
+	// a previously truncated response.
+	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListLifecyclePoliciesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListLifecyclePoliciesInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListLifecyclePoliciesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListLifecyclePoliciesInput"}
+	if s.Filters != nil && len(s.Filters) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Filters", 1))
+	}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+	if s.NextToken != nil && len(*s.NextToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 1))
+	}
+	if s.Filters != nil {
+		for i, v := range s.Filters {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Filters", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetFilters sets the Filters field's value.
+func (s *ListLifecyclePoliciesInput) SetFilters(v []*Filter) *ListLifecyclePoliciesInput {
+	s.Filters = v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListLifecyclePoliciesInput) SetMaxResults(v int64) *ListLifecyclePoliciesInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListLifecyclePoliciesInput) SetNextToken(v string) *ListLifecyclePoliciesInput {
+	s.NextToken = &v
+	return s
+}
+
+type ListLifecyclePoliciesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A list of lifecycle policies in your Amazon Web Services account that meet
+	// the criteria specified in the request.
+	LifecyclePolicySummaryList []*LifecyclePolicySummary `locationName:"lifecyclePolicySummaryList" type:"list"`
+
+	// The next token used for paginated responses. When this field isn't empty,
+	// there are additional elements that the service hasn't included in this request.
+	// Use this token with the next request to retrieve additional objects.
+	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListLifecyclePoliciesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListLifecyclePoliciesOutput) GoString() string {
+	return s.String()
+}
+
+// SetLifecyclePolicySummaryList sets the LifecyclePolicySummaryList field's value.
+func (s *ListLifecyclePoliciesOutput) SetLifecyclePolicySummaryList(v []*LifecyclePolicySummary) *ListLifecyclePoliciesOutput {
+	s.LifecyclePolicySummaryList = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListLifecyclePoliciesOutput) SetNextToken(v string) *ListLifecyclePoliciesOutput {
+	s.NextToken = &v
 	return s
 }
 
@@ -15663,6 +21548,312 @@ func (s ListTagsForResourceOutput) GoString() string {
 // SetTags sets the Tags field's value.
 func (s *ListTagsForResourceOutput) SetTags(v map[string]*string) *ListTagsForResourceOutput {
 	s.Tags = v
+	return s
+}
+
+type ListWorkflowExecutionsInput struct {
+	_ struct{} `type:"structure"`
+
+	// List all workflow runtime instances for the specified image build version
+	// resource ARN.
+	//
+	// ImageBuildVersionArn is a required field
+	ImageBuildVersionArn *string `locationName:"imageBuildVersionArn" type:"string" required:"true"`
+
+	// The maximum items to return in a request.
+	MaxResults *int64 `locationName:"maxResults" min:"1" type:"integer"`
+
+	// A token to specify where to start paginating. This is the nextToken from
+	// a previously truncated response.
+	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListWorkflowExecutionsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListWorkflowExecutionsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListWorkflowExecutionsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListWorkflowExecutionsInput"}
+	if s.ImageBuildVersionArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ImageBuildVersionArn"))
+	}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+	if s.NextToken != nil && len(*s.NextToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetImageBuildVersionArn sets the ImageBuildVersionArn field's value.
+func (s *ListWorkflowExecutionsInput) SetImageBuildVersionArn(v string) *ListWorkflowExecutionsInput {
+	s.ImageBuildVersionArn = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListWorkflowExecutionsInput) SetMaxResults(v int64) *ListWorkflowExecutionsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListWorkflowExecutionsInput) SetNextToken(v string) *ListWorkflowExecutionsInput {
+	s.NextToken = &v
+	return s
+}
+
+type ListWorkflowExecutionsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The resource ARN of the image build version for which you requested a list
+	// of workflow runtime details.
+	ImageBuildVersionArn *string `locationName:"imageBuildVersionArn" type:"string"`
+
+	// The output message from the list action, if applicable.
+	Message *string `locationName:"message" type:"string"`
+
+	// The next token used for paginated responses. When this field isn't empty,
+	// there are additional elements that the service hasn't included in this request.
+	// Use this token with the next request to retrieve additional objects.
+	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
+
+	// The request ID that uniquely identifies this request.
+	RequestId *string `locationName:"requestId" min:"1" type:"string"`
+
+	// Contains an array of runtime details that represents each time a workflow
+	// ran for the requested image build version.
+	WorkflowExecutions []*WorkflowExecutionMetadata `locationName:"workflowExecutions" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListWorkflowExecutionsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListWorkflowExecutionsOutput) GoString() string {
+	return s.String()
+}
+
+// SetImageBuildVersionArn sets the ImageBuildVersionArn field's value.
+func (s *ListWorkflowExecutionsOutput) SetImageBuildVersionArn(v string) *ListWorkflowExecutionsOutput {
+	s.ImageBuildVersionArn = &v
+	return s
+}
+
+// SetMessage sets the Message field's value.
+func (s *ListWorkflowExecutionsOutput) SetMessage(v string) *ListWorkflowExecutionsOutput {
+	s.Message = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListWorkflowExecutionsOutput) SetNextToken(v string) *ListWorkflowExecutionsOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetRequestId sets the RequestId field's value.
+func (s *ListWorkflowExecutionsOutput) SetRequestId(v string) *ListWorkflowExecutionsOutput {
+	s.RequestId = &v
+	return s
+}
+
+// SetWorkflowExecutions sets the WorkflowExecutions field's value.
+func (s *ListWorkflowExecutionsOutput) SetWorkflowExecutions(v []*WorkflowExecutionMetadata) *ListWorkflowExecutionsOutput {
+	s.WorkflowExecutions = v
+	return s
+}
+
+type ListWorkflowStepExecutionsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The maximum items to return in a request.
+	MaxResults *int64 `locationName:"maxResults" min:"1" type:"integer"`
+
+	// A token to specify where to start paginating. This is the nextToken from
+	// a previously truncated response.
+	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
+
+	// The unique identifier that Image Builder assigned to keep track of runtime
+	// details when it ran the workflow.
+	//
+	// WorkflowExecutionId is a required field
+	WorkflowExecutionId *string `locationName:"workflowExecutionId" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListWorkflowStepExecutionsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListWorkflowStepExecutionsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListWorkflowStepExecutionsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListWorkflowStepExecutionsInput"}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+	if s.NextToken != nil && len(*s.NextToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 1))
+	}
+	if s.WorkflowExecutionId == nil {
+		invalidParams.Add(request.NewErrParamRequired("WorkflowExecutionId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListWorkflowStepExecutionsInput) SetMaxResults(v int64) *ListWorkflowStepExecutionsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListWorkflowStepExecutionsInput) SetNextToken(v string) *ListWorkflowStepExecutionsInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetWorkflowExecutionId sets the WorkflowExecutionId field's value.
+func (s *ListWorkflowStepExecutionsInput) SetWorkflowExecutionId(v string) *ListWorkflowStepExecutionsInput {
+	s.WorkflowExecutionId = &v
+	return s
+}
+
+type ListWorkflowStepExecutionsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The image build version resource ARN that's associated with the specified
+	// runtime instance of the workflow.
+	ImageBuildVersionArn *string `locationName:"imageBuildVersionArn" type:"string"`
+
+	// The output message from the list action, if applicable.
+	Message *string `locationName:"message" type:"string"`
+
+	// The next token used for paginated responses. When this field isn't empty,
+	// there are additional elements that the service hasn't included in this request.
+	// Use this token with the next request to retrieve additional objects.
+	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
+
+	// The request ID that uniquely identifies this request.
+	RequestId *string `locationName:"requestId" min:"1" type:"string"`
+
+	// Contains an array of runtime details that represents each step in this runtime
+	// instance of the workflow.
+	Steps []*WorkflowStepMetadata `locationName:"steps" type:"list"`
+
+	// The build version ARN for the Image Builder workflow resource that defines
+	// the steps for this runtime instance of the workflow.
+	WorkflowBuildVersionArn *string `locationName:"workflowBuildVersionArn" type:"string"`
+
+	// The unique identifier that Image Builder assigned to keep track of runtime
+	// details when it ran the workflow.
+	WorkflowExecutionId *string `locationName:"workflowExecutionId" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListWorkflowStepExecutionsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListWorkflowStepExecutionsOutput) GoString() string {
+	return s.String()
+}
+
+// SetImageBuildVersionArn sets the ImageBuildVersionArn field's value.
+func (s *ListWorkflowStepExecutionsOutput) SetImageBuildVersionArn(v string) *ListWorkflowStepExecutionsOutput {
+	s.ImageBuildVersionArn = &v
+	return s
+}
+
+// SetMessage sets the Message field's value.
+func (s *ListWorkflowStepExecutionsOutput) SetMessage(v string) *ListWorkflowStepExecutionsOutput {
+	s.Message = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListWorkflowStepExecutionsOutput) SetNextToken(v string) *ListWorkflowStepExecutionsOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetRequestId sets the RequestId field's value.
+func (s *ListWorkflowStepExecutionsOutput) SetRequestId(v string) *ListWorkflowStepExecutionsOutput {
+	s.RequestId = &v
+	return s
+}
+
+// SetSteps sets the Steps field's value.
+func (s *ListWorkflowStepExecutionsOutput) SetSteps(v []*WorkflowStepMetadata) *ListWorkflowStepExecutionsOutput {
+	s.Steps = v
+	return s
+}
+
+// SetWorkflowBuildVersionArn sets the WorkflowBuildVersionArn field's value.
+func (s *ListWorkflowStepExecutionsOutput) SetWorkflowBuildVersionArn(v string) *ListWorkflowStepExecutionsOutput {
+	s.WorkflowBuildVersionArn = &v
+	return s
+}
+
+// SetWorkflowExecutionId sets the WorkflowExecutionId field's value.
+func (s *ListWorkflowStepExecutionsOutput) SetWorkflowExecutionId(v string) *ListWorkflowStepExecutionsOutput {
+	s.WorkflowExecutionId = &v
 	return s
 }
 
@@ -15752,6 +21943,125 @@ func (s *OutputResources) SetAmis(v []*Ami) *OutputResources {
 // SetContainers sets the Containers field's value.
 func (s *OutputResources) SetContainers(v []*Container) *OutputResources {
 	s.Containers = v
+	return s
+}
+
+// Information about package vulnerability findings.
+type PackageVulnerabilityDetails struct {
+	_ struct{} `type:"structure"`
+
+	// CVSS scores for one or more vulnerabilities that Amazon Inspector identified
+	// for a package.
+	Cvss []*CvssScore `locationName:"cvss" type:"list"`
+
+	// Links to web pages that contain details about the vulnerabilities that Amazon
+	// Inspector identified for the package.
+	ReferenceUrls []*string `locationName:"referenceUrls" min:"1" type:"list"`
+
+	// Vulnerabilities that are often related to the findings for the package.
+	RelatedVulnerabilities []*string `locationName:"relatedVulnerabilities" type:"list"`
+
+	// The source of the vulnerability information.
+	Source *string `locationName:"source" min:"1" type:"string"`
+
+	// A link to the source of the vulnerability information.
+	SourceUrl *string `locationName:"sourceUrl" min:"1" type:"string"`
+
+	// The date and time when this vulnerability was first added to the vendor's
+	// database.
+	VendorCreatedAt *time.Time `locationName:"vendorCreatedAt" type:"timestamp"`
+
+	// The severity that the vendor assigned to this vulnerability type.
+	VendorSeverity *string `locationName:"vendorSeverity" min:"1" type:"string"`
+
+	// The date and time when the vendor last updated this vulnerability in their
+	// database.
+	VendorUpdatedAt *time.Time `locationName:"vendorUpdatedAt" type:"timestamp"`
+
+	// A unique identifier for this vulnerability.
+	//
+	// VulnerabilityId is a required field
+	VulnerabilityId *string `locationName:"vulnerabilityId" type:"string" required:"true"`
+
+	// The packages that this vulnerability impacts.
+	VulnerablePackages []*VulnerablePackage `locationName:"vulnerablePackages" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PackageVulnerabilityDetails) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PackageVulnerabilityDetails) GoString() string {
+	return s.String()
+}
+
+// SetCvss sets the Cvss field's value.
+func (s *PackageVulnerabilityDetails) SetCvss(v []*CvssScore) *PackageVulnerabilityDetails {
+	s.Cvss = v
+	return s
+}
+
+// SetReferenceUrls sets the ReferenceUrls field's value.
+func (s *PackageVulnerabilityDetails) SetReferenceUrls(v []*string) *PackageVulnerabilityDetails {
+	s.ReferenceUrls = v
+	return s
+}
+
+// SetRelatedVulnerabilities sets the RelatedVulnerabilities field's value.
+func (s *PackageVulnerabilityDetails) SetRelatedVulnerabilities(v []*string) *PackageVulnerabilityDetails {
+	s.RelatedVulnerabilities = v
+	return s
+}
+
+// SetSource sets the Source field's value.
+func (s *PackageVulnerabilityDetails) SetSource(v string) *PackageVulnerabilityDetails {
+	s.Source = &v
+	return s
+}
+
+// SetSourceUrl sets the SourceUrl field's value.
+func (s *PackageVulnerabilityDetails) SetSourceUrl(v string) *PackageVulnerabilityDetails {
+	s.SourceUrl = &v
+	return s
+}
+
+// SetVendorCreatedAt sets the VendorCreatedAt field's value.
+func (s *PackageVulnerabilityDetails) SetVendorCreatedAt(v time.Time) *PackageVulnerabilityDetails {
+	s.VendorCreatedAt = &v
+	return s
+}
+
+// SetVendorSeverity sets the VendorSeverity field's value.
+func (s *PackageVulnerabilityDetails) SetVendorSeverity(v string) *PackageVulnerabilityDetails {
+	s.VendorSeverity = &v
+	return s
+}
+
+// SetVendorUpdatedAt sets the VendorUpdatedAt field's value.
+func (s *PackageVulnerabilityDetails) SetVendorUpdatedAt(v time.Time) *PackageVulnerabilityDetails {
+	s.VendorUpdatedAt = &v
+	return s
+}
+
+// SetVulnerabilityId sets the VulnerabilityId field's value.
+func (s *PackageVulnerabilityDetails) SetVulnerabilityId(v string) *PackageVulnerabilityDetails {
+	s.VulnerabilityId = &v
+	return s
+}
+
+// SetVulnerablePackages sets the VulnerablePackages field's value.
+func (s *PackageVulnerabilityDetails) SetVulnerablePackages(v []*VulnerablePackage) *PackageVulnerabilityDetails {
+	s.VulnerablePackages = v
 	return s
 }
 
@@ -16175,6 +22485,80 @@ func (s *PutImageRecipePolicyOutput) SetRequestId(v string) *PutImageRecipePolic
 	return s
 }
 
+// Information about how to remediate a finding.
+type Remediation struct {
+	_ struct{} `type:"structure"`
+
+	// An object that contains information about the recommended course of action
+	// to remediate the finding.
+	Recommendation *RemediationRecommendation `locationName:"recommendation" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Remediation) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Remediation) GoString() string {
+	return s.String()
+}
+
+// SetRecommendation sets the Recommendation field's value.
+func (s *Remediation) SetRecommendation(v *RemediationRecommendation) *Remediation {
+	s.Recommendation = v
+	return s
+}
+
+// Details about the recommended course of action to remediate the finding.
+type RemediationRecommendation struct {
+	_ struct{} `type:"structure"`
+
+	// The recommended course of action to remediate the finding.
+	Text *string `locationName:"text" min:"1" type:"string"`
+
+	// A link to more information about the recommended remediation for this vulnerability.
+	Url *string `locationName:"url" min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RemediationRecommendation) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RemediationRecommendation) GoString() string {
+	return s.String()
+}
+
+// SetText sets the Text field's value.
+func (s *RemediationRecommendation) SetText(v string) *RemediationRecommendation {
+	s.Text = &v
+	return s
+}
+
+// SetUrl sets the Url field's value.
+func (s *RemediationRecommendation) SetUrl(v string) *RemediationRecommendation {
+	s.Url = &v
+	return s
+}
+
 // The resource that you are trying to create already exists.
 type ResourceAlreadyExistsException struct {
 	_            struct{}                  `type:"structure"`
@@ -16431,6 +22815,138 @@ func (s *ResourceNotFoundException) StatusCode() int {
 // RequestID returns the service's response RequestID for request.
 func (s *ResourceNotFoundException) RequestID() string {
 	return s.RespMetadata.RequestID
+}
+
+// The current state of an impacted resource.
+type ResourceState struct {
+	_ struct{} `type:"structure"`
+
+	// Shows the current lifecycle policy action that was applied to an impacted
+	// resource.
+	Status *string `locationName:"status" type:"string" enum:"ResourceStatus"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResourceState) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResourceState) GoString() string {
+	return s.String()
+}
+
+// SetStatus sets the Status field's value.
+func (s *ResourceState) SetStatus(v string) *ResourceState {
+	s.Status = &v
+	return s
+}
+
+// Additional rules to specify resources that should be exempt from ad-hoc lifecycle
+// actions.
+type ResourceStateUpdateExclusionRules struct {
+	_ struct{} `type:"structure"`
+
+	// Defines criteria for AMIs that are excluded from lifecycle actions.
+	Amis *LifecyclePolicyDetailExclusionRulesAmis `locationName:"amis" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResourceStateUpdateExclusionRules) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResourceStateUpdateExclusionRules) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ResourceStateUpdateExclusionRules) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ResourceStateUpdateExclusionRules"}
+	if s.Amis != nil {
+		if err := s.Amis.Validate(); err != nil {
+			invalidParams.AddNested("Amis", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAmis sets the Amis field's value.
+func (s *ResourceStateUpdateExclusionRules) SetAmis(v *LifecyclePolicyDetailExclusionRulesAmis) *ResourceStateUpdateExclusionRules {
+	s.Amis = v
+	return s
+}
+
+// Specifies if the lifecycle policy should apply actions to selected resources.
+type ResourceStateUpdateIncludeResources struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies whether the lifecycle action should apply to distributed AMIs
+	Amis *bool `locationName:"amis" type:"boolean"`
+
+	// Specifies whether the lifecycle action should apply to distributed containers.
+	Containers *bool `locationName:"containers" type:"boolean"`
+
+	// Specifies whether the lifecycle action should apply to snapshots associated
+	// with distributed AMIs.
+	Snapshots *bool `locationName:"snapshots" type:"boolean"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResourceStateUpdateIncludeResources) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResourceStateUpdateIncludeResources) GoString() string {
+	return s.String()
+}
+
+// SetAmis sets the Amis field's value.
+func (s *ResourceStateUpdateIncludeResources) SetAmis(v bool) *ResourceStateUpdateIncludeResources {
+	s.Amis = &v
+	return s
+}
+
+// SetContainers sets the Containers field's value.
+func (s *ResourceStateUpdateIncludeResources) SetContainers(v bool) *ResourceStateUpdateIncludeResources {
+	s.Containers = &v
+	return s
+}
+
+// SetSnapshots sets the Snapshots field's value.
+func (s *ResourceStateUpdateIncludeResources) SetSnapshots(v bool) *ResourceStateUpdateIncludeResources {
+	s.Snapshots = &v
+	return s
 }
 
 // Properties that configure export from your build instance to a compatible
@@ -16868,10 +23384,73 @@ func (s *ServiceUnavailableException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
+// Includes counts by severity level for medium severity and higher level findings,
+// plus a total for all of the findings for the specified filter.
+type SeverityCounts struct {
+	_ struct{} `type:"structure"`
+
+	// The total number of findings across all severity levels for the specified
+	// filter.
+	All *int64 `locationName:"all" type:"long"`
+
+	// The number of critical severity findings for the specified filter.
+	Critical *int64 `locationName:"critical" type:"long"`
+
+	// The number of high severity findings for the specified filter.
+	High *int64 `locationName:"high" type:"long"`
+
+	// The number of medium severity findings for the specified filter.
+	Medium *int64 `locationName:"medium" type:"long"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SeverityCounts) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SeverityCounts) GoString() string {
+	return s.String()
+}
+
+// SetAll sets the All field's value.
+func (s *SeverityCounts) SetAll(v int64) *SeverityCounts {
+	s.All = &v
+	return s
+}
+
+// SetCritical sets the Critical field's value.
+func (s *SeverityCounts) SetCritical(v int64) *SeverityCounts {
+	s.Critical = &v
+	return s
+}
+
+// SetHigh sets the High field's value.
+func (s *SeverityCounts) SetHigh(v int64) *SeverityCounts {
+	s.High = &v
+	return s
+}
+
+// SetMedium sets the Medium field's value.
+func (s *SeverityCounts) SetMedium(v int64) *SeverityCounts {
+	s.Medium = &v
+	return s
+}
+
 type StartImagePipelineExecutionInput struct {
 	_ struct{} `type:"structure"`
 
-	// The idempotency token used to make this request idempotent.
+	// Unique, case-sensitive identifier you provide to ensure idempotency of the
+	// request. For more information, see Ensuring idempotency (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html)
+	// in the Amazon EC2 API Reference.
 	ClientToken *string `locationName:"clientToken" min:"1" type:"string" idempotencyToken:"true"`
 
 	// The Amazon Resource Name (ARN) of the image pipeline that you want to manually
@@ -16930,10 +23509,10 @@ func (s *StartImagePipelineExecutionInput) SetImagePipelineArn(v string) *StartI
 type StartImagePipelineExecutionOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The idempotency token used to make this request idempotent.
+	// The client token that uniquely identifies the request.
 	ClientToken *string `locationName:"clientToken" min:"1" type:"string"`
 
-	// The Amazon Resource Name (ARN) of the image that was created by this request.
+	// The Amazon Resource Name (ARN) of the image that the request created.
 	ImageBuildVersionArn *string `locationName:"imageBuildVersionArn" type:"string"`
 
 	// The request ID that uniquely identifies this request.
@@ -16973,6 +23552,168 @@ func (s *StartImagePipelineExecutionOutput) SetImageBuildVersionArn(v string) *S
 // SetRequestId sets the RequestId field's value.
 func (s *StartImagePipelineExecutionOutput) SetRequestId(v string) *StartImagePipelineExecutionOutput {
 	s.RequestId = &v
+	return s
+}
+
+type StartResourceStateUpdateInput struct {
+	_ struct{} `type:"structure"`
+
+	// Unique, case-sensitive identifier you provide to ensure idempotency of the
+	// request. For more information, see Ensuring idempotency (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html)
+	// in the Amazon EC2 API Reference.
+	ClientToken *string `locationName:"clientToken" min:"1" type:"string" idempotencyToken:"true"`
+
+	// Skip action on the image resource and associated resources if specified exclusion
+	// rules are met.
+	ExclusionRules *ResourceStateUpdateExclusionRules `locationName:"exclusionRules" type:"structure"`
+
+	// The name or Amazon Resource Name (ARN) of the IAM role that’s used to update
+	// image state.
+	ExecutionRole *string `locationName:"executionRole" min:"1" type:"string"`
+
+	// A list of image resources to update state for.
+	IncludeResources *ResourceStateUpdateIncludeResources `locationName:"includeResources" type:"structure"`
+
+	// The ARN of the Image Builder resource that is updated. The state update might
+	// also impact associated resources.
+	//
+	// ResourceArn is a required field
+	ResourceArn *string `locationName:"resourceArn" type:"string" required:"true"`
+
+	// Indicates the lifecycle action to take for this request.
+	//
+	// State is a required field
+	State *ResourceState `locationName:"state" type:"structure" required:"true"`
+
+	// The timestamp that indicates when resources are updated by a lifecycle action.
+	UpdateAt *time.Time `locationName:"updateAt" type:"timestamp"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StartResourceStateUpdateInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StartResourceStateUpdateInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *StartResourceStateUpdateInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "StartResourceStateUpdateInput"}
+	if s.ClientToken != nil && len(*s.ClientToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClientToken", 1))
+	}
+	if s.ExecutionRole != nil && len(*s.ExecutionRole) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ExecutionRole", 1))
+	}
+	if s.ResourceArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ResourceArn"))
+	}
+	if s.State == nil {
+		invalidParams.Add(request.NewErrParamRequired("State"))
+	}
+	if s.ExclusionRules != nil {
+		if err := s.ExclusionRules.Validate(); err != nil {
+			invalidParams.AddNested("ExclusionRules", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *StartResourceStateUpdateInput) SetClientToken(v string) *StartResourceStateUpdateInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetExclusionRules sets the ExclusionRules field's value.
+func (s *StartResourceStateUpdateInput) SetExclusionRules(v *ResourceStateUpdateExclusionRules) *StartResourceStateUpdateInput {
+	s.ExclusionRules = v
+	return s
+}
+
+// SetExecutionRole sets the ExecutionRole field's value.
+func (s *StartResourceStateUpdateInput) SetExecutionRole(v string) *StartResourceStateUpdateInput {
+	s.ExecutionRole = &v
+	return s
+}
+
+// SetIncludeResources sets the IncludeResources field's value.
+func (s *StartResourceStateUpdateInput) SetIncludeResources(v *ResourceStateUpdateIncludeResources) *StartResourceStateUpdateInput {
+	s.IncludeResources = v
+	return s
+}
+
+// SetResourceArn sets the ResourceArn field's value.
+func (s *StartResourceStateUpdateInput) SetResourceArn(v string) *StartResourceStateUpdateInput {
+	s.ResourceArn = &v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *StartResourceStateUpdateInput) SetState(v *ResourceState) *StartResourceStateUpdateInput {
+	s.State = v
+	return s
+}
+
+// SetUpdateAt sets the UpdateAt field's value.
+func (s *StartResourceStateUpdateInput) SetUpdateAt(v time.Time) *StartResourceStateUpdateInput {
+	s.UpdateAt = &v
+	return s
+}
+
+type StartResourceStateUpdateOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Identifies the lifecycle runtime instance that started the resource state
+	// update.
+	LifecycleExecutionId *string `locationName:"lifecycleExecutionId" type:"string"`
+
+	// The requested ARN of the Image Builder resource for the asynchronous update.
+	ResourceArn *string `locationName:"resourceArn" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StartResourceStateUpdateOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StartResourceStateUpdateOutput) GoString() string {
+	return s.String()
+}
+
+// SetLifecycleExecutionId sets the LifecycleExecutionId field's value.
+func (s *StartResourceStateUpdateOutput) SetLifecycleExecutionId(v string) *StartResourceStateUpdateOutput {
+	s.LifecycleExecutionId = &v
+	return s
+}
+
+// SetResourceArn sets the ResourceArn field's value.
+func (s *StartResourceStateUpdateOutput) SetResourceArn(v string) *StartResourceStateUpdateOutput {
+	s.ResourceArn = &v
 	return s
 }
 
@@ -17255,7 +23996,9 @@ func (s UntagResourceOutput) GoString() string {
 type UpdateDistributionConfigurationInput struct {
 	_ struct{} `type:"structure"`
 
-	// The idempotency token of the distribution configuration.
+	// Unique, case-sensitive identifier you provide to ensure idempotency of the
+	// request. For more information, see Ensuring idempotency (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html)
+	// in the Amazon EC2 API Reference.
 	ClientToken *string `locationName:"clientToken" min:"1" type:"string" idempotencyToken:"true"`
 
 	// The description of the distribution configuration.
@@ -17350,7 +24093,7 @@ func (s *UpdateDistributionConfigurationInput) SetDistributions(v []*Distributio
 type UpdateDistributionConfigurationOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The idempotency token used to make this request idempotent.
+	// The client token that uniquely identifies the request.
 	ClientToken *string `locationName:"clientToken" min:"1" type:"string"`
 
 	// The Amazon Resource Name (ARN) of the distribution configuration that was
@@ -17400,7 +24143,9 @@ func (s *UpdateDistributionConfigurationOutput) SetRequestId(v string) *UpdateDi
 type UpdateImagePipelineInput struct {
 	_ struct{} `type:"structure"`
 
-	// The idempotency token used to make this request idempotent.
+	// Unique, case-sensitive identifier you provide to ensure idempotency of the
+	// request. For more information, see Ensuring idempotency (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html)
+	// in the Amazon EC2 API Reference.
 	ClientToken *string `locationName:"clientToken" min:"1" type:"string" idempotencyToken:"true"`
 
 	// The Amazon Resource Name (ARN) of the container pipeline to update.
@@ -17409,8 +24154,9 @@ type UpdateImagePipelineInput struct {
 	// The description of the image pipeline.
 	Description *string `locationName:"description" min:"1" type:"string"`
 
-	// The Amazon Resource Name (ARN) of the distribution configuration that will
-	// be used to configure and distribute images updated by this image pipeline.
+	// The Amazon Resource Name (ARN) of the distribution configuration that Image
+	// Builder uses to configure and distribute images that this image pipeline
+	// has updated.
 	DistributionConfigurationArn *string `locationName:"distributionConfigurationArn" type:"string"`
 
 	// Collects additional information about the image being created, including
@@ -17428,11 +24174,14 @@ type UpdateImagePipelineInput struct {
 	// images updated by this image pipeline.
 	ImageRecipeArn *string `locationName:"imageRecipeArn" type:"string"`
 
+	// Contains settings for vulnerability scans.
+	ImageScanningConfiguration *ImageScanningConfiguration `locationName:"imageScanningConfiguration" type:"structure"`
+
 	// The image test configuration of the image pipeline.
 	ImageTestsConfiguration *ImageTestsConfiguration `locationName:"imageTestsConfiguration" type:"structure"`
 
-	// The Amazon Resource Name (ARN) of the infrastructure configuration that will
-	// be used to build images updated by this image pipeline.
+	// The Amazon Resource Name (ARN) of the infrastructure configuration that Image
+	// Builder uses to build images that this image pipeline has updated.
 	//
 	// InfrastructureConfigurationArn is a required field
 	InfrastructureConfigurationArn *string `locationName:"infrastructureConfigurationArn" type:"string" required:"true"`
@@ -17476,6 +24225,11 @@ func (s *UpdateImagePipelineInput) Validate() error {
 	}
 	if s.InfrastructureConfigurationArn == nil {
 		invalidParams.Add(request.NewErrParamRequired("InfrastructureConfigurationArn"))
+	}
+	if s.ImageScanningConfiguration != nil {
+		if err := s.ImageScanningConfiguration.Validate(); err != nil {
+			invalidParams.AddNested("ImageScanningConfiguration", err.(request.ErrInvalidParams))
+		}
 	}
 	if s.ImageTestsConfiguration != nil {
 		if err := s.ImageTestsConfiguration.Validate(); err != nil {
@@ -17536,6 +24290,12 @@ func (s *UpdateImagePipelineInput) SetImageRecipeArn(v string) *UpdateImagePipel
 	return s
 }
 
+// SetImageScanningConfiguration sets the ImageScanningConfiguration field's value.
+func (s *UpdateImagePipelineInput) SetImageScanningConfiguration(v *ImageScanningConfiguration) *UpdateImagePipelineInput {
+	s.ImageScanningConfiguration = v
+	return s
+}
+
 // SetImageTestsConfiguration sets the ImageTestsConfiguration field's value.
 func (s *UpdateImagePipelineInput) SetImageTestsConfiguration(v *ImageTestsConfiguration) *UpdateImagePipelineInput {
 	s.ImageTestsConfiguration = v
@@ -17563,7 +24323,7 @@ func (s *UpdateImagePipelineInput) SetStatus(v string) *UpdateImagePipelineInput
 type UpdateImagePipelineOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The idempotency token used to make this request idempotent.
+	// The client token that uniquely identifies the request.
 	ClientToken *string `locationName:"clientToken" min:"1" type:"string"`
 
 	// The Amazon Resource Name (ARN) of the image pipeline that was updated by
@@ -17613,7 +24373,9 @@ func (s *UpdateImagePipelineOutput) SetRequestId(v string) *UpdateImagePipelineO
 type UpdateInfrastructureConfigurationInput struct {
 	_ struct{} `type:"structure"`
 
-	// The idempotency token used to make this request idempotent.
+	// Unique, case-sensitive identifier you provide to ensure idempotency of the
+	// request. For more information, see Ensuring idempotency (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html)
+	// in the Amazon EC2 API Reference.
 	ClientToken *string `locationName:"clientToken" min:"1" type:"string" idempotencyToken:"true"`
 
 	// The description of the infrastructure configuration.
@@ -17823,7 +24585,7 @@ func (s *UpdateInfrastructureConfigurationInput) SetTerminateInstanceOnFailure(v
 type UpdateInfrastructureConfigurationOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The idempotency token used to make this request idempotent.
+	// The client token that uniquely identifies the request.
 	ClientToken *string `locationName:"clientToken" min:"1" type:"string"`
 
 	// The Amazon Resource Name (ARN) of the infrastructure configuration that was
@@ -17867,6 +24629,602 @@ func (s *UpdateInfrastructureConfigurationOutput) SetInfrastructureConfiguration
 // SetRequestId sets the RequestId field's value.
 func (s *UpdateInfrastructureConfigurationOutput) SetRequestId(v string) *UpdateInfrastructureConfigurationOutput {
 	s.RequestId = &v
+	return s
+}
+
+type UpdateLifecyclePolicyInput struct {
+	_ struct{} `type:"structure"`
+
+	// Unique, case-sensitive identifier you provide to ensure idempotency of the
+	// request. For more information, see Ensuring idempotency (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html)
+	// in the Amazon EC2 API Reference.
+	ClientToken *string `locationName:"clientToken" min:"1" type:"string" idempotencyToken:"true"`
+
+	// Optional description for the lifecycle policy.
+	Description *string `locationName:"description" min:"1" type:"string"`
+
+	// The name of the IAM role that Image Builder should use to update the lifecycle
+	// policy.
+	//
+	// ExecutionRole is a required field
+	ExecutionRole *string `locationName:"executionRole" min:"1" type:"string" required:"true"`
+
+	// The Amazon Resource Name (ARN) of the lifecycle policy resource.
+	//
+	// LifecyclePolicyArn is a required field
+	LifecyclePolicyArn *string `locationName:"lifecyclePolicyArn" type:"string" required:"true"`
+
+	// The configuration details for a lifecycle policy resource.
+	//
+	// PolicyDetails is a required field
+	PolicyDetails []*LifecyclePolicyDetail `locationName:"policyDetails" min:"1" type:"list" required:"true"`
+
+	// Selection criteria for resources that the lifecycle policy applies to.
+	//
+	// ResourceSelection is a required field
+	ResourceSelection *LifecyclePolicyResourceSelection `locationName:"resourceSelection" type:"structure" required:"true"`
+
+	// The type of image resource that the lifecycle policy applies to.
+	//
+	// ResourceType is a required field
+	ResourceType *string `locationName:"resourceType" type:"string" required:"true" enum:"LifecyclePolicyResourceType"`
+
+	// Indicates whether the lifecycle policy resource is enabled.
+	Status *string `locationName:"status" type:"string" enum:"LifecyclePolicyStatus"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateLifecyclePolicyInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateLifecyclePolicyInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdateLifecyclePolicyInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdateLifecyclePolicyInput"}
+	if s.ClientToken != nil && len(*s.ClientToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClientToken", 1))
+	}
+	if s.Description != nil && len(*s.Description) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Description", 1))
+	}
+	if s.ExecutionRole == nil {
+		invalidParams.Add(request.NewErrParamRequired("ExecutionRole"))
+	}
+	if s.ExecutionRole != nil && len(*s.ExecutionRole) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ExecutionRole", 1))
+	}
+	if s.LifecyclePolicyArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("LifecyclePolicyArn"))
+	}
+	if s.PolicyDetails == nil {
+		invalidParams.Add(request.NewErrParamRequired("PolicyDetails"))
+	}
+	if s.PolicyDetails != nil && len(s.PolicyDetails) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("PolicyDetails", 1))
+	}
+	if s.ResourceSelection == nil {
+		invalidParams.Add(request.NewErrParamRequired("ResourceSelection"))
+	}
+	if s.ResourceType == nil {
+		invalidParams.Add(request.NewErrParamRequired("ResourceType"))
+	}
+	if s.PolicyDetails != nil {
+		for i, v := range s.PolicyDetails {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "PolicyDetails", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.ResourceSelection != nil {
+		if err := s.ResourceSelection.Validate(); err != nil {
+			invalidParams.AddNested("ResourceSelection", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *UpdateLifecyclePolicyInput) SetClientToken(v string) *UpdateLifecyclePolicyInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *UpdateLifecyclePolicyInput) SetDescription(v string) *UpdateLifecyclePolicyInput {
+	s.Description = &v
+	return s
+}
+
+// SetExecutionRole sets the ExecutionRole field's value.
+func (s *UpdateLifecyclePolicyInput) SetExecutionRole(v string) *UpdateLifecyclePolicyInput {
+	s.ExecutionRole = &v
+	return s
+}
+
+// SetLifecyclePolicyArn sets the LifecyclePolicyArn field's value.
+func (s *UpdateLifecyclePolicyInput) SetLifecyclePolicyArn(v string) *UpdateLifecyclePolicyInput {
+	s.LifecyclePolicyArn = &v
+	return s
+}
+
+// SetPolicyDetails sets the PolicyDetails field's value.
+func (s *UpdateLifecyclePolicyInput) SetPolicyDetails(v []*LifecyclePolicyDetail) *UpdateLifecyclePolicyInput {
+	s.PolicyDetails = v
+	return s
+}
+
+// SetResourceSelection sets the ResourceSelection field's value.
+func (s *UpdateLifecyclePolicyInput) SetResourceSelection(v *LifecyclePolicyResourceSelection) *UpdateLifecyclePolicyInput {
+	s.ResourceSelection = v
+	return s
+}
+
+// SetResourceType sets the ResourceType field's value.
+func (s *UpdateLifecyclePolicyInput) SetResourceType(v string) *UpdateLifecyclePolicyInput {
+	s.ResourceType = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *UpdateLifecyclePolicyInput) SetStatus(v string) *UpdateLifecyclePolicyInput {
+	s.Status = &v
+	return s
+}
+
+type UpdateLifecyclePolicyOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the image lifecycle policy resource that was updated.
+	LifecyclePolicyArn *string `locationName:"lifecyclePolicyArn" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateLifecyclePolicyOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateLifecyclePolicyOutput) GoString() string {
+	return s.String()
+}
+
+// SetLifecyclePolicyArn sets the LifecyclePolicyArn field's value.
+func (s *UpdateLifecyclePolicyOutput) SetLifecyclePolicyArn(v string) *UpdateLifecyclePolicyOutput {
+	s.LifecyclePolicyArn = &v
+	return s
+}
+
+// Includes counts of image and pipeline resource findings by vulnerability.
+type VulnerabilityIdAggregation struct {
+	_ struct{} `type:"structure"`
+
+	// Counts by severity level for medium severity and higher level findings, plus
+	// a total for all of the findings for the specified vulnerability.
+	SeverityCounts *SeverityCounts `locationName:"severityCounts" type:"structure"`
+
+	// The vulnerability Id for this set of counts.
+	VulnerabilityId *string `locationName:"vulnerabilityId" min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VulnerabilityIdAggregation) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VulnerabilityIdAggregation) GoString() string {
+	return s.String()
+}
+
+// SetSeverityCounts sets the SeverityCounts field's value.
+func (s *VulnerabilityIdAggregation) SetSeverityCounts(v *SeverityCounts) *VulnerabilityIdAggregation {
+	s.SeverityCounts = v
+	return s
+}
+
+// SetVulnerabilityId sets the VulnerabilityId field's value.
+func (s *VulnerabilityIdAggregation) SetVulnerabilityId(v string) *VulnerabilityIdAggregation {
+	s.VulnerabilityId = &v
+	return s
+}
+
+// Information about a vulnerable package that Amazon Inspector identifies in
+// a finding.
+type VulnerablePackage struct {
+	_ struct{} `type:"structure"`
+
+	// The architecture of the vulnerable package.
+	Arch *string `locationName:"arch" type:"string"`
+
+	// The epoch of the vulnerable package.
+	Epoch *int64 `locationName:"epoch" type:"integer"`
+
+	// The file path of the vulnerable package.
+	FilePath *string `locationName:"filePath" min:"1" type:"string"`
+
+	// The version of the package that contains the vulnerability fix.
+	FixedInVersion *string `locationName:"fixedInVersion" min:"1" type:"string"`
+
+	// The name of the vulnerable package.
+	Name *string `locationName:"name" min:"1" type:"string"`
+
+	// The package manager of the vulnerable package.
+	PackageManager *string `locationName:"packageManager" min:"1" type:"string"`
+
+	// The release of the vulnerable package.
+	Release *string `locationName:"release" min:"1" type:"string"`
+
+	// The code to run in your environment to update packages with a fix available.
+	Remediation *string `locationName:"remediation" min:"1" type:"string"`
+
+	// The source layer hash of the vulnerable package.
+	SourceLayerHash *string `locationName:"sourceLayerHash" type:"string"`
+
+	// The version of the vulnerable package.
+	Version *string `locationName:"version" min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VulnerablePackage) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VulnerablePackage) GoString() string {
+	return s.String()
+}
+
+// SetArch sets the Arch field's value.
+func (s *VulnerablePackage) SetArch(v string) *VulnerablePackage {
+	s.Arch = &v
+	return s
+}
+
+// SetEpoch sets the Epoch field's value.
+func (s *VulnerablePackage) SetEpoch(v int64) *VulnerablePackage {
+	s.Epoch = &v
+	return s
+}
+
+// SetFilePath sets the FilePath field's value.
+func (s *VulnerablePackage) SetFilePath(v string) *VulnerablePackage {
+	s.FilePath = &v
+	return s
+}
+
+// SetFixedInVersion sets the FixedInVersion field's value.
+func (s *VulnerablePackage) SetFixedInVersion(v string) *VulnerablePackage {
+	s.FixedInVersion = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *VulnerablePackage) SetName(v string) *VulnerablePackage {
+	s.Name = &v
+	return s
+}
+
+// SetPackageManager sets the PackageManager field's value.
+func (s *VulnerablePackage) SetPackageManager(v string) *VulnerablePackage {
+	s.PackageManager = &v
+	return s
+}
+
+// SetRelease sets the Release field's value.
+func (s *VulnerablePackage) SetRelease(v string) *VulnerablePackage {
+	s.Release = &v
+	return s
+}
+
+// SetRemediation sets the Remediation field's value.
+func (s *VulnerablePackage) SetRemediation(v string) *VulnerablePackage {
+	s.Remediation = &v
+	return s
+}
+
+// SetSourceLayerHash sets the SourceLayerHash field's value.
+func (s *VulnerablePackage) SetSourceLayerHash(v string) *VulnerablePackage {
+	s.SourceLayerHash = &v
+	return s
+}
+
+// SetVersion sets the Version field's value.
+func (s *VulnerablePackage) SetVersion(v string) *VulnerablePackage {
+	s.Version = &v
+	return s
+}
+
+// Metadata that includes details and status from this runtime instance of the
+// workflow.
+type WorkflowExecutionMetadata struct {
+	_ struct{} `type:"structure"`
+
+	// The timestamp when this runtime instance of the workflow finished.
+	EndTime *string `locationName:"endTime" type:"string"`
+
+	// The runtime output message from the workflow, if applicable.
+	Message *string `locationName:"message" type:"string"`
+
+	// The timestamp when the runtime instance of this workflow started.
+	StartTime *string `locationName:"startTime" type:"string"`
+
+	// The current runtime status for this workflow.
+	Status *string `locationName:"status" type:"string" enum:"WorkflowExecutionStatus"`
+
+	// The total number of steps in the workflow. This should equal the sum of the
+	// step counts for steps that succeeded, were skipped, and failed.
+	TotalStepCount *int64 `locationName:"totalStepCount" type:"integer"`
+
+	// A runtime count for the number of steps in the workflow that failed.
+	TotalStepsFailed *int64 `locationName:"totalStepsFailed" type:"integer"`
+
+	// A runtime count for the number of steps in the workflow that were skipped.
+	TotalStepsSkipped *int64 `locationName:"totalStepsSkipped" type:"integer"`
+
+	// A runtime count for the number of steps in the workflow that ran successfully.
+	TotalStepsSucceeded *int64 `locationName:"totalStepsSucceeded" type:"integer"`
+
+	// Indicates what type of workflow that Image Builder ran for this runtime instance
+	// of the workflow.
+	Type *string `locationName:"type" type:"string" enum:"WorkflowType"`
+
+	// The Amazon Resource Name (ARN) of the workflow resource build version that
+	// ran.
+	WorkflowBuildVersionArn *string `locationName:"workflowBuildVersionArn" type:"string"`
+
+	// Unique identifier that Image Builder assigns to keep track of runtime resources
+	// each time it runs a workflow.
+	WorkflowExecutionId *string `locationName:"workflowExecutionId" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s WorkflowExecutionMetadata) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s WorkflowExecutionMetadata) GoString() string {
+	return s.String()
+}
+
+// SetEndTime sets the EndTime field's value.
+func (s *WorkflowExecutionMetadata) SetEndTime(v string) *WorkflowExecutionMetadata {
+	s.EndTime = &v
+	return s
+}
+
+// SetMessage sets the Message field's value.
+func (s *WorkflowExecutionMetadata) SetMessage(v string) *WorkflowExecutionMetadata {
+	s.Message = &v
+	return s
+}
+
+// SetStartTime sets the StartTime field's value.
+func (s *WorkflowExecutionMetadata) SetStartTime(v string) *WorkflowExecutionMetadata {
+	s.StartTime = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *WorkflowExecutionMetadata) SetStatus(v string) *WorkflowExecutionMetadata {
+	s.Status = &v
+	return s
+}
+
+// SetTotalStepCount sets the TotalStepCount field's value.
+func (s *WorkflowExecutionMetadata) SetTotalStepCount(v int64) *WorkflowExecutionMetadata {
+	s.TotalStepCount = &v
+	return s
+}
+
+// SetTotalStepsFailed sets the TotalStepsFailed field's value.
+func (s *WorkflowExecutionMetadata) SetTotalStepsFailed(v int64) *WorkflowExecutionMetadata {
+	s.TotalStepsFailed = &v
+	return s
+}
+
+// SetTotalStepsSkipped sets the TotalStepsSkipped field's value.
+func (s *WorkflowExecutionMetadata) SetTotalStepsSkipped(v int64) *WorkflowExecutionMetadata {
+	s.TotalStepsSkipped = &v
+	return s
+}
+
+// SetTotalStepsSucceeded sets the TotalStepsSucceeded field's value.
+func (s *WorkflowExecutionMetadata) SetTotalStepsSucceeded(v int64) *WorkflowExecutionMetadata {
+	s.TotalStepsSucceeded = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *WorkflowExecutionMetadata) SetType(v string) *WorkflowExecutionMetadata {
+	s.Type = &v
+	return s
+}
+
+// SetWorkflowBuildVersionArn sets the WorkflowBuildVersionArn field's value.
+func (s *WorkflowExecutionMetadata) SetWorkflowBuildVersionArn(v string) *WorkflowExecutionMetadata {
+	s.WorkflowBuildVersionArn = &v
+	return s
+}
+
+// SetWorkflowExecutionId sets the WorkflowExecutionId field's value.
+func (s *WorkflowExecutionMetadata) SetWorkflowExecutionId(v string) *WorkflowExecutionMetadata {
+	s.WorkflowExecutionId = &v
+	return s
+}
+
+// Runtime details and status for the workflow step.
+type WorkflowStepMetadata struct {
+	_ struct{} `type:"structure"`
+
+	// The step action name.
+	Action *string `locationName:"action" type:"string"`
+
+	// Description of the workflow step.
+	Description *string `locationName:"description" type:"string"`
+
+	// The timestamp when the workflow step finished.
+	EndTime *string `locationName:"endTime" type:"string"`
+
+	// Input parameters that Image Builder provides for the workflow step.
+	Inputs *string `locationName:"inputs" type:"string"`
+
+	// Detailed output message that the workflow step provides at runtime.
+	Message *string `locationName:"message" type:"string"`
+
+	// The name of the workflow step.
+	Name *string `locationName:"name" type:"string"`
+
+	// The file names that the workflow step created as output for this runtime
+	// instance of the workflow.
+	Outputs *string `locationName:"outputs" type:"string"`
+
+	// Reports on the rollback status of the step, if applicable.
+	RollbackStatus *string `locationName:"rollbackStatus" type:"string" enum:"WorkflowStepExecutionRollbackStatus"`
+
+	// The timestamp when the workflow step started.
+	StartTime *string `locationName:"startTime" type:"string"`
+
+	// Runtime status for the workflow step.
+	Status *string `locationName:"status" type:"string" enum:"WorkflowStepExecutionStatus"`
+
+	// A unique identifier for the workflow step, assigned at runtime.
+	StepExecutionId *string `locationName:"stepExecutionId" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s WorkflowStepMetadata) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s WorkflowStepMetadata) GoString() string {
+	return s.String()
+}
+
+// SetAction sets the Action field's value.
+func (s *WorkflowStepMetadata) SetAction(v string) *WorkflowStepMetadata {
+	s.Action = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *WorkflowStepMetadata) SetDescription(v string) *WorkflowStepMetadata {
+	s.Description = &v
+	return s
+}
+
+// SetEndTime sets the EndTime field's value.
+func (s *WorkflowStepMetadata) SetEndTime(v string) *WorkflowStepMetadata {
+	s.EndTime = &v
+	return s
+}
+
+// SetInputs sets the Inputs field's value.
+func (s *WorkflowStepMetadata) SetInputs(v string) *WorkflowStepMetadata {
+	s.Inputs = &v
+	return s
+}
+
+// SetMessage sets the Message field's value.
+func (s *WorkflowStepMetadata) SetMessage(v string) *WorkflowStepMetadata {
+	s.Message = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *WorkflowStepMetadata) SetName(v string) *WorkflowStepMetadata {
+	s.Name = &v
+	return s
+}
+
+// SetOutputs sets the Outputs field's value.
+func (s *WorkflowStepMetadata) SetOutputs(v string) *WorkflowStepMetadata {
+	s.Outputs = &v
+	return s
+}
+
+// SetRollbackStatus sets the RollbackStatus field's value.
+func (s *WorkflowStepMetadata) SetRollbackStatus(v string) *WorkflowStepMetadata {
+	s.RollbackStatus = &v
+	return s
+}
+
+// SetStartTime sets the StartTime field's value.
+func (s *WorkflowStepMetadata) SetStartTime(v string) *WorkflowStepMetadata {
+	s.StartTime = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *WorkflowStepMetadata) SetStatus(v string) *WorkflowStepMetadata {
+	s.Status = &v
+	return s
+}
+
+// SetStepExecutionId sets the StepExecutionId field's value.
+func (s *WorkflowStepMetadata) SetStepExecutionId(v string) *WorkflowStepMetadata {
+	s.StepExecutionId = &v
 	return s
 }
 
@@ -18011,6 +25369,66 @@ func EbsVolumeType_Values() []string {
 }
 
 const (
+	// ImageScanStatusPending is a ImageScanStatus enum value
+	ImageScanStatusPending = "PENDING"
+
+	// ImageScanStatusScanning is a ImageScanStatus enum value
+	ImageScanStatusScanning = "SCANNING"
+
+	// ImageScanStatusCollecting is a ImageScanStatus enum value
+	ImageScanStatusCollecting = "COLLECTING"
+
+	// ImageScanStatusCompleted is a ImageScanStatus enum value
+	ImageScanStatusCompleted = "COMPLETED"
+
+	// ImageScanStatusAbandoned is a ImageScanStatus enum value
+	ImageScanStatusAbandoned = "ABANDONED"
+
+	// ImageScanStatusFailed is a ImageScanStatus enum value
+	ImageScanStatusFailed = "FAILED"
+
+	// ImageScanStatusTimedOut is a ImageScanStatus enum value
+	ImageScanStatusTimedOut = "TIMED_OUT"
+)
+
+// ImageScanStatus_Values returns all elements of the ImageScanStatus enum
+func ImageScanStatus_Values() []string {
+	return []string{
+		ImageScanStatusPending,
+		ImageScanStatusScanning,
+		ImageScanStatusCollecting,
+		ImageScanStatusCompleted,
+		ImageScanStatusAbandoned,
+		ImageScanStatusFailed,
+		ImageScanStatusTimedOut,
+	}
+}
+
+const (
+	// ImageSourceAmazonManaged is a ImageSource enum value
+	ImageSourceAmazonManaged = "AMAZON_MANAGED"
+
+	// ImageSourceAwsMarketplace is a ImageSource enum value
+	ImageSourceAwsMarketplace = "AWS_MARKETPLACE"
+
+	// ImageSourceImported is a ImageSource enum value
+	ImageSourceImported = "IMPORTED"
+
+	// ImageSourceCustom is a ImageSource enum value
+	ImageSourceCustom = "CUSTOM"
+)
+
+// ImageSource_Values returns all elements of the ImageSource enum
+func ImageSource_Values() []string {
+	return []string{
+		ImageSourceAmazonManaged,
+		ImageSourceAwsMarketplace,
+		ImageSourceImported,
+		ImageSourceCustom,
+	}
+}
+
+const (
 	// ImageStatusPending is a ImageStatus enum value
 	ImageStatusPending = "PENDING"
 
@@ -18043,6 +25461,9 @@ const (
 
 	// ImageStatusDeleted is a ImageStatus enum value
 	ImageStatusDeleted = "DELETED"
+
+	// ImageStatusDisabled is a ImageStatus enum value
+	ImageStatusDisabled = "DISABLED"
 )
 
 // ImageStatus_Values returns all elements of the ImageStatus enum
@@ -18059,6 +25480,7 @@ func ImageStatus_Values() []string {
 		ImageStatusFailed,
 		ImageStatusDeprecated,
 		ImageStatusDeleted,
+		ImageStatusDisabled,
 	}
 }
 
@@ -18079,6 +25501,174 @@ func ImageType_Values() []string {
 }
 
 const (
+	// LifecycleExecutionResourceActionNameAvailable is a LifecycleExecutionResourceActionName enum value
+	LifecycleExecutionResourceActionNameAvailable = "AVAILABLE"
+
+	// LifecycleExecutionResourceActionNameDelete is a LifecycleExecutionResourceActionName enum value
+	LifecycleExecutionResourceActionNameDelete = "DELETE"
+
+	// LifecycleExecutionResourceActionNameDeprecate is a LifecycleExecutionResourceActionName enum value
+	LifecycleExecutionResourceActionNameDeprecate = "DEPRECATE"
+
+	// LifecycleExecutionResourceActionNameDisable is a LifecycleExecutionResourceActionName enum value
+	LifecycleExecutionResourceActionNameDisable = "DISABLE"
+)
+
+// LifecycleExecutionResourceActionName_Values returns all elements of the LifecycleExecutionResourceActionName enum
+func LifecycleExecutionResourceActionName_Values() []string {
+	return []string{
+		LifecycleExecutionResourceActionNameAvailable,
+		LifecycleExecutionResourceActionNameDelete,
+		LifecycleExecutionResourceActionNameDeprecate,
+		LifecycleExecutionResourceActionNameDisable,
+	}
+}
+
+const (
+	// LifecycleExecutionResourceStatusFailed is a LifecycleExecutionResourceStatus enum value
+	LifecycleExecutionResourceStatusFailed = "FAILED"
+
+	// LifecycleExecutionResourceStatusInProgress is a LifecycleExecutionResourceStatus enum value
+	LifecycleExecutionResourceStatusInProgress = "IN_PROGRESS"
+
+	// LifecycleExecutionResourceStatusSkipped is a LifecycleExecutionResourceStatus enum value
+	LifecycleExecutionResourceStatusSkipped = "SKIPPED"
+
+	// LifecycleExecutionResourceStatusSuccess is a LifecycleExecutionResourceStatus enum value
+	LifecycleExecutionResourceStatusSuccess = "SUCCESS"
+)
+
+// LifecycleExecutionResourceStatus_Values returns all elements of the LifecycleExecutionResourceStatus enum
+func LifecycleExecutionResourceStatus_Values() []string {
+	return []string{
+		LifecycleExecutionResourceStatusFailed,
+		LifecycleExecutionResourceStatusInProgress,
+		LifecycleExecutionResourceStatusSkipped,
+		LifecycleExecutionResourceStatusSuccess,
+	}
+}
+
+const (
+	// LifecycleExecutionStatusInProgress is a LifecycleExecutionStatus enum value
+	LifecycleExecutionStatusInProgress = "IN_PROGRESS"
+
+	// LifecycleExecutionStatusCancelled is a LifecycleExecutionStatus enum value
+	LifecycleExecutionStatusCancelled = "CANCELLED"
+
+	// LifecycleExecutionStatusCancelling is a LifecycleExecutionStatus enum value
+	LifecycleExecutionStatusCancelling = "CANCELLING"
+
+	// LifecycleExecutionStatusFailed is a LifecycleExecutionStatus enum value
+	LifecycleExecutionStatusFailed = "FAILED"
+
+	// LifecycleExecutionStatusSuccess is a LifecycleExecutionStatus enum value
+	LifecycleExecutionStatusSuccess = "SUCCESS"
+)
+
+// LifecycleExecutionStatus_Values returns all elements of the LifecycleExecutionStatus enum
+func LifecycleExecutionStatus_Values() []string {
+	return []string{
+		LifecycleExecutionStatusInProgress,
+		LifecycleExecutionStatusCancelled,
+		LifecycleExecutionStatusCancelling,
+		LifecycleExecutionStatusFailed,
+		LifecycleExecutionStatusSuccess,
+	}
+}
+
+const (
+	// LifecyclePolicyDetailActionTypeDelete is a LifecyclePolicyDetailActionType enum value
+	LifecyclePolicyDetailActionTypeDelete = "DELETE"
+
+	// LifecyclePolicyDetailActionTypeDeprecate is a LifecyclePolicyDetailActionType enum value
+	LifecyclePolicyDetailActionTypeDeprecate = "DEPRECATE"
+
+	// LifecyclePolicyDetailActionTypeDisable is a LifecyclePolicyDetailActionType enum value
+	LifecyclePolicyDetailActionTypeDisable = "DISABLE"
+)
+
+// LifecyclePolicyDetailActionType_Values returns all elements of the LifecyclePolicyDetailActionType enum
+func LifecyclePolicyDetailActionType_Values() []string {
+	return []string{
+		LifecyclePolicyDetailActionTypeDelete,
+		LifecyclePolicyDetailActionTypeDeprecate,
+		LifecyclePolicyDetailActionTypeDisable,
+	}
+}
+
+const (
+	// LifecyclePolicyDetailFilterTypeAge is a LifecyclePolicyDetailFilterType enum value
+	LifecyclePolicyDetailFilterTypeAge = "AGE"
+
+	// LifecyclePolicyDetailFilterTypeCount is a LifecyclePolicyDetailFilterType enum value
+	LifecyclePolicyDetailFilterTypeCount = "COUNT"
+)
+
+// LifecyclePolicyDetailFilterType_Values returns all elements of the LifecyclePolicyDetailFilterType enum
+func LifecyclePolicyDetailFilterType_Values() []string {
+	return []string{
+		LifecyclePolicyDetailFilterTypeAge,
+		LifecyclePolicyDetailFilterTypeCount,
+	}
+}
+
+const (
+	// LifecyclePolicyResourceTypeAmiImage is a LifecyclePolicyResourceType enum value
+	LifecyclePolicyResourceTypeAmiImage = "AMI_IMAGE"
+
+	// LifecyclePolicyResourceTypeContainerImage is a LifecyclePolicyResourceType enum value
+	LifecyclePolicyResourceTypeContainerImage = "CONTAINER_IMAGE"
+)
+
+// LifecyclePolicyResourceType_Values returns all elements of the LifecyclePolicyResourceType enum
+func LifecyclePolicyResourceType_Values() []string {
+	return []string{
+		LifecyclePolicyResourceTypeAmiImage,
+		LifecyclePolicyResourceTypeContainerImage,
+	}
+}
+
+const (
+	// LifecyclePolicyStatusDisabled is a LifecyclePolicyStatus enum value
+	LifecyclePolicyStatusDisabled = "DISABLED"
+
+	// LifecyclePolicyStatusEnabled is a LifecyclePolicyStatus enum value
+	LifecyclePolicyStatusEnabled = "ENABLED"
+)
+
+// LifecyclePolicyStatus_Values returns all elements of the LifecyclePolicyStatus enum
+func LifecyclePolicyStatus_Values() []string {
+	return []string{
+		LifecyclePolicyStatusDisabled,
+		LifecyclePolicyStatusEnabled,
+	}
+}
+
+const (
+	// LifecyclePolicyTimeUnitDays is a LifecyclePolicyTimeUnit enum value
+	LifecyclePolicyTimeUnitDays = "DAYS"
+
+	// LifecyclePolicyTimeUnitWeeks is a LifecyclePolicyTimeUnit enum value
+	LifecyclePolicyTimeUnitWeeks = "WEEKS"
+
+	// LifecyclePolicyTimeUnitMonths is a LifecyclePolicyTimeUnit enum value
+	LifecyclePolicyTimeUnitMonths = "MONTHS"
+
+	// LifecyclePolicyTimeUnitYears is a LifecyclePolicyTimeUnit enum value
+	LifecyclePolicyTimeUnitYears = "YEARS"
+)
+
+// LifecyclePolicyTimeUnit_Values returns all elements of the LifecyclePolicyTimeUnit enum
+func LifecyclePolicyTimeUnit_Values() []string {
+	return []string{
+		LifecyclePolicyTimeUnitDays,
+		LifecyclePolicyTimeUnitWeeks,
+		LifecyclePolicyTimeUnitMonths,
+		LifecyclePolicyTimeUnitYears,
+	}
+}
+
+const (
 	// OwnershipSelf is a Ownership enum value
 	OwnershipSelf = "Self"
 
@@ -18087,6 +25677,9 @@ const (
 
 	// OwnershipAmazon is a Ownership enum value
 	OwnershipAmazon = "Amazon"
+
+	// OwnershipThirdParty is a Ownership enum value
+	OwnershipThirdParty = "ThirdParty"
 )
 
 // Ownership_Values returns all elements of the Ownership enum
@@ -18095,6 +25688,7 @@ func Ownership_Values() []string {
 		OwnershipSelf,
 		OwnershipShared,
 		OwnershipAmazon,
+		OwnershipThirdParty,
 	}
 }
 
@@ -18143,5 +25737,137 @@ func Platform_Values() []string {
 	return []string{
 		PlatformWindows,
 		PlatformLinux,
+	}
+}
+
+const (
+	// ResourceStatusAvailable is a ResourceStatus enum value
+	ResourceStatusAvailable = "AVAILABLE"
+
+	// ResourceStatusDeleted is a ResourceStatus enum value
+	ResourceStatusDeleted = "DELETED"
+
+	// ResourceStatusDeprecated is a ResourceStatus enum value
+	ResourceStatusDeprecated = "DEPRECATED"
+
+	// ResourceStatusDisabled is a ResourceStatus enum value
+	ResourceStatusDisabled = "DISABLED"
+)
+
+// ResourceStatus_Values returns all elements of the ResourceStatus enum
+func ResourceStatus_Values() []string {
+	return []string{
+		ResourceStatusAvailable,
+		ResourceStatusDeleted,
+		ResourceStatusDeprecated,
+		ResourceStatusDisabled,
+	}
+}
+
+const (
+	// WorkflowExecutionStatusPending is a WorkflowExecutionStatus enum value
+	WorkflowExecutionStatusPending = "PENDING"
+
+	// WorkflowExecutionStatusSkipped is a WorkflowExecutionStatus enum value
+	WorkflowExecutionStatusSkipped = "SKIPPED"
+
+	// WorkflowExecutionStatusRunning is a WorkflowExecutionStatus enum value
+	WorkflowExecutionStatusRunning = "RUNNING"
+
+	// WorkflowExecutionStatusCompleted is a WorkflowExecutionStatus enum value
+	WorkflowExecutionStatusCompleted = "COMPLETED"
+
+	// WorkflowExecutionStatusFailed is a WorkflowExecutionStatus enum value
+	WorkflowExecutionStatusFailed = "FAILED"
+
+	// WorkflowExecutionStatusRollbackInProgress is a WorkflowExecutionStatus enum value
+	WorkflowExecutionStatusRollbackInProgress = "ROLLBACK_IN_PROGRESS"
+
+	// WorkflowExecutionStatusRollbackCompleted is a WorkflowExecutionStatus enum value
+	WorkflowExecutionStatusRollbackCompleted = "ROLLBACK_COMPLETED"
+)
+
+// WorkflowExecutionStatus_Values returns all elements of the WorkflowExecutionStatus enum
+func WorkflowExecutionStatus_Values() []string {
+	return []string{
+		WorkflowExecutionStatusPending,
+		WorkflowExecutionStatusSkipped,
+		WorkflowExecutionStatusRunning,
+		WorkflowExecutionStatusCompleted,
+		WorkflowExecutionStatusFailed,
+		WorkflowExecutionStatusRollbackInProgress,
+		WorkflowExecutionStatusRollbackCompleted,
+	}
+}
+
+const (
+	// WorkflowStepExecutionRollbackStatusRunning is a WorkflowStepExecutionRollbackStatus enum value
+	WorkflowStepExecutionRollbackStatusRunning = "RUNNING"
+
+	// WorkflowStepExecutionRollbackStatusCompleted is a WorkflowStepExecutionRollbackStatus enum value
+	WorkflowStepExecutionRollbackStatusCompleted = "COMPLETED"
+
+	// WorkflowStepExecutionRollbackStatusSkipped is a WorkflowStepExecutionRollbackStatus enum value
+	WorkflowStepExecutionRollbackStatusSkipped = "SKIPPED"
+
+	// WorkflowStepExecutionRollbackStatusFailed is a WorkflowStepExecutionRollbackStatus enum value
+	WorkflowStepExecutionRollbackStatusFailed = "FAILED"
+)
+
+// WorkflowStepExecutionRollbackStatus_Values returns all elements of the WorkflowStepExecutionRollbackStatus enum
+func WorkflowStepExecutionRollbackStatus_Values() []string {
+	return []string{
+		WorkflowStepExecutionRollbackStatusRunning,
+		WorkflowStepExecutionRollbackStatusCompleted,
+		WorkflowStepExecutionRollbackStatusSkipped,
+		WorkflowStepExecutionRollbackStatusFailed,
+	}
+}
+
+const (
+	// WorkflowStepExecutionStatusPending is a WorkflowStepExecutionStatus enum value
+	WorkflowStepExecutionStatusPending = "PENDING"
+
+	// WorkflowStepExecutionStatusSkipped is a WorkflowStepExecutionStatus enum value
+	WorkflowStepExecutionStatusSkipped = "SKIPPED"
+
+	// WorkflowStepExecutionStatusRunning is a WorkflowStepExecutionStatus enum value
+	WorkflowStepExecutionStatusRunning = "RUNNING"
+
+	// WorkflowStepExecutionStatusCompleted is a WorkflowStepExecutionStatus enum value
+	WorkflowStepExecutionStatusCompleted = "COMPLETED"
+
+	// WorkflowStepExecutionStatusFailed is a WorkflowStepExecutionStatus enum value
+	WorkflowStepExecutionStatusFailed = "FAILED"
+)
+
+// WorkflowStepExecutionStatus_Values returns all elements of the WorkflowStepExecutionStatus enum
+func WorkflowStepExecutionStatus_Values() []string {
+	return []string{
+		WorkflowStepExecutionStatusPending,
+		WorkflowStepExecutionStatusSkipped,
+		WorkflowStepExecutionStatusRunning,
+		WorkflowStepExecutionStatusCompleted,
+		WorkflowStepExecutionStatusFailed,
+	}
+}
+
+const (
+	// WorkflowTypeBuild is a WorkflowType enum value
+	WorkflowTypeBuild = "BUILD"
+
+	// WorkflowTypeTest is a WorkflowType enum value
+	WorkflowTypeTest = "TEST"
+
+	// WorkflowTypeDistribution is a WorkflowType enum value
+	WorkflowTypeDistribution = "DISTRIBUTION"
+)
+
+// WorkflowType_Values returns all elements of the WorkflowType enum
+func WorkflowType_Values() []string {
+	return []string{
+		WorkflowTypeBuild,
+		WorkflowTypeTest,
+		WorkflowTypeDistribution,
 	}
 }

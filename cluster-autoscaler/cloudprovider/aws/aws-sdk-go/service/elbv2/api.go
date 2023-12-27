@@ -29,14 +29,13 @@ const opAddListenerCertificates = "AddListenerCertificates"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AddListenerCertificatesRequest method.
+//	req, resp := client.AddListenerCertificatesRequest(params)
 //
-//    // Example sending a request using the AddListenerCertificatesRequest method.
-//    req, resp := client.AddListenerCertificatesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/AddListenerCertificates
 func (c *ELBV2) AddListenerCertificatesRequest(input *AddListenerCertificatesInput) (req *request.Request, output *AddListenerCertificatesOutput) {
@@ -75,14 +74,15 @@ func (c *ELBV2) AddListenerCertificatesRequest(input *AddListenerCertificatesInp
 // API operation AddListenerCertificates for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeListenerNotFoundException "ListenerNotFound"
-//   The specified listener does not exist.
 //
-//   * ErrCodeTooManyCertificatesException "TooManyCertificates"
-//   You've reached the limit on the number of certificates per load balancer.
+//   - ErrCodeListenerNotFoundException "ListenerNotFound"
+//     The specified listener does not exist.
 //
-//   * ErrCodeCertificateNotFoundException "CertificateNotFound"
-//   The specified certificate does not exist.
+//   - ErrCodeTooManyCertificatesException "TooManyCertificates"
+//     You've reached the limit on the number of certificates per load balancer.
+//
+//   - ErrCodeCertificateNotFoundException "CertificateNotFound"
+//     The specified certificate does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/AddListenerCertificates
 func (c *ELBV2) AddListenerCertificates(input *AddListenerCertificatesInput) (*AddListenerCertificatesOutput, error) {
@@ -122,14 +122,13 @@ const opAddTags = "AddTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AddTagsRequest method.
+//	req, resp := client.AddTagsRequest(params)
 //
-//    // Example sending a request using the AddTagsRequest method.
-//    req, resp := client.AddTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/AddTags
 func (c *ELBV2) AddTagsRequest(input *AddTagsInput) (req *request.Request, output *AddTagsOutput) {
@@ -153,7 +152,7 @@ func (c *ELBV2) AddTagsRequest(input *AddTagsInput) (req *request.Request, outpu
 //
 // Adds the specified tags to the specified Elastic Load Balancing resource.
 // You can tag your Application Load Balancers, Network Load Balancers, Gateway
-// Load Balancers, target groups, listeners, and rules.
+// Load Balancers, target groups, trust stores, listeners, and rules.
 //
 // Each tag consists of a key and an optional value. If a resource already has
 // a tag with the same key, AddTags updates its value.
@@ -166,23 +165,27 @@ func (c *ELBV2) AddTagsRequest(input *AddTagsInput) (req *request.Request, outpu
 // API operation AddTags for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeDuplicateTagKeysException "DuplicateTagKeys"
-//   A tag key was specified more than once.
 //
-//   * ErrCodeTooManyTagsException "TooManyTags"
-//   You've reached the limit on the number of tags per load balancer.
+//   - ErrCodeDuplicateTagKeysException "DuplicateTagKeys"
+//     A tag key was specified more than once.
 //
-//   * ErrCodeLoadBalancerNotFoundException "LoadBalancerNotFound"
-//   The specified load balancer does not exist.
+//   - ErrCodeTooManyTagsException "TooManyTags"
+//     You've reached the limit on the number of tags for this resource.
 //
-//   * ErrCodeTargetGroupNotFoundException "TargetGroupNotFound"
-//   The specified target group does not exist.
+//   - ErrCodeLoadBalancerNotFoundException "LoadBalancerNotFound"
+//     The specified load balancer does not exist.
 //
-//   * ErrCodeListenerNotFoundException "ListenerNotFound"
-//   The specified listener does not exist.
+//   - ErrCodeTargetGroupNotFoundException "TargetGroupNotFound"
+//     The specified target group does not exist.
 //
-//   * ErrCodeRuleNotFoundException "RuleNotFound"
-//   The specified rule does not exist.
+//   - ErrCodeListenerNotFoundException "ListenerNotFound"
+//     The specified listener does not exist.
+//
+//   - ErrCodeRuleNotFoundException "RuleNotFound"
+//     The specified rule does not exist.
+//
+//   - ErrCodeTrustStoreNotFoundException "TrustStoreNotFound"
+//     The specified trust store does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/AddTags
 func (c *ELBV2) AddTags(input *AddTagsInput) (*AddTagsOutput, error) {
@@ -206,6 +209,94 @@ func (c *ELBV2) AddTagsWithContext(ctx aws.Context, input *AddTagsInput, opts ..
 	return out, req.Send()
 }
 
+const opAddTrustStoreRevocations = "AddTrustStoreRevocations"
+
+// AddTrustStoreRevocationsRequest generates a "aws/request.Request" representing the
+// client's request for the AddTrustStoreRevocations operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See AddTrustStoreRevocations for more information on using the AddTrustStoreRevocations
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the AddTrustStoreRevocationsRequest method.
+//	req, resp := client.AddTrustStoreRevocationsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/AddTrustStoreRevocations
+func (c *ELBV2) AddTrustStoreRevocationsRequest(input *AddTrustStoreRevocationsInput) (req *request.Request, output *AddTrustStoreRevocationsOutput) {
+	op := &request.Operation{
+		Name:       opAddTrustStoreRevocations,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &AddTrustStoreRevocationsInput{}
+	}
+
+	output = &AddTrustStoreRevocationsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// AddTrustStoreRevocations API operation for Elastic Load Balancing.
+//
+// Adds the specified revocation file to the specified trust store.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Elastic Load Balancing's
+// API operation AddTrustStoreRevocations for usage and error information.
+//
+// Returned Error Codes:
+//
+//   - ErrCodeTrustStoreNotFoundException "TrustStoreNotFound"
+//     The specified trust store does not exist.
+//
+//   - ErrCodeInvalidRevocationContentException "InvalidRevocationContent"
+//     The provided revocation file is an invalid format, or uses an incorrect algorithm.
+//
+//   - ErrCodeTooManyTrustStoreRevocationEntriesException "TooManyTrustStoreRevocationEntries"
+//     The specified trust store has too many revocation entries.
+//
+//   - ErrCodeRevocationContentNotFoundException "RevocationContentNotFound"
+//     The specified revocation file does not exist.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/AddTrustStoreRevocations
+func (c *ELBV2) AddTrustStoreRevocations(input *AddTrustStoreRevocationsInput) (*AddTrustStoreRevocationsOutput, error) {
+	req, out := c.AddTrustStoreRevocationsRequest(input)
+	return out, req.Send()
+}
+
+// AddTrustStoreRevocationsWithContext is the same as AddTrustStoreRevocations with the addition of
+// the ability to pass a context and additional request options.
+//
+// See AddTrustStoreRevocations for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ELBV2) AddTrustStoreRevocationsWithContext(ctx aws.Context, input *AddTrustStoreRevocationsInput, opts ...request.Option) (*AddTrustStoreRevocationsOutput, error) {
+	req, out := c.AddTrustStoreRevocationsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opCreateListener = "CreateListener"
 
 // CreateListenerRequest generates a "aws/request.Request" representing the
@@ -222,14 +313,13 @@ const opCreateListener = "CreateListener"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateListenerRequest method.
+//	req, resp := client.CreateListenerRequest(params)
 //
-//    // Example sending a request using the CreateListenerRequest method.
-//    req, resp := client.CreateListenerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/CreateListener
 func (c *ELBV2) CreateListenerRequest(input *CreateListenerInput) (req *request.Request, output *CreateListenerOutput) {
@@ -255,11 +345,11 @@ func (c *ELBV2) CreateListenerRequest(input *CreateListenerInput) (req *request.
 //
 // For more information, see the following:
 //
-//    * Listeners for your Application Load Balancers (https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-listeners.html)
+//   - Listeners for your Application Load Balancers (https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-listeners.html)
 //
-//    * Listeners for your Network Load Balancers (https://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-listeners.html)
+//   - Listeners for your Network Load Balancers (https://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-listeners.html)
 //
-//    * Listeners for your Gateway Load Balancers (https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/gateway-listeners.html)
+//   - Listeners for your Gateway Load Balancers (https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/gateway-listeners.html)
 //
 // This operation is idempotent, which means that it completes at most one time.
 // If you attempt to create multiple listeners with the same settings, each
@@ -273,62 +363,69 @@ func (c *ELBV2) CreateListenerRequest(input *CreateListenerInput) (req *request.
 // API operation CreateListener for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeDuplicateListenerException "DuplicateListener"
-//   A listener with the specified port already exists.
 //
-//   * ErrCodeTooManyListenersException "TooManyListeners"
-//   You've reached the limit on the number of listeners per load balancer.
+//   - ErrCodeDuplicateListenerException "DuplicateListener"
+//     A listener with the specified port already exists.
 //
-//   * ErrCodeTooManyCertificatesException "TooManyCertificates"
-//   You've reached the limit on the number of certificates per load balancer.
+//   - ErrCodeTooManyListenersException "TooManyListeners"
+//     You've reached the limit on the number of listeners per load balancer.
 //
-//   * ErrCodeLoadBalancerNotFoundException "LoadBalancerNotFound"
-//   The specified load balancer does not exist.
+//   - ErrCodeTooManyCertificatesException "TooManyCertificates"
+//     You've reached the limit on the number of certificates per load balancer.
 //
-//   * ErrCodeTargetGroupNotFoundException "TargetGroupNotFound"
-//   The specified target group does not exist.
+//   - ErrCodeLoadBalancerNotFoundException "LoadBalancerNotFound"
+//     The specified load balancer does not exist.
 //
-//   * ErrCodeTargetGroupAssociationLimitException "TargetGroupAssociationLimit"
-//   You've reached the limit on the number of load balancers per target group.
+//   - ErrCodeTargetGroupNotFoundException "TargetGroupNotFound"
+//     The specified target group does not exist.
 //
-//   * ErrCodeInvalidConfigurationRequestException "InvalidConfigurationRequest"
-//   The requested configuration is not valid.
+//   - ErrCodeTargetGroupAssociationLimitException "TargetGroupAssociationLimit"
+//     You've reached the limit on the number of load balancers per target group.
 //
-//   * ErrCodeIncompatibleProtocolsException "IncompatibleProtocols"
-//   The specified configuration is not valid with this protocol.
+//   - ErrCodeInvalidConfigurationRequestException "InvalidConfigurationRequest"
+//     The requested configuration is not valid.
 //
-//   * ErrCodeSSLPolicyNotFoundException "SSLPolicyNotFound"
-//   The specified SSL policy does not exist.
+//   - ErrCodeIncompatibleProtocolsException "IncompatibleProtocols"
+//     The specified configuration is not valid with this protocol.
 //
-//   * ErrCodeCertificateNotFoundException "CertificateNotFound"
-//   The specified certificate does not exist.
+//   - ErrCodeSSLPolicyNotFoundException "SSLPolicyNotFound"
+//     The specified SSL policy does not exist.
 //
-//   * ErrCodeUnsupportedProtocolException "UnsupportedProtocol"
-//   The specified protocol is not supported.
+//   - ErrCodeCertificateNotFoundException "CertificateNotFound"
+//     The specified certificate does not exist.
 //
-//   * ErrCodeTooManyRegistrationsForTargetIdException "TooManyRegistrationsForTargetId"
-//   You've reached the limit on the number of times a target can be registered
-//   with a load balancer.
+//   - ErrCodeUnsupportedProtocolException "UnsupportedProtocol"
+//     The specified protocol is not supported.
 //
-//   * ErrCodeTooManyTargetsException "TooManyTargets"
-//   You've reached the limit on the number of targets.
+//   - ErrCodeTooManyRegistrationsForTargetIdException "TooManyRegistrationsForTargetId"
+//     You've reached the limit on the number of times a target can be registered
+//     with a load balancer.
 //
-//   * ErrCodeTooManyActionsException "TooManyActions"
-//   You've reached the limit on the number of actions per rule.
+//   - ErrCodeTooManyTargetsException "TooManyTargets"
+//     You've reached the limit on the number of targets.
 //
-//   * ErrCodeInvalidLoadBalancerActionException "InvalidLoadBalancerAction"
-//   The requested action is not valid.
+//   - ErrCodeTooManyActionsException "TooManyActions"
+//     You've reached the limit on the number of actions per rule.
 //
-//   * ErrCodeTooManyUniqueTargetGroupsPerLoadBalancerException "TooManyUniqueTargetGroupsPerLoadBalancer"
-//   You've reached the limit on the number of unique target groups per load balancer
-//   across all listeners. If a target group is used by multiple actions for a
-//   load balancer, it is counted as only one use.
+//   - ErrCodeInvalidLoadBalancerActionException "InvalidLoadBalancerAction"
+//     The requested action is not valid.
 //
-//   * ErrCodeALPNPolicyNotSupportedException "ALPNPolicyNotFound"
-//   The specified ALPN policy is not supported.
+//   - ErrCodeTooManyUniqueTargetGroupsPerLoadBalancerException "TooManyUniqueTargetGroupsPerLoadBalancer"
+//     You've reached the limit on the number of unique target groups per load balancer
+//     across all listeners. If a target group is used by multiple actions for a
+//     load balancer, it is counted as only one use.
 //
-//   * ErrCodeTooManyTagsException "TooManyTags"
-//   You've reached the limit on the number of tags per load balancer.
+//   - ErrCodeALPNPolicyNotSupportedException "ALPNPolicyNotFound"
+//     The specified ALPN policy is not supported.
+//
+//   - ErrCodeTooManyTagsException "TooManyTags"
+//     You've reached the limit on the number of tags for this resource.
+//
+//   - ErrCodeTrustStoreNotFoundException "TrustStoreNotFound"
+//     The specified trust store does not exist.
+//
+//   - ErrCodeTrustStoreNotReadyException "TrustStoreNotReady"
+//     The specified trust store is not active.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/CreateListener
 func (c *ELBV2) CreateListener(input *CreateListenerInput) (*CreateListenerOutput, error) {
@@ -368,14 +465,13 @@ const opCreateLoadBalancer = "CreateLoadBalancer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateLoadBalancerRequest method.
+//	req, resp := client.CreateLoadBalancerRequest(params)
 //
-//    // Example sending a request using the CreateLoadBalancerRequest method.
-//    req, resp := client.CreateLoadBalancerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/CreateLoadBalancer
 func (c *ELBV2) CreateLoadBalancerRequest(input *CreateLoadBalancerInput) (req *request.Request, output *CreateLoadBalancerOutput) {
@@ -401,11 +497,11 @@ func (c *ELBV2) CreateLoadBalancerRequest(input *CreateLoadBalancerInput) (req *
 //
 // For more information, see the following:
 //
-//    * Application Load Balancers (https://docs.aws.amazon.com/elasticloadbalancing/latest/application/application-load-balancers.html)
+//   - Application Load Balancers (https://docs.aws.amazon.com/elasticloadbalancing/latest/application/application-load-balancers.html)
 //
-//    * Network Load Balancers (https://docs.aws.amazon.com/elasticloadbalancing/latest/network/network-load-balancers.html)
+//   - Network Load Balancers (https://docs.aws.amazon.com/elasticloadbalancing/latest/network/network-load-balancers.html)
 //
-//    * Gateway Load Balancers (https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/gateway-load-balancers.html)
+//   - Gateway Load Balancers (https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/gateway-load-balancers.html)
 //
 // This operation is idempotent, which means that it completes at most one time.
 // If you attempt to create multiple load balancers with the same settings,
@@ -419,45 +515,46 @@ func (c *ELBV2) CreateLoadBalancerRequest(input *CreateLoadBalancerInput) (req *
 // API operation CreateLoadBalancer for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeDuplicateLoadBalancerNameException "DuplicateLoadBalancerName"
-//   A load balancer with the specified name already exists.
 //
-//   * ErrCodeTooManyLoadBalancersException "TooManyLoadBalancers"
-//   You've reached the limit on the number of load balancers for your Amazon
-//   Web Services account.
+//   - ErrCodeDuplicateLoadBalancerNameException "DuplicateLoadBalancerName"
+//     A load balancer with the specified name already exists.
 //
-//   * ErrCodeInvalidConfigurationRequestException "InvalidConfigurationRequest"
-//   The requested configuration is not valid.
+//   - ErrCodeTooManyLoadBalancersException "TooManyLoadBalancers"
+//     You've reached the limit on the number of load balancers for your Amazon
+//     Web Services account.
 //
-//   * ErrCodeSubnetNotFoundException "SubnetNotFound"
-//   The specified subnet does not exist.
+//   - ErrCodeInvalidConfigurationRequestException "InvalidConfigurationRequest"
+//     The requested configuration is not valid.
 //
-//   * ErrCodeInvalidSubnetException "InvalidSubnet"
-//   The specified subnet is out of available addresses.
+//   - ErrCodeSubnetNotFoundException "SubnetNotFound"
+//     The specified subnet does not exist.
 //
-//   * ErrCodeInvalidSecurityGroupException "InvalidSecurityGroup"
-//   The specified security group does not exist.
+//   - ErrCodeInvalidSubnetException "InvalidSubnet"
+//     The specified subnet is out of available addresses.
 //
-//   * ErrCodeInvalidSchemeException "InvalidScheme"
-//   The requested scheme is not valid.
+//   - ErrCodeInvalidSecurityGroupException "InvalidSecurityGroup"
+//     The specified security group does not exist.
 //
-//   * ErrCodeTooManyTagsException "TooManyTags"
-//   You've reached the limit on the number of tags per load balancer.
+//   - ErrCodeInvalidSchemeException "InvalidScheme"
+//     The requested scheme is not valid.
 //
-//   * ErrCodeDuplicateTagKeysException "DuplicateTagKeys"
-//   A tag key was specified more than once.
+//   - ErrCodeTooManyTagsException "TooManyTags"
+//     You've reached the limit on the number of tags for this resource.
 //
-//   * ErrCodeResourceInUseException "ResourceInUse"
-//   A specified resource is in use.
+//   - ErrCodeDuplicateTagKeysException "DuplicateTagKeys"
+//     A tag key was specified more than once.
 //
-//   * ErrCodeAllocationIdNotFoundException "AllocationIdNotFound"
-//   The specified allocation ID does not exist.
+//   - ErrCodeResourceInUseException "ResourceInUse"
+//     A specified resource is in use.
 //
-//   * ErrCodeAvailabilityZoneNotSupportedException "AvailabilityZoneNotSupported"
-//   The specified Availability Zone is not supported.
+//   - ErrCodeAllocationIdNotFoundException "AllocationIdNotFound"
+//     The specified allocation ID does not exist.
 //
-//   * ErrCodeOperationNotPermittedException "OperationNotPermitted"
-//   This operation is not allowed.
+//   - ErrCodeAvailabilityZoneNotSupportedException "AvailabilityZoneNotSupported"
+//     The specified Availability Zone is not supported.
+//
+//   - ErrCodeOperationNotPermittedException "OperationNotPermitted"
+//     This operation is not allowed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/CreateLoadBalancer
 func (c *ELBV2) CreateLoadBalancer(input *CreateLoadBalancerInput) (*CreateLoadBalancerOutput, error) {
@@ -497,14 +594,13 @@ const opCreateRule = "CreateRule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateRuleRequest method.
+//	req, resp := client.CreateRuleRequest(params)
 //
-//    // Example sending a request using the CreateRuleRequest method.
-//    req, resp := client.CreateRuleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/CreateRule
 func (c *ELBV2) CreateRuleRequest(input *CreateRuleInput) (req *request.Request, output *CreateRuleOutput) {
@@ -543,54 +639,55 @@ func (c *ELBV2) CreateRuleRequest(input *CreateRuleInput) (req *request.Request,
 // API operation CreateRule for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodePriorityInUseException "PriorityInUse"
-//   The specified priority is in use.
 //
-//   * ErrCodeTooManyTargetGroupsException "TooManyTargetGroups"
-//   You've reached the limit on the number of target groups for your Amazon Web
-//   Services account.
+//   - ErrCodePriorityInUseException "PriorityInUse"
+//     The specified priority is in use.
 //
-//   * ErrCodeTooManyRulesException "TooManyRules"
-//   You've reached the limit on the number of rules per load balancer.
+//   - ErrCodeTooManyTargetGroupsException "TooManyTargetGroups"
+//     You've reached the limit on the number of target groups for your Amazon Web
+//     Services account.
 //
-//   * ErrCodeTargetGroupAssociationLimitException "TargetGroupAssociationLimit"
-//   You've reached the limit on the number of load balancers per target group.
+//   - ErrCodeTooManyRulesException "TooManyRules"
+//     You've reached the limit on the number of rules per load balancer.
 //
-//   * ErrCodeIncompatibleProtocolsException "IncompatibleProtocols"
-//   The specified configuration is not valid with this protocol.
+//   - ErrCodeTargetGroupAssociationLimitException "TargetGroupAssociationLimit"
+//     You've reached the limit on the number of load balancers per target group.
 //
-//   * ErrCodeListenerNotFoundException "ListenerNotFound"
-//   The specified listener does not exist.
+//   - ErrCodeIncompatibleProtocolsException "IncompatibleProtocols"
+//     The specified configuration is not valid with this protocol.
 //
-//   * ErrCodeTargetGroupNotFoundException "TargetGroupNotFound"
-//   The specified target group does not exist.
+//   - ErrCodeListenerNotFoundException "ListenerNotFound"
+//     The specified listener does not exist.
 //
-//   * ErrCodeInvalidConfigurationRequestException "InvalidConfigurationRequest"
-//   The requested configuration is not valid.
+//   - ErrCodeTargetGroupNotFoundException "TargetGroupNotFound"
+//     The specified target group does not exist.
 //
-//   * ErrCodeTooManyRegistrationsForTargetIdException "TooManyRegistrationsForTargetId"
-//   You've reached the limit on the number of times a target can be registered
-//   with a load balancer.
+//   - ErrCodeInvalidConfigurationRequestException "InvalidConfigurationRequest"
+//     The requested configuration is not valid.
 //
-//   * ErrCodeTooManyTargetsException "TooManyTargets"
-//   You've reached the limit on the number of targets.
+//   - ErrCodeTooManyRegistrationsForTargetIdException "TooManyRegistrationsForTargetId"
+//     You've reached the limit on the number of times a target can be registered
+//     with a load balancer.
 //
-//   * ErrCodeUnsupportedProtocolException "UnsupportedProtocol"
-//   The specified protocol is not supported.
+//   - ErrCodeTooManyTargetsException "TooManyTargets"
+//     You've reached the limit on the number of targets.
 //
-//   * ErrCodeTooManyActionsException "TooManyActions"
-//   You've reached the limit on the number of actions per rule.
+//   - ErrCodeUnsupportedProtocolException "UnsupportedProtocol"
+//     The specified protocol is not supported.
 //
-//   * ErrCodeInvalidLoadBalancerActionException "InvalidLoadBalancerAction"
-//   The requested action is not valid.
+//   - ErrCodeTooManyActionsException "TooManyActions"
+//     You've reached the limit on the number of actions per rule.
 //
-//   * ErrCodeTooManyUniqueTargetGroupsPerLoadBalancerException "TooManyUniqueTargetGroupsPerLoadBalancer"
-//   You've reached the limit on the number of unique target groups per load balancer
-//   across all listeners. If a target group is used by multiple actions for a
-//   load balancer, it is counted as only one use.
+//   - ErrCodeInvalidLoadBalancerActionException "InvalidLoadBalancerAction"
+//     The requested action is not valid.
 //
-//   * ErrCodeTooManyTagsException "TooManyTags"
-//   You've reached the limit on the number of tags per load balancer.
+//   - ErrCodeTooManyUniqueTargetGroupsPerLoadBalancerException "TooManyUniqueTargetGroupsPerLoadBalancer"
+//     You've reached the limit on the number of unique target groups per load balancer
+//     across all listeners. If a target group is used by multiple actions for a
+//     load balancer, it is counted as only one use.
+//
+//   - ErrCodeTooManyTagsException "TooManyTags"
+//     You've reached the limit on the number of tags for this resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/CreateRule
 func (c *ELBV2) CreateRule(input *CreateRuleInput) (*CreateRuleOutput, error) {
@@ -630,14 +727,13 @@ const opCreateTargetGroup = "CreateTargetGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateTargetGroupRequest method.
+//	req, resp := client.CreateTargetGroupRequest(params)
 //
-//    // Example sending a request using the CreateTargetGroupRequest method.
-//    req, resp := client.CreateTargetGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/CreateTargetGroup
 func (c *ELBV2) CreateTargetGroupRequest(input *CreateTargetGroupInput) (req *request.Request, output *CreateTargetGroupOutput) {
@@ -662,11 +758,11 @@ func (c *ELBV2) CreateTargetGroupRequest(input *CreateTargetGroupInput) (req *re
 //
 // For more information, see the following:
 //
-//    * Target groups for your Application Load Balancers (https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-target-groups.html)
+//   - Target groups for your Application Load Balancers (https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-target-groups.html)
 //
-//    * Target groups for your Network Load Balancers (https://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-target-groups.html)
+//   - Target groups for your Network Load Balancers (https://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-target-groups.html)
 //
-//    * Target groups for your Gateway Load Balancers (https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/target-groups.html)
+//   - Target groups for your Gateway Load Balancers (https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/target-groups.html)
 //
 // This operation is idempotent, which means that it completes at most one time.
 // If you attempt to create multiple target groups with the same settings, each
@@ -680,18 +776,19 @@ func (c *ELBV2) CreateTargetGroupRequest(input *CreateTargetGroupInput) (req *re
 // API operation CreateTargetGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeDuplicateTargetGroupNameException "DuplicateTargetGroupName"
-//   A target group with the specified name already exists.
 //
-//   * ErrCodeTooManyTargetGroupsException "TooManyTargetGroups"
-//   You've reached the limit on the number of target groups for your Amazon Web
-//   Services account.
+//   - ErrCodeDuplicateTargetGroupNameException "DuplicateTargetGroupName"
+//     A target group with the specified name already exists.
 //
-//   * ErrCodeInvalidConfigurationRequestException "InvalidConfigurationRequest"
-//   The requested configuration is not valid.
+//   - ErrCodeTooManyTargetGroupsException "TooManyTargetGroups"
+//     You've reached the limit on the number of target groups for your Amazon Web
+//     Services account.
 //
-//   * ErrCodeTooManyTagsException "TooManyTags"
-//   You've reached the limit on the number of tags per load balancer.
+//   - ErrCodeInvalidConfigurationRequestException "InvalidConfigurationRequest"
+//     The requested configuration is not valid.
+//
+//   - ErrCodeTooManyTagsException "TooManyTags"
+//     You've reached the limit on the number of tags for this resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/CreateTargetGroup
 func (c *ELBV2) CreateTargetGroup(input *CreateTargetGroupInput) (*CreateTargetGroupOutput, error) {
@@ -715,6 +812,101 @@ func (c *ELBV2) CreateTargetGroupWithContext(ctx aws.Context, input *CreateTarge
 	return out, req.Send()
 }
 
+const opCreateTrustStore = "CreateTrustStore"
+
+// CreateTrustStoreRequest generates a "aws/request.Request" representing the
+// client's request for the CreateTrustStore operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateTrustStore for more information on using the CreateTrustStore
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreateTrustStoreRequest method.
+//	req, resp := client.CreateTrustStoreRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/CreateTrustStore
+func (c *ELBV2) CreateTrustStoreRequest(input *CreateTrustStoreInput) (req *request.Request, output *CreateTrustStoreOutput) {
+	op := &request.Operation{
+		Name:       opCreateTrustStore,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &CreateTrustStoreInput{}
+	}
+
+	output = &CreateTrustStoreOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateTrustStore API operation for Elastic Load Balancing.
+//
+// Creates a trust store.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Elastic Load Balancing's
+// API operation CreateTrustStore for usage and error information.
+//
+// Returned Error Codes:
+//
+//   - ErrCodeDuplicateTrustStoreNameException "DuplicateTrustStoreName"
+//     A trust store with the specified name already exists.
+//
+//   - ErrCodeTooManyTrustStoresException "TooManyTrustStores"
+//     You've reached the limit on the number of trust stores for your Amazon Web
+//     Services account.
+//
+//   - ErrCodeInvalidCaCertificatesBundleException "InvalidCaCertificatesBundle"
+//     The specified ca certificate bundle is in an invalid format, or corrupt.
+//
+//   - ErrCodeCaCertificatesBundleNotFoundException "CaCertificatesBundleNotFound"
+//     The specified ca certificate bundle does not exist.
+//
+//   - ErrCodeTooManyTagsException "TooManyTags"
+//     You've reached the limit on the number of tags for this resource.
+//
+//   - ErrCodeDuplicateTagKeysException "DuplicateTagKeys"
+//     A tag key was specified more than once.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/CreateTrustStore
+func (c *ELBV2) CreateTrustStore(input *CreateTrustStoreInput) (*CreateTrustStoreOutput, error) {
+	req, out := c.CreateTrustStoreRequest(input)
+	return out, req.Send()
+}
+
+// CreateTrustStoreWithContext is the same as CreateTrustStore with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateTrustStore for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ELBV2) CreateTrustStoreWithContext(ctx aws.Context, input *CreateTrustStoreInput, opts ...request.Option) (*CreateTrustStoreOutput, error) {
+	req, out := c.CreateTrustStoreRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opDeleteListener = "DeleteListener"
 
 // DeleteListenerRequest generates a "aws/request.Request" representing the
@@ -731,14 +923,13 @@ const opDeleteListener = "DeleteListener"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteListenerRequest method.
+//	req, resp := client.DeleteListenerRequest(params)
 //
-//    // Example sending a request using the DeleteListenerRequest method.
-//    req, resp := client.DeleteListenerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/DeleteListener
 func (c *ELBV2) DeleteListenerRequest(input *DeleteListenerInput) (req *request.Request, output *DeleteListenerOutput) {
@@ -773,11 +964,12 @@ func (c *ELBV2) DeleteListenerRequest(input *DeleteListenerInput) (req *request.
 // API operation DeleteListener for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeListenerNotFoundException "ListenerNotFound"
-//   The specified listener does not exist.
 //
-//   * ErrCodeResourceInUseException "ResourceInUse"
-//   A specified resource is in use.
+//   - ErrCodeListenerNotFoundException "ListenerNotFound"
+//     The specified listener does not exist.
+//
+//   - ErrCodeResourceInUseException "ResourceInUse"
+//     A specified resource is in use.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/DeleteListener
 func (c *ELBV2) DeleteListener(input *DeleteListenerInput) (*DeleteListenerOutput, error) {
@@ -817,14 +1009,13 @@ const opDeleteLoadBalancer = "DeleteLoadBalancer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteLoadBalancerRequest method.
+//	req, resp := client.DeleteLoadBalancerRequest(params)
 //
-//    // Example sending a request using the DeleteLoadBalancerRequest method.
-//    req, resp := client.DeleteLoadBalancerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/DeleteLoadBalancer
 func (c *ELBV2) DeleteLoadBalancerRequest(input *DeleteLoadBalancerInput) (req *request.Request, output *DeleteLoadBalancerOutput) {
@@ -865,14 +1056,15 @@ func (c *ELBV2) DeleteLoadBalancerRequest(input *DeleteLoadBalancerInput) (req *
 // API operation DeleteLoadBalancer for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeLoadBalancerNotFoundException "LoadBalancerNotFound"
-//   The specified load balancer does not exist.
 //
-//   * ErrCodeOperationNotPermittedException "OperationNotPermitted"
-//   This operation is not allowed.
+//   - ErrCodeLoadBalancerNotFoundException "LoadBalancerNotFound"
+//     The specified load balancer does not exist.
 //
-//   * ErrCodeResourceInUseException "ResourceInUse"
-//   A specified resource is in use.
+//   - ErrCodeOperationNotPermittedException "OperationNotPermitted"
+//     This operation is not allowed.
+//
+//   - ErrCodeResourceInUseException "ResourceInUse"
+//     A specified resource is in use.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/DeleteLoadBalancer
 func (c *ELBV2) DeleteLoadBalancer(input *DeleteLoadBalancerInput) (*DeleteLoadBalancerOutput, error) {
@@ -912,14 +1104,13 @@ const opDeleteRule = "DeleteRule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteRuleRequest method.
+//	req, resp := client.DeleteRuleRequest(params)
 //
-//    // Example sending a request using the DeleteRuleRequest method.
-//    req, resp := client.DeleteRuleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/DeleteRule
 func (c *ELBV2) DeleteRuleRequest(input *DeleteRuleInput) (req *request.Request, output *DeleteRuleOutput) {
@@ -953,11 +1144,12 @@ func (c *ELBV2) DeleteRuleRequest(input *DeleteRuleInput) (req *request.Request,
 // API operation DeleteRule for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeRuleNotFoundException "RuleNotFound"
-//   The specified rule does not exist.
 //
-//   * ErrCodeOperationNotPermittedException "OperationNotPermitted"
-//   This operation is not allowed.
+//   - ErrCodeRuleNotFoundException "RuleNotFound"
+//     The specified rule does not exist.
+//
+//   - ErrCodeOperationNotPermittedException "OperationNotPermitted"
+//     This operation is not allowed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/DeleteRule
 func (c *ELBV2) DeleteRule(input *DeleteRuleInput) (*DeleteRuleOutput, error) {
@@ -997,14 +1189,13 @@ const opDeleteTargetGroup = "DeleteTargetGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteTargetGroupRequest method.
+//	req, resp := client.DeleteTargetGroupRequest(params)
 //
-//    // Example sending a request using the DeleteTargetGroupRequest method.
-//    req, resp := client.DeleteTargetGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/DeleteTargetGroup
 func (c *ELBV2) DeleteTargetGroupRequest(input *DeleteTargetGroupInput) (req *request.Request, output *DeleteTargetGroupOutput) {
@@ -1041,8 +1232,8 @@ func (c *ELBV2) DeleteTargetGroupRequest(input *DeleteTargetGroupInput) (req *re
 // API operation DeleteTargetGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeResourceInUseException "ResourceInUse"
-//   A specified resource is in use.
+//   - ErrCodeResourceInUseException "ResourceInUse"
+//     A specified resource is in use.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/DeleteTargetGroup
 func (c *ELBV2) DeleteTargetGroup(input *DeleteTargetGroupInput) (*DeleteTargetGroupOutput, error) {
@@ -1066,6 +1257,89 @@ func (c *ELBV2) DeleteTargetGroupWithContext(ctx aws.Context, input *DeleteTarge
 	return out, req.Send()
 }
 
+const opDeleteTrustStore = "DeleteTrustStore"
+
+// DeleteTrustStoreRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteTrustStore operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteTrustStore for more information on using the DeleteTrustStore
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteTrustStoreRequest method.
+//	req, resp := client.DeleteTrustStoreRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/DeleteTrustStore
+func (c *ELBV2) DeleteTrustStoreRequest(input *DeleteTrustStoreInput) (req *request.Request, output *DeleteTrustStoreOutput) {
+	op := &request.Operation{
+		Name:       opDeleteTrustStore,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DeleteTrustStoreInput{}
+	}
+
+	output = &DeleteTrustStoreOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(query.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// DeleteTrustStore API operation for Elastic Load Balancing.
+//
+// Deletes a trust store.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Elastic Load Balancing's
+// API operation DeleteTrustStore for usage and error information.
+//
+// Returned Error Codes:
+//
+//   - ErrCodeTrustStoreNotFoundException "TrustStoreNotFound"
+//     The specified trust store does not exist.
+//
+//   - ErrCodeTrustStoreInUseException "TrustStoreInUse"
+//     The specified trust store is currently in use.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/DeleteTrustStore
+func (c *ELBV2) DeleteTrustStore(input *DeleteTrustStoreInput) (*DeleteTrustStoreOutput, error) {
+	req, out := c.DeleteTrustStoreRequest(input)
+	return out, req.Send()
+}
+
+// DeleteTrustStoreWithContext is the same as DeleteTrustStore with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteTrustStore for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ELBV2) DeleteTrustStoreWithContext(ctx aws.Context, input *DeleteTrustStoreInput, opts ...request.Option) (*DeleteTrustStoreOutput, error) {
+	req, out := c.DeleteTrustStoreRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opDeregisterTargets = "DeregisterTargets"
 
 // DeregisterTargetsRequest generates a "aws/request.Request" representing the
@@ -1082,14 +1356,13 @@ const opDeregisterTargets = "DeregisterTargets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeregisterTargetsRequest method.
+//	req, resp := client.DeregisterTargetsRequest(params)
 //
-//    // Example sending a request using the DeregisterTargetsRequest method.
-//    req, resp := client.DeregisterTargetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/DeregisterTargets
 func (c *ELBV2) DeregisterTargetsRequest(input *DeregisterTargetsInput) (req *request.Request, output *DeregisterTargetsOutput) {
@@ -1115,6 +1388,24 @@ func (c *ELBV2) DeregisterTargetsRequest(input *DeregisterTargetsInput) (req *re
 // the targets are deregistered, they no longer receive traffic from the load
 // balancer.
 //
+// The load balancer stops sending requests to targets that are deregistering,
+// but uses connection draining to ensure that in-flight traffic completes on
+// the existing connections. This deregistration delay is configured by default
+// but can be updated for each target group.
+//
+// For more information, see the following:
+//
+//   - Deregistration delay (https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-target-groups.html#deregistration-delay)
+//     in the Application Load Balancers User Guide
+//
+//   - Deregistration delay (https://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-target-groups.html#deregistration-delay)
+//     in the Network Load Balancers User Guide
+//
+//   - Deregistration delay (https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/target-groups.html#deregistration-delay)
+//     in the Gateway Load Balancers User Guide
+//
+// Note: If the specified target does not exist, the action returns successfully.
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -1123,12 +1414,13 @@ func (c *ELBV2) DeregisterTargetsRequest(input *DeregisterTargetsInput) (req *re
 // API operation DeregisterTargets for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeTargetGroupNotFoundException "TargetGroupNotFound"
-//   The specified target group does not exist.
 //
-//   * ErrCodeInvalidTargetException "InvalidTarget"
-//   The specified target does not exist, is not in the same VPC as the target
-//   group, or has an unsupported instance type.
+//   - ErrCodeTargetGroupNotFoundException "TargetGroupNotFound"
+//     The specified target group does not exist.
+//
+//   - ErrCodeInvalidTargetException "InvalidTarget"
+//     The specified target does not exist, is not in the same VPC as the target
+//     group, or has an unsupported instance type.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/DeregisterTargets
 func (c *ELBV2) DeregisterTargets(input *DeregisterTargetsInput) (*DeregisterTargetsOutput, error) {
@@ -1168,14 +1460,13 @@ const opDescribeAccountLimits = "DescribeAccountLimits"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAccountLimitsRequest method.
+//	req, resp := client.DescribeAccountLimitsRequest(params)
 //
-//    // Example sending a request using the DescribeAccountLimitsRequest method.
-//    req, resp := client.DescribeAccountLimitsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/DescribeAccountLimits
 func (c *ELBV2) DescribeAccountLimitsRequest(input *DescribeAccountLimitsInput) (req *request.Request, output *DescribeAccountLimitsOutput) {
@@ -1201,11 +1492,11 @@ func (c *ELBV2) DescribeAccountLimitsRequest(input *DescribeAccountLimitsInput) 
 //
 // For more information, see the following:
 //
-//    * Quotas for your Application Load Balancers (https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-limits.html)
+//   - Quotas for your Application Load Balancers (https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-limits.html)
 //
-//    * Quotas for your Network Load Balancers (https://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-limits.html)
+//   - Quotas for your Network Load Balancers (https://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-limits.html)
 //
-//    * Quotas for your Gateway Load Balancers (https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/quotas-limits.html)
+//   - Quotas for your Gateway Load Balancers (https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/quotas-limits.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1251,14 +1542,13 @@ const opDescribeListenerCertificates = "DescribeListenerCertificates"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeListenerCertificatesRequest method.
+//	req, resp := client.DescribeListenerCertificatesRequest(params)
 //
-//    // Example sending a request using the DescribeListenerCertificatesRequest method.
-//    req, resp := client.DescribeListenerCertificatesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/DescribeListenerCertificates
 func (c *ELBV2) DescribeListenerCertificatesRequest(input *DescribeListenerCertificatesInput) (req *request.Request, output *DescribeListenerCertificatesOutput) {
@@ -1298,8 +1588,8 @@ func (c *ELBV2) DescribeListenerCertificatesRequest(input *DescribeListenerCerti
 // API operation DescribeListenerCertificates for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeListenerNotFoundException "ListenerNotFound"
-//   The specified listener does not exist.
+//   - ErrCodeListenerNotFoundException "ListenerNotFound"
+//     The specified listener does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/DescribeListenerCertificates
 func (c *ELBV2) DescribeListenerCertificates(input *DescribeListenerCertificatesInput) (*DescribeListenerCertificatesOutput, error) {
@@ -1339,14 +1629,13 @@ const opDescribeListeners = "DescribeListeners"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeListenersRequest method.
+//	req, resp := client.DescribeListenersRequest(params)
 //
-//    // Example sending a request using the DescribeListenersRequest method.
-//    req, resp := client.DescribeListenersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/DescribeListeners
 func (c *ELBV2) DescribeListenersRequest(input *DescribeListenersInput) (req *request.Request, output *DescribeListenersOutput) {
@@ -1385,14 +1674,15 @@ func (c *ELBV2) DescribeListenersRequest(input *DescribeListenersInput) (req *re
 // API operation DescribeListeners for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeListenerNotFoundException "ListenerNotFound"
-//   The specified listener does not exist.
 //
-//   * ErrCodeLoadBalancerNotFoundException "LoadBalancerNotFound"
-//   The specified load balancer does not exist.
+//   - ErrCodeListenerNotFoundException "ListenerNotFound"
+//     The specified listener does not exist.
 //
-//   * ErrCodeUnsupportedProtocolException "UnsupportedProtocol"
-//   The specified protocol is not supported.
+//   - ErrCodeLoadBalancerNotFoundException "LoadBalancerNotFound"
+//     The specified load balancer does not exist.
+//
+//   - ErrCodeUnsupportedProtocolException "UnsupportedProtocol"
+//     The specified protocol is not supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/DescribeListeners
 func (c *ELBV2) DescribeListeners(input *DescribeListenersInput) (*DescribeListenersOutput, error) {
@@ -1424,15 +1714,14 @@ func (c *ELBV2) DescribeListenersWithContext(ctx aws.Context, input *DescribeLis
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeListeners operation.
-//    pageNum := 0
-//    err := client.DescribeListenersPages(params,
-//        func(page *elbv2.DescribeListenersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeListeners operation.
+//	pageNum := 0
+//	err := client.DescribeListenersPages(params,
+//	    func(page *elbv2.DescribeListenersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ELBV2) DescribeListenersPages(input *DescribeListenersInput, fn func(*DescribeListenersOutput, bool) bool) error {
 	return c.DescribeListenersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1484,14 +1773,13 @@ const opDescribeLoadBalancerAttributes = "DescribeLoadBalancerAttributes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeLoadBalancerAttributesRequest method.
+//	req, resp := client.DescribeLoadBalancerAttributesRequest(params)
 //
-//    // Example sending a request using the DescribeLoadBalancerAttributesRequest method.
-//    req, resp := client.DescribeLoadBalancerAttributesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/DescribeLoadBalancerAttributes
 func (c *ELBV2) DescribeLoadBalancerAttributesRequest(input *DescribeLoadBalancerAttributesInput) (req *request.Request, output *DescribeLoadBalancerAttributesOutput) {
@@ -1517,14 +1805,14 @@ func (c *ELBV2) DescribeLoadBalancerAttributesRequest(input *DescribeLoadBalance
 //
 // For more information, see the following:
 //
-//    * Load balancer attributes (https://docs.aws.amazon.com/elasticloadbalancing/latest/application/application-load-balancers.html#load-balancer-attributes)
-//    in the Application Load Balancers Guide
+//   - Load balancer attributes (https://docs.aws.amazon.com/elasticloadbalancing/latest/application/application-load-balancers.html#load-balancer-attributes)
+//     in the Application Load Balancers Guide
 //
-//    * Load balancer attributes (https://docs.aws.amazon.com/elasticloadbalancing/latest/network/network-load-balancers.html#load-balancer-attributes)
-//    in the Network Load Balancers Guide
+//   - Load balancer attributes (https://docs.aws.amazon.com/elasticloadbalancing/latest/network/network-load-balancers.html#load-balancer-attributes)
+//     in the Network Load Balancers Guide
 //
-//    * Load balancer attributes (https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/gateway-load-balancers.html#load-balancer-attributes)
-//    in the Gateway Load Balancers Guide
+//   - Load balancer attributes (https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/gateway-load-balancers.html#load-balancer-attributes)
+//     in the Gateway Load Balancers Guide
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1534,8 +1822,8 @@ func (c *ELBV2) DescribeLoadBalancerAttributesRequest(input *DescribeLoadBalance
 // API operation DescribeLoadBalancerAttributes for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeLoadBalancerNotFoundException "LoadBalancerNotFound"
-//   The specified load balancer does not exist.
+//   - ErrCodeLoadBalancerNotFoundException "LoadBalancerNotFound"
+//     The specified load balancer does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/DescribeLoadBalancerAttributes
 func (c *ELBV2) DescribeLoadBalancerAttributes(input *DescribeLoadBalancerAttributesInput) (*DescribeLoadBalancerAttributesOutput, error) {
@@ -1575,14 +1863,13 @@ const opDescribeLoadBalancers = "DescribeLoadBalancers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeLoadBalancersRequest method.
+//	req, resp := client.DescribeLoadBalancersRequest(params)
 //
-//    // Example sending a request using the DescribeLoadBalancersRequest method.
-//    req, resp := client.DescribeLoadBalancersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/DescribeLoadBalancers
 func (c *ELBV2) DescribeLoadBalancersRequest(input *DescribeLoadBalancersInput) (req *request.Request, output *DescribeLoadBalancersOutput) {
@@ -1619,8 +1906,8 @@ func (c *ELBV2) DescribeLoadBalancersRequest(input *DescribeLoadBalancersInput) 
 // API operation DescribeLoadBalancers for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeLoadBalancerNotFoundException "LoadBalancerNotFound"
-//   The specified load balancer does not exist.
+//   - ErrCodeLoadBalancerNotFoundException "LoadBalancerNotFound"
+//     The specified load balancer does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/DescribeLoadBalancers
 func (c *ELBV2) DescribeLoadBalancers(input *DescribeLoadBalancersInput) (*DescribeLoadBalancersOutput, error) {
@@ -1652,15 +1939,14 @@ func (c *ELBV2) DescribeLoadBalancersWithContext(ctx aws.Context, input *Describ
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeLoadBalancers operation.
-//    pageNum := 0
-//    err := client.DescribeLoadBalancersPages(params,
-//        func(page *elbv2.DescribeLoadBalancersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeLoadBalancers operation.
+//	pageNum := 0
+//	err := client.DescribeLoadBalancersPages(params,
+//	    func(page *elbv2.DescribeLoadBalancersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ELBV2) DescribeLoadBalancersPages(input *DescribeLoadBalancersInput, fn func(*DescribeLoadBalancersOutput, bool) bool) error {
 	return c.DescribeLoadBalancersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1712,14 +1998,13 @@ const opDescribeRules = "DescribeRules"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeRulesRequest method.
+//	req, resp := client.DescribeRulesRequest(params)
 //
-//    // Example sending a request using the DescribeRulesRequest method.
-//    req, resp := client.DescribeRulesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/DescribeRules
 func (c *ELBV2) DescribeRulesRequest(input *DescribeRulesInput) (req *request.Request, output *DescribeRulesOutput) {
@@ -1751,14 +2036,15 @@ func (c *ELBV2) DescribeRulesRequest(input *DescribeRulesInput) (req *request.Re
 // API operation DescribeRules for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeListenerNotFoundException "ListenerNotFound"
-//   The specified listener does not exist.
 //
-//   * ErrCodeRuleNotFoundException "RuleNotFound"
-//   The specified rule does not exist.
+//   - ErrCodeListenerNotFoundException "ListenerNotFound"
+//     The specified listener does not exist.
 //
-//   * ErrCodeUnsupportedProtocolException "UnsupportedProtocol"
-//   The specified protocol is not supported.
+//   - ErrCodeRuleNotFoundException "RuleNotFound"
+//     The specified rule does not exist.
+//
+//   - ErrCodeUnsupportedProtocolException "UnsupportedProtocol"
+//     The specified protocol is not supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/DescribeRules
 func (c *ELBV2) DescribeRules(input *DescribeRulesInput) (*DescribeRulesOutput, error) {
@@ -1798,14 +2084,13 @@ const opDescribeSSLPolicies = "DescribeSSLPolicies"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeSSLPoliciesRequest method.
+//	req, resp := client.DescribeSSLPoliciesRequest(params)
 //
-//    // Example sending a request using the DescribeSSLPoliciesRequest method.
-//    req, resp := client.DescribeSSLPoliciesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/DescribeSSLPolicies
 func (c *ELBV2) DescribeSSLPoliciesRequest(input *DescribeSSLPoliciesInput) (req *request.Request, output *DescribeSSLPoliciesOutput) {
@@ -1840,8 +2125,8 @@ func (c *ELBV2) DescribeSSLPoliciesRequest(input *DescribeSSLPoliciesInput) (req
 // API operation DescribeSSLPolicies for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeSSLPolicyNotFoundException "SSLPolicyNotFound"
-//   The specified SSL policy does not exist.
+//   - ErrCodeSSLPolicyNotFoundException "SSLPolicyNotFound"
+//     The specified SSL policy does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/DescribeSSLPolicies
 func (c *ELBV2) DescribeSSLPolicies(input *DescribeSSLPoliciesInput) (*DescribeSSLPoliciesOutput, error) {
@@ -1881,14 +2166,13 @@ const opDescribeTags = "DescribeTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeTagsRequest method.
+//	req, resp := client.DescribeTagsRequest(params)
 //
-//    // Example sending a request using the DescribeTagsRequest method.
-//    req, resp := client.DescribeTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/DescribeTags
 func (c *ELBV2) DescribeTagsRequest(input *DescribeTagsInput) (req *request.Request, output *DescribeTagsOutput) {
@@ -1921,17 +2205,21 @@ func (c *ELBV2) DescribeTagsRequest(input *DescribeTagsInput) (req *request.Requ
 // API operation DescribeTags for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeLoadBalancerNotFoundException "LoadBalancerNotFound"
-//   The specified load balancer does not exist.
 //
-//   * ErrCodeTargetGroupNotFoundException "TargetGroupNotFound"
-//   The specified target group does not exist.
+//   - ErrCodeLoadBalancerNotFoundException "LoadBalancerNotFound"
+//     The specified load balancer does not exist.
 //
-//   * ErrCodeListenerNotFoundException "ListenerNotFound"
-//   The specified listener does not exist.
+//   - ErrCodeTargetGroupNotFoundException "TargetGroupNotFound"
+//     The specified target group does not exist.
 //
-//   * ErrCodeRuleNotFoundException "RuleNotFound"
-//   The specified rule does not exist.
+//   - ErrCodeListenerNotFoundException "ListenerNotFound"
+//     The specified listener does not exist.
+//
+//   - ErrCodeRuleNotFoundException "RuleNotFound"
+//     The specified rule does not exist.
+//
+//   - ErrCodeTrustStoreNotFoundException "TrustStoreNotFound"
+//     The specified trust store does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/DescribeTags
 func (c *ELBV2) DescribeTags(input *DescribeTagsInput) (*DescribeTagsOutput, error) {
@@ -1971,14 +2259,13 @@ const opDescribeTargetGroupAttributes = "DescribeTargetGroupAttributes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeTargetGroupAttributesRequest method.
+//	req, resp := client.DescribeTargetGroupAttributesRequest(params)
 //
-//    // Example sending a request using the DescribeTargetGroupAttributesRequest method.
-//    req, resp := client.DescribeTargetGroupAttributesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/DescribeTargetGroupAttributes
 func (c *ELBV2) DescribeTargetGroupAttributesRequest(input *DescribeTargetGroupAttributesInput) (req *request.Request, output *DescribeTargetGroupAttributesOutput) {
@@ -2003,14 +2290,14 @@ func (c *ELBV2) DescribeTargetGroupAttributesRequest(input *DescribeTargetGroupA
 //
 // For more information, see the following:
 //
-//    * Target group attributes (https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-target-groups.html#target-group-attributes)
-//    in the Application Load Balancers Guide
+//   - Target group attributes (https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-target-groups.html#target-group-attributes)
+//     in the Application Load Balancers Guide
 //
-//    * Target group attributes (https://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-target-groups.html#target-group-attributes)
-//    in the Network Load Balancers Guide
+//   - Target group attributes (https://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-target-groups.html#target-group-attributes)
+//     in the Network Load Balancers Guide
 //
-//    * Target group attributes (https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/target-groups.html#target-group-attributes)
-//    in the Gateway Load Balancers Guide
+//   - Target group attributes (https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/target-groups.html#target-group-attributes)
+//     in the Gateway Load Balancers Guide
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2020,8 +2307,8 @@ func (c *ELBV2) DescribeTargetGroupAttributesRequest(input *DescribeTargetGroupA
 // API operation DescribeTargetGroupAttributes for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeTargetGroupNotFoundException "TargetGroupNotFound"
-//   The specified target group does not exist.
+//   - ErrCodeTargetGroupNotFoundException "TargetGroupNotFound"
+//     The specified target group does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/DescribeTargetGroupAttributes
 func (c *ELBV2) DescribeTargetGroupAttributes(input *DescribeTargetGroupAttributesInput) (*DescribeTargetGroupAttributesOutput, error) {
@@ -2061,14 +2348,13 @@ const opDescribeTargetGroups = "DescribeTargetGroups"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeTargetGroupsRequest method.
+//	req, resp := client.DescribeTargetGroupsRequest(params)
 //
-//    // Example sending a request using the DescribeTargetGroupsRequest method.
-//    req, resp := client.DescribeTargetGroupsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/DescribeTargetGroups
 func (c *ELBV2) DescribeTargetGroupsRequest(input *DescribeTargetGroupsInput) (req *request.Request, output *DescribeTargetGroupsOutput) {
@@ -2108,11 +2394,12 @@ func (c *ELBV2) DescribeTargetGroupsRequest(input *DescribeTargetGroupsInput) (r
 // API operation DescribeTargetGroups for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeLoadBalancerNotFoundException "LoadBalancerNotFound"
-//   The specified load balancer does not exist.
 //
-//   * ErrCodeTargetGroupNotFoundException "TargetGroupNotFound"
-//   The specified target group does not exist.
+//   - ErrCodeLoadBalancerNotFoundException "LoadBalancerNotFound"
+//     The specified load balancer does not exist.
+//
+//   - ErrCodeTargetGroupNotFoundException "TargetGroupNotFound"
+//     The specified target group does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/DescribeTargetGroups
 func (c *ELBV2) DescribeTargetGroups(input *DescribeTargetGroupsInput) (*DescribeTargetGroupsOutput, error) {
@@ -2144,15 +2431,14 @@ func (c *ELBV2) DescribeTargetGroupsWithContext(ctx aws.Context, input *Describe
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeTargetGroups operation.
-//    pageNum := 0
-//    err := client.DescribeTargetGroupsPages(params,
-//        func(page *elbv2.DescribeTargetGroupsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeTargetGroups operation.
+//	pageNum := 0
+//	err := client.DescribeTargetGroupsPages(params,
+//	    func(page *elbv2.DescribeTargetGroupsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ELBV2) DescribeTargetGroupsPages(input *DescribeTargetGroupsInput, fn func(*DescribeTargetGroupsOutput, bool) bool) error {
 	return c.DescribeTargetGroupsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2204,14 +2490,13 @@ const opDescribeTargetHealth = "DescribeTargetHealth"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeTargetHealthRequest method.
+//	req, resp := client.DescribeTargetHealthRequest(params)
 //
-//    // Example sending a request using the DescribeTargetHealthRequest method.
-//    req, resp := client.DescribeTargetHealthRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/DescribeTargetHealth
 func (c *ELBV2) DescribeTargetHealthRequest(input *DescribeTargetHealthInput) (req *request.Request, output *DescribeTargetHealthOutput) {
@@ -2242,16 +2527,17 @@ func (c *ELBV2) DescribeTargetHealthRequest(input *DescribeTargetHealthInput) (r
 // API operation DescribeTargetHealth for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidTargetException "InvalidTarget"
-//   The specified target does not exist, is not in the same VPC as the target
-//   group, or has an unsupported instance type.
 //
-//   * ErrCodeTargetGroupNotFoundException "TargetGroupNotFound"
-//   The specified target group does not exist.
+//   - ErrCodeInvalidTargetException "InvalidTarget"
+//     The specified target does not exist, is not in the same VPC as the target
+//     group, or has an unsupported instance type.
 //
-//   * ErrCodeHealthUnavailableException "HealthUnavailable"
-//   The health of the specified targets could not be retrieved due to an internal
-//   error.
+//   - ErrCodeTargetGroupNotFoundException "TargetGroupNotFound"
+//     The specified target group does not exist.
+//
+//   - ErrCodeHealthUnavailableException "HealthUnavailable"
+//     The health of the specified targets could not be retrieved due to an internal
+//     error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/DescribeTargetHealth
 func (c *ELBV2) DescribeTargetHealth(input *DescribeTargetHealthInput) (*DescribeTargetHealthOutput, error) {
@@ -2275,6 +2561,581 @@ func (c *ELBV2) DescribeTargetHealthWithContext(ctx aws.Context, input *Describe
 	return out, req.Send()
 }
 
+const opDescribeTrustStoreAssociations = "DescribeTrustStoreAssociations"
+
+// DescribeTrustStoreAssociationsRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeTrustStoreAssociations operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeTrustStoreAssociations for more information on using the DescribeTrustStoreAssociations
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribeTrustStoreAssociationsRequest method.
+//	req, resp := client.DescribeTrustStoreAssociationsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/DescribeTrustStoreAssociations
+func (c *ELBV2) DescribeTrustStoreAssociationsRequest(input *DescribeTrustStoreAssociationsInput) (req *request.Request, output *DescribeTrustStoreAssociationsOutput) {
+	op := &request.Operation{
+		Name:       opDescribeTrustStoreAssociations,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"Marker"},
+			OutputTokens:    []string{"NextMarker"},
+			LimitToken:      "PageSize",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &DescribeTrustStoreAssociationsInput{}
+	}
+
+	output = &DescribeTrustStoreAssociationsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeTrustStoreAssociations API operation for Elastic Load Balancing.
+//
+// Describes all resources associated with the specified trust store.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Elastic Load Balancing's
+// API operation DescribeTrustStoreAssociations for usage and error information.
+//
+// Returned Error Codes:
+//   - ErrCodeTrustStoreNotFoundException "TrustStoreNotFound"
+//     The specified trust store does not exist.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/DescribeTrustStoreAssociations
+func (c *ELBV2) DescribeTrustStoreAssociations(input *DescribeTrustStoreAssociationsInput) (*DescribeTrustStoreAssociationsOutput, error) {
+	req, out := c.DescribeTrustStoreAssociationsRequest(input)
+	return out, req.Send()
+}
+
+// DescribeTrustStoreAssociationsWithContext is the same as DescribeTrustStoreAssociations with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeTrustStoreAssociations for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ELBV2) DescribeTrustStoreAssociationsWithContext(ctx aws.Context, input *DescribeTrustStoreAssociationsInput, opts ...request.Option) (*DescribeTrustStoreAssociationsOutput, error) {
+	req, out := c.DescribeTrustStoreAssociationsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// DescribeTrustStoreAssociationsPages iterates over the pages of a DescribeTrustStoreAssociations operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeTrustStoreAssociations method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeTrustStoreAssociations operation.
+//	pageNum := 0
+//	err := client.DescribeTrustStoreAssociationsPages(params,
+//	    func(page *elbv2.DescribeTrustStoreAssociationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *ELBV2) DescribeTrustStoreAssociationsPages(input *DescribeTrustStoreAssociationsInput, fn func(*DescribeTrustStoreAssociationsOutput, bool) bool) error {
+	return c.DescribeTrustStoreAssociationsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeTrustStoreAssociationsPagesWithContext same as DescribeTrustStoreAssociationsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ELBV2) DescribeTrustStoreAssociationsPagesWithContext(ctx aws.Context, input *DescribeTrustStoreAssociationsInput, fn func(*DescribeTrustStoreAssociationsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeTrustStoreAssociationsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeTrustStoreAssociationsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeTrustStoreAssociationsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opDescribeTrustStoreRevocations = "DescribeTrustStoreRevocations"
+
+// DescribeTrustStoreRevocationsRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeTrustStoreRevocations operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeTrustStoreRevocations for more information on using the DescribeTrustStoreRevocations
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribeTrustStoreRevocationsRequest method.
+//	req, resp := client.DescribeTrustStoreRevocationsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/DescribeTrustStoreRevocations
+func (c *ELBV2) DescribeTrustStoreRevocationsRequest(input *DescribeTrustStoreRevocationsInput) (req *request.Request, output *DescribeTrustStoreRevocationsOutput) {
+	op := &request.Operation{
+		Name:       opDescribeTrustStoreRevocations,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"Marker"},
+			OutputTokens:    []string{"NextMarker"},
+			LimitToken:      "PageSize",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &DescribeTrustStoreRevocationsInput{}
+	}
+
+	output = &DescribeTrustStoreRevocationsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeTrustStoreRevocations API operation for Elastic Load Balancing.
+//
+// Describes the revocation files in use by the specified trust store arn, or
+// revocation ID.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Elastic Load Balancing's
+// API operation DescribeTrustStoreRevocations for usage and error information.
+//
+// Returned Error Codes:
+//
+//   - ErrCodeTrustStoreNotFoundException "TrustStoreNotFound"
+//     The specified trust store does not exist.
+//
+//   - ErrCodeRevocationIdNotFoundException "RevocationIdNotFound"
+//     The specified revocation ID does not exist.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/DescribeTrustStoreRevocations
+func (c *ELBV2) DescribeTrustStoreRevocations(input *DescribeTrustStoreRevocationsInput) (*DescribeTrustStoreRevocationsOutput, error) {
+	req, out := c.DescribeTrustStoreRevocationsRequest(input)
+	return out, req.Send()
+}
+
+// DescribeTrustStoreRevocationsWithContext is the same as DescribeTrustStoreRevocations with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeTrustStoreRevocations for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ELBV2) DescribeTrustStoreRevocationsWithContext(ctx aws.Context, input *DescribeTrustStoreRevocationsInput, opts ...request.Option) (*DescribeTrustStoreRevocationsOutput, error) {
+	req, out := c.DescribeTrustStoreRevocationsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// DescribeTrustStoreRevocationsPages iterates over the pages of a DescribeTrustStoreRevocations operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeTrustStoreRevocations method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeTrustStoreRevocations operation.
+//	pageNum := 0
+//	err := client.DescribeTrustStoreRevocationsPages(params,
+//	    func(page *elbv2.DescribeTrustStoreRevocationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *ELBV2) DescribeTrustStoreRevocationsPages(input *DescribeTrustStoreRevocationsInput, fn func(*DescribeTrustStoreRevocationsOutput, bool) bool) error {
+	return c.DescribeTrustStoreRevocationsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeTrustStoreRevocationsPagesWithContext same as DescribeTrustStoreRevocationsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ELBV2) DescribeTrustStoreRevocationsPagesWithContext(ctx aws.Context, input *DescribeTrustStoreRevocationsInput, fn func(*DescribeTrustStoreRevocationsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeTrustStoreRevocationsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeTrustStoreRevocationsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeTrustStoreRevocationsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opDescribeTrustStores = "DescribeTrustStores"
+
+// DescribeTrustStoresRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeTrustStores operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeTrustStores for more information on using the DescribeTrustStores
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribeTrustStoresRequest method.
+//	req, resp := client.DescribeTrustStoresRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/DescribeTrustStores
+func (c *ELBV2) DescribeTrustStoresRequest(input *DescribeTrustStoresInput) (req *request.Request, output *DescribeTrustStoresOutput) {
+	op := &request.Operation{
+		Name:       opDescribeTrustStores,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"Marker"},
+			OutputTokens:    []string{"NextMarker"},
+			LimitToken:      "PageSize",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &DescribeTrustStoresInput{}
+	}
+
+	output = &DescribeTrustStoresOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeTrustStores API operation for Elastic Load Balancing.
+//
+// Describes all trust stores for a given account by trust store arn’s or
+// name.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Elastic Load Balancing's
+// API operation DescribeTrustStores for usage and error information.
+//
+// Returned Error Codes:
+//   - ErrCodeTrustStoreNotFoundException "TrustStoreNotFound"
+//     The specified trust store does not exist.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/DescribeTrustStores
+func (c *ELBV2) DescribeTrustStores(input *DescribeTrustStoresInput) (*DescribeTrustStoresOutput, error) {
+	req, out := c.DescribeTrustStoresRequest(input)
+	return out, req.Send()
+}
+
+// DescribeTrustStoresWithContext is the same as DescribeTrustStores with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeTrustStores for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ELBV2) DescribeTrustStoresWithContext(ctx aws.Context, input *DescribeTrustStoresInput, opts ...request.Option) (*DescribeTrustStoresOutput, error) {
+	req, out := c.DescribeTrustStoresRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// DescribeTrustStoresPages iterates over the pages of a DescribeTrustStores operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeTrustStores method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeTrustStores operation.
+//	pageNum := 0
+//	err := client.DescribeTrustStoresPages(params,
+//	    func(page *elbv2.DescribeTrustStoresOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *ELBV2) DescribeTrustStoresPages(input *DescribeTrustStoresInput, fn func(*DescribeTrustStoresOutput, bool) bool) error {
+	return c.DescribeTrustStoresPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeTrustStoresPagesWithContext same as DescribeTrustStoresPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ELBV2) DescribeTrustStoresPagesWithContext(ctx aws.Context, input *DescribeTrustStoresInput, fn func(*DescribeTrustStoresOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeTrustStoresInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeTrustStoresRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeTrustStoresOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opGetTrustStoreCaCertificatesBundle = "GetTrustStoreCaCertificatesBundle"
+
+// GetTrustStoreCaCertificatesBundleRequest generates a "aws/request.Request" representing the
+// client's request for the GetTrustStoreCaCertificatesBundle operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetTrustStoreCaCertificatesBundle for more information on using the GetTrustStoreCaCertificatesBundle
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetTrustStoreCaCertificatesBundleRequest method.
+//	req, resp := client.GetTrustStoreCaCertificatesBundleRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/GetTrustStoreCaCertificatesBundle
+func (c *ELBV2) GetTrustStoreCaCertificatesBundleRequest(input *GetTrustStoreCaCertificatesBundleInput) (req *request.Request, output *GetTrustStoreCaCertificatesBundleOutput) {
+	op := &request.Operation{
+		Name:       opGetTrustStoreCaCertificatesBundle,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &GetTrustStoreCaCertificatesBundleInput{}
+	}
+
+	output = &GetTrustStoreCaCertificatesBundleOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetTrustStoreCaCertificatesBundle API operation for Elastic Load Balancing.
+//
+// Retrieves the ca certificate bundle.
+//
+// This action returns a pre-signed S3 URI which is active for ten minutes.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Elastic Load Balancing's
+// API operation GetTrustStoreCaCertificatesBundle for usage and error information.
+//
+// Returned Error Codes:
+//   - ErrCodeTrustStoreNotFoundException "TrustStoreNotFound"
+//     The specified trust store does not exist.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/GetTrustStoreCaCertificatesBundle
+func (c *ELBV2) GetTrustStoreCaCertificatesBundle(input *GetTrustStoreCaCertificatesBundleInput) (*GetTrustStoreCaCertificatesBundleOutput, error) {
+	req, out := c.GetTrustStoreCaCertificatesBundleRequest(input)
+	return out, req.Send()
+}
+
+// GetTrustStoreCaCertificatesBundleWithContext is the same as GetTrustStoreCaCertificatesBundle with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetTrustStoreCaCertificatesBundle for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ELBV2) GetTrustStoreCaCertificatesBundleWithContext(ctx aws.Context, input *GetTrustStoreCaCertificatesBundleInput, opts ...request.Option) (*GetTrustStoreCaCertificatesBundleOutput, error) {
+	req, out := c.GetTrustStoreCaCertificatesBundleRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opGetTrustStoreRevocationContent = "GetTrustStoreRevocationContent"
+
+// GetTrustStoreRevocationContentRequest generates a "aws/request.Request" representing the
+// client's request for the GetTrustStoreRevocationContent operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetTrustStoreRevocationContent for more information on using the GetTrustStoreRevocationContent
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetTrustStoreRevocationContentRequest method.
+//	req, resp := client.GetTrustStoreRevocationContentRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/GetTrustStoreRevocationContent
+func (c *ELBV2) GetTrustStoreRevocationContentRequest(input *GetTrustStoreRevocationContentInput) (req *request.Request, output *GetTrustStoreRevocationContentOutput) {
+	op := &request.Operation{
+		Name:       opGetTrustStoreRevocationContent,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &GetTrustStoreRevocationContentInput{}
+	}
+
+	output = &GetTrustStoreRevocationContentOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetTrustStoreRevocationContent API operation for Elastic Load Balancing.
+//
+// Retrieves the specified revocation file.
+//
+// This action returns a pre-signed S3 URI which is active for ten minutes.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Elastic Load Balancing's
+// API operation GetTrustStoreRevocationContent for usage and error information.
+//
+// Returned Error Codes:
+//
+//   - ErrCodeTrustStoreNotFoundException "TrustStoreNotFound"
+//     The specified trust store does not exist.
+//
+//   - ErrCodeRevocationIdNotFoundException "RevocationIdNotFound"
+//     The specified revocation ID does not exist.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/GetTrustStoreRevocationContent
+func (c *ELBV2) GetTrustStoreRevocationContent(input *GetTrustStoreRevocationContentInput) (*GetTrustStoreRevocationContentOutput, error) {
+	req, out := c.GetTrustStoreRevocationContentRequest(input)
+	return out, req.Send()
+}
+
+// GetTrustStoreRevocationContentWithContext is the same as GetTrustStoreRevocationContent with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetTrustStoreRevocationContent for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ELBV2) GetTrustStoreRevocationContentWithContext(ctx aws.Context, input *GetTrustStoreRevocationContentInput, opts ...request.Option) (*GetTrustStoreRevocationContentOutput, error) {
+	req, out := c.GetTrustStoreRevocationContentRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opModifyListener = "ModifyListener"
 
 // ModifyListenerRequest generates a "aws/request.Request" representing the
@@ -2291,14 +3152,13 @@ const opModifyListener = "ModifyListener"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyListenerRequest method.
+//	req, resp := client.ModifyListenerRequest(params)
 //
-//    // Example sending a request using the ModifyListenerRequest method.
-//    req, resp := client.ModifyListenerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/ModifyListener
 func (c *ELBV2) ModifyListenerRequest(input *ModifyListenerInput) (req *request.Request, output *ModifyListenerOutput) {
@@ -2339,59 +3199,66 @@ func (c *ELBV2) ModifyListenerRequest(input *ModifyListenerInput) (req *request.
 // API operation ModifyListener for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeDuplicateListenerException "DuplicateListener"
-//   A listener with the specified port already exists.
 //
-//   * ErrCodeTooManyListenersException "TooManyListeners"
-//   You've reached the limit on the number of listeners per load balancer.
+//   - ErrCodeDuplicateListenerException "DuplicateListener"
+//     A listener with the specified port already exists.
 //
-//   * ErrCodeTooManyCertificatesException "TooManyCertificates"
-//   You've reached the limit on the number of certificates per load balancer.
+//   - ErrCodeTooManyListenersException "TooManyListeners"
+//     You've reached the limit on the number of listeners per load balancer.
 //
-//   * ErrCodeListenerNotFoundException "ListenerNotFound"
-//   The specified listener does not exist.
+//   - ErrCodeTooManyCertificatesException "TooManyCertificates"
+//     You've reached the limit on the number of certificates per load balancer.
 //
-//   * ErrCodeTargetGroupNotFoundException "TargetGroupNotFound"
-//   The specified target group does not exist.
+//   - ErrCodeListenerNotFoundException "ListenerNotFound"
+//     The specified listener does not exist.
 //
-//   * ErrCodeTargetGroupAssociationLimitException "TargetGroupAssociationLimit"
-//   You've reached the limit on the number of load balancers per target group.
+//   - ErrCodeTargetGroupNotFoundException "TargetGroupNotFound"
+//     The specified target group does not exist.
 //
-//   * ErrCodeIncompatibleProtocolsException "IncompatibleProtocols"
-//   The specified configuration is not valid with this protocol.
+//   - ErrCodeTargetGroupAssociationLimitException "TargetGroupAssociationLimit"
+//     You've reached the limit on the number of load balancers per target group.
 //
-//   * ErrCodeSSLPolicyNotFoundException "SSLPolicyNotFound"
-//   The specified SSL policy does not exist.
+//   - ErrCodeIncompatibleProtocolsException "IncompatibleProtocols"
+//     The specified configuration is not valid with this protocol.
 //
-//   * ErrCodeCertificateNotFoundException "CertificateNotFound"
-//   The specified certificate does not exist.
+//   - ErrCodeSSLPolicyNotFoundException "SSLPolicyNotFound"
+//     The specified SSL policy does not exist.
 //
-//   * ErrCodeInvalidConfigurationRequestException "InvalidConfigurationRequest"
-//   The requested configuration is not valid.
+//   - ErrCodeCertificateNotFoundException "CertificateNotFound"
+//     The specified certificate does not exist.
 //
-//   * ErrCodeUnsupportedProtocolException "UnsupportedProtocol"
-//   The specified protocol is not supported.
+//   - ErrCodeInvalidConfigurationRequestException "InvalidConfigurationRequest"
+//     The requested configuration is not valid.
 //
-//   * ErrCodeTooManyRegistrationsForTargetIdException "TooManyRegistrationsForTargetId"
-//   You've reached the limit on the number of times a target can be registered
-//   with a load balancer.
+//   - ErrCodeUnsupportedProtocolException "UnsupportedProtocol"
+//     The specified protocol is not supported.
 //
-//   * ErrCodeTooManyTargetsException "TooManyTargets"
-//   You've reached the limit on the number of targets.
+//   - ErrCodeTooManyRegistrationsForTargetIdException "TooManyRegistrationsForTargetId"
+//     You've reached the limit on the number of times a target can be registered
+//     with a load balancer.
 //
-//   * ErrCodeTooManyActionsException "TooManyActions"
-//   You've reached the limit on the number of actions per rule.
+//   - ErrCodeTooManyTargetsException "TooManyTargets"
+//     You've reached the limit on the number of targets.
 //
-//   * ErrCodeInvalidLoadBalancerActionException "InvalidLoadBalancerAction"
-//   The requested action is not valid.
+//   - ErrCodeTooManyActionsException "TooManyActions"
+//     You've reached the limit on the number of actions per rule.
 //
-//   * ErrCodeTooManyUniqueTargetGroupsPerLoadBalancerException "TooManyUniqueTargetGroupsPerLoadBalancer"
-//   You've reached the limit on the number of unique target groups per load balancer
-//   across all listeners. If a target group is used by multiple actions for a
-//   load balancer, it is counted as only one use.
+//   - ErrCodeInvalidLoadBalancerActionException "InvalidLoadBalancerAction"
+//     The requested action is not valid.
 //
-//   * ErrCodeALPNPolicyNotSupportedException "ALPNPolicyNotFound"
-//   The specified ALPN policy is not supported.
+//   - ErrCodeTooManyUniqueTargetGroupsPerLoadBalancerException "TooManyUniqueTargetGroupsPerLoadBalancer"
+//     You've reached the limit on the number of unique target groups per load balancer
+//     across all listeners. If a target group is used by multiple actions for a
+//     load balancer, it is counted as only one use.
+//
+//   - ErrCodeALPNPolicyNotSupportedException "ALPNPolicyNotFound"
+//     The specified ALPN policy is not supported.
+//
+//   - ErrCodeTrustStoreNotFoundException "TrustStoreNotFound"
+//     The specified trust store does not exist.
+//
+//   - ErrCodeTrustStoreNotReadyException "TrustStoreNotReady"
+//     The specified trust store is not active.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/ModifyListener
 func (c *ELBV2) ModifyListener(input *ModifyListenerInput) (*ModifyListenerOutput, error) {
@@ -2431,14 +3298,13 @@ const opModifyLoadBalancerAttributes = "ModifyLoadBalancerAttributes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyLoadBalancerAttributesRequest method.
+//	req, resp := client.ModifyLoadBalancerAttributesRequest(params)
 //
-//    // Example sending a request using the ModifyLoadBalancerAttributesRequest method.
-//    req, resp := client.ModifyLoadBalancerAttributesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/ModifyLoadBalancerAttributes
 func (c *ELBV2) ModifyLoadBalancerAttributesRequest(input *ModifyLoadBalancerAttributesInput) (req *request.Request, output *ModifyLoadBalancerAttributesOutput) {
@@ -2474,11 +3340,12 @@ func (c *ELBV2) ModifyLoadBalancerAttributesRequest(input *ModifyLoadBalancerAtt
 // API operation ModifyLoadBalancerAttributes for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeLoadBalancerNotFoundException "LoadBalancerNotFound"
-//   The specified load balancer does not exist.
 //
-//   * ErrCodeInvalidConfigurationRequestException "InvalidConfigurationRequest"
-//   The requested configuration is not valid.
+//   - ErrCodeLoadBalancerNotFoundException "LoadBalancerNotFound"
+//     The specified load balancer does not exist.
+//
+//   - ErrCodeInvalidConfigurationRequestException "InvalidConfigurationRequest"
+//     The requested configuration is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/ModifyLoadBalancerAttributes
 func (c *ELBV2) ModifyLoadBalancerAttributes(input *ModifyLoadBalancerAttributesInput) (*ModifyLoadBalancerAttributesOutput, error) {
@@ -2518,14 +3385,13 @@ const opModifyRule = "ModifyRule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyRuleRequest method.
+//	req, resp := client.ModifyRuleRequest(params)
 //
-//    // Example sending a request using the ModifyRuleRequest method.
-//    req, resp := client.ModifyRuleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/ModifyRule
 func (c *ELBV2) ModifyRuleRequest(input *ModifyRuleInput) (req *request.Request, output *ModifyRuleOutput) {
@@ -2561,41 +3427,42 @@ func (c *ELBV2) ModifyRuleRequest(input *ModifyRuleInput) (req *request.Request,
 // API operation ModifyRule for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeTargetGroupAssociationLimitException "TargetGroupAssociationLimit"
-//   You've reached the limit on the number of load balancers per target group.
 //
-//   * ErrCodeIncompatibleProtocolsException "IncompatibleProtocols"
-//   The specified configuration is not valid with this protocol.
+//   - ErrCodeTargetGroupAssociationLimitException "TargetGroupAssociationLimit"
+//     You've reached the limit on the number of load balancers per target group.
 //
-//   * ErrCodeRuleNotFoundException "RuleNotFound"
-//   The specified rule does not exist.
+//   - ErrCodeIncompatibleProtocolsException "IncompatibleProtocols"
+//     The specified configuration is not valid with this protocol.
 //
-//   * ErrCodeOperationNotPermittedException "OperationNotPermitted"
-//   This operation is not allowed.
+//   - ErrCodeRuleNotFoundException "RuleNotFound"
+//     The specified rule does not exist.
 //
-//   * ErrCodeTooManyRegistrationsForTargetIdException "TooManyRegistrationsForTargetId"
-//   You've reached the limit on the number of times a target can be registered
-//   with a load balancer.
+//   - ErrCodeOperationNotPermittedException "OperationNotPermitted"
+//     This operation is not allowed.
 //
-//   * ErrCodeTooManyTargetsException "TooManyTargets"
-//   You've reached the limit on the number of targets.
+//   - ErrCodeTooManyRegistrationsForTargetIdException "TooManyRegistrationsForTargetId"
+//     You've reached the limit on the number of times a target can be registered
+//     with a load balancer.
 //
-//   * ErrCodeTargetGroupNotFoundException "TargetGroupNotFound"
-//   The specified target group does not exist.
+//   - ErrCodeTooManyTargetsException "TooManyTargets"
+//     You've reached the limit on the number of targets.
 //
-//   * ErrCodeUnsupportedProtocolException "UnsupportedProtocol"
-//   The specified protocol is not supported.
+//   - ErrCodeTargetGroupNotFoundException "TargetGroupNotFound"
+//     The specified target group does not exist.
 //
-//   * ErrCodeTooManyActionsException "TooManyActions"
-//   You've reached the limit on the number of actions per rule.
+//   - ErrCodeUnsupportedProtocolException "UnsupportedProtocol"
+//     The specified protocol is not supported.
 //
-//   * ErrCodeInvalidLoadBalancerActionException "InvalidLoadBalancerAction"
-//   The requested action is not valid.
+//   - ErrCodeTooManyActionsException "TooManyActions"
+//     You've reached the limit on the number of actions per rule.
 //
-//   * ErrCodeTooManyUniqueTargetGroupsPerLoadBalancerException "TooManyUniqueTargetGroupsPerLoadBalancer"
-//   You've reached the limit on the number of unique target groups per load balancer
-//   across all listeners. If a target group is used by multiple actions for a
-//   load balancer, it is counted as only one use.
+//   - ErrCodeInvalidLoadBalancerActionException "InvalidLoadBalancerAction"
+//     The requested action is not valid.
+//
+//   - ErrCodeTooManyUniqueTargetGroupsPerLoadBalancerException "TooManyUniqueTargetGroupsPerLoadBalancer"
+//     You've reached the limit on the number of unique target groups per load balancer
+//     across all listeners. If a target group is used by multiple actions for a
+//     load balancer, it is counted as only one use.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/ModifyRule
 func (c *ELBV2) ModifyRule(input *ModifyRuleInput) (*ModifyRuleOutput, error) {
@@ -2635,14 +3502,13 @@ const opModifyTargetGroup = "ModifyTargetGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyTargetGroupRequest method.
+//	req, resp := client.ModifyTargetGroupRequest(params)
 //
-//    // Example sending a request using the ModifyTargetGroupRequest method.
-//    req, resp := client.ModifyTargetGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/ModifyTargetGroup
 func (c *ELBV2) ModifyTargetGroupRequest(input *ModifyTargetGroupInput) (req *request.Request, output *ModifyTargetGroupOutput) {
@@ -2674,11 +3540,12 @@ func (c *ELBV2) ModifyTargetGroupRequest(input *ModifyTargetGroupInput) (req *re
 // API operation ModifyTargetGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeTargetGroupNotFoundException "TargetGroupNotFound"
-//   The specified target group does not exist.
 //
-//   * ErrCodeInvalidConfigurationRequestException "InvalidConfigurationRequest"
-//   The requested configuration is not valid.
+//   - ErrCodeTargetGroupNotFoundException "TargetGroupNotFound"
+//     The specified target group does not exist.
+//
+//   - ErrCodeInvalidConfigurationRequestException "InvalidConfigurationRequest"
+//     The requested configuration is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/ModifyTargetGroup
 func (c *ELBV2) ModifyTargetGroup(input *ModifyTargetGroupInput) (*ModifyTargetGroupOutput, error) {
@@ -2718,14 +3585,13 @@ const opModifyTargetGroupAttributes = "ModifyTargetGroupAttributes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyTargetGroupAttributesRequest method.
+//	req, resp := client.ModifyTargetGroupAttributesRequest(params)
 //
-//    // Example sending a request using the ModifyTargetGroupAttributesRequest method.
-//    req, resp := client.ModifyTargetGroupAttributesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/ModifyTargetGroupAttributes
 func (c *ELBV2) ModifyTargetGroupAttributesRequest(input *ModifyTargetGroupAttributesInput) (req *request.Request, output *ModifyTargetGroupAttributesOutput) {
@@ -2756,11 +3622,12 @@ func (c *ELBV2) ModifyTargetGroupAttributesRequest(input *ModifyTargetGroupAttri
 // API operation ModifyTargetGroupAttributes for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeTargetGroupNotFoundException "TargetGroupNotFound"
-//   The specified target group does not exist.
 //
-//   * ErrCodeInvalidConfigurationRequestException "InvalidConfigurationRequest"
-//   The requested configuration is not valid.
+//   - ErrCodeTargetGroupNotFoundException "TargetGroupNotFound"
+//     The specified target group does not exist.
+//
+//   - ErrCodeInvalidConfigurationRequestException "InvalidConfigurationRequest"
+//     The requested configuration is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/ModifyTargetGroupAttributes
 func (c *ELBV2) ModifyTargetGroupAttributes(input *ModifyTargetGroupAttributesInput) (*ModifyTargetGroupAttributesOutput, error) {
@@ -2784,6 +3651,91 @@ func (c *ELBV2) ModifyTargetGroupAttributesWithContext(ctx aws.Context, input *M
 	return out, req.Send()
 }
 
+const opModifyTrustStore = "ModifyTrustStore"
+
+// ModifyTrustStoreRequest generates a "aws/request.Request" representing the
+// client's request for the ModifyTrustStore operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ModifyTrustStore for more information on using the ModifyTrustStore
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ModifyTrustStoreRequest method.
+//	req, resp := client.ModifyTrustStoreRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/ModifyTrustStore
+func (c *ELBV2) ModifyTrustStoreRequest(input *ModifyTrustStoreInput) (req *request.Request, output *ModifyTrustStoreOutput) {
+	op := &request.Operation{
+		Name:       opModifyTrustStore,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &ModifyTrustStoreInput{}
+	}
+
+	output = &ModifyTrustStoreOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ModifyTrustStore API operation for Elastic Load Balancing.
+//
+// Update the ca certificate bundle for a given trust store.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Elastic Load Balancing's
+// API operation ModifyTrustStore for usage and error information.
+//
+// Returned Error Codes:
+//
+//   - ErrCodeTrustStoreNotFoundException "TrustStoreNotFound"
+//     The specified trust store does not exist.
+//
+//   - ErrCodeInvalidCaCertificatesBundleException "InvalidCaCertificatesBundle"
+//     The specified ca certificate bundle is in an invalid format, or corrupt.
+//
+//   - ErrCodeCaCertificatesBundleNotFoundException "CaCertificatesBundleNotFound"
+//     The specified ca certificate bundle does not exist.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/ModifyTrustStore
+func (c *ELBV2) ModifyTrustStore(input *ModifyTrustStoreInput) (*ModifyTrustStoreOutput, error) {
+	req, out := c.ModifyTrustStoreRequest(input)
+	return out, req.Send()
+}
+
+// ModifyTrustStoreWithContext is the same as ModifyTrustStore with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ModifyTrustStore for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ELBV2) ModifyTrustStoreWithContext(ctx aws.Context, input *ModifyTrustStoreInput, opts ...request.Option) (*ModifyTrustStoreOutput, error) {
+	req, out := c.ModifyTrustStoreRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opRegisterTargets = "RegisterTargets"
 
 // RegisterTargetsRequest generates a "aws/request.Request" representing the
@@ -2800,14 +3752,13 @@ const opRegisterTargets = "RegisterTargets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RegisterTargetsRequest method.
+//	req, resp := client.RegisterTargetsRequest(params)
 //
-//    // Example sending a request using the RegisterTargetsRequest method.
-//    req, resp := client.RegisterTargetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/RegisterTargets
 func (c *ELBV2) RegisterTargetsRequest(input *RegisterTargetsInput) (req *request.Request, output *RegisterTargetsOutput) {
@@ -2852,19 +3803,20 @@ func (c *ELBV2) RegisterTargetsRequest(input *RegisterTargetsInput) (req *reques
 // API operation RegisterTargets for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeTargetGroupNotFoundException "TargetGroupNotFound"
-//   The specified target group does not exist.
 //
-//   * ErrCodeTooManyTargetsException "TooManyTargets"
-//   You've reached the limit on the number of targets.
+//   - ErrCodeTargetGroupNotFoundException "TargetGroupNotFound"
+//     The specified target group does not exist.
 //
-//   * ErrCodeInvalidTargetException "InvalidTarget"
-//   The specified target does not exist, is not in the same VPC as the target
-//   group, or has an unsupported instance type.
+//   - ErrCodeTooManyTargetsException "TooManyTargets"
+//     You've reached the limit on the number of targets.
 //
-//   * ErrCodeTooManyRegistrationsForTargetIdException "TooManyRegistrationsForTargetId"
-//   You've reached the limit on the number of times a target can be registered
-//   with a load balancer.
+//   - ErrCodeInvalidTargetException "InvalidTarget"
+//     The specified target does not exist, is not in the same VPC as the target
+//     group, or has an unsupported instance type.
+//
+//   - ErrCodeTooManyRegistrationsForTargetIdException "TooManyRegistrationsForTargetId"
+//     You've reached the limit on the number of times a target can be registered
+//     with a load balancer.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/RegisterTargets
 func (c *ELBV2) RegisterTargets(input *RegisterTargetsInput) (*RegisterTargetsOutput, error) {
@@ -2904,14 +3856,13 @@ const opRemoveListenerCertificates = "RemoveListenerCertificates"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RemoveListenerCertificatesRequest method.
+//	req, resp := client.RemoveListenerCertificatesRequest(params)
 //
-//    // Example sending a request using the RemoveListenerCertificatesRequest method.
-//    req, resp := client.RemoveListenerCertificatesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/RemoveListenerCertificates
 func (c *ELBV2) RemoveListenerCertificatesRequest(input *RemoveListenerCertificatesInput) (req *request.Request, output *RemoveListenerCertificatesOutput) {
@@ -2944,11 +3895,12 @@ func (c *ELBV2) RemoveListenerCertificatesRequest(input *RemoveListenerCertifica
 // API operation RemoveListenerCertificates for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeListenerNotFoundException "ListenerNotFound"
-//   The specified listener does not exist.
 //
-//   * ErrCodeOperationNotPermittedException "OperationNotPermitted"
-//   This operation is not allowed.
+//   - ErrCodeListenerNotFoundException "ListenerNotFound"
+//     The specified listener does not exist.
+//
+//   - ErrCodeOperationNotPermittedException "OperationNotPermitted"
+//     This operation is not allowed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/RemoveListenerCertificates
 func (c *ELBV2) RemoveListenerCertificates(input *RemoveListenerCertificatesInput) (*RemoveListenerCertificatesOutput, error) {
@@ -2988,14 +3940,13 @@ const opRemoveTags = "RemoveTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RemoveTagsRequest method.
+//	req, resp := client.RemoveTagsRequest(params)
 //
-//    // Example sending a request using the RemoveTagsRequest method.
-//    req, resp := client.RemoveTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/RemoveTags
 func (c *ELBV2) RemoveTagsRequest(input *RemoveTagsInput) (req *request.Request, output *RemoveTagsOutput) {
@@ -3029,20 +3980,24 @@ func (c *ELBV2) RemoveTagsRequest(input *RemoveTagsInput) (req *request.Request,
 // API operation RemoveTags for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeLoadBalancerNotFoundException "LoadBalancerNotFound"
-//   The specified load balancer does not exist.
 //
-//   * ErrCodeTargetGroupNotFoundException "TargetGroupNotFound"
-//   The specified target group does not exist.
+//   - ErrCodeLoadBalancerNotFoundException "LoadBalancerNotFound"
+//     The specified load balancer does not exist.
 //
-//   * ErrCodeListenerNotFoundException "ListenerNotFound"
-//   The specified listener does not exist.
+//   - ErrCodeTargetGroupNotFoundException "TargetGroupNotFound"
+//     The specified target group does not exist.
 //
-//   * ErrCodeRuleNotFoundException "RuleNotFound"
-//   The specified rule does not exist.
+//   - ErrCodeListenerNotFoundException "ListenerNotFound"
+//     The specified listener does not exist.
 //
-//   * ErrCodeTooManyTagsException "TooManyTags"
-//   You've reached the limit on the number of tags per load balancer.
+//   - ErrCodeRuleNotFoundException "RuleNotFound"
+//     The specified rule does not exist.
+//
+//   - ErrCodeTooManyTagsException "TooManyTags"
+//     You've reached the limit on the number of tags for this resource.
+//
+//   - ErrCodeTrustStoreNotFoundException "TrustStoreNotFound"
+//     The specified trust store does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/RemoveTags
 func (c *ELBV2) RemoveTags(input *RemoveTagsInput) (*RemoveTagsOutput, error) {
@@ -3066,6 +4021,89 @@ func (c *ELBV2) RemoveTagsWithContext(ctx aws.Context, input *RemoveTagsInput, o
 	return out, req.Send()
 }
 
+const opRemoveTrustStoreRevocations = "RemoveTrustStoreRevocations"
+
+// RemoveTrustStoreRevocationsRequest generates a "aws/request.Request" representing the
+// client's request for the RemoveTrustStoreRevocations operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See RemoveTrustStoreRevocations for more information on using the RemoveTrustStoreRevocations
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the RemoveTrustStoreRevocationsRequest method.
+//	req, resp := client.RemoveTrustStoreRevocationsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/RemoveTrustStoreRevocations
+func (c *ELBV2) RemoveTrustStoreRevocationsRequest(input *RemoveTrustStoreRevocationsInput) (req *request.Request, output *RemoveTrustStoreRevocationsOutput) {
+	op := &request.Operation{
+		Name:       opRemoveTrustStoreRevocations,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &RemoveTrustStoreRevocationsInput{}
+	}
+
+	output = &RemoveTrustStoreRevocationsOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(query.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// RemoveTrustStoreRevocations API operation for Elastic Load Balancing.
+//
+// Removes the specified revocation file from the specified trust store.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Elastic Load Balancing's
+// API operation RemoveTrustStoreRevocations for usage and error information.
+//
+// Returned Error Codes:
+//
+//   - ErrCodeTrustStoreNotFoundException "TrustStoreNotFound"
+//     The specified trust store does not exist.
+//
+//   - ErrCodeRevocationIdNotFoundException "RevocationIdNotFound"
+//     The specified revocation ID does not exist.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/RemoveTrustStoreRevocations
+func (c *ELBV2) RemoveTrustStoreRevocations(input *RemoveTrustStoreRevocationsInput) (*RemoveTrustStoreRevocationsOutput, error) {
+	req, out := c.RemoveTrustStoreRevocationsRequest(input)
+	return out, req.Send()
+}
+
+// RemoveTrustStoreRevocationsWithContext is the same as RemoveTrustStoreRevocations with the addition of
+// the ability to pass a context and additional request options.
+//
+// See RemoveTrustStoreRevocations for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ELBV2) RemoveTrustStoreRevocationsWithContext(ctx aws.Context, input *RemoveTrustStoreRevocationsInput, opts ...request.Option) (*RemoveTrustStoreRevocationsOutput, error) {
+	req, out := c.RemoveTrustStoreRevocationsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opSetIpAddressType = "SetIpAddressType"
 
 // SetIpAddressTypeRequest generates a "aws/request.Request" representing the
@@ -3082,14 +4120,13 @@ const opSetIpAddressType = "SetIpAddressType"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SetIpAddressTypeRequest method.
+//	req, resp := client.SetIpAddressTypeRequest(params)
 //
-//    // Example sending a request using the SetIpAddressTypeRequest method.
-//    req, resp := client.SetIpAddressTypeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/SetIpAddressType
 func (c *ELBV2) SetIpAddressTypeRequest(input *SetIpAddressTypeInput) (req *request.Request, output *SetIpAddressTypeOutput) {
@@ -3110,8 +4147,7 @@ func (c *ELBV2) SetIpAddressTypeRequest(input *SetIpAddressTypeInput) (req *requ
 
 // SetIpAddressType API operation for Elastic Load Balancing.
 //
-// Sets the type of IP addresses used by the subnets of the specified Application
-// Load Balancer or Network Load Balancer.
+// Sets the type of IP addresses used by the subnets of the specified load balancer.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3121,14 +4157,15 @@ func (c *ELBV2) SetIpAddressTypeRequest(input *SetIpAddressTypeInput) (req *requ
 // API operation SetIpAddressType for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeLoadBalancerNotFoundException "LoadBalancerNotFound"
-//   The specified load balancer does not exist.
 //
-//   * ErrCodeInvalidConfigurationRequestException "InvalidConfigurationRequest"
-//   The requested configuration is not valid.
+//   - ErrCodeLoadBalancerNotFoundException "LoadBalancerNotFound"
+//     The specified load balancer does not exist.
 //
-//   * ErrCodeInvalidSubnetException "InvalidSubnet"
-//   The specified subnet is out of available addresses.
+//   - ErrCodeInvalidConfigurationRequestException "InvalidConfigurationRequest"
+//     The requested configuration is not valid.
+//
+//   - ErrCodeInvalidSubnetException "InvalidSubnet"
+//     The specified subnet is out of available addresses.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/SetIpAddressType
 func (c *ELBV2) SetIpAddressType(input *SetIpAddressTypeInput) (*SetIpAddressTypeOutput, error) {
@@ -3168,14 +4205,13 @@ const opSetRulePriorities = "SetRulePriorities"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SetRulePrioritiesRequest method.
+//	req, resp := client.SetRulePrioritiesRequest(params)
 //
-//    // Example sending a request using the SetRulePrioritiesRequest method.
-//    req, resp := client.SetRulePrioritiesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/SetRulePriorities
 func (c *ELBV2) SetRulePrioritiesRequest(input *SetRulePrioritiesInput) (req *request.Request, output *SetRulePrioritiesOutput) {
@@ -3210,14 +4246,15 @@ func (c *ELBV2) SetRulePrioritiesRequest(input *SetRulePrioritiesInput) (req *re
 // API operation SetRulePriorities for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeRuleNotFoundException "RuleNotFound"
-//   The specified rule does not exist.
 //
-//   * ErrCodePriorityInUseException "PriorityInUse"
-//   The specified priority is in use.
+//   - ErrCodeRuleNotFoundException "RuleNotFound"
+//     The specified rule does not exist.
 //
-//   * ErrCodeOperationNotPermittedException "OperationNotPermitted"
-//   This operation is not allowed.
+//   - ErrCodePriorityInUseException "PriorityInUse"
+//     The specified priority is in use.
+//
+//   - ErrCodeOperationNotPermittedException "OperationNotPermitted"
+//     This operation is not allowed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/SetRulePriorities
 func (c *ELBV2) SetRulePriorities(input *SetRulePrioritiesInput) (*SetRulePrioritiesOutput, error) {
@@ -3257,14 +4294,13 @@ const opSetSecurityGroups = "SetSecurityGroups"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SetSecurityGroupsRequest method.
+//	req, resp := client.SetSecurityGroupsRequest(params)
 //
-//    // Example sending a request using the SetSecurityGroupsRequest method.
-//    req, resp := client.SetSecurityGroupsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/SetSecurityGroups
 func (c *ELBV2) SetSecurityGroupsRequest(input *SetSecurityGroupsInput) (req *request.Request, output *SetSecurityGroupsOutput) {
@@ -3286,11 +4322,13 @@ func (c *ELBV2) SetSecurityGroupsRequest(input *SetSecurityGroupsInput) (req *re
 // SetSecurityGroups API operation for Elastic Load Balancing.
 //
 // Associates the specified security groups with the specified Application Load
-// Balancer. The specified security groups override the previously associated
-// security groups.
+// Balancer or Network Load Balancer. The specified security groups override
+// the previously associated security groups.
 //
-// You can't specify a security group for a Network Load Balancer or Gateway
-// Load Balancer.
+// You can't perform this operation on a Network Load Balancer unless you specified
+// a security group for the load balancer when you created it.
+//
+// You can't associate a security group with a Gateway Load Balancer.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3300,14 +4338,15 @@ func (c *ELBV2) SetSecurityGroupsRequest(input *SetSecurityGroupsInput) (req *re
 // API operation SetSecurityGroups for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeLoadBalancerNotFoundException "LoadBalancerNotFound"
-//   The specified load balancer does not exist.
 //
-//   * ErrCodeInvalidConfigurationRequestException "InvalidConfigurationRequest"
-//   The requested configuration is not valid.
+//   - ErrCodeLoadBalancerNotFoundException "LoadBalancerNotFound"
+//     The specified load balancer does not exist.
 //
-//   * ErrCodeInvalidSecurityGroupException "InvalidSecurityGroup"
-//   The specified security group does not exist.
+//   - ErrCodeInvalidConfigurationRequestException "InvalidConfigurationRequest"
+//     The requested configuration is not valid.
+//
+//   - ErrCodeInvalidSecurityGroupException "InvalidSecurityGroup"
+//     The specified security group does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/SetSecurityGroups
 func (c *ELBV2) SetSecurityGroups(input *SetSecurityGroupsInput) (*SetSecurityGroupsOutput, error) {
@@ -3347,14 +4386,13 @@ const opSetSubnets = "SetSubnets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SetSubnetsRequest method.
+//	req, resp := client.SetSubnetsRequest(params)
 //
-//    // Example sending a request using the SetSubnetsRequest method.
-//    req, resp := client.SetSubnetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/SetSubnets
 func (c *ELBV2) SetSubnetsRequest(input *SetSubnetsInput) (req *request.Request, output *SetSubnetsOutput) {
@@ -3376,12 +4414,12 @@ func (c *ELBV2) SetSubnetsRequest(input *SetSubnetsInput) (req *request.Request,
 // SetSubnets API operation for Elastic Load Balancing.
 //
 // Enables the Availability Zones for the specified public subnets for the specified
-// Application Load Balancer or Network Load Balancer. The specified subnets
-// replace the previously enabled subnets.
+// Application Load Balancer, Network Load Balancer or Gateway Load Balancer.
+// The specified subnets replace the previously enabled subnets.
 //
-// When you specify subnets for a Network Load Balancer, you must include all
-// subnets that were enabled previously, with their existing configurations,
-// plus any additional subnets.
+// When you specify subnets for a Network Load Balancer, or Gateway Load Balancer
+// you must include all subnets that were enabled previously, with their existing
+// configurations, plus any additional subnets.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3391,23 +4429,24 @@ func (c *ELBV2) SetSubnetsRequest(input *SetSubnetsInput) (req *request.Request,
 // API operation SetSubnets for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeLoadBalancerNotFoundException "LoadBalancerNotFound"
-//   The specified load balancer does not exist.
 //
-//   * ErrCodeInvalidConfigurationRequestException "InvalidConfigurationRequest"
-//   The requested configuration is not valid.
+//   - ErrCodeLoadBalancerNotFoundException "LoadBalancerNotFound"
+//     The specified load balancer does not exist.
 //
-//   * ErrCodeSubnetNotFoundException "SubnetNotFound"
-//   The specified subnet does not exist.
+//   - ErrCodeInvalidConfigurationRequestException "InvalidConfigurationRequest"
+//     The requested configuration is not valid.
 //
-//   * ErrCodeInvalidSubnetException "InvalidSubnet"
-//   The specified subnet is out of available addresses.
+//   - ErrCodeSubnetNotFoundException "SubnetNotFound"
+//     The specified subnet does not exist.
 //
-//   * ErrCodeAllocationIdNotFoundException "AllocationIdNotFound"
-//   The specified allocation ID does not exist.
+//   - ErrCodeInvalidSubnetException "InvalidSubnet"
+//     The specified subnet is out of available addresses.
 //
-//   * ErrCodeAvailabilityZoneNotSupportedException "AvailabilityZoneNotSupported"
-//   The specified Availability Zone is not supported.
+//   - ErrCodeAllocationIdNotFoundException "AllocationIdNotFound"
+//     The specified allocation ID does not exist.
+//
+//   - ErrCodeAvailabilityZoneNotSupportedException "AvailabilityZoneNotSupported"
+//     The specified Availability Zone is not supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticloadbalancingv2-2015-12-01/SetSubnets
 func (c *ELBV2) SetSubnets(input *SetSubnetsInput) (*SetSubnetsOutput, error) {
@@ -3763,6 +4802,133 @@ func (s AddTagsOutput) String() string {
 // value will be replaced with "sensitive".
 func (s AddTagsOutput) GoString() string {
 	return s.String()
+}
+
+type AddTrustStoreRevocationsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The revocation file to add.
+	RevocationContents []*RevocationContent `type:"list"`
+
+	// The Amazon Resource Name (ARN) of the trust store.
+	//
+	// TrustStoreArn is a required field
+	TrustStoreArn *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AddTrustStoreRevocationsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AddTrustStoreRevocationsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AddTrustStoreRevocationsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AddTrustStoreRevocationsInput"}
+	if s.TrustStoreArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("TrustStoreArn"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetRevocationContents sets the RevocationContents field's value.
+func (s *AddTrustStoreRevocationsInput) SetRevocationContents(v []*RevocationContent) *AddTrustStoreRevocationsInput {
+	s.RevocationContents = v
+	return s
+}
+
+// SetTrustStoreArn sets the TrustStoreArn field's value.
+func (s *AddTrustStoreRevocationsInput) SetTrustStoreArn(v string) *AddTrustStoreRevocationsInput {
+	s.TrustStoreArn = &v
+	return s
+}
+
+type AddTrustStoreRevocationsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the revocation file added to the trust store.
+	TrustStoreRevocations []*TrustStoreRevocation `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AddTrustStoreRevocationsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AddTrustStoreRevocationsOutput) GoString() string {
+	return s.String()
+}
+
+// SetTrustStoreRevocations sets the TrustStoreRevocations field's value.
+func (s *AddTrustStoreRevocationsOutput) SetTrustStoreRevocations(v []*TrustStoreRevocation) *AddTrustStoreRevocationsOutput {
+	s.TrustStoreRevocations = v
+	return s
+}
+
+// Information about anomaly detection and mitigation.
+type AnomalyDetection struct {
+	_ struct{} `type:"structure"`
+
+	// Indicates whether anomaly mitigation is in progress.
+	MitigationInEffect *string `type:"string" enum:"MitigationInEffectEnum"`
+
+	// The latest anomaly detection result.
+	Result *string `type:"string" enum:"AnomalyResultEnum"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AnomalyDetection) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AnomalyDetection) GoString() string {
+	return s.String()
+}
+
+// SetMitigationInEffect sets the MitigationInEffect field's value.
+func (s *AnomalyDetection) SetMitigationInEffect(v string) *AnomalyDetection {
+	s.MitigationInEffect = &v
+	return s
+}
+
+// SetResult sets the Result field's value.
+func (s *AnomalyDetection) SetResult(v string) *AnomalyDetection {
+	s.Result = &v
+	return s
 }
 
 // Request parameters to use when integrating with Amazon Cognito to authenticate
@@ -4271,6 +5437,9 @@ type CreateListenerInput struct {
 	// LoadBalancerArn is a required field
 	LoadBalancerArn *string `type:"string" required:"true"`
 
+	// The mutual authentication configuration information.
+	MutualAuthentication *MutualAuthenticationAttributes `type:"structure"`
+
 	// The port on which the load balancer is listening. You cannot specify a port
 	// for a Gateway Load Balancer.
 	Port *int64 `min:"1" type:"integer"`
@@ -4378,6 +5547,12 @@ func (s *CreateListenerInput) SetLoadBalancerArn(v string) *CreateListenerInput 
 	return s
 }
 
+// SetMutualAuthentication sets the MutualAuthentication field's value.
+func (s *CreateListenerInput) SetMutualAuthentication(v *MutualAuthenticationAttributes) *CreateListenerInput {
+	s.MutualAuthentication = v
+	return s
+}
+
 // SetPort sets the Port field's value.
 func (s *CreateListenerInput) SetPort(v int64) *CreateListenerInput {
 	s.Port = &v
@@ -4469,12 +5644,12 @@ type CreateLoadBalancerInput struct {
 	// You cannot specify a scheme for a Gateway Load Balancer.
 	Scheme *string `type:"string" enum:"LoadBalancerSchemeEnum"`
 
-	// [Application Load Balancers] The IDs of the security groups for the load
-	// balancer.
+	// [Application Load Balancers and Network Load Balancers] The IDs of the security
+	// groups for the load balancer.
 	SecurityGroups []*string `type:"list"`
 
 	// The IDs of the public subnets. You can specify only one subnet per Availability
-	// Zone. You must specify either subnets or subnet mappings.
+	// Zone. You must specify either subnets or subnet mappings, but not both.
 	//
 	// [Application Load Balancers] You must specify subnets from at least two Availability
 	// Zones. You cannot specify Elastic IP addresses for your subnets.
@@ -4496,7 +5671,8 @@ type CreateLoadBalancerInput struct {
 	SubnetMappings []*SubnetMapping `type:"list"`
 
 	// The IDs of the public subnets. You can specify only one subnet per Availability
-	// Zone. You must specify either subnets or subnet mappings.
+	// Zone. You must specify either subnets or subnet mappings, but not both. To
+	// specify an Elastic IP address, specify subnet mappings instead of subnets.
 	//
 	// [Application Load Balancers] You must specify subnets from at least two Availability
 	// Zones.
@@ -4812,10 +5988,10 @@ type CreateTargetGroupInput struct {
 	HealthCheckEnabled *bool `type:"boolean"`
 
 	// The approximate amount of time, in seconds, between health checks of an individual
-	// target. If the target group protocol is TCP, TLS, UDP, or TCP_UDP, the supported
-	// values are 10 and 30 seconds. If the target group protocol is HTTP or HTTPS,
-	// the default is 30 seconds. If the target group protocol is GENEVE, the default
-	// is 10 seconds. If the target type is lambda, the default is 35 seconds.
+	// target. The range is 5-300. If the target group protocol is TCP, TLS, UDP,
+	// TCP_UDP, HTTP or HTTPS, the default is 30 seconds. If the target group protocol
+	// is GENEVE, the default is 10 seconds. If the target type is lambda, the default
+	// is 35 seconds.
 	HealthCheckIntervalSeconds *int64 `min:"5" type:"integer"`
 
 	// [HTTP/HTTPS health checks] The destination for health checks on the targets.
@@ -4840,17 +6016,18 @@ type CreateTargetGroupInput struct {
 	HealthCheckProtocol *string `type:"string" enum:"ProtocolEnum"`
 
 	// The amount of time, in seconds, during which no response from a target means
-	// a failed health check. For target groups with a protocol of HTTP, HTTPS,
-	// or GENEVE, the default is 5 seconds. For target groups with a protocol of
-	// TCP or TLS, this value must be 6 seconds for HTTP health checks and 10 seconds
-	// for TCP and HTTPS health checks. If the target type is lambda, the default
-	// is 30 seconds.
+	// a failed health check. The range is 2–120 seconds. For target groups with
+	// a protocol of HTTP, the default is 6 seconds. For target groups with a protocol
+	// of TCP, TLS or HTTPS, the default is 10 seconds. For target groups with a
+	// protocol of GENEVE, the default is 5 seconds. If the target type is lambda,
+	// the default is 30 seconds.
 	HealthCheckTimeoutSeconds *int64 `min:"2" type:"integer"`
 
-	// The number of consecutive health checks successes required before considering
-	// an unhealthy target healthy. For target groups with a protocol of HTTP or
-	// HTTPS, the default is 5. For target groups with a protocol of TCP, TLS, or
-	// GENEVE, the default is 3. If the target type is lambda, the default is 5.
+	// The number of consecutive health check successes required before considering
+	// a target healthy. The range is 2-10. If the target group protocol is TCP,
+	// TCP_UDP, UDP, TLS, HTTP or HTTPS, the default is 5. For target groups with
+	// a protocol of GENEVE, the default is 5. If the target type is lambda, the
+	// default is 5.
 	HealthyThresholdCount *int64 `min:"2" type:"integer"`
 
 	// The type of IP address used for this target group. The possible values are
@@ -4859,7 +6036,10 @@ type CreateTargetGroupInput struct {
 	IpAddressType *string `type:"string" enum:"TargetGroupIpAddressTypeEnum"`
 
 	// [HTTP/HTTPS health checks] The HTTP or gRPC codes to use when checking for
-	// a successful response from a target.
+	// a successful response from a target. For target groups with a protocol of
+	// TCP, TCP_UDP, UDP or TLS the range is 200-599. For target groups with a protocol
+	// of HTTP or HTTPS, the range is 200-499. For target groups with a protocol
+	// of GENEVE, the range is 200-399.
 	Matcher *Matcher `type:"structure"`
 
 	// The name of the target group.
@@ -4911,10 +6091,10 @@ type CreateTargetGroupInput struct {
 	TargetType *string `type:"string" enum:"TargetTypeEnum"`
 
 	// The number of consecutive health check failures required before considering
-	// a target unhealthy. If the target group protocol is HTTP or HTTPS, the default
-	// is 2. If the target group protocol is TCP or TLS, this value must be the
-	// same as the healthy threshold count. If the target group protocol is GENEVE,
-	// the default is 3. If the target type is lambda, the default is 2.
+	// a target unhealthy. The range is 2-10. If the target group protocol is TCP,
+	// TCP_UDP, UDP, TLS, HTTP or HTTPS, the default is 2. For target groups with
+	// a protocol of GENEVE, the default is 2. If the target type is lambda, the
+	// default is 5.
 	UnhealthyThresholdCount *int64 `min:"2" type:"integer"`
 
 	// The identifier of the virtual private cloud (VPC). If the target is a Lambda
@@ -5114,6 +6294,148 @@ func (s CreateTargetGroupOutput) GoString() string {
 // SetTargetGroups sets the TargetGroups field's value.
 func (s *CreateTargetGroupOutput) SetTargetGroups(v []*TargetGroup) *CreateTargetGroupOutput {
 	s.TargetGroups = v
+	return s
+}
+
+type CreateTrustStoreInput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon S3 bucket for the ca certificates bundle.
+	//
+	// CaCertificatesBundleS3Bucket is a required field
+	CaCertificatesBundleS3Bucket *string `type:"string" required:"true"`
+
+	// The Amazon S3 path for the ca certificates bundle.
+	//
+	// CaCertificatesBundleS3Key is a required field
+	CaCertificatesBundleS3Key *string `type:"string" required:"true"`
+
+	// The Amazon S3 object version for the ca certificates bundle. If undefined
+	// the current version is used.
+	CaCertificatesBundleS3ObjectVersion *string `type:"string"`
+
+	// The name of the trust store.
+	//
+	// This name must be unique per region and cannot be changed after creation.
+	//
+	// Name is a required field
+	Name *string `min:"1" type:"string" required:"true"`
+
+	// The tags to assign to the trust store.
+	Tags []*Tag `min:"1" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateTrustStoreInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateTrustStoreInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateTrustStoreInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateTrustStoreInput"}
+	if s.CaCertificatesBundleS3Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("CaCertificatesBundleS3Bucket"))
+	}
+	if s.CaCertificatesBundleS3Key == nil {
+		invalidParams.Add(request.NewErrParamRequired("CaCertificatesBundleS3Key"))
+	}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+	if s.Tags != nil && len(s.Tags) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Tags", 1))
+	}
+	if s.Tags != nil {
+		for i, v := range s.Tags {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Tags", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetCaCertificatesBundleS3Bucket sets the CaCertificatesBundleS3Bucket field's value.
+func (s *CreateTrustStoreInput) SetCaCertificatesBundleS3Bucket(v string) *CreateTrustStoreInput {
+	s.CaCertificatesBundleS3Bucket = &v
+	return s
+}
+
+// SetCaCertificatesBundleS3Key sets the CaCertificatesBundleS3Key field's value.
+func (s *CreateTrustStoreInput) SetCaCertificatesBundleS3Key(v string) *CreateTrustStoreInput {
+	s.CaCertificatesBundleS3Key = &v
+	return s
+}
+
+// SetCaCertificatesBundleS3ObjectVersion sets the CaCertificatesBundleS3ObjectVersion field's value.
+func (s *CreateTrustStoreInput) SetCaCertificatesBundleS3ObjectVersion(v string) *CreateTrustStoreInput {
+	s.CaCertificatesBundleS3ObjectVersion = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CreateTrustStoreInput) SetName(v string) *CreateTrustStoreInput {
+	s.Name = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CreateTrustStoreInput) SetTags(v []*Tag) *CreateTrustStoreInput {
+	s.Tags = v
+	return s
+}
+
+type CreateTrustStoreOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the trust store created.
+	TrustStores []*TrustStore `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateTrustStoreOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateTrustStoreOutput) GoString() string {
+	return s.String()
+}
+
+// SetTrustStores sets the TrustStores field's value.
+func (s *CreateTrustStoreOutput) SetTrustStores(v []*TrustStore) *CreateTrustStoreOutput {
+	s.TrustStores = v
 	return s
 }
 
@@ -5386,6 +6708,74 @@ func (s DeleteTargetGroupOutput) String() string {
 // be included in the string output. The member name will be present, but the
 // value will be replaced with "sensitive".
 func (s DeleteTargetGroupOutput) GoString() string {
+	return s.String()
+}
+
+type DeleteTrustStoreInput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the trust store.
+	//
+	// TrustStoreArn is a required field
+	TrustStoreArn *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteTrustStoreInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteTrustStoreInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteTrustStoreInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteTrustStoreInput"}
+	if s.TrustStoreArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("TrustStoreArn"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetTrustStoreArn sets the TrustStoreArn field's value.
+func (s *DeleteTrustStoreInput) SetTrustStoreArn(v string) *DeleteTrustStoreInput {
+	s.TrustStoreArn = &v
+	return s
+}
+
+type DeleteTrustStoreOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteTrustStoreOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteTrustStoreOutput) GoString() string {
 	return s.String()
 }
 
@@ -6497,6 +7887,9 @@ func (s *DescribeTargetGroupsOutput) SetTargetGroups(v []*TargetGroup) *Describe
 type DescribeTargetHealthInput struct {
 	_ struct{} `type:"structure"`
 
+	// Used to inclue anomaly detection information.
+	Include []*string `type:"list" enum:"DescribeTargetHealthInputIncludeEnum"`
+
 	// The Amazon Resource Name (ARN) of the target group.
 	//
 	// TargetGroupArn is a required field
@@ -6547,6 +7940,12 @@ func (s *DescribeTargetHealthInput) Validate() error {
 	return nil
 }
 
+// SetInclude sets the Include field's value.
+func (s *DescribeTargetHealthInput) SetInclude(v []*string) *DescribeTargetHealthInput {
+	s.Include = v
+	return s
+}
+
 // SetTargetGroupArn sets the TargetGroupArn field's value.
 func (s *DescribeTargetHealthInput) SetTargetGroupArn(v string) *DescribeTargetHealthInput {
 	s.TargetGroupArn = &v
@@ -6587,6 +7986,405 @@ func (s DescribeTargetHealthOutput) GoString() string {
 // SetTargetHealthDescriptions sets the TargetHealthDescriptions field's value.
 func (s *DescribeTargetHealthOutput) SetTargetHealthDescriptions(v []*TargetHealthDescription) *DescribeTargetHealthOutput {
 	s.TargetHealthDescriptions = v
+	return s
+}
+
+type DescribeTrustStoreAssociationsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The marker for the next set of results. (You received this marker from a
+	// previous call.)
+	Marker *string `type:"string"`
+
+	// The maximum number of results to return with this call.
+	PageSize *int64 `min:"1" type:"integer"`
+
+	// The Amazon Resource Name (ARN) of the trust store.
+	//
+	// TrustStoreArn is a required field
+	TrustStoreArn *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeTrustStoreAssociationsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeTrustStoreAssociationsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeTrustStoreAssociationsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeTrustStoreAssociationsInput"}
+	if s.PageSize != nil && *s.PageSize < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("PageSize", 1))
+	}
+	if s.TrustStoreArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("TrustStoreArn"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetMarker sets the Marker field's value.
+func (s *DescribeTrustStoreAssociationsInput) SetMarker(v string) *DescribeTrustStoreAssociationsInput {
+	s.Marker = &v
+	return s
+}
+
+// SetPageSize sets the PageSize field's value.
+func (s *DescribeTrustStoreAssociationsInput) SetPageSize(v int64) *DescribeTrustStoreAssociationsInput {
+	s.PageSize = &v
+	return s
+}
+
+// SetTrustStoreArn sets the TrustStoreArn field's value.
+func (s *DescribeTrustStoreAssociationsInput) SetTrustStoreArn(v string) *DescribeTrustStoreAssociationsInput {
+	s.TrustStoreArn = &v
+	return s
+}
+
+type DescribeTrustStoreAssociationsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// If there are additional results, this is the marker for the next set of results.
+	// Otherwise, this is null.
+	NextMarker *string `type:"string"`
+
+	// Information about the resources the trust store is associated to.
+	TrustStoreAssociations []*TrustStoreAssociation `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeTrustStoreAssociationsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeTrustStoreAssociationsOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextMarker sets the NextMarker field's value.
+func (s *DescribeTrustStoreAssociationsOutput) SetNextMarker(v string) *DescribeTrustStoreAssociationsOutput {
+	s.NextMarker = &v
+	return s
+}
+
+// SetTrustStoreAssociations sets the TrustStoreAssociations field's value.
+func (s *DescribeTrustStoreAssociationsOutput) SetTrustStoreAssociations(v []*TrustStoreAssociation) *DescribeTrustStoreAssociationsOutput {
+	s.TrustStoreAssociations = v
+	return s
+}
+
+// Information about the revocations used by a trust store.
+type DescribeTrustStoreRevocation struct {
+	_ struct{} `type:"structure"`
+
+	// The number of revoked certificates.
+	NumberOfRevokedEntries *int64 `type:"long"`
+
+	// The revocation ID of a revocation file in use.
+	RevocationId *int64 `type:"long"`
+
+	// The type of revocation file.
+	RevocationType *string `type:"string" enum:"RevocationType"`
+
+	// The Amazon Resource Name (ARN) of the trust store.
+	TrustStoreArn *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeTrustStoreRevocation) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeTrustStoreRevocation) GoString() string {
+	return s.String()
+}
+
+// SetNumberOfRevokedEntries sets the NumberOfRevokedEntries field's value.
+func (s *DescribeTrustStoreRevocation) SetNumberOfRevokedEntries(v int64) *DescribeTrustStoreRevocation {
+	s.NumberOfRevokedEntries = &v
+	return s
+}
+
+// SetRevocationId sets the RevocationId field's value.
+func (s *DescribeTrustStoreRevocation) SetRevocationId(v int64) *DescribeTrustStoreRevocation {
+	s.RevocationId = &v
+	return s
+}
+
+// SetRevocationType sets the RevocationType field's value.
+func (s *DescribeTrustStoreRevocation) SetRevocationType(v string) *DescribeTrustStoreRevocation {
+	s.RevocationType = &v
+	return s
+}
+
+// SetTrustStoreArn sets the TrustStoreArn field's value.
+func (s *DescribeTrustStoreRevocation) SetTrustStoreArn(v string) *DescribeTrustStoreRevocation {
+	s.TrustStoreArn = &v
+	return s
+}
+
+type DescribeTrustStoreRevocationsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The marker for the next set of results. (You received this marker from a
+	// previous call.)
+	Marker *string `type:"string"`
+
+	// The maximum number of results to return with this call.
+	PageSize *int64 `min:"1" type:"integer"`
+
+	// The revocation IDs of the revocation files you want to describe.
+	RevocationIds []*int64 `type:"list"`
+
+	// The Amazon Resource Name (ARN) of the trust store.
+	//
+	// TrustStoreArn is a required field
+	TrustStoreArn *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeTrustStoreRevocationsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeTrustStoreRevocationsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeTrustStoreRevocationsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeTrustStoreRevocationsInput"}
+	if s.PageSize != nil && *s.PageSize < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("PageSize", 1))
+	}
+	if s.TrustStoreArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("TrustStoreArn"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetMarker sets the Marker field's value.
+func (s *DescribeTrustStoreRevocationsInput) SetMarker(v string) *DescribeTrustStoreRevocationsInput {
+	s.Marker = &v
+	return s
+}
+
+// SetPageSize sets the PageSize field's value.
+func (s *DescribeTrustStoreRevocationsInput) SetPageSize(v int64) *DescribeTrustStoreRevocationsInput {
+	s.PageSize = &v
+	return s
+}
+
+// SetRevocationIds sets the RevocationIds field's value.
+func (s *DescribeTrustStoreRevocationsInput) SetRevocationIds(v []*int64) *DescribeTrustStoreRevocationsInput {
+	s.RevocationIds = v
+	return s
+}
+
+// SetTrustStoreArn sets the TrustStoreArn field's value.
+func (s *DescribeTrustStoreRevocationsInput) SetTrustStoreArn(v string) *DescribeTrustStoreRevocationsInput {
+	s.TrustStoreArn = &v
+	return s
+}
+
+type DescribeTrustStoreRevocationsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// If there are additional results, this is the marker for the next set of results.
+	// Otherwise, this is null.
+	NextMarker *string `type:"string"`
+
+	// Information about the revocation file in the trust store.
+	TrustStoreRevocations []*DescribeTrustStoreRevocation `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeTrustStoreRevocationsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeTrustStoreRevocationsOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextMarker sets the NextMarker field's value.
+func (s *DescribeTrustStoreRevocationsOutput) SetNextMarker(v string) *DescribeTrustStoreRevocationsOutput {
+	s.NextMarker = &v
+	return s
+}
+
+// SetTrustStoreRevocations sets the TrustStoreRevocations field's value.
+func (s *DescribeTrustStoreRevocationsOutput) SetTrustStoreRevocations(v []*DescribeTrustStoreRevocation) *DescribeTrustStoreRevocationsOutput {
+	s.TrustStoreRevocations = v
+	return s
+}
+
+type DescribeTrustStoresInput struct {
+	_ struct{} `type:"structure"`
+
+	// The marker for the next set of results. (You received this marker from a
+	// previous call.)
+	Marker *string `type:"string"`
+
+	// The names of the trust stores.
+	Names []*string `type:"list"`
+
+	// The maximum number of results to return with this call.
+	PageSize *int64 `min:"1" type:"integer"`
+
+	// The Amazon Resource Name (ARN) of the trust store.
+	TrustStoreArns []*string `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeTrustStoresInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeTrustStoresInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeTrustStoresInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeTrustStoresInput"}
+	if s.PageSize != nil && *s.PageSize < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("PageSize", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetMarker sets the Marker field's value.
+func (s *DescribeTrustStoresInput) SetMarker(v string) *DescribeTrustStoresInput {
+	s.Marker = &v
+	return s
+}
+
+// SetNames sets the Names field's value.
+func (s *DescribeTrustStoresInput) SetNames(v []*string) *DescribeTrustStoresInput {
+	s.Names = v
+	return s
+}
+
+// SetPageSize sets the PageSize field's value.
+func (s *DescribeTrustStoresInput) SetPageSize(v int64) *DescribeTrustStoresInput {
+	s.PageSize = &v
+	return s
+}
+
+// SetTrustStoreArns sets the TrustStoreArns field's value.
+func (s *DescribeTrustStoresInput) SetTrustStoreArns(v []*string) *DescribeTrustStoresInput {
+	s.TrustStoreArns = v
+	return s
+}
+
+type DescribeTrustStoresOutput struct {
+	_ struct{} `type:"structure"`
+
+	// If there are additional results, this is the marker for the next set of results.
+	// Otherwise, this is null.
+	NextMarker *string `type:"string"`
+
+	// Information about the trust stores.
+	TrustStores []*TrustStore `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeTrustStoresOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeTrustStoresOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextMarker sets the NextMarker field's value.
+func (s *DescribeTrustStoresOutput) SetNextMarker(v string) *DescribeTrustStoresOutput {
+	s.NextMarker = &v
+	return s
+}
+
+// SetTrustStores sets the TrustStores field's value.
+func (s *DescribeTrustStoresOutput) SetTrustStores(v []*TrustStore) *DescribeTrustStoresOutput {
+	s.TrustStores = v
 	return s
 }
 
@@ -6665,8 +8463,8 @@ type ForwardActionConfig struct {
 	// The target group stickiness for the rule.
 	TargetGroupStickinessConfig *TargetGroupStickinessConfig `type:"structure"`
 
-	// One or more target groups. For Network Load Balancers, you can specify a
-	// single target group.
+	// The target groups. For Network Load Balancers, you can specify a single target
+	// group.
 	TargetGroups []*TargetGroupTuple `type:"list"`
 }
 
@@ -6700,13 +8498,181 @@ func (s *ForwardActionConfig) SetTargetGroups(v []*TargetGroupTuple) *ForwardAct
 	return s
 }
 
+type GetTrustStoreCaCertificatesBundleInput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the trust store.
+	//
+	// TrustStoreArn is a required field
+	TrustStoreArn *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetTrustStoreCaCertificatesBundleInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetTrustStoreCaCertificatesBundleInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetTrustStoreCaCertificatesBundleInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetTrustStoreCaCertificatesBundleInput"}
+	if s.TrustStoreArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("TrustStoreArn"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetTrustStoreArn sets the TrustStoreArn field's value.
+func (s *GetTrustStoreCaCertificatesBundleInput) SetTrustStoreArn(v string) *GetTrustStoreCaCertificatesBundleInput {
+	s.TrustStoreArn = &v
+	return s
+}
+
+type GetTrustStoreCaCertificatesBundleOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ca certificate bundles Amazon S3 URI.
+	Location *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetTrustStoreCaCertificatesBundleOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetTrustStoreCaCertificatesBundleOutput) GoString() string {
+	return s.String()
+}
+
+// SetLocation sets the Location field's value.
+func (s *GetTrustStoreCaCertificatesBundleOutput) SetLocation(v string) *GetTrustStoreCaCertificatesBundleOutput {
+	s.Location = &v
+	return s
+}
+
+type GetTrustStoreRevocationContentInput struct {
+	_ struct{} `type:"structure"`
+
+	// The revocation ID of the revocation file.
+	//
+	// RevocationId is a required field
+	RevocationId *int64 `type:"long" required:"true"`
+
+	// The Amazon Resource Name (ARN) of the trust store.
+	//
+	// TrustStoreArn is a required field
+	TrustStoreArn *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetTrustStoreRevocationContentInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetTrustStoreRevocationContentInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetTrustStoreRevocationContentInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetTrustStoreRevocationContentInput"}
+	if s.RevocationId == nil {
+		invalidParams.Add(request.NewErrParamRequired("RevocationId"))
+	}
+	if s.TrustStoreArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("TrustStoreArn"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetRevocationId sets the RevocationId field's value.
+func (s *GetTrustStoreRevocationContentInput) SetRevocationId(v int64) *GetTrustStoreRevocationContentInput {
+	s.RevocationId = &v
+	return s
+}
+
+// SetTrustStoreArn sets the TrustStoreArn field's value.
+func (s *GetTrustStoreRevocationContentInput) SetTrustStoreArn(v string) *GetTrustStoreRevocationContentInput {
+	s.TrustStoreArn = &v
+	return s
+}
+
+type GetTrustStoreRevocationContentOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The revocation files Amazon S3 URI.
+	Location *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetTrustStoreRevocationContentOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetTrustStoreRevocationContentOutput) GoString() string {
+	return s.String()
+}
+
+// SetLocation sets the Location field's value.
+func (s *GetTrustStoreRevocationContentOutput) SetLocation(v string) *GetTrustStoreRevocationContentOutput {
+	s.Location = &v
+	return s
+}
+
 // Information about a host header condition.
 type HostHeaderConditionConfig struct {
 	_ struct{} `type:"structure"`
 
-	// One or more host names. The maximum size of each name is 128 characters.
-	// The comparison is case insensitive. The following wildcard characters are
-	// supported: * (matches 0 or more characters) and ? (matches exactly 1 character).
+	// The host names. The maximum size of each name is 128 characters. The comparison
+	// is case insensitive. The following wildcard characters are supported: * (matches
+	// 0 or more characters) and ? (matches exactly 1 character).
 	//
 	// If you specify multiple strings, the condition is satisfied if one of the
 	// strings matches the host name.
@@ -6752,10 +8718,10 @@ type HttpHeaderConditionConfig struct {
 	// to specify a host header condition.
 	HttpHeaderName *string `type:"string"`
 
-	// One or more strings to compare against the value of the HTTP header. The
-	// maximum size of each string is 128 characters. The comparison strings are
-	// case insensitive. The following wildcard characters are supported: * (matches
-	// 0 or more characters) and ? (matches exactly 1 character).
+	// The strings to compare against the value of the HTTP header. The maximum
+	// size of each string is 128 characters. The comparison strings are case insensitive.
+	// The following wildcard characters are supported: * (matches 0 or more characters)
+	// and ? (matches exactly 1 character).
 	//
 	// If the same header appears multiple times in the request, we search them
 	// in order until a match is found.
@@ -6842,6 +8808,14 @@ func (s *HttpRequestMethodConditionConfig) SetValues(v []*string) *HttpRequestMe
 
 // Information about an Elastic Load Balancing resource limit for your Amazon
 // Web Services account.
+//
+// For more information, see the following:
+//
+//   - Quotas for your Application Load Balancers (https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-limits.html)
+//
+//   - Quotas for your Network Load Balancers (https://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-limits.html)
+//
+//   - Quotas for your Gateway Load Balancers (https://docs.aws.amazon.com/elasticloadbalancing/latest/gateway/quotas-limits.html)
 type Limit struct {
 	_ struct{} `type:"structure"`
 
@@ -6938,6 +8912,9 @@ type Listener struct {
 	// The Amazon Resource Name (ARN) of the load balancer.
 	LoadBalancerArn *string `type:"string"`
 
+	// The mutual authentication configuration information.
+	MutualAuthentication *MutualAuthenticationAttributes `type:"structure"`
+
 	// The port on which the load balancer is listening.
 	Port *int64 `min:"1" type:"integer"`
 
@@ -6997,6 +8974,12 @@ func (s *Listener) SetLoadBalancerArn(v string) *Listener {
 	return s
 }
 
+// SetMutualAuthentication sets the MutualAuthentication field's value.
+func (s *Listener) SetMutualAuthentication(v *MutualAuthenticationAttributes) *Listener {
+	s.MutualAuthentication = v
+	return s
+}
+
 // SetPort sets the Port field's value.
 func (s *Listener) SetPort(v int64) *Listener {
 	s.Port = &v
@@ -7034,6 +9017,10 @@ type LoadBalancer struct {
 
 	// The public DNS name of the load balancer.
 	DNSName *string `type:"string"`
+
+	// Indicates whether to evaluate inbound security group rules for traffic sent
+	// to a Network Load Balancer through Amazon Web Services PrivateLink.
+	EnforceSecurityGroupInboundRulesOnPrivateLinkTraffic *string `type:"string"`
 
 	// The type of IP addresses used by the subnets for your load balancer. The
 	// possible values are ipv4 (for IPv4 addresses) and dualstack (for IPv4 and
@@ -7115,6 +9102,12 @@ func (s *LoadBalancer) SetCustomerOwnedIpv4Pool(v string) *LoadBalancer {
 // SetDNSName sets the DNSName field's value.
 func (s *LoadBalancer) SetDNSName(v string) *LoadBalancer {
 	s.DNSName = &v
+	return s
+}
+
+// SetEnforceSecurityGroupInboundRulesOnPrivateLinkTraffic sets the EnforceSecurityGroupInboundRulesOnPrivateLinkTraffic field's value.
+func (s *LoadBalancer) SetEnforceSecurityGroupInboundRulesOnPrivateLinkTraffic(v string) *LoadBalancer {
+	s.EnforceSecurityGroupInboundRulesOnPrivateLinkTraffic = &v
 	return s
 }
 
@@ -7232,10 +9225,15 @@ type LoadBalancerAttribute struct {
 
 	// The name of the attribute.
 	//
-	// The following attribute is supported by all load balancers:
+	// The following attributes are supported by all load balancers:
 	//
 	//    * deletion_protection.enabled - Indicates whether deletion protection
 	//    is enabled. The value is true or false. The default is false.
+	//
+	//    * load_balancing.cross_zone.enabled - Indicates whether cross-zone load
+	//    balancing is enabled. The possible values are true and false. The default
+	//    for Network Load Balancers and Gateway Load Balancers is false. The default
+	//    for Application Load Balancers is true, and cannot be changed.
 	//
 	// The following attributes are supported by both Application Load Balancers
 	// and Network Load Balancers:
@@ -7251,7 +9249,7 @@ type LoadBalancerAttribute struct {
 	//    * access_logs.s3.prefix - The prefix for the location in the S3 bucket
 	//    for the access logs.
 	//
-	//    * ipv6.deny-all-igw-traffic - Blocks internet gateway (IGW) access to
+	//    * ipv6.deny_all_igw_traffic - Blocks internet gateway (IGW) access to
 	//    the load balancer. It is set to false for internet-facing load balancers
 	//    and true for internal load balancers, preventing unintended access to
 	//    your internal load balancer through an internet gateway.
@@ -7261,6 +9259,17 @@ type LoadBalancerAttribute struct {
 	//    * idle_timeout.timeout_seconds - The idle timeout value, in seconds. The
 	//    valid range is 1-4000 seconds. The default is 60 seconds.
 	//
+	//    * connection_logs.s3.enabled - Indicates whether connection logs are enabled.
+	//    The value is true or false. The default is false.
+	//
+	//    * connection_logs.s3.bucket - The name of the S3 bucket for the connection
+	//    logs. This attribute is required if connection logs are enabled. The bucket
+	//    must exist in the same region as the load balancer and have a bucket policy
+	//    that grants Elastic Load Balancing permissions to write to the bucket.
+	//
+	//    * connection_logs.s3.prefix - The prefix for the location in the S3 bucket
+	//    for the connection logs.
+	//
 	//    * routing.http.desync_mitigation_mode - Determines how the load balancer
 	//    handles requests that might pose a security risk to your application.
 	//    The possible values are monitor, defensive, and strictest. The default
@@ -7269,6 +9278,11 @@ type LoadBalancerAttribute struct {
 	//    * routing.http.drop_invalid_header_fields.enabled - Indicates whether
 	//    HTTP headers with invalid header fields are removed by the load balancer
 	//    (true) or routed to targets (false). The default is false.
+	//
+	//    * routing.http.preserve_host_header.enabled - Indicates whether the Application
+	//    Load Balancer should preserve the Host header in the HTTP request and
+	//    send it to the target without any change. The possible values are true
+	//    and false. The default is false.
 	//
 	//    * routing.http.x_amzn_tls_version_and_cipher_suite.enabled - Indicates
 	//    whether the two headers (x-amzn-tls-version and x-amzn-tls-cipher-suite),
@@ -7285,6 +9299,18 @@ type LoadBalancerAttribute struct {
 	//    to the load balancer. The possible values are true and false. The default
 	//    is false.
 	//
+	//    * routing.http.xff_header_processing.mode - Enables you to modify, preserve,
+	//    or remove the X-Forwarded-For header in the HTTP request before the Application
+	//    Load Balancer sends the request to the target. The possible values are
+	//    append, preserve, and remove. The default is append. If the value is append,
+	//    the Application Load Balancer adds the client IP address (of the last
+	//    hop) to the X-Forwarded-For header in the HTTP request before it sends
+	//    it to targets. If the value is preserve the Application Load Balancer
+	//    preserves the X-Forwarded-For header in the HTTP request, and sends it
+	//    to targets without any change. If the value is remove, the Application
+	//    Load Balancer removes the X-Forwarded-For header in the HTTP request before
+	//    it sends it to targets.
+	//
 	//    * routing.http2.enabled - Indicates whether HTTP/2 is enabled. The possible
 	//    values are true and false. The default is true. Elastic Load Balancing
 	//    requires that message header names contain only alphanumeric characters
@@ -7295,12 +9321,13 @@ type LoadBalancerAttribute struct {
 	//    to Amazon Web Services WAF. The possible values are true and false. The
 	//    default is false.
 	//
-	// The following attribute is supported by Network Load Balancers and Gateway
-	// Load Balancers:
+	// The following attributes are supported by only Network Load Balancers:
 	//
-	//    * load_balancing.cross_zone.enabled - Indicates whether cross-zone load
-	//    balancing is enabled. The possible values are true and false. The default
-	//    is false.
+	//    * dns_record.client_routing_policy - Indicates how traffic is distributed
+	//    among the load balancer Availability Zones. The possible values are availability_zone_affinity
+	//    with 100 percent zonal affinity, partial_availability_zone_affinity with
+	//    85 percent zonal affinity, and any_availability_zone with 0 percent zonal
+	//    affinity.
 	Key *string `type:"string"`
 
 	// The value of the attribute.
@@ -7394,10 +9421,14 @@ type Matcher struct {
 	GrpcCode *string `type:"string"`
 
 	// For Application Load Balancers, you can specify values between 200 and 499,
-	// and the default value is 200. You can specify multiple values (for example,
+	// with the default value being 200. You can specify multiple values (for example,
 	// "200,202") or a range of values (for example, "200-299").
 	//
-	// For Network Load Balancers and Gateway Load Balancers, this must be "200–399".
+	// For Network Load Balancers, you can specify values between 200 and 599, with
+	// the default value being 200-399. You can specify multiple values (for example,
+	// "200,202") or a range of values (for example, "200-299").
+	//
+	// For Gateway Load Balancers, this must be "200–399".
 	//
 	// Note that when using shorthand syntax, some values such as commas need to
 	// be escaped.
@@ -7466,6 +9497,9 @@ type ModifyListenerInput struct {
 	//
 	// ListenerArn is a required field
 	ListenerArn *string `type:"string" required:"true"`
+
+	// The mutual authentication configuration information.
+	MutualAuthentication *MutualAuthenticationAttributes `type:"structure"`
 
 	// The port for connections from clients to the load balancer. You cannot specify
 	// a port for a Gateway Load Balancer.
@@ -7552,6 +9586,12 @@ func (s *ModifyListenerInput) SetDefaultActions(v []*Action) *ModifyListenerInpu
 // SetListenerArn sets the ListenerArn field's value.
 func (s *ModifyListenerInput) SetListenerArn(v string) *ModifyListenerInput {
 	s.ListenerArn = &v
+	return s
+}
+
+// SetMutualAuthentication sets the MutualAuthentication field's value.
+func (s *ModifyListenerInput) SetMutualAuthentication(v *MutualAuthenticationAttributes) *ModifyListenerInput {
+	s.MutualAuthentication = v
 	return s
 }
 
@@ -7898,9 +9938,7 @@ type ModifyTargetGroupInput struct {
 	HealthCheckEnabled *bool `type:"boolean"`
 
 	// The approximate amount of time, in seconds, between health checks of an individual
-	// target. For TCP health checks, the supported values are 10 or 30 seconds.
-	//
-	// With Network Load Balancers, you can't modify this setting.
+	// target.
 	HealthCheckIntervalSeconds *int64 `min:"5" type:"integer"`
 
 	// [HTTP/HTTPS health checks] The destination for health checks on the targets.
@@ -7921,14 +9959,10 @@ type ModifyTargetGroupInput struct {
 	// is supported for health checks only if the protocol of the target group is
 	// TCP, TLS, UDP, or TCP_UDP. The GENEVE, TLS, UDP, and TCP_UDP protocols are
 	// not supported for health checks.
-	//
-	// With Network Load Balancers, you can't modify this setting.
 	HealthCheckProtocol *string `type:"string" enum:"ProtocolEnum"`
 
 	// [HTTP/HTTPS health checks] The amount of time, in seconds, during which no
 	// response means a failed health check.
-	//
-	// With Network Load Balancers, you can't modify this setting.
 	HealthCheckTimeoutSeconds *int64 `min:"2" type:"integer"`
 
 	// The number of consecutive health checks successes required before considering
@@ -7936,9 +9970,10 @@ type ModifyTargetGroupInput struct {
 	HealthyThresholdCount *int64 `min:"2" type:"integer"`
 
 	// [HTTP/HTTPS health checks] The HTTP or gRPC codes to use when checking for
-	// a successful response from a target.
-	//
-	// With Network Load Balancers, you can't modify this setting.
+	// a successful response from a target. For target groups with a protocol of
+	// TCP, TCP_UDP, UDP or TLS the range is 200-599. For target groups with a protocol
+	// of HTTP or HTTPS, the range is 200-499. For target groups with a protocol
+	// of GENEVE, the range is 200-399.
 	Matcher *Matcher `type:"structure"`
 
 	// The Amazon Resource Name (ARN) of the target group.
@@ -7947,8 +9982,7 @@ type ModifyTargetGroupInput struct {
 	TargetGroupArn *string `type:"string" required:"true"`
 
 	// The number of consecutive health check failures required before considering
-	// the target unhealthy. For target groups with a protocol of TCP or TLS, this
-	// value must be the same as the healthy threshold count.
+	// the target unhealthy.
 	UnhealthyThresholdCount *int64 `min:"2" type:"integer"`
 }
 
@@ -8089,14 +10123,180 @@ func (s *ModifyTargetGroupOutput) SetTargetGroups(v []*TargetGroup) *ModifyTarge
 	return s
 }
 
+type ModifyTrustStoreInput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon S3 bucket for the ca certificates bundle.
+	//
+	// CaCertificatesBundleS3Bucket is a required field
+	CaCertificatesBundleS3Bucket *string `type:"string" required:"true"`
+
+	// The Amazon S3 path for the ca certificates bundle.
+	//
+	// CaCertificatesBundleS3Key is a required field
+	CaCertificatesBundleS3Key *string `type:"string" required:"true"`
+
+	// The Amazon S3 object version for the ca certificates bundle. If undefined
+	// the current version is used.
+	CaCertificatesBundleS3ObjectVersion *string `type:"string"`
+
+	// The Amazon Resource Name (ARN) of the trust store.
+	//
+	// TrustStoreArn is a required field
+	TrustStoreArn *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyTrustStoreInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyTrustStoreInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ModifyTrustStoreInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ModifyTrustStoreInput"}
+	if s.CaCertificatesBundleS3Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("CaCertificatesBundleS3Bucket"))
+	}
+	if s.CaCertificatesBundleS3Key == nil {
+		invalidParams.Add(request.NewErrParamRequired("CaCertificatesBundleS3Key"))
+	}
+	if s.TrustStoreArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("TrustStoreArn"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetCaCertificatesBundleS3Bucket sets the CaCertificatesBundleS3Bucket field's value.
+func (s *ModifyTrustStoreInput) SetCaCertificatesBundleS3Bucket(v string) *ModifyTrustStoreInput {
+	s.CaCertificatesBundleS3Bucket = &v
+	return s
+}
+
+// SetCaCertificatesBundleS3Key sets the CaCertificatesBundleS3Key field's value.
+func (s *ModifyTrustStoreInput) SetCaCertificatesBundleS3Key(v string) *ModifyTrustStoreInput {
+	s.CaCertificatesBundleS3Key = &v
+	return s
+}
+
+// SetCaCertificatesBundleS3ObjectVersion sets the CaCertificatesBundleS3ObjectVersion field's value.
+func (s *ModifyTrustStoreInput) SetCaCertificatesBundleS3ObjectVersion(v string) *ModifyTrustStoreInput {
+	s.CaCertificatesBundleS3ObjectVersion = &v
+	return s
+}
+
+// SetTrustStoreArn sets the TrustStoreArn field's value.
+func (s *ModifyTrustStoreInput) SetTrustStoreArn(v string) *ModifyTrustStoreInput {
+	s.TrustStoreArn = &v
+	return s
+}
+
+type ModifyTrustStoreOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the modified trust store.
+	TrustStores []*TrustStore `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyTrustStoreOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyTrustStoreOutput) GoString() string {
+	return s.String()
+}
+
+// SetTrustStores sets the TrustStores field's value.
+func (s *ModifyTrustStoreOutput) SetTrustStores(v []*TrustStore) *ModifyTrustStoreOutput {
+	s.TrustStores = v
+	return s
+}
+
+// Information about the mutual authentication attributes of a listener.
+type MutualAuthenticationAttributes struct {
+	_ struct{} `type:"structure"`
+
+	// Indicates whether expired client certificates are ignored.
+	IgnoreClientCertificateExpiry *bool `type:"boolean"`
+
+	// The client certificate handling method. Options are off, passthrough or verify.
+	// The default value is off.
+	Mode *string `type:"string"`
+
+	// The Amazon Resource Name (ARN) of the trust store.
+	TrustStoreArn *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s MutualAuthenticationAttributes) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s MutualAuthenticationAttributes) GoString() string {
+	return s.String()
+}
+
+// SetIgnoreClientCertificateExpiry sets the IgnoreClientCertificateExpiry field's value.
+func (s *MutualAuthenticationAttributes) SetIgnoreClientCertificateExpiry(v bool) *MutualAuthenticationAttributes {
+	s.IgnoreClientCertificateExpiry = &v
+	return s
+}
+
+// SetMode sets the Mode field's value.
+func (s *MutualAuthenticationAttributes) SetMode(v string) *MutualAuthenticationAttributes {
+	s.Mode = &v
+	return s
+}
+
+// SetTrustStoreArn sets the TrustStoreArn field's value.
+func (s *MutualAuthenticationAttributes) SetTrustStoreArn(v string) *MutualAuthenticationAttributes {
+	s.TrustStoreArn = &v
+	return s
+}
+
 // Information about a path pattern condition.
 type PathPatternConditionConfig struct {
 	_ struct{} `type:"structure"`
 
-	// One or more path patterns to compare against the request URL. The maximum
-	// size of each string is 128 characters. The comparison is case sensitive.
-	// The following wildcard characters are supported: * (matches 0 or more characters)
-	// and ? (matches exactly 1 character).
+	// The path patterns to compare against the request URL. The maximum size of
+	// each string is 128 characters. The comparison is case sensitive. The following
+	// wildcard characters are supported: * (matches 0 or more characters) and ?
+	// (matches exactly 1 character).
 	//
 	// If you specify multiple strings, the condition is satisfied if one of them
 	// matches the request URL. The path pattern is compared only to the path of
@@ -8138,9 +10338,9 @@ func (s *PathPatternConditionConfig) SetValues(v []*string) *PathPatternConditio
 type QueryStringConditionConfig struct {
 	_ struct{} `type:"structure"`
 
-	// One or more key/value pairs or values to find in the query string. The maximum
-	// size of each string is 128 characters. The comparison is case insensitive.
-	// The following wildcard characters are supported: * (matches 0 or more characters)
+	// The key/value pairs or values to find in the query string. The maximum size
+	// of each string is 128 characters. The comparison is case insensitive. The
+	// following wildcard characters are supported: * (matches 0 or more characters)
 	// and ? (matches exactly 1 character). To search for a literal '*' or '?' character
 	// in a query string, you must escape these characters in Values using a '\'
 	// character.
@@ -8224,15 +10424,15 @@ func (s *QueryStringKeyValuePair) SetValue(v string) *QueryStringKeyValuePair {
 //
 // You can reuse URI components using the following reserved keywords:
 //
-//    * #{protocol}
+//   - #{protocol}
 //
-//    * #{host}
+//   - #{host}
 //
-//    * #{port}
+//   - #{port}
 //
-//    * #{path} (the leading "/" is removed)
+//   - #{path} (the leading "/" is removed)
 //
-//    * #{query}
+//   - #{query}
 //
 // For example, you can change the path to "/new/#{path}", the hostname to "example.#{host}",
 // or the query to "#{query}&value=xyz".
@@ -8597,6 +10797,147 @@ func (s RemoveTagsOutput) GoString() string {
 	return s.String()
 }
 
+type RemoveTrustStoreRevocationsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The revocation IDs of the revocation files you want to remove.
+	//
+	// RevocationIds is a required field
+	RevocationIds []*int64 `type:"list" required:"true"`
+
+	// The Amazon Resource Name (ARN) of the trust store.
+	//
+	// TrustStoreArn is a required field
+	TrustStoreArn *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RemoveTrustStoreRevocationsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RemoveTrustStoreRevocationsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *RemoveTrustStoreRevocationsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "RemoveTrustStoreRevocationsInput"}
+	if s.RevocationIds == nil {
+		invalidParams.Add(request.NewErrParamRequired("RevocationIds"))
+	}
+	if s.TrustStoreArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("TrustStoreArn"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetRevocationIds sets the RevocationIds field's value.
+func (s *RemoveTrustStoreRevocationsInput) SetRevocationIds(v []*int64) *RemoveTrustStoreRevocationsInput {
+	s.RevocationIds = v
+	return s
+}
+
+// SetTrustStoreArn sets the TrustStoreArn field's value.
+func (s *RemoveTrustStoreRevocationsInput) SetTrustStoreArn(v string) *RemoveTrustStoreRevocationsInput {
+	s.TrustStoreArn = &v
+	return s
+}
+
+type RemoveTrustStoreRevocationsOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RemoveTrustStoreRevocationsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RemoveTrustStoreRevocationsOutput) GoString() string {
+	return s.String()
+}
+
+// Information about a revocation file.
+type RevocationContent struct {
+	_ struct{} `type:"structure"`
+
+	// The type of revocation file.
+	RevocationType *string `type:"string" enum:"RevocationType"`
+
+	// The Amazon S3 bucket for the revocation file.
+	S3Bucket *string `type:"string"`
+
+	// The Amazon S3 path for the revocation file.
+	S3Key *string `type:"string"`
+
+	// The Amazon S3 object version of the revocation file.
+	S3ObjectVersion *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RevocationContent) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RevocationContent) GoString() string {
+	return s.String()
+}
+
+// SetRevocationType sets the RevocationType field's value.
+func (s *RevocationContent) SetRevocationType(v string) *RevocationContent {
+	s.RevocationType = &v
+	return s
+}
+
+// SetS3Bucket sets the S3Bucket field's value.
+func (s *RevocationContent) SetS3Bucket(v string) *RevocationContent {
+	s.S3Bucket = &v
+	return s
+}
+
+// SetS3Key sets the S3Key field's value.
+func (s *RevocationContent) SetS3Key(v string) *RevocationContent {
+	s.S3Key = &v
+	return s
+}
+
+// SetS3ObjectVersion sets the S3ObjectVersion field's value.
+func (s *RevocationContent) SetS3ObjectVersion(v string) *RevocationContent {
+	s.S3ObjectVersion = &v
+	return s
+}
+
 // Information about a rule.
 type Rule struct {
 	_ struct{} `type:"structure"`
@@ -8674,7 +11015,10 @@ func (s *Rule) SetRuleArn(v string) *Rule {
 // Each rule can optionally include up to one of each of the following conditions:
 // http-request-method, host-header, path-pattern, and source-ip. Each rule
 // can also optionally include one or more of each of the following conditions:
-// http-header and query-string.
+// http-header and query-string. Note that the value for a condition cannot
+// be empty.
+//
+// For more information, see Quotas for your Application Load Balancers (https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-limits.html).
 type RuleCondition struct {
 	_ struct{} `type:"structure"`
 
@@ -9048,6 +11392,11 @@ func (s *SetRulePrioritiesOutput) SetRules(v []*Rule) *SetRulePrioritiesOutput {
 type SetSecurityGroupsInput struct {
 	_ struct{} `type:"structure"`
 
+	// Indicates whether to evaluate inbound security group rules for traffic sent
+	// to a Network Load Balancer through Amazon Web Services PrivateLink. The default
+	// is on.
+	EnforceSecurityGroupInboundRulesOnPrivateLinkTraffic *string `type:"string" enum:"EnforceSecurityGroupInboundRulesOnPrivateLinkTrafficEnum"`
+
 	// The Amazon Resource Name (ARN) of the load balancer.
 	//
 	// LoadBalancerArn is a required field
@@ -9093,6 +11442,12 @@ func (s *SetSecurityGroupsInput) Validate() error {
 	return nil
 }
 
+// SetEnforceSecurityGroupInboundRulesOnPrivateLinkTraffic sets the EnforceSecurityGroupInboundRulesOnPrivateLinkTraffic field's value.
+func (s *SetSecurityGroupsInput) SetEnforceSecurityGroupInboundRulesOnPrivateLinkTraffic(v string) *SetSecurityGroupsInput {
+	s.EnforceSecurityGroupInboundRulesOnPrivateLinkTraffic = &v
+	return s
+}
+
 // SetLoadBalancerArn sets the LoadBalancerArn field's value.
 func (s *SetSecurityGroupsInput) SetLoadBalancerArn(v string) *SetSecurityGroupsInput {
 	s.LoadBalancerArn = &v
@@ -9107,6 +11462,10 @@ func (s *SetSecurityGroupsInput) SetSecurityGroups(v []*string) *SetSecurityGrou
 
 type SetSecurityGroupsOutput struct {
 	_ struct{} `type:"structure"`
+
+	// Indicates whether to evaluate inbound security group rules for traffic sent
+	// to a Network Load Balancer through Amazon Web Services PrivateLink.
+	EnforceSecurityGroupInboundRulesOnPrivateLinkTraffic *string `type:"string" enum:"EnforceSecurityGroupInboundRulesOnPrivateLinkTrafficEnum"`
 
 	// The IDs of the security groups associated with the load balancer.
 	SecurityGroupIds []*string `type:"list"`
@@ -9130,6 +11489,12 @@ func (s SetSecurityGroupsOutput) GoString() string {
 	return s.String()
 }
 
+// SetEnforceSecurityGroupInboundRulesOnPrivateLinkTraffic sets the EnforceSecurityGroupInboundRulesOnPrivateLinkTraffic field's value.
+func (s *SetSecurityGroupsOutput) SetEnforceSecurityGroupInboundRulesOnPrivateLinkTraffic(v string) *SetSecurityGroupsOutput {
+	s.EnforceSecurityGroupInboundRulesOnPrivateLinkTraffic = &v
+	return s
+}
+
 // SetSecurityGroupIds sets the SecurityGroupIds field's value.
 func (s *SetSecurityGroupsOutput) SetSecurityGroupIds(v []*string) *SetSecurityGroupsOutput {
 	s.SecurityGroupIds = v
@@ -9142,7 +11507,11 @@ type SetSubnetsInput struct {
 	// [Network Load Balancers] The type of IP addresses used by the subnets for
 	// your load balancer. The possible values are ipv4 (for IPv4 addresses) and
 	// dualstack (for IPv4 and IPv6 addresses). You can’t specify dualstack for
-	// a load balancer with a UDP or TCP_UDP listener. .
+	// a load balancer with a UDP or TCP_UDP listener.
+	//
+	// [Gateway Load Balancers] The type of IP addresses used by the subnets for
+	// your load balancer. The possible values are ipv4 (for IPv4 addresses) and
+	// dualstack (for IPv4 and IPv6 addresses).
 	IpAddressType *string `type:"string" enum:"IpAddressType"`
 
 	// The Amazon Resource Name (ARN) of the load balancer.
@@ -9167,6 +11536,9 @@ type SetSubnetsInput struct {
 	// you can specify one private IP address per subnet from the IPv4 range of
 	// the subnet. For internet-facing load balancer, you can specify one IPv6 address
 	// per subnet.
+	//
+	// [Gateway Load Balancers] You can specify subnets from one or more Availability
+	// Zones.
 	SubnetMappings []*SubnetMapping `type:"list"`
 
 	// The IDs of the public subnets. You can specify only one subnet per Availability
@@ -9181,6 +11553,9 @@ type SetSubnetsInput struct {
 	// one or more Local Zones.
 	//
 	// [Network Load Balancers] You can specify subnets from one or more Availability
+	// Zones.
+	//
+	// [Gateway Load Balancers] You can specify subnets from one or more Availability
 	// Zones.
 	Subnets []*string `type:"list"`
 }
@@ -9247,6 +11622,8 @@ type SetSubnetsOutput struct {
 	AvailabilityZones []*AvailabilityZone `type:"list"`
 
 	// [Network Load Balancers] The IP address type.
+	//
+	// [Gateway Load Balancers] The IP address type.
 	IpAddressType *string `type:"string" enum:"IpAddressType"`
 }
 
@@ -9288,8 +11665,8 @@ func (s *SetSubnetsOutput) SetIpAddressType(v string) *SetSubnetsOutput {
 type SourceIpConditionConfig struct {
 	_ struct{} `type:"structure"`
 
-	// One or more source IP addresses, in CIDR format. You can use both IPv4 and
-	// IPv6 addresses. Wildcards are not supported.
+	// The source IP addresses, in CIDR format. You can use both IPv4 and IPv6 addresses.
+	// Wildcards are not supported.
 	//
 	// If you specify multiple addresses, the condition is satisfied if the source
 	// IP address of the request matches one of the CIDR blocks. This condition
@@ -9549,6 +11926,10 @@ type TargetDescription struct {
 	// traffic from the load balancer nodes in the specified Availability Zone or
 	// from all enabled Availability Zones for the load balancer.
 	//
+	// For Application Load Balancer target groups, the specified Availability Zone
+	// value is only applicable when cross-zone load balancing is off. Otherwise
+	// the parameter is ignored and treated as all.
+	//
 	// This parameter is not supported if the target type of the target group is
 	// instance or alb.
 	//
@@ -9557,8 +11938,10 @@ type TargetDescription struct {
 	// parameter is optional. If the IP address is outside the VPC, this parameter
 	// is required.
 	//
-	// With an Application Load Balancer, if the target type is ip and the IP address
-	// is outside the VPC for the target group, the only supported value is all.
+	// For Application Load Balancer target groups with cross-zone load balancing
+	// off, if the target type is ip and the IP address is outside of the VPC for
+	// the target group, this should be an Availability Zone inside the VPC for
+	// the target group.
 	//
 	// If the target type is lambda, this parameter is optional and the only supported
 	// value is all.
@@ -9576,7 +11959,8 @@ type TargetDescription struct {
 	// The port on which the target is listening. If the target group protocol is
 	// GENEVE, the supported port is 6081. If the target type is alb, the targeted
 	// Application Load Balancer must have at least one listener whose port matches
-	// the target group port. Not used if the target is a Lambda function.
+	// the target group port. This parameter is not used if the target is a Lambda
+	// function.
 	Port *int64 `min:"1" type:"integer"`
 }
 
@@ -9666,16 +12050,16 @@ type TargetGroup struct {
 	// type defaults to ipv4.
 	IpAddressType *string `type:"string" enum:"TargetGroupIpAddressTypeEnum"`
 
-	// The Amazon Resource Names (ARN) of the load balancers that route traffic
-	// to this target group.
+	// The Amazon Resource Name (ARN) of the load balancer that routes traffic to
+	// this target group. You can use each target group with only one load balancer.
 	LoadBalancerArns []*string `type:"list"`
 
 	// The HTTP or gRPC codes to use when checking for a successful response from
 	// a target.
 	Matcher *Matcher `type:"structure"`
 
-	// The port on which the targets are listening. Not used if the target is a
-	// Lambda function.
+	// The port on which the targets are listening. This parameter is not used if
+	// the target is a Lambda function.
 	Port *int64 `min:"1" type:"integer"`
 
 	// The protocol to use for routing traffic to the targets.
@@ -9838,7 +12222,7 @@ type TargetGroupAttribute struct {
 
 	// The name of the attribute.
 	//
-	// The following attribute is supported by all load balancers:
+	// The following attributes are supported by all load balancers:
 	//
 	//    * deregistration_delay.timeout_seconds - The amount of time, in seconds,
 	//    for Elastic Load Balancing to wait before changing the state of a deregistering
@@ -9846,22 +12230,56 @@ type TargetGroupAttribute struct {
 	//    value is 300 seconds. If the target is a Lambda function, this attribute
 	//    is not supported.
 	//
-	// The following attributes are supported by both Application Load Balancers
-	// and Network Load Balancers:
-	//
-	//    * stickiness.enabled - Indicates whether sticky sessions are enabled.
+	//    * stickiness.enabled - Indicates whether target stickiness is enabled.
 	//    The value is true or false. The default is false.
 	//
-	//    * stickiness.type - The type of sticky sessions. The possible values are
-	//    lb_cookie and app_cookie for Application Load Balancers or source_ip for
-	//    Network Load Balancers.
+	//    * stickiness.type - Indicates the type of stickiness. The possible values
+	//    are: lb_cookie and app_cookie for Application Load Balancers. source_ip
+	//    for Network Load Balancers. source_ip_dest_ip and source_ip_dest_ip_proto
+	//    for Gateway Load Balancers.
+	//
+	// The following attributes are supported by Application Load Balancers and
+	// Network Load Balancers:
+	//
+	//    * load_balancing.cross_zone.enabled - Indicates whether cross zone load
+	//    balancing is enabled. The value is true, false or use_load_balancer_configuration.
+	//    The default is use_load_balancer_configuration.
+	//
+	//    * target_group_health.dns_failover.minimum_healthy_targets.count - The
+	//    minimum number of targets that must be healthy. If the number of healthy
+	//    targets is below this value, mark the zone as unhealthy in DNS, so that
+	//    traffic is routed only to healthy zones. The possible values are off or
+	//    an integer from 1 to the maximum number of targets. The default is off.
+	//
+	//    * target_group_health.dns_failover.minimum_healthy_targets.percentage
+	//    - The minimum percentage of targets that must be healthy. If the percentage
+	//    of healthy targets is below this value, mark the zone as unhealthy in
+	//    DNS, so that traffic is routed only to healthy zones. The possible values
+	//    are off or an integer from 1 to 100. The default is off.
+	//
+	//    * target_group_health.unhealthy_state_routing.minimum_healthy_targets.count
+	//    - The minimum number of targets that must be healthy. If the number of
+	//    healthy targets is below this value, send traffic to all targets, including
+	//    unhealthy targets. The possible values are 1 to the maximum number of
+	//    targets. The default is 1.
+	//
+	//    * target_group_health.unhealthy_state_routing.minimum_healthy_targets.percentage
+	//    - The minimum percentage of targets that must be healthy. If the percentage
+	//    of healthy targets is below this value, send traffic to all targets, including
+	//    unhealthy targets. The possible values are off or an integer from 1 to
+	//    100. The default is off.
 	//
 	// The following attributes are supported only if the load balancer is an Application
 	// Load Balancer and the target is an instance or an IP address:
 	//
 	//    * load_balancing.algorithm.type - The load balancing algorithm determines
 	//    how the load balancer selects targets when routing requests. The value
-	//    is round_robin or least_outstanding_requests. The default is round_robin.
+	//    is round_robin, least_outstanding_requests, or weighted_random. The default
+	//    is round_robin.
+	//
+	//    * load_balancing.algorithm.anomaly_mitigation - Only available when load_balancing.algorithm.type
+	//    is weighted_random. Indicates whether anomaly mitigation is enabled. The
+	//    value is on or off. The default is off.
 	//
 	//    * slow_start.duration_seconds - The time period, in seconds, during which
 	//    a newly registered target receives an increasing share of the traffic
@@ -9900,7 +12318,8 @@ type TargetGroupAttribute struct {
 	//
 	//    * deregistration_delay.connection_termination.enabled - Indicates whether
 	//    the load balancer terminates connections at the end of the deregistration
-	//    timeout. The value is true or false. The default is false.
+	//    timeout. The value is true or false. For new UDP/TCP_UDP target groups
+	//    the default is true. Otherwise, the default is false.
 	//
 	//    * preserve_client_ip.enabled - Indicates whether client IP preservation
 	//    is enabled. The value is true or false. The default is disabled if the
@@ -9910,6 +12329,26 @@ type TargetGroupAttribute struct {
 	//
 	//    * proxy_protocol_v2.enabled - Indicates whether Proxy Protocol version
 	//    2 is enabled. The value is true or false. The default is false.
+	//
+	//    * target_health_state.unhealthy.connection_termination.enabled - Indicates
+	//    whether the load balancer terminates connections to unhealthy targets.
+	//    The value is true or false. The default is true.
+	//
+	// The following attributes are supported only by Gateway Load Balancers:
+	//
+	//    * target_failover.on_deregistration - Indicates how the Gateway Load Balancer
+	//    handles existing flows when a target is deregistered. The possible values
+	//    are rebalance and no_rebalance. The default is no_rebalance. The two attributes
+	//    (target_failover.on_deregistration and target_failover.on_unhealthy) can't
+	//    be set independently. The value you set for both attributes must be the
+	//    same.
+	//
+	//    * target_failover.on_unhealthy - Indicates how the Gateway Load Balancer
+	//    handles existing flows when a target is unhealthy. The possible values
+	//    are rebalance and no_rebalance. The default is no_rebalance. The two attributes
+	//    (target_failover.on_deregistration and target_failover.on_unhealthy) cannot
+	//    be set independently. The value you set for both attributes must be the
+	//    same.
 	Key *string `type:"string"`
 
 	// The value of the attribute.
@@ -10141,6 +12580,13 @@ func (s *TargetHealth) SetState(v string) *TargetHealth {
 type TargetHealthDescription struct {
 	_ struct{} `type:"structure"`
 
+	// The anomaly detection result for the target.
+	//
+	// If no anomalies were detected, the result is normal.
+	//
+	// If anomalies were detected, the result is anomalous.
+	AnomalyDetection *AnomalyDetection `type:"structure"`
+
 	// The port to use to connect with the target.
 	HealthCheckPort *string `type:"string"`
 
@@ -10169,6 +12615,12 @@ func (s TargetHealthDescription) GoString() string {
 	return s.String()
 }
 
+// SetAnomalyDetection sets the AnomalyDetection field's value.
+func (s *TargetHealthDescription) SetAnomalyDetection(v *AnomalyDetection) *TargetHealthDescription {
+	s.AnomalyDetection = v
+	return s
+}
+
 // SetHealthCheckPort sets the HealthCheckPort field's value.
 func (s *TargetHealthDescription) SetHealthCheckPort(v string) *TargetHealthDescription {
 	s.HealthCheckPort = &v
@@ -10184,6 +12636,165 @@ func (s *TargetHealthDescription) SetTarget(v *TargetDescription) *TargetHealthD
 // SetTargetHealth sets the TargetHealth field's value.
 func (s *TargetHealthDescription) SetTargetHealth(v *TargetHealth) *TargetHealthDescription {
 	s.TargetHealth = v
+	return s
+}
+
+// Information about a trust store.
+type TrustStore struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the trust store.
+	Name *string `min:"1" type:"string"`
+
+	// The number of ca certificates in the trust store.
+	NumberOfCaCertificates *int64 `type:"integer"`
+
+	// The current status of the trust store.
+	Status *string `type:"string" enum:"TrustStoreStatus"`
+
+	// The number of revoked certificates in the trust store.
+	TotalRevokedEntries *int64 `type:"long"`
+
+	// The Amazon Resource Name (ARN) of the trust store.
+	TrustStoreArn *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TrustStore) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TrustStore) GoString() string {
+	return s.String()
+}
+
+// SetName sets the Name field's value.
+func (s *TrustStore) SetName(v string) *TrustStore {
+	s.Name = &v
+	return s
+}
+
+// SetNumberOfCaCertificates sets the NumberOfCaCertificates field's value.
+func (s *TrustStore) SetNumberOfCaCertificates(v int64) *TrustStore {
+	s.NumberOfCaCertificates = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *TrustStore) SetStatus(v string) *TrustStore {
+	s.Status = &v
+	return s
+}
+
+// SetTotalRevokedEntries sets the TotalRevokedEntries field's value.
+func (s *TrustStore) SetTotalRevokedEntries(v int64) *TrustStore {
+	s.TotalRevokedEntries = &v
+	return s
+}
+
+// SetTrustStoreArn sets the TrustStoreArn field's value.
+func (s *TrustStore) SetTrustStoreArn(v string) *TrustStore {
+	s.TrustStoreArn = &v
+	return s
+}
+
+// Information about the resources a trust store is associated with.
+type TrustStoreAssociation struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the resource.
+	ResourceArn *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TrustStoreAssociation) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TrustStoreAssociation) GoString() string {
+	return s.String()
+}
+
+// SetResourceArn sets the ResourceArn field's value.
+func (s *TrustStoreAssociation) SetResourceArn(v string) *TrustStoreAssociation {
+	s.ResourceArn = &v
+	return s
+}
+
+// Information about a revocation file in use by a trust store.
+type TrustStoreRevocation struct {
+	_ struct{} `type:"structure"`
+
+	// The number of revoked certificates.
+	NumberOfRevokedEntries *int64 `type:"long"`
+
+	// The revocation ID of the revocation file.
+	RevocationId *int64 `type:"long"`
+
+	// The type of revocation file.
+	RevocationType *string `type:"string" enum:"RevocationType"`
+
+	// The Amazon Resource Name (ARN) of the trust store.
+	TrustStoreArn *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TrustStoreRevocation) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TrustStoreRevocation) GoString() string {
+	return s.String()
+}
+
+// SetNumberOfRevokedEntries sets the NumberOfRevokedEntries field's value.
+func (s *TrustStoreRevocation) SetNumberOfRevokedEntries(v int64) *TrustStoreRevocation {
+	s.NumberOfRevokedEntries = &v
+	return s
+}
+
+// SetRevocationId sets the RevocationId field's value.
+func (s *TrustStoreRevocation) SetRevocationId(v int64) *TrustStoreRevocation {
+	s.RevocationId = &v
+	return s
+}
+
+// SetRevocationType sets the RevocationType field's value.
+func (s *TrustStoreRevocation) SetRevocationType(v string) *TrustStoreRevocation {
+	s.RevocationType = &v
+	return s
+}
+
+// SetTrustStoreArn sets the TrustStoreArn field's value.
+func (s *TrustStoreRevocation) SetTrustStoreArn(v string) *TrustStoreRevocation {
+	s.TrustStoreArn = &v
 	return s
 }
 
@@ -10212,6 +12823,22 @@ func ActionTypeEnum_Values() []string {
 		ActionTypeEnumAuthenticateCognito,
 		ActionTypeEnumRedirect,
 		ActionTypeEnumFixedResponse,
+	}
+}
+
+const (
+	// AnomalyResultEnumAnomalous is a AnomalyResultEnum enum value
+	AnomalyResultEnumAnomalous = "anomalous"
+
+	// AnomalyResultEnumNormal is a AnomalyResultEnum enum value
+	AnomalyResultEnumNormal = "normal"
+)
+
+// AnomalyResultEnum_Values returns all elements of the AnomalyResultEnum enum
+func AnomalyResultEnum_Values() []string {
+	return []string{
+		AnomalyResultEnumAnomalous,
+		AnomalyResultEnumNormal,
 	}
 }
 
@@ -10252,6 +12879,38 @@ func AuthenticateOidcActionConditionalBehaviorEnum_Values() []string {
 		AuthenticateOidcActionConditionalBehaviorEnumDeny,
 		AuthenticateOidcActionConditionalBehaviorEnumAllow,
 		AuthenticateOidcActionConditionalBehaviorEnumAuthenticate,
+	}
+}
+
+const (
+	// DescribeTargetHealthInputIncludeEnumAnomalyDetection is a DescribeTargetHealthInputIncludeEnum enum value
+	DescribeTargetHealthInputIncludeEnumAnomalyDetection = "AnomalyDetection"
+
+	// DescribeTargetHealthInputIncludeEnumAll is a DescribeTargetHealthInputIncludeEnum enum value
+	DescribeTargetHealthInputIncludeEnumAll = "All"
+)
+
+// DescribeTargetHealthInputIncludeEnum_Values returns all elements of the DescribeTargetHealthInputIncludeEnum enum
+func DescribeTargetHealthInputIncludeEnum_Values() []string {
+	return []string{
+		DescribeTargetHealthInputIncludeEnumAnomalyDetection,
+		DescribeTargetHealthInputIncludeEnumAll,
+	}
+}
+
+const (
+	// EnforceSecurityGroupInboundRulesOnPrivateLinkTrafficEnumOn is a EnforceSecurityGroupInboundRulesOnPrivateLinkTrafficEnum enum value
+	EnforceSecurityGroupInboundRulesOnPrivateLinkTrafficEnumOn = "on"
+
+	// EnforceSecurityGroupInboundRulesOnPrivateLinkTrafficEnumOff is a EnforceSecurityGroupInboundRulesOnPrivateLinkTrafficEnum enum value
+	EnforceSecurityGroupInboundRulesOnPrivateLinkTrafficEnumOff = "off"
+)
+
+// EnforceSecurityGroupInboundRulesOnPrivateLinkTrafficEnum_Values returns all elements of the EnforceSecurityGroupInboundRulesOnPrivateLinkTrafficEnum enum
+func EnforceSecurityGroupInboundRulesOnPrivateLinkTrafficEnum_Values() []string {
+	return []string{
+		EnforceSecurityGroupInboundRulesOnPrivateLinkTrafficEnumOn,
+		EnforceSecurityGroupInboundRulesOnPrivateLinkTrafficEnumOff,
 	}
 }
 
@@ -10332,6 +12991,22 @@ func LoadBalancerTypeEnum_Values() []string {
 }
 
 const (
+	// MitigationInEffectEnumYes is a MitigationInEffectEnum enum value
+	MitigationInEffectEnumYes = "yes"
+
+	// MitigationInEffectEnumNo is a MitigationInEffectEnum enum value
+	MitigationInEffectEnumNo = "no"
+)
+
+// MitigationInEffectEnum_Values returns all elements of the MitigationInEffectEnum enum
+func MitigationInEffectEnum_Values() []string {
+	return []string{
+		MitigationInEffectEnumYes,
+		MitigationInEffectEnumNo,
+	}
+}
+
+const (
 	// ProtocolEnumHttp is a ProtocolEnum enum value
 	ProtocolEnumHttp = "HTTP"
 
@@ -10380,6 +13055,18 @@ func RedirectActionStatusCodeEnum_Values() []string {
 	return []string{
 		RedirectActionStatusCodeEnumHttp301,
 		RedirectActionStatusCodeEnumHttp302,
+	}
+}
+
+const (
+	// RevocationTypeCrl is a RevocationType enum value
+	RevocationTypeCrl = "CRL"
+)
+
+// RevocationType_Values returns all elements of the RevocationType enum
+func RevocationType_Values() []string {
+	return []string{
+		RevocationTypeCrl,
 	}
 }
 
@@ -10508,5 +13195,21 @@ func TargetTypeEnum_Values() []string {
 		TargetTypeEnumIp,
 		TargetTypeEnumLambda,
 		TargetTypeEnumAlb,
+	}
+}
+
+const (
+	// TrustStoreStatusActive is a TrustStoreStatus enum value
+	TrustStoreStatusActive = "ACTIVE"
+
+	// TrustStoreStatusCreating is a TrustStoreStatus enum value
+	TrustStoreStatusCreating = "CREATING"
+)
+
+// TrustStoreStatus_Values returns all elements of the TrustStoreStatus enum
+func TrustStoreStatus_Values() []string {
+	return []string{
+		TrustStoreStatusActive,
+		TrustStoreStatusCreating,
 	}
 }

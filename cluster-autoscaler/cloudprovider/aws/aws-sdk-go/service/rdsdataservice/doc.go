@@ -4,8 +4,10 @@
 // requests to AWS RDS DataService.
 //
 // Amazon RDS provides an HTTP endpoint to run SQL statements on an Amazon Aurora
-// Serverless DB cluster. To run these statements, you work with the Data Service
-// API.
+// Serverless v1 DB cluster. To run these statements, you work with the Data
+// Service API.
+//
+// The Data Service API isn't supported on Amazon Aurora Serverless v2 DB clusters.
 //
 // For more information about the Data Service API, see Using the Data API (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/data-api.html)
 // in the Amazon Aurora User Guide.
@@ -15,7 +17,7 @@
 // See rdsdataservice package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/rdsdataservice/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact AWS RDS DataService with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

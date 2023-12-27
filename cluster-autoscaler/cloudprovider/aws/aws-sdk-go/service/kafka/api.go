@@ -29,14 +29,13 @@ const opBatchAssociateScramSecret = "BatchAssociateScramSecret"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchAssociateScramSecretRequest method.
+//	req, resp := client.BatchAssociateScramSecretRequest(params)
 //
-//    // Example sending a request using the BatchAssociateScramSecretRequest method.
-//    req, resp := client.BatchAssociateScramSecretRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/BatchAssociateScramSecret
 func (c *Kafka) BatchAssociateScramSecretRequest(input *BatchAssociateScramSecretInput) (req *request.Request, output *BatchAssociateScramSecretOutput) {
@@ -67,26 +66,27 @@ func (c *Kafka) BatchAssociateScramSecretRequest(input *BatchAssociateScramSecre
 // API operation BatchAssociateScramSecret for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
-//   * NotFoundException
-//   Returns information about an error.
+//   - ForbiddenException
+//     Returns information about an error.
 //
-//   * ServiceUnavailableException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * TooManyRequestsException
-//   Returns information about an error.
+//   - ServiceUnavailableException
+//     Returns information about an error.
+//
+//   - TooManyRequestsException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/BatchAssociateScramSecret
 func (c *Kafka) BatchAssociateScramSecret(input *BatchAssociateScramSecretInput) (*BatchAssociateScramSecretOutput, error) {
@@ -126,14 +126,13 @@ const opBatchDisassociateScramSecret = "BatchDisassociateScramSecret"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchDisassociateScramSecretRequest method.
+//	req, resp := client.BatchDisassociateScramSecretRequest(params)
 //
-//    // Example sending a request using the BatchDisassociateScramSecretRequest method.
-//    req, resp := client.BatchDisassociateScramSecretRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/BatchDisassociateScramSecret
 func (c *Kafka) BatchDisassociateScramSecretRequest(input *BatchDisassociateScramSecretInput) (req *request.Request, output *BatchDisassociateScramSecretOutput) {
@@ -164,26 +163,27 @@ func (c *Kafka) BatchDisassociateScramSecretRequest(input *BatchDisassociateScra
 // API operation BatchDisassociateScramSecret for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
-//   * NotFoundException
-//   Returns information about an error.
+//   - ForbiddenException
+//     Returns information about an error.
 //
-//   * ServiceUnavailableException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * TooManyRequestsException
-//   Returns information about an error.
+//   - ServiceUnavailableException
+//     Returns information about an error.
+//
+//   - TooManyRequestsException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/BatchDisassociateScramSecret
 func (c *Kafka) BatchDisassociateScramSecret(input *BatchDisassociateScramSecretInput) (*BatchDisassociateScramSecretOutput, error) {
@@ -223,14 +223,13 @@ const opCreateCluster = "CreateCluster"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateClusterRequest method.
+//	req, resp := client.CreateClusterRequest(params)
 //
-//    // Example sending a request using the CreateClusterRequest method.
-//    req, resp := client.CreateClusterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/CreateCluster
 func (c *Kafka) CreateClusterRequest(input *CreateClusterInput) (req *request.Request, output *CreateClusterOutput) {
@@ -261,26 +260,27 @@ func (c *Kafka) CreateClusterRequest(input *CreateClusterInput) (req *request.Re
 // API operation CreateCluster for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ServiceUnavailableException
-//   Returns information about an error.
+//   - ForbiddenException
+//     Returns information about an error.
 //
-//   * TooManyRequestsException
-//   Returns information about an error.
+//   - ServiceUnavailableException
+//     Returns information about an error.
 //
-//   * ConflictException
-//   Returns information about an error.
+//   - TooManyRequestsException
+//     Returns information about an error.
+//
+//   - ConflictException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/CreateCluster
 func (c *Kafka) CreateCluster(input *CreateClusterInput) (*CreateClusterOutput, error) {
@@ -320,14 +320,13 @@ const opCreateClusterV2 = "CreateClusterV2"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateClusterV2Request method.
+//	req, resp := client.CreateClusterV2Request(params)
 //
-//    // Example sending a request using the CreateClusterV2Request method.
-//    req, resp := client.CreateClusterV2Request(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/CreateClusterV2
 func (c *Kafka) CreateClusterV2Request(input *CreateClusterV2Input) (req *request.Request, output *CreateClusterV2Output) {
@@ -359,26 +358,27 @@ func (c *Kafka) CreateClusterV2Request(input *CreateClusterV2Input) (req *reques
 // API operation CreateClusterV2 for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ServiceUnavailableException
-//   Returns information about an error.
+//   - ForbiddenException
+//     Returns information about an error.
 //
-//   * TooManyRequestsException
-//   Returns information about an error.
+//   - ServiceUnavailableException
+//     Returns information about an error.
 //
-//   * ConflictException
-//   Returns information about an error.
+//   - TooManyRequestsException
+//     Returns information about an error.
+//
+//   - ConflictException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/CreateClusterV2
 func (c *Kafka) CreateClusterV2(input *CreateClusterV2Input) (*CreateClusterV2Output, error) {
@@ -418,14 +418,13 @@ const opCreateConfiguration = "CreateConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateConfigurationRequest method.
+//	req, resp := client.CreateConfigurationRequest(params)
 //
-//    // Example sending a request using the CreateConfigurationRequest method.
-//    req, resp := client.CreateConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/CreateConfiguration
 func (c *Kafka) CreateConfigurationRequest(input *CreateConfigurationInput) (req *request.Request, output *CreateConfigurationOutput) {
@@ -456,26 +455,27 @@ func (c *Kafka) CreateConfigurationRequest(input *CreateConfigurationInput) (req
 // API operation CreateConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ServiceUnavailableException
-//   Returns information about an error.
+//   - ForbiddenException
+//     Returns information about an error.
 //
-//   * TooManyRequestsException
-//   Returns information about an error.
+//   - ServiceUnavailableException
+//     Returns information about an error.
 //
-//   * ConflictException
-//   Returns information about an error.
+//   - TooManyRequestsException
+//     Returns information about an error.
+//
+//   - ConflictException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/CreateConfiguration
 func (c *Kafka) CreateConfiguration(input *CreateConfigurationInput) (*CreateConfigurationOutput, error) {
@@ -499,6 +499,203 @@ func (c *Kafka) CreateConfigurationWithContext(ctx aws.Context, input *CreateCon
 	return out, req.Send()
 }
 
+const opCreateReplicator = "CreateReplicator"
+
+// CreateReplicatorRequest generates a "aws/request.Request" representing the
+// client's request for the CreateReplicator operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateReplicator for more information on using the CreateReplicator
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreateReplicatorRequest method.
+//	req, resp := client.CreateReplicatorRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/CreateReplicator
+func (c *Kafka) CreateReplicatorRequest(input *CreateReplicatorInput) (req *request.Request, output *CreateReplicatorOutput) {
+	op := &request.Operation{
+		Name:       opCreateReplicator,
+		HTTPMethod: "POST",
+		HTTPPath:   "/replication/v1/replicators",
+	}
+
+	if input == nil {
+		input = &CreateReplicatorInput{}
+	}
+
+	output = &CreateReplicatorOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateReplicator API operation for Managed Streaming for Kafka.
+//
+// Creates a new Kafka Replicator.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Managed Streaming for Kafka's
+// API operation CreateReplicator for usage and error information.
+//
+// Returned Error Types:
+//
+//   - BadRequestException
+//     Returns information about an error.
+//
+//   - UnauthorizedException
+//     Returns information about an error.
+//
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
+//
+//   - NotFoundException
+//     Returns information about an error.
+//
+//   - ServiceUnavailableException
+//     Returns information about an error.
+//
+//   - TooManyRequestsException
+//     Returns information about an error.
+//
+//   - ConflictException
+//     Returns information about an error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/CreateReplicator
+func (c *Kafka) CreateReplicator(input *CreateReplicatorInput) (*CreateReplicatorOutput, error) {
+	req, out := c.CreateReplicatorRequest(input)
+	return out, req.Send()
+}
+
+// CreateReplicatorWithContext is the same as CreateReplicator with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateReplicator for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Kafka) CreateReplicatorWithContext(ctx aws.Context, input *CreateReplicatorInput, opts ...request.Option) (*CreateReplicatorOutput, error) {
+	req, out := c.CreateReplicatorRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opCreateVpcConnection = "CreateVpcConnection"
+
+// CreateVpcConnectionRequest generates a "aws/request.Request" representing the
+// client's request for the CreateVpcConnection operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateVpcConnection for more information on using the CreateVpcConnection
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreateVpcConnectionRequest method.
+//	req, resp := client.CreateVpcConnectionRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/CreateVpcConnection
+func (c *Kafka) CreateVpcConnectionRequest(input *CreateVpcConnectionInput) (req *request.Request, output *CreateVpcConnectionOutput) {
+	op := &request.Operation{
+		Name:       opCreateVpcConnection,
+		HTTPMethod: "POST",
+		HTTPPath:   "/v1/vpc-connection",
+	}
+
+	if input == nil {
+		input = &CreateVpcConnectionInput{}
+	}
+
+	output = &CreateVpcConnectionOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateVpcConnection API operation for Managed Streaming for Kafka.
+//
+// Creates a new Amazon MSK VPC connection.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Managed Streaming for Kafka's
+// API operation CreateVpcConnection for usage and error information.
+//
+// Returned Error Types:
+//
+//   - BadRequestException
+//     Returns information about an error.
+//
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - UnauthorizedException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
+//
+//   - ServiceUnavailableException
+//     Returns information about an error.
+//
+//   - TooManyRequestsException
+//     Returns information about an error.
+//
+//   - ConflictException
+//     Returns information about an error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/CreateVpcConnection
+func (c *Kafka) CreateVpcConnection(input *CreateVpcConnectionInput) (*CreateVpcConnectionOutput, error) {
+	req, out := c.CreateVpcConnectionRequest(input)
+	return out, req.Send()
+}
+
+// CreateVpcConnectionWithContext is the same as CreateVpcConnection with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateVpcConnection for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Kafka) CreateVpcConnectionWithContext(ctx aws.Context, input *CreateVpcConnectionInput, opts ...request.Option) (*CreateVpcConnectionOutput, error) {
+	req, out := c.CreateVpcConnectionRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opDeleteCluster = "DeleteCluster"
 
 // DeleteClusterRequest generates a "aws/request.Request" representing the
@@ -515,14 +712,13 @@ const opDeleteCluster = "DeleteCluster"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteClusterRequest method.
+//	req, resp := client.DeleteClusterRequest(params)
 //
-//    // Example sending a request using the DeleteClusterRequest method.
-//    req, resp := client.DeleteClusterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/DeleteCluster
 func (c *Kafka) DeleteClusterRequest(input *DeleteClusterInput) (req *request.Request, output *DeleteClusterOutput) {
@@ -554,17 +750,18 @@ func (c *Kafka) DeleteClusterRequest(input *DeleteClusterInput) (req *request.Re
 // API operation DeleteCluster for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   Returns information about an error.
 //
-//   * BadRequestException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/DeleteCluster
 func (c *Kafka) DeleteCluster(input *DeleteClusterInput) (*DeleteClusterOutput, error) {
@@ -588,6 +785,99 @@ func (c *Kafka) DeleteClusterWithContext(ctx aws.Context, input *DeleteClusterIn
 	return out, req.Send()
 }
 
+const opDeleteClusterPolicy = "DeleteClusterPolicy"
+
+// DeleteClusterPolicyRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteClusterPolicy operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteClusterPolicy for more information on using the DeleteClusterPolicy
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteClusterPolicyRequest method.
+//	req, resp := client.DeleteClusterPolicyRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/DeleteClusterPolicy
+func (c *Kafka) DeleteClusterPolicyRequest(input *DeleteClusterPolicyInput) (req *request.Request, output *DeleteClusterPolicyOutput) {
+	op := &request.Operation{
+		Name:       opDeleteClusterPolicy,
+		HTTPMethod: "DELETE",
+		HTTPPath:   "/v1/clusters/{clusterArn}/policy",
+	}
+
+	if input == nil {
+		input = &DeleteClusterPolicyInput{}
+	}
+
+	output = &DeleteClusterPolicyOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// DeleteClusterPolicy API operation for Managed Streaming for Kafka.
+//
+// Deletes the MSK cluster policy specified by the Amazon Resource Name (ARN)
+// in your request.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Managed Streaming for Kafka's
+// API operation DeleteClusterPolicy for usage and error information.
+//
+// Returned Error Types:
+//
+//   - NotFoundException
+//     Returns information about an error.
+//
+//   - BadRequestException
+//     Returns information about an error.
+//
+//   - UnauthorizedException
+//     Returns information about an error.
+//
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/DeleteClusterPolicy
+func (c *Kafka) DeleteClusterPolicy(input *DeleteClusterPolicyInput) (*DeleteClusterPolicyOutput, error) {
+	req, out := c.DeleteClusterPolicyRequest(input)
+	return out, req.Send()
+}
+
+// DeleteClusterPolicyWithContext is the same as DeleteClusterPolicy with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteClusterPolicy for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Kafka) DeleteClusterPolicyWithContext(ctx aws.Context, input *DeleteClusterPolicyInput, opts ...request.Option) (*DeleteClusterPolicyOutput, error) {
+	req, out := c.DeleteClusterPolicyRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opDeleteConfiguration = "DeleteConfiguration"
 
 // DeleteConfigurationRequest generates a "aws/request.Request" representing the
@@ -604,14 +894,13 @@ const opDeleteConfiguration = "DeleteConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteConfigurationRequest method.
+//	req, resp := client.DeleteConfigurationRequest(params)
 //
-//    // Example sending a request using the DeleteConfigurationRequest method.
-//    req, resp := client.DeleteConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/DeleteConfiguration
 func (c *Kafka) DeleteConfigurationRequest(input *DeleteConfigurationInput) (req *request.Request, output *DeleteConfigurationOutput) {
@@ -643,17 +932,18 @@ func (c *Kafka) DeleteConfigurationRequest(input *DeleteConfigurationInput) (req
 // API operation DeleteConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   Returns information about an error.
 //
-//   * BadRequestException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/DeleteConfiguration
 func (c *Kafka) DeleteConfiguration(input *DeleteConfigurationInput) (*DeleteConfigurationOutput, error) {
@@ -677,6 +967,191 @@ func (c *Kafka) DeleteConfigurationWithContext(ctx aws.Context, input *DeleteCon
 	return out, req.Send()
 }
 
+const opDeleteReplicator = "DeleteReplicator"
+
+// DeleteReplicatorRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteReplicator operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteReplicator for more information on using the DeleteReplicator
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteReplicatorRequest method.
+//	req, resp := client.DeleteReplicatorRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/DeleteReplicator
+func (c *Kafka) DeleteReplicatorRequest(input *DeleteReplicatorInput) (req *request.Request, output *DeleteReplicatorOutput) {
+	op := &request.Operation{
+		Name:       opDeleteReplicator,
+		HTTPMethod: "DELETE",
+		HTTPPath:   "/replication/v1/replicators/{replicatorArn}",
+	}
+
+	if input == nil {
+		input = &DeleteReplicatorInput{}
+	}
+
+	output = &DeleteReplicatorOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DeleteReplicator API operation for Managed Streaming for Kafka.
+//
+// Deletes a replicator.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Managed Streaming for Kafka's
+// API operation DeleteReplicator for usage and error information.
+//
+// Returned Error Types:
+//
+//   - BadRequestException
+//     Returns information about an error.
+//
+//   - UnauthorizedException
+//     Returns information about an error.
+//
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
+//
+//   - NotFoundException
+//     Returns information about an error.
+//
+//   - ServiceUnavailableException
+//     Returns information about an error.
+//
+//   - TooManyRequestsException
+//     Returns information about an error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/DeleteReplicator
+func (c *Kafka) DeleteReplicator(input *DeleteReplicatorInput) (*DeleteReplicatorOutput, error) {
+	req, out := c.DeleteReplicatorRequest(input)
+	return out, req.Send()
+}
+
+// DeleteReplicatorWithContext is the same as DeleteReplicator with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteReplicator for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Kafka) DeleteReplicatorWithContext(ctx aws.Context, input *DeleteReplicatorInput, opts ...request.Option) (*DeleteReplicatorOutput, error) {
+	req, out := c.DeleteReplicatorRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDeleteVpcConnection = "DeleteVpcConnection"
+
+// DeleteVpcConnectionRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteVpcConnection operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteVpcConnection for more information on using the DeleteVpcConnection
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteVpcConnectionRequest method.
+//	req, resp := client.DeleteVpcConnectionRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/DeleteVpcConnection
+func (c *Kafka) DeleteVpcConnectionRequest(input *DeleteVpcConnectionInput) (req *request.Request, output *DeleteVpcConnectionOutput) {
+	op := &request.Operation{
+		Name:       opDeleteVpcConnection,
+		HTTPMethod: "DELETE",
+		HTTPPath:   "/v1/vpc-connection/{arn}",
+	}
+
+	if input == nil {
+		input = &DeleteVpcConnectionInput{}
+	}
+
+	output = &DeleteVpcConnectionOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DeleteVpcConnection API operation for Managed Streaming for Kafka.
+//
+// Deletes the Amazon MSK VPC connection specified in your request.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Managed Streaming for Kafka's
+// API operation DeleteVpcConnection for usage and error information.
+//
+// Returned Error Types:
+//
+//   - NotFoundException
+//     Returns information about an error.
+//
+//   - BadRequestException
+//     Returns information about an error.
+//
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/DeleteVpcConnection
+func (c *Kafka) DeleteVpcConnection(input *DeleteVpcConnectionInput) (*DeleteVpcConnectionOutput, error) {
+	req, out := c.DeleteVpcConnectionRequest(input)
+	return out, req.Send()
+}
+
+// DeleteVpcConnectionWithContext is the same as DeleteVpcConnection with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteVpcConnection for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Kafka) DeleteVpcConnectionWithContext(ctx aws.Context, input *DeleteVpcConnectionInput, opts ...request.Option) (*DeleteVpcConnectionOutput, error) {
+	req, out := c.DeleteVpcConnectionRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opDescribeCluster = "DescribeCluster"
 
 // DescribeClusterRequest generates a "aws/request.Request" representing the
@@ -693,14 +1168,13 @@ const opDescribeCluster = "DescribeCluster"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeClusterRequest method.
+//	req, resp := client.DescribeClusterRequest(params)
 //
-//    // Example sending a request using the DescribeClusterRequest method.
-//    req, resp := client.DescribeClusterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/DescribeCluster
 func (c *Kafka) DescribeClusterRequest(input *DescribeClusterInput) (req *request.Request, output *DescribeClusterOutput) {
@@ -732,20 +1206,21 @@ func (c *Kafka) DescribeClusterRequest(input *DescribeClusterInput) (req *reques
 // API operation DescribeCluster for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   Returns information about an error.
 //
-//   * BadRequestException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/DescribeCluster
 func (c *Kafka) DescribeCluster(input *DescribeClusterInput) (*DescribeClusterOutput, error) {
@@ -785,14 +1260,13 @@ const opDescribeClusterOperation = "DescribeClusterOperation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeClusterOperationRequest method.
+//	req, resp := client.DescribeClusterOperationRequest(params)
 //
-//    // Example sending a request using the DescribeClusterOperationRequest method.
-//    req, resp := client.DescribeClusterOperationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/DescribeClusterOperation
 func (c *Kafka) DescribeClusterOperationRequest(input *DescribeClusterOperationInput) (req *request.Request, output *DescribeClusterOperationOutput) {
@@ -823,20 +1297,21 @@ func (c *Kafka) DescribeClusterOperationRequest(input *DescribeClusterOperationI
 // API operation DescribeClusterOperation for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   Returns information about an error.
 //
-//   * BadRequestException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/DescribeClusterOperation
 func (c *Kafka) DescribeClusterOperation(input *DescribeClusterOperationInput) (*DescribeClusterOperationOutput, error) {
@@ -860,6 +1335,103 @@ func (c *Kafka) DescribeClusterOperationWithContext(ctx aws.Context, input *Desc
 	return out, req.Send()
 }
 
+const opDescribeClusterOperationV2 = "DescribeClusterOperationV2"
+
+// DescribeClusterOperationV2Request generates a "aws/request.Request" representing the
+// client's request for the DescribeClusterOperationV2 operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeClusterOperationV2 for more information on using the DescribeClusterOperationV2
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribeClusterOperationV2Request method.
+//	req, resp := client.DescribeClusterOperationV2Request(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/DescribeClusterOperationV2
+func (c *Kafka) DescribeClusterOperationV2Request(input *DescribeClusterOperationV2Input) (req *request.Request, output *DescribeClusterOperationV2Output) {
+	op := &request.Operation{
+		Name:       opDescribeClusterOperationV2,
+		HTTPMethod: "GET",
+		HTTPPath:   "/api/v2/operations/{clusterOperationArn}",
+	}
+
+	if input == nil {
+		input = &DescribeClusterOperationV2Input{}
+	}
+
+	output = &DescribeClusterOperationV2Output{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeClusterOperationV2 API operation for Managed Streaming for Kafka.
+//
+// Returns a description of the cluster operation specified by the ARN.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Managed Streaming for Kafka's
+// API operation DescribeClusterOperationV2 for usage and error information.
+//
+// Returned Error Types:
+//
+//   - BadRequestException
+//     Returns information about an error.
+//
+//   - UnauthorizedException
+//     Returns information about an error.
+//
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
+//
+//   - NotFoundException
+//     Returns information about an error.
+//
+//   - ServiceUnavailableException
+//     Returns information about an error.
+//
+//   - TooManyRequestsException
+//     Returns information about an error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/DescribeClusterOperationV2
+func (c *Kafka) DescribeClusterOperationV2(input *DescribeClusterOperationV2Input) (*DescribeClusterOperationV2Output, error) {
+	req, out := c.DescribeClusterOperationV2Request(input)
+	return out, req.Send()
+}
+
+// DescribeClusterOperationV2WithContext is the same as DescribeClusterOperationV2 with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeClusterOperationV2 for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Kafka) DescribeClusterOperationV2WithContext(ctx aws.Context, input *DescribeClusterOperationV2Input, opts ...request.Option) (*DescribeClusterOperationV2Output, error) {
+	req, out := c.DescribeClusterOperationV2Request(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opDescribeClusterV2 = "DescribeClusterV2"
 
 // DescribeClusterV2Request generates a "aws/request.Request" representing the
@@ -876,14 +1448,13 @@ const opDescribeClusterV2 = "DescribeClusterV2"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeClusterV2Request method.
+//	req, resp := client.DescribeClusterV2Request(params)
 //
-//    // Example sending a request using the DescribeClusterV2Request method.
-//    req, resp := client.DescribeClusterV2Request(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/DescribeClusterV2
 func (c *Kafka) DescribeClusterV2Request(input *DescribeClusterV2Input) (req *request.Request, output *DescribeClusterV2Output) {
@@ -915,20 +1486,21 @@ func (c *Kafka) DescribeClusterV2Request(input *DescribeClusterV2Input) (req *re
 // API operation DescribeClusterV2 for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   Returns information about an error.
 //
-//   * BadRequestException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/DescribeClusterV2
 func (c *Kafka) DescribeClusterV2(input *DescribeClusterV2Input) (*DescribeClusterV2Output, error) {
@@ -968,14 +1540,13 @@ const opDescribeConfiguration = "DescribeConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeConfigurationRequest method.
+//	req, resp := client.DescribeConfigurationRequest(params)
 //
-//    // Example sending a request using the DescribeConfigurationRequest method.
-//    req, resp := client.DescribeConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/DescribeConfiguration
 func (c *Kafka) DescribeConfigurationRequest(input *DescribeConfigurationInput) (req *request.Request, output *DescribeConfigurationOutput) {
@@ -1006,23 +1577,24 @@ func (c *Kafka) DescribeConfigurationRequest(input *DescribeConfigurationInput) 
 // API operation DescribeConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
-//   * NotFoundException
-//   Returns information about an error.
+//   - ForbiddenException
+//     Returns information about an error.
 //
-//   * ServiceUnavailableException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
+//
+//   - ServiceUnavailableException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/DescribeConfiguration
 func (c *Kafka) DescribeConfiguration(input *DescribeConfigurationInput) (*DescribeConfigurationOutput, error) {
@@ -1062,14 +1634,13 @@ const opDescribeConfigurationRevision = "DescribeConfigurationRevision"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeConfigurationRevisionRequest method.
+//	req, resp := client.DescribeConfigurationRevisionRequest(params)
 //
-//    // Example sending a request using the DescribeConfigurationRevisionRequest method.
-//    req, resp := client.DescribeConfigurationRevisionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/DescribeConfigurationRevision
 func (c *Kafka) DescribeConfigurationRevisionRequest(input *DescribeConfigurationRevisionInput) (req *request.Request, output *DescribeConfigurationRevisionOutput) {
@@ -1100,23 +1671,24 @@ func (c *Kafka) DescribeConfigurationRevisionRequest(input *DescribeConfiguratio
 // API operation DescribeConfigurationRevision for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
-//   * NotFoundException
-//   Returns information about an error.
+//   - ForbiddenException
+//     Returns information about an error.
 //
-//   * ServiceUnavailableException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
+//
+//   - ServiceUnavailableException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/DescribeConfigurationRevision
 func (c *Kafka) DescribeConfigurationRevision(input *DescribeConfigurationRevisionInput) (*DescribeConfigurationRevisionOutput, error) {
@@ -1140,6 +1712,198 @@ func (c *Kafka) DescribeConfigurationRevisionWithContext(ctx aws.Context, input 
 	return out, req.Send()
 }
 
+const opDescribeReplicator = "DescribeReplicator"
+
+// DescribeReplicatorRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeReplicator operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeReplicator for more information on using the DescribeReplicator
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribeReplicatorRequest method.
+//	req, resp := client.DescribeReplicatorRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/DescribeReplicator
+func (c *Kafka) DescribeReplicatorRequest(input *DescribeReplicatorInput) (req *request.Request, output *DescribeReplicatorOutput) {
+	op := &request.Operation{
+		Name:       opDescribeReplicator,
+		HTTPMethod: "GET",
+		HTTPPath:   "/replication/v1/replicators/{replicatorArn}",
+	}
+
+	if input == nil {
+		input = &DescribeReplicatorInput{}
+	}
+
+	output = &DescribeReplicatorOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeReplicator API operation for Managed Streaming for Kafka.
+//
+// Returns a description of the Kafka Replicator whose Amazon Resource Name
+// (ARN) is specified in the request.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Managed Streaming for Kafka's
+// API operation DescribeReplicator for usage and error information.
+//
+// Returned Error Types:
+//
+//   - BadRequestException
+//     Returns information about an error.
+//
+//   - UnauthorizedException
+//     Returns information about an error.
+//
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
+//
+//   - NotFoundException
+//     Returns information about an error.
+//
+//   - ServiceUnavailableException
+//     Returns information about an error.
+//
+//   - TooManyRequestsException
+//     Returns information about an error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/DescribeReplicator
+func (c *Kafka) DescribeReplicator(input *DescribeReplicatorInput) (*DescribeReplicatorOutput, error) {
+	req, out := c.DescribeReplicatorRequest(input)
+	return out, req.Send()
+}
+
+// DescribeReplicatorWithContext is the same as DescribeReplicator with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeReplicator for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Kafka) DescribeReplicatorWithContext(ctx aws.Context, input *DescribeReplicatorInput, opts ...request.Option) (*DescribeReplicatorOutput, error) {
+	req, out := c.DescribeReplicatorRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDescribeVpcConnection = "DescribeVpcConnection"
+
+// DescribeVpcConnectionRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeVpcConnection operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeVpcConnection for more information on using the DescribeVpcConnection
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribeVpcConnectionRequest method.
+//	req, resp := client.DescribeVpcConnectionRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/DescribeVpcConnection
+func (c *Kafka) DescribeVpcConnectionRequest(input *DescribeVpcConnectionInput) (req *request.Request, output *DescribeVpcConnectionOutput) {
+	op := &request.Operation{
+		Name:       opDescribeVpcConnection,
+		HTTPMethod: "GET",
+		HTTPPath:   "/v1/vpc-connection/{arn}",
+	}
+
+	if input == nil {
+		input = &DescribeVpcConnectionInput{}
+	}
+
+	output = &DescribeVpcConnectionOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeVpcConnection API operation for Managed Streaming for Kafka.
+//
+// Displays information about the specified Amazon MSK VPC connection.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Managed Streaming for Kafka's
+// API operation DescribeVpcConnection for usage and error information.
+//
+// Returned Error Types:
+//
+//   - BadRequestException
+//     Returns information about an error.
+//
+//   - UnauthorizedException
+//     Returns information about an error.
+//
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
+//
+//   - NotFoundException
+//     Returns information about an error.
+//
+//   - ServiceUnavailableException
+//     Returns information about an error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/DescribeVpcConnection
+func (c *Kafka) DescribeVpcConnection(input *DescribeVpcConnectionInput) (*DescribeVpcConnectionOutput, error) {
+	req, out := c.DescribeVpcConnectionRequest(input)
+	return out, req.Send()
+}
+
+// DescribeVpcConnectionWithContext is the same as DescribeVpcConnection with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeVpcConnection for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Kafka) DescribeVpcConnectionWithContext(ctx aws.Context, input *DescribeVpcConnectionInput, opts ...request.Option) (*DescribeVpcConnectionOutput, error) {
+	req, out := c.DescribeVpcConnectionRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opGetBootstrapBrokers = "GetBootstrapBrokers"
 
 // GetBootstrapBrokersRequest generates a "aws/request.Request" representing the
@@ -1156,14 +1920,13 @@ const opGetBootstrapBrokers = "GetBootstrapBrokers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetBootstrapBrokersRequest method.
+//	req, resp := client.GetBootstrapBrokersRequest(params)
 //
-//    // Example sending a request using the GetBootstrapBrokersRequest method.
-//    req, resp := client.GetBootstrapBrokersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/GetBootstrapBrokers
 func (c *Kafka) GetBootstrapBrokersRequest(input *GetBootstrapBrokersInput) (req *request.Request, output *GetBootstrapBrokersOutput) {
@@ -1194,20 +1957,21 @@ func (c *Kafka) GetBootstrapBrokersRequest(input *GetBootstrapBrokersInput) (req
 // API operation GetBootstrapBrokers for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ConflictException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - ConflictException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/GetBootstrapBrokers
 func (c *Kafka) GetBootstrapBrokers(input *GetBootstrapBrokersInput) (*GetBootstrapBrokersOutput, error) {
@@ -1231,6 +1995,97 @@ func (c *Kafka) GetBootstrapBrokersWithContext(ctx aws.Context, input *GetBootst
 	return out, req.Send()
 }
 
+const opGetClusterPolicy = "GetClusterPolicy"
+
+// GetClusterPolicyRequest generates a "aws/request.Request" representing the
+// client's request for the GetClusterPolicy operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetClusterPolicy for more information on using the GetClusterPolicy
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetClusterPolicyRequest method.
+//	req, resp := client.GetClusterPolicyRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/GetClusterPolicy
+func (c *Kafka) GetClusterPolicyRequest(input *GetClusterPolicyInput) (req *request.Request, output *GetClusterPolicyOutput) {
+	op := &request.Operation{
+		Name:       opGetClusterPolicy,
+		HTTPMethod: "GET",
+		HTTPPath:   "/v1/clusters/{clusterArn}/policy",
+	}
+
+	if input == nil {
+		input = &GetClusterPolicyInput{}
+	}
+
+	output = &GetClusterPolicyOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetClusterPolicy API operation for Managed Streaming for Kafka.
+//
+// Retrieves the contents of the specified MSK cluster policy.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Managed Streaming for Kafka's
+// API operation GetClusterPolicy for usage and error information.
+//
+// Returned Error Types:
+//
+//   - NotFoundException
+//     Returns information about an error.
+//
+//   - BadRequestException
+//     Returns information about an error.
+//
+//   - UnauthorizedException
+//     Returns information about an error.
+//
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/GetClusterPolicy
+func (c *Kafka) GetClusterPolicy(input *GetClusterPolicyInput) (*GetClusterPolicyOutput, error) {
+	req, out := c.GetClusterPolicyRequest(input)
+	return out, req.Send()
+}
+
+// GetClusterPolicyWithContext is the same as GetClusterPolicy with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetClusterPolicy for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Kafka) GetClusterPolicyWithContext(ctx aws.Context, input *GetClusterPolicyInput, opts ...request.Option) (*GetClusterPolicyOutput, error) {
+	req, out := c.GetClusterPolicyRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opGetCompatibleKafkaVersions = "GetCompatibleKafkaVersions"
 
 // GetCompatibleKafkaVersionsRequest generates a "aws/request.Request" representing the
@@ -1247,14 +2102,13 @@ const opGetCompatibleKafkaVersions = "GetCompatibleKafkaVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCompatibleKafkaVersionsRequest method.
+//	req, resp := client.GetCompatibleKafkaVersionsRequest(params)
 //
-//    // Example sending a request using the GetCompatibleKafkaVersionsRequest method.
-//    req, resp := client.GetCompatibleKafkaVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/GetCompatibleKafkaVersions
 func (c *Kafka) GetCompatibleKafkaVersionsRequest(input *GetCompatibleKafkaVersionsInput) (req *request.Request, output *GetCompatibleKafkaVersionsOutput) {
@@ -1285,26 +2139,27 @@ func (c *Kafka) GetCompatibleKafkaVersionsRequest(input *GetCompatibleKafkaVersi
 // API operation GetCompatibleKafkaVersions for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
-//   * NotFoundException
-//   Returns information about an error.
+//   - ForbiddenException
+//     Returns information about an error.
 //
-//   * ServiceUnavailableException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * TooManyRequestsException
-//   Returns information about an error.
+//   - ServiceUnavailableException
+//     Returns information about an error.
+//
+//   - TooManyRequestsException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/GetCompatibleKafkaVersions
 func (c *Kafka) GetCompatibleKafkaVersions(input *GetCompatibleKafkaVersionsInput) (*GetCompatibleKafkaVersionsOutput, error) {
@@ -1328,6 +2183,154 @@ func (c *Kafka) GetCompatibleKafkaVersionsWithContext(ctx aws.Context, input *Ge
 	return out, req.Send()
 }
 
+const opListClientVpcConnections = "ListClientVpcConnections"
+
+// ListClientVpcConnectionsRequest generates a "aws/request.Request" representing the
+// client's request for the ListClientVpcConnections operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListClientVpcConnections for more information on using the ListClientVpcConnections
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListClientVpcConnectionsRequest method.
+//	req, resp := client.ListClientVpcConnectionsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/ListClientVpcConnections
+func (c *Kafka) ListClientVpcConnectionsRequest(input *ListClientVpcConnectionsInput) (req *request.Request, output *ListClientVpcConnectionsOutput) {
+	op := &request.Operation{
+		Name:       opListClientVpcConnections,
+		HTTPMethod: "GET",
+		HTTPPath:   "/v1/clusters/{clusterArn}/client-vpc-connections",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListClientVpcConnectionsInput{}
+	}
+
+	output = &ListClientVpcConnectionsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListClientVpcConnections API operation for Managed Streaming for Kafka.
+//
+// Displays a list of client VPC connections.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Managed Streaming for Kafka's
+// API operation ListClientVpcConnections for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ServiceUnavailableException
+//     Returns information about an error.
+//
+//   - BadRequestException
+//     Returns information about an error.
+//
+//   - UnauthorizedException
+//     Returns information about an error.
+//
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/ListClientVpcConnections
+func (c *Kafka) ListClientVpcConnections(input *ListClientVpcConnectionsInput) (*ListClientVpcConnectionsOutput, error) {
+	req, out := c.ListClientVpcConnectionsRequest(input)
+	return out, req.Send()
+}
+
+// ListClientVpcConnectionsWithContext is the same as ListClientVpcConnections with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListClientVpcConnections for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Kafka) ListClientVpcConnectionsWithContext(ctx aws.Context, input *ListClientVpcConnectionsInput, opts ...request.Option) (*ListClientVpcConnectionsOutput, error) {
+	req, out := c.ListClientVpcConnectionsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListClientVpcConnectionsPages iterates over the pages of a ListClientVpcConnections operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListClientVpcConnections method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListClientVpcConnections operation.
+//	pageNum := 0
+//	err := client.ListClientVpcConnectionsPages(params,
+//	    func(page *kafka.ListClientVpcConnectionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *Kafka) ListClientVpcConnectionsPages(input *ListClientVpcConnectionsInput, fn func(*ListClientVpcConnectionsOutput, bool) bool) error {
+	return c.ListClientVpcConnectionsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListClientVpcConnectionsPagesWithContext same as ListClientVpcConnectionsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Kafka) ListClientVpcConnectionsPagesWithContext(ctx aws.Context, input *ListClientVpcConnectionsInput, fn func(*ListClientVpcConnectionsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListClientVpcConnectionsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListClientVpcConnectionsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListClientVpcConnectionsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opListClusterOperations = "ListClusterOperations"
 
 // ListClusterOperationsRequest generates a "aws/request.Request" representing the
@@ -1344,14 +2347,13 @@ const opListClusterOperations = "ListClusterOperations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListClusterOperationsRequest method.
+//	req, resp := client.ListClusterOperationsRequest(params)
 //
-//    // Example sending a request using the ListClusterOperationsRequest method.
-//    req, resp := client.ListClusterOperationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/ListClusterOperations
 func (c *Kafka) ListClusterOperationsRequest(input *ListClusterOperationsInput) (req *request.Request, output *ListClusterOperationsOutput) {
@@ -1389,17 +2391,18 @@ func (c *Kafka) ListClusterOperationsRequest(input *ListClusterOperationsInput) 
 // API operation ListClusterOperations for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/ListClusterOperations
 func (c *Kafka) ListClusterOperations(input *ListClusterOperationsInput) (*ListClusterOperationsOutput, error) {
@@ -1431,15 +2434,14 @@ func (c *Kafka) ListClusterOperationsWithContext(ctx aws.Context, input *ListClu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListClusterOperations operation.
-//    pageNum := 0
-//    err := client.ListClusterOperationsPages(params,
-//        func(page *kafka.ListClusterOperationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListClusterOperations operation.
+//	pageNum := 0
+//	err := client.ListClusterOperationsPages(params,
+//	    func(page *kafka.ListClusterOperationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Kafka) ListClusterOperationsPages(input *ListClusterOperationsInput, fn func(*ListClusterOperationsOutput, bool) bool) error {
 	return c.ListClusterOperationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1475,6 +2477,161 @@ func (c *Kafka) ListClusterOperationsPagesWithContext(ctx aws.Context, input *Li
 	return p.Err()
 }
 
+const opListClusterOperationsV2 = "ListClusterOperationsV2"
+
+// ListClusterOperationsV2Request generates a "aws/request.Request" representing the
+// client's request for the ListClusterOperationsV2 operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListClusterOperationsV2 for more information on using the ListClusterOperationsV2
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListClusterOperationsV2Request method.
+//	req, resp := client.ListClusterOperationsV2Request(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/ListClusterOperationsV2
+func (c *Kafka) ListClusterOperationsV2Request(input *ListClusterOperationsV2Input) (req *request.Request, output *ListClusterOperationsV2Output) {
+	op := &request.Operation{
+		Name:       opListClusterOperationsV2,
+		HTTPMethod: "GET",
+		HTTPPath:   "/api/v2/clusters/{clusterArn}/operations",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListClusterOperationsV2Input{}
+	}
+
+	output = &ListClusterOperationsV2Output{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListClusterOperationsV2 API operation for Managed Streaming for Kafka.
+//
+// Returns a list of all the operations that have been performed on the specified
+// MSK cluster.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Managed Streaming for Kafka's
+// API operation ListClusterOperationsV2 for usage and error information.
+//
+// Returned Error Types:
+//
+//   - BadRequestException
+//     Returns information about an error.
+//
+//   - UnauthorizedException
+//     Returns information about an error.
+//
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
+//
+//   - NotFoundException
+//     Returns information about an error.
+//
+//   - ServiceUnavailableException
+//     Returns information about an error.
+//
+//   - TooManyRequestsException
+//     Returns information about an error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/ListClusterOperationsV2
+func (c *Kafka) ListClusterOperationsV2(input *ListClusterOperationsV2Input) (*ListClusterOperationsV2Output, error) {
+	req, out := c.ListClusterOperationsV2Request(input)
+	return out, req.Send()
+}
+
+// ListClusterOperationsV2WithContext is the same as ListClusterOperationsV2 with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListClusterOperationsV2 for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Kafka) ListClusterOperationsV2WithContext(ctx aws.Context, input *ListClusterOperationsV2Input, opts ...request.Option) (*ListClusterOperationsV2Output, error) {
+	req, out := c.ListClusterOperationsV2Request(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListClusterOperationsV2Pages iterates over the pages of a ListClusterOperationsV2 operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListClusterOperationsV2 method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListClusterOperationsV2 operation.
+//	pageNum := 0
+//	err := client.ListClusterOperationsV2Pages(params,
+//	    func(page *kafka.ListClusterOperationsV2Output, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *Kafka) ListClusterOperationsV2Pages(input *ListClusterOperationsV2Input, fn func(*ListClusterOperationsV2Output, bool) bool) error {
+	return c.ListClusterOperationsV2PagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListClusterOperationsV2PagesWithContext same as ListClusterOperationsV2Pages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Kafka) ListClusterOperationsV2PagesWithContext(ctx aws.Context, input *ListClusterOperationsV2Input, fn func(*ListClusterOperationsV2Output, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListClusterOperationsV2Input
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListClusterOperationsV2Request(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListClusterOperationsV2Output), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opListClusters = "ListClusters"
 
 // ListClustersRequest generates a "aws/request.Request" representing the
@@ -1491,14 +2648,13 @@ const opListClusters = "ListClusters"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListClustersRequest method.
+//	req, resp := client.ListClustersRequest(params)
 //
-//    // Example sending a request using the ListClustersRequest method.
-//    req, resp := client.ListClustersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/ListClusters
 func (c *Kafka) ListClustersRequest(input *ListClustersInput) (req *request.Request, output *ListClustersOutput) {
@@ -1535,17 +2691,18 @@ func (c *Kafka) ListClustersRequest(input *ListClustersInput) (req *request.Requ
 // API operation ListClusters for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/ListClusters
 func (c *Kafka) ListClusters(input *ListClustersInput) (*ListClustersOutput, error) {
@@ -1577,15 +2734,14 @@ func (c *Kafka) ListClustersWithContext(ctx aws.Context, input *ListClustersInpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListClusters operation.
-//    pageNum := 0
-//    err := client.ListClustersPages(params,
-//        func(page *kafka.ListClustersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListClusters operation.
+//	pageNum := 0
+//	err := client.ListClustersPages(params,
+//	    func(page *kafka.ListClustersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Kafka) ListClustersPages(input *ListClustersInput, fn func(*ListClustersOutput, bool) bool) error {
 	return c.ListClustersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1637,14 +2793,13 @@ const opListClustersV2 = "ListClustersV2"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListClustersV2Request method.
+//	req, resp := client.ListClustersV2Request(params)
 //
-//    // Example sending a request using the ListClustersV2Request method.
-//    req, resp := client.ListClustersV2Request(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/ListClustersV2
 func (c *Kafka) ListClustersV2Request(input *ListClustersV2Input) (req *request.Request, output *ListClustersV2Output) {
@@ -1681,17 +2836,18 @@ func (c *Kafka) ListClustersV2Request(input *ListClustersV2Input) (req *request.
 // API operation ListClustersV2 for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/ListClustersV2
 func (c *Kafka) ListClustersV2(input *ListClustersV2Input) (*ListClustersV2Output, error) {
@@ -1723,15 +2879,14 @@ func (c *Kafka) ListClustersV2WithContext(ctx aws.Context, input *ListClustersV2
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListClustersV2 operation.
-//    pageNum := 0
-//    err := client.ListClustersV2Pages(params,
-//        func(page *kafka.ListClustersV2Output, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListClustersV2 operation.
+//	pageNum := 0
+//	err := client.ListClustersV2Pages(params,
+//	    func(page *kafka.ListClustersV2Output, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Kafka) ListClustersV2Pages(input *ListClustersV2Input, fn func(*ListClustersV2Output, bool) bool) error {
 	return c.ListClustersV2PagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1783,14 +2938,13 @@ const opListConfigurationRevisions = "ListConfigurationRevisions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListConfigurationRevisionsRequest method.
+//	req, resp := client.ListConfigurationRevisionsRequest(params)
 //
-//    // Example sending a request using the ListConfigurationRevisionsRequest method.
-//    req, resp := client.ListConfigurationRevisionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/ListConfigurationRevisions
 func (c *Kafka) ListConfigurationRevisionsRequest(input *ListConfigurationRevisionsInput) (req *request.Request, output *ListConfigurationRevisionsOutput) {
@@ -1827,23 +2981,24 @@ func (c *Kafka) ListConfigurationRevisionsRequest(input *ListConfigurationRevisi
 // API operation ListConfigurationRevisions for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
-//   * NotFoundException
-//   Returns information about an error.
+//   - ForbiddenException
+//     Returns information about an error.
 //
-//   * ServiceUnavailableException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
+//
+//   - ServiceUnavailableException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/ListConfigurationRevisions
 func (c *Kafka) ListConfigurationRevisions(input *ListConfigurationRevisionsInput) (*ListConfigurationRevisionsOutput, error) {
@@ -1875,15 +3030,14 @@ func (c *Kafka) ListConfigurationRevisionsWithContext(ctx aws.Context, input *Li
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListConfigurationRevisions operation.
-//    pageNum := 0
-//    err := client.ListConfigurationRevisionsPages(params,
-//        func(page *kafka.ListConfigurationRevisionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListConfigurationRevisions operation.
+//	pageNum := 0
+//	err := client.ListConfigurationRevisionsPages(params,
+//	    func(page *kafka.ListConfigurationRevisionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Kafka) ListConfigurationRevisionsPages(input *ListConfigurationRevisionsInput, fn func(*ListConfigurationRevisionsOutput, bool) bool) error {
 	return c.ListConfigurationRevisionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1935,14 +3089,13 @@ const opListConfigurations = "ListConfigurations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListConfigurationsRequest method.
+//	req, resp := client.ListConfigurationsRequest(params)
 //
-//    // Example sending a request using the ListConfigurationsRequest method.
-//    req, resp := client.ListConfigurationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/ListConfigurations
 func (c *Kafka) ListConfigurationsRequest(input *ListConfigurationsInput) (req *request.Request, output *ListConfigurationsOutput) {
@@ -1979,20 +3132,21 @@ func (c *Kafka) ListConfigurationsRequest(input *ListConfigurationsInput) (req *
 // API operation ListConfigurations for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
-//   Returns information about an error.
 //
-//   * BadRequestException
-//   Returns information about an error.
+//   - ServiceUnavailableException
+//     Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/ListConfigurations
 func (c *Kafka) ListConfigurations(input *ListConfigurationsInput) (*ListConfigurationsOutput, error) {
@@ -2024,15 +3178,14 @@ func (c *Kafka) ListConfigurationsWithContext(ctx aws.Context, input *ListConfig
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListConfigurations operation.
-//    pageNum := 0
-//    err := client.ListConfigurationsPages(params,
-//        func(page *kafka.ListConfigurationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListConfigurations operation.
+//	pageNum := 0
+//	err := client.ListConfigurationsPages(params,
+//	    func(page *kafka.ListConfigurationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Kafka) ListConfigurationsPages(input *ListConfigurationsInput, fn func(*ListConfigurationsOutput, bool) bool) error {
 	return c.ListConfigurationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2084,14 +3237,13 @@ const opListKafkaVersions = "ListKafkaVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListKafkaVersionsRequest method.
+//	req, resp := client.ListKafkaVersionsRequest(params)
 //
-//    // Example sending a request using the ListKafkaVersionsRequest method.
-//    req, resp := client.ListKafkaVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/ListKafkaVersions
 func (c *Kafka) ListKafkaVersionsRequest(input *ListKafkaVersionsInput) (req *request.Request, output *ListKafkaVersionsOutput) {
@@ -2128,17 +3280,18 @@ func (c *Kafka) ListKafkaVersionsRequest(input *ListKafkaVersionsInput) (req *re
 // API operation ListKafkaVersions for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/ListKafkaVersions
 func (c *Kafka) ListKafkaVersions(input *ListKafkaVersionsInput) (*ListKafkaVersionsOutput, error) {
@@ -2170,15 +3323,14 @@ func (c *Kafka) ListKafkaVersionsWithContext(ctx aws.Context, input *ListKafkaVe
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListKafkaVersions operation.
-//    pageNum := 0
-//    err := client.ListKafkaVersionsPages(params,
-//        func(page *kafka.ListKafkaVersionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListKafkaVersions operation.
+//	pageNum := 0
+//	err := client.ListKafkaVersionsPages(params,
+//	    func(page *kafka.ListKafkaVersionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Kafka) ListKafkaVersionsPages(input *ListKafkaVersionsInput, fn func(*ListKafkaVersionsOutput, bool) bool) error {
 	return c.ListKafkaVersionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2230,14 +3382,13 @@ const opListNodes = "ListNodes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListNodesRequest method.
+//	req, resp := client.ListNodesRequest(params)
 //
-//    // Example sending a request using the ListNodesRequest method.
-//    req, resp := client.ListNodesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/ListNodes
 func (c *Kafka) ListNodesRequest(input *ListNodesInput) (req *request.Request, output *ListNodesOutput) {
@@ -2274,17 +3425,18 @@ func (c *Kafka) ListNodesRequest(input *ListNodesInput) (req *request.Request, o
 // API operation ListNodes for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   Returns information about an error.
 //
-//   * BadRequestException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/ListNodes
 func (c *Kafka) ListNodes(input *ListNodesInput) (*ListNodesOutput, error) {
@@ -2316,15 +3468,14 @@ func (c *Kafka) ListNodesWithContext(ctx aws.Context, input *ListNodesInput, opt
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListNodes operation.
-//    pageNum := 0
-//    err := client.ListNodesPages(params,
-//        func(page *kafka.ListNodesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListNodes operation.
+//	pageNum := 0
+//	err := client.ListNodesPages(params,
+//	    func(page *kafka.ListNodesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Kafka) ListNodesPages(input *ListNodesInput, fn func(*ListNodesOutput, bool) bool) error {
 	return c.ListNodesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2360,6 +3511,160 @@ func (c *Kafka) ListNodesPagesWithContext(ctx aws.Context, input *ListNodesInput
 	return p.Err()
 }
 
+const opListReplicators = "ListReplicators"
+
+// ListReplicatorsRequest generates a "aws/request.Request" representing the
+// client's request for the ListReplicators operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListReplicators for more information on using the ListReplicators
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListReplicatorsRequest method.
+//	req, resp := client.ListReplicatorsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/ListReplicators
+func (c *Kafka) ListReplicatorsRequest(input *ListReplicatorsInput) (req *request.Request, output *ListReplicatorsOutput) {
+	op := &request.Operation{
+		Name:       opListReplicators,
+		HTTPMethod: "GET",
+		HTTPPath:   "/replication/v1/replicators",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListReplicatorsInput{}
+	}
+
+	output = &ListReplicatorsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListReplicators API operation for Managed Streaming for Kafka.
+//
+// Lists the replicators.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Managed Streaming for Kafka's
+// API operation ListReplicators for usage and error information.
+//
+// Returned Error Types:
+//
+//   - BadRequestException
+//     Returns information about an error.
+//
+//   - UnauthorizedException
+//     Returns information about an error.
+//
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
+//
+//   - NotFoundException
+//     Returns information about an error.
+//
+//   - ServiceUnavailableException
+//     Returns information about an error.
+//
+//   - TooManyRequestsException
+//     Returns information about an error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/ListReplicators
+func (c *Kafka) ListReplicators(input *ListReplicatorsInput) (*ListReplicatorsOutput, error) {
+	req, out := c.ListReplicatorsRequest(input)
+	return out, req.Send()
+}
+
+// ListReplicatorsWithContext is the same as ListReplicators with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListReplicators for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Kafka) ListReplicatorsWithContext(ctx aws.Context, input *ListReplicatorsInput, opts ...request.Option) (*ListReplicatorsOutput, error) {
+	req, out := c.ListReplicatorsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListReplicatorsPages iterates over the pages of a ListReplicators operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListReplicators method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListReplicators operation.
+//	pageNum := 0
+//	err := client.ListReplicatorsPages(params,
+//	    func(page *kafka.ListReplicatorsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *Kafka) ListReplicatorsPages(input *ListReplicatorsInput, fn func(*ListReplicatorsOutput, bool) bool) error {
+	return c.ListReplicatorsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListReplicatorsPagesWithContext same as ListReplicatorsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Kafka) ListReplicatorsPagesWithContext(ctx aws.Context, input *ListReplicatorsInput, fn func(*ListReplicatorsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListReplicatorsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListReplicatorsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListReplicatorsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opListScramSecrets = "ListScramSecrets"
 
 // ListScramSecretsRequest generates a "aws/request.Request" representing the
@@ -2376,14 +3681,13 @@ const opListScramSecrets = "ListScramSecrets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListScramSecretsRequest method.
+//	req, resp := client.ListScramSecretsRequest(params)
 //
-//    // Example sending a request using the ListScramSecretsRequest method.
-//    req, resp := client.ListScramSecretsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/ListScramSecrets
 func (c *Kafka) ListScramSecretsRequest(input *ListScramSecretsInput) (req *request.Request, output *ListScramSecretsOutput) {
@@ -2420,26 +3724,27 @@ func (c *Kafka) ListScramSecretsRequest(input *ListScramSecretsInput) (req *requ
 // API operation ListScramSecrets for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
-//   * NotFoundException
-//   Returns information about an error.
+//   - ForbiddenException
+//     Returns information about an error.
 //
-//   * ServiceUnavailableException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * TooManyRequestsException
-//   Returns information about an error.
+//   - ServiceUnavailableException
+//     Returns information about an error.
+//
+//   - TooManyRequestsException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/ListScramSecrets
 func (c *Kafka) ListScramSecrets(input *ListScramSecretsInput) (*ListScramSecretsOutput, error) {
@@ -2471,15 +3776,14 @@ func (c *Kafka) ListScramSecretsWithContext(ctx aws.Context, input *ListScramSec
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListScramSecrets operation.
-//    pageNum := 0
-//    err := client.ListScramSecretsPages(params,
-//        func(page *kafka.ListScramSecretsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListScramSecrets operation.
+//	pageNum := 0
+//	err := client.ListScramSecretsPages(params,
+//	    func(page *kafka.ListScramSecretsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Kafka) ListScramSecretsPages(input *ListScramSecretsInput, fn func(*ListScramSecretsOutput, bool) bool) error {
 	return c.ListScramSecretsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2531,14 +3835,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/ListTagsForResource
 func (c *Kafka) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -2569,14 +3872,15 @@ func (c *Kafka) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   Returns information about an error.
 //
-//   * BadRequestException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
+//
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/ListTagsForResource
 func (c *Kafka) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -2600,6 +3904,246 @@ func (c *Kafka) ListTagsForResourceWithContext(ctx aws.Context, input *ListTagsF
 	return out, req.Send()
 }
 
+const opListVpcConnections = "ListVpcConnections"
+
+// ListVpcConnectionsRequest generates a "aws/request.Request" representing the
+// client's request for the ListVpcConnections operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListVpcConnections for more information on using the ListVpcConnections
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListVpcConnectionsRequest method.
+//	req, resp := client.ListVpcConnectionsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/ListVpcConnections
+func (c *Kafka) ListVpcConnectionsRequest(input *ListVpcConnectionsInput) (req *request.Request, output *ListVpcConnectionsOutput) {
+	op := &request.Operation{
+		Name:       opListVpcConnections,
+		HTTPMethod: "GET",
+		HTTPPath:   "/v1/vpc-connections",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListVpcConnectionsInput{}
+	}
+
+	output = &ListVpcConnectionsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListVpcConnections API operation for Managed Streaming for Kafka.
+//
+// Displays a list of Amazon MSK VPC connections.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Managed Streaming for Kafka's
+// API operation ListVpcConnections for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ServiceUnavailableException
+//     Returns information about an error.
+//
+//   - BadRequestException
+//     Returns information about an error.
+//
+//   - UnauthorizedException
+//     Returns information about an error.
+//
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/ListVpcConnections
+func (c *Kafka) ListVpcConnections(input *ListVpcConnectionsInput) (*ListVpcConnectionsOutput, error) {
+	req, out := c.ListVpcConnectionsRequest(input)
+	return out, req.Send()
+}
+
+// ListVpcConnectionsWithContext is the same as ListVpcConnections with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListVpcConnections for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Kafka) ListVpcConnectionsWithContext(ctx aws.Context, input *ListVpcConnectionsInput, opts ...request.Option) (*ListVpcConnectionsOutput, error) {
+	req, out := c.ListVpcConnectionsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListVpcConnectionsPages iterates over the pages of a ListVpcConnections operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListVpcConnections method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListVpcConnections operation.
+//	pageNum := 0
+//	err := client.ListVpcConnectionsPages(params,
+//	    func(page *kafka.ListVpcConnectionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *Kafka) ListVpcConnectionsPages(input *ListVpcConnectionsInput, fn func(*ListVpcConnectionsOutput, bool) bool) error {
+	return c.ListVpcConnectionsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListVpcConnectionsPagesWithContext same as ListVpcConnectionsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Kafka) ListVpcConnectionsPagesWithContext(ctx aws.Context, input *ListVpcConnectionsInput, fn func(*ListVpcConnectionsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListVpcConnectionsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListVpcConnectionsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListVpcConnectionsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opPutClusterPolicy = "PutClusterPolicy"
+
+// PutClusterPolicyRequest generates a "aws/request.Request" representing the
+// client's request for the PutClusterPolicy operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See PutClusterPolicy for more information on using the PutClusterPolicy
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the PutClusterPolicyRequest method.
+//	req, resp := client.PutClusterPolicyRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/PutClusterPolicy
+func (c *Kafka) PutClusterPolicyRequest(input *PutClusterPolicyInput) (req *request.Request, output *PutClusterPolicyOutput) {
+	op := &request.Operation{
+		Name:       opPutClusterPolicy,
+		HTTPMethod: "PUT",
+		HTTPPath:   "/v1/clusters/{clusterArn}/policy",
+	}
+
+	if input == nil {
+		input = &PutClusterPolicyInput{}
+	}
+
+	output = &PutClusterPolicyOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// PutClusterPolicy API operation for Managed Streaming for Kafka.
+//
+// Creates or updates the specified MSK cluster policy. If updating the policy,
+// the currentVersion field is required in the request payload.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Managed Streaming for Kafka's
+// API operation PutClusterPolicy for usage and error information.
+//
+// Returned Error Types:
+//
+//   - NotFoundException
+//     Returns information about an error.
+//
+//   - BadRequestException
+//     Returns information about an error.
+//
+//   - UnauthorizedException
+//     Returns information about an error.
+//
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/PutClusterPolicy
+func (c *Kafka) PutClusterPolicy(input *PutClusterPolicyInput) (*PutClusterPolicyOutput, error) {
+	req, out := c.PutClusterPolicyRequest(input)
+	return out, req.Send()
+}
+
+// PutClusterPolicyWithContext is the same as PutClusterPolicy with the addition of
+// the ability to pass a context and additional request options.
+//
+// See PutClusterPolicy for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Kafka) PutClusterPolicyWithContext(ctx aws.Context, input *PutClusterPolicyInput, opts ...request.Option) (*PutClusterPolicyOutput, error) {
+	req, out := c.PutClusterPolicyRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opRebootBroker = "RebootBroker"
 
 // RebootBrokerRequest generates a "aws/request.Request" representing the
@@ -2616,14 +4160,13 @@ const opRebootBroker = "RebootBroker"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RebootBrokerRequest method.
+//	req, resp := client.RebootBrokerRequest(params)
 //
-//    // Example sending a request using the RebootBrokerRequest method.
-//    req, resp := client.RebootBrokerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/RebootBroker
 func (c *Kafka) RebootBrokerRequest(input *RebootBrokerInput) (req *request.Request, output *RebootBrokerOutput) {
@@ -2654,26 +4197,27 @@ func (c *Kafka) RebootBrokerRequest(input *RebootBrokerInput) (req *request.Requ
 // API operation RebootBroker for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
-//   * NotFoundException
-//   Returns information about an error.
+//   - ForbiddenException
+//     Returns information about an error.
 //
-//   * ServiceUnavailableException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * TooManyRequestsException
-//   Returns information about an error.
+//   - ServiceUnavailableException
+//     Returns information about an error.
+//
+//   - TooManyRequestsException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/RebootBroker
 func (c *Kafka) RebootBroker(input *RebootBrokerInput) (*RebootBrokerOutput, error) {
@@ -2697,6 +4241,96 @@ func (c *Kafka) RebootBrokerWithContext(ctx aws.Context, input *RebootBrokerInpu
 	return out, req.Send()
 }
 
+const opRejectClientVpcConnection = "RejectClientVpcConnection"
+
+// RejectClientVpcConnectionRequest generates a "aws/request.Request" representing the
+// client's request for the RejectClientVpcConnection operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See RejectClientVpcConnection for more information on using the RejectClientVpcConnection
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the RejectClientVpcConnectionRequest method.
+//	req, resp := client.RejectClientVpcConnectionRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/RejectClientVpcConnection
+func (c *Kafka) RejectClientVpcConnectionRequest(input *RejectClientVpcConnectionInput) (req *request.Request, output *RejectClientVpcConnectionOutput) {
+	op := &request.Operation{
+		Name:       opRejectClientVpcConnection,
+		HTTPMethod: "PUT",
+		HTTPPath:   "/v1/clusters/{clusterArn}/client-vpc-connection",
+	}
+
+	if input == nil {
+		input = &RejectClientVpcConnectionInput{}
+	}
+
+	output = &RejectClientVpcConnectionOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// RejectClientVpcConnection API operation for Managed Streaming for Kafka.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Managed Streaming for Kafka's
+// API operation RejectClientVpcConnection for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ServiceUnavailableException
+//     Returns information about an error.
+//
+//   - BadRequestException
+//     Returns information about an error.
+//
+//   - UnauthorizedException
+//     Returns information about an error.
+//
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/RejectClientVpcConnection
+func (c *Kafka) RejectClientVpcConnection(input *RejectClientVpcConnectionInput) (*RejectClientVpcConnectionOutput, error) {
+	req, out := c.RejectClientVpcConnectionRequest(input)
+	return out, req.Send()
+}
+
+// RejectClientVpcConnectionWithContext is the same as RejectClientVpcConnection with the addition of
+// the ability to pass a context and additional request options.
+//
+// See RejectClientVpcConnection for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Kafka) RejectClientVpcConnectionWithContext(ctx aws.Context, input *RejectClientVpcConnectionInput, opts ...request.Option) (*RejectClientVpcConnectionOutput, error) {
+	req, out := c.RejectClientVpcConnectionRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opTagResource = "TagResource"
 
 // TagResourceRequest generates a "aws/request.Request" representing the
@@ -2713,14 +4347,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/TagResource
 func (c *Kafka) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -2752,14 +4385,15 @@ func (c *Kafka) TagResourceRequest(input *TagResourceInput) (req *request.Reques
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   Returns information about an error.
 //
-//   * BadRequestException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
+//
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/TagResource
 func (c *Kafka) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -2799,14 +4433,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/UntagResource
 func (c *Kafka) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -2838,14 +4471,15 @@ func (c *Kafka) UntagResourceRequest(input *UntagResourceInput) (req *request.Re
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   Returns information about an error.
 //
-//   * BadRequestException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
+//
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/UntagResource
 func (c *Kafka) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -2885,14 +4519,13 @@ const opUpdateBrokerCount = "UpdateBrokerCount"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateBrokerCountRequest method.
+//	req, resp := client.UpdateBrokerCountRequest(params)
 //
-//    // Example sending a request using the UpdateBrokerCountRequest method.
-//    req, resp := client.UpdateBrokerCountRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/UpdateBrokerCount
 func (c *Kafka) UpdateBrokerCountRequest(input *UpdateBrokerCountInput) (req *request.Request, output *UpdateBrokerCountOutput) {
@@ -2925,20 +4558,21 @@ func (c *Kafka) UpdateBrokerCountRequest(input *UpdateBrokerCountInput) (req *re
 // API operation UpdateBrokerCount for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
-//   Returns information about an error.
 //
-//   * BadRequestException
-//   Returns information about an error.
+//   - ServiceUnavailableException
+//     Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/UpdateBrokerCount
 func (c *Kafka) UpdateBrokerCount(input *UpdateBrokerCountInput) (*UpdateBrokerCountOutput, error) {
@@ -2978,14 +4612,13 @@ const opUpdateBrokerStorage = "UpdateBrokerStorage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateBrokerStorageRequest method.
+//	req, resp := client.UpdateBrokerStorageRequest(params)
 //
-//    // Example sending a request using the UpdateBrokerStorageRequest method.
-//    req, resp := client.UpdateBrokerStorageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/UpdateBrokerStorage
 func (c *Kafka) UpdateBrokerStorageRequest(input *UpdateBrokerStorageInput) (req *request.Request, output *UpdateBrokerStorageOutput) {
@@ -3016,20 +4649,21 @@ func (c *Kafka) UpdateBrokerStorageRequest(input *UpdateBrokerStorageInput) (req
 // API operation UpdateBrokerStorage for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
-//   Returns information about an error.
 //
-//   * BadRequestException
-//   Returns information about an error.
+//   - ServiceUnavailableException
+//     Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/UpdateBrokerStorage
 func (c *Kafka) UpdateBrokerStorage(input *UpdateBrokerStorageInput) (*UpdateBrokerStorageOutput, error) {
@@ -3069,14 +4703,13 @@ const opUpdateBrokerType = "UpdateBrokerType"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateBrokerTypeRequest method.
+//	req, resp := client.UpdateBrokerTypeRequest(params)
 //
-//    // Example sending a request using the UpdateBrokerTypeRequest method.
-//    req, resp := client.UpdateBrokerTypeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/UpdateBrokerType
 func (c *Kafka) UpdateBrokerTypeRequest(input *UpdateBrokerTypeInput) (req *request.Request, output *UpdateBrokerTypeOutput) {
@@ -3107,26 +4740,27 @@ func (c *Kafka) UpdateBrokerTypeRequest(input *UpdateBrokerTypeInput) (req *requ
 // API operation UpdateBrokerType for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - ForbiddenException
+//     Returns information about an error.
 //
-//   * NotFoundException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
-//   * ServiceUnavailableException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - ServiceUnavailableException
+//     Returns information about an error.
 //
-//   * TooManyRequestsException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
+//
+//   - TooManyRequestsException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/UpdateBrokerType
 func (c *Kafka) UpdateBrokerType(input *UpdateBrokerTypeInput) (*UpdateBrokerTypeOutput, error) {
@@ -3166,14 +4800,13 @@ const opUpdateClusterConfiguration = "UpdateClusterConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateClusterConfigurationRequest method.
+//	req, resp := client.UpdateClusterConfigurationRequest(params)
 //
-//    // Example sending a request using the UpdateClusterConfigurationRequest method.
-//    req, resp := client.UpdateClusterConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/UpdateClusterConfiguration
 func (c *Kafka) UpdateClusterConfigurationRequest(input *UpdateClusterConfigurationInput) (req *request.Request, output *UpdateClusterConfigurationOutput) {
@@ -3205,23 +4838,24 @@ func (c *Kafka) UpdateClusterConfigurationRequest(input *UpdateClusterConfigurat
 // API operation UpdateClusterConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
-//   * NotFoundException
-//   Returns information about an error.
+//   - ForbiddenException
+//     Returns information about an error.
 //
-//   * ServiceUnavailableException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
+//
+//   - ServiceUnavailableException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/UpdateClusterConfiguration
 func (c *Kafka) UpdateClusterConfiguration(input *UpdateClusterConfigurationInput) (*UpdateClusterConfigurationOutput, error) {
@@ -3261,14 +4895,13 @@ const opUpdateClusterKafkaVersion = "UpdateClusterKafkaVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateClusterKafkaVersionRequest method.
+//	req, resp := client.UpdateClusterKafkaVersionRequest(params)
 //
-//    // Example sending a request using the UpdateClusterKafkaVersionRequest method.
-//    req, resp := client.UpdateClusterKafkaVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/UpdateClusterKafkaVersion
 func (c *Kafka) UpdateClusterKafkaVersionRequest(input *UpdateClusterKafkaVersionInput) (req *request.Request, output *UpdateClusterKafkaVersionOutput) {
@@ -3299,26 +4932,27 @@ func (c *Kafka) UpdateClusterKafkaVersionRequest(input *UpdateClusterKafkaVersio
 // API operation UpdateClusterKafkaVersion for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
-//   * NotFoundException
-//   Returns information about an error.
+//   - ForbiddenException
+//     Returns information about an error.
 //
-//   * ServiceUnavailableException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * TooManyRequestsException
-//   Returns information about an error.
+//   - ServiceUnavailableException
+//     Returns information about an error.
+//
+//   - TooManyRequestsException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/UpdateClusterKafkaVersion
 func (c *Kafka) UpdateClusterKafkaVersion(input *UpdateClusterKafkaVersionInput) (*UpdateClusterKafkaVersionOutput, error) {
@@ -3358,14 +4992,13 @@ const opUpdateConfiguration = "UpdateConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateConfigurationRequest method.
+//	req, resp := client.UpdateConfigurationRequest(params)
 //
-//    // Example sending a request using the UpdateConfigurationRequest method.
-//    req, resp := client.UpdateConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/UpdateConfiguration
 func (c *Kafka) UpdateConfigurationRequest(input *UpdateConfigurationInput) (req *request.Request, output *UpdateConfigurationOutput) {
@@ -3397,20 +5030,21 @@ func (c *Kafka) UpdateConfigurationRequest(input *UpdateConfigurationInput) (req
 // API operation UpdateConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
-//   Returns information about an error.
 //
-//   * BadRequestException
-//   Returns information about an error.
+//   - ServiceUnavailableException
+//     Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/UpdateConfiguration
 func (c *Kafka) UpdateConfiguration(input *UpdateConfigurationInput) (*UpdateConfigurationOutput, error) {
@@ -3450,14 +5084,13 @@ const opUpdateConnectivity = "UpdateConnectivity"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateConnectivityRequest method.
+//	req, resp := client.UpdateConnectivityRequest(params)
 //
-//    // Example sending a request using the UpdateConnectivityRequest method.
-//    req, resp := client.UpdateConnectivityRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/UpdateConnectivity
 func (c *Kafka) UpdateConnectivityRequest(input *UpdateConnectivityInput) (req *request.Request, output *UpdateConnectivityOutput) {
@@ -3478,7 +5111,7 @@ func (c *Kafka) UpdateConnectivityRequest(input *UpdateConnectivityInput) (req *
 
 // UpdateConnectivity API operation for Managed Streaming for Kafka.
 //
-// Updates the connectivity configuration for the cluster.
+// Updates the connectivity configuration for the MSK cluster.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3488,26 +5121,27 @@ func (c *Kafka) UpdateConnectivityRequest(input *UpdateConnectivityInput) (req *
 // API operation UpdateConnectivity for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
-//   * NotFoundException
-//   Returns information about an error.
+//   - ForbiddenException
+//     Returns information about an error.
 //
-//   * ServiceUnavailableException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * TooManyRequestsException
-//   Returns information about an error.
+//   - ServiceUnavailableException
+//     Returns information about an error.
+//
+//   - TooManyRequestsException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/UpdateConnectivity
 func (c *Kafka) UpdateConnectivity(input *UpdateConnectivityInput) (*UpdateConnectivityOutput, error) {
@@ -3547,14 +5181,13 @@ const opUpdateMonitoring = "UpdateMonitoring"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateMonitoringRequest method.
+//	req, resp := client.UpdateMonitoringRequest(params)
 //
-//    // Example sending a request using the UpdateMonitoringRequest method.
-//    req, resp := client.UpdateMonitoringRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/UpdateMonitoring
 func (c *Kafka) UpdateMonitoringRequest(input *UpdateMonitoringInput) (req *request.Request, output *UpdateMonitoringOutput) {
@@ -3587,20 +5220,21 @@ func (c *Kafka) UpdateMonitoringRequest(input *UpdateMonitoringInput) (req *requ
 // API operation UpdateMonitoring for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
-//   Returns information about an error.
 //
-//   * BadRequestException
-//   Returns information about an error.
+//   - ServiceUnavailableException
+//     Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/UpdateMonitoring
 func (c *Kafka) UpdateMonitoring(input *UpdateMonitoringInput) (*UpdateMonitoringOutput, error) {
@@ -3624,6 +5258,103 @@ func (c *Kafka) UpdateMonitoringWithContext(ctx aws.Context, input *UpdateMonito
 	return out, req.Send()
 }
 
+const opUpdateReplicationInfo = "UpdateReplicationInfo"
+
+// UpdateReplicationInfoRequest generates a "aws/request.Request" representing the
+// client's request for the UpdateReplicationInfo operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UpdateReplicationInfo for more information on using the UpdateReplicationInfo
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UpdateReplicationInfoRequest method.
+//	req, resp := client.UpdateReplicationInfoRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/UpdateReplicationInfo
+func (c *Kafka) UpdateReplicationInfoRequest(input *UpdateReplicationInfoInput) (req *request.Request, output *UpdateReplicationInfoOutput) {
+	op := &request.Operation{
+		Name:       opUpdateReplicationInfo,
+		HTTPMethod: "PUT",
+		HTTPPath:   "/replication/v1/replicators/{replicatorArn}/replication-info",
+	}
+
+	if input == nil {
+		input = &UpdateReplicationInfoInput{}
+	}
+
+	output = &UpdateReplicationInfoOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// UpdateReplicationInfo API operation for Managed Streaming for Kafka.
+//
+// Updates replication info of a replicator.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Managed Streaming for Kafka's
+// API operation UpdateReplicationInfo for usage and error information.
+//
+// Returned Error Types:
+//
+//   - BadRequestException
+//     Returns information about an error.
+//
+//   - UnauthorizedException
+//     Returns information about an error.
+//
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
+//
+//   - NotFoundException
+//     Returns information about an error.
+//
+//   - ServiceUnavailableException
+//     Returns information about an error.
+//
+//   - TooManyRequestsException
+//     Returns information about an error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/UpdateReplicationInfo
+func (c *Kafka) UpdateReplicationInfo(input *UpdateReplicationInfoInput) (*UpdateReplicationInfoOutput, error) {
+	req, out := c.UpdateReplicationInfoRequest(input)
+	return out, req.Send()
+}
+
+// UpdateReplicationInfoWithContext is the same as UpdateReplicationInfo with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UpdateReplicationInfo for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Kafka) UpdateReplicationInfoWithContext(ctx aws.Context, input *UpdateReplicationInfoInput, opts ...request.Option) (*UpdateReplicationInfoOutput, error) {
+	req, out := c.UpdateReplicationInfoRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opUpdateSecurity = "UpdateSecurity"
 
 // UpdateSecurityRequest generates a "aws/request.Request" representing the
@@ -3640,14 +5371,13 @@ const opUpdateSecurity = "UpdateSecurity"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateSecurityRequest method.
+//	req, resp := client.UpdateSecurityRequest(params)
 //
-//    // Example sending a request using the UpdateSecurityRequest method.
-//    req, resp := client.UpdateSecurityRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/UpdateSecurity
 func (c *Kafka) UpdateSecurityRequest(input *UpdateSecurityInput) (req *request.Request, output *UpdateSecurityOutput) {
@@ -3679,26 +5409,27 @@ func (c *Kafka) UpdateSecurityRequest(input *UpdateSecurityInput) (req *request.
 // API operation UpdateSecurity for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
-//   * NotFoundException
-//   Returns information about an error.
+//   - ForbiddenException
+//     Returns information about an error.
 //
-//   * ServiceUnavailableException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * TooManyRequestsException
-//   Returns information about an error.
+//   - ServiceUnavailableException
+//     Returns information about an error.
+//
+//   - TooManyRequestsException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/UpdateSecurity
 func (c *Kafka) UpdateSecurity(input *UpdateSecurityInput) (*UpdateSecurityOutput, error) {
@@ -3720,6 +5451,150 @@ func (c *Kafka) UpdateSecurityWithContext(ctx aws.Context, input *UpdateSecurity
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
+}
+
+const opUpdateStorage = "UpdateStorage"
+
+// UpdateStorageRequest generates a "aws/request.Request" representing the
+// client's request for the UpdateStorage operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UpdateStorage for more information on using the UpdateStorage
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UpdateStorageRequest method.
+//	req, resp := client.UpdateStorageRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/UpdateStorage
+func (c *Kafka) UpdateStorageRequest(input *UpdateStorageInput) (req *request.Request, output *UpdateStorageOutput) {
+	op := &request.Operation{
+		Name:       opUpdateStorage,
+		HTTPMethod: "PUT",
+		HTTPPath:   "/v1/clusters/{clusterArn}/storage",
+	}
+
+	if input == nil {
+		input = &UpdateStorageInput{}
+	}
+
+	output = &UpdateStorageOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// UpdateStorage API operation for Managed Streaming for Kafka.
+//
+// Updates cluster broker volume size (or) sets cluster storage mode to TIERED.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Managed Streaming for Kafka's
+// API operation UpdateStorage for usage and error information.
+//
+// Returned Error Types:
+//
+//   - BadRequestException
+//     Returns information about an error.
+//
+//   - UnauthorizedException
+//     Returns information about an error.
+//
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
+//
+//   - NotFoundException
+//     Returns information about an error.
+//
+//   - ServiceUnavailableException
+//     Returns information about an error.
+//
+//   - TooManyRequestsException
+//     Returns information about an error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/UpdateStorage
+func (c *Kafka) UpdateStorage(input *UpdateStorageInput) (*UpdateStorageOutput, error) {
+	req, out := c.UpdateStorageRequest(input)
+	return out, req.Send()
+}
+
+// UpdateStorageWithContext is the same as UpdateStorage with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UpdateStorage for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Kafka) UpdateStorageWithContext(ctx aws.Context, input *UpdateStorageInput, opts ...request.Option) (*UpdateStorageOutput, error) {
+	req, out := c.UpdateStorageRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// Details of an Amazon MSK Cluster.
+type AmazonMskCluster struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of an Amazon MSK cluster.
+	//
+	// MskClusterArn is a required field
+	MskClusterArn *string `locationName:"mskClusterArn" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AmazonMskCluster) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AmazonMskCluster) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AmazonMskCluster) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AmazonMskCluster"}
+	if s.MskClusterArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("MskClusterArn"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetMskClusterArn sets the MskClusterArn field's value.
+func (s *AmazonMskCluster) SetMskClusterArn(v string) *AmazonMskCluster {
+	s.MskClusterArn = &v
+	return s
 }
 
 // Returns information about an error.
@@ -4147,7 +6022,7 @@ type BrokerNodeGroupInfo struct {
 	// The list of subnets to connect to in the client virtual private cloud (VPC).
 	// AWS creates elastic network interfaces inside these subnets. Client applications
 	// use elastic network interfaces to produce and consume data. Client subnets
-	// can't be in Availability Zone us-east-1e.
+	// can't occupy the Availability Zone with ID use use1-az3.
 	//
 	// ClientSubnets is a required field
 	ClientSubnets []*string `locationName:"clientSubnets" type:"list" required:"true"`
@@ -4170,6 +6045,9 @@ type BrokerNodeGroupInfo struct {
 
 	// Contains information about storage volumes attached to MSK broker nodes.
 	StorageInfo *StorageInfo `locationName:"storageInfo" type:"structure"`
+
+	// The zoneIds for the cluster.
+	ZoneIds []*string `locationName:"zoneIds" type:"list"`
 }
 
 // String returns the string representation.
@@ -4247,6 +6125,12 @@ func (s *BrokerNodeGroupInfo) SetSecurityGroups(v []*string) *BrokerNodeGroupInf
 // SetStorageInfo sets the StorageInfo field's value.
 func (s *BrokerNodeGroupInfo) SetStorageInfo(v *StorageInfo) *BrokerNodeGroupInfo {
 	s.StorageInfo = v
+	return s
+}
+
+// SetZoneIds sets the ZoneIds field's value.
+func (s *BrokerNodeGroupInfo) SetZoneIds(v []*string) *BrokerNodeGroupInfo {
+	s.ZoneIds = v
 	return s
 }
 
@@ -4426,6 +6310,76 @@ func (s *ClientAuthentication) SetTls(v *Tls) *ClientAuthentication {
 // SetUnauthenticated sets the Unauthenticated field's value.
 func (s *ClientAuthentication) SetUnauthenticated(v *Unauthenticated) *ClientAuthentication {
 	s.Unauthenticated = v
+	return s
+}
+
+// The client VPC connection object.
+type ClientVpcConnection struct {
+	_ struct{} `type:"structure"`
+
+	// The VPC connection authentication type.
+	Authentication *string `locationName:"authentication" type:"string"`
+
+	// The creation time of the VPC connection.
+	CreationTime *time.Time `locationName:"creationTime" type:"timestamp" timestampFormat:"iso8601"`
+
+	// The owner of the VPC connection.
+	Owner *string `locationName:"owner" type:"string"`
+
+	// The state of a configuration.
+	State *string `locationName:"state" type:"string" enum:"VpcConnectionState"`
+
+	// The Amazon Resource Name (ARN) of the VPC connection.
+	//
+	// VpcConnectionArn is a required field
+	VpcConnectionArn *string `locationName:"vpcConnectionArn" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ClientVpcConnection) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ClientVpcConnection) GoString() string {
+	return s.String()
+}
+
+// SetAuthentication sets the Authentication field's value.
+func (s *ClientVpcConnection) SetAuthentication(v string) *ClientVpcConnection {
+	s.Authentication = &v
+	return s
+}
+
+// SetCreationTime sets the CreationTime field's value.
+func (s *ClientVpcConnection) SetCreationTime(v time.Time) *ClientVpcConnection {
+	s.CreationTime = &v
+	return s
+}
+
+// SetOwner sets the Owner field's value.
+func (s *ClientVpcConnection) SetOwner(v string) *ClientVpcConnection {
+	s.Owner = &v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *ClientVpcConnection) SetState(v string) *ClientVpcConnection {
+	s.State = &v
+	return s
+}
+
+// SetVpcConnectionArn sets the VpcConnectionArn field's value.
+func (s *ClientVpcConnection) SetVpcConnectionArn(v string) *ClientVpcConnection {
+	s.VpcConnectionArn = &v
 	return s
 }
 
@@ -4632,6 +6586,9 @@ type ClusterInfo struct {
 	// version is KTVPDKIKX0DER.
 	CurrentVersion *string `locationName:"currentVersion" type:"string"`
 
+	// Determines if there is an action required from the customer.
+	CustomerActionStatus *string `locationName:"customerActionStatus" type:"string" enum:"CustomerActionStatus"`
+
 	// Includes all encryption-related information.
 	EncryptionInfo *EncryptionInfo `locationName:"encryptionInfo" type:"structure"`
 
@@ -4658,6 +6615,9 @@ type ClusterInfo struct {
 
 	// Contains information about the state of the Amazon MSK cluster.
 	StateInfo *StateInfo `locationName:"stateInfo" type:"structure"`
+
+	// This controls storage mode for supported storage tiers.
+	StorageMode *string `locationName:"storageMode" type:"string" enum:"StorageMode"`
 
 	// Tags attached to the cluster.
 	Tags map[string]*string `locationName:"tags" type:"map"`
@@ -4735,6 +6695,12 @@ func (s *ClusterInfo) SetCurrentVersion(v string) *ClusterInfo {
 	return s
 }
 
+// SetCustomerActionStatus sets the CustomerActionStatus field's value.
+func (s *ClusterInfo) SetCustomerActionStatus(v string) *ClusterInfo {
+	s.CustomerActionStatus = &v
+	return s
+}
+
 // SetEncryptionInfo sets the EncryptionInfo field's value.
 func (s *ClusterInfo) SetEncryptionInfo(v *EncryptionInfo) *ClusterInfo {
 	s.EncryptionInfo = v
@@ -4774,6 +6740,12 @@ func (s *ClusterInfo) SetState(v string) *ClusterInfo {
 // SetStateInfo sets the StateInfo field's value.
 func (s *ClusterInfo) SetStateInfo(v *StateInfo) *ClusterInfo {
 	s.StateInfo = v
+	return s
+}
+
+// SetStorageMode sets the StorageMode field's value.
+func (s *ClusterInfo) SetStorageMode(v string) *ClusterInfo {
+	s.StorageMode = &v
 	return s
 }
 
@@ -4831,6 +6803,10 @@ type ClusterOperationInfo struct {
 
 	// Information about cluster attributes after a cluster is updated.
 	TargetClusterInfo *MutableClusterInfo `locationName:"targetClusterInfo" type:"structure"`
+
+	// Description of the VPC connection for CreateVpcConnection and DeleteVpcConnection
+	// operations.
+	VpcConnectionInfo *VpcConnectionInfo `locationName:"vpcConnectionInfo" type:"structure"`
 }
 
 // String returns the string representation.
@@ -4917,6 +6893,12 @@ func (s *ClusterOperationInfo) SetTargetClusterInfo(v *MutableClusterInfo) *Clus
 	return s
 }
 
+// SetVpcConnectionInfo sets the VpcConnectionInfo field's value.
+func (s *ClusterOperationInfo) SetVpcConnectionInfo(v *VpcConnectionInfo) *ClusterOperationInfo {
+	s.VpcConnectionInfo = v
+	return s
+}
+
 // Step taken during a cluster operation.
 type ClusterOperationStep struct {
 	_ struct{} `type:"structure"`
@@ -4990,6 +6972,274 @@ func (s *ClusterOperationStepInfo) SetStepStatus(v string) *ClusterOperationStep
 	return s
 }
 
+// Returns information about a cluster operation.
+type ClusterOperationV2 struct {
+	_ struct{} `type:"structure"`
+
+	ClusterArn *string `locationName:"clusterArn" type:"string"`
+
+	ClusterType *string `locationName:"clusterType" type:"string" enum:"ClusterType"`
+
+	EndTime *time.Time `locationName:"endTime" type:"timestamp" timestampFormat:"iso8601"`
+
+	OperationArn *string `locationName:"operationArn" type:"string"`
+
+	OperationState *string `locationName:"operationState" type:"string"`
+
+	OperationType *string `locationName:"operationType" type:"string"`
+
+	// Properties of a provisioned cluster.
+	Provisioned *ClusterOperationV2Provisioned `locationName:"provisioned" type:"structure"`
+
+	// Properties of a serverless cluster.
+	Serverless *ClusterOperationV2Serverless `locationName:"serverless" type:"structure"`
+
+	StartTime *time.Time `locationName:"startTime" type:"timestamp" timestampFormat:"iso8601"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ClusterOperationV2) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ClusterOperationV2) GoString() string {
+	return s.String()
+}
+
+// SetClusterArn sets the ClusterArn field's value.
+func (s *ClusterOperationV2) SetClusterArn(v string) *ClusterOperationV2 {
+	s.ClusterArn = &v
+	return s
+}
+
+// SetClusterType sets the ClusterType field's value.
+func (s *ClusterOperationV2) SetClusterType(v string) *ClusterOperationV2 {
+	s.ClusterType = &v
+	return s
+}
+
+// SetEndTime sets the EndTime field's value.
+func (s *ClusterOperationV2) SetEndTime(v time.Time) *ClusterOperationV2 {
+	s.EndTime = &v
+	return s
+}
+
+// SetOperationArn sets the OperationArn field's value.
+func (s *ClusterOperationV2) SetOperationArn(v string) *ClusterOperationV2 {
+	s.OperationArn = &v
+	return s
+}
+
+// SetOperationState sets the OperationState field's value.
+func (s *ClusterOperationV2) SetOperationState(v string) *ClusterOperationV2 {
+	s.OperationState = &v
+	return s
+}
+
+// SetOperationType sets the OperationType field's value.
+func (s *ClusterOperationV2) SetOperationType(v string) *ClusterOperationV2 {
+	s.OperationType = &v
+	return s
+}
+
+// SetProvisioned sets the Provisioned field's value.
+func (s *ClusterOperationV2) SetProvisioned(v *ClusterOperationV2Provisioned) *ClusterOperationV2 {
+	s.Provisioned = v
+	return s
+}
+
+// SetServerless sets the Serverless field's value.
+func (s *ClusterOperationV2) SetServerless(v *ClusterOperationV2Serverless) *ClusterOperationV2 {
+	s.Serverless = v
+	return s
+}
+
+// SetStartTime sets the StartTime field's value.
+func (s *ClusterOperationV2) SetStartTime(v time.Time) *ClusterOperationV2 {
+	s.StartTime = &v
+	return s
+}
+
+// Returns information about a provisioned cluster operation.
+type ClusterOperationV2Provisioned struct {
+	_ struct{} `type:"structure"`
+
+	OperationSteps []*ClusterOperationStep `locationName:"operationSteps" type:"list"`
+
+	// Information about cluster attributes that can be updated via update APIs.
+	SourceClusterInfo *MutableClusterInfo `locationName:"sourceClusterInfo" type:"structure"`
+
+	// Information about cluster attributes that can be updated via update APIs.
+	TargetClusterInfo *MutableClusterInfo `locationName:"targetClusterInfo" type:"structure"`
+
+	// Description of the VPC connection for CreateVpcConnection and DeleteVpcConnection
+	// operations.
+	VpcConnectionInfo *VpcConnectionInfo `locationName:"vpcConnectionInfo" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ClusterOperationV2Provisioned) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ClusterOperationV2Provisioned) GoString() string {
+	return s.String()
+}
+
+// SetOperationSteps sets the OperationSteps field's value.
+func (s *ClusterOperationV2Provisioned) SetOperationSteps(v []*ClusterOperationStep) *ClusterOperationV2Provisioned {
+	s.OperationSteps = v
+	return s
+}
+
+// SetSourceClusterInfo sets the SourceClusterInfo field's value.
+func (s *ClusterOperationV2Provisioned) SetSourceClusterInfo(v *MutableClusterInfo) *ClusterOperationV2Provisioned {
+	s.SourceClusterInfo = v
+	return s
+}
+
+// SetTargetClusterInfo sets the TargetClusterInfo field's value.
+func (s *ClusterOperationV2Provisioned) SetTargetClusterInfo(v *MutableClusterInfo) *ClusterOperationV2Provisioned {
+	s.TargetClusterInfo = v
+	return s
+}
+
+// SetVpcConnectionInfo sets the VpcConnectionInfo field's value.
+func (s *ClusterOperationV2Provisioned) SetVpcConnectionInfo(v *VpcConnectionInfo) *ClusterOperationV2Provisioned {
+	s.VpcConnectionInfo = v
+	return s
+}
+
+// Returns information about a serverless cluster operation.
+type ClusterOperationV2Serverless struct {
+	_ struct{} `type:"structure"`
+
+	// Description of the VPC connection for CreateVpcConnection and DeleteVpcConnection
+	// operations.
+	VpcConnectionInfo *VpcConnectionInfoServerless `locationName:"vpcConnectionInfo" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ClusterOperationV2Serverless) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ClusterOperationV2Serverless) GoString() string {
+	return s.String()
+}
+
+// SetVpcConnectionInfo sets the VpcConnectionInfo field's value.
+func (s *ClusterOperationV2Serverless) SetVpcConnectionInfo(v *VpcConnectionInfoServerless) *ClusterOperationV2Serverless {
+	s.VpcConnectionInfo = v
+	return s
+}
+
+// Returns information about a cluster operation.
+type ClusterOperationV2Summary struct {
+	_ struct{} `type:"structure"`
+
+	ClusterArn *string `locationName:"clusterArn" type:"string"`
+
+	ClusterType *string `locationName:"clusterType" type:"string" enum:"ClusterType"`
+
+	EndTime *time.Time `locationName:"endTime" type:"timestamp" timestampFormat:"iso8601"`
+
+	OperationArn *string `locationName:"operationArn" type:"string"`
+
+	OperationState *string `locationName:"operationState" type:"string"`
+
+	OperationType *string `locationName:"operationType" type:"string"`
+
+	StartTime *time.Time `locationName:"startTime" type:"timestamp" timestampFormat:"iso8601"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ClusterOperationV2Summary) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ClusterOperationV2Summary) GoString() string {
+	return s.String()
+}
+
+// SetClusterArn sets the ClusterArn field's value.
+func (s *ClusterOperationV2Summary) SetClusterArn(v string) *ClusterOperationV2Summary {
+	s.ClusterArn = &v
+	return s
+}
+
+// SetClusterType sets the ClusterType field's value.
+func (s *ClusterOperationV2Summary) SetClusterType(v string) *ClusterOperationV2Summary {
+	s.ClusterType = &v
+	return s
+}
+
+// SetEndTime sets the EndTime field's value.
+func (s *ClusterOperationV2Summary) SetEndTime(v time.Time) *ClusterOperationV2Summary {
+	s.EndTime = &v
+	return s
+}
+
+// SetOperationArn sets the OperationArn field's value.
+func (s *ClusterOperationV2Summary) SetOperationArn(v string) *ClusterOperationV2Summary {
+	s.OperationArn = &v
+	return s
+}
+
+// SetOperationState sets the OperationState field's value.
+func (s *ClusterOperationV2Summary) SetOperationState(v string) *ClusterOperationV2Summary {
+	s.OperationState = &v
+	return s
+}
+
+// SetOperationType sets the OperationType field's value.
+func (s *ClusterOperationV2Summary) SetOperationType(v string) *ClusterOperationV2Summary {
+	s.OperationType = &v
+	return s
+}
+
+// SetStartTime sets the StartTime field's value.
+func (s *ClusterOperationV2Summary) SetStartTime(v time.Time) *ClusterOperationV2Summary {
+	s.StartTime = &v
+	return s
+}
+
 // Contains source Apache Kafka versions and compatible target Apache Kafka
 // versions.
 type CompatibleKafkaVersion struct {
@@ -5039,6 +7289,8 @@ type Configuration struct {
 	// Arn is a required field
 	Arn *string `locationName:"arn" type:"string" required:"true"`
 
+	// The time when the configuration was created.
+	//
 	// CreationTime is a required field
 	CreationTime *time.Time `locationName:"creationTime" type:"timestamp" timestampFormat:"iso8601" required:"true"`
 
@@ -5318,6 +7570,9 @@ type ConnectivityInfo struct {
 
 	// Public access control for brokers.
 	PublicAccess *PublicAccess `locationName:"publicAccess" type:"structure"`
+
+	// VpcConnectivity control for brokers.
+	VpcConnectivity *VpcConnectivity `locationName:"vpcConnectivity" type:"structure"`
 }
 
 // String returns the string representation.
@@ -5341,6 +7596,179 @@ func (s ConnectivityInfo) GoString() string {
 // SetPublicAccess sets the PublicAccess field's value.
 func (s *ConnectivityInfo) SetPublicAccess(v *PublicAccess) *ConnectivityInfo {
 	s.PublicAccess = v
+	return s
+}
+
+// SetVpcConnectivity sets the VpcConnectivity field's value.
+func (s *ConnectivityInfo) SetVpcConnectivity(v *VpcConnectivity) *ConnectivityInfo {
+	s.VpcConnectivity = v
+	return s
+}
+
+// Details about consumer group replication.
+type ConsumerGroupReplication struct {
+	_ struct{} `type:"structure"`
+
+	// List of regular expression patterns indicating the consumer groups that should
+	// not be replicated.
+	ConsumerGroupsToExclude []*string `locationName:"consumerGroupsToExclude" type:"list"`
+
+	// List of regular expression patterns indicating the consumer groups to copy.
+	//
+	// ConsumerGroupsToReplicate is a required field
+	ConsumerGroupsToReplicate []*string `locationName:"consumerGroupsToReplicate" type:"list" required:"true"`
+
+	// Enables synchronization of consumer groups to target cluster.
+	DetectAndCopyNewConsumerGroups *bool `locationName:"detectAndCopyNewConsumerGroups" type:"boolean"`
+
+	// Enables synchronization of consumer group offsets to target cluster. The
+	// translated offsets will be written to topic __consumer_offsets.
+	SynchroniseConsumerGroupOffsets *bool `locationName:"synchroniseConsumerGroupOffsets" type:"boolean"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ConsumerGroupReplication) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ConsumerGroupReplication) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ConsumerGroupReplication) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ConsumerGroupReplication"}
+	if s.ConsumerGroupsToReplicate == nil {
+		invalidParams.Add(request.NewErrParamRequired("ConsumerGroupsToReplicate"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetConsumerGroupsToExclude sets the ConsumerGroupsToExclude field's value.
+func (s *ConsumerGroupReplication) SetConsumerGroupsToExclude(v []*string) *ConsumerGroupReplication {
+	s.ConsumerGroupsToExclude = v
+	return s
+}
+
+// SetConsumerGroupsToReplicate sets the ConsumerGroupsToReplicate field's value.
+func (s *ConsumerGroupReplication) SetConsumerGroupsToReplicate(v []*string) *ConsumerGroupReplication {
+	s.ConsumerGroupsToReplicate = v
+	return s
+}
+
+// SetDetectAndCopyNewConsumerGroups sets the DetectAndCopyNewConsumerGroups field's value.
+func (s *ConsumerGroupReplication) SetDetectAndCopyNewConsumerGroups(v bool) *ConsumerGroupReplication {
+	s.DetectAndCopyNewConsumerGroups = &v
+	return s
+}
+
+// SetSynchroniseConsumerGroupOffsets sets the SynchroniseConsumerGroupOffsets field's value.
+func (s *ConsumerGroupReplication) SetSynchroniseConsumerGroupOffsets(v bool) *ConsumerGroupReplication {
+	s.SynchroniseConsumerGroupOffsets = &v
+	return s
+}
+
+// Details about consumer group replication.
+type ConsumerGroupReplicationUpdate struct {
+	_ struct{} `type:"structure"`
+
+	// List of regular expression patterns indicating the consumer groups that should
+	// not be replicated.
+	//
+	// ConsumerGroupsToExclude is a required field
+	ConsumerGroupsToExclude []*string `locationName:"consumerGroupsToExclude" type:"list" required:"true"`
+
+	// List of regular expression patterns indicating the consumer groups to copy.
+	//
+	// ConsumerGroupsToReplicate is a required field
+	ConsumerGroupsToReplicate []*string `locationName:"consumerGroupsToReplicate" type:"list" required:"true"`
+
+	// Enables synchronization of consumer groups to target cluster.
+	//
+	// DetectAndCopyNewConsumerGroups is a required field
+	DetectAndCopyNewConsumerGroups *bool `locationName:"detectAndCopyNewConsumerGroups" type:"boolean" required:"true"`
+
+	// Enables synchronization of consumer group offsets to target cluster. The
+	// translated offsets will be written to topic __consumer_offsets.
+	//
+	// SynchroniseConsumerGroupOffsets is a required field
+	SynchroniseConsumerGroupOffsets *bool `locationName:"synchroniseConsumerGroupOffsets" type:"boolean" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ConsumerGroupReplicationUpdate) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ConsumerGroupReplicationUpdate) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ConsumerGroupReplicationUpdate) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ConsumerGroupReplicationUpdate"}
+	if s.ConsumerGroupsToExclude == nil {
+		invalidParams.Add(request.NewErrParamRequired("ConsumerGroupsToExclude"))
+	}
+	if s.ConsumerGroupsToReplicate == nil {
+		invalidParams.Add(request.NewErrParamRequired("ConsumerGroupsToReplicate"))
+	}
+	if s.DetectAndCopyNewConsumerGroups == nil {
+		invalidParams.Add(request.NewErrParamRequired("DetectAndCopyNewConsumerGroups"))
+	}
+	if s.SynchroniseConsumerGroupOffsets == nil {
+		invalidParams.Add(request.NewErrParamRequired("SynchroniseConsumerGroupOffsets"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetConsumerGroupsToExclude sets the ConsumerGroupsToExclude field's value.
+func (s *ConsumerGroupReplicationUpdate) SetConsumerGroupsToExclude(v []*string) *ConsumerGroupReplicationUpdate {
+	s.ConsumerGroupsToExclude = v
+	return s
+}
+
+// SetConsumerGroupsToReplicate sets the ConsumerGroupsToReplicate field's value.
+func (s *ConsumerGroupReplicationUpdate) SetConsumerGroupsToReplicate(v []*string) *ConsumerGroupReplicationUpdate {
+	s.ConsumerGroupsToReplicate = v
+	return s
+}
+
+// SetDetectAndCopyNewConsumerGroups sets the DetectAndCopyNewConsumerGroups field's value.
+func (s *ConsumerGroupReplicationUpdate) SetDetectAndCopyNewConsumerGroups(v bool) *ConsumerGroupReplicationUpdate {
+	s.DetectAndCopyNewConsumerGroups = &v
+	return s
+}
+
+// SetSynchroniseConsumerGroupOffsets sets the SynchroniseConsumerGroupOffsets field's value.
+func (s *ConsumerGroupReplicationUpdate) SetSynchroniseConsumerGroupOffsets(v bool) *ConsumerGroupReplicationUpdate {
+	s.SynchroniseConsumerGroupOffsets = &v
 	return s
 }
 
@@ -5386,6 +7814,9 @@ type CreateClusterInput struct {
 
 	// The settings for open monitoring.
 	OpenMonitoring *OpenMonitoringInfo `locationName:"openMonitoring" type:"structure"`
+
+	// This controls storage mode for supported storage tiers.
+	StorageMode *string `locationName:"storageMode" type:"string" enum:"StorageMode"`
 
 	// Create tags when creating the cluster.
 	Tags map[string]*string `locationName:"tags" type:"map"`
@@ -5522,6 +7953,12 @@ func (s *CreateClusterInput) SetNumberOfBrokerNodes(v int64) *CreateClusterInput
 // SetOpenMonitoring sets the OpenMonitoring field's value.
 func (s *CreateClusterInput) SetOpenMonitoring(v *OpenMonitoringInfo) *CreateClusterInput {
 	s.OpenMonitoring = v
+	return s
+}
+
+// SetStorageMode sets the StorageMode field's value.
+func (s *CreateClusterInput) SetStorageMode(v string) *CreateClusterInput {
+	s.StorageMode = &v
 	return s
 }
 
@@ -5875,6 +8312,392 @@ func (s *CreateConfigurationOutput) SetState(v string) *CreateConfigurationOutpu
 	return s
 }
 
+// Request body for replicator.
+type CreateReplicatorInput struct {
+	_ struct{} `type:"structure"`
+
+	// A summary description of the replicator.
+	Description *string `locationName:"description" type:"string"`
+
+	// Kafka Clusters to use in setting up sources / targets for replication.
+	//
+	// KafkaClusters is a required field
+	KafkaClusters []*KafkaCluster `locationName:"kafkaClusters" type:"list" required:"true"`
+
+	// A list of replication configurations, where each configuration targets a
+	// given source cluster to target cluster replication flow.
+	//
+	// ReplicationInfoList is a required field
+	ReplicationInfoList []*ReplicationInfo `locationName:"replicationInfoList" type:"list" required:"true"`
+
+	// The name of the replicator. Alpha-numeric characters with '-' are allowed.
+	//
+	// ReplicatorName is a required field
+	ReplicatorName *string `locationName:"replicatorName" min:"1" type:"string" required:"true"`
+
+	// The ARN of the IAM role used by the replicator to access resources in the
+	// customer's account (e.g source and target clusters)
+	//
+	// ServiceExecutionRoleArn is a required field
+	ServiceExecutionRoleArn *string `locationName:"serviceExecutionRoleArn" type:"string" required:"true"`
+
+	// List of tags to attach to created Replicator.
+	Tags map[string]*string `locationName:"tags" type:"map"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateReplicatorInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateReplicatorInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateReplicatorInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateReplicatorInput"}
+	if s.KafkaClusters == nil {
+		invalidParams.Add(request.NewErrParamRequired("KafkaClusters"))
+	}
+	if s.ReplicationInfoList == nil {
+		invalidParams.Add(request.NewErrParamRequired("ReplicationInfoList"))
+	}
+	if s.ReplicatorName == nil {
+		invalidParams.Add(request.NewErrParamRequired("ReplicatorName"))
+	}
+	if s.ReplicatorName != nil && len(*s.ReplicatorName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ReplicatorName", 1))
+	}
+	if s.ServiceExecutionRoleArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ServiceExecutionRoleArn"))
+	}
+	if s.KafkaClusters != nil {
+		for i, v := range s.KafkaClusters {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "KafkaClusters", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.ReplicationInfoList != nil {
+		for i, v := range s.ReplicationInfoList {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "ReplicationInfoList", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDescription sets the Description field's value.
+func (s *CreateReplicatorInput) SetDescription(v string) *CreateReplicatorInput {
+	s.Description = &v
+	return s
+}
+
+// SetKafkaClusters sets the KafkaClusters field's value.
+func (s *CreateReplicatorInput) SetKafkaClusters(v []*KafkaCluster) *CreateReplicatorInput {
+	s.KafkaClusters = v
+	return s
+}
+
+// SetReplicationInfoList sets the ReplicationInfoList field's value.
+func (s *CreateReplicatorInput) SetReplicationInfoList(v []*ReplicationInfo) *CreateReplicatorInput {
+	s.ReplicationInfoList = v
+	return s
+}
+
+// SetReplicatorName sets the ReplicatorName field's value.
+func (s *CreateReplicatorInput) SetReplicatorName(v string) *CreateReplicatorInput {
+	s.ReplicatorName = &v
+	return s
+}
+
+// SetServiceExecutionRoleArn sets the ServiceExecutionRoleArn field's value.
+func (s *CreateReplicatorInput) SetServiceExecutionRoleArn(v string) *CreateReplicatorInput {
+	s.ServiceExecutionRoleArn = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CreateReplicatorInput) SetTags(v map[string]*string) *CreateReplicatorInput {
+	s.Tags = v
+	return s
+}
+
+// Returns information about the created replicator.
+type CreateReplicatorOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the replicator.
+	ReplicatorArn *string `locationName:"replicatorArn" type:"string"`
+
+	// Name of the replicator provided by the customer.
+	ReplicatorName *string `locationName:"replicatorName" type:"string"`
+
+	// State of the replicator.
+	ReplicatorState *string `locationName:"replicatorState" type:"string" enum:"ReplicatorState"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateReplicatorOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateReplicatorOutput) GoString() string {
+	return s.String()
+}
+
+// SetReplicatorArn sets the ReplicatorArn field's value.
+func (s *CreateReplicatorOutput) SetReplicatorArn(v string) *CreateReplicatorOutput {
+	s.ReplicatorArn = &v
+	return s
+}
+
+// SetReplicatorName sets the ReplicatorName field's value.
+func (s *CreateReplicatorOutput) SetReplicatorName(v string) *CreateReplicatorOutput {
+	s.ReplicatorName = &v
+	return s
+}
+
+// SetReplicatorState sets the ReplicatorState field's value.
+func (s *CreateReplicatorOutput) SetReplicatorState(v string) *CreateReplicatorOutput {
+	s.ReplicatorState = &v
+	return s
+}
+
+// Request body for CreateVpcConnection.
+type CreateVpcConnectionInput struct {
+	_ struct{} `type:"structure"`
+
+	// Authentication is a required field
+	Authentication *string `locationName:"authentication" type:"string" required:"true"`
+
+	// The list of subnets in the client VPC.
+	//
+	// ClientSubnets is a required field
+	ClientSubnets []*string `locationName:"clientSubnets" type:"list" required:"true"`
+
+	// The list of security groups to attach to the VPC connection.
+	//
+	// SecurityGroups is a required field
+	SecurityGroups []*string `locationName:"securityGroups" type:"list" required:"true"`
+
+	// Create tags when creating the VPC connection.
+	Tags map[string]*string `locationName:"tags" type:"map"`
+
+	// The Amazon Resource Name (ARN) of the cluster.
+	//
+	// TargetClusterArn is a required field
+	TargetClusterArn *string `locationName:"targetClusterArn" type:"string" required:"true"`
+
+	// The VPC ID of the VPC connection.
+	//
+	// VpcId is a required field
+	VpcId *string `locationName:"vpcId" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateVpcConnectionInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateVpcConnectionInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateVpcConnectionInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateVpcConnectionInput"}
+	if s.Authentication == nil {
+		invalidParams.Add(request.NewErrParamRequired("Authentication"))
+	}
+	if s.ClientSubnets == nil {
+		invalidParams.Add(request.NewErrParamRequired("ClientSubnets"))
+	}
+	if s.SecurityGroups == nil {
+		invalidParams.Add(request.NewErrParamRequired("SecurityGroups"))
+	}
+	if s.TargetClusterArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("TargetClusterArn"))
+	}
+	if s.VpcId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpcId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAuthentication sets the Authentication field's value.
+func (s *CreateVpcConnectionInput) SetAuthentication(v string) *CreateVpcConnectionInput {
+	s.Authentication = &v
+	return s
+}
+
+// SetClientSubnets sets the ClientSubnets field's value.
+func (s *CreateVpcConnectionInput) SetClientSubnets(v []*string) *CreateVpcConnectionInput {
+	s.ClientSubnets = v
+	return s
+}
+
+// SetSecurityGroups sets the SecurityGroups field's value.
+func (s *CreateVpcConnectionInput) SetSecurityGroups(v []*string) *CreateVpcConnectionInput {
+	s.SecurityGroups = v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CreateVpcConnectionInput) SetTags(v map[string]*string) *CreateVpcConnectionInput {
+	s.Tags = v
+	return s
+}
+
+// SetTargetClusterArn sets the TargetClusterArn field's value.
+func (s *CreateVpcConnectionInput) SetTargetClusterArn(v string) *CreateVpcConnectionInput {
+	s.TargetClusterArn = &v
+	return s
+}
+
+// SetVpcId sets the VpcId field's value.
+func (s *CreateVpcConnectionInput) SetVpcId(v string) *CreateVpcConnectionInput {
+	s.VpcId = &v
+	return s
+}
+
+// Response body for CreateVpcConnection
+type CreateVpcConnectionOutput struct {
+	_ struct{} `type:"structure"`
+
+	Authentication *string `locationName:"authentication" type:"string"`
+
+	// The list of subnets in the client VPC.
+	ClientSubnets []*string `locationName:"clientSubnets" type:"list"`
+
+	// The time when the VPC connection was created.
+	CreationTime *time.Time `locationName:"creationTime" type:"timestamp" timestampFormat:"iso8601"`
+
+	// The list of security groups attached to the VPC connection.
+	SecurityGroups []*string `locationName:"securityGroups" type:"list"`
+
+	// The state of the VPC connection. The only possible state is CREATING.
+	State *string `locationName:"state" type:"string" enum:"VpcConnectionState"`
+
+	// Tags attached to the VPC connection.
+	Tags map[string]*string `locationName:"tags" type:"map"`
+
+	// The Amazon Resource Name (ARN) of the VPC connection.
+	VpcConnectionArn *string `locationName:"vpcConnectionArn" type:"string"`
+
+	// The VPC ID of the VPC connection.
+	VpcId *string `locationName:"vpcId" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateVpcConnectionOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateVpcConnectionOutput) GoString() string {
+	return s.String()
+}
+
+// SetAuthentication sets the Authentication field's value.
+func (s *CreateVpcConnectionOutput) SetAuthentication(v string) *CreateVpcConnectionOutput {
+	s.Authentication = &v
+	return s
+}
+
+// SetClientSubnets sets the ClientSubnets field's value.
+func (s *CreateVpcConnectionOutput) SetClientSubnets(v []*string) *CreateVpcConnectionOutput {
+	s.ClientSubnets = v
+	return s
+}
+
+// SetCreationTime sets the CreationTime field's value.
+func (s *CreateVpcConnectionOutput) SetCreationTime(v time.Time) *CreateVpcConnectionOutput {
+	s.CreationTime = &v
+	return s
+}
+
+// SetSecurityGroups sets the SecurityGroups field's value.
+func (s *CreateVpcConnectionOutput) SetSecurityGroups(v []*string) *CreateVpcConnectionOutput {
+	s.SecurityGroups = v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *CreateVpcConnectionOutput) SetState(v string) *CreateVpcConnectionOutput {
+	s.State = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CreateVpcConnectionOutput) SetTags(v map[string]*string) *CreateVpcConnectionOutput {
+	s.Tags = v
+	return s
+}
+
+// SetVpcConnectionArn sets the VpcConnectionArn field's value.
+func (s *CreateVpcConnectionOutput) SetVpcConnectionArn(v string) *CreateVpcConnectionOutput {
+	s.VpcConnectionArn = &v
+	return s
+}
+
+// SetVpcId sets the VpcId field's value.
+func (s *CreateVpcConnectionOutput) SetVpcId(v string) *CreateVpcConnectionOutput {
+	s.VpcId = &v
+	return s
+}
+
 type DeleteClusterInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
@@ -5972,6 +8795,77 @@ func (s *DeleteClusterOutput) SetState(v string) *DeleteClusterOutput {
 	return s
 }
 
+// Request body for DeleteClusterPolicy.
+type DeleteClusterPolicyInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// ClusterArn is a required field
+	ClusterArn *string `location:"uri" locationName:"clusterArn" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteClusterPolicyInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteClusterPolicyInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteClusterPolicyInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteClusterPolicyInput"}
+	if s.ClusterArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ClusterArn"))
+	}
+	if s.ClusterArn != nil && len(*s.ClusterArn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClusterArn", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClusterArn sets the ClusterArn field's value.
+func (s *DeleteClusterPolicyInput) SetClusterArn(v string) *DeleteClusterPolicyInput {
+	s.ClusterArn = &v
+	return s
+}
+
+// Response body for DeleteClusterPolicy.
+type DeleteClusterPolicyOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteClusterPolicyOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteClusterPolicyOutput) GoString() string {
+	return s.String()
+}
+
 // Request body for DeleteConfiguration.
 type DeleteConfigurationInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
@@ -6061,6 +8955,191 @@ func (s *DeleteConfigurationOutput) SetArn(v string) *DeleteConfigurationOutput 
 // SetState sets the State field's value.
 func (s *DeleteConfigurationOutput) SetState(v string) *DeleteConfigurationOutput {
 	s.State = &v
+	return s
+}
+
+type DeleteReplicatorInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	CurrentVersion *string `location:"querystring" locationName:"currentVersion" type:"string"`
+
+	// ReplicatorArn is a required field
+	ReplicatorArn *string `location:"uri" locationName:"replicatorArn" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteReplicatorInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteReplicatorInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteReplicatorInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteReplicatorInput"}
+	if s.ReplicatorArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ReplicatorArn"))
+	}
+	if s.ReplicatorArn != nil && len(*s.ReplicatorArn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ReplicatorArn", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetCurrentVersion sets the CurrentVersion field's value.
+func (s *DeleteReplicatorInput) SetCurrentVersion(v string) *DeleteReplicatorInput {
+	s.CurrentVersion = &v
+	return s
+}
+
+// SetReplicatorArn sets the ReplicatorArn field's value.
+func (s *DeleteReplicatorInput) SetReplicatorArn(v string) *DeleteReplicatorInput {
+	s.ReplicatorArn = &v
+	return s
+}
+
+// Returns information about the deleted replicator.
+type DeleteReplicatorOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the replicator.
+	ReplicatorArn *string `locationName:"replicatorArn" type:"string"`
+
+	// The state of the replicator.
+	ReplicatorState *string `locationName:"replicatorState" type:"string" enum:"ReplicatorState"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteReplicatorOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteReplicatorOutput) GoString() string {
+	return s.String()
+}
+
+// SetReplicatorArn sets the ReplicatorArn field's value.
+func (s *DeleteReplicatorOutput) SetReplicatorArn(v string) *DeleteReplicatorOutput {
+	s.ReplicatorArn = &v
+	return s
+}
+
+// SetReplicatorState sets the ReplicatorState field's value.
+func (s *DeleteReplicatorOutput) SetReplicatorState(v string) *DeleteReplicatorOutput {
+	s.ReplicatorState = &v
+	return s
+}
+
+// Request body for DeleteVpcConnection.
+type DeleteVpcConnectionInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// Arn is a required field
+	Arn *string `location:"uri" locationName:"arn" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteVpcConnectionInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteVpcConnectionInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteVpcConnectionInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteVpcConnectionInput"}
+	if s.Arn == nil {
+		invalidParams.Add(request.NewErrParamRequired("Arn"))
+	}
+	if s.Arn != nil && len(*s.Arn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Arn", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetArn sets the Arn field's value.
+func (s *DeleteVpcConnectionInput) SetArn(v string) *DeleteVpcConnectionInput {
+	s.Arn = &v
+	return s
+}
+
+// Response body for DeleteVpcConnection.
+type DeleteVpcConnectionOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The state of the VPC connection. The only possible state is DELETING.
+	State *string `locationName:"state" type:"string" enum:"VpcConnectionState"`
+
+	// The Amazon Resource Name (ARN) of the VPC connection.
+	VpcConnectionArn *string `locationName:"vpcConnectionArn" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteVpcConnectionOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteVpcConnectionOutput) GoString() string {
+	return s.String()
+}
+
+// SetState sets the State field's value.
+func (s *DeleteVpcConnectionOutput) SetState(v string) *DeleteVpcConnectionOutput {
+	s.State = &v
+	return s
+}
+
+// SetVpcConnectionArn sets the VpcConnectionArn field's value.
+func (s *DeleteVpcConnectionOutput) SetVpcConnectionArn(v string) *DeleteVpcConnectionOutput {
+	s.VpcConnectionArn = &v
 	return s
 }
 
@@ -6186,6 +9265,85 @@ func (s DescribeClusterOperationOutput) GoString() string {
 
 // SetClusterOperationInfo sets the ClusterOperationInfo field's value.
 func (s *DescribeClusterOperationOutput) SetClusterOperationInfo(v *ClusterOperationInfo) *DescribeClusterOperationOutput {
+	s.ClusterOperationInfo = v
+	return s
+}
+
+type DescribeClusterOperationV2Input struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// ClusterOperationArn is a required field
+	ClusterOperationArn *string `location:"uri" locationName:"clusterOperationArn" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeClusterOperationV2Input) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeClusterOperationV2Input) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeClusterOperationV2Input) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeClusterOperationV2Input"}
+	if s.ClusterOperationArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ClusterOperationArn"))
+	}
+	if s.ClusterOperationArn != nil && len(*s.ClusterOperationArn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClusterOperationArn", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClusterOperationArn sets the ClusterOperationArn field's value.
+func (s *DescribeClusterOperationV2Input) SetClusterOperationArn(v string) *DescribeClusterOperationV2Input {
+	s.ClusterOperationArn = &v
+	return s
+}
+
+// Information about a cluster operation.
+type DescribeClusterOperationV2Output struct {
+	_ struct{} `type:"structure"`
+
+	// Cluster operation information
+	ClusterOperationInfo *ClusterOperationV2 `locationName:"clusterOperationInfo" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeClusterOperationV2Output) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeClusterOperationV2Output) GoString() string {
+	return s.String()
+}
+
+// SetClusterOperationInfo sets the ClusterOperationInfo field's value.
+func (s *DescribeClusterOperationV2Output) SetClusterOperationInfo(v *ClusterOperationV2) *DescribeClusterOperationV2Output {
 	s.ClusterOperationInfo = v
 	return s
 }
@@ -6561,6 +9719,348 @@ func (s *DescribeConfigurationRevisionOutput) SetRevision(v int64) *DescribeConf
 // SetServerProperties sets the ServerProperties field's value.
 func (s *DescribeConfigurationRevisionOutput) SetServerProperties(v []byte) *DescribeConfigurationRevisionOutput {
 	s.ServerProperties = v
+	return s
+}
+
+type DescribeReplicatorInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// ReplicatorArn is a required field
+	ReplicatorArn *string `location:"uri" locationName:"replicatorArn" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeReplicatorInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeReplicatorInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeReplicatorInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeReplicatorInput"}
+	if s.ReplicatorArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ReplicatorArn"))
+	}
+	if s.ReplicatorArn != nil && len(*s.ReplicatorArn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ReplicatorArn", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetReplicatorArn sets the ReplicatorArn field's value.
+func (s *DescribeReplicatorInput) SetReplicatorArn(v string) *DescribeReplicatorInput {
+	s.ReplicatorArn = &v
+	return s
+}
+
+// Response body for DescribeReplicator.
+type DescribeReplicatorOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The time when the replicator was created.
+	CreationTime *time.Time `locationName:"creationTime" type:"timestamp" timestampFormat:"iso8601"`
+
+	// The current version number of the replicator.
+	CurrentVersion *string `locationName:"currentVersion" type:"string"`
+
+	// Whether this resource is a replicator reference.
+	IsReplicatorReference *bool `locationName:"isReplicatorReference" type:"boolean"`
+
+	// Kafka Clusters used in setting up sources / targets for replication.
+	KafkaClusters []*KafkaClusterDescription `locationName:"kafkaClusters" type:"list"`
+
+	// A list of replication configurations, where each configuration targets a
+	// given source cluster to target cluster replication flow.
+	ReplicationInfoList []*ReplicationInfoDescription `locationName:"replicationInfoList" type:"list"`
+
+	// The Amazon Resource Name (ARN) of the replicator.
+	ReplicatorArn *string `locationName:"replicatorArn" type:"string"`
+
+	// The description of the replicator.
+	ReplicatorDescription *string `locationName:"replicatorDescription" type:"string"`
+
+	// The name of the replicator.
+	ReplicatorName *string `locationName:"replicatorName" type:"string"`
+
+	// The Amazon Resource Name (ARN) of the replicator resource in the region where
+	// the replicator was created.
+	ReplicatorResourceArn *string `locationName:"replicatorResourceArn" type:"string"`
+
+	// State of the replicator.
+	ReplicatorState *string `locationName:"replicatorState" type:"string" enum:"ReplicatorState"`
+
+	// The Amazon Resource Name (ARN) of the IAM role used by the replicator to
+	// access resources in the customer's account (e.g source and target clusters)
+	ServiceExecutionRoleArn *string `locationName:"serviceExecutionRoleArn" type:"string"`
+
+	// Details about the state of the replicator.
+	StateInfo *ReplicationStateInfo `locationName:"stateInfo" type:"structure"`
+
+	// List of tags attached to the Replicator.
+	Tags map[string]*string `locationName:"tags" type:"map"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeReplicatorOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeReplicatorOutput) GoString() string {
+	return s.String()
+}
+
+// SetCreationTime sets the CreationTime field's value.
+func (s *DescribeReplicatorOutput) SetCreationTime(v time.Time) *DescribeReplicatorOutput {
+	s.CreationTime = &v
+	return s
+}
+
+// SetCurrentVersion sets the CurrentVersion field's value.
+func (s *DescribeReplicatorOutput) SetCurrentVersion(v string) *DescribeReplicatorOutput {
+	s.CurrentVersion = &v
+	return s
+}
+
+// SetIsReplicatorReference sets the IsReplicatorReference field's value.
+func (s *DescribeReplicatorOutput) SetIsReplicatorReference(v bool) *DescribeReplicatorOutput {
+	s.IsReplicatorReference = &v
+	return s
+}
+
+// SetKafkaClusters sets the KafkaClusters field's value.
+func (s *DescribeReplicatorOutput) SetKafkaClusters(v []*KafkaClusterDescription) *DescribeReplicatorOutput {
+	s.KafkaClusters = v
+	return s
+}
+
+// SetReplicationInfoList sets the ReplicationInfoList field's value.
+func (s *DescribeReplicatorOutput) SetReplicationInfoList(v []*ReplicationInfoDescription) *DescribeReplicatorOutput {
+	s.ReplicationInfoList = v
+	return s
+}
+
+// SetReplicatorArn sets the ReplicatorArn field's value.
+func (s *DescribeReplicatorOutput) SetReplicatorArn(v string) *DescribeReplicatorOutput {
+	s.ReplicatorArn = &v
+	return s
+}
+
+// SetReplicatorDescription sets the ReplicatorDescription field's value.
+func (s *DescribeReplicatorOutput) SetReplicatorDescription(v string) *DescribeReplicatorOutput {
+	s.ReplicatorDescription = &v
+	return s
+}
+
+// SetReplicatorName sets the ReplicatorName field's value.
+func (s *DescribeReplicatorOutput) SetReplicatorName(v string) *DescribeReplicatorOutput {
+	s.ReplicatorName = &v
+	return s
+}
+
+// SetReplicatorResourceArn sets the ReplicatorResourceArn field's value.
+func (s *DescribeReplicatorOutput) SetReplicatorResourceArn(v string) *DescribeReplicatorOutput {
+	s.ReplicatorResourceArn = &v
+	return s
+}
+
+// SetReplicatorState sets the ReplicatorState field's value.
+func (s *DescribeReplicatorOutput) SetReplicatorState(v string) *DescribeReplicatorOutput {
+	s.ReplicatorState = &v
+	return s
+}
+
+// SetServiceExecutionRoleArn sets the ServiceExecutionRoleArn field's value.
+func (s *DescribeReplicatorOutput) SetServiceExecutionRoleArn(v string) *DescribeReplicatorOutput {
+	s.ServiceExecutionRoleArn = &v
+	return s
+}
+
+// SetStateInfo sets the StateInfo field's value.
+func (s *DescribeReplicatorOutput) SetStateInfo(v *ReplicationStateInfo) *DescribeReplicatorOutput {
+	s.StateInfo = v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *DescribeReplicatorOutput) SetTags(v map[string]*string) *DescribeReplicatorOutput {
+	s.Tags = v
+	return s
+}
+
+type DescribeVpcConnectionInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// Arn is a required field
+	Arn *string `location:"uri" locationName:"arn" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeVpcConnectionInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeVpcConnectionInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeVpcConnectionInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeVpcConnectionInput"}
+	if s.Arn == nil {
+		invalidParams.Add(request.NewErrParamRequired("Arn"))
+	}
+	if s.Arn != nil && len(*s.Arn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Arn", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetArn sets the Arn field's value.
+func (s *DescribeVpcConnectionInput) SetArn(v string) *DescribeVpcConnectionInput {
+	s.Arn = &v
+	return s
+}
+
+// Response body for DescribeVpcConnection.
+type DescribeVpcConnectionOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The authentication type of the VPC connection.
+	Authentication *string `locationName:"authentication" type:"string"`
+
+	// The creation time of the VPC connection.
+	CreationTime *time.Time `locationName:"creationTime" type:"timestamp" timestampFormat:"iso8601"`
+
+	// The list of security groups attached to the VPC connection.
+	SecurityGroups []*string `locationName:"securityGroups" type:"list"`
+
+	// The state of the VPC connection. The possible states are AVAILABLE, INACTIVE,
+	// DEACTIVATING, DELETING, CREATING, REJECTING, REJECTED and FAILED.
+	State *string `locationName:"state" type:"string" enum:"VpcConnectionState"`
+
+	// The list of subnets in the client VPC.
+	Subnets []*string `locationName:"subnets" type:"list"`
+
+	// Tags attached to the VPC connection.
+	Tags map[string]*string `locationName:"tags" type:"map"`
+
+	// The Amazon Resource Name (ARN) of the cluster.
+	TargetClusterArn *string `locationName:"targetClusterArn" type:"string"`
+
+	// The Amazon Resource Name (ARN) of the VPC connection.
+	VpcConnectionArn *string `locationName:"vpcConnectionArn" type:"string"`
+
+	// The VPC ID of the VPC connection.
+	VpcId *string `locationName:"vpcId" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeVpcConnectionOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeVpcConnectionOutput) GoString() string {
+	return s.String()
+}
+
+// SetAuthentication sets the Authentication field's value.
+func (s *DescribeVpcConnectionOutput) SetAuthentication(v string) *DescribeVpcConnectionOutput {
+	s.Authentication = &v
+	return s
+}
+
+// SetCreationTime sets the CreationTime field's value.
+func (s *DescribeVpcConnectionOutput) SetCreationTime(v time.Time) *DescribeVpcConnectionOutput {
+	s.CreationTime = &v
+	return s
+}
+
+// SetSecurityGroups sets the SecurityGroups field's value.
+func (s *DescribeVpcConnectionOutput) SetSecurityGroups(v []*string) *DescribeVpcConnectionOutput {
+	s.SecurityGroups = v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *DescribeVpcConnectionOutput) SetState(v string) *DescribeVpcConnectionOutput {
+	s.State = &v
+	return s
+}
+
+// SetSubnets sets the Subnets field's value.
+func (s *DescribeVpcConnectionOutput) SetSubnets(v []*string) *DescribeVpcConnectionOutput {
+	s.Subnets = v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *DescribeVpcConnectionOutput) SetTags(v map[string]*string) *DescribeVpcConnectionOutput {
+	s.Tags = v
+	return s
+}
+
+// SetTargetClusterArn sets the TargetClusterArn field's value.
+func (s *DescribeVpcConnectionOutput) SetTargetClusterArn(v string) *DescribeVpcConnectionOutput {
+	s.TargetClusterArn = &v
+	return s
+}
+
+// SetVpcConnectionArn sets the VpcConnectionArn field's value.
+func (s *DescribeVpcConnectionOutput) SetVpcConnectionArn(v string) *DescribeVpcConnectionOutput {
+	s.VpcConnectionArn = &v
+	return s
+}
+
+// SetVpcId sets the VpcId field's value.
+func (s *DescribeVpcConnectionOutput) SetVpcId(v string) *DescribeVpcConnectionOutput {
+	s.VpcId = &v
 	return s
 }
 
@@ -7029,6 +10529,18 @@ type GetBootstrapBrokersOutput struct {
 	// pairs. The following is an example.
 	//  { "BootstrapBrokerStringTls": "b-3.exampleClusterName.abcde.c2.kafka.us-east-1.amazonaws.com:9094,b-1.exampleClusterName.abcde.c2.kafka.us-east-1.amazonaws.com:9094,b-2.exampleClusterName.abcde.c2.kafka.us-east-1.amazonaws.com:9094"}
 	BootstrapBrokerStringTls *string `locationName:"bootstrapBrokerStringTls" type:"string"`
+
+	// A string containing one or more dns name (or IP) and SASL IAM port pairs
+	// for VPC connectivity.
+	BootstrapBrokerStringVpcConnectivitySaslIam *string `locationName:"bootstrapBrokerStringVpcConnectivitySaslIam" type:"string"`
+
+	// A string containing one or more dns name (or IP) and SASL SCRAM port pairs
+	// for VPC connectivity.
+	BootstrapBrokerStringVpcConnectivitySaslScram *string `locationName:"bootstrapBrokerStringVpcConnectivitySaslScram" type:"string"`
+
+	// A string containing one or more dns name (or IP) and Tls port pairs for VPC
+	// connectivity.
+	BootstrapBrokerStringVpcConnectivityTls *string `locationName:"bootstrapBrokerStringVpcConnectivityTls" type:"string"`
 }
 
 // String returns the string representation.
@@ -7088,6 +10600,113 @@ func (s *GetBootstrapBrokersOutput) SetBootstrapBrokerStringSaslScram(v string) 
 // SetBootstrapBrokerStringTls sets the BootstrapBrokerStringTls field's value.
 func (s *GetBootstrapBrokersOutput) SetBootstrapBrokerStringTls(v string) *GetBootstrapBrokersOutput {
 	s.BootstrapBrokerStringTls = &v
+	return s
+}
+
+// SetBootstrapBrokerStringVpcConnectivitySaslIam sets the BootstrapBrokerStringVpcConnectivitySaslIam field's value.
+func (s *GetBootstrapBrokersOutput) SetBootstrapBrokerStringVpcConnectivitySaslIam(v string) *GetBootstrapBrokersOutput {
+	s.BootstrapBrokerStringVpcConnectivitySaslIam = &v
+	return s
+}
+
+// SetBootstrapBrokerStringVpcConnectivitySaslScram sets the BootstrapBrokerStringVpcConnectivitySaslScram field's value.
+func (s *GetBootstrapBrokersOutput) SetBootstrapBrokerStringVpcConnectivitySaslScram(v string) *GetBootstrapBrokersOutput {
+	s.BootstrapBrokerStringVpcConnectivitySaslScram = &v
+	return s
+}
+
+// SetBootstrapBrokerStringVpcConnectivityTls sets the BootstrapBrokerStringVpcConnectivityTls field's value.
+func (s *GetBootstrapBrokersOutput) SetBootstrapBrokerStringVpcConnectivityTls(v string) *GetBootstrapBrokersOutput {
+	s.BootstrapBrokerStringVpcConnectivityTls = &v
+	return s
+}
+
+// Request body for GetClusterPolicy.
+type GetClusterPolicyInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// ClusterArn is a required field
+	ClusterArn *string `location:"uri" locationName:"clusterArn" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetClusterPolicyInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetClusterPolicyInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetClusterPolicyInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetClusterPolicyInput"}
+	if s.ClusterArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ClusterArn"))
+	}
+	if s.ClusterArn != nil && len(*s.ClusterArn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClusterArn", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClusterArn sets the ClusterArn field's value.
+func (s *GetClusterPolicyInput) SetClusterArn(v string) *GetClusterPolicyInput {
+	s.ClusterArn = &v
+	return s
+}
+
+// Returns information about the specified cluster policy.
+type GetClusterPolicyOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Cluster policy version.
+	CurrentVersion *string `locationName:"currentVersion" type:"string"`
+
+	// Cluster policy attached to the MSK cluster.
+	Policy *string `locationName:"policy" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetClusterPolicyOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetClusterPolicyOutput) GoString() string {
+	return s.String()
+}
+
+// SetCurrentVersion sets the CurrentVersion field's value.
+func (s *GetClusterPolicyOutput) SetCurrentVersion(v string) *GetClusterPolicyOutput {
+	s.CurrentVersion = &v
+	return s
+}
+
+// SetPolicy sets the Policy field's value.
+func (s *GetClusterPolicyOutput) SetPolicy(v string) *GetClusterPolicyOutput {
+	s.Policy = &v
 	return s
 }
 
@@ -7330,6 +10949,226 @@ func (s *JmxExporterInfo) SetEnabledInBroker(v bool) *JmxExporterInfo {
 	return s
 }
 
+// Information about Kafka Cluster to be used as source / target for replication.
+type KafkaCluster struct {
+	_ struct{} `type:"structure"`
+
+	// Details of an Amazon MSK Cluster.
+	//
+	// AmazonMskCluster is a required field
+	AmazonMskCluster *AmazonMskCluster `locationName:"amazonMskCluster" type:"structure" required:"true"`
+
+	// Details of an Amazon VPC which has network connectivity to the Apache Kafka
+	// cluster.
+	//
+	// VpcConfig is a required field
+	VpcConfig *KafkaClusterClientVpcConfig `locationName:"vpcConfig" type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s KafkaCluster) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s KafkaCluster) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *KafkaCluster) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "KafkaCluster"}
+	if s.AmazonMskCluster == nil {
+		invalidParams.Add(request.NewErrParamRequired("AmazonMskCluster"))
+	}
+	if s.VpcConfig == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpcConfig"))
+	}
+	if s.AmazonMskCluster != nil {
+		if err := s.AmazonMskCluster.Validate(); err != nil {
+			invalidParams.AddNested("AmazonMskCluster", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.VpcConfig != nil {
+		if err := s.VpcConfig.Validate(); err != nil {
+			invalidParams.AddNested("VpcConfig", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAmazonMskCluster sets the AmazonMskCluster field's value.
+func (s *KafkaCluster) SetAmazonMskCluster(v *AmazonMskCluster) *KafkaCluster {
+	s.AmazonMskCluster = v
+	return s
+}
+
+// SetVpcConfig sets the VpcConfig field's value.
+func (s *KafkaCluster) SetVpcConfig(v *KafkaClusterClientVpcConfig) *KafkaCluster {
+	s.VpcConfig = v
+	return s
+}
+
+type KafkaClusterClientVpcConfig struct {
+	_ struct{} `type:"structure"`
+
+	// The security groups to attach to the ENIs for the broker nodes.
+	SecurityGroupIds []*string `locationName:"securityGroupIds" type:"list"`
+
+	// The list of subnets in the client VPC to connect to.
+	//
+	// SubnetIds is a required field
+	SubnetIds []*string `locationName:"subnetIds" type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s KafkaClusterClientVpcConfig) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s KafkaClusterClientVpcConfig) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *KafkaClusterClientVpcConfig) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "KafkaClusterClientVpcConfig"}
+	if s.SubnetIds == nil {
+		invalidParams.Add(request.NewErrParamRequired("SubnetIds"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetSecurityGroupIds sets the SecurityGroupIds field's value.
+func (s *KafkaClusterClientVpcConfig) SetSecurityGroupIds(v []*string) *KafkaClusterClientVpcConfig {
+	s.SecurityGroupIds = v
+	return s
+}
+
+// SetSubnetIds sets the SubnetIds field's value.
+func (s *KafkaClusterClientVpcConfig) SetSubnetIds(v []*string) *KafkaClusterClientVpcConfig {
+	s.SubnetIds = v
+	return s
+}
+
+// Information about Kafka Cluster used as source / target for replication.
+type KafkaClusterDescription struct {
+	_ struct{} `type:"structure"`
+
+	// Details of an Amazon MSK Cluster.
+	AmazonMskCluster *AmazonMskCluster `locationName:"amazonMskCluster" type:"structure"`
+
+	// The alias of the Kafka cluster. Used to prefix names of replicated topics.
+	KafkaClusterAlias *string `locationName:"kafkaClusterAlias" type:"string"`
+
+	// Details of an Amazon VPC which has network connectivity to the Apache Kafka
+	// cluster.
+	VpcConfig *KafkaClusterClientVpcConfig `locationName:"vpcConfig" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s KafkaClusterDescription) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s KafkaClusterDescription) GoString() string {
+	return s.String()
+}
+
+// SetAmazonMskCluster sets the AmazonMskCluster field's value.
+func (s *KafkaClusterDescription) SetAmazonMskCluster(v *AmazonMskCluster) *KafkaClusterDescription {
+	s.AmazonMskCluster = v
+	return s
+}
+
+// SetKafkaClusterAlias sets the KafkaClusterAlias field's value.
+func (s *KafkaClusterDescription) SetKafkaClusterAlias(v string) *KafkaClusterDescription {
+	s.KafkaClusterAlias = &v
+	return s
+}
+
+// SetVpcConfig sets the VpcConfig field's value.
+func (s *KafkaClusterDescription) SetVpcConfig(v *KafkaClusterClientVpcConfig) *KafkaClusterDescription {
+	s.VpcConfig = v
+	return s
+}
+
+// Summarized information about Kafka Cluster used as source / target for replication.
+type KafkaClusterSummary struct {
+	_ struct{} `type:"structure"`
+
+	// Details of an Amazon MSK Cluster
+	// .
+	AmazonMskCluster *AmazonMskCluster `locationName:"amazonMskCluster" type:"structure"`
+
+	// The alias of the Kafka cluster. Used to prefix names of replicated topics.
+	KafkaClusterAlias *string `locationName:"kafkaClusterAlias" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s KafkaClusterSummary) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s KafkaClusterSummary) GoString() string {
+	return s.String()
+}
+
+// SetAmazonMskCluster sets the AmazonMskCluster field's value.
+func (s *KafkaClusterSummary) SetAmazonMskCluster(v *AmazonMskCluster) *KafkaClusterSummary {
+	s.AmazonMskCluster = v
+	return s
+}
+
+// SetKafkaClusterAlias sets the KafkaClusterAlias field's value.
+func (s *KafkaClusterSummary) SetKafkaClusterAlias(v string) *KafkaClusterSummary {
+	s.KafkaClusterAlias = &v
+	return s
+}
+
 // Information about a Apache Kafka version.
 type KafkaVersion struct {
 	_ struct{} `type:"structure"`
@@ -7368,6 +11207,117 @@ func (s *KafkaVersion) SetStatus(v string) *KafkaVersion {
 // SetVersion sets the Version field's value.
 func (s *KafkaVersion) SetVersion(v string) *KafkaVersion {
 	s.Version = &v
+	return s
+}
+
+// Request body for ListClientVpcConnections.
+type ListClientVpcConnectionsInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// ClusterArn is a required field
+	ClusterArn *string `location:"uri" locationName:"clusterArn" type:"string" required:"true"`
+
+	MaxResults *int64 `location:"querystring" locationName:"maxResults" min:"1" type:"integer"`
+
+	NextToken *string `location:"querystring" locationName:"nextToken" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListClientVpcConnectionsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListClientVpcConnectionsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListClientVpcConnectionsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListClientVpcConnectionsInput"}
+	if s.ClusterArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ClusterArn"))
+	}
+	if s.ClusterArn != nil && len(*s.ClusterArn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClusterArn", 1))
+	}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClusterArn sets the ClusterArn field's value.
+func (s *ListClientVpcConnectionsInput) SetClusterArn(v string) *ListClientVpcConnectionsInput {
+	s.ClusterArn = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListClientVpcConnectionsInput) SetMaxResults(v int64) *ListClientVpcConnectionsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListClientVpcConnectionsInput) SetNextToken(v string) *ListClientVpcConnectionsInput {
+	s.NextToken = &v
+	return s
+}
+
+// The response contains an array of client VPC connections and a next token
+// if the response is truncated.
+type ListClientVpcConnectionsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// List containing a ClientVpcConnection object.
+	ClientVpcConnections []*ClientVpcConnection `locationName:"clientVpcConnections" type:"list"`
+
+	// If the response of ListClientVpcConnections is truncated, it returns a NextToken
+	// in the response. This Nexttoken should be sent in the subsequent request
+	// to ListClientVpcConnections.
+	NextToken *string `locationName:"nextToken" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListClientVpcConnectionsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListClientVpcConnectionsOutput) GoString() string {
+	return s.String()
+}
+
+// SetClientVpcConnections sets the ClientVpcConnections field's value.
+func (s *ListClientVpcConnectionsOutput) SetClientVpcConnections(v []*ClientVpcConnection) *ListClientVpcConnectionsOutput {
+	s.ClientVpcConnections = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListClientVpcConnectionsOutput) SetNextToken(v string) *ListClientVpcConnectionsOutput {
+	s.NextToken = &v
 	return s
 }
 
@@ -7477,6 +11427,112 @@ func (s *ListClusterOperationsOutput) SetClusterOperationInfoList(v []*ClusterOp
 
 // SetNextToken sets the NextToken field's value.
 func (s *ListClusterOperationsOutput) SetNextToken(v string) *ListClusterOperationsOutput {
+	s.NextToken = &v
+	return s
+}
+
+type ListClusterOperationsV2Input struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// ClusterArn is a required field
+	ClusterArn *string `location:"uri" locationName:"clusterArn" type:"string" required:"true"`
+
+	MaxResults *int64 `location:"querystring" locationName:"maxResults" min:"1" type:"integer"`
+
+	NextToken *string `location:"querystring" locationName:"nextToken" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListClusterOperationsV2Input) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListClusterOperationsV2Input) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListClusterOperationsV2Input) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListClusterOperationsV2Input"}
+	if s.ClusterArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ClusterArn"))
+	}
+	if s.ClusterArn != nil && len(*s.ClusterArn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClusterArn", 1))
+	}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClusterArn sets the ClusterArn field's value.
+func (s *ListClusterOperationsV2Input) SetClusterArn(v string) *ListClusterOperationsV2Input {
+	s.ClusterArn = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListClusterOperationsV2Input) SetMaxResults(v int64) *ListClusterOperationsV2Input {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListClusterOperationsV2Input) SetNextToken(v string) *ListClusterOperationsV2Input {
+	s.NextToken = &v
+	return s
+}
+
+// The response contains an array containing cluster operation information and
+// a next token if the response is truncated.
+type ListClusterOperationsV2Output struct {
+	_ struct{} `type:"structure"`
+
+	ClusterOperationInfoList []*ClusterOperationV2Summary `locationName:"clusterOperationInfoList" type:"list"`
+
+	NextToken *string `locationName:"nextToken" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListClusterOperationsV2Output) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListClusterOperationsV2Output) GoString() string {
+	return s.String()
+}
+
+// SetClusterOperationInfoList sets the ClusterOperationInfoList field's value.
+func (s *ListClusterOperationsV2Output) SetClusterOperationInfoList(v []*ClusterOperationV2Summary) *ListClusterOperationsV2Output {
+	s.ClusterOperationInfoList = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListClusterOperationsV2Output) SetNextToken(v string) *ListClusterOperationsV2Output {
 	s.NextToken = &v
 	return s
 }
@@ -8095,6 +12151,109 @@ func (s *ListNodesOutput) SetNodeInfoList(v []*NodeInfo) *ListNodesOutput {
 	return s
 }
 
+type ListReplicatorsInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	MaxResults *int64 `location:"querystring" locationName:"maxResults" min:"1" type:"integer"`
+
+	NextToken *string `location:"querystring" locationName:"nextToken" type:"string"`
+
+	ReplicatorNameFilter *string `location:"querystring" locationName:"replicatorNameFilter" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListReplicatorsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListReplicatorsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListReplicatorsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListReplicatorsInput"}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListReplicatorsInput) SetMaxResults(v int64) *ListReplicatorsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListReplicatorsInput) SetNextToken(v string) *ListReplicatorsInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetReplicatorNameFilter sets the ReplicatorNameFilter field's value.
+func (s *ListReplicatorsInput) SetReplicatorNameFilter(v string) *ListReplicatorsInput {
+	s.ReplicatorNameFilter = &v
+	return s
+}
+
+// The response contains an array containing replicator information and a NextToken
+// if the response is truncated.
+type ListReplicatorsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// If the response of ListReplicators is truncated, it returns a NextToken in
+	// the response. This NextToken should be sent in the subsequent request to
+	// ListReplicators.
+	NextToken *string `locationName:"nextToken" type:"string"`
+
+	// List containing information of each of the replicators in the account.
+	Replicators []*ReplicatorSummary `locationName:"replicators" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListReplicatorsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListReplicatorsOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListReplicatorsOutput) SetNextToken(v string) *ListReplicatorsOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetReplicators sets the Replicators field's value.
+func (s *ListReplicatorsOutput) SetReplicators(v []*ReplicatorSummary) *ListReplicatorsOutput {
+	s.Replicators = v
+	return s
+}
+
 type ListScramSecretsInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
@@ -8281,6 +12440,102 @@ func (s *ListTagsForResourceOutput) SetTags(v map[string]*string) *ListTagsForRe
 	return s
 }
 
+// Request body for ListVpcConnections.
+type ListVpcConnectionsInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	MaxResults *int64 `location:"querystring" locationName:"maxResults" min:"1" type:"integer"`
+
+	NextToken *string `location:"querystring" locationName:"nextToken" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListVpcConnectionsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListVpcConnectionsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListVpcConnectionsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListVpcConnectionsInput"}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListVpcConnectionsInput) SetMaxResults(v int64) *ListVpcConnectionsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListVpcConnectionsInput) SetNextToken(v string) *ListVpcConnectionsInput {
+	s.NextToken = &v
+	return s
+}
+
+// The response contains an array of MSK VPC connections and a next token if
+// the response is truncated.
+type ListVpcConnectionsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// If the response of ListVpcConnections is truncated, it returns a NextToken
+	// in the response. This NextToken should be sent in the subsequent request
+	// to ListVpcConnections.
+	NextToken *string `locationName:"nextToken" type:"string"`
+
+	// List containing a VpcConnection object.
+	VpcConnections []*VpcConnection `locationName:"vpcConnections" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListVpcConnectionsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListVpcConnectionsOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListVpcConnectionsOutput) SetNextToken(v string) *ListVpcConnectionsOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetVpcConnections sets the VpcConnections field's value.
+func (s *ListVpcConnectionsOutput) SetVpcConnections(v []*VpcConnection) *ListVpcConnectionsOutput {
+	s.VpcConnections = v
+	return s
+}
+
 // You can configure your MSK cluster to send broker logs to different destination
 // types. This is a container for the configuration details related to broker
 // logs.
@@ -8361,6 +12616,7 @@ type MutableClusterInfo struct {
 
 	InstanceType *string `locationName:"instanceType" type:"string"`
 
+	// The Apache Kafka version.
 	KafkaVersion *string `locationName:"kafkaVersion" type:"string"`
 
 	// LoggingInfo details.
@@ -8371,6 +12627,9 @@ type MutableClusterInfo struct {
 
 	// Settings for open monitoring using Prometheus.
 	OpenMonitoring *OpenMonitoring `locationName:"openMonitoring" type:"structure"`
+
+	// This controls storage mode for supported storage tiers.
+	StorageMode *string `locationName:"storageMode" type:"string" enum:"StorageMode"`
 }
 
 // String returns the string representation.
@@ -8454,6 +12713,12 @@ func (s *MutableClusterInfo) SetNumberOfBrokerNodes(v int64) *MutableClusterInfo
 // SetOpenMonitoring sets the OpenMonitoring field's value.
 func (s *MutableClusterInfo) SetOpenMonitoring(v *OpenMonitoring) *MutableClusterInfo {
 	s.OpenMonitoring = v
+	return s
+}
+
+// SetStorageMode sets the StorageMode field's value.
+func (s *MutableClusterInfo) SetStorageMode(v string) *MutableClusterInfo {
+	s.StorageMode = &v
 	return s
 }
 
@@ -8885,6 +13150,9 @@ type Provisioned struct {
 	// Kafka brokers in the cluster.
 	CurrentBrokerSoftwareInfo *BrokerSoftwareInfo `locationName:"currentBrokerSoftwareInfo" type:"structure"`
 
+	// Determines if there is an action required from the customer.
+	CustomerActionStatus *string `locationName:"customerActionStatus" type:"string" enum:"CustomerActionStatus"`
+
 	// Includes all encryption-related information.
 	EncryptionInfo *EncryptionInfo `locationName:"encryptionInfo" type:"structure"`
 
@@ -8904,6 +13172,9 @@ type Provisioned struct {
 
 	// JMX and Node monitoring for the MSK cluster.
 	OpenMonitoring *OpenMonitoringInfo `locationName:"openMonitoring" type:"structure"`
+
+	// This controls storage mode for supported storage tiers.
+	StorageMode *string `locationName:"storageMode" type:"string" enum:"StorageMode"`
 
 	ZookeeperConnectString *string `locationName:"zookeeperConnectString" type:"string"`
 
@@ -8946,6 +13217,12 @@ func (s *Provisioned) SetCurrentBrokerSoftwareInfo(v *BrokerSoftwareInfo) *Provi
 	return s
 }
 
+// SetCustomerActionStatus sets the CustomerActionStatus field's value.
+func (s *Provisioned) SetCustomerActionStatus(v string) *Provisioned {
+	s.CustomerActionStatus = &v
+	return s
+}
+
 // SetEncryptionInfo sets the EncryptionInfo field's value.
 func (s *Provisioned) SetEncryptionInfo(v *EncryptionInfo) *Provisioned {
 	s.EncryptionInfo = v
@@ -8973,6 +13250,12 @@ func (s *Provisioned) SetNumberOfBrokerNodes(v int64) *Provisioned {
 // SetOpenMonitoring sets the OpenMonitoring field's value.
 func (s *Provisioned) SetOpenMonitoring(v *OpenMonitoringInfo) *Provisioned {
 	s.OpenMonitoring = v
+	return s
+}
+
+// SetStorageMode sets the StorageMode field's value.
+func (s *Provisioned) SetStorageMode(v string) *Provisioned {
+	s.StorageMode = &v
 	return s
 }
 
@@ -9021,6 +13304,9 @@ type ProvisionedRequest struct {
 
 	// The settings for open monitoring.
 	OpenMonitoring *OpenMonitoringInfo `locationName:"openMonitoring" type:"structure"`
+
+	// This controls storage mode for supported storage tiers.
+	StorageMode *string `locationName:"storageMode" type:"string" enum:"StorageMode"`
 }
 
 // String returns the string representation.
@@ -9145,6 +13431,12 @@ func (s *ProvisionedRequest) SetOpenMonitoring(v *OpenMonitoringInfo) *Provision
 	return s
 }
 
+// SetStorageMode sets the StorageMode field's value.
+func (s *ProvisionedRequest) SetStorageMode(v string) *ProvisionedRequest {
+	s.StorageMode = &v
+	return s
+}
+
 // Contains information about provisioned throughput for EBS storage volumes
 // attached to kafka broker nodes.
 type ProvisionedThroughput struct {
@@ -9218,6 +13510,106 @@ func (s PublicAccess) GoString() string {
 // SetType sets the Type field's value.
 func (s *PublicAccess) SetType(v string) *PublicAccess {
 	s.Type = &v
+	return s
+}
+
+// Request body for PutClusterPolicy.
+type PutClusterPolicyInput struct {
+	_ struct{} `type:"structure"`
+
+	// ClusterArn is a required field
+	ClusterArn *string `location:"uri" locationName:"clusterArn" type:"string" required:"true"`
+
+	CurrentVersion *string `locationName:"currentVersion" type:"string"`
+
+	// Policy is a required field
+	Policy *string `locationName:"policy" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutClusterPolicyInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutClusterPolicyInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PutClusterPolicyInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PutClusterPolicyInput"}
+	if s.ClusterArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ClusterArn"))
+	}
+	if s.ClusterArn != nil && len(*s.ClusterArn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClusterArn", 1))
+	}
+	if s.Policy == nil {
+		invalidParams.Add(request.NewErrParamRequired("Policy"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClusterArn sets the ClusterArn field's value.
+func (s *PutClusterPolicyInput) SetClusterArn(v string) *PutClusterPolicyInput {
+	s.ClusterArn = &v
+	return s
+}
+
+// SetCurrentVersion sets the CurrentVersion field's value.
+func (s *PutClusterPolicyInput) SetCurrentVersion(v string) *PutClusterPolicyInput {
+	s.CurrentVersion = &v
+	return s
+}
+
+// SetPolicy sets the Policy field's value.
+func (s *PutClusterPolicyInput) SetPolicy(v string) *PutClusterPolicyInput {
+	s.Policy = &v
+	return s
+}
+
+// Response body for PutClusterPolicy.
+type PutClusterPolicyOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Cluster policy version.
+	CurrentVersion *string `locationName:"currentVersion" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutClusterPolicyOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutClusterPolicyOutput) GoString() string {
+	return s.String()
+}
+
+// SetCurrentVersion sets the CurrentVersion field's value.
+func (s *PutClusterPolicyOutput) SetCurrentVersion(v string) *PutClusterPolicyOutput {
+	s.CurrentVersion = &v
 	return s
 }
 
@@ -9321,6 +13713,460 @@ func (s *RebootBrokerOutput) SetClusterArn(v string) *RebootBrokerOutput {
 // SetClusterOperationArn sets the ClusterOperationArn field's value.
 func (s *RebootBrokerOutput) SetClusterOperationArn(v string) *RebootBrokerOutput {
 	s.ClusterOperationArn = &v
+	return s
+}
+
+// Request body for RejectClientVpcConnection.
+type RejectClientVpcConnectionInput struct {
+	_ struct{} `type:"structure"`
+
+	// ClusterArn is a required field
+	ClusterArn *string `location:"uri" locationName:"clusterArn" type:"string" required:"true"`
+
+	// VpcConnectionArn is a required field
+	VpcConnectionArn *string `locationName:"vpcConnectionArn" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RejectClientVpcConnectionInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RejectClientVpcConnectionInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *RejectClientVpcConnectionInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "RejectClientVpcConnectionInput"}
+	if s.ClusterArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ClusterArn"))
+	}
+	if s.ClusterArn != nil && len(*s.ClusterArn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClusterArn", 1))
+	}
+	if s.VpcConnectionArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpcConnectionArn"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClusterArn sets the ClusterArn field's value.
+func (s *RejectClientVpcConnectionInput) SetClusterArn(v string) *RejectClientVpcConnectionInput {
+	s.ClusterArn = &v
+	return s
+}
+
+// SetVpcConnectionArn sets the VpcConnectionArn field's value.
+func (s *RejectClientVpcConnectionInput) SetVpcConnectionArn(v string) *RejectClientVpcConnectionInput {
+	s.VpcConnectionArn = &v
+	return s
+}
+
+// Response body for RejectClientVpcConnection.
+type RejectClientVpcConnectionOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RejectClientVpcConnectionOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RejectClientVpcConnectionOutput) GoString() string {
+	return s.String()
+}
+
+// Specifies configuration for replication between a source and target Kafka
+// cluster.
+type ReplicationInfo struct {
+	_ struct{} `type:"structure"`
+
+	// Configuration relating to consumer group replication.
+	//
+	// ConsumerGroupReplication is a required field
+	ConsumerGroupReplication *ConsumerGroupReplication `locationName:"consumerGroupReplication" type:"structure" required:"true"`
+
+	// The ARN of the source Kafka cluster.
+	//
+	// SourceKafkaClusterArn is a required field
+	SourceKafkaClusterArn *string `locationName:"sourceKafkaClusterArn" type:"string" required:"true"`
+
+	// The compression type to use when producing records to target cluster.
+	//
+	// TargetCompressionType is a required field
+	TargetCompressionType *string `locationName:"targetCompressionType" type:"string" required:"true" enum:"TargetCompressionType"`
+
+	// The ARN of the target Kafka cluster.
+	//
+	// TargetKafkaClusterArn is a required field
+	TargetKafkaClusterArn *string `locationName:"targetKafkaClusterArn" type:"string" required:"true"`
+
+	// Configuration relating to topic replication.
+	//
+	// TopicReplication is a required field
+	TopicReplication *TopicReplication `locationName:"topicReplication" type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReplicationInfo) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReplicationInfo) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ReplicationInfo) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ReplicationInfo"}
+	if s.ConsumerGroupReplication == nil {
+		invalidParams.Add(request.NewErrParamRequired("ConsumerGroupReplication"))
+	}
+	if s.SourceKafkaClusterArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("SourceKafkaClusterArn"))
+	}
+	if s.TargetCompressionType == nil {
+		invalidParams.Add(request.NewErrParamRequired("TargetCompressionType"))
+	}
+	if s.TargetKafkaClusterArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("TargetKafkaClusterArn"))
+	}
+	if s.TopicReplication == nil {
+		invalidParams.Add(request.NewErrParamRequired("TopicReplication"))
+	}
+	if s.ConsumerGroupReplication != nil {
+		if err := s.ConsumerGroupReplication.Validate(); err != nil {
+			invalidParams.AddNested("ConsumerGroupReplication", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.TopicReplication != nil {
+		if err := s.TopicReplication.Validate(); err != nil {
+			invalidParams.AddNested("TopicReplication", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetConsumerGroupReplication sets the ConsumerGroupReplication field's value.
+func (s *ReplicationInfo) SetConsumerGroupReplication(v *ConsumerGroupReplication) *ReplicationInfo {
+	s.ConsumerGroupReplication = v
+	return s
+}
+
+// SetSourceKafkaClusterArn sets the SourceKafkaClusterArn field's value.
+func (s *ReplicationInfo) SetSourceKafkaClusterArn(v string) *ReplicationInfo {
+	s.SourceKafkaClusterArn = &v
+	return s
+}
+
+// SetTargetCompressionType sets the TargetCompressionType field's value.
+func (s *ReplicationInfo) SetTargetCompressionType(v string) *ReplicationInfo {
+	s.TargetCompressionType = &v
+	return s
+}
+
+// SetTargetKafkaClusterArn sets the TargetKafkaClusterArn field's value.
+func (s *ReplicationInfo) SetTargetKafkaClusterArn(v string) *ReplicationInfo {
+	s.TargetKafkaClusterArn = &v
+	return s
+}
+
+// SetTopicReplication sets the TopicReplication field's value.
+func (s *ReplicationInfo) SetTopicReplication(v *TopicReplication) *ReplicationInfo {
+	s.TopicReplication = v
+	return s
+}
+
+// Specifies configuration for replication between a source and target Kafka
+// cluster (sourceKafkaClusterAlias -> targetKafkaClusterAlias)
+type ReplicationInfoDescription struct {
+	_ struct{} `type:"structure"`
+
+	// Configuration relating to consumer group replication
+	// .
+	ConsumerGroupReplication *ConsumerGroupReplication `locationName:"consumerGroupReplication" type:"structure"`
+
+	// The alias of the source Kafka cluster.
+	SourceKafkaClusterAlias *string `locationName:"sourceKafkaClusterAlias" type:"string"`
+
+	// The compression type to use when producing records to target cluster.
+	TargetCompressionType *string `locationName:"targetCompressionType" type:"string" enum:"TargetCompressionType"`
+
+	// The alias of the target Kafka cluster.
+	TargetKafkaClusterAlias *string `locationName:"targetKafkaClusterAlias" type:"string"`
+
+	// Configuration relating to topic replication.
+	TopicReplication *TopicReplication `locationName:"topicReplication" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReplicationInfoDescription) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReplicationInfoDescription) GoString() string {
+	return s.String()
+}
+
+// SetConsumerGroupReplication sets the ConsumerGroupReplication field's value.
+func (s *ReplicationInfoDescription) SetConsumerGroupReplication(v *ConsumerGroupReplication) *ReplicationInfoDescription {
+	s.ConsumerGroupReplication = v
+	return s
+}
+
+// SetSourceKafkaClusterAlias sets the SourceKafkaClusterAlias field's value.
+func (s *ReplicationInfoDescription) SetSourceKafkaClusterAlias(v string) *ReplicationInfoDescription {
+	s.SourceKafkaClusterAlias = &v
+	return s
+}
+
+// SetTargetCompressionType sets the TargetCompressionType field's value.
+func (s *ReplicationInfoDescription) SetTargetCompressionType(v string) *ReplicationInfoDescription {
+	s.TargetCompressionType = &v
+	return s
+}
+
+// SetTargetKafkaClusterAlias sets the TargetKafkaClusterAlias field's value.
+func (s *ReplicationInfoDescription) SetTargetKafkaClusterAlias(v string) *ReplicationInfoDescription {
+	s.TargetKafkaClusterAlias = &v
+	return s
+}
+
+// SetTopicReplication sets the TopicReplication field's value.
+func (s *ReplicationInfoDescription) SetTopicReplication(v *TopicReplication) *ReplicationInfoDescription {
+	s.TopicReplication = v
+	return s
+}
+
+// Summarized information of replication between clusters.
+type ReplicationInfoSummary struct {
+	_ struct{} `type:"structure"`
+
+	// The alias of the source Kafka cluster.
+	SourceKafkaClusterAlias *string `locationName:"sourceKafkaClusterAlias" type:"string"`
+
+	// The alias of the target Kafka cluster.
+	TargetKafkaClusterAlias *string `locationName:"targetKafkaClusterAlias" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReplicationInfoSummary) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReplicationInfoSummary) GoString() string {
+	return s.String()
+}
+
+// SetSourceKafkaClusterAlias sets the SourceKafkaClusterAlias field's value.
+func (s *ReplicationInfoSummary) SetSourceKafkaClusterAlias(v string) *ReplicationInfoSummary {
+	s.SourceKafkaClusterAlias = &v
+	return s
+}
+
+// SetTargetKafkaClusterAlias sets the TargetKafkaClusterAlias field's value.
+func (s *ReplicationInfoSummary) SetTargetKafkaClusterAlias(v string) *ReplicationInfoSummary {
+	s.TargetKafkaClusterAlias = &v
+	return s
+}
+
+// Details about the state of a replicator
+type ReplicationStateInfo struct {
+	_ struct{} `type:"structure"`
+
+	// Code that describes the current state of the replicator.
+	Code *string `locationName:"code" type:"string"`
+
+	// Message that describes the state of the replicator.
+	Message *string `locationName:"message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReplicationStateInfo) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReplicationStateInfo) GoString() string {
+	return s.String()
+}
+
+// SetCode sets the Code field's value.
+func (s *ReplicationStateInfo) SetCode(v string) *ReplicationStateInfo {
+	s.Code = &v
+	return s
+}
+
+// SetMessage sets the Message field's value.
+func (s *ReplicationStateInfo) SetMessage(v string) *ReplicationStateInfo {
+	s.Message = &v
+	return s
+}
+
+// Information about a replicator.
+type ReplicatorSummary struct {
+	_ struct{} `type:"structure"`
+
+	// The time the replicator was created.
+	CreationTime *time.Time `locationName:"creationTime" type:"timestamp" timestampFormat:"iso8601"`
+
+	// The current version of the replicator.
+	CurrentVersion *string `locationName:"currentVersion" type:"string"`
+
+	// Whether this resource is a replicator reference.
+	IsReplicatorReference *bool `locationName:"isReplicatorReference" type:"boolean"`
+
+	// Kafka Clusters used in setting up sources / targets for replication.
+	KafkaClustersSummary []*KafkaClusterSummary `locationName:"kafkaClustersSummary" type:"list"`
+
+	// A list of summarized information of replications between clusters.
+	ReplicationInfoSummaryList []*ReplicationInfoSummary `locationName:"replicationInfoSummaryList" type:"list"`
+
+	// The Amazon Resource Name (ARN) of the replicator.
+	ReplicatorArn *string `locationName:"replicatorArn" type:"string"`
+
+	// The name of the replicator.
+	ReplicatorName *string `locationName:"replicatorName" type:"string"`
+
+	// The Amazon Resource Name (ARN) of the replicator resource in the region where
+	// the replicator was created.
+	ReplicatorResourceArn *string `locationName:"replicatorResourceArn" type:"string"`
+
+	// State of the replicator.
+	ReplicatorState *string `locationName:"replicatorState" type:"string" enum:"ReplicatorState"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReplicatorSummary) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReplicatorSummary) GoString() string {
+	return s.String()
+}
+
+// SetCreationTime sets the CreationTime field's value.
+func (s *ReplicatorSummary) SetCreationTime(v time.Time) *ReplicatorSummary {
+	s.CreationTime = &v
+	return s
+}
+
+// SetCurrentVersion sets the CurrentVersion field's value.
+func (s *ReplicatorSummary) SetCurrentVersion(v string) *ReplicatorSummary {
+	s.CurrentVersion = &v
+	return s
+}
+
+// SetIsReplicatorReference sets the IsReplicatorReference field's value.
+func (s *ReplicatorSummary) SetIsReplicatorReference(v bool) *ReplicatorSummary {
+	s.IsReplicatorReference = &v
+	return s
+}
+
+// SetKafkaClustersSummary sets the KafkaClustersSummary field's value.
+func (s *ReplicatorSummary) SetKafkaClustersSummary(v []*KafkaClusterSummary) *ReplicatorSummary {
+	s.KafkaClustersSummary = v
+	return s
+}
+
+// SetReplicationInfoSummaryList sets the ReplicationInfoSummaryList field's value.
+func (s *ReplicatorSummary) SetReplicationInfoSummaryList(v []*ReplicationInfoSummary) *ReplicatorSummary {
+	s.ReplicationInfoSummaryList = v
+	return s
+}
+
+// SetReplicatorArn sets the ReplicatorArn field's value.
+func (s *ReplicatorSummary) SetReplicatorArn(v string) *ReplicatorSummary {
+	s.ReplicatorArn = &v
+	return s
+}
+
+// SetReplicatorName sets the ReplicatorName field's value.
+func (s *ReplicatorSummary) SetReplicatorName(v string) *ReplicatorSummary {
+	s.ReplicatorName = &v
+	return s
+}
+
+// SetReplicatorResourceArn sets the ReplicatorResourceArn field's value.
+func (s *ReplicatorSummary) SetReplicatorResourceArn(v string) *ReplicatorSummary {
+	s.ReplicatorResourceArn = &v
+	return s
+}
+
+// SetReplicatorState sets the ReplicatorState field's value.
+func (s *ReplicatorSummary) SetReplicatorState(v string) *ReplicatorSummary {
+	s.ReplicatorState = &v
 	return s
 }
 
@@ -9975,6 +14821,198 @@ func (s *TooManyRequestsException) StatusCode() int {
 // RequestID returns the service's response RequestID for request.
 func (s *TooManyRequestsException) RequestID() string {
 	return s.RespMetadata.RequestID
+}
+
+// Details about topic replication.
+type TopicReplication struct {
+	_ struct{} `type:"structure"`
+
+	// Whether to periodically configure remote topic ACLs to match their corresponding
+	// upstream topics.
+	CopyAccessControlListsForTopics *bool `locationName:"copyAccessControlListsForTopics" type:"boolean"`
+
+	// Whether to periodically configure remote topics to match their corresponding
+	// upstream topics.
+	CopyTopicConfigurations *bool `locationName:"copyTopicConfigurations" type:"boolean"`
+
+	// Whether to periodically check for new topics and partitions.
+	DetectAndCopyNewTopics *bool `locationName:"detectAndCopyNewTopics" type:"boolean"`
+
+	// List of regular expression patterns indicating the topics that should not
+	// be replicated.
+	TopicsToExclude []*string `locationName:"topicsToExclude" type:"list"`
+
+	// List of regular expression patterns indicating the topics to copy.
+	//
+	// TopicsToReplicate is a required field
+	TopicsToReplicate []*string `locationName:"topicsToReplicate" type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TopicReplication) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TopicReplication) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *TopicReplication) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "TopicReplication"}
+	if s.TopicsToReplicate == nil {
+		invalidParams.Add(request.NewErrParamRequired("TopicsToReplicate"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetCopyAccessControlListsForTopics sets the CopyAccessControlListsForTopics field's value.
+func (s *TopicReplication) SetCopyAccessControlListsForTopics(v bool) *TopicReplication {
+	s.CopyAccessControlListsForTopics = &v
+	return s
+}
+
+// SetCopyTopicConfigurations sets the CopyTopicConfigurations field's value.
+func (s *TopicReplication) SetCopyTopicConfigurations(v bool) *TopicReplication {
+	s.CopyTopicConfigurations = &v
+	return s
+}
+
+// SetDetectAndCopyNewTopics sets the DetectAndCopyNewTopics field's value.
+func (s *TopicReplication) SetDetectAndCopyNewTopics(v bool) *TopicReplication {
+	s.DetectAndCopyNewTopics = &v
+	return s
+}
+
+// SetTopicsToExclude sets the TopicsToExclude field's value.
+func (s *TopicReplication) SetTopicsToExclude(v []*string) *TopicReplication {
+	s.TopicsToExclude = v
+	return s
+}
+
+// SetTopicsToReplicate sets the TopicsToReplicate field's value.
+func (s *TopicReplication) SetTopicsToReplicate(v []*string) *TopicReplication {
+	s.TopicsToReplicate = v
+	return s
+}
+
+// Details for updating the topic replication of a replicator.
+type TopicReplicationUpdate struct {
+	_ struct{} `type:"structure"`
+
+	// Whether to periodically configure remote topic ACLs to match their corresponding
+	// upstream topics.
+	//
+	// CopyAccessControlListsForTopics is a required field
+	CopyAccessControlListsForTopics *bool `locationName:"copyAccessControlListsForTopics" type:"boolean" required:"true"`
+
+	// Whether to periodically configure remote topics to match their corresponding
+	// upstream topics.
+	//
+	// CopyTopicConfigurations is a required field
+	CopyTopicConfigurations *bool `locationName:"copyTopicConfigurations" type:"boolean" required:"true"`
+
+	// Whether to periodically check for new topics and partitions.
+	//
+	// DetectAndCopyNewTopics is a required field
+	DetectAndCopyNewTopics *bool `locationName:"detectAndCopyNewTopics" type:"boolean" required:"true"`
+
+	// List of regular expression patterns indicating the topics that should not
+	// be replicated.
+	//
+	// TopicsToExclude is a required field
+	TopicsToExclude []*string `locationName:"topicsToExclude" type:"list" required:"true"`
+
+	// List of regular expression patterns indicating the topics to copy.
+	//
+	// TopicsToReplicate is a required field
+	TopicsToReplicate []*string `locationName:"topicsToReplicate" type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TopicReplicationUpdate) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TopicReplicationUpdate) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *TopicReplicationUpdate) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "TopicReplicationUpdate"}
+	if s.CopyAccessControlListsForTopics == nil {
+		invalidParams.Add(request.NewErrParamRequired("CopyAccessControlListsForTopics"))
+	}
+	if s.CopyTopicConfigurations == nil {
+		invalidParams.Add(request.NewErrParamRequired("CopyTopicConfigurations"))
+	}
+	if s.DetectAndCopyNewTopics == nil {
+		invalidParams.Add(request.NewErrParamRequired("DetectAndCopyNewTopics"))
+	}
+	if s.TopicsToExclude == nil {
+		invalidParams.Add(request.NewErrParamRequired("TopicsToExclude"))
+	}
+	if s.TopicsToReplicate == nil {
+		invalidParams.Add(request.NewErrParamRequired("TopicsToReplicate"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetCopyAccessControlListsForTopics sets the CopyAccessControlListsForTopics field's value.
+func (s *TopicReplicationUpdate) SetCopyAccessControlListsForTopics(v bool) *TopicReplicationUpdate {
+	s.CopyAccessControlListsForTopics = &v
+	return s
+}
+
+// SetCopyTopicConfigurations sets the CopyTopicConfigurations field's value.
+func (s *TopicReplicationUpdate) SetCopyTopicConfigurations(v bool) *TopicReplicationUpdate {
+	s.CopyTopicConfigurations = &v
+	return s
+}
+
+// SetDetectAndCopyNewTopics sets the DetectAndCopyNewTopics field's value.
+func (s *TopicReplicationUpdate) SetDetectAndCopyNewTopics(v bool) *TopicReplicationUpdate {
+	s.DetectAndCopyNewTopics = &v
+	return s
+}
+
+// SetTopicsToExclude sets the TopicsToExclude field's value.
+func (s *TopicReplicationUpdate) SetTopicsToExclude(v []*string) *TopicReplicationUpdate {
+	s.TopicsToExclude = v
+	return s
+}
+
+// SetTopicsToReplicate sets the TopicsToReplicate field's value.
+func (s *TopicReplicationUpdate) SetTopicsToReplicate(v []*string) *TopicReplicationUpdate {
+	s.TopicsToReplicate = v
+	return s
 }
 
 // Contains information about unauthenticated traffic to the cluster.
@@ -11202,6 +16240,166 @@ func (s *UpdateMonitoringOutput) SetClusterOperationArn(v string) *UpdateMonitor
 	return s
 }
 
+// Parameters for updating replication information between source and target
+// Kafka clusters of a replicator.
+type UpdateReplicationInfoInput struct {
+	_ struct{} `type:"structure"`
+
+	// Updated consumer group replication information.
+	ConsumerGroupReplication *ConsumerGroupReplicationUpdate `locationName:"consumerGroupReplication" type:"structure"`
+
+	// Current replicator version.
+	//
+	// CurrentVersion is a required field
+	CurrentVersion *string `locationName:"currentVersion" type:"string" required:"true"`
+
+	// ReplicatorArn is a required field
+	ReplicatorArn *string `location:"uri" locationName:"replicatorArn" type:"string" required:"true"`
+
+	// The ARN of the source Kafka cluster.
+	//
+	// SourceKafkaClusterArn is a required field
+	SourceKafkaClusterArn *string `locationName:"sourceKafkaClusterArn" type:"string" required:"true"`
+
+	// The ARN of the target Kafka cluster.
+	//
+	// TargetKafkaClusterArn is a required field
+	TargetKafkaClusterArn *string `locationName:"targetKafkaClusterArn" type:"string" required:"true"`
+
+	// Updated topic replication information.
+	TopicReplication *TopicReplicationUpdate `locationName:"topicReplication" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateReplicationInfoInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateReplicationInfoInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdateReplicationInfoInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdateReplicationInfoInput"}
+	if s.CurrentVersion == nil {
+		invalidParams.Add(request.NewErrParamRequired("CurrentVersion"))
+	}
+	if s.ReplicatorArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ReplicatorArn"))
+	}
+	if s.ReplicatorArn != nil && len(*s.ReplicatorArn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ReplicatorArn", 1))
+	}
+	if s.SourceKafkaClusterArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("SourceKafkaClusterArn"))
+	}
+	if s.TargetKafkaClusterArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("TargetKafkaClusterArn"))
+	}
+	if s.ConsumerGroupReplication != nil {
+		if err := s.ConsumerGroupReplication.Validate(); err != nil {
+			invalidParams.AddNested("ConsumerGroupReplication", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.TopicReplication != nil {
+		if err := s.TopicReplication.Validate(); err != nil {
+			invalidParams.AddNested("TopicReplication", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetConsumerGroupReplication sets the ConsumerGroupReplication field's value.
+func (s *UpdateReplicationInfoInput) SetConsumerGroupReplication(v *ConsumerGroupReplicationUpdate) *UpdateReplicationInfoInput {
+	s.ConsumerGroupReplication = v
+	return s
+}
+
+// SetCurrentVersion sets the CurrentVersion field's value.
+func (s *UpdateReplicationInfoInput) SetCurrentVersion(v string) *UpdateReplicationInfoInput {
+	s.CurrentVersion = &v
+	return s
+}
+
+// SetReplicatorArn sets the ReplicatorArn field's value.
+func (s *UpdateReplicationInfoInput) SetReplicatorArn(v string) *UpdateReplicationInfoInput {
+	s.ReplicatorArn = &v
+	return s
+}
+
+// SetSourceKafkaClusterArn sets the SourceKafkaClusterArn field's value.
+func (s *UpdateReplicationInfoInput) SetSourceKafkaClusterArn(v string) *UpdateReplicationInfoInput {
+	s.SourceKafkaClusterArn = &v
+	return s
+}
+
+// SetTargetKafkaClusterArn sets the TargetKafkaClusterArn field's value.
+func (s *UpdateReplicationInfoInput) SetTargetKafkaClusterArn(v string) *UpdateReplicationInfoInput {
+	s.TargetKafkaClusterArn = &v
+	return s
+}
+
+// SetTopicReplication sets the TopicReplication field's value.
+func (s *UpdateReplicationInfoInput) SetTopicReplication(v *TopicReplicationUpdate) *UpdateReplicationInfoInput {
+	s.TopicReplication = v
+	return s
+}
+
+// Updated Replication information of a replicator.
+type UpdateReplicationInfoOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the replicator.
+	ReplicatorArn *string `locationName:"replicatorArn" type:"string"`
+
+	// State of the replicator.
+	ReplicatorState *string `locationName:"replicatorState" type:"string" enum:"ReplicatorState"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateReplicationInfoOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateReplicationInfoOutput) GoString() string {
+	return s.String()
+}
+
+// SetReplicatorArn sets the ReplicatorArn field's value.
+func (s *UpdateReplicationInfoOutput) SetReplicatorArn(v string) *UpdateReplicationInfoOutput {
+	s.ReplicatorArn = &v
+	return s
+}
+
+// SetReplicatorState sets the ReplicatorState field's value.
+func (s *UpdateReplicationInfoOutput) SetReplicatorState(v string) *UpdateReplicationInfoOutput {
+	s.ReplicatorState = &v
+	return s
+}
+
 // Request body for UpdateSecurity.
 type UpdateSecurityInput struct {
 	_ struct{} `type:"structure"`
@@ -11330,6 +16528,177 @@ func (s *UpdateSecurityOutput) SetClusterOperationArn(v string) *UpdateSecurityO
 	return s
 }
 
+// Request object for UpdateStorageApi.
+type UpdateStorageInput struct {
+	_ struct{} `type:"structure"`
+
+	// ClusterArn is a required field
+	ClusterArn *string `location:"uri" locationName:"clusterArn" type:"string" required:"true"`
+
+	// The version of cluster to update from. A successful operation will then generate
+	// a new version.
+	//
+	// CurrentVersion is a required field
+	CurrentVersion *string `locationName:"currentVersion" type:"string" required:"true"`
+
+	// EBS volume provisioned throughput information.
+	ProvisionedThroughput *ProvisionedThroughput `locationName:"provisionedThroughput" type:"structure"`
+
+	// Controls storage mode for supported storage tiers.
+	StorageMode *string `locationName:"storageMode" type:"string" enum:"StorageMode"`
+
+	// size of the EBS volume to update.
+	VolumeSizeGB *int64 `locationName:"volumeSizeGB" type:"integer"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateStorageInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateStorageInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdateStorageInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdateStorageInput"}
+	if s.ClusterArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ClusterArn"))
+	}
+	if s.ClusterArn != nil && len(*s.ClusterArn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClusterArn", 1))
+	}
+	if s.CurrentVersion == nil {
+		invalidParams.Add(request.NewErrParamRequired("CurrentVersion"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClusterArn sets the ClusterArn field's value.
+func (s *UpdateStorageInput) SetClusterArn(v string) *UpdateStorageInput {
+	s.ClusterArn = &v
+	return s
+}
+
+// SetCurrentVersion sets the CurrentVersion field's value.
+func (s *UpdateStorageInput) SetCurrentVersion(v string) *UpdateStorageInput {
+	s.CurrentVersion = &v
+	return s
+}
+
+// SetProvisionedThroughput sets the ProvisionedThroughput field's value.
+func (s *UpdateStorageInput) SetProvisionedThroughput(v *ProvisionedThroughput) *UpdateStorageInput {
+	s.ProvisionedThroughput = v
+	return s
+}
+
+// SetStorageMode sets the StorageMode field's value.
+func (s *UpdateStorageInput) SetStorageMode(v string) *UpdateStorageInput {
+	s.StorageMode = &v
+	return s
+}
+
+// SetVolumeSizeGB sets the VolumeSizeGB field's value.
+func (s *UpdateStorageInput) SetVolumeSizeGB(v int64) *UpdateStorageInput {
+	s.VolumeSizeGB = &v
+	return s
+}
+
+// Response body for UpdateStorageResponse Api.
+type UpdateStorageOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the cluster.
+	ClusterArn *string `locationName:"clusterArn" type:"string"`
+
+	// The Amazon Resource Name (ARN) of the cluster operation.
+	ClusterOperationArn *string `locationName:"clusterOperationArn" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateStorageOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateStorageOutput) GoString() string {
+	return s.String()
+}
+
+// SetClusterArn sets the ClusterArn field's value.
+func (s *UpdateStorageOutput) SetClusterArn(v string) *UpdateStorageOutput {
+	s.ClusterArn = &v
+	return s
+}
+
+// SetClusterOperationArn sets the ClusterOperationArn field's value.
+func (s *UpdateStorageOutput) SetClusterOperationArn(v string) *UpdateStorageOutput {
+	s.ClusterOperationArn = &v
+	return s
+}
+
+// Description of the requester that calls the API operation.
+type UserIdentity struct {
+	_ struct{} `type:"structure"`
+
+	PrincipalId *string `locationName:"principalId" type:"string"`
+
+	// The identity type of the requester that calls the API operation.
+	Type *string `locationName:"type" type:"string" enum:"UserIdentityType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UserIdentity) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UserIdentity) GoString() string {
+	return s.String()
+}
+
+// SetPrincipalId sets the PrincipalId field's value.
+func (s *UserIdentity) SetPrincipalId(v string) *UserIdentity {
+	s.PrincipalId = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *UserIdentity) SetType(v string) *UserIdentity {
+	s.Type = &v
+	return s
+}
+
 // The configuration of the Amazon VPCs for the cluster.
 type VpcConfig struct {
 	_ struct{} `type:"structure"`
@@ -11380,6 +16749,400 @@ func (s *VpcConfig) SetSecurityGroupIds(v []*string) *VpcConfig {
 // SetSubnetIds sets the SubnetIds field's value.
 func (s *VpcConfig) SetSubnetIds(v []*string) *VpcConfig {
 	s.SubnetIds = v
+	return s
+}
+
+// The VPC connection object.
+type VpcConnection struct {
+	_ struct{} `type:"structure"`
+
+	// The authentication type for the VPC connection.
+	Authentication *string `locationName:"authentication" type:"string"`
+
+	// The creation time of the VPC connection.
+	CreationTime *time.Time `locationName:"creationTime" type:"timestamp" timestampFormat:"iso8601"`
+
+	// The state of a configuration.
+	State *string `locationName:"state" type:"string" enum:"VpcConnectionState"`
+
+	// The Amazon Resource Name (ARN) of the cluster.
+	//
+	// TargetClusterArn is a required field
+	TargetClusterArn *string `locationName:"targetClusterArn" type:"string" required:"true"`
+
+	// The Amazon Resource Name (ARN) of the VPC connection.
+	//
+	// VpcConnectionArn is a required field
+	VpcConnectionArn *string `locationName:"vpcConnectionArn" type:"string" required:"true"`
+
+	// The VPC ID of the VPC connection.
+	VpcId *string `locationName:"vpcId" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VpcConnection) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VpcConnection) GoString() string {
+	return s.String()
+}
+
+// SetAuthentication sets the Authentication field's value.
+func (s *VpcConnection) SetAuthentication(v string) *VpcConnection {
+	s.Authentication = &v
+	return s
+}
+
+// SetCreationTime sets the CreationTime field's value.
+func (s *VpcConnection) SetCreationTime(v time.Time) *VpcConnection {
+	s.CreationTime = &v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *VpcConnection) SetState(v string) *VpcConnection {
+	s.State = &v
+	return s
+}
+
+// SetTargetClusterArn sets the TargetClusterArn field's value.
+func (s *VpcConnection) SetTargetClusterArn(v string) *VpcConnection {
+	s.TargetClusterArn = &v
+	return s
+}
+
+// SetVpcConnectionArn sets the VpcConnectionArn field's value.
+func (s *VpcConnection) SetVpcConnectionArn(v string) *VpcConnection {
+	s.VpcConnectionArn = &v
+	return s
+}
+
+// SetVpcId sets the VpcId field's value.
+func (s *VpcConnection) SetVpcId(v string) *VpcConnection {
+	s.VpcId = &v
+	return s
+}
+
+// Description of the VPC connection for CreateVpcConnection and DeleteVpcConnection
+// operations.
+type VpcConnectionInfo struct {
+	_ struct{} `type:"structure"`
+
+	CreationTime *time.Time `locationName:"creationTime" type:"timestamp" timestampFormat:"iso8601"`
+
+	Owner *string `locationName:"owner" type:"string"`
+
+	// Description of the requester that calls the API operation.
+	UserIdentity *UserIdentity `locationName:"userIdentity" type:"structure"`
+
+	VpcConnectionArn *string `locationName:"vpcConnectionArn" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VpcConnectionInfo) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VpcConnectionInfo) GoString() string {
+	return s.String()
+}
+
+// SetCreationTime sets the CreationTime field's value.
+func (s *VpcConnectionInfo) SetCreationTime(v time.Time) *VpcConnectionInfo {
+	s.CreationTime = &v
+	return s
+}
+
+// SetOwner sets the Owner field's value.
+func (s *VpcConnectionInfo) SetOwner(v string) *VpcConnectionInfo {
+	s.Owner = &v
+	return s
+}
+
+// SetUserIdentity sets the UserIdentity field's value.
+func (s *VpcConnectionInfo) SetUserIdentity(v *UserIdentity) *VpcConnectionInfo {
+	s.UserIdentity = v
+	return s
+}
+
+// SetVpcConnectionArn sets the VpcConnectionArn field's value.
+func (s *VpcConnectionInfo) SetVpcConnectionArn(v string) *VpcConnectionInfo {
+	s.VpcConnectionArn = &v
+	return s
+}
+
+// Description of the VPC connection for CreateVpcConnection and DeleteVpcConnection
+// operations.
+type VpcConnectionInfoServerless struct {
+	_ struct{} `type:"structure"`
+
+	CreationTime *time.Time `locationName:"creationTime" type:"timestamp" timestampFormat:"iso8601"`
+
+	Owner *string `locationName:"owner" type:"string"`
+
+	// Description of the requester that calls the API operation.
+	UserIdentity *UserIdentity `locationName:"userIdentity" type:"structure"`
+
+	VpcConnectionArn *string `locationName:"vpcConnectionArn" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VpcConnectionInfoServerless) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VpcConnectionInfoServerless) GoString() string {
+	return s.String()
+}
+
+// SetCreationTime sets the CreationTime field's value.
+func (s *VpcConnectionInfoServerless) SetCreationTime(v time.Time) *VpcConnectionInfoServerless {
+	s.CreationTime = &v
+	return s
+}
+
+// SetOwner sets the Owner field's value.
+func (s *VpcConnectionInfoServerless) SetOwner(v string) *VpcConnectionInfoServerless {
+	s.Owner = &v
+	return s
+}
+
+// SetUserIdentity sets the UserIdentity field's value.
+func (s *VpcConnectionInfoServerless) SetUserIdentity(v *UserIdentity) *VpcConnectionInfoServerless {
+	s.UserIdentity = v
+	return s
+}
+
+// SetVpcConnectionArn sets the VpcConnectionArn field's value.
+func (s *VpcConnectionInfoServerless) SetVpcConnectionArn(v string) *VpcConnectionInfoServerless {
+	s.VpcConnectionArn = &v
+	return s
+}
+
+// Broker VPC connectivity access control.
+type VpcConnectivity struct {
+	_ struct{} `type:"structure"`
+
+	ClientAuthentication *VpcConnectivityClientAuthentication `locationName:"clientAuthentication" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VpcConnectivity) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VpcConnectivity) GoString() string {
+	return s.String()
+}
+
+// SetClientAuthentication sets the ClientAuthentication field's value.
+func (s *VpcConnectivity) SetClientAuthentication(v *VpcConnectivityClientAuthentication) *VpcConnectivity {
+	s.ClientAuthentication = v
+	return s
+}
+
+type VpcConnectivityClientAuthentication struct {
+	_ struct{} `type:"structure"`
+
+	Sasl *VpcConnectivitySasl `locationName:"sasl" type:"structure"`
+
+	Tls *VpcConnectivityTls `locationName:"tls" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VpcConnectivityClientAuthentication) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VpcConnectivityClientAuthentication) GoString() string {
+	return s.String()
+}
+
+// SetSasl sets the Sasl field's value.
+func (s *VpcConnectivityClientAuthentication) SetSasl(v *VpcConnectivitySasl) *VpcConnectivityClientAuthentication {
+	s.Sasl = v
+	return s
+}
+
+// SetTls sets the Tls field's value.
+func (s *VpcConnectivityClientAuthentication) SetTls(v *VpcConnectivityTls) *VpcConnectivityClientAuthentication {
+	s.Tls = v
+	return s
+}
+
+type VpcConnectivityIam struct {
+	_ struct{} `type:"structure"`
+
+	Enabled *bool `locationName:"enabled" type:"boolean"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VpcConnectivityIam) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VpcConnectivityIam) GoString() string {
+	return s.String()
+}
+
+// SetEnabled sets the Enabled field's value.
+func (s *VpcConnectivityIam) SetEnabled(v bool) *VpcConnectivityIam {
+	s.Enabled = &v
+	return s
+}
+
+type VpcConnectivitySasl struct {
+	_ struct{} `type:"structure"`
+
+	Iam *VpcConnectivityIam `locationName:"iam" type:"structure"`
+
+	Scram *VpcConnectivityScram `locationName:"scram" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VpcConnectivitySasl) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VpcConnectivitySasl) GoString() string {
+	return s.String()
+}
+
+// SetIam sets the Iam field's value.
+func (s *VpcConnectivitySasl) SetIam(v *VpcConnectivityIam) *VpcConnectivitySasl {
+	s.Iam = v
+	return s
+}
+
+// SetScram sets the Scram field's value.
+func (s *VpcConnectivitySasl) SetScram(v *VpcConnectivityScram) *VpcConnectivitySasl {
+	s.Scram = v
+	return s
+}
+
+type VpcConnectivityScram struct {
+	_ struct{} `type:"structure"`
+
+	// SASL/SCRAM authentication for VPC connectivity is on or off.
+	Enabled *bool `locationName:"enabled" type:"boolean"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VpcConnectivityScram) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VpcConnectivityScram) GoString() string {
+	return s.String()
+}
+
+// SetEnabled sets the Enabled field's value.
+func (s *VpcConnectivityScram) SetEnabled(v bool) *VpcConnectivityScram {
+	s.Enabled = &v
+	return s
+}
+
+type VpcConnectivityTls struct {
+	_ struct{} `type:"structure"`
+
+	// TLS authentication for VPC connectivity is on or off.
+	Enabled *bool `locationName:"enabled" type:"boolean"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VpcConnectivityTls) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VpcConnectivityTls) GoString() string {
+	return s.String()
+}
+
+// SetEnabled sets the Enabled field's value.
+func (s *VpcConnectivityTls) SetEnabled(v bool) *VpcConnectivityTls {
+	s.Enabled = &v
 	return s
 }
 
@@ -11566,6 +17329,27 @@ func ConfigurationState_Values() []string {
 	}
 }
 
+// A type of an action required from the customer.
+const (
+	// CustomerActionStatusCriticalActionRequired is a CustomerActionStatus enum value
+	CustomerActionStatusCriticalActionRequired = "CRITICAL_ACTION_REQUIRED"
+
+	// CustomerActionStatusActionRecommended is a CustomerActionStatus enum value
+	CustomerActionStatusActionRecommended = "ACTION_RECOMMENDED"
+
+	// CustomerActionStatusNone is a CustomerActionStatus enum value
+	CustomerActionStatusNone = "NONE"
+)
+
+// CustomerActionStatus_Values returns all elements of the CustomerActionStatus enum
+func CustomerActionStatus_Values() []string {
+	return []string{
+		CustomerActionStatusCriticalActionRequired,
+		CustomerActionStatusActionRecommended,
+		CustomerActionStatusNone,
+	}
+}
+
 // Specifies which metrics are gathered for the MSK cluster. This property has
 // the following possible values: DEFAULT, PER_BROKER, PER_TOPIC_PER_BROKER,
 // and PER_TOPIC_PER_PARTITION. For a list of the metrics associated with each
@@ -11621,5 +17405,138 @@ const (
 func NodeType_Values() []string {
 	return []string{
 		NodeTypeBroker,
+	}
+}
+
+// The state of a replicator.
+const (
+	// ReplicatorStateRunning is a ReplicatorState enum value
+	ReplicatorStateRunning = "RUNNING"
+
+	// ReplicatorStateCreating is a ReplicatorState enum value
+	ReplicatorStateCreating = "CREATING"
+
+	// ReplicatorStateUpdating is a ReplicatorState enum value
+	ReplicatorStateUpdating = "UPDATING"
+
+	// ReplicatorStateDeleting is a ReplicatorState enum value
+	ReplicatorStateDeleting = "DELETING"
+
+	// ReplicatorStateFailed is a ReplicatorState enum value
+	ReplicatorStateFailed = "FAILED"
+)
+
+// ReplicatorState_Values returns all elements of the ReplicatorState enum
+func ReplicatorState_Values() []string {
+	return []string{
+		ReplicatorStateRunning,
+		ReplicatorStateCreating,
+		ReplicatorStateUpdating,
+		ReplicatorStateDeleting,
+		ReplicatorStateFailed,
+	}
+}
+
+// Controls storage mode for various supported storage tiers.
+const (
+	// StorageModeLocal is a StorageMode enum value
+	StorageModeLocal = "LOCAL"
+
+	// StorageModeTiered is a StorageMode enum value
+	StorageModeTiered = "TIERED"
+)
+
+// StorageMode_Values returns all elements of the StorageMode enum
+func StorageMode_Values() []string {
+	return []string{
+		StorageModeLocal,
+		StorageModeTiered,
+	}
+}
+
+// The type of compression to use producing records to the target cluster.
+const (
+	// TargetCompressionTypeNone is a TargetCompressionType enum value
+	TargetCompressionTypeNone = "NONE"
+
+	// TargetCompressionTypeGzip is a TargetCompressionType enum value
+	TargetCompressionTypeGzip = "GZIP"
+
+	// TargetCompressionTypeSnappy is a TargetCompressionType enum value
+	TargetCompressionTypeSnappy = "SNAPPY"
+
+	// TargetCompressionTypeLz4 is a TargetCompressionType enum value
+	TargetCompressionTypeLz4 = "LZ4"
+
+	// TargetCompressionTypeZstd is a TargetCompressionType enum value
+	TargetCompressionTypeZstd = "ZSTD"
+)
+
+// TargetCompressionType_Values returns all elements of the TargetCompressionType enum
+func TargetCompressionType_Values() []string {
+	return []string{
+		TargetCompressionTypeNone,
+		TargetCompressionTypeGzip,
+		TargetCompressionTypeSnappy,
+		TargetCompressionTypeLz4,
+		TargetCompressionTypeZstd,
+	}
+}
+
+// The identity type of the requester that calls the API operation.
+const (
+	// UserIdentityTypeAwsaccount is a UserIdentityType enum value
+	UserIdentityTypeAwsaccount = "AWSACCOUNT"
+
+	// UserIdentityTypeAwsservice is a UserIdentityType enum value
+	UserIdentityTypeAwsservice = "AWSSERVICE"
+)
+
+// UserIdentityType_Values returns all elements of the UserIdentityType enum
+func UserIdentityType_Values() []string {
+	return []string{
+		UserIdentityTypeAwsaccount,
+		UserIdentityTypeAwsservice,
+	}
+}
+
+// The state of a configuration.
+const (
+	// VpcConnectionStateCreating is a VpcConnectionState enum value
+	VpcConnectionStateCreating = "CREATING"
+
+	// VpcConnectionStateAvailable is a VpcConnectionState enum value
+	VpcConnectionStateAvailable = "AVAILABLE"
+
+	// VpcConnectionStateInactive is a VpcConnectionState enum value
+	VpcConnectionStateInactive = "INACTIVE"
+
+	// VpcConnectionStateDeactivating is a VpcConnectionState enum value
+	VpcConnectionStateDeactivating = "DEACTIVATING"
+
+	// VpcConnectionStateDeleting is a VpcConnectionState enum value
+	VpcConnectionStateDeleting = "DELETING"
+
+	// VpcConnectionStateFailed is a VpcConnectionState enum value
+	VpcConnectionStateFailed = "FAILED"
+
+	// VpcConnectionStateRejected is a VpcConnectionState enum value
+	VpcConnectionStateRejected = "REJECTED"
+
+	// VpcConnectionStateRejecting is a VpcConnectionState enum value
+	VpcConnectionStateRejecting = "REJECTING"
+)
+
+// VpcConnectionState_Values returns all elements of the VpcConnectionState enum
+func VpcConnectionState_Values() []string {
+	return []string{
+		VpcConnectionStateCreating,
+		VpcConnectionStateAvailable,
+		VpcConnectionStateInactive,
+		VpcConnectionStateDeactivating,
+		VpcConnectionStateDeleting,
+		VpcConnectionStateFailed,
+		VpcConnectionStateRejected,
+		VpcConnectionStateRejecting,
 	}
 }

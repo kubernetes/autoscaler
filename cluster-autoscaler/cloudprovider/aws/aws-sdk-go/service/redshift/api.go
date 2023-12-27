@@ -29,14 +29,13 @@ const opAcceptReservedNodeExchange = "AcceptReservedNodeExchange"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AcceptReservedNodeExchangeRequest method.
+//	req, resp := client.AcceptReservedNodeExchangeRequest(params)
 //
-//    // Example sending a request using the AcceptReservedNodeExchangeRequest method.
-//    req, resp := client.AcceptReservedNodeExchangeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/AcceptReservedNodeExchange
 func (c *Redshift) AcceptReservedNodeExchangeRequest(input *AcceptReservedNodeExchangeInput) (req *request.Request, output *AcceptReservedNodeExchangeOutput) {
@@ -69,27 +68,28 @@ func (c *Redshift) AcceptReservedNodeExchangeRequest(input *AcceptReservedNodeEx
 // API operation AcceptReservedNodeExchange for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeReservedNodeNotFoundFault "ReservedNodeNotFound"
-//   The specified reserved compute node not found.
 //
-//   * ErrCodeInvalidReservedNodeStateFault "InvalidReservedNodeState"
-//   Indicates that the Reserved Node being exchanged is not in an active state.
+//   - ErrCodeReservedNodeNotFoundFault "ReservedNodeNotFound"
+//     The specified reserved compute node not found.
 //
-//   * ErrCodeReservedNodeAlreadyMigratedFault "ReservedNodeAlreadyMigrated"
-//   Indicates that the reserved node has already been exchanged.
+//   - ErrCodeInvalidReservedNodeStateFault "InvalidReservedNodeState"
+//     Indicates that the Reserved Node being exchanged is not in an active state.
 //
-//   * ErrCodeReservedNodeOfferingNotFoundFault "ReservedNodeOfferingNotFound"
-//   Specified offering does not exist.
+//   - ErrCodeReservedNodeAlreadyMigratedFault "ReservedNodeAlreadyMigrated"
+//     Indicates that the reserved node has already been exchanged.
 //
-//   * ErrCodeUnsupportedOperationFault "UnsupportedOperation"
-//   The requested operation isn't supported.
+//   - ErrCodeReservedNodeOfferingNotFoundFault "ReservedNodeOfferingNotFound"
+//     Specified offering does not exist.
 //
-//   * ErrCodeDependentServiceUnavailableFault "DependentServiceUnavailableFault"
-//   Your request cannot be completed because a dependent internal service is
-//   temporarily unavailable. Wait 30 to 60 seconds and try again.
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
 //
-//   * ErrCodeReservedNodeAlreadyExistsFault "ReservedNodeAlreadyExists"
-//   User already has a reservation with the given identifier.
+//   - ErrCodeDependentServiceUnavailableFault "DependentServiceUnavailableFault"
+//     Your request cannot be completed because a dependent internal service is
+//     temporarily unavailable. Wait 30 to 60 seconds and try again.
+//
+//   - ErrCodeReservedNodeAlreadyExistsFault "ReservedNodeAlreadyExists"
+//     User already has a reservation with the given identifier.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/AcceptReservedNodeExchange
 func (c *Redshift) AcceptReservedNodeExchange(input *AcceptReservedNodeExchangeInput) (*AcceptReservedNodeExchangeOutput, error) {
@@ -129,14 +129,13 @@ const opAddPartner = "AddPartner"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AddPartnerRequest method.
+//	req, resp := client.AddPartnerRequest(params)
 //
-//    // Example sending a request using the AddPartnerRequest method.
-//    req, resp := client.AddPartnerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/AddPartner
 func (c *Redshift) AddPartnerRequest(input *AddPartnerInput) (req *request.Request, output *AddPartnerOutput) {
@@ -169,14 +168,18 @@ func (c *Redshift) AddPartnerRequest(input *AddPartnerInput) (req *request.Reque
 // API operation AddPartner for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodePartnerNotFoundFault "PartnerNotFound"
-//   The name of the partner was not found.
 //
-//   * ErrCodeClusterNotFoundFault "ClusterNotFound"
-//   The ClusterIdentifier parameter does not refer to an existing cluster.
+//   - ErrCodePartnerNotFoundFault "PartnerNotFound"
+//     The name of the partner was not found.
 //
-//   * ErrCodeUnauthorizedPartnerIntegrationFault "UnauthorizedPartnerIntegration"
-//   The partner integration is not authorized.
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
+//
+//   - ErrCodeUnauthorizedPartnerIntegrationFault "UnauthorizedPartnerIntegration"
+//     The partner integration is not authorized.
+//
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/AddPartner
 func (c *Redshift) AddPartner(input *AddPartnerInput) (*AddPartnerOutput, error) {
@@ -216,14 +219,13 @@ const opAssociateDataShareConsumer = "AssociateDataShareConsumer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateDataShareConsumerRequest method.
+//	req, resp := client.AssociateDataShareConsumerRequest(params)
 //
-//    // Example sending a request using the AssociateDataShareConsumerRequest method.
-//    req, resp := client.AssociateDataShareConsumerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/AssociateDataShareConsumer
 func (c *Redshift) AssociateDataShareConsumerRequest(input *AssociateDataShareConsumerInput) (req *request.Request, output *AssociateDataShareConsumerOutput) {
@@ -256,12 +258,13 @@ func (c *Redshift) AssociateDataShareConsumerRequest(input *AssociateDataShareCo
 // API operation AssociateDataShareConsumer for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidDataShareFault "InvalidDataShareFault"
-//   There is an error with the datashare.
 //
-//   * ErrCodeInvalidNamespaceFault "InvalidNamespaceFault"
-//   The namespace isn't valid because the namespace doesn't exist. Provide a
-//   valid namespace.
+//   - ErrCodeInvalidDataShareFault "InvalidDataShareFault"
+//     There is an error with the datashare.
+//
+//   - ErrCodeInvalidNamespaceFault "InvalidNamespaceFault"
+//     The namespace isn't valid because the namespace doesn't exist. Provide a
+//     valid namespace.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/AssociateDataShareConsumer
 func (c *Redshift) AssociateDataShareConsumer(input *AssociateDataShareConsumerInput) (*AssociateDataShareConsumerOutput, error) {
@@ -301,14 +304,13 @@ const opAuthorizeClusterSecurityGroupIngress = "AuthorizeClusterSecurityGroupIng
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AuthorizeClusterSecurityGroupIngressRequest method.
+//	req, resp := client.AuthorizeClusterSecurityGroupIngressRequest(params)
 //
-//    // Example sending a request using the AuthorizeClusterSecurityGroupIngressRequest method.
-//    req, resp := client.AuthorizeClusterSecurityGroupIngressRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/AuthorizeClusterSecurityGroupIngress
 func (c *Redshift) AuthorizeClusterSecurityGroupIngressRequest(input *AuthorizeClusterSecurityGroupIngressInput) (req *request.Request, output *AuthorizeClusterSecurityGroupIngressOutput) {
@@ -358,19 +360,20 @@ func (c *Redshift) AuthorizeClusterSecurityGroupIngressRequest(input *AuthorizeC
 // API operation AuthorizeClusterSecurityGroupIngress for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeClusterSecurityGroupNotFoundFault "ClusterSecurityGroupNotFound"
-//   The cluster security group name does not refer to an existing cluster security
-//   group.
 //
-//   * ErrCodeInvalidClusterSecurityGroupStateFault "InvalidClusterSecurityGroupState"
-//   The state of the cluster security group is not available.
+//   - ErrCodeClusterSecurityGroupNotFoundFault "ClusterSecurityGroupNotFound"
+//     The cluster security group name does not refer to an existing cluster security
+//     group.
 //
-//   * ErrCodeAuthorizationAlreadyExistsFault "AuthorizationAlreadyExists"
-//   The specified CIDR block or EC2 security group is already authorized for
-//   the specified cluster security group.
+//   - ErrCodeInvalidClusterSecurityGroupStateFault "InvalidClusterSecurityGroupState"
+//     The state of the cluster security group is not available.
 //
-//   * ErrCodeAuthorizationQuotaExceededFault "AuthorizationQuotaExceeded"
-//   The authorization quota for the cluster security group has been reached.
+//   - ErrCodeAuthorizationAlreadyExistsFault "AuthorizationAlreadyExists"
+//     The specified CIDR block or EC2 security group is already authorized for
+//     the specified cluster security group.
+//
+//   - ErrCodeAuthorizationQuotaExceededFault "AuthorizationQuotaExceeded"
+//     The authorization quota for the cluster security group has been reached.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/AuthorizeClusterSecurityGroupIngress
 func (c *Redshift) AuthorizeClusterSecurityGroupIngress(input *AuthorizeClusterSecurityGroupIngressInput) (*AuthorizeClusterSecurityGroupIngressOutput, error) {
@@ -410,14 +413,13 @@ const opAuthorizeDataShare = "AuthorizeDataShare"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AuthorizeDataShareRequest method.
+//	req, resp := client.AuthorizeDataShareRequest(params)
 //
-//    // Example sending a request using the AuthorizeDataShareRequest method.
-//    req, resp := client.AuthorizeDataShareRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/AuthorizeDataShare
 func (c *Redshift) AuthorizeDataShareRequest(input *AuthorizeDataShareInput) (req *request.Request, output *AuthorizeDataShareOutput) {
@@ -450,8 +452,8 @@ func (c *Redshift) AuthorizeDataShareRequest(input *AuthorizeDataShareInput) (re
 // API operation AuthorizeDataShare for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidDataShareFault "InvalidDataShareFault"
-//   There is an error with the datashare.
+//   - ErrCodeInvalidDataShareFault "InvalidDataShareFault"
+//     There is an error with the datashare.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/AuthorizeDataShare
 func (c *Redshift) AuthorizeDataShare(input *AuthorizeDataShareInput) (*AuthorizeDataShareOutput, error) {
@@ -491,14 +493,13 @@ const opAuthorizeEndpointAccess = "AuthorizeEndpointAccess"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AuthorizeEndpointAccessRequest method.
+//	req, resp := client.AuthorizeEndpointAccessRequest(params)
 //
-//    // Example sending a request using the AuthorizeEndpointAccessRequest method.
-//    req, resp := client.AuthorizeEndpointAccessRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/AuthorizeEndpointAccess
 func (c *Redshift) AuthorizeEndpointAccessRequest(input *AuthorizeEndpointAccessInput) (req *request.Request, output *AuthorizeEndpointAccessOutput) {
@@ -529,23 +530,24 @@ func (c *Redshift) AuthorizeEndpointAccessRequest(input *AuthorizeEndpointAccess
 // API operation AuthorizeEndpointAccess for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeClusterNotFoundFault "ClusterNotFound"
-//   The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeEndpointAuthorizationsPerClusterLimitExceededFault "EndpointAuthorizationsPerClusterLimitExceeded"
-//   The number of endpoint authorizations per cluster has exceeded its limit.
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeUnsupportedOperationFault "UnsupportedOperation"
-//   The requested operation isn't supported.
+//   - ErrCodeEndpointAuthorizationsPerClusterLimitExceededFault "EndpointAuthorizationsPerClusterLimitExceeded"
+//     The number of endpoint authorizations per cluster has exceeded its limit.
 //
-//   * ErrCodeEndpointAuthorizationAlreadyExistsFault "EndpointAuthorizationAlreadyExists"
-//   The authorization already exists for this endpoint.
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
 //
-//   * ErrCodeInvalidAuthorizationStateFault "InvalidAuthorizationState"
-//   The status of the authorization is not valid.
+//   - ErrCodeEndpointAuthorizationAlreadyExistsFault "EndpointAuthorizationAlreadyExists"
+//     The authorization already exists for this endpoint.
 //
-//   * ErrCodeInvalidClusterStateFault "InvalidClusterState"
-//   The specified cluster is not in the available state.
+//   - ErrCodeInvalidAuthorizationStateFault "InvalidAuthorizationState"
+//     The status of the authorization is not valid.
+//
+//   - ErrCodeInvalidClusterStateFault "InvalidClusterState"
+//     The specified cluster is not in the available state.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/AuthorizeEndpointAccess
 func (c *Redshift) AuthorizeEndpointAccess(input *AuthorizeEndpointAccessInput) (*AuthorizeEndpointAccessOutput, error) {
@@ -585,14 +587,13 @@ const opAuthorizeSnapshotAccess = "AuthorizeSnapshotAccess"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AuthorizeSnapshotAccessRequest method.
+//	req, resp := client.AuthorizeSnapshotAccessRequest(params)
 //
-//    // Example sending a request using the AuthorizeSnapshotAccessRequest method.
-//    req, resp := client.AuthorizeSnapshotAccessRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/AuthorizeSnapshotAccess
 func (c *Redshift) AuthorizeSnapshotAccessRequest(input *AuthorizeSnapshotAccessInput) (req *request.Request, output *AuthorizeSnapshotAccessOutput) {
@@ -628,26 +629,30 @@ func (c *Redshift) AuthorizeSnapshotAccessRequest(input *AuthorizeSnapshotAccess
 // API operation AuthorizeSnapshotAccess for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeClusterSnapshotNotFoundFault "ClusterSnapshotNotFound"
-//   The snapshot identifier does not refer to an existing cluster snapshot.
 //
-//   * ErrCodeAuthorizationAlreadyExistsFault "AuthorizationAlreadyExists"
-//   The specified CIDR block or EC2 security group is already authorized for
-//   the specified cluster security group.
+//   - ErrCodeClusterSnapshotNotFoundFault "ClusterSnapshotNotFound"
+//     The snapshot identifier does not refer to an existing cluster snapshot.
 //
-//   * ErrCodeAuthorizationQuotaExceededFault "AuthorizationQuotaExceeded"
-//   The authorization quota for the cluster security group has been reached.
+//   - ErrCodeAuthorizationAlreadyExistsFault "AuthorizationAlreadyExists"
+//     The specified CIDR block or EC2 security group is already authorized for
+//     the specified cluster security group.
 //
-//   * ErrCodeDependentServiceRequestThrottlingFault "DependentServiceRequestThrottlingFault"
-//   The request cannot be completed because a dependent service is throttling
-//   requests made by Amazon Redshift on your behalf. Wait and retry the request.
+//   - ErrCodeAuthorizationQuotaExceededFault "AuthorizationQuotaExceeded"
+//     The authorization quota for the cluster security group has been reached.
 //
-//   * ErrCodeInvalidClusterSnapshotStateFault "InvalidClusterSnapshotState"
-//   The specified cluster snapshot is not in the available state, or other accounts
-//   are authorized to access the snapshot.
+//   - ErrCodeDependentServiceRequestThrottlingFault "DependentServiceRequestThrottlingFault"
+//     The request cannot be completed because a dependent service is throttling
+//     requests made by Amazon Redshift on your behalf. Wait and retry the request.
 //
-//   * ErrCodeLimitExceededFault "LimitExceededFault"
-//   The encryption key has exceeded its grant limit in Amazon Web Services KMS.
+//   - ErrCodeInvalidClusterSnapshotStateFault "InvalidClusterSnapshotState"
+//     The specified cluster snapshot is not in the available state, or other accounts
+//     are authorized to access the snapshot.
+//
+//   - ErrCodeLimitExceededFault "LimitExceededFault"
+//     The encryption key has exceeded its grant limit in Amazon Web Services KMS.
+//
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/AuthorizeSnapshotAccess
 func (c *Redshift) AuthorizeSnapshotAccess(input *AuthorizeSnapshotAccessInput) (*AuthorizeSnapshotAccessOutput, error) {
@@ -687,14 +692,13 @@ const opBatchDeleteClusterSnapshots = "BatchDeleteClusterSnapshots"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchDeleteClusterSnapshotsRequest method.
+//	req, resp := client.BatchDeleteClusterSnapshotsRequest(params)
 //
-//    // Example sending a request using the BatchDeleteClusterSnapshotsRequest method.
-//    req, resp := client.BatchDeleteClusterSnapshotsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/BatchDeleteClusterSnapshots
 func (c *Redshift) BatchDeleteClusterSnapshotsRequest(input *BatchDeleteClusterSnapshotsInput) (req *request.Request, output *BatchDeleteClusterSnapshotsOutput) {
@@ -725,9 +729,9 @@ func (c *Redshift) BatchDeleteClusterSnapshotsRequest(input *BatchDeleteClusterS
 // API operation BatchDeleteClusterSnapshots for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeBatchDeleteRequestSizeExceededFault "BatchDeleteRequestSizeExceeded"
-//   The maximum number for a batch delete of snapshots has been reached. The
-//   limit is 100.
+//   - ErrCodeBatchDeleteRequestSizeExceededFault "BatchDeleteRequestSizeExceeded"
+//     The maximum number for a batch delete of snapshots has been reached. The
+//     limit is 100.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/BatchDeleteClusterSnapshots
 func (c *Redshift) BatchDeleteClusterSnapshots(input *BatchDeleteClusterSnapshotsInput) (*BatchDeleteClusterSnapshotsOutput, error) {
@@ -767,14 +771,13 @@ const opBatchModifyClusterSnapshots = "BatchModifyClusterSnapshots"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchModifyClusterSnapshotsRequest method.
+//	req, resp := client.BatchModifyClusterSnapshotsRequest(params)
 //
-//    // Example sending a request using the BatchModifyClusterSnapshotsRequest method.
-//    req, resp := client.BatchModifyClusterSnapshotsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/BatchModifyClusterSnapshots
 func (c *Redshift) BatchModifyClusterSnapshotsRequest(input *BatchModifyClusterSnapshotsInput) (req *request.Request, output *BatchModifyClusterSnapshotsOutput) {
@@ -805,14 +808,15 @@ func (c *Redshift) BatchModifyClusterSnapshotsRequest(input *BatchModifyClusterS
 // API operation BatchModifyClusterSnapshots for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidRetentionPeriodFault "InvalidRetentionPeriodFault"
-//   The retention period specified is either in the past or is not a valid value.
 //
-//   The value must be either -1 or an integer between 1 and 3,653.
+//   - ErrCodeInvalidRetentionPeriodFault "InvalidRetentionPeriodFault"
+//     The retention period specified is either in the past or is not a valid value.
 //
-//   * ErrCodeBatchModifyClusterSnapshotsLimitExceededFault "BatchModifyClusterSnapshotsLimitExceededFault"
-//   The maximum number for snapshot identifiers has been reached. The limit is
-//   100.
+//     The value must be either -1 or an integer between 1 and 3,653.
+//
+//   - ErrCodeBatchModifyClusterSnapshotsLimitExceededFault "BatchModifyClusterSnapshotsLimitExceededFault"
+//     The maximum number for snapshot identifiers has been reached. The limit is
+//     100.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/BatchModifyClusterSnapshots
 func (c *Redshift) BatchModifyClusterSnapshots(input *BatchModifyClusterSnapshotsInput) (*BatchModifyClusterSnapshotsOutput, error) {
@@ -852,14 +856,13 @@ const opCancelResize = "CancelResize"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CancelResizeRequest method.
+//	req, resp := client.CancelResizeRequest(params)
 //
-//    // Example sending a request using the CancelResizeRequest method.
-//    req, resp := client.CancelResizeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/CancelResize
 func (c *Redshift) CancelResizeRequest(input *CancelResizeInput) (req *request.Request, output *CancelResizeOutput) {
@@ -890,17 +893,18 @@ func (c *Redshift) CancelResizeRequest(input *CancelResizeInput) (req *request.R
 // API operation CancelResize for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeClusterNotFoundFault "ClusterNotFound"
-//   The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeResizeNotFoundFault "ResizeNotFound"
-//   A resize operation for the specified cluster is not found.
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeInvalidClusterStateFault "InvalidClusterState"
-//   The specified cluster is not in the available state.
+//   - ErrCodeResizeNotFoundFault "ResizeNotFound"
+//     A resize operation for the specified cluster is not found.
 //
-//   * ErrCodeUnsupportedOperationFault "UnsupportedOperation"
-//   The requested operation isn't supported.
+//   - ErrCodeInvalidClusterStateFault "InvalidClusterState"
+//     The specified cluster is not in the available state.
+//
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/CancelResize
 func (c *Redshift) CancelResize(input *CancelResizeInput) (*CancelResizeOutput, error) {
@@ -940,14 +944,13 @@ const opCopyClusterSnapshot = "CopyClusterSnapshot"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CopyClusterSnapshotRequest method.
+//	req, resp := client.CopyClusterSnapshotRequest(params)
 //
-//    // Example sending a request using the CopyClusterSnapshotRequest method.
-//    req, resp := client.CopyClusterSnapshotRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/CopyClusterSnapshot
 func (c *Redshift) CopyClusterSnapshotRequest(input *CopyClusterSnapshotInput) (req *request.Request, output *CopyClusterSnapshotOutput) {
@@ -990,25 +993,29 @@ func (c *Redshift) CopyClusterSnapshotRequest(input *CopyClusterSnapshotInput) (
 // API operation CopyClusterSnapshot for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeClusterSnapshotAlreadyExistsFault "ClusterSnapshotAlreadyExists"
-//   The value specified as a snapshot identifier is already used by an existing
-//   snapshot.
 //
-//   * ErrCodeClusterSnapshotNotFoundFault "ClusterSnapshotNotFound"
-//   The snapshot identifier does not refer to an existing cluster snapshot.
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeInvalidClusterSnapshotStateFault "InvalidClusterSnapshotState"
-//   The specified cluster snapshot is not in the available state, or other accounts
-//   are authorized to access the snapshot.
+//   - ErrCodeClusterSnapshotAlreadyExistsFault "ClusterSnapshotAlreadyExists"
+//     The value specified as a snapshot identifier is already used by an existing
+//     snapshot.
 //
-//   * ErrCodeClusterSnapshotQuotaExceededFault "ClusterSnapshotQuotaExceeded"
-//   The request would result in the user exceeding the allowed number of cluster
-//   snapshots.
+//   - ErrCodeClusterSnapshotNotFoundFault "ClusterSnapshotNotFound"
+//     The snapshot identifier does not refer to an existing cluster snapshot.
 //
-//   * ErrCodeInvalidRetentionPeriodFault "InvalidRetentionPeriodFault"
-//   The retention period specified is either in the past or is not a valid value.
+//   - ErrCodeInvalidClusterSnapshotStateFault "InvalidClusterSnapshotState"
+//     The specified cluster snapshot is not in the available state, or other accounts
+//     are authorized to access the snapshot.
 //
-//   The value must be either -1 or an integer between 1 and 3,653.
+//   - ErrCodeClusterSnapshotQuotaExceededFault "ClusterSnapshotQuotaExceeded"
+//     The request would result in the user exceeding the allowed number of cluster
+//     snapshots.
+//
+//   - ErrCodeInvalidRetentionPeriodFault "InvalidRetentionPeriodFault"
+//     The retention period specified is either in the past or is not a valid value.
+//
+//     The value must be either -1 or an integer between 1 and 3,653.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/CopyClusterSnapshot
 func (c *Redshift) CopyClusterSnapshot(input *CopyClusterSnapshotInput) (*CopyClusterSnapshotOutput, error) {
@@ -1048,14 +1055,13 @@ const opCreateAuthenticationProfile = "CreateAuthenticationProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAuthenticationProfileRequest method.
+//	req, resp := client.CreateAuthenticationProfileRequest(params)
 //
-//    // Example sending a request using the CreateAuthenticationProfileRequest method.
-//    req, resp := client.CreateAuthenticationProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/CreateAuthenticationProfile
 func (c *Redshift) CreateAuthenticationProfileRequest(input *CreateAuthenticationProfileInput) (req *request.Request, output *CreateAuthenticationProfileOutput) {
@@ -1086,18 +1092,19 @@ func (c *Redshift) CreateAuthenticationProfileRequest(input *CreateAuthenticatio
 // API operation CreateAuthenticationProfile for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAuthenticationProfileAlreadyExistsFault "AuthenticationProfileAlreadyExistsFault"
-//   The authentication profile already exists.
 //
-//   * ErrCodeAuthenticationProfileQuotaExceededFault "AuthenticationProfileQuotaExceededFault"
-//   The size or number of authentication profiles has exceeded the quota. The
-//   maximum length of the JSON string and maximum number of authentication profiles
-//   is determined by a quota for your account.
+//   - ErrCodeAuthenticationProfileAlreadyExistsFault "AuthenticationProfileAlreadyExistsFault"
+//     The authentication profile already exists.
 //
-//   * ErrCodeInvalidAuthenticationProfileRequestFault "InvalidAuthenticationProfileRequestFault"
-//   The authentication profile request is not valid. The profile name can't be
-//   null or empty. The authentication profile API operation must be available
-//   in the Amazon Web Services Region.
+//   - ErrCodeAuthenticationProfileQuotaExceededFault "AuthenticationProfileQuotaExceededFault"
+//     The size or number of authentication profiles has exceeded the quota. The
+//     maximum length of the JSON string and maximum number of authentication profiles
+//     is determined by a quota for your account.
+//
+//   - ErrCodeInvalidAuthenticationProfileRequestFault "InvalidAuthenticationProfileRequestFault"
+//     The authentication profile request is not valid. The profile name can't be
+//     null or empty. The authentication profile API operation must be available
+//     in the Amazon Web Services Region.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/CreateAuthenticationProfile
 func (c *Redshift) CreateAuthenticationProfile(input *CreateAuthenticationProfileInput) (*CreateAuthenticationProfileOutput, error) {
@@ -1137,14 +1144,13 @@ const opCreateCluster = "CreateCluster"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateClusterRequest method.
+//	req, resp := client.CreateClusterRequest(params)
 //
-//    // Example sending a request using the CreateClusterRequest method.
-//    req, resp := client.CreateClusterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/CreateCluster
 func (c *Redshift) CreateClusterRequest(input *CreateClusterInput) (req *request.Request, output *CreateClusterOutput) {
@@ -1181,83 +1187,94 @@ func (c *Redshift) CreateClusterRequest(input *CreateClusterInput) (req *request
 // API operation CreateCluster for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeClusterAlreadyExistsFault "ClusterAlreadyExists"
-//   The account already has a cluster with the given identifier.
 //
-//   * ErrCodeInsufficientClusterCapacityFault "InsufficientClusterCapacity"
-//   The number of nodes specified exceeds the allotted capacity of the cluster.
+//   - ErrCodeClusterAlreadyExistsFault "ClusterAlreadyExists"
+//     The account already has a cluster with the given identifier.
 //
-//   * ErrCodeClusterParameterGroupNotFoundFault "ClusterParameterGroupNotFound"
-//   The parameter group name does not refer to an existing parameter group.
+//   - ErrCodeInsufficientClusterCapacityFault "InsufficientClusterCapacity"
+//     The number of nodes specified exceeds the allotted capacity of the cluster.
 //
-//   * ErrCodeClusterSecurityGroupNotFoundFault "ClusterSecurityGroupNotFound"
-//   The cluster security group name does not refer to an existing cluster security
-//   group.
+//   - ErrCodeClusterParameterGroupNotFoundFault "ClusterParameterGroupNotFound"
+//     The parameter group name does not refer to an existing parameter group.
 //
-//   * ErrCodeClusterQuotaExceededFault "ClusterQuotaExceeded"
-//   The request would exceed the allowed number of cluster instances for this
-//   account. For information about increasing your quota, go to Limits in Amazon
-//   Redshift (https://docs.aws.amazon.com/redshift/latest/mgmt/amazon-redshift-limits.html)
-//   in the Amazon Redshift Cluster Management Guide.
+//   - ErrCodeClusterSecurityGroupNotFoundFault "ClusterSecurityGroupNotFound"
+//     The cluster security group name does not refer to an existing cluster security
+//     group.
 //
-//   * ErrCodeNumberOfNodesQuotaExceededFault "NumberOfNodesQuotaExceeded"
-//   The operation would exceed the number of nodes allotted to the account. For
-//   information about increasing your quota, go to Limits in Amazon Redshift
-//   (https://docs.aws.amazon.com/redshift/latest/mgmt/amazon-redshift-limits.html)
-//   in the Amazon Redshift Cluster Management Guide.
+//   - ErrCodeClusterQuotaExceededFault "ClusterQuotaExceeded"
+//     The request would exceed the allowed number of cluster instances for this
+//     account. For information about increasing your quota, go to Limits in Amazon
+//     Redshift (https://docs.aws.amazon.com/redshift/latest/mgmt/amazon-redshift-limits.html)
+//     in the Amazon Redshift Cluster Management Guide.
 //
-//   * ErrCodeNumberOfNodesPerClusterLimitExceededFault "NumberOfNodesPerClusterLimitExceeded"
-//   The operation would exceed the number of nodes allowed for a cluster.
+//   - ErrCodeNumberOfNodesQuotaExceededFault "NumberOfNodesQuotaExceeded"
+//     The operation would exceed the number of nodes allotted to the account. For
+//     information about increasing your quota, go to Limits in Amazon Redshift
+//     (https://docs.aws.amazon.com/redshift/latest/mgmt/amazon-redshift-limits.html)
+//     in the Amazon Redshift Cluster Management Guide.
 //
-//   * ErrCodeClusterSubnetGroupNotFoundFault "ClusterSubnetGroupNotFoundFault"
-//   The cluster subnet group name does not refer to an existing cluster subnet
-//   group.
+//   - ErrCodeNumberOfNodesPerClusterLimitExceededFault "NumberOfNodesPerClusterLimitExceeded"
+//     The operation would exceed the number of nodes allowed for a cluster.
 //
-//   * ErrCodeInvalidVPCNetworkStateFault "InvalidVPCNetworkStateFault"
-//   The cluster subnet group does not cover all Availability Zones.
+//   - ErrCodeClusterSubnetGroupNotFoundFault "ClusterSubnetGroupNotFoundFault"
+//     The cluster subnet group name does not refer to an existing cluster subnet
+//     group.
 //
-//   * ErrCodeInvalidClusterSubnetGroupStateFault "InvalidClusterSubnetGroupStateFault"
-//   The cluster subnet group cannot be deleted because it is in use.
+//   - ErrCodeInvalidVPCNetworkStateFault "InvalidVPCNetworkStateFault"
+//     The cluster subnet group does not cover all Availability Zones.
 //
-//   * ErrCodeInvalidSubnet "InvalidSubnet"
-//   The requested subnet is not valid, or not all of the subnets are in the same
-//   VPC.
+//   - ErrCodeInvalidClusterSubnetGroupStateFault "InvalidClusterSubnetGroupStateFault"
+//     The cluster subnet group cannot be deleted because it is in use.
 //
-//   * ErrCodeUnauthorizedOperation "UnauthorizedOperation"
-//   Your account is not authorized to perform the requested operation.
+//   - ErrCodeInvalidSubnet "InvalidSubnet"
+//     The requested subnet is not valid, or not all of the subnets are in the same
+//     VPC.
 //
-//   * ErrCodeHsmClientCertificateNotFoundFault "HsmClientCertificateNotFoundFault"
-//   There is no Amazon Redshift HSM client certificate with the specified identifier.
+//   - ErrCodeUnauthorizedOperation "UnauthorizedOperation"
+//     Your account is not authorized to perform the requested operation.
 //
-//   * ErrCodeHsmConfigurationNotFoundFault "HsmConfigurationNotFoundFault"
-//   There is no Amazon Redshift HSM configuration with the specified identifier.
+//   - ErrCodeHsmClientCertificateNotFoundFault "HsmClientCertificateNotFoundFault"
+//     There is no Amazon Redshift HSM client certificate with the specified identifier.
 //
-//   * ErrCodeInvalidElasticIpFault "InvalidElasticIpFault"
-//   The Elastic IP (EIP) is invalid or cannot be found.
+//   - ErrCodeHsmConfigurationNotFoundFault "HsmConfigurationNotFoundFault"
+//     There is no Amazon Redshift HSM configuration with the specified identifier.
 //
-//   * ErrCodeTagLimitExceededFault "TagLimitExceededFault"
-//   You have exceeded the number of tags allowed.
+//   - ErrCodeInvalidElasticIpFault "InvalidElasticIpFault"
+//     The Elastic IP (EIP) is invalid or cannot be found.
 //
-//   * ErrCodeInvalidTagFault "InvalidTagFault"
-//   The tag is invalid.
+//   - ErrCodeTagLimitExceededFault "TagLimitExceededFault"
+//     You have exceeded the number of tags allowed.
 //
-//   * ErrCodeLimitExceededFault "LimitExceededFault"
-//   The encryption key has exceeded its grant limit in Amazon Web Services KMS.
+//   - ErrCodeInvalidTagFault "InvalidTagFault"
+//     The tag is invalid.
 //
-//   * ErrCodeDependentServiceRequestThrottlingFault "DependentServiceRequestThrottlingFault"
-//   The request cannot be completed because a dependent service is throttling
-//   requests made by Amazon Redshift on your behalf. Wait and retry the request.
+//   - ErrCodeLimitExceededFault "LimitExceededFault"
+//     The encryption key has exceeded its grant limit in Amazon Web Services KMS.
 //
-//   * ErrCodeInvalidClusterTrackFault "InvalidClusterTrack"
-//   The provided cluster track name is not valid.
+//   - ErrCodeDependentServiceRequestThrottlingFault "DependentServiceRequestThrottlingFault"
+//     The request cannot be completed because a dependent service is throttling
+//     requests made by Amazon Redshift on your behalf. Wait and retry the request.
 //
-//   * ErrCodeSnapshotScheduleNotFoundFault "SnapshotScheduleNotFound"
-//   We could not find the specified snapshot schedule.
+//   - ErrCodeInvalidClusterTrackFault "InvalidClusterTrack"
+//     The provided cluster track name is not valid.
 //
-//   * ErrCodeInvalidRetentionPeriodFault "InvalidRetentionPeriodFault"
-//   The retention period specified is either in the past or is not a valid value.
+//   - ErrCodeSnapshotScheduleNotFoundFault "SnapshotScheduleNotFound"
+//     We could not find the specified snapshot schedule.
 //
-//   The value must be either -1 or an integer between 1 and 3,653.
+//   - ErrCodeInvalidRetentionPeriodFault "InvalidRetentionPeriodFault"
+//     The retention period specified is either in the past or is not a valid value.
+//
+//     The value must be either -1 or an integer between 1 and 3,653.
+//
+//   - ErrCodeIpv6CidrBlockNotFoundFault "Ipv6CidrBlockNotFoundFault"
+//     There are no subnets in your VPC with associated IPv6 CIDR blocks. To use
+//     dual-stack mode, associate an IPv6 CIDR block with each subnet in your VPC.
+//
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
+//
+//   - ErrCodeRedshiftIdcApplicationNotExistsFault "RedshiftIdcApplicationNotExists"
+//     The application you attempted to find doesn't exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/CreateCluster
 func (c *Redshift) CreateCluster(input *CreateClusterInput) (*CreateClusterOutput, error) {
@@ -1297,14 +1314,13 @@ const opCreateClusterParameterGroup = "CreateClusterParameterGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateClusterParameterGroupRequest method.
+//	req, resp := client.CreateClusterParameterGroupRequest(params)
 //
-//    // Example sending a request using the CreateClusterParameterGroupRequest method.
-//    req, resp := client.CreateClusterParameterGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/CreateClusterParameterGroup
 func (c *Redshift) CreateClusterParameterGroupRequest(input *CreateClusterParameterGroupInput) (req *request.Request, output *CreateClusterParameterGroupOutput) {
@@ -1345,20 +1361,21 @@ func (c *Redshift) CreateClusterParameterGroupRequest(input *CreateClusterParame
 // API operation CreateClusterParameterGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeClusterParameterGroupQuotaExceededFault "ClusterParameterGroupQuotaExceeded"
-//   The request would result in the user exceeding the allowed number of cluster
-//   parameter groups. For information about increasing your quota, go to Limits
-//   in Amazon Redshift (https://docs.aws.amazon.com/redshift/latest/mgmt/amazon-redshift-limits.html)
-//   in the Amazon Redshift Cluster Management Guide.
 //
-//   * ErrCodeClusterParameterGroupAlreadyExistsFault "ClusterParameterGroupAlreadyExists"
-//   A cluster parameter group with the same name already exists.
+//   - ErrCodeClusterParameterGroupQuotaExceededFault "ClusterParameterGroupQuotaExceeded"
+//     The request would result in the user exceeding the allowed number of cluster
+//     parameter groups. For information about increasing your quota, go to Limits
+//     in Amazon Redshift (https://docs.aws.amazon.com/redshift/latest/mgmt/amazon-redshift-limits.html)
+//     in the Amazon Redshift Cluster Management Guide.
 //
-//   * ErrCodeTagLimitExceededFault "TagLimitExceededFault"
-//   You have exceeded the number of tags allowed.
+//   - ErrCodeClusterParameterGroupAlreadyExistsFault "ClusterParameterGroupAlreadyExists"
+//     A cluster parameter group with the same name already exists.
 //
-//   * ErrCodeInvalidTagFault "InvalidTagFault"
-//   The tag is invalid.
+//   - ErrCodeTagLimitExceededFault "TagLimitExceededFault"
+//     You have exceeded the number of tags allowed.
+//
+//   - ErrCodeInvalidTagFault "InvalidTagFault"
+//     The tag is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/CreateClusterParameterGroup
 func (c *Redshift) CreateClusterParameterGroup(input *CreateClusterParameterGroupInput) (*CreateClusterParameterGroupOutput, error) {
@@ -1398,14 +1415,13 @@ const opCreateClusterSecurityGroup = "CreateClusterSecurityGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateClusterSecurityGroupRequest method.
+//	req, resp := client.CreateClusterSecurityGroupRequest(params)
 //
-//    // Example sending a request using the CreateClusterSecurityGroupRequest method.
-//    req, resp := client.CreateClusterSecurityGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/CreateClusterSecurityGroup
 func (c *Redshift) CreateClusterSecurityGroupRequest(input *CreateClusterSecurityGroupInput) (req *request.Request, output *CreateClusterSecurityGroupOutput) {
@@ -1441,20 +1457,21 @@ func (c *Redshift) CreateClusterSecurityGroupRequest(input *CreateClusterSecurit
 // API operation CreateClusterSecurityGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeClusterSecurityGroupAlreadyExistsFault "ClusterSecurityGroupAlreadyExists"
-//   A cluster security group with the same name already exists.
 //
-//   * ErrCodeClusterSecurityGroupQuotaExceededFault "QuotaExceeded.ClusterSecurityGroup"
-//   The request would result in the user exceeding the allowed number of cluster
-//   security groups. For information about increasing your quota, go to Limits
-//   in Amazon Redshift (https://docs.aws.amazon.com/redshift/latest/mgmt/amazon-redshift-limits.html)
-//   in the Amazon Redshift Cluster Management Guide.
+//   - ErrCodeClusterSecurityGroupAlreadyExistsFault "ClusterSecurityGroupAlreadyExists"
+//     A cluster security group with the same name already exists.
 //
-//   * ErrCodeTagLimitExceededFault "TagLimitExceededFault"
-//   You have exceeded the number of tags allowed.
+//   - ErrCodeClusterSecurityGroupQuotaExceededFault "QuotaExceeded.ClusterSecurityGroup"
+//     The request would result in the user exceeding the allowed number of cluster
+//     security groups. For information about increasing your quota, go to Limits
+//     in Amazon Redshift (https://docs.aws.amazon.com/redshift/latest/mgmt/amazon-redshift-limits.html)
+//     in the Amazon Redshift Cluster Management Guide.
 //
-//   * ErrCodeInvalidTagFault "InvalidTagFault"
-//   The tag is invalid.
+//   - ErrCodeTagLimitExceededFault "TagLimitExceededFault"
+//     You have exceeded the number of tags allowed.
+//
+//   - ErrCodeInvalidTagFault "InvalidTagFault"
+//     The tag is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/CreateClusterSecurityGroup
 func (c *Redshift) CreateClusterSecurityGroup(input *CreateClusterSecurityGroupInput) (*CreateClusterSecurityGroupOutput, error) {
@@ -1494,14 +1511,13 @@ const opCreateClusterSnapshot = "CreateClusterSnapshot"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateClusterSnapshotRequest method.
+//	req, resp := client.CreateClusterSnapshotRequest(params)
 //
-//    // Example sending a request using the CreateClusterSnapshotRequest method.
-//    req, resp := client.CreateClusterSnapshotRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/CreateClusterSnapshot
 func (c *Redshift) CreateClusterSnapshotRequest(input *CreateClusterSnapshotInput) (req *request.Request, output *CreateClusterSnapshotOutput) {
@@ -1537,30 +1553,31 @@ func (c *Redshift) CreateClusterSnapshotRequest(input *CreateClusterSnapshotInpu
 // API operation CreateClusterSnapshot for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeClusterSnapshotAlreadyExistsFault "ClusterSnapshotAlreadyExists"
-//   The value specified as a snapshot identifier is already used by an existing
-//   snapshot.
 //
-//   * ErrCodeInvalidClusterStateFault "InvalidClusterState"
-//   The specified cluster is not in the available state.
+//   - ErrCodeClusterSnapshotAlreadyExistsFault "ClusterSnapshotAlreadyExists"
+//     The value specified as a snapshot identifier is already used by an existing
+//     snapshot.
 //
-//   * ErrCodeClusterNotFoundFault "ClusterNotFound"
-//   The ClusterIdentifier parameter does not refer to an existing cluster.
+//   - ErrCodeInvalidClusterStateFault "InvalidClusterState"
+//     The specified cluster is not in the available state.
 //
-//   * ErrCodeClusterSnapshotQuotaExceededFault "ClusterSnapshotQuotaExceeded"
-//   The request would result in the user exceeding the allowed number of cluster
-//   snapshots.
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeTagLimitExceededFault "TagLimitExceededFault"
-//   You have exceeded the number of tags allowed.
+//   - ErrCodeClusterSnapshotQuotaExceededFault "ClusterSnapshotQuotaExceeded"
+//     The request would result in the user exceeding the allowed number of cluster
+//     snapshots.
 //
-//   * ErrCodeInvalidTagFault "InvalidTagFault"
-//   The tag is invalid.
+//   - ErrCodeTagLimitExceededFault "TagLimitExceededFault"
+//     You have exceeded the number of tags allowed.
 //
-//   * ErrCodeInvalidRetentionPeriodFault "InvalidRetentionPeriodFault"
-//   The retention period specified is either in the past or is not a valid value.
+//   - ErrCodeInvalidTagFault "InvalidTagFault"
+//     The tag is invalid.
 //
-//   The value must be either -1 or an integer between 1 and 3,653.
+//   - ErrCodeInvalidRetentionPeriodFault "InvalidRetentionPeriodFault"
+//     The retention period specified is either in the past or is not a valid value.
+//
+//     The value must be either -1 or an integer between 1 and 3,653.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/CreateClusterSnapshot
 func (c *Redshift) CreateClusterSnapshot(input *CreateClusterSnapshotInput) (*CreateClusterSnapshotOutput, error) {
@@ -1600,14 +1617,13 @@ const opCreateClusterSubnetGroup = "CreateClusterSubnetGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateClusterSubnetGroupRequest method.
+//	req, resp := client.CreateClusterSubnetGroupRequest(params)
 //
-//    // Example sending a request using the CreateClusterSubnetGroupRequest method.
-//    req, resp := client.CreateClusterSubnetGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/CreateClusterSubnetGroup
 func (c *Redshift) CreateClusterSubnetGroupRequest(input *CreateClusterSubnetGroupInput) (req *request.Request, output *CreateClusterSubnetGroupOutput) {
@@ -1644,37 +1660,38 @@ func (c *Redshift) CreateClusterSubnetGroupRequest(input *CreateClusterSubnetGro
 // API operation CreateClusterSubnetGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeClusterSubnetGroupAlreadyExistsFault "ClusterSubnetGroupAlreadyExists"
-//   A ClusterSubnetGroupName is already used by an existing cluster subnet group.
 //
-//   * ErrCodeClusterSubnetGroupQuotaExceededFault "ClusterSubnetGroupQuotaExceeded"
-//   The request would result in user exceeding the allowed number of cluster
-//   subnet groups. For information about increasing your quota, go to Limits
-//   in Amazon Redshift (https://docs.aws.amazon.com/redshift/latest/mgmt/amazon-redshift-limits.html)
-//   in the Amazon Redshift Cluster Management Guide.
+//   - ErrCodeClusterSubnetGroupAlreadyExistsFault "ClusterSubnetGroupAlreadyExists"
+//     A ClusterSubnetGroupName is already used by an existing cluster subnet group.
 //
-//   * ErrCodeClusterSubnetQuotaExceededFault "ClusterSubnetQuotaExceededFault"
-//   The request would result in user exceeding the allowed number of subnets
-//   in a cluster subnet groups. For information about increasing your quota,
-//   go to Limits in Amazon Redshift (https://docs.aws.amazon.com/redshift/latest/mgmt/amazon-redshift-limits.html)
-//   in the Amazon Redshift Cluster Management Guide.
+//   - ErrCodeClusterSubnetGroupQuotaExceededFault "ClusterSubnetGroupQuotaExceeded"
+//     The request would result in user exceeding the allowed number of cluster
+//     subnet groups. For information about increasing your quota, go to Limits
+//     in Amazon Redshift (https://docs.aws.amazon.com/redshift/latest/mgmt/amazon-redshift-limits.html)
+//     in the Amazon Redshift Cluster Management Guide.
 //
-//   * ErrCodeInvalidSubnet "InvalidSubnet"
-//   The requested subnet is not valid, or not all of the subnets are in the same
-//   VPC.
+//   - ErrCodeClusterSubnetQuotaExceededFault "ClusterSubnetQuotaExceededFault"
+//     The request would result in user exceeding the allowed number of subnets
+//     in a cluster subnet groups. For information about increasing your quota,
+//     go to Limits in Amazon Redshift (https://docs.aws.amazon.com/redshift/latest/mgmt/amazon-redshift-limits.html)
+//     in the Amazon Redshift Cluster Management Guide.
 //
-//   * ErrCodeUnauthorizedOperation "UnauthorizedOperation"
-//   Your account is not authorized to perform the requested operation.
+//   - ErrCodeInvalidSubnet "InvalidSubnet"
+//     The requested subnet is not valid, or not all of the subnets are in the same
+//     VPC.
 //
-//   * ErrCodeTagLimitExceededFault "TagLimitExceededFault"
-//   You have exceeded the number of tags allowed.
+//   - ErrCodeUnauthorizedOperation "UnauthorizedOperation"
+//     Your account is not authorized to perform the requested operation.
 //
-//   * ErrCodeInvalidTagFault "InvalidTagFault"
-//   The tag is invalid.
+//   - ErrCodeTagLimitExceededFault "TagLimitExceededFault"
+//     You have exceeded the number of tags allowed.
 //
-//   * ErrCodeDependentServiceRequestThrottlingFault "DependentServiceRequestThrottlingFault"
-//   The request cannot be completed because a dependent service is throttling
-//   requests made by Amazon Redshift on your behalf. Wait and retry the request.
+//   - ErrCodeInvalidTagFault "InvalidTagFault"
+//     The tag is invalid.
+//
+//   - ErrCodeDependentServiceRequestThrottlingFault "DependentServiceRequestThrottlingFault"
+//     The request cannot be completed because a dependent service is throttling
+//     requests made by Amazon Redshift on your behalf. Wait and retry the request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/CreateClusterSubnetGroup
 func (c *Redshift) CreateClusterSubnetGroup(input *CreateClusterSubnetGroupInput) (*CreateClusterSubnetGroupOutput, error) {
@@ -1698,6 +1715,93 @@ func (c *Redshift) CreateClusterSubnetGroupWithContext(ctx aws.Context, input *C
 	return out, req.Send()
 }
 
+const opCreateCustomDomainAssociation = "CreateCustomDomainAssociation"
+
+// CreateCustomDomainAssociationRequest generates a "aws/request.Request" representing the
+// client's request for the CreateCustomDomainAssociation operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateCustomDomainAssociation for more information on using the CreateCustomDomainAssociation
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreateCustomDomainAssociationRequest method.
+//	req, resp := client.CreateCustomDomainAssociationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/CreateCustomDomainAssociation
+func (c *Redshift) CreateCustomDomainAssociationRequest(input *CreateCustomDomainAssociationInput) (req *request.Request, output *CreateCustomDomainAssociationOutput) {
+	op := &request.Operation{
+		Name:       opCreateCustomDomainAssociation,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &CreateCustomDomainAssociationInput{}
+	}
+
+	output = &CreateCustomDomainAssociationOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateCustomDomainAssociation API operation for Amazon Redshift.
+//
+// Used to create a custom domain name for a cluster. Properties include the
+// custom domain name, the cluster the custom domain is associated with, and
+// the certificate Amazon Resource Name (ARN).
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Redshift's
+// API operation CreateCustomDomainAssociation for usage and error information.
+//
+// Returned Error Codes:
+//
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
+//
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
+//
+//   - ErrCodeCustomCnameAssociationFault "CustomCnameAssociationFault"
+//     An error occurred when an attempt was made to change the custom domain association.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/CreateCustomDomainAssociation
+func (c *Redshift) CreateCustomDomainAssociation(input *CreateCustomDomainAssociationInput) (*CreateCustomDomainAssociationOutput, error) {
+	req, out := c.CreateCustomDomainAssociationRequest(input)
+	return out, req.Send()
+}
+
+// CreateCustomDomainAssociationWithContext is the same as CreateCustomDomainAssociation with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateCustomDomainAssociation for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Redshift) CreateCustomDomainAssociationWithContext(ctx aws.Context, input *CreateCustomDomainAssociationInput, opts ...request.Option) (*CreateCustomDomainAssociationOutput, error) {
+	req, out := c.CreateCustomDomainAssociationRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opCreateEndpointAccess = "CreateEndpointAccess"
 
 // CreateEndpointAccessRequest generates a "aws/request.Request" representing the
@@ -1714,14 +1818,13 @@ const opCreateEndpointAccess = "CreateEndpointAccess"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateEndpointAccessRequest method.
+//	req, resp := client.CreateEndpointAccessRequest(params)
 //
-//    // Example sending a request using the CreateEndpointAccessRequest method.
-//    req, resp := client.CreateEndpointAccessRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/CreateEndpointAccess
 func (c *Redshift) CreateEndpointAccessRequest(input *CreateEndpointAccessInput) (req *request.Request, output *CreateEndpointAccessOutput) {
@@ -1752,38 +1855,39 @@ func (c *Redshift) CreateEndpointAccessRequest(input *CreateEndpointAccessInput)
 // API operation CreateEndpointAccess for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeClusterNotFoundFault "ClusterNotFound"
-//   The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeAccessToClusterDeniedFault "AccessToClusterDenied"
-//   You are not authorized to access the cluster.
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeEndpointsPerClusterLimitExceededFault "EndpointsPerClusterLimitExceeded"
-//   The number of Redshift-managed VPC endpoints per cluster has exceeded its
-//   limit.
+//   - ErrCodeAccessToClusterDeniedFault "AccessToClusterDenied"
+//     You are not authorized to access the cluster.
 //
-//   * ErrCodeEndpointsPerAuthorizationLimitExceededFault "EndpointsPerAuthorizationLimitExceeded"
-//   The number of Redshift-managed VPC endpoints per authorization has exceeded
-//   its limit.
+//   - ErrCodeEndpointsPerClusterLimitExceededFault "EndpointsPerClusterLimitExceeded"
+//     The number of Redshift-managed VPC endpoints per cluster has exceeded its
+//     limit.
 //
-//   * ErrCodeInvalidClusterSecurityGroupStateFault "InvalidClusterSecurityGroupState"
-//   The state of the cluster security group is not available.
+//   - ErrCodeEndpointsPerAuthorizationLimitExceededFault "EndpointsPerAuthorizationLimitExceeded"
+//     The number of Redshift-managed VPC endpoints per authorization has exceeded
+//     its limit.
 //
-//   * ErrCodeClusterSubnetGroupNotFoundFault "ClusterSubnetGroupNotFoundFault"
-//   The cluster subnet group name does not refer to an existing cluster subnet
-//   group.
+//   - ErrCodeInvalidClusterSecurityGroupStateFault "InvalidClusterSecurityGroupState"
+//     The state of the cluster security group is not available.
 //
-//   * ErrCodeEndpointAlreadyExistsFault "EndpointAlreadyExists"
-//   The account already has a Redshift-managed VPC endpoint with the given identifier.
+//   - ErrCodeClusterSubnetGroupNotFoundFault "ClusterSubnetGroupNotFoundFault"
+//     The cluster subnet group name does not refer to an existing cluster subnet
+//     group.
 //
-//   * ErrCodeUnsupportedOperationFault "UnsupportedOperation"
-//   The requested operation isn't supported.
+//   - ErrCodeEndpointAlreadyExistsFault "EndpointAlreadyExists"
+//     The account already has a Redshift-managed VPC endpoint with the given identifier.
 //
-//   * ErrCodeInvalidClusterStateFault "InvalidClusterState"
-//   The specified cluster is not in the available state.
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
 //
-//   * ErrCodeUnauthorizedOperation "UnauthorizedOperation"
-//   Your account is not authorized to perform the requested operation.
+//   - ErrCodeInvalidClusterStateFault "InvalidClusterState"
+//     The specified cluster is not in the available state.
+//
+//   - ErrCodeUnauthorizedOperation "UnauthorizedOperation"
+//     Your account is not authorized to perform the requested operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/CreateEndpointAccess
 func (c *Redshift) CreateEndpointAccess(input *CreateEndpointAccessInput) (*CreateEndpointAccessOutput, error) {
@@ -1823,14 +1927,13 @@ const opCreateEventSubscription = "CreateEventSubscription"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateEventSubscriptionRequest method.
+//	req, resp := client.CreateEventSubscriptionRequest(params)
 //
-//    // Example sending a request using the CreateEventSubscriptionRequest method.
-//    req, resp := client.CreateEventSubscriptionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/CreateEventSubscription
 func (c *Redshift) CreateEventSubscriptionRequest(input *CreateEventSubscriptionInput) (req *request.Request, output *CreateEventSubscriptionOutput) {
@@ -1883,48 +1986,49 @@ func (c *Redshift) CreateEventSubscriptionRequest(input *CreateEventSubscription
 // API operation CreateEventSubscription for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeEventSubscriptionQuotaExceededFault "EventSubscriptionQuotaExceeded"
-//   The request would exceed the allowed number of event subscriptions for this
-//   account. For information about increasing your quota, go to Limits in Amazon
-//   Redshift (https://docs.aws.amazon.com/redshift/latest/mgmt/amazon-redshift-limits.html)
-//   in the Amazon Redshift Cluster Management Guide.
 //
-//   * ErrCodeSubscriptionAlreadyExistFault "SubscriptionAlreadyExist"
-//   There is already an existing event notification subscription with the specified
-//   name.
+//   - ErrCodeEventSubscriptionQuotaExceededFault "EventSubscriptionQuotaExceeded"
+//     The request would exceed the allowed number of event subscriptions for this
+//     account. For information about increasing your quota, go to Limits in Amazon
+//     Redshift (https://docs.aws.amazon.com/redshift/latest/mgmt/amazon-redshift-limits.html)
+//     in the Amazon Redshift Cluster Management Guide.
 //
-//   * ErrCodeSNSInvalidTopicFault "SNSInvalidTopic"
-//   Amazon SNS has responded that there is a problem with the specified Amazon
-//   SNS topic.
+//   - ErrCodeSubscriptionAlreadyExistFault "SubscriptionAlreadyExist"
+//     There is already an existing event notification subscription with the specified
+//     name.
 //
-//   * ErrCodeSNSNoAuthorizationFault "SNSNoAuthorization"
-//   You do not have permission to publish to the specified Amazon SNS topic.
+//   - ErrCodeSNSInvalidTopicFault "SNSInvalidTopic"
+//     Amazon SNS has responded that there is a problem with the specified Amazon
+//     SNS topic.
 //
-//   * ErrCodeSNSTopicArnNotFoundFault "SNSTopicArnNotFound"
-//   An Amazon SNS topic with the specified Amazon Resource Name (ARN) does not
-//   exist.
+//   - ErrCodeSNSNoAuthorizationFault "SNSNoAuthorization"
+//     You do not have permission to publish to the specified Amazon SNS topic.
 //
-//   * ErrCodeSubscriptionEventIdNotFoundFault "SubscriptionEventIdNotFound"
-//   An Amazon Redshift event with the specified event ID does not exist.
+//   - ErrCodeSNSTopicArnNotFoundFault "SNSTopicArnNotFound"
+//     An Amazon SNS topic with the specified Amazon Resource Name (ARN) does not
+//     exist.
 //
-//   * ErrCodeSubscriptionCategoryNotFoundFault "SubscriptionCategoryNotFound"
-//   The value specified for the event category was not one of the allowed values,
-//   or it specified a category that does not apply to the specified source type.
-//   The allowed values are Configuration, Management, Monitoring, and Security.
+//   - ErrCodeSubscriptionEventIdNotFoundFault "SubscriptionEventIdNotFound"
+//     An Amazon Redshift event with the specified event ID does not exist.
 //
-//   * ErrCodeSubscriptionSeverityNotFoundFault "SubscriptionSeverityNotFound"
-//   The value specified for the event severity was not one of the allowed values,
-//   or it specified a severity that does not apply to the specified source type.
-//   The allowed values are ERROR and INFO.
+//   - ErrCodeSubscriptionCategoryNotFoundFault "SubscriptionCategoryNotFound"
+//     The value specified for the event category was not one of the allowed values,
+//     or it specified a category that does not apply to the specified source type.
+//     The allowed values are Configuration, Management, Monitoring, and Security.
 //
-//   * ErrCodeSourceNotFoundFault "SourceNotFound"
-//   The specified Amazon Redshift event source could not be found.
+//   - ErrCodeSubscriptionSeverityNotFoundFault "SubscriptionSeverityNotFound"
+//     The value specified for the event severity was not one of the allowed values,
+//     or it specified a severity that does not apply to the specified source type.
+//     The allowed values are ERROR and INFO.
 //
-//   * ErrCodeTagLimitExceededFault "TagLimitExceededFault"
-//   You have exceeded the number of tags allowed.
+//   - ErrCodeSourceNotFoundFault "SourceNotFound"
+//     The specified Amazon Redshift event source could not be found.
 //
-//   * ErrCodeInvalidTagFault "InvalidTagFault"
-//   The tag is invalid.
+//   - ErrCodeTagLimitExceededFault "TagLimitExceededFault"
+//     You have exceeded the number of tags allowed.
+//
+//   - ErrCodeInvalidTagFault "InvalidTagFault"
+//     The tag is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/CreateEventSubscription
 func (c *Redshift) CreateEventSubscription(input *CreateEventSubscriptionInput) (*CreateEventSubscriptionOutput, error) {
@@ -1964,14 +2068,13 @@ const opCreateHsmClientCertificate = "CreateHsmClientCertificate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateHsmClientCertificateRequest method.
+//	req, resp := client.CreateHsmClientCertificateRequest(params)
 //
-//    // Example sending a request using the CreateHsmClientCertificateRequest method.
-//    req, resp := client.CreateHsmClientCertificateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/CreateHsmClientCertificate
 func (c *Redshift) CreateHsmClientCertificateRequest(input *CreateHsmClientCertificateInput) (req *request.Request, output *CreateHsmClientCertificateOutput) {
@@ -2010,20 +2113,21 @@ func (c *Redshift) CreateHsmClientCertificateRequest(input *CreateHsmClientCerti
 // API operation CreateHsmClientCertificate for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeHsmClientCertificateAlreadyExistsFault "HsmClientCertificateAlreadyExistsFault"
-//   There is already an existing Amazon Redshift HSM client certificate with
-//   the specified identifier.
 //
-//   * ErrCodeHsmClientCertificateQuotaExceededFault "HsmClientCertificateQuotaExceededFault"
-//   The quota for HSM client certificates has been reached. For information about
-//   increasing your quota, go to Limits in Amazon Redshift (https://docs.aws.amazon.com/redshift/latest/mgmt/amazon-redshift-limits.html)
-//   in the Amazon Redshift Cluster Management Guide.
+//   - ErrCodeHsmClientCertificateAlreadyExistsFault "HsmClientCertificateAlreadyExistsFault"
+//     There is already an existing Amazon Redshift HSM client certificate with
+//     the specified identifier.
 //
-//   * ErrCodeTagLimitExceededFault "TagLimitExceededFault"
-//   You have exceeded the number of tags allowed.
+//   - ErrCodeHsmClientCertificateQuotaExceededFault "HsmClientCertificateQuotaExceededFault"
+//     The quota for HSM client certificates has been reached. For information about
+//     increasing your quota, go to Limits in Amazon Redshift (https://docs.aws.amazon.com/redshift/latest/mgmt/amazon-redshift-limits.html)
+//     in the Amazon Redshift Cluster Management Guide.
 //
-//   * ErrCodeInvalidTagFault "InvalidTagFault"
-//   The tag is invalid.
+//   - ErrCodeTagLimitExceededFault "TagLimitExceededFault"
+//     You have exceeded the number of tags allowed.
+//
+//   - ErrCodeInvalidTagFault "InvalidTagFault"
+//     The tag is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/CreateHsmClientCertificate
 func (c *Redshift) CreateHsmClientCertificate(input *CreateHsmClientCertificateInput) (*CreateHsmClientCertificateOutput, error) {
@@ -2063,14 +2167,13 @@ const opCreateHsmConfiguration = "CreateHsmConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateHsmConfigurationRequest method.
+//	req, resp := client.CreateHsmConfigurationRequest(params)
 //
-//    // Example sending a request using the CreateHsmConfigurationRequest method.
-//    req, resp := client.CreateHsmConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/CreateHsmConfiguration
 func (c *Redshift) CreateHsmConfigurationRequest(input *CreateHsmConfigurationInput) (req *request.Request, output *CreateHsmConfigurationOutput) {
@@ -2110,20 +2213,21 @@ func (c *Redshift) CreateHsmConfigurationRequest(input *CreateHsmConfigurationIn
 // API operation CreateHsmConfiguration for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeHsmConfigurationAlreadyExistsFault "HsmConfigurationAlreadyExistsFault"
-//   There is already an existing Amazon Redshift HSM configuration with the specified
-//   identifier.
 //
-//   * ErrCodeHsmConfigurationQuotaExceededFault "HsmConfigurationQuotaExceededFault"
-//   The quota for HSM configurations has been reached. For information about
-//   increasing your quota, go to Limits in Amazon Redshift (https://docs.aws.amazon.com/redshift/latest/mgmt/amazon-redshift-limits.html)
-//   in the Amazon Redshift Cluster Management Guide.
+//   - ErrCodeHsmConfigurationAlreadyExistsFault "HsmConfigurationAlreadyExistsFault"
+//     There is already an existing Amazon Redshift HSM configuration with the specified
+//     identifier.
 //
-//   * ErrCodeTagLimitExceededFault "TagLimitExceededFault"
-//   You have exceeded the number of tags allowed.
+//   - ErrCodeHsmConfigurationQuotaExceededFault "HsmConfigurationQuotaExceededFault"
+//     The quota for HSM configurations has been reached. For information about
+//     increasing your quota, go to Limits in Amazon Redshift (https://docs.aws.amazon.com/redshift/latest/mgmt/amazon-redshift-limits.html)
+//     in the Amazon Redshift Cluster Management Guide.
 //
-//   * ErrCodeInvalidTagFault "InvalidTagFault"
-//   The tag is invalid.
+//   - ErrCodeTagLimitExceededFault "TagLimitExceededFault"
+//     You have exceeded the number of tags allowed.
+//
+//   - ErrCodeInvalidTagFault "InvalidTagFault"
+//     The tag is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/CreateHsmConfiguration
 func (c *Redshift) CreateHsmConfiguration(input *CreateHsmConfigurationInput) (*CreateHsmConfigurationOutput, error) {
@@ -2147,6 +2251,98 @@ func (c *Redshift) CreateHsmConfigurationWithContext(ctx aws.Context, input *Cre
 	return out, req.Send()
 }
 
+const opCreateRedshiftIdcApplication = "CreateRedshiftIdcApplication"
+
+// CreateRedshiftIdcApplicationRequest generates a "aws/request.Request" representing the
+// client's request for the CreateRedshiftIdcApplication operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateRedshiftIdcApplication for more information on using the CreateRedshiftIdcApplication
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreateRedshiftIdcApplicationRequest method.
+//	req, resp := client.CreateRedshiftIdcApplicationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/CreateRedshiftIdcApplication
+func (c *Redshift) CreateRedshiftIdcApplicationRequest(input *CreateRedshiftIdcApplicationInput) (req *request.Request, output *CreateRedshiftIdcApplicationOutput) {
+	op := &request.Operation{
+		Name:       opCreateRedshiftIdcApplication,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &CreateRedshiftIdcApplicationInput{}
+	}
+
+	output = &CreateRedshiftIdcApplicationOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateRedshiftIdcApplication API operation for Amazon Redshift.
+//
+// Creates an Amazon Redshift application for use with IAM Identity Center.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Redshift's
+// API operation CreateRedshiftIdcApplication for usage and error information.
+//
+// Returned Error Codes:
+//
+//   - ErrCodeRedshiftIdcApplicationAlreadyExistsFault "RedshiftIdcApplicationAlreadyExists"
+//     The application you attempted to add already exists.
+//
+//   - ErrCodeDependentServiceUnavailableFault "DependentServiceUnavailableFault"
+//     Your request cannot be completed because a dependent internal service is
+//     temporarily unavailable. Wait 30 to 60 seconds and try again.
+//
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
+//
+//   - ErrCodeDependentServiceAccessDeniedFault "DependentServiceAccessDenied"
+//     A dependent service denied access for the integration.
+//
+//   - ErrCodeRedshiftIdcApplicationQuotaExceededFault "RedshiftIdcApplicationQuotaExceeded"
+//     The maximum number of Redshift IAM Identity Center applications was exceeded.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/CreateRedshiftIdcApplication
+func (c *Redshift) CreateRedshiftIdcApplication(input *CreateRedshiftIdcApplicationInput) (*CreateRedshiftIdcApplicationOutput, error) {
+	req, out := c.CreateRedshiftIdcApplicationRequest(input)
+	return out, req.Send()
+}
+
+// CreateRedshiftIdcApplicationWithContext is the same as CreateRedshiftIdcApplication with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateRedshiftIdcApplication for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Redshift) CreateRedshiftIdcApplicationWithContext(ctx aws.Context, input *CreateRedshiftIdcApplicationInput, opts ...request.Option) (*CreateRedshiftIdcApplicationOutput, error) {
+	req, out := c.CreateRedshiftIdcApplicationRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opCreateScheduledAction = "CreateScheduledAction"
 
 // CreateScheduledActionRequest generates a "aws/request.Request" representing the
@@ -2163,14 +2359,13 @@ const opCreateScheduledAction = "CreateScheduledAction"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateScheduledActionRequest method.
+//	req, resp := client.CreateScheduledActionRequest(params)
 //
-//    // Example sending a request using the CreateScheduledActionRequest method.
-//    req, resp := client.CreateScheduledActionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/CreateScheduledAction
 func (c *Redshift) CreateScheduledActionRequest(input *CreateScheduledActionInput) (req *request.Request, output *CreateScheduledActionOutput) {
@@ -2203,23 +2398,30 @@ func (c *Redshift) CreateScheduledActionRequest(input *CreateScheduledActionInpu
 // API operation CreateScheduledAction for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeScheduledActionAlreadyExistsFault "ScheduledActionAlreadyExists"
-//   The scheduled action already exists.
 //
-//   * ErrCodeScheduledActionQuotaExceededFault "ScheduledActionQuotaExceeded"
-//   The quota for scheduled actions exceeded.
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeScheduledActionTypeUnsupportedFault "ScheduledActionTypeUnsupported"
-//   The action type specified for a scheduled action is not supported.
+//   - ErrCodeScheduledActionAlreadyExistsFault "ScheduledActionAlreadyExists"
+//     The scheduled action already exists.
 //
-//   * ErrCodeInvalidScheduleFault "InvalidSchedule"
-//   The schedule you submitted isn't valid.
+//   - ErrCodeScheduledActionQuotaExceededFault "ScheduledActionQuotaExceeded"
+//     The quota for scheduled actions exceeded.
 //
-//   * ErrCodeInvalidScheduledActionFault "InvalidScheduledAction"
-//   The scheduled action is not valid.
+//   - ErrCodeScheduledActionTypeUnsupportedFault "ScheduledActionTypeUnsupported"
+//     The action type specified for a scheduled action is not supported.
 //
-//   * ErrCodeUnauthorizedOperation "UnauthorizedOperation"
-//   Your account is not authorized to perform the requested operation.
+//   - ErrCodeInvalidScheduleFault "InvalidSchedule"
+//     The schedule you submitted isn't valid.
+//
+//   - ErrCodeInvalidScheduledActionFault "InvalidScheduledAction"
+//     The scheduled action is not valid.
+//
+//   - ErrCodeUnauthorizedOperation "UnauthorizedOperation"
+//     Your account is not authorized to perform the requested operation.
+//
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/CreateScheduledAction
 func (c *Redshift) CreateScheduledAction(input *CreateScheduledActionInput) (*CreateScheduledActionOutput, error) {
@@ -2259,14 +2461,13 @@ const opCreateSnapshotCopyGrant = "CreateSnapshotCopyGrant"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateSnapshotCopyGrantRequest method.
+//	req, resp := client.CreateSnapshotCopyGrantRequest(params)
 //
-//    // Example sending a request using the CreateSnapshotCopyGrantRequest method.
-//    req, resp := client.CreateSnapshotCopyGrantRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/CreateSnapshotCopyGrant
 func (c *Redshift) CreateSnapshotCopyGrantRequest(input *CreateSnapshotCopyGrantInput) (req *request.Request, output *CreateSnapshotCopyGrantOutput) {
@@ -2303,26 +2504,27 @@ func (c *Redshift) CreateSnapshotCopyGrantRequest(input *CreateSnapshotCopyGrant
 // API operation CreateSnapshotCopyGrant for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeSnapshotCopyGrantAlreadyExistsFault "SnapshotCopyGrantAlreadyExistsFault"
-//   The snapshot copy grant can't be created because a grant with the same name
-//   already exists.
 //
-//   * ErrCodeSnapshotCopyGrantQuotaExceededFault "SnapshotCopyGrantQuotaExceededFault"
-//   The Amazon Web Services account has exceeded the maximum number of snapshot
-//   copy grants in this region.
+//   - ErrCodeSnapshotCopyGrantAlreadyExistsFault "SnapshotCopyGrantAlreadyExistsFault"
+//     The snapshot copy grant can't be created because a grant with the same name
+//     already exists.
 //
-//   * ErrCodeLimitExceededFault "LimitExceededFault"
-//   The encryption key has exceeded its grant limit in Amazon Web Services KMS.
+//   - ErrCodeSnapshotCopyGrantQuotaExceededFault "SnapshotCopyGrantQuotaExceededFault"
+//     The Amazon Web Services account has exceeded the maximum number of snapshot
+//     copy grants in this region.
 //
-//   * ErrCodeTagLimitExceededFault "TagLimitExceededFault"
-//   You have exceeded the number of tags allowed.
+//   - ErrCodeLimitExceededFault "LimitExceededFault"
+//     The encryption key has exceeded its grant limit in Amazon Web Services KMS.
 //
-//   * ErrCodeInvalidTagFault "InvalidTagFault"
-//   The tag is invalid.
+//   - ErrCodeTagLimitExceededFault "TagLimitExceededFault"
+//     You have exceeded the number of tags allowed.
 //
-//   * ErrCodeDependentServiceRequestThrottlingFault "DependentServiceRequestThrottlingFault"
-//   The request cannot be completed because a dependent service is throttling
-//   requests made by Amazon Redshift on your behalf. Wait and retry the request.
+//   - ErrCodeInvalidTagFault "InvalidTagFault"
+//     The tag is invalid.
+//
+//   - ErrCodeDependentServiceRequestThrottlingFault "DependentServiceRequestThrottlingFault"
+//     The request cannot be completed because a dependent service is throttling
+//     requests made by Amazon Redshift on your behalf. Wait and retry the request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/CreateSnapshotCopyGrant
 func (c *Redshift) CreateSnapshotCopyGrant(input *CreateSnapshotCopyGrantInput) (*CreateSnapshotCopyGrantOutput, error) {
@@ -2362,14 +2564,13 @@ const opCreateSnapshotSchedule = "CreateSnapshotSchedule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateSnapshotScheduleRequest method.
+//	req, resp := client.CreateSnapshotScheduleRequest(params)
 //
-//    // Example sending a request using the CreateSnapshotScheduleRequest method.
-//    req, resp := client.CreateSnapshotScheduleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/CreateSnapshotSchedule
 func (c *Redshift) CreateSnapshotScheduleRequest(input *CreateSnapshotScheduleInput) (req *request.Request, output *CreateSnapshotScheduleOutput) {
@@ -2401,23 +2602,24 @@ func (c *Redshift) CreateSnapshotScheduleRequest(input *CreateSnapshotScheduleIn
 // API operation CreateSnapshotSchedule for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeSnapshotScheduleAlreadyExistsFault "SnapshotScheduleAlreadyExists"
-//   The specified snapshot schedule already exists.
 //
-//   * ErrCodeInvalidScheduleFault "InvalidSchedule"
-//   The schedule you submitted isn't valid.
+//   - ErrCodeSnapshotScheduleAlreadyExistsFault "SnapshotScheduleAlreadyExists"
+//     The specified snapshot schedule already exists.
 //
-//   * ErrCodeSnapshotScheduleQuotaExceededFault "SnapshotScheduleQuotaExceeded"
-//   You have exceeded the quota of snapshot schedules.
+//   - ErrCodeInvalidScheduleFault "InvalidSchedule"
+//     The schedule you submitted isn't valid.
 //
-//   * ErrCodeTagLimitExceededFault "TagLimitExceededFault"
-//   You have exceeded the number of tags allowed.
+//   - ErrCodeSnapshotScheduleQuotaExceededFault "SnapshotScheduleQuotaExceeded"
+//     You have exceeded the quota of snapshot schedules.
 //
-//   * ErrCodeScheduleDefinitionTypeUnsupportedFault "ScheduleDefinitionTypeUnsupported"
-//   The definition you submitted is not supported.
+//   - ErrCodeTagLimitExceededFault "TagLimitExceededFault"
+//     You have exceeded the number of tags allowed.
 //
-//   * ErrCodeInvalidTagFault "InvalidTagFault"
-//   The tag is invalid.
+//   - ErrCodeScheduleDefinitionTypeUnsupportedFault "ScheduleDefinitionTypeUnsupported"
+//     The definition you submitted is not supported.
+//
+//   - ErrCodeInvalidTagFault "InvalidTagFault"
+//     The tag is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/CreateSnapshotSchedule
 func (c *Redshift) CreateSnapshotSchedule(input *CreateSnapshotScheduleInput) (*CreateSnapshotScheduleOutput, error) {
@@ -2457,14 +2659,13 @@ const opCreateTags = "CreateTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateTagsRequest method.
+//	req, resp := client.CreateTagsRequest(params)
 //
-//    // Example sending a request using the CreateTagsRequest method.
-//    req, resp := client.CreateTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/CreateTags
 func (c *Redshift) CreateTagsRequest(input *CreateTagsInput) (req *request.Request, output *CreateTagsOutput) {
@@ -2502,17 +2703,18 @@ func (c *Redshift) CreateTagsRequest(input *CreateTagsInput) (req *request.Reque
 // API operation CreateTags for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeTagLimitExceededFault "TagLimitExceededFault"
-//   You have exceeded the number of tags allowed.
 //
-//   * ErrCodeResourceNotFoundFault "ResourceNotFoundFault"
-//   The resource could not be found.
+//   - ErrCodeTagLimitExceededFault "TagLimitExceededFault"
+//     You have exceeded the number of tags allowed.
 //
-//   * ErrCodeInvalidTagFault "InvalidTagFault"
-//   The tag is invalid.
+//   - ErrCodeResourceNotFoundFault "ResourceNotFoundFault"
+//     The resource could not be found.
 //
-//   * ErrCodeInvalidClusterStateFault "InvalidClusterState"
-//   The specified cluster is not in the available state.
+//   - ErrCodeInvalidTagFault "InvalidTagFault"
+//     The tag is invalid.
+//
+//   - ErrCodeInvalidClusterStateFault "InvalidClusterState"
+//     The specified cluster is not in the available state.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/CreateTags
 func (c *Redshift) CreateTags(input *CreateTagsInput) (*CreateTagsOutput, error) {
@@ -2552,14 +2754,13 @@ const opCreateUsageLimit = "CreateUsageLimit"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateUsageLimitRequest method.
+//	req, resp := client.CreateUsageLimitRequest(params)
 //
-//    // Example sending a request using the CreateUsageLimitRequest method.
-//    req, resp := client.CreateUsageLimitRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/CreateUsageLimit
 func (c *Redshift) CreateUsageLimitRequest(input *CreateUsageLimitInput) (req *request.Request, output *CreateUsageLimitOutput) {
@@ -2591,26 +2792,27 @@ func (c *Redshift) CreateUsageLimitRequest(input *CreateUsageLimitInput) (req *r
 // API operation CreateUsageLimit for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeClusterNotFoundFault "ClusterNotFound"
-//   The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeInvalidClusterStateFault "InvalidClusterState"
-//   The specified cluster is not in the available state.
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeLimitExceededFault "LimitExceededFault"
-//   The encryption key has exceeded its grant limit in Amazon Web Services KMS.
+//   - ErrCodeInvalidClusterStateFault "InvalidClusterState"
+//     The specified cluster is not in the available state.
 //
-//   * ErrCodeUsageLimitAlreadyExistsFault "UsageLimitAlreadyExists"
-//   The usage limit already exists.
+//   - ErrCodeLimitExceededFault "LimitExceededFault"
+//     The encryption key has exceeded its grant limit in Amazon Web Services KMS.
 //
-//   * ErrCodeInvalidUsageLimitFault "InvalidUsageLimit"
-//   The usage limit is not valid.
+//   - ErrCodeUsageLimitAlreadyExistsFault "UsageLimitAlreadyExists"
+//     The usage limit already exists.
 //
-//   * ErrCodeTagLimitExceededFault "TagLimitExceededFault"
-//   You have exceeded the number of tags allowed.
+//   - ErrCodeInvalidUsageLimitFault "InvalidUsageLimit"
+//     The usage limit is not valid.
 //
-//   * ErrCodeUnsupportedOperationFault "UnsupportedOperation"
-//   The requested operation isn't supported.
+//   - ErrCodeTagLimitExceededFault "TagLimitExceededFault"
+//     You have exceeded the number of tags allowed.
+//
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/CreateUsageLimit
 func (c *Redshift) CreateUsageLimit(input *CreateUsageLimitInput) (*CreateUsageLimitOutput, error) {
@@ -2650,14 +2852,13 @@ const opDeauthorizeDataShare = "DeauthorizeDataShare"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeauthorizeDataShareRequest method.
+//	req, resp := client.DeauthorizeDataShareRequest(params)
 //
-//    // Example sending a request using the DeauthorizeDataShareRequest method.
-//    req, resp := client.DeauthorizeDataShareRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DeauthorizeDataShare
 func (c *Redshift) DeauthorizeDataShareRequest(input *DeauthorizeDataShareInput) (req *request.Request, output *DeauthorizeDataShareOutput) {
@@ -2689,8 +2890,8 @@ func (c *Redshift) DeauthorizeDataShareRequest(input *DeauthorizeDataShareInput)
 // API operation DeauthorizeDataShare for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidDataShareFault "InvalidDataShareFault"
-//   There is an error with the datashare.
+//   - ErrCodeInvalidDataShareFault "InvalidDataShareFault"
+//     There is an error with the datashare.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DeauthorizeDataShare
 func (c *Redshift) DeauthorizeDataShare(input *DeauthorizeDataShareInput) (*DeauthorizeDataShareOutput, error) {
@@ -2730,14 +2931,13 @@ const opDeleteAuthenticationProfile = "DeleteAuthenticationProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAuthenticationProfileRequest method.
+//	req, resp := client.DeleteAuthenticationProfileRequest(params)
 //
-//    // Example sending a request using the DeleteAuthenticationProfileRequest method.
-//    req, resp := client.DeleteAuthenticationProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DeleteAuthenticationProfile
 func (c *Redshift) DeleteAuthenticationProfileRequest(input *DeleteAuthenticationProfileInput) (req *request.Request, output *DeleteAuthenticationProfileOutput) {
@@ -2768,13 +2968,14 @@ func (c *Redshift) DeleteAuthenticationProfileRequest(input *DeleteAuthenticatio
 // API operation DeleteAuthenticationProfile for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAuthenticationProfileNotFoundFault "AuthenticationProfileNotFoundFault"
-//   The authentication profile can't be found.
 //
-//   * ErrCodeInvalidAuthenticationProfileRequestFault "InvalidAuthenticationProfileRequestFault"
-//   The authentication profile request is not valid. The profile name can't be
-//   null or empty. The authentication profile API operation must be available
-//   in the Amazon Web Services Region.
+//   - ErrCodeAuthenticationProfileNotFoundFault "AuthenticationProfileNotFoundFault"
+//     The authentication profile can't be found.
+//
+//   - ErrCodeInvalidAuthenticationProfileRequestFault "InvalidAuthenticationProfileRequestFault"
+//     The authentication profile request is not valid. The profile name can't be
+//     null or empty. The authentication profile API operation must be available
+//     in the Amazon Web Services Region.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DeleteAuthenticationProfile
 func (c *Redshift) DeleteAuthenticationProfile(input *DeleteAuthenticationProfileInput) (*DeleteAuthenticationProfileOutput, error) {
@@ -2814,14 +3015,13 @@ const opDeleteCluster = "DeleteCluster"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteClusterRequest method.
+//	req, resp := client.DeleteClusterRequest(params)
 //
-//    // Example sending a request using the DeleteClusterRequest method.
-//    req, resp := client.DeleteClusterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DeleteCluster
 func (c *Redshift) DeleteClusterRequest(input *DeleteClusterInput) (req *request.Request, output *DeleteClusterOutput) {
@@ -2869,24 +3069,25 @@ func (c *Redshift) DeleteClusterRequest(input *DeleteClusterInput) (req *request
 // API operation DeleteCluster for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeClusterNotFoundFault "ClusterNotFound"
-//   The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeInvalidClusterStateFault "InvalidClusterState"
-//   The specified cluster is not in the available state.
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeClusterSnapshotAlreadyExistsFault "ClusterSnapshotAlreadyExists"
-//   The value specified as a snapshot identifier is already used by an existing
-//   snapshot.
+//   - ErrCodeInvalidClusterStateFault "InvalidClusterState"
+//     The specified cluster is not in the available state.
 //
-//   * ErrCodeClusterSnapshotQuotaExceededFault "ClusterSnapshotQuotaExceeded"
-//   The request would result in the user exceeding the allowed number of cluster
-//   snapshots.
+//   - ErrCodeClusterSnapshotAlreadyExistsFault "ClusterSnapshotAlreadyExists"
+//     The value specified as a snapshot identifier is already used by an existing
+//     snapshot.
 //
-//   * ErrCodeInvalidRetentionPeriodFault "InvalidRetentionPeriodFault"
-//   The retention period specified is either in the past or is not a valid value.
+//   - ErrCodeClusterSnapshotQuotaExceededFault "ClusterSnapshotQuotaExceeded"
+//     The request would result in the user exceeding the allowed number of cluster
+//     snapshots.
 //
-//   The value must be either -1 or an integer between 1 and 3,653.
+//   - ErrCodeInvalidRetentionPeriodFault "InvalidRetentionPeriodFault"
+//     The retention period specified is either in the past or is not a valid value.
+//
+//     The value must be either -1 or an integer between 1 and 3,653.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DeleteCluster
 func (c *Redshift) DeleteCluster(input *DeleteClusterInput) (*DeleteClusterOutput, error) {
@@ -2926,14 +3127,13 @@ const opDeleteClusterParameterGroup = "DeleteClusterParameterGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteClusterParameterGroupRequest method.
+//	req, resp := client.DeleteClusterParameterGroupRequest(params)
 //
-//    // Example sending a request using the DeleteClusterParameterGroupRequest method.
-//    req, resp := client.DeleteClusterParameterGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DeleteClusterParameterGroup
 func (c *Redshift) DeleteClusterParameterGroupRequest(input *DeleteClusterParameterGroupInput) (req *request.Request, output *DeleteClusterParameterGroupOutput) {
@@ -2967,13 +3167,14 @@ func (c *Redshift) DeleteClusterParameterGroupRequest(input *DeleteClusterParame
 // API operation DeleteClusterParameterGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidClusterParameterGroupStateFault "InvalidClusterParameterGroupState"
-//   The cluster parameter group action can not be completed because another task
-//   is in progress that involves the parameter group. Wait a few moments and
-//   try the operation again.
 //
-//   * ErrCodeClusterParameterGroupNotFoundFault "ClusterParameterGroupNotFound"
-//   The parameter group name does not refer to an existing parameter group.
+//   - ErrCodeInvalidClusterParameterGroupStateFault "InvalidClusterParameterGroupState"
+//     The cluster parameter group action can not be completed because another task
+//     is in progress that involves the parameter group. Wait a few moments and
+//     try the operation again.
+//
+//   - ErrCodeClusterParameterGroupNotFoundFault "ClusterParameterGroupNotFound"
+//     The parameter group name does not refer to an existing parameter group.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DeleteClusterParameterGroup
 func (c *Redshift) DeleteClusterParameterGroup(input *DeleteClusterParameterGroupInput) (*DeleteClusterParameterGroupOutput, error) {
@@ -3013,14 +3214,13 @@ const opDeleteClusterSecurityGroup = "DeleteClusterSecurityGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteClusterSecurityGroupRequest method.
+//	req, resp := client.DeleteClusterSecurityGroupRequest(params)
 //
-//    // Example sending a request using the DeleteClusterSecurityGroupRequest method.
-//    req, resp := client.DeleteClusterSecurityGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DeleteClusterSecurityGroup
 func (c *Redshift) DeleteClusterSecurityGroupRequest(input *DeleteClusterSecurityGroupInput) (req *request.Request, output *DeleteClusterSecurityGroupOutput) {
@@ -3059,12 +3259,13 @@ func (c *Redshift) DeleteClusterSecurityGroupRequest(input *DeleteClusterSecurit
 // API operation DeleteClusterSecurityGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidClusterSecurityGroupStateFault "InvalidClusterSecurityGroupState"
-//   The state of the cluster security group is not available.
 //
-//   * ErrCodeClusterSecurityGroupNotFoundFault "ClusterSecurityGroupNotFound"
-//   The cluster security group name does not refer to an existing cluster security
-//   group.
+//   - ErrCodeInvalidClusterSecurityGroupStateFault "InvalidClusterSecurityGroupState"
+//     The state of the cluster security group is not available.
+//
+//   - ErrCodeClusterSecurityGroupNotFoundFault "ClusterSecurityGroupNotFound"
+//     The cluster security group name does not refer to an existing cluster security
+//     group.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DeleteClusterSecurityGroup
 func (c *Redshift) DeleteClusterSecurityGroup(input *DeleteClusterSecurityGroupInput) (*DeleteClusterSecurityGroupOutput, error) {
@@ -3104,14 +3305,13 @@ const opDeleteClusterSnapshot = "DeleteClusterSnapshot"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteClusterSnapshotRequest method.
+//	req, resp := client.DeleteClusterSnapshotRequest(params)
 //
-//    // Example sending a request using the DeleteClusterSnapshotRequest method.
-//    req, resp := client.DeleteClusterSnapshotRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DeleteClusterSnapshot
 func (c *Redshift) DeleteClusterSnapshotRequest(input *DeleteClusterSnapshotInput) (req *request.Request, output *DeleteClusterSnapshotOutput) {
@@ -3149,12 +3349,13 @@ func (c *Redshift) DeleteClusterSnapshotRequest(input *DeleteClusterSnapshotInpu
 // API operation DeleteClusterSnapshot for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidClusterSnapshotStateFault "InvalidClusterSnapshotState"
-//   The specified cluster snapshot is not in the available state, or other accounts
-//   are authorized to access the snapshot.
 //
-//   * ErrCodeClusterSnapshotNotFoundFault "ClusterSnapshotNotFound"
-//   The snapshot identifier does not refer to an existing cluster snapshot.
+//   - ErrCodeInvalidClusterSnapshotStateFault "InvalidClusterSnapshotState"
+//     The specified cluster snapshot is not in the available state, or other accounts
+//     are authorized to access the snapshot.
+//
+//   - ErrCodeClusterSnapshotNotFoundFault "ClusterSnapshotNotFound"
+//     The snapshot identifier does not refer to an existing cluster snapshot.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DeleteClusterSnapshot
 func (c *Redshift) DeleteClusterSnapshot(input *DeleteClusterSnapshotInput) (*DeleteClusterSnapshotOutput, error) {
@@ -3194,14 +3395,13 @@ const opDeleteClusterSubnetGroup = "DeleteClusterSubnetGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteClusterSubnetGroupRequest method.
+//	req, resp := client.DeleteClusterSubnetGroupRequest(params)
 //
-//    // Example sending a request using the DeleteClusterSubnetGroupRequest method.
-//    req, resp := client.DeleteClusterSubnetGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DeleteClusterSubnetGroup
 func (c *Redshift) DeleteClusterSubnetGroupRequest(input *DeleteClusterSubnetGroupInput) (req *request.Request, output *DeleteClusterSubnetGroupOutput) {
@@ -3233,15 +3433,16 @@ func (c *Redshift) DeleteClusterSubnetGroupRequest(input *DeleteClusterSubnetGro
 // API operation DeleteClusterSubnetGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidClusterSubnetGroupStateFault "InvalidClusterSubnetGroupStateFault"
-//   The cluster subnet group cannot be deleted because it is in use.
 //
-//   * ErrCodeInvalidClusterSubnetStateFault "InvalidClusterSubnetStateFault"
-//   The state of the subnet is invalid.
+//   - ErrCodeInvalidClusterSubnetGroupStateFault "InvalidClusterSubnetGroupStateFault"
+//     The cluster subnet group cannot be deleted because it is in use.
 //
-//   * ErrCodeClusterSubnetGroupNotFoundFault "ClusterSubnetGroupNotFoundFault"
-//   The cluster subnet group name does not refer to an existing cluster subnet
-//   group.
+//   - ErrCodeInvalidClusterSubnetStateFault "InvalidClusterSubnetStateFault"
+//     The state of the subnet is invalid.
+//
+//   - ErrCodeClusterSubnetGroupNotFoundFault "ClusterSubnetGroupNotFoundFault"
+//     The cluster subnet group name does not refer to an existing cluster subnet
+//     group.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DeleteClusterSubnetGroup
 func (c *Redshift) DeleteClusterSubnetGroup(input *DeleteClusterSubnetGroupInput) (*DeleteClusterSubnetGroupOutput, error) {
@@ -3265,6 +3466,95 @@ func (c *Redshift) DeleteClusterSubnetGroupWithContext(ctx aws.Context, input *D
 	return out, req.Send()
 }
 
+const opDeleteCustomDomainAssociation = "DeleteCustomDomainAssociation"
+
+// DeleteCustomDomainAssociationRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteCustomDomainAssociation operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteCustomDomainAssociation for more information on using the DeleteCustomDomainAssociation
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteCustomDomainAssociationRequest method.
+//	req, resp := client.DeleteCustomDomainAssociationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DeleteCustomDomainAssociation
+func (c *Redshift) DeleteCustomDomainAssociationRequest(input *DeleteCustomDomainAssociationInput) (req *request.Request, output *DeleteCustomDomainAssociationOutput) {
+	op := &request.Operation{
+		Name:       opDeleteCustomDomainAssociation,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DeleteCustomDomainAssociationInput{}
+	}
+
+	output = &DeleteCustomDomainAssociationOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(query.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// DeleteCustomDomainAssociation API operation for Amazon Redshift.
+//
+// Contains information about deleting a custom domain association for a cluster.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Redshift's
+// API operation DeleteCustomDomainAssociation for usage and error information.
+//
+// Returned Error Codes:
+//
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
+//
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
+//
+//   - ErrCodeCustomCnameAssociationFault "CustomCnameAssociationFault"
+//     An error occurred when an attempt was made to change the custom domain association.
+//
+//   - ErrCodeCustomDomainAssociationNotFoundFault "CustomDomainAssociationNotFoundFault"
+//     An error occurred. The custom domain name couldn't be found.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DeleteCustomDomainAssociation
+func (c *Redshift) DeleteCustomDomainAssociation(input *DeleteCustomDomainAssociationInput) (*DeleteCustomDomainAssociationOutput, error) {
+	req, out := c.DeleteCustomDomainAssociationRequest(input)
+	return out, req.Send()
+}
+
+// DeleteCustomDomainAssociationWithContext is the same as DeleteCustomDomainAssociation with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteCustomDomainAssociation for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Redshift) DeleteCustomDomainAssociationWithContext(ctx aws.Context, input *DeleteCustomDomainAssociationInput, opts ...request.Option) (*DeleteCustomDomainAssociationOutput, error) {
+	req, out := c.DeleteCustomDomainAssociationRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opDeleteEndpointAccess = "DeleteEndpointAccess"
 
 // DeleteEndpointAccessRequest generates a "aws/request.Request" representing the
@@ -3281,14 +3571,13 @@ const opDeleteEndpointAccess = "DeleteEndpointAccess"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteEndpointAccessRequest method.
+//	req, resp := client.DeleteEndpointAccessRequest(params)
 //
-//    // Example sending a request using the DeleteEndpointAccessRequest method.
-//    req, resp := client.DeleteEndpointAccessRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DeleteEndpointAccess
 func (c *Redshift) DeleteEndpointAccessRequest(input *DeleteEndpointAccessInput) (req *request.Request, output *DeleteEndpointAccessOutput) {
@@ -3319,20 +3608,21 @@ func (c *Redshift) DeleteEndpointAccessRequest(input *DeleteEndpointAccessInput)
 // API operation DeleteEndpointAccess for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeClusterNotFoundFault "ClusterNotFound"
-//   The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeInvalidEndpointStateFault "InvalidEndpointState"
-//   The status of the endpoint is not valid.
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeInvalidClusterSecurityGroupStateFault "InvalidClusterSecurityGroupState"
-//   The state of the cluster security group is not available.
+//   - ErrCodeInvalidEndpointStateFault "InvalidEndpointState"
+//     The status of the endpoint is not valid.
 //
-//   * ErrCodeEndpointNotFoundFault "EndpointNotFound"
-//   The endpoint name doesn't refer to an existing endpoint.
+//   - ErrCodeInvalidClusterSecurityGroupStateFault "InvalidClusterSecurityGroupState"
+//     The state of the cluster security group is not available.
 //
-//   * ErrCodeInvalidClusterStateFault "InvalidClusterState"
-//   The specified cluster is not in the available state.
+//   - ErrCodeEndpointNotFoundFault "EndpointNotFound"
+//     The endpoint name doesn't refer to an existing endpoint.
+//
+//   - ErrCodeInvalidClusterStateFault "InvalidClusterState"
+//     The specified cluster is not in the available state.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DeleteEndpointAccess
 func (c *Redshift) DeleteEndpointAccess(input *DeleteEndpointAccessInput) (*DeleteEndpointAccessOutput, error) {
@@ -3372,14 +3662,13 @@ const opDeleteEventSubscription = "DeleteEventSubscription"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteEventSubscriptionRequest method.
+//	req, resp := client.DeleteEventSubscriptionRequest(params)
 //
-//    // Example sending a request using the DeleteEventSubscriptionRequest method.
-//    req, resp := client.DeleteEventSubscriptionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DeleteEventSubscription
 func (c *Redshift) DeleteEventSubscriptionRequest(input *DeleteEventSubscriptionInput) (req *request.Request, output *DeleteEventSubscriptionOutput) {
@@ -3411,13 +3700,14 @@ func (c *Redshift) DeleteEventSubscriptionRequest(input *DeleteEventSubscription
 // API operation DeleteEventSubscription for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeSubscriptionNotFoundFault "SubscriptionNotFound"
-//   An Amazon Redshift event notification subscription with the specified name
-//   does not exist.
 //
-//   * ErrCodeInvalidSubscriptionStateFault "InvalidSubscriptionStateFault"
-//   The subscription request is invalid because it is a duplicate request. This
-//   subscription request is already in progress.
+//   - ErrCodeSubscriptionNotFoundFault "SubscriptionNotFound"
+//     An Amazon Redshift event notification subscription with the specified name
+//     does not exist.
+//
+//   - ErrCodeInvalidSubscriptionStateFault "InvalidSubscriptionStateFault"
+//     The subscription request is invalid because it is a duplicate request. This
+//     subscription request is already in progress.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DeleteEventSubscription
 func (c *Redshift) DeleteEventSubscription(input *DeleteEventSubscriptionInput) (*DeleteEventSubscriptionOutput, error) {
@@ -3457,14 +3747,13 @@ const opDeleteHsmClientCertificate = "DeleteHsmClientCertificate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteHsmClientCertificateRequest method.
+//	req, resp := client.DeleteHsmClientCertificateRequest(params)
 //
-//    // Example sending a request using the DeleteHsmClientCertificateRequest method.
-//    req, resp := client.DeleteHsmClientCertificateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DeleteHsmClientCertificate
 func (c *Redshift) DeleteHsmClientCertificateRequest(input *DeleteHsmClientCertificateInput) (req *request.Request, output *DeleteHsmClientCertificateOutput) {
@@ -3496,12 +3785,13 @@ func (c *Redshift) DeleteHsmClientCertificateRequest(input *DeleteHsmClientCerti
 // API operation DeleteHsmClientCertificate for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidHsmClientCertificateStateFault "InvalidHsmClientCertificateStateFault"
-//   The specified HSM client certificate is not in the available state, or it
-//   is still in use by one or more Amazon Redshift clusters.
 //
-//   * ErrCodeHsmClientCertificateNotFoundFault "HsmClientCertificateNotFoundFault"
-//   There is no Amazon Redshift HSM client certificate with the specified identifier.
+//   - ErrCodeInvalidHsmClientCertificateStateFault "InvalidHsmClientCertificateStateFault"
+//     The specified HSM client certificate is not in the available state, or it
+//     is still in use by one or more Amazon Redshift clusters.
+//
+//   - ErrCodeHsmClientCertificateNotFoundFault "HsmClientCertificateNotFoundFault"
+//     There is no Amazon Redshift HSM client certificate with the specified identifier.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DeleteHsmClientCertificate
 func (c *Redshift) DeleteHsmClientCertificate(input *DeleteHsmClientCertificateInput) (*DeleteHsmClientCertificateOutput, error) {
@@ -3541,14 +3831,13 @@ const opDeleteHsmConfiguration = "DeleteHsmConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteHsmConfigurationRequest method.
+//	req, resp := client.DeleteHsmConfigurationRequest(params)
 //
-//    // Example sending a request using the DeleteHsmConfigurationRequest method.
-//    req, resp := client.DeleteHsmConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DeleteHsmConfiguration
 func (c *Redshift) DeleteHsmConfigurationRequest(input *DeleteHsmConfigurationInput) (req *request.Request, output *DeleteHsmConfigurationOutput) {
@@ -3580,12 +3869,13 @@ func (c *Redshift) DeleteHsmConfigurationRequest(input *DeleteHsmConfigurationIn
 // API operation DeleteHsmConfiguration for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidHsmConfigurationStateFault "InvalidHsmConfigurationStateFault"
-//   The specified HSM configuration is not in the available state, or it is still
-//   in use by one or more Amazon Redshift clusters.
 //
-//   * ErrCodeHsmConfigurationNotFoundFault "HsmConfigurationNotFoundFault"
-//   There is no Amazon Redshift HSM configuration with the specified identifier.
+//   - ErrCodeInvalidHsmConfigurationStateFault "InvalidHsmConfigurationStateFault"
+//     The specified HSM configuration is not in the available state, or it is still
+//     in use by one or more Amazon Redshift clusters.
+//
+//   - ErrCodeHsmConfigurationNotFoundFault "HsmConfigurationNotFoundFault"
+//     There is no Amazon Redshift HSM configuration with the specified identifier.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DeleteHsmConfiguration
 func (c *Redshift) DeleteHsmConfiguration(input *DeleteHsmConfigurationInput) (*DeleteHsmConfigurationOutput, error) {
@@ -3625,14 +3915,13 @@ const opDeletePartner = "DeletePartner"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeletePartnerRequest method.
+//	req, resp := client.DeletePartnerRequest(params)
 //
-//    // Example sending a request using the DeletePartnerRequest method.
-//    req, resp := client.DeletePartnerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DeletePartner
 func (c *Redshift) DeletePartnerRequest(input *DeletePartnerInput) (req *request.Request, output *DeletePartnerOutput) {
@@ -3664,14 +3953,18 @@ func (c *Redshift) DeletePartnerRequest(input *DeletePartnerInput) (req *request
 // API operation DeletePartner for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodePartnerNotFoundFault "PartnerNotFound"
-//   The name of the partner was not found.
 //
-//   * ErrCodeClusterNotFoundFault "ClusterNotFound"
-//   The ClusterIdentifier parameter does not refer to an existing cluster.
+//   - ErrCodePartnerNotFoundFault "PartnerNotFound"
+//     The name of the partner was not found.
 //
-//   * ErrCodeUnauthorizedPartnerIntegrationFault "UnauthorizedPartnerIntegration"
-//   The partner integration is not authorized.
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
+//
+//   - ErrCodeUnauthorizedPartnerIntegrationFault "UnauthorizedPartnerIntegration"
+//     The partner integration is not authorized.
+//
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DeletePartner
 func (c *Redshift) DeletePartner(input *DeletePartnerInput) (*DeletePartnerOutput, error) {
@@ -3695,6 +3988,179 @@ func (c *Redshift) DeletePartnerWithContext(ctx aws.Context, input *DeletePartne
 	return out, req.Send()
 }
 
+const opDeleteRedshiftIdcApplication = "DeleteRedshiftIdcApplication"
+
+// DeleteRedshiftIdcApplicationRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteRedshiftIdcApplication operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteRedshiftIdcApplication for more information on using the DeleteRedshiftIdcApplication
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteRedshiftIdcApplicationRequest method.
+//	req, resp := client.DeleteRedshiftIdcApplicationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DeleteRedshiftIdcApplication
+func (c *Redshift) DeleteRedshiftIdcApplicationRequest(input *DeleteRedshiftIdcApplicationInput) (req *request.Request, output *DeleteRedshiftIdcApplicationOutput) {
+	op := &request.Operation{
+		Name:       opDeleteRedshiftIdcApplication,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DeleteRedshiftIdcApplicationInput{}
+	}
+
+	output = &DeleteRedshiftIdcApplicationOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(query.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// DeleteRedshiftIdcApplication API operation for Amazon Redshift.
+//
+// Deletes an Amazon Redshift IAM Identity Center application.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Redshift's
+// API operation DeleteRedshiftIdcApplication for usage and error information.
+//
+// Returned Error Codes:
+//
+//   - ErrCodeRedshiftIdcApplicationNotExistsFault "RedshiftIdcApplicationNotExists"
+//     The application you attempted to find doesn't exist.
+//
+//   - ErrCodeDependentServiceUnavailableFault "DependentServiceUnavailableFault"
+//     Your request cannot be completed because a dependent internal service is
+//     temporarily unavailable. Wait 30 to 60 seconds and try again.
+//
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
+//
+//   - ErrCodeDependentServiceAccessDeniedFault "DependentServiceAccessDenied"
+//     A dependent service denied access for the integration.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DeleteRedshiftIdcApplication
+func (c *Redshift) DeleteRedshiftIdcApplication(input *DeleteRedshiftIdcApplicationInput) (*DeleteRedshiftIdcApplicationOutput, error) {
+	req, out := c.DeleteRedshiftIdcApplicationRequest(input)
+	return out, req.Send()
+}
+
+// DeleteRedshiftIdcApplicationWithContext is the same as DeleteRedshiftIdcApplication with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteRedshiftIdcApplication for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Redshift) DeleteRedshiftIdcApplicationWithContext(ctx aws.Context, input *DeleteRedshiftIdcApplicationInput, opts ...request.Option) (*DeleteRedshiftIdcApplicationOutput, error) {
+	req, out := c.DeleteRedshiftIdcApplicationRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDeleteResourcePolicy = "DeleteResourcePolicy"
+
+// DeleteResourcePolicyRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteResourcePolicy operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteResourcePolicy for more information on using the DeleteResourcePolicy
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteResourcePolicyRequest method.
+//	req, resp := client.DeleteResourcePolicyRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DeleteResourcePolicy
+func (c *Redshift) DeleteResourcePolicyRequest(input *DeleteResourcePolicyInput) (req *request.Request, output *DeleteResourcePolicyOutput) {
+	op := &request.Operation{
+		Name:       opDeleteResourcePolicy,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DeleteResourcePolicyInput{}
+	}
+
+	output = &DeleteResourcePolicyOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(query.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// DeleteResourcePolicy API operation for Amazon Redshift.
+//
+// Deletes the resource policy for a specified resource.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Redshift's
+// API operation DeleteResourcePolicy for usage and error information.
+//
+// Returned Error Codes:
+//
+//   - ErrCodeResourceNotFoundFault "ResourceNotFoundFault"
+//     The resource could not be found.
+//
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DeleteResourcePolicy
+func (c *Redshift) DeleteResourcePolicy(input *DeleteResourcePolicyInput) (*DeleteResourcePolicyOutput, error) {
+	req, out := c.DeleteResourcePolicyRequest(input)
+	return out, req.Send()
+}
+
+// DeleteResourcePolicyWithContext is the same as DeleteResourcePolicy with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteResourcePolicy for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Redshift) DeleteResourcePolicyWithContext(ctx aws.Context, input *DeleteResourcePolicyInput, opts ...request.Option) (*DeleteResourcePolicyOutput, error) {
+	req, out := c.DeleteResourcePolicyRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opDeleteScheduledAction = "DeleteScheduledAction"
 
 // DeleteScheduledActionRequest generates a "aws/request.Request" representing the
@@ -3711,14 +4177,13 @@ const opDeleteScheduledAction = "DeleteScheduledAction"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteScheduledActionRequest method.
+//	req, resp := client.DeleteScheduledActionRequest(params)
 //
-//    // Example sending a request using the DeleteScheduledActionRequest method.
-//    req, resp := client.DeleteScheduledActionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DeleteScheduledAction
 func (c *Redshift) DeleteScheduledActionRequest(input *DeleteScheduledActionInput) (req *request.Request, output *DeleteScheduledActionOutput) {
@@ -3750,11 +4215,12 @@ func (c *Redshift) DeleteScheduledActionRequest(input *DeleteScheduledActionInpu
 // API operation DeleteScheduledAction for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeScheduledActionNotFoundFault "ScheduledActionNotFound"
-//   The scheduled action cannot be found.
 //
-//   * ErrCodeUnauthorizedOperation "UnauthorizedOperation"
-//   Your account is not authorized to perform the requested operation.
+//   - ErrCodeScheduledActionNotFoundFault "ScheduledActionNotFound"
+//     The scheduled action cannot be found.
+//
+//   - ErrCodeUnauthorizedOperation "UnauthorizedOperation"
+//     Your account is not authorized to perform the requested operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DeleteScheduledAction
 func (c *Redshift) DeleteScheduledAction(input *DeleteScheduledActionInput) (*DeleteScheduledActionOutput, error) {
@@ -3794,14 +4260,13 @@ const opDeleteSnapshotCopyGrant = "DeleteSnapshotCopyGrant"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteSnapshotCopyGrantRequest method.
+//	req, resp := client.DeleteSnapshotCopyGrantRequest(params)
 //
-//    // Example sending a request using the DeleteSnapshotCopyGrantRequest method.
-//    req, resp := client.DeleteSnapshotCopyGrantRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DeleteSnapshotCopyGrant
 func (c *Redshift) DeleteSnapshotCopyGrantRequest(input *DeleteSnapshotCopyGrantInput) (req *request.Request, output *DeleteSnapshotCopyGrantOutput) {
@@ -3833,13 +4298,14 @@ func (c *Redshift) DeleteSnapshotCopyGrantRequest(input *DeleteSnapshotCopyGrant
 // API operation DeleteSnapshotCopyGrant for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidSnapshotCopyGrantStateFault "InvalidSnapshotCopyGrantStateFault"
-//   The snapshot copy grant can't be deleted because it is used by one or more
-//   clusters.
 //
-//   * ErrCodeSnapshotCopyGrantNotFoundFault "SnapshotCopyGrantNotFoundFault"
-//   The specified snapshot copy grant can't be found. Make sure that the name
-//   is typed correctly and that the grant exists in the destination region.
+//   - ErrCodeInvalidSnapshotCopyGrantStateFault "InvalidSnapshotCopyGrantStateFault"
+//     The snapshot copy grant can't be deleted because it is used by one or more
+//     clusters.
+//
+//   - ErrCodeSnapshotCopyGrantNotFoundFault "SnapshotCopyGrantNotFoundFault"
+//     The specified snapshot copy grant can't be found. Make sure that the name
+//     is typed correctly and that the grant exists in the destination region.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DeleteSnapshotCopyGrant
 func (c *Redshift) DeleteSnapshotCopyGrant(input *DeleteSnapshotCopyGrantInput) (*DeleteSnapshotCopyGrantOutput, error) {
@@ -3879,14 +4345,13 @@ const opDeleteSnapshotSchedule = "DeleteSnapshotSchedule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteSnapshotScheduleRequest method.
+//	req, resp := client.DeleteSnapshotScheduleRequest(params)
 //
-//    // Example sending a request using the DeleteSnapshotScheduleRequest method.
-//    req, resp := client.DeleteSnapshotScheduleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DeleteSnapshotSchedule
 func (c *Redshift) DeleteSnapshotScheduleRequest(input *DeleteSnapshotScheduleInput) (req *request.Request, output *DeleteSnapshotScheduleOutput) {
@@ -3918,11 +4383,12 @@ func (c *Redshift) DeleteSnapshotScheduleRequest(input *DeleteSnapshotScheduleIn
 // API operation DeleteSnapshotSchedule for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidClusterSnapshotScheduleStateFault "InvalidClusterSnapshotScheduleState"
-//   The cluster snapshot schedule state is not valid.
 //
-//   * ErrCodeSnapshotScheduleNotFoundFault "SnapshotScheduleNotFound"
-//   We could not find the specified snapshot schedule.
+//   - ErrCodeInvalidClusterSnapshotScheduleStateFault "InvalidClusterSnapshotScheduleState"
+//     The cluster snapshot schedule state is not valid.
+//
+//   - ErrCodeSnapshotScheduleNotFoundFault "SnapshotScheduleNotFound"
+//     We could not find the specified snapshot schedule.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DeleteSnapshotSchedule
 func (c *Redshift) DeleteSnapshotSchedule(input *DeleteSnapshotScheduleInput) (*DeleteSnapshotScheduleOutput, error) {
@@ -3962,14 +4428,13 @@ const opDeleteTags = "DeleteTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteTagsRequest method.
+//	req, resp := client.DeleteTagsRequest(params)
 //
-//    // Example sending a request using the DeleteTagsRequest method.
-//    req, resp := client.DeleteTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DeleteTags
 func (c *Redshift) DeleteTagsRequest(input *DeleteTagsInput) (req *request.Request, output *DeleteTagsOutput) {
@@ -4002,11 +4467,12 @@ func (c *Redshift) DeleteTagsRequest(input *DeleteTagsInput) (req *request.Reque
 // API operation DeleteTags for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeResourceNotFoundFault "ResourceNotFoundFault"
-//   The resource could not be found.
 //
-//   * ErrCodeInvalidTagFault "InvalidTagFault"
-//   The tag is invalid.
+//   - ErrCodeResourceNotFoundFault "ResourceNotFoundFault"
+//     The resource could not be found.
+//
+//   - ErrCodeInvalidTagFault "InvalidTagFault"
+//     The tag is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DeleteTags
 func (c *Redshift) DeleteTags(input *DeleteTagsInput) (*DeleteTagsOutput, error) {
@@ -4046,14 +4512,13 @@ const opDeleteUsageLimit = "DeleteUsageLimit"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteUsageLimitRequest method.
+//	req, resp := client.DeleteUsageLimitRequest(params)
 //
-//    // Example sending a request using the DeleteUsageLimitRequest method.
-//    req, resp := client.DeleteUsageLimitRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DeleteUsageLimit
 func (c *Redshift) DeleteUsageLimitRequest(input *DeleteUsageLimitInput) (req *request.Request, output *DeleteUsageLimitOutput) {
@@ -4085,11 +4550,12 @@ func (c *Redshift) DeleteUsageLimitRequest(input *DeleteUsageLimitInput) (req *r
 // API operation DeleteUsageLimit for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeUsageLimitNotFoundFault "UsageLimitNotFound"
-//   The usage limit identifier can't be found.
 //
-//   * ErrCodeUnsupportedOperationFault "UnsupportedOperation"
-//   The requested operation isn't supported.
+//   - ErrCodeUsageLimitNotFoundFault "UsageLimitNotFound"
+//     The usage limit identifier can't be found.
+//
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DeleteUsageLimit
 func (c *Redshift) DeleteUsageLimit(input *DeleteUsageLimitInput) (*DeleteUsageLimitOutput, error) {
@@ -4129,14 +4595,13 @@ const opDescribeAccountAttributes = "DescribeAccountAttributes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAccountAttributesRequest method.
+//	req, resp := client.DescribeAccountAttributesRequest(params)
 //
-//    // Example sending a request using the DescribeAccountAttributesRequest method.
-//    req, resp := client.DescribeAccountAttributesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeAccountAttributes
 func (c *Redshift) DescribeAccountAttributesRequest(input *DescribeAccountAttributesInput) (req *request.Request, output *DescribeAccountAttributesOutput) {
@@ -4157,7 +4622,7 @@ func (c *Redshift) DescribeAccountAttributesRequest(input *DescribeAccountAttrib
 
 // DescribeAccountAttributes API operation for Amazon Redshift.
 //
-// Returns a list of attributes attached to an account
+// # Returns a list of attributes attached to an account
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4203,14 +4668,13 @@ const opDescribeAuthenticationProfiles = "DescribeAuthenticationProfiles"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAuthenticationProfilesRequest method.
+//	req, resp := client.DescribeAuthenticationProfilesRequest(params)
 //
-//    // Example sending a request using the DescribeAuthenticationProfilesRequest method.
-//    req, resp := client.DescribeAuthenticationProfilesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeAuthenticationProfiles
 func (c *Redshift) DescribeAuthenticationProfilesRequest(input *DescribeAuthenticationProfilesInput) (req *request.Request, output *DescribeAuthenticationProfilesOutput) {
@@ -4241,13 +4705,14 @@ func (c *Redshift) DescribeAuthenticationProfilesRequest(input *DescribeAuthenti
 // API operation DescribeAuthenticationProfiles for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAuthenticationProfileNotFoundFault "AuthenticationProfileNotFoundFault"
-//   The authentication profile can't be found.
 //
-//   * ErrCodeInvalidAuthenticationProfileRequestFault "InvalidAuthenticationProfileRequestFault"
-//   The authentication profile request is not valid. The profile name can't be
-//   null or empty. The authentication profile API operation must be available
-//   in the Amazon Web Services Region.
+//   - ErrCodeAuthenticationProfileNotFoundFault "AuthenticationProfileNotFoundFault"
+//     The authentication profile can't be found.
+//
+//   - ErrCodeInvalidAuthenticationProfileRequestFault "InvalidAuthenticationProfileRequestFault"
+//     The authentication profile request is not valid. The profile name can't be
+//     null or empty. The authentication profile API operation must be available
+//     in the Amazon Web Services Region.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeAuthenticationProfiles
 func (c *Redshift) DescribeAuthenticationProfiles(input *DescribeAuthenticationProfilesInput) (*DescribeAuthenticationProfilesOutput, error) {
@@ -4287,14 +4752,13 @@ const opDescribeClusterDbRevisions = "DescribeClusterDbRevisions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeClusterDbRevisionsRequest method.
+//	req, resp := client.DescribeClusterDbRevisionsRequest(params)
 //
-//    // Example sending a request using the DescribeClusterDbRevisionsRequest method.
-//    req, resp := client.DescribeClusterDbRevisionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeClusterDbRevisions
 func (c *Redshift) DescribeClusterDbRevisionsRequest(input *DescribeClusterDbRevisionsInput) (req *request.Request, output *DescribeClusterDbRevisionsOutput) {
@@ -4331,11 +4795,12 @@ func (c *Redshift) DescribeClusterDbRevisionsRequest(input *DescribeClusterDbRev
 // API operation DescribeClusterDbRevisions for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeClusterNotFoundFault "ClusterNotFound"
-//   The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeInvalidClusterStateFault "InvalidClusterState"
-//   The specified cluster is not in the available state.
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
+//
+//   - ErrCodeInvalidClusterStateFault "InvalidClusterState"
+//     The specified cluster is not in the available state.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeClusterDbRevisions
 func (c *Redshift) DescribeClusterDbRevisions(input *DescribeClusterDbRevisionsInput) (*DescribeClusterDbRevisionsOutput, error) {
@@ -4367,15 +4832,14 @@ func (c *Redshift) DescribeClusterDbRevisionsWithContext(ctx aws.Context, input 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeClusterDbRevisions operation.
-//    pageNum := 0
-//    err := client.DescribeClusterDbRevisionsPages(params,
-//        func(page *redshift.DescribeClusterDbRevisionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeClusterDbRevisions operation.
+//	pageNum := 0
+//	err := client.DescribeClusterDbRevisionsPages(params,
+//	    func(page *redshift.DescribeClusterDbRevisionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Redshift) DescribeClusterDbRevisionsPages(input *DescribeClusterDbRevisionsInput, fn func(*DescribeClusterDbRevisionsOutput, bool) bool) error {
 	return c.DescribeClusterDbRevisionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4427,14 +4891,13 @@ const opDescribeClusterParameterGroups = "DescribeClusterParameterGroups"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeClusterParameterGroupsRequest method.
+//	req, resp := client.DescribeClusterParameterGroupsRequest(params)
 //
-//    // Example sending a request using the DescribeClusterParameterGroupsRequest method.
-//    req, resp := client.DescribeClusterParameterGroupsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeClusterParameterGroups
 func (c *Redshift) DescribeClusterParameterGroupsRequest(input *DescribeClusterParameterGroupsInput) (req *request.Request, output *DescribeClusterParameterGroupsOutput) {
@@ -4489,11 +4952,12 @@ func (c *Redshift) DescribeClusterParameterGroupsRequest(input *DescribeClusterP
 // API operation DescribeClusterParameterGroups for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeClusterParameterGroupNotFoundFault "ClusterParameterGroupNotFound"
-//   The parameter group name does not refer to an existing parameter group.
 //
-//   * ErrCodeInvalidTagFault "InvalidTagFault"
-//   The tag is invalid.
+//   - ErrCodeClusterParameterGroupNotFoundFault "ClusterParameterGroupNotFound"
+//     The parameter group name does not refer to an existing parameter group.
+//
+//   - ErrCodeInvalidTagFault "InvalidTagFault"
+//     The tag is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeClusterParameterGroups
 func (c *Redshift) DescribeClusterParameterGroups(input *DescribeClusterParameterGroupsInput) (*DescribeClusterParameterGroupsOutput, error) {
@@ -4525,15 +4989,14 @@ func (c *Redshift) DescribeClusterParameterGroupsWithContext(ctx aws.Context, in
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeClusterParameterGroups operation.
-//    pageNum := 0
-//    err := client.DescribeClusterParameterGroupsPages(params,
-//        func(page *redshift.DescribeClusterParameterGroupsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeClusterParameterGroups operation.
+//	pageNum := 0
+//	err := client.DescribeClusterParameterGroupsPages(params,
+//	    func(page *redshift.DescribeClusterParameterGroupsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Redshift) DescribeClusterParameterGroupsPages(input *DescribeClusterParameterGroupsInput, fn func(*DescribeClusterParameterGroupsOutput, bool) bool) error {
 	return c.DescribeClusterParameterGroupsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4585,14 +5048,13 @@ const opDescribeClusterParameters = "DescribeClusterParameters"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeClusterParametersRequest method.
+//	req, resp := client.DescribeClusterParametersRequest(params)
 //
-//    // Example sending a request using the DescribeClusterParametersRequest method.
-//    req, resp := client.DescribeClusterParametersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeClusterParameters
 func (c *Redshift) DescribeClusterParametersRequest(input *DescribeClusterParametersInput) (req *request.Request, output *DescribeClusterParametersOutput) {
@@ -4640,8 +5102,8 @@ func (c *Redshift) DescribeClusterParametersRequest(input *DescribeClusterParame
 // API operation DescribeClusterParameters for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeClusterParameterGroupNotFoundFault "ClusterParameterGroupNotFound"
-//   The parameter group name does not refer to an existing parameter group.
+//   - ErrCodeClusterParameterGroupNotFoundFault "ClusterParameterGroupNotFound"
+//     The parameter group name does not refer to an existing parameter group.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeClusterParameters
 func (c *Redshift) DescribeClusterParameters(input *DescribeClusterParametersInput) (*DescribeClusterParametersOutput, error) {
@@ -4673,15 +5135,14 @@ func (c *Redshift) DescribeClusterParametersWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeClusterParameters operation.
-//    pageNum := 0
-//    err := client.DescribeClusterParametersPages(params,
-//        func(page *redshift.DescribeClusterParametersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeClusterParameters operation.
+//	pageNum := 0
+//	err := client.DescribeClusterParametersPages(params,
+//	    func(page *redshift.DescribeClusterParametersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Redshift) DescribeClusterParametersPages(input *DescribeClusterParametersInput, fn func(*DescribeClusterParametersOutput, bool) bool) error {
 	return c.DescribeClusterParametersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4733,14 +5194,13 @@ const opDescribeClusterSecurityGroups = "DescribeClusterSecurityGroups"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeClusterSecurityGroupsRequest method.
+//	req, resp := client.DescribeClusterSecurityGroupsRequest(params)
 //
-//    // Example sending a request using the DescribeClusterSecurityGroupsRequest method.
-//    req, resp := client.DescribeClusterSecurityGroupsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeClusterSecurityGroups
 func (c *Redshift) DescribeClusterSecurityGroupsRequest(input *DescribeClusterSecurityGroupsInput) (req *request.Request, output *DescribeClusterSecurityGroupsOutput) {
@@ -4793,12 +5253,13 @@ func (c *Redshift) DescribeClusterSecurityGroupsRequest(input *DescribeClusterSe
 // API operation DescribeClusterSecurityGroups for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeClusterSecurityGroupNotFoundFault "ClusterSecurityGroupNotFound"
-//   The cluster security group name does not refer to an existing cluster security
-//   group.
 //
-//   * ErrCodeInvalidTagFault "InvalidTagFault"
-//   The tag is invalid.
+//   - ErrCodeClusterSecurityGroupNotFoundFault "ClusterSecurityGroupNotFound"
+//     The cluster security group name does not refer to an existing cluster security
+//     group.
+//
+//   - ErrCodeInvalidTagFault "InvalidTagFault"
+//     The tag is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeClusterSecurityGroups
 func (c *Redshift) DescribeClusterSecurityGroups(input *DescribeClusterSecurityGroupsInput) (*DescribeClusterSecurityGroupsOutput, error) {
@@ -4830,15 +5291,14 @@ func (c *Redshift) DescribeClusterSecurityGroupsWithContext(ctx aws.Context, inp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeClusterSecurityGroups operation.
-//    pageNum := 0
-//    err := client.DescribeClusterSecurityGroupsPages(params,
-//        func(page *redshift.DescribeClusterSecurityGroupsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeClusterSecurityGroups operation.
+//	pageNum := 0
+//	err := client.DescribeClusterSecurityGroupsPages(params,
+//	    func(page *redshift.DescribeClusterSecurityGroupsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Redshift) DescribeClusterSecurityGroupsPages(input *DescribeClusterSecurityGroupsInput, fn func(*DescribeClusterSecurityGroupsOutput, bool) bool) error {
 	return c.DescribeClusterSecurityGroupsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4890,14 +5350,13 @@ const opDescribeClusterSnapshots = "DescribeClusterSnapshots"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeClusterSnapshotsRequest method.
+//	req, resp := client.DescribeClusterSnapshotsRequest(params)
 //
-//    // Example sending a request using the DescribeClusterSnapshotsRequest method.
-//    req, resp := client.DescribeClusterSnapshotsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeClusterSnapshots
 func (c *Redshift) DescribeClusterSnapshotsRequest(input *DescribeClusterSnapshotsInput) (req *request.Request, output *DescribeClusterSnapshotsOutput) {
@@ -4948,14 +5407,18 @@ func (c *Redshift) DescribeClusterSnapshotsRequest(input *DescribeClusterSnapsho
 // API operation DescribeClusterSnapshots for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeClusterNotFoundFault "ClusterNotFound"
-//   The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeClusterSnapshotNotFoundFault "ClusterSnapshotNotFound"
-//   The snapshot identifier does not refer to an existing cluster snapshot.
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeInvalidTagFault "InvalidTagFault"
-//   The tag is invalid.
+//   - ErrCodeClusterSnapshotNotFoundFault "ClusterSnapshotNotFound"
+//     The snapshot identifier does not refer to an existing cluster snapshot.
+//
+//   - ErrCodeInvalidTagFault "InvalidTagFault"
+//     The tag is invalid.
+//
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeClusterSnapshots
 func (c *Redshift) DescribeClusterSnapshots(input *DescribeClusterSnapshotsInput) (*DescribeClusterSnapshotsOutput, error) {
@@ -4987,15 +5450,14 @@ func (c *Redshift) DescribeClusterSnapshotsWithContext(ctx aws.Context, input *D
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeClusterSnapshots operation.
-//    pageNum := 0
-//    err := client.DescribeClusterSnapshotsPages(params,
-//        func(page *redshift.DescribeClusterSnapshotsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeClusterSnapshots operation.
+//	pageNum := 0
+//	err := client.DescribeClusterSnapshotsPages(params,
+//	    func(page *redshift.DescribeClusterSnapshotsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Redshift) DescribeClusterSnapshotsPages(input *DescribeClusterSnapshotsInput, fn func(*DescribeClusterSnapshotsOutput, bool) bool) error {
 	return c.DescribeClusterSnapshotsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5047,14 +5509,13 @@ const opDescribeClusterSubnetGroups = "DescribeClusterSubnetGroups"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeClusterSubnetGroupsRequest method.
+//	req, resp := client.DescribeClusterSubnetGroupsRequest(params)
 //
-//    // Example sending a request using the DescribeClusterSubnetGroupsRequest method.
-//    req, resp := client.DescribeClusterSubnetGroupsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeClusterSubnetGroups
 func (c *Redshift) DescribeClusterSubnetGroupsRequest(input *DescribeClusterSubnetGroupsInput) (req *request.Request, output *DescribeClusterSubnetGroupsOutput) {
@@ -5104,12 +5565,13 @@ func (c *Redshift) DescribeClusterSubnetGroupsRequest(input *DescribeClusterSubn
 // API operation DescribeClusterSubnetGroups for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeClusterSubnetGroupNotFoundFault "ClusterSubnetGroupNotFoundFault"
-//   The cluster subnet group name does not refer to an existing cluster subnet
-//   group.
 //
-//   * ErrCodeInvalidTagFault "InvalidTagFault"
-//   The tag is invalid.
+//   - ErrCodeClusterSubnetGroupNotFoundFault "ClusterSubnetGroupNotFoundFault"
+//     The cluster subnet group name does not refer to an existing cluster subnet
+//     group.
+//
+//   - ErrCodeInvalidTagFault "InvalidTagFault"
+//     The tag is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeClusterSubnetGroups
 func (c *Redshift) DescribeClusterSubnetGroups(input *DescribeClusterSubnetGroupsInput) (*DescribeClusterSubnetGroupsOutput, error) {
@@ -5141,15 +5603,14 @@ func (c *Redshift) DescribeClusterSubnetGroupsWithContext(ctx aws.Context, input
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeClusterSubnetGroups operation.
-//    pageNum := 0
-//    err := client.DescribeClusterSubnetGroupsPages(params,
-//        func(page *redshift.DescribeClusterSubnetGroupsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeClusterSubnetGroups operation.
+//	pageNum := 0
+//	err := client.DescribeClusterSubnetGroupsPages(params,
+//	    func(page *redshift.DescribeClusterSubnetGroupsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Redshift) DescribeClusterSubnetGroupsPages(input *DescribeClusterSubnetGroupsInput, fn func(*DescribeClusterSubnetGroupsOutput, bool) bool) error {
 	return c.DescribeClusterSubnetGroupsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5201,14 +5662,13 @@ const opDescribeClusterTracks = "DescribeClusterTracks"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeClusterTracksRequest method.
+//	req, resp := client.DescribeClusterTracksRequest(params)
 //
-//    // Example sending a request using the DescribeClusterTracksRequest method.
-//    req, resp := client.DescribeClusterTracksRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeClusterTracks
 func (c *Redshift) DescribeClusterTracksRequest(input *DescribeClusterTracksInput) (req *request.Request, output *DescribeClusterTracksOutput) {
@@ -5245,11 +5705,12 @@ func (c *Redshift) DescribeClusterTracksRequest(input *DescribeClusterTracksInpu
 // API operation DescribeClusterTracks for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidClusterTrackFault "InvalidClusterTrack"
-//   The provided cluster track name is not valid.
 //
-//   * ErrCodeUnauthorizedOperation "UnauthorizedOperation"
-//   Your account is not authorized to perform the requested operation.
+//   - ErrCodeInvalidClusterTrackFault "InvalidClusterTrack"
+//     The provided cluster track name is not valid.
+//
+//   - ErrCodeUnauthorizedOperation "UnauthorizedOperation"
+//     Your account is not authorized to perform the requested operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeClusterTracks
 func (c *Redshift) DescribeClusterTracks(input *DescribeClusterTracksInput) (*DescribeClusterTracksOutput, error) {
@@ -5281,15 +5742,14 @@ func (c *Redshift) DescribeClusterTracksWithContext(ctx aws.Context, input *Desc
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeClusterTracks operation.
-//    pageNum := 0
-//    err := client.DescribeClusterTracksPages(params,
-//        func(page *redshift.DescribeClusterTracksOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeClusterTracks operation.
+//	pageNum := 0
+//	err := client.DescribeClusterTracksPages(params,
+//	    func(page *redshift.DescribeClusterTracksOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Redshift) DescribeClusterTracksPages(input *DescribeClusterTracksInput, fn func(*DescribeClusterTracksOutput, bool) bool) error {
 	return c.DescribeClusterTracksPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5341,14 +5801,13 @@ const opDescribeClusterVersions = "DescribeClusterVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeClusterVersionsRequest method.
+//	req, resp := client.DescribeClusterVersionsRequest(params)
 //
-//    // Example sending a request using the DescribeClusterVersionsRequest method.
-//    req, resp := client.DescribeClusterVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeClusterVersions
 func (c *Redshift) DescribeClusterVersionsRequest(input *DescribeClusterVersionsInput) (req *request.Request, output *DescribeClusterVersionsOutput) {
@@ -5417,15 +5876,14 @@ func (c *Redshift) DescribeClusterVersionsWithContext(ctx aws.Context, input *De
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeClusterVersions operation.
-//    pageNum := 0
-//    err := client.DescribeClusterVersionsPages(params,
-//        func(page *redshift.DescribeClusterVersionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeClusterVersions operation.
+//	pageNum := 0
+//	err := client.DescribeClusterVersionsPages(params,
+//	    func(page *redshift.DescribeClusterVersionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Redshift) DescribeClusterVersionsPages(input *DescribeClusterVersionsInput, fn func(*DescribeClusterVersionsOutput, bool) bool) error {
 	return c.DescribeClusterVersionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5477,14 +5935,13 @@ const opDescribeClusters = "DescribeClusters"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeClustersRequest method.
+//	req, resp := client.DescribeClustersRequest(params)
 //
-//    // Example sending a request using the DescribeClustersRequest method.
-//    req, resp := client.DescribeClustersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeClusters
 func (c *Redshift) DescribeClustersRequest(input *DescribeClustersInput) (req *request.Request, output *DescribeClustersOutput) {
@@ -5534,11 +5991,12 @@ func (c *Redshift) DescribeClustersRequest(input *DescribeClustersInput) (req *r
 // API operation DescribeClusters for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeClusterNotFoundFault "ClusterNotFound"
-//   The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeInvalidTagFault "InvalidTagFault"
-//   The tag is invalid.
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
+//
+//   - ErrCodeInvalidTagFault "InvalidTagFault"
+//     The tag is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeClusters
 func (c *Redshift) DescribeClusters(input *DescribeClustersInput) (*DescribeClustersOutput, error) {
@@ -5570,15 +6028,14 @@ func (c *Redshift) DescribeClustersWithContext(ctx aws.Context, input *DescribeC
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeClusters operation.
-//    pageNum := 0
-//    err := client.DescribeClustersPages(params,
-//        func(page *redshift.DescribeClustersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeClusters operation.
+//	pageNum := 0
+//	err := client.DescribeClustersPages(params,
+//	    func(page *redshift.DescribeClustersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Redshift) DescribeClustersPages(input *DescribeClustersInput, fn func(*DescribeClustersOutput, bool) bool) error {
 	return c.DescribeClustersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5614,6 +6071,145 @@ func (c *Redshift) DescribeClustersPagesWithContext(ctx aws.Context, input *Desc
 	return p.Err()
 }
 
+const opDescribeCustomDomainAssociations = "DescribeCustomDomainAssociations"
+
+// DescribeCustomDomainAssociationsRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeCustomDomainAssociations operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeCustomDomainAssociations for more information on using the DescribeCustomDomainAssociations
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribeCustomDomainAssociationsRequest method.
+//	req, resp := client.DescribeCustomDomainAssociationsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeCustomDomainAssociations
+func (c *Redshift) DescribeCustomDomainAssociationsRequest(input *DescribeCustomDomainAssociationsInput) (req *request.Request, output *DescribeCustomDomainAssociationsOutput) {
+	op := &request.Operation{
+		Name:       opDescribeCustomDomainAssociations,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"Marker"},
+			OutputTokens:    []string{"Marker"},
+			LimitToken:      "MaxRecords",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &DescribeCustomDomainAssociationsInput{}
+	}
+
+	output = &DescribeCustomDomainAssociationsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeCustomDomainAssociations API operation for Amazon Redshift.
+//
+// Contains information about custom domain associations for a cluster.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Redshift's
+// API operation DescribeCustomDomainAssociations for usage and error information.
+//
+// Returned Error Codes:
+//
+//   - ErrCodeCustomDomainAssociationNotFoundFault "CustomDomainAssociationNotFoundFault"
+//     An error occurred. The custom domain name couldn't be found.
+//
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeCustomDomainAssociations
+func (c *Redshift) DescribeCustomDomainAssociations(input *DescribeCustomDomainAssociationsInput) (*DescribeCustomDomainAssociationsOutput, error) {
+	req, out := c.DescribeCustomDomainAssociationsRequest(input)
+	return out, req.Send()
+}
+
+// DescribeCustomDomainAssociationsWithContext is the same as DescribeCustomDomainAssociations with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeCustomDomainAssociations for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Redshift) DescribeCustomDomainAssociationsWithContext(ctx aws.Context, input *DescribeCustomDomainAssociationsInput, opts ...request.Option) (*DescribeCustomDomainAssociationsOutput, error) {
+	req, out := c.DescribeCustomDomainAssociationsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// DescribeCustomDomainAssociationsPages iterates over the pages of a DescribeCustomDomainAssociations operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeCustomDomainAssociations method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeCustomDomainAssociations operation.
+//	pageNum := 0
+//	err := client.DescribeCustomDomainAssociationsPages(params,
+//	    func(page *redshift.DescribeCustomDomainAssociationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *Redshift) DescribeCustomDomainAssociationsPages(input *DescribeCustomDomainAssociationsInput, fn func(*DescribeCustomDomainAssociationsOutput, bool) bool) error {
+	return c.DescribeCustomDomainAssociationsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeCustomDomainAssociationsPagesWithContext same as DescribeCustomDomainAssociationsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Redshift) DescribeCustomDomainAssociationsPagesWithContext(ctx aws.Context, input *DescribeCustomDomainAssociationsInput, fn func(*DescribeCustomDomainAssociationsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeCustomDomainAssociationsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeCustomDomainAssociationsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeCustomDomainAssociationsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opDescribeDataShares = "DescribeDataShares"
 
 // DescribeDataSharesRequest generates a "aws/request.Request" representing the
@@ -5630,14 +6226,13 @@ const opDescribeDataShares = "DescribeDataShares"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDataSharesRequest method.
+//	req, resp := client.DescribeDataSharesRequest(params)
 //
-//    // Example sending a request using the DescribeDataSharesRequest method.
-//    req, resp := client.DescribeDataSharesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeDataShares
 func (c *Redshift) DescribeDataSharesRequest(input *DescribeDataSharesInput) (req *request.Request, output *DescribeDataSharesOutput) {
@@ -5675,8 +6270,8 @@ func (c *Redshift) DescribeDataSharesRequest(input *DescribeDataSharesInput) (re
 // API operation DescribeDataShares for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidDataShareFault "InvalidDataShareFault"
-//   There is an error with the datashare.
+//   - ErrCodeInvalidDataShareFault "InvalidDataShareFault"
+//     There is an error with the datashare.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeDataShares
 func (c *Redshift) DescribeDataShares(input *DescribeDataSharesInput) (*DescribeDataSharesOutput, error) {
@@ -5708,15 +6303,14 @@ func (c *Redshift) DescribeDataSharesWithContext(ctx aws.Context, input *Describ
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeDataShares operation.
-//    pageNum := 0
-//    err := client.DescribeDataSharesPages(params,
-//        func(page *redshift.DescribeDataSharesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeDataShares operation.
+//	pageNum := 0
+//	err := client.DescribeDataSharesPages(params,
+//	    func(page *redshift.DescribeDataSharesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Redshift) DescribeDataSharesPages(input *DescribeDataSharesInput, fn func(*DescribeDataSharesOutput, bool) bool) error {
 	return c.DescribeDataSharesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5768,14 +6362,13 @@ const opDescribeDataSharesForConsumer = "DescribeDataSharesForConsumer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDataSharesForConsumerRequest method.
+//	req, resp := client.DescribeDataSharesForConsumerRequest(params)
 //
-//    // Example sending a request using the DescribeDataSharesForConsumerRequest method.
-//    req, resp := client.DescribeDataSharesForConsumerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeDataSharesForConsumer
 func (c *Redshift) DescribeDataSharesForConsumerRequest(input *DescribeDataSharesForConsumerInput) (req *request.Request, output *DescribeDataSharesForConsumerOutput) {
@@ -5813,9 +6406,9 @@ func (c *Redshift) DescribeDataSharesForConsumerRequest(input *DescribeDataShare
 // API operation DescribeDataSharesForConsumer for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidNamespaceFault "InvalidNamespaceFault"
-//   The namespace isn't valid because the namespace doesn't exist. Provide a
-//   valid namespace.
+//   - ErrCodeInvalidNamespaceFault "InvalidNamespaceFault"
+//     The namespace isn't valid because the namespace doesn't exist. Provide a
+//     valid namespace.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeDataSharesForConsumer
 func (c *Redshift) DescribeDataSharesForConsumer(input *DescribeDataSharesForConsumerInput) (*DescribeDataSharesForConsumerOutput, error) {
@@ -5847,15 +6440,14 @@ func (c *Redshift) DescribeDataSharesForConsumerWithContext(ctx aws.Context, inp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeDataSharesForConsumer operation.
-//    pageNum := 0
-//    err := client.DescribeDataSharesForConsumerPages(params,
-//        func(page *redshift.DescribeDataSharesForConsumerOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeDataSharesForConsumer operation.
+//	pageNum := 0
+//	err := client.DescribeDataSharesForConsumerPages(params,
+//	    func(page *redshift.DescribeDataSharesForConsumerOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Redshift) DescribeDataSharesForConsumerPages(input *DescribeDataSharesForConsumerInput, fn func(*DescribeDataSharesForConsumerOutput, bool) bool) error {
 	return c.DescribeDataSharesForConsumerPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5907,14 +6499,13 @@ const opDescribeDataSharesForProducer = "DescribeDataSharesForProducer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDataSharesForProducerRequest method.
+//	req, resp := client.DescribeDataSharesForProducerRequest(params)
 //
-//    // Example sending a request using the DescribeDataSharesForProducerRequest method.
-//    req, resp := client.DescribeDataSharesForProducerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeDataSharesForProducer
 func (c *Redshift) DescribeDataSharesForProducerRequest(input *DescribeDataSharesForProducerInput) (req *request.Request, output *DescribeDataSharesForProducerOutput) {
@@ -5952,9 +6543,9 @@ func (c *Redshift) DescribeDataSharesForProducerRequest(input *DescribeDataShare
 // API operation DescribeDataSharesForProducer for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidNamespaceFault "InvalidNamespaceFault"
-//   The namespace isn't valid because the namespace doesn't exist. Provide a
-//   valid namespace.
+//   - ErrCodeInvalidNamespaceFault "InvalidNamespaceFault"
+//     The namespace isn't valid because the namespace doesn't exist. Provide a
+//     valid namespace.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeDataSharesForProducer
 func (c *Redshift) DescribeDataSharesForProducer(input *DescribeDataSharesForProducerInput) (*DescribeDataSharesForProducerOutput, error) {
@@ -5986,15 +6577,14 @@ func (c *Redshift) DescribeDataSharesForProducerWithContext(ctx aws.Context, inp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeDataSharesForProducer operation.
-//    pageNum := 0
-//    err := client.DescribeDataSharesForProducerPages(params,
-//        func(page *redshift.DescribeDataSharesForProducerOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeDataSharesForProducer operation.
+//	pageNum := 0
+//	err := client.DescribeDataSharesForProducerPages(params,
+//	    func(page *redshift.DescribeDataSharesForProducerOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Redshift) DescribeDataSharesForProducerPages(input *DescribeDataSharesForProducerInput, fn func(*DescribeDataSharesForProducerOutput, bool) bool) error {
 	return c.DescribeDataSharesForProducerPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -6046,14 +6636,13 @@ const opDescribeDefaultClusterParameters = "DescribeDefaultClusterParameters"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDefaultClusterParametersRequest method.
+//	req, resp := client.DescribeDefaultClusterParametersRequest(params)
 //
-//    // Example sending a request using the DescribeDefaultClusterParametersRequest method.
-//    req, resp := client.DescribeDefaultClusterParametersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeDefaultClusterParameters
 func (c *Redshift) DescribeDefaultClusterParametersRequest(input *DescribeDefaultClusterParametersInput) (req *request.Request, output *DescribeDefaultClusterParametersOutput) {
@@ -6122,15 +6711,14 @@ func (c *Redshift) DescribeDefaultClusterParametersWithContext(ctx aws.Context, 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeDefaultClusterParameters operation.
-//    pageNum := 0
-//    err := client.DescribeDefaultClusterParametersPages(params,
-//        func(page *redshift.DescribeDefaultClusterParametersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeDefaultClusterParameters operation.
+//	pageNum := 0
+//	err := client.DescribeDefaultClusterParametersPages(params,
+//	    func(page *redshift.DescribeDefaultClusterParametersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Redshift) DescribeDefaultClusterParametersPages(input *DescribeDefaultClusterParametersInput, fn func(*DescribeDefaultClusterParametersOutput, bool) bool) error {
 	return c.DescribeDefaultClusterParametersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -6182,14 +6770,13 @@ const opDescribeEndpointAccess = "DescribeEndpointAccess"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEndpointAccessRequest method.
+//	req, resp := client.DescribeEndpointAccessRequest(params)
 //
-//    // Example sending a request using the DescribeEndpointAccessRequest method.
-//    req, resp := client.DescribeEndpointAccessRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeEndpointAccess
 func (c *Redshift) DescribeEndpointAccessRequest(input *DescribeEndpointAccessInput) (req *request.Request, output *DescribeEndpointAccessOutput) {
@@ -6226,14 +6813,15 @@ func (c *Redshift) DescribeEndpointAccessRequest(input *DescribeEndpointAccessIn
 // API operation DescribeEndpointAccess for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeClusterNotFoundFault "ClusterNotFound"
-//   The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeInvalidClusterStateFault "InvalidClusterState"
-//   The specified cluster is not in the available state.
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeEndpointNotFoundFault "EndpointNotFound"
-//   The endpoint name doesn't refer to an existing endpoint.
+//   - ErrCodeInvalidClusterStateFault "InvalidClusterState"
+//     The specified cluster is not in the available state.
+//
+//   - ErrCodeEndpointNotFoundFault "EndpointNotFound"
+//     The endpoint name doesn't refer to an existing endpoint.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeEndpointAccess
 func (c *Redshift) DescribeEndpointAccess(input *DescribeEndpointAccessInput) (*DescribeEndpointAccessOutput, error) {
@@ -6265,15 +6853,14 @@ func (c *Redshift) DescribeEndpointAccessWithContext(ctx aws.Context, input *Des
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeEndpointAccess operation.
-//    pageNum := 0
-//    err := client.DescribeEndpointAccessPages(params,
-//        func(page *redshift.DescribeEndpointAccessOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeEndpointAccess operation.
+//	pageNum := 0
+//	err := client.DescribeEndpointAccessPages(params,
+//	    func(page *redshift.DescribeEndpointAccessOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Redshift) DescribeEndpointAccessPages(input *DescribeEndpointAccessInput, fn func(*DescribeEndpointAccessOutput, bool) bool) error {
 	return c.DescribeEndpointAccessPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -6325,14 +6912,13 @@ const opDescribeEndpointAuthorization = "DescribeEndpointAuthorization"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEndpointAuthorizationRequest method.
+//	req, resp := client.DescribeEndpointAuthorizationRequest(params)
 //
-//    // Example sending a request using the DescribeEndpointAuthorizationRequest method.
-//    req, resp := client.DescribeEndpointAuthorizationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeEndpointAuthorization
 func (c *Redshift) DescribeEndpointAuthorizationRequest(input *DescribeEndpointAuthorizationInput) (req *request.Request, output *DescribeEndpointAuthorizationOutput) {
@@ -6369,11 +6955,12 @@ func (c *Redshift) DescribeEndpointAuthorizationRequest(input *DescribeEndpointA
 // API operation DescribeEndpointAuthorization for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeClusterNotFoundFault "ClusterNotFound"
-//   The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeUnsupportedOperationFault "UnsupportedOperation"
-//   The requested operation isn't supported.
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
+//
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeEndpointAuthorization
 func (c *Redshift) DescribeEndpointAuthorization(input *DescribeEndpointAuthorizationInput) (*DescribeEndpointAuthorizationOutput, error) {
@@ -6405,15 +6992,14 @@ func (c *Redshift) DescribeEndpointAuthorizationWithContext(ctx aws.Context, inp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeEndpointAuthorization operation.
-//    pageNum := 0
-//    err := client.DescribeEndpointAuthorizationPages(params,
-//        func(page *redshift.DescribeEndpointAuthorizationOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeEndpointAuthorization operation.
+//	pageNum := 0
+//	err := client.DescribeEndpointAuthorizationPages(params,
+//	    func(page *redshift.DescribeEndpointAuthorizationOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Redshift) DescribeEndpointAuthorizationPages(input *DescribeEndpointAuthorizationInput, fn func(*DescribeEndpointAuthorizationOutput, bool) bool) error {
 	return c.DescribeEndpointAuthorizationPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -6465,14 +7051,13 @@ const opDescribeEventCategories = "DescribeEventCategories"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEventCategoriesRequest method.
+//	req, resp := client.DescribeEventCategoriesRequest(params)
 //
-//    // Example sending a request using the DescribeEventCategoriesRequest method.
-//    req, resp := client.DescribeEventCategoriesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeEventCategories
 func (c *Redshift) DescribeEventCategoriesRequest(input *DescribeEventCategoriesInput) (req *request.Request, output *DescribeEventCategoriesOutput) {
@@ -6541,14 +7126,13 @@ const opDescribeEventSubscriptions = "DescribeEventSubscriptions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEventSubscriptionsRequest method.
+//	req, resp := client.DescribeEventSubscriptionsRequest(params)
 //
-//    // Example sending a request using the DescribeEventSubscriptionsRequest method.
-//    req, resp := client.DescribeEventSubscriptionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeEventSubscriptions
 func (c *Redshift) DescribeEventSubscriptionsRequest(input *DescribeEventSubscriptionsInput) (req *request.Request, output *DescribeEventSubscriptionsOutput) {
@@ -6597,12 +7181,13 @@ func (c *Redshift) DescribeEventSubscriptionsRequest(input *DescribeEventSubscri
 // API operation DescribeEventSubscriptions for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeSubscriptionNotFoundFault "SubscriptionNotFound"
-//   An Amazon Redshift event notification subscription with the specified name
-//   does not exist.
 //
-//   * ErrCodeInvalidTagFault "InvalidTagFault"
-//   The tag is invalid.
+//   - ErrCodeSubscriptionNotFoundFault "SubscriptionNotFound"
+//     An Amazon Redshift event notification subscription with the specified name
+//     does not exist.
+//
+//   - ErrCodeInvalidTagFault "InvalidTagFault"
+//     The tag is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeEventSubscriptions
 func (c *Redshift) DescribeEventSubscriptions(input *DescribeEventSubscriptionsInput) (*DescribeEventSubscriptionsOutput, error) {
@@ -6634,15 +7219,14 @@ func (c *Redshift) DescribeEventSubscriptionsWithContext(ctx aws.Context, input 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeEventSubscriptions operation.
-//    pageNum := 0
-//    err := client.DescribeEventSubscriptionsPages(params,
-//        func(page *redshift.DescribeEventSubscriptionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeEventSubscriptions operation.
+//	pageNum := 0
+//	err := client.DescribeEventSubscriptionsPages(params,
+//	    func(page *redshift.DescribeEventSubscriptionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Redshift) DescribeEventSubscriptionsPages(input *DescribeEventSubscriptionsInput, fn func(*DescribeEventSubscriptionsOutput, bool) bool) error {
 	return c.DescribeEventSubscriptionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -6694,14 +7278,13 @@ const opDescribeEvents = "DescribeEvents"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEventsRequest method.
+//	req, resp := client.DescribeEventsRequest(params)
 //
-//    // Example sending a request using the DescribeEventsRequest method.
-//    req, resp := client.DescribeEventsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeEvents
 func (c *Redshift) DescribeEventsRequest(input *DescribeEventsInput) (req *request.Request, output *DescribeEventsOutput) {
@@ -6769,15 +7352,14 @@ func (c *Redshift) DescribeEventsWithContext(ctx aws.Context, input *DescribeEve
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeEvents operation.
-//    pageNum := 0
-//    err := client.DescribeEventsPages(params,
-//        func(page *redshift.DescribeEventsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeEvents operation.
+//	pageNum := 0
+//	err := client.DescribeEventsPages(params,
+//	    func(page *redshift.DescribeEventsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Redshift) DescribeEventsPages(input *DescribeEventsInput, fn func(*DescribeEventsOutput, bool) bool) error {
 	return c.DescribeEventsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -6829,14 +7411,13 @@ const opDescribeHsmClientCertificates = "DescribeHsmClientCertificates"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeHsmClientCertificatesRequest method.
+//	req, resp := client.DescribeHsmClientCertificatesRequest(params)
 //
-//    // Example sending a request using the DescribeHsmClientCertificatesRequest method.
-//    req, resp := client.DescribeHsmClientCertificatesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeHsmClientCertificates
 func (c *Redshift) DescribeHsmClientCertificatesRequest(input *DescribeHsmClientCertificatesInput) (req *request.Request, output *DescribeHsmClientCertificatesOutput) {
@@ -6885,11 +7466,12 @@ func (c *Redshift) DescribeHsmClientCertificatesRequest(input *DescribeHsmClient
 // API operation DescribeHsmClientCertificates for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeHsmClientCertificateNotFoundFault "HsmClientCertificateNotFoundFault"
-//   There is no Amazon Redshift HSM client certificate with the specified identifier.
 //
-//   * ErrCodeInvalidTagFault "InvalidTagFault"
-//   The tag is invalid.
+//   - ErrCodeHsmClientCertificateNotFoundFault "HsmClientCertificateNotFoundFault"
+//     There is no Amazon Redshift HSM client certificate with the specified identifier.
+//
+//   - ErrCodeInvalidTagFault "InvalidTagFault"
+//     The tag is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeHsmClientCertificates
 func (c *Redshift) DescribeHsmClientCertificates(input *DescribeHsmClientCertificatesInput) (*DescribeHsmClientCertificatesOutput, error) {
@@ -6921,15 +7503,14 @@ func (c *Redshift) DescribeHsmClientCertificatesWithContext(ctx aws.Context, inp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeHsmClientCertificates operation.
-//    pageNum := 0
-//    err := client.DescribeHsmClientCertificatesPages(params,
-//        func(page *redshift.DescribeHsmClientCertificatesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeHsmClientCertificates operation.
+//	pageNum := 0
+//	err := client.DescribeHsmClientCertificatesPages(params,
+//	    func(page *redshift.DescribeHsmClientCertificatesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Redshift) DescribeHsmClientCertificatesPages(input *DescribeHsmClientCertificatesInput, fn func(*DescribeHsmClientCertificatesOutput, bool) bool) error {
 	return c.DescribeHsmClientCertificatesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -6981,14 +7562,13 @@ const opDescribeHsmConfigurations = "DescribeHsmConfigurations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeHsmConfigurationsRequest method.
+//	req, resp := client.DescribeHsmConfigurationsRequest(params)
 //
-//    // Example sending a request using the DescribeHsmConfigurationsRequest method.
-//    req, resp := client.DescribeHsmConfigurationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeHsmConfigurations
 func (c *Redshift) DescribeHsmConfigurationsRequest(input *DescribeHsmConfigurationsInput) (req *request.Request, output *DescribeHsmConfigurationsOutput) {
@@ -7037,11 +7617,12 @@ func (c *Redshift) DescribeHsmConfigurationsRequest(input *DescribeHsmConfigurat
 // API operation DescribeHsmConfigurations for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeHsmConfigurationNotFoundFault "HsmConfigurationNotFoundFault"
-//   There is no Amazon Redshift HSM configuration with the specified identifier.
 //
-//   * ErrCodeInvalidTagFault "InvalidTagFault"
-//   The tag is invalid.
+//   - ErrCodeHsmConfigurationNotFoundFault "HsmConfigurationNotFoundFault"
+//     There is no Amazon Redshift HSM configuration with the specified identifier.
+//
+//   - ErrCodeInvalidTagFault "InvalidTagFault"
+//     The tag is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeHsmConfigurations
 func (c *Redshift) DescribeHsmConfigurations(input *DescribeHsmConfigurationsInput) (*DescribeHsmConfigurationsOutput, error) {
@@ -7073,15 +7654,14 @@ func (c *Redshift) DescribeHsmConfigurationsWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeHsmConfigurations operation.
-//    pageNum := 0
-//    err := client.DescribeHsmConfigurationsPages(params,
-//        func(page *redshift.DescribeHsmConfigurationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeHsmConfigurations operation.
+//	pageNum := 0
+//	err := client.DescribeHsmConfigurationsPages(params,
+//	    func(page *redshift.DescribeHsmConfigurationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Redshift) DescribeHsmConfigurationsPages(input *DescribeHsmConfigurationsInput, fn func(*DescribeHsmConfigurationsOutput, bool) bool) error {
 	return c.DescribeHsmConfigurationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -7117,6 +7697,149 @@ func (c *Redshift) DescribeHsmConfigurationsPagesWithContext(ctx aws.Context, in
 	return p.Err()
 }
 
+const opDescribeInboundIntegrations = "DescribeInboundIntegrations"
+
+// DescribeInboundIntegrationsRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeInboundIntegrations operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeInboundIntegrations for more information on using the DescribeInboundIntegrations
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribeInboundIntegrationsRequest method.
+//	req, resp := client.DescribeInboundIntegrationsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeInboundIntegrations
+func (c *Redshift) DescribeInboundIntegrationsRequest(input *DescribeInboundIntegrationsInput) (req *request.Request, output *DescribeInboundIntegrationsOutput) {
+	op := &request.Operation{
+		Name:       opDescribeInboundIntegrations,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"Marker"},
+			OutputTokens:    []string{"Marker"},
+			LimitToken:      "MaxRecords",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &DescribeInboundIntegrationsInput{}
+	}
+
+	output = &DescribeInboundIntegrationsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeInboundIntegrations API operation for Amazon Redshift.
+//
+// Returns a list of inbound integrations.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Redshift's
+// API operation DescribeInboundIntegrations for usage and error information.
+//
+// Returned Error Codes:
+//
+//   - ErrCodeIntegrationNotFoundFault "IntegrationNotFoundFault"
+//     The integration can't be found.
+//
+//   - ErrCodeInvalidNamespaceFault "InvalidNamespaceFault"
+//     The namespace isn't valid because the namespace doesn't exist. Provide a
+//     valid namespace.
+//
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeInboundIntegrations
+func (c *Redshift) DescribeInboundIntegrations(input *DescribeInboundIntegrationsInput) (*DescribeInboundIntegrationsOutput, error) {
+	req, out := c.DescribeInboundIntegrationsRequest(input)
+	return out, req.Send()
+}
+
+// DescribeInboundIntegrationsWithContext is the same as DescribeInboundIntegrations with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeInboundIntegrations for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Redshift) DescribeInboundIntegrationsWithContext(ctx aws.Context, input *DescribeInboundIntegrationsInput, opts ...request.Option) (*DescribeInboundIntegrationsOutput, error) {
+	req, out := c.DescribeInboundIntegrationsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// DescribeInboundIntegrationsPages iterates over the pages of a DescribeInboundIntegrations operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeInboundIntegrations method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeInboundIntegrations operation.
+//	pageNum := 0
+//	err := client.DescribeInboundIntegrationsPages(params,
+//	    func(page *redshift.DescribeInboundIntegrationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *Redshift) DescribeInboundIntegrationsPages(input *DescribeInboundIntegrationsInput, fn func(*DescribeInboundIntegrationsOutput, bool) bool) error {
+	return c.DescribeInboundIntegrationsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeInboundIntegrationsPagesWithContext same as DescribeInboundIntegrationsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Redshift) DescribeInboundIntegrationsPagesWithContext(ctx aws.Context, input *DescribeInboundIntegrationsInput, fn func(*DescribeInboundIntegrationsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeInboundIntegrationsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeInboundIntegrationsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeInboundIntegrationsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opDescribeLoggingStatus = "DescribeLoggingStatus"
 
 // DescribeLoggingStatusRequest generates a "aws/request.Request" representing the
@@ -7133,14 +7856,13 @@ const opDescribeLoggingStatus = "DescribeLoggingStatus"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeLoggingStatusRequest method.
+//	req, resp := client.DescribeLoggingStatusRequest(params)
 //
-//    // Example sending a request using the DescribeLoggingStatusRequest method.
-//    req, resp := client.DescribeLoggingStatusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeLoggingStatus
 func (c *Redshift) DescribeLoggingStatusRequest(input *DescribeLoggingStatusInput) (req *request.Request, output *LoggingStatus) {
@@ -7172,8 +7894,12 @@ func (c *Redshift) DescribeLoggingStatusRequest(input *DescribeLoggingStatusInpu
 // API operation DescribeLoggingStatus for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeClusterNotFoundFault "ClusterNotFound"
-//   The ClusterIdentifier parameter does not refer to an existing cluster.
+//
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
+//
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeLoggingStatus
 func (c *Redshift) DescribeLoggingStatus(input *DescribeLoggingStatusInput) (*LoggingStatus, error) {
@@ -7213,14 +7939,13 @@ const opDescribeNodeConfigurationOptions = "DescribeNodeConfigurationOptions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeNodeConfigurationOptionsRequest method.
+//	req, resp := client.DescribeNodeConfigurationOptionsRequest(params)
 //
-//    // Example sending a request using the DescribeNodeConfigurationOptionsRequest method.
-//    req, resp := client.DescribeNodeConfigurationOptionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeNodeConfigurationOptions
 func (c *Redshift) DescribeNodeConfigurationOptionsRequest(input *DescribeNodeConfigurationOptionsInput) (req *request.Request, output *DescribeNodeConfigurationOptionsOutput) {
@@ -7258,19 +7983,23 @@ func (c *Redshift) DescribeNodeConfigurationOptionsRequest(input *DescribeNodeCo
 // API operation DescribeNodeConfigurationOptions for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeClusterSnapshotNotFoundFault "ClusterSnapshotNotFound"
-//   The snapshot identifier does not refer to an existing cluster snapshot.
 //
-//   * ErrCodeInvalidClusterSnapshotStateFault "InvalidClusterSnapshotState"
-//   The specified cluster snapshot is not in the available state, or other accounts
-//   are authorized to access the snapshot.
+//   - ErrCodeClusterSnapshotNotFoundFault "ClusterSnapshotNotFound"
+//     The snapshot identifier does not refer to an existing cluster snapshot.
 //
-//   * ErrCodeClusterNotFoundFault "ClusterNotFound"
-//   The ClusterIdentifier parameter does not refer to an existing cluster.
+//   - ErrCodeInvalidClusterSnapshotStateFault "InvalidClusterSnapshotState"
+//     The specified cluster snapshot is not in the available state, or other accounts
+//     are authorized to access the snapshot.
 //
-//   * ErrCodeAccessToSnapshotDeniedFault "AccessToSnapshotDenied"
-//   The owner of the specified snapshot has not authorized your account to access
-//   the snapshot.
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
+//
+//   - ErrCodeAccessToSnapshotDeniedFault "AccessToSnapshotDenied"
+//     The owner of the specified snapshot has not authorized your account to access
+//     the snapshot.
+//
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeNodeConfigurationOptions
 func (c *Redshift) DescribeNodeConfigurationOptions(input *DescribeNodeConfigurationOptionsInput) (*DescribeNodeConfigurationOptionsOutput, error) {
@@ -7302,15 +8031,14 @@ func (c *Redshift) DescribeNodeConfigurationOptionsWithContext(ctx aws.Context, 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeNodeConfigurationOptions operation.
-//    pageNum := 0
-//    err := client.DescribeNodeConfigurationOptionsPages(params,
-//        func(page *redshift.DescribeNodeConfigurationOptionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeNodeConfigurationOptions operation.
+//	pageNum := 0
+//	err := client.DescribeNodeConfigurationOptionsPages(params,
+//	    func(page *redshift.DescribeNodeConfigurationOptionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Redshift) DescribeNodeConfigurationOptionsPages(input *DescribeNodeConfigurationOptionsInput, fn func(*DescribeNodeConfigurationOptionsOutput, bool) bool) error {
 	return c.DescribeNodeConfigurationOptionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -7362,14 +8090,13 @@ const opDescribeOrderableClusterOptions = "DescribeOrderableClusterOptions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeOrderableClusterOptionsRequest method.
+//	req, resp := client.DescribeOrderableClusterOptionsRequest(params)
 //
-//    // Example sending a request using the DescribeOrderableClusterOptionsRequest method.
-//    req, resp := client.DescribeOrderableClusterOptionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeOrderableClusterOptions
 func (c *Redshift) DescribeOrderableClusterOptionsRequest(input *DescribeOrderableClusterOptionsInput) (req *request.Request, output *DescribeOrderableClusterOptionsOutput) {
@@ -7442,15 +8169,14 @@ func (c *Redshift) DescribeOrderableClusterOptionsWithContext(ctx aws.Context, i
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeOrderableClusterOptions operation.
-//    pageNum := 0
-//    err := client.DescribeOrderableClusterOptionsPages(params,
-//        func(page *redshift.DescribeOrderableClusterOptionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeOrderableClusterOptions operation.
+//	pageNum := 0
+//	err := client.DescribeOrderableClusterOptionsPages(params,
+//	    func(page *redshift.DescribeOrderableClusterOptionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Redshift) DescribeOrderableClusterOptionsPages(input *DescribeOrderableClusterOptionsInput, fn func(*DescribeOrderableClusterOptionsOutput, bool) bool) error {
 	return c.DescribeOrderableClusterOptionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -7502,14 +8228,13 @@ const opDescribePartners = "DescribePartners"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribePartnersRequest method.
+//	req, resp := client.DescribePartnersRequest(params)
 //
-//    // Example sending a request using the DescribePartnersRequest method.
-//    req, resp := client.DescribePartnersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribePartners
 func (c *Redshift) DescribePartnersRequest(input *DescribePartnersInput) (req *request.Request, output *DescribePartnersOutput) {
@@ -7540,11 +8265,15 @@ func (c *Redshift) DescribePartnersRequest(input *DescribePartnersInput) (req *r
 // API operation DescribePartners for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeClusterNotFoundFault "ClusterNotFound"
-//   The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeUnauthorizedPartnerIntegrationFault "UnauthorizedPartnerIntegration"
-//   The partner integration is not authorized.
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
+//
+//   - ErrCodeUnauthorizedPartnerIntegrationFault "UnauthorizedPartnerIntegration"
+//     The partner integration is not authorized.
+//
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribePartners
 func (c *Redshift) DescribePartners(input *DescribePartnersInput) (*DescribePartnersOutput, error) {
@@ -7568,6 +8297,152 @@ func (c *Redshift) DescribePartnersWithContext(ctx aws.Context, input *DescribeP
 	return out, req.Send()
 }
 
+const opDescribeRedshiftIdcApplications = "DescribeRedshiftIdcApplications"
+
+// DescribeRedshiftIdcApplicationsRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeRedshiftIdcApplications operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeRedshiftIdcApplications for more information on using the DescribeRedshiftIdcApplications
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribeRedshiftIdcApplicationsRequest method.
+//	req, resp := client.DescribeRedshiftIdcApplicationsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeRedshiftIdcApplications
+func (c *Redshift) DescribeRedshiftIdcApplicationsRequest(input *DescribeRedshiftIdcApplicationsInput) (req *request.Request, output *DescribeRedshiftIdcApplicationsOutput) {
+	op := &request.Operation{
+		Name:       opDescribeRedshiftIdcApplications,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"Marker"},
+			OutputTokens:    []string{"Marker"},
+			LimitToken:      "MaxRecords",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &DescribeRedshiftIdcApplicationsInput{}
+	}
+
+	output = &DescribeRedshiftIdcApplicationsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeRedshiftIdcApplications API operation for Amazon Redshift.
+//
+// Lists the Amazon Redshift IAM Identity Center applications.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Redshift's
+// API operation DescribeRedshiftIdcApplications for usage and error information.
+//
+// Returned Error Codes:
+//
+//   - ErrCodeRedshiftIdcApplicationNotExistsFault "RedshiftIdcApplicationNotExists"
+//     The application you attempted to find doesn't exist.
+//
+//   - ErrCodeDependentServiceUnavailableFault "DependentServiceUnavailableFault"
+//     Your request cannot be completed because a dependent internal service is
+//     temporarily unavailable. Wait 30 to 60 seconds and try again.
+//
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
+//
+//   - ErrCodeDependentServiceAccessDeniedFault "DependentServiceAccessDenied"
+//     A dependent service denied access for the integration.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeRedshiftIdcApplications
+func (c *Redshift) DescribeRedshiftIdcApplications(input *DescribeRedshiftIdcApplicationsInput) (*DescribeRedshiftIdcApplicationsOutput, error) {
+	req, out := c.DescribeRedshiftIdcApplicationsRequest(input)
+	return out, req.Send()
+}
+
+// DescribeRedshiftIdcApplicationsWithContext is the same as DescribeRedshiftIdcApplications with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeRedshiftIdcApplications for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Redshift) DescribeRedshiftIdcApplicationsWithContext(ctx aws.Context, input *DescribeRedshiftIdcApplicationsInput, opts ...request.Option) (*DescribeRedshiftIdcApplicationsOutput, error) {
+	req, out := c.DescribeRedshiftIdcApplicationsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// DescribeRedshiftIdcApplicationsPages iterates over the pages of a DescribeRedshiftIdcApplications operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeRedshiftIdcApplications method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeRedshiftIdcApplications operation.
+//	pageNum := 0
+//	err := client.DescribeRedshiftIdcApplicationsPages(params,
+//	    func(page *redshift.DescribeRedshiftIdcApplicationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *Redshift) DescribeRedshiftIdcApplicationsPages(input *DescribeRedshiftIdcApplicationsInput, fn func(*DescribeRedshiftIdcApplicationsOutput, bool) bool) error {
+	return c.DescribeRedshiftIdcApplicationsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeRedshiftIdcApplicationsPagesWithContext same as DescribeRedshiftIdcApplicationsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Redshift) DescribeRedshiftIdcApplicationsPagesWithContext(ctx aws.Context, input *DescribeRedshiftIdcApplicationsInput, fn func(*DescribeRedshiftIdcApplicationsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeRedshiftIdcApplicationsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeRedshiftIdcApplicationsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeRedshiftIdcApplicationsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opDescribeReservedNodeExchangeStatus = "DescribeReservedNodeExchangeStatus"
 
 // DescribeReservedNodeExchangeStatusRequest generates a "aws/request.Request" representing the
@@ -7584,14 +8459,13 @@ const opDescribeReservedNodeExchangeStatus = "DescribeReservedNodeExchangeStatus
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeReservedNodeExchangeStatusRequest method.
+//	req, resp := client.DescribeReservedNodeExchangeStatusRequest(params)
 //
-//    // Example sending a request using the DescribeReservedNodeExchangeStatusRequest method.
-//    req, resp := client.DescribeReservedNodeExchangeStatusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeReservedNodeExchangeStatus
 func (c *Redshift) DescribeReservedNodeExchangeStatusRequest(input *DescribeReservedNodeExchangeStatusInput) (req *request.Request, output *DescribeReservedNodeExchangeStatusOutput) {
@@ -7629,14 +8503,15 @@ func (c *Redshift) DescribeReservedNodeExchangeStatusRequest(input *DescribeRese
 // API operation DescribeReservedNodeExchangeStatus for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeReservedNodeNotFoundFault "ReservedNodeNotFound"
-//   The specified reserved compute node not found.
 //
-//   * ErrCodeReservedNodeExchangeNotFoundFault "ReservedNodeExchangeNotFond"
-//   The reserved-node exchange status wasn't found.
+//   - ErrCodeReservedNodeNotFoundFault "ReservedNodeNotFound"
+//     The specified reserved compute node not found.
 //
-//   * ErrCodeUnsupportedOperationFault "UnsupportedOperation"
-//   The requested operation isn't supported.
+//   - ErrCodeReservedNodeExchangeNotFoundFault "ReservedNodeExchangeNotFond"
+//     The reserved-node exchange status wasn't found.
+//
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeReservedNodeExchangeStatus
 func (c *Redshift) DescribeReservedNodeExchangeStatus(input *DescribeReservedNodeExchangeStatusInput) (*DescribeReservedNodeExchangeStatusOutput, error) {
@@ -7668,15 +8543,14 @@ func (c *Redshift) DescribeReservedNodeExchangeStatusWithContext(ctx aws.Context
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeReservedNodeExchangeStatus operation.
-//    pageNum := 0
-//    err := client.DescribeReservedNodeExchangeStatusPages(params,
-//        func(page *redshift.DescribeReservedNodeExchangeStatusOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeReservedNodeExchangeStatus operation.
+//	pageNum := 0
+//	err := client.DescribeReservedNodeExchangeStatusPages(params,
+//	    func(page *redshift.DescribeReservedNodeExchangeStatusOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Redshift) DescribeReservedNodeExchangeStatusPages(input *DescribeReservedNodeExchangeStatusInput, fn func(*DescribeReservedNodeExchangeStatusOutput, bool) bool) error {
 	return c.DescribeReservedNodeExchangeStatusPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -7728,14 +8602,13 @@ const opDescribeReservedNodeOfferings = "DescribeReservedNodeOfferings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeReservedNodeOfferingsRequest method.
+//	req, resp := client.DescribeReservedNodeOfferingsRequest(params)
 //
-//    // Example sending a request using the DescribeReservedNodeOfferingsRequest method.
-//    req, resp := client.DescribeReservedNodeOfferingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeReservedNodeOfferings
 func (c *Redshift) DescribeReservedNodeOfferingsRequest(input *DescribeReservedNodeOfferingsInput) (req *request.Request, output *DescribeReservedNodeOfferingsOutput) {
@@ -7781,15 +8654,16 @@ func (c *Redshift) DescribeReservedNodeOfferingsRequest(input *DescribeReservedN
 // API operation DescribeReservedNodeOfferings for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeReservedNodeOfferingNotFoundFault "ReservedNodeOfferingNotFound"
-//   Specified offering does not exist.
 //
-//   * ErrCodeUnsupportedOperationFault "UnsupportedOperation"
-//   The requested operation isn't supported.
+//   - ErrCodeReservedNodeOfferingNotFoundFault "ReservedNodeOfferingNotFound"
+//     Specified offering does not exist.
 //
-//   * ErrCodeDependentServiceUnavailableFault "DependentServiceUnavailableFault"
-//   Your request cannot be completed because a dependent internal service is
-//   temporarily unavailable. Wait 30 to 60 seconds and try again.
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
+//
+//   - ErrCodeDependentServiceUnavailableFault "DependentServiceUnavailableFault"
+//     Your request cannot be completed because a dependent internal service is
+//     temporarily unavailable. Wait 30 to 60 seconds and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeReservedNodeOfferings
 func (c *Redshift) DescribeReservedNodeOfferings(input *DescribeReservedNodeOfferingsInput) (*DescribeReservedNodeOfferingsOutput, error) {
@@ -7821,15 +8695,14 @@ func (c *Redshift) DescribeReservedNodeOfferingsWithContext(ctx aws.Context, inp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeReservedNodeOfferings operation.
-//    pageNum := 0
-//    err := client.DescribeReservedNodeOfferingsPages(params,
-//        func(page *redshift.DescribeReservedNodeOfferingsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeReservedNodeOfferings operation.
+//	pageNum := 0
+//	err := client.DescribeReservedNodeOfferingsPages(params,
+//	    func(page *redshift.DescribeReservedNodeOfferingsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Redshift) DescribeReservedNodeOfferingsPages(input *DescribeReservedNodeOfferingsInput, fn func(*DescribeReservedNodeOfferingsOutput, bool) bool) error {
 	return c.DescribeReservedNodeOfferingsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -7881,14 +8754,13 @@ const opDescribeReservedNodes = "DescribeReservedNodes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeReservedNodesRequest method.
+//	req, resp := client.DescribeReservedNodesRequest(params)
 //
-//    // Example sending a request using the DescribeReservedNodesRequest method.
-//    req, resp := client.DescribeReservedNodesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeReservedNodes
 func (c *Redshift) DescribeReservedNodesRequest(input *DescribeReservedNodesInput) (req *request.Request, output *DescribeReservedNodesOutput) {
@@ -7925,12 +8797,13 @@ func (c *Redshift) DescribeReservedNodesRequest(input *DescribeReservedNodesInpu
 // API operation DescribeReservedNodes for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeReservedNodeNotFoundFault "ReservedNodeNotFound"
-//   The specified reserved compute node not found.
 //
-//   * ErrCodeDependentServiceUnavailableFault "DependentServiceUnavailableFault"
-//   Your request cannot be completed because a dependent internal service is
-//   temporarily unavailable. Wait 30 to 60 seconds and try again.
+//   - ErrCodeReservedNodeNotFoundFault "ReservedNodeNotFound"
+//     The specified reserved compute node not found.
+//
+//   - ErrCodeDependentServiceUnavailableFault "DependentServiceUnavailableFault"
+//     Your request cannot be completed because a dependent internal service is
+//     temporarily unavailable. Wait 30 to 60 seconds and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeReservedNodes
 func (c *Redshift) DescribeReservedNodes(input *DescribeReservedNodesInput) (*DescribeReservedNodesOutput, error) {
@@ -7962,15 +8835,14 @@ func (c *Redshift) DescribeReservedNodesWithContext(ctx aws.Context, input *Desc
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeReservedNodes operation.
-//    pageNum := 0
-//    err := client.DescribeReservedNodesPages(params,
-//        func(page *redshift.DescribeReservedNodesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeReservedNodes operation.
+//	pageNum := 0
+//	err := client.DescribeReservedNodesPages(params,
+//	    func(page *redshift.DescribeReservedNodesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Redshift) DescribeReservedNodesPages(input *DescribeReservedNodesInput, fn func(*DescribeReservedNodesOutput, bool) bool) error {
 	return c.DescribeReservedNodesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -8022,14 +8894,13 @@ const opDescribeResize = "DescribeResize"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeResizeRequest method.
+//	req, resp := client.DescribeResizeRequest(params)
 //
-//    // Example sending a request using the DescribeResizeRequest method.
-//    req, resp := client.DescribeResizeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeResize
 func (c *Redshift) DescribeResizeRequest(input *DescribeResizeInput) (req *request.Request, output *DescribeResizeOutput) {
@@ -8066,11 +8937,15 @@ func (c *Redshift) DescribeResizeRequest(input *DescribeResizeInput) (req *reque
 // API operation DescribeResize for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeClusterNotFoundFault "ClusterNotFound"
-//   The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeResizeNotFoundFault "ResizeNotFound"
-//   A resize operation for the specified cluster is not found.
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
+//
+//   - ErrCodeResizeNotFoundFault "ResizeNotFound"
+//     A resize operation for the specified cluster is not found.
+//
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeResize
 func (c *Redshift) DescribeResize(input *DescribeResizeInput) (*DescribeResizeOutput, error) {
@@ -8110,14 +8985,13 @@ const opDescribeScheduledActions = "DescribeScheduledActions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeScheduledActionsRequest method.
+//	req, resp := client.DescribeScheduledActionsRequest(params)
 //
-//    // Example sending a request using the DescribeScheduledActionsRequest method.
-//    req, resp := client.DescribeScheduledActionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeScheduledActions
 func (c *Redshift) DescribeScheduledActionsRequest(input *DescribeScheduledActionsInput) (req *request.Request, output *DescribeScheduledActionsOutput) {
@@ -8154,11 +9028,12 @@ func (c *Redshift) DescribeScheduledActionsRequest(input *DescribeScheduledActio
 // API operation DescribeScheduledActions for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeScheduledActionNotFoundFault "ScheduledActionNotFound"
-//   The scheduled action cannot be found.
 //
-//   * ErrCodeUnauthorizedOperation "UnauthorizedOperation"
-//   Your account is not authorized to perform the requested operation.
+//   - ErrCodeScheduledActionNotFoundFault "ScheduledActionNotFound"
+//     The scheduled action cannot be found.
+//
+//   - ErrCodeUnauthorizedOperation "UnauthorizedOperation"
+//     Your account is not authorized to perform the requested operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeScheduledActions
 func (c *Redshift) DescribeScheduledActions(input *DescribeScheduledActionsInput) (*DescribeScheduledActionsOutput, error) {
@@ -8190,15 +9065,14 @@ func (c *Redshift) DescribeScheduledActionsWithContext(ctx aws.Context, input *D
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeScheduledActions operation.
-//    pageNum := 0
-//    err := client.DescribeScheduledActionsPages(params,
-//        func(page *redshift.DescribeScheduledActionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeScheduledActions operation.
+//	pageNum := 0
+//	err := client.DescribeScheduledActionsPages(params,
+//	    func(page *redshift.DescribeScheduledActionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Redshift) DescribeScheduledActionsPages(input *DescribeScheduledActionsInput, fn func(*DescribeScheduledActionsOutput, bool) bool) error {
 	return c.DescribeScheduledActionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -8250,14 +9124,13 @@ const opDescribeSnapshotCopyGrants = "DescribeSnapshotCopyGrants"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeSnapshotCopyGrantsRequest method.
+//	req, resp := client.DescribeSnapshotCopyGrantsRequest(params)
 //
-//    // Example sending a request using the DescribeSnapshotCopyGrantsRequest method.
-//    req, resp := client.DescribeSnapshotCopyGrantsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeSnapshotCopyGrants
 func (c *Redshift) DescribeSnapshotCopyGrantsRequest(input *DescribeSnapshotCopyGrantsInput) (req *request.Request, output *DescribeSnapshotCopyGrantsOutput) {
@@ -8299,12 +9172,13 @@ func (c *Redshift) DescribeSnapshotCopyGrantsRequest(input *DescribeSnapshotCopy
 // API operation DescribeSnapshotCopyGrants for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeSnapshotCopyGrantNotFoundFault "SnapshotCopyGrantNotFoundFault"
-//   The specified snapshot copy grant can't be found. Make sure that the name
-//   is typed correctly and that the grant exists in the destination region.
 //
-//   * ErrCodeInvalidTagFault "InvalidTagFault"
-//   The tag is invalid.
+//   - ErrCodeSnapshotCopyGrantNotFoundFault "SnapshotCopyGrantNotFoundFault"
+//     The specified snapshot copy grant can't be found. Make sure that the name
+//     is typed correctly and that the grant exists in the destination region.
+//
+//   - ErrCodeInvalidTagFault "InvalidTagFault"
+//     The tag is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeSnapshotCopyGrants
 func (c *Redshift) DescribeSnapshotCopyGrants(input *DescribeSnapshotCopyGrantsInput) (*DescribeSnapshotCopyGrantsOutput, error) {
@@ -8336,15 +9210,14 @@ func (c *Redshift) DescribeSnapshotCopyGrantsWithContext(ctx aws.Context, input 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeSnapshotCopyGrants operation.
-//    pageNum := 0
-//    err := client.DescribeSnapshotCopyGrantsPages(params,
-//        func(page *redshift.DescribeSnapshotCopyGrantsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeSnapshotCopyGrants operation.
+//	pageNum := 0
+//	err := client.DescribeSnapshotCopyGrantsPages(params,
+//	    func(page *redshift.DescribeSnapshotCopyGrantsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Redshift) DescribeSnapshotCopyGrantsPages(input *DescribeSnapshotCopyGrantsInput, fn func(*DescribeSnapshotCopyGrantsOutput, bool) bool) error {
 	return c.DescribeSnapshotCopyGrantsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -8396,14 +9269,13 @@ const opDescribeSnapshotSchedules = "DescribeSnapshotSchedules"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeSnapshotSchedulesRequest method.
+//	req, resp := client.DescribeSnapshotSchedulesRequest(params)
 //
-//    // Example sending a request using the DescribeSnapshotSchedulesRequest method.
-//    req, resp := client.DescribeSnapshotSchedulesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeSnapshotSchedules
 func (c *Redshift) DescribeSnapshotSchedulesRequest(input *DescribeSnapshotSchedulesInput) (req *request.Request, output *DescribeSnapshotSchedulesOutput) {
@@ -8468,15 +9340,14 @@ func (c *Redshift) DescribeSnapshotSchedulesWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeSnapshotSchedules operation.
-//    pageNum := 0
-//    err := client.DescribeSnapshotSchedulesPages(params,
-//        func(page *redshift.DescribeSnapshotSchedulesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeSnapshotSchedules operation.
+//	pageNum := 0
+//	err := client.DescribeSnapshotSchedulesPages(params,
+//	    func(page *redshift.DescribeSnapshotSchedulesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Redshift) DescribeSnapshotSchedulesPages(input *DescribeSnapshotSchedulesInput, fn func(*DescribeSnapshotSchedulesOutput, bool) bool) error {
 	return c.DescribeSnapshotSchedulesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -8528,14 +9399,13 @@ const opDescribeStorage = "DescribeStorage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeStorageRequest method.
+//	req, resp := client.DescribeStorageRequest(params)
 //
-//    // Example sending a request using the DescribeStorageRequest method.
-//    req, resp := client.DescribeStorageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeStorage
 func (c *Redshift) DescribeStorageRequest(input *DescribeStorageInput) (req *request.Request, output *DescribeStorageOutput) {
@@ -8602,14 +9472,13 @@ const opDescribeTableRestoreStatus = "DescribeTableRestoreStatus"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeTableRestoreStatusRequest method.
+//	req, resp := client.DescribeTableRestoreStatusRequest(params)
 //
-//    // Example sending a request using the DescribeTableRestoreStatusRequest method.
-//    req, resp := client.DescribeTableRestoreStatusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeTableRestoreStatus
 func (c *Redshift) DescribeTableRestoreStatusRequest(input *DescribeTableRestoreStatusInput) (req *request.Request, output *DescribeTableRestoreStatusOutput) {
@@ -8650,11 +9519,12 @@ func (c *Redshift) DescribeTableRestoreStatusRequest(input *DescribeTableRestore
 // API operation DescribeTableRestoreStatus for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeTableRestoreNotFoundFault "TableRestoreNotFoundFault"
-//   The specified TableRestoreRequestId value was not found.
 //
-//   * ErrCodeClusterNotFoundFault "ClusterNotFound"
-//   The ClusterIdentifier parameter does not refer to an existing cluster.
+//   - ErrCodeTableRestoreNotFoundFault "TableRestoreNotFoundFault"
+//     The specified TableRestoreRequestId value was not found.
+//
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeTableRestoreStatus
 func (c *Redshift) DescribeTableRestoreStatus(input *DescribeTableRestoreStatusInput) (*DescribeTableRestoreStatusOutput, error) {
@@ -8686,15 +9556,14 @@ func (c *Redshift) DescribeTableRestoreStatusWithContext(ctx aws.Context, input 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeTableRestoreStatus operation.
-//    pageNum := 0
-//    err := client.DescribeTableRestoreStatusPages(params,
-//        func(page *redshift.DescribeTableRestoreStatusOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeTableRestoreStatus operation.
+//	pageNum := 0
+//	err := client.DescribeTableRestoreStatusPages(params,
+//	    func(page *redshift.DescribeTableRestoreStatusOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Redshift) DescribeTableRestoreStatusPages(input *DescribeTableRestoreStatusInput, fn func(*DescribeTableRestoreStatusOutput, bool) bool) error {
 	return c.DescribeTableRestoreStatusPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -8746,14 +9615,13 @@ const opDescribeTags = "DescribeTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeTagsRequest method.
+//	req, resp := client.DescribeTagsRequest(params)
 //
-//    // Example sending a request using the DescribeTagsRequest method.
-//    req, resp := client.DescribeTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeTags
 func (c *Redshift) DescribeTagsRequest(input *DescribeTagsInput) (req *request.Request, output *DescribeTagsOutput) {
@@ -8786,14 +9654,14 @@ func (c *Redshift) DescribeTagsRequest(input *DescribeTagsInput) (req *request.R
 //
 // The following are limitations for DescribeTags:
 //
-//    * You cannot specify an ARN and a resource-type value together in the
-//    same request.
+//   - You cannot specify an ARN and a resource-type value together in the
+//     same request.
 //
-//    * You cannot use the MaxRecords and Marker parameters together with the
-//    ARN parameter.
+//   - You cannot use the MaxRecords and Marker parameters together with the
+//     ARN parameter.
 //
-//    * The MaxRecords parameter can be a range from 10 to 50 results to return
-//    in a request.
+//   - The MaxRecords parameter can be a range from 10 to 50 results to return
+//     in a request.
 //
 // If you specify both tag keys and tag values in the same request, Amazon Redshift
 // returns all resources that match any combination of the specified keys and
@@ -8812,11 +9680,12 @@ func (c *Redshift) DescribeTagsRequest(input *DescribeTagsInput) (req *request.R
 // API operation DescribeTags for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeResourceNotFoundFault "ResourceNotFoundFault"
-//   The resource could not be found.
 //
-//   * ErrCodeInvalidTagFault "InvalidTagFault"
-//   The tag is invalid.
+//   - ErrCodeResourceNotFoundFault "ResourceNotFoundFault"
+//     The resource could not be found.
+//
+//   - ErrCodeInvalidTagFault "InvalidTagFault"
+//     The tag is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeTags
 func (c *Redshift) DescribeTags(input *DescribeTagsInput) (*DescribeTagsOutput, error) {
@@ -8848,15 +9717,14 @@ func (c *Redshift) DescribeTagsWithContext(ctx aws.Context, input *DescribeTagsI
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeTags operation.
-//    pageNum := 0
-//    err := client.DescribeTagsPages(params,
-//        func(page *redshift.DescribeTagsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeTags operation.
+//	pageNum := 0
+//	err := client.DescribeTagsPages(params,
+//	    func(page *redshift.DescribeTagsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Redshift) DescribeTagsPages(input *DescribeTagsInput, fn func(*DescribeTagsOutput, bool) bool) error {
 	return c.DescribeTagsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -8908,14 +9776,13 @@ const opDescribeUsageLimits = "DescribeUsageLimits"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeUsageLimitsRequest method.
+//	req, resp := client.DescribeUsageLimitsRequest(params)
 //
-//    // Example sending a request using the DescribeUsageLimitsRequest method.
-//    req, resp := client.DescribeUsageLimitsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeUsageLimits
 func (c *Redshift) DescribeUsageLimitsRequest(input *DescribeUsageLimitsInput) (req *request.Request, output *DescribeUsageLimitsOutput) {
@@ -8945,18 +9812,18 @@ func (c *Redshift) DescribeUsageLimitsRequest(input *DescribeUsageLimitsInput) (
 // Shows usage limits on a cluster. Results are filtered based on the combination
 // of input usage limit identifier, cluster identifier, and feature type parameters:
 //
-//    * If usage limit identifier, cluster identifier, and feature type are
-//    not provided, then all usage limit objects for the current account in
-//    the current region are returned.
+//   - If usage limit identifier, cluster identifier, and feature type are
+//     not provided, then all usage limit objects for the current account in
+//     the current region are returned.
 //
-//    * If usage limit identifier is provided, then the corresponding usage
-//    limit object is returned.
+//   - If usage limit identifier is provided, then the corresponding usage
+//     limit object is returned.
 //
-//    * If cluster identifier is provided, then all usage limit objects for
-//    the specified cluster are returned.
+//   - If cluster identifier is provided, then all usage limit objects for
+//     the specified cluster are returned.
 //
-//    * If cluster identifier and feature type are provided, then all usage
-//    limit objects for the combination of cluster and feature are returned.
+//   - If cluster identifier and feature type are provided, then all usage
+//     limit objects for the combination of cluster and feature are returned.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -8966,11 +9833,12 @@ func (c *Redshift) DescribeUsageLimitsRequest(input *DescribeUsageLimitsInput) (
 // API operation DescribeUsageLimits for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeClusterNotFoundFault "ClusterNotFound"
-//   The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeUnsupportedOperationFault "UnsupportedOperation"
-//   The requested operation isn't supported.
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
+//
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DescribeUsageLimits
 func (c *Redshift) DescribeUsageLimits(input *DescribeUsageLimitsInput) (*DescribeUsageLimitsOutput, error) {
@@ -9002,15 +9870,14 @@ func (c *Redshift) DescribeUsageLimitsWithContext(ctx aws.Context, input *Descri
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeUsageLimits operation.
-//    pageNum := 0
-//    err := client.DescribeUsageLimitsPages(params,
-//        func(page *redshift.DescribeUsageLimitsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeUsageLimits operation.
+//	pageNum := 0
+//	err := client.DescribeUsageLimitsPages(params,
+//	    func(page *redshift.DescribeUsageLimitsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Redshift) DescribeUsageLimitsPages(input *DescribeUsageLimitsInput, fn func(*DescribeUsageLimitsOutput, bool) bool) error {
 	return c.DescribeUsageLimitsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -9062,14 +9929,13 @@ const opDisableLogging = "DisableLogging"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisableLoggingRequest method.
+//	req, resp := client.DisableLoggingRequest(params)
 //
-//    // Example sending a request using the DisableLoggingRequest method.
-//    req, resp := client.DisableLoggingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DisableLogging
 func (c *Redshift) DisableLoggingRequest(input *DisableLoggingInput) (req *request.Request, output *LoggingStatus) {
@@ -9101,11 +9967,15 @@ func (c *Redshift) DisableLoggingRequest(input *DisableLoggingInput) (req *reque
 // API operation DisableLogging for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeClusterNotFoundFault "ClusterNotFound"
-//   The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeInvalidClusterStateFault "InvalidClusterState"
-//   The specified cluster is not in the available state.
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
+//
+//   - ErrCodeInvalidClusterStateFault "InvalidClusterState"
+//     The specified cluster is not in the available state.
+//
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DisableLogging
 func (c *Redshift) DisableLogging(input *DisableLoggingInput) (*LoggingStatus, error) {
@@ -9145,14 +10015,13 @@ const opDisableSnapshotCopy = "DisableSnapshotCopy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisableSnapshotCopyRequest method.
+//	req, resp := client.DisableSnapshotCopyRequest(params)
 //
-//    // Example sending a request using the DisableSnapshotCopyRequest method.
-//    req, resp := client.DisableSnapshotCopyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DisableSnapshotCopy
 func (c *Redshift) DisableSnapshotCopyRequest(input *DisableSnapshotCopyInput) (req *request.Request, output *DisableSnapshotCopyOutput) {
@@ -9189,17 +10058,21 @@ func (c *Redshift) DisableSnapshotCopyRequest(input *DisableSnapshotCopyInput) (
 // API operation DisableSnapshotCopy for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeClusterNotFoundFault "ClusterNotFound"
-//   The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeSnapshotCopyAlreadyDisabledFault "SnapshotCopyAlreadyDisabledFault"
-//   The cluster already has cross-region snapshot copy disabled.
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeInvalidClusterStateFault "InvalidClusterState"
-//   The specified cluster is not in the available state.
+//   - ErrCodeSnapshotCopyAlreadyDisabledFault "SnapshotCopyAlreadyDisabledFault"
+//     The cluster already has cross-region snapshot copy disabled.
 //
-//   * ErrCodeUnauthorizedOperation "UnauthorizedOperation"
-//   Your account is not authorized to perform the requested operation.
+//   - ErrCodeInvalidClusterStateFault "InvalidClusterState"
+//     The specified cluster is not in the available state.
+//
+//   - ErrCodeUnauthorizedOperation "UnauthorizedOperation"
+//     Your account is not authorized to perform the requested operation.
+//
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DisableSnapshotCopy
 func (c *Redshift) DisableSnapshotCopy(input *DisableSnapshotCopyInput) (*DisableSnapshotCopyOutput, error) {
@@ -9239,14 +10112,13 @@ const opDisassociateDataShareConsumer = "DisassociateDataShareConsumer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateDataShareConsumerRequest method.
+//	req, resp := client.DisassociateDataShareConsumerRequest(params)
 //
-//    // Example sending a request using the DisassociateDataShareConsumerRequest method.
-//    req, resp := client.DisassociateDataShareConsumerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DisassociateDataShareConsumer
 func (c *Redshift) DisassociateDataShareConsumerRequest(input *DisassociateDataShareConsumerInput) (req *request.Request, output *DisassociateDataShareConsumerOutput) {
@@ -9277,12 +10149,13 @@ func (c *Redshift) DisassociateDataShareConsumerRequest(input *DisassociateDataS
 // API operation DisassociateDataShareConsumer for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidDataShareFault "InvalidDataShareFault"
-//   There is an error with the datashare.
 //
-//   * ErrCodeInvalidNamespaceFault "InvalidNamespaceFault"
-//   The namespace isn't valid because the namespace doesn't exist. Provide a
-//   valid namespace.
+//   - ErrCodeInvalidDataShareFault "InvalidDataShareFault"
+//     There is an error with the datashare.
+//
+//   - ErrCodeInvalidNamespaceFault "InvalidNamespaceFault"
+//     The namespace isn't valid because the namespace doesn't exist. Provide a
+//     valid namespace.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/DisassociateDataShareConsumer
 func (c *Redshift) DisassociateDataShareConsumer(input *DisassociateDataShareConsumerInput) (*DisassociateDataShareConsumerOutput, error) {
@@ -9322,14 +10195,13 @@ const opEnableLogging = "EnableLogging"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the EnableLoggingRequest method.
+//	req, resp := client.EnableLoggingRequest(params)
 //
-//    // Example sending a request using the EnableLoggingRequest method.
-//    req, resp := client.EnableLoggingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/EnableLogging
 func (c *Redshift) EnableLoggingRequest(input *EnableLoggingInput) (req *request.Request, output *LoggingStatus) {
@@ -9361,27 +10233,31 @@ func (c *Redshift) EnableLoggingRequest(input *EnableLoggingInput) (req *request
 // API operation EnableLogging for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeClusterNotFoundFault "ClusterNotFound"
-//   The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeBucketNotFoundFault "BucketNotFoundFault"
-//   Could not find the specified S3 bucket.
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeInsufficientS3BucketPolicyFault "InsufficientS3BucketPolicyFault"
-//   The cluster does not have read bucket or put object permissions on the S3
-//   bucket specified when enabling logging.
+//   - ErrCodeBucketNotFoundFault "BucketNotFoundFault"
+//     Could not find the specified S3 bucket.
 //
-//   * ErrCodeInvalidS3KeyPrefixFault "InvalidS3KeyPrefixFault"
-//   The string specified for the logging S3 key prefix does not comply with the
-//   documented constraints.
+//   - ErrCodeInsufficientS3BucketPolicyFault "InsufficientS3BucketPolicyFault"
+//     The cluster does not have read bucket or put object permissions on the S3
+//     bucket specified when enabling logging.
 //
-//   * ErrCodeInvalidS3BucketNameFault "InvalidS3BucketNameFault"
-//   The S3 bucket name is invalid. For more information about naming rules, go
-//   to Bucket Restrictions and Limitations (https://docs.aws.amazon.com/AmazonS3/latest/dev/BucketRestrictions.html)
-//   in the Amazon Simple Storage Service (S3) Developer Guide.
+//   - ErrCodeInvalidS3KeyPrefixFault "InvalidS3KeyPrefixFault"
+//     The string specified for the logging S3 key prefix does not comply with the
+//     documented constraints.
 //
-//   * ErrCodeInvalidClusterStateFault "InvalidClusterState"
-//   The specified cluster is not in the available state.
+//   - ErrCodeInvalidS3BucketNameFault "InvalidS3BucketNameFault"
+//     The S3 bucket name is invalid. For more information about naming rules, go
+//     to Bucket Restrictions and Limitations (https://docs.aws.amazon.com/AmazonS3/latest/dev/BucketRestrictions.html)
+//     in the Amazon Simple Storage Service (S3) Developer Guide.
+//
+//   - ErrCodeInvalidClusterStateFault "InvalidClusterState"
+//     The specified cluster is not in the available state.
+//
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/EnableLogging
 func (c *Redshift) EnableLogging(input *EnableLoggingInput) (*LoggingStatus, error) {
@@ -9421,14 +10297,13 @@ const opEnableSnapshotCopy = "EnableSnapshotCopy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the EnableSnapshotCopyRequest method.
+//	req, resp := client.EnableSnapshotCopyRequest(params)
 //
-//    // Example sending a request using the EnableSnapshotCopyRequest method.
-//    req, resp := client.EnableSnapshotCopyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/EnableSnapshotCopy
 func (c *Redshift) EnableSnapshotCopyRequest(input *EnableSnapshotCopyInput) (req *request.Request, output *EnableSnapshotCopyOutput) {
@@ -9460,42 +10335,43 @@ func (c *Redshift) EnableSnapshotCopyRequest(input *EnableSnapshotCopyInput) (re
 // API operation EnableSnapshotCopy for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeIncompatibleOrderableOptions "IncompatibleOrderableOptions"
-//   The specified options are incompatible.
 //
-//   * ErrCodeInvalidClusterStateFault "InvalidClusterState"
-//   The specified cluster is not in the available state.
+//   - ErrCodeIncompatibleOrderableOptions "IncompatibleOrderableOptions"
+//     The specified options are incompatible.
 //
-//   * ErrCodeClusterNotFoundFault "ClusterNotFound"
-//   The ClusterIdentifier parameter does not refer to an existing cluster.
+//   - ErrCodeInvalidClusterStateFault "InvalidClusterState"
+//     The specified cluster is not in the available state.
 //
-//   * ErrCodeCopyToRegionDisabledFault "CopyToRegionDisabledFault"
-//   Cross-region snapshot copy was temporarily disabled. Try your request again.
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeSnapshotCopyAlreadyEnabledFault "SnapshotCopyAlreadyEnabledFault"
-//   The cluster already has cross-region snapshot copy enabled.
+//   - ErrCodeCopyToRegionDisabledFault "CopyToRegionDisabledFault"
+//     Cross-region snapshot copy was temporarily disabled. Try your request again.
 //
-//   * ErrCodeUnknownSnapshotCopyRegionFault "UnknownSnapshotCopyRegionFault"
-//   The specified region is incorrect or does not exist.
+//   - ErrCodeSnapshotCopyAlreadyEnabledFault "SnapshotCopyAlreadyEnabledFault"
+//     The cluster already has cross-region snapshot copy enabled.
 //
-//   * ErrCodeUnauthorizedOperation "UnauthorizedOperation"
-//   Your account is not authorized to perform the requested operation.
+//   - ErrCodeUnknownSnapshotCopyRegionFault "UnknownSnapshotCopyRegionFault"
+//     The specified region is incorrect or does not exist.
 //
-//   * ErrCodeSnapshotCopyGrantNotFoundFault "SnapshotCopyGrantNotFoundFault"
-//   The specified snapshot copy grant can't be found. Make sure that the name
-//   is typed correctly and that the grant exists in the destination region.
+//   - ErrCodeUnauthorizedOperation "UnauthorizedOperation"
+//     Your account is not authorized to perform the requested operation.
 //
-//   * ErrCodeLimitExceededFault "LimitExceededFault"
-//   The encryption key has exceeded its grant limit in Amazon Web Services KMS.
+//   - ErrCodeSnapshotCopyGrantNotFoundFault "SnapshotCopyGrantNotFoundFault"
+//     The specified snapshot copy grant can't be found. Make sure that the name
+//     is typed correctly and that the grant exists in the destination region.
 //
-//   * ErrCodeDependentServiceRequestThrottlingFault "DependentServiceRequestThrottlingFault"
-//   The request cannot be completed because a dependent service is throttling
-//   requests made by Amazon Redshift on your behalf. Wait and retry the request.
+//   - ErrCodeLimitExceededFault "LimitExceededFault"
+//     The encryption key has exceeded its grant limit in Amazon Web Services KMS.
 //
-//   * ErrCodeInvalidRetentionPeriodFault "InvalidRetentionPeriodFault"
-//   The retention period specified is either in the past or is not a valid value.
+//   - ErrCodeDependentServiceRequestThrottlingFault "DependentServiceRequestThrottlingFault"
+//     The request cannot be completed because a dependent service is throttling
+//     requests made by Amazon Redshift on your behalf. Wait and retry the request.
 //
-//   The value must be either -1 or an integer between 1 and 3,653.
+//   - ErrCodeInvalidRetentionPeriodFault "InvalidRetentionPeriodFault"
+//     The retention period specified is either in the past or is not a valid value.
+//
+//     The value must be either -1 or an integer between 1 and 3,653.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/EnableSnapshotCopy
 func (c *Redshift) EnableSnapshotCopy(input *EnableSnapshotCopyInput) (*EnableSnapshotCopyOutput, error) {
@@ -9519,6 +10395,95 @@ func (c *Redshift) EnableSnapshotCopyWithContext(ctx aws.Context, input *EnableS
 	return out, req.Send()
 }
 
+const opFailoverPrimaryCompute = "FailoverPrimaryCompute"
+
+// FailoverPrimaryComputeRequest generates a "aws/request.Request" representing the
+// client's request for the FailoverPrimaryCompute operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See FailoverPrimaryCompute for more information on using the FailoverPrimaryCompute
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the FailoverPrimaryComputeRequest method.
+//	req, resp := client.FailoverPrimaryComputeRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/FailoverPrimaryCompute
+func (c *Redshift) FailoverPrimaryComputeRequest(input *FailoverPrimaryComputeInput) (req *request.Request, output *FailoverPrimaryComputeOutput) {
+	op := &request.Operation{
+		Name:       opFailoverPrimaryCompute,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &FailoverPrimaryComputeInput{}
+	}
+
+	output = &FailoverPrimaryComputeOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// FailoverPrimaryCompute API operation for Amazon Redshift.
+//
+// Fails over the primary compute unit of the specified Multi-AZ cluster to
+// another Availability Zone.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Redshift's
+// API operation FailoverPrimaryCompute for usage and error information.
+//
+// Returned Error Codes:
+//
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
+//
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
+//
+//   - ErrCodeUnauthorizedOperation "UnauthorizedOperation"
+//     Your account is not authorized to perform the requested operation.
+//
+//   - ErrCodeInvalidClusterStateFault "InvalidClusterState"
+//     The specified cluster is not in the available state.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/FailoverPrimaryCompute
+func (c *Redshift) FailoverPrimaryCompute(input *FailoverPrimaryComputeInput) (*FailoverPrimaryComputeOutput, error) {
+	req, out := c.FailoverPrimaryComputeRequest(input)
+	return out, req.Send()
+}
+
+// FailoverPrimaryComputeWithContext is the same as FailoverPrimaryCompute with the addition of
+// the ability to pass a context and additional request options.
+//
+// See FailoverPrimaryCompute for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Redshift) FailoverPrimaryComputeWithContext(ctx aws.Context, input *FailoverPrimaryComputeInput, opts ...request.Option) (*FailoverPrimaryComputeOutput, error) {
+	req, out := c.FailoverPrimaryComputeRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opGetClusterCredentials = "GetClusterCredentials"
 
 // GetClusterCredentialsRequest generates a "aws/request.Request" representing the
@@ -9535,14 +10500,13 @@ const opGetClusterCredentials = "GetClusterCredentials"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetClusterCredentialsRequest method.
+//	req, resp := client.GetClusterCredentialsRequest(params)
 //
-//    // Example sending a request using the GetClusterCredentialsRequest method.
-//    req, resp := client.GetClusterCredentialsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/GetClusterCredentials
 func (c *Redshift) GetClusterCredentialsRequest(input *GetClusterCredentialsInput) (req *request.Request, output *GetClusterCredentialsOutput) {
@@ -9596,11 +10560,12 @@ func (c *Redshift) GetClusterCredentialsRequest(input *GetClusterCredentialsInpu
 // API operation GetClusterCredentials for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeClusterNotFoundFault "ClusterNotFound"
-//   The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeUnsupportedOperationFault "UnsupportedOperation"
-//   The requested operation isn't supported.
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
+//
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/GetClusterCredentials
 func (c *Redshift) GetClusterCredentials(input *GetClusterCredentialsInput) (*GetClusterCredentialsOutput, error) {
@@ -9624,6 +10589,99 @@ func (c *Redshift) GetClusterCredentialsWithContext(ctx aws.Context, input *GetC
 	return out, req.Send()
 }
 
+const opGetClusterCredentialsWithIAM = "GetClusterCredentialsWithIAM"
+
+// GetClusterCredentialsWithIAMRequest generates a "aws/request.Request" representing the
+// client's request for the GetClusterCredentialsWithIAM operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetClusterCredentialsWithIAM for more information on using the GetClusterCredentialsWithIAM
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetClusterCredentialsWithIAMRequest method.
+//	req, resp := client.GetClusterCredentialsWithIAMRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/GetClusterCredentialsWithIAM
+func (c *Redshift) GetClusterCredentialsWithIAMRequest(input *GetClusterCredentialsWithIAMInput) (req *request.Request, output *GetClusterCredentialsWithIAMOutput) {
+	op := &request.Operation{
+		Name:       opGetClusterCredentialsWithIAM,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &GetClusterCredentialsWithIAMInput{}
+	}
+
+	output = &GetClusterCredentialsWithIAMOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetClusterCredentialsWithIAM API operation for Amazon Redshift.
+//
+// Returns a database user name and temporary password with temporary authorization
+// to log in to an Amazon Redshift database. The database user is mapped 1:1
+// to the source Identity and Access Management (IAM) identity. For more information
+// about IAM identities, see IAM Identities (users, user groups, and roles)
+// (https://docs.aws.amazon.com/IAM/latest/UserGuide/id.html) in the Amazon
+// Web Services Identity and Access Management User Guide.
+//
+// The Identity and Access Management (IAM) identity that runs this operation
+// must have an IAM policy attached that allows access to all necessary actions
+// and resources. For more information about permissions, see Using identity-based
+// policies (IAM policies) (https://docs.aws.amazon.com/redshift/latest/mgmt/redshift-iam-access-control-identity-based.html)
+// in the Amazon Redshift Cluster Management Guide.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Redshift's
+// API operation GetClusterCredentialsWithIAM for usage and error information.
+//
+// Returned Error Codes:
+//
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
+//
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/GetClusterCredentialsWithIAM
+func (c *Redshift) GetClusterCredentialsWithIAM(input *GetClusterCredentialsWithIAMInput) (*GetClusterCredentialsWithIAMOutput, error) {
+	req, out := c.GetClusterCredentialsWithIAMRequest(input)
+	return out, req.Send()
+}
+
+// GetClusterCredentialsWithIAMWithContext is the same as GetClusterCredentialsWithIAM with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetClusterCredentialsWithIAM for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Redshift) GetClusterCredentialsWithIAMWithContext(ctx aws.Context, input *GetClusterCredentialsWithIAMInput, opts ...request.Option) (*GetClusterCredentialsWithIAMOutput, error) {
+	req, out := c.GetClusterCredentialsWithIAMRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opGetReservedNodeExchangeConfigurationOptions = "GetReservedNodeExchangeConfigurationOptions"
 
 // GetReservedNodeExchangeConfigurationOptionsRequest generates a "aws/request.Request" representing the
@@ -9640,14 +10698,13 @@ const opGetReservedNodeExchangeConfigurationOptions = "GetReservedNodeExchangeCo
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetReservedNodeExchangeConfigurationOptionsRequest method.
+//	req, resp := client.GetReservedNodeExchangeConfigurationOptionsRequest(params)
 //
-//    // Example sending a request using the GetReservedNodeExchangeConfigurationOptionsRequest method.
-//    req, resp := client.GetReservedNodeExchangeConfigurationOptionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/GetReservedNodeExchangeConfigurationOptions
 func (c *Redshift) GetReservedNodeExchangeConfigurationOptionsRequest(input *GetReservedNodeExchangeConfigurationOptionsInput) (req *request.Request, output *GetReservedNodeExchangeConfigurationOptionsOutput) {
@@ -9687,30 +10744,31 @@ func (c *Redshift) GetReservedNodeExchangeConfigurationOptionsRequest(input *Get
 // API operation GetReservedNodeExchangeConfigurationOptions for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeReservedNodeNotFoundFault "ReservedNodeNotFound"
-//   The specified reserved compute node not found.
 //
-//   * ErrCodeInvalidReservedNodeStateFault "InvalidReservedNodeState"
-//   Indicates that the Reserved Node being exchanged is not in an active state.
+//   - ErrCodeReservedNodeNotFoundFault "ReservedNodeNotFound"
+//     The specified reserved compute node not found.
 //
-//   * ErrCodeReservedNodeAlreadyMigratedFault "ReservedNodeAlreadyMigrated"
-//   Indicates that the reserved node has already been exchanged.
+//   - ErrCodeInvalidReservedNodeStateFault "InvalidReservedNodeState"
+//     Indicates that the Reserved Node being exchanged is not in an active state.
 //
-//   * ErrCodeReservedNodeOfferingNotFoundFault "ReservedNodeOfferingNotFound"
-//   Specified offering does not exist.
+//   - ErrCodeReservedNodeAlreadyMigratedFault "ReservedNodeAlreadyMigrated"
+//     Indicates that the reserved node has already been exchanged.
 //
-//   * ErrCodeUnsupportedOperationFault "UnsupportedOperation"
-//   The requested operation isn't supported.
+//   - ErrCodeReservedNodeOfferingNotFoundFault "ReservedNodeOfferingNotFound"
+//     Specified offering does not exist.
 //
-//   * ErrCodeDependentServiceUnavailableFault "DependentServiceUnavailableFault"
-//   Your request cannot be completed because a dependent internal service is
-//   temporarily unavailable. Wait 30 to 60 seconds and try again.
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
 //
-//   * ErrCodeClusterNotFoundFault "ClusterNotFound"
-//   The ClusterIdentifier parameter does not refer to an existing cluster.
+//   - ErrCodeDependentServiceUnavailableFault "DependentServiceUnavailableFault"
+//     Your request cannot be completed because a dependent internal service is
+//     temporarily unavailable. Wait 30 to 60 seconds and try again.
 //
-//   * ErrCodeClusterSnapshotNotFoundFault "ClusterSnapshotNotFound"
-//   The snapshot identifier does not refer to an existing cluster snapshot.
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
+//
+//   - ErrCodeClusterSnapshotNotFoundFault "ClusterSnapshotNotFound"
+//     The snapshot identifier does not refer to an existing cluster snapshot.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/GetReservedNodeExchangeConfigurationOptions
 func (c *Redshift) GetReservedNodeExchangeConfigurationOptions(input *GetReservedNodeExchangeConfigurationOptionsInput) (*GetReservedNodeExchangeConfigurationOptionsOutput, error) {
@@ -9742,15 +10800,14 @@ func (c *Redshift) GetReservedNodeExchangeConfigurationOptionsWithContext(ctx aw
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetReservedNodeExchangeConfigurationOptions operation.
-//    pageNum := 0
-//    err := client.GetReservedNodeExchangeConfigurationOptionsPages(params,
-//        func(page *redshift.GetReservedNodeExchangeConfigurationOptionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetReservedNodeExchangeConfigurationOptions operation.
+//	pageNum := 0
+//	err := client.GetReservedNodeExchangeConfigurationOptionsPages(params,
+//	    func(page *redshift.GetReservedNodeExchangeConfigurationOptionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Redshift) GetReservedNodeExchangeConfigurationOptionsPages(input *GetReservedNodeExchangeConfigurationOptionsInput, fn func(*GetReservedNodeExchangeConfigurationOptionsOutput, bool) bool) error {
 	return c.GetReservedNodeExchangeConfigurationOptionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -9802,14 +10859,13 @@ const opGetReservedNodeExchangeOfferings = "GetReservedNodeExchangeOfferings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetReservedNodeExchangeOfferingsRequest method.
+//	req, resp := client.GetReservedNodeExchangeOfferingsRequest(params)
 //
-//    // Example sending a request using the GetReservedNodeExchangeOfferingsRequest method.
-//    req, resp := client.GetReservedNodeExchangeOfferingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/GetReservedNodeExchangeOfferings
 func (c *Redshift) GetReservedNodeExchangeOfferingsRequest(input *GetReservedNodeExchangeOfferingsInput) (req *request.Request, output *GetReservedNodeExchangeOfferingsOutput) {
@@ -9847,24 +10903,25 @@ func (c *Redshift) GetReservedNodeExchangeOfferingsRequest(input *GetReservedNod
 // API operation GetReservedNodeExchangeOfferings for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeReservedNodeNotFoundFault "ReservedNodeNotFound"
-//   The specified reserved compute node not found.
 //
-//   * ErrCodeInvalidReservedNodeStateFault "InvalidReservedNodeState"
-//   Indicates that the Reserved Node being exchanged is not in an active state.
+//   - ErrCodeReservedNodeNotFoundFault "ReservedNodeNotFound"
+//     The specified reserved compute node not found.
 //
-//   * ErrCodeReservedNodeAlreadyMigratedFault "ReservedNodeAlreadyMigrated"
-//   Indicates that the reserved node has already been exchanged.
+//   - ErrCodeInvalidReservedNodeStateFault "InvalidReservedNodeState"
+//     Indicates that the Reserved Node being exchanged is not in an active state.
 //
-//   * ErrCodeReservedNodeOfferingNotFoundFault "ReservedNodeOfferingNotFound"
-//   Specified offering does not exist.
+//   - ErrCodeReservedNodeAlreadyMigratedFault "ReservedNodeAlreadyMigrated"
+//     Indicates that the reserved node has already been exchanged.
 //
-//   * ErrCodeUnsupportedOperationFault "UnsupportedOperation"
-//   The requested operation isn't supported.
+//   - ErrCodeReservedNodeOfferingNotFoundFault "ReservedNodeOfferingNotFound"
+//     Specified offering does not exist.
 //
-//   * ErrCodeDependentServiceUnavailableFault "DependentServiceUnavailableFault"
-//   Your request cannot be completed because a dependent internal service is
-//   temporarily unavailable. Wait 30 to 60 seconds and try again.
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
+//
+//   - ErrCodeDependentServiceUnavailableFault "DependentServiceUnavailableFault"
+//     Your request cannot be completed because a dependent internal service is
+//     temporarily unavailable. Wait 30 to 60 seconds and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/GetReservedNodeExchangeOfferings
 func (c *Redshift) GetReservedNodeExchangeOfferings(input *GetReservedNodeExchangeOfferingsInput) (*GetReservedNodeExchangeOfferingsOutput, error) {
@@ -9896,15 +10953,14 @@ func (c *Redshift) GetReservedNodeExchangeOfferingsWithContext(ctx aws.Context, 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetReservedNodeExchangeOfferings operation.
-//    pageNum := 0
-//    err := client.GetReservedNodeExchangeOfferingsPages(params,
-//        func(page *redshift.GetReservedNodeExchangeOfferingsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetReservedNodeExchangeOfferings operation.
+//	pageNum := 0
+//	err := client.GetReservedNodeExchangeOfferingsPages(params,
+//	    func(page *redshift.GetReservedNodeExchangeOfferingsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Redshift) GetReservedNodeExchangeOfferingsPages(input *GetReservedNodeExchangeOfferingsInput, fn func(*GetReservedNodeExchangeOfferingsOutput, bool) bool) error {
 	return c.GetReservedNodeExchangeOfferingsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -9940,6 +10996,91 @@ func (c *Redshift) GetReservedNodeExchangeOfferingsPagesWithContext(ctx aws.Cont
 	return p.Err()
 }
 
+const opGetResourcePolicy = "GetResourcePolicy"
+
+// GetResourcePolicyRequest generates a "aws/request.Request" representing the
+// client's request for the GetResourcePolicy operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetResourcePolicy for more information on using the GetResourcePolicy
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetResourcePolicyRequest method.
+//	req, resp := client.GetResourcePolicyRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/GetResourcePolicy
+func (c *Redshift) GetResourcePolicyRequest(input *GetResourcePolicyInput) (req *request.Request, output *GetResourcePolicyOutput) {
+	op := &request.Operation{
+		Name:       opGetResourcePolicy,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &GetResourcePolicyInput{}
+	}
+
+	output = &GetResourcePolicyOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetResourcePolicy API operation for Amazon Redshift.
+//
+// Get the resource policy for a specified resource.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Redshift's
+// API operation GetResourcePolicy for usage and error information.
+//
+// Returned Error Codes:
+//
+//   - ErrCodeResourceNotFoundFault "ResourceNotFoundFault"
+//     The resource could not be found.
+//
+//   - ErrCodeInvalidPolicyFault "InvalidPolicyFault"
+//     The resource policy isn't valid.
+//
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/GetResourcePolicy
+func (c *Redshift) GetResourcePolicy(input *GetResourcePolicyInput) (*GetResourcePolicyOutput, error) {
+	req, out := c.GetResourcePolicyRequest(input)
+	return out, req.Send()
+}
+
+// GetResourcePolicyWithContext is the same as GetResourcePolicy with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetResourcePolicy for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Redshift) GetResourcePolicyWithContext(ctx aws.Context, input *GetResourcePolicyInput, opts ...request.Option) (*GetResourcePolicyOutput, error) {
+	req, out := c.GetResourcePolicyRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opModifyAquaConfiguration = "ModifyAquaConfiguration"
 
 // ModifyAquaConfigurationRequest generates a "aws/request.Request" representing the
@@ -9956,14 +11097,13 @@ const opModifyAquaConfiguration = "ModifyAquaConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyAquaConfigurationRequest method.
+//	req, resp := client.ModifyAquaConfigurationRequest(params)
 //
-//    // Example sending a request using the ModifyAquaConfigurationRequest method.
-//    req, resp := client.ModifyAquaConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/ModifyAquaConfiguration
 func (c *Redshift) ModifyAquaConfigurationRequest(input *ModifyAquaConfigurationInput) (req *request.Request, output *ModifyAquaConfigurationOutput) {
@@ -9984,7 +11124,9 @@ func (c *Redshift) ModifyAquaConfigurationRequest(input *ModifyAquaConfiguration
 
 // ModifyAquaConfiguration API operation for Amazon Redshift.
 //
-// Modifies whether a cluster can use AQUA (Advanced Query Accelerator).
+// This operation is retired. Calling this operation does not change AQUA configuration.
+// Amazon Redshift automatically determines whether to use AQUA (Advanced Query
+// Accelerator).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -9994,14 +11136,15 @@ func (c *Redshift) ModifyAquaConfigurationRequest(input *ModifyAquaConfiguration
 // API operation ModifyAquaConfiguration for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeClusterNotFoundFault "ClusterNotFound"
-//   The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeInvalidClusterStateFault "InvalidClusterState"
-//   The specified cluster is not in the available state.
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeUnsupportedOperationFault "UnsupportedOperation"
-//   The requested operation isn't supported.
+//   - ErrCodeInvalidClusterStateFault "InvalidClusterState"
+//     The specified cluster is not in the available state.
+//
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/ModifyAquaConfiguration
 func (c *Redshift) ModifyAquaConfiguration(input *ModifyAquaConfigurationInput) (*ModifyAquaConfigurationOutput, error) {
@@ -10041,14 +11184,13 @@ const opModifyAuthenticationProfile = "ModifyAuthenticationProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyAuthenticationProfileRequest method.
+//	req, resp := client.ModifyAuthenticationProfileRequest(params)
 //
-//    // Example sending a request using the ModifyAuthenticationProfileRequest method.
-//    req, resp := client.ModifyAuthenticationProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/ModifyAuthenticationProfile
 func (c *Redshift) ModifyAuthenticationProfileRequest(input *ModifyAuthenticationProfileInput) (req *request.Request, output *ModifyAuthenticationProfileOutput) {
@@ -10079,18 +11221,19 @@ func (c *Redshift) ModifyAuthenticationProfileRequest(input *ModifyAuthenticatio
 // API operation ModifyAuthenticationProfile for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAuthenticationProfileNotFoundFault "AuthenticationProfileNotFoundFault"
-//   The authentication profile can't be found.
 //
-//   * ErrCodeAuthenticationProfileQuotaExceededFault "AuthenticationProfileQuotaExceededFault"
-//   The size or number of authentication profiles has exceeded the quota. The
-//   maximum length of the JSON string and maximum number of authentication profiles
-//   is determined by a quota for your account.
+//   - ErrCodeAuthenticationProfileNotFoundFault "AuthenticationProfileNotFoundFault"
+//     The authentication profile can't be found.
 //
-//   * ErrCodeInvalidAuthenticationProfileRequestFault "InvalidAuthenticationProfileRequestFault"
-//   The authentication profile request is not valid. The profile name can't be
-//   null or empty. The authentication profile API operation must be available
-//   in the Amazon Web Services Region.
+//   - ErrCodeAuthenticationProfileQuotaExceededFault "AuthenticationProfileQuotaExceededFault"
+//     The size or number of authentication profiles has exceeded the quota. The
+//     maximum length of the JSON string and maximum number of authentication profiles
+//     is determined by a quota for your account.
+//
+//   - ErrCodeInvalidAuthenticationProfileRequestFault "InvalidAuthenticationProfileRequestFault"
+//     The authentication profile request is not valid. The profile name can't be
+//     null or empty. The authentication profile API operation must be available
+//     in the Amazon Web Services Region.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/ModifyAuthenticationProfile
 func (c *Redshift) ModifyAuthenticationProfile(input *ModifyAuthenticationProfileInput) (*ModifyAuthenticationProfileOutput, error) {
@@ -10130,14 +11273,13 @@ const opModifyCluster = "ModifyCluster"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyClusterRequest method.
+//	req, resp := client.ModifyClusterRequest(params)
 //
-//    // Example sending a request using the ModifyClusterRequest method.
-//    req, resp := client.ModifyClusterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/ModifyCluster
 func (c *Redshift) ModifyClusterRequest(input *ModifyClusterInput) (req *request.Request, output *ModifyClusterOutput) {
@@ -10179,70 +11321,81 @@ func (c *Redshift) ModifyClusterRequest(input *ModifyClusterInput) (req *request
 // API operation ModifyCluster for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidClusterStateFault "InvalidClusterState"
-//   The specified cluster is not in the available state.
 //
-//   * ErrCodeInvalidClusterSecurityGroupStateFault "InvalidClusterSecurityGroupState"
-//   The state of the cluster security group is not available.
+//   - ErrCodeInvalidClusterStateFault "InvalidClusterState"
+//     The specified cluster is not in the available state.
 //
-//   * ErrCodeClusterNotFoundFault "ClusterNotFound"
-//   The ClusterIdentifier parameter does not refer to an existing cluster.
+//   - ErrCodeInvalidClusterSecurityGroupStateFault "InvalidClusterSecurityGroupState"
+//     The state of the cluster security group is not available.
 //
-//   * ErrCodeNumberOfNodesQuotaExceededFault "NumberOfNodesQuotaExceeded"
-//   The operation would exceed the number of nodes allotted to the account. For
-//   information about increasing your quota, go to Limits in Amazon Redshift
-//   (https://docs.aws.amazon.com/redshift/latest/mgmt/amazon-redshift-limits.html)
-//   in the Amazon Redshift Cluster Management Guide.
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeNumberOfNodesPerClusterLimitExceededFault "NumberOfNodesPerClusterLimitExceeded"
-//   The operation would exceed the number of nodes allowed for a cluster.
+//   - ErrCodeNumberOfNodesQuotaExceededFault "NumberOfNodesQuotaExceeded"
+//     The operation would exceed the number of nodes allotted to the account. For
+//     information about increasing your quota, go to Limits in Amazon Redshift
+//     (https://docs.aws.amazon.com/redshift/latest/mgmt/amazon-redshift-limits.html)
+//     in the Amazon Redshift Cluster Management Guide.
 //
-//   * ErrCodeClusterSecurityGroupNotFoundFault "ClusterSecurityGroupNotFound"
-//   The cluster security group name does not refer to an existing cluster security
-//   group.
+//   - ErrCodeNumberOfNodesPerClusterLimitExceededFault "NumberOfNodesPerClusterLimitExceeded"
+//     The operation would exceed the number of nodes allowed for a cluster.
 //
-//   * ErrCodeClusterParameterGroupNotFoundFault "ClusterParameterGroupNotFound"
-//   The parameter group name does not refer to an existing parameter group.
+//   - ErrCodeClusterSecurityGroupNotFoundFault "ClusterSecurityGroupNotFound"
+//     The cluster security group name does not refer to an existing cluster security
+//     group.
 //
-//   * ErrCodeInsufficientClusterCapacityFault "InsufficientClusterCapacity"
-//   The number of nodes specified exceeds the allotted capacity of the cluster.
+//   - ErrCodeClusterParameterGroupNotFoundFault "ClusterParameterGroupNotFound"
+//     The parameter group name does not refer to an existing parameter group.
 //
-//   * ErrCodeUnsupportedOptionFault "UnsupportedOptionFault"
-//   A request option was specified that is not supported.
+//   - ErrCodeInsufficientClusterCapacityFault "InsufficientClusterCapacity"
+//     The number of nodes specified exceeds the allotted capacity of the cluster.
 //
-//   * ErrCodeUnauthorizedOperation "UnauthorizedOperation"
-//   Your account is not authorized to perform the requested operation.
+//   - ErrCodeUnsupportedOptionFault "UnsupportedOptionFault"
+//     A request option was specified that is not supported.
 //
-//   * ErrCodeHsmClientCertificateNotFoundFault "HsmClientCertificateNotFoundFault"
-//   There is no Amazon Redshift HSM client certificate with the specified identifier.
+//   - ErrCodeUnauthorizedOperation "UnauthorizedOperation"
+//     Your account is not authorized to perform the requested operation.
 //
-//   * ErrCodeHsmConfigurationNotFoundFault "HsmConfigurationNotFoundFault"
-//   There is no Amazon Redshift HSM configuration with the specified identifier.
+//   - ErrCodeHsmClientCertificateNotFoundFault "HsmClientCertificateNotFoundFault"
+//     There is no Amazon Redshift HSM client certificate with the specified identifier.
 //
-//   * ErrCodeClusterAlreadyExistsFault "ClusterAlreadyExists"
-//   The account already has a cluster with the given identifier.
+//   - ErrCodeHsmConfigurationNotFoundFault "HsmConfigurationNotFoundFault"
+//     There is no Amazon Redshift HSM configuration with the specified identifier.
 //
-//   * ErrCodeLimitExceededFault "LimitExceededFault"
-//   The encryption key has exceeded its grant limit in Amazon Web Services KMS.
+//   - ErrCodeClusterAlreadyExistsFault "ClusterAlreadyExists"
+//     The account already has a cluster with the given identifier.
 //
-//   * ErrCodeDependentServiceRequestThrottlingFault "DependentServiceRequestThrottlingFault"
-//   The request cannot be completed because a dependent service is throttling
-//   requests made by Amazon Redshift on your behalf. Wait and retry the request.
+//   - ErrCodeLimitExceededFault "LimitExceededFault"
+//     The encryption key has exceeded its grant limit in Amazon Web Services KMS.
 //
-//   * ErrCodeInvalidElasticIpFault "InvalidElasticIpFault"
-//   The Elastic IP (EIP) is invalid or cannot be found.
+//   - ErrCodeDependentServiceRequestThrottlingFault "DependentServiceRequestThrottlingFault"
+//     The request cannot be completed because a dependent service is throttling
+//     requests made by Amazon Redshift on your behalf. Wait and retry the request.
 //
-//   * ErrCodeTableLimitExceededFault "TableLimitExceeded"
-//   The number of tables in the cluster exceeds the limit for the requested new
-//   cluster node type.
+//   - ErrCodeInvalidElasticIpFault "InvalidElasticIpFault"
+//     The Elastic IP (EIP) is invalid or cannot be found.
 //
-//   * ErrCodeInvalidClusterTrackFault "InvalidClusterTrack"
-//   The provided cluster track name is not valid.
+//   - ErrCodeTableLimitExceededFault "TableLimitExceeded"
+//     The number of tables in the cluster exceeds the limit for the requested new
+//     cluster node type.
 //
-//   * ErrCodeInvalidRetentionPeriodFault "InvalidRetentionPeriodFault"
-//   The retention period specified is either in the past or is not a valid value.
+//   - ErrCodeInvalidClusterTrackFault "InvalidClusterTrack"
+//     The provided cluster track name is not valid.
 //
-//   The value must be either -1 or an integer between 1 and 3,653.
+//   - ErrCodeInvalidRetentionPeriodFault "InvalidRetentionPeriodFault"
+//     The retention period specified is either in the past or is not a valid value.
+//
+//     The value must be either -1 or an integer between 1 and 3,653.
+//
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
+//
+//   - ErrCodeCustomCnameAssociationFault "CustomCnameAssociationFault"
+//     An error occurred when an attempt was made to change the custom domain association.
+//
+//   - ErrCodeIpv6CidrBlockNotFoundFault "Ipv6CidrBlockNotFoundFault"
+//     There are no subnets in your VPC with associated IPv6 CIDR blocks. To use
+//     dual-stack mode, associate an IPv6 CIDR block with each subnet in your VPC.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/ModifyCluster
 func (c *Redshift) ModifyCluster(input *ModifyClusterInput) (*ModifyClusterOutput, error) {
@@ -10282,14 +11435,13 @@ const opModifyClusterDbRevision = "ModifyClusterDbRevision"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyClusterDbRevisionRequest method.
+//	req, resp := client.ModifyClusterDbRevisionRequest(params)
 //
-//    // Example sending a request using the ModifyClusterDbRevisionRequest method.
-//    req, resp := client.ModifyClusterDbRevisionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/ModifyClusterDbRevision
 func (c *Redshift) ModifyClusterDbRevisionRequest(input *ModifyClusterDbRevisionInput) (req *request.Request, output *ModifyClusterDbRevisionOutput) {
@@ -10321,14 +11473,18 @@ func (c *Redshift) ModifyClusterDbRevisionRequest(input *ModifyClusterDbRevision
 // API operation ModifyClusterDbRevision for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeClusterNotFoundFault "ClusterNotFound"
-//   The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeClusterOnLatestRevisionFault "ClusterOnLatestRevision"
-//   Cluster is already on the latest database revision.
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeInvalidClusterStateFault "InvalidClusterState"
-//   The specified cluster is not in the available state.
+//   - ErrCodeClusterOnLatestRevisionFault "ClusterOnLatestRevision"
+//     Cluster is already on the latest database revision.
+//
+//   - ErrCodeInvalidClusterStateFault "InvalidClusterState"
+//     The specified cluster is not in the available state.
+//
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/ModifyClusterDbRevision
 func (c *Redshift) ModifyClusterDbRevision(input *ModifyClusterDbRevisionInput) (*ModifyClusterDbRevisionOutput, error) {
@@ -10368,14 +11524,13 @@ const opModifyClusterIamRoles = "ModifyClusterIamRoles"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyClusterIamRolesRequest method.
+//	req, resp := client.ModifyClusterIamRolesRequest(params)
 //
-//    // Example sending a request using the ModifyClusterIamRolesRequest method.
-//    req, resp := client.ModifyClusterIamRolesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/ModifyClusterIamRoles
 func (c *Redshift) ModifyClusterIamRolesRequest(input *ModifyClusterIamRolesInput) (req *request.Request, output *ModifyClusterIamRolesOutput) {
@@ -10411,11 +11566,12 @@ func (c *Redshift) ModifyClusterIamRolesRequest(input *ModifyClusterIamRolesInpu
 // API operation ModifyClusterIamRoles for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidClusterStateFault "InvalidClusterState"
-//   The specified cluster is not in the available state.
 //
-//   * ErrCodeClusterNotFoundFault "ClusterNotFound"
-//   The ClusterIdentifier parameter does not refer to an existing cluster.
+//   - ErrCodeInvalidClusterStateFault "InvalidClusterState"
+//     The specified cluster is not in the available state.
+//
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/ModifyClusterIamRoles
 func (c *Redshift) ModifyClusterIamRoles(input *ModifyClusterIamRolesInput) (*ModifyClusterIamRolesOutput, error) {
@@ -10455,14 +11611,13 @@ const opModifyClusterMaintenance = "ModifyClusterMaintenance"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyClusterMaintenanceRequest method.
+//	req, resp := client.ModifyClusterMaintenanceRequest(params)
 //
-//    // Example sending a request using the ModifyClusterMaintenanceRequest method.
-//    req, resp := client.ModifyClusterMaintenanceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/ModifyClusterMaintenance
 func (c *Redshift) ModifyClusterMaintenanceRequest(input *ModifyClusterMaintenanceInput) (req *request.Request, output *ModifyClusterMaintenanceOutput) {
@@ -10493,11 +11648,12 @@ func (c *Redshift) ModifyClusterMaintenanceRequest(input *ModifyClusterMaintenan
 // API operation ModifyClusterMaintenance for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeClusterNotFoundFault "ClusterNotFound"
-//   The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeInvalidClusterStateFault "InvalidClusterState"
-//   The specified cluster is not in the available state.
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
+//
+//   - ErrCodeInvalidClusterStateFault "InvalidClusterState"
+//     The specified cluster is not in the available state.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/ModifyClusterMaintenance
 func (c *Redshift) ModifyClusterMaintenance(input *ModifyClusterMaintenanceInput) (*ModifyClusterMaintenanceOutput, error) {
@@ -10537,14 +11693,13 @@ const opModifyClusterParameterGroup = "ModifyClusterParameterGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyClusterParameterGroupRequest method.
+//	req, resp := client.ModifyClusterParameterGroupRequest(params)
 //
-//    // Example sending a request using the ModifyClusterParameterGroupRequest method.
-//    req, resp := client.ModifyClusterParameterGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/ModifyClusterParameterGroup
 func (c *Redshift) ModifyClusterParameterGroupRequest(input *ModifyClusterParameterGroupInput) (req *request.Request, output *ClusterParameterGroupNameMessage) {
@@ -10580,13 +11735,14 @@ func (c *Redshift) ModifyClusterParameterGroupRequest(input *ModifyClusterParame
 // API operation ModifyClusterParameterGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeClusterParameterGroupNotFoundFault "ClusterParameterGroupNotFound"
-//   The parameter group name does not refer to an existing parameter group.
 //
-//   * ErrCodeInvalidClusterParameterGroupStateFault "InvalidClusterParameterGroupState"
-//   The cluster parameter group action can not be completed because another task
-//   is in progress that involves the parameter group. Wait a few moments and
-//   try the operation again.
+//   - ErrCodeClusterParameterGroupNotFoundFault "ClusterParameterGroupNotFound"
+//     The parameter group name does not refer to an existing parameter group.
+//
+//   - ErrCodeInvalidClusterParameterGroupStateFault "InvalidClusterParameterGroupState"
+//     The cluster parameter group action can not be completed because another task
+//     is in progress that involves the parameter group. Wait a few moments and
+//     try the operation again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/ModifyClusterParameterGroup
 func (c *Redshift) ModifyClusterParameterGroup(input *ModifyClusterParameterGroupInput) (*ClusterParameterGroupNameMessage, error) {
@@ -10626,14 +11782,13 @@ const opModifyClusterSnapshot = "ModifyClusterSnapshot"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyClusterSnapshotRequest method.
+//	req, resp := client.ModifyClusterSnapshotRequest(params)
 //
-//    // Example sending a request using the ModifyClusterSnapshotRequest method.
-//    req, resp := client.ModifyClusterSnapshotRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/ModifyClusterSnapshot
 func (c *Redshift) ModifyClusterSnapshotRequest(input *ModifyClusterSnapshotInput) (req *request.Request, output *ModifyClusterSnapshotOutput) {
@@ -10667,17 +11822,18 @@ func (c *Redshift) ModifyClusterSnapshotRequest(input *ModifyClusterSnapshotInpu
 // API operation ModifyClusterSnapshot for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidClusterSnapshotStateFault "InvalidClusterSnapshotState"
-//   The specified cluster snapshot is not in the available state, or other accounts
-//   are authorized to access the snapshot.
 //
-//   * ErrCodeClusterSnapshotNotFoundFault "ClusterSnapshotNotFound"
-//   The snapshot identifier does not refer to an existing cluster snapshot.
+//   - ErrCodeInvalidClusterSnapshotStateFault "InvalidClusterSnapshotState"
+//     The specified cluster snapshot is not in the available state, or other accounts
+//     are authorized to access the snapshot.
 //
-//   * ErrCodeInvalidRetentionPeriodFault "InvalidRetentionPeriodFault"
-//   The retention period specified is either in the past or is not a valid value.
+//   - ErrCodeClusterSnapshotNotFoundFault "ClusterSnapshotNotFound"
+//     The snapshot identifier does not refer to an existing cluster snapshot.
 //
-//   The value must be either -1 or an integer between 1 and 3,653.
+//   - ErrCodeInvalidRetentionPeriodFault "InvalidRetentionPeriodFault"
+//     The retention period specified is either in the past or is not a valid value.
+//
+//     The value must be either -1 or an integer between 1 and 3,653.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/ModifyClusterSnapshot
 func (c *Redshift) ModifyClusterSnapshot(input *ModifyClusterSnapshotInput) (*ModifyClusterSnapshotOutput, error) {
@@ -10717,14 +11873,13 @@ const opModifyClusterSnapshotSchedule = "ModifyClusterSnapshotSchedule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyClusterSnapshotScheduleRequest method.
+//	req, resp := client.ModifyClusterSnapshotScheduleRequest(params)
 //
-//    // Example sending a request using the ModifyClusterSnapshotScheduleRequest method.
-//    req, resp := client.ModifyClusterSnapshotScheduleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/ModifyClusterSnapshotSchedule
 func (c *Redshift) ModifyClusterSnapshotScheduleRequest(input *ModifyClusterSnapshotScheduleInput) (req *request.Request, output *ModifyClusterSnapshotScheduleOutput) {
@@ -10756,14 +11911,15 @@ func (c *Redshift) ModifyClusterSnapshotScheduleRequest(input *ModifyClusterSnap
 // API operation ModifyClusterSnapshotSchedule for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeClusterNotFoundFault "ClusterNotFound"
-//   The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeSnapshotScheduleNotFoundFault "SnapshotScheduleNotFound"
-//   We could not find the specified snapshot schedule.
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeInvalidClusterSnapshotScheduleStateFault "InvalidClusterSnapshotScheduleState"
-//   The cluster snapshot schedule state is not valid.
+//   - ErrCodeSnapshotScheduleNotFoundFault "SnapshotScheduleNotFound"
+//     We could not find the specified snapshot schedule.
+//
+//   - ErrCodeInvalidClusterSnapshotScheduleStateFault "InvalidClusterSnapshotScheduleState"
+//     The cluster snapshot schedule state is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/ModifyClusterSnapshotSchedule
 func (c *Redshift) ModifyClusterSnapshotSchedule(input *ModifyClusterSnapshotScheduleInput) (*ModifyClusterSnapshotScheduleOutput, error) {
@@ -10803,14 +11959,13 @@ const opModifyClusterSubnetGroup = "ModifyClusterSubnetGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyClusterSubnetGroupRequest method.
+//	req, resp := client.ModifyClusterSubnetGroupRequest(params)
 //
-//    // Example sending a request using the ModifyClusterSubnetGroupRequest method.
-//    req, resp := client.ModifyClusterSubnetGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/ModifyClusterSubnetGroup
 func (c *Redshift) ModifyClusterSubnetGroupRequest(input *ModifyClusterSubnetGroupInput) (req *request.Request, output *ModifyClusterSubnetGroupOutput) {
@@ -10843,29 +11998,30 @@ func (c *Redshift) ModifyClusterSubnetGroupRequest(input *ModifyClusterSubnetGro
 // API operation ModifyClusterSubnetGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeClusterSubnetGroupNotFoundFault "ClusterSubnetGroupNotFoundFault"
-//   The cluster subnet group name does not refer to an existing cluster subnet
-//   group.
 //
-//   * ErrCodeClusterSubnetQuotaExceededFault "ClusterSubnetQuotaExceededFault"
-//   The request would result in user exceeding the allowed number of subnets
-//   in a cluster subnet groups. For information about increasing your quota,
-//   go to Limits in Amazon Redshift (https://docs.aws.amazon.com/redshift/latest/mgmt/amazon-redshift-limits.html)
-//   in the Amazon Redshift Cluster Management Guide.
+//   - ErrCodeClusterSubnetGroupNotFoundFault "ClusterSubnetGroupNotFoundFault"
+//     The cluster subnet group name does not refer to an existing cluster subnet
+//     group.
 //
-//   * ErrCodeSubnetAlreadyInUse "SubnetAlreadyInUse"
-//   A specified subnet is already in use by another cluster.
+//   - ErrCodeClusterSubnetQuotaExceededFault "ClusterSubnetQuotaExceededFault"
+//     The request would result in user exceeding the allowed number of subnets
+//     in a cluster subnet groups. For information about increasing your quota,
+//     go to Limits in Amazon Redshift (https://docs.aws.amazon.com/redshift/latest/mgmt/amazon-redshift-limits.html)
+//     in the Amazon Redshift Cluster Management Guide.
 //
-//   * ErrCodeInvalidSubnet "InvalidSubnet"
-//   The requested subnet is not valid, or not all of the subnets are in the same
-//   VPC.
+//   - ErrCodeSubnetAlreadyInUse "SubnetAlreadyInUse"
+//     A specified subnet is already in use by another cluster.
 //
-//   * ErrCodeUnauthorizedOperation "UnauthorizedOperation"
-//   Your account is not authorized to perform the requested operation.
+//   - ErrCodeInvalidSubnet "InvalidSubnet"
+//     The requested subnet is not valid, or not all of the subnets are in the same
+//     VPC.
 //
-//   * ErrCodeDependentServiceRequestThrottlingFault "DependentServiceRequestThrottlingFault"
-//   The request cannot be completed because a dependent service is throttling
-//   requests made by Amazon Redshift on your behalf. Wait and retry the request.
+//   - ErrCodeUnauthorizedOperation "UnauthorizedOperation"
+//     Your account is not authorized to perform the requested operation.
+//
+//   - ErrCodeDependentServiceRequestThrottlingFault "DependentServiceRequestThrottlingFault"
+//     The request cannot be completed because a dependent service is throttling
+//     requests made by Amazon Redshift on your behalf. Wait and retry the request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/ModifyClusterSubnetGroup
 func (c *Redshift) ModifyClusterSubnetGroup(input *ModifyClusterSubnetGroupInput) (*ModifyClusterSubnetGroupOutput, error) {
@@ -10889,6 +12045,94 @@ func (c *Redshift) ModifyClusterSubnetGroupWithContext(ctx aws.Context, input *M
 	return out, req.Send()
 }
 
+const opModifyCustomDomainAssociation = "ModifyCustomDomainAssociation"
+
+// ModifyCustomDomainAssociationRequest generates a "aws/request.Request" representing the
+// client's request for the ModifyCustomDomainAssociation operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ModifyCustomDomainAssociation for more information on using the ModifyCustomDomainAssociation
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ModifyCustomDomainAssociationRequest method.
+//	req, resp := client.ModifyCustomDomainAssociationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/ModifyCustomDomainAssociation
+func (c *Redshift) ModifyCustomDomainAssociationRequest(input *ModifyCustomDomainAssociationInput) (req *request.Request, output *ModifyCustomDomainAssociationOutput) {
+	op := &request.Operation{
+		Name:       opModifyCustomDomainAssociation,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &ModifyCustomDomainAssociationInput{}
+	}
+
+	output = &ModifyCustomDomainAssociationOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ModifyCustomDomainAssociation API operation for Amazon Redshift.
+//
+// Contains information for changing a custom domain association.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Redshift's
+// API operation ModifyCustomDomainAssociation for usage and error information.
+//
+// Returned Error Codes:
+//
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
+//
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
+//
+//   - ErrCodeCustomCnameAssociationFault "CustomCnameAssociationFault"
+//     An error occurred when an attempt was made to change the custom domain association.
+//
+//   - ErrCodeCustomDomainAssociationNotFoundFault "CustomDomainAssociationNotFoundFault"
+//     An error occurred. The custom domain name couldn't be found.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/ModifyCustomDomainAssociation
+func (c *Redshift) ModifyCustomDomainAssociation(input *ModifyCustomDomainAssociationInput) (*ModifyCustomDomainAssociationOutput, error) {
+	req, out := c.ModifyCustomDomainAssociationRequest(input)
+	return out, req.Send()
+}
+
+// ModifyCustomDomainAssociationWithContext is the same as ModifyCustomDomainAssociation with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ModifyCustomDomainAssociation for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Redshift) ModifyCustomDomainAssociationWithContext(ctx aws.Context, input *ModifyCustomDomainAssociationInput, opts ...request.Option) (*ModifyCustomDomainAssociationOutput, error) {
+	req, out := c.ModifyCustomDomainAssociationRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opModifyEndpointAccess = "ModifyEndpointAccess"
 
 // ModifyEndpointAccessRequest generates a "aws/request.Request" representing the
@@ -10905,14 +12149,13 @@ const opModifyEndpointAccess = "ModifyEndpointAccess"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyEndpointAccessRequest method.
+//	req, resp := client.ModifyEndpointAccessRequest(params)
 //
-//    // Example sending a request using the ModifyEndpointAccessRequest method.
-//    req, resp := client.ModifyEndpointAccessRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/ModifyEndpointAccess
 func (c *Redshift) ModifyEndpointAccessRequest(input *ModifyEndpointAccessInput) (req *request.Request, output *ModifyEndpointAccessOutput) {
@@ -10943,23 +12186,24 @@ func (c *Redshift) ModifyEndpointAccessRequest(input *ModifyEndpointAccessInput)
 // API operation ModifyEndpointAccess for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidClusterSecurityGroupStateFault "InvalidClusterSecurityGroupState"
-//   The state of the cluster security group is not available.
 //
-//   * ErrCodeClusterNotFoundFault "ClusterNotFound"
-//   The ClusterIdentifier parameter does not refer to an existing cluster.
+//   - ErrCodeInvalidClusterSecurityGroupStateFault "InvalidClusterSecurityGroupState"
+//     The state of the cluster security group is not available.
 //
-//   * ErrCodeInvalidEndpointStateFault "InvalidEndpointState"
-//   The status of the endpoint is not valid.
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeEndpointNotFoundFault "EndpointNotFound"
-//   The endpoint name doesn't refer to an existing endpoint.
+//   - ErrCodeInvalidEndpointStateFault "InvalidEndpointState"
+//     The status of the endpoint is not valid.
 //
-//   * ErrCodeInvalidClusterStateFault "InvalidClusterState"
-//   The specified cluster is not in the available state.
+//   - ErrCodeEndpointNotFoundFault "EndpointNotFound"
+//     The endpoint name doesn't refer to an existing endpoint.
 //
-//   * ErrCodeUnauthorizedOperation "UnauthorizedOperation"
-//   Your account is not authorized to perform the requested operation.
+//   - ErrCodeInvalidClusterStateFault "InvalidClusterState"
+//     The specified cluster is not in the available state.
+//
+//   - ErrCodeUnauthorizedOperation "UnauthorizedOperation"
+//     Your account is not authorized to perform the requested operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/ModifyEndpointAccess
 func (c *Redshift) ModifyEndpointAccess(input *ModifyEndpointAccessInput) (*ModifyEndpointAccessOutput, error) {
@@ -10999,14 +12243,13 @@ const opModifyEventSubscription = "ModifyEventSubscription"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyEventSubscriptionRequest method.
+//	req, resp := client.ModifyEventSubscriptionRequest(params)
 //
-//    // Example sending a request using the ModifyEventSubscriptionRequest method.
-//    req, resp := client.ModifyEventSubscriptionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/ModifyEventSubscription
 func (c *Redshift) ModifyEventSubscriptionRequest(input *ModifyEventSubscriptionInput) (req *request.Request, output *ModifyEventSubscriptionOutput) {
@@ -11037,40 +12280,41 @@ func (c *Redshift) ModifyEventSubscriptionRequest(input *ModifyEventSubscription
 // API operation ModifyEventSubscription for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeSubscriptionNotFoundFault "SubscriptionNotFound"
-//   An Amazon Redshift event notification subscription with the specified name
-//   does not exist.
 //
-//   * ErrCodeSNSInvalidTopicFault "SNSInvalidTopic"
-//   Amazon SNS has responded that there is a problem with the specified Amazon
-//   SNS topic.
+//   - ErrCodeSubscriptionNotFoundFault "SubscriptionNotFound"
+//     An Amazon Redshift event notification subscription with the specified name
+//     does not exist.
 //
-//   * ErrCodeSNSNoAuthorizationFault "SNSNoAuthorization"
-//   You do not have permission to publish to the specified Amazon SNS topic.
+//   - ErrCodeSNSInvalidTopicFault "SNSInvalidTopic"
+//     Amazon SNS has responded that there is a problem with the specified Amazon
+//     SNS topic.
 //
-//   * ErrCodeSNSTopicArnNotFoundFault "SNSTopicArnNotFound"
-//   An Amazon SNS topic with the specified Amazon Resource Name (ARN) does not
-//   exist.
+//   - ErrCodeSNSNoAuthorizationFault "SNSNoAuthorization"
+//     You do not have permission to publish to the specified Amazon SNS topic.
 //
-//   * ErrCodeSubscriptionEventIdNotFoundFault "SubscriptionEventIdNotFound"
-//   An Amazon Redshift event with the specified event ID does not exist.
+//   - ErrCodeSNSTopicArnNotFoundFault "SNSTopicArnNotFound"
+//     An Amazon SNS topic with the specified Amazon Resource Name (ARN) does not
+//     exist.
 //
-//   * ErrCodeSubscriptionCategoryNotFoundFault "SubscriptionCategoryNotFound"
-//   The value specified for the event category was not one of the allowed values,
-//   or it specified a category that does not apply to the specified source type.
-//   The allowed values are Configuration, Management, Monitoring, and Security.
+//   - ErrCodeSubscriptionEventIdNotFoundFault "SubscriptionEventIdNotFound"
+//     An Amazon Redshift event with the specified event ID does not exist.
 //
-//   * ErrCodeSubscriptionSeverityNotFoundFault "SubscriptionSeverityNotFound"
-//   The value specified for the event severity was not one of the allowed values,
-//   or it specified a severity that does not apply to the specified source type.
-//   The allowed values are ERROR and INFO.
+//   - ErrCodeSubscriptionCategoryNotFoundFault "SubscriptionCategoryNotFound"
+//     The value specified for the event category was not one of the allowed values,
+//     or it specified a category that does not apply to the specified source type.
+//     The allowed values are Configuration, Management, Monitoring, and Security.
 //
-//   * ErrCodeSourceNotFoundFault "SourceNotFound"
-//   The specified Amazon Redshift event source could not be found.
+//   - ErrCodeSubscriptionSeverityNotFoundFault "SubscriptionSeverityNotFound"
+//     The value specified for the event severity was not one of the allowed values,
+//     or it specified a severity that does not apply to the specified source type.
+//     The allowed values are ERROR and INFO.
 //
-//   * ErrCodeInvalidSubscriptionStateFault "InvalidSubscriptionStateFault"
-//   The subscription request is invalid because it is a duplicate request. This
-//   subscription request is already in progress.
+//   - ErrCodeSourceNotFoundFault "SourceNotFound"
+//     The specified Amazon Redshift event source could not be found.
+//
+//   - ErrCodeInvalidSubscriptionStateFault "InvalidSubscriptionStateFault"
+//     The subscription request is invalid because it is a duplicate request. This
+//     subscription request is already in progress.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/ModifyEventSubscription
 func (c *Redshift) ModifyEventSubscription(input *ModifyEventSubscriptionInput) (*ModifyEventSubscriptionOutput, error) {
@@ -11094,6 +12338,95 @@ func (c *Redshift) ModifyEventSubscriptionWithContext(ctx aws.Context, input *Mo
 	return out, req.Send()
 }
 
+const opModifyRedshiftIdcApplication = "ModifyRedshiftIdcApplication"
+
+// ModifyRedshiftIdcApplicationRequest generates a "aws/request.Request" representing the
+// client's request for the ModifyRedshiftIdcApplication operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ModifyRedshiftIdcApplication for more information on using the ModifyRedshiftIdcApplication
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ModifyRedshiftIdcApplicationRequest method.
+//	req, resp := client.ModifyRedshiftIdcApplicationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/ModifyRedshiftIdcApplication
+func (c *Redshift) ModifyRedshiftIdcApplicationRequest(input *ModifyRedshiftIdcApplicationInput) (req *request.Request, output *ModifyRedshiftIdcApplicationOutput) {
+	op := &request.Operation{
+		Name:       opModifyRedshiftIdcApplication,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &ModifyRedshiftIdcApplicationInput{}
+	}
+
+	output = &ModifyRedshiftIdcApplicationOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ModifyRedshiftIdcApplication API operation for Amazon Redshift.
+//
+// Changes an existing Amazon Redshift IAM Identity Center application.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Redshift's
+// API operation ModifyRedshiftIdcApplication for usage and error information.
+//
+// Returned Error Codes:
+//
+//   - ErrCodeRedshiftIdcApplicationNotExistsFault "RedshiftIdcApplicationNotExists"
+//     The application you attempted to find doesn't exist.
+//
+//   - ErrCodeDependentServiceUnavailableFault "DependentServiceUnavailableFault"
+//     Your request cannot be completed because a dependent internal service is
+//     temporarily unavailable. Wait 30 to 60 seconds and try again.
+//
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
+//
+//   - ErrCodeDependentServiceAccessDeniedFault "DependentServiceAccessDenied"
+//     A dependent service denied access for the integration.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/ModifyRedshiftIdcApplication
+func (c *Redshift) ModifyRedshiftIdcApplication(input *ModifyRedshiftIdcApplicationInput) (*ModifyRedshiftIdcApplicationOutput, error) {
+	req, out := c.ModifyRedshiftIdcApplicationRequest(input)
+	return out, req.Send()
+}
+
+// ModifyRedshiftIdcApplicationWithContext is the same as ModifyRedshiftIdcApplication with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ModifyRedshiftIdcApplication for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Redshift) ModifyRedshiftIdcApplicationWithContext(ctx aws.Context, input *ModifyRedshiftIdcApplicationInput, opts ...request.Option) (*ModifyRedshiftIdcApplicationOutput, error) {
+	req, out := c.ModifyRedshiftIdcApplicationRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opModifyScheduledAction = "ModifyScheduledAction"
 
 // ModifyScheduledActionRequest generates a "aws/request.Request" representing the
@@ -11110,14 +12443,13 @@ const opModifyScheduledAction = "ModifyScheduledAction"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyScheduledActionRequest method.
+//	req, resp := client.ModifyScheduledActionRequest(params)
 //
-//    // Example sending a request using the ModifyScheduledActionRequest method.
-//    req, resp := client.ModifyScheduledActionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/ModifyScheduledAction
 func (c *Redshift) ModifyScheduledActionRequest(input *ModifyScheduledActionInput) (req *request.Request, output *ModifyScheduledActionOutput) {
@@ -11148,20 +12480,27 @@ func (c *Redshift) ModifyScheduledActionRequest(input *ModifyScheduledActionInpu
 // API operation ModifyScheduledAction for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeScheduledActionNotFoundFault "ScheduledActionNotFound"
-//   The scheduled action cannot be found.
 //
-//   * ErrCodeScheduledActionTypeUnsupportedFault "ScheduledActionTypeUnsupported"
-//   The action type specified for a scheduled action is not supported.
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeInvalidScheduleFault "InvalidSchedule"
-//   The schedule you submitted isn't valid.
+//   - ErrCodeScheduledActionNotFoundFault "ScheduledActionNotFound"
+//     The scheduled action cannot be found.
 //
-//   * ErrCodeInvalidScheduledActionFault "InvalidScheduledAction"
-//   The scheduled action is not valid.
+//   - ErrCodeScheduledActionTypeUnsupportedFault "ScheduledActionTypeUnsupported"
+//     The action type specified for a scheduled action is not supported.
 //
-//   * ErrCodeUnauthorizedOperation "UnauthorizedOperation"
-//   Your account is not authorized to perform the requested operation.
+//   - ErrCodeInvalidScheduleFault "InvalidSchedule"
+//     The schedule you submitted isn't valid.
+//
+//   - ErrCodeInvalidScheduledActionFault "InvalidScheduledAction"
+//     The scheduled action is not valid.
+//
+//   - ErrCodeUnauthorizedOperation "UnauthorizedOperation"
+//     Your account is not authorized to perform the requested operation.
+//
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/ModifyScheduledAction
 func (c *Redshift) ModifyScheduledAction(input *ModifyScheduledActionInput) (*ModifyScheduledActionOutput, error) {
@@ -11201,14 +12540,13 @@ const opModifySnapshotCopyRetentionPeriod = "ModifySnapshotCopyRetentionPeriod"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifySnapshotCopyRetentionPeriodRequest method.
+//	req, resp := client.ModifySnapshotCopyRetentionPeriodRequest(params)
 //
-//    // Example sending a request using the ModifySnapshotCopyRetentionPeriodRequest method.
-//    req, resp := client.ModifySnapshotCopyRetentionPeriodRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/ModifySnapshotCopyRetentionPeriod
 func (c *Redshift) ModifySnapshotCopyRetentionPeriodRequest(input *ModifySnapshotCopyRetentionPeriodInput) (req *request.Request, output *ModifySnapshotCopyRetentionPeriodOutput) {
@@ -11246,22 +12584,23 @@ func (c *Redshift) ModifySnapshotCopyRetentionPeriodRequest(input *ModifySnapsho
 // API operation ModifySnapshotCopyRetentionPeriod for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeClusterNotFoundFault "ClusterNotFound"
-//   The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeSnapshotCopyDisabledFault "SnapshotCopyDisabledFault"
-//   Cross-region snapshot copy was temporarily disabled. Try your request again.
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeUnauthorizedOperation "UnauthorizedOperation"
-//   Your account is not authorized to perform the requested operation.
+//   - ErrCodeSnapshotCopyDisabledFault "SnapshotCopyDisabledFault"
+//     Cross-region snapshot copy was temporarily disabled. Try your request again.
 //
-//   * ErrCodeInvalidClusterStateFault "InvalidClusterState"
-//   The specified cluster is not in the available state.
+//   - ErrCodeUnauthorizedOperation "UnauthorizedOperation"
+//     Your account is not authorized to perform the requested operation.
 //
-//   * ErrCodeInvalidRetentionPeriodFault "InvalidRetentionPeriodFault"
-//   The retention period specified is either in the past or is not a valid value.
+//   - ErrCodeInvalidClusterStateFault "InvalidClusterState"
+//     The specified cluster is not in the available state.
 //
-//   The value must be either -1 or an integer between 1 and 3,653.
+//   - ErrCodeInvalidRetentionPeriodFault "InvalidRetentionPeriodFault"
+//     The retention period specified is either in the past or is not a valid value.
+//
+//     The value must be either -1 or an integer between 1 and 3,653.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/ModifySnapshotCopyRetentionPeriod
 func (c *Redshift) ModifySnapshotCopyRetentionPeriod(input *ModifySnapshotCopyRetentionPeriodInput) (*ModifySnapshotCopyRetentionPeriodOutput, error) {
@@ -11301,14 +12640,13 @@ const opModifySnapshotSchedule = "ModifySnapshotSchedule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifySnapshotScheduleRequest method.
+//	req, resp := client.ModifySnapshotScheduleRequest(params)
 //
-//    // Example sending a request using the ModifySnapshotScheduleRequest method.
-//    req, resp := client.ModifySnapshotScheduleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/ModifySnapshotSchedule
 func (c *Redshift) ModifySnapshotScheduleRequest(input *ModifySnapshotScheduleInput) (req *request.Request, output *ModifySnapshotScheduleOutput) {
@@ -11340,14 +12678,15 @@ func (c *Redshift) ModifySnapshotScheduleRequest(input *ModifySnapshotScheduleIn
 // API operation ModifySnapshotSchedule for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidScheduleFault "InvalidSchedule"
-//   The schedule you submitted isn't valid.
 //
-//   * ErrCodeSnapshotScheduleNotFoundFault "SnapshotScheduleNotFound"
-//   We could not find the specified snapshot schedule.
+//   - ErrCodeInvalidScheduleFault "InvalidSchedule"
+//     The schedule you submitted isn't valid.
 //
-//   * ErrCodeSnapshotScheduleUpdateInProgressFault "SnapshotScheduleUpdateInProgress"
-//   The specified snapshot schedule is already being updated.
+//   - ErrCodeSnapshotScheduleNotFoundFault "SnapshotScheduleNotFound"
+//     We could not find the specified snapshot schedule.
+//
+//   - ErrCodeSnapshotScheduleUpdateInProgressFault "SnapshotScheduleUpdateInProgress"
+//     The specified snapshot schedule is already being updated.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/ModifySnapshotSchedule
 func (c *Redshift) ModifySnapshotSchedule(input *ModifySnapshotScheduleInput) (*ModifySnapshotScheduleOutput, error) {
@@ -11387,14 +12726,13 @@ const opModifyUsageLimit = "ModifyUsageLimit"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyUsageLimitRequest method.
+//	req, resp := client.ModifyUsageLimitRequest(params)
 //
-//    // Example sending a request using the ModifyUsageLimitRequest method.
-//    req, resp := client.ModifyUsageLimitRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/ModifyUsageLimit
 func (c *Redshift) ModifyUsageLimitRequest(input *ModifyUsageLimitInput) (req *request.Request, output *ModifyUsageLimitOutput) {
@@ -11426,14 +12764,15 @@ func (c *Redshift) ModifyUsageLimitRequest(input *ModifyUsageLimitInput) (req *r
 // API operation ModifyUsageLimit for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidUsageLimitFault "InvalidUsageLimit"
-//   The usage limit is not valid.
 //
-//   * ErrCodeUsageLimitNotFoundFault "UsageLimitNotFound"
-//   The usage limit identifier can't be found.
+//   - ErrCodeInvalidUsageLimitFault "InvalidUsageLimit"
+//     The usage limit is not valid.
 //
-//   * ErrCodeUnsupportedOperationFault "UnsupportedOperation"
-//   The requested operation isn't supported.
+//   - ErrCodeUsageLimitNotFoundFault "UsageLimitNotFound"
+//     The usage limit identifier can't be found.
+//
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/ModifyUsageLimit
 func (c *Redshift) ModifyUsageLimit(input *ModifyUsageLimitInput) (*ModifyUsageLimitOutput, error) {
@@ -11473,14 +12812,13 @@ const opPauseCluster = "PauseCluster"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PauseClusterRequest method.
+//	req, resp := client.PauseClusterRequest(params)
 //
-//    // Example sending a request using the PauseClusterRequest method.
-//    req, resp := client.PauseClusterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/PauseCluster
 func (c *Redshift) PauseClusterRequest(input *PauseClusterInput) (req *request.Request, output *PauseClusterOutput) {
@@ -11511,11 +12849,15 @@ func (c *Redshift) PauseClusterRequest(input *PauseClusterInput) (req *request.R
 // API operation PauseCluster for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeClusterNotFoundFault "ClusterNotFound"
-//   The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeInvalidClusterStateFault "InvalidClusterState"
-//   The specified cluster is not in the available state.
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
+//
+//   - ErrCodeInvalidClusterStateFault "InvalidClusterState"
+//     The specified cluster is not in the available state.
+//
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/PauseCluster
 func (c *Redshift) PauseCluster(input *PauseClusterInput) (*PauseClusterOutput, error) {
@@ -11555,14 +12897,13 @@ const opPurchaseReservedNodeOffering = "PurchaseReservedNodeOffering"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PurchaseReservedNodeOfferingRequest method.
+//	req, resp := client.PurchaseReservedNodeOfferingRequest(params)
 //
-//    // Example sending a request using the PurchaseReservedNodeOfferingRequest method.
-//    req, resp := client.PurchaseReservedNodeOfferingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/PurchaseReservedNodeOffering
 func (c *Redshift) PurchaseReservedNodeOfferingRequest(input *PurchaseReservedNodeOfferingInput) (req *request.Request, output *PurchaseReservedNodeOfferingOutput) {
@@ -11601,19 +12942,20 @@ func (c *Redshift) PurchaseReservedNodeOfferingRequest(input *PurchaseReservedNo
 // API operation PurchaseReservedNodeOffering for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeReservedNodeOfferingNotFoundFault "ReservedNodeOfferingNotFound"
-//   Specified offering does not exist.
 //
-//   * ErrCodeReservedNodeAlreadyExistsFault "ReservedNodeAlreadyExists"
-//   User already has a reservation with the given identifier.
+//   - ErrCodeReservedNodeOfferingNotFoundFault "ReservedNodeOfferingNotFound"
+//     Specified offering does not exist.
 //
-//   * ErrCodeReservedNodeQuotaExceededFault "ReservedNodeQuotaExceeded"
-//   Request would exceed the user's compute node quota. For information about
-//   increasing your quota, go to Limits in Amazon Redshift (https://docs.aws.amazon.com/redshift/latest/mgmt/amazon-redshift-limits.html)
-//   in the Amazon Redshift Cluster Management Guide.
+//   - ErrCodeReservedNodeAlreadyExistsFault "ReservedNodeAlreadyExists"
+//     User already has a reservation with the given identifier.
 //
-//   * ErrCodeUnsupportedOperationFault "UnsupportedOperation"
-//   The requested operation isn't supported.
+//   - ErrCodeReservedNodeQuotaExceededFault "ReservedNodeQuotaExceeded"
+//     Request would exceed the user's compute node quota. For information about
+//     increasing your quota, go to Limits in Amazon Redshift (https://docs.aws.amazon.com/redshift/latest/mgmt/amazon-redshift-limits.html)
+//     in the Amazon Redshift Cluster Management Guide.
+//
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/PurchaseReservedNodeOffering
 func (c *Redshift) PurchaseReservedNodeOffering(input *PurchaseReservedNodeOfferingInput) (*PurchaseReservedNodeOfferingOutput, error) {
@@ -11637,6 +12979,94 @@ func (c *Redshift) PurchaseReservedNodeOfferingWithContext(ctx aws.Context, inpu
 	return out, req.Send()
 }
 
+const opPutResourcePolicy = "PutResourcePolicy"
+
+// PutResourcePolicyRequest generates a "aws/request.Request" representing the
+// client's request for the PutResourcePolicy operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See PutResourcePolicy for more information on using the PutResourcePolicy
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the PutResourcePolicyRequest method.
+//	req, resp := client.PutResourcePolicyRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/PutResourcePolicy
+func (c *Redshift) PutResourcePolicyRequest(input *PutResourcePolicyInput) (req *request.Request, output *PutResourcePolicyOutput) {
+	op := &request.Operation{
+		Name:       opPutResourcePolicy,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &PutResourcePolicyInput{}
+	}
+
+	output = &PutResourcePolicyOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// PutResourcePolicy API operation for Amazon Redshift.
+//
+// Updates the resource policy for a specified resource.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Redshift's
+// API operation PutResourcePolicy for usage and error information.
+//
+// Returned Error Codes:
+//
+//   - ErrCodeResourceNotFoundFault "ResourceNotFoundFault"
+//     The resource could not be found.
+//
+//   - ErrCodeInvalidPolicyFault "InvalidPolicyFault"
+//     The resource policy isn't valid.
+//
+//   - ErrCodeConflictPolicyUpdateFault "ConflictPolicyUpdateFault"
+//     There is a conflict while updating the resource policy.
+//
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/PutResourcePolicy
+func (c *Redshift) PutResourcePolicy(input *PutResourcePolicyInput) (*PutResourcePolicyOutput, error) {
+	req, out := c.PutResourcePolicyRequest(input)
+	return out, req.Send()
+}
+
+// PutResourcePolicyWithContext is the same as PutResourcePolicy with the addition of
+// the ability to pass a context and additional request options.
+//
+// See PutResourcePolicy for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Redshift) PutResourcePolicyWithContext(ctx aws.Context, input *PutResourcePolicyInput, opts ...request.Option) (*PutResourcePolicyOutput, error) {
+	req, out := c.PutResourcePolicyRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opRebootCluster = "RebootCluster"
 
 // RebootClusterRequest generates a "aws/request.Request" representing the
@@ -11653,14 +13083,13 @@ const opRebootCluster = "RebootCluster"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RebootClusterRequest method.
+//	req, resp := client.RebootClusterRequest(params)
 //
-//    // Example sending a request using the RebootClusterRequest method.
-//    req, resp := client.RebootClusterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/RebootCluster
 func (c *Redshift) RebootClusterRequest(input *RebootClusterInput) (req *request.Request, output *RebootClusterOutput) {
@@ -11697,11 +13126,12 @@ func (c *Redshift) RebootClusterRequest(input *RebootClusterInput) (req *request
 // API operation RebootCluster for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidClusterStateFault "InvalidClusterState"
-//   The specified cluster is not in the available state.
 //
-//   * ErrCodeClusterNotFoundFault "ClusterNotFound"
-//   The ClusterIdentifier parameter does not refer to an existing cluster.
+//   - ErrCodeInvalidClusterStateFault "InvalidClusterState"
+//     The specified cluster is not in the available state.
+//
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/RebootCluster
 func (c *Redshift) RebootCluster(input *RebootClusterInput) (*RebootClusterOutput, error) {
@@ -11741,14 +13171,13 @@ const opRejectDataShare = "RejectDataShare"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RejectDataShareRequest method.
+//	req, resp := client.RejectDataShareRequest(params)
 //
-//    // Example sending a request using the RejectDataShareRequest method.
-//    req, resp := client.RejectDataShareRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/RejectDataShare
 func (c *Redshift) RejectDataShareRequest(input *RejectDataShareInput) (req *request.Request, output *RejectDataShareOutput) {
@@ -11779,8 +13208,8 @@ func (c *Redshift) RejectDataShareRequest(input *RejectDataShareInput) (req *req
 // API operation RejectDataShare for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidDataShareFault "InvalidDataShareFault"
-//   There is an error with the datashare.
+//   - ErrCodeInvalidDataShareFault "InvalidDataShareFault"
+//     There is an error with the datashare.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/RejectDataShare
 func (c *Redshift) RejectDataShare(input *RejectDataShareInput) (*RejectDataShareOutput, error) {
@@ -11820,14 +13249,13 @@ const opResetClusterParameterGroup = "ResetClusterParameterGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ResetClusterParameterGroupRequest method.
+//	req, resp := client.ResetClusterParameterGroupRequest(params)
 //
-//    // Example sending a request using the ResetClusterParameterGroupRequest method.
-//    req, resp := client.ResetClusterParameterGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/ResetClusterParameterGroup
 func (c *Redshift) ResetClusterParameterGroupRequest(input *ResetClusterParameterGroupInput) (req *request.Request, output *ClusterParameterGroupNameMessage) {
@@ -11861,13 +13289,14 @@ func (c *Redshift) ResetClusterParameterGroupRequest(input *ResetClusterParamete
 // API operation ResetClusterParameterGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidClusterParameterGroupStateFault "InvalidClusterParameterGroupState"
-//   The cluster parameter group action can not be completed because another task
-//   is in progress that involves the parameter group. Wait a few moments and
-//   try the operation again.
 //
-//   * ErrCodeClusterParameterGroupNotFoundFault "ClusterParameterGroupNotFound"
-//   The parameter group name does not refer to an existing parameter group.
+//   - ErrCodeInvalidClusterParameterGroupStateFault "InvalidClusterParameterGroupState"
+//     The cluster parameter group action can not be completed because another task
+//     is in progress that involves the parameter group. Wait a few moments and
+//     try the operation again.
+//
+//   - ErrCodeClusterParameterGroupNotFoundFault "ClusterParameterGroupNotFound"
+//     The parameter group name does not refer to an existing parameter group.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/ResetClusterParameterGroup
 func (c *Redshift) ResetClusterParameterGroup(input *ResetClusterParameterGroupInput) (*ClusterParameterGroupNameMessage, error) {
@@ -11907,14 +13336,13 @@ const opResizeCluster = "ResizeCluster"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ResizeClusterRequest method.
+//	req, resp := client.ResizeClusterRequest(params)
 //
-//    // Example sending a request using the ResizeClusterRequest method.
-//    req, resp := client.ResizeClusterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/ResizeCluster
 func (c *Redshift) ResizeClusterRequest(input *ResizeClusterInput) (req *request.Request, output *ResizeClusterOutput) {
@@ -11942,11 +13370,11 @@ func (c *Redshift) ResizeClusterRequest(input *ResizeClusterInput) (req *request
 //
 // Elastic resize operations have the following restrictions:
 //
-//    * You can only resize clusters of the following types: dc1.large (if your
-//    cluster is in a VPC) dc1.8xlarge (if your cluster is in a VPC) dc2.large
-//    dc2.8xlarge ds2.xlarge ds2.8xlarge ra3.xlplus ra3.4xlarge ra3.16xlarge
+//   - You can only resize clusters of the following types: dc1.large (if your
+//     cluster is in a VPC) dc1.8xlarge (if your cluster is in a VPC) dc2.large
+//     dc2.8xlarge ds2.xlarge ds2.8xlarge ra3.xlplus ra3.4xlarge ra3.16xlarge
 //
-//    * The type of nodes that you add must match the node type for the cluster.
+//   - The type of nodes that you add must match the node type for the cluster.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -11956,54 +13384,55 @@ func (c *Redshift) ResizeClusterRequest(input *ResizeClusterInput) (req *request
 // API operation ResizeCluster for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidClusterStateFault "InvalidClusterState"
-//   The specified cluster is not in the available state.
 //
-//   * ErrCodeClusterNotFoundFault "ClusterNotFound"
-//   The ClusterIdentifier parameter does not refer to an existing cluster.
+//   - ErrCodeInvalidClusterStateFault "InvalidClusterState"
+//     The specified cluster is not in the available state.
 //
-//   * ErrCodeNumberOfNodesQuotaExceededFault "NumberOfNodesQuotaExceeded"
-//   The operation would exceed the number of nodes allotted to the account. For
-//   information about increasing your quota, go to Limits in Amazon Redshift
-//   (https://docs.aws.amazon.com/redshift/latest/mgmt/amazon-redshift-limits.html)
-//   in the Amazon Redshift Cluster Management Guide.
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeNumberOfNodesPerClusterLimitExceededFault "NumberOfNodesPerClusterLimitExceeded"
-//   The operation would exceed the number of nodes allowed for a cluster.
+//   - ErrCodeNumberOfNodesQuotaExceededFault "NumberOfNodesQuotaExceeded"
+//     The operation would exceed the number of nodes allotted to the account. For
+//     information about increasing your quota, go to Limits in Amazon Redshift
+//     (https://docs.aws.amazon.com/redshift/latest/mgmt/amazon-redshift-limits.html)
+//     in the Amazon Redshift Cluster Management Guide.
 //
-//   * ErrCodeInsufficientClusterCapacityFault "InsufficientClusterCapacity"
-//   The number of nodes specified exceeds the allotted capacity of the cluster.
+//   - ErrCodeNumberOfNodesPerClusterLimitExceededFault "NumberOfNodesPerClusterLimitExceeded"
+//     The operation would exceed the number of nodes allowed for a cluster.
 //
-//   * ErrCodeUnsupportedOptionFault "UnsupportedOptionFault"
-//   A request option was specified that is not supported.
+//   - ErrCodeInsufficientClusterCapacityFault "InsufficientClusterCapacity"
+//     The number of nodes specified exceeds the allotted capacity of the cluster.
 //
-//   * ErrCodeUnsupportedOperationFault "UnsupportedOperation"
-//   The requested operation isn't supported.
+//   - ErrCodeUnsupportedOptionFault "UnsupportedOptionFault"
+//     A request option was specified that is not supported.
 //
-//   * ErrCodeUnauthorizedOperation "UnauthorizedOperation"
-//   Your account is not authorized to perform the requested operation.
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
 //
-//   * ErrCodeLimitExceededFault "LimitExceededFault"
-//   The encryption key has exceeded its grant limit in Amazon Web Services KMS.
+//   - ErrCodeUnauthorizedOperation "UnauthorizedOperation"
+//     Your account is not authorized to perform the requested operation.
 //
-//   * ErrCodeReservedNodeNotFoundFault "ReservedNodeNotFound"
-//   The specified reserved compute node not found.
+//   - ErrCodeLimitExceededFault "LimitExceededFault"
+//     The encryption key has exceeded its grant limit in Amazon Web Services KMS.
 //
-//   * ErrCodeInvalidReservedNodeStateFault "InvalidReservedNodeState"
-//   Indicates that the Reserved Node being exchanged is not in an active state.
+//   - ErrCodeReservedNodeNotFoundFault "ReservedNodeNotFound"
+//     The specified reserved compute node not found.
 //
-//   * ErrCodeReservedNodeAlreadyMigratedFault "ReservedNodeAlreadyMigrated"
-//   Indicates that the reserved node has already been exchanged.
+//   - ErrCodeInvalidReservedNodeStateFault "InvalidReservedNodeState"
+//     Indicates that the Reserved Node being exchanged is not in an active state.
 //
-//   * ErrCodeReservedNodeOfferingNotFoundFault "ReservedNodeOfferingNotFound"
-//   Specified offering does not exist.
+//   - ErrCodeReservedNodeAlreadyMigratedFault "ReservedNodeAlreadyMigrated"
+//     Indicates that the reserved node has already been exchanged.
 //
-//   * ErrCodeDependentServiceUnavailableFault "DependentServiceUnavailableFault"
-//   Your request cannot be completed because a dependent internal service is
-//   temporarily unavailable. Wait 30 to 60 seconds and try again.
+//   - ErrCodeReservedNodeOfferingNotFoundFault "ReservedNodeOfferingNotFound"
+//     Specified offering does not exist.
 //
-//   * ErrCodeReservedNodeAlreadyExistsFault "ReservedNodeAlreadyExists"
-//   User already has a reservation with the given identifier.
+//   - ErrCodeDependentServiceUnavailableFault "DependentServiceUnavailableFault"
+//     Your request cannot be completed because a dependent internal service is
+//     temporarily unavailable. Wait 30 to 60 seconds and try again.
+//
+//   - ErrCodeReservedNodeAlreadyExistsFault "ReservedNodeAlreadyExists"
+//     User already has a reservation with the given identifier.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/ResizeCluster
 func (c *Redshift) ResizeCluster(input *ResizeClusterInput) (*ResizeClusterOutput, error) {
@@ -12043,14 +13472,13 @@ const opRestoreFromClusterSnapshot = "RestoreFromClusterSnapshot"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RestoreFromClusterSnapshotRequest method.
+//	req, resp := client.RestoreFromClusterSnapshotRequest(params)
 //
-//    // Example sending a request using the RestoreFromClusterSnapshotRequest method.
-//    req, resp := client.RestoreFromClusterSnapshotRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/RestoreFromClusterSnapshot
 func (c *Redshift) RestoreFromClusterSnapshotRequest(input *RestoreFromClusterSnapshotInput) (req *request.Request, output *RestoreFromClusterSnapshotOutput) {
@@ -12095,114 +13523,119 @@ func (c *Redshift) RestoreFromClusterSnapshotRequest(input *RestoreFromClusterSn
 // API operation RestoreFromClusterSnapshot for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAccessToSnapshotDeniedFault "AccessToSnapshotDenied"
-//   The owner of the specified snapshot has not authorized your account to access
-//   the snapshot.
 //
-//   * ErrCodeClusterAlreadyExistsFault "ClusterAlreadyExists"
-//   The account already has a cluster with the given identifier.
+//   - ErrCodeAccessToSnapshotDeniedFault "AccessToSnapshotDenied"
+//     The owner of the specified snapshot has not authorized your account to access
+//     the snapshot.
 //
-//   * ErrCodeClusterSnapshotNotFoundFault "ClusterSnapshotNotFound"
-//   The snapshot identifier does not refer to an existing cluster snapshot.
+//   - ErrCodeClusterAlreadyExistsFault "ClusterAlreadyExists"
+//     The account already has a cluster with the given identifier.
 //
-//   * ErrCodeClusterQuotaExceededFault "ClusterQuotaExceeded"
-//   The request would exceed the allowed number of cluster instances for this
-//   account. For information about increasing your quota, go to Limits in Amazon
-//   Redshift (https://docs.aws.amazon.com/redshift/latest/mgmt/amazon-redshift-limits.html)
-//   in the Amazon Redshift Cluster Management Guide.
+//   - ErrCodeClusterSnapshotNotFoundFault "ClusterSnapshotNotFound"
+//     The snapshot identifier does not refer to an existing cluster snapshot.
 //
-//   * ErrCodeInsufficientClusterCapacityFault "InsufficientClusterCapacity"
-//   The number of nodes specified exceeds the allotted capacity of the cluster.
+//   - ErrCodeClusterQuotaExceededFault "ClusterQuotaExceeded"
+//     The request would exceed the allowed number of cluster instances for this
+//     account. For information about increasing your quota, go to Limits in Amazon
+//     Redshift (https://docs.aws.amazon.com/redshift/latest/mgmt/amazon-redshift-limits.html)
+//     in the Amazon Redshift Cluster Management Guide.
 //
-//   * ErrCodeInvalidClusterSnapshotStateFault "InvalidClusterSnapshotState"
-//   The specified cluster snapshot is not in the available state, or other accounts
-//   are authorized to access the snapshot.
+//   - ErrCodeInsufficientClusterCapacityFault "InsufficientClusterCapacity"
+//     The number of nodes specified exceeds the allotted capacity of the cluster.
 //
-//   * ErrCodeInvalidRestoreFault "InvalidRestore"
-//   The restore is invalid.
+//   - ErrCodeInvalidClusterSnapshotStateFault "InvalidClusterSnapshotState"
+//     The specified cluster snapshot is not in the available state, or other accounts
+//     are authorized to access the snapshot.
 //
-//   * ErrCodeNumberOfNodesQuotaExceededFault "NumberOfNodesQuotaExceeded"
-//   The operation would exceed the number of nodes allotted to the account. For
-//   information about increasing your quota, go to Limits in Amazon Redshift
-//   (https://docs.aws.amazon.com/redshift/latest/mgmt/amazon-redshift-limits.html)
-//   in the Amazon Redshift Cluster Management Guide.
+//   - ErrCodeInvalidRestoreFault "InvalidRestore"
+//     The restore is invalid.
 //
-//   * ErrCodeNumberOfNodesPerClusterLimitExceededFault "NumberOfNodesPerClusterLimitExceeded"
-//   The operation would exceed the number of nodes allowed for a cluster.
+//   - ErrCodeNumberOfNodesQuotaExceededFault "NumberOfNodesQuotaExceeded"
+//     The operation would exceed the number of nodes allotted to the account. For
+//     information about increasing your quota, go to Limits in Amazon Redshift
+//     (https://docs.aws.amazon.com/redshift/latest/mgmt/amazon-redshift-limits.html)
+//     in the Amazon Redshift Cluster Management Guide.
 //
-//   * ErrCodeInvalidVPCNetworkStateFault "InvalidVPCNetworkStateFault"
-//   The cluster subnet group does not cover all Availability Zones.
+//   - ErrCodeNumberOfNodesPerClusterLimitExceededFault "NumberOfNodesPerClusterLimitExceeded"
+//     The operation would exceed the number of nodes allowed for a cluster.
 //
-//   * ErrCodeInvalidClusterSubnetGroupStateFault "InvalidClusterSubnetGroupStateFault"
-//   The cluster subnet group cannot be deleted because it is in use.
+//   - ErrCodeInvalidVPCNetworkStateFault "InvalidVPCNetworkStateFault"
+//     The cluster subnet group does not cover all Availability Zones.
 //
-//   * ErrCodeInvalidSubnet "InvalidSubnet"
-//   The requested subnet is not valid, or not all of the subnets are in the same
-//   VPC.
+//   - ErrCodeInvalidClusterSubnetGroupStateFault "InvalidClusterSubnetGroupStateFault"
+//     The cluster subnet group cannot be deleted because it is in use.
 //
-//   * ErrCodeClusterSubnetGroupNotFoundFault "ClusterSubnetGroupNotFoundFault"
-//   The cluster subnet group name does not refer to an existing cluster subnet
-//   group.
+//   - ErrCodeInvalidSubnet "InvalidSubnet"
+//     The requested subnet is not valid, or not all of the subnets are in the same
+//     VPC.
 //
-//   * ErrCodeUnauthorizedOperation "UnauthorizedOperation"
-//   Your account is not authorized to perform the requested operation.
+//   - ErrCodeClusterSubnetGroupNotFoundFault "ClusterSubnetGroupNotFoundFault"
+//     The cluster subnet group name does not refer to an existing cluster subnet
+//     group.
 //
-//   * ErrCodeHsmClientCertificateNotFoundFault "HsmClientCertificateNotFoundFault"
-//   There is no Amazon Redshift HSM client certificate with the specified identifier.
+//   - ErrCodeUnauthorizedOperation "UnauthorizedOperation"
+//     Your account is not authorized to perform the requested operation.
 //
-//   * ErrCodeHsmConfigurationNotFoundFault "HsmConfigurationNotFoundFault"
-//   There is no Amazon Redshift HSM configuration with the specified identifier.
+//   - ErrCodeHsmClientCertificateNotFoundFault "HsmClientCertificateNotFoundFault"
+//     There is no Amazon Redshift HSM client certificate with the specified identifier.
 //
-//   * ErrCodeInvalidElasticIpFault "InvalidElasticIpFault"
-//   The Elastic IP (EIP) is invalid or cannot be found.
+//   - ErrCodeHsmConfigurationNotFoundFault "HsmConfigurationNotFoundFault"
+//     There is no Amazon Redshift HSM configuration with the specified identifier.
 //
-//   * ErrCodeClusterParameterGroupNotFoundFault "ClusterParameterGroupNotFound"
-//   The parameter group name does not refer to an existing parameter group.
+//   - ErrCodeInvalidElasticIpFault "InvalidElasticIpFault"
+//     The Elastic IP (EIP) is invalid or cannot be found.
 //
-//   * ErrCodeClusterSecurityGroupNotFoundFault "ClusterSecurityGroupNotFound"
-//   The cluster security group name does not refer to an existing cluster security
-//   group.
+//   - ErrCodeClusterParameterGroupNotFoundFault "ClusterParameterGroupNotFound"
+//     The parameter group name does not refer to an existing parameter group.
 //
-//   * ErrCodeLimitExceededFault "LimitExceededFault"
-//   The encryption key has exceeded its grant limit in Amazon Web Services KMS.
+//   - ErrCodeClusterSecurityGroupNotFoundFault "ClusterSecurityGroupNotFound"
+//     The cluster security group name does not refer to an existing cluster security
+//     group.
 //
-//   * ErrCodeDependentServiceRequestThrottlingFault "DependentServiceRequestThrottlingFault"
-//   The request cannot be completed because a dependent service is throttling
-//   requests made by Amazon Redshift on your behalf. Wait and retry the request.
+//   - ErrCodeLimitExceededFault "LimitExceededFault"
+//     The encryption key has exceeded its grant limit in Amazon Web Services KMS.
 //
-//   * ErrCodeInvalidClusterTrackFault "InvalidClusterTrack"
-//   The provided cluster track name is not valid.
+//   - ErrCodeDependentServiceRequestThrottlingFault "DependentServiceRequestThrottlingFault"
+//     The request cannot be completed because a dependent service is throttling
+//     requests made by Amazon Redshift on your behalf. Wait and retry the request.
 //
-//   * ErrCodeSnapshotScheduleNotFoundFault "SnapshotScheduleNotFound"
-//   We could not find the specified snapshot schedule.
+//   - ErrCodeInvalidClusterTrackFault "InvalidClusterTrack"
+//     The provided cluster track name is not valid.
 //
-//   * ErrCodeTagLimitExceededFault "TagLimitExceededFault"
-//   You have exceeded the number of tags allowed.
+//   - ErrCodeSnapshotScheduleNotFoundFault "SnapshotScheduleNotFound"
+//     We could not find the specified snapshot schedule.
 //
-//   * ErrCodeInvalidTagFault "InvalidTagFault"
-//   The tag is invalid.
+//   - ErrCodeTagLimitExceededFault "TagLimitExceededFault"
+//     You have exceeded the number of tags allowed.
 //
-//   * ErrCodeReservedNodeNotFoundFault "ReservedNodeNotFound"
-//   The specified reserved compute node not found.
+//   - ErrCodeInvalidTagFault "InvalidTagFault"
+//     The tag is invalid.
 //
-//   * ErrCodeInvalidReservedNodeStateFault "InvalidReservedNodeState"
-//   Indicates that the Reserved Node being exchanged is not in an active state.
+//   - ErrCodeReservedNodeNotFoundFault "ReservedNodeNotFound"
+//     The specified reserved compute node not found.
 //
-//   * ErrCodeReservedNodeAlreadyMigratedFault "ReservedNodeAlreadyMigrated"
-//   Indicates that the reserved node has already been exchanged.
+//   - ErrCodeInvalidReservedNodeStateFault "InvalidReservedNodeState"
+//     Indicates that the Reserved Node being exchanged is not in an active state.
 //
-//   * ErrCodeReservedNodeOfferingNotFoundFault "ReservedNodeOfferingNotFound"
-//   Specified offering does not exist.
+//   - ErrCodeReservedNodeAlreadyMigratedFault "ReservedNodeAlreadyMigrated"
+//     Indicates that the reserved node has already been exchanged.
 //
-//   * ErrCodeDependentServiceUnavailableFault "DependentServiceUnavailableFault"
-//   Your request cannot be completed because a dependent internal service is
-//   temporarily unavailable. Wait 30 to 60 seconds and try again.
+//   - ErrCodeReservedNodeOfferingNotFoundFault "ReservedNodeOfferingNotFound"
+//     Specified offering does not exist.
 //
-//   * ErrCodeReservedNodeAlreadyExistsFault "ReservedNodeAlreadyExists"
-//   User already has a reservation with the given identifier.
+//   - ErrCodeDependentServiceUnavailableFault "DependentServiceUnavailableFault"
+//     Your request cannot be completed because a dependent internal service is
+//     temporarily unavailable. Wait 30 to 60 seconds and try again.
 //
-//   * ErrCodeUnsupportedOperationFault "UnsupportedOperation"
-//   The requested operation isn't supported.
+//   - ErrCodeReservedNodeAlreadyExistsFault "ReservedNodeAlreadyExists"
+//     User already has a reservation with the given identifier.
+//
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
+//
+//   - ErrCodeIpv6CidrBlockNotFoundFault "Ipv6CidrBlockNotFoundFault"
+//     There are no subnets in your VPC with associated IPv6 CIDR blocks. To use
+//     dual-stack mode, associate an IPv6 CIDR block with each subnet in your VPC.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/RestoreFromClusterSnapshot
 func (c *Redshift) RestoreFromClusterSnapshot(input *RestoreFromClusterSnapshotInput) (*RestoreFromClusterSnapshotOutput, error) {
@@ -12242,14 +13675,13 @@ const opRestoreTableFromClusterSnapshot = "RestoreTableFromClusterSnapshot"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RestoreTableFromClusterSnapshotRequest method.
+//	req, resp := client.RestoreTableFromClusterSnapshotRequest(params)
 //
-//    // Example sending a request using the RestoreTableFromClusterSnapshotRequest method.
-//    req, resp := client.RestoreTableFromClusterSnapshotRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/RestoreTableFromClusterSnapshot
 func (c *Redshift) RestoreTableFromClusterSnapshotRequest(input *RestoreTableFromClusterSnapshotInput) (req *request.Request, output *RestoreTableFromClusterSnapshotOutput) {
@@ -12284,6 +13716,9 @@ func (c *Redshift) RestoreTableFromClusterSnapshotRequest(input *RestoreTableFro
 // This way, you can replace the original table with the table created from
 // the snapshot.
 //
+// You can't use this operation to restore tables with interleaved sort keys
+// (https://docs.aws.amazon.com/redshift/latest/dg/t_Sorting_data.html#t_Sorting_data-interleaved).
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -12292,29 +13727,30 @@ func (c *Redshift) RestoreTableFromClusterSnapshotRequest(input *RestoreTableFro
 // API operation RestoreTableFromClusterSnapshot for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeClusterSnapshotNotFoundFault "ClusterSnapshotNotFound"
-//   The snapshot identifier does not refer to an existing cluster snapshot.
 //
-//   * ErrCodeInProgressTableRestoreQuotaExceededFault "InProgressTableRestoreQuotaExceededFault"
-//   You have exceeded the allowed number of table restore requests. Wait for
-//   your current table restore requests to complete before making a new request.
+//   - ErrCodeClusterSnapshotNotFoundFault "ClusterSnapshotNotFound"
+//     The snapshot identifier does not refer to an existing cluster snapshot.
 //
-//   * ErrCodeInvalidClusterSnapshotStateFault "InvalidClusterSnapshotState"
-//   The specified cluster snapshot is not in the available state, or other accounts
-//   are authorized to access the snapshot.
+//   - ErrCodeInProgressTableRestoreQuotaExceededFault "InProgressTableRestoreQuotaExceededFault"
+//     You have exceeded the allowed number of table restore requests. Wait for
+//     your current table restore requests to complete before making a new request.
 //
-//   * ErrCodeInvalidTableRestoreArgumentFault "InvalidTableRestoreArgument"
-//   The value specified for the sourceDatabaseName, sourceSchemaName, or sourceTableName
-//   parameter, or a combination of these, doesn't exist in the snapshot.
+//   - ErrCodeInvalidClusterSnapshotStateFault "InvalidClusterSnapshotState"
+//     The specified cluster snapshot is not in the available state, or other accounts
+//     are authorized to access the snapshot.
 //
-//   * ErrCodeClusterNotFoundFault "ClusterNotFound"
-//   The ClusterIdentifier parameter does not refer to an existing cluster.
+//   - ErrCodeInvalidTableRestoreArgumentFault "InvalidTableRestoreArgument"
+//     The value specified for the sourceDatabaseName, sourceSchemaName, or sourceTableName
+//     parameter, or a combination of these, doesn't exist in the snapshot.
 //
-//   * ErrCodeInvalidClusterStateFault "InvalidClusterState"
-//   The specified cluster is not in the available state.
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeUnsupportedOperationFault "UnsupportedOperation"
-//   The requested operation isn't supported.
+//   - ErrCodeInvalidClusterStateFault "InvalidClusterState"
+//     The specified cluster is not in the available state.
+//
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/RestoreTableFromClusterSnapshot
 func (c *Redshift) RestoreTableFromClusterSnapshot(input *RestoreTableFromClusterSnapshotInput) (*RestoreTableFromClusterSnapshotOutput, error) {
@@ -12354,14 +13790,13 @@ const opResumeCluster = "ResumeCluster"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ResumeClusterRequest method.
+//	req, resp := client.ResumeClusterRequest(params)
 //
-//    // Example sending a request using the ResumeClusterRequest method.
-//    req, resp := client.ResumeClusterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/ResumeCluster
 func (c *Redshift) ResumeClusterRequest(input *ResumeClusterInput) (req *request.Request, output *ResumeClusterOutput) {
@@ -12392,14 +13827,18 @@ func (c *Redshift) ResumeClusterRequest(input *ResumeClusterInput) (req *request
 // API operation ResumeCluster for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeClusterNotFoundFault "ClusterNotFound"
-//   The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeInvalidClusterStateFault "InvalidClusterState"
-//   The specified cluster is not in the available state.
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeInsufficientClusterCapacityFault "InsufficientClusterCapacity"
-//   The number of nodes specified exceeds the allotted capacity of the cluster.
+//   - ErrCodeInvalidClusterStateFault "InvalidClusterState"
+//     The specified cluster is not in the available state.
+//
+//   - ErrCodeInsufficientClusterCapacityFault "InsufficientClusterCapacity"
+//     The number of nodes specified exceeds the allotted capacity of the cluster.
+//
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/ResumeCluster
 func (c *Redshift) ResumeCluster(input *ResumeClusterInput) (*ResumeClusterOutput, error) {
@@ -12439,14 +13878,13 @@ const opRevokeClusterSecurityGroupIngress = "RevokeClusterSecurityGroupIngress"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RevokeClusterSecurityGroupIngressRequest method.
+//	req, resp := client.RevokeClusterSecurityGroupIngressRequest(params)
 //
-//    // Example sending a request using the RevokeClusterSecurityGroupIngressRequest method.
-//    req, resp := client.RevokeClusterSecurityGroupIngressRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/RevokeClusterSecurityGroupIngress
 func (c *Redshift) RevokeClusterSecurityGroupIngressRequest(input *RevokeClusterSecurityGroupIngressInput) (req *request.Request, output *RevokeClusterSecurityGroupIngressOutput) {
@@ -12481,16 +13919,17 @@ func (c *Redshift) RevokeClusterSecurityGroupIngressRequest(input *RevokeCluster
 // API operation RevokeClusterSecurityGroupIngress for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeClusterSecurityGroupNotFoundFault "ClusterSecurityGroupNotFound"
-//   The cluster security group name does not refer to an existing cluster security
-//   group.
 //
-//   * ErrCodeAuthorizationNotFoundFault "AuthorizationNotFound"
-//   The specified CIDR IP range or EC2 security group is not authorized for the
-//   specified cluster security group.
+//   - ErrCodeClusterSecurityGroupNotFoundFault "ClusterSecurityGroupNotFound"
+//     The cluster security group name does not refer to an existing cluster security
+//     group.
 //
-//   * ErrCodeInvalidClusterSecurityGroupStateFault "InvalidClusterSecurityGroupState"
-//   The state of the cluster security group is not available.
+//   - ErrCodeAuthorizationNotFoundFault "AuthorizationNotFound"
+//     The specified CIDR IP range or EC2 security group is not authorized for the
+//     specified cluster security group.
+//
+//   - ErrCodeInvalidClusterSecurityGroupStateFault "InvalidClusterSecurityGroupState"
+//     The state of the cluster security group is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/RevokeClusterSecurityGroupIngress
 func (c *Redshift) RevokeClusterSecurityGroupIngress(input *RevokeClusterSecurityGroupIngressInput) (*RevokeClusterSecurityGroupIngressOutput, error) {
@@ -12530,14 +13969,13 @@ const opRevokeEndpointAccess = "RevokeEndpointAccess"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RevokeEndpointAccessRequest method.
+//	req, resp := client.RevokeEndpointAccessRequest(params)
 //
-//    // Example sending a request using the RevokeEndpointAccessRequest method.
-//    req, resp := client.RevokeEndpointAccessRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/RevokeEndpointAccess
 func (c *Redshift) RevokeEndpointAccessRequest(input *RevokeEndpointAccessInput) (req *request.Request, output *RevokeEndpointAccessOutput) {
@@ -12568,26 +14006,27 @@ func (c *Redshift) RevokeEndpointAccessRequest(input *RevokeEndpointAccessInput)
 // API operation RevokeEndpointAccess for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeClusterNotFoundFault "ClusterNotFound"
-//   The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeInvalidEndpointStateFault "InvalidEndpointState"
-//   The status of the endpoint is not valid.
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeInvalidClusterSecurityGroupStateFault "InvalidClusterSecurityGroupState"
-//   The state of the cluster security group is not available.
+//   - ErrCodeInvalidEndpointStateFault "InvalidEndpointState"
+//     The status of the endpoint is not valid.
 //
-//   * ErrCodeEndpointNotFoundFault "EndpointNotFound"
-//   The endpoint name doesn't refer to an existing endpoint.
+//   - ErrCodeInvalidClusterSecurityGroupStateFault "InvalidClusterSecurityGroupState"
+//     The state of the cluster security group is not available.
 //
-//   * ErrCodeEndpointAuthorizationNotFoundFault "EndpointAuthorizationNotFound"
-//   The authorization for this endpoint can't be found.
+//   - ErrCodeEndpointNotFoundFault "EndpointNotFound"
+//     The endpoint name doesn't refer to an existing endpoint.
 //
-//   * ErrCodeInvalidAuthorizationStateFault "InvalidAuthorizationState"
-//   The status of the authorization is not valid.
+//   - ErrCodeEndpointAuthorizationNotFoundFault "EndpointAuthorizationNotFound"
+//     The authorization for this endpoint can't be found.
 //
-//   * ErrCodeInvalidClusterStateFault "InvalidClusterState"
-//   The specified cluster is not in the available state.
+//   - ErrCodeInvalidAuthorizationStateFault "InvalidAuthorizationState"
+//     The status of the authorization is not valid.
+//
+//   - ErrCodeInvalidClusterStateFault "InvalidClusterState"
+//     The specified cluster is not in the available state.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/RevokeEndpointAccess
 func (c *Redshift) RevokeEndpointAccess(input *RevokeEndpointAccessInput) (*RevokeEndpointAccessOutput, error) {
@@ -12627,14 +14066,13 @@ const opRevokeSnapshotAccess = "RevokeSnapshotAccess"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RevokeSnapshotAccessRequest method.
+//	req, resp := client.RevokeSnapshotAccessRequest(params)
 //
-//    // Example sending a request using the RevokeSnapshotAccessRequest method.
-//    req, resp := client.RevokeSnapshotAccessRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/RevokeSnapshotAccess
 func (c *Redshift) RevokeSnapshotAccessRequest(input *RevokeSnapshotAccessInput) (req *request.Request, output *RevokeSnapshotAccessOutput) {
@@ -12671,16 +14109,20 @@ func (c *Redshift) RevokeSnapshotAccessRequest(input *RevokeSnapshotAccessInput)
 // API operation RevokeSnapshotAccess for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAccessToSnapshotDeniedFault "AccessToSnapshotDenied"
-//   The owner of the specified snapshot has not authorized your account to access
-//   the snapshot.
 //
-//   * ErrCodeAuthorizationNotFoundFault "AuthorizationNotFound"
-//   The specified CIDR IP range or EC2 security group is not authorized for the
-//   specified cluster security group.
+//   - ErrCodeAccessToSnapshotDeniedFault "AccessToSnapshotDenied"
+//     The owner of the specified snapshot has not authorized your account to access
+//     the snapshot.
 //
-//   * ErrCodeClusterSnapshotNotFoundFault "ClusterSnapshotNotFound"
-//   The snapshot identifier does not refer to an existing cluster snapshot.
+//   - ErrCodeAuthorizationNotFoundFault "AuthorizationNotFound"
+//     The specified CIDR IP range or EC2 security group is not authorized for the
+//     specified cluster security group.
+//
+//   - ErrCodeClusterSnapshotNotFoundFault "ClusterSnapshotNotFound"
+//     The snapshot identifier does not refer to an existing cluster snapshot.
+//
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/RevokeSnapshotAccess
 func (c *Redshift) RevokeSnapshotAccess(input *RevokeSnapshotAccessInput) (*RevokeSnapshotAccessOutput, error) {
@@ -12720,14 +14162,13 @@ const opRotateEncryptionKey = "RotateEncryptionKey"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RotateEncryptionKeyRequest method.
+//	req, resp := client.RotateEncryptionKeyRequest(params)
 //
-//    // Example sending a request using the RotateEncryptionKeyRequest method.
-//    req, resp := client.RotateEncryptionKeyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/RotateEncryptionKey
 func (c *Redshift) RotateEncryptionKeyRequest(input *RotateEncryptionKeyInput) (req *request.Request, output *RotateEncryptionKeyOutput) {
@@ -12758,15 +14199,19 @@ func (c *Redshift) RotateEncryptionKeyRequest(input *RotateEncryptionKeyInput) (
 // API operation RotateEncryptionKey for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeClusterNotFoundFault "ClusterNotFound"
-//   The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeInvalidClusterStateFault "InvalidClusterState"
-//   The specified cluster is not in the available state.
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
 //
-//   * ErrCodeDependentServiceRequestThrottlingFault "DependentServiceRequestThrottlingFault"
-//   The request cannot be completed because a dependent service is throttling
-//   requests made by Amazon Redshift on your behalf. Wait and retry the request.
+//   - ErrCodeInvalidClusterStateFault "InvalidClusterState"
+//     The specified cluster is not in the available state.
+//
+//   - ErrCodeDependentServiceRequestThrottlingFault "DependentServiceRequestThrottlingFault"
+//     The request cannot be completed because a dependent service is throttling
+//     requests made by Amazon Redshift on your behalf. Wait and retry the request.
+//
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/RotateEncryptionKey
 func (c *Redshift) RotateEncryptionKey(input *RotateEncryptionKeyInput) (*RotateEncryptionKeyOutput, error) {
@@ -12806,14 +14251,13 @@ const opUpdatePartnerStatus = "UpdatePartnerStatus"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdatePartnerStatusRequest method.
+//	req, resp := client.UpdatePartnerStatusRequest(params)
 //
-//    // Example sending a request using the UpdatePartnerStatusRequest method.
-//    req, resp := client.UpdatePartnerStatusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/UpdatePartnerStatus
 func (c *Redshift) UpdatePartnerStatusRequest(input *UpdatePartnerStatusInput) (req *request.Request, output *UpdatePartnerStatusOutput) {
@@ -12844,14 +14288,18 @@ func (c *Redshift) UpdatePartnerStatusRequest(input *UpdatePartnerStatusInput) (
 // API operation UpdatePartnerStatus for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodePartnerNotFoundFault "PartnerNotFound"
-//   The name of the partner was not found.
 //
-//   * ErrCodeClusterNotFoundFault "ClusterNotFound"
-//   The ClusterIdentifier parameter does not refer to an existing cluster.
+//   - ErrCodePartnerNotFoundFault "PartnerNotFound"
+//     The name of the partner was not found.
 //
-//   * ErrCodeUnauthorizedPartnerIntegrationFault "UnauthorizedPartnerIntegration"
-//   The partner integration is not authorized.
+//   - ErrCodeClusterNotFoundFault "ClusterNotFound"
+//     The ClusterIdentifier parameter does not refer to an existing cluster.
+//
+//   - ErrCodeUnauthorizedPartnerIntegrationFault "UnauthorizedPartnerIntegration"
+//     The partner integration is not authorized.
+//
+//   - ErrCodeUnsupportedOperationFault "UnsupportedOperation"
+//     The requested operation isn't supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/redshift-2012-12-01/UpdatePartnerStatus
 func (c *Redshift) UpdatePartnerStatus(input *UpdatePartnerStatusInput) (*UpdatePartnerStatusOutput, error) {
@@ -13184,29 +14632,17 @@ func (s *AddPartnerOutput) SetPartnerName(v string) *AddPartnerOutput {
 	return s
 }
 
-// The AQUA (Advanced Query Accelerator) configuration of the cluster.
+// The operation that uses this structure is retired. Amazon Redshift automatically
+// determines whether to use AQUA (Advanced Query Accelerator).
 type AquaConfiguration struct {
 	_ struct{} `type:"structure"`
 
-	// The value represents how the cluster is configured to use AQUA. Possible
-	// values include the following.
-	//
-	//    * enabled - Use AQUA if it is available for the current Amazon Web Services
-	//    Region and Amazon Redshift node type.
-	//
-	//    * disabled - Don't use AQUA.
-	//
-	//    * auto - Amazon Redshift determines whether to use AQUA.
+	// This field is retired. Amazon Redshift automatically determines whether to
+	// use AQUA (Advanced Query Accelerator).
 	AquaConfigurationStatus *string `type:"string" enum:"AquaConfigurationStatus"`
 
-	// The value indicates the status of AQUA on the cluster. Possible values include
-	// the following.
-	//
-	//    * enabled - AQUA is enabled.
-	//
-	//    * disabled - AQUA is not enabled.
-	//
-	//    * applying - AQUA status is being applied.
+	// This field is retired. Amazon Redshift automatically determines whether to
+	// use AQUA (Advanced Query Accelerator).
 	AquaStatus *string `type:"string" enum:"AquaStatus"`
 }
 
@@ -13242,6 +14678,9 @@ func (s *AquaConfiguration) SetAquaStatus(v string) *AquaConfiguration {
 
 type AssociateDataShareConsumerInput struct {
 	_ struct{} `type:"structure"`
+
+	// If set to true, allows write operations for a datashare.
+	AllowWrites *bool `type:"boolean"`
 
 	// A value that specifies whether the datashare is associated with the entire
 	// account.
@@ -13291,6 +14730,12 @@ func (s *AssociateDataShareConsumerInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetAllowWrites sets the AllowWrites field's value.
+func (s *AssociateDataShareConsumerInput) SetAllowWrites(v bool) *AssociateDataShareConsumerInput {
+	s.AllowWrites = &v
+	return s
 }
 
 // SetAssociateEntireAccount sets the AssociateEntireAccount field's value.
@@ -13386,6 +14831,57 @@ func (s *AssociateDataShareConsumerOutput) SetManagedBy(v string) *AssociateData
 // SetProducerArn sets the ProducerArn field's value.
 func (s *AssociateDataShareConsumerOutput) SetProducerArn(v string) *AssociateDataShareConsumerOutput {
 	s.ProducerArn = &v
+	return s
+}
+
+// Contains information about the custom domain name association.
+type Association struct {
+	_ struct{} `type:"structure"`
+
+	// A list of all associated clusters and domain names tied to a specific certificate.
+	CertificateAssociations []*CertificateAssociation `locationNameList:"CertificateAssociation" type:"list"`
+
+	// The Amazon Resource Name (ARN) for the certificate associated with the custom
+	// domain.
+	CustomDomainCertificateArn *string `type:"string"`
+
+	// The expiration date for the certificate.
+	CustomDomainCertificateExpiryDate *time.Time `type:"timestamp"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Association) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Association) GoString() string {
+	return s.String()
+}
+
+// SetCertificateAssociations sets the CertificateAssociations field's value.
+func (s *Association) SetCertificateAssociations(v []*CertificateAssociation) *Association {
+	s.CertificateAssociations = v
+	return s
+}
+
+// SetCustomDomainCertificateArn sets the CustomDomainCertificateArn field's value.
+func (s *Association) SetCustomDomainCertificateArn(v string) *Association {
+	s.CustomDomainCertificateArn = &v
+	return s
+}
+
+// SetCustomDomainCertificateExpiryDate sets the CustomDomainCertificateExpiryDate field's value.
+func (s *Association) SetCustomDomainCertificateExpiryDate(v time.Time) *Association {
+	s.CustomDomainCertificateExpiryDate = &v
 	return s
 }
 
@@ -13574,6 +15070,9 @@ func (s *AuthorizeClusterSecurityGroupIngressOutput) SetClusterSecurityGroup(v *
 type AuthorizeDataShareInput struct {
 	_ struct{} `type:"structure"`
 
+	// If set to true, allows write operations for a datashare.
+	AllowWrites *bool `type:"boolean"`
+
 	// The identifier of the data consumer that is authorized to access the datashare.
 	// This identifier is an Amazon Web Services account ID or a keyword, such as
 	// ADX.
@@ -13620,6 +15119,12 @@ func (s *AuthorizeDataShareInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetAllowWrites sets the AllowWrites field's value.
+func (s *AuthorizeDataShareInput) SetAllowWrites(v bool) *AuthorizeDataShareInput {
+	s.AllowWrites = &v
+	return s
 }
 
 // SetConsumerIdentifier sets the ConsumerIdentifier field's value.
@@ -13887,15 +15392,16 @@ type AuthorizeSnapshotAccessInput struct {
 	// AccountWithRestoreAccess is a required field
 	AccountWithRestoreAccess *string `type:"string" required:"true"`
 
+	// The Amazon Resource Name (ARN) of the snapshot to authorize access to.
+	SnapshotArn *string `type:"string"`
+
 	// The identifier of the cluster the snapshot was created from. This parameter
 	// is required if your IAM user has a policy containing a snapshot resource
 	// element that specifies anything other than * for the cluster name.
 	SnapshotClusterIdentifier *string `type:"string"`
 
 	// The identifier of the snapshot the account is authorized to restore.
-	//
-	// SnapshotIdentifier is a required field
-	SnapshotIdentifier *string `type:"string" required:"true"`
+	SnapshotIdentifier *string `type:"string"`
 }
 
 // String returns the string representation.
@@ -13922,9 +15428,6 @@ func (s *AuthorizeSnapshotAccessInput) Validate() error {
 	if s.AccountWithRestoreAccess == nil {
 		invalidParams.Add(request.NewErrParamRequired("AccountWithRestoreAccess"))
 	}
-	if s.SnapshotIdentifier == nil {
-		invalidParams.Add(request.NewErrParamRequired("SnapshotIdentifier"))
-	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -13935,6 +15438,12 @@ func (s *AuthorizeSnapshotAccessInput) Validate() error {
 // SetAccountWithRestoreAccess sets the AccountWithRestoreAccess field's value.
 func (s *AuthorizeSnapshotAccessInput) SetAccountWithRestoreAccess(v string) *AuthorizeSnapshotAccessInput {
 	s.AccountWithRestoreAccess = &v
+	return s
+}
+
+// SetSnapshotArn sets the SnapshotArn field's value.
+func (s *AuthorizeSnapshotAccessInput) SetSnapshotArn(v string) *AuthorizeSnapshotAccessInput {
+	s.SnapshotArn = &v
 	return s
 }
 
@@ -13978,6 +15487,49 @@ func (s AuthorizeSnapshotAccessOutput) GoString() string {
 // SetSnapshot sets the Snapshot field's value.
 func (s *AuthorizeSnapshotAccessOutput) SetSnapshot(v *Snapshot) *AuthorizeSnapshotAccessOutput {
 	s.Snapshot = v
+	return s
+}
+
+// The authorized token issuer for the Amazon Redshift IAM Identity Center application.
+type AuthorizedTokenIssuer struct {
+	_ struct{} `type:"structure"`
+
+	// The list of audiences for the authorized token issuer for integrating Amazon
+	// Redshift with IDC Identity Center.
+	AuthorizedAudiencesList []*string `type:"list"`
+
+	// The ARN for the authorized token issuer for integrating Amazon Redshift with
+	// IDC Identity Center.
+	TrustedTokenIssuerArn *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AuthorizedTokenIssuer) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AuthorizedTokenIssuer) GoString() string {
+	return s.String()
+}
+
+// SetAuthorizedAudiencesList sets the AuthorizedAudiencesList field's value.
+func (s *AuthorizedTokenIssuer) SetAuthorizedAudiencesList(v []*string) *AuthorizedTokenIssuer {
+	s.AuthorizedAudiencesList = v
+	return s
+}
+
+// SetTrustedTokenIssuerArn sets the TrustedTokenIssuerArn field's value.
+func (s *AuthorizedTokenIssuer) SetTrustedTokenIssuerArn(v string) *AuthorizedTokenIssuer {
+	s.TrustedTokenIssuerArn = &v
 	return s
 }
 
@@ -14470,6 +16022,48 @@ func (s *CancelResizeOutput) SetTotalResizeDataInMegaBytes(v int64) *CancelResiz
 	return s
 }
 
+// A cluster ID and custom domain name tied to a specific certificate. These
+// are typically returned in a list.
+type CertificateAssociation struct {
+	_ struct{} `type:"structure"`
+
+	// The cluster identifier for the certificate association.
+	ClusterIdentifier *string `type:"string"`
+
+	// The custom domain name for the certificate association.
+	CustomDomainName *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CertificateAssociation) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CertificateAssociation) GoString() string {
+	return s.String()
+}
+
+// SetClusterIdentifier sets the ClusterIdentifier field's value.
+func (s *CertificateAssociation) SetClusterIdentifier(v string) *CertificateAssociation {
+	s.ClusterIdentifier = &v
+	return s
+}
+
+// SetCustomDomainName sets the CustomDomainName field's value.
+func (s *CertificateAssociation) SetCustomDomainName(v string) *CertificateAssociation {
+	s.CustomDomainName = &v
+	return s
+}
+
 // Describes a cluster.
 type Cluster struct {
 	_ struct{} `type:"structure"`
@@ -14478,7 +16072,8 @@ type Cluster struct {
 	// be applied automatically to the cluster during the maintenance window.
 	AllowVersionUpgrade *bool `type:"boolean"`
 
-	// The AQUA (Advanced Query Accelerator) configuration of the cluster.
+	// This field is retired. Amazon Redshift automatically determines whether to
+	// use AQUA (Advanced Query Accelerator).
 	AquaConfiguration *AquaConfiguration `type:"structure"`
 
 	// The number of days that automatic cluster snapshots are retained.
@@ -14591,6 +16186,16 @@ type Cluster struct {
 	// The version ID of the Amazon Redshift engine that is running on the cluster.
 	ClusterVersion *string `type:"string"`
 
+	// The certificate Amazon Resource Name (ARN) for the custom domain name.
+	CustomDomainCertificateArn *string `type:"string"`
+
+	// The expiration date for the certificate associated with the custom domain
+	// name.
+	CustomDomainCertificateExpiryDate *time.Time `type:"timestamp"`
+
+	// The custom domain name associated with the cluster.
+	CustomDomainName *string `type:"string"`
+
 	// The name of the initial database that was created when the cluster was created.
 	// This same name is returned for the life of the cluster. If an initial database
 	// was not specified, a database named devdev was created by default.
@@ -14654,6 +16259,9 @@ type Cluster struct {
 	// the cluster to access other Amazon Web Services services.
 	IamRoles []*ClusterIamRole `locationNameList:"ClusterIamRole" type:"list"`
 
+	// The IP address type for the cluster. Possible values are ipv4 and dualstack.
+	IpAddressType *string `type:"string"`
+
 	// The Key Management Service (KMS) key ID of the encryption key used to encrypt
 	// data in the cluster.
 	KmsKeyId *string `type:"string"`
@@ -14668,12 +16276,27 @@ type Cluster struct {
 	// The value must be either -1 or an integer between 1 and 3,653.
 	ManualSnapshotRetentionPeriod *int64 `type:"integer"`
 
+	// The Amazon Resource Name (ARN) for the cluster's admin user credentials secret.
+	MasterPasswordSecretArn *string `type:"string"`
+
+	// The ID of the Key Management Service (KMS) key used to encrypt and store
+	// the cluster's admin credentials secret.
+	MasterPasswordSecretKmsKeyId *string `type:"string"`
+
 	// The admin user name for the cluster. This name is used to connect to the
 	// database that is specified in the DBName parameter.
 	MasterUsername *string `type:"string"`
 
 	// The status of a modify operation, if any, initiated for the cluster.
 	ModifyStatus *string `type:"string"`
+
+	// A boolean value that, if true, indicates that the cluster is deployed in
+	// two Availability Zones.
+	MultiAZ *string `type:"string"`
+
+	// The secondary compute unit of a cluster, if Multi-AZ deployment is turned
+	// on.
+	MultiAZSecondary *SecondaryClusterInfo `type:"structure"`
 
 	// The date and time in UTC when system maintenance can begin.
 	NextMaintenanceWindowStartTime *time.Time `type:"timestamp"`
@@ -14862,6 +16485,24 @@ func (s *Cluster) SetClusterVersion(v string) *Cluster {
 	return s
 }
 
+// SetCustomDomainCertificateArn sets the CustomDomainCertificateArn field's value.
+func (s *Cluster) SetCustomDomainCertificateArn(v string) *Cluster {
+	s.CustomDomainCertificateArn = &v
+	return s
+}
+
+// SetCustomDomainCertificateExpiryDate sets the CustomDomainCertificateExpiryDate field's value.
+func (s *Cluster) SetCustomDomainCertificateExpiryDate(v time.Time) *Cluster {
+	s.CustomDomainCertificateExpiryDate = &v
+	return s
+}
+
+// SetCustomDomainName sets the CustomDomainName field's value.
+func (s *Cluster) SetCustomDomainName(v string) *Cluster {
+	s.CustomDomainName = &v
+	return s
+}
+
 // SetDBName sets the DBName field's value.
 func (s *Cluster) SetDBName(v string) *Cluster {
 	s.DBName = &v
@@ -14940,6 +16581,12 @@ func (s *Cluster) SetIamRoles(v []*ClusterIamRole) *Cluster {
 	return s
 }
 
+// SetIpAddressType sets the IpAddressType field's value.
+func (s *Cluster) SetIpAddressType(v string) *Cluster {
+	s.IpAddressType = &v
+	return s
+}
+
 // SetKmsKeyId sets the KmsKeyId field's value.
 func (s *Cluster) SetKmsKeyId(v string) *Cluster {
 	s.KmsKeyId = &v
@@ -14958,6 +16605,18 @@ func (s *Cluster) SetManualSnapshotRetentionPeriod(v int64) *Cluster {
 	return s
 }
 
+// SetMasterPasswordSecretArn sets the MasterPasswordSecretArn field's value.
+func (s *Cluster) SetMasterPasswordSecretArn(v string) *Cluster {
+	s.MasterPasswordSecretArn = &v
+	return s
+}
+
+// SetMasterPasswordSecretKmsKeyId sets the MasterPasswordSecretKmsKeyId field's value.
+func (s *Cluster) SetMasterPasswordSecretKmsKeyId(v string) *Cluster {
+	s.MasterPasswordSecretKmsKeyId = &v
+	return s
+}
+
 // SetMasterUsername sets the MasterUsername field's value.
 func (s *Cluster) SetMasterUsername(v string) *Cluster {
 	s.MasterUsername = &v
@@ -14967,6 +16626,18 @@ func (s *Cluster) SetMasterUsername(v string) *Cluster {
 // SetModifyStatus sets the ModifyStatus field's value.
 func (s *Cluster) SetModifyStatus(v string) *Cluster {
 	s.ModifyStatus = &v
+	return s
+}
+
+// SetMultiAZ sets the MultiAZ field's value.
+func (s *Cluster) SetMultiAZ(v string) *Cluster {
+	s.MultiAZ = &v
+	return s
+}
+
+// SetMultiAZSecondary sets the MultiAZSecondary field's value.
+func (s *Cluster) SetMultiAZSecondary(v *SecondaryClusterInfo) *Cluster {
+	s.MultiAZSecondary = v
 	return s
 }
 
@@ -15689,6 +17360,10 @@ type ClusterSubnetGroup struct {
 	// A list of the VPC Subnet elements.
 	Subnets []*Subnet `locationNameList:"Subnet" type:"list"`
 
+	// The IP address types supported by this cluster subnet group. Possible values
+	// are ipv4 and dualstack.
+	SupportedClusterIpAddressTypes []*string `locationNameList:"item" type:"list"`
+
 	// The list of tags for the cluster subnet group.
 	Tags []*Tag `locationNameList:"Tag" type:"list"`
 
@@ -15735,6 +17410,12 @@ func (s *ClusterSubnetGroup) SetSubnetGroupStatus(v string) *ClusterSubnetGroup 
 // SetSubnets sets the Subnets field's value.
 func (s *ClusterSubnetGroup) SetSubnets(v []*Subnet) *ClusterSubnetGroup {
 	s.Subnets = v
+	return s
+}
+
+// SetSupportedClusterIpAddressTypes sets the SupportedClusterIpAddressTypes field's value.
+func (s *ClusterSubnetGroup) SetSupportedClusterIpAddressTypes(v []*string) *ClusterSubnetGroup {
+	s.SupportedClusterIpAddressTypes = v
 	return s
 }
 
@@ -16056,15 +17737,9 @@ type CreateClusterInput struct {
 	// Default: true
 	AllowVersionUpgrade *bool `type:"boolean"`
 
-	// The value represents how the cluster is configured to use AQUA (Advanced
-	// Query Accelerator) when it is created. Possible values include the following.
-	//
-	//    * enabled - Use AQUA if it is available for the current Amazon Web Services
-	//    Region and Amazon Redshift node type.
-	//
-	//    * disabled - Don't use AQUA.
-	//
-	//    * auto - Amazon Redshift determines whether to use AQUA.
+	// This parameter is retired. It does not set the AQUA configuration status.
+	// Amazon Redshift automatically determines whether to use AQUA (Advanced Query
+	// Accelerator).
 	AquaConfigurationStatus *string `type:"string" enum:"AquaConfigurationStatus"`
 
 	// The number of days that automated snapshots are retained. If the value is
@@ -16192,8 +17867,10 @@ type CreateClusterInput struct {
 	// The Elastic IP (EIP) address for the cluster.
 	//
 	// Constraints: The cluster must be provisioned in EC2-VPC and publicly-accessible
-	// through an Internet gateway. For more information about provisioning clusters
-	// in EC2-VPC, go to Supported Platforms to Launch Your Cluster (https://docs.aws.amazon.com/redshift/latest/mgmt/working-with-clusters.html#cluster-platforms)
+	// through an Internet gateway. Don't specify the Elastic IP address for a publicly
+	// accessible cluster with availability zone relocation turned on. For more
+	// information about provisioning clusters in EC2-VPC, go to Supported Platforms
+	// to Launch Your Cluster (https://docs.aws.amazon.com/redshift/latest/mgmt/working-with-clusters.html#cluster-platforms)
 	// in the Amazon Redshift Cluster Management Guide.
 	ElasticIp *string `type:"string"`
 
@@ -16230,6 +17907,10 @@ type CreateClusterInput struct {
 	// in the Amazon Redshift Cluster Management Guide.
 	IamRoles []*string `locationNameList:"IamRoleArn" type:"list"`
 
+	// The IP address types that the cluster supports. Possible values are ipv4
+	// and dualstack.
+	IpAddressType *string `type:"string"`
+
 	// The Key Management Service (KMS) key ID of the encryption key that you want
 	// to use to encrypt data in the cluster.
 	KmsKeyId *string `type:"string"`
@@ -16242,6 +17923,12 @@ type CreateClusterInput struct {
 	// the current track.
 	MaintenanceTrackName *string `type:"string"`
 
+	// If true, Amazon Redshift uses Secrets Manager to manage this cluster's admin
+	// credentials. You can't use MasterUserPassword if ManageMasterPassword is
+	// true. If ManageMasterPassword is false or not set, Amazon Redshift uses MasterUserPassword
+	// for the admin user account's password.
+	ManageMasterPassword *bool `type:"boolean"`
+
 	// The default number of days to retain a manual snapshot. If the value is -1,
 	// the snapshot is retained indefinitely. This setting doesn't change the retention
 	// period of existing snapshots.
@@ -16249,8 +17936,15 @@ type CreateClusterInput struct {
 	// The value must be either -1 or an integer between 1 and 3,653.
 	ManualSnapshotRetentionPeriod *int64 `type:"integer"`
 
+	// The ID of the Key Management Service (KMS) key used to encrypt and store
+	// the cluster's admin credentials secret. You can only use this parameter if
+	// ManageMasterPassword is true.
+	MasterPasswordSecretKmsKeyId *string `type:"string"`
+
 	// The password associated with the admin user account for the cluster that
 	// is being created.
+	//
+	// You can't use MasterUserPassword if ManageMasterPassword is true.
 	//
 	// Constraints:
 	//
@@ -16265,17 +17959,25 @@ type CreateClusterInput struct {
 	//    * Can be any printable ASCII character (ASCII code 33-126) except ' (single
 	//    quote), " (double quote), \, /, or @.
 	//
-	// MasterUserPassword is a required field
-	MasterUserPassword *string `type:"string" required:"true"`
+	// MasterUserPassword is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by CreateClusterInput's
+	// String and GoString methods.
+	MasterUserPassword *string `type:"string" sensitive:"true"`
 
 	// The user name associated with the admin user account for the cluster that
 	// is being created.
 	//
 	// Constraints:
 	//
-	//    * Must be 1 - 128 alphanumeric characters. The user name can't be PUBLIC.
+	//    * Must be 1 - 128 alphanumeric characters or hyphens. The user name can't
+	//    be PUBLIC.
 	//
-	//    * First character must be a letter.
+	//    * Must contain only lowercase letters, numbers, underscore, plus sign,
+	//    period (dot), at symbol (@), or hyphen.
+	//
+	//    * The first character must be a letter.
+	//
+	//    * Must not contain a colon (:) or a slash (/).
 	//
 	//    * Cannot be a reserved word. A list of reserved words can be found in
 	//    Reserved Words (https://docs.aws.amazon.com/redshift/latest/dg/r_pg_keywords.html)
@@ -16283,6 +17985,10 @@ type CreateClusterInput struct {
 	//
 	// MasterUsername is a required field
 	MasterUsername *string `type:"string" required:"true"`
+
+	// If true, Amazon Redshift will deploy the cluster in two Availability Zones
+	// (AZ).
+	MultiAZ *bool `type:"boolean"`
 
 	// The node type to be provisioned for the cluster. For information about node
 	// types, go to Working with Clusters (https://docs.aws.amazon.com/redshift/latest/mgmt/working-with-clusters.html#how-many-nodes)
@@ -16339,6 +18045,10 @@ type CreateClusterInput struct {
 	// If true, the cluster can be accessed from a public network.
 	PubliclyAccessible *bool `type:"boolean"`
 
+	// The Amazon resource name (ARN) of the Amazon Redshift IAM Identity Center
+	// application.
+	RedshiftIdcApplicationArn *string `type:"string"`
+
 	// A unique identifier for the snapshot schedule.
 	SnapshotScheduleIdentifier *string `type:"string"`
 
@@ -16375,9 +18085,6 @@ func (s *CreateClusterInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "CreateClusterInput"}
 	if s.ClusterIdentifier == nil {
 		invalidParams.Add(request.NewErrParamRequired("ClusterIdentifier"))
-	}
-	if s.MasterUserPassword == nil {
-		invalidParams.Add(request.NewErrParamRequired("MasterUserPassword"))
 	}
 	if s.MasterUsername == nil {
 		invalidParams.Add(request.NewErrParamRequired("MasterUsername"))
@@ -16512,6 +18219,12 @@ func (s *CreateClusterInput) SetIamRoles(v []*string) *CreateClusterInput {
 	return s
 }
 
+// SetIpAddressType sets the IpAddressType field's value.
+func (s *CreateClusterInput) SetIpAddressType(v string) *CreateClusterInput {
+	s.IpAddressType = &v
+	return s
+}
+
 // SetKmsKeyId sets the KmsKeyId field's value.
 func (s *CreateClusterInput) SetKmsKeyId(v string) *CreateClusterInput {
 	s.KmsKeyId = &v
@@ -16530,9 +18243,21 @@ func (s *CreateClusterInput) SetMaintenanceTrackName(v string) *CreateClusterInp
 	return s
 }
 
+// SetManageMasterPassword sets the ManageMasterPassword field's value.
+func (s *CreateClusterInput) SetManageMasterPassword(v bool) *CreateClusterInput {
+	s.ManageMasterPassword = &v
+	return s
+}
+
 // SetManualSnapshotRetentionPeriod sets the ManualSnapshotRetentionPeriod field's value.
 func (s *CreateClusterInput) SetManualSnapshotRetentionPeriod(v int64) *CreateClusterInput {
 	s.ManualSnapshotRetentionPeriod = &v
+	return s
+}
+
+// SetMasterPasswordSecretKmsKeyId sets the MasterPasswordSecretKmsKeyId field's value.
+func (s *CreateClusterInput) SetMasterPasswordSecretKmsKeyId(v string) *CreateClusterInput {
+	s.MasterPasswordSecretKmsKeyId = &v
 	return s
 }
 
@@ -16545,6 +18270,12 @@ func (s *CreateClusterInput) SetMasterUserPassword(v string) *CreateClusterInput
 // SetMasterUsername sets the MasterUsername field's value.
 func (s *CreateClusterInput) SetMasterUsername(v string) *CreateClusterInput {
 	s.MasterUsername = &v
+	return s
+}
+
+// SetMultiAZ sets the MultiAZ field's value.
+func (s *CreateClusterInput) SetMultiAZ(v bool) *CreateClusterInput {
+	s.MultiAZ = &v
 	return s
 }
 
@@ -16575,6 +18306,12 @@ func (s *CreateClusterInput) SetPreferredMaintenanceWindow(v string) *CreateClus
 // SetPubliclyAccessible sets the PubliclyAccessible field's value.
 func (s *CreateClusterInput) SetPubliclyAccessible(v bool) *CreateClusterInput {
 	s.PubliclyAccessible = &v
+	return s
+}
+
+// SetRedshiftIdcApplicationArn sets the RedshiftIdcApplicationArn field's value.
+func (s *CreateClusterInput) SetRedshiftIdcApplicationArn(v string) *CreateClusterInput {
+	s.RedshiftIdcApplicationArn = &v
 	return s
 }
 
@@ -17124,6 +18861,145 @@ func (s CreateClusterSubnetGroupOutput) GoString() string {
 // SetClusterSubnetGroup sets the ClusterSubnetGroup field's value.
 func (s *CreateClusterSubnetGroupOutput) SetClusterSubnetGroup(v *ClusterSubnetGroup) *CreateClusterSubnetGroupOutput {
 	s.ClusterSubnetGroup = v
+	return s
+}
+
+type CreateCustomDomainAssociationInput struct {
+	_ struct{} `type:"structure"`
+
+	// The cluster identifier that the custom domain is associated with.
+	//
+	// ClusterIdentifier is a required field
+	ClusterIdentifier *string `type:"string" required:"true"`
+
+	// The certificate Amazon Resource Name (ARN) for the custom domain name association.
+	//
+	// CustomDomainCertificateArn is a required field
+	CustomDomainCertificateArn *string `min:"20" type:"string" required:"true"`
+
+	// The custom domain name for a custom domain association.
+	//
+	// CustomDomainName is a required field
+	CustomDomainName *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateCustomDomainAssociationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateCustomDomainAssociationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateCustomDomainAssociationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateCustomDomainAssociationInput"}
+	if s.ClusterIdentifier == nil {
+		invalidParams.Add(request.NewErrParamRequired("ClusterIdentifier"))
+	}
+	if s.CustomDomainCertificateArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("CustomDomainCertificateArn"))
+	}
+	if s.CustomDomainCertificateArn != nil && len(*s.CustomDomainCertificateArn) < 20 {
+		invalidParams.Add(request.NewErrParamMinLen("CustomDomainCertificateArn", 20))
+	}
+	if s.CustomDomainName == nil {
+		invalidParams.Add(request.NewErrParamRequired("CustomDomainName"))
+	}
+	if s.CustomDomainName != nil && len(*s.CustomDomainName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("CustomDomainName", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClusterIdentifier sets the ClusterIdentifier field's value.
+func (s *CreateCustomDomainAssociationInput) SetClusterIdentifier(v string) *CreateCustomDomainAssociationInput {
+	s.ClusterIdentifier = &v
+	return s
+}
+
+// SetCustomDomainCertificateArn sets the CustomDomainCertificateArn field's value.
+func (s *CreateCustomDomainAssociationInput) SetCustomDomainCertificateArn(v string) *CreateCustomDomainAssociationInput {
+	s.CustomDomainCertificateArn = &v
+	return s
+}
+
+// SetCustomDomainName sets the CustomDomainName field's value.
+func (s *CreateCustomDomainAssociationInput) SetCustomDomainName(v string) *CreateCustomDomainAssociationInput {
+	s.CustomDomainName = &v
+	return s
+}
+
+type CreateCustomDomainAssociationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The identifier of the cluster that the custom domain is associated with.
+	ClusterIdentifier *string `type:"string"`
+
+	// The expiration time for the certificate for the custom domain.
+	CustomDomainCertExpiryTime *string `type:"string"`
+
+	// The Amazon Resource Name (ARN) for the certificate associated with the custom
+	// domain name.
+	CustomDomainCertificateArn *string `min:"20" type:"string"`
+
+	// The custom domain name for the association result.
+	CustomDomainName *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateCustomDomainAssociationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateCustomDomainAssociationOutput) GoString() string {
+	return s.String()
+}
+
+// SetClusterIdentifier sets the ClusterIdentifier field's value.
+func (s *CreateCustomDomainAssociationOutput) SetClusterIdentifier(v string) *CreateCustomDomainAssociationOutput {
+	s.ClusterIdentifier = &v
+	return s
+}
+
+// SetCustomDomainCertExpiryTime sets the CustomDomainCertExpiryTime field's value.
+func (s *CreateCustomDomainAssociationOutput) SetCustomDomainCertExpiryTime(v string) *CreateCustomDomainAssociationOutput {
+	s.CustomDomainCertExpiryTime = &v
+	return s
+}
+
+// SetCustomDomainCertificateArn sets the CustomDomainCertificateArn field's value.
+func (s *CreateCustomDomainAssociationOutput) SetCustomDomainCertificateArn(v string) *CreateCustomDomainAssociationOutput {
+	s.CustomDomainCertificateArn = &v
+	return s
+}
+
+// SetCustomDomainName sets the CustomDomainName field's value.
+func (s *CreateCustomDomainAssociationOutput) SetCustomDomainName(v string) *CreateCustomDomainAssociationOutput {
+	s.CustomDomainName = &v
 	return s
 }
 
@@ -17760,6 +19636,178 @@ func (s CreateHsmConfigurationOutput) GoString() string {
 // SetHsmConfiguration sets the HsmConfiguration field's value.
 func (s *CreateHsmConfigurationOutput) SetHsmConfiguration(v *HsmConfiguration) *CreateHsmConfigurationOutput {
 	s.HsmConfiguration = v
+	return s
+}
+
+type CreateRedshiftIdcApplicationInput struct {
+	_ struct{} `type:"structure"`
+
+	// The token issuer list for the Amazon Redshift IAM Identity Center application
+	// instance.
+	AuthorizedTokenIssuerList []*AuthorizedTokenIssuer `type:"list"`
+
+	// The IAM role ARN for the Amazon Redshift IAM Identity Center application
+	// instance. It has the required permissions to be assumed and invoke the IDC
+	// Identity Center API.
+	//
+	// IamRoleArn is a required field
+	IamRoleArn *string `type:"string" required:"true"`
+
+	// The display name for the Amazon Redshift IAM Identity Center application
+	// instance. It appears in the console.
+	//
+	// IdcDisplayName is a required field
+	IdcDisplayName *string `min:"1" type:"string" required:"true"`
+
+	// The Amazon resource name (ARN) of the IAM Identity Center instance where
+	// Amazon Redshift creates a new managed application.
+	//
+	// IdcInstanceArn is a required field
+	IdcInstanceArn *string `type:"string" required:"true"`
+
+	// The namespace for the Amazon Redshift IAM Identity Center application instance.
+	// It determines which managed application verifies the connection token.
+	IdentityNamespace *string `min:"1" type:"string"`
+
+	// The name of the Redshift application in IAM Identity Center.
+	//
+	// RedshiftIdcApplicationName is a required field
+	RedshiftIdcApplicationName *string `min:"1" type:"string" required:"true"`
+
+	// A collection of service integrations for the Redshift IAM Identity Center
+	// application.
+	ServiceIntegrations []*ServiceIntegrationsUnion `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateRedshiftIdcApplicationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateRedshiftIdcApplicationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateRedshiftIdcApplicationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateRedshiftIdcApplicationInput"}
+	if s.IamRoleArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("IamRoleArn"))
+	}
+	if s.IdcDisplayName == nil {
+		invalidParams.Add(request.NewErrParamRequired("IdcDisplayName"))
+	}
+	if s.IdcDisplayName != nil && len(*s.IdcDisplayName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("IdcDisplayName", 1))
+	}
+	if s.IdcInstanceArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("IdcInstanceArn"))
+	}
+	if s.IdentityNamespace != nil && len(*s.IdentityNamespace) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("IdentityNamespace", 1))
+	}
+	if s.RedshiftIdcApplicationName == nil {
+		invalidParams.Add(request.NewErrParamRequired("RedshiftIdcApplicationName"))
+	}
+	if s.RedshiftIdcApplicationName != nil && len(*s.RedshiftIdcApplicationName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RedshiftIdcApplicationName", 1))
+	}
+	if s.ServiceIntegrations != nil {
+		for i, v := range s.ServiceIntegrations {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "ServiceIntegrations", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAuthorizedTokenIssuerList sets the AuthorizedTokenIssuerList field's value.
+func (s *CreateRedshiftIdcApplicationInput) SetAuthorizedTokenIssuerList(v []*AuthorizedTokenIssuer) *CreateRedshiftIdcApplicationInput {
+	s.AuthorizedTokenIssuerList = v
+	return s
+}
+
+// SetIamRoleArn sets the IamRoleArn field's value.
+func (s *CreateRedshiftIdcApplicationInput) SetIamRoleArn(v string) *CreateRedshiftIdcApplicationInput {
+	s.IamRoleArn = &v
+	return s
+}
+
+// SetIdcDisplayName sets the IdcDisplayName field's value.
+func (s *CreateRedshiftIdcApplicationInput) SetIdcDisplayName(v string) *CreateRedshiftIdcApplicationInput {
+	s.IdcDisplayName = &v
+	return s
+}
+
+// SetIdcInstanceArn sets the IdcInstanceArn field's value.
+func (s *CreateRedshiftIdcApplicationInput) SetIdcInstanceArn(v string) *CreateRedshiftIdcApplicationInput {
+	s.IdcInstanceArn = &v
+	return s
+}
+
+// SetIdentityNamespace sets the IdentityNamespace field's value.
+func (s *CreateRedshiftIdcApplicationInput) SetIdentityNamespace(v string) *CreateRedshiftIdcApplicationInput {
+	s.IdentityNamespace = &v
+	return s
+}
+
+// SetRedshiftIdcApplicationName sets the RedshiftIdcApplicationName field's value.
+func (s *CreateRedshiftIdcApplicationInput) SetRedshiftIdcApplicationName(v string) *CreateRedshiftIdcApplicationInput {
+	s.RedshiftIdcApplicationName = &v
+	return s
+}
+
+// SetServiceIntegrations sets the ServiceIntegrations field's value.
+func (s *CreateRedshiftIdcApplicationInput) SetServiceIntegrations(v []*ServiceIntegrationsUnion) *CreateRedshiftIdcApplicationInput {
+	s.ServiceIntegrations = v
+	return s
+}
+
+type CreateRedshiftIdcApplicationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Contains properties for the Redshift IDC application.
+	RedshiftIdcApplication *RedshiftIdcApplication `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateRedshiftIdcApplicationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateRedshiftIdcApplicationOutput) GoString() string {
+	return s.String()
+}
+
+// SetRedshiftIdcApplication sets the RedshiftIdcApplication field's value.
+func (s *CreateRedshiftIdcApplicationOutput) SetRedshiftIdcApplication(v *RedshiftIdcApplication) *CreateRedshiftIdcApplicationOutput {
+	s.RedshiftIdcApplication = v
 	return s
 }
 
@@ -18693,6 +20741,9 @@ func (s *DataShare) SetProducerArn(v string) *DataShare {
 type DataShareAssociation struct {
 	_ struct{} `type:"structure"`
 
+	// Specifies whether write operations were allowed during data share association.
+	ConsumerAcceptedWrites *bool `type:"boolean"`
+
 	// The name of the consumer accounts that have an association with a producer
 	// datashare.
 	ConsumerIdentifier *string `type:"string"`
@@ -18703,6 +20754,9 @@ type DataShareAssociation struct {
 
 	// The creation date of the datashare that is associated.
 	CreatedDate *time.Time `type:"timestamp"`
+
+	// Specifies whether write operations were allowed during data share authorization.
+	ProducerAllowedWrites *bool `type:"boolean"`
 
 	// The status of the datashare that is associated.
 	Status *string `type:"string" enum:"DataShareStatus"`
@@ -18729,6 +20783,12 @@ func (s DataShareAssociation) GoString() string {
 	return s.String()
 }
 
+// SetConsumerAcceptedWrites sets the ConsumerAcceptedWrites field's value.
+func (s *DataShareAssociation) SetConsumerAcceptedWrites(v bool) *DataShareAssociation {
+	s.ConsumerAcceptedWrites = &v
+	return s
+}
+
 // SetConsumerIdentifier sets the ConsumerIdentifier field's value.
 func (s *DataShareAssociation) SetConsumerIdentifier(v string) *DataShareAssociation {
 	s.ConsumerIdentifier = &v
@@ -18744,6 +20804,12 @@ func (s *DataShareAssociation) SetConsumerRegion(v string) *DataShareAssociation
 // SetCreatedDate sets the CreatedDate field's value.
 func (s *DataShareAssociation) SetCreatedDate(v time.Time) *DataShareAssociation {
 	s.CreatedDate = &v
+	return s
+}
+
+// SetProducerAllowedWrites sets the ProducerAllowedWrites field's value.
+func (s *DataShareAssociation) SetProducerAllowedWrites(v bool) *DataShareAssociation {
+	s.ProducerAllowedWrites = &v
 	return s
 }
 
@@ -19655,6 +21721,91 @@ func (s DeleteClusterSubnetGroupOutput) GoString() string {
 	return s.String()
 }
 
+type DeleteCustomDomainAssociationInput struct {
+	_ struct{} `type:"structure"`
+
+	// The identifier of the cluster to delete a custom domain association for.
+	//
+	// ClusterIdentifier is a required field
+	ClusterIdentifier *string `type:"string" required:"true"`
+
+	// The custom domain name for the custom domain association.
+	//
+	// CustomDomainName is a required field
+	CustomDomainName *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteCustomDomainAssociationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteCustomDomainAssociationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteCustomDomainAssociationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteCustomDomainAssociationInput"}
+	if s.ClusterIdentifier == nil {
+		invalidParams.Add(request.NewErrParamRequired("ClusterIdentifier"))
+	}
+	if s.CustomDomainName == nil {
+		invalidParams.Add(request.NewErrParamRequired("CustomDomainName"))
+	}
+	if s.CustomDomainName != nil && len(*s.CustomDomainName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("CustomDomainName", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClusterIdentifier sets the ClusterIdentifier field's value.
+func (s *DeleteCustomDomainAssociationInput) SetClusterIdentifier(v string) *DeleteCustomDomainAssociationInput {
+	s.ClusterIdentifier = &v
+	return s
+}
+
+// SetCustomDomainName sets the CustomDomainName field's value.
+func (s *DeleteCustomDomainAssociationInput) SetCustomDomainName(v string) *DeleteCustomDomainAssociationInput {
+	s.CustomDomainName = &v
+	return s
+}
+
+type DeleteCustomDomainAssociationOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteCustomDomainAssociationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteCustomDomainAssociationOutput) GoString() string {
+	return s.String()
+}
+
 type DeleteEndpointAccessInput struct {
 	_ struct{} `type:"structure"`
 
@@ -20148,6 +22299,143 @@ func (s *DeletePartnerOutput) SetDatabaseName(v string) *DeletePartnerOutput {
 func (s *DeletePartnerOutput) SetPartnerName(v string) *DeletePartnerOutput {
 	s.PartnerName = &v
 	return s
+}
+
+type DeleteRedshiftIdcApplicationInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN for a deleted Amazon Redshift IAM Identity Center application.
+	//
+	// RedshiftIdcApplicationArn is a required field
+	RedshiftIdcApplicationArn *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteRedshiftIdcApplicationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteRedshiftIdcApplicationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteRedshiftIdcApplicationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteRedshiftIdcApplicationInput"}
+	if s.RedshiftIdcApplicationArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("RedshiftIdcApplicationArn"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetRedshiftIdcApplicationArn sets the RedshiftIdcApplicationArn field's value.
+func (s *DeleteRedshiftIdcApplicationInput) SetRedshiftIdcApplicationArn(v string) *DeleteRedshiftIdcApplicationInput {
+	s.RedshiftIdcApplicationArn = &v
+	return s
+}
+
+type DeleteRedshiftIdcApplicationOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteRedshiftIdcApplicationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteRedshiftIdcApplicationOutput) GoString() string {
+	return s.String()
+}
+
+type DeleteResourcePolicyInput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the resource of which its resource policy
+	// is deleted.
+	//
+	// ResourceArn is a required field
+	ResourceArn *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteResourcePolicyInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteResourcePolicyInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteResourcePolicyInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteResourcePolicyInput"}
+	if s.ResourceArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ResourceArn"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetResourceArn sets the ResourceArn field's value.
+func (s *DeleteResourcePolicyInput) SetResourceArn(v string) *DeleteResourcePolicyInput {
+	s.ResourceArn = &v
+	return s
+}
+
+type DeleteResourcePolicyOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteResourcePolicyOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteResourcePolicyOutput) GoString() string {
+	return s.String()
 }
 
 type DeleteScheduledActionInput struct {
@@ -21019,7 +23307,7 @@ type DescribeClusterSecurityGroupsInput struct {
 	_ struct{} `type:"structure"`
 
 	// The name of a cluster security group for which you are requesting details.
-	// You can specify either the Marker parameter or a ClusterSecurityGroupName
+	// You must specify either the Marker parameter or a ClusterSecurityGroupName
 	// parameter, but not both.
 	//
 	// Example: securitygroup1
@@ -21032,7 +23320,7 @@ type DescribeClusterSecurityGroupsInput struct {
 	// records by providing the returned marker value in the Marker parameter and
 	// retrying the request.
 	//
-	// Constraints: You can specify either the ClusterSecurityGroupName parameter
+	// Constraints: You must specify either the ClusterSecurityGroupName parameter
 	// or the Marker parameter, but not both.
 	Marker *string `type:"string"`
 
@@ -21210,6 +23498,10 @@ type DescribeClusterSnapshotsInput struct {
 	// or do not specify the parameter.
 	OwnerAccount *string `type:"string"`
 
+	// The Amazon Resource Name (ARN) of the snapshot associated with the message
+	// to describe cluster snapshots.
+	SnapshotArn *string `type:"string"`
+
 	// The snapshot identifier of the snapshot about which to return information.
 	SnapshotIdentifier *string `type:"string"`
 
@@ -21316,6 +23608,12 @@ func (s *DescribeClusterSnapshotsInput) SetMaxRecords(v int64) *DescribeClusterS
 // SetOwnerAccount sets the OwnerAccount field's value.
 func (s *DescribeClusterSnapshotsInput) SetOwnerAccount(v string) *DescribeClusterSnapshotsInput {
 	s.OwnerAccount = &v
+	return s
+}
+
+// SetSnapshotArn sets the SnapshotArn field's value.
+func (s *DescribeClusterSnapshotsInput) SetSnapshotArn(v string) *DescribeClusterSnapshotsInput {
+	s.SnapshotArn = &v
 	return s
 }
 
@@ -21895,6 +24193,120 @@ func (s *DescribeClustersOutput) SetMarker(v string) *DescribeClustersOutput {
 	return s
 }
 
+type DescribeCustomDomainAssociationsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The certificate Amazon Resource Name (ARN) for the custom domain association.
+	CustomDomainCertificateArn *string `min:"20" type:"string"`
+
+	// The custom domain name for the custom domain association.
+	CustomDomainName *string `min:"1" type:"string"`
+
+	// The marker for the custom domain association.
+	Marker *string `type:"string"`
+
+	// The maximum records setting for the associated custom domain.
+	MaxRecords *int64 `type:"integer"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeCustomDomainAssociationsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeCustomDomainAssociationsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeCustomDomainAssociationsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeCustomDomainAssociationsInput"}
+	if s.CustomDomainCertificateArn != nil && len(*s.CustomDomainCertificateArn) < 20 {
+		invalidParams.Add(request.NewErrParamMinLen("CustomDomainCertificateArn", 20))
+	}
+	if s.CustomDomainName != nil && len(*s.CustomDomainName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("CustomDomainName", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetCustomDomainCertificateArn sets the CustomDomainCertificateArn field's value.
+func (s *DescribeCustomDomainAssociationsInput) SetCustomDomainCertificateArn(v string) *DescribeCustomDomainAssociationsInput {
+	s.CustomDomainCertificateArn = &v
+	return s
+}
+
+// SetCustomDomainName sets the CustomDomainName field's value.
+func (s *DescribeCustomDomainAssociationsInput) SetCustomDomainName(v string) *DescribeCustomDomainAssociationsInput {
+	s.CustomDomainName = &v
+	return s
+}
+
+// SetMarker sets the Marker field's value.
+func (s *DescribeCustomDomainAssociationsInput) SetMarker(v string) *DescribeCustomDomainAssociationsInput {
+	s.Marker = &v
+	return s
+}
+
+// SetMaxRecords sets the MaxRecords field's value.
+func (s *DescribeCustomDomainAssociationsInput) SetMaxRecords(v int64) *DescribeCustomDomainAssociationsInput {
+	s.MaxRecords = &v
+	return s
+}
+
+type DescribeCustomDomainAssociationsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The associations for the custom domain.
+	Associations []*Association `locationNameList:"Association" type:"list"`
+
+	// The marker for the custom domain association.
+	Marker *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeCustomDomainAssociationsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeCustomDomainAssociationsOutput) GoString() string {
+	return s.String()
+}
+
+// SetAssociations sets the Associations field's value.
+func (s *DescribeCustomDomainAssociationsOutput) SetAssociations(v []*Association) *DescribeCustomDomainAssociationsOutput {
+	s.Associations = v
+	return s
+}
+
+// SetMarker sets the Marker field's value.
+func (s *DescribeCustomDomainAssociationsOutput) SetMarker(v string) *DescribeCustomDomainAssociationsOutput {
+	s.Marker = &v
+	return s
+}
+
 type DescribeDataSharesForConsumerInput struct {
 	_ struct{} `type:"structure"`
 
@@ -22457,7 +24869,7 @@ func (s *DescribeEndpointAccessOutput) SetMarker(v string) *DescribeEndpointAcce
 type DescribeEndpointAuthorizationInput struct {
 	_ struct{} `type:"structure"`
 
-	// The AAmazon Web Services account ID of either the cluster owner (grantor)
+	// The Amazon Web Services account ID of either the cluster owner (grantor)
 	// or grantee. If Grantee parameter is true, then the Account value is of the
 	// grantor.
 	Account *string `type:"string"`
@@ -23225,6 +25637,120 @@ func (s *DescribeHsmConfigurationsOutput) SetMarker(v string) *DescribeHsmConfig
 	return s
 }
 
+type DescribeInboundIntegrationsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the inbound integration.
+	IntegrationArn *string `type:"string"`
+
+	// An optional parameter that specifies the starting point to return a set of
+	// response records. When the results of a DescribeInboundIntegrations request
+	// exceed the value specified in MaxRecords, Amazon Web Services returns a value
+	// in the Marker field of the response. You can retrieve the next set of response
+	// records by providing the returned marker value in the Marker parameter and
+	// retrying the request.
+	Marker *string `type:"string"`
+
+	// The maximum number of response records to return in each call. If the number
+	// of remaining response records exceeds the specified MaxRecords value, a value
+	// is returned in a marker field of the response. You can retrieve the next
+	// set of records by retrying the command with the returned marker value.
+	//
+	// Default: 100
+	//
+	// Constraints: minimum 20, maximum 100.
+	MaxRecords *int64 `type:"integer"`
+
+	// The Amazon Resource Name (ARN) of the target of an inbound integration.
+	TargetArn *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeInboundIntegrationsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeInboundIntegrationsInput) GoString() string {
+	return s.String()
+}
+
+// SetIntegrationArn sets the IntegrationArn field's value.
+func (s *DescribeInboundIntegrationsInput) SetIntegrationArn(v string) *DescribeInboundIntegrationsInput {
+	s.IntegrationArn = &v
+	return s
+}
+
+// SetMarker sets the Marker field's value.
+func (s *DescribeInboundIntegrationsInput) SetMarker(v string) *DescribeInboundIntegrationsInput {
+	s.Marker = &v
+	return s
+}
+
+// SetMaxRecords sets the MaxRecords field's value.
+func (s *DescribeInboundIntegrationsInput) SetMaxRecords(v int64) *DescribeInboundIntegrationsInput {
+	s.MaxRecords = &v
+	return s
+}
+
+// SetTargetArn sets the TargetArn field's value.
+func (s *DescribeInboundIntegrationsInput) SetTargetArn(v string) *DescribeInboundIntegrationsInput {
+	s.TargetArn = &v
+	return s
+}
+
+type DescribeInboundIntegrationsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A list of InboundIntegration instances.
+	InboundIntegrations []*InboundIntegration `locationNameList:"InboundIntegration" type:"list"`
+
+	// A value that indicates the starting point for the next set of response records
+	// in a subsequent request. If a value is returned in a response, you can retrieve
+	// the next set of records by providing this returned marker value in the Marker
+	// parameter and retrying the command. If the Marker field is empty, all response
+	// records have been retrieved for the request.
+	Marker *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeInboundIntegrationsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeInboundIntegrationsOutput) GoString() string {
+	return s.String()
+}
+
+// SetInboundIntegrations sets the InboundIntegrations field's value.
+func (s *DescribeInboundIntegrationsOutput) SetInboundIntegrations(v []*InboundIntegration) *DescribeInboundIntegrationsOutput {
+	s.InboundIntegrations = v
+	return s
+}
+
+// SetMarker sets the Marker field's value.
+func (s *DescribeInboundIntegrationsOutput) SetMarker(v string) *DescribeInboundIntegrationsOutput {
+	s.Marker = &v
+	return s
+}
+
 type DescribeLoggingStatusInput struct {
 	_ struct{} `type:"structure"`
 
@@ -23313,6 +25839,10 @@ type DescribeNodeConfigurationOptionsInput struct {
 	// if you are restoring a snapshot you do not own, optional if you own the snapshot.
 	OwnerAccount *string `type:"string"`
 
+	// The Amazon Resource Name (ARN) of the snapshot associated with the message
+	// to describe node configuration.
+	SnapshotArn *string `type:"string"`
+
 	// The identifier of the snapshot to evaluate for possible node configurations.
 	SnapshotIdentifier *string `type:"string"`
 }
@@ -23381,6 +25911,12 @@ func (s *DescribeNodeConfigurationOptionsInput) SetMaxRecords(v int64) *Describe
 // SetOwnerAccount sets the OwnerAccount field's value.
 func (s *DescribeNodeConfigurationOptionsInput) SetOwnerAccount(v string) *DescribeNodeConfigurationOptionsInput {
 	s.OwnerAccount = &v
+	return s
+}
+
+// SetSnapshotArn sets the SnapshotArn field's value.
+func (s *DescribeNodeConfigurationOptionsInput) SetSnapshotArn(v string) *DescribeNodeConfigurationOptionsInput {
+	s.SnapshotArn = &v
 	return s
 }
 
@@ -23668,6 +26204,106 @@ func (s DescribePartnersOutput) GoString() string {
 // SetPartnerIntegrationInfoList sets the PartnerIntegrationInfoList field's value.
 func (s *DescribePartnersOutput) SetPartnerIntegrationInfoList(v []*PartnerIntegrationInfo) *DescribePartnersOutput {
 	s.PartnerIntegrationInfoList = v
+	return s
+}
+
+type DescribeRedshiftIdcApplicationsInput struct {
+	_ struct{} `type:"structure"`
+
+	// A value that indicates the starting point for the next set of response records
+	// in a subsequent request. If a value is returned in a response, you can retrieve
+	// the next set of records by providing this returned marker value in the Marker
+	// parameter and retrying the command. If the Marker field is empty, all response
+	// records have been retrieved for the request.
+	Marker *string `type:"string"`
+
+	// The maximum number of response records to return in each call. If the number
+	// of remaining response records exceeds the specified MaxRecords value, a value
+	// is returned in a marker field of the response. You can retrieve the next
+	// set of records by retrying the command with the returned marker value.
+	MaxRecords *int64 `type:"integer"`
+
+	// The ARN for the Redshift application that integrates with IAM Identity Center.
+	RedshiftIdcApplicationArn *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeRedshiftIdcApplicationsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeRedshiftIdcApplicationsInput) GoString() string {
+	return s.String()
+}
+
+// SetMarker sets the Marker field's value.
+func (s *DescribeRedshiftIdcApplicationsInput) SetMarker(v string) *DescribeRedshiftIdcApplicationsInput {
+	s.Marker = &v
+	return s
+}
+
+// SetMaxRecords sets the MaxRecords field's value.
+func (s *DescribeRedshiftIdcApplicationsInput) SetMaxRecords(v int64) *DescribeRedshiftIdcApplicationsInput {
+	s.MaxRecords = &v
+	return s
+}
+
+// SetRedshiftIdcApplicationArn sets the RedshiftIdcApplicationArn field's value.
+func (s *DescribeRedshiftIdcApplicationsInput) SetRedshiftIdcApplicationArn(v string) *DescribeRedshiftIdcApplicationsInput {
+	s.RedshiftIdcApplicationArn = &v
+	return s
+}
+
+type DescribeRedshiftIdcApplicationsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A value that indicates the starting point for the next set of response records
+	// in a subsequent request. If a value is returned in a response, you can retrieve
+	// the next set of records by providing this returned marker value in the Marker
+	// parameter and retrying the command. If the Marker field is empty, all response
+	// records have been retrieved for the request.
+	Marker *string `type:"string"`
+
+	// The list of Amazon Redshift IAM Identity Center applications.
+	RedshiftIdcApplications []*RedshiftIdcApplication `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeRedshiftIdcApplicationsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeRedshiftIdcApplicationsOutput) GoString() string {
+	return s.String()
+}
+
+// SetMarker sets the Marker field's value.
+func (s *DescribeRedshiftIdcApplicationsOutput) SetMarker(v string) *DescribeRedshiftIdcApplicationsOutput {
+	s.Marker = &v
+	return s
+}
+
+// SetRedshiftIdcApplications sets the RedshiftIdcApplications field's value.
+func (s *DescribeRedshiftIdcApplicationsOutput) SetRedshiftIdcApplications(v []*RedshiftIdcApplication) *DescribeRedshiftIdcApplicationsOutput {
+	s.RedshiftIdcApplications = v
 	return s
 }
 
@@ -25557,8 +28193,8 @@ type EnableLoggingInput struct {
 	// The log destination type. An enum with possible values of s3 and cloudwatch.
 	LogDestinationType *string `type:"string" enum:"LogDestinationType"`
 
-	// The collection of exported log types. Log types include the connection log,
-	// user log and user activity log.
+	// The collection of exported log types. Possible values are connectionlog,
+	// useractivitylog, and userlog.
 	LogExports []*string `type:"list"`
 
 	// The prefix applied to the log file names.
@@ -26375,6 +29011,84 @@ func (s *EventSubscription) SetTags(v []*Tag) *EventSubscription {
 	return s
 }
 
+type FailoverPrimaryComputeInput struct {
+	_ struct{} `type:"structure"`
+
+	// The unique identifier of the cluster for which the primary compute unit will
+	// be failed over to another Availability Zone.
+	//
+	// ClusterIdentifier is a required field
+	ClusterIdentifier *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FailoverPrimaryComputeInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FailoverPrimaryComputeInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *FailoverPrimaryComputeInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "FailoverPrimaryComputeInput"}
+	if s.ClusterIdentifier == nil {
+		invalidParams.Add(request.NewErrParamRequired("ClusterIdentifier"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClusterIdentifier sets the ClusterIdentifier field's value.
+func (s *FailoverPrimaryComputeInput) SetClusterIdentifier(v string) *FailoverPrimaryComputeInput {
+	s.ClusterIdentifier = &v
+	return s
+}
+
+type FailoverPrimaryComputeOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Describes a cluster.
+	Cluster *Cluster `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FailoverPrimaryComputeOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FailoverPrimaryComputeOutput) GoString() string {
+	return s.String()
+}
+
+// SetCluster sets the Cluster field's value.
+func (s *FailoverPrimaryComputeOutput) SetCluster(v *Cluster) *FailoverPrimaryComputeOutput {
+	s.Cluster = v
+	return s
+}
+
 // The request parameters to get cluster credentials.
 type GetClusterCredentialsInput struct {
 	_ struct{} `type:"structure"`
@@ -26384,10 +29098,11 @@ type GetClusterCredentialsInput struct {
 	AutoCreate *bool `type:"boolean"`
 
 	// The unique identifier of the cluster that contains the database for which
-	// your are requesting credentials. This parameter is case sensitive.
-	//
-	// ClusterIdentifier is a required field
-	ClusterIdentifier *string `type:"string" required:"true"`
+	// you are requesting credentials. This parameter is case sensitive.
+	ClusterIdentifier *string `type:"string"`
+
+	// The custom domain name for the cluster credentials.
+	CustomDomainName *string `type:"string"`
 
 	// A list of the names of existing database groups that the user named in DbUser
 	// will join for the current session, in addition to any group memberships for
@@ -26416,8 +29131,8 @@ type GetClusterCredentialsInput struct {
 	//
 	//    * Must be 1 to 64 alphanumeric characters or hyphens
 	//
-	//    * Must contain only lowercase letters, numbers, underscore, plus sign,
-	//    period (dot), at symbol (@), or hyphen.
+	//    * Must contain uppercase or lowercase letters, numbers, underscore, plus
+	//    sign, period (dot), at symbol (@), or hyphen.
 	//
 	//    * First character must be a letter.
 	//
@@ -26444,8 +29159,8 @@ type GetClusterCredentialsInput struct {
 	//    * Must be 1 to 64 alphanumeric characters or hyphens. The user name can't
 	//    be PUBLIC.
 	//
-	//    * Must contain only lowercase letters, numbers, underscore, plus sign,
-	//    period (dot), at symbol (@), or hyphen.
+	//    * Must contain uppercase or lowercase letters, numbers, underscore, plus
+	//    sign, period (dot), at symbol (@), or hyphen.
 	//
 	//    * First character must be a letter.
 	//
@@ -26487,9 +29202,6 @@ func (s GetClusterCredentialsInput) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *GetClusterCredentialsInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "GetClusterCredentialsInput"}
-	if s.ClusterIdentifier == nil {
-		invalidParams.Add(request.NewErrParamRequired("ClusterIdentifier"))
-	}
 	if s.DbUser == nil {
 		invalidParams.Add(request.NewErrParamRequired("DbUser"))
 	}
@@ -26509,6 +29221,12 @@ func (s *GetClusterCredentialsInput) SetAutoCreate(v bool) *GetClusterCredential
 // SetClusterIdentifier sets the ClusterIdentifier field's value.
 func (s *GetClusterCredentialsInput) SetClusterIdentifier(v string) *GetClusterCredentialsInput {
 	s.ClusterIdentifier = &v
+	return s
+}
+
+// SetCustomDomainName sets the CustomDomainName field's value.
+func (s *GetClusterCredentialsInput) SetCustomDomainName(v string) *GetClusterCredentialsInput {
+	s.CustomDomainName = &v
 	return s
 }
 
@@ -26594,6 +29312,134 @@ func (s *GetClusterCredentialsOutput) SetDbUser(v string) *GetClusterCredentials
 // SetExpiration sets the Expiration field's value.
 func (s *GetClusterCredentialsOutput) SetExpiration(v time.Time) *GetClusterCredentialsOutput {
 	s.Expiration = &v
+	return s
+}
+
+type GetClusterCredentialsWithIAMInput struct {
+	_ struct{} `type:"structure"`
+
+	// The unique identifier of the cluster that contains the database for which
+	// you are requesting credentials.
+	ClusterIdentifier *string `type:"string"`
+
+	// The custom domain name for the IAM message cluster credentials.
+	CustomDomainName *string `type:"string"`
+
+	// The name of the database for which you are requesting credentials. If the
+	// database name is specified, the IAM policy must allow access to the resource
+	// dbname for the specified database name. If the database name is not specified,
+	// access to all databases is allowed.
+	DbName *string `type:"string"`
+
+	// The number of seconds until the returned temporary password expires.
+	//
+	// Range: 900-3600. Default: 900.
+	DurationSeconds *int64 `type:"integer"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetClusterCredentialsWithIAMInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetClusterCredentialsWithIAMInput) GoString() string {
+	return s.String()
+}
+
+// SetClusterIdentifier sets the ClusterIdentifier field's value.
+func (s *GetClusterCredentialsWithIAMInput) SetClusterIdentifier(v string) *GetClusterCredentialsWithIAMInput {
+	s.ClusterIdentifier = &v
+	return s
+}
+
+// SetCustomDomainName sets the CustomDomainName field's value.
+func (s *GetClusterCredentialsWithIAMInput) SetCustomDomainName(v string) *GetClusterCredentialsWithIAMInput {
+	s.CustomDomainName = &v
+	return s
+}
+
+// SetDbName sets the DbName field's value.
+func (s *GetClusterCredentialsWithIAMInput) SetDbName(v string) *GetClusterCredentialsWithIAMInput {
+	s.DbName = &v
+	return s
+}
+
+// SetDurationSeconds sets the DurationSeconds field's value.
+func (s *GetClusterCredentialsWithIAMInput) SetDurationSeconds(v int64) *GetClusterCredentialsWithIAMInput {
+	s.DurationSeconds = &v
+	return s
+}
+
+type GetClusterCredentialsWithIAMOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A temporary password that you provide when you connect to a database.
+	//
+	// DbPassword is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by GetClusterCredentialsWithIAMOutput's
+	// String and GoString methods.
+	DbPassword *string `type:"string" sensitive:"true"`
+
+	// A database user name that you provide when you connect to a database. The
+	// database user is mapped 1:1 to the source IAM identity.
+	DbUser *string `type:"string"`
+
+	// The time (UTC) when the temporary password expires. After this timestamp,
+	// a log in with the temporary password fails.
+	Expiration *time.Time `type:"timestamp"`
+
+	// Reserved for future use.
+	NextRefreshTime *time.Time `type:"timestamp"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetClusterCredentialsWithIAMOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetClusterCredentialsWithIAMOutput) GoString() string {
+	return s.String()
+}
+
+// SetDbPassword sets the DbPassword field's value.
+func (s *GetClusterCredentialsWithIAMOutput) SetDbPassword(v string) *GetClusterCredentialsWithIAMOutput {
+	s.DbPassword = &v
+	return s
+}
+
+// SetDbUser sets the DbUser field's value.
+func (s *GetClusterCredentialsWithIAMOutput) SetDbUser(v string) *GetClusterCredentialsWithIAMOutput {
+	s.DbUser = &v
+	return s
+}
+
+// SetExpiration sets the Expiration field's value.
+func (s *GetClusterCredentialsWithIAMOutput) SetExpiration(v time.Time) *GetClusterCredentialsWithIAMOutput {
+	s.Expiration = &v
+	return s
+}
+
+// SetNextRefreshTime sets the NextRefreshTime field's value.
+func (s *GetClusterCredentialsWithIAMOutput) SetNextRefreshTime(v time.Time) *GetClusterCredentialsWithIAMOutput {
+	s.NextRefreshTime = &v
 	return s
 }
 
@@ -26841,6 +29687,84 @@ func (s *GetReservedNodeExchangeOfferingsOutput) SetReservedNodeOfferings(v []*R
 	return s
 }
 
+type GetResourcePolicyInput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the resource of which its resource policy
+	// is fetched.
+	//
+	// ResourceArn is a required field
+	ResourceArn *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetResourcePolicyInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetResourcePolicyInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetResourcePolicyInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetResourcePolicyInput"}
+	if s.ResourceArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ResourceArn"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetResourceArn sets the ResourceArn field's value.
+func (s *GetResourcePolicyInput) SetResourceArn(v string) *GetResourcePolicyInput {
+	s.ResourceArn = &v
+	return s
+}
+
+type GetResourcePolicyOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The content of the resource policy.
+	ResourcePolicy *ResourcePolicy `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetResourcePolicyOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetResourcePolicyOutput) GoString() string {
+	return s.String()
+}
+
+// SetResourcePolicy sets the ResourcePolicy field's value.
+func (s *GetResourcePolicyOutput) SetResourcePolicy(v *ResourcePolicy) *GetResourcePolicyOutput {
+	s.ResourcePolicy = v
+	return s
+}
+
 // Returns information about an HSM client certificate. The certificate is stored
 // in a secure Hardware Storage Module (HSM), and used by the Amazon Redshift
 // cluster to encrypt data files.
@@ -27070,6 +29994,221 @@ func (s *IPRange) SetTags(v []*Tag) *IPRange {
 	return s
 }
 
+// The content of an inbound integration.
+type InboundIntegration struct {
+	_ struct{} `type:"structure"`
+
+	// The creation time of an inbound integration.
+	CreateTime *time.Time `type:"timestamp"`
+
+	// The outstanding errors of an inbound integration. Each item is an "IntegrationError".
+	// This is null if there is no error.
+	Errors []*IntegrationError `locationNameList:"IntegrationError" type:"list"`
+
+	// The Amazon Resource Name (ARN) of an inbound integration.
+	IntegrationArn *string `type:"string"`
+
+	// The Amazon Resource Name (ARN) of the source of an inbound integration.
+	SourceArn *string `type:"string"`
+
+	// The status of an inbound integration.
+	Status *string `type:"string" enum:"ZeroETLIntegrationStatus"`
+
+	// The Amazon Resource Name (ARN) of the target of an inbound integration.
+	TargetArn *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s InboundIntegration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s InboundIntegration) GoString() string {
+	return s.String()
+}
+
+// SetCreateTime sets the CreateTime field's value.
+func (s *InboundIntegration) SetCreateTime(v time.Time) *InboundIntegration {
+	s.CreateTime = &v
+	return s
+}
+
+// SetErrors sets the Errors field's value.
+func (s *InboundIntegration) SetErrors(v []*IntegrationError) *InboundIntegration {
+	s.Errors = v
+	return s
+}
+
+// SetIntegrationArn sets the IntegrationArn field's value.
+func (s *InboundIntegration) SetIntegrationArn(v string) *InboundIntegration {
+	s.IntegrationArn = &v
+	return s
+}
+
+// SetSourceArn sets the SourceArn field's value.
+func (s *InboundIntegration) SetSourceArn(v string) *InboundIntegration {
+	s.SourceArn = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *InboundIntegration) SetStatus(v string) *InboundIntegration {
+	s.Status = &v
+	return s
+}
+
+// SetTargetArn sets the TargetArn field's value.
+func (s *InboundIntegration) SetTargetArn(v string) *InboundIntegration {
+	s.TargetArn = &v
+	return s
+}
+
+// The error of an inbound integration.
+type IntegrationError struct {
+	_ struct{} `type:"structure"`
+
+	// The error code of an inbound integration error.
+	//
+	// ErrorCode is a required field
+	ErrorCode *string `type:"string" required:"true"`
+
+	// The error message of an inbound integration error.
+	ErrorMessage *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s IntegrationError) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s IntegrationError) GoString() string {
+	return s.String()
+}
+
+// SetErrorCode sets the ErrorCode field's value.
+func (s *IntegrationError) SetErrorCode(v string) *IntegrationError {
+	s.ErrorCode = &v
+	return s
+}
+
+// SetErrorMessage sets the ErrorMessage field's value.
+func (s *IntegrationError) SetErrorMessage(v string) *IntegrationError {
+	s.ErrorMessage = &v
+	return s
+}
+
+// The Lake Formation scope.
+type LakeFormationQuery struct {
+	_ struct{} `type:"structure"`
+
+	// Determines whether the query scope is enabled or disabled.
+	//
+	// Authorization is a required field
+	Authorization *string `type:"string" required:"true" enum:"ServiceAuthorization"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LakeFormationQuery) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LakeFormationQuery) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *LakeFormationQuery) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "LakeFormationQuery"}
+	if s.Authorization == nil {
+		invalidParams.Add(request.NewErrParamRequired("Authorization"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAuthorization sets the Authorization field's value.
+func (s *LakeFormationQuery) SetAuthorization(v string) *LakeFormationQuery {
+	s.Authorization = &v
+	return s
+}
+
+// A list of scopes set up for Lake Formation integration.
+type LakeFormationScopeUnion struct {
+	_ struct{} `type:"structure"`
+
+	// The Lake Formation scope.
+	LakeFormationQuery *LakeFormationQuery `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LakeFormationScopeUnion) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LakeFormationScopeUnion) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *LakeFormationScopeUnion) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "LakeFormationScopeUnion"}
+	if s.LakeFormationQuery != nil {
+		if err := s.LakeFormationQuery.Validate(); err != nil {
+			invalidParams.AddNested("LakeFormationQuery", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetLakeFormationQuery sets the LakeFormationQuery field's value.
+func (s *LakeFormationScopeUnion) SetLakeFormationQuery(v *LakeFormationQuery) *LakeFormationScopeUnion {
+	s.LakeFormationQuery = v
+	return s
+}
+
 // Describes the status of logging for a cluster.
 type LoggingStatus struct {
 	_ struct{} `type:"structure"`
@@ -27089,8 +30228,8 @@ type LoggingStatus struct {
 	// The log destination type. An enum with possible values of s3 and cloudwatch.
 	LogDestinationType *string `type:"string" enum:"LogDestinationType"`
 
-	// The collection of exported log types. Log types include the connection log,
-	// user log and user activity log.
+	// The collection of exported log types. Possible values are connectionlog,
+	// useractivitylog, and userlog.
 	LogExports []*string `type:"list"`
 
 	// true if logging is on, false if logging is off.
@@ -27223,14 +30362,8 @@ func (s *MaintenanceTrack) SetUpdateTargets(v []*UpdateTarget) *MaintenanceTrack
 type ModifyAquaConfigurationInput struct {
 	_ struct{} `type:"structure"`
 
-	// The new value of AQUA configuration status. Possible values include the following.
-	//
-	//    * enabled - Use AQUA if it is available for the current Amazon Web Services
-	//    Region and Amazon Redshift node type.
-	//
-	//    * disabled - Don't use AQUA.
-	//
-	//    * auto - Amazon Redshift determines whether to use AQUA.
+	// This parameter is retired. Amazon Redshift automatically determines whether
+	// to use AQUA (Advanced Query Accelerator).
 	AquaConfigurationStatus *string `type:"string" enum:"AquaConfigurationStatus"`
 
 	// The identifier of the cluster to be modified.
@@ -27285,7 +30418,8 @@ func (s *ModifyAquaConfigurationInput) SetClusterIdentifier(v string) *ModifyAqu
 type ModifyAquaConfigurationOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The updated AQUA configuration of the cluster.
+	// This parameter is retired. Amazon Redshift automatically determines whether
+	// to use AQUA (Advanced Query Accelerator).
 	AquaConfiguration *AquaConfiguration `type:"structure"`
 }
 
@@ -27738,6 +30872,10 @@ type ModifyClusterInput struct {
 	// the Amazon Redshift cluster can use to retrieve and store keys in an HSM.
 	HsmConfigurationIdentifier *string `type:"string"`
 
+	// The IP address types that the cluster supports. Possible values are ipv4
+	// and dualstack.
+	IpAddressType *string `type:"string"`
+
 	// The Key Management Service (KMS) key ID of the encryption key that you want
 	// to use to encrypt data in the cluster.
 	KmsKeyId *string `type:"string"`
@@ -27749,6 +30887,12 @@ type ModifyClusterInput struct {
 	// for the maintenance track. At this point, the maintenance track name is applied.
 	MaintenanceTrackName *string `type:"string"`
 
+	// If true, Amazon Redshift uses Secrets Manager to manage this cluster's admin
+	// credentials. You can't use MasterUserPassword if ManageMasterPassword is
+	// true. If ManageMasterPassword is false or not set, Amazon Redshift uses MasterUserPassword
+	// for the admin user account's password.
+	ManageMasterPassword *bool `type:"boolean"`
+
 	// The default for number of days that a newly created manual snapshot is retained.
 	// If the value is -1, the manual snapshot is retained indefinitely. This value
 	// doesn't retroactively change the retention periods of existing manual snapshots.
@@ -27758,10 +30902,17 @@ type ModifyClusterInput struct {
 	// The default value is -1.
 	ManualSnapshotRetentionPeriod *int64 `type:"integer"`
 
+	// The ID of the Key Management Service (KMS) key used to encrypt and store
+	// the cluster's admin credentials secret. You can only use this parameter if
+	// ManageMasterPassword is true.
+	MasterPasswordSecretKmsKeyId *string `type:"string"`
+
 	// The new password for the cluster admin user. This change is asynchronously
 	// applied as soon as possible. Between the time of the request and the completion
 	// of the request, the MasterUserPassword element exists in the PendingModifiedValues
 	// element of the operation response.
+	//
+	// You can't use MasterUserPassword if ManageMasterPassword is true.
 	//
 	// Operations never return the password, so this operation provides a way to
 	// regain access to the admin user account for a cluster if the password is
@@ -27781,7 +30932,15 @@ type ModifyClusterInput struct {
 	//
 	//    * Can be any printable ASCII character (ASCII code 33-126) except ' (single
 	//    quote), " (double quote), \, /, or @.
-	MasterUserPassword *string `type:"string"`
+	//
+	// MasterUserPassword is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by ModifyClusterInput's
+	// String and GoString methods.
+	MasterUserPassword *string `type:"string" sensitive:"true"`
+
+	// If true and the cluster is currently only deployed in a single Availability
+	// Zone, the cluster will be modified to be deployed in two Availability Zones.
+	MultiAZ *bool `type:"boolean"`
 
 	// The new identifier for the cluster.
 	//
@@ -27966,6 +31125,12 @@ func (s *ModifyClusterInput) SetHsmConfigurationIdentifier(v string) *ModifyClus
 	return s
 }
 
+// SetIpAddressType sets the IpAddressType field's value.
+func (s *ModifyClusterInput) SetIpAddressType(v string) *ModifyClusterInput {
+	s.IpAddressType = &v
+	return s
+}
+
 // SetKmsKeyId sets the KmsKeyId field's value.
 func (s *ModifyClusterInput) SetKmsKeyId(v string) *ModifyClusterInput {
 	s.KmsKeyId = &v
@@ -27978,15 +31143,33 @@ func (s *ModifyClusterInput) SetMaintenanceTrackName(v string) *ModifyClusterInp
 	return s
 }
 
+// SetManageMasterPassword sets the ManageMasterPassword field's value.
+func (s *ModifyClusterInput) SetManageMasterPassword(v bool) *ModifyClusterInput {
+	s.ManageMasterPassword = &v
+	return s
+}
+
 // SetManualSnapshotRetentionPeriod sets the ManualSnapshotRetentionPeriod field's value.
 func (s *ModifyClusterInput) SetManualSnapshotRetentionPeriod(v int64) *ModifyClusterInput {
 	s.ManualSnapshotRetentionPeriod = &v
 	return s
 }
 
+// SetMasterPasswordSecretKmsKeyId sets the MasterPasswordSecretKmsKeyId field's value.
+func (s *ModifyClusterInput) SetMasterPasswordSecretKmsKeyId(v string) *ModifyClusterInput {
+	s.MasterPasswordSecretKmsKeyId = &v
+	return s
+}
+
 // SetMasterUserPassword sets the MasterUserPassword field's value.
 func (s *ModifyClusterInput) SetMasterUserPassword(v string) *ModifyClusterInput {
 	s.MasterUserPassword = &v
+	return s
+}
+
+// SetMultiAZ sets the MultiAZ field's value.
+func (s *ModifyClusterInput) SetMultiAZ(v bool) *ModifyClusterInput {
+	s.MultiAZ = &v
 	return s
 }
 
@@ -28547,6 +31730,149 @@ func (s *ModifyClusterSubnetGroupOutput) SetClusterSubnetGroup(v *ClusterSubnetG
 	return s
 }
 
+type ModifyCustomDomainAssociationInput struct {
+	_ struct{} `type:"structure"`
+
+	// The identifier of the cluster to change a custom domain association for.
+	//
+	// ClusterIdentifier is a required field
+	ClusterIdentifier *string `type:"string" required:"true"`
+
+	// The certificate Amazon Resource Name (ARN) for the changed custom domain
+	// association.
+	//
+	// CustomDomainCertificateArn is a required field
+	CustomDomainCertificateArn *string `min:"20" type:"string" required:"true"`
+
+	// The custom domain name for a changed custom domain association.
+	//
+	// CustomDomainName is a required field
+	CustomDomainName *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyCustomDomainAssociationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyCustomDomainAssociationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ModifyCustomDomainAssociationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ModifyCustomDomainAssociationInput"}
+	if s.ClusterIdentifier == nil {
+		invalidParams.Add(request.NewErrParamRequired("ClusterIdentifier"))
+	}
+	if s.CustomDomainCertificateArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("CustomDomainCertificateArn"))
+	}
+	if s.CustomDomainCertificateArn != nil && len(*s.CustomDomainCertificateArn) < 20 {
+		invalidParams.Add(request.NewErrParamMinLen("CustomDomainCertificateArn", 20))
+	}
+	if s.CustomDomainName == nil {
+		invalidParams.Add(request.NewErrParamRequired("CustomDomainName"))
+	}
+	if s.CustomDomainName != nil && len(*s.CustomDomainName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("CustomDomainName", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClusterIdentifier sets the ClusterIdentifier field's value.
+func (s *ModifyCustomDomainAssociationInput) SetClusterIdentifier(v string) *ModifyCustomDomainAssociationInput {
+	s.ClusterIdentifier = &v
+	return s
+}
+
+// SetCustomDomainCertificateArn sets the CustomDomainCertificateArn field's value.
+func (s *ModifyCustomDomainAssociationInput) SetCustomDomainCertificateArn(v string) *ModifyCustomDomainAssociationInput {
+	s.CustomDomainCertificateArn = &v
+	return s
+}
+
+// SetCustomDomainName sets the CustomDomainName field's value.
+func (s *ModifyCustomDomainAssociationInput) SetCustomDomainName(v string) *ModifyCustomDomainAssociationInput {
+	s.CustomDomainName = &v
+	return s
+}
+
+type ModifyCustomDomainAssociationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The identifier of the cluster associated with the result for the changed
+	// custom domain association.
+	ClusterIdentifier *string `type:"string"`
+
+	// The certificate expiration time associated with the result for the changed
+	// custom domain association.
+	CustomDomainCertExpiryTime *string `type:"string"`
+
+	// The certificate Amazon Resource Name (ARN) associated with the result for
+	// the changed custom domain association.
+	CustomDomainCertificateArn *string `min:"20" type:"string"`
+
+	// The custom domain name associated with the result for the changed custom
+	// domain association.
+	CustomDomainName *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyCustomDomainAssociationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyCustomDomainAssociationOutput) GoString() string {
+	return s.String()
+}
+
+// SetClusterIdentifier sets the ClusterIdentifier field's value.
+func (s *ModifyCustomDomainAssociationOutput) SetClusterIdentifier(v string) *ModifyCustomDomainAssociationOutput {
+	s.ClusterIdentifier = &v
+	return s
+}
+
+// SetCustomDomainCertExpiryTime sets the CustomDomainCertExpiryTime field's value.
+func (s *ModifyCustomDomainAssociationOutput) SetCustomDomainCertExpiryTime(v string) *ModifyCustomDomainAssociationOutput {
+	s.CustomDomainCertExpiryTime = &v
+	return s
+}
+
+// SetCustomDomainCertificateArn sets the CustomDomainCertificateArn field's value.
+func (s *ModifyCustomDomainAssociationOutput) SetCustomDomainCertificateArn(v string) *ModifyCustomDomainAssociationOutput {
+	s.CustomDomainCertificateArn = &v
+	return s
+}
+
+// SetCustomDomainName sets the CustomDomainName field's value.
+func (s *ModifyCustomDomainAssociationOutput) SetCustomDomainName(v string) *ModifyCustomDomainAssociationOutput {
+	s.CustomDomainName = &v
+	return s
+}
+
 type ModifyEndpointAccessInput struct {
 	_ struct{} `type:"structure"`
 
@@ -28868,6 +32194,149 @@ func (s ModifyEventSubscriptionOutput) GoString() string {
 // SetEventSubscription sets the EventSubscription field's value.
 func (s *ModifyEventSubscriptionOutput) SetEventSubscription(v *EventSubscription) *ModifyEventSubscriptionOutput {
 	s.EventSubscription = v
+	return s
+}
+
+type ModifyRedshiftIdcApplicationInput struct {
+	_ struct{} `type:"structure"`
+
+	// The authorized token issuer list for the Amazon Redshift IAM Identity Center
+	// application to change.
+	AuthorizedTokenIssuerList []*AuthorizedTokenIssuer `type:"list"`
+
+	// The IAM role ARN associated with the Amazon Redshift IAM Identity Center
+	// application to change. It has the required permissions to be assumed and
+	// invoke the IDC Identity Center API.
+	IamRoleArn *string `type:"string"`
+
+	// The display name for the Amazon Redshift IAM Identity Center application
+	// to change. It appears on the console.
+	IdcDisplayName *string `min:"1" type:"string"`
+
+	// The namespace for the Amazon Redshift IAM Identity Center application to
+	// change. It determines which managed application verifies the connection token.
+	IdentityNamespace *string `min:"1" type:"string"`
+
+	// The ARN for the Redshift application that integrates with IAM Identity Center.
+	//
+	// RedshiftIdcApplicationArn is a required field
+	RedshiftIdcApplicationArn *string `type:"string" required:"true"`
+
+	// A collection of service integrations associated with the application.
+	ServiceIntegrations []*ServiceIntegrationsUnion `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyRedshiftIdcApplicationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyRedshiftIdcApplicationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ModifyRedshiftIdcApplicationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ModifyRedshiftIdcApplicationInput"}
+	if s.IdcDisplayName != nil && len(*s.IdcDisplayName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("IdcDisplayName", 1))
+	}
+	if s.IdentityNamespace != nil && len(*s.IdentityNamespace) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("IdentityNamespace", 1))
+	}
+	if s.RedshiftIdcApplicationArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("RedshiftIdcApplicationArn"))
+	}
+	if s.ServiceIntegrations != nil {
+		for i, v := range s.ServiceIntegrations {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "ServiceIntegrations", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAuthorizedTokenIssuerList sets the AuthorizedTokenIssuerList field's value.
+func (s *ModifyRedshiftIdcApplicationInput) SetAuthorizedTokenIssuerList(v []*AuthorizedTokenIssuer) *ModifyRedshiftIdcApplicationInput {
+	s.AuthorizedTokenIssuerList = v
+	return s
+}
+
+// SetIamRoleArn sets the IamRoleArn field's value.
+func (s *ModifyRedshiftIdcApplicationInput) SetIamRoleArn(v string) *ModifyRedshiftIdcApplicationInput {
+	s.IamRoleArn = &v
+	return s
+}
+
+// SetIdcDisplayName sets the IdcDisplayName field's value.
+func (s *ModifyRedshiftIdcApplicationInput) SetIdcDisplayName(v string) *ModifyRedshiftIdcApplicationInput {
+	s.IdcDisplayName = &v
+	return s
+}
+
+// SetIdentityNamespace sets the IdentityNamespace field's value.
+func (s *ModifyRedshiftIdcApplicationInput) SetIdentityNamespace(v string) *ModifyRedshiftIdcApplicationInput {
+	s.IdentityNamespace = &v
+	return s
+}
+
+// SetRedshiftIdcApplicationArn sets the RedshiftIdcApplicationArn field's value.
+func (s *ModifyRedshiftIdcApplicationInput) SetRedshiftIdcApplicationArn(v string) *ModifyRedshiftIdcApplicationInput {
+	s.RedshiftIdcApplicationArn = &v
+	return s
+}
+
+// SetServiceIntegrations sets the ServiceIntegrations field's value.
+func (s *ModifyRedshiftIdcApplicationInput) SetServiceIntegrations(v []*ServiceIntegrationsUnion) *ModifyRedshiftIdcApplicationInput {
+	s.ServiceIntegrations = v
+	return s
+}
+
+type ModifyRedshiftIdcApplicationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Contains properties for the Redshift IDC application.
+	RedshiftIdcApplication *RedshiftIdcApplication `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyRedshiftIdcApplicationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyRedshiftIdcApplicationOutput) GoString() string {
+	return s.String()
+}
+
+// SetRedshiftIdcApplication sets the RedshiftIdcApplication field's value.
+func (s *ModifyRedshiftIdcApplicationOutput) SetRedshiftIdcApplication(v *RedshiftIdcApplication) *ModifyRedshiftIdcApplicationOutput {
+	s.RedshiftIdcApplication = v
 	return s
 }
 
@@ -29566,6 +33035,9 @@ type NetworkInterface struct {
 	// The Availability Zone.
 	AvailabilityZone *string `type:"string"`
 
+	// The IPv6 address of the network interface within the subnet.
+	Ipv6Address *string `type:"string"`
+
 	// The network interface identifier.
 	NetworkInterfaceId *string `type:"string"`
 
@@ -29597,6 +33069,12 @@ func (s NetworkInterface) GoString() string {
 // SetAvailabilityZone sets the AvailabilityZone field's value.
 func (s *NetworkInterface) SetAvailabilityZone(v string) *NetworkInterface {
 	s.AvailabilityZone = &v
+	return s
+}
+
+// SetIpv6Address sets the Ipv6Address field's value.
+func (s *NetworkInterface) SetIpv6Address(v string) *NetworkInterface {
+	s.Ipv6Address = &v
 	return s
 }
 
@@ -30144,7 +33622,11 @@ type PendingModifiedValues struct {
 	MaintenanceTrackName *string `type:"string"`
 
 	// The pending or in-progress change of the admin user password for the cluster.
-	MasterUserPassword *string `type:"string"`
+	//
+	// MasterUserPassword is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by PendingModifiedValues's
+	// String and GoString methods.
+	MasterUserPassword *string `type:"string" sensitive:"true"`
 
 	// The pending or in-progress change of the cluster's node type.
 	NodeType *string `type:"string"`
@@ -30330,6 +33812,98 @@ func (s *PurchaseReservedNodeOfferingOutput) SetReservedNode(v *ReservedNode) *P
 	return s
 }
 
+type PutResourcePolicyInput struct {
+	_ struct{} `type:"structure"`
+
+	// The content of the resource policy being updated.
+	//
+	// Policy is a required field
+	Policy *string `type:"string" required:"true"`
+
+	// The Amazon Resource Name (ARN) of the resource of which its resource policy
+	// is updated.
+	//
+	// ResourceArn is a required field
+	ResourceArn *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutResourcePolicyInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutResourcePolicyInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PutResourcePolicyInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PutResourcePolicyInput"}
+	if s.Policy == nil {
+		invalidParams.Add(request.NewErrParamRequired("Policy"))
+	}
+	if s.ResourceArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ResourceArn"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetPolicy sets the Policy field's value.
+func (s *PutResourcePolicyInput) SetPolicy(v string) *PutResourcePolicyInput {
+	s.Policy = &v
+	return s
+}
+
+// SetResourceArn sets the ResourceArn field's value.
+func (s *PutResourcePolicyInput) SetResourceArn(v string) *PutResourcePolicyInput {
+	s.ResourceArn = &v
+	return s
+}
+
+type PutResourcePolicyOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The content of the updated resource policy.
+	ResourcePolicy *ResourcePolicy `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutResourcePolicyOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutResourcePolicyOutput) GoString() string {
+	return s.String()
+}
+
+// SetResourcePolicy sets the ResourcePolicy field's value.
+func (s *PutResourcePolicyOutput) SetResourcePolicy(v *ResourcePolicy) *PutResourcePolicyOutput {
+	s.ResourcePolicy = v
+	return s
+}
+
 type RebootClusterInput struct {
 	_ struct{} `type:"structure"`
 
@@ -30446,6 +34020,123 @@ func (s *RecurringCharge) SetRecurringChargeAmount(v float64) *RecurringCharge {
 // SetRecurringChargeFrequency sets the RecurringChargeFrequency field's value.
 func (s *RecurringCharge) SetRecurringChargeFrequency(v string) *RecurringCharge {
 	s.RecurringChargeFrequency = &v
+	return s
+}
+
+// Contains properties for the Redshift IDC application.
+type RedshiftIdcApplication struct {
+	_ struct{} `type:"structure"`
+
+	// The authorized token issuer list for the Amazon Redshift IAM Identity Center
+	// application.
+	AuthorizedTokenIssuerList []*AuthorizedTokenIssuer `type:"list"`
+
+	// The ARN for the Amazon Redshift IAM Identity Center application. It has the
+	// required permissions to be assumed and invoke the IDC Identity Center API.
+	IamRoleArn *string `type:"string"`
+
+	// The display name for the Amazon Redshift IAM Identity Center application.
+	// It appears on the console.
+	IdcDisplayName *string `min:"1" type:"string"`
+
+	// The ARN for the IAM Identity Center instance that Redshift integrates with.
+	IdcInstanceArn *string `type:"string"`
+
+	// The ARN for the Amazon Redshift IAM Identity Center application.
+	IdcManagedApplicationArn *string `type:"string"`
+
+	// The onboarding status for the Amazon Redshift IAM Identity Center application.
+	IdcOnboardStatus *string `type:"string"`
+
+	// The identity namespace for the Amazon Redshift IAM Identity Center application.
+	// It determines which managed application verifies the connection token.
+	IdentityNamespace *string `min:"1" type:"string"`
+
+	// The ARN for the Redshift application that integrates with IAM Identity Center.
+	RedshiftIdcApplicationArn *string `type:"string"`
+
+	// The name of the Redshift application in IAM Identity Center.
+	RedshiftIdcApplicationName *string `min:"1" type:"string"`
+
+	// A list of service integrations for the Redshift IAM Identity Center application.
+	ServiceIntegrations []*ServiceIntegrationsUnion `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RedshiftIdcApplication) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RedshiftIdcApplication) GoString() string {
+	return s.String()
+}
+
+// SetAuthorizedTokenIssuerList sets the AuthorizedTokenIssuerList field's value.
+func (s *RedshiftIdcApplication) SetAuthorizedTokenIssuerList(v []*AuthorizedTokenIssuer) *RedshiftIdcApplication {
+	s.AuthorizedTokenIssuerList = v
+	return s
+}
+
+// SetIamRoleArn sets the IamRoleArn field's value.
+func (s *RedshiftIdcApplication) SetIamRoleArn(v string) *RedshiftIdcApplication {
+	s.IamRoleArn = &v
+	return s
+}
+
+// SetIdcDisplayName sets the IdcDisplayName field's value.
+func (s *RedshiftIdcApplication) SetIdcDisplayName(v string) *RedshiftIdcApplication {
+	s.IdcDisplayName = &v
+	return s
+}
+
+// SetIdcInstanceArn sets the IdcInstanceArn field's value.
+func (s *RedshiftIdcApplication) SetIdcInstanceArn(v string) *RedshiftIdcApplication {
+	s.IdcInstanceArn = &v
+	return s
+}
+
+// SetIdcManagedApplicationArn sets the IdcManagedApplicationArn field's value.
+func (s *RedshiftIdcApplication) SetIdcManagedApplicationArn(v string) *RedshiftIdcApplication {
+	s.IdcManagedApplicationArn = &v
+	return s
+}
+
+// SetIdcOnboardStatus sets the IdcOnboardStatus field's value.
+func (s *RedshiftIdcApplication) SetIdcOnboardStatus(v string) *RedshiftIdcApplication {
+	s.IdcOnboardStatus = &v
+	return s
+}
+
+// SetIdentityNamespace sets the IdentityNamespace field's value.
+func (s *RedshiftIdcApplication) SetIdentityNamespace(v string) *RedshiftIdcApplication {
+	s.IdentityNamespace = &v
+	return s
+}
+
+// SetRedshiftIdcApplicationArn sets the RedshiftIdcApplicationArn field's value.
+func (s *RedshiftIdcApplication) SetRedshiftIdcApplicationArn(v string) *RedshiftIdcApplication {
+	s.RedshiftIdcApplicationArn = &v
+	return s
+}
+
+// SetRedshiftIdcApplicationName sets the RedshiftIdcApplicationName field's value.
+func (s *RedshiftIdcApplication) SetRedshiftIdcApplicationName(v string) *RedshiftIdcApplication {
+	s.RedshiftIdcApplicationName = &v
+	return s
+}
+
+// SetServiceIntegrations sets the ServiceIntegrations field's value.
+func (s *RedshiftIdcApplication) SetServiceIntegrations(v []*ServiceIntegrationsUnion) *RedshiftIdcApplication {
+	s.ServiceIntegrations = v
 	return s
 }
 
@@ -31345,6 +35036,47 @@ func (s *ResizeInfo) SetResizeType(v string) *ResizeInfo {
 	return s
 }
 
+// The policy that is attached to a resource.
+type ResourcePolicy struct {
+	_ struct{} `type:"structure"`
+
+	// The content of a resource policy.
+	Policy *string `type:"string"`
+
+	// The resources that a policy is attached to.
+	ResourceArn *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResourcePolicy) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResourcePolicy) GoString() string {
+	return s.String()
+}
+
+// SetPolicy sets the Policy field's value.
+func (s *ResourcePolicy) SetPolicy(v string) *ResourcePolicy {
+	s.Policy = &v
+	return s
+}
+
+// SetResourceArn sets the ResourceArn field's value.
+func (s *ResourcePolicy) SetResourceArn(v string) *ResourcePolicy {
+	s.ResourceArn = &v
+	return s
+}
+
 type RestoreFromClusterSnapshotInput struct {
 	_ struct{} `type:"structure"`
 
@@ -31357,16 +35089,9 @@ type RestoreFromClusterSnapshotInput struct {
 	// Default: true
 	AllowVersionUpgrade *bool `type:"boolean"`
 
-	// The value represents how the cluster is configured to use AQUA (Advanced
-	// Query Accelerator) after the cluster is restored. Possible values include
-	// the following.
-	//
-	//    * enabled - Use AQUA if it is available for the current Amazon Web Services
-	//    Region and Amazon Redshift node type.
-	//
-	//    * disabled - Don't use AQUA.
-	//
-	//    * auto - Amazon Redshift determines whether to use AQUA.
+	// This parameter is retired. It does not set the AQUA configuration status.
+	// Amazon Redshift automatically determines whether to use AQUA (Advanced Query
+	// Accelerator).
 	AquaConfigurationStatus *string `type:"string" enum:"AquaConfigurationStatus"`
 
 	// The number of days that automated snapshots are retained. If the value is
@@ -31442,7 +35167,9 @@ type RestoreFromClusterSnapshotInput struct {
 	// a snapshot.
 	DefaultIamRoleArn *string `type:"string"`
 
-	// The elastic IP (EIP) address for the cluster.
+	// The Elastic IP (EIP) address for the cluster. Don't specify the Elastic IP
+	// address for a publicly accessible cluster with availability zone relocation
+	// turned on.
 	ElasticIp *string `type:"string"`
 
 	// Enables support for restoring an unencrypted snapshot to a cluster encrypted
@@ -31477,6 +35204,9 @@ type RestoreFromClusterSnapshotInput struct {
 	// in the Amazon Redshift Cluster Management Guide.
 	IamRoles []*string `locationNameList:"IamRoleArn" type:"list"`
 
+	// The IP address type for the cluster. Possible values are ipv4 and dualstack.
+	IpAddressType *string `type:"string"`
+
 	// The Key Management Service (KMS) key ID of the encryption key that encrypts
 	// data in the cluster restored from a shared snapshot. You can also provide
 	// the key ID when you restore from an unencrypted snapshot to an encrypted
@@ -31495,12 +35225,26 @@ type RestoreFromClusterSnapshotInput struct {
 	// are on different tracks.
 	MaintenanceTrackName *string `type:"string"`
 
+	// If true, Amazon Redshift uses Secrets Manager to manage the restored cluster's
+	// admin credentials. If ManageMasterPassword is false or not set, Amazon Redshift
+	// uses the admin credentials the cluster had at the time the snapshot was taken.
+	ManageMasterPassword *bool `type:"boolean"`
+
 	// The default number of days to retain a manual snapshot. If the value is -1,
 	// the snapshot is retained indefinitely. This setting doesn't change the retention
 	// period of existing snapshots.
 	//
 	// The value must be either -1 or an integer between 1 and 3,653.
 	ManualSnapshotRetentionPeriod *int64 `type:"integer"`
+
+	// The ID of the Key Management Service (KMS) key used to encrypt and store
+	// the cluster's admin credentials secret. You can only use this parameter if
+	// ManageMasterPassword is true.
+	MasterPasswordSecretKmsKeyId *string `type:"string"`
+
+	// If true, the snapshot will be restored to a cluster deployed in two Availability
+	// Zones.
+	MultiAZ *bool `type:"boolean"`
 
 	// The node type that the restored cluster will be provisioned with.
 	//
@@ -31552,18 +35296,22 @@ type RestoreFromClusterSnapshotInput struct {
 	// The identifier of the target reserved node offering.
 	ReservedNodeId *string `type:"string"`
 
+	// The Amazon Resource Name (ARN) of the snapshot associated with the message
+	// to restore from a cluster. You must specify this parameter or snapshotIdentifier,
+	// but not both.
+	SnapshotArn *string `type:"string"`
+
 	// The name of the cluster the source snapshot was created from. This parameter
 	// is required if your IAM user has a policy containing a snapshot resource
 	// element that specifies anything other than * for the cluster name.
 	SnapshotClusterIdentifier *string `type:"string"`
 
 	// The name of the snapshot from which to create the new cluster. This parameter
-	// isn't case sensitive.
+	// isn't case sensitive. You must specify this parameter or snapshotArn, but
+	// not both.
 	//
 	// Example: my-snapshot-id
-	//
-	// SnapshotIdentifier is a required field
-	SnapshotIdentifier *string `type:"string" required:"true"`
+	SnapshotIdentifier *string `type:"string"`
 
 	// A unique identifier for the snapshot schedule.
 	SnapshotScheduleIdentifier *string `type:"string"`
@@ -31603,9 +35351,6 @@ func (s *RestoreFromClusterSnapshotInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "RestoreFromClusterSnapshotInput"}
 	if s.ClusterIdentifier == nil {
 		invalidParams.Add(request.NewErrParamRequired("ClusterIdentifier"))
-	}
-	if s.SnapshotIdentifier == nil {
-		invalidParams.Add(request.NewErrParamRequired("SnapshotIdentifier"))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -31716,6 +35461,12 @@ func (s *RestoreFromClusterSnapshotInput) SetIamRoles(v []*string) *RestoreFromC
 	return s
 }
 
+// SetIpAddressType sets the IpAddressType field's value.
+func (s *RestoreFromClusterSnapshotInput) SetIpAddressType(v string) *RestoreFromClusterSnapshotInput {
+	s.IpAddressType = &v
+	return s
+}
+
 // SetKmsKeyId sets the KmsKeyId field's value.
 func (s *RestoreFromClusterSnapshotInput) SetKmsKeyId(v string) *RestoreFromClusterSnapshotInput {
 	s.KmsKeyId = &v
@@ -31728,9 +35479,27 @@ func (s *RestoreFromClusterSnapshotInput) SetMaintenanceTrackName(v string) *Res
 	return s
 }
 
+// SetManageMasterPassword sets the ManageMasterPassword field's value.
+func (s *RestoreFromClusterSnapshotInput) SetManageMasterPassword(v bool) *RestoreFromClusterSnapshotInput {
+	s.ManageMasterPassword = &v
+	return s
+}
+
 // SetManualSnapshotRetentionPeriod sets the ManualSnapshotRetentionPeriod field's value.
 func (s *RestoreFromClusterSnapshotInput) SetManualSnapshotRetentionPeriod(v int64) *RestoreFromClusterSnapshotInput {
 	s.ManualSnapshotRetentionPeriod = &v
+	return s
+}
+
+// SetMasterPasswordSecretKmsKeyId sets the MasterPasswordSecretKmsKeyId field's value.
+func (s *RestoreFromClusterSnapshotInput) SetMasterPasswordSecretKmsKeyId(v string) *RestoreFromClusterSnapshotInput {
+	s.MasterPasswordSecretKmsKeyId = &v
+	return s
+}
+
+// SetMultiAZ sets the MultiAZ field's value.
+func (s *RestoreFromClusterSnapshotInput) SetMultiAZ(v bool) *RestoreFromClusterSnapshotInput {
+	s.MultiAZ = &v
 	return s
 }
 
@@ -31773,6 +35542,12 @@ func (s *RestoreFromClusterSnapshotInput) SetPubliclyAccessible(v bool) *Restore
 // SetReservedNodeId sets the ReservedNodeId field's value.
 func (s *RestoreFromClusterSnapshotInput) SetReservedNodeId(v string) *RestoreFromClusterSnapshotInput {
 	s.ReservedNodeId = &v
+	return s
+}
+
+// SetSnapshotArn sets the SnapshotArn field's value.
+func (s *RestoreFromClusterSnapshotInput) SetSnapshotArn(v string) *RestoreFromClusterSnapshotInput {
+	s.SnapshotArn = &v
 	return s
 }
 
@@ -32564,15 +36339,17 @@ type RevokeSnapshotAccessInput struct {
 	// AccountWithRestoreAccess is a required field
 	AccountWithRestoreAccess *string `type:"string" required:"true"`
 
+	// The Amazon Resource Name (ARN) of the snapshot associated with the message
+	// to revoke access.
+	SnapshotArn *string `type:"string"`
+
 	// The identifier of the cluster the snapshot was created from. This parameter
 	// is required if your IAM user has a policy containing a snapshot resource
 	// element that specifies anything other than * for the cluster name.
 	SnapshotClusterIdentifier *string `type:"string"`
 
 	// The identifier of the snapshot that the account can no longer access.
-	//
-	// SnapshotIdentifier is a required field
-	SnapshotIdentifier *string `type:"string" required:"true"`
+	SnapshotIdentifier *string `type:"string"`
 }
 
 // String returns the string representation.
@@ -32599,9 +36376,6 @@ func (s *RevokeSnapshotAccessInput) Validate() error {
 	if s.AccountWithRestoreAccess == nil {
 		invalidParams.Add(request.NewErrParamRequired("AccountWithRestoreAccess"))
 	}
-	if s.SnapshotIdentifier == nil {
-		invalidParams.Add(request.NewErrParamRequired("SnapshotIdentifier"))
-	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -32612,6 +36386,12 @@ func (s *RevokeSnapshotAccessInput) Validate() error {
 // SetAccountWithRestoreAccess sets the AccountWithRestoreAccess field's value.
 func (s *RevokeSnapshotAccessInput) SetAccountWithRestoreAccess(v string) *RevokeSnapshotAccessInput {
 	s.AccountWithRestoreAccess = &v
+	return s
+}
+
+// SetSnapshotArn sets the SnapshotArn field's value.
+func (s *RevokeSnapshotAccessInput) SetSnapshotArn(v string) *RevokeSnapshotAccessInput {
+	s.SnapshotArn = &v
 	return s
 }
 
@@ -33000,6 +36780,101 @@ func (s *ScheduledActionType) SetResumeCluster(v *ResumeClusterMessage) *Schedul
 	return s
 }
 
+// The AvailabilityZone and ClusterNodes information of the secondary compute
+// unit.
+type SecondaryClusterInfo struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the Availability Zone in which the secondary compute unit of
+	// the cluster is located.
+	AvailabilityZone *string `type:"string"`
+
+	// The nodes in the secondary compute unit.
+	ClusterNodes []*ClusterNode `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SecondaryClusterInfo) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SecondaryClusterInfo) GoString() string {
+	return s.String()
+}
+
+// SetAvailabilityZone sets the AvailabilityZone field's value.
+func (s *SecondaryClusterInfo) SetAvailabilityZone(v string) *SecondaryClusterInfo {
+	s.AvailabilityZone = &v
+	return s
+}
+
+// SetClusterNodes sets the ClusterNodes field's value.
+func (s *SecondaryClusterInfo) SetClusterNodes(v []*ClusterNode) *SecondaryClusterInfo {
+	s.ClusterNodes = v
+	return s
+}
+
+// A list of service integrations.
+type ServiceIntegrationsUnion struct {
+	_ struct{} `type:"structure"`
+
+	// A list of scopes set up for Lake Formation integration.
+	LakeFormation []*LakeFormationScopeUnion `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ServiceIntegrationsUnion) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ServiceIntegrationsUnion) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ServiceIntegrationsUnion) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ServiceIntegrationsUnion"}
+	if s.LakeFormation != nil {
+		for i, v := range s.LakeFormation {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "LakeFormation", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetLakeFormation sets the LakeFormation field's value.
+func (s *ServiceIntegrationsUnion) SetLakeFormation(v []*LakeFormationScopeUnion) *ServiceIntegrationsUnion {
+	s.LakeFormation = v
+	return s
+}
+
 // Describes a snapshot.
 type Snapshot struct {
 	_ struct{} `type:"structure"`
@@ -33080,6 +36955,13 @@ type Snapshot struct {
 	//
 	// The value must be either -1 or an integer between 1 and 3,653.
 	ManualSnapshotRetentionPeriod *int64 `type:"integer"`
+
+	// The Amazon Resource Name (ARN) for the cluster's admin user credentials secret.
+	MasterPasswordSecretArn *string `type:"string"`
+
+	// The ID of the Key Management Service (KMS) key used to encrypt and store
+	// the cluster's admin credentials secret.
+	MasterPasswordSecretKmsKeyId *string `type:"string"`
 
 	// The admin user name for the cluster.
 	MasterUsername *string `type:"string"`
@@ -33270,6 +37152,18 @@ func (s *Snapshot) SetManualSnapshotRemainingDays(v int64) *Snapshot {
 // SetManualSnapshotRetentionPeriod sets the ManualSnapshotRetentionPeriod field's value.
 func (s *Snapshot) SetManualSnapshotRetentionPeriod(v int64) *Snapshot {
 	s.ManualSnapshotRetentionPeriod = &v
+	return s
+}
+
+// SetMasterPasswordSecretArn sets the MasterPasswordSecretArn field's value.
+func (s *Snapshot) SetMasterPasswordSecretArn(v string) *Snapshot {
+	s.MasterPasswordSecretArn = &v
+	return s
+}
+
+// SetMasterPasswordSecretKmsKeyId sets the MasterPasswordSecretKmsKeyId field's value.
+func (s *Snapshot) SetMasterPasswordSecretKmsKeyId(v string) *Snapshot {
+	s.MasterPasswordSecretKmsKeyId = &v
 	return s
 }
 
@@ -34829,6 +38723,22 @@ func ScheduledActionTypeValues_Values() []string {
 }
 
 const (
+	// ServiceAuthorizationEnabled is a ServiceAuthorization enum value
+	ServiceAuthorizationEnabled = "Enabled"
+
+	// ServiceAuthorizationDisabled is a ServiceAuthorization enum value
+	ServiceAuthorizationDisabled = "Disabled"
+)
+
+// ServiceAuthorization_Values returns all elements of the ServiceAuthorization enum
+func ServiceAuthorization_Values() []string {
+	return []string{
+		ServiceAuthorizationEnabled,
+		ServiceAuthorizationDisabled,
+	}
+}
+
+const (
 	// SnapshotAttributeToSortBySourceType is a SnapshotAttributeToSortBy enum value
 	SnapshotAttributeToSortBySourceType = "SOURCE_TYPE"
 
@@ -34993,5 +38903,41 @@ func UsageLimitPeriod_Values() []string {
 		UsageLimitPeriodDaily,
 		UsageLimitPeriodWeekly,
 		UsageLimitPeriodMonthly,
+	}
+}
+
+const (
+	// ZeroETLIntegrationStatusCreating is a ZeroETLIntegrationStatus enum value
+	ZeroETLIntegrationStatusCreating = "creating"
+
+	// ZeroETLIntegrationStatusActive is a ZeroETLIntegrationStatus enum value
+	ZeroETLIntegrationStatusActive = "active"
+
+	// ZeroETLIntegrationStatusModifying is a ZeroETLIntegrationStatus enum value
+	ZeroETLIntegrationStatusModifying = "modifying"
+
+	// ZeroETLIntegrationStatusFailed is a ZeroETLIntegrationStatus enum value
+	ZeroETLIntegrationStatusFailed = "failed"
+
+	// ZeroETLIntegrationStatusDeleting is a ZeroETLIntegrationStatus enum value
+	ZeroETLIntegrationStatusDeleting = "deleting"
+
+	// ZeroETLIntegrationStatusSyncing is a ZeroETLIntegrationStatus enum value
+	ZeroETLIntegrationStatusSyncing = "syncing"
+
+	// ZeroETLIntegrationStatusNeedsAttention is a ZeroETLIntegrationStatus enum value
+	ZeroETLIntegrationStatusNeedsAttention = "needs_attention"
+)
+
+// ZeroETLIntegrationStatus_Values returns all elements of the ZeroETLIntegrationStatus enum
+func ZeroETLIntegrationStatus_Values() []string {
+	return []string{
+		ZeroETLIntegrationStatusCreating,
+		ZeroETLIntegrationStatusActive,
+		ZeroETLIntegrationStatusModifying,
+		ZeroETLIntegrationStatusFailed,
+		ZeroETLIntegrationStatusDeleting,
+		ZeroETLIntegrationStatusSyncing,
+		ZeroETLIntegrationStatusNeedsAttention,
 	}
 }

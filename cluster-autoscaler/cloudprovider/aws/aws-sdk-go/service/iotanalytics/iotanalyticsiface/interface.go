@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // AWS IoT Analytics.
-//    func myFunc(svc iotanalyticsiface.IoTAnalyticsAPI) bool {
-//        // Make svc.BatchPutMessage request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// AWS IoT Analytics.
+//	func myFunc(svc iotanalyticsiface.IoTAnalyticsAPI) bool {
+//	    // Make svc.BatchPutMessage request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := iotanalytics.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := iotanalytics.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockIoTAnalyticsClient struct {
-//        iotanalyticsiface.IoTAnalyticsAPI
-//    }
-//    func (m *mockIoTAnalyticsClient) BatchPutMessage(input *iotanalytics.BatchPutMessageInput) (*iotanalytics.BatchPutMessageOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockIoTAnalyticsClient struct {
+//	    iotanalyticsiface.IoTAnalyticsAPI
+//	}
+//	func (m *mockIoTAnalyticsClient) BatchPutMessage(input *iotanalytics.BatchPutMessageInput) (*iotanalytics.BatchPutMessageOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockIoTAnalyticsClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockIoTAnalyticsClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,

@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // Amazon Fraud Detector.
-//    func myFunc(svc frauddetectoriface.FraudDetectorAPI) bool {
-//        // Make svc.BatchCreateVariable request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// Amazon Fraud Detector.
+//	func myFunc(svc frauddetectoriface.FraudDetectorAPI) bool {
+//	    // Make svc.BatchCreateVariable request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := frauddetector.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := frauddetector.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockFraudDetectorClient struct {
-//        frauddetectoriface.FraudDetectorAPI
-//    }
-//    func (m *mockFraudDetectorClient) BatchCreateVariable(input *frauddetector.BatchCreateVariableInput) (*frauddetector.BatchCreateVariableOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockFraudDetectorClient struct {
+//	    frauddetectoriface.FraudDetectorAPI
+//	}
+//	func (m *mockFraudDetectorClient) BatchCreateVariable(input *frauddetector.BatchCreateVariableInput) (*frauddetector.BatchCreateVariableOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockFraudDetectorClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockFraudDetectorClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,
@@ -87,6 +87,10 @@ type FraudDetectorAPI interface {
 	CreateDetectorVersion(*frauddetector.CreateDetectorVersionInput) (*frauddetector.CreateDetectorVersionOutput, error)
 	CreateDetectorVersionWithContext(aws.Context, *frauddetector.CreateDetectorVersionInput, ...request.Option) (*frauddetector.CreateDetectorVersionOutput, error)
 	CreateDetectorVersionRequest(*frauddetector.CreateDetectorVersionInput) (*request.Request, *frauddetector.CreateDetectorVersionOutput)
+
+	CreateList(*frauddetector.CreateListInput) (*frauddetector.CreateListOutput, error)
+	CreateListWithContext(aws.Context, *frauddetector.CreateListInput, ...request.Option) (*frauddetector.CreateListOutput, error)
+	CreateListRequest(*frauddetector.CreateListInput) (*request.Request, *frauddetector.CreateListOutput)
 
 	CreateModel(*frauddetector.CreateModelInput) (*frauddetector.CreateModelOutput, error)
 	CreateModelWithContext(aws.Context, *frauddetector.CreateModelInput, ...request.Option) (*frauddetector.CreateModelOutput, error)
@@ -143,6 +147,10 @@ type FraudDetectorAPI interface {
 	DeleteLabel(*frauddetector.DeleteLabelInput) (*frauddetector.DeleteLabelOutput, error)
 	DeleteLabelWithContext(aws.Context, *frauddetector.DeleteLabelInput, ...request.Option) (*frauddetector.DeleteLabelOutput, error)
 	DeleteLabelRequest(*frauddetector.DeleteLabelInput) (*request.Request, *frauddetector.DeleteLabelOutput)
+
+	DeleteList(*frauddetector.DeleteListInput) (*frauddetector.DeleteListOutput, error)
+	DeleteListWithContext(aws.Context, *frauddetector.DeleteListInput, ...request.Option) (*frauddetector.DeleteListOutput, error)
+	DeleteListRequest(*frauddetector.DeleteListInput) (*request.Request, *frauddetector.DeleteListOutput)
 
 	DeleteModel(*frauddetector.DeleteModelInput) (*frauddetector.DeleteModelOutput, error)
 	DeleteModelWithContext(aws.Context, *frauddetector.DeleteModelInput, ...request.Option) (*frauddetector.DeleteModelOutput, error)
@@ -248,6 +256,20 @@ type FraudDetectorAPI interface {
 	GetLabelsPages(*frauddetector.GetLabelsInput, func(*frauddetector.GetLabelsOutput, bool) bool) error
 	GetLabelsPagesWithContext(aws.Context, *frauddetector.GetLabelsInput, func(*frauddetector.GetLabelsOutput, bool) bool, ...request.Option) error
 
+	GetListElements(*frauddetector.GetListElementsInput) (*frauddetector.GetListElementsOutput, error)
+	GetListElementsWithContext(aws.Context, *frauddetector.GetListElementsInput, ...request.Option) (*frauddetector.GetListElementsOutput, error)
+	GetListElementsRequest(*frauddetector.GetListElementsInput) (*request.Request, *frauddetector.GetListElementsOutput)
+
+	GetListElementsPages(*frauddetector.GetListElementsInput, func(*frauddetector.GetListElementsOutput, bool) bool) error
+	GetListElementsPagesWithContext(aws.Context, *frauddetector.GetListElementsInput, func(*frauddetector.GetListElementsOutput, bool) bool, ...request.Option) error
+
+	GetListsMetadata(*frauddetector.GetListsMetadataInput) (*frauddetector.GetListsMetadataOutput, error)
+	GetListsMetadataWithContext(aws.Context, *frauddetector.GetListsMetadataInput, ...request.Option) (*frauddetector.GetListsMetadataOutput, error)
+	GetListsMetadataRequest(*frauddetector.GetListsMetadataInput) (*request.Request, *frauddetector.GetListsMetadataOutput)
+
+	GetListsMetadataPages(*frauddetector.GetListsMetadataInput, func(*frauddetector.GetListsMetadataOutput, bool) bool) error
+	GetListsMetadataPagesWithContext(aws.Context, *frauddetector.GetListsMetadataInput, func(*frauddetector.GetListsMetadataOutput, bool) bool, ...request.Option) error
+
 	GetModelVersion(*frauddetector.GetModelVersionInput) (*frauddetector.GetModelVersionOutput, error)
 	GetModelVersionWithContext(aws.Context, *frauddetector.GetModelVersionInput, ...request.Option) (*frauddetector.GetModelVersionOutput, error)
 	GetModelVersionRequest(*frauddetector.GetModelVersionInput) (*request.Request, *frauddetector.GetModelVersionOutput)
@@ -349,6 +371,10 @@ type FraudDetectorAPI interface {
 	UpdateEventLabel(*frauddetector.UpdateEventLabelInput) (*frauddetector.UpdateEventLabelOutput, error)
 	UpdateEventLabelWithContext(aws.Context, *frauddetector.UpdateEventLabelInput, ...request.Option) (*frauddetector.UpdateEventLabelOutput, error)
 	UpdateEventLabelRequest(*frauddetector.UpdateEventLabelInput) (*request.Request, *frauddetector.UpdateEventLabelOutput)
+
+	UpdateList(*frauddetector.UpdateListInput) (*frauddetector.UpdateListOutput, error)
+	UpdateListWithContext(aws.Context, *frauddetector.UpdateListInput, ...request.Option) (*frauddetector.UpdateListOutput, error)
+	UpdateListRequest(*frauddetector.UpdateListInput) (*request.Request, *frauddetector.UpdateListOutput)
 
 	UpdateModel(*frauddetector.UpdateModelInput) (*frauddetector.UpdateModelOutput, error)
 	UpdateModelWithContext(aws.Context, *frauddetector.UpdateModelInput, ...request.Option) (*frauddetector.UpdateModelOutput, error)

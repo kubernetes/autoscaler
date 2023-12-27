@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // Access Analyzer.
-//    func myFunc(svc accessanalyzeriface.AccessAnalyzerAPI) bool {
-//        // Make svc.ApplyArchiveRule request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// Access Analyzer.
+//	func myFunc(svc accessanalyzeriface.AccessAnalyzerAPI) bool {
+//	    // Make svc.ApplyArchiveRule request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := accessanalyzer.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := accessanalyzer.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockAccessAnalyzerClient struct {
-//        accessanalyzeriface.AccessAnalyzerAPI
-//    }
-//    func (m *mockAccessAnalyzerClient) ApplyArchiveRule(input *accessanalyzer.ApplyArchiveRuleInput) (*accessanalyzer.ApplyArchiveRuleOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockAccessAnalyzerClient struct {
+//	    accessanalyzeriface.AccessAnalyzerAPI
+//	}
+//	func (m *mockAccessAnalyzerClient) ApplyArchiveRule(input *accessanalyzer.ApplyArchiveRuleInput) (*accessanalyzer.ApplyArchiveRuleOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockAccessAnalyzerClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockAccessAnalyzerClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,
@@ -67,6 +67,14 @@ type AccessAnalyzerAPI interface {
 	CancelPolicyGeneration(*accessanalyzer.CancelPolicyGenerationInput) (*accessanalyzer.CancelPolicyGenerationOutput, error)
 	CancelPolicyGenerationWithContext(aws.Context, *accessanalyzer.CancelPolicyGenerationInput, ...request.Option) (*accessanalyzer.CancelPolicyGenerationOutput, error)
 	CancelPolicyGenerationRequest(*accessanalyzer.CancelPolicyGenerationInput) (*request.Request, *accessanalyzer.CancelPolicyGenerationOutput)
+
+	CheckAccessNotGranted(*accessanalyzer.CheckAccessNotGrantedInput) (*accessanalyzer.CheckAccessNotGrantedOutput, error)
+	CheckAccessNotGrantedWithContext(aws.Context, *accessanalyzer.CheckAccessNotGrantedInput, ...request.Option) (*accessanalyzer.CheckAccessNotGrantedOutput, error)
+	CheckAccessNotGrantedRequest(*accessanalyzer.CheckAccessNotGrantedInput) (*request.Request, *accessanalyzer.CheckAccessNotGrantedOutput)
+
+	CheckNoNewAccess(*accessanalyzer.CheckNoNewAccessInput) (*accessanalyzer.CheckNoNewAccessOutput, error)
+	CheckNoNewAccessWithContext(aws.Context, *accessanalyzer.CheckNoNewAccessInput, ...request.Option) (*accessanalyzer.CheckNoNewAccessOutput, error)
+	CheckNoNewAccessRequest(*accessanalyzer.CheckNoNewAccessInput) (*request.Request, *accessanalyzer.CheckNoNewAccessOutput)
 
 	CreateAccessPreview(*accessanalyzer.CreateAccessPreviewInput) (*accessanalyzer.CreateAccessPreviewOutput, error)
 	CreateAccessPreviewWithContext(aws.Context, *accessanalyzer.CreateAccessPreviewInput, ...request.Option) (*accessanalyzer.CreateAccessPreviewOutput, error)
@@ -107,6 +115,13 @@ type AccessAnalyzerAPI interface {
 	GetFinding(*accessanalyzer.GetFindingInput) (*accessanalyzer.GetFindingOutput, error)
 	GetFindingWithContext(aws.Context, *accessanalyzer.GetFindingInput, ...request.Option) (*accessanalyzer.GetFindingOutput, error)
 	GetFindingRequest(*accessanalyzer.GetFindingInput) (*request.Request, *accessanalyzer.GetFindingOutput)
+
+	GetFindingV2(*accessanalyzer.GetFindingV2Input) (*accessanalyzer.GetFindingV2Output, error)
+	GetFindingV2WithContext(aws.Context, *accessanalyzer.GetFindingV2Input, ...request.Option) (*accessanalyzer.GetFindingV2Output, error)
+	GetFindingV2Request(*accessanalyzer.GetFindingV2Input) (*request.Request, *accessanalyzer.GetFindingV2Output)
+
+	GetFindingV2Pages(*accessanalyzer.GetFindingV2Input, func(*accessanalyzer.GetFindingV2Output, bool) bool) error
+	GetFindingV2PagesWithContext(aws.Context, *accessanalyzer.GetFindingV2Input, func(*accessanalyzer.GetFindingV2Output, bool) bool, ...request.Option) error
 
 	GetGeneratedPolicy(*accessanalyzer.GetGeneratedPolicyInput) (*accessanalyzer.GetGeneratedPolicyOutput, error)
 	GetGeneratedPolicyWithContext(aws.Context, *accessanalyzer.GetGeneratedPolicyInput, ...request.Option) (*accessanalyzer.GetGeneratedPolicyOutput, error)
@@ -153,6 +168,13 @@ type AccessAnalyzerAPI interface {
 
 	ListFindingsPages(*accessanalyzer.ListFindingsInput, func(*accessanalyzer.ListFindingsOutput, bool) bool) error
 	ListFindingsPagesWithContext(aws.Context, *accessanalyzer.ListFindingsInput, func(*accessanalyzer.ListFindingsOutput, bool) bool, ...request.Option) error
+
+	ListFindingsV2(*accessanalyzer.ListFindingsV2Input) (*accessanalyzer.ListFindingsV2Output, error)
+	ListFindingsV2WithContext(aws.Context, *accessanalyzer.ListFindingsV2Input, ...request.Option) (*accessanalyzer.ListFindingsV2Output, error)
+	ListFindingsV2Request(*accessanalyzer.ListFindingsV2Input) (*request.Request, *accessanalyzer.ListFindingsV2Output)
+
+	ListFindingsV2Pages(*accessanalyzer.ListFindingsV2Input, func(*accessanalyzer.ListFindingsV2Output, bool) bool) error
+	ListFindingsV2PagesWithContext(aws.Context, *accessanalyzer.ListFindingsV2Input, func(*accessanalyzer.ListFindingsV2Output, bool) bool, ...request.Option) error
 
 	ListPolicyGenerations(*accessanalyzer.ListPolicyGenerationsInput) (*accessanalyzer.ListPolicyGenerationsOutput, error)
 	ListPolicyGenerationsWithContext(aws.Context, *accessanalyzer.ListPolicyGenerationsInput, ...request.Option) (*accessanalyzer.ListPolicyGenerationsOutput, error)

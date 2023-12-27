@@ -10,12 +10,15 @@
 // about using this service, see the Amazon Web Services Secrets Manager User
 // Guide (https://docs.aws.amazon.com/secretsmanager/latest/userguide/introduction.html).
 //
-// API Version
+// # API Version
 //
 // This version of the Secrets Manager API Reference documents the Secrets Manager
 // API version 2017-10-17.
 //
-// Support and Feedback for Amazon Web Services Secrets Manager
+// For a list of endpoints, see Amazon Web Services Secrets Manager endpoints
+// (https://docs.aws.amazon.com/secretsmanager/latest/userguide/asm_access.html#endpoints).
+//
+// # Support and Feedback for Amazon Web Services Secrets Manager
 //
 // We welcome your feedback. Send your comments to awssecretsmanager-feedback@amazon.com
 // (mailto:awssecretsmanager-feedback@amazon.com), or post your feedback and
@@ -23,7 +26,7 @@
 // For more information about the Amazon Web Services Discussion Forums, see
 // Forums Help (http://forums.aws.amazon.com/help.jspa).
 //
-// Logging API Requests
+// # Logging API Requests
 //
 // Amazon Web Services Secrets Manager supports Amazon Web Services CloudTrail,
 // a service that records Amazon Web Services API calls for your Amazon Web
@@ -42,7 +45,7 @@
 // See secretsmanager package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/secretsmanager/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact AWS Secrets Manager with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

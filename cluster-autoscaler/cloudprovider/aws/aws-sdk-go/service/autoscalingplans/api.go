@@ -29,14 +29,13 @@ const opCreateScalingPlan = "CreateScalingPlan"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateScalingPlanRequest method.
+//	req, resp := client.CreateScalingPlanRequest(params)
 //
-//    // Example sending a request using the CreateScalingPlanRequest method.
-//    req, resp := client.CreateScalingPlanRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/autoscaling-plans-2018-01-06/CreateScalingPlan
 func (c *AutoScalingPlans) CreateScalingPlanRequest(input *CreateScalingPlanInput) (req *request.Request, output *CreateScalingPlanOutput) {
@@ -67,19 +66,20 @@ func (c *AutoScalingPlans) CreateScalingPlanRequest(input *CreateScalingPlanInpu
 // API operation CreateScalingPlan for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   An exception was thrown for a validation issue. Review the parameters provided.
 //
-//   * LimitExceededException
-//   Your account exceeded a limit. This exception is thrown when a per-account
-//   resource limit is exceeded.
+//   - ValidationException
+//     An exception was thrown for a validation issue. Review the parameters provided.
 //
-//   * ConcurrentUpdateException
-//   Concurrent updates caused an exception, for example, if you request an update
-//   to a scaling plan that already has a pending update.
+//   - LimitExceededException
+//     Your account exceeded a limit. This exception is thrown when a per-account
+//     resource limit is exceeded.
 //
-//   * InternalServiceException
-//   The service encountered an internal error.
+//   - ConcurrentUpdateException
+//     Concurrent updates caused an exception, for example, if you request an update
+//     to a scaling plan that already has a pending update.
+//
+//   - InternalServiceException
+//     The service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/autoscaling-plans-2018-01-06/CreateScalingPlan
 func (c *AutoScalingPlans) CreateScalingPlan(input *CreateScalingPlanInput) (*CreateScalingPlanOutput, error) {
@@ -119,14 +119,13 @@ const opDeleteScalingPlan = "DeleteScalingPlan"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteScalingPlanRequest method.
+//	req, resp := client.DeleteScalingPlanRequest(params)
 //
-//    // Example sending a request using the DeleteScalingPlanRequest method.
-//    req, resp := client.DeleteScalingPlanRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/autoscaling-plans-2018-01-06/DeleteScalingPlan
 func (c *AutoScalingPlans) DeleteScalingPlanRequest(input *DeleteScalingPlanInput) (req *request.Request, output *DeleteScalingPlanOutput) {
@@ -164,18 +163,19 @@ func (c *AutoScalingPlans) DeleteScalingPlanRequest(input *DeleteScalingPlanInpu
 // API operation DeleteScalingPlan for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   An exception was thrown for a validation issue. Review the parameters provided.
 //
-//   * ObjectNotFoundException
-//   The specified object could not be found.
+//   - ValidationException
+//     An exception was thrown for a validation issue. Review the parameters provided.
 //
-//   * ConcurrentUpdateException
-//   Concurrent updates caused an exception, for example, if you request an update
-//   to a scaling plan that already has a pending update.
+//   - ObjectNotFoundException
+//     The specified object could not be found.
 //
-//   * InternalServiceException
-//   The service encountered an internal error.
+//   - ConcurrentUpdateException
+//     Concurrent updates caused an exception, for example, if you request an update
+//     to a scaling plan that already has a pending update.
+//
+//   - InternalServiceException
+//     The service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/autoscaling-plans-2018-01-06/DeleteScalingPlan
 func (c *AutoScalingPlans) DeleteScalingPlan(input *DeleteScalingPlanInput) (*DeleteScalingPlanOutput, error) {
@@ -215,14 +215,13 @@ const opDescribeScalingPlanResources = "DescribeScalingPlanResources"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeScalingPlanResourcesRequest method.
+//	req, resp := client.DescribeScalingPlanResourcesRequest(params)
 //
-//    // Example sending a request using the DescribeScalingPlanResourcesRequest method.
-//    req, resp := client.DescribeScalingPlanResourcesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/autoscaling-plans-2018-01-06/DescribeScalingPlanResources
 func (c *AutoScalingPlans) DescribeScalingPlanResourcesRequest(input *DescribeScalingPlanResourcesInput) (req *request.Request, output *DescribeScalingPlanResourcesOutput) {
@@ -253,18 +252,19 @@ func (c *AutoScalingPlans) DescribeScalingPlanResourcesRequest(input *DescribeSc
 // API operation DescribeScalingPlanResources for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   An exception was thrown for a validation issue. Review the parameters provided.
 //
-//   * InvalidNextTokenException
-//   The token provided is not valid.
+//   - ValidationException
+//     An exception was thrown for a validation issue. Review the parameters provided.
 //
-//   * ConcurrentUpdateException
-//   Concurrent updates caused an exception, for example, if you request an update
-//   to a scaling plan that already has a pending update.
+//   - InvalidNextTokenException
+//     The token provided is not valid.
 //
-//   * InternalServiceException
-//   The service encountered an internal error.
+//   - ConcurrentUpdateException
+//     Concurrent updates caused an exception, for example, if you request an update
+//     to a scaling plan that already has a pending update.
+//
+//   - InternalServiceException
+//     The service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/autoscaling-plans-2018-01-06/DescribeScalingPlanResources
 func (c *AutoScalingPlans) DescribeScalingPlanResources(input *DescribeScalingPlanResourcesInput) (*DescribeScalingPlanResourcesOutput, error) {
@@ -304,14 +304,13 @@ const opDescribeScalingPlans = "DescribeScalingPlans"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeScalingPlansRequest method.
+//	req, resp := client.DescribeScalingPlansRequest(params)
 //
-//    // Example sending a request using the DescribeScalingPlansRequest method.
-//    req, resp := client.DescribeScalingPlansRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/autoscaling-plans-2018-01-06/DescribeScalingPlans
 func (c *AutoScalingPlans) DescribeScalingPlansRequest(input *DescribeScalingPlansInput) (req *request.Request, output *DescribeScalingPlansOutput) {
@@ -342,18 +341,19 @@ func (c *AutoScalingPlans) DescribeScalingPlansRequest(input *DescribeScalingPla
 // API operation DescribeScalingPlans for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   An exception was thrown for a validation issue. Review the parameters provided.
 //
-//   * InvalidNextTokenException
-//   The token provided is not valid.
+//   - ValidationException
+//     An exception was thrown for a validation issue. Review the parameters provided.
 //
-//   * ConcurrentUpdateException
-//   Concurrent updates caused an exception, for example, if you request an update
-//   to a scaling plan that already has a pending update.
+//   - InvalidNextTokenException
+//     The token provided is not valid.
 //
-//   * InternalServiceException
-//   The service encountered an internal error.
+//   - ConcurrentUpdateException
+//     Concurrent updates caused an exception, for example, if you request an update
+//     to a scaling plan that already has a pending update.
+//
+//   - InternalServiceException
+//     The service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/autoscaling-plans-2018-01-06/DescribeScalingPlans
 func (c *AutoScalingPlans) DescribeScalingPlans(input *DescribeScalingPlansInput) (*DescribeScalingPlansOutput, error) {
@@ -393,14 +393,13 @@ const opGetScalingPlanResourceForecastData = "GetScalingPlanResourceForecastData
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetScalingPlanResourceForecastDataRequest method.
+//	req, resp := client.GetScalingPlanResourceForecastDataRequest(params)
 //
-//    // Example sending a request using the GetScalingPlanResourceForecastDataRequest method.
-//    req, resp := client.GetScalingPlanResourceForecastDataRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/autoscaling-plans-2018-01-06/GetScalingPlanResourceForecastData
 func (c *AutoScalingPlans) GetScalingPlanResourceForecastDataRequest(input *GetScalingPlanResourceForecastDataInput) (req *request.Request, output *GetScalingPlanResourceForecastDataOutput) {
@@ -435,11 +434,12 @@ func (c *AutoScalingPlans) GetScalingPlanResourceForecastDataRequest(input *GetS
 // API operation GetScalingPlanResourceForecastData for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   An exception was thrown for a validation issue. Review the parameters provided.
 //
-//   * InternalServiceException
-//   The service encountered an internal error.
+//   - ValidationException
+//     An exception was thrown for a validation issue. Review the parameters provided.
+//
+//   - InternalServiceException
+//     The service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/autoscaling-plans-2018-01-06/GetScalingPlanResourceForecastData
 func (c *AutoScalingPlans) GetScalingPlanResourceForecastData(input *GetScalingPlanResourceForecastDataInput) (*GetScalingPlanResourceForecastDataOutput, error) {
@@ -479,14 +479,13 @@ const opUpdateScalingPlan = "UpdateScalingPlan"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateScalingPlanRequest method.
+//	req, resp := client.UpdateScalingPlanRequest(params)
 //
-//    // Example sending a request using the UpdateScalingPlanRequest method.
-//    req, resp := client.UpdateScalingPlanRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/autoscaling-plans-2018-01-06/UpdateScalingPlan
 func (c *AutoScalingPlans) UpdateScalingPlanRequest(input *UpdateScalingPlanInput) (req *request.Request, output *UpdateScalingPlanOutput) {
@@ -521,18 +520,19 @@ func (c *AutoScalingPlans) UpdateScalingPlanRequest(input *UpdateScalingPlanInpu
 // API operation UpdateScalingPlan for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   An exception was thrown for a validation issue. Review the parameters provided.
 //
-//   * ConcurrentUpdateException
-//   Concurrent updates caused an exception, for example, if you request an update
-//   to a scaling plan that already has a pending update.
+//   - ValidationException
+//     An exception was thrown for a validation issue. Review the parameters provided.
 //
-//   * InternalServiceException
-//   The service encountered an internal error.
+//   - ConcurrentUpdateException
+//     Concurrent updates caused an exception, for example, if you request an update
+//     to a scaling plan that already has a pending update.
 //
-//   * ObjectNotFoundException
-//   The specified object could not be found.
+//   - InternalServiceException
+//     The service encountered an internal error.
+//
+//   - ObjectNotFoundException
+//     The specified object could not be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/autoscaling-plans-2018-01-06/UpdateScalingPlan
 func (c *AutoScalingPlans) UpdateScalingPlan(input *UpdateScalingPlanInput) (*UpdateScalingPlanOutput, error) {
@@ -957,16 +957,16 @@ func (s *CustomizedLoadMetricSpecification) SetUnit(v string) *CustomizedLoadMet
 //
 // To create your customized scaling metric specification:
 //
-//    * Add values for each required parameter from CloudWatch. You can use
-//    an existing metric, or a new metric that you create. To use your own metric,
-//    you must first publish the metric to CloudWatch. For more information,
-//    see Publish Custom Metrics (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/publishingMetrics.html)
-//    in the Amazon CloudWatch User Guide.
+//   - Add values for each required parameter from CloudWatch. You can use
+//     an existing metric, or a new metric that you create. To use your own metric,
+//     you must first publish the metric to CloudWatch. For more information,
+//     see Publish Custom Metrics (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/publishingMetrics.html)
+//     in the Amazon CloudWatch User Guide.
 //
-//    * Choose a metric that changes proportionally with capacity. The value
-//    of the metric should increase or decrease in inverse proportion to the
-//    number of capacity units. That is, the value of the metric should decrease
-//    when capacity increases.
+//   - Choose a metric that changes proportionally with capacity. The value
+//     of the metric should increase or decrease in inverse proportion to the
+//     number of capacity units. That is, the value of the metric should decrease
+//     when capacity increases.
 //
 // For information about terminology, available metrics, or how to publish new
 // metrics, see Amazon CloudWatch Concepts (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html)

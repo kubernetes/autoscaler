@@ -5,14 +5,13 @@
 //
 // Amazon API Gateway helps developers deliver robust, secure, and scalable
 // mobile and web application back ends. API Gateway allows developers to securely
-// connect mobile and web applications to APIs that run on AWS Lambda, Amazon
-// EC2, or other publicly addressable web services that are hosted outside of
-// AWS.
+// connect mobile and web applications to APIs that run on Lambda, Amazon EC2,
+// or other publicly addressable web services that are hosted outside of AWS.
 //
 // See apigateway package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/apigateway/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact Amazon API Gateway with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

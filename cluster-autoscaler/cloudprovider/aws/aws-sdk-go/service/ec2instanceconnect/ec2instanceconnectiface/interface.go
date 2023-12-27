@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // AWS EC2 Instance Connect.
-//    func myFunc(svc ec2instanceconnectiface.EC2InstanceConnectAPI) bool {
-//        // Make svc.SendSSHPublicKey request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// AWS EC2 Instance Connect.
+//	func myFunc(svc ec2instanceconnectiface.EC2InstanceConnectAPI) bool {
+//	    // Make svc.SendSSHPublicKey request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := ec2instanceconnect.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := ec2instanceconnect.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockEC2InstanceConnectClient struct {
-//        ec2instanceconnectiface.EC2InstanceConnectAPI
-//    }
-//    func (m *mockEC2InstanceConnectClient) SendSSHPublicKey(input *ec2instanceconnect.SendSSHPublicKeyInput) (*ec2instanceconnect.SendSSHPublicKeyOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockEC2InstanceConnectClient struct {
+//	    ec2instanceconnectiface.EC2InstanceConnectAPI
+//	}
+//	func (m *mockEC2InstanceConnectClient) SendSSHPublicKey(input *ec2instanceconnect.SendSSHPublicKeyInput) (*ec2instanceconnect.SendSSHPublicKeyOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockEC2InstanceConnectClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockEC2InstanceConnectClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,

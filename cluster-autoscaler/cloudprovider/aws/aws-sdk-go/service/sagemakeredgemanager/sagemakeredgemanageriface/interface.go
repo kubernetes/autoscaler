@@ -23,43 +23,47 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // Amazon Sagemaker Edge Manager.
-//    func myFunc(svc sagemakeredgemanageriface.SagemakerEdgeManagerAPI) bool {
-//        // Make svc.GetDeviceRegistration request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// Amazon Sagemaker Edge Manager.
+//	func myFunc(svc sagemakeredgemanageriface.SagemakerEdgeManagerAPI) bool {
+//	    // Make svc.GetDeployments request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := sagemakeredgemanager.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := sagemakeredgemanager.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockSagemakerEdgeManagerClient struct {
-//        sagemakeredgemanageriface.SagemakerEdgeManagerAPI
-//    }
-//    func (m *mockSagemakerEdgeManagerClient) GetDeviceRegistration(input *sagemakeredgemanager.GetDeviceRegistrationInput) (*sagemakeredgemanager.GetDeviceRegistrationOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockSagemakerEdgeManagerClient struct {
+//	    sagemakeredgemanageriface.SagemakerEdgeManagerAPI
+//	}
+//	func (m *mockSagemakerEdgeManagerClient) GetDeployments(input *sagemakeredgemanager.GetDeploymentsInput) (*sagemakeredgemanager.GetDeploymentsOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockSagemakerEdgeManagerClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockSagemakerEdgeManagerClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,
 // and waiters. Its suggested to use the pattern above for testing, or using
 // tooling to generate mocks to satisfy the interfaces.
 type SagemakerEdgeManagerAPI interface {
+	GetDeployments(*sagemakeredgemanager.GetDeploymentsInput) (*sagemakeredgemanager.GetDeploymentsOutput, error)
+	GetDeploymentsWithContext(aws.Context, *sagemakeredgemanager.GetDeploymentsInput, ...request.Option) (*sagemakeredgemanager.GetDeploymentsOutput, error)
+	GetDeploymentsRequest(*sagemakeredgemanager.GetDeploymentsInput) (*request.Request, *sagemakeredgemanager.GetDeploymentsOutput)
+
 	GetDeviceRegistration(*sagemakeredgemanager.GetDeviceRegistrationInput) (*sagemakeredgemanager.GetDeviceRegistrationOutput, error)
 	GetDeviceRegistrationWithContext(aws.Context, *sagemakeredgemanager.GetDeviceRegistrationInput, ...request.Option) (*sagemakeredgemanager.GetDeviceRegistrationOutput, error)
 	GetDeviceRegistrationRequest(*sagemakeredgemanager.GetDeviceRegistrationInput) (*request.Request, *sagemakeredgemanager.GetDeviceRegistrationOutput)

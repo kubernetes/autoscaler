@@ -3,7 +3,7 @@
 // Package healthlake provides the client and types for making API
 // requests to Amazon HealthLake.
 //
-// Amazon HealthLake is a HIPAA eligibile service that allows customers to store,
+// AWS HealthLake is a HIPAA eligibile service that allows customers to store,
 // transform, query, and analyze their FHIR-formatted data in a consistent fashion
 // in the cloud.
 //
@@ -12,7 +12,7 @@
 // See healthlake package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/healthlake/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact Amazon HealthLake with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

@@ -30,14 +30,13 @@ const opCreateDataset = "CreateDataset"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDatasetRequest method.
+//	req, resp := client.CreateDatasetRequest(params)
 //
-//    // Example sending a request using the CreateDatasetRequest method.
-//    req, resp := client.CreateDatasetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutvision-2020-11-20/CreateDataset
 func (c *LookoutForVision) CreateDatasetRequest(input *CreateDatasetInput) (req *request.Request, output *CreateDatasetOutput) {
@@ -78,30 +77,31 @@ func (c *LookoutForVision) CreateDatasetRequest(input *CreateDatasetInput) (req 
 // API operation CreateDataset for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You are not authorized to perform the action.
 //
-//   * InternalServerException
-//   Amazon Lookout for Vision experienced a service issue. Try your call again.
+//   - AccessDeniedException
+//     You are not authorized to perform the action.
 //
-//   * ValidationException
-//   An input validation error occured. For example, invalid characters in a project
-//   name, or if a pagination token is invalid.
+//   - InternalServerException
+//     Amazon Lookout for Vision experienced a service issue. Try your call again.
 //
-//   * ConflictException
-//   The update or deletion of a resource caused an inconsistent state.
+//   - ValidationException
+//     An input validation error occured. For example, invalid characters in a project
+//     name, or if a pagination token is invalid.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - ConflictException
+//     The update or deletion of a resource caused an inconsistent state.
 //
-//   * ThrottlingException
-//   Amazon Lookout for Vision is temporarily unable to process the request. Try
-//   your call again.
+//   - ResourceNotFoundException
+//     The resource could not be found.
 //
-//   * ServiceQuotaExceededException
-//   A service quota was exceeded the allowed limit. For more information, see
-//   Limits in Amazon Lookout for Vision in the Amazon Lookout for Vision Developer
-//   Guide.
+//   - ThrottlingException
+//     Amazon Lookout for Vision is temporarily unable to process the request. Try
+//     your call again.
+//
+//   - ServiceQuotaExceededException
+//     A service quota was exceeded the allowed limit. For more information, see
+//     Limits in Amazon Lookout for Vision in the Amazon Lookout for Vision Developer
+//     Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutvision-2020-11-20/CreateDataset
 func (c *LookoutForVision) CreateDataset(input *CreateDatasetInput) (*CreateDatasetOutput, error) {
@@ -141,14 +141,13 @@ const opCreateModel = "CreateModel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateModelRequest method.
+//	req, resp := client.CreateModelRequest(params)
 //
-//    // Example sending a request using the CreateModelRequest method.
-//    req, resp := client.CreateModelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutvision-2020-11-20/CreateModel
 func (c *LookoutForVision) CreateModelRequest(input *CreateModelInput) (req *request.Request, output *CreateModelOutput) {
@@ -196,30 +195,31 @@ func (c *LookoutForVision) CreateModelRequest(input *CreateModelInput) (req *req
 // API operation CreateModel for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You are not authorized to perform the action.
 //
-//   * InternalServerException
-//   Amazon Lookout for Vision experienced a service issue. Try your call again.
+//   - AccessDeniedException
+//     You are not authorized to perform the action.
 //
-//   * ValidationException
-//   An input validation error occured. For example, invalid characters in a project
-//   name, or if a pagination token is invalid.
+//   - InternalServerException
+//     Amazon Lookout for Vision experienced a service issue. Try your call again.
 //
-//   * ConflictException
-//   The update or deletion of a resource caused an inconsistent state.
+//   - ValidationException
+//     An input validation error occured. For example, invalid characters in a project
+//     name, or if a pagination token is invalid.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - ConflictException
+//     The update or deletion of a resource caused an inconsistent state.
 //
-//   * ThrottlingException
-//   Amazon Lookout for Vision is temporarily unable to process the request. Try
-//   your call again.
+//   - ResourceNotFoundException
+//     The resource could not be found.
 //
-//   * ServiceQuotaExceededException
-//   A service quota was exceeded the allowed limit. For more information, see
-//   Limits in Amazon Lookout for Vision in the Amazon Lookout for Vision Developer
-//   Guide.
+//   - ThrottlingException
+//     Amazon Lookout for Vision is temporarily unable to process the request. Try
+//     your call again.
+//
+//   - ServiceQuotaExceededException
+//     A service quota was exceeded the allowed limit. For more information, see
+//     Limits in Amazon Lookout for Vision in the Amazon Lookout for Vision Developer
+//     Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutvision-2020-11-20/CreateModel
 func (c *LookoutForVision) CreateModel(input *CreateModelInput) (*CreateModelOutput, error) {
@@ -259,14 +259,13 @@ const opCreateProject = "CreateProject"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateProjectRequest method.
+//	req, resp := client.CreateProjectRequest(params)
 //
-//    // Example sending a request using the CreateProjectRequest method.
-//    req, resp := client.CreateProjectRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutvision-2020-11-20/CreateProject
 func (c *LookoutForVision) CreateProjectRequest(input *CreateProjectInput) (req *request.Request, output *CreateProjectOutput) {
@@ -301,30 +300,31 @@ func (c *LookoutForVision) CreateProjectRequest(input *CreateProjectInput) (req 
 // API operation CreateProject for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You are not authorized to perform the action.
 //
-//   * InternalServerException
-//   Amazon Lookout for Vision experienced a service issue. Try your call again.
+//   - AccessDeniedException
+//     You are not authorized to perform the action.
 //
-//   * ValidationException
-//   An input validation error occured. For example, invalid characters in a project
-//   name, or if a pagination token is invalid.
+//   - InternalServerException
+//     Amazon Lookout for Vision experienced a service issue. Try your call again.
 //
-//   * ConflictException
-//   The update or deletion of a resource caused an inconsistent state.
+//   - ValidationException
+//     An input validation error occured. For example, invalid characters in a project
+//     name, or if a pagination token is invalid.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - ConflictException
+//     The update or deletion of a resource caused an inconsistent state.
 //
-//   * ThrottlingException
-//   Amazon Lookout for Vision is temporarily unable to process the request. Try
-//   your call again.
+//   - ResourceNotFoundException
+//     The resource could not be found.
 //
-//   * ServiceQuotaExceededException
-//   A service quota was exceeded the allowed limit. For more information, see
-//   Limits in Amazon Lookout for Vision in the Amazon Lookout for Vision Developer
-//   Guide.
+//   - ThrottlingException
+//     Amazon Lookout for Vision is temporarily unable to process the request. Try
+//     your call again.
+//
+//   - ServiceQuotaExceededException
+//     A service quota was exceeded the allowed limit. For more information, see
+//     Limits in Amazon Lookout for Vision in the Amazon Lookout for Vision Developer
+//     Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutvision-2020-11-20/CreateProject
 func (c *LookoutForVision) CreateProject(input *CreateProjectInput) (*CreateProjectOutput, error) {
@@ -364,14 +364,13 @@ const opDeleteDataset = "DeleteDataset"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDatasetRequest method.
+//	req, resp := client.DeleteDatasetRequest(params)
 //
-//    // Example sending a request using the DeleteDatasetRequest method.
-//    req, resp := client.DeleteDatasetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutvision-2020-11-20/DeleteDataset
 func (c *LookoutForVision) DeleteDatasetRequest(input *DeleteDatasetInput) (req *request.Request, output *DeleteDatasetOutput) {
@@ -400,12 +399,12 @@ func (c *LookoutForVision) DeleteDatasetRequest(input *DeleteDatasetInput) (req 
 //
 // If you project has a training dataset and a test dataset consider the following.
 //
-//    * If you delete the test dataset, your project reverts to a single dataset
-//    project. If you then train the model, Amazon Lookout for Vision internally
-//    splits the remaining dataset into a training and test dataset.
+//   - If you delete the test dataset, your project reverts to a single dataset
+//     project. If you then train the model, Amazon Lookout for Vision internally
+//     splits the remaining dataset into a training and test dataset.
 //
-//    * If you delete the training dataset, you must create a training dataset
-//    before you can create a model.
+//   - If you delete the training dataset, you must create a training dataset
+//     before you can create a model.
 //
 // This operation requires permissions to perform the lookoutvision:DeleteDataset
 // operation.
@@ -418,25 +417,26 @@ func (c *LookoutForVision) DeleteDatasetRequest(input *DeleteDatasetInput) (req 
 // API operation DeleteDataset for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You are not authorized to perform the action.
 //
-//   * InternalServerException
-//   Amazon Lookout for Vision experienced a service issue. Try your call again.
+//   - AccessDeniedException
+//     You are not authorized to perform the action.
 //
-//   * ValidationException
-//   An input validation error occured. For example, invalid characters in a project
-//   name, or if a pagination token is invalid.
+//   - InternalServerException
+//     Amazon Lookout for Vision experienced a service issue. Try your call again.
 //
-//   * ConflictException
-//   The update or deletion of a resource caused an inconsistent state.
+//   - ValidationException
+//     An input validation error occured. For example, invalid characters in a project
+//     name, or if a pagination token is invalid.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - ConflictException
+//     The update or deletion of a resource caused an inconsistent state.
 //
-//   * ThrottlingException
-//   Amazon Lookout for Vision is temporarily unable to process the request. Try
-//   your call again.
+//   - ResourceNotFoundException
+//     The resource could not be found.
+//
+//   - ThrottlingException
+//     Amazon Lookout for Vision is temporarily unable to process the request. Try
+//     your call again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutvision-2020-11-20/DeleteDataset
 func (c *LookoutForVision) DeleteDataset(input *DeleteDatasetInput) (*DeleteDatasetOutput, error) {
@@ -476,14 +476,13 @@ const opDeleteModel = "DeleteModel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteModelRequest method.
+//	req, resp := client.DeleteModelRequest(params)
 //
-//    // Example sending a request using the DeleteModelRequest method.
-//    req, resp := client.DeleteModelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutvision-2020-11-20/DeleteModel
 func (c *LookoutForVision) DeleteModelRequest(input *DeleteModelInput) (req *request.Request, output *DeleteModelOutput) {
@@ -522,25 +521,26 @@ func (c *LookoutForVision) DeleteModelRequest(input *DeleteModelInput) (req *req
 // API operation DeleteModel for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You are not authorized to perform the action.
 //
-//   * InternalServerException
-//   Amazon Lookout for Vision experienced a service issue. Try your call again.
+//   - AccessDeniedException
+//     You are not authorized to perform the action.
 //
-//   * ValidationException
-//   An input validation error occured. For example, invalid characters in a project
-//   name, or if a pagination token is invalid.
+//   - InternalServerException
+//     Amazon Lookout for Vision experienced a service issue. Try your call again.
 //
-//   * ConflictException
-//   The update or deletion of a resource caused an inconsistent state.
+//   - ValidationException
+//     An input validation error occured. For example, invalid characters in a project
+//     name, or if a pagination token is invalid.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - ConflictException
+//     The update or deletion of a resource caused an inconsistent state.
 //
-//   * ThrottlingException
-//   Amazon Lookout for Vision is temporarily unable to process the request. Try
-//   your call again.
+//   - ResourceNotFoundException
+//     The resource could not be found.
+//
+//   - ThrottlingException
+//     Amazon Lookout for Vision is temporarily unable to process the request. Try
+//     your call again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutvision-2020-11-20/DeleteModel
 func (c *LookoutForVision) DeleteModel(input *DeleteModelInput) (*DeleteModelOutput, error) {
@@ -580,14 +580,13 @@ const opDeleteProject = "DeleteProject"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteProjectRequest method.
+//	req, resp := client.DeleteProjectRequest(params)
 //
-//    // Example sending a request using the DeleteProjectRequest method.
-//    req, resp := client.DeleteProjectRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutvision-2020-11-20/DeleteProject
 func (c *LookoutForVision) DeleteProjectRequest(input *DeleteProjectInput) (req *request.Request, output *DeleteProjectOutput) {
@@ -628,25 +627,26 @@ func (c *LookoutForVision) DeleteProjectRequest(input *DeleteProjectInput) (req 
 // API operation DeleteProject for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You are not authorized to perform the action.
 //
-//   * InternalServerException
-//   Amazon Lookout for Vision experienced a service issue. Try your call again.
+//   - AccessDeniedException
+//     You are not authorized to perform the action.
 //
-//   * ValidationException
-//   An input validation error occured. For example, invalid characters in a project
-//   name, or if a pagination token is invalid.
+//   - InternalServerException
+//     Amazon Lookout for Vision experienced a service issue. Try your call again.
 //
-//   * ConflictException
-//   The update or deletion of a resource caused an inconsistent state.
+//   - ValidationException
+//     An input validation error occured. For example, invalid characters in a project
+//     name, or if a pagination token is invalid.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - ConflictException
+//     The update or deletion of a resource caused an inconsistent state.
 //
-//   * ThrottlingException
-//   Amazon Lookout for Vision is temporarily unable to process the request. Try
-//   your call again.
+//   - ResourceNotFoundException
+//     The resource could not be found.
+//
+//   - ThrottlingException
+//     Amazon Lookout for Vision is temporarily unable to process the request. Try
+//     your call again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutvision-2020-11-20/DeleteProject
 func (c *LookoutForVision) DeleteProject(input *DeleteProjectInput) (*DeleteProjectOutput, error) {
@@ -686,14 +686,13 @@ const opDescribeDataset = "DescribeDataset"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDatasetRequest method.
+//	req, resp := client.DescribeDatasetRequest(params)
 //
-//    // Example sending a request using the DescribeDatasetRequest method.
-//    req, resp := client.DescribeDatasetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutvision-2020-11-20/DescribeDataset
 func (c *LookoutForVision) DescribeDatasetRequest(input *DescribeDatasetInput) (req *request.Request, output *DescribeDatasetOutput) {
@@ -727,25 +726,26 @@ func (c *LookoutForVision) DescribeDatasetRequest(input *DescribeDatasetInput) (
 // API operation DescribeDataset for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You are not authorized to perform the action.
 //
-//   * InternalServerException
-//   Amazon Lookout for Vision experienced a service issue. Try your call again.
+//   - AccessDeniedException
+//     You are not authorized to perform the action.
 //
-//   * ValidationException
-//   An input validation error occured. For example, invalid characters in a project
-//   name, or if a pagination token is invalid.
+//   - InternalServerException
+//     Amazon Lookout for Vision experienced a service issue. Try your call again.
 //
-//   * ConflictException
-//   The update or deletion of a resource caused an inconsistent state.
+//   - ValidationException
+//     An input validation error occured. For example, invalid characters in a project
+//     name, or if a pagination token is invalid.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - ConflictException
+//     The update or deletion of a resource caused an inconsistent state.
 //
-//   * ThrottlingException
-//   Amazon Lookout for Vision is temporarily unable to process the request. Try
-//   your call again.
+//   - ResourceNotFoundException
+//     The resource could not be found.
+//
+//   - ThrottlingException
+//     Amazon Lookout for Vision is temporarily unable to process the request. Try
+//     your call again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutvision-2020-11-20/DescribeDataset
 func (c *LookoutForVision) DescribeDataset(input *DescribeDatasetInput) (*DescribeDatasetOutput, error) {
@@ -785,14 +785,13 @@ const opDescribeModel = "DescribeModel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeModelRequest method.
+//	req, resp := client.DescribeModelRequest(params)
 //
-//    // Example sending a request using the DescribeModelRequest method.
-//    req, resp := client.DescribeModelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutvision-2020-11-20/DescribeModel
 func (c *LookoutForVision) DescribeModelRequest(input *DescribeModelInput) (req *request.Request, output *DescribeModelOutput) {
@@ -826,25 +825,26 @@ func (c *LookoutForVision) DescribeModelRequest(input *DescribeModelInput) (req 
 // API operation DescribeModel for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You are not authorized to perform the action.
 //
-//   * InternalServerException
-//   Amazon Lookout for Vision experienced a service issue. Try your call again.
+//   - AccessDeniedException
+//     You are not authorized to perform the action.
 //
-//   * ValidationException
-//   An input validation error occured. For example, invalid characters in a project
-//   name, or if a pagination token is invalid.
+//   - InternalServerException
+//     Amazon Lookout for Vision experienced a service issue. Try your call again.
 //
-//   * ConflictException
-//   The update or deletion of a resource caused an inconsistent state.
+//   - ValidationException
+//     An input validation error occured. For example, invalid characters in a project
+//     name, or if a pagination token is invalid.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - ConflictException
+//     The update or deletion of a resource caused an inconsistent state.
 //
-//   * ThrottlingException
-//   Amazon Lookout for Vision is temporarily unable to process the request. Try
-//   your call again.
+//   - ResourceNotFoundException
+//     The resource could not be found.
+//
+//   - ThrottlingException
+//     Amazon Lookout for Vision is temporarily unable to process the request. Try
+//     your call again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutvision-2020-11-20/DescribeModel
 func (c *LookoutForVision) DescribeModel(input *DescribeModelInput) (*DescribeModelOutput, error) {
@@ -884,14 +884,13 @@ const opDescribeModelPackagingJob = "DescribeModelPackagingJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeModelPackagingJobRequest method.
+//	req, resp := client.DescribeModelPackagingJobRequest(params)
 //
-//    // Example sending a request using the DescribeModelPackagingJobRequest method.
-//    req, resp := client.DescribeModelPackagingJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutvision-2020-11-20/DescribeModelPackagingJob
 func (c *LookoutForVision) DescribeModelPackagingJobRequest(input *DescribeModelPackagingJobInput) (req *request.Request, output *DescribeModelPackagingJobOutput) {
@@ -928,22 +927,23 @@ func (c *LookoutForVision) DescribeModelPackagingJobRequest(input *DescribeModel
 // API operation DescribeModelPackagingJob for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You are not authorized to perform the action.
 //
-//   * InternalServerException
-//   Amazon Lookout for Vision experienced a service issue. Try your call again.
+//   - AccessDeniedException
+//     You are not authorized to perform the action.
 //
-//   * ValidationException
-//   An input validation error occured. For example, invalid characters in a project
-//   name, or if a pagination token is invalid.
+//   - InternalServerException
+//     Amazon Lookout for Vision experienced a service issue. Try your call again.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - ValidationException
+//     An input validation error occured. For example, invalid characters in a project
+//     name, or if a pagination token is invalid.
 //
-//   * ThrottlingException
-//   Amazon Lookout for Vision is temporarily unable to process the request. Try
-//   your call again.
+//   - ResourceNotFoundException
+//     The resource could not be found.
+//
+//   - ThrottlingException
+//     Amazon Lookout for Vision is temporarily unable to process the request. Try
+//     your call again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutvision-2020-11-20/DescribeModelPackagingJob
 func (c *LookoutForVision) DescribeModelPackagingJob(input *DescribeModelPackagingJobInput) (*DescribeModelPackagingJobOutput, error) {
@@ -983,14 +983,13 @@ const opDescribeProject = "DescribeProject"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeProjectRequest method.
+//	req, resp := client.DescribeProjectRequest(params)
 //
-//    // Example sending a request using the DescribeProjectRequest method.
-//    req, resp := client.DescribeProjectRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutvision-2020-11-20/DescribeProject
 func (c *LookoutForVision) DescribeProjectRequest(input *DescribeProjectInput) (req *request.Request, output *DescribeProjectOutput) {
@@ -1024,25 +1023,26 @@ func (c *LookoutForVision) DescribeProjectRequest(input *DescribeProjectInput) (
 // API operation DescribeProject for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You are not authorized to perform the action.
 //
-//   * InternalServerException
-//   Amazon Lookout for Vision experienced a service issue. Try your call again.
+//   - AccessDeniedException
+//     You are not authorized to perform the action.
 //
-//   * ValidationException
-//   An input validation error occured. For example, invalid characters in a project
-//   name, or if a pagination token is invalid.
+//   - InternalServerException
+//     Amazon Lookout for Vision experienced a service issue. Try your call again.
 //
-//   * ConflictException
-//   The update or deletion of a resource caused an inconsistent state.
+//   - ValidationException
+//     An input validation error occured. For example, invalid characters in a project
+//     name, or if a pagination token is invalid.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - ConflictException
+//     The update or deletion of a resource caused an inconsistent state.
 //
-//   * ThrottlingException
-//   Amazon Lookout for Vision is temporarily unable to process the request. Try
-//   your call again.
+//   - ResourceNotFoundException
+//     The resource could not be found.
+//
+//   - ThrottlingException
+//     Amazon Lookout for Vision is temporarily unable to process the request. Try
+//     your call again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutvision-2020-11-20/DescribeProject
 func (c *LookoutForVision) DescribeProject(input *DescribeProjectInput) (*DescribeProjectOutput, error) {
@@ -1082,14 +1082,13 @@ const opDetectAnomalies = "DetectAnomalies"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DetectAnomaliesRequest method.
+//	req, resp := client.DetectAnomaliesRequest(params)
 //
-//    // Example sending a request using the DetectAnomaliesRequest method.
-//    req, resp := client.DetectAnomaliesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutvision-2020-11-20/DetectAnomalies
 func (c *LookoutForVision) DetectAnomaliesRequest(input *DetectAnomaliesInput) (req *request.Request, output *DetectAnomaliesOutput) {
@@ -1114,12 +1113,17 @@ func (c *LookoutForVision) DetectAnomaliesRequest(input *DetectAnomaliesInput) (
 //
 // The response from DetectAnomalies includes a boolean prediction that the
 // image contains one or more anomalies and a confidence value for the prediction.
+// If the model is an image segmentation model, the response also includes segmentation
+// information for each type of anomaly found in the image.
 //
 // Before calling DetectAnomalies, you must first start your model with the
 // StartModel operation. You are charged for the amount of time, in minutes,
 // that a model runs and for the number of anomaly detection units that your
 // model uses. If you are not using a model, use the StopModel operation to
 // stop your model.
+//
+// For more information, see Detecting anomalies in an image in the Amazon Lookout
+// for Vision developer guide.
 //
 // This operation requires permissions to perform the lookoutvision:DetectAnomalies
 // operation.
@@ -1132,25 +1136,26 @@ func (c *LookoutForVision) DetectAnomaliesRequest(input *DetectAnomaliesInput) (
 // API operation DetectAnomalies for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You are not authorized to perform the action.
 //
-//   * InternalServerException
-//   Amazon Lookout for Vision experienced a service issue. Try your call again.
+//   - AccessDeniedException
+//     You are not authorized to perform the action.
 //
-//   * ValidationException
-//   An input validation error occured. For example, invalid characters in a project
-//   name, or if a pagination token is invalid.
+//   - InternalServerException
+//     Amazon Lookout for Vision experienced a service issue. Try your call again.
 //
-//   * ConflictException
-//   The update or deletion of a resource caused an inconsistent state.
+//   - ValidationException
+//     An input validation error occured. For example, invalid characters in a project
+//     name, or if a pagination token is invalid.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - ConflictException
+//     The update or deletion of a resource caused an inconsistent state.
 //
-//   * ThrottlingException
-//   Amazon Lookout for Vision is temporarily unable to process the request. Try
-//   your call again.
+//   - ResourceNotFoundException
+//     The resource could not be found.
+//
+//   - ThrottlingException
+//     Amazon Lookout for Vision is temporarily unable to process the request. Try
+//     your call again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutvision-2020-11-20/DetectAnomalies
 func (c *LookoutForVision) DetectAnomalies(input *DetectAnomaliesInput) (*DetectAnomaliesOutput, error) {
@@ -1190,14 +1195,13 @@ const opListDatasetEntries = "ListDatasetEntries"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDatasetEntriesRequest method.
+//	req, resp := client.ListDatasetEntriesRequest(params)
 //
-//    // Example sending a request using the ListDatasetEntriesRequest method.
-//    req, resp := client.ListDatasetEntriesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutvision-2020-11-20/ListDatasetEntries
 func (c *LookoutForVision) ListDatasetEntriesRequest(input *ListDatasetEntriesInput) (req *request.Request, output *ListDatasetEntriesOutput) {
@@ -1239,25 +1243,26 @@ func (c *LookoutForVision) ListDatasetEntriesRequest(input *ListDatasetEntriesIn
 // API operation ListDatasetEntries for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You are not authorized to perform the action.
 //
-//   * InternalServerException
-//   Amazon Lookout for Vision experienced a service issue. Try your call again.
+//   - AccessDeniedException
+//     You are not authorized to perform the action.
 //
-//   * ValidationException
-//   An input validation error occured. For example, invalid characters in a project
-//   name, or if a pagination token is invalid.
+//   - InternalServerException
+//     Amazon Lookout for Vision experienced a service issue. Try your call again.
 //
-//   * ConflictException
-//   The update or deletion of a resource caused an inconsistent state.
+//   - ValidationException
+//     An input validation error occured. For example, invalid characters in a project
+//     name, or if a pagination token is invalid.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - ConflictException
+//     The update or deletion of a resource caused an inconsistent state.
 //
-//   * ThrottlingException
-//   Amazon Lookout for Vision is temporarily unable to process the request. Try
-//   your call again.
+//   - ResourceNotFoundException
+//     The resource could not be found.
+//
+//   - ThrottlingException
+//     Amazon Lookout for Vision is temporarily unable to process the request. Try
+//     your call again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutvision-2020-11-20/ListDatasetEntries
 func (c *LookoutForVision) ListDatasetEntries(input *ListDatasetEntriesInput) (*ListDatasetEntriesOutput, error) {
@@ -1289,15 +1294,14 @@ func (c *LookoutForVision) ListDatasetEntriesWithContext(ctx aws.Context, input 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListDatasetEntries operation.
-//    pageNum := 0
-//    err := client.ListDatasetEntriesPages(params,
-//        func(page *lookoutforvision.ListDatasetEntriesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListDatasetEntries operation.
+//	pageNum := 0
+//	err := client.ListDatasetEntriesPages(params,
+//	    func(page *lookoutforvision.ListDatasetEntriesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LookoutForVision) ListDatasetEntriesPages(input *ListDatasetEntriesInput, fn func(*ListDatasetEntriesOutput, bool) bool) error {
 	return c.ListDatasetEntriesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1349,14 +1353,13 @@ const opListModelPackagingJobs = "ListModelPackagingJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListModelPackagingJobsRequest method.
+//	req, resp := client.ListModelPackagingJobsRequest(params)
 //
-//    // Example sending a request using the ListModelPackagingJobsRequest method.
-//    req, resp := client.ListModelPackagingJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutvision-2020-11-20/ListModelPackagingJobs
 func (c *LookoutForVision) ListModelPackagingJobsRequest(input *ListModelPackagingJobsInput) (req *request.Request, output *ListModelPackagingJobsOutput) {
@@ -1399,22 +1402,23 @@ func (c *LookoutForVision) ListModelPackagingJobsRequest(input *ListModelPackagi
 // API operation ListModelPackagingJobs for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You are not authorized to perform the action.
 //
-//   * InternalServerException
-//   Amazon Lookout for Vision experienced a service issue. Try your call again.
+//   - AccessDeniedException
+//     You are not authorized to perform the action.
 //
-//   * ValidationException
-//   An input validation error occured. For example, invalid characters in a project
-//   name, or if a pagination token is invalid.
+//   - InternalServerException
+//     Amazon Lookout for Vision experienced a service issue. Try your call again.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - ValidationException
+//     An input validation error occured. For example, invalid characters in a project
+//     name, or if a pagination token is invalid.
 //
-//   * ThrottlingException
-//   Amazon Lookout for Vision is temporarily unable to process the request. Try
-//   your call again.
+//   - ResourceNotFoundException
+//     The resource could not be found.
+//
+//   - ThrottlingException
+//     Amazon Lookout for Vision is temporarily unable to process the request. Try
+//     your call again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutvision-2020-11-20/ListModelPackagingJobs
 func (c *LookoutForVision) ListModelPackagingJobs(input *ListModelPackagingJobsInput) (*ListModelPackagingJobsOutput, error) {
@@ -1446,15 +1450,14 @@ func (c *LookoutForVision) ListModelPackagingJobsWithContext(ctx aws.Context, in
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListModelPackagingJobs operation.
-//    pageNum := 0
-//    err := client.ListModelPackagingJobsPages(params,
-//        func(page *lookoutforvision.ListModelPackagingJobsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListModelPackagingJobs operation.
+//	pageNum := 0
+//	err := client.ListModelPackagingJobsPages(params,
+//	    func(page *lookoutforvision.ListModelPackagingJobsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LookoutForVision) ListModelPackagingJobsPages(input *ListModelPackagingJobsInput, fn func(*ListModelPackagingJobsOutput, bool) bool) error {
 	return c.ListModelPackagingJobsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1506,14 +1509,13 @@ const opListModels = "ListModels"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListModelsRequest method.
+//	req, resp := client.ListModelsRequest(params)
 //
-//    // Example sending a request using the ListModelsRequest method.
-//    req, resp := client.ListModelsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutvision-2020-11-20/ListModels
 func (c *LookoutForVision) ListModelsRequest(input *ListModelsInput) (req *request.Request, output *ListModelsOutput) {
@@ -1556,25 +1558,26 @@ func (c *LookoutForVision) ListModelsRequest(input *ListModelsInput) (req *reque
 // API operation ListModels for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You are not authorized to perform the action.
 //
-//   * InternalServerException
-//   Amazon Lookout for Vision experienced a service issue. Try your call again.
+//   - AccessDeniedException
+//     You are not authorized to perform the action.
 //
-//   * ValidationException
-//   An input validation error occured. For example, invalid characters in a project
-//   name, or if a pagination token is invalid.
+//   - InternalServerException
+//     Amazon Lookout for Vision experienced a service issue. Try your call again.
 //
-//   * ConflictException
-//   The update or deletion of a resource caused an inconsistent state.
+//   - ValidationException
+//     An input validation error occured. For example, invalid characters in a project
+//     name, or if a pagination token is invalid.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - ConflictException
+//     The update or deletion of a resource caused an inconsistent state.
 //
-//   * ThrottlingException
-//   Amazon Lookout for Vision is temporarily unable to process the request. Try
-//   your call again.
+//   - ResourceNotFoundException
+//     The resource could not be found.
+//
+//   - ThrottlingException
+//     Amazon Lookout for Vision is temporarily unable to process the request. Try
+//     your call again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutvision-2020-11-20/ListModels
 func (c *LookoutForVision) ListModels(input *ListModelsInput) (*ListModelsOutput, error) {
@@ -1606,15 +1609,14 @@ func (c *LookoutForVision) ListModelsWithContext(ctx aws.Context, input *ListMod
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListModels operation.
-//    pageNum := 0
-//    err := client.ListModelsPages(params,
-//        func(page *lookoutforvision.ListModelsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListModels operation.
+//	pageNum := 0
+//	err := client.ListModelsPages(params,
+//	    func(page *lookoutforvision.ListModelsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LookoutForVision) ListModelsPages(input *ListModelsInput, fn func(*ListModelsOutput, bool) bool) error {
 	return c.ListModelsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1666,14 +1668,13 @@ const opListProjects = "ListProjects"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListProjectsRequest method.
+//	req, resp := client.ListProjectsRequest(params)
 //
-//    // Example sending a request using the ListProjectsRequest method.
-//    req, resp := client.ListProjectsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutvision-2020-11-20/ListProjects
 func (c *LookoutForVision) ListProjectsRequest(input *ListProjectsInput) (req *request.Request, output *ListProjectsOutput) {
@@ -1700,7 +1701,8 @@ func (c *LookoutForVision) ListProjectsRequest(input *ListProjectsInput) (req *r
 
 // ListProjects API operation for Amazon Lookout for Vision.
 //
-// Lists the Amazon Lookout for Vision projects in your AWS account.
+// Lists the Amazon Lookout for Vision projects in your AWS account that are
+// in the AWS Region in which you call ListProjects.
 //
 // The ListProjects operation is eventually consistent. Recent calls to CreateProject
 // and DeleteProject might take a while to appear in the response from ListProjects.
@@ -1716,25 +1718,26 @@ func (c *LookoutForVision) ListProjectsRequest(input *ListProjectsInput) (req *r
 // API operation ListProjects for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You are not authorized to perform the action.
 //
-//   * InternalServerException
-//   Amazon Lookout for Vision experienced a service issue. Try your call again.
+//   - AccessDeniedException
+//     You are not authorized to perform the action.
 //
-//   * ValidationException
-//   An input validation error occured. For example, invalid characters in a project
-//   name, or if a pagination token is invalid.
+//   - InternalServerException
+//     Amazon Lookout for Vision experienced a service issue. Try your call again.
 //
-//   * ConflictException
-//   The update or deletion of a resource caused an inconsistent state.
+//   - ValidationException
+//     An input validation error occured. For example, invalid characters in a project
+//     name, or if a pagination token is invalid.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - ConflictException
+//     The update or deletion of a resource caused an inconsistent state.
 //
-//   * ThrottlingException
-//   Amazon Lookout for Vision is temporarily unable to process the request. Try
-//   your call again.
+//   - ResourceNotFoundException
+//     The resource could not be found.
+//
+//   - ThrottlingException
+//     Amazon Lookout for Vision is temporarily unable to process the request. Try
+//     your call again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutvision-2020-11-20/ListProjects
 func (c *LookoutForVision) ListProjects(input *ListProjectsInput) (*ListProjectsOutput, error) {
@@ -1766,15 +1769,14 @@ func (c *LookoutForVision) ListProjectsWithContext(ctx aws.Context, input *ListP
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListProjects operation.
-//    pageNum := 0
-//    err := client.ListProjectsPages(params,
-//        func(page *lookoutforvision.ListProjectsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListProjects operation.
+//	pageNum := 0
+//	err := client.ListProjectsPages(params,
+//	    func(page *lookoutforvision.ListProjectsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LookoutForVision) ListProjectsPages(input *ListProjectsInput, fn func(*ListProjectsOutput, bool) bool) error {
 	return c.ListProjectsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1826,14 +1828,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutvision-2020-11-20/ListTagsForResource
 func (c *LookoutForVision) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -1868,25 +1869,26 @@ func (c *LookoutForVision) ListTagsForResourceRequest(input *ListTagsForResource
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You are not authorized to perform the action.
 //
-//   * InternalServerException
-//   Amazon Lookout for Vision experienced a service issue. Try your call again.
+//   - AccessDeniedException
+//     You are not authorized to perform the action.
 //
-//   * ValidationException
-//   An input validation error occured. For example, invalid characters in a project
-//   name, or if a pagination token is invalid.
+//   - InternalServerException
+//     Amazon Lookout for Vision experienced a service issue. Try your call again.
 //
-//   * ConflictException
-//   The update or deletion of a resource caused an inconsistent state.
+//   - ValidationException
+//     An input validation error occured. For example, invalid characters in a project
+//     name, or if a pagination token is invalid.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - ConflictException
+//     The update or deletion of a resource caused an inconsistent state.
 //
-//   * ThrottlingException
-//   Amazon Lookout for Vision is temporarily unable to process the request. Try
-//   your call again.
+//   - ResourceNotFoundException
+//     The resource could not be found.
+//
+//   - ThrottlingException
+//     Amazon Lookout for Vision is temporarily unable to process the request. Try
+//     your call again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutvision-2020-11-20/ListTagsForResource
 func (c *LookoutForVision) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -1926,14 +1928,13 @@ const opStartModel = "StartModel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartModelRequest method.
+//	req, resp := client.StartModelRequest(params)
 //
-//    // Example sending a request using the StartModelRequest method.
-//    req, resp := client.StartModelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutvision-2020-11-20/StartModel
 func (c *LookoutForVision) StartModelRequest(input *StartModelInput) (req *request.Request, output *StartModelOutput) {
@@ -1977,30 +1978,31 @@ func (c *LookoutForVision) StartModelRequest(input *StartModelInput) (req *reque
 // API operation StartModel for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You are not authorized to perform the action.
 //
-//   * InternalServerException
-//   Amazon Lookout for Vision experienced a service issue. Try your call again.
+//   - AccessDeniedException
+//     You are not authorized to perform the action.
 //
-//   * ValidationException
-//   An input validation error occured. For example, invalid characters in a project
-//   name, or if a pagination token is invalid.
+//   - InternalServerException
+//     Amazon Lookout for Vision experienced a service issue. Try your call again.
 //
-//   * ConflictException
-//   The update or deletion of a resource caused an inconsistent state.
+//   - ValidationException
+//     An input validation error occured. For example, invalid characters in a project
+//     name, or if a pagination token is invalid.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - ConflictException
+//     The update or deletion of a resource caused an inconsistent state.
 //
-//   * ThrottlingException
-//   Amazon Lookout for Vision is temporarily unable to process the request. Try
-//   your call again.
+//   - ResourceNotFoundException
+//     The resource could not be found.
 //
-//   * ServiceQuotaExceededException
-//   A service quota was exceeded the allowed limit. For more information, see
-//   Limits in Amazon Lookout for Vision in the Amazon Lookout for Vision Developer
-//   Guide.
+//   - ThrottlingException
+//     Amazon Lookout for Vision is temporarily unable to process the request. Try
+//     your call again.
+//
+//   - ServiceQuotaExceededException
+//     A service quota was exceeded the allowed limit. For more information, see
+//     Limits in Amazon Lookout for Vision in the Amazon Lookout for Vision Developer
+//     Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutvision-2020-11-20/StartModel
 func (c *LookoutForVision) StartModel(input *StartModelInput) (*StartModelOutput, error) {
@@ -2040,14 +2042,13 @@ const opStartModelPackagingJob = "StartModelPackagingJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartModelPackagingJobRequest method.
+//	req, resp := client.StartModelPackagingJobRequest(params)
 //
-//    // Example sending a request using the StartModelPackagingJobRequest method.
-//    req, resp := client.StartModelPackagingJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutvision-2020-11-20/StartModelPackagingJob
 func (c *LookoutForVision) StartModelPackagingJobRequest(input *StartModelPackagingJobInput) (req *request.Request, output *StartModelPackagingJobOutput) {
@@ -2082,18 +2083,20 @@ func (c *LookoutForVision) StartModelPackagingJobRequest(input *StartModelPackag
 //
 // This operation requires the following permissions:
 //
-//    * lookoutvision:StartModelPackagingJob
+//   - lookoutvision:StartModelPackagingJob
 //
-//    * s3:PutObject
+//   - s3:PutObject
 //
-//    * s3:GetBucketLocation
+//   - s3:GetBucketLocation
 //
-//    * greengrass:CreateComponentVersion
+//   - kms:GenerateDataKey
 //
-//    * greengrass:DescribeComponent
+//   - greengrass:CreateComponentVersion
 //
-//    * (Optional) greengrass:TagResource. Only required if you want to tag
-//    the component.
+//   - greengrass:DescribeComponent
+//
+//   - (Optional) greengrass:TagResource. Only required if you want to tag
+//     the component.
 //
 // For more information, see Using your Amazon Lookout for Vision model on an
 // edge device in the Amazon Lookout for Vision Developer Guide.
@@ -2106,30 +2109,31 @@ func (c *LookoutForVision) StartModelPackagingJobRequest(input *StartModelPackag
 // API operation StartModelPackagingJob for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You are not authorized to perform the action.
 //
-//   * InternalServerException
-//   Amazon Lookout for Vision experienced a service issue. Try your call again.
+//   - AccessDeniedException
+//     You are not authorized to perform the action.
 //
-//   * ValidationException
-//   An input validation error occured. For example, invalid characters in a project
-//   name, or if a pagination token is invalid.
+//   - InternalServerException
+//     Amazon Lookout for Vision experienced a service issue. Try your call again.
 //
-//   * ConflictException
-//   The update or deletion of a resource caused an inconsistent state.
+//   - ValidationException
+//     An input validation error occured. For example, invalid characters in a project
+//     name, or if a pagination token is invalid.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - ConflictException
+//     The update or deletion of a resource caused an inconsistent state.
 //
-//   * ThrottlingException
-//   Amazon Lookout for Vision is temporarily unable to process the request. Try
-//   your call again.
+//   - ResourceNotFoundException
+//     The resource could not be found.
 //
-//   * ServiceQuotaExceededException
-//   A service quota was exceeded the allowed limit. For more information, see
-//   Limits in Amazon Lookout for Vision in the Amazon Lookout for Vision Developer
-//   Guide.
+//   - ThrottlingException
+//     Amazon Lookout for Vision is temporarily unable to process the request. Try
+//     your call again.
+//
+//   - ServiceQuotaExceededException
+//     A service quota was exceeded the allowed limit. For more information, see
+//     Limits in Amazon Lookout for Vision in the Amazon Lookout for Vision Developer
+//     Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutvision-2020-11-20/StartModelPackagingJob
 func (c *LookoutForVision) StartModelPackagingJob(input *StartModelPackagingJobInput) (*StartModelPackagingJobOutput, error) {
@@ -2169,14 +2173,13 @@ const opStopModel = "StopModel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopModelRequest method.
+//	req, resp := client.StopModelRequest(params)
 //
-//    // Example sending a request using the StopModelRequest method.
-//    req, resp := client.StopModelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutvision-2020-11-20/StopModel
 func (c *LookoutForVision) StopModelRequest(input *StopModelInput) (req *request.Request, output *StopModelOutput) {
@@ -2213,25 +2216,26 @@ func (c *LookoutForVision) StopModelRequest(input *StopModelInput) (req *request
 // API operation StopModel for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You are not authorized to perform the action.
 //
-//   * InternalServerException
-//   Amazon Lookout for Vision experienced a service issue. Try your call again.
+//   - AccessDeniedException
+//     You are not authorized to perform the action.
 //
-//   * ValidationException
-//   An input validation error occured. For example, invalid characters in a project
-//   name, or if a pagination token is invalid.
+//   - InternalServerException
+//     Amazon Lookout for Vision experienced a service issue. Try your call again.
 //
-//   * ConflictException
-//   The update or deletion of a resource caused an inconsistent state.
+//   - ValidationException
+//     An input validation error occured. For example, invalid characters in a project
+//     name, or if a pagination token is invalid.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - ConflictException
+//     The update or deletion of a resource caused an inconsistent state.
 //
-//   * ThrottlingException
-//   Amazon Lookout for Vision is temporarily unable to process the request. Try
-//   your call again.
+//   - ResourceNotFoundException
+//     The resource could not be found.
+//
+//   - ThrottlingException
+//     Amazon Lookout for Vision is temporarily unable to process the request. Try
+//     your call again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutvision-2020-11-20/StopModel
 func (c *LookoutForVision) StopModel(input *StopModelInput) (*StopModelOutput, error) {
@@ -2271,14 +2275,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutvision-2020-11-20/TagResource
 func (c *LookoutForVision) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -2315,30 +2318,31 @@ func (c *LookoutForVision) TagResourceRequest(input *TagResourceInput) (req *req
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You are not authorized to perform the action.
 //
-//   * InternalServerException
-//   Amazon Lookout for Vision experienced a service issue. Try your call again.
+//   - AccessDeniedException
+//     You are not authorized to perform the action.
 //
-//   * ValidationException
-//   An input validation error occured. For example, invalid characters in a project
-//   name, or if a pagination token is invalid.
+//   - InternalServerException
+//     Amazon Lookout for Vision experienced a service issue. Try your call again.
 //
-//   * ConflictException
-//   The update or deletion of a resource caused an inconsistent state.
+//   - ValidationException
+//     An input validation error occured. For example, invalid characters in a project
+//     name, or if a pagination token is invalid.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - ConflictException
+//     The update or deletion of a resource caused an inconsistent state.
 //
-//   * ThrottlingException
-//   Amazon Lookout for Vision is temporarily unable to process the request. Try
-//   your call again.
+//   - ResourceNotFoundException
+//     The resource could not be found.
 //
-//   * ServiceQuotaExceededException
-//   A service quota was exceeded the allowed limit. For more information, see
-//   Limits in Amazon Lookout for Vision in the Amazon Lookout for Vision Developer
-//   Guide.
+//   - ThrottlingException
+//     Amazon Lookout for Vision is temporarily unable to process the request. Try
+//     your call again.
+//
+//   - ServiceQuotaExceededException
+//     A service quota was exceeded the allowed limit. For more information, see
+//     Limits in Amazon Lookout for Vision in the Amazon Lookout for Vision Developer
+//     Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutvision-2020-11-20/TagResource
 func (c *LookoutForVision) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -2378,14 +2382,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutvision-2020-11-20/UntagResource
 func (c *LookoutForVision) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -2422,25 +2425,26 @@ func (c *LookoutForVision) UntagResourceRequest(input *UntagResourceInput) (req 
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You are not authorized to perform the action.
 //
-//   * InternalServerException
-//   Amazon Lookout for Vision experienced a service issue. Try your call again.
+//   - AccessDeniedException
+//     You are not authorized to perform the action.
 //
-//   * ValidationException
-//   An input validation error occured. For example, invalid characters in a project
-//   name, or if a pagination token is invalid.
+//   - InternalServerException
+//     Amazon Lookout for Vision experienced a service issue. Try your call again.
 //
-//   * ConflictException
-//   The update or deletion of a resource caused an inconsistent state.
+//   - ValidationException
+//     An input validation error occured. For example, invalid characters in a project
+//     name, or if a pagination token is invalid.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - ConflictException
+//     The update or deletion of a resource caused an inconsistent state.
 //
-//   * ThrottlingException
-//   Amazon Lookout for Vision is temporarily unable to process the request. Try
-//   your call again.
+//   - ResourceNotFoundException
+//     The resource could not be found.
+//
+//   - ThrottlingException
+//     Amazon Lookout for Vision is temporarily unable to process the request. Try
+//     your call again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutvision-2020-11-20/UntagResource
 func (c *LookoutForVision) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -2480,14 +2484,13 @@ const opUpdateDatasetEntries = "UpdateDatasetEntries"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateDatasetEntriesRequest method.
+//	req, resp := client.UpdateDatasetEntriesRequest(params)
 //
-//    // Example sending a request using the UpdateDatasetEntriesRequest method.
-//    req, resp := client.UpdateDatasetEntriesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutvision-2020-11-20/UpdateDatasetEntries
 func (c *LookoutForVision) UpdateDatasetEntriesRequest(input *UpdateDatasetEntriesInput) (req *request.Request, output *UpdateDatasetEntriesOutput) {
@@ -2537,25 +2540,26 @@ func (c *LookoutForVision) UpdateDatasetEntriesRequest(input *UpdateDatasetEntri
 // API operation UpdateDatasetEntries for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You are not authorized to perform the action.
 //
-//   * InternalServerException
-//   Amazon Lookout for Vision experienced a service issue. Try your call again.
+//   - AccessDeniedException
+//     You are not authorized to perform the action.
 //
-//   * ValidationException
-//   An input validation error occured. For example, invalid characters in a project
-//   name, or if a pagination token is invalid.
+//   - InternalServerException
+//     Amazon Lookout for Vision experienced a service issue. Try your call again.
 //
-//   * ConflictException
-//   The update or deletion of a resource caused an inconsistent state.
+//   - ValidationException
+//     An input validation error occured. For example, invalid characters in a project
+//     name, or if a pagination token is invalid.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - ConflictException
+//     The update or deletion of a resource caused an inconsistent state.
 //
-//   * ThrottlingException
-//   Amazon Lookout for Vision is temporarily unable to process the request. Try
-//   your call again.
+//   - ResourceNotFoundException
+//     The resource could not be found.
+//
+//   - ThrottlingException
+//     Amazon Lookout for Vision is temporarily unable to process the request. Try
+//     your call again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lookoutvision-2020-11-20/UpdateDatasetEntries
 func (c *LookoutForVision) UpdateDatasetEntries(input *UpdateDatasetEntriesInput) (*UpdateDatasetEntriesOutput, error) {
@@ -2641,6 +2645,51 @@ func (s *AccessDeniedException) StatusCode() int {
 // RequestID returns the service's response RequestID for request.
 func (s *AccessDeniedException) RequestID() string {
 	return s.RespMetadata.RequestID
+}
+
+// Information about an anomaly type found on an image by an image segmentation
+// model. For more information, see DetectAnomalies.
+type Anomaly struct {
+	_ struct{} `type:"structure"`
+
+	// The name of an anomaly type found in an image. Name maps to an anomaly type
+	// in the training dataset, apart from the anomaly type background. The service
+	// automatically inserts the background anomaly type into the response from
+	// DetectAnomalies.
+	Name *string `min:"1" type:"string"`
+
+	// Information about the pixel mask that covers an anomaly type.
+	PixelAnomaly *PixelAnomaly `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Anomaly) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Anomaly) GoString() string {
+	return s.String()
+}
+
+// SetName sets the Name field's value.
+func (s *Anomaly) SetName(v string) *Anomaly {
+	s.Name = &v
+	return s
+}
+
+// SetPixelAnomaly sets the PixelAnomaly field's value.
+func (s *Anomaly) SetPixelAnomaly(v *PixelAnomaly) *Anomaly {
+	s.PixelAnomaly = v
+	return s
 }
 
 // The update or deletion of a resource caused an inconsistent state.
@@ -4284,15 +4333,44 @@ func (s *DetectAnomaliesOutput) SetDetectAnomalyResult(v *DetectAnomalyResult) *
 	return s
 }
 
-// The prediction results from a call to DetectAnomalies.
+// The prediction results from a call to DetectAnomalies. DetectAnomalyResult
+// includes classification information for the prediction (IsAnomalous and Confidence).
+// If the model you use is an image segementation model, DetectAnomalyResult
+// also includes segmentation information (Anomalies and AnomalyMask). Classification
+// information is calculated separately from segmentation information and you
+// shouldn't assume a relationship between them.
 type DetectAnomalyResult struct {
 	_ struct{} `type:"structure"`
 
-	// The confidence that Amazon Lookout for Vision has in the accuracy of the
-	// prediction.
+	// If the model is an image segmentation model, Anomalies contains a list of
+	// anomaly types found in the image. There is one entry for each type of anomaly
+	// found (even if multiple instances of an anomaly type exist on the image).
+	// The first element in the list is always an anomaly type representing the
+	// image background ('background') and shouldn't be considered an anomaly. Amazon
+	// Lookout for Vision automatically add the background anomaly type to the response,
+	// and you don't need to declare a background anomaly type in your dataset.
+	//
+	// If the list has one entry ('background'), no anomalies were found on the
+	// image.
+	//
+	// An image classification model doesn't return an Anomalies list.
+	Anomalies []*Anomaly `type:"list"`
+
+	// If the model is an image segmentation model, AnomalyMask contains pixel masks
+	// that covers all anomaly types found on the image. Each anomaly type has a
+	// different mask color. To map a color to an anomaly type, see the color field
+	// of the PixelAnomaly object.
+	//
+	// An image classification model doesn't return an Anomalies list.
+	// AnomalyMask is automatically base64 encoded/decoded by the SDK.
+	AnomalyMask []byte `min:"1" type:"blob"`
+
+	// The confidence that Lookout for Vision has in the accuracy of the classification
+	// in IsAnomalous.
 	Confidence *float64 `type:"float"`
 
-	// True if the image contains an anomaly, otherwise false.
+	// True if Amazon Lookout for Vision classifies the image as containing an anomaly,
+	// otherwise false.
 	IsAnomalous *bool `type:"boolean"`
 
 	// The source of the image that was analyzed. direct means that the images was
@@ -4316,6 +4394,18 @@ func (s DetectAnomalyResult) String() string {
 // value will be replaced with "sensitive".
 func (s DetectAnomalyResult) GoString() string {
 	return s.String()
+}
+
+// SetAnomalies sets the Anomalies field's value.
+func (s *DetectAnomalyResult) SetAnomalies(v []*Anomaly) *DetectAnomalyResult {
+	s.Anomalies = v
+	return s
+}
+
+// SetAnomalyMask sets the AnomalyMask field's value.
+func (s *DetectAnomalyResult) SetAnomalyMask(v []byte) *DetectAnomalyResult {
+	s.AnomalyMask = v
+	return s
 }
 
 // SetConfidence sets the Confidence field's value.
@@ -4345,9 +4435,8 @@ type GreengrassConfiguration struct {
 	_ struct{} `type:"structure"`
 
 	// Additional compiler options for the Greengrass component. Currently, only
-	// NVIDIA Graphics Processing Units (GPU) are supported. If you specify TargetPlatform,
-	// you must specify CompilerOptions. If you specify TargetDevice, don't specify
-	// CompilerOptions.
+	// NVIDIA Graphics Processing Units (GPU) and CPU accelerators are supported.
+	// If you specify TargetDevice, don't specify CompilerOptions.
 	//
 	// For more information, see Compiler options in the Amazon Lookout for Vision
 	// Developer Guide.
@@ -5354,6 +5443,14 @@ type ModelDescription struct {
 	// to encrypt the model during training.
 	KmsKeyId *string `min:"1" type:"string"`
 
+	// The maximum number of inference units Amazon Lookout for Vision uses to auto-scale
+	// the model. For more information, see StartModel.
+	MaxInferenceUnits *int64 `min:"1" type:"integer"`
+
+	// The minimum number of inference units used by the model. For more information,
+	// see StartModel
+	MinInferenceUnits *int64 `min:"1" type:"integer"`
+
 	// The Amazon Resource Name (ARN) of the model.
 	ModelArn *string `type:"string"`
 
@@ -5424,6 +5521,18 @@ func (s *ModelDescription) SetEvaluationResult(v *OutputS3Object) *ModelDescript
 // SetKmsKeyId sets the KmsKeyId field's value.
 func (s *ModelDescription) SetKmsKeyId(v string) *ModelDescription {
 	s.KmsKeyId = &v
+	return s
+}
+
+// SetMaxInferenceUnits sets the MaxInferenceUnits field's value.
+func (s *ModelDescription) SetMaxInferenceUnits(v int64) *ModelDescription {
+	s.MaxInferenceUnits = &v
+	return s
+}
+
+// SetMinInferenceUnits sets the MinInferenceUnits field's value.
+func (s *ModelDescription) SetMinInferenceUnits(v int64) *ModelDescription {
+	s.MinInferenceUnits = &v
 	return s
 }
 
@@ -6017,6 +6126,50 @@ func (s *OutputS3Object) SetKey(v string) *OutputS3Object {
 	return s
 }
 
+// Information about the pixels in an anomaly mask. For more information, see
+// Anomaly. PixelAnomaly is only returned by image segmentation models.
+type PixelAnomaly struct {
+	_ struct{} `type:"structure"`
+
+	// A hex color value for the mask that covers an anomaly type. Each anomaly
+	// type has a different mask color. The color maps to the color of the anomaly
+	// type used in the training dataset.
+	Color *string `min:"7" type:"string"`
+
+	// The percentage area of the image that the anomaly type covers.
+	TotalPercentageArea *float64 `type:"float"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PixelAnomaly) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PixelAnomaly) GoString() string {
+	return s.String()
+}
+
+// SetColor sets the Color field's value.
+func (s *PixelAnomaly) SetColor(v string) *PixelAnomaly {
+	s.Color = &v
+	return s
+}
+
+// SetTotalPercentageArea sets the TotalPercentageArea field's value.
+func (s *PixelAnomaly) SetTotalPercentageArea(v float64) *PixelAnomaly {
+	s.TotalPercentageArea = &v
+	return s
+}
+
 // Describe an Amazon Lookout for Vision project. For more information, see
 // DescribeProject.
 type ProjectDescription struct {
@@ -6364,6 +6517,11 @@ type StartModelInput struct {
 	// call to StartModel. An idempotency token is active for 8 hours.
 	ClientToken *string `location:"header" locationName:"X-Amzn-Client-Token" min:"1" type:"string" idempotencyToken:"true"`
 
+	// The maximum number of inference units to use for auto-scaling the model.
+	// If you don't specify a value, Amazon Lookout for Vision doesn't auto-scale
+	// the model.
+	MaxInferenceUnits *int64 `min:"1" type:"integer"`
+
 	// The minimum number of inference units to use. A single inference unit represents
 	// 1 hour of processing. Use a higher number to increase the TPS throughput
 	// of your model. You are charged for the number of inference units that you
@@ -6407,6 +6565,9 @@ func (s *StartModelInput) Validate() error {
 	if s.ClientToken != nil && len(*s.ClientToken) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("ClientToken", 1))
 	}
+	if s.MaxInferenceUnits != nil && *s.MaxInferenceUnits < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxInferenceUnits", 1))
+	}
 	if s.MinInferenceUnits == nil {
 		invalidParams.Add(request.NewErrParamRequired("MinInferenceUnits"))
 	}
@@ -6435,6 +6596,12 @@ func (s *StartModelInput) Validate() error {
 // SetClientToken sets the ClientToken field's value.
 func (s *StartModelInput) SetClientToken(v string) *StartModelInput {
 	s.ClientToken = &v
+	return s
+}
+
+// SetMaxInferenceUnits sets the MaxInferenceUnits field's value.
+func (s *StartModelInput) SetMaxInferenceUnits(v int64) *StartModelInput {
+	s.MaxInferenceUnits = &v
 	return s
 }
 
@@ -6940,12 +7107,18 @@ func (s TagResourceOutput) GoString() string {
 type TargetPlatform struct {
 	_ struct{} `type:"structure"`
 
-	// The target accelerator for the model. NVIDIA (Nvidia graphics processing
-	// unit) is the only accelerator that is currently supported. You must also
-	// specify the gpu-code, trt-ver, and cuda-ver compiler options.
+	// The target accelerator for the model. Currently, Amazon Lookout for Vision
+	// only supports NVIDIA (Nvidia graphics processing unit) and CPU accelerators.
+	// If you specify NVIDIA as an accelerator, you must also specify the gpu-code,
+	// trt-ver, and cuda-ver compiler options. If you don't specify an accelerator,
+	// Lookout for Vision uses the CPU for compilation and we highly recommend that
+	// you use the GreengrassConfiguration$CompilerOptions field. For example, you
+	// can use the following compiler options for CPU:
 	//
-	// Accelerator is a required field
-	Accelerator *string `type:"string" required:"true" enum:"TargetPlatformAccelerator"`
+	//    * mcpu: CPU micro-architecture. For example, {'mcpu': 'skylake-avx512'}
+	//
+	//    * mattr: CPU flags. For example, {'mattr': ['+neon', '+vfpv4']}
+	Accelerator *string `type:"string" enum:"TargetPlatformAccelerator"`
 
 	// The target architecture for the model. The currently supported architectures
 	// are X86_64 (64-bit version of the x86 instruction set) and ARM_64 (ARMv8
@@ -6982,9 +7155,6 @@ func (s TargetPlatform) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *TargetPlatform) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "TargetPlatform"}
-	if s.Accelerator == nil {
-		invalidParams.Add(request.NewErrParamRequired("Accelerator"))
-	}
 	if s.Arch == nil {
 		invalidParams.Add(request.NewErrParamRequired("Arch"))
 	}

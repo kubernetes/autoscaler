@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // AWSBillingConductor.
-//    func myFunc(svc billingconductoriface.BillingConductorAPI) bool {
-//        // Make svc.AssociateAccounts request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// AWSBillingConductor.
+//	func myFunc(svc billingconductoriface.BillingConductorAPI) bool {
+//	    // Make svc.AssociateAccounts request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := billingconductor.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := billingconductor.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockBillingConductorClient struct {
-//        billingconductoriface.BillingConductorAPI
-//    }
-//    func (m *mockBillingConductorClient) AssociateAccounts(input *billingconductor.AssociateAccountsInput) (*billingconductor.AssociateAccountsOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockBillingConductorClient struct {
+//	    billingconductoriface.BillingConductorAPI
+//	}
+//	func (m *mockBillingConductorClient) AssociateAccounts(input *billingconductor.AssociateAccountsInput) (*billingconductor.AssociateAccountsOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockBillingConductorClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockBillingConductorClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,
@@ -136,6 +136,13 @@ type BillingConductorAPI interface {
 
 	ListBillingGroupsPages(*billingconductor.ListBillingGroupsInput, func(*billingconductor.ListBillingGroupsOutput, bool) bool) error
 	ListBillingGroupsPagesWithContext(aws.Context, *billingconductor.ListBillingGroupsInput, func(*billingconductor.ListBillingGroupsOutput, bool) bool, ...request.Option) error
+
+	ListCustomLineItemVersions(*billingconductor.ListCustomLineItemVersionsInput) (*billingconductor.ListCustomLineItemVersionsOutput, error)
+	ListCustomLineItemVersionsWithContext(aws.Context, *billingconductor.ListCustomLineItemVersionsInput, ...request.Option) (*billingconductor.ListCustomLineItemVersionsOutput, error)
+	ListCustomLineItemVersionsRequest(*billingconductor.ListCustomLineItemVersionsInput) (*request.Request, *billingconductor.ListCustomLineItemVersionsOutput)
+
+	ListCustomLineItemVersionsPages(*billingconductor.ListCustomLineItemVersionsInput, func(*billingconductor.ListCustomLineItemVersionsOutput, bool) bool) error
+	ListCustomLineItemVersionsPagesWithContext(aws.Context, *billingconductor.ListCustomLineItemVersionsInput, func(*billingconductor.ListCustomLineItemVersionsOutput, bool) bool, ...request.Option) error
 
 	ListCustomLineItems(*billingconductor.ListCustomLineItemsInput) (*billingconductor.ListCustomLineItemsOutput, error)
 	ListCustomLineItemsWithContext(aws.Context, *billingconductor.ListCustomLineItemsInput, ...request.Option) (*billingconductor.ListCustomLineItemsOutput, error)

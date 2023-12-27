@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // AWS Route53 Recovery Control Config.
-//    func myFunc(svc route53recoverycontrolconfigiface.Route53RecoveryControlConfigAPI) bool {
-//        // Make svc.CreateCluster request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// AWS Route53 Recovery Control Config.
+//	func myFunc(svc route53recoverycontrolconfigiface.Route53RecoveryControlConfigAPI) bool {
+//	    // Make svc.CreateCluster request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := route53recoverycontrolconfig.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := route53recoverycontrolconfig.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockRoute53RecoveryControlConfigClient struct {
-//        route53recoverycontrolconfigiface.Route53RecoveryControlConfigAPI
-//    }
-//    func (m *mockRoute53RecoveryControlConfigClient) CreateCluster(input *route53recoverycontrolconfig.CreateClusterInput) (*route53recoverycontrolconfig.CreateClusterOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockRoute53RecoveryControlConfigClient struct {
+//	    route53recoverycontrolconfigiface.Route53RecoveryControlConfigAPI
+//	}
+//	func (m *mockRoute53RecoveryControlConfigClient) CreateCluster(input *route53recoverycontrolconfig.CreateClusterInput) (*route53recoverycontrolconfig.CreateClusterOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockRoute53RecoveryControlConfigClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockRoute53RecoveryControlConfigClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,
@@ -107,6 +107,10 @@ type Route53RecoveryControlConfigAPI interface {
 	DescribeSafetyRule(*route53recoverycontrolconfig.DescribeSafetyRuleInput) (*route53recoverycontrolconfig.DescribeSafetyRuleOutput, error)
 	DescribeSafetyRuleWithContext(aws.Context, *route53recoverycontrolconfig.DescribeSafetyRuleInput, ...request.Option) (*route53recoverycontrolconfig.DescribeSafetyRuleOutput, error)
 	DescribeSafetyRuleRequest(*route53recoverycontrolconfig.DescribeSafetyRuleInput) (*request.Request, *route53recoverycontrolconfig.DescribeSafetyRuleOutput)
+
+	GetResourcePolicy(*route53recoverycontrolconfig.GetResourcePolicyInput) (*route53recoverycontrolconfig.GetResourcePolicyOutput, error)
+	GetResourcePolicyWithContext(aws.Context, *route53recoverycontrolconfig.GetResourcePolicyInput, ...request.Option) (*route53recoverycontrolconfig.GetResourcePolicyOutput, error)
+	GetResourcePolicyRequest(*route53recoverycontrolconfig.GetResourcePolicyInput) (*request.Request, *route53recoverycontrolconfig.GetResourcePolicyOutput)
 
 	ListAssociatedRoute53HealthChecks(*route53recoverycontrolconfig.ListAssociatedRoute53HealthChecksInput) (*route53recoverycontrolconfig.ListAssociatedRoute53HealthChecksOutput, error)
 	ListAssociatedRoute53HealthChecksWithContext(aws.Context, *route53recoverycontrolconfig.ListAssociatedRoute53HealthChecksInput, ...request.Option) (*route53recoverycontrolconfig.ListAssociatedRoute53HealthChecksOutput, error)

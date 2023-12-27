@@ -3,19 +3,19 @@
 // Package resiliencehub provides the client and types for making API
 // requests to AWS Resilience Hub.
 //
-// AWS Resilience Hub helps you proactively prepare and protect your Amazon
-// Web Services applications from disruptions. Resilience Hub offers continuous
-// resiliency assessment and validation that integrates into your software development
-// lifecycle. This enables you to uncover resiliency weaknesses, ensure recovery
-// time objective (RTO) and recovery point objective (RPO) targets for your
-// applications are met, and resolve issues before they are released into production.
+// Resilience Hub helps you proactively prepare and protect your Amazon Web
+// Services applications from disruptions. It offers continual resiliency assessment
+// and validation that integrates into your software development lifecycle.
+// This enables you to uncover resiliency weaknesses, ensure recovery time objective
+// (RTO) and recovery point objective (RPO) targets for your applications are
+// met, and resolve issues before they are released into production.
 //
 // See https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30 for more information on this service.
 //
 // See resiliencehub package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/resiliencehub/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact AWS Resilience Hub with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

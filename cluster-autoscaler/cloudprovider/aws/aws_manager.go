@@ -191,6 +191,7 @@ func createAWSManagerInternal(
 		klog.Errorf("Unable to validate custom endpoint overrides: %v", err)
 		return nil, err
 	}
+	klog.Infof("AWS SDK Version: %s", aws.SDKVersion)
 
 	if awsService == nil {
 		awsSdkProvider := newAWSSDKProvider(cfg)

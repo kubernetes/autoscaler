@@ -29,14 +29,13 @@ const opAcceptGrant = "AcceptGrant"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AcceptGrantRequest method.
+//	req, resp := client.AcceptGrantRequest(params)
 //
-//    // Example sending a request using the AcceptGrantRequest method.
-//    req, resp := client.AcceptGrantRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/AcceptGrant
 func (c *LicenseManager) AcceptGrantRequest(input *AcceptGrantInput) (req *request.Request, output *AcceptGrantOutput) {
@@ -67,27 +66,28 @@ func (c *LicenseManager) AcceptGrantRequest(input *AcceptGrantInput) (req *reque
 // API operation AcceptGrant for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The provided input is not valid. Try your request again.
 //
-//   * InvalidParameterValueException
-//   One or more parameter values are not valid.
+//   - ValidationException
+//     The provided input is not valid. Try your request again.
 //
-//   * AuthorizationException
-//   The Amazon Web Services user account does not have permission to perform
-//   the action. Check the IAM policy associated with this account.
+//   - InvalidParameterValueException
+//     One or more parameter values are not valid.
 //
-//   * AccessDeniedException
-//   Access to resource denied.
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
 //
-//   * RateLimitExceededException
-//   Too many requests have been submitted. Try again after a brief wait.
+//   - AccessDeniedException
+//     Access to resource denied.
 //
-//   * ResourceLimitExceededException
-//   Your resource limits have been exceeded.
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
 //
-//   * ServerInternalException
-//   The server experienced an internal error. Try again.
+//   - ResourceLimitExceededException
+//     Your resource limits have been exceeded.
+//
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/AcceptGrant
 func (c *LicenseManager) AcceptGrant(input *AcceptGrantInput) (*AcceptGrantOutput, error) {
@@ -127,14 +127,13 @@ const opCheckInLicense = "CheckInLicense"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CheckInLicenseRequest method.
+//	req, resp := client.CheckInLicenseRequest(params)
 //
-//    // Example sending a request using the CheckInLicenseRequest method.
-//    req, resp := client.CheckInLicenseRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/CheckInLicense
 func (c *LicenseManager) CheckInLicenseRequest(input *CheckInLicenseInput) (req *request.Request, output *CheckInLicenseOutput) {
@@ -167,30 +166,31 @@ func (c *LicenseManager) CheckInLicenseRequest(input *CheckInLicenseInput) (req 
 // API operation CheckInLicense for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The provided input is not valid. Try your request again.
 //
-//   * InvalidParameterValueException
-//   One or more parameter values are not valid.
+//   - ValidationException
+//     The provided input is not valid. Try your request again.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InvalidParameterValueException
+//     One or more parameter values are not valid.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Try your request again.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * AuthorizationException
-//   The Amazon Web Services user account does not have permission to perform
-//   the action. Check the IAM policy associated with this account.
+//   - ConflictException
+//     There was a conflict processing the request. Try your request again.
 //
-//   * AccessDeniedException
-//   Access to resource denied.
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
 //
-//   * RateLimitExceededException
-//   Too many requests have been submitted. Try again after a brief wait.
+//   - AccessDeniedException
+//     Access to resource denied.
 //
-//   * ServerInternalException
-//   The server experienced an internal error. Try again.
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
+//
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/CheckInLicense
 func (c *LicenseManager) CheckInLicense(input *CheckInLicenseInput) (*CheckInLicenseOutput, error) {
@@ -230,14 +230,13 @@ const opCheckoutBorrowLicense = "CheckoutBorrowLicense"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CheckoutBorrowLicenseRequest method.
+//	req, resp := client.CheckoutBorrowLicenseRequest(params)
 //
-//    // Example sending a request using the CheckoutBorrowLicenseRequest method.
-//    req, resp := client.CheckoutBorrowLicenseRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/CheckoutBorrowLicense
 func (c *LicenseManager) CheckoutBorrowLicenseRequest(input *CheckoutBorrowLicenseInput) (req *request.Request, output *CheckoutBorrowLicenseOutput) {
@@ -268,40 +267,41 @@ func (c *LicenseManager) CheckoutBorrowLicenseRequest(input *CheckoutBorrowLicen
 // API operation CheckoutBorrowLicense for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The provided input is not valid. Try your request again.
 //
-//   * InvalidParameterValueException
-//   One or more parameter values are not valid.
+//   - ValidationException
+//     The provided input is not valid. Try your request again.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InvalidParameterValueException
+//     One or more parameter values are not valid.
 //
-//   * NoEntitlementsAllowedException
-//   There are no entitlements found for this license, or the entitlement maximum
-//   count is reached.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * EntitlementNotAllowedException
-//   The entitlement is not allowed.
+//   - NoEntitlementsAllowedException
+//     There are no entitlements found for this license, or the entitlement maximum
+//     count is reached.
 //
-//   * UnsupportedDigitalSignatureMethodException
-//   The digital signature method is unsupported. Try your request again.
+//   - EntitlementNotAllowedException
+//     The entitlement is not allowed.
 //
-//   * RedirectException
-//   This is not the correct Region for the resource. Try again.
+//   - UnsupportedDigitalSignatureMethodException
+//     The digital signature method is unsupported. Try your request again.
 //
-//   * AuthorizationException
-//   The Amazon Web Services user account does not have permission to perform
-//   the action. Check the IAM policy associated with this account.
+//   - RedirectException
+//     This is not the correct Region for the resource. Try again.
 //
-//   * AccessDeniedException
-//   Access to resource denied.
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
 //
-//   * RateLimitExceededException
-//   Too many requests have been submitted. Try again after a brief wait.
+//   - AccessDeniedException
+//     Access to resource denied.
 //
-//   * ServerInternalException
-//   The server experienced an internal error. Try again.
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
+//
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/CheckoutBorrowLicense
 func (c *LicenseManager) CheckoutBorrowLicense(input *CheckoutBorrowLicenseInput) (*CheckoutBorrowLicenseOutput, error) {
@@ -341,14 +341,13 @@ const opCheckoutLicense = "CheckoutLicense"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CheckoutLicenseRequest method.
+//	req, resp := client.CheckoutLicenseRequest(params)
 //
-//    // Example sending a request using the CheckoutLicenseRequest method.
-//    req, resp := client.CheckoutLicenseRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/CheckoutLicense
 func (c *LicenseManager) CheckoutLicenseRequest(input *CheckoutLicenseInput) (req *request.Request, output *CheckoutLicenseOutput) {
@@ -371,6 +370,9 @@ func (c *LicenseManager) CheckoutLicenseRequest(input *CheckoutLicenseInput) (re
 //
 // Checks out the specified license.
 //
+// If the account that created the license is the same that is performing the
+// check out, you must specify the account as the beneficiary.
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -379,37 +381,38 @@ func (c *LicenseManager) CheckoutLicenseRequest(input *CheckoutLicenseInput) (re
 // API operation CheckoutLicense for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The provided input is not valid. Try your request again.
 //
-//   * InvalidParameterValueException
-//   One or more parameter values are not valid.
+//   - ValidationException
+//     The provided input is not valid. Try your request again.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InvalidParameterValueException
+//     One or more parameter values are not valid.
 //
-//   * NoEntitlementsAllowedException
-//   There are no entitlements found for this license, or the entitlement maximum
-//   count is reached.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * UnsupportedDigitalSignatureMethodException
-//   The digital signature method is unsupported. Try your request again.
+//   - NoEntitlementsAllowedException
+//     There are no entitlements found for this license, or the entitlement maximum
+//     count is reached.
 //
-//   * RedirectException
-//   This is not the correct Region for the resource. Try again.
+//   - UnsupportedDigitalSignatureMethodException
+//     The digital signature method is unsupported. Try your request again.
 //
-//   * AuthorizationException
-//   The Amazon Web Services user account does not have permission to perform
-//   the action. Check the IAM policy associated with this account.
+//   - RedirectException
+//     This is not the correct Region for the resource. Try again.
 //
-//   * AccessDeniedException
-//   Access to resource denied.
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
 //
-//   * RateLimitExceededException
-//   Too many requests have been submitted. Try again after a brief wait.
+//   - AccessDeniedException
+//     Access to resource denied.
 //
-//   * ServerInternalException
-//   The server experienced an internal error. Try again.
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
+//
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/CheckoutLicense
 func (c *LicenseManager) CheckoutLicense(input *CheckoutLicenseInput) (*CheckoutLicenseOutput, error) {
@@ -449,14 +452,13 @@ const opCreateGrant = "CreateGrant"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateGrantRequest method.
+//	req, resp := client.CreateGrantRequest(params)
 //
-//    // Example sending a request using the CreateGrantRequest method.
-//    req, resp := client.CreateGrantRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/CreateGrant
 func (c *LicenseManager) CreateGrantRequest(input *CreateGrantInput) (req *request.Request, output *CreateGrantOutput) {
@@ -478,7 +480,10 @@ func (c *LicenseManager) CreateGrantRequest(input *CreateGrantInput) (req *reque
 // CreateGrant API operation for AWS License Manager.
 //
 // Creates a grant for the specified license. A grant shares the use of license
-// entitlements with specific Amazon Web Services accounts.
+// entitlements with a specific Amazon Web Services account, an organization,
+// or an organizational unit (OU). For more information, see Granted licenses
+// in License Manager (https://docs.aws.amazon.com/license-manager/latest/userguide/granted-licenses.html)
+// in the License Manager User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -488,27 +493,28 @@ func (c *LicenseManager) CreateGrantRequest(input *CreateGrantInput) (req *reque
 // API operation CreateGrant for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The provided input is not valid. Try your request again.
 //
-//   * InvalidParameterValueException
-//   One or more parameter values are not valid.
+//   - ValidationException
+//     The provided input is not valid. Try your request again.
 //
-//   * ResourceLimitExceededException
-//   Your resource limits have been exceeded.
+//   - InvalidParameterValueException
+//     One or more parameter values are not valid.
 //
-//   * ServerInternalException
-//   The server experienced an internal error. Try again.
+//   - ResourceLimitExceededException
+//     Your resource limits have been exceeded.
 //
-//   * AuthorizationException
-//   The Amazon Web Services user account does not have permission to perform
-//   the action. Check the IAM policy associated with this account.
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
 //
-//   * RateLimitExceededException
-//   Too many requests have been submitted. Try again after a brief wait.
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
 //
-//   * AccessDeniedException
-//   Access to resource denied.
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
+//
+//   - AccessDeniedException
+//     Access to resource denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/CreateGrant
 func (c *LicenseManager) CreateGrant(input *CreateGrantInput) (*CreateGrantOutput, error) {
@@ -548,14 +554,13 @@ const opCreateGrantVersion = "CreateGrantVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateGrantVersionRequest method.
+//	req, resp := client.CreateGrantVersionRequest(params)
 //
-//    // Example sending a request using the CreateGrantVersionRequest method.
-//    req, resp := client.CreateGrantVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/CreateGrantVersion
 func (c *LicenseManager) CreateGrantVersionRequest(input *CreateGrantVersionInput) (req *request.Request, output *CreateGrantVersionOutput) {
@@ -576,7 +581,9 @@ func (c *LicenseManager) CreateGrantVersionRequest(input *CreateGrantVersionInpu
 
 // CreateGrantVersion API operation for AWS License Manager.
 //
-// Creates a new version of the specified grant.
+// Creates a new version of the specified grant. For more information, see Granted
+// licenses in License Manager (https://docs.aws.amazon.com/license-manager/latest/userguide/granted-licenses.html)
+// in the License Manager User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -586,27 +593,28 @@ func (c *LicenseManager) CreateGrantVersionRequest(input *CreateGrantVersionInpu
 // API operation CreateGrantVersion for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The provided input is not valid. Try your request again.
 //
-//   * InvalidParameterValueException
-//   One or more parameter values are not valid.
+//   - ValidationException
+//     The provided input is not valid. Try your request again.
 //
-//   * ResourceLimitExceededException
-//   Your resource limits have been exceeded.
+//   - InvalidParameterValueException
+//     One or more parameter values are not valid.
 //
-//   * ServerInternalException
-//   The server experienced an internal error. Try again.
+//   - ResourceLimitExceededException
+//     Your resource limits have been exceeded.
 //
-//   * AuthorizationException
-//   The Amazon Web Services user account does not have permission to perform
-//   the action. Check the IAM policy associated with this account.
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
 //
-//   * AccessDeniedException
-//   Access to resource denied.
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
 //
-//   * RateLimitExceededException
-//   Too many requests have been submitted. Try again after a brief wait.
+//   - AccessDeniedException
+//     Access to resource denied.
+//
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/CreateGrantVersion
 func (c *LicenseManager) CreateGrantVersion(input *CreateGrantVersionInput) (*CreateGrantVersionOutput, error) {
@@ -646,14 +654,13 @@ const opCreateLicense = "CreateLicense"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateLicenseRequest method.
+//	req, resp := client.CreateLicenseRequest(params)
 //
-//    // Example sending a request using the CreateLicenseRequest method.
-//    req, resp := client.CreateLicenseRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/CreateLicense
 func (c *LicenseManager) CreateLicenseRequest(input *CreateLicenseInput) (req *request.Request, output *CreateLicenseOutput) {
@@ -684,27 +691,28 @@ func (c *LicenseManager) CreateLicenseRequest(input *CreateLicenseInput) (req *r
 // API operation CreateLicense for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The provided input is not valid. Try your request again.
 //
-//   * InvalidParameterValueException
-//   One or more parameter values are not valid.
+//   - ValidationException
+//     The provided input is not valid. Try your request again.
 //
-//   * RedirectException
-//   This is not the correct Region for the resource. Try again.
+//   - InvalidParameterValueException
+//     One or more parameter values are not valid.
 //
-//   * AuthorizationException
-//   The Amazon Web Services user account does not have permission to perform
-//   the action. Check the IAM policy associated with this account.
+//   - RedirectException
+//     This is not the correct Region for the resource. Try again.
 //
-//   * AccessDeniedException
-//   Access to resource denied.
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
 //
-//   * RateLimitExceededException
-//   Too many requests have been submitted. Try again after a brief wait.
+//   - AccessDeniedException
+//     Access to resource denied.
 //
-//   * ServerInternalException
-//   The server experienced an internal error. Try again.
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
+//
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/CreateLicense
 func (c *LicenseManager) CreateLicense(input *CreateLicenseInput) (*CreateLicenseOutput, error) {
@@ -744,14 +752,13 @@ const opCreateLicenseConfiguration = "CreateLicenseConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateLicenseConfigurationRequest method.
+//	req, resp := client.CreateLicenseConfigurationRequest(params)
 //
-//    // Example sending a request using the CreateLicenseConfigurationRequest method.
-//    req, resp := client.CreateLicenseConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/CreateLicenseConfiguration
 func (c *LicenseManager) CreateLicenseConfigurationRequest(input *CreateLicenseConfigurationInput) (req *request.Request, output *CreateLicenseConfigurationOutput) {
@@ -789,24 +796,25 @@ func (c *LicenseManager) CreateLicenseConfigurationRequest(input *CreateLicenseC
 // API operation CreateLicenseConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   One or more parameter values are not valid.
 //
-//   * ServerInternalException
-//   The server experienced an internal error. Try again.
+//   - InvalidParameterValueException
+//     One or more parameter values are not valid.
 //
-//   * ResourceLimitExceededException
-//   Your resource limits have been exceeded.
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
 //
-//   * AuthorizationException
-//   The Amazon Web Services user account does not have permission to perform
-//   the action. Check the IAM policy associated with this account.
+//   - ResourceLimitExceededException
+//     Your resource limits have been exceeded.
 //
-//   * AccessDeniedException
-//   Access to resource denied.
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
 //
-//   * RateLimitExceededException
-//   Too many requests have been submitted. Try again after a brief wait.
+//   - AccessDeniedException
+//     Access to resource denied.
+//
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/CreateLicenseConfiguration
 func (c *LicenseManager) CreateLicenseConfiguration(input *CreateLicenseConfigurationInput) (*CreateLicenseConfigurationOutput, error) {
@@ -846,14 +854,13 @@ const opCreateLicenseConversionTaskForResource = "CreateLicenseConversionTaskFor
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateLicenseConversionTaskForResourceRequest method.
+//	req, resp := client.CreateLicenseConversionTaskForResourceRequest(params)
 //
-//    // Example sending a request using the CreateLicenseConversionTaskForResourceRequest method.
-//    req, resp := client.CreateLicenseConversionTaskForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/CreateLicenseConversionTaskForResource
 func (c *LicenseManager) CreateLicenseConversionTaskForResourceRequest(input *CreateLicenseConversionTaskForResourceInput) (req *request.Request, output *CreateLicenseConversionTaskForResourceOutput) {
@@ -884,24 +891,25 @@ func (c *LicenseManager) CreateLicenseConversionTaskForResourceRequest(input *Cr
 // API operation CreateLicenseConversionTaskForResource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   One or more parameter values are not valid.
 //
-//   * ValidationException
-//   The provided input is not valid. Try your request again.
+//   - InvalidParameterValueException
+//     One or more parameter values are not valid.
 //
-//   * ServerInternalException
-//   The server experienced an internal error. Try again.
+//   - ValidationException
+//     The provided input is not valid. Try your request again.
 //
-//   * AuthorizationException
-//   The Amazon Web Services user account does not have permission to perform
-//   the action. Check the IAM policy associated with this account.
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
 //
-//   * AccessDeniedException
-//   Access to resource denied.
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
 //
-//   * RateLimitExceededException
-//   Too many requests have been submitted. Try again after a brief wait.
+//   - AccessDeniedException
+//     Access to resource denied.
+//
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/CreateLicenseConversionTaskForResource
 func (c *LicenseManager) CreateLicenseConversionTaskForResource(input *CreateLicenseConversionTaskForResourceInput) (*CreateLicenseConversionTaskForResourceOutput, error) {
@@ -941,14 +949,13 @@ const opCreateLicenseManagerReportGenerator = "CreateLicenseManagerReportGenerat
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateLicenseManagerReportGeneratorRequest method.
+//	req, resp := client.CreateLicenseManagerReportGeneratorRequest(params)
 //
-//    // Example sending a request using the CreateLicenseManagerReportGeneratorRequest method.
-//    req, resp := client.CreateLicenseManagerReportGeneratorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/CreateLicenseManagerReportGenerator
 func (c *LicenseManager) CreateLicenseManagerReportGeneratorRequest(input *CreateLicenseManagerReportGeneratorInput) (req *request.Request, output *CreateLicenseManagerReportGeneratorOutput) {
@@ -979,30 +986,31 @@ func (c *LicenseManager) CreateLicenseManagerReportGeneratorRequest(input *Creat
 // API operation CreateLicenseManagerReportGenerator for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The provided input is not valid. Try your request again.
 //
-//   * InvalidParameterValueException
-//   One or more parameter values are not valid.
+//   - ValidationException
+//     The provided input is not valid. Try your request again.
 //
-//   * ResourceLimitExceededException
-//   Your resource limits have been exceeded.
+//   - InvalidParameterValueException
+//     One or more parameter values are not valid.
 //
-//   * ServerInternalException
-//   The server experienced an internal error. Try again.
+//   - ResourceLimitExceededException
+//     Your resource limits have been exceeded.
 //
-//   * AuthorizationException
-//   The Amazon Web Services user account does not have permission to perform
-//   the action. Check the IAM policy associated with this account.
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
 //
-//   * RateLimitExceededException
-//   Too many requests have been submitted. Try again after a brief wait.
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
 //
-//   * AccessDeniedException
-//   Access to resource denied.
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - AccessDeniedException
+//     Access to resource denied.
+//
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/CreateLicenseManagerReportGenerator
 func (c *LicenseManager) CreateLicenseManagerReportGenerator(input *CreateLicenseManagerReportGeneratorInput) (*CreateLicenseManagerReportGeneratorOutput, error) {
@@ -1042,14 +1050,13 @@ const opCreateLicenseVersion = "CreateLicenseVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateLicenseVersionRequest method.
+//	req, resp := client.CreateLicenseVersionRequest(params)
 //
-//    // Example sending a request using the CreateLicenseVersionRequest method.
-//    req, resp := client.CreateLicenseVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/CreateLicenseVersion
 func (c *LicenseManager) CreateLicenseVersionRequest(input *CreateLicenseVersionInput) (req *request.Request, output *CreateLicenseVersionOutput) {
@@ -1080,30 +1087,31 @@ func (c *LicenseManager) CreateLicenseVersionRequest(input *CreateLicenseVersion
 // API operation CreateLicenseVersion for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The provided input is not valid. Try your request again.
 //
-//   * AccessDeniedException
-//   Access to resource denied.
+//   - ValidationException
+//     The provided input is not valid. Try your request again.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - AccessDeniedException
+//     Access to resource denied.
 //
-//   * RedirectException
-//   This is not the correct Region for the resource. Try again.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Try your request again.
+//   - RedirectException
+//     This is not the correct Region for the resource. Try again.
 //
-//   * ServerInternalException
-//   The server experienced an internal error. Try again.
+//   - ConflictException
+//     There was a conflict processing the request. Try your request again.
 //
-//   * AuthorizationException
-//   The Amazon Web Services user account does not have permission to perform
-//   the action. Check the IAM policy associated with this account.
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
 //
-//   * RateLimitExceededException
-//   Too many requests have been submitted. Try again after a brief wait.
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
+//
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/CreateLicenseVersion
 func (c *LicenseManager) CreateLicenseVersion(input *CreateLicenseVersionInput) (*CreateLicenseVersionOutput, error) {
@@ -1143,14 +1151,13 @@ const opCreateToken = "CreateToken"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateTokenRequest method.
+//	req, resp := client.CreateTokenRequest(params)
 //
-//    // Example sending a request using the CreateTokenRequest method.
-//    req, resp := client.CreateTokenRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/CreateToken
 func (c *LicenseManager) CreateTokenRequest(input *CreateTokenInput) (req *request.Request, output *CreateTokenOutput) {
@@ -1185,30 +1192,31 @@ func (c *LicenseManager) CreateTokenRequest(input *CreateTokenInput) (req *reque
 // API operation CreateToken for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The provided input is not valid. Try your request again.
 //
-//   * AuthorizationException
-//   The Amazon Web Services user account does not have permission to perform
-//   the action. Check the IAM policy associated with this account.
+//   - ValidationException
+//     The provided input is not valid. Try your request again.
 //
-//   * AccessDeniedException
-//   Access to resource denied.
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
 //
-//   * RateLimitExceededException
-//   Too many requests have been submitted. Try again after a brief wait.
+//   - AccessDeniedException
+//     Access to resource denied.
 //
-//   * ResourceLimitExceededException
-//   Your resource limits have been exceeded.
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
 //
-//   * ServerInternalException
-//   The server experienced an internal error. Try again.
+//   - ResourceLimitExceededException
+//     Your resource limits have been exceeded.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
 //
-//   * RedirectException
-//   This is not the correct Region for the resource. Try again.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
+//
+//   - RedirectException
+//     This is not the correct Region for the resource. Try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/CreateToken
 func (c *LicenseManager) CreateToken(input *CreateTokenInput) (*CreateTokenOutput, error) {
@@ -1248,14 +1256,13 @@ const opDeleteGrant = "DeleteGrant"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteGrantRequest method.
+//	req, resp := client.DeleteGrantRequest(params)
 //
-//    // Example sending a request using the DeleteGrantRequest method.
-//    req, resp := client.DeleteGrantRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/DeleteGrant
 func (c *LicenseManager) DeleteGrantRequest(input *DeleteGrantInput) (req *request.Request, output *DeleteGrantOutput) {
@@ -1286,27 +1293,28 @@ func (c *LicenseManager) DeleteGrantRequest(input *DeleteGrantInput) (req *reque
 // API operation DeleteGrant for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The provided input is not valid. Try your request again.
 //
-//   * InvalidParameterValueException
-//   One or more parameter values are not valid.
+//   - ValidationException
+//     The provided input is not valid. Try your request again.
 //
-//   * AuthorizationException
-//   The Amazon Web Services user account does not have permission to perform
-//   the action. Check the IAM policy associated with this account.
+//   - InvalidParameterValueException
+//     One or more parameter values are not valid.
 //
-//   * AccessDeniedException
-//   Access to resource denied.
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
 //
-//   * RateLimitExceededException
-//   Too many requests have been submitted. Try again after a brief wait.
+//   - AccessDeniedException
+//     Access to resource denied.
 //
-//   * ResourceLimitExceededException
-//   Your resource limits have been exceeded.
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
 //
-//   * ServerInternalException
-//   The server experienced an internal error. Try again.
+//   - ResourceLimitExceededException
+//     Your resource limits have been exceeded.
+//
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/DeleteGrant
 func (c *LicenseManager) DeleteGrant(input *DeleteGrantInput) (*DeleteGrantOutput, error) {
@@ -1346,14 +1354,13 @@ const opDeleteLicense = "DeleteLicense"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteLicenseRequest method.
+//	req, resp := client.DeleteLicenseRequest(params)
 //
-//    // Example sending a request using the DeleteLicenseRequest method.
-//    req, resp := client.DeleteLicenseRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/DeleteLicense
 func (c *LicenseManager) DeleteLicenseRequest(input *DeleteLicenseInput) (req *request.Request, output *DeleteLicenseOutput) {
@@ -1384,30 +1391,31 @@ func (c *LicenseManager) DeleteLicenseRequest(input *DeleteLicenseInput) (req *r
 // API operation DeleteLicense for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The provided input is not valid. Try your request again.
 //
-//   * InvalidParameterValueException
-//   One or more parameter values are not valid.
+//   - ValidationException
+//     The provided input is not valid. Try your request again.
 //
-//   * RedirectException
-//   This is not the correct Region for the resource. Try again.
+//   - InvalidParameterValueException
+//     One or more parameter values are not valid.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Try your request again.
+//   - RedirectException
+//     This is not the correct Region for the resource. Try again.
 //
-//   * ServerInternalException
-//   The server experienced an internal error. Try again.
+//   - ConflictException
+//     There was a conflict processing the request. Try your request again.
 //
-//   * AuthorizationException
-//   The Amazon Web Services user account does not have permission to perform
-//   the action. Check the IAM policy associated with this account.
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
 //
-//   * AccessDeniedException
-//   Access to resource denied.
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
 //
-//   * RateLimitExceededException
-//   Too many requests have been submitted. Try again after a brief wait.
+//   - AccessDeniedException
+//     Access to resource denied.
+//
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/DeleteLicense
 func (c *LicenseManager) DeleteLicense(input *DeleteLicenseInput) (*DeleteLicenseOutput, error) {
@@ -1447,14 +1455,13 @@ const opDeleteLicenseConfiguration = "DeleteLicenseConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteLicenseConfigurationRequest method.
+//	req, resp := client.DeleteLicenseConfigurationRequest(params)
 //
-//    // Example sending a request using the DeleteLicenseConfigurationRequest method.
-//    req, resp := client.DeleteLicenseConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/DeleteLicenseConfiguration
 func (c *LicenseManager) DeleteLicenseConfigurationRequest(input *DeleteLicenseConfigurationInput) (req *request.Request, output *DeleteLicenseConfigurationOutput) {
@@ -1488,21 +1495,22 @@ func (c *LicenseManager) DeleteLicenseConfigurationRequest(input *DeleteLicenseC
 // API operation DeleteLicenseConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   One or more parameter values are not valid.
 //
-//   * ServerInternalException
-//   The server experienced an internal error. Try again.
+//   - InvalidParameterValueException
+//     One or more parameter values are not valid.
 //
-//   * AuthorizationException
-//   The Amazon Web Services user account does not have permission to perform
-//   the action. Check the IAM policy associated with this account.
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
 //
-//   * AccessDeniedException
-//   Access to resource denied.
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
 //
-//   * RateLimitExceededException
-//   Too many requests have been submitted. Try again after a brief wait.
+//   - AccessDeniedException
+//     Access to resource denied.
+//
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/DeleteLicenseConfiguration
 func (c *LicenseManager) DeleteLicenseConfiguration(input *DeleteLicenseConfigurationInput) (*DeleteLicenseConfigurationOutput, error) {
@@ -1542,14 +1550,13 @@ const opDeleteLicenseManagerReportGenerator = "DeleteLicenseManagerReportGenerat
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteLicenseManagerReportGeneratorRequest method.
+//	req, resp := client.DeleteLicenseManagerReportGeneratorRequest(params)
 //
-//    // Example sending a request using the DeleteLicenseManagerReportGeneratorRequest method.
-//    req, resp := client.DeleteLicenseManagerReportGeneratorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/DeleteLicenseManagerReportGenerator
 func (c *LicenseManager) DeleteLicenseManagerReportGeneratorRequest(input *DeleteLicenseManagerReportGeneratorInput) (req *request.Request, output *DeleteLicenseManagerReportGeneratorOutput) {
@@ -1585,30 +1592,31 @@ func (c *LicenseManager) DeleteLicenseManagerReportGeneratorRequest(input *Delet
 // API operation DeleteLicenseManagerReportGenerator for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The provided input is not valid. Try your request again.
 //
-//   * InvalidParameterValueException
-//   One or more parameter values are not valid.
+//   - ValidationException
+//     The provided input is not valid. Try your request again.
 //
-//   * ResourceLimitExceededException
-//   Your resource limits have been exceeded.
+//   - InvalidParameterValueException
+//     One or more parameter values are not valid.
 //
-//   * ServerInternalException
-//   The server experienced an internal error. Try again.
+//   - ResourceLimitExceededException
+//     Your resource limits have been exceeded.
 //
-//   * AuthorizationException
-//   The Amazon Web Services user account does not have permission to perform
-//   the action. Check the IAM policy associated with this account.
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
 //
-//   * RateLimitExceededException
-//   Too many requests have been submitted. Try again after a brief wait.
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
 //
-//   * AccessDeniedException
-//   Access to resource denied.
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - AccessDeniedException
+//     Access to resource denied.
+//
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/DeleteLicenseManagerReportGenerator
 func (c *LicenseManager) DeleteLicenseManagerReportGenerator(input *DeleteLicenseManagerReportGeneratorInput) (*DeleteLicenseManagerReportGeneratorOutput, error) {
@@ -1648,14 +1656,13 @@ const opDeleteToken = "DeleteToken"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteTokenRequest method.
+//	req, resp := client.DeleteTokenRequest(params)
 //
-//    // Example sending a request using the DeleteTokenRequest method.
-//    req, resp := client.DeleteTokenRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/DeleteToken
 func (c *LicenseManager) DeleteTokenRequest(input *DeleteTokenInput) (req *request.Request, output *DeleteTokenOutput) {
@@ -1687,27 +1694,28 @@ func (c *LicenseManager) DeleteTokenRequest(input *DeleteTokenInput) (req *reque
 // API operation DeleteToken for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The provided input is not valid. Try your request again.
 //
-//   * AuthorizationException
-//   The Amazon Web Services user account does not have permission to perform
-//   the action. Check the IAM policy associated with this account.
+//   - ValidationException
+//     The provided input is not valid. Try your request again.
 //
-//   * AccessDeniedException
-//   Access to resource denied.
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
 //
-//   * RateLimitExceededException
-//   Too many requests have been submitted. Try again after a brief wait.
+//   - AccessDeniedException
+//     Access to resource denied.
 //
-//   * ServerInternalException
-//   The server experienced an internal error. Try again.
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
 //
-//   * RedirectException
-//   This is not the correct Region for the resource. Try again.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
+//
+//   - RedirectException
+//     This is not the correct Region for the resource. Try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/DeleteToken
 func (c *LicenseManager) DeleteToken(input *DeleteTokenInput) (*DeleteTokenOutput, error) {
@@ -1747,14 +1755,13 @@ const opExtendLicenseConsumption = "ExtendLicenseConsumption"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ExtendLicenseConsumptionRequest method.
+//	req, resp := client.ExtendLicenseConsumptionRequest(params)
 //
-//    // Example sending a request using the ExtendLicenseConsumptionRequest method.
-//    req, resp := client.ExtendLicenseConsumptionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/ExtendLicenseConsumption
 func (c *LicenseManager) ExtendLicenseConsumptionRequest(input *ExtendLicenseConsumptionInput) (req *request.Request, output *ExtendLicenseConsumptionOutput) {
@@ -1785,27 +1792,28 @@ func (c *LicenseManager) ExtendLicenseConsumptionRequest(input *ExtendLicenseCon
 // API operation ExtendLicenseConsumption for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The provided input is not valid. Try your request again.
 //
-//   * InvalidParameterValueException
-//   One or more parameter values are not valid.
+//   - ValidationException
+//     The provided input is not valid. Try your request again.
 //
-//   * AuthorizationException
-//   The Amazon Web Services user account does not have permission to perform
-//   the action. Check the IAM policy associated with this account.
+//   - InvalidParameterValueException
+//     One or more parameter values are not valid.
 //
-//   * AccessDeniedException
-//   Access to resource denied.
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
 //
-//   * RateLimitExceededException
-//   Too many requests have been submitted. Try again after a brief wait.
+//   - AccessDeniedException
+//     Access to resource denied.
 //
-//   * ServerInternalException
-//   The server experienced an internal error. Try again.
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
+//
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/ExtendLicenseConsumption
 func (c *LicenseManager) ExtendLicenseConsumption(input *ExtendLicenseConsumptionInput) (*ExtendLicenseConsumptionOutput, error) {
@@ -1845,14 +1853,13 @@ const opGetAccessToken = "GetAccessToken"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAccessTokenRequest method.
+//	req, resp := client.GetAccessTokenRequest(params)
 //
-//    // Example sending a request using the GetAccessTokenRequest method.
-//    req, resp := client.GetAccessTokenRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/GetAccessToken
 func (c *LicenseManager) GetAccessTokenRequest(input *GetAccessTokenInput) (req *request.Request, output *GetAccessTokenOutput) {
@@ -1884,21 +1891,22 @@ func (c *LicenseManager) GetAccessTokenRequest(input *GetAccessTokenInput) (req 
 // API operation GetAccessToken for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The provided input is not valid. Try your request again.
 //
-//   * AuthorizationException
-//   The Amazon Web Services user account does not have permission to perform
-//   the action. Check the IAM policy associated with this account.
+//   - ValidationException
+//     The provided input is not valid. Try your request again.
 //
-//   * AccessDeniedException
-//   Access to resource denied.
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
 //
-//   * RateLimitExceededException
-//   Too many requests have been submitted. Try again after a brief wait.
+//   - AccessDeniedException
+//     Access to resource denied.
 //
-//   * ServerInternalException
-//   The server experienced an internal error. Try again.
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
+//
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/GetAccessToken
 func (c *LicenseManager) GetAccessToken(input *GetAccessTokenInput) (*GetAccessTokenOutput, error) {
@@ -1938,14 +1946,13 @@ const opGetGrant = "GetGrant"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetGrantRequest method.
+//	req, resp := client.GetGrantRequest(params)
 //
-//    // Example sending a request using the GetGrantRequest method.
-//    req, resp := client.GetGrantRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/GetGrant
 func (c *LicenseManager) GetGrantRequest(input *GetGrantInput) (req *request.Request, output *GetGrantOutput) {
@@ -1976,27 +1983,28 @@ func (c *LicenseManager) GetGrantRequest(input *GetGrantInput) (req *request.Req
 // API operation GetGrant for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The provided input is not valid. Try your request again.
 //
-//   * InvalidParameterValueException
-//   One or more parameter values are not valid.
+//   - ValidationException
+//     The provided input is not valid. Try your request again.
 //
-//   * ResourceLimitExceededException
-//   Your resource limits have been exceeded.
+//   - InvalidParameterValueException
+//     One or more parameter values are not valid.
 //
-//   * ServerInternalException
-//   The server experienced an internal error. Try again.
+//   - ResourceLimitExceededException
+//     Your resource limits have been exceeded.
 //
-//   * AuthorizationException
-//   The Amazon Web Services user account does not have permission to perform
-//   the action. Check the IAM policy associated with this account.
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
 //
-//   * AccessDeniedException
-//   Access to resource denied.
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
 //
-//   * RateLimitExceededException
-//   Too many requests have been submitted. Try again after a brief wait.
+//   - AccessDeniedException
+//     Access to resource denied.
+//
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/GetGrant
 func (c *LicenseManager) GetGrant(input *GetGrantInput) (*GetGrantOutput, error) {
@@ -2036,14 +2044,13 @@ const opGetLicense = "GetLicense"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetLicenseRequest method.
+//	req, resp := client.GetLicenseRequest(params)
 //
-//    // Example sending a request using the GetLicenseRequest method.
-//    req, resp := client.GetLicenseRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/GetLicense
 func (c *LicenseManager) GetLicenseRequest(input *GetLicenseInput) (req *request.Request, output *GetLicenseOutput) {
@@ -2074,24 +2081,25 @@ func (c *LicenseManager) GetLicenseRequest(input *GetLicenseInput) (req *request
 // API operation GetLicense for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The provided input is not valid. Try your request again.
 //
-//   * InvalidParameterValueException
-//   One or more parameter values are not valid.
+//   - ValidationException
+//     The provided input is not valid. Try your request again.
 //
-//   * AuthorizationException
-//   The Amazon Web Services user account does not have permission to perform
-//   the action. Check the IAM policy associated with this account.
+//   - InvalidParameterValueException
+//     One or more parameter values are not valid.
 //
-//   * AccessDeniedException
-//   Access to resource denied.
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
 //
-//   * RateLimitExceededException
-//   Too many requests have been submitted. Try again after a brief wait.
+//   - AccessDeniedException
+//     Access to resource denied.
 //
-//   * ServerInternalException
-//   The server experienced an internal error. Try again.
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
+//
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/GetLicense
 func (c *LicenseManager) GetLicense(input *GetLicenseInput) (*GetLicenseOutput, error) {
@@ -2131,14 +2139,13 @@ const opGetLicenseConfiguration = "GetLicenseConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetLicenseConfigurationRequest method.
+//	req, resp := client.GetLicenseConfigurationRequest(params)
 //
-//    // Example sending a request using the GetLicenseConfigurationRequest method.
-//    req, resp := client.GetLicenseConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/GetLicenseConfiguration
 func (c *LicenseManager) GetLicenseConfigurationRequest(input *GetLicenseConfigurationInput) (req *request.Request, output *GetLicenseConfigurationOutput) {
@@ -2169,21 +2176,22 @@ func (c *LicenseManager) GetLicenseConfigurationRequest(input *GetLicenseConfigu
 // API operation GetLicenseConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   One or more parameter values are not valid.
 //
-//   * ServerInternalException
-//   The server experienced an internal error. Try again.
+//   - InvalidParameterValueException
+//     One or more parameter values are not valid.
 //
-//   * AuthorizationException
-//   The Amazon Web Services user account does not have permission to perform
-//   the action. Check the IAM policy associated with this account.
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
 //
-//   * AccessDeniedException
-//   Access to resource denied.
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
 //
-//   * RateLimitExceededException
-//   Too many requests have been submitted. Try again after a brief wait.
+//   - AccessDeniedException
+//     Access to resource denied.
+//
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/GetLicenseConfiguration
 func (c *LicenseManager) GetLicenseConfiguration(input *GetLicenseConfigurationInput) (*GetLicenseConfigurationOutput, error) {
@@ -2223,14 +2231,13 @@ const opGetLicenseConversionTask = "GetLicenseConversionTask"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetLicenseConversionTaskRequest method.
+//	req, resp := client.GetLicenseConversionTaskRequest(params)
 //
-//    // Example sending a request using the GetLicenseConversionTaskRequest method.
-//    req, resp := client.GetLicenseConversionTaskRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/GetLicenseConversionTask
 func (c *LicenseManager) GetLicenseConversionTaskRequest(input *GetLicenseConversionTaskInput) (req *request.Request, output *GetLicenseConversionTaskOutput) {
@@ -2261,21 +2268,22 @@ func (c *LicenseManager) GetLicenseConversionTaskRequest(input *GetLicenseConver
 // API operation GetLicenseConversionTask for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   One or more parameter values are not valid.
 //
-//   * ServerInternalException
-//   The server experienced an internal error. Try again.
+//   - InvalidParameterValueException
+//     One or more parameter values are not valid.
 //
-//   * AuthorizationException
-//   The Amazon Web Services user account does not have permission to perform
-//   the action. Check the IAM policy associated with this account.
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
 //
-//   * AccessDeniedException
-//   Access to resource denied.
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
 //
-//   * RateLimitExceededException
-//   Too many requests have been submitted. Try again after a brief wait.
+//   - AccessDeniedException
+//     Access to resource denied.
+//
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/GetLicenseConversionTask
 func (c *LicenseManager) GetLicenseConversionTask(input *GetLicenseConversionTaskInput) (*GetLicenseConversionTaskOutput, error) {
@@ -2315,14 +2323,13 @@ const opGetLicenseManagerReportGenerator = "GetLicenseManagerReportGenerator"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetLicenseManagerReportGeneratorRequest method.
+//	req, resp := client.GetLicenseManagerReportGeneratorRequest(params)
 //
-//    // Example sending a request using the GetLicenseManagerReportGeneratorRequest method.
-//    req, resp := client.GetLicenseManagerReportGeneratorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/GetLicenseManagerReportGenerator
 func (c *LicenseManager) GetLicenseManagerReportGeneratorRequest(input *GetLicenseManagerReportGeneratorInput) (req *request.Request, output *GetLicenseManagerReportGeneratorOutput) {
@@ -2353,30 +2360,31 @@ func (c *LicenseManager) GetLicenseManagerReportGeneratorRequest(input *GetLicen
 // API operation GetLicenseManagerReportGenerator for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The provided input is not valid. Try your request again.
 //
-//   * InvalidParameterValueException
-//   One or more parameter values are not valid.
+//   - ValidationException
+//     The provided input is not valid. Try your request again.
 //
-//   * ResourceLimitExceededException
-//   Your resource limits have been exceeded.
+//   - InvalidParameterValueException
+//     One or more parameter values are not valid.
 //
-//   * ServerInternalException
-//   The server experienced an internal error. Try again.
+//   - ResourceLimitExceededException
+//     Your resource limits have been exceeded.
 //
-//   * AuthorizationException
-//   The Amazon Web Services user account does not have permission to perform
-//   the action. Check the IAM policy associated with this account.
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
 //
-//   * RateLimitExceededException
-//   Too many requests have been submitted. Try again after a brief wait.
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
 //
-//   * AccessDeniedException
-//   Access to resource denied.
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - AccessDeniedException
+//     Access to resource denied.
+//
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/GetLicenseManagerReportGenerator
 func (c *LicenseManager) GetLicenseManagerReportGenerator(input *GetLicenseManagerReportGeneratorInput) (*GetLicenseManagerReportGeneratorOutput, error) {
@@ -2416,14 +2424,13 @@ const opGetLicenseUsage = "GetLicenseUsage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetLicenseUsageRequest method.
+//	req, resp := client.GetLicenseUsageRequest(params)
 //
-//    // Example sending a request using the GetLicenseUsageRequest method.
-//    req, resp := client.GetLicenseUsageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/GetLicenseUsage
 func (c *LicenseManager) GetLicenseUsageRequest(input *GetLicenseUsageInput) (req *request.Request, output *GetLicenseUsageOutput) {
@@ -2454,24 +2461,25 @@ func (c *LicenseManager) GetLicenseUsageRequest(input *GetLicenseUsageInput) (re
 // API operation GetLicenseUsage for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The provided input is not valid. Try your request again.
 //
-//   * InvalidParameterValueException
-//   One or more parameter values are not valid.
+//   - ValidationException
+//     The provided input is not valid. Try your request again.
 //
-//   * AuthorizationException
-//   The Amazon Web Services user account does not have permission to perform
-//   the action. Check the IAM policy associated with this account.
+//   - InvalidParameterValueException
+//     One or more parameter values are not valid.
 //
-//   * AccessDeniedException
-//   Access to resource denied.
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
 //
-//   * RateLimitExceededException
-//   Too many requests have been submitted. Try again after a brief wait.
+//   - AccessDeniedException
+//     Access to resource denied.
 //
-//   * ServerInternalException
-//   The server experienced an internal error. Try again.
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
+//
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/GetLicenseUsage
 func (c *LicenseManager) GetLicenseUsage(input *GetLicenseUsageInput) (*GetLicenseUsageOutput, error) {
@@ -2511,14 +2519,13 @@ const opGetServiceSettings = "GetServiceSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetServiceSettingsRequest method.
+//	req, resp := client.GetServiceSettingsRequest(params)
 //
-//    // Example sending a request using the GetServiceSettingsRequest method.
-//    req, resp := client.GetServiceSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/GetServiceSettings
 func (c *LicenseManager) GetServiceSettingsRequest(input *GetServiceSettingsInput) (req *request.Request, output *GetServiceSettingsOutput) {
@@ -2549,18 +2556,19 @@ func (c *LicenseManager) GetServiceSettingsRequest(input *GetServiceSettingsInpu
 // API operation GetServiceSettings for usage and error information.
 //
 // Returned Error Types:
-//   * ServerInternalException
-//   The server experienced an internal error. Try again.
 //
-//   * AuthorizationException
-//   The Amazon Web Services user account does not have permission to perform
-//   the action. Check the IAM policy associated with this account.
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
 //
-//   * AccessDeniedException
-//   Access to resource denied.
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
 //
-//   * RateLimitExceededException
-//   Too many requests have been submitted. Try again after a brief wait.
+//   - AccessDeniedException
+//     Access to resource denied.
+//
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/GetServiceSettings
 func (c *LicenseManager) GetServiceSettings(input *GetServiceSettingsInput) (*GetServiceSettingsOutput, error) {
@@ -2600,14 +2608,13 @@ const opListAssociationsForLicenseConfiguration = "ListAssociationsForLicenseCon
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAssociationsForLicenseConfigurationRequest method.
+//	req, resp := client.ListAssociationsForLicenseConfigurationRequest(params)
 //
-//    // Example sending a request using the ListAssociationsForLicenseConfigurationRequest method.
-//    req, resp := client.ListAssociationsForLicenseConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/ListAssociationsForLicenseConfiguration
 func (c *LicenseManager) ListAssociationsForLicenseConfigurationRequest(input *ListAssociationsForLicenseConfigurationInput) (req *request.Request, output *ListAssociationsForLicenseConfigurationOutput) {
@@ -2642,24 +2649,25 @@ func (c *LicenseManager) ListAssociationsForLicenseConfigurationRequest(input *L
 // API operation ListAssociationsForLicenseConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   One or more parameter values are not valid.
 //
-//   * FilterLimitExceededException
-//   The request uses too many filters or too many filter values.
+//   - InvalidParameterValueException
+//     One or more parameter values are not valid.
 //
-//   * ServerInternalException
-//   The server experienced an internal error. Try again.
+//   - FilterLimitExceededException
+//     The request uses too many filters or too many filter values.
 //
-//   * AuthorizationException
-//   The Amazon Web Services user account does not have permission to perform
-//   the action. Check the IAM policy associated with this account.
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
 //
-//   * AccessDeniedException
-//   Access to resource denied.
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
 //
-//   * RateLimitExceededException
-//   Too many requests have been submitted. Try again after a brief wait.
+//   - AccessDeniedException
+//     Access to resource denied.
+//
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/ListAssociationsForLicenseConfiguration
 func (c *LicenseManager) ListAssociationsForLicenseConfiguration(input *ListAssociationsForLicenseConfigurationInput) (*ListAssociationsForLicenseConfigurationOutput, error) {
@@ -2699,14 +2707,13 @@ const opListDistributedGrants = "ListDistributedGrants"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDistributedGrantsRequest method.
+//	req, resp := client.ListDistributedGrantsRequest(params)
 //
-//    // Example sending a request using the ListDistributedGrantsRequest method.
-//    req, resp := client.ListDistributedGrantsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/ListDistributedGrants
 func (c *LicenseManager) ListDistributedGrantsRequest(input *ListDistributedGrantsInput) (req *request.Request, output *ListDistributedGrantsOutput) {
@@ -2737,27 +2744,28 @@ func (c *LicenseManager) ListDistributedGrantsRequest(input *ListDistributedGran
 // API operation ListDistributedGrants for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The provided input is not valid. Try your request again.
 //
-//   * InvalidParameterValueException
-//   One or more parameter values are not valid.
+//   - ValidationException
+//     The provided input is not valid. Try your request again.
 //
-//   * ResourceLimitExceededException
-//   Your resource limits have been exceeded.
+//   - InvalidParameterValueException
+//     One or more parameter values are not valid.
 //
-//   * ServerInternalException
-//   The server experienced an internal error. Try again.
+//   - ResourceLimitExceededException
+//     Your resource limits have been exceeded.
 //
-//   * AuthorizationException
-//   The Amazon Web Services user account does not have permission to perform
-//   the action. Check the IAM policy associated with this account.
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
 //
-//   * AccessDeniedException
-//   Access to resource denied.
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
 //
-//   * RateLimitExceededException
-//   Too many requests have been submitted. Try again after a brief wait.
+//   - AccessDeniedException
+//     Access to resource denied.
+//
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/ListDistributedGrants
 func (c *LicenseManager) ListDistributedGrants(input *ListDistributedGrantsInput) (*ListDistributedGrantsOutput, error) {
@@ -2797,14 +2805,13 @@ const opListFailuresForLicenseConfigurationOperations = "ListFailuresForLicenseC
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListFailuresForLicenseConfigurationOperationsRequest method.
+//	req, resp := client.ListFailuresForLicenseConfigurationOperationsRequest(params)
 //
-//    // Example sending a request using the ListFailuresForLicenseConfigurationOperationsRequest method.
-//    req, resp := client.ListFailuresForLicenseConfigurationOperationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/ListFailuresForLicenseConfigurationOperations
 func (c *LicenseManager) ListFailuresForLicenseConfigurationOperationsRequest(input *ListFailuresForLicenseConfigurationOperationsInput) (req *request.Request, output *ListFailuresForLicenseConfigurationOperationsOutput) {
@@ -2835,21 +2842,22 @@ func (c *LicenseManager) ListFailuresForLicenseConfigurationOperationsRequest(in
 // API operation ListFailuresForLicenseConfigurationOperations for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   One or more parameter values are not valid.
 //
-//   * ServerInternalException
-//   The server experienced an internal error. Try again.
+//   - InvalidParameterValueException
+//     One or more parameter values are not valid.
 //
-//   * AuthorizationException
-//   The Amazon Web Services user account does not have permission to perform
-//   the action. Check the IAM policy associated with this account.
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
 //
-//   * AccessDeniedException
-//   Access to resource denied.
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
 //
-//   * RateLimitExceededException
-//   Too many requests have been submitted. Try again after a brief wait.
+//   - AccessDeniedException
+//     Access to resource denied.
+//
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/ListFailuresForLicenseConfigurationOperations
 func (c *LicenseManager) ListFailuresForLicenseConfigurationOperations(input *ListFailuresForLicenseConfigurationOperationsInput) (*ListFailuresForLicenseConfigurationOperationsOutput, error) {
@@ -2889,14 +2897,13 @@ const opListLicenseConfigurations = "ListLicenseConfigurations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListLicenseConfigurationsRequest method.
+//	req, resp := client.ListLicenseConfigurationsRequest(params)
 //
-//    // Example sending a request using the ListLicenseConfigurationsRequest method.
-//    req, resp := client.ListLicenseConfigurationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/ListLicenseConfigurations
 func (c *LicenseManager) ListLicenseConfigurationsRequest(input *ListLicenseConfigurationsInput) (req *request.Request, output *ListLicenseConfigurationsOutput) {
@@ -2927,24 +2934,25 @@ func (c *LicenseManager) ListLicenseConfigurationsRequest(input *ListLicenseConf
 // API operation ListLicenseConfigurations for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   One or more parameter values are not valid.
 //
-//   * ServerInternalException
-//   The server experienced an internal error. Try again.
+//   - InvalidParameterValueException
+//     One or more parameter values are not valid.
 //
-//   * FilterLimitExceededException
-//   The request uses too many filters or too many filter values.
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
 //
-//   * AuthorizationException
-//   The Amazon Web Services user account does not have permission to perform
-//   the action. Check the IAM policy associated with this account.
+//   - FilterLimitExceededException
+//     The request uses too many filters or too many filter values.
 //
-//   * AccessDeniedException
-//   Access to resource denied.
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
 //
-//   * RateLimitExceededException
-//   Too many requests have been submitted. Try again after a brief wait.
+//   - AccessDeniedException
+//     Access to resource denied.
+//
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/ListLicenseConfigurations
 func (c *LicenseManager) ListLicenseConfigurations(input *ListLicenseConfigurationsInput) (*ListLicenseConfigurationsOutput, error) {
@@ -2984,14 +2992,13 @@ const opListLicenseConversionTasks = "ListLicenseConversionTasks"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListLicenseConversionTasksRequest method.
+//	req, resp := client.ListLicenseConversionTasksRequest(params)
 //
-//    // Example sending a request using the ListLicenseConversionTasksRequest method.
-//    req, resp := client.ListLicenseConversionTasksRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/ListLicenseConversionTasks
 func (c *LicenseManager) ListLicenseConversionTasksRequest(input *ListLicenseConversionTasksInput) (req *request.Request, output *ListLicenseConversionTasksOutput) {
@@ -3022,21 +3029,22 @@ func (c *LicenseManager) ListLicenseConversionTasksRequest(input *ListLicenseCon
 // API operation ListLicenseConversionTasks for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   One or more parameter values are not valid.
 //
-//   * ServerInternalException
-//   The server experienced an internal error. Try again.
+//   - InvalidParameterValueException
+//     One or more parameter values are not valid.
 //
-//   * AuthorizationException
-//   The Amazon Web Services user account does not have permission to perform
-//   the action. Check the IAM policy associated with this account.
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
 //
-//   * AccessDeniedException
-//   Access to resource denied.
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
 //
-//   * RateLimitExceededException
-//   Too many requests have been submitted. Try again after a brief wait.
+//   - AccessDeniedException
+//     Access to resource denied.
+//
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/ListLicenseConversionTasks
 func (c *LicenseManager) ListLicenseConversionTasks(input *ListLicenseConversionTasksInput) (*ListLicenseConversionTasksOutput, error) {
@@ -3076,14 +3084,13 @@ const opListLicenseManagerReportGenerators = "ListLicenseManagerReportGenerators
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListLicenseManagerReportGeneratorsRequest method.
+//	req, resp := client.ListLicenseManagerReportGeneratorsRequest(params)
 //
-//    // Example sending a request using the ListLicenseManagerReportGeneratorsRequest method.
-//    req, resp := client.ListLicenseManagerReportGeneratorsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/ListLicenseManagerReportGenerators
 func (c *LicenseManager) ListLicenseManagerReportGeneratorsRequest(input *ListLicenseManagerReportGeneratorsInput) (req *request.Request, output *ListLicenseManagerReportGeneratorsOutput) {
@@ -3114,30 +3121,31 @@ func (c *LicenseManager) ListLicenseManagerReportGeneratorsRequest(input *ListLi
 // API operation ListLicenseManagerReportGenerators for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The provided input is not valid. Try your request again.
 //
-//   * InvalidParameterValueException
-//   One or more parameter values are not valid.
+//   - ValidationException
+//     The provided input is not valid. Try your request again.
 //
-//   * ResourceLimitExceededException
-//   Your resource limits have been exceeded.
+//   - InvalidParameterValueException
+//     One or more parameter values are not valid.
 //
-//   * ServerInternalException
-//   The server experienced an internal error. Try again.
+//   - ResourceLimitExceededException
+//     Your resource limits have been exceeded.
 //
-//   * AuthorizationException
-//   The Amazon Web Services user account does not have permission to perform
-//   the action. Check the IAM policy associated with this account.
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
 //
-//   * RateLimitExceededException
-//   Too many requests have been submitted. Try again after a brief wait.
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
 //
-//   * AccessDeniedException
-//   Access to resource denied.
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - AccessDeniedException
+//     Access to resource denied.
+//
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/ListLicenseManagerReportGenerators
 func (c *LicenseManager) ListLicenseManagerReportGenerators(input *ListLicenseManagerReportGeneratorsInput) (*ListLicenseManagerReportGeneratorsOutput, error) {
@@ -3177,14 +3185,13 @@ const opListLicenseSpecificationsForResource = "ListLicenseSpecificationsForReso
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListLicenseSpecificationsForResourceRequest method.
+//	req, resp := client.ListLicenseSpecificationsForResourceRequest(params)
 //
-//    // Example sending a request using the ListLicenseSpecificationsForResourceRequest method.
-//    req, resp := client.ListLicenseSpecificationsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/ListLicenseSpecificationsForResource
 func (c *LicenseManager) ListLicenseSpecificationsForResourceRequest(input *ListLicenseSpecificationsForResourceInput) (req *request.Request, output *ListLicenseSpecificationsForResourceOutput) {
@@ -3215,21 +3222,22 @@ func (c *LicenseManager) ListLicenseSpecificationsForResourceRequest(input *List
 // API operation ListLicenseSpecificationsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   One or more parameter values are not valid.
 //
-//   * ServerInternalException
-//   The server experienced an internal error. Try again.
+//   - InvalidParameterValueException
+//     One or more parameter values are not valid.
 //
-//   * AuthorizationException
-//   The Amazon Web Services user account does not have permission to perform
-//   the action. Check the IAM policy associated with this account.
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
 //
-//   * AccessDeniedException
-//   Access to resource denied.
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
 //
-//   * RateLimitExceededException
-//   Too many requests have been submitted. Try again after a brief wait.
+//   - AccessDeniedException
+//     Access to resource denied.
+//
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/ListLicenseSpecificationsForResource
 func (c *LicenseManager) ListLicenseSpecificationsForResource(input *ListLicenseSpecificationsForResourceInput) (*ListLicenseSpecificationsForResourceOutput, error) {
@@ -3269,14 +3277,13 @@ const opListLicenseVersions = "ListLicenseVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListLicenseVersionsRequest method.
+//	req, resp := client.ListLicenseVersionsRequest(params)
 //
-//    // Example sending a request using the ListLicenseVersionsRequest method.
-//    req, resp := client.ListLicenseVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/ListLicenseVersions
 func (c *LicenseManager) ListLicenseVersionsRequest(input *ListLicenseVersionsInput) (req *request.Request, output *ListLicenseVersionsOutput) {
@@ -3307,21 +3314,22 @@ func (c *LicenseManager) ListLicenseVersionsRequest(input *ListLicenseVersionsIn
 // API operation ListLicenseVersions for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   One or more parameter values are not valid.
 //
-//   * AuthorizationException
-//   The Amazon Web Services user account does not have permission to perform
-//   the action. Check the IAM policy associated with this account.
+//   - InvalidParameterValueException
+//     One or more parameter values are not valid.
 //
-//   * AccessDeniedException
-//   Access to resource denied.
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
 //
-//   * RateLimitExceededException
-//   Too many requests have been submitted. Try again after a brief wait.
+//   - AccessDeniedException
+//     Access to resource denied.
 //
-//   * ServerInternalException
-//   The server experienced an internal error. Try again.
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
+//
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/ListLicenseVersions
 func (c *LicenseManager) ListLicenseVersions(input *ListLicenseVersionsInput) (*ListLicenseVersionsOutput, error) {
@@ -3361,14 +3369,13 @@ const opListLicenses = "ListLicenses"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListLicensesRequest method.
+//	req, resp := client.ListLicensesRequest(params)
 //
-//    // Example sending a request using the ListLicensesRequest method.
-//    req, resp := client.ListLicensesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/ListLicenses
 func (c *LicenseManager) ListLicensesRequest(input *ListLicensesInput) (req *request.Request, output *ListLicensesOutput) {
@@ -3399,24 +3406,25 @@ func (c *LicenseManager) ListLicensesRequest(input *ListLicensesInput) (req *req
 // API operation ListLicenses for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The provided input is not valid. Try your request again.
 //
-//   * InvalidParameterValueException
-//   One or more parameter values are not valid.
+//   - ValidationException
+//     The provided input is not valid. Try your request again.
 //
-//   * AuthorizationException
-//   The Amazon Web Services user account does not have permission to perform
-//   the action. Check the IAM policy associated with this account.
+//   - InvalidParameterValueException
+//     One or more parameter values are not valid.
 //
-//   * AccessDeniedException
-//   Access to resource denied.
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
 //
-//   * RateLimitExceededException
-//   Too many requests have been submitted. Try again after a brief wait.
+//   - AccessDeniedException
+//     Access to resource denied.
 //
-//   * ServerInternalException
-//   The server experienced an internal error. Try again.
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
+//
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/ListLicenses
 func (c *LicenseManager) ListLicenses(input *ListLicensesInput) (*ListLicensesOutput, error) {
@@ -3456,14 +3464,13 @@ const opListReceivedGrants = "ListReceivedGrants"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListReceivedGrantsRequest method.
+//	req, resp := client.ListReceivedGrantsRequest(params)
 //
-//    // Example sending a request using the ListReceivedGrantsRequest method.
-//    req, resp := client.ListReceivedGrantsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/ListReceivedGrants
 func (c *LicenseManager) ListReceivedGrantsRequest(input *ListReceivedGrantsInput) (req *request.Request, output *ListReceivedGrantsOutput) {
@@ -3484,7 +3491,9 @@ func (c *LicenseManager) ListReceivedGrantsRequest(input *ListReceivedGrantsInpu
 
 // ListReceivedGrants API operation for AWS License Manager.
 //
-// Lists grants that are received but not accepted.
+// Lists grants that are received. Received grants are grants created while
+// specifying the recipient as this Amazon Web Services account, your organization,
+// or an organizational unit (OU) to which this member account belongs.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3494,27 +3503,28 @@ func (c *LicenseManager) ListReceivedGrantsRequest(input *ListReceivedGrantsInpu
 // API operation ListReceivedGrants for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The provided input is not valid. Try your request again.
 //
-//   * InvalidParameterValueException
-//   One or more parameter values are not valid.
+//   - ValidationException
+//     The provided input is not valid. Try your request again.
 //
-//   * ResourceLimitExceededException
-//   Your resource limits have been exceeded.
+//   - InvalidParameterValueException
+//     One or more parameter values are not valid.
 //
-//   * ServerInternalException
-//   The server experienced an internal error. Try again.
+//   - ResourceLimitExceededException
+//     Your resource limits have been exceeded.
 //
-//   * AuthorizationException
-//   The Amazon Web Services user account does not have permission to perform
-//   the action. Check the IAM policy associated with this account.
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
 //
-//   * AccessDeniedException
-//   Access to resource denied.
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
 //
-//   * RateLimitExceededException
-//   Too many requests have been submitted. Try again after a brief wait.
+//   - AccessDeniedException
+//     Access to resource denied.
+//
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/ListReceivedGrants
 func (c *LicenseManager) ListReceivedGrants(input *ListReceivedGrantsInput) (*ListReceivedGrantsOutput, error) {
@@ -3538,6 +3548,104 @@ func (c *LicenseManager) ListReceivedGrantsWithContext(ctx aws.Context, input *L
 	return out, req.Send()
 }
 
+const opListReceivedGrantsForOrganization = "ListReceivedGrantsForOrganization"
+
+// ListReceivedGrantsForOrganizationRequest generates a "aws/request.Request" representing the
+// client's request for the ListReceivedGrantsForOrganization operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListReceivedGrantsForOrganization for more information on using the ListReceivedGrantsForOrganization
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListReceivedGrantsForOrganizationRequest method.
+//	req, resp := client.ListReceivedGrantsForOrganizationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/ListReceivedGrantsForOrganization
+func (c *LicenseManager) ListReceivedGrantsForOrganizationRequest(input *ListReceivedGrantsForOrganizationInput) (req *request.Request, output *ListReceivedGrantsForOrganizationOutput) {
+	op := &request.Operation{
+		Name:       opListReceivedGrantsForOrganization,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &ListReceivedGrantsForOrganizationInput{}
+	}
+
+	output = &ListReceivedGrantsForOrganizationOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListReceivedGrantsForOrganization API operation for AWS License Manager.
+//
+// Lists the grants received for all accounts in the organization.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS License Manager's
+// API operation ListReceivedGrantsForOrganization for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ValidationException
+//     The provided input is not valid. Try your request again.
+//
+//   - InvalidParameterValueException
+//     One or more parameter values are not valid.
+//
+//   - ResourceLimitExceededException
+//     Your resource limits have been exceeded.
+//
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
+//
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
+//
+//   - AccessDeniedException
+//     Access to resource denied.
+//
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/ListReceivedGrantsForOrganization
+func (c *LicenseManager) ListReceivedGrantsForOrganization(input *ListReceivedGrantsForOrganizationInput) (*ListReceivedGrantsForOrganizationOutput, error) {
+	req, out := c.ListReceivedGrantsForOrganizationRequest(input)
+	return out, req.Send()
+}
+
+// ListReceivedGrantsForOrganizationWithContext is the same as ListReceivedGrantsForOrganization with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListReceivedGrantsForOrganization for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *LicenseManager) ListReceivedGrantsForOrganizationWithContext(ctx aws.Context, input *ListReceivedGrantsForOrganizationInput, opts ...request.Option) (*ListReceivedGrantsForOrganizationOutput, error) {
+	req, out := c.ListReceivedGrantsForOrganizationRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opListReceivedLicenses = "ListReceivedLicenses"
 
 // ListReceivedLicensesRequest generates a "aws/request.Request" representing the
@@ -3554,14 +3662,13 @@ const opListReceivedLicenses = "ListReceivedLicenses"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListReceivedLicensesRequest method.
+//	req, resp := client.ListReceivedLicensesRequest(params)
 //
-//    // Example sending a request using the ListReceivedLicensesRequest method.
-//    req, resp := client.ListReceivedLicensesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/ListReceivedLicenses
 func (c *LicenseManager) ListReceivedLicensesRequest(input *ListReceivedLicensesInput) (req *request.Request, output *ListReceivedLicensesOutput) {
@@ -3592,27 +3699,28 @@ func (c *LicenseManager) ListReceivedLicensesRequest(input *ListReceivedLicenses
 // API operation ListReceivedLicenses for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The provided input is not valid. Try your request again.
 //
-//   * InvalidParameterValueException
-//   One or more parameter values are not valid.
+//   - ValidationException
+//     The provided input is not valid. Try your request again.
 //
-//   * ResourceLimitExceededException
-//   Your resource limits have been exceeded.
+//   - InvalidParameterValueException
+//     One or more parameter values are not valid.
 //
-//   * ServerInternalException
-//   The server experienced an internal error. Try again.
+//   - ResourceLimitExceededException
+//     Your resource limits have been exceeded.
 //
-//   * AuthorizationException
-//   The Amazon Web Services user account does not have permission to perform
-//   the action. Check the IAM policy associated with this account.
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
 //
-//   * AccessDeniedException
-//   Access to resource denied.
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
 //
-//   * RateLimitExceededException
-//   Too many requests have been submitted. Try again after a brief wait.
+//   - AccessDeniedException
+//     Access to resource denied.
+//
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/ListReceivedLicenses
 func (c *LicenseManager) ListReceivedLicenses(input *ListReceivedLicensesInput) (*ListReceivedLicensesOutput, error) {
@@ -3636,6 +3744,104 @@ func (c *LicenseManager) ListReceivedLicensesWithContext(ctx aws.Context, input 
 	return out, req.Send()
 }
 
+const opListReceivedLicensesForOrganization = "ListReceivedLicensesForOrganization"
+
+// ListReceivedLicensesForOrganizationRequest generates a "aws/request.Request" representing the
+// client's request for the ListReceivedLicensesForOrganization operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListReceivedLicensesForOrganization for more information on using the ListReceivedLicensesForOrganization
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListReceivedLicensesForOrganizationRequest method.
+//	req, resp := client.ListReceivedLicensesForOrganizationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/ListReceivedLicensesForOrganization
+func (c *LicenseManager) ListReceivedLicensesForOrganizationRequest(input *ListReceivedLicensesForOrganizationInput) (req *request.Request, output *ListReceivedLicensesForOrganizationOutput) {
+	op := &request.Operation{
+		Name:       opListReceivedLicensesForOrganization,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &ListReceivedLicensesForOrganizationInput{}
+	}
+
+	output = &ListReceivedLicensesForOrganizationOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListReceivedLicensesForOrganization API operation for AWS License Manager.
+//
+// Lists the licenses received for all accounts in the organization.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS License Manager's
+// API operation ListReceivedLicensesForOrganization for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ValidationException
+//     The provided input is not valid. Try your request again.
+//
+//   - InvalidParameterValueException
+//     One or more parameter values are not valid.
+//
+//   - ResourceLimitExceededException
+//     Your resource limits have been exceeded.
+//
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
+//
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
+//
+//   - AccessDeniedException
+//     Access to resource denied.
+//
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/ListReceivedLicensesForOrganization
+func (c *LicenseManager) ListReceivedLicensesForOrganization(input *ListReceivedLicensesForOrganizationInput) (*ListReceivedLicensesForOrganizationOutput, error) {
+	req, out := c.ListReceivedLicensesForOrganizationRequest(input)
+	return out, req.Send()
+}
+
+// ListReceivedLicensesForOrganizationWithContext is the same as ListReceivedLicensesForOrganization with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListReceivedLicensesForOrganization for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *LicenseManager) ListReceivedLicensesForOrganizationWithContext(ctx aws.Context, input *ListReceivedLicensesForOrganizationInput, opts ...request.Option) (*ListReceivedLicensesForOrganizationOutput, error) {
+	req, out := c.ListReceivedLicensesForOrganizationRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opListResourceInventory = "ListResourceInventory"
 
 // ListResourceInventoryRequest generates a "aws/request.Request" representing the
@@ -3652,14 +3858,13 @@ const opListResourceInventory = "ListResourceInventory"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListResourceInventoryRequest method.
+//	req, resp := client.ListResourceInventoryRequest(params)
 //
-//    // Example sending a request using the ListResourceInventoryRequest method.
-//    req, resp := client.ListResourceInventoryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/ListResourceInventory
 func (c *LicenseManager) ListResourceInventoryRequest(input *ListResourceInventoryInput) (req *request.Request, output *ListResourceInventoryOutput) {
@@ -3690,27 +3895,28 @@ func (c *LicenseManager) ListResourceInventoryRequest(input *ListResourceInvento
 // API operation ListResourceInventory for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   One or more parameter values are not valid.
 //
-//   * ServerInternalException
-//   The server experienced an internal error. Try again.
+//   - InvalidParameterValueException
+//     One or more parameter values are not valid.
 //
-//   * FilterLimitExceededException
-//   The request uses too many filters or too many filter values.
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
 //
-//   * FailedDependencyException
-//   A dependency required to run the API is missing.
+//   - FilterLimitExceededException
+//     The request uses too many filters or too many filter values.
 //
-//   * AuthorizationException
-//   The Amazon Web Services user account does not have permission to perform
-//   the action. Check the IAM policy associated with this account.
+//   - FailedDependencyException
+//     A dependency required to run the API is missing.
 //
-//   * AccessDeniedException
-//   Access to resource denied.
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
 //
-//   * RateLimitExceededException
-//   Too many requests have been submitted. Try again after a brief wait.
+//   - AccessDeniedException
+//     Access to resource denied.
+//
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/ListResourceInventory
 func (c *LicenseManager) ListResourceInventory(input *ListResourceInventoryInput) (*ListResourceInventoryOutput, error) {
@@ -3750,14 +3956,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/ListTagsForResource
 func (c *LicenseManager) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -3788,21 +3993,22 @@ func (c *LicenseManager) ListTagsForResourceRequest(input *ListTagsForResourceIn
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   One or more parameter values are not valid.
 //
-//   * ServerInternalException
-//   The server experienced an internal error. Try again.
+//   - InvalidParameterValueException
+//     One or more parameter values are not valid.
 //
-//   * AuthorizationException
-//   The Amazon Web Services user account does not have permission to perform
-//   the action. Check the IAM policy associated with this account.
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
 //
-//   * AccessDeniedException
-//   Access to resource denied.
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
 //
-//   * RateLimitExceededException
-//   Too many requests have been submitted. Try again after a brief wait.
+//   - AccessDeniedException
+//     Access to resource denied.
+//
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/ListTagsForResource
 func (c *LicenseManager) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -3842,14 +4048,13 @@ const opListTokens = "ListTokens"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTokensRequest method.
+//	req, resp := client.ListTokensRequest(params)
 //
-//    // Example sending a request using the ListTokensRequest method.
-//    req, resp := client.ListTokensRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/ListTokens
 func (c *LicenseManager) ListTokensRequest(input *ListTokensInput) (req *request.Request, output *ListTokensOutput) {
@@ -3880,21 +4085,22 @@ func (c *LicenseManager) ListTokensRequest(input *ListTokensInput) (req *request
 // API operation ListTokens for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The provided input is not valid. Try your request again.
 //
-//   * AuthorizationException
-//   The Amazon Web Services user account does not have permission to perform
-//   the action. Check the IAM policy associated with this account.
+//   - ValidationException
+//     The provided input is not valid. Try your request again.
 //
-//   * AccessDeniedException
-//   Access to resource denied.
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
 //
-//   * RateLimitExceededException
-//   Too many requests have been submitted. Try again after a brief wait.
+//   - AccessDeniedException
+//     Access to resource denied.
 //
-//   * ServerInternalException
-//   The server experienced an internal error. Try again.
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
+//
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/ListTokens
 func (c *LicenseManager) ListTokens(input *ListTokensInput) (*ListTokensOutput, error) {
@@ -3934,14 +4140,13 @@ const opListUsageForLicenseConfiguration = "ListUsageForLicenseConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListUsageForLicenseConfigurationRequest method.
+//	req, resp := client.ListUsageForLicenseConfigurationRequest(params)
 //
-//    // Example sending a request using the ListUsageForLicenseConfigurationRequest method.
-//    req, resp := client.ListUsageForLicenseConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/ListUsageForLicenseConfiguration
 func (c *LicenseManager) ListUsageForLicenseConfigurationRequest(input *ListUsageForLicenseConfigurationInput) (req *request.Request, output *ListUsageForLicenseConfigurationOutput) {
@@ -3974,24 +4179,25 @@ func (c *LicenseManager) ListUsageForLicenseConfigurationRequest(input *ListUsag
 // API operation ListUsageForLicenseConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   One or more parameter values are not valid.
 //
-//   * FilterLimitExceededException
-//   The request uses too many filters or too many filter values.
+//   - InvalidParameterValueException
+//     One or more parameter values are not valid.
 //
-//   * ServerInternalException
-//   The server experienced an internal error. Try again.
+//   - FilterLimitExceededException
+//     The request uses too many filters or too many filter values.
 //
-//   * AuthorizationException
-//   The Amazon Web Services user account does not have permission to perform
-//   the action. Check the IAM policy associated with this account.
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
 //
-//   * AccessDeniedException
-//   Access to resource denied.
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
 //
-//   * RateLimitExceededException
-//   Too many requests have been submitted. Try again after a brief wait.
+//   - AccessDeniedException
+//     Access to resource denied.
+//
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/ListUsageForLicenseConfiguration
 func (c *LicenseManager) ListUsageForLicenseConfiguration(input *ListUsageForLicenseConfigurationInput) (*ListUsageForLicenseConfigurationOutput, error) {
@@ -4031,14 +4237,13 @@ const opRejectGrant = "RejectGrant"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RejectGrantRequest method.
+//	req, resp := client.RejectGrantRequest(params)
 //
-//    // Example sending a request using the RejectGrantRequest method.
-//    req, resp := client.RejectGrantRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/RejectGrant
 func (c *LicenseManager) RejectGrantRequest(input *RejectGrantInput) (req *request.Request, output *RejectGrantOutput) {
@@ -4069,27 +4274,28 @@ func (c *LicenseManager) RejectGrantRequest(input *RejectGrantInput) (req *reque
 // API operation RejectGrant for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The provided input is not valid. Try your request again.
 //
-//   * InvalidParameterValueException
-//   One or more parameter values are not valid.
+//   - ValidationException
+//     The provided input is not valid. Try your request again.
 //
-//   * AuthorizationException
-//   The Amazon Web Services user account does not have permission to perform
-//   the action. Check the IAM policy associated with this account.
+//   - InvalidParameterValueException
+//     One or more parameter values are not valid.
 //
-//   * AccessDeniedException
-//   Access to resource denied.
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
 //
-//   * RateLimitExceededException
-//   Too many requests have been submitted. Try again after a brief wait.
+//   - AccessDeniedException
+//     Access to resource denied.
 //
-//   * ResourceLimitExceededException
-//   Your resource limits have been exceeded.
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
 //
-//   * ServerInternalException
-//   The server experienced an internal error. Try again.
+//   - ResourceLimitExceededException
+//     Your resource limits have been exceeded.
+//
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/RejectGrant
 func (c *LicenseManager) RejectGrant(input *RejectGrantInput) (*RejectGrantOutput, error) {
@@ -4129,14 +4335,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/TagResource
 func (c *LicenseManager) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -4168,21 +4373,22 @@ func (c *LicenseManager) TagResourceRequest(input *TagResourceInput) (req *reque
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   One or more parameter values are not valid.
 //
-//   * ServerInternalException
-//   The server experienced an internal error. Try again.
+//   - InvalidParameterValueException
+//     One or more parameter values are not valid.
 //
-//   * AuthorizationException
-//   The Amazon Web Services user account does not have permission to perform
-//   the action. Check the IAM policy associated with this account.
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
 //
-//   * AccessDeniedException
-//   Access to resource denied.
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
 //
-//   * RateLimitExceededException
-//   Too many requests have been submitted. Try again after a brief wait.
+//   - AccessDeniedException
+//     Access to resource denied.
+//
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/TagResource
 func (c *LicenseManager) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -4222,14 +4428,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/UntagResource
 func (c *LicenseManager) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -4261,21 +4466,22 @@ func (c *LicenseManager) UntagResourceRequest(input *UntagResourceInput) (req *r
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   One or more parameter values are not valid.
 //
-//   * ServerInternalException
-//   The server experienced an internal error. Try again.
+//   - InvalidParameterValueException
+//     One or more parameter values are not valid.
 //
-//   * AuthorizationException
-//   The Amazon Web Services user account does not have permission to perform
-//   the action. Check the IAM policy associated with this account.
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
 //
-//   * AccessDeniedException
-//   Access to resource denied.
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
 //
-//   * RateLimitExceededException
-//   Too many requests have been submitted. Try again after a brief wait.
+//   - AccessDeniedException
+//     Access to resource denied.
+//
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/UntagResource
 func (c *LicenseManager) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -4315,14 +4521,13 @@ const opUpdateLicenseConfiguration = "UpdateLicenseConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateLicenseConfigurationRequest method.
+//	req, resp := client.UpdateLicenseConfigurationRequest(params)
 //
-//    // Example sending a request using the UpdateLicenseConfigurationRequest method.
-//    req, resp := client.UpdateLicenseConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/UpdateLicenseConfiguration
 func (c *LicenseManager) UpdateLicenseConfigurationRequest(input *UpdateLicenseConfigurationInput) (req *request.Request, output *UpdateLicenseConfigurationOutput) {
@@ -4354,24 +4559,25 @@ func (c *LicenseManager) UpdateLicenseConfigurationRequest(input *UpdateLicenseC
 // API operation UpdateLicenseConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   One or more parameter values are not valid.
 //
-//   * ServerInternalException
-//   The server experienced an internal error. Try again.
+//   - InvalidParameterValueException
+//     One or more parameter values are not valid.
 //
-//   * AuthorizationException
-//   The Amazon Web Services user account does not have permission to perform
-//   the action. Check the IAM policy associated with this account.
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
 //
-//   * AccessDeniedException
-//   Access to resource denied.
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
 //
-//   * RateLimitExceededException
-//   Too many requests have been submitted. Try again after a brief wait.
+//   - AccessDeniedException
+//     Access to resource denied.
 //
-//   * ResourceLimitExceededException
-//   Your resource limits have been exceeded.
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
+//
+//   - ResourceLimitExceededException
+//     Your resource limits have been exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/UpdateLicenseConfiguration
 func (c *LicenseManager) UpdateLicenseConfiguration(input *UpdateLicenseConfigurationInput) (*UpdateLicenseConfigurationOutput, error) {
@@ -4411,14 +4617,13 @@ const opUpdateLicenseManagerReportGenerator = "UpdateLicenseManagerReportGenerat
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateLicenseManagerReportGeneratorRequest method.
+//	req, resp := client.UpdateLicenseManagerReportGeneratorRequest(params)
 //
-//    // Example sending a request using the UpdateLicenseManagerReportGeneratorRequest method.
-//    req, resp := client.UpdateLicenseManagerReportGeneratorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/UpdateLicenseManagerReportGenerator
 func (c *LicenseManager) UpdateLicenseManagerReportGeneratorRequest(input *UpdateLicenseManagerReportGeneratorInput) (req *request.Request, output *UpdateLicenseManagerReportGeneratorOutput) {
@@ -4453,30 +4658,31 @@ func (c *LicenseManager) UpdateLicenseManagerReportGeneratorRequest(input *Updat
 // API operation UpdateLicenseManagerReportGenerator for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The provided input is not valid. Try your request again.
 //
-//   * InvalidParameterValueException
-//   One or more parameter values are not valid.
+//   - ValidationException
+//     The provided input is not valid. Try your request again.
 //
-//   * RateLimitExceededException
-//   Too many requests have been submitted. Try again after a brief wait.
+//   - InvalidParameterValueException
+//     One or more parameter values are not valid.
 //
-//   * ServerInternalException
-//   The server experienced an internal error. Try again.
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
 //
-//   * AuthorizationException
-//   The Amazon Web Services user account does not have permission to perform
-//   the action. Check the IAM policy associated with this account.
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
 //
-//   * AccessDeniedException
-//   Access to resource denied.
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - AccessDeniedException
+//     Access to resource denied.
 //
-//   * ResourceLimitExceededException
-//   Your resource limits have been exceeded.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
+//
+//   - ResourceLimitExceededException
+//     Your resource limits have been exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/UpdateLicenseManagerReportGenerator
 func (c *LicenseManager) UpdateLicenseManagerReportGenerator(input *UpdateLicenseManagerReportGeneratorInput) (*UpdateLicenseManagerReportGeneratorOutput, error) {
@@ -4516,14 +4722,13 @@ const opUpdateLicenseSpecificationsForResource = "UpdateLicenseSpecificationsFor
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateLicenseSpecificationsForResourceRequest method.
+//	req, resp := client.UpdateLicenseSpecificationsForResourceRequest(params)
 //
-//    // Example sending a request using the UpdateLicenseSpecificationsForResourceRequest method.
-//    req, resp := client.UpdateLicenseSpecificationsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/UpdateLicenseSpecificationsForResource
 func (c *LicenseManager) UpdateLicenseSpecificationsForResourceRequest(input *UpdateLicenseSpecificationsForResourceInput) (req *request.Request, output *UpdateLicenseSpecificationsForResourceOutput) {
@@ -4561,30 +4766,31 @@ func (c *LicenseManager) UpdateLicenseSpecificationsForResourceRequest(input *Up
 // API operation UpdateLicenseSpecificationsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   One or more parameter values are not valid.
 //
-//   * InvalidResourceStateException
-//   License Manager cannot allocate a license to a resource because of its state.
+//   - InvalidParameterValueException
+//     One or more parameter values are not valid.
 //
-//   For example, you cannot allocate a license to an instance in the process
-//   of shutting down.
+//   - InvalidResourceStateException
+//     License Manager cannot allocate a license to a resource because of its state.
 //
-//   * LicenseUsageException
-//   You do not have enough licenses available to support a new resource launch.
+//     For example, you cannot allocate a license to an instance in the process
+//     of shutting down.
 //
-//   * ServerInternalException
-//   The server experienced an internal error. Try again.
+//   - LicenseUsageException
+//     You do not have enough licenses available to support a new resource launch.
 //
-//   * AuthorizationException
-//   The Amazon Web Services user account does not have permission to perform
-//   the action. Check the IAM policy associated with this account.
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
 //
-//   * AccessDeniedException
-//   Access to resource denied.
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
 //
-//   * RateLimitExceededException
-//   Too many requests have been submitted. Try again after a brief wait.
+//   - AccessDeniedException
+//     Access to resource denied.
+//
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/UpdateLicenseSpecificationsForResource
 func (c *LicenseManager) UpdateLicenseSpecificationsForResource(input *UpdateLicenseSpecificationsForResourceInput) (*UpdateLicenseSpecificationsForResourceOutput, error) {
@@ -4624,14 +4830,13 @@ const opUpdateServiceSettings = "UpdateServiceSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateServiceSettingsRequest method.
+//	req, resp := client.UpdateServiceSettingsRequest(params)
 //
-//    // Example sending a request using the UpdateServiceSettingsRequest method.
-//    req, resp := client.UpdateServiceSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/UpdateServiceSettings
 func (c *LicenseManager) UpdateServiceSettingsRequest(input *UpdateServiceSettingsInput) (req *request.Request, output *UpdateServiceSettingsOutput) {
@@ -4663,21 +4868,22 @@ func (c *LicenseManager) UpdateServiceSettingsRequest(input *UpdateServiceSettin
 // API operation UpdateServiceSettings for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   One or more parameter values are not valid.
 //
-//   * ServerInternalException
-//   The server experienced an internal error. Try again.
+//   - InvalidParameterValueException
+//     One or more parameter values are not valid.
 //
-//   * AuthorizationException
-//   The Amazon Web Services user account does not have permission to perform
-//   the action. Check the IAM policy associated with this account.
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
 //
-//   * AccessDeniedException
-//   Access to resource denied.
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
 //
-//   * RateLimitExceededException
-//   Too many requests have been submitted. Try again after a brief wait.
+//   - AccessDeniedException
+//     Access to resource denied.
+//
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/UpdateServiceSettings
 func (c *LicenseManager) UpdateServiceSettings(input *UpdateServiceSettingsInput) (*UpdateServiceSettingsOutput, error) {
@@ -5738,7 +5944,14 @@ type CreateGrantInput struct {
 	// LicenseArn is a required field
 	LicenseArn *string `type:"string" required:"true"`
 
-	// The grant principals.
+	// The grant principals. You can specify one of the following as an Amazon Resource
+	// Name (ARN):
+	//
+	//    * An Amazon Web Services account, which includes only the account specified.
+	//
+	//    * An organizational unit (OU), which includes all accounts in the OU.
+	//
+	//    * An organization, which will include all accounts across your organization.
 	//
 	// Principals is a required field
 	Principals []*string `min:"1" type:"list" required:"true"`
@@ -5901,6 +6114,9 @@ type CreateGrantVersionInput struct {
 	// Grant name.
 	GrantName *string `type:"string"`
 
+	// The options specified for the grant.
+	Options *Options `type:"structure"`
+
 	// Current version of the grant.
 	SourceVersion *string `type:"string"`
 
@@ -5969,6 +6185,12 @@ func (s *CreateGrantVersionInput) SetGrantArn(v string) *CreateGrantVersionInput
 // SetGrantName sets the GrantName field's value.
 func (s *CreateGrantVersionInput) SetGrantName(v string) *CreateGrantVersionInput {
 	s.GrantName = &v
+	return s
+}
+
+// SetOptions sets the Options field's value.
+func (s *CreateGrantVersionInput) SetOptions(v *Options) *CreateGrantVersionInput {
+	s.Options = v
 	return s
 }
 
@@ -6227,7 +6449,7 @@ type CreateLicenseConversionTaskForResourceInput struct {
 
 	// Information that identifies the license type you are converting to. For the
 	// structure of the destination license, see Convert a license type using the
-	// AWS CLI (https://docs.aws.amazon.com/license-manager/latest/userguide/conversion-procedures.html#conversion-cli)
+	// CLI (https://docs.aws.amazon.com/license-manager/latest/userguide/conversion-procedures.html#conversion-cli)
 	// in the License Manager User Guide.
 	//
 	// DestinationLicenseContext is a required field
@@ -6241,7 +6463,7 @@ type CreateLicenseConversionTaskForResourceInput struct {
 
 	// Information that identifies the license type you are converting from. For
 	// the structure of the source license, see Convert a license type using the
-	// AWS CLI (https://docs.aws.amazon.com/license-manager/latest/userguide/conversion-procedures.html#conversion-cli)
+	// CLI (https://docs.aws.amazon.com/license-manager/latest/userguide/conversion-procedures.html#conversion-cli)
 	// in the License Manager User Guide.
 	//
 	// SourceLicenseContext is a required field
@@ -8115,7 +8337,8 @@ type Filter struct {
 	// Name of the filter. Filter names are case-sensitive.
 	Name *string `type:"string"`
 
-	// Filter values. Filter values are case-sensitive.
+	// The value of the filter, which is case-sensitive. You can only specify one
+	// value for the filter.
 	Values []*string `type:"list"`
 }
 
@@ -9127,6 +9350,9 @@ type Grant struct {
 	// LicenseArn is a required field
 	LicenseArn *string `type:"string" required:"true"`
 
+	// The options specified for the grant.
+	Options *Options `type:"structure"`
+
 	// Parent ARN.
 	//
 	// ParentArn is a required field
@@ -9198,6 +9424,12 @@ func (s *Grant) SetHomeRegion(v string) *Grant {
 // SetLicenseArn sets the LicenseArn field's value.
 func (s *Grant) SetLicenseArn(v string) *Grant {
 	s.LicenseArn = &v
+	return s
+}
+
+// SetOptions sets the Options field's value.
+func (s *Grant) SetOptions(v *Options) *Grant {
+	s.Options = v
 	return s
 }
 
@@ -11501,6 +11733,126 @@ func (s *ListLicensesOutput) SetNextToken(v string) *ListLicensesOutput {
 	return s
 }
 
+type ListReceivedGrantsForOrganizationInput struct {
+	_ struct{} `type:"structure"`
+
+	// Filters to scope the results. The following filters are supported:
+	//
+	//    * ParentArn
+	//
+	//    * GranteePrincipalArn
+	Filters []*Filter `type:"list"`
+
+	// The Amazon Resource Name (ARN) of the received license.
+	//
+	// LicenseArn is a required field
+	LicenseArn *string `type:"string" required:"true"`
+
+	// Maximum number of results to return in a single call.
+	MaxResults *int64 `min:"1" type:"integer"`
+
+	// Token for the next set of results.
+	NextToken *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListReceivedGrantsForOrganizationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListReceivedGrantsForOrganizationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListReceivedGrantsForOrganizationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListReceivedGrantsForOrganizationInput"}
+	if s.LicenseArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("LicenseArn"))
+	}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetFilters sets the Filters field's value.
+func (s *ListReceivedGrantsForOrganizationInput) SetFilters(v []*Filter) *ListReceivedGrantsForOrganizationInput {
+	s.Filters = v
+	return s
+}
+
+// SetLicenseArn sets the LicenseArn field's value.
+func (s *ListReceivedGrantsForOrganizationInput) SetLicenseArn(v string) *ListReceivedGrantsForOrganizationInput {
+	s.LicenseArn = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListReceivedGrantsForOrganizationInput) SetMaxResults(v int64) *ListReceivedGrantsForOrganizationInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListReceivedGrantsForOrganizationInput) SetNextToken(v string) *ListReceivedGrantsForOrganizationInput {
+	s.NextToken = &v
+	return s
+}
+
+type ListReceivedGrantsForOrganizationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Lists the grants the organization has received.
+	Grants []*Grant `type:"list"`
+
+	// Token for the next set of results.
+	NextToken *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListReceivedGrantsForOrganizationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListReceivedGrantsForOrganizationOutput) GoString() string {
+	return s.String()
+}
+
+// SetGrants sets the Grants field's value.
+func (s *ListReceivedGrantsForOrganizationOutput) SetGrants(v []*Grant) *ListReceivedGrantsForOrganizationOutput {
+	s.Grants = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListReceivedGrantsForOrganizationOutput) SetNextToken(v string) *ListReceivedGrantsForOrganizationOutput {
+	s.NextToken = &v
+	return s
+}
+
 type ListReceivedGrantsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -11618,6 +11970,112 @@ func (s *ListReceivedGrantsOutput) SetGrants(v []*Grant) *ListReceivedGrantsOutp
 
 // SetNextToken sets the NextToken field's value.
 func (s *ListReceivedGrantsOutput) SetNextToken(v string) *ListReceivedGrantsOutput {
+	s.NextToken = &v
+	return s
+}
+
+type ListReceivedLicensesForOrganizationInput struct {
+	_ struct{} `type:"structure"`
+
+	// Filters to scope the results. The following filters are supported:
+	//
+	//    * Beneficiary
+	//
+	//    * ProductSKU
+	Filters []*Filter `type:"list"`
+
+	// Maximum number of results to return in a single call.
+	MaxResults *int64 `min:"1" type:"integer"`
+
+	// Token for the next set of results.
+	NextToken *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListReceivedLicensesForOrganizationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListReceivedLicensesForOrganizationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListReceivedLicensesForOrganizationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListReceivedLicensesForOrganizationInput"}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetFilters sets the Filters field's value.
+func (s *ListReceivedLicensesForOrganizationInput) SetFilters(v []*Filter) *ListReceivedLicensesForOrganizationInput {
+	s.Filters = v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListReceivedLicensesForOrganizationInput) SetMaxResults(v int64) *ListReceivedLicensesForOrganizationInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListReceivedLicensesForOrganizationInput) SetNextToken(v string) *ListReceivedLicensesForOrganizationInput {
+	s.NextToken = &v
+	return s
+}
+
+type ListReceivedLicensesForOrganizationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Lists the licenses the organization has received.
+	Licenses []*GrantedLicense `type:"list"`
+
+	// Token for the next set of results.
+	NextToken *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListReceivedLicensesForOrganizationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListReceivedLicensesForOrganizationOutput) GoString() string {
+	return s.String()
+}
+
+// SetLicenses sets the Licenses field's value.
+func (s *ListReceivedLicensesForOrganizationOutput) SetLicenses(v []*GrantedLicense) *ListReceivedLicensesForOrganizationOutput {
+	s.Licenses = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListReceivedLicensesForOrganizationOutput) SetNextToken(v string) *ListReceivedLicensesForOrganizationOutput {
 	s.NextToken = &v
 	return s
 }
@@ -12331,6 +12789,65 @@ func (s *NoEntitlementsAllowedException) StatusCode() int {
 // RequestID returns the service's response RequestID for request.
 func (s *NoEntitlementsAllowedException) RequestID() string {
 	return s.RespMetadata.RequestID
+}
+
+// The options you can specify when you create a new version of a grant, such
+// as activation override behavior. For more information, see Granted licenses
+// in License Manager (https://docs.aws.amazon.com/license-manager/latest/userguide/granted-licenses.html)
+// in the License Manager User Guide.
+type Options struct {
+	_ struct{} `type:"structure"`
+
+	// An activation option for your grant that determines the behavior of activating
+	// a grant. Activation options can only be used with granted licenses sourced
+	// from the Amazon Web Services Marketplace. Additionally, the operation must
+	// specify the value of ACTIVE for the Status parameter.
+	//
+	//    * As a license administrator, you can optionally specify an ActivationOverrideBehavior
+	//    when activating a grant.
+	//
+	//    * As a grantor, you can optionally specify an ActivationOverrideBehavior
+	//    when you activate a grant for a grantee account in your organization.
+	//
+	//    * As a grantee, if the grantor creating the distributed grant doesn’t
+	//    specify an ActivationOverrideBehavior, you can optionally specify one
+	//    when you are activating the grant.
+	//
+	// DISTRIBUTED_GRANTS_ONLY
+	//
+	// Use this value to activate a grant without replacing any member account’s
+	// active grants for the same product.
+	//
+	// ALL_GRANTS_PERMITTED_BY_ISSUER
+	//
+	// Use this value to activate a grant and disable other active grants in any
+	// member accounts for the same product. This action will also replace their
+	// previously activated grants with this activated grant.
+	ActivationOverrideBehavior *string `type:"string" enum:"ActivationOverrideBehavior"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Options) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Options) GoString() string {
+	return s.String()
+}
+
+// SetActivationOverrideBehavior sets the ActivationOverrideBehavior field's value.
+func (s *Options) SetActivationOverrideBehavior(v string) *Options {
+	s.ActivationOverrideBehavior = &v
+	return s
 }
 
 // Configuration information for Organizations.
@@ -14363,6 +14880,22 @@ func (s *ValidationException) StatusCode() int {
 // RequestID returns the service's response RequestID for request.
 func (s *ValidationException) RequestID() string {
 	return s.RespMetadata.RequestID
+}
+
+const (
+	// ActivationOverrideBehaviorDistributedGrantsOnly is a ActivationOverrideBehavior enum value
+	ActivationOverrideBehaviorDistributedGrantsOnly = "DISTRIBUTED_GRANTS_ONLY"
+
+	// ActivationOverrideBehaviorAllGrantsPermittedByIssuer is a ActivationOverrideBehavior enum value
+	ActivationOverrideBehaviorAllGrantsPermittedByIssuer = "ALL_GRANTS_PERMITTED_BY_ISSUER"
+)
+
+// ActivationOverrideBehavior_Values returns all elements of the ActivationOverrideBehavior enum
+func ActivationOverrideBehavior_Values() []string {
+	return []string{
+		ActivationOverrideBehaviorDistributedGrantsOnly,
+		ActivationOverrideBehaviorAllGrantsPermittedByIssuer,
+	}
 }
 
 const (

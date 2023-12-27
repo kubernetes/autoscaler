@@ -8,18 +8,18 @@
 // a home region, as well as to create and work with controls that describe
 // the home region.
 //
-//    * You must make API calls for write actions (create, notify, associate,
-//    disassociate, import, or put) while in your home region, or a HomeRegionNotSetException
-//    error is returned.
+//   - You must make API calls for write actions (create, notify, associate,
+//     disassociate, import, or put) while in your home region, or a HomeRegionNotSetException
+//     error is returned.
 //
-//    * API calls for read actions (list, describe, stop, and delete) are permitted
-//    outside of your home region.
+//   - API calls for read actions (list, describe, stop, and delete) are permitted
+//     outside of your home region.
 //
-//    * If you call a write API outside the home region, an InvalidInputException
-//    is returned.
+//   - If you call a write API outside the home region, an InvalidInputException
+//     is returned.
 //
-//    * You can call GetHomeRegion action to obtain the account's Migration
-//    Hub home region.
+//   - You can call GetHomeRegion action to obtain the account's Migration
+//     Hub home region.
 //
 // For specific API usage, see the sections that follow in this AWS Migration
 // Hub Home Region API reference.
@@ -29,7 +29,7 @@
 // See migrationhubconfig package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/migrationhubconfig/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact AWS Migration Hub Config with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.
