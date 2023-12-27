@@ -21,18 +21,18 @@ The credentials for authenticating with Equinix Metal are stored in a secret and
 provided as an env var to the container. [examples/cluster-autoscaler-secret](examples/cluster-autoscaler-secret.yaml)
 In the above file you can modify the following fields:
 
-| Secret                          | Key                     | Value                        |
-|---------------------------------|-------------------------|------------------------------------------------------------------------------------------------------------------------------------|
-| cluster-autoscaler-packet       | authtoken               | Your Equinix Metal API token. It must be base64 encoded.                                                                                 |
-| cluster-autoscaler-cloud-config | Global/project-id       | Your Equinix Metal project id                                                                                                             |
-| cluster-autoscaler-cloud-config | Global/api-server       | The ip:port for you cluster's k8s api (e.g. K8S_MASTER_PUBLIC_IP:6443)                                                             |
-| cluster-autoscaler-cloud-config | Global/facility         | The Equinix Metal facility for the devices in your nodepool (eg: sv15)                                                                    |
-| cluster-autoscaler-cloud-config | Global/plan             | The Equinix Metal plan (aka size/flavor) for new nodes in the nodepool (eg: c3.small.x86)                                                 |
-| cluster-autoscaler-cloud-config | Global/billing          | The billing interval for new nodes (default: hourly)                                                                               |
-| cluster-autoscaler-cloud-config | Global/os               | The OS image to use for new nodes (default: ubuntu_18_04). If you change this also update cloudinit.                               |
-| cluster-autoscaler-cloud-config | Global/cloudinit        | The base64 encoded [user data](https://metal.equinix.com/developers/docs/servers/user-data/) submitted when provisioning devices. In the example file, the default value has been tested with Ubuntu 18.04 to install Docker & kubelet and then to bootstrap the node into the cluster using kubeadm. The kubeadm, kubelet, kubectl are pinned to version 1.17.4. For a different base OS or bootstrap method, this needs to be customized accordingly|
-| cluster-autoscaler-cloud-config | Global/reservation      | The values "require" or "prefer" will request the next available hardware reservation for new devices in selected facility & plan. If no hardware reservations match, "require" will trigger a failure, while "prefer" will launch on-demand devices instead (default: none)  |
-| cluster-autoscaler-cloud-config | Global/hostname-pattern | The pattern for the names of new Equinix Metal devices (default: "k8s-{{.ClusterName}}-{{.NodeGroup}}-{{.RandString8}}" )                  |
+| Secret                              | Key                     | Value                        |
+|-------------------------------------|-------------------------|------------------------------------------------------------------------------------------------------------------------------------|
+| cluster-autoscaler-equinixmetal | authtoken               | Your Equinix Metal API token. It must be base64 encoded.                                                                                 |
+| cluster-autoscaler-cloud-config     | Global/project-id       | Your Equinix Metal project id                                                                                                             |
+| cluster-autoscaler-cloud-config     | Global/api-server       | The ip:port for you cluster's k8s api (e.g. K8S_MASTER_PUBLIC_IP:6443)                                                             |
+| cluster-autoscaler-cloud-config     | Global/facility         | The Equinix Metal facility for the devices in your nodepool (eg: sv15)                                                                    |
+| cluster-autoscaler-cloud-config     | Global/plan             | The Equinix Metal plan (aka size/flavor) for new nodes in the nodepool (eg: c3.small.x86)                                                 |
+| cluster-autoscaler-cloud-config     | Global/billing          | The billing interval for new nodes (default: hourly)                                                                               |
+| cluster-autoscaler-cloud-config     | Global/os               | The OS image to use for new nodes (default: ubuntu_18_04). If you change this also update cloudinit.                               |
+| cluster-autoscaler-cloud-config     | Global/cloudinit        | The base64 encoded [user data](https://metal.equinix.com/developers/docs/servers/user-data/) submitted when provisioning devices. In the example file, the default value has been tested with Ubuntu 18.04 to install Docker & kubelet and then to bootstrap the node into the cluster using kubeadm. The kubeadm, kubelet, kubectl are pinned to version 1.17.4. For a different base OS or bootstrap method, this needs to be customized accordingly|
+| cluster-autoscaler-cloud-config     | Global/reservation      | The values "require" or "prefer" will request the next available hardware reservation for new devices in selected facility & plan. If no hardware reservations match, "require" will trigger a failure, while "prefer" will launch on-demand devices instead (default: none)  |
+| cluster-autoscaler-cloud-config     | Global/hostname-pattern | The pattern for the names of new Equinix Metal devices (default: "k8s-{{.ClusterName}}-{{.NodeGroup}}-{{.RandString8}}" )                  |
 
 You can always update the secret with more nodepool definitions (with different plans etc.) as shown in the example, but you should always provide a default nodepool configuration.
 
@@ -106,7 +106,7 @@ environment variable in the deployment:
 
 ```
 env:
-  - name: PACKET_CONTROLLER_NODE_IDENTIFIER_LABEL
+  - name: METAL_CONTROLLER_NODE_IDENTIFIER_LABEL
     value: <label>
 ```
 
