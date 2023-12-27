@@ -83,6 +83,12 @@ const (
 	// Enable ClusterTrustBundle objects and Kubelet integration.
 	ClusterTrustBundle featuregate.Feature = "ClusterTrustBundle"
 
+	// owner: @ahmedtd
+	// alpha: v1.28
+	//
+	// Enable ClusterTrustBundle Kubelet projected volumes.  Depends on ClusterTrustBundle.
+	ClusterTrustBundleProjection featuregate.Feature = "ClusterTrustBundleProjection"
+
 	// owner: @szuecs
 	// alpha: v1.12
 	//
@@ -453,6 +459,12 @@ const (
 	// GA: v1.28
 	// Enable POD resources API to return allocatable resources
 	KubeletPodResourcesGetAllocatable featuregate.Feature = "KubeletPodResourcesGetAllocatable"
+
+	// KubeletSeparateDiskGC enables Kubelet to garbage collection images/containers on different filesystems
+	// owner: @kannon92
+	// kep: https://kep.k8s.io/4191
+	// alpha: v1.29
+	KubeletSeparateDiskGC featuregate.Feature = "KubeletSeparateDiskGC"
 
 	// owner: @sallyom
 	// kep: https://kep.k8s.io/2832
@@ -990,6 +1002,8 @@ var defaultKubernetesFeatureGates = map[featuregate.Feature]featuregate.FeatureS
 
 	ClusterTrustBundle: {Default: false, PreRelease: featuregate.Alpha},
 
+	ClusterTrustBundleProjection: {Default: false, PreRelease: featuregate.Alpha},
+
 	CPUCFSQuotaPeriod: {Default: false, PreRelease: featuregate.Alpha},
 
 	CPUManager: {Default: true, PreRelease: featuregate.GA, LockToDefault: true}, // GA in 1.26
@@ -1088,6 +1102,8 @@ var defaultKubernetesFeatureGates = map[featuregate.Feature]featuregate.FeatureS
 
 	KubeletPodResourcesGetAllocatable: {Default: true, PreRelease: featuregate.GA, LockToDefault: true}, // GA in 1.28, remove in 1.30
 
+	KubeletSeparateDiskGC: {Default: false, PreRelease: featuregate.Alpha},
+
 	KubeletTracing: {Default: true, PreRelease: featuregate.Beta},
 
 	KubeProxyDrainingTerminatingNodes: {Default: false, PreRelease: featuregate.Alpha},
@@ -1160,7 +1176,7 @@ var defaultKubernetesFeatureGates = map[featuregate.Feature]featuregate.FeatureS
 
 	ElasticIndexedJob: {Default: true, PreRelease: featuregate.Beta},
 
-	SchedulerQueueingHints: {Default: true, PreRelease: featuregate.Beta},
+	SchedulerQueueingHints: {Default: false, PreRelease: featuregate.Beta},
 
 	SecurityContextDeny: {Default: false, PreRelease: featuregate.Alpha},
 

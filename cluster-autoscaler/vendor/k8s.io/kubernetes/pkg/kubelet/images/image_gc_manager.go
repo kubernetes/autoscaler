@@ -54,7 +54,7 @@ const imageIndexTupleFormat = "%s,%s"
 // collection.
 type StatsProvider interface {
 	// ImageFsStats returns the stats of the image filesystem.
-	ImageFsStats(ctx context.Context) (*statsapi.FsStats, error)
+	ImageFsStats(ctx context.Context) (*statsapi.FsStats, *statsapi.FsStats, error)
 }
 
 // ImageGCManager is an interface for managing lifecycle of all images.
@@ -117,9 +117,6 @@ type realImageGCManager struct {
 
 	// Reference to this node.
 	nodeRef *v1.ObjectReference
-
-	// Track initialization
-	initialized bool
 
 	// imageCache is the cache of latest image list.
 	imageCache imageCache
@@ -196,7 +193,6 @@ func NewImageGCManager(runtime container.Runtime, statsProvider StatsProvider, r
 		statsProvider: statsProvider,
 		recorder:      recorder,
 		nodeRef:       nodeRef,
-		initialized:   false,
 		tracer:        tracer,
 	}
 
@@ -206,16 +202,9 @@ func NewImageGCManager(runtime container.Runtime, statsProvider StatsProvider, r
 func (im *realImageGCManager) Start() {
 	ctx := context.Background()
 	go wait.Until(func() {
-		// Initial detection make detected time "unknown" in the past.
-		var ts time.Time
-		if im.initialized {
-			ts = time.Now()
-		}
-		_, err := im.detectImages(ctx, ts)
+		_, err := im.detectImages(ctx, time.Now())
 		if err != nil {
 			klog.InfoS("Failed to monitor images", "err", err)
-		} else {
-			im.initialized = true
 		}
 	}, 5*time.Minute, wait.NeverStop)
 
@@ -328,7 +317,7 @@ func (im *realImageGCManager) GarbageCollect(ctx context.Context) error {
 	}
 
 	// Get disk usage on disk holding images.
-	fsStats, err := im.statsProvider.ImageFsStats(ctx)
+	fsStats, _, err := im.statsProvider.ImageFsStats(ctx)
 	if err != nil {
 		return err
 	}
