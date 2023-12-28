@@ -45,6 +45,10 @@ import (
 const (
 	// MaxNodeStartupTime is the maximum time from the moment the node is registered to the time the node is ready.
 	MaxNodeStartupTime = 15 * time.Minute
+	// maxErrorMessageSize is the maximum size of error messages displayed in config map as the max size of configmap is 1MB.
+	maxErrorMessageSize = 500
+	// messageTrancated is displayed at the end of a trancated message.
+	messageTrancated = "<truncated>"
 )
 
 var (
@@ -852,7 +856,7 @@ func (csr *ClusterStateRegistry) buildScaleUpStatusNodeGroup(nodeGroup cloudprov
 		condition.Status = api.ClusterAutoscalerBackoff
 		condition.BackoffInfo = api.BackoffInfo{
 			ErrorCode:    scaleUpSafety.BackoffStatus.ErrorInfo.ErrorCode,
-			ErrorMessage: scaleUpSafety.BackoffStatus.ErrorInfo.ErrorMessage,
+			ErrorMessage: truncateIfExceedMaxLength(scaleUpSafety.BackoffStatus.ErrorInfo.ErrorMessage, maxErrorMessageSize),
 		}
 	} else {
 		condition.Status = api.ClusterAutoscalerNoActivity
@@ -1250,4 +1254,15 @@ func (csr *ClusterStateRegistry) GetScaleUpFailures() map[string][]ScaleUpFailur
 		result[nodeGroupId] = failures
 	}
 	return result
+}
+
+func truncateIfExceedMaxLength(s string, maxLength int) string {
+	if len(s) <= maxLength {
+		return s
+	}
+	untrancatedLen := maxLength - len(messageTrancated)
+	if untrancatedLen < 0 {
+		return s[:maxLength]
+	}
+	return s[:untrancatedLen] + messageTrancated
 }
