@@ -77,21 +77,23 @@ Starting from Kubernetes 1.12, versioning scheme was changed to match Kubernetes
 
 <sup>*</sup>Cluster Autoscaler 0.5.X is the official version shipped with k8s 1.6. We've done some basic tests using k8s 1.6 / CA 0.6 and we're not aware of any problems with this setup. However, Cluster Autoscaler internally simulates Kubernetes' scheduler and using different versions of scheduler code can lead to subtle issues.
 
-# Patch releases
+## Schedule
 
-Cluster Autoscaler releases patches for versions corresponding to currently
+Cluster Autoscaler releases new minor versions shortly after OSS Kubernetes release
+and patches for versions corresponding to currently
 supported [Kubernetes versions](https://kubernetes.io/releases/) on a roughly 2
 month cadence. Currently planned schedule is below. Please note that target
 dates listed below are approximate and we expect up to a week difference between
 target ETA and the actual releases.
 
-| Date       | Maintainer Preparing Release | Backup Maintainer |
-|------------|------------------------------|-------------------|
-| 2024-01-17 | MaciekPytel                  | gjtempleton       |
-| 2024-03-13 | gjtempleton                  | BigDarkClown      |
-| 2024-05-22 | BigDarkClown                 | towca             |
-| 2024-07-24 | towca                        | x13n              |
-| 2024-09-18 | x13n                         | MaciekPytel       |
+| Date       | Maintainer Preparing Release | Backup Maintainer | Type  |
+|------------|------------------------------|-------------------|-------|
+| 2024-01-17 | MaciekPytel                  | gjtempleton       | patch |
+| 2024-03-13 | gjtempleton                  | BigDarkClown      | patch |
+| 2024-04-17 | BigDarkClown                 | towca             | 1.30  |
+| 2024-05-22 | towca                        | x13n              | patch |
+| 2024-07-24 | x13n                         | MaciekPytel       | patch |
+| 2024-08-21 | MaciekPytel                  | gjtempleton       | 1.31  |
 
 Additional patch releases may happen outside of the schedule in case of critical
 bugs or vulnerabilities.
