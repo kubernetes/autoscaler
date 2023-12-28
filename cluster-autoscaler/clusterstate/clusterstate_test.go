@@ -1325,3 +1325,44 @@ func TestUpdateIncorrectNodeGroupSizes(t *testing.T) {
 		})
 	}
 }
+
+func TestTruncateIfExceedMaxSize(t *testing.T) {
+	testCases := []struct {
+		name        string
+		message     string
+		maxSize     int
+		wantMessage string
+	}{
+		{
+			name:        "Message doesn't exceed maxSize",
+			message:     "Some message",
+			maxSize:     len("Some message"),
+			wantMessage: "Some message",
+		},
+		{
+			name:        "Message exceeds maxSize",
+			message:     "Some long message",
+			maxSize:     len("Some long message") - 1,
+			wantMessage: "Some <truncated>",
+		},
+		{
+			name:        "Message doesn't exceed maxSize and maxSize is smaller than truncatedMessageSuffix length",
+			message:     "msg",
+			maxSize:     len("msg"),
+			wantMessage: "msg",
+		},
+		{
+			name:        "Message exceeds maxSize and maxSize is smaller than truncatedMessageSuffix length",
+			message:     "msg",
+			maxSize:     2,
+			wantMessage: "ms",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := truncateIfExceedMaxLength(tc.message, tc.maxSize)
+			assert.Equal(t, tc.wantMessage, got)
+		})
+	}
+}
