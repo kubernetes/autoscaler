@@ -291,4 +291,8 @@ type KubeClientOptions struct {
 	KubeConfigPath string
 	// APIContentType specifies type of requests sent to APIServer.
 	APIContentType string
+	// Burst setting for kubernetes client
+	KubeClientBurst int
+	// QPS setting for kubernetes client
+	KubeClientQPS float32
 }
