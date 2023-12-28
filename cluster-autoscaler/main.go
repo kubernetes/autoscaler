@@ -103,8 +103,8 @@ var (
 	kubernetes              = flag.String("kubernetes", "", "Kubernetes master location. Leave blank for default")
 	kubeConfigFile          = flag.String("kubeconfig", "", "Path to kubeconfig file with authorization and master location information.")
 	kubeAPIContentType      = flag.String("kube-api-content-type", "application/vnd.kubernetes.protobuf", "Content type of requests sent to apiserver.")
-	_                       = flag.Int("kube-client-burst", rest.DefaultBurst, "Burst value for kubernetes client. (Deprecated, relay on APF for rate limiting)")
-	_                       = flag.Float64("kube-client-qps", float64(rest.DefaultQPS), "QPS value for kubernetes client. (Deprecated, relay on APF for rate limiting)")
+	kubeClientBurst         = flag.Int("kube-client-burst", rest.DefaultBurst, "Burst value for kubernetes client.")
+	kubeClientQPS           = flag.Float64("kube-client-qps", float64(rest.DefaultQPS), "QPS value for kubernetes client.")
 	cloudConfig             = flag.String("cloud-config", "", "The path to the cloud provider configuration file.  Empty string for no configuration file.")
 	namespace               = flag.String("namespace", "kube-system", "Namespace in which cluster-autoscaler run.")
 	enforceNodeGroupMinSize = flag.Bool("enforce-node-group-min-size", false, "Should CA scale up the node group to the configured min size if needed.")
@@ -442,6 +442,8 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 	// Create basic config from flags.
 	autoscalingOptions := createAutoscalingOptions()
 
+	autoscalingOptions.KubeClientOpts.KubeClientBurst = int(*kubeClientBurst)
+	autoscalingOptions.KubeClientOpts.KubeClientQPS = float32(*kubeClientQPS)
 	kubeClient := kube_util.CreateKubeClient(autoscalingOptions.KubeClientOpts)
 
 	// Informer transform to trim ManagedFields for memory efficiency.
