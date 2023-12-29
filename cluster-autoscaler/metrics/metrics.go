@@ -91,7 +91,7 @@ const (
 	// debugging purposes.
 	LogLongDurationThreshold = 5 * time.Second
 	// PodEvictionSucceed means creation of the pod eviction object succeed
-	PodEvictionSucceed PodEvictionResult = "succeed"
+	PodEvictionSucceed PodEvictionResult = "succeeded"
 	// PodEvictionFailed means creation of the pod eviction object failed
 	PodEvictionFailed PodEvictionResult = "failed"
 )
