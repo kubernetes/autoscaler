@@ -21,6 +21,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	pod_util "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
@@ -57,7 +58,10 @@ func (r *Rule) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod) dr
 	if controllerRef == nil {
 		return drainability.NewUndefinedStatus()
 	}
-	refKind := controllerRef.Kind
+
+	groupVersionKind := schema.FromAPIVersionAndKind(controllerRef.APIVersion, controllerRef.Kind)
+	refGroup := groupVersionKind.Group
+	refKind := groupVersionKind.Kind
 
 	if refKind == "ReplicationController" {
 		rc, err := drainCtx.Listers.ReplicationControllerLister().ReplicationControllers(controllerNamespace).Get(controllerRef.Name)
@@ -71,8 +75,8 @@ func (r *Rule) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod) dr
 			return drainability.NewBlockedStatus(drain.MinReplicasReached, fmt.Errorf("replication controller for %s/%s has too few replicas spec: %d min: %d", pod.Namespace, pod.Name, rc.Spec.Replicas, r.minReplicaCount))
 		}
 	} else if pod_util.IsDaemonSetPod(pod) {
-		if refKind != "DaemonSet" {
-			// We don't have a listener for the other DaemonSet kind.
+		if refGroup != "apps" || refKind != "DaemonSet" {
+			// We don't have a listener for the other DaemonSet group or kind.
 			// TODO: Use a generic client for checking the reference.
 			return drainability.NewUndefinedStatus()
 		}
