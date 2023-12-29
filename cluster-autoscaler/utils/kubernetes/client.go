@@ -62,6 +62,8 @@ func getKubeConfig(opts config.KubeClientOptions) *rest.Config {
 		}
 	}
 
+	kubeConfig.QPS = opts.KubeClientQPS
+	kubeConfig.Burst = opts.KubeClientBurst
 	kubeConfig.ContentType = opts.APIContentType
 
 	return kubeConfig
