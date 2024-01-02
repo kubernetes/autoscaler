@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package packet
+package equinixmetal
 
 import (
 	"bytes"
@@ -58,7 +58,7 @@ type instanceType struct {
 	GPU          int64
 }
 
-// InstanceTypes is a map of packet resources
+// InstanceTypes is a map of equinix metal resources
 var InstanceTypes = map[string]*instanceType{
 	"a3.large.x86": {
 		InstanceName: "a3.large.x86",
@@ -439,7 +439,7 @@ func (mgr *equinixMetalManagerRest) NodeGroupForNode(labels map[string]string, n
 	return "", fmt.Errorf("could not find group for node: %s", nodeId)
 }
 
-// nodeGroupSize gets the current size of the nodegroup as reported by packet tags.
+// nodeGroupSize gets the current size of the nodegroup as reported by equinix metal tags.
 func (mgr *equinixMetalManagerRest) nodeGroupSize(nodegroup string) (int, error) {
 	devices, err := mgr.listMetalDevices(context.TODO())
 	if err != nil {
@@ -500,7 +500,7 @@ func (mgr *equinixMetalManagerRest) createNode(ctx context.Context, cloudinit, n
 	return nil
 }
 
-// createNodes provisions new nodes on packet and bootstraps them in the cluster.
+// createNodes provisions new nodes on equinix metal and bootstraps them in the cluster.
 func (mgr *equinixMetalManagerRest) createNodes(nodegroup string, nodes int) error {
 	klog.Infof("Updating node count to %d for nodegroup %s", nodes, nodegroup)
 
@@ -578,7 +578,7 @@ func (mgr *equinixMetalManagerRest) createDeviceRequest(ctx context.Context, cr 
 // getNodes should return ProviderIDs for all nodes in the node group,
 // used to find any nodes which are unregistered in kubernetes.
 func (mgr *equinixMetalManagerRest) getNodes(nodegroup string) ([]string, error) {
-	// Get node ProviderIDs by getting device IDs from Packet
+	// Get node ProviderIDs by getting device IDs from the Equinix Metal API
 	devices, err := mgr.listMetalDevices(context.TODO())
 	if err != nil {
 		return nil, fmt.Errorf("failed to list devices: %w", err)

@@ -1,5 +1,5 @@
-//go:build packet
-// +build packet
+//go:build equinixmetal
+// +build equinixmetal
 
 /*
 Copyright 2019 The Kubernetes Authors.
@@ -21,13 +21,13 @@ package builder
 
 import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/packet"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/equinixmetal"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 )
 
 // AvailableCloudProviders supported by the cloud provider builder.
 var AvailableCloudProviders = []string{
-	packet.ProviderName,
+	cloudprovider.PacketProviderName,
 	cloudprovider.EquinixMetalProviderName,
 }
 
@@ -36,8 +36,8 @@ const DefaultCloudProvider = cloudprovider.EquinixMetalProviderName
 
 func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	switch opts.CloudProviderName {
-	case packet.ProviderName, cloudprovider.EquinixMetalProviderName:
-		return packet.BuildCloudProvider(opts, do, rl)
+	case cloudprovider.PacketProviderName, cloudprovider.EquinixMetalProviderName:
+		return equinixmetal.BuildCloudProvider(opts, do, rl)
 	}
 
 	return nil

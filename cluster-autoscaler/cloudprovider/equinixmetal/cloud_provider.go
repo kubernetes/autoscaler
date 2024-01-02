@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package packet
+package equinixmetal
 
 import (
 	"fmt"
@@ -35,8 +35,6 @@ import (
 )
 
 const (
-	// ProviderName is the cloud provider name for Packet cloud provider, now named as equinixmetal
-	ProviderName = "packet"
 	// GPULabel is the label added to nodes with GPU resource.
 	GPULabel = "cloud.google.com/gke-accelerator"
 	// DefaultControllerNodeLabelKey is the label added to Master/Controller to identify as

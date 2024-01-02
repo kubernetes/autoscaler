@@ -18,12 +18,15 @@ package utils
 
 import (
 	"errors"
+	"io/ioutil"
 	"testing"
+	"time"
 
 	apiv1 "k8s.io/api/core/v1"
 	kube_errors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/api"
 	"k8s.io/client-go/kubernetes/fake"
 	core "k8s.io/client-go/testing"
 
@@ -87,7 +90,7 @@ func setUpTest(t *testing.T) *testInfo {
 
 func TestWriteStatusConfigMapExisting(t *testing.T) {
 	ti := setUpTest(t)
-	result, err := WriteStatusConfigMap(ti.client, ti.namespace, "TEST_MSG", nil, "my-cool-configmap")
+	result, err := WriteStatusConfigMap(ti.client, ti.namespace, api.ClusterAutoscalerStatus{Message: "TEST_MSG"}, nil, "my-cool-configmap", time.Now())
 	assert.Equal(t, ti.configMap, result)
 	assert.Contains(t, result.Data["status"], "TEST_MSG")
 	assert.Contains(t, result.ObjectMeta.Annotations, ConfigMapLastUpdatedKey)
@@ -98,7 +101,7 @@ func TestWriteStatusConfigMapExisting(t *testing.T) {
 
 	// to test the case where configmap is empty
 	ti.configMap.Data = nil
-	result, err = WriteStatusConfigMap(ti.client, ti.namespace, "TEST_MSG", nil, "my-cool-configmap")
+	result, err = WriteStatusConfigMap(ti.client, ti.namespace, api.ClusterAutoscalerStatus{Message: "TEST_MSG"}, nil, "my-cool-configmap", time.Now())
 	assert.Equal(t, ti.configMap, result)
 	assert.Contains(t, result.Data["status"], "TEST_MSG")
 	assert.Contains(t, result.ObjectMeta.Annotations, ConfigMapLastUpdatedKey)
@@ -111,7 +114,7 @@ func TestWriteStatusConfigMapExisting(t *testing.T) {
 func TestWriteStatusConfigMapCreate(t *testing.T) {
 	ti := setUpTest(t)
 	ti.getError = kube_errors.NewNotFound(apiv1.Resource("configmap"), "nope, not found")
-	result, err := WriteStatusConfigMap(ti.client, ti.namespace, "TEST_MSG", nil, "my-cool-configmap")
+	result, err := WriteStatusConfigMap(ti.client, ti.namespace, api.ClusterAutoscalerStatus{Message: "TEST_MSG"}, nil, "my-cool-configmap", time.Now())
 	assert.Contains(t, result.Data["status"], "TEST_MSG")
 	assert.Contains(t, result.ObjectMeta.Annotations, ConfigMapLastUpdatedKey)
 	assert.Nil(t, err)
@@ -123,11 +126,102 @@ func TestWriteStatusConfigMapCreate(t *testing.T) {
 func TestWriteStatusConfigMapError(t *testing.T) {
 	ti := setUpTest(t)
 	ti.getError = errors.New("stuff bad")
-	result, err := WriteStatusConfigMap(ti.client, ti.namespace, "TEST_MSG", nil, "my-cool-configmap")
+	result, err := WriteStatusConfigMap(ti.client, ti.namespace, api.ClusterAutoscalerStatus{Message: "TEST_MSG"}, nil, "my-cool-configmap", time.Now())
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "stuff bad")
 	assert.Nil(t, result)
 	assert.True(t, ti.getCalled)
 	assert.False(t, ti.updateCalled)
 	assert.False(t, ti.createCalled)
+}
+
+var status api.ClusterAutoscalerStatus = api.ClusterAutoscalerStatus{
+	Message:          "TEST_MSG",
+	AutoscalerStatus: "Running",
+	ClusterWide: api.ClusterWideStatus{
+		Health: api.ClusterHealthCondition{
+			Status: "Healthy",
+			NodeCounts: api.NodeCount{
+				Registered: api.RegisteredNodeCount{
+					Total:        10,
+					Ready:        4,
+					NotStarted:   3,
+					BeingDeleted: 1,
+					Unready: api.RegisteredUnreadyNodeCount{
+						Total:           2,
+						ResourceUnready: 1,
+					},
+				},
+				LongUnregistered: 1,
+				Unregistered:     2,
+			},
+			LastProbeTime:      metav1.Date(2023, 11, 24, 04, 28, 19, 48988, time.UTC),
+			LastTransitionTime: metav1.Date(2023, 11, 23, 14, 52, 02, 11000, time.UTC),
+		},
+		ScaleUp: api.ClusterScaleUpCondition{
+			Status:             "NoActivity",
+			LastProbeTime:      metav1.Date(2023, 11, 24, 04, 28, 19, 48988, time.UTC),
+			LastTransitionTime: metav1.Date(2023, 11, 23, 14, 52, 02, 11000, time.UTC),
+		},
+		ScaleDown: api.ScaleDownCondition{
+			Status:             "NoCandidates",
+			Candidates:         2,
+			LastProbeTime:      metav1.Date(2023, 11, 24, 04, 28, 19, 48988, time.UTC),
+			LastTransitionTime: metav1.Date(2023, 11, 23, 14, 52, 02, 11000, time.UTC),
+		},
+	},
+	NodeGroups: []api.NodeGroupStatus{{
+		Name: "sample-node-group",
+		Health: api.NodeGroupHealthCondition{
+			Status: "Healthy",
+			NodeCounts: api.NodeCount{
+				Registered: api.RegisteredNodeCount{
+					Total:        10,
+					Ready:        4,
+					NotStarted:   3,
+					BeingDeleted: 1,
+					Unready: api.RegisteredUnreadyNodeCount{
+						Total:           2,
+						ResourceUnready: 1,
+					},
+				},
+				LongUnregistered: 1,
+				Unregistered:     2,
+			},
+			CloudProviderTarget: 8,
+			MinSize:             2,
+			MaxSize:             12,
+			LastProbeTime:       metav1.Date(2023, 11, 24, 04, 28, 19, 48988, time.UTC),
+			LastTransitionTime:  metav1.Date(2023, 11, 23, 14, 52, 02, 11000, time.UTC),
+		},
+		ScaleUp: api.NodeGroupScaleUpCondition{
+			Status: "Backoff",
+			BackoffInfo: api.BackoffInfo{
+				ErrorCode:    "QUOTA_EXCEEDED",
+				ErrorMessage: "Instance 'sample-node-group-40ce0341-t28s' creation failed: Quota 'CPUS' exceeded. Limit: 57.0 in region us-central1.",
+			},
+			LastProbeTime:      metav1.Date(2023, 11, 24, 04, 28, 19, 48988, time.UTC),
+			LastTransitionTime: metav1.Date(2023, 11, 23, 14, 52, 02, 11000, time.UTC),
+		},
+		ScaleDown: api.ScaleDownCondition{
+			Status:             "NoCandidates",
+			Candidates:         2,
+			LastProbeTime:      metav1.Date(2023, 11, 24, 04, 28, 19, 48988, time.UTC),
+			LastTransitionTime: metav1.Date(2023, 11, 23, 14, 52, 02, 11000, time.UTC),
+		},
+	}},
+}
+
+func TestWriteStatusConfigMapMarshal(t *testing.T) {
+	const statusYamlTestFile = "status_test.yaml"
+	ti := setUpTest(t)
+	want, err := ioutil.ReadFile(statusYamlTestFile)
+	if err != nil {
+		t.Fatalf("Failed to Marshal %s: %v", statusYamlTestFile, err)
+	}
+	result, err := WriteStatusConfigMap(ti.client, ti.namespace, status, nil, "my-cool-configmap", time.Date(2023, 11, 24, 4, 28, 19, 546750398, time.UTC))
+	if err != nil {
+		t.Fatalf("Expected WriteStatusConfigMap not to return error, got: %v", err)
+	}
+	assert.YAMLEq(t, string(want), result.Data["status"])
 }

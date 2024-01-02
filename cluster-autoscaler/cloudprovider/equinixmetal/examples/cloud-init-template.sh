@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#This is a template of cloud-init script for cluster-autoscaler/cloudprovider/packet
+#This is a template of cloud-init script for cluster-autoscaler/cloudprovider/equinixmetal
 #This gets base64'd and put into the example cluster-autoscaler-secret.yaml file
 sleep 10
 sed -ri '/\sswap\s/s/^#?/#/' /etc/fstab

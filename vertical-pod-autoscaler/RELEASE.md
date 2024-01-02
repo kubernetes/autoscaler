@@ -33,27 +33,27 @@ We use the issue to communicate what is state of the release.
 
 1. [ ] Change the version in
     [common/version-go](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/common/version.go)
-    to `0.${next-minor}.0`,
+    to `1.${next-minor}.0`,
 2. [ ] Commit and merge the change,
 3. [ ] Go to the merged change,
-4. [ ] [Create a new branch](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-and-deleting-branches-within-your-repository) named `vpa-release-0.${next-minor}` from the
+4. [ ] [Create a new branch](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-and-deleting-branches-within-your-repository) named `vpa-release-1.${next-minor}` from the
     merged change.
 
 ### New patch release
 
 1.  [ ] Bump the patch version number in VerticalPodAutoscalerVersion constant in
     [common/version.go](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/common/version.go).
-    Create a commit and merge by making a PR to the `vpa-release-0.${minor}` branch.
+    Create a commit and merge by making a PR to the `vpa-release-1.${minor}` branch.
 
 ## Build and stage images
 
-Create a fresh clone of the repo and switch to the `vpa-release-0.${minor}`
+Create a fresh clone of the repo and switch to the `vpa-release-1.${minor}`
 branch. This makes sure you have no local changes while building the images.
 
 For example:
 ```sh
 git clone git@github.com:kubernetes/autoscaler.git
-git switch vpa-release-0.14
+git switch vpa-release-1.0
 ```
 
 Once in the freshly cloned repo, build and stage the images.
@@ -127,7 +127,7 @@ sure nothing we care about will break if we do.
     ```sh
     sed -i -s "s|[0-9]\+\.[0-9]\+\.[0-9]\+|[*vpa-version*]|" ./deploy/*-deployment*.yaml ./hack/vpa-process-yaml.sh
     ```
-   Merge this change into branch vpa-release-0.X and optionally into master if 0.X is the latest minor release (example
+   Merge this change into branch vpa-release-1.{$minor} and optionally into master if 1.{$minor} is the latest minor release (example
    PR: [#5460](https://github.com/kubernetes/autoscaler/pull/5460)).
 
 1.  [ ] Tag the commit with version const change
