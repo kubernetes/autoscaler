@@ -202,8 +202,8 @@ type AutoscalingOptions struct {
 	Regional bool
 	// Pods newer than this will not be considered as unschedulable for scale-up.
 	NewPodScaleUpDelay time.Duration
-	
-	// IgnoreMinCountForUnregisteredNodes will ignore min count for unregistered nodes and allow deletion of unregistered nodes 
+
+	// IgnoreMinCountForUnregisteredNodes will ignore min count for unregistered nodes and allow deletion of unregistered nodes
 	IgnoreMinCountForUnregisteredNodes bool
 
 	// MaxBulkSoftTaint sets the maximum number of nodes that can be (un)tainted PreferNoSchedule during single scaling down run.
