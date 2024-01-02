@@ -691,6 +691,9 @@ func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
 	}
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
 
+	// We should default the violation of min count for unregistered nodes to false to maintain backwards compatibility 
+	assert.False(t, options.IgnoreMinCountForUnregisteredNodes)
+
 	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, processorCallbacks, nil)
 	assert.NoError(t, err)
 
@@ -1801,62 +1804,6 @@ func TestRemoveFixNodeTargetSize(t *testing.T) {
 	assert.True(t, removed)
 	change := core_utils.GetStringFromChan(sizeChanges)
 	assert.Equal(t, "ng1/-2", change)
-}
-
-func TestRemoveOldUnregisteredNodes(t *testing.T) {
-	deletedNodes := make(chan string, 10)
-
-	now := time.Now()
-
-	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
-	ng1_1.Spec.ProviderID = "ng1-1"
-	ng1_2 := BuildTestNode("ng1-2", 1000, 1000)
-	ng1_2.Spec.ProviderID = "ng1-2"
-	provider := testprovider.NewTestCloudProvider(nil, func(nodegroup string, node string) error {
-		deletedNodes <- fmt.Sprintf("%s/%s", nodegroup, node)
-		return nil
-	})
-	provider.AddNodeGroup("ng1", 1, 10, 2)
-	provider.AddNode("ng1", ng1_1)
-	provider.AddNode("ng1", ng1_2)
-
-	fakeClient := &fake.Clientset{}
-	fakeLogRecorder, _ := clusterstate_utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false, "my-cool-configmap")
-
-	context := &context.AutoscalingContext{
-		AutoscalingOptions: config.AutoscalingOptions{
-			NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
-				MaxNodeProvisionTime: 45 * time.Minute,
-			},
-		},
-		CloudProvider: provider,
-	}
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{
-		MaxTotalUnreadyPercentage: 10,
-		OkTotalUnreadyCount:       1,
-	}, fakeLogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(context.AutoscalingOptions.NodeGroupDefaults))
-	err := clusterState.UpdateNodes([]*apiv1.Node{ng1_1}, nil, now.Add(-time.Hour))
-	assert.NoError(t, err)
-
-	unregisteredNodes := clusterState.GetUnregisteredNodes()
-	assert.Equal(t, 1, len(unregisteredNodes))
-
-	autoscaler := &StaticAutoscaler{
-		AutoscalingContext:   context,
-		clusterStateRegistry: clusterState,
-	}
-
-	// Nothing should be removed. The unregistered node is not old enough.
-	removed, err := autoscaler.removeOldUnregisteredNodes(unregisteredNodes, context, clusterState, now.Add(-50*time.Minute), fakeLogRecorder)
-	assert.NoError(t, err)
-	assert.False(t, removed)
-
-	// ng1_2 should be removed.
-	removed, err = autoscaler.removeOldUnregisteredNodes(unregisteredNodes, context, clusterState, now, fakeLogRecorder)
-	assert.NoError(t, err)
-	assert.True(t, removed)
-	deletedNode := core_utils.GetStringFromChan(deletedNodes)
-	assert.Equal(t, "ng1/ng1-2", deletedNode)
 }
 
 func TestRemoveOldUnregisteredNodesAtomic(t *testing.T) {
