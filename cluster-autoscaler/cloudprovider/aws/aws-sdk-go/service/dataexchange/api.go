@@ -75,15 +75,15 @@ func (c *DataExchange) CancelJobRequest(input *CancelJobInput) (req *request.Req
 //   - ThrottlingException
 //     The limit on the number of requests per second was exceeded.
 //
+//   - ConflictException
+//     The request couldn't be completed because it conflicted with the current
+//     state of the resource.
+//
 //   - ValidationException
 //     The request was invalid.
 //
 //   - InternalServerException
 //     An exception occurred with the service.
-//
-//   - ConflictException
-//     The request couldn't be completed because it conflicted with the current
-//     state of the resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/CancelJob
 func (c *DataExchange) CancelJob(input *CancelJobInput) (*CancelJobOutput, error) {
@@ -161,20 +161,20 @@ func (c *DataExchange) CreateDataSetRequest(input *CreateDataSetInput) (req *req
 //
 // Returned Error Types:
 //
+//   - ServiceLimitExceededException
+//     The request has exceeded the quotas imposed by the service.
+//
 //   - ThrottlingException
 //     The limit on the number of requests per second was exceeded.
+//
+//   - AccessDeniedException
+//     Access to the resource is denied.
 //
 //   - ValidationException
 //     The request was invalid.
 //
 //   - InternalServerException
 //     An exception occurred with the service.
-//
-//   - ServiceLimitExceededException
-//     The request has exceeded the quotas imposed by the service.
-//
-//   - AccessDeniedException
-//     Access to the resource is denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/CreateDataSet
 func (c *DataExchange) CreateDataSet(input *CreateDataSetInput) (*CreateDataSetOutput, error) {
@@ -252,20 +252,20 @@ func (c *DataExchange) CreateEventActionRequest(input *CreateEventActionInput) (
 //
 // Returned Error Types:
 //
+//   - ServiceLimitExceededException
+//     The request has exceeded the quotas imposed by the service.
+//
 //   - ThrottlingException
 //     The limit on the number of requests per second was exceeded.
+//
+//   - AccessDeniedException
+//     Access to the resource is denied.
 //
 //   - ValidationException
 //     The request was invalid.
 //
 //   - InternalServerException
 //     An exception occurred with the service.
-//
-//   - ServiceLimitExceededException
-//     The request has exceeded the quotas imposed by the service.
-//
-//   - AccessDeniedException
-//     Access to the resource is denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/CreateEventAction
 func (c *DataExchange) CreateEventAction(input *CreateEventActionInput) (*CreateEventActionOutput, error) {
@@ -349,18 +349,18 @@ func (c *DataExchange) CreateJobRequest(input *CreateJobInput) (req *request.Req
 //   - ThrottlingException
 //     The limit on the number of requests per second was exceeded.
 //
-//   - ValidationException
-//     The request was invalid.
-//
-//   - InternalServerException
-//     An exception occurred with the service.
-//
 //   - AccessDeniedException
 //     Access to the resource is denied.
 //
 //   - ConflictException
 //     The request couldn't be completed because it conflicted with the current
 //     state of the resource.
+//
+//   - ValidationException
+//     The request was invalid.
+//
+//   - InternalServerException
+//     An exception occurred with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/CreateJob
 func (c *DataExchange) CreateJob(input *CreateJobInput) (*CreateJobOutput, error) {
@@ -444,14 +444,14 @@ func (c *DataExchange) CreateRevisionRequest(input *CreateRevisionInput) (req *r
 //   - ThrottlingException
 //     The limit on the number of requests per second was exceeded.
 //
+//   - AccessDeniedException
+//     Access to the resource is denied.
+//
 //   - ValidationException
 //     The request was invalid.
 //
 //   - InternalServerException
 //     An exception occurred with the service.
-//
-//   - AccessDeniedException
-//     Access to the resource is denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/CreateRevision
 func (c *DataExchange) CreateRevision(input *CreateRevisionInput) (*CreateRevisionOutput, error) {
@@ -530,24 +530,24 @@ func (c *DataExchange) DeleteAssetRequest(input *DeleteAssetInput) (req *request
 //
 // Returned Error Types:
 //
-//   - ValidationException
-//     The request was invalid.
-//
-//   - InternalServerException
-//     An exception occurred with the service.
-//
-//   - AccessDeniedException
-//     Access to the resource is denied.
-//
 //   - ResourceNotFoundException
 //     The resource couldn't be found.
 //
 //   - ThrottlingException
 //     The limit on the number of requests per second was exceeded.
 //
+//   - AccessDeniedException
+//     Access to the resource is denied.
+//
 //   - ConflictException
 //     The request couldn't be completed because it conflicted with the current
 //     state of the resource.
+//
+//   - ValidationException
+//     The request was invalid.
+//
+//   - InternalServerException
+//     An exception occurred with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/DeleteAsset
 func (c *DataExchange) DeleteAsset(input *DeleteAssetInput) (*DeleteAssetOutput, error) {
@@ -626,24 +626,24 @@ func (c *DataExchange) DeleteDataSetRequest(input *DeleteDataSetInput) (req *req
 //
 // Returned Error Types:
 //
-//   - ValidationException
-//     The request was invalid.
-//
-//   - InternalServerException
-//     An exception occurred with the service.
-//
-//   - AccessDeniedException
-//     Access to the resource is denied.
-//
 //   - ResourceNotFoundException
 //     The resource couldn't be found.
 //
 //   - ThrottlingException
 //     The limit on the number of requests per second was exceeded.
 //
+//   - AccessDeniedException
+//     Access to the resource is denied.
+//
 //   - ConflictException
 //     The request couldn't be completed because it conflicted with the current
 //     state of the resource.
+//
+//   - ValidationException
+//     The request was invalid.
+//
+//   - InternalServerException
+//     An exception occurred with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/DeleteDataSet
 func (c *DataExchange) DeleteDataSet(input *DeleteDataSetInput) (*DeleteDataSetOutput, error) {
@@ -811,24 +811,24 @@ func (c *DataExchange) DeleteRevisionRequest(input *DeleteRevisionInput) (req *r
 //
 // Returned Error Types:
 //
-//   - ValidationException
-//     The request was invalid.
-//
-//   - InternalServerException
-//     An exception occurred with the service.
-//
-//   - AccessDeniedException
-//     Access to the resource is denied.
-//
 //   - ResourceNotFoundException
 //     The resource couldn't be found.
 //
 //   - ThrottlingException
 //     The limit on the number of requests per second was exceeded.
 //
+//   - AccessDeniedException
+//     Access to the resource is denied.
+//
 //   - ConflictException
 //     The request couldn't be completed because it conflicted with the current
 //     state of the resource.
+//
+//   - ValidationException
+//     The request was invalid.
+//
+//   - InternalServerException
+//     An exception occurred with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/DeleteRevision
 func (c *DataExchange) DeleteRevision(input *DeleteRevisionInput) (*DeleteRevisionOutput, error) {
@@ -2050,7 +2050,7 @@ func (c *DataExchange) ListTagsForResourceRequest(input *ListTagsForResourceInpu
 	op := &request.Operation{
 		Name:       opListTagsForResource,
 		HTTPMethod: "GET",
-		HTTPPath:   "/tags/{resource-arn}",
+		HTTPPath:   "/tags/{ResourceArn}",
 	}
 
 	if input == nil {
@@ -2148,24 +2148,24 @@ func (c *DataExchange) RevokeRevisionRequest(input *RevokeRevisionInput) (req *r
 //
 // Returned Error Types:
 //
-//   - ValidationException
-//     The request was invalid.
-//
-//   - InternalServerException
-//     An exception occurred with the service.
-//
-//   - AccessDeniedException
-//     Access to the resource is denied.
-//
 //   - ResourceNotFoundException
 //     The resource couldn't be found.
 //
 //   - ThrottlingException
 //     The limit on the number of requests per second was exceeded.
 //
+//   - AccessDeniedException
+//     Access to the resource is denied.
+//
 //   - ConflictException
 //     The request couldn't be completed because it conflicted with the current
 //     state of the resource.
+//
+//   - ValidationException
+//     The request was invalid.
+//
+//   - InternalServerException
+//     An exception occurred with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/RevokeRevision
 func (c *DataExchange) RevokeRevision(input *RevokeRevisionInput) (*RevokeRevisionOutput, error) {
@@ -2252,14 +2252,14 @@ func (c *DataExchange) SendApiAssetRequest(input *SendApiAssetInput) (req *reque
 //   - ThrottlingException
 //     The limit on the number of requests per second was exceeded.
 //
+//   - AccessDeniedException
+//     Access to the resource is denied.
+//
 //   - ValidationException
 //     The request was invalid.
 //
 //   - InternalServerException
 //     An exception occurred with the service.
-//
-//   - AccessDeniedException
-//     Access to the resource is denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/SendApiAsset
 func (c *DataExchange) SendApiAsset(input *SendApiAssetInput) (*SendApiAssetOutput, error) {
@@ -2278,6 +2278,102 @@ func (c *DataExchange) SendApiAsset(input *SendApiAssetInput) (*SendApiAssetOutp
 // for more information on using Contexts.
 func (c *DataExchange) SendApiAssetWithContext(ctx aws.Context, input *SendApiAssetInput, opts ...request.Option) (*SendApiAssetOutput, error) {
 	req, out := c.SendApiAssetRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opSendDataSetNotification = "SendDataSetNotification"
+
+// SendDataSetNotificationRequest generates a "aws/request.Request" representing the
+// client's request for the SendDataSetNotification operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See SendDataSetNotification for more information on using the SendDataSetNotification
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the SendDataSetNotificationRequest method.
+//	req, resp := client.SendDataSetNotificationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/SendDataSetNotification
+func (c *DataExchange) SendDataSetNotificationRequest(input *SendDataSetNotificationInput) (req *request.Request, output *SendDataSetNotificationOutput) {
+	op := &request.Operation{
+		Name:       opSendDataSetNotification,
+		HTTPMethod: "POST",
+		HTTPPath:   "/v1/data-sets/{DataSetId}/notification",
+	}
+
+	if input == nil {
+		input = &SendDataSetNotificationInput{}
+	}
+
+	output = &SendDataSetNotificationOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// SendDataSetNotification API operation for AWS Data Exchange.
+//
+// The type of event associated with the data set.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Data Exchange's
+// API operation SendDataSetNotification for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ResourceNotFoundException
+//     The resource couldn't be found.
+//
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - AccessDeniedException
+//     Access to the resource is denied.
+//
+//   - ConflictException
+//     The request couldn't be completed because it conflicted with the current
+//     state of the resource.
+//
+//   - ValidationException
+//     The request was invalid.
+//
+//   - InternalServerException
+//     An exception occurred with the service.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/SendDataSetNotification
+func (c *DataExchange) SendDataSetNotification(input *SendDataSetNotificationInput) (*SendDataSetNotificationOutput, error) {
+	req, out := c.SendDataSetNotificationRequest(input)
+	return out, req.Send()
+}
+
+// SendDataSetNotificationWithContext is the same as SendDataSetNotification with the addition of
+// the ability to pass a context and additional request options.
+//
+// See SendDataSetNotification for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *DataExchange) SendDataSetNotificationWithContext(ctx aws.Context, input *SendDataSetNotificationInput, opts ...request.Option) (*SendDataSetNotificationOutput, error) {
+	req, out := c.SendDataSetNotificationRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -2338,24 +2434,24 @@ func (c *DataExchange) StartJobRequest(input *StartJobInput) (req *request.Reque
 //
 // Returned Error Types:
 //
-//   - ValidationException
-//     The request was invalid.
-//
-//   - InternalServerException
-//     An exception occurred with the service.
-//
-//   - AccessDeniedException
-//     Access to the resource is denied.
-//
 //   - ResourceNotFoundException
 //     The resource couldn't be found.
 //
 //   - ThrottlingException
 //     The limit on the number of requests per second was exceeded.
 //
+//   - AccessDeniedException
+//     Access to the resource is denied.
+//
 //   - ConflictException
 //     The request couldn't be completed because it conflicted with the current
 //     state of the resource.
+//
+//   - ValidationException
+//     The request was invalid.
+//
+//   - InternalServerException
+//     An exception occurred with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/StartJob
 func (c *DataExchange) StartJob(input *StartJobInput) (*StartJobOutput, error) {
@@ -2408,7 +2504,7 @@ func (c *DataExchange) TagResourceRequest(input *TagResourceInput) (req *request
 	op := &request.Operation{
 		Name:       opTagResource,
 		HTTPMethod: "POST",
-		HTTPPath:   "/tags/{resource-arn}",
+		HTTPPath:   "/tags/{ResourceArn}",
 	}
 
 	if input == nil {
@@ -2482,7 +2578,7 @@ func (c *DataExchange) UntagResourceRequest(input *UntagResourceInput) (req *req
 	op := &request.Operation{
 		Name:       opUntagResource,
 		HTTPMethod: "DELETE",
-		HTTPPath:   "/tags/{resource-arn}",
+		HTTPPath:   "/tags/{ResourceArn}",
 	}
 
 	if input == nil {
@@ -2581,24 +2677,24 @@ func (c *DataExchange) UpdateAssetRequest(input *UpdateAssetInput) (req *request
 //
 // Returned Error Types:
 //
-//   - ValidationException
-//     The request was invalid.
-//
-//   - InternalServerException
-//     An exception occurred with the service.
-//
-//   - AccessDeniedException
-//     Access to the resource is denied.
-//
 //   - ResourceNotFoundException
 //     The resource couldn't be found.
 //
 //   - ThrottlingException
 //     The limit on the number of requests per second was exceeded.
 //
+//   - AccessDeniedException
+//     Access to the resource is denied.
+//
 //   - ConflictException
 //     The request couldn't be completed because it conflicted with the current
 //     state of the resource.
+//
+//   - ValidationException
+//     The request was invalid.
+//
+//   - InternalServerException
+//     An exception occurred with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/UpdateAsset
 func (c *DataExchange) UpdateAsset(input *UpdateAssetInput) (*UpdateAssetOutput, error) {
@@ -2682,14 +2778,14 @@ func (c *DataExchange) UpdateDataSetRequest(input *UpdateDataSetInput) (req *req
 //   - ThrottlingException
 //     The limit on the number of requests per second was exceeded.
 //
+//   - AccessDeniedException
+//     Access to the resource is denied.
+//
 //   - ValidationException
 //     The request was invalid.
 //
 //   - InternalServerException
 //     An exception occurred with the service.
-//
-//   - AccessDeniedException
-//     Access to the resource is denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/UpdateDataSet
 func (c *DataExchange) UpdateDataSet(input *UpdateDataSetInput) (*UpdateDataSetOutput, error) {
@@ -2773,14 +2869,14 @@ func (c *DataExchange) UpdateEventActionRequest(input *UpdateEventActionInput) (
 //   - ThrottlingException
 //     The limit on the number of requests per second was exceeded.
 //
+//   - AccessDeniedException
+//     Access to the resource is denied.
+//
 //   - ValidationException
 //     The request was invalid.
 //
 //   - InternalServerException
 //     An exception occurred with the service.
-//
-//   - AccessDeniedException
-//     Access to the resource is denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/UpdateEventAction
 func (c *DataExchange) UpdateEventAction(input *UpdateEventActionInput) (*UpdateEventActionOutput, error) {
@@ -2858,24 +2954,24 @@ func (c *DataExchange) UpdateRevisionRequest(input *UpdateRevisionInput) (req *r
 //
 // Returned Error Types:
 //
-//   - ValidationException
-//     The request was invalid.
-//
-//   - InternalServerException
-//     An exception occurred with the service.
-//
-//   - AccessDeniedException
-//     Access to the resource is denied.
-//
 //   - ResourceNotFoundException
 //     The resource couldn't be found.
 //
 //   - ThrottlingException
 //     The limit on the number of requests per second was exceeded.
 //
+//   - AccessDeniedException
+//     Access to the resource is denied.
+//
 //   - ConflictException
 //     The request couldn't be completed because it conflicted with the current
 //     state of the resource.
+//
+//   - ValidationException
+//     The request was invalid.
+//
+//   - InternalServerException
+//     An exception occurred with the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dataexchange-2017-07-25/UpdateRevision
 func (c *DataExchange) UpdateRevision(input *UpdateRevisionInput) (*UpdateRevisionOutput, error) {
@@ -3124,7 +3220,7 @@ type AssetDestinationEntry struct {
 	// AssetId is a required field
 	AssetId *string `type:"string" required:"true"`
 
-	// The S3 bucket that is the destination for the asset.
+	// The Amazon S3 bucket that is the destination for the asset.
 	//
 	// Bucket is a required field
 	Bucket *string `type:"string" required:"true"`
@@ -3185,17 +3281,23 @@ func (s *AssetDestinationEntry) SetKey(v string) *AssetDestinationEntry {
 	return s
 }
 
-// Information about the asset.
+// Details about the asset.
 type AssetDetails struct {
 	_ struct{} `type:"structure"`
 
 	// Information about the API Gateway API asset.
 	ApiGatewayApiAsset *ApiGatewayApiAsset `type:"structure"`
 
+	// The AWS Lake Formation data permission that is the asset.
+	LakeFormationDataPermissionAsset *LakeFormationDataPermissionAsset `type:"structure"`
+
 	// The Amazon Redshift datashare that is the asset.
 	RedshiftDataShareAsset *RedshiftDataShareAsset `type:"structure"`
 
-	// The S3 object that is the asset.
+	// The Amazon S3 data access that is the asset.
+	S3DataAccessAsset *S3DataAccessAsset `type:"structure"`
+
+	// The Amazon S3 object that is the asset.
 	S3SnapshotAsset *S3SnapshotAsset `type:"structure"`
 }
 
@@ -3223,9 +3325,21 @@ func (s *AssetDetails) SetApiGatewayApiAsset(v *ApiGatewayApiAsset) *AssetDetail
 	return s
 }
 
+// SetLakeFormationDataPermissionAsset sets the LakeFormationDataPermissionAsset field's value.
+func (s *AssetDetails) SetLakeFormationDataPermissionAsset(v *LakeFormationDataPermissionAsset) *AssetDetails {
+	s.LakeFormationDataPermissionAsset = v
+	return s
+}
+
 // SetRedshiftDataShareAsset sets the RedshiftDataShareAsset field's value.
 func (s *AssetDetails) SetRedshiftDataShareAsset(v *RedshiftDataShareAsset) *AssetDetails {
 	s.RedshiftDataShareAsset = v
+	return s
+}
+
+// SetS3DataAccessAsset sets the S3DataAccessAsset field's value.
+func (s *AssetDetails) SetS3DataAccessAsset(v *S3DataAccessAsset) *AssetDetails {
+	s.S3DataAccessAsset = v
 	return s
 }
 
@@ -3235,12 +3349,15 @@ func (s *AssetDetails) SetS3SnapshotAsset(v *S3SnapshotAsset) *AssetDetails {
 	return s
 }
 
-// An asset in AWS Data Exchange is a piece of data (S3 object) or a means of
-// fulfilling data (Amazon Redshift datashare or Amazon API Gateway API). The
-// asset can be a structured data file, an image file, or some other data file
-// that can be stored as an S3 object, an Amazon API Gateway API, or an Amazon
-// Redshift datashare. When you create an import job for your files, API Gateway
-// APIs, or Amazon Redshift datashares, you create an asset in AWS Data Exchange.
+// An asset in AWS Data Exchange is a piece of data (Amazon S3 object) or a
+// means of fulfilling data (Amazon Redshift datashare or Amazon API Gateway
+// API, AWS Lake Formation data permission, or Amazon S3 data access). The asset
+// can be a structured data file, an image file, or some other data file that
+// can be stored as an Amazon S3 object, an Amazon API Gateway API, or an Amazon
+// Redshift datashare, an AWS Lake Formation data permission, or an Amazon S3
+// data access. When you create an import job for your files, API Gateway APIs,
+// Amazon Redshift datashares, AWS Lake Formation data permission, or Amazon
+// S3 data access, you create an asset in AWS Data Exchange.
 type AssetEntry struct {
 	_ struct{} `type:"structure"`
 
@@ -3249,7 +3366,7 @@ type AssetEntry struct {
 	// Arn is a required field
 	Arn *string `type:"string" required:"true"`
 
-	// Information about the asset.
+	// Details about the asset.
 	//
 	// AssetDetails is a required field
 	AssetDetails *AssetDetails `type:"structure" required:"true"`
@@ -3274,11 +3391,13 @@ type AssetEntry struct {
 	// Id is a required field
 	Id *string `type:"string" required:"true"`
 
-	// The name of the asset. When importing from Amazon S3, the S3 object key is
-	// used as the asset name. When exporting to Amazon S3, the asset name is used
-	// as default target S3 object key. When importing from Amazon API Gateway API,
-	// the API name is used as the asset name. When importing from Amazon Redshift,
-	// the datashare name is used as the asset name.
+	// The name of the asset. When importing from Amazon S3, the Amazon S3 object
+	// key is used as the asset name. When exporting to Amazon S3, the asset name
+	// is used as default target Amazon S3 object key. When importing from Amazon
+	// API Gateway API, the API name is used as the asset name. When importing from
+	// Amazon Redshift, the datashare name is used as the asset name. When importing
+	// from AWS Lake Formation, the static values of "Database(s) included in LF-tag
+	// policy" or "Table(s) included in LF-tag policy" are used as the asset name.
 	//
 	// Name is a required field
 	Name *string `type:"string" required:"true"`
@@ -3381,7 +3500,7 @@ func (s *AssetEntry) SetUpdatedAt(v time.Time) *AssetEntry {
 type AssetSourceEntry struct {
 	_ struct{} `type:"structure"`
 
-	// The S3 bucket that's part of the source of the asset.
+	// The Amazon S3 bucket that's part of the source of the asset.
 	//
 	// Bucket is a required field
 	Bucket *string `type:"string" required:"true"`
@@ -3443,7 +3562,7 @@ func (s *AssetSourceEntry) SetKey(v string) *AssetSourceEntry {
 type AutoExportRevisionDestinationEntry struct {
 	_ struct{} `type:"structure"`
 
-	// The S3 bucket that is the destination for the event action.
+	// The Amazon S3 bucket that is the destination for the event action.
 	//
 	// Bucket is a required field
 	Bucket *string `type:"string" required:"true"`
@@ -3567,6 +3686,8 @@ func (s *AutoExportRevisionToS3RequestDetails) SetRevisionDestination(v *AutoExp
 type CancelJobInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
+	// The unique identifier for a job.
+	//
 	// JobId is a required field
 	JobId *string `location:"uri" locationName:"JobId" type:"string" required:"true"`
 }
@@ -3706,7 +3827,6 @@ func (s *ConflictException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
-// A request to create a data set that contains one or more revisions.
 type CreateDataSetInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3797,39 +3917,41 @@ func (s *CreateDataSetInput) SetTags(v map[string]*string) *CreateDataSetInput {
 type CreateDataSetOutput struct {
 	_ struct{} `type:"structure"`
 
-	// An Amazon Resource Name (ARN) that uniquely identifies an AWS resource.
+	// The ARN for the data set.
 	Arn *string `type:"string"`
 
 	// The type of asset that is added to a data set.
 	AssetType *string `type:"string" enum:"AssetType"`
 
-	// Dates and times in AWS Data Exchange are recorded in ISO 8601 format.
+	// The date and time that the data set was created, in ISO 8601 format.
 	CreatedAt *time.Time `type:"timestamp" timestampFormat:"iso8601"`
 
-	// A description of a resource.
+	// The description for the data set.
 	Description *string `type:"string"`
 
-	// A unique identifier.
+	// The unique identifier for the data set.
 	Id *string `type:"string"`
 
-	// The name of the model.
+	// The name of the data set.
 	Name *string `type:"string"`
 
 	// A property that defines the data set as OWNED by the account (for providers)
-	// or ENTITLED to the account (for subscribers). When an owned data set is published
-	// in a product, AWS Data Exchange creates a copy of the data set. Subscribers
-	// can access that copy of the data set as an entitled data set.
+	// or ENTITLED to the account (for subscribers).
 	Origin *string `type:"string" enum:"Origin"`
 
-	// Information about the origin of the data set.
+	// If the origin of this data set is ENTITLED, includes the details for the
+	// product on AWS Marketplace.
 	OriginDetails *OriginDetails `type:"structure"`
 
-	// A unique identifier.
+	// The data set ID of the owned data set corresponding to the entitled data
+	// set being viewed. This parameter is returned when a data set owner is viewing
+	// the entitled copy of its owned data set.
 	SourceId *string `type:"string"`
 
+	// The tags for the data set.
 	Tags map[string]*string `type:"map"`
 
-	// Dates and times in AWS Data Exchange are recorded in ISO 8601 format.
+	// The date and time that the data set was last updated, in ISO 8601 format.
 	UpdatedAt *time.Time `type:"timestamp" timestampFormat:"iso8601"`
 }
 
@@ -3917,7 +4039,6 @@ func (s *CreateDataSetOutput) SetUpdatedAt(v time.Time) *CreateDataSetOutput {
 	return s
 }
 
-// A request to create an event action.
 type CreateEventActionInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3994,19 +4115,19 @@ type CreateEventActionOutput struct {
 	// What occurs after a certain event.
 	Action *Action `type:"structure"`
 
-	// An Amazon Resource Name (ARN) that uniquely identifies an AWS resource.
+	// The ARN for the event action.
 	Arn *string `type:"string"`
 
-	// Dates and times in AWS Data Exchange are recorded in ISO 8601 format.
+	// The date and time that the event action was created, in ISO 8601 format.
 	CreatedAt *time.Time `type:"timestamp" timestampFormat:"iso8601"`
 
 	// What occurs to start an action.
 	Event *Event `type:"structure"`
 
-	// A unique identifier.
+	// The unique identifier for the event action.
 	Id *string `type:"string"`
 
-	// Dates and times in AWS Data Exchange are recorded in ISO 8601 format.
+	// The date and time that the event action was last updated, in ISO 8601 format.
 	UpdatedAt *time.Time `type:"timestamp" timestampFormat:"iso8601"`
 }
 
@@ -4064,11 +4185,6 @@ func (s *CreateEventActionOutput) SetUpdatedAt(v time.Time) *CreateEventActionOu
 	return s
 }
 
-// The CreateJob request. AWS Data Exchange Jobs are asynchronous import or
-// export operations used to create or copy assets. A data set owner can both
-// import and export assets. A subscriber with an entitlement to a data set
-// can only export. Jobs are deleted 90 days after they are created. Created
-// jobs must be started with the StartJob operation.
 type CreateJobInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4137,25 +4253,28 @@ func (s *CreateJobInput) SetType(v string) *CreateJobInput {
 type CreateJobOutput struct {
 	_ struct{} `type:"structure"`
 
-	// An Amazon Resource Name (ARN) that uniquely identifies an AWS resource.
+	// The ARN for the job.
 	Arn *string `type:"string"`
 
-	// Dates and times in AWS Data Exchange are recorded in ISO 8601 format.
+	// The date and time that the job was created, in ISO 8601 format.
 	CreatedAt *time.Time `type:"timestamp" timestampFormat:"iso8601"`
 
-	// Details for the response.
+	// Details about the job.
 	Details *ResponseDetails `type:"structure"`
 
+	// The errors associated with jobs.
 	Errors []*JobError `type:"list"`
 
-	// A unique identifier.
+	// The unique identifier for the job.
 	Id *string `type:"string"`
 
+	// The state of the job.
 	State *string `type:"string" enum:"State"`
 
+	// The job type.
 	Type *string `type:"string" enum:"Type"`
 
-	// Dates and times in AWS Data Exchange are recorded in ISO 8601 format.
+	// The date and time that the job was last updated, in ISO 8601 format.
 	UpdatedAt *time.Time `type:"timestamp" timestampFormat:"iso8601"`
 }
 
@@ -4225,16 +4344,14 @@ func (s *CreateJobOutput) SetUpdatedAt(v time.Time) *CreateJobOutput {
 	return s
 }
 
-// Creates a revision for a data set. When they're created, revisions are not
-// published to products, and therefore are not available to subscribers. To
-// publish a revision to a data set in a product, the revision must first be
-// finalized.
 type CreateRevisionInput struct {
 	_ struct{} `type:"structure"`
 
 	// An optional comment about the revision.
 	Comment *string `type:"string"`
 
+	// The unique identifier for a data set.
+	//
 	// DataSetId is a required field
 	DataSetId *string `location:"uri" locationName:"DataSetId" type:"string" required:"true"`
 
@@ -4300,35 +4417,49 @@ func (s *CreateRevisionInput) SetTags(v map[string]*string) *CreateRevisionInput
 type CreateRevisionOutput struct {
 	_ struct{} `type:"structure"`
 
-	// An Amazon Resource Name (ARN) that uniquely identifies an AWS resource.
+	// The ARN for the revision.
 	Arn *string `type:"string"`
 
+	// An optional comment about the revision.
 	Comment *string `type:"string"`
 
-	// Dates and times in AWS Data Exchange are recorded in ISO 8601 format.
+	// The date and time that the revision was created, in ISO 8601 format.
 	CreatedAt *time.Time `type:"timestamp" timestampFormat:"iso8601"`
 
-	// A unique identifier.
+	// The unique identifier for the data set associated with the data set revision.
 	DataSetId *string `type:"string"`
 
+	// To publish a revision to a data set in a product, the revision must first
+	// be finalized. Finalizing a revision tells AWS Data Exchange that your changes
+	// to the assets in the revision are complete. After it's in this read-only
+	// state, you can publish the revision to your products. Finalized revisions
+	// can be published through the AWS Data Exchange console or the AWS Marketplace
+	// Catalog API, using the StartChangeSet AWS Marketplace Catalog API action.
+	// When using the API, revisions are uniquely identified by their ARN.
 	Finalized *bool `type:"boolean"`
 
-	// A unique identifier.
+	// The unique identifier for the revision.
 	Id *string `type:"string"`
 
+	// A required comment to inform subscribers of the reason their access to the
+	// revision was revoked.
 	RevocationComment *string `min:"10" type:"string"`
 
+	// A status indicating that subscribers' access to the revision was revoked.
 	Revoked *bool `type:"boolean"`
 
-	// Dates and times in AWS Data Exchange are recorded in ISO 8601 format.
+	// The date and time that the revision was revoked, in ISO 8601 format.
 	RevokedAt *time.Time `type:"timestamp" timestampFormat:"iso8601"`
 
-	// A unique identifier.
+	// The revision ID of the owned revision corresponding to the entitled revision
+	// being viewed. This parameter is returned when a revision owner is viewing
+	// the entitled copy of its owned revision.
 	SourceId *string `type:"string"`
 
+	// The tags for the revision.
 	Tags map[string]*string `type:"map"`
 
-	// Dates and times in AWS Data Exchange are recorded in ISO 8601 format.
+	// The date and time that the revision was last updated, in ISO 8601 format.
 	UpdatedAt *time.Time `type:"timestamp" timestampFormat:"iso8601"`
 }
 
@@ -4419,6 +4550,144 @@ func (s *CreateRevisionOutput) SetTags(v map[string]*string) *CreateRevisionOutp
 // SetUpdatedAt sets the UpdatedAt field's value.
 func (s *CreateRevisionOutput) SetUpdatedAt(v time.Time) *CreateRevisionOutput {
 	s.UpdatedAt = &v
+	return s
+}
+
+// Details of the operation to create an Amazon S3 data access from an S3 bucket.
+type CreateS3DataAccessFromS3BucketRequestDetails struct {
+	_ struct{} `type:"structure"`
+
+	// Details about the S3 data access source asset.
+	//
+	// AssetSource is a required field
+	AssetSource *S3DataAccessAssetSourceEntry `type:"structure" required:"true"`
+
+	// The unique identifier for the data set associated with the creation of this
+	// Amazon S3 data access.
+	//
+	// DataSetId is a required field
+	DataSetId *string `type:"string" required:"true"`
+
+	// The unique identifier for a revision.
+	//
+	// RevisionId is a required field
+	RevisionId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateS3DataAccessFromS3BucketRequestDetails) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateS3DataAccessFromS3BucketRequestDetails) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateS3DataAccessFromS3BucketRequestDetails) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateS3DataAccessFromS3BucketRequestDetails"}
+	if s.AssetSource == nil {
+		invalidParams.Add(request.NewErrParamRequired("AssetSource"))
+	}
+	if s.DataSetId == nil {
+		invalidParams.Add(request.NewErrParamRequired("DataSetId"))
+	}
+	if s.RevisionId == nil {
+		invalidParams.Add(request.NewErrParamRequired("RevisionId"))
+	}
+	if s.AssetSource != nil {
+		if err := s.AssetSource.Validate(); err != nil {
+			invalidParams.AddNested("AssetSource", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAssetSource sets the AssetSource field's value.
+func (s *CreateS3DataAccessFromS3BucketRequestDetails) SetAssetSource(v *S3DataAccessAssetSourceEntry) *CreateS3DataAccessFromS3BucketRequestDetails {
+	s.AssetSource = v
+	return s
+}
+
+// SetDataSetId sets the DataSetId field's value.
+func (s *CreateS3DataAccessFromS3BucketRequestDetails) SetDataSetId(v string) *CreateS3DataAccessFromS3BucketRequestDetails {
+	s.DataSetId = &v
+	return s
+}
+
+// SetRevisionId sets the RevisionId field's value.
+func (s *CreateS3DataAccessFromS3BucketRequestDetails) SetRevisionId(v string) *CreateS3DataAccessFromS3BucketRequestDetails {
+	s.RevisionId = &v
+	return s
+}
+
+// Details about the response of the operation to create an S3 data access from
+// an S3 bucket.
+type CreateS3DataAccessFromS3BucketResponseDetails struct {
+	_ struct{} `type:"structure"`
+
+	// Details about the asset source from an Amazon S3 bucket.
+	//
+	// AssetSource is a required field
+	AssetSource *S3DataAccessAssetSourceEntry `type:"structure" required:"true"`
+
+	// The unique identifier for this data set.
+	//
+	// DataSetId is a required field
+	DataSetId *string `type:"string" required:"true"`
+
+	// The unique identifier for the revision.
+	//
+	// RevisionId is a required field
+	RevisionId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateS3DataAccessFromS3BucketResponseDetails) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateS3DataAccessFromS3BucketResponseDetails) GoString() string {
+	return s.String()
+}
+
+// SetAssetSource sets the AssetSource field's value.
+func (s *CreateS3DataAccessFromS3BucketResponseDetails) SetAssetSource(v *S3DataAccessAssetSourceEntry) *CreateS3DataAccessFromS3BucketResponseDetails {
+	s.AssetSource = v
+	return s
+}
+
+// SetDataSetId sets the DataSetId field's value.
+func (s *CreateS3DataAccessFromS3BucketResponseDetails) SetDataSetId(v string) *CreateS3DataAccessFromS3BucketResponseDetails {
+	s.DataSetId = &v
+	return s
+}
+
+// SetRevisionId sets the RevisionId field's value.
+func (s *CreateS3DataAccessFromS3BucketResponseDetails) SetRevisionId(v string) *CreateS3DataAccessFromS3BucketResponseDetails {
+	s.RevisionId = &v
 	return s
 }
 
@@ -4555,15 +4824,159 @@ func (s *DataSetEntry) SetUpdatedAt(v time.Time) *DataSetEntry {
 	return s
 }
 
+// Extra details specific to a data update type notification.
+type DataUpdateRequestDetails struct {
+	_ struct{} `type:"structure"`
+
+	// A datetime in the past when the data was updated. This typically means that
+	// the underlying resource supporting the data set was updated.
+	DataUpdatedAt *time.Time `type:"timestamp" timestampFormat:"iso8601"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DataUpdateRequestDetails) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DataUpdateRequestDetails) GoString() string {
+	return s.String()
+}
+
+// SetDataUpdatedAt sets the DataUpdatedAt field's value.
+func (s *DataUpdateRequestDetails) SetDataUpdatedAt(v time.Time) *DataUpdateRequestDetails {
+	s.DataUpdatedAt = &v
+	return s
+}
+
+// The LF-tag policy for database resources.
+type DatabaseLFTagPolicy struct {
+	_ struct{} `type:"structure"`
+
+	// A list of LF-tag conditions that apply to database resources.
+	//
+	// Expression is a required field
+	Expression []*LFTag `type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DatabaseLFTagPolicy) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DatabaseLFTagPolicy) GoString() string {
+	return s.String()
+}
+
+// SetExpression sets the Expression field's value.
+func (s *DatabaseLFTagPolicy) SetExpression(v []*LFTag) *DatabaseLFTagPolicy {
+	s.Expression = v
+	return s
+}
+
+// The LF-tag policy and permissions for database resources.
+type DatabaseLFTagPolicyAndPermissions struct {
+	_ struct{} `type:"structure"`
+
+	// A list of LF-tag conditions that apply to database resources.
+	//
+	// Expression is a required field
+	Expression []*LFTag `type:"list" required:"true"`
+
+	// The permissions granted to subscribers on database resources.
+	//
+	// Permissions is a required field
+	Permissions []*string `type:"list" required:"true" enum:"DatabaseLFTagPolicyPermission"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DatabaseLFTagPolicyAndPermissions) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DatabaseLFTagPolicyAndPermissions) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DatabaseLFTagPolicyAndPermissions) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DatabaseLFTagPolicyAndPermissions"}
+	if s.Expression == nil {
+		invalidParams.Add(request.NewErrParamRequired("Expression"))
+	}
+	if s.Permissions == nil {
+		invalidParams.Add(request.NewErrParamRequired("Permissions"))
+	}
+	if s.Expression != nil {
+		for i, v := range s.Expression {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Expression", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetExpression sets the Expression field's value.
+func (s *DatabaseLFTagPolicyAndPermissions) SetExpression(v []*LFTag) *DatabaseLFTagPolicyAndPermissions {
+	s.Expression = v
+	return s
+}
+
+// SetPermissions sets the Permissions field's value.
+func (s *DatabaseLFTagPolicyAndPermissions) SetPermissions(v []*string) *DatabaseLFTagPolicyAndPermissions {
+	s.Permissions = v
+	return s
+}
+
 type DeleteAssetInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
+	// The unique identifier for an asset.
+	//
 	// AssetId is a required field
 	AssetId *string `location:"uri" locationName:"AssetId" type:"string" required:"true"`
 
+	// The unique identifier for a data set.
+	//
 	// DataSetId is a required field
 	DataSetId *string `location:"uri" locationName:"DataSetId" type:"string" required:"true"`
 
+	// The unique identifier for a revision.
+	//
 	// RevisionId is a required field
 	RevisionId *string `location:"uri" locationName:"RevisionId" type:"string" required:"true"`
 }
@@ -4657,6 +5070,8 @@ func (s DeleteAssetOutput) GoString() string {
 type DeleteDataSetInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
+	// The unique identifier for a data set.
+	//
 	// DataSetId is a required field
 	DataSetId *string `location:"uri" locationName:"DataSetId" type:"string" required:"true"`
 }
@@ -4726,6 +5141,8 @@ func (s DeleteDataSetOutput) GoString() string {
 type DeleteEventActionInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
+	// The unique identifier for the event action.
+	//
 	// EventActionId is a required field
 	EventActionId *string `location:"uri" locationName:"EventActionId" type:"string" required:"true"`
 }
@@ -4795,9 +5212,13 @@ func (s DeleteEventActionOutput) GoString() string {
 type DeleteRevisionInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
+	// The unique identifier for a data set.
+	//
 	// DataSetId is a required field
 	DataSetId *string `location:"uri" locationName:"DataSetId" type:"string" required:"true"`
 
+	// The unique identifier for a revision.
+	//
 	// RevisionId is a required field
 	RevisionId *string `location:"uri" locationName:"RevisionId" type:"string" required:"true"`
 }
@@ -4876,6 +5297,53 @@ func (s DeleteRevisionOutput) GoString() string {
 	return s.String()
 }
 
+// Extra details specific to a deprecation type notification.
+type DeprecationRequestDetails struct {
+	_ struct{} `type:"structure"`
+
+	// A datetime in the future when the data set will be deprecated.
+	//
+	// DeprecationAt is a required field
+	DeprecationAt *time.Time `type:"timestamp" timestampFormat:"iso8601" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeprecationRequestDetails) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeprecationRequestDetails) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeprecationRequestDetails) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeprecationRequestDetails"}
+	if s.DeprecationAt == nil {
+		invalidParams.Add(request.NewErrParamRequired("DeprecationAt"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDeprecationAt sets the DeprecationAt field's value.
+func (s *DeprecationRequestDetails) SetDeprecationAt(v time.Time) *DeprecationRequestDetails {
+	s.DeprecationAt = &v
+	return s
+}
+
 // Information about the job error.
 type Details struct {
 	_ struct{} `type:"structure"`
@@ -4883,7 +5351,7 @@ type Details struct {
 	// Information about the job error.
 	ImportAssetFromSignedUrlJobErrorDetails *ImportAssetFromSignedUrlJobErrorDetails `type:"structure"`
 
-	// Information about the job error.
+	// Details about the job error.
 	ImportAssetsFromS3JobErrorDetails []*AssetSourceEntry `type:"list"`
 }
 
@@ -5517,7 +5985,7 @@ func (s *ExportRevisionsToS3ResponseDetails) SetRevisionDestinations(v []*Revisi
 
 // Encryption configuration of the export job. Includes the encryption type
 // in addition to the AWS KMS key. The KMS key is only necessary if you chose
-// the KMS encryption. type.
+// the KMS encryption type.
 type ExportServerSideEncryption struct {
 	_ struct{} `type:"structure"`
 
@@ -5579,12 +6047,18 @@ func (s *ExportServerSideEncryption) SetType(v string) *ExportServerSideEncrypti
 type GetAssetInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
+	// The unique identifier for an asset.
+	//
 	// AssetId is a required field
 	AssetId *string `location:"uri" locationName:"AssetId" type:"string" required:"true"`
 
+	// The unique identifier for a data set.
+	//
 	// DataSetId is a required field
 	DataSetId *string `location:"uri" locationName:"DataSetId" type:"string" required:"true"`
 
+	// The unique identifier for a revision.
+	//
 	// RevisionId is a required field
 	RevisionId *string `location:"uri" locationName:"RevisionId" type:"string" required:"true"`
 }
@@ -5656,38 +6130,43 @@ func (s *GetAssetInput) SetRevisionId(v string) *GetAssetInput {
 type GetAssetOutput struct {
 	_ struct{} `type:"structure"`
 
-	// An Amazon Resource Name (ARN) that uniquely identifies an AWS resource.
+	// The ARN for the asset.
 	Arn *string `type:"string"`
 
-	// Information about the asset.
+	// Details about the asset.
 	AssetDetails *AssetDetails `type:"structure"`
 
 	// The type of asset that is added to a data set.
 	AssetType *string `type:"string" enum:"AssetType"`
 
-	// Dates and times in AWS Data Exchange are recorded in ISO 8601 format.
+	// The date and time that the asset was created, in ISO 8601 format.
 	CreatedAt *time.Time `type:"timestamp" timestampFormat:"iso8601"`
 
-	// A unique identifier.
+	// The unique identifier for the data set associated with this asset.
 	DataSetId *string `type:"string"`
 
-	// A unique identifier.
+	// The unique identifier for the asset.
 	Id *string `type:"string"`
 
-	// The name of the asset. When importing from Amazon S3, the S3 object key is
-	// used as the asset name. When exporting to Amazon S3, the asset name is used
-	// as default target S3 object key. When importing from Amazon API Gateway API,
-	// the API name is used as the asset name. When importing from Amazon Redshift,
-	// the datashare name is used as the asset name.
+	// The name of the asset. When importing from Amazon S3, the Amazon S3 object
+	// key is used as the asset name. When exporting to Amazon S3, the asset name
+	// is used as default target Amazon S3 object key. When importing from Amazon
+	// API Gateway API, the API name is used as the asset name. When importing from
+	// Amazon Redshift, the datashare name is used as the asset name. When importing
+	// from AWS Lake Formation, the static values of "Database(s) included in the
+	// LF-tag policy" or "Table(s) included in the LF-tag policy" are used as the
+	// asset name.
 	Name *string `type:"string"`
 
-	// A unique identifier.
+	// The unique identifier for the revision associated with this asset.
 	RevisionId *string `type:"string"`
 
-	// A unique identifier.
+	// The asset ID of the owned asset corresponding to the entitled asset being
+	// viewed. This parameter is returned when an asset owner is viewing the entitled
+	// copy of its owned asset.
 	SourceId *string `type:"string"`
 
-	// Dates and times in AWS Data Exchange are recorded in ISO 8601 format.
+	// The date and time that the asset was last updated, in ISO 8601 format.
 	UpdatedAt *time.Time `type:"timestamp" timestampFormat:"iso8601"`
 }
 
@@ -5772,6 +6251,8 @@ func (s *GetAssetOutput) SetUpdatedAt(v time.Time) *GetAssetOutput {
 type GetDataSetInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
+	// The unique identifier for a data set.
+	//
 	// DataSetId is a required field
 	DataSetId *string `location:"uri" locationName:"DataSetId" type:"string" required:"true"`
 }
@@ -5819,39 +6300,41 @@ func (s *GetDataSetInput) SetDataSetId(v string) *GetDataSetInput {
 type GetDataSetOutput struct {
 	_ struct{} `type:"structure"`
 
-	// An Amazon Resource Name (ARN) that uniquely identifies an AWS resource.
+	// The ARN for the data set.
 	Arn *string `type:"string"`
 
 	// The type of asset that is added to a data set.
 	AssetType *string `type:"string" enum:"AssetType"`
 
-	// Dates and times in AWS Data Exchange are recorded in ISO 8601 format.
+	// The date and time that the data set was created, in ISO 8601 format.
 	CreatedAt *time.Time `type:"timestamp" timestampFormat:"iso8601"`
 
-	// A description of a resource.
+	// The description for the data set.
 	Description *string `type:"string"`
 
-	// A unique identifier.
+	// The unique identifier for the data set.
 	Id *string `type:"string"`
 
-	// The name of the model.
+	// The name of the data set.
 	Name *string `type:"string"`
 
 	// A property that defines the data set as OWNED by the account (for providers)
-	// or ENTITLED to the account (for subscribers). When an owned data set is published
-	// in a product, AWS Data Exchange creates a copy of the data set. Subscribers
-	// can access that copy of the data set as an entitled data set.
+	// or ENTITLED to the account (for subscribers).
 	Origin *string `type:"string" enum:"Origin"`
 
-	// Information about the origin of the data set.
+	// If the origin of this data set is ENTITLED, includes the details for the
+	// product on AWS Marketplace.
 	OriginDetails *OriginDetails `type:"structure"`
 
-	// A unique identifier.
+	// The data set ID of the owned data set corresponding to the entitled data
+	// set being viewed. This parameter is returned when a data set owner is viewing
+	// the entitled copy of its owned data set.
 	SourceId *string `type:"string"`
 
+	// The tags for the data set.
 	Tags map[string]*string `type:"map"`
 
-	// Dates and times in AWS Data Exchange are recorded in ISO 8601 format.
+	// The date and time that the data set was last updated, in ISO 8601 format.
 	UpdatedAt *time.Time `type:"timestamp" timestampFormat:"iso8601"`
 }
 
@@ -5942,6 +6425,8 @@ func (s *GetDataSetOutput) SetUpdatedAt(v time.Time) *GetDataSetOutput {
 type GetEventActionInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
+	// The unique identifier for the event action.
+	//
 	// EventActionId is a required field
 	EventActionId *string `location:"uri" locationName:"EventActionId" type:"string" required:"true"`
 }
@@ -5992,19 +6477,19 @@ type GetEventActionOutput struct {
 	// What occurs after a certain event.
 	Action *Action `type:"structure"`
 
-	// An Amazon Resource Name (ARN) that uniquely identifies an AWS resource.
+	// The ARN for the event action.
 	Arn *string `type:"string"`
 
-	// Dates and times in AWS Data Exchange are recorded in ISO 8601 format.
+	// The date and time that the event action was created, in ISO 8601 format.
 	CreatedAt *time.Time `type:"timestamp" timestampFormat:"iso8601"`
 
 	// What occurs to start an action.
 	Event *Event `type:"structure"`
 
-	// A unique identifier.
+	// The unique identifier for the event action.
 	Id *string `type:"string"`
 
-	// Dates and times in AWS Data Exchange are recorded in ISO 8601 format.
+	// The date and time that the event action was last updated, in ISO 8601 format.
 	UpdatedAt *time.Time `type:"timestamp" timestampFormat:"iso8601"`
 }
 
@@ -6065,6 +6550,8 @@ func (s *GetEventActionOutput) SetUpdatedAt(v time.Time) *GetEventActionOutput {
 type GetJobInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
+	// The unique identifier for a job.
+	//
 	// JobId is a required field
 	JobId *string `location:"uri" locationName:"JobId" type:"string" required:"true"`
 }
@@ -6112,25 +6599,28 @@ func (s *GetJobInput) SetJobId(v string) *GetJobInput {
 type GetJobOutput struct {
 	_ struct{} `type:"structure"`
 
-	// An Amazon Resource Name (ARN) that uniquely identifies an AWS resource.
+	// The ARN for the job.
 	Arn *string `type:"string"`
 
-	// Dates and times in AWS Data Exchange are recorded in ISO 8601 format.
+	// The date and time that the job was created, in ISO 8601 format.
 	CreatedAt *time.Time `type:"timestamp" timestampFormat:"iso8601"`
 
-	// Details for the response.
+	// Details about the job.
 	Details *ResponseDetails `type:"structure"`
 
+	// The errors associated with jobs.
 	Errors []*JobError `type:"list"`
 
-	// A unique identifier.
+	// The unique identifier for the job.
 	Id *string `type:"string"`
 
+	// The state of the job.
 	State *string `type:"string" enum:"State"`
 
+	// The job type.
 	Type *string `type:"string" enum:"Type"`
 
-	// Dates and times in AWS Data Exchange are recorded in ISO 8601 format.
+	// The date and time that the job was last updated, in ISO 8601 format.
 	UpdatedAt *time.Time `type:"timestamp" timestampFormat:"iso8601"`
 }
 
@@ -6203,9 +6693,13 @@ func (s *GetJobOutput) SetUpdatedAt(v time.Time) *GetJobOutput {
 type GetRevisionInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
+	// The unique identifier for a data set.
+	//
 	// DataSetId is a required field
 	DataSetId *string `location:"uri" locationName:"DataSetId" type:"string" required:"true"`
 
+	// The unique identifier for a revision.
+	//
 	// RevisionId is a required field
 	RevisionId *string `location:"uri" locationName:"RevisionId" type:"string" required:"true"`
 }
@@ -6265,35 +6759,49 @@ func (s *GetRevisionInput) SetRevisionId(v string) *GetRevisionInput {
 type GetRevisionOutput struct {
 	_ struct{} `type:"structure"`
 
-	// An Amazon Resource Name (ARN) that uniquely identifies an AWS resource.
+	// The ARN for the revision.
 	Arn *string `type:"string"`
 
+	// An optional comment about the revision.
 	Comment *string `type:"string"`
 
-	// Dates and times in AWS Data Exchange are recorded in ISO 8601 format.
+	// The date and time that the revision was created, in ISO 8601 format.
 	CreatedAt *time.Time `type:"timestamp" timestampFormat:"iso8601"`
 
-	// A unique identifier.
+	// The unique identifier for the data set associated with the data set revision.
 	DataSetId *string `type:"string"`
 
+	// To publish a revision to a data set in a product, the revision must first
+	// be finalized. Finalizing a revision tells AWS Data Exchange that your changes
+	// to the assets in the revision are complete. After it's in this read-only
+	// state, you can publish the revision to your products. Finalized revisions
+	// can be published through the AWS Data Exchange console or the AWS Marketplace
+	// Catalog API, using the StartChangeSet AWS Marketplace Catalog API action.
+	// When using the API, revisions are uniquely identified by their ARN.
 	Finalized *bool `type:"boolean"`
 
-	// A unique identifier.
+	// The unique identifier for the revision.
 	Id *string `type:"string"`
 
+	// A required comment to inform subscribers of the reason their access to the
+	// revision was revoked.
 	RevocationComment *string `min:"10" type:"string"`
 
+	// A status indicating that subscribers' access to the revision was revoked.
 	Revoked *bool `type:"boolean"`
 
-	// Dates and times in AWS Data Exchange are recorded in ISO 8601 format.
+	// The date and time that the revision was revoked, in ISO 8601 format.
 	RevokedAt *time.Time `type:"timestamp" timestampFormat:"iso8601"`
 
-	// A unique identifier.
+	// The revision ID of the owned revision corresponding to the entitled revision
+	// being viewed. This parameter is returned when a revision owner is viewing
+	// the entitled copy of its owned revision.
 	SourceId *string `type:"string"`
 
+	// The tags for the revision.
 	Tags map[string]*string `type:"map"`
 
-	// Dates and times in AWS Data Exchange are recorded in ISO 8601 format.
+	// The date and time that the revision was last updated, in ISO 8601 format.
 	UpdatedAt *time.Time `type:"timestamp" timestampFormat:"iso8601"`
 }
 
@@ -6681,11 +7189,11 @@ func (s *ImportAssetFromApiGatewayApiResponseDetails) SetStage(v string) *Import
 	return s
 }
 
-// Information about the job error.
+// Details about the job error.
 type ImportAssetFromSignedUrlJobErrorDetails struct {
 	_ struct{} `type:"structure"`
 
-	// Information about the job error.
+	// Details about the job error.
 	//
 	// AssetName is a required field
 	AssetName *string `type:"string" required:"true"`
@@ -6719,8 +7227,8 @@ func (s *ImportAssetFromSignedUrlJobErrorDetails) SetAssetName(v string) *Import
 type ImportAssetFromSignedUrlRequestDetails struct {
 	_ struct{} `type:"structure"`
 
-	// The name of the asset. When importing from Amazon S3, the S3 object key is
-	// used as the asset name.
+	// The name of the asset. When importing from Amazon S3, the Amazon S3 object
+	// key is used as the asset name.
 	//
 	// AssetName is a required field
 	AssetName *string `type:"string" required:"true"`
@@ -6894,6 +7402,213 @@ func (s *ImportAssetFromSignedUrlResponseDetails) SetSignedUrlExpiresAt(v time.T
 	return s
 }
 
+// Details about the assets imported from an AWS Lake Formation tag policy request.
+type ImportAssetsFromLakeFormationTagPolicyRequestDetails struct {
+	_ struct{} `type:"structure"`
+
+	// The identifier for the AWS Glue Data Catalog.
+	//
+	// CatalogId is a required field
+	CatalogId *string `min:"12" type:"string" required:"true"`
+
+	// The unique identifier for the data set associated with this import job.
+	//
+	// DataSetId is a required field
+	DataSetId *string `type:"string" required:"true"`
+
+	// A structure for the database object.
+	Database *DatabaseLFTagPolicyAndPermissions `type:"structure"`
+
+	// The unique identifier for the revision associated with this import job.
+	//
+	// RevisionId is a required field
+	RevisionId *string `type:"string" required:"true"`
+
+	// The IAM role's ARN that allows AWS Data Exchange to assume the role and grant
+	// and revoke permissions of subscribers to AWS Lake Formation data permissions.
+	//
+	// RoleArn is a required field
+	RoleArn *string `type:"string" required:"true"`
+
+	// A structure for the table object.
+	Table *TableLFTagPolicyAndPermissions `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ImportAssetsFromLakeFormationTagPolicyRequestDetails) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ImportAssetsFromLakeFormationTagPolicyRequestDetails) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ImportAssetsFromLakeFormationTagPolicyRequestDetails) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ImportAssetsFromLakeFormationTagPolicyRequestDetails"}
+	if s.CatalogId == nil {
+		invalidParams.Add(request.NewErrParamRequired("CatalogId"))
+	}
+	if s.CatalogId != nil && len(*s.CatalogId) < 12 {
+		invalidParams.Add(request.NewErrParamMinLen("CatalogId", 12))
+	}
+	if s.DataSetId == nil {
+		invalidParams.Add(request.NewErrParamRequired("DataSetId"))
+	}
+	if s.RevisionId == nil {
+		invalidParams.Add(request.NewErrParamRequired("RevisionId"))
+	}
+	if s.RoleArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("RoleArn"))
+	}
+	if s.Database != nil {
+		if err := s.Database.Validate(); err != nil {
+			invalidParams.AddNested("Database", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.Table != nil {
+		if err := s.Table.Validate(); err != nil {
+			invalidParams.AddNested("Table", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetCatalogId sets the CatalogId field's value.
+func (s *ImportAssetsFromLakeFormationTagPolicyRequestDetails) SetCatalogId(v string) *ImportAssetsFromLakeFormationTagPolicyRequestDetails {
+	s.CatalogId = &v
+	return s
+}
+
+// SetDataSetId sets the DataSetId field's value.
+func (s *ImportAssetsFromLakeFormationTagPolicyRequestDetails) SetDataSetId(v string) *ImportAssetsFromLakeFormationTagPolicyRequestDetails {
+	s.DataSetId = &v
+	return s
+}
+
+// SetDatabase sets the Database field's value.
+func (s *ImportAssetsFromLakeFormationTagPolicyRequestDetails) SetDatabase(v *DatabaseLFTagPolicyAndPermissions) *ImportAssetsFromLakeFormationTagPolicyRequestDetails {
+	s.Database = v
+	return s
+}
+
+// SetRevisionId sets the RevisionId field's value.
+func (s *ImportAssetsFromLakeFormationTagPolicyRequestDetails) SetRevisionId(v string) *ImportAssetsFromLakeFormationTagPolicyRequestDetails {
+	s.RevisionId = &v
+	return s
+}
+
+// SetRoleArn sets the RoleArn field's value.
+func (s *ImportAssetsFromLakeFormationTagPolicyRequestDetails) SetRoleArn(v string) *ImportAssetsFromLakeFormationTagPolicyRequestDetails {
+	s.RoleArn = &v
+	return s
+}
+
+// SetTable sets the Table field's value.
+func (s *ImportAssetsFromLakeFormationTagPolicyRequestDetails) SetTable(v *TableLFTagPolicyAndPermissions) *ImportAssetsFromLakeFormationTagPolicyRequestDetails {
+	s.Table = v
+	return s
+}
+
+// Details from an import AWS Lake Formation tag policy job response.
+type ImportAssetsFromLakeFormationTagPolicyResponseDetails struct {
+	_ struct{} `type:"structure"`
+
+	// The identifier for the AWS Glue Data Catalog.
+	//
+	// CatalogId is a required field
+	CatalogId *string `min:"12" type:"string" required:"true"`
+
+	// The unique identifier for the data set associated with this import job.
+	//
+	// DataSetId is a required field
+	DataSetId *string `type:"string" required:"true"`
+
+	// A structure for the database object.
+	Database *DatabaseLFTagPolicyAndPermissions `type:"structure"`
+
+	// The unique identifier for the revision associated with this import job.
+	//
+	// RevisionId is a required field
+	RevisionId *string `type:"string" required:"true"`
+
+	// The IAM role's ARN that allows AWS Data Exchange to assume the role and grant
+	// and revoke permissions to AWS Lake Formation data permissions.
+	//
+	// RoleArn is a required field
+	RoleArn *string `type:"string" required:"true"`
+
+	// A structure for the table object.
+	Table *TableLFTagPolicyAndPermissions `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ImportAssetsFromLakeFormationTagPolicyResponseDetails) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ImportAssetsFromLakeFormationTagPolicyResponseDetails) GoString() string {
+	return s.String()
+}
+
+// SetCatalogId sets the CatalogId field's value.
+func (s *ImportAssetsFromLakeFormationTagPolicyResponseDetails) SetCatalogId(v string) *ImportAssetsFromLakeFormationTagPolicyResponseDetails {
+	s.CatalogId = &v
+	return s
+}
+
+// SetDataSetId sets the DataSetId field's value.
+func (s *ImportAssetsFromLakeFormationTagPolicyResponseDetails) SetDataSetId(v string) *ImportAssetsFromLakeFormationTagPolicyResponseDetails {
+	s.DataSetId = &v
+	return s
+}
+
+// SetDatabase sets the Database field's value.
+func (s *ImportAssetsFromLakeFormationTagPolicyResponseDetails) SetDatabase(v *DatabaseLFTagPolicyAndPermissions) *ImportAssetsFromLakeFormationTagPolicyResponseDetails {
+	s.Database = v
+	return s
+}
+
+// SetRevisionId sets the RevisionId field's value.
+func (s *ImportAssetsFromLakeFormationTagPolicyResponseDetails) SetRevisionId(v string) *ImportAssetsFromLakeFormationTagPolicyResponseDetails {
+	s.RevisionId = &v
+	return s
+}
+
+// SetRoleArn sets the RoleArn field's value.
+func (s *ImportAssetsFromLakeFormationTagPolicyResponseDetails) SetRoleArn(v string) *ImportAssetsFromLakeFormationTagPolicyResponseDetails {
+	s.RoleArn = &v
+	return s
+}
+
+// SetTable sets the Table field's value.
+func (s *ImportAssetsFromLakeFormationTagPolicyResponseDetails) SetTable(v *TableLFTagPolicyAndPermissions) *ImportAssetsFromLakeFormationTagPolicyResponseDetails {
+	s.Table = v
+	return s
+}
+
 // Details from an import from Amazon Redshift datashare request.
 type ImportAssetsFromRedshiftDataSharesRequestDetails struct {
 	_ struct{} `type:"structure"`
@@ -7039,7 +7754,7 @@ func (s *ImportAssetsFromRedshiftDataSharesResponseDetails) SetRevisionId(v stri
 type ImportAssetsFromS3RequestDetails struct {
 	_ struct{} `type:"structure"`
 
-	// Is a list of S3 bucket and object key pairs.
+	// Is a list of Amazon S3 bucket and object key pairs.
 	//
 	// AssetSources is a required field
 	AssetSources []*AssetSourceEntry `type:"list" required:"true"`
@@ -7444,14 +8159,373 @@ func (s *JobError) SetResourceType(v string) *JobError {
 	return s
 }
 
+// The Amazon Resource Name (ARN) of the AWS KMS key used to encrypt the shared
+// S3 objects.
+type KmsKeyToGrant struct {
+	_ struct{} `type:"structure"`
+
+	// The AWS KMS CMK (Key Management System Customer Managed Key) used to encrypt
+	// S3 objects in the shared S3 Bucket. AWS Data exchange will create a KMS grant
+	// for each subscriber to allow them to access and decrypt their entitled data
+	// that is encrypted using this KMS key specified.
+	//
+	// KmsKeyArn is a required field
+	KmsKeyArn *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s KmsKeyToGrant) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s KmsKeyToGrant) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *KmsKeyToGrant) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "KmsKeyToGrant"}
+	if s.KmsKeyArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("KmsKeyArn"))
+	}
+	if s.KmsKeyArn != nil && len(*s.KmsKeyArn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("KmsKeyArn", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetKmsKeyArn sets the KmsKeyArn field's value.
+func (s *KmsKeyToGrant) SetKmsKeyArn(v string) *KmsKeyToGrant {
+	s.KmsKeyArn = &v
+	return s
+}
+
+// Details about the AWS Lake Formation resource (Table or Database) included
+// in the AWS Lake Formation data permission.
+type LFResourceDetails struct {
+	_ struct{} `type:"structure"`
+
+	// Details about the database resource included in the AWS Lake Formation data
+	// permission.
+	Database *DatabaseLFTagPolicy `type:"structure"`
+
+	// Details about the table resource included in the AWS Lake Formation data
+	// permission.
+	Table *TableLFTagPolicy `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LFResourceDetails) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LFResourceDetails) GoString() string {
+	return s.String()
+}
+
+// SetDatabase sets the Database field's value.
+func (s *LFResourceDetails) SetDatabase(v *DatabaseLFTagPolicy) *LFResourceDetails {
+	s.Database = v
+	return s
+}
+
+// SetTable sets the Table field's value.
+func (s *LFResourceDetails) SetTable(v *TableLFTagPolicy) *LFResourceDetails {
+	s.Table = v
+	return s
+}
+
+// A structure that allows an LF-admin to grant permissions on certain conditions.
+type LFTag struct {
+	_ struct{} `type:"structure"`
+
+	// The key name for the LF-tag.
+	//
+	// TagKey is a required field
+	TagKey *string `type:"string" required:"true"`
+
+	// A list of LF-tag values.
+	//
+	// TagValues is a required field
+	TagValues []*string `type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LFTag) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LFTag) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *LFTag) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "LFTag"}
+	if s.TagKey == nil {
+		invalidParams.Add(request.NewErrParamRequired("TagKey"))
+	}
+	if s.TagValues == nil {
+		invalidParams.Add(request.NewErrParamRequired("TagValues"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetTagKey sets the TagKey field's value.
+func (s *LFTag) SetTagKey(v string) *LFTag {
+	s.TagKey = &v
+	return s
+}
+
+// SetTagValues sets the TagValues field's value.
+func (s *LFTag) SetTagValues(v []*string) *LFTag {
+	s.TagValues = v
+	return s
+}
+
+// Details about the LF-tag policy.
+type LFTagPolicyDetails struct {
+	_ struct{} `type:"structure"`
+
+	// The identifier for the AWS Glue Data Catalog.
+	//
+	// CatalogId is a required field
+	CatalogId *string `min:"12" type:"string" required:"true"`
+
+	// Details for the Lake Formation Resources included in the LF-tag policy.
+	//
+	// ResourceDetails is a required field
+	ResourceDetails *LFResourceDetails `type:"structure" required:"true"`
+
+	// The resource type for which the LF-tag policy applies.
+	//
+	// ResourceType is a required field
+	ResourceType *string `type:"string" required:"true" enum:"LFResourceType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LFTagPolicyDetails) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LFTagPolicyDetails) GoString() string {
+	return s.String()
+}
+
+// SetCatalogId sets the CatalogId field's value.
+func (s *LFTagPolicyDetails) SetCatalogId(v string) *LFTagPolicyDetails {
+	s.CatalogId = &v
+	return s
+}
+
+// SetResourceDetails sets the ResourceDetails field's value.
+func (s *LFTagPolicyDetails) SetResourceDetails(v *LFResourceDetails) *LFTagPolicyDetails {
+	s.ResourceDetails = v
+	return s
+}
+
+// SetResourceType sets the ResourceType field's value.
+func (s *LFTagPolicyDetails) SetResourceType(v string) *LFTagPolicyDetails {
+	s.ResourceType = &v
+	return s
+}
+
+// The AWS Lake Formation data permission asset.
+type LakeFormationDataPermissionAsset struct {
+	_ struct{} `type:"structure"`
+
+	// Details about the AWS Lake Formation data permission.
+	//
+	// LakeFormationDataPermissionDetails is a required field
+	LakeFormationDataPermissionDetails *LakeFormationDataPermissionDetails `type:"structure" required:"true"`
+
+	// The data permission type.
+	//
+	// LakeFormationDataPermissionType is a required field
+	LakeFormationDataPermissionType *string `type:"string" required:"true" enum:"LakeFormationDataPermissionType"`
+
+	// The permissions granted to the subscribers on the resource.
+	//
+	// Permissions is a required field
+	Permissions []*string `type:"list" required:"true" enum:"LFPermission"`
+
+	// The IAM role's ARN that allows AWS Data Exchange to assume the role and grant
+	// and revoke permissions to AWS Lake Formation data permissions.
+	RoleArn *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LakeFormationDataPermissionAsset) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LakeFormationDataPermissionAsset) GoString() string {
+	return s.String()
+}
+
+// SetLakeFormationDataPermissionDetails sets the LakeFormationDataPermissionDetails field's value.
+func (s *LakeFormationDataPermissionAsset) SetLakeFormationDataPermissionDetails(v *LakeFormationDataPermissionDetails) *LakeFormationDataPermissionAsset {
+	s.LakeFormationDataPermissionDetails = v
+	return s
+}
+
+// SetLakeFormationDataPermissionType sets the LakeFormationDataPermissionType field's value.
+func (s *LakeFormationDataPermissionAsset) SetLakeFormationDataPermissionType(v string) *LakeFormationDataPermissionAsset {
+	s.LakeFormationDataPermissionType = &v
+	return s
+}
+
+// SetPermissions sets the Permissions field's value.
+func (s *LakeFormationDataPermissionAsset) SetPermissions(v []*string) *LakeFormationDataPermissionAsset {
+	s.Permissions = v
+	return s
+}
+
+// SetRoleArn sets the RoleArn field's value.
+func (s *LakeFormationDataPermissionAsset) SetRoleArn(v string) *LakeFormationDataPermissionAsset {
+	s.RoleArn = &v
+	return s
+}
+
+// Details about the AWS Lake Formation data permission.
+type LakeFormationDataPermissionDetails struct {
+	_ struct{} `type:"structure"`
+
+	// Details about the LF-tag policy.
+	LFTagPolicy *LFTagPolicyDetails `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LakeFormationDataPermissionDetails) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LakeFormationDataPermissionDetails) GoString() string {
+	return s.String()
+}
+
+// SetLFTagPolicy sets the LFTagPolicy field's value.
+func (s *LakeFormationDataPermissionDetails) SetLFTagPolicy(v *LFTagPolicyDetails) *LakeFormationDataPermissionDetails {
+	s.LFTagPolicy = v
+	return s
+}
+
+// Extra details specific to the affected scope in this LF data set.
+type LakeFormationTagPolicyDetails struct {
+	_ struct{} `type:"structure"`
+
+	// The underlying Glue database that the notification is referring to.
+	Database *string `type:"string"`
+
+	// The underlying Glue table that the notification is referring to.
+	Table *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LakeFormationTagPolicyDetails) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LakeFormationTagPolicyDetails) GoString() string {
+	return s.String()
+}
+
+// SetDatabase sets the Database field's value.
+func (s *LakeFormationTagPolicyDetails) SetDatabase(v string) *LakeFormationTagPolicyDetails {
+	s.Database = &v
+	return s
+}
+
+// SetTable sets the Table field's value.
+func (s *LakeFormationTagPolicyDetails) SetTable(v string) *LakeFormationTagPolicyDetails {
+	s.Table = &v
+	return s
+}
+
 type ListDataSetRevisionsInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
+	// The unique identifier for a data set.
+	//
 	// DataSetId is a required field
 	DataSetId *string `location:"uri" locationName:"DataSetId" type:"string" required:"true"`
 
+	// The maximum number of results returned by a single call.
 	MaxResults *int64 `location:"querystring" locationName:"maxResults" min:"1" type:"integer"`
 
+	// The token value retrieved from a previous call to access the next page of
+	// results.
 	NextToken *string `location:"querystring" locationName:"nextToken" type:"string"`
 }
 
@@ -7517,6 +8591,7 @@ type ListDataSetRevisionsOutput struct {
 	// results.
 	NextToken *string `type:"string"`
 
+	// The asset objects listed by the request.
 	Revisions []*RevisionEntry `type:"list"`
 }
 
@@ -7553,10 +8628,15 @@ func (s *ListDataSetRevisionsOutput) SetRevisions(v []*RevisionEntry) *ListDataS
 type ListDataSetsInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
+	// The maximum number of results returned by a single call.
 	MaxResults *int64 `location:"querystring" locationName:"maxResults" min:"1" type:"integer"`
 
+	// The token value retrieved from a previous call to access the next page of
+	// results.
 	NextToken *string `location:"querystring" locationName:"nextToken" type:"string"`
 
+	// A property that defines the data set as OWNED by the account (for providers)
+	// or ENTITLED to the account (for subscribers).
 	Origin *string `location:"querystring" locationName:"origin" type:"string"`
 }
 
@@ -7612,6 +8692,7 @@ func (s *ListDataSetsInput) SetOrigin(v string) *ListDataSetsInput {
 type ListDataSetsOutput struct {
 	_ struct{} `type:"structure"`
 
+	// The data set objects listed by the request.
 	DataSets []*DataSetEntry `type:"list"`
 
 	// The token value retrieved from a previous call to access the next page of
@@ -7652,10 +8733,14 @@ func (s *ListDataSetsOutput) SetNextToken(v string) *ListDataSetsOutput {
 type ListEventActionsInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
+	// The unique identifier for the event source.
 	EventSourceId *string `location:"querystring" locationName:"eventSourceId" type:"string"`
 
+	// The maximum number of results returned by a single call.
 	MaxResults *int64 `location:"querystring" locationName:"maxResults" min:"1" type:"integer"`
 
+	// The token value retrieved from a previous call to access the next page of
+	// results.
 	NextToken *string `location:"querystring" locationName:"nextToken" type:"string"`
 }
 
@@ -7711,6 +8796,7 @@ func (s *ListEventActionsInput) SetNextToken(v string) *ListEventActionsInput {
 type ListEventActionsOutput struct {
 	_ struct{} `type:"structure"`
 
+	// The event action objects listed by the request.
 	EventActions []*EventActionEntry `type:"list"`
 
 	// The token value retrieved from a previous call to access the next page of
@@ -7751,12 +8837,17 @@ func (s *ListEventActionsOutput) SetNextToken(v string) *ListEventActionsOutput 
 type ListJobsInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
+	// The unique identifier for a data set.
 	DataSetId *string `location:"querystring" locationName:"dataSetId" type:"string"`
 
+	// The maximum number of results returned by a single call.
 	MaxResults *int64 `location:"querystring" locationName:"maxResults" min:"1" type:"integer"`
 
+	// The token value retrieved from a previous call to access the next page of
+	// results.
 	NextToken *string `location:"querystring" locationName:"nextToken" type:"string"`
 
+	// The unique identifier for a revision.
 	RevisionId *string `location:"querystring" locationName:"revisionId" type:"string"`
 }
 
@@ -7818,6 +8909,7 @@ func (s *ListJobsInput) SetRevisionId(v string) *ListJobsInput {
 type ListJobsOutput struct {
 	_ struct{} `type:"structure"`
 
+	// The jobs listed by the request.
 	Jobs []*JobEntry `type:"list"`
 
 	// The token value retrieved from a previous call to access the next page of
@@ -7858,13 +8950,20 @@ func (s *ListJobsOutput) SetNextToken(v string) *ListJobsOutput {
 type ListRevisionAssetsInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
+	// The unique identifier for a data set.
+	//
 	// DataSetId is a required field
 	DataSetId *string `location:"uri" locationName:"DataSetId" type:"string" required:"true"`
 
+	// The maximum number of results returned by a single call.
 	MaxResults *int64 `location:"querystring" locationName:"maxResults" min:"1" type:"integer"`
 
+	// The token value retrieved from a previous call to access the next page of
+	// results.
 	NextToken *string `location:"querystring" locationName:"nextToken" type:"string"`
 
+	// The unique identifier for a revision.
+	//
 	// RevisionId is a required field
 	RevisionId *string `location:"uri" locationName:"RevisionId" type:"string" required:"true"`
 }
@@ -7939,6 +9038,7 @@ func (s *ListRevisionAssetsInput) SetRevisionId(v string) *ListRevisionAssetsInp
 type ListRevisionAssetsOutput struct {
 	_ struct{} `type:"structure"`
 
+	// The asset objects listed by the request.
 	Assets []*AssetEntry `type:"list"`
 
 	// The token value retrieved from a previous call to access the next page of
@@ -7979,8 +9079,10 @@ func (s *ListRevisionAssetsOutput) SetNextToken(v string) *ListRevisionAssetsOut
 type ListTagsForResourceInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
+	// An Amazon Resource Name (ARN) that uniquely identifies an AWS resource.
+	//
 	// ResourceArn is a required field
-	ResourceArn *string `location:"uri" locationName:"resource-arn" type:"string" required:"true"`
+	ResourceArn *string `location:"uri" locationName:"ResourceArn" type:"string" required:"true"`
 }
 
 // String returns the string representation.
@@ -8026,6 +9128,7 @@ func (s *ListTagsForResourceInput) SetResourceArn(v string) *ListTagsForResource
 type ListTagsForResourceOutput struct {
 	_ struct{} `type:"structure"`
 
+	// A label that consists of a customer-defined key and an optional value.
 	Tags map[string]*string `locationName:"tags" type:"map"`
 }
 
@@ -8053,14 +9156,82 @@ func (s *ListTagsForResourceOutput) SetTags(v map[string]*string) *ListTagsForRe
 	return s
 }
 
-// Information about the origin of the data set.
+// Extra details specific to this notification.
+type NotificationDetails struct {
+	_ struct{} `type:"structure"`
+
+	// Extra details specific to a data update type notification.
+	DataUpdate *DataUpdateRequestDetails `type:"structure"`
+
+	// Extra details specific to a deprecation type notification.
+	Deprecation *DeprecationRequestDetails `type:"structure"`
+
+	// Extra details specific to a schema change type notification.
+	SchemaChange *SchemaChangeRequestDetails `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s NotificationDetails) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s NotificationDetails) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *NotificationDetails) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "NotificationDetails"}
+	if s.Deprecation != nil {
+		if err := s.Deprecation.Validate(); err != nil {
+			invalidParams.AddNested("Deprecation", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.SchemaChange != nil {
+		if err := s.SchemaChange.Validate(); err != nil {
+			invalidParams.AddNested("SchemaChange", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDataUpdate sets the DataUpdate field's value.
+func (s *NotificationDetails) SetDataUpdate(v *DataUpdateRequestDetails) *NotificationDetails {
+	s.DataUpdate = v
+	return s
+}
+
+// SetDeprecation sets the Deprecation field's value.
+func (s *NotificationDetails) SetDeprecation(v *DeprecationRequestDetails) *NotificationDetails {
+	s.Deprecation = v
+	return s
+}
+
+// SetSchemaChange sets the SchemaChange field's value.
+func (s *NotificationDetails) SetSchemaChange(v *SchemaChangeRequestDetails) *NotificationDetails {
+	s.SchemaChange = v
+	return s
+}
+
+// Details about the origin of the data set.
 type OriginDetails struct {
 	_ struct{} `type:"structure"`
 
 	// The product ID of the origin of the data set.
-	//
-	// ProductId is a required field
-	ProductId *string `type:"string" required:"true"`
+	ProductId *string `type:"string"`
 }
 
 // String returns the string representation.
@@ -8168,9 +9339,111 @@ func (s *RedshiftDataShareAssetSourceEntry) SetDataShareArn(v string) *RedshiftD
 	return s
 }
 
+// Extra details specific to the affected scope in this Redshift data set.
+type RedshiftDataShareDetails struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the underlying Redshift data share that is being affected by this
+	// notification.
+	//
+	// Arn is a required field
+	Arn *string `type:"string" required:"true"`
+
+	// The database name in the Redshift data share that is being affected by this
+	// notification.
+	//
+	// Database is a required field
+	Database *string `type:"string" required:"true"`
+
+	// A function name in the Redshift database that is being affected by this notification.
+	Function *string `type:"string"`
+
+	// A schema name in the Redshift database that is being affected by this notification.
+	Schema *string `type:"string"`
+
+	// A table name in the Redshift database that is being affected by this notification.
+	Table *string `type:"string"`
+
+	// A view name in the Redshift database that is being affected by this notification.
+	View *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RedshiftDataShareDetails) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RedshiftDataShareDetails) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *RedshiftDataShareDetails) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "RedshiftDataShareDetails"}
+	if s.Arn == nil {
+		invalidParams.Add(request.NewErrParamRequired("Arn"))
+	}
+	if s.Database == nil {
+		invalidParams.Add(request.NewErrParamRequired("Database"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetArn sets the Arn field's value.
+func (s *RedshiftDataShareDetails) SetArn(v string) *RedshiftDataShareDetails {
+	s.Arn = &v
+	return s
+}
+
+// SetDatabase sets the Database field's value.
+func (s *RedshiftDataShareDetails) SetDatabase(v string) *RedshiftDataShareDetails {
+	s.Database = &v
+	return s
+}
+
+// SetFunction sets the Function field's value.
+func (s *RedshiftDataShareDetails) SetFunction(v string) *RedshiftDataShareDetails {
+	s.Function = &v
+	return s
+}
+
+// SetSchema sets the Schema field's value.
+func (s *RedshiftDataShareDetails) SetSchema(v string) *RedshiftDataShareDetails {
+	s.Schema = &v
+	return s
+}
+
+// SetTable sets the Table field's value.
+func (s *RedshiftDataShareDetails) SetTable(v string) *RedshiftDataShareDetails {
+	s.Table = &v
+	return s
+}
+
+// SetView sets the View field's value.
+func (s *RedshiftDataShareDetails) SetView(v string) *RedshiftDataShareDetails {
+	s.View = &v
+	return s
+}
+
 // The details for the request.
 type RequestDetails struct {
 	_ struct{} `type:"structure"`
+
+	// Details of the request to create S3 data access from the Amazon S3 bucket.
+	CreateS3DataAccessFromS3Bucket *CreateS3DataAccessFromS3BucketRequestDetails `type:"structure"`
 
 	// Details about the export to signed URL request.
 	ExportAssetToSignedUrl *ExportAssetToSignedUrlRequestDetails `type:"structure"`
@@ -8181,16 +9454,19 @@ type RequestDetails struct {
 	// Details about the export to Amazon S3 request.
 	ExportRevisionsToS3 *ExportRevisionsToS3RequestDetails `type:"structure"`
 
-	// Information about the import asset from API Gateway API request.
+	// Details about the import from signed URL request.
 	ImportAssetFromApiGatewayApi *ImportAssetFromApiGatewayApiRequestDetails `type:"structure"`
 
-	// Details about the import from signed URL request.
+	// Details about the import from Amazon S3 request.
 	ImportAssetFromSignedUrl *ImportAssetFromSignedUrlRequestDetails `type:"structure"`
+
+	// Request details for the ImportAssetsFromLakeFormationTagPolicy job.
+	ImportAssetsFromLakeFormationTagPolicy *ImportAssetsFromLakeFormationTagPolicyRequestDetails `type:"structure"`
 
 	// Details from an import from Amazon Redshift datashare request.
 	ImportAssetsFromRedshiftDataShares *ImportAssetsFromRedshiftDataSharesRequestDetails `type:"structure"`
 
-	// Details about the import from Amazon S3 request.
+	// Details about the import asset from API Gateway API request.
 	ImportAssetsFromS3 *ImportAssetsFromS3RequestDetails `type:"structure"`
 }
 
@@ -8215,6 +9491,11 @@ func (s RequestDetails) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *RequestDetails) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "RequestDetails"}
+	if s.CreateS3DataAccessFromS3Bucket != nil {
+		if err := s.CreateS3DataAccessFromS3Bucket.Validate(); err != nil {
+			invalidParams.AddNested("CreateS3DataAccessFromS3Bucket", err.(request.ErrInvalidParams))
+		}
+	}
 	if s.ExportAssetToSignedUrl != nil {
 		if err := s.ExportAssetToSignedUrl.Validate(); err != nil {
 			invalidParams.AddNested("ExportAssetToSignedUrl", err.(request.ErrInvalidParams))
@@ -8240,6 +9521,11 @@ func (s *RequestDetails) Validate() error {
 			invalidParams.AddNested("ImportAssetFromSignedUrl", err.(request.ErrInvalidParams))
 		}
 	}
+	if s.ImportAssetsFromLakeFormationTagPolicy != nil {
+		if err := s.ImportAssetsFromLakeFormationTagPolicy.Validate(); err != nil {
+			invalidParams.AddNested("ImportAssetsFromLakeFormationTagPolicy", err.(request.ErrInvalidParams))
+		}
+	}
 	if s.ImportAssetsFromRedshiftDataShares != nil {
 		if err := s.ImportAssetsFromRedshiftDataShares.Validate(); err != nil {
 			invalidParams.AddNested("ImportAssetsFromRedshiftDataShares", err.(request.ErrInvalidParams))
@@ -8255,6 +9541,12 @@ func (s *RequestDetails) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetCreateS3DataAccessFromS3Bucket sets the CreateS3DataAccessFromS3Bucket field's value.
+func (s *RequestDetails) SetCreateS3DataAccessFromS3Bucket(v *CreateS3DataAccessFromS3BucketRequestDetails) *RequestDetails {
+	s.CreateS3DataAccessFromS3Bucket = v
+	return s
 }
 
 // SetExportAssetToSignedUrl sets the ExportAssetToSignedUrl field's value.
@@ -8284,6 +9576,12 @@ func (s *RequestDetails) SetImportAssetFromApiGatewayApi(v *ImportAssetFromApiGa
 // SetImportAssetFromSignedUrl sets the ImportAssetFromSignedUrl field's value.
 func (s *RequestDetails) SetImportAssetFromSignedUrl(v *ImportAssetFromSignedUrlRequestDetails) *RequestDetails {
 	s.ImportAssetFromSignedUrl = v
+	return s
+}
+
+// SetImportAssetsFromLakeFormationTagPolicy sets the ImportAssetsFromLakeFormationTagPolicy field's value.
+func (s *RequestDetails) SetImportAssetsFromLakeFormationTagPolicy(v *ImportAssetsFromLakeFormationTagPolicyRequestDetails) *RequestDetails {
+	s.ImportAssetsFromLakeFormationTagPolicy = v
 	return s
 }
 
@@ -8374,6 +9672,9 @@ func (s *ResourceNotFoundException) RequestID() string {
 type ResponseDetails struct {
 	_ struct{} `type:"structure"`
 
+	// Response details from the CreateS3DataAccessFromS3Bucket job.
+	CreateS3DataAccessFromS3Bucket *CreateS3DataAccessFromS3BucketResponseDetails `type:"structure"`
+
 	// Details for the export to signed URL response.
 	ExportAssetToSignedUrl *ExportAssetToSignedUrlResponseDetails `type:"structure"`
 
@@ -8388,6 +9689,9 @@ type ResponseDetails struct {
 
 	// Details for the import from signed URL response.
 	ImportAssetFromSignedUrl *ImportAssetFromSignedUrlResponseDetails `type:"structure"`
+
+	// Response details from the ImportAssetsFromLakeFormationTagPolicy job.
+	ImportAssetsFromLakeFormationTagPolicy *ImportAssetsFromLakeFormationTagPolicyResponseDetails `type:"structure"`
 
 	// Details from an import from Amazon Redshift datashare response.
 	ImportAssetsFromRedshiftDataShares *ImportAssetsFromRedshiftDataSharesResponseDetails `type:"structure"`
@@ -8412,6 +9716,12 @@ func (s ResponseDetails) String() string {
 // value will be replaced with "sensitive".
 func (s ResponseDetails) GoString() string {
 	return s.String()
+}
+
+// SetCreateS3DataAccessFromS3Bucket sets the CreateS3DataAccessFromS3Bucket field's value.
+func (s *ResponseDetails) SetCreateS3DataAccessFromS3Bucket(v *CreateS3DataAccessFromS3BucketResponseDetails) *ResponseDetails {
+	s.CreateS3DataAccessFromS3Bucket = v
+	return s
 }
 
 // SetExportAssetToSignedUrl sets the ExportAssetToSignedUrl field's value.
@@ -8444,6 +9754,12 @@ func (s *ResponseDetails) SetImportAssetFromSignedUrl(v *ImportAssetFromSignedUr
 	return s
 }
 
+// SetImportAssetsFromLakeFormationTagPolicy sets the ImportAssetsFromLakeFormationTagPolicy field's value.
+func (s *ResponseDetails) SetImportAssetsFromLakeFormationTagPolicy(v *ImportAssetsFromLakeFormationTagPolicyResponseDetails) *ResponseDetails {
+	s.ImportAssetsFromLakeFormationTagPolicy = v
+	return s
+}
+
 // SetImportAssetsFromRedshiftDataShares sets the ImportAssetsFromRedshiftDataShares field's value.
 func (s *ResponseDetails) SetImportAssetsFromRedshiftDataShares(v *ImportAssetsFromRedshiftDataSharesResponseDetails) *ResponseDetails {
 	s.ImportAssetsFromRedshiftDataShares = v
@@ -8460,7 +9776,7 @@ func (s *ResponseDetails) SetImportAssetsFromS3(v *ImportAssetsFromS3ResponseDet
 type RevisionDestinationEntry struct {
 	_ struct{} `type:"structure"`
 
-	// The S3 bucket that is the destination for the assets in the revision.
+	// The Amazon S3 bucket that is the destination for the assets in the revision.
 	//
 	// Bucket is a required field
 	Bucket *string `type:"string" required:"true"`
@@ -8545,7 +9861,7 @@ type RevisionEntry struct {
 	// CreatedAt is a required field
 	CreatedAt *time.Time `type:"timestamp" timestampFormat:"iso8601" required:"true"`
 
-	// The unique identifier for the data set associated with this revision.
+	// The unique identifier for the data set associated with the data set revision.
 	//
 	// DataSetId is a required field
 	DataSetId *string `type:"string" required:"true"`
@@ -8553,12 +9869,10 @@ type RevisionEntry struct {
 	// To publish a revision to a data set in a product, the revision must first
 	// be finalized. Finalizing a revision tells AWS Data Exchange that your changes
 	// to the assets in the revision are complete. After it's in this read-only
-	// state, you can publish the revision to your products.
-	//
-	// Finalized revisions can be published through the AWS Data Exchange console
-	// or the AWS Marketplace Catalog API, using the StartChangeSet AWS Marketplace
-	// Catalog API action. When using the API, revisions are uniquely identified
-	// by their ARN.
+	// state, you can publish the revision to your products. Finalized revisions
+	// can be published through the AWS Data Exchange console or the AWS Marketplace
+	// Catalog API, using the StartChangeSet AWS Marketplace Catalog API action.
+	// When using the API, revisions are uniquely identified by their ARN.
 	Finalized *bool `type:"boolean"`
 
 	// The unique identifier for the revision.
@@ -8718,13 +10032,16 @@ func (s *RevisionPublished) SetDataSetId(v string) *RevisionPublished {
 	return s
 }
 
-// The request sent to revoke the revision.
 type RevokeRevisionInput struct {
 	_ struct{} `type:"structure"`
 
+	// The unique identifier for a data set.
+	//
 	// DataSetId is a required field
 	DataSetId *string `location:"uri" locationName:"DataSetId" type:"string" required:"true"`
 
+	// The unique identifier for a revision.
+	//
 	// RevisionId is a required field
 	RevisionId *string `location:"uri" locationName:"RevisionId" type:"string" required:"true"`
 
@@ -8802,33 +10119,46 @@ func (s *RevokeRevisionInput) SetRevocationComment(v string) *RevokeRevisionInpu
 type RevokeRevisionOutput struct {
 	_ struct{} `type:"structure"`
 
-	// An Amazon Resource Name (ARN) that uniquely identifies an AWS resource.
+	// The ARN for the revision.
 	Arn *string `type:"string"`
 
+	// An optional comment about the revision.
 	Comment *string `type:"string"`
 
-	// Dates and times in AWS Data Exchange are recorded in ISO 8601 format.
+	// The date and time that the revision was created, in ISO 8601 format.
 	CreatedAt *time.Time `type:"timestamp" timestampFormat:"iso8601"`
 
-	// A unique identifier.
+	// The unique identifier for the data set associated with the data set revision.
 	DataSetId *string `type:"string"`
 
+	// To publish a revision to a data set in a product, the revision must first
+	// be finalized. Finalizing a revision tells AWS Data Exchange that changes
+	// to the assets in the revision are complete. After it's in this read-only
+	// state, you can publish the revision to your products. Finalized revisions
+	// can be published through the AWS Data Exchange console or the AWS Marketplace
+	// Catalog API, using the StartChangeSet AWS Marketplace Catalog API action.
+	// When using the API, revisions are uniquely identified by their ARN.
 	Finalized *bool `type:"boolean"`
 
-	// A unique identifier.
+	// The unique identifier for the revision.
 	Id *string `type:"string"`
 
+	// A required comment to inform subscribers of the reason their access to the
+	// revision was revoked.
 	RevocationComment *string `min:"10" type:"string"`
 
+	// A status indicating that subscribers' access to the revision was revoked.
 	Revoked *bool `type:"boolean"`
 
-	// Dates and times in AWS Data Exchange are recorded in ISO 8601 format.
+	// The date and time that the revision was revoked, in ISO 8601 format.
 	RevokedAt *time.Time `type:"timestamp" timestampFormat:"iso8601"`
 
-	// A unique identifier.
+	// The revision ID of the owned revision corresponding to the entitled revision
+	// being viewed. This parameter is returned when a revision owner is viewing
+	// the entitled copy of its owned revision.
 	SourceId *string `type:"string"`
 
-	// Dates and times in AWS Data Exchange are recorded in ISO 8601 format.
+	// The date and time that the revision was last updated, in ISO 8601 format.
 	UpdatedAt *time.Time `type:"timestamp" timestampFormat:"iso8601"`
 }
 
@@ -8916,11 +10246,227 @@ func (s *RevokeRevisionOutput) SetUpdatedAt(v time.Time) *RevokeRevisionOutput {
 	return s
 }
 
-// The S3 object that is the asset.
+// The Amazon S3 data access that is the asset.
+type S3DataAccessAsset struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon S3 bucket hosting data to be shared in the S3 data access.
+	//
+	// Bucket is a required field
+	Bucket *string `type:"string" required:"true"`
+
+	// The Amazon S3 bucket used for hosting shared data in the Amazon S3 data access.
+	KeyPrefixes []*string `type:"list"`
+
+	// S3 keys made available using this asset.
+	Keys []*string `type:"list"`
+
+	// List of AWS KMS CMKs (Key Management System Customer Managed Keys) and ARNs
+	// used to encrypt S3 objects being shared in this S3 Data Access asset. Providers
+	// must include all AWS KMS keys used to encrypt these shared S3 objects.
+	KmsKeysToGrant []*KmsKeyToGrant `min:"1" type:"list"`
+
+	// The automatically-generated bucket-style alias for your Amazon S3 Access
+	// Point. Customers can access their entitled data using the S3 Access Point
+	// alias.
+	S3AccessPointAlias *string `type:"string"`
+
+	// The ARN for your Amazon S3 Access Point. Customers can also access their
+	// entitled data using the S3 Access Point ARN.
+	S3AccessPointArn *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s S3DataAccessAsset) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s S3DataAccessAsset) GoString() string {
+	return s.String()
+}
+
+// SetBucket sets the Bucket field's value.
+func (s *S3DataAccessAsset) SetBucket(v string) *S3DataAccessAsset {
+	s.Bucket = &v
+	return s
+}
+
+// SetKeyPrefixes sets the KeyPrefixes field's value.
+func (s *S3DataAccessAsset) SetKeyPrefixes(v []*string) *S3DataAccessAsset {
+	s.KeyPrefixes = v
+	return s
+}
+
+// SetKeys sets the Keys field's value.
+func (s *S3DataAccessAsset) SetKeys(v []*string) *S3DataAccessAsset {
+	s.Keys = v
+	return s
+}
+
+// SetKmsKeysToGrant sets the KmsKeysToGrant field's value.
+func (s *S3DataAccessAsset) SetKmsKeysToGrant(v []*KmsKeyToGrant) *S3DataAccessAsset {
+	s.KmsKeysToGrant = v
+	return s
+}
+
+// SetS3AccessPointAlias sets the S3AccessPointAlias field's value.
+func (s *S3DataAccessAsset) SetS3AccessPointAlias(v string) *S3DataAccessAsset {
+	s.S3AccessPointAlias = &v
+	return s
+}
+
+// SetS3AccessPointArn sets the S3AccessPointArn field's value.
+func (s *S3DataAccessAsset) SetS3AccessPointArn(v string) *S3DataAccessAsset {
+	s.S3AccessPointArn = &v
+	return s
+}
+
+// Source details for an Amazon S3 data access asset.
+type S3DataAccessAssetSourceEntry struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon S3 bucket used for hosting shared data in the Amazon S3 data access.
+	//
+	// Bucket is a required field
+	Bucket *string `type:"string" required:"true"`
+
+	// Organizes Amazon S3 asset key prefixes stored in an Amazon S3 bucket.
+	KeyPrefixes []*string `type:"list"`
+
+	// The keys used to create the Amazon S3 data access.
+	Keys []*string `type:"list"`
+
+	// List of AWS KMS CMKs (Key Management System Customer Managed Keys) and ARNs
+	// used to encrypt S3 objects being shared in this S3 Data Access asset.
+	KmsKeysToGrant []*KmsKeyToGrant `min:"1" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s S3DataAccessAssetSourceEntry) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s S3DataAccessAssetSourceEntry) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *S3DataAccessAssetSourceEntry) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "S3DataAccessAssetSourceEntry"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+	if s.KmsKeysToGrant != nil && len(s.KmsKeysToGrant) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("KmsKeysToGrant", 1))
+	}
+	if s.KmsKeysToGrant != nil {
+		for i, v := range s.KmsKeysToGrant {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "KmsKeysToGrant", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetBucket sets the Bucket field's value.
+func (s *S3DataAccessAssetSourceEntry) SetBucket(v string) *S3DataAccessAssetSourceEntry {
+	s.Bucket = &v
+	return s
+}
+
+// SetKeyPrefixes sets the KeyPrefixes field's value.
+func (s *S3DataAccessAssetSourceEntry) SetKeyPrefixes(v []*string) *S3DataAccessAssetSourceEntry {
+	s.KeyPrefixes = v
+	return s
+}
+
+// SetKeys sets the Keys field's value.
+func (s *S3DataAccessAssetSourceEntry) SetKeys(v []*string) *S3DataAccessAssetSourceEntry {
+	s.Keys = v
+	return s
+}
+
+// SetKmsKeysToGrant sets the KmsKeysToGrant field's value.
+func (s *S3DataAccessAssetSourceEntry) SetKmsKeysToGrant(v []*KmsKeyToGrant) *S3DataAccessAssetSourceEntry {
+	s.KmsKeysToGrant = v
+	return s
+}
+
+// Extra details specific to the affected scope in this S3 Data Access data
+// set.
+type S3DataAccessDetails struct {
+	_ struct{} `type:"structure"`
+
+	// A list of the key prefixes affected by this notification. This can have up
+	// to 50 entries.
+	KeyPrefixes []*string `type:"list"`
+
+	// A list of the keys affected by this notification. This can have up to 50
+	// entries.
+	Keys []*string `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s S3DataAccessDetails) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s S3DataAccessDetails) GoString() string {
+	return s.String()
+}
+
+// SetKeyPrefixes sets the KeyPrefixes field's value.
+func (s *S3DataAccessDetails) SetKeyPrefixes(v []*string) *S3DataAccessDetails {
+	s.KeyPrefixes = v
+	return s
+}
+
+// SetKeys sets the Keys field's value.
+func (s *S3DataAccessDetails) SetKeys(v []*string) *S3DataAccessDetails {
+	s.Keys = v
+	return s
+}
+
+// The Amazon S3 object that is the asset.
 type S3SnapshotAsset struct {
 	_ struct{} `type:"structure"`
 
-	// The size of the S3 object that is the object.
+	// The size of the Amazon S3 object that is the object.
 	//
 	// Size is a required field
 	Size *float64 `type:"double" required:"true"`
@@ -8950,25 +10496,250 @@ func (s *S3SnapshotAsset) SetSize(v float64) *S3SnapshotAsset {
 	return s
 }
 
+// Object encompassing information about a schema change to a single, particular
+// field, a notification can have up to 100 of these.
+type SchemaChangeDetails struct {
+	_ struct{} `type:"structure"`
+
+	// Description of what's changing about this field. This value can be up to
+	// 512 characters long.
+	Description *string `type:"string"`
+
+	// Name of the changing field. This value can be up to 255 characters long.
+	//
+	// Name is a required field
+	Name *string `type:"string" required:"true"`
+
+	// Is the field being added, removed, or modified?
+	//
+	// Type is a required field
+	Type *string `type:"string" required:"true" enum:"SchemaChangeType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SchemaChangeDetails) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SchemaChangeDetails) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *SchemaChangeDetails) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "SchemaChangeDetails"}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Type == nil {
+		invalidParams.Add(request.NewErrParamRequired("Type"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDescription sets the Description field's value.
+func (s *SchemaChangeDetails) SetDescription(v string) *SchemaChangeDetails {
+	s.Description = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *SchemaChangeDetails) SetName(v string) *SchemaChangeDetails {
+	s.Name = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *SchemaChangeDetails) SetType(v string) *SchemaChangeDetails {
+	s.Type = &v
+	return s
+}
+
+// Extra details specific to this schema change type notification.
+type SchemaChangeRequestDetails struct {
+	_ struct{} `type:"structure"`
+
+	// List of schema changes happening in the scope of this notification. This
+	// can have up to 100 entries.
+	Changes []*SchemaChangeDetails `type:"list"`
+
+	// A date in the future when the schema change is taking effect.
+	//
+	// SchemaChangeAt is a required field
+	SchemaChangeAt *time.Time `type:"timestamp" timestampFormat:"iso8601" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SchemaChangeRequestDetails) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SchemaChangeRequestDetails) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *SchemaChangeRequestDetails) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "SchemaChangeRequestDetails"}
+	if s.SchemaChangeAt == nil {
+		invalidParams.Add(request.NewErrParamRequired("SchemaChangeAt"))
+	}
+	if s.Changes != nil {
+		for i, v := range s.Changes {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Changes", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetChanges sets the Changes field's value.
+func (s *SchemaChangeRequestDetails) SetChanges(v []*SchemaChangeDetails) *SchemaChangeRequestDetails {
+	s.Changes = v
+	return s
+}
+
+// SetSchemaChangeAt sets the SchemaChangeAt field's value.
+func (s *SchemaChangeRequestDetails) SetSchemaChangeAt(v time.Time) *SchemaChangeRequestDetails {
+	s.SchemaChangeAt = &v
+	return s
+}
+
+// Details about the scope of the notifications such as the affected resources.
+type ScopeDetails struct {
+	_ struct{} `type:"structure"`
+
+	// Underlying LF resources that will be affected by this notification.
+	LakeFormationTagPolicies []*LakeFormationTagPolicyDetails `type:"list"`
+
+	// Underlying Redshift resources that will be affected by this notification.
+	RedshiftDataShares []*RedshiftDataShareDetails `type:"list"`
+
+	// Underlying S3 resources that will be affected by this notification.
+	S3DataAccesses []*S3DataAccessDetails `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ScopeDetails) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ScopeDetails) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ScopeDetails) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ScopeDetails"}
+	if s.RedshiftDataShares != nil {
+		for i, v := range s.RedshiftDataShares {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "RedshiftDataShares", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetLakeFormationTagPolicies sets the LakeFormationTagPolicies field's value.
+func (s *ScopeDetails) SetLakeFormationTagPolicies(v []*LakeFormationTagPolicyDetails) *ScopeDetails {
+	s.LakeFormationTagPolicies = v
+	return s
+}
+
+// SetRedshiftDataShares sets the RedshiftDataShares field's value.
+func (s *ScopeDetails) SetRedshiftDataShares(v []*RedshiftDataShareDetails) *ScopeDetails {
+	s.RedshiftDataShares = v
+	return s
+}
+
+// SetS3DataAccesses sets the S3DataAccesses field's value.
+func (s *ScopeDetails) SetS3DataAccesses(v []*S3DataAccessDetails) *ScopeDetails {
+	s.S3DataAccesses = v
+	return s
+}
+
 type SendApiAssetInput struct {
 	_ struct{} `type:"structure" payload:"Body"`
 
+	// Asset ID value for the API request.
+	//
 	// AssetId is a required field
 	AssetId *string `location:"header" locationName:"x-amzn-dataexchange-asset-id" type:"string" required:"true"`
 
+	// The request body.
 	Body *string `type:"string"`
 
+	// Data set ID value for the API request.
+	//
 	// DataSetId is a required field
 	DataSetId *string `location:"header" locationName:"x-amzn-dataexchange-data-set-id" type:"string" required:"true"`
 
+	// HTTP method value for the API request. Alternatively, you can use the appropriate
+	// verb in your request.
 	Method *string `location:"header" locationName:"x-amzn-dataexchange-http-method" type:"string"`
 
+	// URI path value for the API request. Alternatively, you can set the URI path
+	// directly by invoking /v1/{pathValue}.
 	Path *string `location:"header" locationName:"x-amzn-dataexchange-path" type:"string"`
 
+	// Attach query string parameters to the end of the URI (for example, /v1/examplePath?exampleParam=exampleValue).
 	QueryStringParameters map[string]*string `location:"querystring" type:"map"`
 
+	// Any header value prefixed with x-amzn-dataexchange-header- will have that
+	// stripped before sending the Asset API request. Use this when you want to
+	// override a header that AWS Data Exchange uses. Alternatively, you can use
+	// the header without a prefix to the HTTP request.
 	RequestHeaders map[string]*string `location:"headers" locationName:"x-amzn-dataexchange-header-" type:"map"`
 
+	// Revision ID value for the API request.
+	//
 	// RevisionId is a required field
 	RevisionId *string `location:"header" locationName:"x-amzn-dataexchange-revision-id" type:"string" required:"true"`
 }
@@ -9058,7 +10829,6 @@ func (s *SendApiAssetInput) SetRevisionId(v string) *SendApiAssetInput {
 	return s
 }
 
-// The details of the send API asset response.
 type SendApiAssetOutput struct {
 	_ struct{} `type:"structure" payload:"Body"`
 
@@ -9103,15 +10873,155 @@ func (s *SendApiAssetOutput) SetResponseHeaders(v map[string]*string) *SendApiAs
 	return s
 }
 
+type SendDataSetNotificationInput struct {
+	_ struct{} `type:"structure"`
+
+	// Idempotency key for the notification, this key allows us to deduplicate notifications
+	// that are sent in quick succession erroneously.
+	ClientToken *string `min:"1" type:"string" idempotencyToken:"true"`
+
+	// Free-form text field for providers to add information about their notifications.
+	Comment *string `type:"string"`
+
+	// Affected data set of the notification.
+	//
+	// DataSetId is a required field
+	DataSetId *string `location:"uri" locationName:"DataSetId" type:"string" required:"true"`
+
+	// Extra details specific to this notification type.
+	Details *NotificationDetails `type:"structure"`
+
+	// Affected scope of this notification such as the underlying resources affected
+	// by the notification event.
+	Scope *ScopeDetails `type:"structure"`
+
+	// The type of the notification. Describing the kind of event the notification
+	// is alerting you to.
+	//
+	// Type is a required field
+	Type *string `type:"string" required:"true" enum:"NotificationType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SendDataSetNotificationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SendDataSetNotificationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *SendDataSetNotificationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "SendDataSetNotificationInput"}
+	if s.ClientToken != nil && len(*s.ClientToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClientToken", 1))
+	}
+	if s.DataSetId == nil {
+		invalidParams.Add(request.NewErrParamRequired("DataSetId"))
+	}
+	if s.DataSetId != nil && len(*s.DataSetId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("DataSetId", 1))
+	}
+	if s.Type == nil {
+		invalidParams.Add(request.NewErrParamRequired("Type"))
+	}
+	if s.Details != nil {
+		if err := s.Details.Validate(); err != nil {
+			invalidParams.AddNested("Details", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.Scope != nil {
+		if err := s.Scope.Validate(); err != nil {
+			invalidParams.AddNested("Scope", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *SendDataSetNotificationInput) SetClientToken(v string) *SendDataSetNotificationInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetComment sets the Comment field's value.
+func (s *SendDataSetNotificationInput) SetComment(v string) *SendDataSetNotificationInput {
+	s.Comment = &v
+	return s
+}
+
+// SetDataSetId sets the DataSetId field's value.
+func (s *SendDataSetNotificationInput) SetDataSetId(v string) *SendDataSetNotificationInput {
+	s.DataSetId = &v
+	return s
+}
+
+// SetDetails sets the Details field's value.
+func (s *SendDataSetNotificationInput) SetDetails(v *NotificationDetails) *SendDataSetNotificationInput {
+	s.Details = v
+	return s
+}
+
+// SetScope sets the Scope field's value.
+func (s *SendDataSetNotificationInput) SetScope(v *ScopeDetails) *SendDataSetNotificationInput {
+	s.Scope = v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *SendDataSetNotificationInput) SetType(v string) *SendDataSetNotificationInput {
+	s.Type = &v
+	return s
+}
+
+type SendDataSetNotificationOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SendDataSetNotificationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SendDataSetNotificationOutput) GoString() string {
+	return s.String()
+}
+
 // The request has exceeded the quotas imposed by the service.
 type ServiceLimitExceededException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
 
+	// The name of the limit that was reached.
 	LimitName *string `type:"string" enum:"LimitName"`
 
+	// The value of the exceeded limit.
 	LimitValue *float64 `type:"double"`
 
+	// The request has exceeded the quotas imposed by the service.
 	Message_ *string `locationName:"Message" type:"string"`
 }
 
@@ -9174,6 +11084,8 @@ func (s *ServiceLimitExceededException) RequestID() string {
 type StartJobInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
+	// The unique identifier for a job.
+	//
 	// JobId is a required field
 	JobId *string `location:"uri" locationName:"JobId" type:"string" required:"true"`
 }
@@ -9240,12 +11152,121 @@ func (s StartJobOutput) GoString() string {
 	return s.String()
 }
 
+// The LF-tag policy for a table resource.
+type TableLFTagPolicy struct {
+	_ struct{} `type:"structure"`
+
+	// A list of LF-tag conditions that apply to table resources.
+	//
+	// Expression is a required field
+	Expression []*LFTag `type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TableLFTagPolicy) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TableLFTagPolicy) GoString() string {
+	return s.String()
+}
+
+// SetExpression sets the Expression field's value.
+func (s *TableLFTagPolicy) SetExpression(v []*LFTag) *TableLFTagPolicy {
+	s.Expression = v
+	return s
+}
+
+// The LF-tag policy and permissions that apply to table resources.
+type TableLFTagPolicyAndPermissions struct {
+	_ struct{} `type:"structure"`
+
+	// A list of LF-tag conditions that apply to table resources.
+	//
+	// Expression is a required field
+	Expression []*LFTag `type:"list" required:"true"`
+
+	// The permissions granted to subscribers on table resources.
+	//
+	// Permissions is a required field
+	Permissions []*string `type:"list" required:"true" enum:"TableTagPolicyLFPermission"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TableLFTagPolicyAndPermissions) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TableLFTagPolicyAndPermissions) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *TableLFTagPolicyAndPermissions) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "TableLFTagPolicyAndPermissions"}
+	if s.Expression == nil {
+		invalidParams.Add(request.NewErrParamRequired("Expression"))
+	}
+	if s.Permissions == nil {
+		invalidParams.Add(request.NewErrParamRequired("Permissions"))
+	}
+	if s.Expression != nil {
+		for i, v := range s.Expression {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Expression", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetExpression sets the Expression field's value.
+func (s *TableLFTagPolicyAndPermissions) SetExpression(v []*LFTag) *TableLFTagPolicyAndPermissions {
+	s.Expression = v
+	return s
+}
+
+// SetPermissions sets the Permissions field's value.
+func (s *TableLFTagPolicyAndPermissions) SetPermissions(v []*string) *TableLFTagPolicyAndPermissions {
+	s.Permissions = v
+	return s
+}
+
 type TagResourceInput struct {
 	_ struct{} `type:"structure"`
 
+	// An Amazon Resource Name (ARN) that uniquely identifies an AWS resource.
+	//
 	// ResourceArn is a required field
-	ResourceArn *string `location:"uri" locationName:"resource-arn" type:"string" required:"true"`
+	ResourceArn *string `location:"uri" locationName:"ResourceArn" type:"string" required:"true"`
 
+	// A label that consists of a customer-defined key and an optional value.
+	//
 	// Tags is a required field
 	Tags map[string]*string `locationName:"tags" type:"map" required:"true"`
 }
@@ -9389,9 +11410,13 @@ func (s *ThrottlingException) RequestID() string {
 type UntagResourceInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
+	// An Amazon Resource Name (ARN) that uniquely identifies an AWS resource.
+	//
 	// ResourceArn is a required field
-	ResourceArn *string `location:"uri" locationName:"resource-arn" type:"string" required:"true"`
+	ResourceArn *string `location:"uri" locationName:"ResourceArn" type:"string" required:"true"`
 
+	// The key tags.
+	//
 	// TagKeys is a required field
 	TagKeys []*string `location:"querystring" locationName:"tagKeys" type:"list" required:"true"`
 }
@@ -9467,25 +11492,32 @@ func (s UntagResourceOutput) GoString() string {
 	return s.String()
 }
 
-// The request to update an asset.
 type UpdateAssetInput struct {
 	_ struct{} `type:"structure"`
 
+	// The unique identifier for an asset.
+	//
 	// AssetId is a required field
 	AssetId *string `location:"uri" locationName:"AssetId" type:"string" required:"true"`
 
+	// The unique identifier for a data set.
+	//
 	// DataSetId is a required field
 	DataSetId *string `location:"uri" locationName:"DataSetId" type:"string" required:"true"`
 
-	// The name of the asset. When importing from Amazon S3, the S3 object key is
-	// used as the asset name. When exporting to Amazon S3, the asset name is used
-	// as default target S3 object key. When importing from Amazon API Gateway API,
-	// the API name is used as the asset name. When importing from Amazon Redshift,
-	// the datashare name is used as the asset name.
+	// The name of the asset. When importing from Amazon S3, the Amazon S3 object
+	// key is used as the asset name. When exporting to Amazon S3, the asset name
+	// is used as default target Amazon S3 object key. When importing from Amazon
+	// API Gateway API, the API name is used as the asset name. When importing from
+	// Amazon Redshift, the datashare name is used as the asset name. When importing
+	// from AWS Lake Formation, the static values of "Database(s) included in the
+	// LF-tag policy" or "Table(s) included in LF-tag policy" are used as the name.
 	//
 	// Name is a required field
 	Name *string `type:"string" required:"true"`
 
+	// The unique identifier for a revision.
+	//
 	// RevisionId is a required field
 	RevisionId *string `location:"uri" locationName:"RevisionId" type:"string" required:"true"`
 }
@@ -9566,38 +11598,43 @@ func (s *UpdateAssetInput) SetRevisionId(v string) *UpdateAssetInput {
 type UpdateAssetOutput struct {
 	_ struct{} `type:"structure"`
 
-	// An Amazon Resource Name (ARN) that uniquely identifies an AWS resource.
+	// The ARN for the asset.
 	Arn *string `type:"string"`
 
-	// Information about the asset.
+	// Details about the asset.
 	AssetDetails *AssetDetails `type:"structure"`
 
 	// The type of asset that is added to a data set.
 	AssetType *string `type:"string" enum:"AssetType"`
 
-	// Dates and times in AWS Data Exchange are recorded in ISO 8601 format.
+	// The date and time that the asset was created, in ISO 8601 format.
 	CreatedAt *time.Time `type:"timestamp" timestampFormat:"iso8601"`
 
-	// A unique identifier.
+	// The unique identifier for the data set associated with this asset.
 	DataSetId *string `type:"string"`
 
-	// A unique identifier.
+	// The unique identifier for the asset.
 	Id *string `type:"string"`
 
-	// The name of the asset. When importing from Amazon S3, the S3 object key is
-	// used as the asset name. When exporting to Amazon S3, the asset name is used
-	// as default target S3 object key. When importing from Amazon API Gateway API,
-	// the API name is used as the asset name. When importing from Amazon Redshift,
-	// the datashare name is used as the asset name.
+	// The name of the asset. When importing from Amazon S3, the Amazon S3 object
+	// key is used as the asset name. When exporting to Amazon S3, the asset name
+	// is used as default target Amazon S3 object key. When importing from Amazon
+	// API Gateway API, the API name is used as the asset name. When importing from
+	// Amazon Redshift, the datashare name is used as the asset name. When importing
+	// from AWS Lake Formation, the static values of "Database(s) included in the
+	// LF-tag policy"- or "Table(s) included in LF-tag policy" are used as the asset
+	// name.
 	Name *string `type:"string"`
 
-	// A unique identifier.
+	// The unique identifier for the revision associated with this asset.
 	RevisionId *string `type:"string"`
 
-	// A unique identifier.
+	// The asset ID of the owned asset corresponding to the entitled asset being
+	// viewed. This parameter is returned when an asset owner is viewing the entitled
+	// copy of its owned asset.
 	SourceId *string `type:"string"`
 
-	// Dates and times in AWS Data Exchange are recorded in ISO 8601 format.
+	// The date and time that the asset was last updated, in ISO 8601 format.
 	UpdatedAt *time.Time `type:"timestamp" timestampFormat:"iso8601"`
 }
 
@@ -9679,10 +11716,11 @@ func (s *UpdateAssetOutput) SetUpdatedAt(v time.Time) *UpdateAssetOutput {
 	return s
 }
 
-// The request to update a data set.
 type UpdateDataSetInput struct {
 	_ struct{} `type:"structure"`
 
+	// The unique identifier for a data set.
+	//
 	// DataSetId is a required field
 	DataSetId *string `location:"uri" locationName:"DataSetId" type:"string" required:"true"`
 
@@ -9748,37 +11786,38 @@ func (s *UpdateDataSetInput) SetName(v string) *UpdateDataSetInput {
 type UpdateDataSetOutput struct {
 	_ struct{} `type:"structure"`
 
-	// An Amazon Resource Name (ARN) that uniquely identifies an AWS resource.
+	// The ARN for the data set.
 	Arn *string `type:"string"`
 
 	// The type of asset that is added to a data set.
 	AssetType *string `type:"string" enum:"AssetType"`
 
-	// Dates and times in AWS Data Exchange are recorded in ISO 8601 format.
+	// The date and time that the data set was created, in ISO 8601 format.
 	CreatedAt *time.Time `type:"timestamp" timestampFormat:"iso8601"`
 
-	// A description of a resource.
+	// The description for the data set.
 	Description *string `type:"string"`
 
-	// A unique identifier.
+	// The unique identifier for the data set.
 	Id *string `type:"string"`
 
-	// The name of the model.
+	// The name of the data set.
 	Name *string `type:"string"`
 
 	// A property that defines the data set as OWNED by the account (for providers)
-	// or ENTITLED to the account (for subscribers). When an owned data set is published
-	// in a product, AWS Data Exchange creates a copy of the data set. Subscribers
-	// can access that copy of the data set as an entitled data set.
+	// or ENTITLED to the account (for subscribers).
 	Origin *string `type:"string" enum:"Origin"`
 
-	// Information about the origin of the data set.
+	// If the origin of this data set is ENTITLED, includes the details for the
+	// product on AWS Marketplace.
 	OriginDetails *OriginDetails `type:"structure"`
 
-	// A unique identifier.
+	// The data set ID of the owned data set corresponding to the entitled data
+	// set being viewed. This parameter is returned when a data set owner is viewing
+	// the entitled copy of its owned data set.
 	SourceId *string `type:"string"`
 
-	// Dates and times in AWS Data Exchange are recorded in ISO 8601 format.
+	// The date and time that the data set was last updated, in ISO 8601 format.
 	UpdatedAt *time.Time `type:"timestamp" timestampFormat:"iso8601"`
 }
 
@@ -9860,13 +11899,14 @@ func (s *UpdateDataSetOutput) SetUpdatedAt(v time.Time) *UpdateDataSetOutput {
 	return s
 }
 
-// The request to update an event action.
 type UpdateEventActionInput struct {
 	_ struct{} `type:"structure"`
 
 	// What occurs after a certain event.
 	Action *Action `type:"structure"`
 
+	// The unique identifier for the event action.
+	//
 	// EventActionId is a required field
 	EventActionId *string `location:"uri" locationName:"EventActionId" type:"string" required:"true"`
 }
@@ -9928,19 +11968,19 @@ type UpdateEventActionOutput struct {
 	// What occurs after a certain event.
 	Action *Action `type:"structure"`
 
-	// An Amazon Resource Name (ARN) that uniquely identifies an AWS resource.
+	// The ARN for the event action.
 	Arn *string `type:"string"`
 
-	// Dates and times in AWS Data Exchange are recorded in ISO 8601 format.
+	// The date and time that the event action was created, in ISO 8601 format.
 	CreatedAt *time.Time `type:"timestamp" timestampFormat:"iso8601"`
 
 	// What occurs to start an action.
 	Event *Event `type:"structure"`
 
-	// A unique identifier.
+	// The unique identifier for the event action.
 	Id *string `type:"string"`
 
-	// Dates and times in AWS Data Exchange are recorded in ISO 8601 format.
+	// The date and time that the event action was last updated, in ISO 8601 format.
 	UpdatedAt *time.Time `type:"timestamp" timestampFormat:"iso8601"`
 }
 
@@ -9998,13 +12038,14 @@ func (s *UpdateEventActionOutput) SetUpdatedAt(v time.Time) *UpdateEventActionOu
 	return s
 }
 
-// The request to update a revision.
 type UpdateRevisionInput struct {
 	_ struct{} `type:"structure"`
 
 	// An optional comment about the revision.
 	Comment *string `type:"string"`
 
+	// The unique identifier for a data set.
+	//
 	// DataSetId is a required field
 	DataSetId *string `location:"uri" locationName:"DataSetId" type:"string" required:"true"`
 
@@ -10013,6 +12054,8 @@ type UpdateRevisionInput struct {
 	// publish the revision to your products.
 	Finalized *bool `type:"boolean"`
 
+	// The unique identifier for a revision.
+	//
 	// RevisionId is a required field
 	RevisionId *string `location:"uri" locationName:"RevisionId" type:"string" required:"true"`
 }
@@ -10084,33 +12127,46 @@ func (s *UpdateRevisionInput) SetRevisionId(v string) *UpdateRevisionInput {
 type UpdateRevisionOutput struct {
 	_ struct{} `type:"structure"`
 
-	// An Amazon Resource Name (ARN) that uniquely identifies an AWS resource.
+	// The ARN for the revision.
 	Arn *string `type:"string"`
 
+	// An optional comment about the revision.
 	Comment *string `type:"string"`
 
-	// Dates and times in AWS Data Exchange are recorded in ISO 8601 format.
+	// The date and time that the revision was created, in ISO 8601 format.
 	CreatedAt *time.Time `type:"timestamp" timestampFormat:"iso8601"`
 
-	// A unique identifier.
+	// The unique identifier for the data set associated with the data set revision.
 	DataSetId *string `type:"string"`
 
+	// To publish a revision to a data set in a product, the revision must first
+	// be finalized. Finalizing a revision tells AWS Data Exchange that changes
+	// to the assets in the revision are complete. After it's in this read-only
+	// state, you can publish the revision to your products. Finalized revisions
+	// can be published through the AWS Data Exchange console or the AWS Marketplace
+	// Catalog API, using the StartChangeSet AWS Marketplace Catalog API action.
+	// When using the API, revisions are uniquely identified by their ARN.
 	Finalized *bool `type:"boolean"`
 
-	// A unique identifier.
+	// The unique identifier for the revision.
 	Id *string `type:"string"`
 
+	// A required comment to inform subscribers of the reason their access to the
+	// revision was revoked.
 	RevocationComment *string `min:"10" type:"string"`
 
+	// A status indicating that subscribers' access to the revision was revoked.
 	Revoked *bool `type:"boolean"`
 
-	// Dates and times in AWS Data Exchange are recorded in ISO 8601 format.
+	// The date and time that the revision was revoked, in ISO 8601 format.
 	RevokedAt *time.Time `type:"timestamp" timestampFormat:"iso8601"`
 
-	// A unique identifier.
+	// The revision ID of the owned revision corresponding to the entitled revision
+	// being viewed. This parameter is returned when a revision owner is viewing
+	// the entitled copy of its owned revision.
 	SourceId *string `type:"string"`
 
-	// Dates and times in AWS Data Exchange are recorded in ISO 8601 format.
+	// The date and time that the revision was last updated, in ISO 8601 format.
 	UpdatedAt *time.Time `type:"timestamp" timestampFormat:"iso8601"`
 }
 
@@ -10203,7 +12259,7 @@ type ValidationException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
 
-	// The message that informs you about what the exception was.
+	// The unique identifier for the resource that couldn't be found.
 	ExceptionCause *string `type:"string" enum:"ExceptionCause"`
 
 	// The message that informs you about what was invalid about the request.
@@ -10266,7 +12322,6 @@ func (s *ValidationException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
-// The type of asset that is added to a data set.
 const (
 	// AssetTypeS3Snapshot is a AssetType enum value
 	AssetTypeS3Snapshot = "S3_SNAPSHOT"
@@ -10276,6 +12331,12 @@ const (
 
 	// AssetTypeApiGatewayApi is a AssetType enum value
 	AssetTypeApiGatewayApi = "API_GATEWAY_API"
+
+	// AssetTypeS3DataAccess is a AssetType enum value
+	AssetTypeS3DataAccess = "S3_DATA_ACCESS"
+
+	// AssetTypeLakeFormationDataPermission is a AssetType enum value
+	AssetTypeLakeFormationDataPermission = "LAKE_FORMATION_DATA_PERMISSION"
 )
 
 // AssetType_Values returns all elements of the AssetType enum
@@ -10284,6 +12345,8 @@ func AssetType_Values() []string {
 		AssetTypeS3Snapshot,
 		AssetTypeRedshiftDataShare,
 		AssetTypeApiGatewayApi,
+		AssetTypeS3DataAccess,
+		AssetTypeLakeFormationDataPermission,
 	}
 }
 
@@ -10324,6 +12387,18 @@ func Code_Values() []string {
 }
 
 const (
+	// DatabaseLFTagPolicyPermissionDescribe is a DatabaseLFTagPolicyPermission enum value
+	DatabaseLFTagPolicyPermissionDescribe = "DESCRIBE"
+)
+
+// DatabaseLFTagPolicyPermission_Values returns all elements of the DatabaseLFTagPolicyPermission enum
+func DatabaseLFTagPolicyPermission_Values() []string {
+	return []string{
+		DatabaseLFTagPolicyPermissionDescribe,
+	}
+}
+
+const (
 	// ExceptionCauseInsufficientS3bucketPolicy is a ExceptionCause enum value
 	ExceptionCauseInsufficientS3bucketPolicy = "InsufficientS3BucketPolicy"
 
@@ -10339,7 +12414,6 @@ func ExceptionCause_Values() []string {
 	}
 }
 
-// The name of the limit that was reached.
 const (
 	// JobErrorLimitNameAssetsperrevision is a JobErrorLimitName enum value
 	JobErrorLimitNameAssetsperrevision = "Assets per revision"
@@ -10349,6 +12423,12 @@ const (
 
 	// JobErrorLimitNameAmazonRedshiftdatashareassetsperrevision is a JobErrorLimitName enum value
 	JobErrorLimitNameAmazonRedshiftdatashareassetsperrevision = "Amazon Redshift datashare assets per revision"
+
+	// JobErrorLimitNameAwslakeFormationdatapermissionassetsperrevision is a JobErrorLimitName enum value
+	JobErrorLimitNameAwslakeFormationdatapermissionassetsperrevision = "AWS Lake Formation data permission assets per revision"
+
+	// JobErrorLimitNameAmazonS3dataaccessassetsperrevision is a JobErrorLimitName enum value
+	JobErrorLimitNameAmazonS3dataaccessassetsperrevision = "Amazon S3 data access assets per revision"
 )
 
 // JobErrorLimitName_Values returns all elements of the JobErrorLimitName enum
@@ -10357,10 +12437,11 @@ func JobErrorLimitName_Values() []string {
 		JobErrorLimitNameAssetsperrevision,
 		JobErrorLimitNameAssetsizeinGb,
 		JobErrorLimitNameAmazonRedshiftdatashareassetsperrevision,
+		JobErrorLimitNameAwslakeFormationdatapermissionassetsperrevision,
+		JobErrorLimitNameAmazonS3dataaccessassetsperrevision,
 	}
 }
 
-// The types of resource which the job error can apply to.
 const (
 	// JobErrorResourceTypesRevision is a JobErrorResourceTypes enum value
 	JobErrorResourceTypesRevision = "REVISION"
@@ -10378,6 +12459,50 @@ func JobErrorResourceTypes_Values() []string {
 		JobErrorResourceTypesRevision,
 		JobErrorResourceTypesAsset,
 		JobErrorResourceTypesDataSet,
+	}
+}
+
+const (
+	// LFPermissionDescribe is a LFPermission enum value
+	LFPermissionDescribe = "DESCRIBE"
+
+	// LFPermissionSelect is a LFPermission enum value
+	LFPermissionSelect = "SELECT"
+)
+
+// LFPermission_Values returns all elements of the LFPermission enum
+func LFPermission_Values() []string {
+	return []string{
+		LFPermissionDescribe,
+		LFPermissionSelect,
+	}
+}
+
+const (
+	// LFResourceTypeTable is a LFResourceType enum value
+	LFResourceTypeTable = "TABLE"
+
+	// LFResourceTypeDatabase is a LFResourceType enum value
+	LFResourceTypeDatabase = "DATABASE"
+)
+
+// LFResourceType_Values returns all elements of the LFResourceType enum
+func LFResourceType_Values() []string {
+	return []string{
+		LFResourceTypeTable,
+		LFResourceTypeDatabase,
+	}
+}
+
+const (
+	// LakeFormationDataPermissionTypeLftagPolicy is a LakeFormationDataPermissionType enum value
+	LakeFormationDataPermissionTypeLftagPolicy = "LFTagPolicy"
+)
+
+// LakeFormationDataPermissionType_Values returns all elements of the LakeFormationDataPermissionType enum
+func LakeFormationDataPermissionType_Values() []string {
+	return []string{
+		LakeFormationDataPermissionTypeLftagPolicy,
 	}
 }
 
@@ -10447,6 +12572,24 @@ const (
 
 	// LimitNameRevisionsperAmazonApigatewayApidataset is a LimitName enum value
 	LimitNameRevisionsperAmazonApigatewayApidataset = "Revisions per Amazon API Gateway API data set"
+
+	// LimitNameConcurrentinprogressjobstoimportassetsfromanAwslakeFormationtagpolicy is a LimitName enum value
+	LimitNameConcurrentinprogressjobstoimportassetsfromanAwslakeFormationtagpolicy = "Concurrent in progress jobs to import assets from an AWS Lake Formation tag policy"
+
+	// LimitNameAwslakeFormationdatapermissionassetsperrevision is a LimitName enum value
+	LimitNameAwslakeFormationdatapermissionassetsperrevision = "AWS Lake Formation data permission assets per revision"
+
+	// LimitNameRevisionsperAwslakeFormationdatapermissiondataset is a LimitName enum value
+	LimitNameRevisionsperAwslakeFormationdatapermissiondataset = "Revisions per AWS Lake Formation data permission data set"
+
+	// LimitNameRevisionsperAmazonS3dataaccessdataset is a LimitName enum value
+	LimitNameRevisionsperAmazonS3dataaccessdataset = "Revisions per Amazon S3 data access data set"
+
+	// LimitNameAmazonS3dataaccessassetsperrevision is a LimitName enum value
+	LimitNameAmazonS3dataaccessassetsperrevision = "Amazon S3 data access assets per revision"
+
+	// LimitNameConcurrentinprogressjobstocreateAmazonS3dataaccessassetsfromS3buckets is a LimitName enum value
+	LimitNameConcurrentinprogressjobstocreateAmazonS3dataaccessassetsfromS3buckets = "Concurrent in progress jobs to create Amazon S3 data access assets from S3 buckets"
 )
 
 // LimitName_Values returns all elements of the LimitName enum
@@ -10474,13 +12617,39 @@ func LimitName_Values() []string {
 		LimitNameConcurrentinprogressjobstoimportassetsfromanApigatewayApi,
 		LimitNameAmazonApigatewayApiassetsperrevision,
 		LimitNameRevisionsperAmazonApigatewayApidataset,
+		LimitNameConcurrentinprogressjobstoimportassetsfromanAwslakeFormationtagpolicy,
+		LimitNameAwslakeFormationdatapermissionassetsperrevision,
+		LimitNameRevisionsperAwslakeFormationdatapermissiondataset,
+		LimitNameRevisionsperAmazonS3dataaccessdataset,
+		LimitNameAmazonS3dataaccessassetsperrevision,
+		LimitNameConcurrentinprogressjobstocreateAmazonS3dataaccessassetsfromS3buckets,
 	}
 }
 
-// A property that defines the data set as OWNED by the account (for providers)
-// or ENTITLED to the account (for subscribers). When an owned data set is published
-// in a product, AWS Data Exchange creates a copy of the data set. Subscribers
-// can access that copy of the data set as an entitled data set.
+const (
+	// NotificationTypeDataDelay is a NotificationType enum value
+	NotificationTypeDataDelay = "DATA_DELAY"
+
+	// NotificationTypeDataUpdate is a NotificationType enum value
+	NotificationTypeDataUpdate = "DATA_UPDATE"
+
+	// NotificationTypeDeprecation is a NotificationType enum value
+	NotificationTypeDeprecation = "DEPRECATION"
+
+	// NotificationTypeSchemaChange is a NotificationType enum value
+	NotificationTypeSchemaChange = "SCHEMA_CHANGE"
+)
+
+// NotificationType_Values returns all elements of the NotificationType enum
+func NotificationType_Values() []string {
+	return []string{
+		NotificationTypeDataDelay,
+		NotificationTypeDataUpdate,
+		NotificationTypeDeprecation,
+		NotificationTypeSchemaChange,
+	}
+}
+
 const (
 	// OriginOwned is a Origin enum value
 	OriginOwned = "OWNED"
@@ -10537,7 +12706,26 @@ func ResourceType_Values() []string {
 	}
 }
 
-// The types of encryption supported in export jobs to Amazon S3.
+const (
+	// SchemaChangeTypeAdd is a SchemaChangeType enum value
+	SchemaChangeTypeAdd = "ADD"
+
+	// SchemaChangeTypeRemove is a SchemaChangeType enum value
+	SchemaChangeTypeRemove = "REMOVE"
+
+	// SchemaChangeTypeModify is a SchemaChangeType enum value
+	SchemaChangeTypeModify = "MODIFY"
+)
+
+// SchemaChangeType_Values returns all elements of the SchemaChangeType enum
+func SchemaChangeType_Values() []string {
+	return []string{
+		SchemaChangeTypeAdd,
+		SchemaChangeTypeRemove,
+		SchemaChangeTypeModify,
+	}
+}
+
 const (
 	// ServerSideEncryptionTypesAwsKms is a ServerSideEncryptionTypes enum value
 	ServerSideEncryptionTypesAwsKms = "aws:kms"
@@ -10587,6 +12775,22 @@ func State_Values() []string {
 }
 
 const (
+	// TableTagPolicyLFPermissionDescribe is a TableTagPolicyLFPermission enum value
+	TableTagPolicyLFPermissionDescribe = "DESCRIBE"
+
+	// TableTagPolicyLFPermissionSelect is a TableTagPolicyLFPermission enum value
+	TableTagPolicyLFPermissionSelect = "SELECT"
+)
+
+// TableTagPolicyLFPermission_Values returns all elements of the TableTagPolicyLFPermission enum
+func TableTagPolicyLFPermission_Values() []string {
+	return []string{
+		TableTagPolicyLFPermissionDescribe,
+		TableTagPolicyLFPermissionSelect,
+	}
+}
+
+const (
 	// TypeImportAssetsFromS3 is a Type enum value
 	TypeImportAssetsFromS3 = "IMPORT_ASSETS_FROM_S3"
 
@@ -10607,6 +12811,12 @@ const (
 
 	// TypeImportAssetFromApiGatewayApi is a Type enum value
 	TypeImportAssetFromApiGatewayApi = "IMPORT_ASSET_FROM_API_GATEWAY_API"
+
+	// TypeCreateS3DataAccessFromS3Bucket is a Type enum value
+	TypeCreateS3DataAccessFromS3Bucket = "CREATE_S3_DATA_ACCESS_FROM_S3_BUCKET"
+
+	// TypeImportAssetsFromLakeFormationTagPolicy is a Type enum value
+	TypeImportAssetsFromLakeFormationTagPolicy = "IMPORT_ASSETS_FROM_LAKE_FORMATION_TAG_POLICY"
 )
 
 // Type_Values returns all elements of the Type enum
@@ -10619,5 +12829,7 @@ func Type_Values() []string {
 		TypeExportRevisionsToS3,
 		TypeImportAssetsFromRedshiftDataShares,
 		TypeImportAssetFromApiGatewayApi,
+		TypeCreateS3DataAccessFromS3Bucket,
+		TypeImportAssetsFromLakeFormationTagPolicy,
 	}
 }

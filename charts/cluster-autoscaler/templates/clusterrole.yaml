@@ -42,6 +42,8 @@ rules:
     verbs:
     - watch
     - list
+    - create
+    - delete
     - get
     - update
   - apiGroups:
@@ -120,6 +122,7 @@ rules:
     verbs:
       - list
       - watch
+      - get
   - apiGroups:
     - coordination.k8s.io
     resources:
@@ -151,7 +154,7 @@ rules:
     - cluster.x-k8s.io
     resources:
     - machinedeployments
-    - machinedeployments/scale
+    - machinepools
     - machines
     - machinesets
     verbs:
@@ -159,5 +162,14 @@ rules:
     - list
     - update
     - watch
+  - apiGroups:
+    - cluster.x-k8s.io
+    resources:
+    - machinedeployments/scale
+    - machinepools/scale
+    verbs:
+    - get
+    - patch
+    - update
 {{- end }}
 {{- end -}}

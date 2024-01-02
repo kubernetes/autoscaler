@@ -25,6 +25,7 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/service/autoscaling"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/service/ec2"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	klog "k8s.io/klog/v2"
 )
@@ -40,6 +41,7 @@ type asgCache struct {
 	asgToInstances       map[AwsRef][]AwsInstanceRef
 	instanceToAsg        map[AwsInstanceRef]*asg
 	instanceStatus       map[AwsInstanceRef]*string
+	instanceLifecycle    map[AwsInstanceRef]*string
 	asgInstanceTypeCache *instanceTypeExpirationStore
 	mutex                sync.Mutex
 	awsService           *awsWrapper
@@ -59,6 +61,7 @@ type mixedInstancesPolicy struct {
 	launchTemplate                *launchTemplate
 	instanceTypesOverrides        []string
 	instanceRequirementsOverrides *autoscaling.InstanceRequirements
+	instanceRequirements          *ec2.InstanceRequirements
 }
 
 type asg struct {
@@ -83,6 +86,7 @@ func newASGCache(awsService *awsWrapper, explicitSpecs []string, autoDiscoverySp
 		asgToInstances:        make(map[AwsRef][]AwsInstanceRef),
 		instanceToAsg:         make(map[AwsInstanceRef]*asg),
 		instanceStatus:        make(map[AwsInstanceRef]*string),
+		instanceLifecycle:     make(map[AwsInstanceRef]*string),
 		asgInstanceTypeCache:  newAsgInstanceTypeCache(awsService),
 		interrupt:             make(chan struct{}),
 		asgAutoDiscoverySpecs: autoDiscoverySpecs,
@@ -137,8 +141,6 @@ func (m *asgCache) register(asg *asg) *asg {
 			return existing
 		}
 
-		klog.V(4).Infof("Updating ASG %s", asg.AwsRef.Name)
-
 		// Explicit registered groups should always use the manually provided min/max
 		// values and the not the ones returned by the API
 		if !m.explicitlyConfigured[asg.AwsRef] {
@@ -155,6 +157,8 @@ func (m *asgCache) register(asg *asg) *asg {
 		existing.LaunchTemplate = asg.LaunchTemplate
 		existing.MixedInstancesPolicy = asg.MixedInstancesPolicy
 		existing.Tags = asg.Tags
+
+		klog.V(4).Infof("Updated ASG cache for %s. min/max/current is %d/%d/%d", asg.AwsRef.Name, existing.minSize, existing.maxSize, existing.curSize)
 
 		return existing
 	}
@@ -239,6 +243,14 @@ func (m *asgCache) InstanceStatus(ref AwsInstanceRef) (*string, error) {
 	return nil, fmt.Errorf("could not find instance %v", ref)
 }
 
+func (m *asgCache) findInstanceLifecycle(ref AwsInstanceRef) (*string, error) {
+	if lifecycle, found := m.instanceLifecycle[ref]; found {
+		return lifecycle, nil
+	}
+
+	return nil, fmt.Errorf("could not find instance %v", ref)
+}
+
 func (m *asgCache) SetAsgSize(asg *asg, size int) error {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
@@ -292,7 +304,6 @@ func (m *asgCache) DeleteInstances(instances []*AwsInstanceRef) error {
 			for i, instance := range instances {
 				instanceIds[i] = instance.Name
 			}
-
 			return fmt.Errorf("can't delete instances %s as they belong to at least two different ASGs (%s and %s)", strings.Join(instanceIds, ","), commonAsg.Name, asg.Name)
 		}
 	}
@@ -305,6 +316,23 @@ func (m *asgCache) DeleteInstances(instances []*AwsInstanceRef) error {
 				"of deleting instance", instance.Name)
 			m.decreaseAsgSizeByOneNoLock(commonAsg)
 		} else {
+			// check if the instance is already terminating - if it is, don't bother terminating again
+			// as doing so causes unnecessary API calls and can cause the curSize cached value to decrement
+			// unnecessarily.
+			lifecycle, err := m.findInstanceLifecycle(*instance)
+			if err != nil {
+				return err
+			}
+
+			if lifecycle != nil &&
+				*lifecycle == autoscaling.LifecycleStateTerminated ||
+				*lifecycle == autoscaling.LifecycleStateTerminating ||
+				*lifecycle == autoscaling.LifecycleStateTerminatingWait ||
+				*lifecycle == autoscaling.LifecycleStateTerminatingProceed {
+				klog.V(2).Infof("instance %s is already terminating in state %s, will skip instead", instance.Name, *lifecycle)
+				continue
+			}
+
 			params := &autoscaling.TerminateInstanceInAutoScalingGroupInput{
 				InstanceId:                     aws.String(instance.Name),
 				ShouldDecrementDesiredCapacity: aws.Bool(true),
@@ -361,6 +389,7 @@ func (m *asgCache) regenerate() error {
 	newInstanceToAsgCache := make(map[AwsInstanceRef]*asg)
 	newAsgToInstancesCache := make(map[AwsRef][]AwsInstanceRef)
 	newInstanceStatusMap := make(map[AwsInstanceRef]*string)
+	newInstanceLifecycleMap := make(map[AwsInstanceRef]*string)
 
 	// Fetch details of all ASGs
 	refreshNames := m.buildAsgNames()
@@ -402,6 +431,7 @@ func (m *asgCache) regenerate() error {
 			newInstanceToAsgCache[ref] = asg
 			newAsgToInstancesCache[asg.AwsRef][i] = ref
 			newInstanceStatusMap[ref] = instance.HealthStatus
+			newInstanceLifecycleMap[ref] = instance.LifecycleState
 		}
 	}
 
@@ -431,6 +461,7 @@ func (m *asgCache) regenerate() error {
 	m.instanceToAsg = newInstanceToAsgCache
 	m.autoscalingOptions = newAutoscalingOptions
 	m.instanceStatus = newInstanceStatusMap
+	m.instanceLifecycle = newInstanceLifecycleMap
 	return nil
 }
 
@@ -546,12 +577,39 @@ func (m *asgCache) buildAsgFromAWS(g *autoscaling.Group) (*asg, error) {
 			instanceRequirementsOverrides: getInstanceTypeRequirements(g.MixedInstancesPolicy.LaunchTemplate.Overrides),
 		}
 
+		instanceRequirements, err := m.getInstanceRequirementsFromMixedInstancesPolicy(asg.MixedInstancesPolicy)
+		if err != nil {
+			return nil, fmt.Errorf("unable to retrieve instance requirements from mixed instance policy, err: %v", err)
+		}
+		asg.MixedInstancesPolicy.instanceRequirements = instanceRequirements
+
 		if len(asg.MixedInstancesPolicy.instanceTypesOverrides) != 0 && asg.MixedInstancesPolicy.instanceRequirementsOverrides != nil {
 			return nil, fmt.Errorf("invalid setup of both instance type and instance requirements overrides configured")
 		}
 	}
 
 	return asg, nil
+}
+
+func (m *asgCache) getInstanceRequirementsFromMixedInstancesPolicy(policy *mixedInstancesPolicy) (*ec2.InstanceRequirements, error) {
+	instanceRequirements := &ec2.InstanceRequirements{}
+	if policy.instanceRequirementsOverrides != nil {
+		var err error
+		instanceRequirements, err = m.awsService.getEC2RequirementsFromAutoscaling(policy.instanceRequirementsOverrides)
+		if err != nil {
+			return nil, err
+		}
+	} else if policy.launchTemplate != nil {
+		templateData, err := m.awsService.getLaunchTemplateData(policy.launchTemplate.name, policy.launchTemplate.version)
+		if err != nil {
+			return nil, err
+		}
+
+		if templateData.InstanceRequirements != nil {
+			instanceRequirements = templateData.InstanceRequirements
+		}
+	}
+	return instanceRequirements, nil
 }
 
 func (m *asgCache) buildInstanceRefFromAWS(instance *autoscaling.Instance) AwsInstanceRef {

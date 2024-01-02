@@ -25,7 +25,7 @@ import (
 
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmclient/mockvmclient"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-03-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources"
 	"github.com/Azure/go-autorest/autorest/date"
 	"github.com/Azure/go-autorest/autorest/to"
@@ -355,8 +355,6 @@ func TestCreateAzureManagerWithNilConfig(t *testing.T) {
 		AADClientCertPath:            "aadClientCertPath",
 		AADClientCertPassword:        "aadClientCertPassword",
 		Deployment:                   "deployment",
-		ClusterName:                  "clusterName",
-		NodeResourceGroup:            "resourcegroup",
 		UseManagedIdentityExtension:  true,
 		UserAssignedIdentityID:       "UserAssignedIdentityID",
 		VmssCacheTTL:                 100,
@@ -423,17 +421,19 @@ func TestCreateAzureManagerWithNilConfig(t *testing.T) {
 
 	t.Setenv("ARM_CLOUD", "AzurePublicCloud")
 	t.Setenv("LOCATION", "southeastasia")
+	t.Setenv("AZURE_TENANT_ID", "tenantId")
+	t.Setenv("AZURE_CLIENT_ID", "aadClientId")
 	t.Setenv("ARM_SUBSCRIPTION_ID", "subscriptionId")
 	t.Setenv("ARM_RESOURCE_GROUP", "resourceGroup")
+	t.Setenv("AZURE_TENANT_ID", "tenantId")
 	t.Setenv("ARM_TENANT_ID", "tenantId")
+	t.Setenv("AZURE_CLIENT_ID", "aadClientId")
 	t.Setenv("ARM_CLIENT_ID", "aadClientId")
 	t.Setenv("ARM_CLIENT_SECRET", "aadClientSecret")
 	t.Setenv("ARM_VM_TYPE", "vmss")
 	t.Setenv("ARM_CLIENT_CERT_PATH", "aadClientCertPath")
 	t.Setenv("ARM_CLIENT_CERT_PASSWORD", "aadClientCertPassword")
 	t.Setenv("ARM_DEPLOYMENT", "deployment")
-	t.Setenv("AZURE_CLUSTER_NAME", "clusterName")
-	t.Setenv("AZURE_NODE_RESOURCE_GROUP", "resourcegroup")
 	t.Setenv("ARM_USE_MANAGED_IDENTITY_EXTENSION", "true")
 	t.Setenv("ARM_USER_ASSIGNED_IDENTITY_ID", "UserAssignedIdentityID")
 	t.Setenv("AZURE_VMSS_CACHE_TTL", "100")
@@ -450,6 +450,8 @@ func TestCreateAzureManagerWithNilConfig(t *testing.T) {
 	t.Run("environment variables correctly set", func(t *testing.T) {
 		manager, err := createAzureManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)
 		assert.NoError(t, err)
+		manager.config.TenantID = "tenantId"
+		manager.config.AADClientID = "aadClientId"
 		assert.Equal(t, true, reflect.DeepEqual(*expectedConfig, *manager.config), "unexpected azure manager configuration")
 	})
 
@@ -577,23 +579,39 @@ func TestFetchExplicitNodeGroups(t *testing.T) {
 		},
 	}
 
-	manager := newTestAzureManager(t)
+	orchestrationModes := [2]compute.OrchestrationMode{compute.Uniform, compute.Flexible}
 	expectedVMSSVMs := newTestVMSSVMList(3)
-	expectedScaleSets := newTestVMSSList(3, "test-asg", "eastus")
+	expectedVMs := newTestVMList(3)
 
-	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
-	mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
-	manager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
-	mockVMSSVMClient := mockvmssvmclient.NewMockInterface(ctrl)
-	mockVMSSVMClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup, "test-asg", gomock.Any()).Return(expectedVMSSVMs, nil).AnyTimes()
-	manager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
-	manager.fetchExplicitNodeGroups(ngdo.NodeGroupSpecs)
+	for _, orchMode := range orchestrationModes {
+		manager := newTestAzureManager(t)
+		expectedScaleSets := newTestVMSSList(3, "test-asg", "eastus", compute.Uniform)
 
-	asgs := manager.azureCache.getRegisteredNodeGroups()
-	assert.Equal(t, 1, len(asgs))
-	assert.Equal(t, name, asgs[0].Id())
-	assert.Equal(t, min, asgs[0].MinSize())
-	assert.Equal(t, max, asgs[0].MaxSize())
+		mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
+		mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
+		manager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
+
+		if orchMode == compute.Uniform {
+
+			mockVMSSVMClient := mockvmssvmclient.NewMockInterface(ctrl)
+			mockVMSSVMClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup, "test-asg", gomock.Any()).Return(expectedVMSSVMs, nil).AnyTimes()
+			manager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
+		} else {
+
+			mockVMClient := mockvmclient.NewMockInterface(ctrl)
+			manager.config.EnableVmssFlex = true
+			mockVMClient.EXPECT().ListVmssFlexVMsWithoutInstanceView(gomock.Any(), "test-asg").Return(expectedVMs, nil).AnyTimes()
+			manager.azClient.virtualMachinesClient = mockVMClient
+		}
+
+		manager.fetchExplicitNodeGroups(ngdo.NodeGroupSpecs)
+
+		asgs := manager.azureCache.getRegisteredNodeGroups()
+		assert.Equal(t, 1, len(asgs))
+		assert.Equal(t, name, asgs[0].Id())
+		assert.Equal(t, min, asgs[0].MinSize())
+		assert.Equal(t, max, asgs[0].MaxSize())
+	}
 
 	// test vmTypeStandard
 	testAS := newTestAgentPool(newTestAzureManager(t), "testAS")
@@ -618,6 +636,7 @@ func TestFetchExplicitNodeGroups(t *testing.T) {
 	assert.NoError(t, err)
 
 	// test invalidVMType
+	manager := newTestAzureManager(t)
 	manager.config.VMType = "invalidVMType"
 	err = manager.fetchExplicitNodeGroups(ngdo.NodeGroupSpecs)
 	expectedErr = fmt.Errorf("failed to parse node group spec: vmtype invalidVMType not supported")
@@ -680,19 +699,13 @@ func TestGetFilteredAutoscalingGroupsWithInvalidVMType(t *testing.T) {
 	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
 	mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
 	manager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
-	manager.config.VMType = vmTypeAKS
 
+	manager.config.VMType = "invalidVMType"
 	specs, err := ParseLabelAutoDiscoverySpecs(ngdo)
 	assert.NoError(t, err)
 
-	expectedErr := fmt.Errorf("vmType \"aks\" does not support autodiscovery")
+	expectedErr := fmt.Errorf("vmType \"invalidVMType\" does not support autodiscovery")
 	asgs, err2 := manager.getFilteredNodeGroups(specs)
-	assert.Nil(t, asgs)
-	assert.Equal(t, expectedErr, err2, "Not match, expected: %v, actual: %v", expectedErr, err2)
-
-	manager.config.VMType = "invalidVMType"
-	expectedErr = fmt.Errorf("vmType \"invalidVMType\" does not support autodiscovery")
-	asgs, err2 = manager.getFilteredNodeGroups(specs)
 	assert.Nil(t, asgs)
 	assert.Equal(t, expectedErr, err2, "Not match, expected: %v, actual: %v", expectedErr, err2)
 }

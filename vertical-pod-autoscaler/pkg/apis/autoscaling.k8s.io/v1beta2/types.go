@@ -39,6 +39,7 @@ type VerticalPodAutoscalerList struct {
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +kubebuilder:resource:shortName=vpa
+// +kubebuilder:subresource:status
 // +k8s:prerelease-lifecycle-gen=true
 
 // VerticalPodAutoscaler is the configuration for a vertical pod

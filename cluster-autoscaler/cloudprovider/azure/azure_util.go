@@ -31,7 +31,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-03-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
 	azStorage "github.com/Azure/azure-sdk-for-go/storage"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/to"
@@ -82,6 +82,16 @@ const (
 	nodeTaintTagName     = "k8s.io_cluster-autoscaler_node-template_taint_"
 	nodeResourcesTagName = "k8s.io_cluster-autoscaler_node-template_resources_"
 	nodeOptionsTagName   = "k8s.io_cluster-autoscaler_node-template_autoscaling-options_"
+
+	// PowerStates reflect the operational state of a VM
+	// From https://learn.microsoft.com/en-us/java/api/com.microsoft.azure.management.compute.powerstate?view=azure-java-stable
+	vmPowerStateStarting     = "PowerState/starting"
+	vmPowerStateRunning      = "PowerState/running"
+	vmPowerStateStopping     = "PowerState/stopping"
+	vmPowerStateStopped      = "PowerState/stopped"
+	vmPowerStateDeallocating = "PowerState/deallocating"
+	vmPowerStateDeallocated  = "PowerState/deallocated"
+	vmPowerStateUnknown      = "PowerState/unknown"
 )
 
 var (
@@ -607,4 +617,33 @@ func isAzureRequestsThrottled(rerr *retry.Error) bool {
 	}
 
 	return rerr.HTTPStatusCode == http.StatusTooManyRequests
+}
+
+func isRunningVmPowerState(powerState string) bool {
+	return powerState == vmPowerStateRunning || powerState == vmPowerStateStarting
+}
+
+func isKnownVmPowerState(powerState string) bool {
+	knownPowerStates := map[string]bool{
+		vmPowerStateStarting:     true,
+		vmPowerStateRunning:      true,
+		vmPowerStateStopping:     true,
+		vmPowerStateStopped:      true,
+		vmPowerStateDeallocating: true,
+		vmPowerStateDeallocated:  true,
+		vmPowerStateUnknown:      true,
+	}
+	return knownPowerStates[powerState]
+}
+
+func vmPowerStateFromStatuses(statuses []compute.InstanceViewStatus) string {
+	for _, status := range statuses {
+		if status.Code == nil || !isKnownVmPowerState(*status.Code) {
+			continue
+		}
+		return *status.Code
+	}
+
+	// PowerState is not set if the VM is still creating (or has failed creation)
+	return vmPowerStateUnknown
 }

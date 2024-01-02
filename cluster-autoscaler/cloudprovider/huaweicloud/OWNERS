@@ -4,3 +4,6 @@ approvers:
 reviewers:
 - kevin-wangzefeng
 - RainbowMango
+
+labels:
+- area/provider/huaweicloud

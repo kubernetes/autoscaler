@@ -27,6 +27,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
@@ -144,7 +145,7 @@ func testRunOnceBase(
 
 	for i := range pods {
 		pods[i] = test.Pod().WithName("test_"+strconv.Itoa(i)).
-			AddContainer(test.BuildTestContainer(containerName, "1", "100M")).
+			AddContainer(test.Container().WithName(containerName).WithCPURequest(resource.MustParse("1")).WithMemRequest(resource.MustParse("100M")).Get()).
 			WithCreator(&rc.ObjectMeta, &rc.TypeMeta).
 			Get()
 
@@ -162,8 +163,8 @@ func testRunOnceBase(
 	vpaObj := test.VerticalPodAutoscaler().
 		WithContainer(containerName).
 		WithTarget("2", "200M").
-		WithMinAllowed("1", "100M").
-		WithMaxAllowed("3", "1G").
+		WithMinAllowed(containerName, "1", "100M").
+		WithMaxAllowed(containerName, "3", "1G").
 		Get()
 	vpaObj.Spec.UpdatePolicy = &vpa_types.PodUpdatePolicy{UpdateMode: &updateMode}
 	vpaLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{vpaObj}, nil).Once()
@@ -175,6 +176,7 @@ func testRunOnceBase(
 		podLister:                    podLister,
 		evictionFactory:              factory,
 		evictionRateLimiter:          rate.NewLimiter(rate.Inf, 0),
+		evictionAdmission:            priority.NewDefaultPodEvictionAdmission(),
 		recommendationProcessor:      &test.FakeRecommendationProcessor{},
 		selectorFetcher:              mockSelectorFetcher,
 		useAdmissionControllerStatus: true,
@@ -201,6 +203,7 @@ func TestRunOnceNotingToProcess(t *testing.T) {
 		podLister:                    podLister,
 		evictionFactory:              factory,
 		evictionRateLimiter:          rate.NewLimiter(rate.Inf, 0),
+		evictionAdmission:            priority.NewDefaultPodEvictionAdmission(),
 		recommendationProcessor:      &test.FakeRecommendationProcessor{},
 		useAdmissionControllerStatus: true,
 		statusValidator:              newFakeValidator(true),

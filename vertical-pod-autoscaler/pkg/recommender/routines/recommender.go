@@ -21,7 +21,8 @@ import (
 	"flag"
 	"time"
 
-	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
+	"k8s.io/klog/v2"
+
 	vpa_api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/checkpoint"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input"
@@ -30,25 +31,11 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	metrics_recommender "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/recommender"
 	vpa_utils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
-	"k8s.io/client-go/informers"
-	kube_client "k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
-	klog "k8s.io/klog/v2"
-)
-
-const (
-	// AggregateContainerStateGCInterval defines how often expired AggregateContainerStates are garbage collected.
-	AggregateContainerStateGCInterval               = 1 * time.Hour
-	scaleCacheEntryLifetime           time.Duration = time.Hour
-	scaleCacheEntryFreshnessTime      time.Duration = 10 * time.Minute
-	scaleCacheEntryJitterFactor       float64       = 1.
-	defaultResyncPeriod               time.Duration = 10 * time.Minute
 )
 
 var (
 	checkpointsWriteTimeout = flag.Duration("checkpoints-timeout", time.Minute, `Timeout for writing checkpoints since the start of the recommender's main loop`)
 	minCheckpointsPerRun    = flag.Int("min-checkpoints", 10, "Minimum number of checkpoints to write per recommender's main loop")
-	memorySaver             = flag.Bool("memory-saver", false, `If true, only track pods which have an associated VPA`)
 )
 
 // Recommender recommend resources for certain containers, based on utilization periodically got from metrics api.
@@ -110,7 +97,7 @@ func (r *recommender) UpdateVPAs() {
 		listOfResourceRecommendation := logic.MapToListOfRecommendedContainerResources(resources)
 
 		for _, postProcessor := range r.recommendationPostProcessor {
-			listOfResourceRecommendation = postProcessor.Process(vpa, listOfResourceRecommendation, observedVpa.Spec.ResourcePolicy)
+			listOfResourceRecommendation = postProcessor.Process(observedVpa, listOfResourceRecommendation)
 		}
 
 		vpa.UpdateRecommendation(listOfResourceRecommendation)
@@ -139,7 +126,7 @@ func (r *recommender) UpdateVPAs() {
 			r.vpaClient.VerticalPodAutoscalers(vpa.ID.Namespace), vpa.ID.VpaName, vpa.AsStatus(), &observedVpa.Status)
 		if err != nil {
 			klog.Errorf(
-				"Cannot update VPA %v object. Reason: %+v", vpa.ID.VpaName, err)
+				"Cannot update VPA %v/%v object. Reason: %+v", vpa.ID.Namespace, vpa.ID.VpaName, err)
 		}
 	}
 }
@@ -222,26 +209,4 @@ func (c RecommenderFactory) Make() Recommender {
 	}
 	klog.V(3).Infof("New Recommender created %+v", recommender)
 	return recommender
-}
-
-// NewRecommender creates a new recommender instance.
-// Dependencies are created automatically.
-// Deprecated; use RecommenderFactory instead.
-func NewRecommender(config *rest.Config, checkpointsGCInterval time.Duration, useCheckpoints bool, namespace string, recommenderName string, recommendationPostProcessors []RecommendationPostProcessor) Recommender {
-	clusterState := model.NewClusterState(AggregateContainerStateGCInterval)
-	kubeClient := kube_client.NewForConfigOrDie(config)
-	factory := informers.NewSharedInformerFactoryWithOptions(kubeClient, defaultResyncPeriod, informers.WithNamespace(namespace))
-	controllerFetcher := controllerfetcher.NewControllerFetcher(config, kubeClient, factory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor)
-
-	return RecommenderFactory{
-		ClusterState:                 clusterState,
-		ClusterStateFeeder:           input.NewClusterStateFeeder(config, clusterState, *memorySaver, namespace, "default-metrics-client", recommenderName),
-		ControllerFetcher:            controllerFetcher,
-		CheckpointWriter:             checkpoint.NewCheckpointWriter(clusterState, vpa_clientset.NewForConfigOrDie(config).AutoscalingV1()),
-		VpaClient:                    vpa_clientset.NewForConfigOrDie(config).AutoscalingV1(),
-		PodResourceRecommender:       logic.CreatePodResourceRecommender(),
-		RecommendationPostProcessors: recommendationPostProcessors,
-		CheckpointsGCInterval:        checkpointsGCInterval,
-		UseCheckpoints:               useCheckpoints,
-	}.Make()
 }

@@ -18,6 +18,9 @@ package config
 
 import (
 	"time"
+
+	kubelet_config "k8s.io/kubernetes/pkg/kubelet/apis/config"
+	scheduler_config "k8s.io/kubernetes/pkg/scheduler/apis/config"
 )
 
 // GpuLimits define lower and upper bound on GPU instances of given type in cluster
@@ -44,6 +47,22 @@ type NodeGroupAutoscalingOptions struct {
 	ScaleDownUnneededTime time.Duration
 	// ScaleDownUnreadyTime represents how long an unready node should be unneeded before it is eligible for scale down
 	ScaleDownUnreadyTime time.Duration
+	// Maximum time CA waits for node to be provisioned
+	MaxNodeProvisionTime time.Duration
+	// ZeroOrMaxNodeScaling means that a node group should be scaled up to maximum size or down to zero nodes all at once instead of one-by-one.
+	ZeroOrMaxNodeScaling bool
+	// IgnoreDaemonSetsUtilization sets if daemonsets utilization should be considered during node scale-down
+	IgnoreDaemonSetsUtilization bool
+}
+
+// GCEOptions contain autoscaling options specific to GCE cloud provider.
+type GCEOptions struct {
+	// ConcurrentRefreshes is the maximum number of concurrently refreshed instance groups or instance templates.
+	ConcurrentRefreshes int
+	// MigInstancesMinRefreshWaitTime is the minimum time which needs to pass before GCE MIG instances from a given MIG can be refreshed.
+	MigInstancesMinRefreshWaitTime time.Duration
+	// DomainUrl is the GCE url used to make calls to GCE API.
+	DomainUrl string
 }
 
 const (
@@ -103,21 +122,24 @@ type AutoscalingOptions struct {
 	GRPCExpanderCert string
 	// GRPCExpanderURL is the url of the gRPC server when using the gRPC expander
 	GRPCExpanderURL string
-	// IgnoreDaemonSetsUtilization is whether CA will ignore DaemonSet pods when calculating resource utilization for scaling down
-	IgnoreDaemonSetsUtilization bool
 	// IgnoreMirrorPodsUtilization is whether CA will ignore Mirror pods when calculating resource utilization for scaling down
 	IgnoreMirrorPodsUtilization bool
 	// MaxGracefulTerminationSec is maximum number of seconds scale down waits for pods to terminate before
 	// removing the node from cloud provider.
+	// DrainPriorityConfig takes higher precedence and MaxGracefulTerminationSec will not be applicable when the DrainPriorityConfig is set.
 	MaxGracefulTerminationSec int
-	//  Maximum time CA waits for node to be provisioned
-	MaxNodeProvisionTime time.Duration
+	// DrainPriorityConfig is a list of ShutdownGracePeriodByPodPriority.
+	// This field is optional and could be nil.
+	// DrainPriorityConfig takes higher precedence and MaxGracefulTerminationSec will not be applicable when the DrainPriorityConfig is set.
+	DrainPriorityConfig []kubelet_config.ShutdownGracePeriodByPodPriority
 	// MaxTotalUnreadyPercentage is the maximum percentage of unready nodes after which CA halts operations
 	MaxTotalUnreadyPercentage float64
 	// OkTotalUnreadyCount is the number of allowed unready nodes, irrespective of max-total-unready-percentage
 	OkTotalUnreadyCount int
 	// ScaleUpFromZero defines if CA should scale up when there 0 ready nodes.
 	ScaleUpFromZero bool
+	// ParallelScaleUp defines whether CA can scale up node groups in parallel.
+	ParallelScaleUp bool
 	// CloudConfig is the path to the cloud provider configuration file. Empty string for no configuration file.
 	CloudConfig string
 	// CloudProviderName sets the type of the cloud provider CA is about to run in. Allowed values: gce, aws
@@ -152,6 +174,9 @@ type AutoscalingOptions struct {
 	// ScaleDownSimulationTimeout defines the maximum time that can be
 	// spent on scale down simulation.
 	ScaleDownSimulationTimeout time.Duration
+	// SchedulerConfig allows changing configuration of in-tree
+	// scheduler plugins acting on PreFilter and Filter extension points
+	SchedulerConfig *scheduler_config.KubeSchedulerConfiguration
 	// NodeDeletionDelayTimeout is maximum time CA waits for removing delay-deletion.cluster-autoscaler.kubernetes.io/ annotations before deleting the node.
 	NodeDeletionDelayTimeout time.Duration
 	// WriteStatusConfigMap tells if the status information should be written to a ConfigMap
@@ -184,8 +209,14 @@ type AutoscalingOptions struct {
 	MaxBulkSoftTaintTime time.Duration
 	// MaxPodEvictionTime sets the maximum time CA tries to evict a pod before giving up.
 	MaxPodEvictionTime time.Duration
-	// IgnoredTaints is a list of taints to ignore when considering a node template for scheduling.
-	IgnoredTaints []string
+	// StartupTaints is a list of taints CA considers to reflect transient node
+	// status that should be removed when creating a node template for scheduling.
+	// startup taints are expected to appear during node startup.
+	StartupTaints []string
+	// StatusTaints is a list of taints CA considers to reflect transient node
+	// status that should be removed when creating a node template for scheduling.
+	// The status taints are expected to appear during node lifetime, after startup.
+	StatusTaints []string
 	// BalancingExtraIgnoredLabels is a list of labels to additionally ignore when comparing if two node groups are similar.
 	// Labels in BasicIgnoredLabels and the cloud provider-specific ignored labels are always ignored.
 	BalancingExtraIgnoredLabels []string
@@ -194,14 +225,10 @@ type AutoscalingOptions struct {
 	BalancingLabels []string
 	// AWSUseStaticInstanceList tells if AWS cloud provider use static instance type list or dynamically fetch from remote APIs.
 	AWSUseStaticInstanceList bool
-	// ConcurrentGceRefreshes is the maximum number of concurrently refreshed instance groups or instance templates.
-	ConcurrentGceRefreshes int
-	// Path to kube configuration if available
-	KubeConfigPath string
-	// Burst setting for kubernetes client
-	KubeClientBurst int
-	// QPS setting for kubernetes client
-	KubeClientQPS float64
+	// GCEOptions contain autoscaling options specific to GCE cloud provider.
+	GCEOptions GCEOptions
+	// KubeClientOpts specify options for kube client
+	KubeClientOpts KubeClientOptions
 	// ClusterAPICloudConfigAuthoritative tells the Cluster API provider to treat the CloudConfig option as authoritative and
 	// not use KubeConfigPath as a fallback when it is not provided.
 	ClusterAPICloudConfigAuthoritative bool
@@ -223,8 +250,6 @@ type AutoscalingOptions struct {
 	MaxScaleDownParallelism int
 	// MaxDrainParallelism is the maximum number of nodes needing drain, that can be drained and deleted in parallel.
 	MaxDrainParallelism int
-	// GceExpanderEphemeralStorageSupport is whether scale-up takes ephemeral storage resources into account.
-	GceExpanderEphemeralStorageSupport bool
 	// RecordDuplicatedEvents controls whether events should be duplicated within a 5 minute window.
 	RecordDuplicatedEvents bool
 	// MaxNodesPerScaleUp controls how many nodes can be added in a single scale-up.
@@ -251,4 +276,23 @@ type AutoscalingOptions struct {
 	ParallelDrain bool
 	// NodeGroupSetRatio is a collection of ratios used by CA used to make scaling decisions.
 	NodeGroupSetRatios NodeGroupDifferenceRatios
+	// dynamicNodeDeleteDelayAfterTaintEnabled is used to enable/disable dynamic adjustment of NodeDeleteDelayAfterTaint
+	// based on the latency between the CA and the api-server
+	DynamicNodeDeleteDelayAfterTaintEnabled bool
+	// BypassedSchedulers are used to specify which schedulers to bypass their processing
+	BypassedSchedulers map[string]bool
+}
+
+// KubeClientOptions specify options for kube client
+type KubeClientOptions struct {
+	// Master specifies master location.
+	Master string
+	// Path to kube configuration if available
+	KubeConfigPath string
+	// APIContentType specifies type of requests sent to APIServer.
+	APIContentType string
+	// Burst setting for kubernetes client
+	KubeClientBurst int
+	// QPS setting for kubernetes client
+	KubeClientQPS float32
 }

@@ -24,6 +24,7 @@ import (
 	"testing"
 	"time"
 
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -66,7 +67,12 @@ func TestSoftMarkNodes(t *testing.T) {
 func TestCheckNodes(t *testing.T) {
 	defer setConflictRetryInterval(setConflictRetryInterval(time.Millisecond))
 	node := BuildTestNode("node", 1000, 1000)
-	addTaintToSpec(node, ToBeDeletedTaint, apiv1.TaintEffectNoSchedule, false)
+	taint := apiv1.Taint{
+		Key:    ToBeDeletedTaint,
+		Value:  fmt.Sprint(time.Now().Unix()),
+		Effect: apiv1.TaintEffectNoSchedule,
+	}
+	addTaintToSpec(node, taint, false)
 	fakeClient := buildFakeClientWithConflicts(t, node)
 
 	updatedNode := getNode(t, fakeClient, "node")
@@ -77,7 +83,12 @@ func TestCheckNodes(t *testing.T) {
 func TestSoftCheckNodes(t *testing.T) {
 	defer setConflictRetryInterval(setConflictRetryInterval(time.Millisecond))
 	node := BuildTestNode("node", 1000, 1000)
-	addTaintToSpec(node, DeletionCandidateTaint, apiv1.TaintEffectPreferNoSchedule, false)
+	taint := apiv1.Taint{
+		Key:    DeletionCandidateTaint,
+		Value:  fmt.Sprint(time.Now().Unix()),
+		Effect: apiv1.TaintEffectPreferNoSchedule,
+	}
+	addTaintToSpec(node, taint, false)
 	fakeClient := buildFakeClientWithConflicts(t, node)
 
 	updatedNode := getNode(t, fakeClient, "node")
@@ -120,7 +131,12 @@ func TestSoftQueryNodes(t *testing.T) {
 func TestCleanNodes(t *testing.T) {
 	defer setConflictRetryInterval(setConflictRetryInterval(time.Millisecond))
 	node := BuildTestNode("node", 1000, 1000)
-	addTaintToSpec(node, ToBeDeletedTaint, apiv1.TaintEffectNoSchedule, false)
+	taint := apiv1.Taint{
+		Key:    ToBeDeletedTaint,
+		Value:  fmt.Sprint(time.Now().Unix()),
+		Effect: apiv1.TaintEffectNoSchedule,
+	}
+	addTaintToSpec(node, taint, false)
 	fakeClient := buildFakeClientWithConflicts(t, node)
 
 	updatedNode := getNode(t, fakeClient, "node")
@@ -140,7 +156,12 @@ func TestCleanNodes(t *testing.T) {
 func TestCleanNodesWithCordon(t *testing.T) {
 	defer setConflictRetryInterval(setConflictRetryInterval(time.Millisecond))
 	node := BuildTestNode("node", 1000, 1000)
-	addTaintToSpec(node, ToBeDeletedTaint, apiv1.TaintEffectNoSchedule, true)
+	taint := apiv1.Taint{
+		Key:    ToBeDeletedTaint,
+		Value:  fmt.Sprint(time.Now().Unix()),
+		Effect: apiv1.TaintEffectNoSchedule,
+	}
+	addTaintToSpec(node, taint, true)
 	fakeClient := buildFakeClientWithConflicts(t, node)
 
 	updatedNode := getNode(t, fakeClient, "node")
@@ -160,7 +181,12 @@ func TestCleanNodesWithCordon(t *testing.T) {
 func TestCleanNodesWithCordonOnOff(t *testing.T) {
 	defer setConflictRetryInterval(setConflictRetryInterval(time.Millisecond))
 	node := BuildTestNode("node", 1000, 1000)
-	addTaintToSpec(node, ToBeDeletedTaint, apiv1.TaintEffectNoSchedule, true)
+	taint := apiv1.Taint{
+		Key:    ToBeDeletedTaint,
+		Value:  fmt.Sprint(time.Now().Unix()),
+		Effect: apiv1.TaintEffectNoSchedule,
+	}
+	addTaintToSpec(node, taint, true)
 	fakeClient := buildFakeClientWithConflicts(t, node)
 
 	updatedNode := getNode(t, fakeClient, "node")
@@ -180,7 +206,12 @@ func TestCleanNodesWithCordonOnOff(t *testing.T) {
 func TestSoftCleanNodes(t *testing.T) {
 	defer setConflictRetryInterval(setConflictRetryInterval(time.Millisecond))
 	node := BuildTestNode("node", 1000, 1000)
-	addTaintToSpec(node, DeletionCandidateTaint, apiv1.TaintEffectPreferNoSchedule, false)
+	taint := apiv1.Taint{
+		Key:    DeletionCandidateTaint,
+		Value:  fmt.Sprint(time.Now().Unix()),
+		Effect: apiv1.TaintEffectPreferNoSchedule,
+	}
+	addTaintToSpec(node, taint, false)
 	fakeClient := buildFakeClientWithConflicts(t, node)
 
 	updatedNode := getNode(t, fakeClient, "node")
@@ -277,7 +308,7 @@ func buildFakeClientWithConflicts(t *testing.T, nodes ...*apiv1.Node) *fake.Clie
 	return fakeClient
 }
 
-func TestFilterOutNodesWithIgnoredTaints(t *testing.T) {
+func TestFilterOutNodesWithStartupTaints(t *testing.T) {
 	isReady := func(t *testing.T, node *apiv1.Node) bool {
 		for _, condition := range node.Status.Conditions {
 			if condition.Type == apiv1.NodeReady {
@@ -295,29 +326,30 @@ func TestFilterOutNodesWithIgnoredTaints(t *testing.T) {
 	}
 
 	for name, tc := range map[string]struct {
-		readyNodes    int
-		allNodes      int
-		ignoredTaints TaintKeySet
-		node          *apiv1.Node
+		readyNodes            int
+		allNodes              int
+		startupTaints         TaintKeySet
+		startupTaintsPrefixes []string
+		node                  *apiv1.Node
 	}{
-		"empty ignored taints, no node": {
+		"empty startup taints, no node": {
 			readyNodes:    0,
 			allNodes:      0,
-			ignoredTaints: map[string]bool{},
+			startupTaints: map[string]bool{},
 			node:          nil,
 		},
-		"one ignored taint, no node": {
+		"one startup taint, no node": {
 			readyNodes: 0,
 			allNodes:   0,
-			ignoredTaints: map[string]bool{
+			startupTaints: map[string]bool{
 				"my-taint": true,
 			},
 			node: nil,
 		},
-		"one ignored taint, one ready untainted node": {
+		"one startup taint, one ready untainted node": {
 			readyNodes: 1,
 			allNodes:   1,
-			ignoredTaints: map[string]bool{
+			startupTaints: map[string]bool{
 				"my-taint": true,
 			},
 			node: &apiv1.Node{
@@ -333,10 +365,10 @@ func TestFilterOutNodesWithIgnoredTaints(t *testing.T) {
 				},
 			},
 		},
-		"one ignored taint, one unready tainted node": {
+		"one startup taint, one unready tainted node": {
 			readyNodes: 0,
 			allNodes:   1,
-			ignoredTaints: map[string]bool{
+			startupTaints: map[string]bool{
 				"my-taint": true,
 			},
 			node: &apiv1.Node{
@@ -358,10 +390,11 @@ func TestFilterOutNodesWithIgnoredTaints(t *testing.T) {
 				},
 			},
 		},
-		"no ignored taint, one unready prefixed tainted node": {
-			readyNodes:    0,
-			allNodes:      1,
-			ignoredTaints: map[string]bool{},
+		"no startup taint, one node unready prefixed with startup taint prefix (Compatibility)": {
+			readyNodes:            0,
+			allNodes:              1,
+			startupTaints:         map[string]bool{},
+			startupTaintsPrefixes: []string{IgnoreTaintPrefix},
 			node: &apiv1.Node{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:              "notReadyTainted",
@@ -381,10 +414,34 @@ func TestFilterOutNodesWithIgnoredTaints(t *testing.T) {
 				},
 			},
 		},
-		"no ignored taint, two taints": {
+		"no startup taint, one node unready prefixed with startup taint prefix": {
+			readyNodes:            0,
+			allNodes:              1,
+			startupTaints:         map[string]bool{},
+			startupTaintsPrefixes: []string{StartupTaintPrefix},
+			node: &apiv1.Node{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:              "notReadyTainted",
+					CreationTimestamp: metav1.NewTime(time.Now()),
+				},
+				Spec: apiv1.NodeSpec{
+					Taints: []apiv1.Taint{
+						{
+							Key:    StartupTaintPrefix + "another-taint",
+							Value:  "myValue",
+							Effect: apiv1.TaintEffectNoSchedule,
+						},
+					},
+				},
+				Status: apiv1.NodeStatus{
+					Conditions: []apiv1.NodeCondition{readyCondition},
+				},
+			},
+		},
+		"no startup taint, two taints": {
 			readyNodes:    1,
 			allNodes:      1,
-			ignoredTaints: map[string]bool{},
+			startupTaints: map[string]bool{},
 			node: &apiv1.Node{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:              "ReadyTainted",
@@ -415,7 +472,11 @@ func TestFilterOutNodesWithIgnoredTaints(t *testing.T) {
 			if tc.node != nil {
 				nodes = append(nodes, tc.node)
 			}
-			allNodes, readyNodes := FilterOutNodesWithIgnoredTaints(tc.ignoredTaints, nodes, nodes)
+			taintConfig := TaintConfig{
+				startupTaints:        tc.startupTaints,
+				startupTaintPrefixes: tc.startupTaintsPrefixes,
+			}
+			allNodes, readyNodes := FilterOutNodesWithStartupTaints(taintConfig, nodes, nodes)
 			assert.Equal(t, tc.allNodes, len(allNodes))
 			assert.Equal(t, tc.readyNodes, len(readyNodes))
 
@@ -456,8 +517,13 @@ func TestSanitizeTaints(t *testing.T) {
 					Effect: apiv1.TaintEffectNoSchedule,
 				},
 				{
-					Key:    ReschedulerTaintKey,
-					Value:  "test1",
+					Key:    StatusTaintPrefix + "some-taint",
+					Value:  "myValue",
+					Effect: apiv1.TaintEffectNoSchedule,
+				},
+				{
+					Key:    StartupTaintPrefix + "some-taint",
+					Value:  "myValue",
 					Effect: apiv1.TaintEffectNoSchedule,
 				},
 				{
@@ -472,6 +538,11 @@ func TestSanitizeTaints(t *testing.T) {
 				},
 				{
 					Key:    "ignore-me",
+					Value:  "1",
+					Effect: apiv1.TaintEffectNoSchedule,
+				},
+				{
+					Key:    "status-me",
 					Value:  "1",
 					Effect: apiv1.TaintEffectNoSchedule,
 				},
@@ -491,9 +562,113 @@ func TestSanitizeTaints(t *testing.T) {
 			Conditions: []apiv1.NodeCondition{},
 		},
 	}
-	ignoredTaints := map[string]bool{"ignore-me": true}
+	taintConfig := TaintConfig{
+		startupTaints:        map[string]bool{"ignore-me": true},
+		statusTaints:         map[string]bool{"status-me": true},
+		startupTaintPrefixes: []string{IgnoreTaintPrefix, StartupTaintPrefix},
+	}
 
-	newTaints := SanitizeTaints(node.Spec.Taints, ignoredTaints)
-	require.Equal(t, len(newTaints), 1)
-	assert.Equal(t, newTaints[0].Key, "test-taint")
+	newTaints := SanitizeTaints(node.Spec.Taints, taintConfig)
+	require.Equal(t, 2, len(newTaints))
+	assert.Equal(t, newTaints[0].Key, StatusTaintPrefix+"some-taint")
+	assert.Equal(t, newTaints[1].Key, "test-taint")
+}
+
+func TestCountNodeTaints(t *testing.T) {
+	node := &apiv1.Node{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:              "node-count-node-taints",
+			CreationTimestamp: metav1.NewTime(time.Now()),
+		},
+		Spec: apiv1.NodeSpec{
+			Taints: []apiv1.Taint{
+				{
+					Key:    IgnoreTaintPrefix + "another-taint",
+					Value:  "myValue",
+					Effect: apiv1.TaintEffectNoSchedule,
+				},
+				{
+					Key:    StatusTaintPrefix + "some-taint",
+					Value:  "myValue",
+					Effect: apiv1.TaintEffectNoSchedule,
+				},
+				{
+					Key:    StartupTaintPrefix + "some-taint",
+					Value:  "myValue",
+					Effect: apiv1.TaintEffectNoSchedule,
+				},
+				{
+					Key:    "test-taint",
+					Value:  "test2",
+					Effect: apiv1.TaintEffectNoSchedule,
+				},
+				{
+					Key:    ToBeDeletedTaint,
+					Value:  "1",
+					Effect: apiv1.TaintEffectNoSchedule,
+				},
+				{
+					Key:    "ignore-me",
+					Value:  "1",
+					Effect: apiv1.TaintEffectNoSchedule,
+				},
+				{
+					Key:    "status-me",
+					Value:  "1",
+					Effect: apiv1.TaintEffectNoSchedule,
+				},
+				{
+					Key:    "node.kubernetes.io/memory-pressure",
+					Value:  "1",
+					Effect: apiv1.TaintEffectNoSchedule,
+				},
+				{
+					Key:    "ignore-taint.cluster-autoscaler.kubernetes.io/to-be-ignored",
+					Value:  "myValue2",
+					Effect: apiv1.TaintEffectNoSchedule,
+				},
+			},
+		},
+		Status: apiv1.NodeStatus{
+			Conditions: []apiv1.NodeCondition{},
+		},
+	}
+	node2 := &apiv1.Node{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:              "node-count-node-taints",
+			CreationTimestamp: metav1.NewTime(time.Now()),
+		},
+		Spec: apiv1.NodeSpec{
+			Taints: []apiv1.Taint{
+				{
+					Key:    StatusTaintPrefix + "some-taint",
+					Value:  "myValue",
+					Effect: apiv1.TaintEffectNoSchedule,
+				},
+				{
+					Key:    "node.kubernetes.io/unschedulable",
+					Value:  "1",
+					Effect: apiv1.TaintEffectNoSchedule,
+				},
+			},
+		},
+		Status: apiv1.NodeStatus{
+			Conditions: []apiv1.NodeCondition{},
+		},
+	}
+	taintConfig := NewTaintConfig(config.AutoscalingOptions{
+		StatusTaints:  []string{"status-me"},
+		StartupTaints: []string{"ignore-me"},
+	})
+	want := map[string]int{
+		"ignore-taint.cluster-autoscaler.kubernetes.io/": 2,
+		"ToBeDeletedByClusterAutoscaler":                 1,
+		"node.kubernetes.io/memory-pressure":             1,
+		"node.kubernetes.io/unschedulable":               1,
+		"other":                                          1,
+		"startup-taint":                                  2,
+		"status-taint":                                   3,
+	}
+	got := CountNodeTaints([]*apiv1.Node{node, node2}, taintConfig)
+	assert.Equal(t, want, got)
 }

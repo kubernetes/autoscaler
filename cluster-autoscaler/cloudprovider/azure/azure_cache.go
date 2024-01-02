@@ -24,7 +24,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-03-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/Azure/skewer"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -39,7 +39,7 @@ var (
 // azureCache is used for caching cluster resources state.
 //
 // It is needed to:
-// - keep track of node groups (AKS, VM and VMSS types) in the cluster,
+// - keep track of node groups (VM and VMSS types) in the cluster,
 // - keep track of instances and which node group they belong to,
 // - limit repetitive Azure API calls.
 type azureCache struct {
@@ -174,7 +174,7 @@ func (m *azureCache) fetchAzureResources() error {
 		} else {
 			return err
 		}
-	case vmTypeStandard, vmTypeAKS:
+	case vmTypeStandard:
 		// List all VMs in the RG.
 		vmResult, err := m.fetchVirtualMachines()
 		if err == nil {
@@ -341,11 +341,13 @@ func (m *azureCache) FindForInstance(instance *azureRef, vmType string) (cloudpr
 	}
 
 	if vmType == vmTypeVMSS {
-		// Omit virtual machines not managed by vmss.
-		if ok := virtualMachineRE.Match([]byte(inst.Name)); ok {
-			klog.V(3).Infof("Instance %q is not managed by vmss, omit it in autoscaler", instance.Name)
-			m.unownedInstances[inst] = true
-			return nil, nil
+		if m.areAllScaleSetsUniform() {
+			// Omit virtual machines not managed by vmss only in case of uniform scale set.
+			if ok := virtualMachineRE.Match([]byte(inst.Name)); ok {
+				klog.V(3).Infof("Instance %q is not managed by vmss, omit it in autoscaler", instance.Name)
+				m.unownedInstances[inst] = true
+				return nil, nil
+			}
 		}
 	}
 
@@ -366,6 +368,16 @@ func (m *azureCache) FindForInstance(instance *azureRef, vmType string) (cloudpr
 	}
 	klog.V(4).Infof("FindForInstance: Couldn't find node group of instance %q", inst)
 	return nil, nil
+}
+
+// isAllScaleSetsAreUniform determines if all the scale set autoscaler is monitoring are Uniform or not.
+func (m *azureCache) areAllScaleSetsUniform() bool {
+	for _, scaleSet := range m.scaleSets {
+		if scaleSet.VirtualMachineScaleSetProperties.OrchestrationMode == compute.Flexible {
+			return false
+		}
+	}
+	return true
 }
 
 // getInstanceFromCache gets the node group from cache. Returns nil if not found.

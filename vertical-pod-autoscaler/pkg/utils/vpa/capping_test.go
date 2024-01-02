@@ -27,7 +27,7 @@ import (
 )
 
 func TestRecommendationNotAvailable(t *testing.T) {
-	pod := test.Pod().WithName("pod1").AddContainer(test.BuildTestContainer("ctr-name", "", "")).Get()
+	pod := test.Pod().WithName("pod1").AddContainer(test.Container().WithName("ctr-name").Get()).Get()
 	podRecommendation := vpa_types.RecommendedPodResources{
 		ContainerRecommendations: []vpa_types.RecommendedContainerResources{
 			{
@@ -48,7 +48,7 @@ func TestRecommendationNotAvailable(t *testing.T) {
 }
 
 func TestRecommendationToLimitCapping(t *testing.T) {
-	pod := test.Pod().WithName("pod1").AddContainer(test.BuildTestContainer("ctr-name", "", "")).Get()
+	pod := test.Pod().WithName("pod1").AddContainer(test.Container().WithName("ctr-name").Get()).Get()
 	pod.Spec.Containers[0].Resources.Limits =
 		apiv1.ResourceList{
 			apiv1.ResourceCPU:    *resource.NewScaledQuantity(3, 1),
@@ -143,7 +143,7 @@ func TestRecommendationToLimitCapping(t *testing.T) {
 }
 
 func TestRecommendationCappedToMinMaxPolicy(t *testing.T) {
-	pod := test.Pod().WithName("pod1").AddContainer(test.BuildTestContainer("ctr-name", "", "")).Get()
+	pod := test.Pod().WithName("pod1").AddContainer(test.Container().WithName("ctr-name").Get()).Get()
 	podRecommendation := vpa_types.RecommendedPodResources{
 		ContainerRecommendations: []vpa_types.RecommendedContainerResources{
 			{
@@ -238,7 +238,7 @@ var applyTestCases = []struct {
 }
 
 func TestApply(t *testing.T) {
-	pod := test.Pod().WithName("pod1").AddContainer(test.BuildTestContainer("ctr-name", "", "")).Get()
+	pod := test.Pod().WithName("pod1").AddContainer(test.Container().WithName("ctr-name").Get()).Get()
 
 	for _, testCase := range applyTestCases {
 		res, _, err := NewCappingRecommendationProcessor(&fakeLimitRangeCalculator{}).Apply(

@@ -20,9 +20,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/gogo/protobuf/proto"
 	"github.com/google/go-cmp/cmp"
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/proto"
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
 	apiv1 "k8s.io/api/core/v1"
@@ -125,7 +125,7 @@ func TestReplicasCounter(t *testing.T) {
 	jobLister, _ := kube_util.NewTestJobLister([]*batchv1.Job{job, unsetJob, jobWithSucceededReplicas})
 	rsLister, _ := kube_util.NewTestReplicaSetLister([]*appsv1.ReplicaSet{rs, unsetRs})
 	ssLister, _ := kube_util.NewTestStatefulSetLister([]*appsv1.StatefulSet{sS})
-	listers := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, rcLister, jobLister, rsLister, ssLister)
+	listers := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, rcLister, jobLister, rsLister, ssLister)
 	testCases := []struct {
 		name         string
 		ownerRef     metav1.OwnerReference

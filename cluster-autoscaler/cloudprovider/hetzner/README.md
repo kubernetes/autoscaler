@@ -2,7 +2,7 @@
 
 The cluster autoscaler for Hetzner Cloud scales worker nodes.
 
-# Configuration
+## Configuration
 
 `HCLOUD_TOKEN` Required Hetzner Cloud token.
 
@@ -10,11 +10,43 @@ The cluster autoscaler for Hetzner Cloud scales worker nodes.
 
 `HCLOUD_IMAGE` Defaults to `ubuntu-20.04`, @see https://docs.hetzner.cloud/#images. You can also use an image ID here (e.g. `15512617`), or a label selector associated with a custom snapshot (e.g. `customized_ubuntu=true`). The most recent snapshot will be used in the latter case.
 
-`HCLOUD_NETWORK` Default empty , The name of the network that is used in the cluster , @see https://docs.hetzner.cloud/#networks
+`HCLOUD_CLUSTER_CONFIG` This is the new format replacing 
+ * `HCLOUD_CLOUD_INIT` 
+ * `HCLOUD_IMAGE` 
+ 
+ Base64 encoded JSON according to the following structure
 
-`HCLOUD_FIREWALL` Default empty , The name of the firewall that is used in the cluster , @see https://docs.hetzner.cloud/#firewalls
+```json
+{
+    "imagesForArch": { // These should be the same format as HCLOUD_IMAGE
+        "arm64": "", 
+        "amd64": ""
+    },
+    "nodeConfigs": {
+        "pool1": { // This equals the pool name. Required for each pool that you have
+            "cloudInit": "", // HCLOUD_CLOUD_INIT make sure it isn't base64 encoded twice ;]
+            "labels": {
+                "node.kubernetes.io/role": "autoscaler-node"
+            },
+            "taints": 
+            [
+                {
+                    "key": "node.kubernetes.io/role",
+                    "value": "autoscaler-node",
+                    "effect": "NoExecute"
+                }
+            ]
+        }
+    }
+}
+```
 
-`HCLOUD_SSH_KEY` Default empty , This SSH Key will have access to the fresh created server, @see https://docs.hetzner.cloud/#ssh-keys
+
+`HCLOUD_NETWORK` Default empty , The id or name of the network that is used in the cluster , @see https://docs.hetzner.cloud/#networks
+
+`HCLOUD_FIREWALL` Default empty , The id or name of the firewall that is used in the cluster , @see https://docs.hetzner.cloud/#firewalls
+
+`HCLOUD_SSH_KEY` Default empty , The id or name of SSH Key that will have access to the fresh created server, @see https://docs.hetzner.cloud/#ssh-keys
 
 `HCLOUD_PUBLIC_IPV4` Default true , Whether the server is created with a public IPv4 address or not, @see https://docs.hetzner.cloud/#primary-ips
 
@@ -31,10 +63,9 @@ Multiple flags will create multiple node pools. For example:
 
 You can find a deployment sample under [examples/cluster-autoscaler-run-on-master.yaml](examples/cluster-autoscaler-run-on-master.yaml). Please be aware that you should change the values within this deployment to reflect your cluster.
 
-# Development
+## Development
 
-Make sure you're inside the root path of the [autoscaler
-repository](https://github.com/kubernetes/autoscaler)
+Make sure you're inside the `cluster-autoscaler` root folder.
 
 1.) Build the `cluster-autoscaler` binary:
 
@@ -54,4 +85,14 @@ docker build -t hetzner/cluster-autoscaler:dev .
 
 ```
 docker push hetzner/cluster-autoscaler:dev
+```
+
+### Updating vendored hcloud-go
+
+To update the vendored `hcloud-go` code, navigate to the directory and run the `hack/update-vendor.sh` script:
+
+```
+cd cluster-autoscaler/cloudprovider/hetzner
+UPSTREAM_REF=v2.0.0 hack/update-vendor.sh
+git add hcloud-go/
 ```

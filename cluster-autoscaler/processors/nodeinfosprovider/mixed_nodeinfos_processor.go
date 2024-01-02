@@ -72,7 +72,7 @@ func (p *MixedTemplateNodeInfoProvider) CleanUp() {
 }
 
 // Process returns the nodeInfos set for this cluster
-func (p *MixedTemplateNodeInfoProvider) Process(ctx *context.AutoscalingContext, nodes []*apiv1.Node, daemonsets []*appsv1.DaemonSet, ignoredTaints taints.TaintKeySet, now time.Time) (map[string]*schedulerframework.NodeInfo, errors.AutoscalerError) {
+func (p *MixedTemplateNodeInfoProvider) Process(ctx *context.AutoscalingContext, nodes []*apiv1.Node, daemonsets []*appsv1.DaemonSet, taintConfig taints.TaintConfig, now time.Time) (map[string]*schedulerframework.NodeInfo, errors.AutoscalerError) {
 	// TODO(mwielgus): This returns map keyed by url, while most code (including scheduler) uses node.Name for a key.
 	// TODO(mwielgus): Review error policy - sometimes we may continue with partial errors.
 	result := make(map[string]*schedulerframework.NodeInfo)
@@ -95,11 +95,22 @@ func (p *MixedTemplateNodeInfoProvider) Process(ctx *context.AutoscalingContext,
 		id := nodeGroup.Id()
 		if _, found := result[id]; !found {
 			// Build nodeInfo.
-			nodeInfo, err := simulator.BuildNodeInfoForNode(node, podsForNodes[node.Name], daemonsets, p.forceDaemonSets)
-			sanitizedNodeInfo, err := utils.SanitizeNodeInfo(nodeInfo, id, ignoredTaints)
+			sanitizedNode, err := utils.SanitizeNode(node, id, taintConfig)
 			if err != nil {
 				return false, "", err
 			}
+			nodeInfo, err := simulator.BuildNodeInfoForNode(sanitizedNode, podsForNodes[node.Name], daemonsets, p.forceDaemonSets)
+			if err != nil {
+				return false, "", err
+			}
+
+			var pods []*apiv1.Pod
+			for _, podInfo := range nodeInfo.Pods {
+				pods = append(pods, podInfo.Pod)
+			}
+
+			sanitizedNodeInfo := schedulerframework.NewNodeInfo(utils.SanitizePods(pods, sanitizedNode)...)
+			sanitizedNodeInfo.SetNode(sanitizedNode)
 			result[id] = sanitizedNodeInfo
 			return true, id, nil
 		}
@@ -141,7 +152,7 @@ func (p *MixedTemplateNodeInfoProvider) Process(ctx *context.AutoscalingContext,
 
 		// No good template, trying to generate one. This is called only if there are no
 		// working nodes in the node groups. By default CA tries to use a real-world example.
-		nodeInfo, err := utils.GetNodeInfoFromTemplate(nodeGroup, daemonsets, ignoredTaints)
+		nodeInfo, err := utils.GetNodeInfoFromTemplate(nodeGroup, daemonsets, taintConfig)
 		if err != nil {
 			if err == cloudprovider.ErrNotImplemented {
 				continue
@@ -184,12 +195,13 @@ func (p *MixedTemplateNodeInfoProvider) Process(ctx *context.AutoscalingContext,
 }
 
 func getPodsForNodes(listers kube_util.ListerRegistry) (map[string][]*apiv1.Pod, errors.AutoscalerError) {
-	pods, err := listers.ScheduledPodLister().List()
+	pods, err := listers.AllPodLister().List()
 	if err != nil {
 		return nil, errors.ToAutoscalerError(errors.ApiCallError, err)
 	}
+	scheduledPods := kube_util.ScheduledPods(pods)
 	podsForNodes := map[string][]*apiv1.Pod{}
-	for _, p := range pods {
+	for _, p := range scheduledPods {
 		podsForNodes[p.Spec.NodeName] = append(podsForNodes[p.Spec.NodeName], p)
 	}
 	return podsForNodes, nil

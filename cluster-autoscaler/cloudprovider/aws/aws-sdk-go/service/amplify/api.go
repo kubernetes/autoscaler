@@ -335,6 +335,10 @@ func (c *Amplify) CreateDeploymentRequest(input *CreateDeploymentInput) (req *re
 // Creates a deployment for a manually deployed Amplify app. Manually deployed
 // apps are not connected to a repository.
 //
+// The maximum duration between the CreateDeployment call and the StartDeployment
+// call cannot exceed 8 hours. If the duration exceeds 8 hours, the StartDeployment
+// call and the associated Job will fail.
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -1245,7 +1249,7 @@ func (c *Amplify) GetAppRequest(input *GetAppInput) (req *request.Request, outpu
 
 // GetApp API operation for AWS Amplify.
 //
-// Returns an existing Amplify app by appID.
+// Returns an existing Amplify app specified by an app ID.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1857,6 +1861,12 @@ func (c *Amplify) ListAppsRequest(input *ListAppsInput) (req *request.Request, o
 		Name:       opListApps,
 		HTTPMethod: "GET",
 		HTTPPath:   "/apps",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"nextToken"},
+			OutputTokens:    []string{"nextToken"},
+			LimitToken:      "maxResults",
+			TruncationToken: "",
+		},
 	}
 
 	if input == nil {
@@ -1910,6 +1920,57 @@ func (c *Amplify) ListAppsWithContext(ctx aws.Context, input *ListAppsInput, opt
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
+}
+
+// ListAppsPages iterates over the pages of a ListApps operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListApps method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListApps operation.
+//	pageNum := 0
+//	err := client.ListAppsPages(params,
+//	    func(page *amplify.ListAppsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *Amplify) ListAppsPages(input *ListAppsInput, fn func(*ListAppsOutput, bool) bool) error {
+	return c.ListAppsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListAppsPagesWithContext same as ListAppsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Amplify) ListAppsPagesWithContext(ctx aws.Context, input *ListAppsInput, fn func(*ListAppsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListAppsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListAppsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListAppsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
 }
 
 const opListArtifacts = "ListArtifacts"
@@ -2115,6 +2176,12 @@ func (c *Amplify) ListBranchesRequest(input *ListBranchesInput) (req *request.Re
 		Name:       opListBranches,
 		HTTPMethod: "GET",
 		HTTPPath:   "/apps/{appId}/branches",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"nextToken"},
+			OutputTokens:    []string{"nextToken"},
+			LimitToken:      "maxResults",
+			TruncationToken: "",
+		},
 	}
 
 	if input == nil {
@@ -2170,6 +2237,57 @@ func (c *Amplify) ListBranchesWithContext(ctx aws.Context, input *ListBranchesIn
 	return out, req.Send()
 }
 
+// ListBranchesPages iterates over the pages of a ListBranches operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListBranches method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListBranches operation.
+//	pageNum := 0
+//	err := client.ListBranchesPages(params,
+//	    func(page *amplify.ListBranchesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *Amplify) ListBranchesPages(input *ListBranchesInput, fn func(*ListBranchesOutput, bool) bool) error {
+	return c.ListBranchesPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListBranchesPagesWithContext same as ListBranchesPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Amplify) ListBranchesPagesWithContext(ctx aws.Context, input *ListBranchesInput, fn func(*ListBranchesOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListBranchesInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListBranchesRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListBranchesOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opListDomainAssociations = "ListDomainAssociations"
 
 // ListDomainAssociationsRequest generates a "aws/request.Request" representing the
@@ -2200,6 +2318,12 @@ func (c *Amplify) ListDomainAssociationsRequest(input *ListDomainAssociationsInp
 		Name:       opListDomainAssociations,
 		HTTPMethod: "GET",
 		HTTPPath:   "/apps/{appId}/domains",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"nextToken"},
+			OutputTokens:    []string{"nextToken"},
+			LimitToken:      "maxResults",
+			TruncationToken: "",
+		},
 	}
 
 	if input == nil {
@@ -2255,6 +2379,57 @@ func (c *Amplify) ListDomainAssociationsWithContext(ctx aws.Context, input *List
 	return out, req.Send()
 }
 
+// ListDomainAssociationsPages iterates over the pages of a ListDomainAssociations operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListDomainAssociations method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListDomainAssociations operation.
+//	pageNum := 0
+//	err := client.ListDomainAssociationsPages(params,
+//	    func(page *amplify.ListDomainAssociationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *Amplify) ListDomainAssociationsPages(input *ListDomainAssociationsInput, fn func(*ListDomainAssociationsOutput, bool) bool) error {
+	return c.ListDomainAssociationsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListDomainAssociationsPagesWithContext same as ListDomainAssociationsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Amplify) ListDomainAssociationsPagesWithContext(ctx aws.Context, input *ListDomainAssociationsInput, fn func(*ListDomainAssociationsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListDomainAssociationsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListDomainAssociationsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListDomainAssociationsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opListJobs = "ListJobs"
 
 // ListJobsRequest generates a "aws/request.Request" representing the
@@ -2285,6 +2460,12 @@ func (c *Amplify) ListJobsRequest(input *ListJobsInput) (req *request.Request, o
 		Name:       opListJobs,
 		HTTPMethod: "GET",
 		HTTPPath:   "/apps/{appId}/branches/{branchName}/jobs",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"nextToken"},
+			OutputTokens:    []string{"nextToken"},
+			LimitToken:      "maxResults",
+			TruncationToken: "",
+		},
 	}
 
 	if input == nil {
@@ -2341,6 +2522,57 @@ func (c *Amplify) ListJobsWithContext(ctx aws.Context, input *ListJobsInput, opt
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
+}
+
+// ListJobsPages iterates over the pages of a ListJobs operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListJobs method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListJobs operation.
+//	pageNum := 0
+//	err := client.ListJobsPages(params,
+//	    func(page *amplify.ListJobsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *Amplify) ListJobsPages(input *ListJobsInput, fn func(*ListJobsOutput, bool) bool) error {
+	return c.ListJobsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListJobsPagesWithContext same as ListJobsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Amplify) ListJobsPagesWithContext(ctx aws.Context, input *ListJobsInput, fn func(*ListJobsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListJobsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListJobsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListJobsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
 }
 
 const opListTagsForResource = "ListTagsForResource"
@@ -2561,6 +2793,10 @@ func (c *Amplify) StartDeploymentRequest(input *StartDeploymentInput) (req *requ
 //
 // Starts a deployment for a manually deployed app. Manually deployed apps are
 // not connected to a repository.
+//
+// The maximum duration between the CreateDeployment call and the StartDeployment
+// call cannot exceed 8 hours. If the duration exceeds 8 hours, the StartDeployment
+// call and the associated Job will fail.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3395,11 +3631,15 @@ type App struct {
 	// EnableBranchAutoBuild is a required field
 	EnableBranchAutoBuild *bool `locationName:"enableBranchAutoBuild" type:"boolean" required:"true"`
 
-	// Automatically disconnect a branch in the Amplify Console when you delete
+	// Automatically disconnect a branch in the Amplify console when you delete
 	// a branch from your Git repository.
 	EnableBranchAutoDeletion *bool `locationName:"enableBranchAutoDeletion" type:"boolean"`
 
 	// The environment variables for the Amplify app.
+	//
+	// For a list of the environment variables that are accessible to Amplify by
+	// default, see Amplify Environment variables (https://docs.aws.amazon.com/amplify/latest/userguide/amplify-console-environment-variables.html)
+	// in the Amplify Hosting User Guide.
 	//
 	// EnvironmentVariables is a required field
 	EnvironmentVariables map[string]*string `locationName:"environmentVariables" type:"map" required:"true"`
@@ -3413,7 +3653,10 @@ type App struct {
 	// Name is a required field
 	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
 
-	// The platform for the Amplify app.
+	// The platform for the Amplify app. For a static app, set the platform type
+	// to WEB. For a dynamic server-side rendered (SSR) app, set the platform type
+	// to WEB_COMPUTE. For an app requiring Amplify Hosting's original SSR support
+	// only, set the platform type to WEB_DYNAMIC.
 	//
 	// Platform is a required field
 	Platform *string `locationName:"platform" type:"string" required:"true" enum:"Platform"`
@@ -3791,6 +4034,51 @@ func (s *AutoBranchCreationConfig) SetStage(v string) *AutoBranchCreationConfig 
 	return s
 }
 
+// Describes the backend properties associated with an Amplify Branch.
+type Backend struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) for the CloudFormation stack.
+	StackArn *string `locationName:"stackArn" min:"20" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Backend) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Backend) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *Backend) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "Backend"}
+	if s.StackArn != nil && len(*s.StackArn) < 20 {
+		invalidParams.Add(request.NewErrParamMinLen("StackArn", 20))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetStackArn sets the StackArn field's value.
+func (s *Backend) SetStackArn(v string) *Backend {
+	s.StackArn = &v
+	return s
+}
+
 // Describes the backend environment for an Amplify app.
 type BackendEnvironment struct {
 	_ struct{} `type:"structure"`
@@ -3955,6 +4243,9 @@ type Branch struct {
 	// A list of custom resources that are linked to this branch.
 	AssociatedResources []*string `locationName:"associatedResources" type:"list"`
 
+	// Describes the backend properties associated with an Amplify Branch.
+	Backend *Backend `locationName:"backend" type:"structure"`
+
 	// The Amazon Resource Name (ARN) for a backend environment that is part of
 	// an Amplify app.
 	BackendEnvironmentArn *string `locationName:"backendEnvironmentArn" type:"string"`
@@ -4106,6 +4397,12 @@ func (s *Branch) SetActiveJobId(v string) *Branch {
 // SetAssociatedResources sets the AssociatedResources field's value.
 func (s *Branch) SetAssociatedResources(v []*string) *Branch {
 	s.AssociatedResources = v
+	return s
+}
+
+// SetBackend sets the Backend field's value.
+func (s *Branch) SetBackend(v *Backend) *Branch {
+	s.Backend = v
 	return s
 }
 
@@ -4275,7 +4572,7 @@ type CreateAppInput struct {
 	// Existing Amplify apps deployed from a GitHub repository using OAuth continue
 	// to work with CI/CD. However, we strongly recommend that you migrate these
 	// apps to use the GitHub App. For more information, see Migrating an existing
-	// OAuth app to the Amplify GitHub App (https://docs.aws.amazon.com/amplify/latest/UserGuide/setting-up-GitHub-access.html#migrating-to-github-app-auth)
+	// OAuth app to the Amplify GitHub App (https://docs.aws.amazon.com/amplify/latest/userguide/setting-up-GitHub-access.html#migrating-to-github-app-auth)
 	// in the Amplify User Guide .
 	//
 	// AccessToken is a sensitive parameter and its value will be
@@ -4310,7 +4607,7 @@ type CreateAppInput struct {
 	// The custom rewrite and redirect rules for an Amplify app.
 	CustomRules []*CustomRule `locationName:"customRules" type:"list"`
 
-	// The description for an Amplify app.
+	// The description of the Amplify app.
 	Description *string `locationName:"description" type:"string"`
 
 	// Enables automated branch creation for an Amplify app.
@@ -4323,18 +4620,22 @@ type CreateAppInput struct {
 	// Enables the auto building of branches for an Amplify app.
 	EnableBranchAutoBuild *bool `locationName:"enableBranchAutoBuild" type:"boolean"`
 
-	// Automatically disconnects a branch in the Amplify Console when you delete
+	// Automatically disconnects a branch in the Amplify console when you delete
 	// a branch from your Git repository.
 	EnableBranchAutoDeletion *bool `locationName:"enableBranchAutoDeletion" type:"boolean"`
 
 	// The environment variables map for an Amplify app.
+	//
+	// For a list of the environment variables that are accessible to Amplify by
+	// default, see Amplify Environment variables (https://docs.aws.amazon.com/amplify/latest/userguide/amplify-console-environment-variables.html)
+	// in the Amplify Hosting User Guide.
 	EnvironmentVariables map[string]*string `locationName:"environmentVariables" type:"map"`
 
 	// The AWS Identity and Access Management (IAM) service role for an Amplify
 	// app.
 	IamServiceRoleArn *string `locationName:"iamServiceRoleArn" type:"string"`
 
-	// The name for an Amplify app.
+	// The name of the Amplify app.
 	//
 	// Name is a required field
 	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
@@ -4352,7 +4653,7 @@ type CreateAppInput struct {
 	// Existing Amplify apps deployed from a GitHub repository using OAuth continue
 	// to work with CI/CD. However, we strongly recommend that you migrate these
 	// apps to use the GitHub App. For more information, see Migrating an existing
-	// OAuth app to the Amplify GitHub App (https://docs.aws.amazon.com/amplify/latest/UserGuide/setting-up-GitHub-access.html#migrating-to-github-app-auth)
+	// OAuth app to the Amplify GitHub App (https://docs.aws.amazon.com/amplify/latest/userguide/setting-up-GitHub-access.html#migrating-to-github-app-auth)
 	// in the Amplify User Guide .
 	//
 	// OauthToken is a sensitive parameter and its value will be
@@ -4360,10 +4661,13 @@ type CreateAppInput struct {
 	// String and GoString methods.
 	OauthToken *string `locationName:"oauthToken" type:"string" sensitive:"true"`
 
-	// The platform or framework for an Amplify app.
+	// The platform for the Amplify app. For a static app, set the platform type
+	// to WEB. For a dynamic server-side rendered (SSR) app, set the platform type
+	// to WEB_COMPUTE. For an app requiring Amplify Hosting's original SSR support
+	// only, set the platform type to WEB_DYNAMIC.
 	Platform *string `locationName:"platform" type:"string" enum:"Platform"`
 
-	// The repository for an Amplify app.
+	// The Git repository for the Amplify app.
 	Repository *string `locationName:"repository" type:"string"`
 
 	// The tag for an Amplify app.
@@ -4707,6 +5011,10 @@ type CreateBranchInput struct {
 	// AppId is a required field
 	AppId *string `location:"uri" locationName:"appId" min:"1" type:"string" required:"true"`
 
+	// The backend for a Branch of an Amplify app. Use for a backend created from
+	// an CloudFormation stack.
+	Backend *Backend `locationName:"backend" type:"structure"`
+
 	// The Amazon Resource Name (ARN) for a backend environment that is part of
 	// an Amplify app.
 	BackendEnvironmentArn *string `locationName:"backendEnvironmentArn" type:"string"`
@@ -4811,6 +5119,11 @@ func (s *CreateBranchInput) Validate() error {
 	if s.BuildSpec != nil && len(*s.BuildSpec) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("BuildSpec", 1))
 	}
+	if s.Backend != nil {
+		if err := s.Backend.Validate(); err != nil {
+			invalidParams.AddNested("Backend", err.(request.ErrInvalidParams))
+		}
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -4821,6 +5134,12 @@ func (s *CreateBranchInput) Validate() error {
 // SetAppId sets the AppId field's value.
 func (s *CreateBranchInput) SetAppId(v string) *CreateBranchInput {
 	s.AppId = &v
+	return s
+}
+
+// SetBackend sets the Backend field's value.
+func (s *CreateBranchInput) SetBackend(v *Backend) *CreateBranchInput {
+	s.Backend = v
 	return s
 }
 
@@ -4970,7 +5289,7 @@ type CreateDeploymentInput struct {
 	// AppId is a required field
 	AppId *string `location:"uri" locationName:"appId" min:"1" type:"string" required:"true"`
 
-	// The name for the branch, for the job.
+	// The name of the branch to use for the job.
 	//
 	// BranchName is a required field
 	BranchName *string `location:"uri" locationName:"branchName" min:"1" type:"string" required:"true"`
@@ -5661,7 +5980,7 @@ type DeleteBranchInput struct {
 	// AppId is a required field
 	AppId *string `location:"uri" locationName:"appId" min:"1" type:"string" required:"true"`
 
-	// The name for the branch.
+	// The name of the branch.
 	//
 	// BranchName is a required field
 	BranchName *string `location:"uri" locationName:"branchName" min:"1" type:"string" required:"true"`
@@ -5863,7 +6182,7 @@ type DeleteJobInput struct {
 	// AppId is a required field
 	AppId *string `location:"uri" locationName:"appId" min:"1" type:"string" required:"true"`
 
-	// The name for the branch, for the job.
+	// The name of the branch to use for the job.
 	//
 	// BranchName is a required field
 	BranchName *string `location:"uri" locationName:"branchName" min:"1" type:"string" required:"true"`
@@ -6643,7 +6962,7 @@ type GetBranchInput struct {
 	// AppId is a required field
 	AppId *string `location:"uri" locationName:"appId" min:"1" type:"string" required:"true"`
 
-	// The name for the branch.
+	// The name of the branch.
 	//
 	// BranchName is a required field
 	BranchName *string `location:"uri" locationName:"branchName" min:"1" type:"string" required:"true"`
@@ -6845,7 +7164,7 @@ type GetJobInput struct {
 	// AppId is a required field
 	AppId *string `location:"uri" locationName:"appId" min:"1" type:"string" required:"true"`
 
-	// The branch name for the job.
+	// The name of the branch to use for the job.
 	//
 	// BranchName is a required field
 	BranchName *string `location:"uri" locationName:"branchName" min:"1" type:"string" required:"true"`
@@ -7931,7 +8250,7 @@ type ListJobsInput struct {
 	// AppId is a required field
 	AppId *string `location:"uri" locationName:"appId" min:"1" type:"string" required:"true"`
 
-	// The name for a branch.
+	// The name of the branch to use for the request.
 	//
 	// BranchName is a required field
 	BranchName *string `location:"uri" locationName:"branchName" min:"1" type:"string" required:"true"`
@@ -8447,7 +8766,7 @@ type StartDeploymentInput struct {
 	// AppId is a required field
 	AppId *string `location:"uri" locationName:"appId" min:"1" type:"string" required:"true"`
 
-	// The name for the branch, for the job.
+	// The name of the branch to use for the job.
 	//
 	// BranchName is a required field
 	BranchName *string `location:"uri" locationName:"branchName" min:"1" type:"string" required:"true"`
@@ -8568,7 +8887,7 @@ type StartJobInput struct {
 	// AppId is a required field
 	AppId *string `location:"uri" locationName:"appId" min:"1" type:"string" required:"true"`
 
-	// The branch name for the job.
+	// The name of the branch to use for the job.
 	//
 	// BranchName is a required field
 	BranchName *string `location:"uri" locationName:"branchName" min:"1" type:"string" required:"true"`
@@ -8586,13 +8905,15 @@ type StartJobInput struct {
 	// is RETRY.
 	JobId *string `locationName:"jobId" type:"string"`
 
-	// A descriptive reason for starting this job.
+	// A descriptive reason for starting the job.
 	JobReason *string `locationName:"jobReason" type:"string"`
 
 	// Describes the type for the job. The job type RELEASE starts a new job with
 	// the latest change from the specified branch. This value is available only
-	// for apps that are connected to a repository. The job type RETRY retries an
-	// existing job. If the job type value is RETRY, the jobId is also required.
+	// for apps that are connected to a repository.
+	//
+	// The job type RETRY retries an existing job. If the job type value is RETRY,
+	// the jobId is also required.
 	//
 	// JobType is a required field
 	JobType *string `locationName:"jobType" type:"string" required:"true" enum:"JobType"`
@@ -8862,7 +9183,7 @@ type StopJobInput struct {
 	// AppId is a required field
 	AppId *string `location:"uri" locationName:"appId" min:"1" type:"string" required:"true"`
 
-	// The name for the branch, for the job.
+	// The name of the branch to use for the stop job request.
 	//
 	// BranchName is a required field
 	BranchName *string `location:"uri" locationName:"branchName" min:"1" type:"string" required:"true"`
@@ -9348,7 +9669,7 @@ type UpdateAppInput struct {
 	// Existing Amplify apps deployed from a GitHub repository using OAuth continue
 	// to work with CI/CD. However, we strongly recommend that you migrate these
 	// apps to use the GitHub App. For more information, see Migrating an existing
-	// OAuth app to the Amplify GitHub App (https://docs.aws.amazon.com/amplify/latest/UserGuide/setting-up-GitHub-access.html#migrating-to-github-app-auth)
+	// OAuth app to the Amplify GitHub App (https://docs.aws.amazon.com/amplify/latest/userguide/setting-up-GitHub-access.html#migrating-to-github-app-auth)
 	// in the Amplify User Guide .
 	//
 	// AccessToken is a sensitive parameter and its value will be
@@ -9400,7 +9721,7 @@ type UpdateAppInput struct {
 	// Enables branch auto-building for an Amplify app.
 	EnableBranchAutoBuild *bool `locationName:"enableBranchAutoBuild" type:"boolean"`
 
-	// Automatically disconnects a branch in the Amplify Console when you delete
+	// Automatically disconnects a branch in the Amplify console when you delete
 	// a branch from your Git repository.
 	EnableBranchAutoDeletion *bool `locationName:"enableBranchAutoDeletion" type:"boolean"`
 
@@ -9428,7 +9749,7 @@ type UpdateAppInput struct {
 	// Existing Amplify apps deployed from a GitHub repository using OAuth continue
 	// to work with CI/CD. However, we strongly recommend that you migrate these
 	// apps to use the GitHub App. For more information, see Migrating an existing
-	// OAuth app to the Amplify GitHub App (https://docs.aws.amazon.com/amplify/latest/UserGuide/setting-up-GitHub-access.html#migrating-to-github-app-auth)
+	// OAuth app to the Amplify GitHub App (https://docs.aws.amazon.com/amplify/latest/userguide/setting-up-GitHub-access.html#migrating-to-github-app-auth)
 	// in the Amplify User Guide .
 	//
 	// OauthToken is a sensitive parameter and its value will be
@@ -9436,10 +9757,13 @@ type UpdateAppInput struct {
 	// String and GoString methods.
 	OauthToken *string `locationName:"oauthToken" type:"string" sensitive:"true"`
 
-	// The platform for an Amplify app.
+	// The platform for the Amplify app. For a static app, set the platform type
+	// to WEB. For a dynamic server-side rendered (SSR) app, set the platform type
+	// to WEB_COMPUTE. For an app requiring Amplify Hosting's original SSR support
+	// only, set the platform type to WEB_DYNAMIC.
 	Platform *string `locationName:"platform" type:"string" enum:"Platform"`
 
-	// The name of the repository for an Amplify app
+	// The name of the Git repository for an Amplify app.
 	Repository *string `locationName:"repository" type:"string"`
 }
 
@@ -9658,6 +9982,10 @@ type UpdateBranchInput struct {
 	// AppId is a required field
 	AppId *string `location:"uri" locationName:"appId" min:"1" type:"string" required:"true"`
 
+	// The backend for a Branch of an Amplify app. Use for a backend created from
+	// an CloudFormation stack.
+	Backend *Backend `locationName:"backend" type:"structure"`
+
 	// The Amazon Resource Name (ARN) for a backend environment that is part of
 	// an Amplify app.
 	BackendEnvironmentArn *string `locationName:"backendEnvironmentArn" type:"string"`
@@ -9670,7 +9998,7 @@ type UpdateBranchInput struct {
 	// String and GoString methods.
 	BasicAuthCredentials *string `locationName:"basicAuthCredentials" type:"string" sensitive:"true"`
 
-	// The name for the branch.
+	// The name of the branch.
 	//
 	// BranchName is a required field
 	BranchName *string `location:"uri" locationName:"branchName" min:"1" type:"string" required:"true"`
@@ -9759,6 +10087,11 @@ func (s *UpdateBranchInput) Validate() error {
 	if s.BuildSpec != nil && len(*s.BuildSpec) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("BuildSpec", 1))
 	}
+	if s.Backend != nil {
+		if err := s.Backend.Validate(); err != nil {
+			invalidParams.AddNested("Backend", err.(request.ErrInvalidParams))
+		}
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -9769,6 +10102,12 @@ func (s *UpdateBranchInput) Validate() error {
 // SetAppId sets the AppId field's value.
 func (s *UpdateBranchInput) SetAppId(v string) *UpdateBranchInput {
 	s.AppId = &v
+	return s
+}
+
+// SetBackend sets the Backend field's value.
+func (s *UpdateBranchInput) SetBackend(v *Backend) *UpdateBranchInput {
+	s.Backend = v
 	return s
 }
 
@@ -10362,6 +10701,9 @@ const (
 
 	// PlatformWebDynamic is a Platform enum value
 	PlatformWebDynamic = "WEB_DYNAMIC"
+
+	// PlatformWebCompute is a Platform enum value
+	PlatformWebCompute = "WEB_COMPUTE"
 )
 
 // Platform_Values returns all elements of the Platform enum
@@ -10369,6 +10711,7 @@ func Platform_Values() []string {
 	return []string{
 		PlatformWeb,
 		PlatformWebDynamic,
+		PlatformWebCompute,
 	}
 }
 

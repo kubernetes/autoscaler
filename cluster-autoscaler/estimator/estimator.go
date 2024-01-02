@@ -23,6 +23,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
+	"k8s.io/kubernetes/pkg/scheduler/framework"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
@@ -42,16 +43,20 @@ type Estimator interface {
 }
 
 // EstimatorBuilder creates a new estimator object.
-type EstimatorBuilder func(predicatechecker.PredicateChecker, clustersnapshot.ClusterSnapshot) Estimator
+type EstimatorBuilder func(predicatechecker.PredicateChecker, clustersnapshot.ClusterSnapshot, EstimationContext) Estimator
+
+// EstimationAnalyserFunc to be run at the end of the estimation logic.
+type EstimationAnalyserFunc func(clustersnapshot.ClusterSnapshot, cloudprovider.NodeGroup, map[string]bool)
 
 // NewEstimatorBuilder creates a new estimator object from flag.
-func NewEstimatorBuilder(name string, limiter EstimationLimiter) (EstimatorBuilder, error) {
+func NewEstimatorBuilder(name string, limiter EstimationLimiter, orderer EstimationPodOrderer, estimationAnalyserFunc EstimationAnalyserFunc) (EstimatorBuilder, error) {
 	switch name {
 	case BinpackingEstimatorName:
 		return func(
 			predicateChecker predicatechecker.PredicateChecker,
-			clusterSnapshot clustersnapshot.ClusterSnapshot) Estimator {
-			return NewBinpackingNodeEstimator(predicateChecker, clusterSnapshot, limiter)
+			clusterSnapshot clustersnapshot.ClusterSnapshot,
+			context EstimationContext) Estimator {
+			return NewBinpackingNodeEstimator(predicateChecker, clusterSnapshot, limiter, orderer, context, estimationAnalyserFunc)
 		}, nil
 	}
 	return nil, fmt.Errorf("unknown estimator: %s", name)
@@ -62,7 +67,7 @@ func NewEstimatorBuilder(name string, limiter EstimationLimiter) (EstimatorBuild
 // scale-up is limited by external factors.
 type EstimationLimiter interface {
 	// StartEstimation is called at the start of estimation.
-	StartEstimation([]*apiv1.Pod, cloudprovider.NodeGroup)
+	StartEstimation([]*apiv1.Pod, cloudprovider.NodeGroup, EstimationContext)
 	// EndEstimation is called at the end of estimation.
 	EndEstimation()
 	// PermissionToAddNode is called by an estimator when it wants to add additional
@@ -71,4 +76,10 @@ type EstimationLimiter interface {
 	// There is no requirement for the Estimator to stop calculations, it's
 	// just not expected to add any more nodes.
 	PermissionToAddNode() bool
+}
+
+// EstimationPodOrderer is an interface used to determine the order of the pods
+// used while binpacking during scale up estimation
+type EstimationPodOrderer interface {
+	Order(pods []*apiv1.Pod, nodeTemplate *framework.NodeInfo, nodeGroup cloudprovider.NodeGroup) []*apiv1.Pod
 }

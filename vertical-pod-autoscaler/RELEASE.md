@@ -23,30 +23,44 @@ We use the issue to communicate what is state of the release.
 ## Update VPA version const
 
 1. [ ] Wait for all VPA changes that will be in the release to merge.
-2. [ ] Wait for [the end to end tests](https://k8s-testgrid.appspot.com/sig-autoscaling-vpa) to run with all VPA changes
+2. [ ] Wait for [the end to end tests](https://testgrid.k8s.io/sig-autoscaling-vpa) to run with all VPA changes
    included.
+   To see what code was actually tested, look for `===== last commit =====`
+   entries in the full `build-log.txt` of a given test run.
 3. [ ] Make sure the end to end VPA tests are green.
 
 ### New minor release
 
 1. [ ] Change the version in
     [common/version-go](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/common/version.go)
-    to `0.${next-minor}.0`,
+    to `1.${next-minor}.0`,
 2. [ ] Commit and merge the change,
 3. [ ] Go to the merged change,
-4. [ ] [Create a new branch](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-and-deleting-branches-within-your-repository) named `vpa-release-0.${next-minor}` from the
+4. [ ] [Create a new branch](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-and-deleting-branches-within-your-repository) named `vpa-release-1.${next-minor}` from the
     merged change.
 
 ### New patch release
 
 1.  [ ] Bump the patch version number in VerticalPodAutoscalerVersion constant in
     [common/version.go](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/common/version.go).
-    Create a commit and merge by making a PR to the `vpa-release-0.${minor}` branch.
+    Create a commit and merge by making a PR to the `vpa-release-1.${minor}` branch.
 
 ## Build and stage images
 
+Create a fresh clone of the repo and switch to the `vpa-release-1.${minor}`
+branch. This makes sure you have no local changes while building the images.
+
+For example:
 ```sh
-for component in recommender updater admission-controller ; do REGISTRY=gcr.io/k8s-staging-autoscaling TAG=[*vpa-version*] make release --directory=pkg/${component}; done
+git clone git@github.com:kubernetes/autoscaler.git
+git switch vpa-release-1.0
+```
+
+Once in the freshly cloned repo, build and stage the images.
+
+```sh
+cd vertical-pod-autoscaler/
+for component in recommender updater admission-controller ; do TAG=`grep 'const VerticalPodAutoscalerVersion = ' common/version.go | cut -d '"' -f 2` REGISTRY=gcr.io/k8s-staging-autoscaling make release --directory=pkg/${component}; done
 ```
 
 ## Test the release
@@ -54,32 +68,36 @@ for component in recommender updater admission-controller ; do REGISTRY=gcr.io/k
 1.  [ ] Create a Kubernetes cluster. If you're using GKE you can use the following command:
 
     ```shell
-    $ gcloud container clusters create e2e-test --machine-type=n1-standard-2 --image-type=COS_CONTAINERD --num-nodes=3
+    gcloud container clusters create e2e-test --machine-type=n1-standard-2 --image-type=COS_CONTAINERD --num-nodes=3
     ```
 
 1. [ ]  Create clusterrole. If you're using GKE you can use the following command:
 
     ```shell
-    $ kubectl create clusterrolebinding my-cluster-admin-binding --clusterrole=cluster-admin --user=`gcloud config get-value account`
+    kubectl create clusterrolebinding my-cluster-admin-binding --clusterrole=cluster-admin --user=`gcloud config get-value account`
     ```
 
 1.  [ ] Deploy VPA:
     ```shell
-    $ REGISTRY=gcr.io/k8s-staging-autoscaling TAG=[*vpa-version*] ./hack/vpa-up.sh
+    REGISTRY=gcr.io/k8s-staging-autoscaling TAG=`grep 'const VerticalPodAutoscalerVersion = ' common/version.go | cut -d '"' -f 2` ./hack/vpa-up.sh
     ```
 
 1.  [ ] [Run](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/hack/run-e2e-tests.sh)
     the `full-vpa` test suite:
 
     ```shell
-    $ ./hack/run-e2e-tests.sh full-vpa
+    ./hack/run-e2e-tests.sh full-vpa
     ```
 
 ## Promote image
 
 To promote image from staging repo send out PR updating
-[autoscaling images mapping](https://github.com/kubernetes/k8s.io/blob/master/k8s.gcr.io/images/k8s-staging-autoscaling/images.yaml)
+[autoscaling images mapping](https://github.com/kubernetes/k8s.io/blob/master/registry.k8s.io/images/k8s-staging-autoscaling/images.yaml)
 ([example](https://github.com/kubernetes/k8s.io/pull/1318)).
+
+NOTE: Please use the [add-version.sh
+script](https://github.com/kubernetes/k8s.io/blob/main/registry.k8s.io/images/k8s-staging-autoscaling/add-version.sh)
+to prepare the changes automatically.
 
 When PR merges the promoter will run automatically and upload the image from
 staging repo to final repo. The post submit job status can be tracked on
@@ -87,11 +105,8 @@ staging repo to final repo. The post submit job status can be tracked on
 To verify if the promoter finished its job one can use gcloud. E.g.:
 
 ```sh
-$ gcloud container images describe us.gcr.io/k8s-artifacts-prod/autoscaling/vpa-recommender:[*vpa-version*]
+gcloud container images describe registry.k8s.io/autoscaling/vpa-recommender:[*vpa-version*]
 ```
-
-You can also take a look at the images in the
-[k8s-artifacts repo](https://us.gcr.io/k8s-artifacts-prod/autoscaling/).
 
 ## Finalize release
 
@@ -112,7 +127,7 @@ sure nothing we care about will break if we do.
     ```sh
     sed -i -s "s|[0-9]\+\.[0-9]\+\.[0-9]\+|[*vpa-version*]|" ./deploy/*-deployment*.yaml ./hack/vpa-process-yaml.sh
     ```
-   Merge this change into branch vpa-release-0.X and optionally into master if 0.X is the latest minor release (example
+   Merge this change into branch vpa-release-1.{$minor} and optionally into master if 1.{$minor} is the latest minor release (example
    PR: [#5460](https://github.com/kubernetes/autoscaler/pull/5460)).
 
 1.  [ ] Tag the commit with version const change
@@ -131,7 +146,7 @@ sure nothing we care about will break if we do.
 
 1.  [ ] To create and publish a github release from pushed tag go to
     https://github.com/kubernetes/autoscaler/releases/tag/vertical-pod-autoscaler-[*vpa-version*],
-    press `Edit release`, complete release title and release notes, tick the
+    press `Create release from tag`, complete release title and release notes, tick the
     `This is a pre-release` box and press `Publish release`.
 
 ## Permissions

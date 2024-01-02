@@ -540,7 +540,7 @@ func (mgr *cherryManagerRest) deleteServer(ctx context.Context, nodegroup string
 		return err
 	}
 
-	klog.Infof("Deleted server %s: %v", id, result)
+	klog.Infof("Deleted server %d: %v", id, result)
 	return nil
 
 }
@@ -591,10 +591,10 @@ func (mgr *cherryManagerRest) deleteNodes(nodegroup string, nodes []NodeRef, upd
 
 			switch {
 			case s.Hostname == n.Name:
-				klog.V(1).Infof("Matching Cherry Server %s - %s", s.Hostname, s.ID)
+				klog.V(1).Infof("Matching Cherry Server %s - %d", s.Hostname, s.ID)
 				errList = append(errList, mgr.deleteServer(ctx, nodegroup, s.ID))
 			case fakeNode && int(nodeID) == s.ID:
-				klog.V(1).Infof("Fake Node %s", s.ID)
+				klog.V(1).Infof("Fake Node %d", s.ID)
 				errList = append(errList, mgr.deleteServer(ctx, nodegroup, s.ID))
 			}
 		}

@@ -21,6 +21,12 @@ rules:
       - patch
       - update
   - apiGroups:
+      - balancer.x-k8s.io
+    resources:
+      - balancers/status
+    verbs:
+      - update
+  - apiGroups:
       - ""
     resources:
       - pods

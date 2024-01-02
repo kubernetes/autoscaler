@@ -19,6 +19,7 @@ package history
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"sort"
 	"strings"
 	"time"
@@ -32,6 +33,18 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 )
 
+// PrometheusBasicAuthTransport contains the username and password of prometheus server
+type PrometheusBasicAuthTransport struct {
+	Username string
+	Password string
+}
+
+// RoundTrip function injects the username and password in the request's basic auth header
+func (t *PrometheusBasicAuthTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	req.SetBasicAuth(t.Username, t.Password)
+	return http.DefaultTransport.RoundTrip(req)
+}
+
 // PrometheusHistoryProviderConfig allow to select which metrics
 // should be queried to get real resource utilization.
 type PrometheusHistoryProviderConfig struct {
@@ -43,6 +56,7 @@ type PrometheusHistoryProviderConfig struct {
 	CtrNamespaceLabel, CtrPodNameLabel, CtrNameLabel string
 	CadvisorMetricsJobName                           string
 	Namespace                                        string
+	PrometheusBasicAuthTransport
 }
 
 // PodHistory represents history of usage and labels for a given pod.
@@ -76,9 +90,19 @@ type prometheusHistoryProvider struct {
 
 // NewPrometheusHistoryProvider constructs a history provider that gets data from Prometheus.
 func NewPrometheusHistoryProvider(config PrometheusHistoryProviderConfig) (HistoryProvider, error) {
-	promClient, err := promapi.NewClient(promapi.Config{
+	promConfig := promapi.Config{
 		Address: config.Address,
-	})
+	}
+
+	if config.Username != "" && config.Password != "" {
+		transport := &PrometheusBasicAuthTransport{
+			Username: config.Username,
+			Password: config.Password,
+		}
+		promConfig.RoundTripper = transport
+	}
+
+	promClient, err := promapi.NewClient(promConfig)
 	if err != nil {
 		return &prometheusHistoryProvider{}, err
 	}

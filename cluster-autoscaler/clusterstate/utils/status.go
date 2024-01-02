@@ -22,10 +22,12 @@ import (
 	"fmt"
 	"time"
 
+	"gopkg.in/yaml.v2"
 	apiv1 "k8s.io/api/core/v1"
 	kube_errors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/api"
 	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/record"
 
@@ -60,6 +62,13 @@ func (ler *LogEventRecorder) Eventf(eventtype, reason, message string, args ...i
 	}
 }
 
+// EmptyClusterAutoscalerStatus returns empty status for ClusterAutoscalerStatus when it is being initialized.
+func EmptyClusterAutoscalerStatus() *api.ClusterAutoscalerStatus {
+	return &api.ClusterAutoscalerStatus{
+		AutoscalerStatus: api.ClusterAutoscalerInitializing,
+	}
+}
+
 // NewStatusMapRecorder creates a LogEventRecorder creating events on status configmap.
 // If the configmap doesn't exist it will be created (with 'Initializing' status).
 // If active == false the map will not be created and no events will be recorded.
@@ -67,7 +76,7 @@ func NewStatusMapRecorder(kubeClient kube_client.Interface, namespace string, re
 	var mapObj runtime.Object
 	var err error
 	if active {
-		mapObj, err = WriteStatusConfigMap(kubeClient, namespace, "Initializing", nil, statusConfigMapName)
+		mapObj, err = WriteStatusConfigMap(kubeClient, namespace, *EmptyClusterAutoscalerStatus(), nil, statusConfigMapName, time.Now())
 		if err != nil {
 			return nil, errors.New("Failed to init status ConfigMap")
 		}
@@ -82,15 +91,23 @@ func NewStatusMapRecorder(kubeClient kube_client.Interface, namespace string, re
 // WriteStatusConfigMap writes updates status ConfigMap with a given message or creates a new
 // ConfigMap if it doesn't exist. If logRecorder is passed and configmap update is successful
 // logRecorder's internal reference will be updated.
-func WriteStatusConfigMap(kubeClient kube_client.Interface, namespace string, msg string, logRecorder *LogEventRecorder, statusConfigMapName string) (*apiv1.ConfigMap, error) {
-	statusUpdateTime := time.Now().Format(ConfigMapLastUpdateFormat)
-	statusMsg := fmt.Sprintf("Cluster-autoscaler status at %s:\n%v", statusUpdateTime, msg)
+func WriteStatusConfigMap(kubeClient kube_client.Interface, namespace string, status api.ClusterAutoscalerStatus, logRecorder *LogEventRecorder, statusConfigMapName string, currentTime time.Time) (*apiv1.ConfigMap, error) {
+	statusUpdateTime := currentTime.Format(ConfigMapLastUpdateFormat)
+	status.Time = statusUpdateTime
 	var configMap *apiv1.ConfigMap
 	var getStatusError, writeStatusError error
 	var errMsg string
 	maps := kubeClient.CoreV1().ConfigMaps(namespace)
 	configMap, getStatusError = maps.Get(context.TODO(), statusConfigMapName, metav1.GetOptions{})
+	statusYaml, err := yaml.Marshal(status)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to marshal status configmap: %v", err)
+	}
+	statusMsg := string(statusYaml)
 	if getStatusError == nil {
+		if configMap.Data == nil {
+			configMap.Data = make(map[string]string)
+		}
 		configMap.Data["status"] = statusMsg
 		if configMap.ObjectMeta.Annotations == nil {
 			configMap.ObjectMeta.Annotations = make(map[string]string)

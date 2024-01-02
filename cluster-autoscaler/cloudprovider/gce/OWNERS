@@ -12,3 +12,6 @@ reviewers:
 - x13n
 - yaroslava-serdiuk
 - BigDarkClown
+
+labels:
+- area/provider/gce

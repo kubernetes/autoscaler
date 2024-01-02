@@ -1,19 +1,3 @@
-/*
-Copyright 2018 The Kubernetes Authors.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
 package hcloud
 
 import (
@@ -141,7 +125,7 @@ func WithPollInterval(pollInterval time.Duration) ClientOption {
 // function when polling from the API.
 func WithPollBackoffFunc(f BackoffFunc) ClientOption {
 	return func(client *Client) {
-		client.backoffFunc = f
+		client.pollBackoffFunc = f
 	}
 }
 
@@ -205,25 +189,25 @@ func NewClient(options ...ClientOption) *Client {
 		client.httpClient.Transport = i.InstrumentedRoundTripper()
 	}
 
-	client.Action = ActionClient{client: client}
+	client.Action = ActionClient{action: &ResourceActionClient{client: client}}
 	client.Datacenter = DatacenterClient{client: client}
-	client.FloatingIP = FloatingIPClient{client: client}
-	client.Image = ImageClient{client: client}
+	client.FloatingIP = FloatingIPClient{client: client, Action: &ResourceActionClient{client: client, resource: "floating_ips"}}
+	client.Image = ImageClient{client: client, Action: &ResourceActionClient{client: client, resource: "images"}}
 	client.ISO = ISOClient{client: client}
 	client.Location = LocationClient{client: client}
-	client.Network = NetworkClient{client: client}
+	client.Network = NetworkClient{client: client, Action: &ResourceActionClient{client: client, resource: "networks"}}
 	client.Pricing = PricingClient{client: client}
-	client.Server = ServerClient{client: client}
+	client.Server = ServerClient{client: client, Action: &ResourceActionClient{client: client, resource: "servers"}}
 	client.ServerType = ServerTypeClient{client: client}
 	client.SSHKey = SSHKeyClient{client: client}
-	client.Volume = VolumeClient{client: client}
-	client.LoadBalancer = LoadBalancerClient{client: client}
+	client.Volume = VolumeClient{client: client, Action: &ResourceActionClient{client: client, resource: "volumes"}}
+	client.LoadBalancer = LoadBalancerClient{client: client, Action: &ResourceActionClient{client: client, resource: "load_balancers"}}
 	client.LoadBalancerType = LoadBalancerTypeClient{client: client}
-	client.Certificate = CertificateClient{client: client}
-	client.Firewall = FirewallClient{client: client}
+	client.Certificate = CertificateClient{client: client, Action: &ResourceActionClient{client: client, resource: "certificates"}}
+	client.Firewall = FirewallClient{client: client, Action: &ResourceActionClient{client: client, resource: "firewalls"}}
 	client.PlacementGroup = PlacementGroupClient{client: client}
 	client.RDNS = RDNSClient{client: client}
-	client.PrimaryIP = PrimaryIPClient{client: client}
+	client.PrimaryIP = PrimaryIPClient{client: client, Action: &ResourceActionClient{client: client, resource: "primary_ips"}}
 
 	return client
 }
@@ -306,7 +290,7 @@ func (c *Client) Do(r *http.Request, v interface{}) (*Response, error) {
 			err = errorFromResponse(resp, body)
 			if err == nil {
 				err = fmt.Errorf("hcloud: server responded with status code %d", resp.StatusCode)
-			} else if isConflict(err) {
+			} else if IsError(err, ErrorCodeConflict) {
 				c.backoff(retries)
 				retries++
 				continue
@@ -323,14 +307,6 @@ func (c *Client) Do(r *http.Request, v interface{}) (*Response, error) {
 
 		return response, err
 	}
-}
-
-func isConflict(error error) bool {
-	err, ok := error.(Error)
-	if !ok {
-		return false
-	}
-	return err.Code == ErrorCodeConflict
 }
 
 func (c *Client) backoff(retries int) {
@@ -461,7 +437,8 @@ type ListOpts struct {
 	LabelSelector string // Label selector for filtering by labels
 }
 
-func (l ListOpts) values() url.Values {
+// Values returns the ListOpts as URL values.
+func (l ListOpts) Values() url.Values {
 	vals := url.Values{}
 	if l.Page > 0 {
 		vals.Add("page", strconv.Itoa(l.Page))

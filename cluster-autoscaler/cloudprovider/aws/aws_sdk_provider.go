@@ -18,17 +18,20 @@ package aws
 
 import (
 	"fmt"
-	"gopkg.in/gcfg.v1"
 	"io"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/ec2metadata"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/endpoints"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/session"
-	"k8s.io/klog/v2"
-	provider_aws "k8s.io/legacy-cloud-providers/aws"
 	"os"
 	"strconv"
 	"strings"
+
+	"gopkg.in/gcfg.v1"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/ec2metadata"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/endpoints"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/request"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/session"
+	"k8s.io/autoscaler/cluster-autoscaler/version"
+	provider_aws "k8s.io/cloud-provider-aws/pkg/providers/v1"
+	"k8s.io/klog/v2"
 )
 
 // createAWSSDKProvider
@@ -60,10 +63,13 @@ func createAWSSDKProvider(configReader io.Reader) (*awsSDKProvider, error) {
 	}
 
 	sess, err := session.NewSession(config)
-
 	if err != nil {
 		return nil, err
 	}
+
+	// add cluster-autoscaler to the user-agent to make it easier to identify
+	agent := fmt.Sprintf("cluster-autoscaler/v%s", version.ClusterAutoscalerVersion)
+	sess.Handlers.Build.PushBack(request.MakeAddToUserAgentFreeFormHandler(agent))
 
 	provider := &awsSDKProvider{
 		session: sess,

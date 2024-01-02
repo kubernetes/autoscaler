@@ -156,10 +156,12 @@ skipped_dirs = ['Godeps', 'third_party', '_gopath', '_output', '.git', 'cluster/
                 "cluster-autoscaler/cloudprovider/brightbox/linkheader",
                 "cluster-autoscaler/cloudprovider/brightbox/go-cache",
                 "cluster-autoscaler/cloudprovider/digitalocean/godo",
+                "cluster-autoscaler/cloudprovider/externalgrpc/protos",
                 "cluster-autoscaler/cloudprovider/magnum/gophercloud",
                 "cluster-autoscaler/cloudprovider/ionoscloud/ionos-cloud-sdk-go",
                 "cluster-autoscaler/cloudprovider/hetzner/hcloud-go",
-                "cluster-autoscaler/cloudprovider/oci"]
+                "cluster-autoscaler/cloudprovider/oci",
+                "cluster-autoscaler/cloudprovider/volcengine/volcengine-go-sdk"]
 
 # list all the files contain 'DO NOT EDIT', but are not generated
 skipped_ungenerated_files = ['hack/build-ui.sh', 'hack/lib/swagger.sh',

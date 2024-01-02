@@ -49,9 +49,9 @@ type node struct {
 
 type scaleDownTimeGetter interface {
 	// GetScaleDownUnneededTime returns ScaleDownUnneededTime value that should be used for a given NodeGroup.
-	GetScaleDownUnneededTime(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (time.Duration, error)
+	GetScaleDownUnneededTime(nodeGroup cloudprovider.NodeGroup) (time.Duration, error)
 	// GetScaleDownUnreadyTime returns ScaleDownUnreadyTime value that should be used for a given NodeGroup.
-	GetScaleDownUnreadyTime(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (time.Duration, error)
+	GetScaleDownUnreadyTime(nodeGroup cloudprovider.NodeGroup) (time.Duration, error)
 }
 
 // NewNodes returns a new initialized Nodes object.
@@ -162,7 +162,7 @@ func (n *Nodes) unremovableReason(context *context.AutoscalingContext, v *node, 
 
 	if ready {
 		// Check how long a ready node was underutilized.
-		unneededTime, err := n.sdtg.GetScaleDownUnneededTime(context, nodeGroup)
+		unneededTime, err := n.sdtg.GetScaleDownUnneededTime(nodeGroup)
 		if err != nil {
 			klog.Errorf("Error trying to get ScaleDownUnneededTime for node %s (in group: %s)", node.Name, nodeGroup.Id())
 			return simulator.UnexpectedError
@@ -172,7 +172,7 @@ func (n *Nodes) unremovableReason(context *context.AutoscalingContext, v *node, 
 		}
 	} else {
 		// Unready nodes may be deleted after a different time than underutilized nodes.
-		unreadyTime, err := n.sdtg.GetScaleDownUnreadyTime(context, nodeGroup)
+		unreadyTime, err := n.sdtg.GetScaleDownUnreadyTime(nodeGroup)
 		if err != nil {
 			klog.Errorf("Error trying to get ScaleDownUnreadyTime for node %s (in group: %s)", node.Name, nodeGroup.Id())
 			return simulator.UnexpectedError

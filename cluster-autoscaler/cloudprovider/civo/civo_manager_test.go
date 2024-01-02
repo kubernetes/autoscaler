@@ -107,6 +107,13 @@ func TestCivoManager_Refresh(t *testing.T) {
 			nil,
 		).Once()
 
+		client.On("FindInstanceSizes", "small").Return(
+			&civocloud.InstanceSize{
+				Name:     "small",
+				CPUCores: 1,
+			}, nil,
+		).Times(10)
+
 		manager.client = client
 		err = manager.Refresh()
 		assert.NoError(t, err)
@@ -166,11 +173,88 @@ func TestCivoManager_RefreshWithNodeSpec(t *testing.T) {
 			nil,
 		).Once()
 
+		client.On("FindInstanceSizes", "small").Return(
+			&civocloud.InstanceSize{
+				Name:     "small",
+				CPUCores: 1,
+			}, nil,
+		).Times(10)
+
 		manager.client = client
 		err = manager.Refresh()
 		assert.NoError(t, err)
 		assert.Equal(t, 2, len(manager.nodeGroups), "number of node groups do not match")
 		assert.Equal(t, 1, manager.nodeGroups[0].minSize, "minimum node for node group does not match")
 		assert.Equal(t, 10, manager.nodeGroups[0].maxSize, "maximum node for node group does not match")
+	})
+}
+
+func TestCivoManager_RefreshWithNodeSpecPool(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		cfg := `{"cluster_id": "123456", "api_key": "123-123-123", "api_url": "https://api.civo.com", "region": "test"}`
+		nodeGroupSpecs := []string{"1:5:pool-1", "5:10:pool-2"}
+		nodeGroupDiscoveryOptions := cloudprovider.NodeGroupDiscoveryOptions{NodeGroupSpecs: nodeGroupSpecs}
+		manager, err := newManager(bytes.NewBufferString(cfg), nodeGroupDiscoveryOptions)
+		assert.NoError(t, err)
+
+		client := &civoClientMock{}
+
+		client.On("ListKubernetesClusterPools", manager.clusterID).Return(
+			[]civocloud.KubernetesPool{
+				{
+					ID:            "pool-1",
+					Count:         2,
+					Size:          "small",
+					InstanceNames: []string{"test-1", "test-2"},
+					Instances: []civocloud.KubernetesInstance{
+						{
+							ID:       "1",
+							Hostname: "test-1",
+							Status:   "ACTIVE",
+						},
+						{
+							ID:       "2",
+							Hostname: "test-1",
+							Status:   "ACTIVE",
+						},
+					},
+				},
+				{
+					ID:            "pool-2",
+					Count:         2,
+					Size:          "small",
+					InstanceNames: []string{"test-1", "test-2"},
+					Instances: []civocloud.KubernetesInstance{
+						{
+							ID:       "3",
+							Hostname: "test-3",
+							Status:   "ACTIVE",
+						},
+						{
+							ID:       "4",
+							Hostname: "test-4",
+							Status:   "BUILDING",
+						},
+					},
+				},
+			},
+			nil,
+		).Once()
+
+		client.On("FindInstanceSizes", "small").Return(
+			&civocloud.InstanceSize{
+				Name:     "small",
+				CPUCores: 1,
+			}, nil,
+		).Times(10)
+
+		manager.client = client
+		err = manager.Refresh()
+		assert.NoError(t, err)
+		assert.Equal(t, 2, len(manager.nodeGroups), "number of node groups do not match")
+		assert.Equal(t, 1, manager.nodeGroups[0].minSize, "minimum node for node group does not match")
+		assert.Equal(t, 5, manager.nodeGroups[0].maxSize, "maximum node for node group does not match")
+		assert.Equal(t, 5, manager.nodeGroups[1].minSize, "minimum node for node group does not match")
+		assert.Equal(t, 10, manager.nodeGroups[1].maxSize, "maximum node for node group does not match")
 	})
 }

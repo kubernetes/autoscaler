@@ -290,71 +290,6 @@ func SetupHamsterContainer(cpu, memory string) apiv1.Container {
 	}
 }
 
-// SetupVPA creates and installs a simple hamster VPA for e2e test purposes.
-func SetupVPA(f *framework.Framework, cpu string, mode vpa_types.UpdateMode, targetRef *autoscaling.CrossVersionObjectReference) *vpa_types.VerticalPodAutoscaler {
-	return SetupVPAForNHamsters(f, 1, cpu, mode, targetRef)
-}
-
-// SetupVPAForNHamsters creates and installs a simple hamster VPA for a pod with n containers, for e2e test purposes.
-func SetupVPAForNHamsters(f *framework.Framework, n int, cpu string, mode vpa_types.UpdateMode, targetRef *autoscaling.CrossVersionObjectReference) *vpa_types.VerticalPodAutoscaler {
-	return SetupVPAForNHamstersWithMinReplicas(f, n, cpu, mode, targetRef, nil)
-}
-
-// SetupVPAForNHamstersWithMinReplicas creates and installs a simple hamster VPA for a pod with n containers, setting MinReplicas. To be used for e2e test purposes.
-func SetupVPAForNHamstersWithMinReplicas(f *framework.Framework, n int, cpu string, mode vpa_types.UpdateMode, targetRef *autoscaling.CrossVersionObjectReference, minReplicas *int32) *vpa_types.VerticalPodAutoscaler {
-	vpaCRD := NewVPA(f, "hamster-vpa", targetRef, []*vpa_types.VerticalPodAutoscalerRecommenderSelector{})
-	vpaCRD.Spec.UpdatePolicy.UpdateMode = &mode
-	vpaCRD.Spec.UpdatePolicy.MinReplicas = minReplicas
-
-	cpuQuantity := ParseQuantityOrDie(cpu)
-	resourceList := apiv1.ResourceList{apiv1.ResourceCPU: cpuQuantity}
-
-	containerRecommendations := []vpa_types.RecommendedContainerResources{}
-	for i := 0; i < n; i++ {
-		containerRecommendations = append(containerRecommendations,
-			vpa_types.RecommendedContainerResources{
-				ContainerName: GetHamsterContainerNameByIndex(i),
-				Target:        resourceList,
-				LowerBound:    resourceList,
-				UpperBound:    resourceList,
-			},
-		)
-	}
-	vpaCRD.Status.Recommendation = &vpa_types.RecommendedPodResources{
-		ContainerRecommendations: containerRecommendations,
-	}
-
-	InstallVPA(f, vpaCRD)
-	return vpaCRD
-}
-
-// NewVPA creates a VPA object for e2e test purposes.
-func NewVPA(f *framework.Framework, name string, targetRef *autoscaling.CrossVersionObjectReference, recommenders []*vpa_types.VerticalPodAutoscalerRecommenderSelector) *vpa_types.VerticalPodAutoscaler {
-	updateMode := vpa_types.UpdateModeAuto
-	vpa := vpa_types.VerticalPodAutoscaler{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: f.Namespace.Name,
-		},
-		Spec: vpa_types.VerticalPodAutoscalerSpec{
-			TargetRef: targetRef,
-			UpdatePolicy: &vpa_types.PodUpdatePolicy{
-				UpdateMode: &updateMode,
-			},
-			ResourcePolicy: &vpa_types.PodResourcePolicy{
-				ContainerPolicies: []vpa_types.ContainerResourcePolicy{},
-			},
-		},
-	}
-
-	if len(recommenders) == 0 {
-		return &vpa
-	}
-
-	vpa.Spec.Recommenders = recommenders
-	return &vpa
-}
-
 type patchRecord struct {
 	Op    string      `json:"op,inline"`
 	Path  string      `json:"path,inline"`
@@ -372,6 +307,23 @@ func InstallVPA(f *framework.Framework, vpa *vpa_types.VerticalPodAutoscaler) {
 	vpaClientSet := getVpaClientSet(f)
 	_, err := vpaClientSet.AutoscalingV1().VerticalPodAutoscalers(f.Namespace.Name).Create(context.TODO(), vpa, metav1.CreateOptions{})
 	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "unexpected error creating VPA")
+	// apiserver ignore status in vpa create, so need to update status
+	if !isStatusEmpty(&vpa.Status) {
+		if vpa.Status.Recommendation != nil {
+			PatchVpaRecommendation(f, vpa, vpa.Status.Recommendation)
+		}
+	}
+}
+
+func isStatusEmpty(status *vpa_types.VerticalPodAutoscalerStatus) bool {
+	if status == nil {
+		return true
+	}
+
+	if len(status.Conditions) == 0 && status.Recommendation == nil {
+		return true
+	}
+	return false
 }
 
 // InstallRawVPA installs a VPA object passed in as raw json in the test cluster.
@@ -396,7 +348,7 @@ func PatchVpaRecommendation(f *framework.Framework, vpa *vpa_types.VerticalPodAu
 		Value: *newStatus,
 	}})
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
-	_, err = getVpaClientSet(f).AutoscalingV1().VerticalPodAutoscalers(f.Namespace.Name).Patch(context.TODO(), vpa.Name, types.JSONPatchType, bytes, metav1.PatchOptions{})
+	_, err = getVpaClientSet(f).AutoscalingV1().VerticalPodAutoscalers(f.Namespace.Name).Patch(context.TODO(), vpa.Name, types.JSONPatchType, bytes, metav1.PatchOptions{}, "status")
 	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "Failed to patch VPA.")
 }
 

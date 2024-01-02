@@ -283,9 +283,11 @@ spec:
               resourcePolicy:
                 description: Controls how the autoscaler computes recommended resources.
                   The resource policy may be used to set constraints on the recommendations
-                  for individual containers. If not specified, the autoscaler computes
-                  recommended resources for all containers in the pod, without additional
-                  constraints.
+                  for individual containers. If any individual containers need to
+                  be excluded from getting the VPA recommendations, then it must be
+                  disabled explicitly by setting mode to "Off" under containerPolicies.
+                  If not specified, the autoscaler computes recommended resources
+                  for all containers in the pod, without additional constraints.
                 properties:
                   containerPolicies:
                     description: Per-container resource policies.
@@ -364,7 +366,7 @@ spec:
                     description: API version of the referent
                     type: string
                   kind:
-                    description: 'Kind of the referent; More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds"'
+                    description: 'Kind of the referent; More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
                     type: string
                   name:
                     description: 'Name of the referent; More info: http://kubernetes.io/docs/user-guide/identifiers#names'
@@ -379,6 +381,39 @@ spec:
                   pods. If not specified, all fields in the `PodUpdatePolicy` are
                   set to their default values.
                 properties:
+                  evictionRequirements:
+                    description: EvictionRequirements is a list of EvictionRequirements
+                      that need to evaluate to true in order for a Pod to be evicted.
+                      If more than one EvictionRequirement is specified, all of them
+                      need to be fulfilled to allow eviction.
+                    items:
+                      description: EvictionRequirement defines a single condition
+                        which needs to be true in order to evict a Pod
+                      properties:
+                        changeRequirement:
+                          description: EvictionChangeRequirement refers to the relationship
+                            between the new target recommendation for a Pod and its
+                            current requests, what kind of change is necessary for
+                            the Pod to be evicted
+                          enum:
+                          - TargetHigherThanRequests
+                          - TargetLowerThanRequests
+                          type: string
+                        resources:
+                          description: Resources is a list of one or more resources
+                            that the condition applies to. If more than one resource
+                            is given, the EvictionRequirement is fulfilled if at least
+                            one resource meets `changeRequirement`.
+                          items:
+                            description: ResourceName is the name identifying various
+                              resources in a ResourceList.
+                            type: string
+                          type: array
+                      required:
+                      - changeRequirement
+                      - resources
+                      type: object
+                    type: array
                   minReplicas:
                     description: Minimal number of replicas which need to be alive
                       for Updater to attempt pod eviction (pending other checks like
@@ -513,7 +548,8 @@ spec:
         type: object
     served: true
     storage: true
-    subresources: {}
+    subresources:
+      status: {}
   - deprecated: true
     deprecationWarning: autoscaling.k8s.io/v1beta2 API is deprecated
     name: v1beta2
@@ -606,7 +642,7 @@ spec:
                     description: API version of the referent
                     type: string
                   kind:
-                    description: 'Kind of the referent; More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds"'
+                    description: 'Kind of the referent; More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
                     type: string
                   name:
                     description: 'Name of the referent; More info: http://kubernetes.io/docs/user-guide/identifiers#names'
@@ -748,3 +784,5 @@ spec:
         type: object
     served: true
     storage: false
+    subresources:
+      status: {}

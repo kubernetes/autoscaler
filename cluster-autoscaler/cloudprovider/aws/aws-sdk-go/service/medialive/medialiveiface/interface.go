@@ -148,6 +148,10 @@ type MediaLiveAPI interface {
 	DeleteTagsWithContext(aws.Context, *medialive.DeleteTagsInput, ...request.Option) (*medialive.DeleteTagsOutput, error)
 	DeleteTagsRequest(*medialive.DeleteTagsInput) (*request.Request, *medialive.DeleteTagsOutput)
 
+	DescribeAccountConfiguration(*medialive.DescribeAccountConfigurationInput) (*medialive.DescribeAccountConfigurationOutput, error)
+	DescribeAccountConfigurationWithContext(aws.Context, *medialive.DescribeAccountConfigurationInput, ...request.Option) (*medialive.DescribeAccountConfigurationOutput, error)
+	DescribeAccountConfigurationRequest(*medialive.DescribeAccountConfigurationInput) (*request.Request, *medialive.DescribeAccountConfigurationOutput)
+
 	DescribeChannel(*medialive.DescribeChannelInput) (*medialive.DescribeChannelOutput, error)
 	DescribeChannelWithContext(aws.Context, *medialive.DescribeChannelInput, ...request.Option) (*medialive.DescribeChannelOutput, error)
 	DescribeChannelRequest(*medialive.DescribeChannelInput) (*request.Request, *medialive.DescribeChannelOutput)
@@ -190,6 +194,10 @@ type MediaLiveAPI interface {
 
 	DescribeSchedulePages(*medialive.DescribeScheduleInput, func(*medialive.DescribeScheduleOutput, bool) bool) error
 	DescribeSchedulePagesWithContext(aws.Context, *medialive.DescribeScheduleInput, func(*medialive.DescribeScheduleOutput, bool) bool, ...request.Option) error
+
+	DescribeThumbnails(*medialive.DescribeThumbnailsInput) (*medialive.DescribeThumbnailsOutput, error)
+	DescribeThumbnailsWithContext(aws.Context, *medialive.DescribeThumbnailsInput, ...request.Option) (*medialive.DescribeThumbnailsOutput, error)
+	DescribeThumbnailsRequest(*medialive.DescribeThumbnailsInput) (*request.Request, *medialive.DescribeThumbnailsOutput)
 
 	ListChannels(*medialive.ListChannelsInput) (*medialive.ListChannelsOutput, error)
 	ListChannelsWithContext(aws.Context, *medialive.ListChannelsInput, ...request.Option) (*medialive.ListChannelsOutput, error)
@@ -262,6 +270,10 @@ type MediaLiveAPI interface {
 	PurchaseOfferingWithContext(aws.Context, *medialive.PurchaseOfferingInput, ...request.Option) (*medialive.PurchaseOfferingOutput, error)
 	PurchaseOfferingRequest(*medialive.PurchaseOfferingInput) (*request.Request, *medialive.PurchaseOfferingOutput)
 
+	RebootInputDevice(*medialive.RebootInputDeviceInput) (*medialive.RebootInputDeviceOutput, error)
+	RebootInputDeviceWithContext(aws.Context, *medialive.RebootInputDeviceInput, ...request.Option) (*medialive.RebootInputDeviceOutput, error)
+	RebootInputDeviceRequest(*medialive.RebootInputDeviceInput) (*request.Request, *medialive.RebootInputDeviceOutput)
+
 	RejectInputDeviceTransfer(*medialive.RejectInputDeviceTransferInput) (*medialive.RejectInputDeviceTransferOutput, error)
 	RejectInputDeviceTransferWithContext(aws.Context, *medialive.RejectInputDeviceTransferInput, ...request.Option) (*medialive.RejectInputDeviceTransferOutput, error)
 	RejectInputDeviceTransferRequest(*medialive.RejectInputDeviceTransferInput) (*request.Request, *medialive.RejectInputDeviceTransferOutput)
@@ -269,6 +281,14 @@ type MediaLiveAPI interface {
 	StartChannel(*medialive.StartChannelInput) (*medialive.StartChannelOutput, error)
 	StartChannelWithContext(aws.Context, *medialive.StartChannelInput, ...request.Option) (*medialive.StartChannelOutput, error)
 	StartChannelRequest(*medialive.StartChannelInput) (*request.Request, *medialive.StartChannelOutput)
+
+	StartInputDevice(*medialive.StartInputDeviceInput) (*medialive.StartInputDeviceOutput, error)
+	StartInputDeviceWithContext(aws.Context, *medialive.StartInputDeviceInput, ...request.Option) (*medialive.StartInputDeviceOutput, error)
+	StartInputDeviceRequest(*medialive.StartInputDeviceInput) (*request.Request, *medialive.StartInputDeviceOutput)
+
+	StartInputDeviceMaintenanceWindow(*medialive.StartInputDeviceMaintenanceWindowInput) (*medialive.StartInputDeviceMaintenanceWindowOutput, error)
+	StartInputDeviceMaintenanceWindowWithContext(aws.Context, *medialive.StartInputDeviceMaintenanceWindowInput, ...request.Option) (*medialive.StartInputDeviceMaintenanceWindowOutput, error)
+	StartInputDeviceMaintenanceWindowRequest(*medialive.StartInputDeviceMaintenanceWindowInput) (*request.Request, *medialive.StartInputDeviceMaintenanceWindowOutput)
 
 	StartMultiplex(*medialive.StartMultiplexInput) (*medialive.StartMultiplexOutput, error)
 	StartMultiplexWithContext(aws.Context, *medialive.StartMultiplexInput, ...request.Option) (*medialive.StartMultiplexOutput, error)
@@ -278,6 +298,10 @@ type MediaLiveAPI interface {
 	StopChannelWithContext(aws.Context, *medialive.StopChannelInput, ...request.Option) (*medialive.StopChannelOutput, error)
 	StopChannelRequest(*medialive.StopChannelInput) (*request.Request, *medialive.StopChannelOutput)
 
+	StopInputDevice(*medialive.StopInputDeviceInput) (*medialive.StopInputDeviceOutput, error)
+	StopInputDeviceWithContext(aws.Context, *medialive.StopInputDeviceInput, ...request.Option) (*medialive.StopInputDeviceOutput, error)
+	StopInputDeviceRequest(*medialive.StopInputDeviceInput) (*request.Request, *medialive.StopInputDeviceOutput)
+
 	StopMultiplex(*medialive.StopMultiplexInput) (*medialive.StopMultiplexOutput, error)
 	StopMultiplexWithContext(aws.Context, *medialive.StopMultiplexInput, ...request.Option) (*medialive.StopMultiplexOutput, error)
 	StopMultiplexRequest(*medialive.StopMultiplexInput) (*request.Request, *medialive.StopMultiplexOutput)
@@ -285,6 +309,10 @@ type MediaLiveAPI interface {
 	TransferInputDevice(*medialive.TransferInputDeviceInput) (*medialive.TransferInputDeviceOutput, error)
 	TransferInputDeviceWithContext(aws.Context, *medialive.TransferInputDeviceInput, ...request.Option) (*medialive.TransferInputDeviceOutput, error)
 	TransferInputDeviceRequest(*medialive.TransferInputDeviceInput) (*request.Request, *medialive.TransferInputDeviceOutput)
+
+	UpdateAccountConfiguration(*medialive.UpdateAccountConfigurationInput) (*medialive.UpdateAccountConfigurationOutput, error)
+	UpdateAccountConfigurationWithContext(aws.Context, *medialive.UpdateAccountConfigurationInput, ...request.Option) (*medialive.UpdateAccountConfigurationOutput, error)
+	UpdateAccountConfigurationRequest(*medialive.UpdateAccountConfigurationInput) (*request.Request, *medialive.UpdateAccountConfigurationOutput)
 
 	UpdateChannel(*medialive.UpdateChannelInput) (*medialive.UpdateChannelOutput, error)
 	UpdateChannelWithContext(aws.Context, *medialive.UpdateChannelInput, ...request.Option) (*medialive.UpdateChannelOutput, error)

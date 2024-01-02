@@ -18,12 +18,23 @@ package scheduler
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/util/uuid"
+	scheduler_config "k8s.io/kubernetes/pkg/scheduler/apis/config"
+	scheduler_scheme "k8s.io/kubernetes/pkg/scheduler/apis/config/scheme"
+	scheduler_validation "k8s.io/kubernetes/pkg/scheduler/apis/config/validation"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
+)
+
+const (
+	schedulerConfigDecodeErr   = "couldn't decode scheduler config"
+	schedulerConfigLoadErr     = "couldn't load scheduler config"
+	schedulerConfigTypeCastErr = "couldn't assert type as KubeSchedulerConfiguration"
+	schedulerConfigInvalidErr  = "invalid KubeSchedulerConfiguration"
 )
 
 // CreateNodeNameToInfoMap obtains a list of pods and pivots that list into a map where the keys are node names
@@ -105,4 +116,47 @@ func ResourceToResourceList(r *schedulerframework.Resource) apiv1.ResourceList {
 		}
 	}
 	return result
+}
+
+// ConfigFromPath loads scheduler config from a path.
+// TODO(vadasambar): replace code to parse scheduler config with upstream function
+// once https://github.com/kubernetes/kubernetes/pull/119057 is merged
+func ConfigFromPath(path string) (*scheduler_config.KubeSchedulerConfiguration, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %v", schedulerConfigLoadErr, err)
+	}
+
+	obj, gvk, err := scheduler_scheme.Codecs.UniversalDecoder().Decode(data, nil, nil)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %v", schedulerConfigDecodeErr, err)
+	}
+
+	cfgObj, ok := obj.(*scheduler_config.KubeSchedulerConfiguration)
+	if !ok {
+		return nil, fmt.Errorf("%s, gvk: %s", schedulerConfigTypeCastErr, gvk)
+	}
+
+	// this needs to be set explicitly because config's api version is empty after decoding
+	// check kubernetes/cmd/kube-scheduler/app/options/configfile.go for more info
+	cfgObj.TypeMeta.APIVersion = gvk.GroupVersion().String()
+
+	if err := scheduler_validation.ValidateKubeSchedulerConfiguration(cfgObj); err != nil {
+		return nil, fmt.Errorf("%s: %v", schedulerConfigInvalidErr, err)
+	}
+
+	return cfgObj, nil
+}
+
+// GetBypassedSchedulersMap returns a map of scheduler names that should be bypassed as keys, and values are set to true
+// Also sets "" (empty string) to true if default scheduler is bypassed
+func GetBypassedSchedulersMap(bypassedSchedulers []string) map[string]bool {
+	bypassedSchedulersMap := make(map[string]bool, len(bypassedSchedulers))
+	for _, scheduler := range bypassedSchedulers {
+		bypassedSchedulersMap[scheduler] = true
+	}
+	if canBypass := bypassedSchedulersMap[apiv1.DefaultSchedulerName]; canBypass {
+		bypassedSchedulersMap[""] = true
+	}
+	return bypassedSchedulersMap
 }

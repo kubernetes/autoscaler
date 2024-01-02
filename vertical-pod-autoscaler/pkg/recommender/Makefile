@@ -8,6 +8,8 @@ ENVVAR=CGO_ENABLED=0 $(TEST_ENVVAR)
 GOOS?=linux
 COMPONENT=recommender
 FULL_COMPONENT=vpa-${COMPONENT}
+# localhost registries need --insecure for some docker commands.
+INSECURE=$(subst localhost,--insecure,$(findstring localhost,$(REGISTRY)))
 
 ALL_ARCHITECTURES?=amd64 arm arm64 ppc64le s390x
 export DOCKER_CLI_EXPERIMENTAL=enabled
@@ -19,13 +21,6 @@ build: clean
 build-binary: clean
 	$(ENVVAR) GOOS=$(GOOS) go build -o ${COMPONENT}
 
-.PHONY: build-binary-with-vendor
-build-binary-with-vendor: $(addprefix build-binary-with-vendor-,$(ALL_ARCHITECTURES)) clean
-
-.PHONY: build-binary-with-vendor-*
-build-binary-with-vendor-%:
-	$(ENVVAR) GOARCH=$* GOOS=$(GOOS) go build -mod vendor -o ${COMPONENT}-$*
-
 test-unit: clean build
 	$(TEST_ENVVAR) go test --test.short -race ./... $(FLAGS)
 
@@ -33,7 +28,7 @@ test-unit: clean build
 docker-build: $(addprefix docker-build-,$(ALL_ARCHITECTURES))
 
 .PHONY: docker-build-*
-docker-build-%: 
+docker-build-%:
 ifndef REGISTRY
 	ERR = $(error REGISTRY is undefined)
 	$(ERR)
@@ -42,13 +37,10 @@ ifndef TAG
 	ERR = $(error TAG is undefined)
 	$(ERR)
 endif
-	docker build --pull -t ${REGISTRY}/${FULL_COMPONENT}-$*:${TAG} --build-arg ARCH=$* .
+	docker buildx build --pull --load --platform linux/$* -t ${REGISTRY}/${FULL_COMPONENT}-$*:${TAG} --build-arg ARCH=$* -f ./Dockerfile ../../
 
 .PHONY: docker-push
-docker-push: $(addprefix sub-push-,$(ALL_ARCHITECTURES)) push-multi-arch;
-
-.PHONY: sub-push-*
-sub-push-%: docker-build-% do-push-% ;
+docker-push: $(addprefix do-push-,$(ALL_ARCHITECTURES)) push-multi-arch;
 
 .PHONY: do-push-*
 do-push-%:
@@ -68,17 +60,24 @@ push-multi-arch:
 	@for arch in $(ALL_ARCHITECTURES); do docker manifest annotate --arch $${arch} $(REGISTRY)/${FULL_COMPONENT}:$(TAG) $(REGISTRY)/${FULL_COMPONENT}-$${arch}:${TAG}; done
 	docker manifest push --purge $(REGISTRY)/${FULL_COMPONENT}:$(TAG)
 
-docker-builder:
-	docker build -t vpa-autoscaling-builder ../../builder
+.PHONY: show-git-info
+show-git-info:
+	echo '=============== local git status ==============='
+	git status
+	echo '=============== last commit ==============='
+	git log -1
+	echo '=============== bulding from the above ==============='
 
-.PHONY: build-in-docker
-build-in-docker: $(addprefix build-in-docker-,$(ALL_ARCHITECTURES))
+.PHONY: create-buildx-builder
+create-buildx-builder:
+	BUILDER=$(shell docker buildx create --driver=docker-container --use)
 
-.PHONY: build-in-docker-*
-build-in-docker-%: clean docker-builder
-	docker run -v `pwd`/../..:/gopath/src/k8s.io/autoscaler/vertical-pod-autoscaler vpa-autoscaling-builder:latest bash -c 'cd /gopath/src/k8s.io/autoscaler/vertical-pod-autoscaler && make build-binary-with-vendor-$* -C pkg/recommender'
+.PHONY: remove-buildx-builder
+remove-buildx-builder:
+	docker buildx rm ${BUILDER}
 
-release: build-in-docker docker-build docker-push
+.PHONY: release
+release: show-git-info create-buildx-builder docker-build remove-buildx-builder docker-push
 	@echo "Full in-docker release ${FULL_COMPONENT}:${TAG} completed"
 
 clean: $(addprefix clean-,$(ALL_ARCHITECTURES))

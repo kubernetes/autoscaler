@@ -80,3 +80,10 @@ func NewClientWithRsaKeyPair(regionId string, publicKeyId, privateKey string, se
 	err = client.InitWithRsaKeyPair(regionId, publicKeyId, privateKey, sessionExpiration)
 	return
 }
+
+// NewClientWithRRSA is a shortcut to create sdk client with RRSA
+func NewClientWithRRSA(regionId, roleARN, oidcProviderARN, oidcTokenFilePath, roleSessionName string) (client *Client, err error) {
+	client = &Client{}
+	err = client.InitWithRRSA(regionId, roleARN, oidcProviderARN, oidcTokenFilePath, roleSessionName)
+	return
+}

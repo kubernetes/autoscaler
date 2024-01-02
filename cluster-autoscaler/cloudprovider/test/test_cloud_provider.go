@@ -443,6 +443,9 @@ func (tng *TestNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	id := tng.id
 	tng.targetSize -= len(nodes)
 	tng.Unlock()
+	if tng.opts != nil && tng.opts.ZeroOrMaxNodeScaling && tng.targetSize != 0 {
+		return fmt.Errorf("TestNodeGroup: attempted to partially scale down a node group that should be scaled down atomically")
+	}
 	for _, node := range nodes {
 		err := tng.cloudProvider.onScaleDown(id, node.Name)
 		if err != nil {
@@ -476,7 +479,12 @@ func (tng *TestNodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 	instances := make([]cloudprovider.Instance, 0)
 	for node, nodegroup := range tng.cloudProvider.nodes {
 		if nodegroup == tng.id {
-			instances = append(instances, cloudprovider.Instance{Id: node})
+			instances = append(instances, cloudprovider.Instance{
+				Id: node,
+				Status: &cloudprovider.InstanceStatus{
+					State: cloudprovider.InstanceRunning,
+				},
+			})
 		}
 	}
 	return instances, nil

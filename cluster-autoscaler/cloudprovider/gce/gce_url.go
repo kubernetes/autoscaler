@@ -18,16 +18,13 @@ package gce
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 )
 
 const (
-	gceUrlSchema    = "https"
-	gceDomainSuffix = "googleapis.com/compute/v1/projects/"
-	// Cluster Autoscaler previously used "content" instead of "www" here, for reasons unknown.
-	gcePrefix           = gceUrlSchema + "://www." + gceDomainSuffix
-	instanceUrlTemplate = gcePrefix + "%s/zones/%s/instances/%s"
-	migUrlTemplate      = gcePrefix + "%s/zones/%s/instanceGroups/%s"
+	projectsSubstring = "/projects/"
+	defaultDomainUrl  = "https://www.googleapis.com/compute/v1"
 )
 
 // ParseMigUrl expects url in format:
@@ -64,30 +61,30 @@ func ParseInstanceUrlRef(url string) (GceRef, error) {
 }
 
 // GenerateInstanceUrl generates url for instance.
-func GenerateInstanceUrl(ref GceRef) string {
+func GenerateInstanceUrl(domainUrl string, ref GceRef) string {
+	if domainUrl == "" {
+		domainUrl = defaultDomainUrl
+	}
+	instanceUrlTemplate := domainUrl + projectsSubstring + "%s/zones/%s/instances/%s"
 	return fmt.Sprintf(instanceUrlTemplate, ref.Project, ref.Zone, ref.Name)
 }
 
 // GenerateMigUrl generates url for instance.
-func GenerateMigUrl(ref GceRef) string {
+func GenerateMigUrl(domainUrl string, ref GceRef) string {
+	if domainUrl == "" {
+		domainUrl = defaultDomainUrl
+	}
+	migUrlTemplate := domainUrl + projectsSubstring + "%s/zones/%s/instanceGroups/%s"
 	return fmt.Sprintf(migUrlTemplate, ref.Project, ref.Zone, ref.Name)
 }
 
 func parseGceUrl(url, expectedResource string) (project string, zone string, name string, err error) {
-	errMsg := fmt.Errorf("wrong url: expected format https://www.googleapis.com/compute/v1/projects/<project-id>/zones/<zone>/%s/<name>, got %s", expectedResource, url)
-	if !strings.Contains(url, gceDomainSuffix) {
+	reg := regexp.MustCompile(fmt.Sprintf("https://.*/projects/.*/zones/.*/%s/.*", expectedResource))
+	errMsg := fmt.Errorf("wrong url: expected format <url>/projects/<project-id>/zones/<zone>/%s/<name>, got %s", expectedResource, url)
+	if !reg.MatchString(url) {
 		return "", "", "", errMsg
 	}
-	if !strings.HasPrefix(url, gceUrlSchema) {
-		return "", "", "", errMsg
-	}
-	splitted := strings.Split(strings.Split(url, gceDomainSuffix)[1], "/")
-	if len(splitted) != 5 || splitted[1] != "zones" {
-		return "", "", "", errMsg
-	}
-	if splitted[3] != expectedResource {
-		return "", "", "", fmt.Errorf("wrong resource in url: expected %s, got %s", expectedResource, splitted[3])
-	}
+	splitted := strings.Split(strings.Split(url, projectsSubstring)[1], "/")
 	project = splitted[0]
 	zone = splitted[2]
 	name = splitted[4]

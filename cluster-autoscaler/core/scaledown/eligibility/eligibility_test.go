@@ -21,12 +21,11 @@ import (
 	"testing"
 	"time"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/unremovable"
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupconfig"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
@@ -36,8 +35,16 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 )
 
-func TestFilterOutUnremovable(t *testing.T) {
-	now := time.Now()
+type testCase struct {
+	desc                        string
+	nodes                       []*apiv1.Node
+	pods                        []*apiv1.Pod
+	want                        []string
+	scaleDownUnready            bool
+	ignoreDaemonSetsUtilization bool
+}
+
+func getTestCases(ignoreDaemonSetsUtilization bool, suffix string, now time.Time) []testCase {
 
 	regularNode := BuildTestNode("regular", 1000, 10)
 	SetNodeReadyState(regularNode, true, time.Time{})
@@ -59,13 +66,10 @@ func TestFilterOutUnremovable(t *testing.T) {
 	smallPod := BuildTestPod("smallPod", 100, 0)
 	smallPod.Spec.NodeName = "regular"
 
-	testCases := []struct {
-		desc             string
-		nodes            []*apiv1.Node
-		pods             []*apiv1.Pod
-		want             []string
-		scaleDownUnready bool
-	}{
+	dsPod := BuildTestPod("dsPod", 500, 0, WithDSController())
+	dsPod.Spec.NodeName = "regular"
+
+	testCases := []testCase{
 		{
 			desc:             "regular node stays",
 			nodes:            []*apiv1.Node{regularNode},
@@ -111,15 +115,58 @@ func TestFilterOutUnremovable(t *testing.T) {
 			scaleDownUnready: false,
 		},
 	}
+
+	finalTestCases := []testCase{}
 	for _, tc := range testCases {
+		tc.desc = tc.desc + " " + suffix
+		if ignoreDaemonSetsUtilization {
+			tc.ignoreDaemonSetsUtilization = true
+		}
+		finalTestCases = append(finalTestCases, tc)
+	}
+
+	if ignoreDaemonSetsUtilization {
+		finalTestCases = append(testCases, testCase{
+			desc:                        "high utilization daemonsets node is filtered out",
+			nodes:                       []*apiv1.Node{regularNode},
+			pods:                        []*apiv1.Pod{smallPod, dsPod},
+			want:                        []string{},
+			scaleDownUnready:            true,
+			ignoreDaemonSetsUtilization: false,
+		},
+			testCase{
+				desc:                        "high utilization daemonsets node stays",
+				nodes:                       []*apiv1.Node{regularNode},
+				pods:                        []*apiv1.Pod{smallPod, dsPod},
+				want:                        []string{"regular"},
+				scaleDownUnready:            true,
+				ignoreDaemonSetsUtilization: true,
+			})
+	}
+
+	return finalTestCases
+}
+
+func TestFilterOutUnremovable(t *testing.T) {
+	now := time.Now()
+	for _, tc := range append(getTestCases(false, "IgnoreDaemonSetUtilization=false", now),
+		getTestCases(true, "IgnoreDaemonsetUtilization=true", now)...) {
 		tc := tc
 		t.Run(tc.desc, func(t *testing.T) {
 			t.Parallel()
-			c := NewChecker(&staticThresholdGetter{0.5})
 			options := config.AutoscalingOptions{
 				UnremovableNodeRecheckTimeout: 5 * time.Minute,
 				ScaleDownUnreadyEnabled:       tc.scaleDownUnready,
+				NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
+					ScaleDownUtilizationThreshold:    config.DefaultScaleDownUtilizationThreshold,
+					ScaleDownGpuUtilizationThreshold: config.DefaultScaleDownGpuUtilizationThreshold,
+					ScaleDownUnneededTime:            config.DefaultScaleDownUnneededTime,
+					ScaleDownUnreadyTime:             config.DefaultScaleDownUnreadyTime,
+					IgnoreDaemonSetsUtilization:      tc.ignoreDaemonSetsUtilization,
+				},
 			}
+			s := nodegroupconfig.NewDefaultNodeGroupConfigProcessor(options.NodeGroupDefaults)
+			c := NewChecker(s)
 			provider := testprovider.NewTestCloudProvider(nil, nil)
 			provider.AddNodeGroup("ng1", 1, 10, 2)
 			for _, n := range tc.nodes {
@@ -135,16 +182,4 @@ func TestFilterOutUnremovable(t *testing.T) {
 			assert.Equal(t, tc.want, got)
 		})
 	}
-}
-
-type staticThresholdGetter struct {
-	threshold float64
-}
-
-func (s *staticThresholdGetter) GetScaleDownUtilizationThreshold(_ *context.AutoscalingContext, _ cloudprovider.NodeGroup) (float64, error) {
-	return s.threshold, nil
-}
-
-func (s *staticThresholdGetter) GetScaleDownGpuUtilizationThreshold(_ *context.AutoscalingContext, _ cloudprovider.NodeGroup) (float64, error) {
-	return s.threshold, nil
 }

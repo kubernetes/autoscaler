@@ -20,7 +20,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -62,13 +62,6 @@ type Error struct {
 	RetryAfter time.Time
 	// RetryAfter indicates the raw error from API.
 	RawError error
-}
-
-// RawErrorContainer is the container of the Error.RawError
-type RawErrorContainer struct {
-	Code    string   `json:"code"`
-	Message string   `json:"message"`
-	Details []string `json:"details"`
 }
 
 // Error returns the error.
@@ -198,8 +191,8 @@ func getRawError(resp *http.Response, err error) error {
 
 	// return the http status if it is unable to get response body.
 	defer resp.Body.Close()
-	respBody, _ := ioutil.ReadAll(resp.Body)
-	resp.Body = ioutil.NopCloser(bytes.NewReader(respBody))
+	respBody, _ := io.ReadAll(resp.Body)
+	resp.Body = io.NopCloser(bytes.NewReader(respBody))
 	if len(respBody) == 0 {
 		return fmt.Errorf("HTTP status code (%d)", resp.StatusCode)
 	}
@@ -424,4 +417,17 @@ func getOperationNotAllowedReason(msg string) string {
 		return QuotaExceeded
 	}
 	return OperationNotAllowed
+}
+
+// PartialUpdateError implements error interface. It is meant to be returned for errors with http status code of 2xx
+type PartialUpdateError struct {
+	message string
+}
+
+func NewPartialUpdateError(msg string) *PartialUpdateError {
+	return &PartialUpdateError{message: msg}
+}
+
+func (e *PartialUpdateError) Error() string {
+	return e.message
 }

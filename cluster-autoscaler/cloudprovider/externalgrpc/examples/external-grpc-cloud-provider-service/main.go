@@ -120,10 +120,12 @@ func main() {
 		NodeGroupAutoDiscovery: *nodeGroupAutoDiscoveryFlag,
 		NodeGroups:             *nodeGroupsFlag,
 		ClusterName:            *clusterName,
-		ConcurrentGceRefreshes: 1,
-		UserAgent:              "user-agent",
+		GCEOptions: config.GCEOptions{
+			ConcurrentRefreshes: 1,
+		},
+		UserAgent: "user-agent",
 	}
-	cloudProvider := cloudBuilder.NewCloudProvider(autoscalingOptions)
+	cloudProvider := cloudBuilder.NewCloudProvider(autoscalingOptions, nil)
 	srv := wrapper.NewCloudProviderGrpcWrapper(cloudProvider)
 
 	// listen

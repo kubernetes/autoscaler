@@ -10,7 +10,7 @@ These domains may include:
 * Cloud provider zones inside a single region, to ensure that the application is still up and running, even if one of the zones has issues.
 * Different types of Kubernetes nodes. These may involve nodes that are spot/preemptible, or of different machine families. 
 
-A single Kuberentes deployment may either leave the placement entirely up to the scheduler 
+A single Kubernetes deployment may either leave the placement entirely up to the scheduler 
 (most likely leading to something not entirely desired, like all pods going to a single domain) or 
 focus on a single domain (thus not achieving the goal of being in two or more domains). 
 

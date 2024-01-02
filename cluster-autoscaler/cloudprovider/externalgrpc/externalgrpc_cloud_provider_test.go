@@ -23,15 +23,18 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/anypb"
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/externalgrpc/protos"
 )
 
 func TestCloudProvider_NodeGroups(t *testing.T) {
 	client, m, teardown := setupTest(t)
 	defer teardown()
-	c := newExternalGrpcCloudProvider(client, nil)
+	c := newExternalGrpcCloudProvider(client, defaultGRPCTimeout, nil)
 
 	m.On("Refresh", mock.Anything, mock.Anything).Return(&protos.RefreshResponse{}, nil)
 
@@ -114,7 +117,7 @@ func TestCloudProvider_NodeGroups(t *testing.T) {
 func TestCloudProvider_NodeGroupForNode(t *testing.T) {
 	client, m, teardown := setupTest(t)
 	defer teardown()
-	c := newExternalGrpcCloudProvider(client, nil)
+	c := newExternalGrpcCloudProvider(client, defaultGRPCTimeout, nil)
 
 	m.On("Refresh", mock.Anything, mock.Anything).Return(&protos.RefreshResponse{}, nil)
 
@@ -232,7 +235,7 @@ func TestCloudProvider_NodeGroupForNode(t *testing.T) {
 func TestCloudProvider_Pricing(t *testing.T) {
 	client, m, teardown := setupTest(t)
 	defer teardown()
-	c := newExternalGrpcCloudProvider(client, nil)
+	c := newExternalGrpcCloudProvider(client, defaultGRPCTimeout, nil)
 
 	model, errPricing := c.Pricing()
 	assert.NoError(t, errPricing)
@@ -286,6 +289,23 @@ func TestCloudProvider_Pricing(t *testing.T) {
 	_, err = model.NodePrice(apiv1Node3, time.Time{}, time.Time{})
 	assert.Error(t, err)
 
+	// test notImplemented for NodePrice
+	m.On(
+		"PricingNodePrice", mock.Anything, mock.MatchedBy(func(req *protos.PricingNodePriceRequest) bool {
+			return req.Node.Name == "node4"
+		}),
+	).Return(
+		&protos.PricingNodePriceResponse{},
+		status.Error(codes.Unimplemented, "mock error"),
+	)
+
+	apiv1Node4 := &apiv1.Node{}
+	apiv1Node4.Name = "node4"
+
+	_, err = model.NodePrice(apiv1Node4, time.Time{}, time.Time{})
+	assert.Error(t, err)
+	assert.Equal(t, cloudprovider.ErrNotImplemented, err)
+
 	// test correct PodPrice call
 	m.On(
 		"PricingPodPrice", mock.Anything, mock.MatchedBy(func(req *protos.PricingPodPriceRequest) bool {
@@ -333,12 +353,30 @@ func TestCloudProvider_Pricing(t *testing.T) {
 
 	_, err = model.PodPrice(apiv1Pod3, time.Time{}, time.Time{})
 	assert.Error(t, err)
+
+	// test notImplemented for PodPrice
+	m.On(
+		"PricingPodPrice", mock.Anything, mock.MatchedBy(func(req *protos.PricingPodPriceRequest) bool {
+			return req.Pod.Name == "pod4"
+		}),
+	).Return(
+		&protos.PricingPodPriceResponse{},
+		status.Error(codes.Unimplemented, "mock error"),
+	)
+
+	apiv1Pod4 := &apiv1.Pod{}
+	apiv1Pod4.Name = "pod4"
+
+	_, err = model.PodPrice(apiv1Pod4, time.Time{}, time.Time{})
+	assert.Error(t, err)
+	assert.Equal(t, cloudprovider.ErrNotImplemented, err)
+
 }
 
 func TestCloudProvider_GPULabel(t *testing.T) {
 	client, m, teardown := setupTest(t)
 	defer teardown()
-	c := newExternalGrpcCloudProvider(client, nil)
+	c := newExternalGrpcCloudProvider(client, defaultGRPCTimeout, nil)
 
 	m.On("Refresh", mock.Anything, mock.Anything).Return(&protos.RefreshResponse{}, nil)
 
@@ -361,7 +399,7 @@ func TestCloudProvider_GPULabel(t *testing.T) {
 	// test grpc error
 	client2, m2, teardown2 := setupTest(t)
 	defer teardown2()
-	c2 := newExternalGrpcCloudProvider(client2, nil)
+	c2 := newExternalGrpcCloudProvider(client2, defaultGRPCTimeout, nil)
 
 	m2.On("Refresh", mock.Anything, mock.Anything).Return(&protos.RefreshResponse{}, nil)
 
@@ -384,7 +422,7 @@ func TestCloudProvider_GPULabel(t *testing.T) {
 func TestCloudProvider_GetAvailableGPUTypes(t *testing.T) {
 	client, m, teardown := setupTest(t)
 	defer teardown()
-	c := newExternalGrpcCloudProvider(client, nil)
+	c := newExternalGrpcCloudProvider(client, defaultGRPCTimeout, nil)
 
 	m.On("Refresh", mock.Anything, mock.Anything).Return(&protos.RefreshResponse{}, nil)
 
@@ -415,7 +453,7 @@ func TestCloudProvider_GetAvailableGPUTypes(t *testing.T) {
 	// test no gpu types
 	client2, m2, teardown2 := setupTest(t)
 	defer teardown2()
-	c2 := newExternalGrpcCloudProvider(client2, nil)
+	c2 := newExternalGrpcCloudProvider(client2, defaultGRPCTimeout, nil)
 
 	m2.On(
 		"GetAvailableGPUTypes", mock.Anything, mock.Anything,
@@ -431,7 +469,7 @@ func TestCloudProvider_GetAvailableGPUTypes(t *testing.T) {
 	// test grpc error
 	client3, m3, teardown3 := setupTest(t)
 	defer teardown3()
-	c3 := newExternalGrpcCloudProvider(client3, nil)
+	c3 := newExternalGrpcCloudProvider(client3, defaultGRPCTimeout, nil)
 
 	m3.On(
 		"GetAvailableGPUTypes", mock.Anything, mock.Anything,
@@ -453,7 +491,7 @@ func TestCloudProvider_GetAvailableGPUTypes(t *testing.T) {
 func TestCloudProvider_Cleanup(t *testing.T) {
 	client, m, teardown := setupTest(t)
 	defer teardown()
-	c := newExternalGrpcCloudProvider(client, nil)
+	c := newExternalGrpcCloudProvider(client, defaultGRPCTimeout, nil)
 
 	// test correct call
 	m.On(
@@ -481,7 +519,7 @@ func TestCloudProvider_Cleanup(t *testing.T) {
 func TestCloudProvider_Refresh(t *testing.T) {
 	client, m, teardown := setupTest(t)
 	defer teardown()
-	c := newExternalGrpcCloudProvider(client, nil)
+	c := newExternalGrpcCloudProvider(client, defaultGRPCTimeout, nil)
 
 	// test correct call
 	m.On(

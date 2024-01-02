@@ -14,6 +14,12 @@ const (
 	// You do not have sufficient access to perform this action.
 	ErrCodeAccessDeniedException = "AccessDeniedException"
 
+	// ErrCodeConflictException for service response error code
+	// "ConflictException".
+	//
+	// There was a conflict with this action, and it could not be completed.
+	ErrCodeConflictException = "ConflictException"
+
 	// ErrCodeInternalServerException for service response error code
 	// "InternalServerException".
 	//
@@ -32,6 +38,12 @@ const (
 	//
 	// A service limit or quota is exceeded.
 	ErrCodeLimitExceededException = "LimitExceededException"
+
+	// ErrCodeResourceAlreadyExistsException for service response error code
+	// "ResourceAlreadyExistsException".
+	//
+	// The specified resource group already exists.
+	ErrCodeResourceAlreadyExistsException = "ResourceAlreadyExistsException"
 
 	// ErrCodeResourceNotFoundException for service response error code
 	// "ResourceNotFoundException".
@@ -61,12 +73,14 @@ const (
 )
 
 var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
-	"AccessDeniedException":         newErrorAccessDeniedException,
-	"InternalServerException":       newErrorInternalServerException,
-	"InvalidRequestException":       newErrorInvalidRequestException,
-	"LimitExceededException":        newErrorLimitExceededException,
-	"ResourceNotFoundException":     newErrorResourceNotFoundException,
-	"ServiceQuotaExceededException": newErrorServiceQuotaExceededException,
-	"ThrottlingException":           newErrorThrottlingException,
-	"ValidationException":           newErrorValidationException,
+	"AccessDeniedException":          newErrorAccessDeniedException,
+	"ConflictException":              newErrorConflictException,
+	"InternalServerException":        newErrorInternalServerException,
+	"InvalidRequestException":        newErrorInvalidRequestException,
+	"LimitExceededException":         newErrorLimitExceededException,
+	"ResourceAlreadyExistsException": newErrorResourceAlreadyExistsException,
+	"ResourceNotFoundException":      newErrorResourceNotFoundException,
+	"ServiceQuotaExceededException":  newErrorServiceQuotaExceededException,
+	"ThrottlingException":            newErrorThrottlingException,
+	"ValidationException":            newErrorValidationException,
 }

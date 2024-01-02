@@ -137,6 +137,11 @@ func TestGetManagedNodegroup(t *testing.T) {
 	capacityType := "testCapacityType"
 	k8sVersion := "1.19"
 
+	tagKey1 := "tag 1"
+	tagValue1 := "value 1"
+	tagKey2 := "tag 2"
+	tagValue2 := "value 2"
+
 	// Create test nodegroup
 	testNodegroup := eks.Nodegroup{
 		AmiType:       &amiType,
@@ -147,6 +152,7 @@ func TestGetManagedNodegroup(t *testing.T) {
 		CapacityType:  &capacityType,
 		Version:       &k8sVersion,
 		Taints:        []*eks.Taint{&taint1, &taint2},
+		Tags:          map[string]*string{tagKey1: &tagValue1, tagKey2: &tagValue2},
 	}
 
 	k.On("DescribeNodegroup", &eks.DescribeNodegroupInput{
@@ -154,7 +160,7 @@ func TestGetManagedNodegroup(t *testing.T) {
 		NodegroupName: &nodegroupName,
 	}).Return(&eks.DescribeNodegroupOutput{Nodegroup: &testNodegroup}, nil)
 
-	taintList, labelMap, err := awsWrapper.getManagedNodegroupInfo(nodegroupName, clusterName)
+	taintList, labelMap, tagMap, err := awsWrapper.getManagedNodegroupInfo(nodegroupName, clusterName)
 	assert.Nil(t, err)
 	assert.Equal(t, len(taintList), 2)
 	assert.Equal(t, taintList[0].Effect, apiv1.TaintEffect(taintEffect1))
@@ -168,9 +174,12 @@ func TestGetManagedNodegroup(t *testing.T) {
 	assert.Equal(t, labelMap[labelKey2], labelValue2)
 	assert.Equal(t, labelMap["diskSize"], strconv.FormatInt(diskSize, 10))
 	assert.Equal(t, labelMap["amiType"], amiType)
-	assert.Equal(t, labelMap["capacityType"], capacityType)
+	assert.Equal(t, labelMap["eks.amazonaws.com/capacityType"], capacityType)
 	assert.Equal(t, labelMap["k8sVersion"], k8sVersion)
 	assert.Equal(t, labelMap["eks.amazonaws.com/nodegroup"], nodegroupName)
+	assert.Equal(t, len(tagMap), 2)
+	assert.Equal(t, tagMap[tagKey1], tagValue1)
+	assert.Equal(t, tagMap[tagKey2], tagValue2)
 }
 
 func TestGetManagedNodegroupWithNilValues(t *testing.T) {
@@ -198,6 +207,7 @@ func TestGetManagedNodegroupWithNilValues(t *testing.T) {
 		CapacityType:  &capacityType,
 		Version:       &k8sVersion,
 		Taints:        nil,
+		Tags:          nil,
 	}
 
 	k.On("DescribeNodegroup", &eks.DescribeNodegroupInput{
@@ -205,14 +215,15 @@ func TestGetManagedNodegroupWithNilValues(t *testing.T) {
 		NodegroupName: &nodegroupName,
 	}).Return(&eks.DescribeNodegroupOutput{Nodegroup: &testNodegroup}, nil)
 
-	taintList, labelMap, err := awsWrapper.getManagedNodegroupInfo(nodegroupName, clusterName)
+	taintList, labelMap, tagMap, err := awsWrapper.getManagedNodegroupInfo(nodegroupName, clusterName)
 	assert.Nil(t, err)
 	assert.Equal(t, len(taintList), 0)
 	assert.Equal(t, len(labelMap), 4)
 	assert.Equal(t, labelMap["amiType"], amiType)
-	assert.Equal(t, labelMap["capacityType"], capacityType)
+	assert.Equal(t, labelMap["eks.amazonaws.com/capacityType"], capacityType)
 	assert.Equal(t, labelMap["k8sVersion"], k8sVersion)
 	assert.Equal(t, labelMap["eks.amazonaws.com/nodegroup"], nodegroupName)
+	assert.Equal(t, len(tagMap), 0)
 }
 
 func TestGetManagedNodegroupWithEmptyValues(t *testing.T) {
@@ -240,6 +251,7 @@ func TestGetManagedNodegroupWithEmptyValues(t *testing.T) {
 		CapacityType:  &capacityType,
 		Version:       &k8sVersion,
 		Taints:        make([]*eks.Taint, 0),
+		Tags:          make(map[string]*string),
 	}
 
 	k.On("DescribeNodegroup", &eks.DescribeNodegroupInput{
@@ -247,14 +259,15 @@ func TestGetManagedNodegroupWithEmptyValues(t *testing.T) {
 		NodegroupName: &nodegroupName,
 	}).Return(&eks.DescribeNodegroupOutput{Nodegroup: &testNodegroup}, nil)
 
-	taintList, labelMap, err := awsWrapper.getManagedNodegroupInfo(nodegroupName, clusterName)
+	taintList, labelMap, tagMap, err := awsWrapper.getManagedNodegroupInfo(nodegroupName, clusterName)
 	assert.Nil(t, err)
 	assert.Equal(t, len(taintList), 0)
 	assert.Equal(t, len(labelMap), 4)
 	assert.Equal(t, labelMap["amiType"], amiType)
-	assert.Equal(t, labelMap["capacityType"], capacityType)
+	assert.Equal(t, labelMap["eks.amazonaws.com/capacityType"], capacityType)
 	assert.Equal(t, labelMap["k8sVersion"], k8sVersion)
 	assert.Equal(t, labelMap["eks.amazonaws.com/nodegroup"], nodegroupName)
+	assert.Equal(t, len(tagMap), 0)
 }
 
 func TestMoreThen100Groups(t *testing.T) {
@@ -681,4 +694,44 @@ func TestBuildLaunchTemplateFromSpec(t *testing.T) {
 		got := buildLaunchTemplateFromSpec(unit.in)
 		assert.Equal(unit.exp, got)
 	}
+}
+
+func TestGetInstanceTypesFromInstanceRequirementsWithEmptyList(t *testing.T) {
+	e := &ec2Mock{}
+	awsWrapper := &awsWrapper{
+		autoScalingI: nil,
+		ec2I:         e,
+		eksI:         nil,
+	}
+	requirements := &ec2.InstanceRequirementsRequest{}
+
+	e.On("DescribeImages", &ec2.DescribeImagesInput{
+		ImageIds: []*string{aws.String("123")},
+	}).Return(&ec2.DescribeImagesOutput{
+		Images: []*ec2.Image{
+			{
+				Architecture:       aws.String("x86_64"),
+				VirtualizationType: aws.String("xen"),
+			},
+		},
+	})
+	e.On("GetInstanceTypesFromInstanceRequirementsPages",
+		&ec2.GetInstanceTypesFromInstanceRequirementsInput{
+			ArchitectureTypes:    []*string{aws.String("x86_64")},
+			InstanceRequirements: requirements,
+			VirtualizationTypes:  []*string{aws.String("xen")},
+		},
+		mock.AnythingOfType("func(*ec2.GetInstanceTypesFromInstanceRequirementsOutput, bool) bool"),
+	).Run(func(args mock.Arguments) {
+		fn := args.Get(1).(func(*ec2.GetInstanceTypesFromInstanceRequirementsOutput, bool) bool)
+		fn(&ec2.GetInstanceTypesFromInstanceRequirementsOutput{
+			InstanceTypes: []*ec2.InstanceTypeInfoFromInstanceRequirements{},
+		}, false)
+	}).Return(nil)
+
+	result, err := awsWrapper.getInstanceTypeFromInstanceRequirements("123", requirements)
+	assert.Error(t, err)
+	exp := fmt.Errorf("no instance types found for requirements")
+	assert.EqualError(t, err, exp.Error())
+	assert.Equal(t, "", result)
 }

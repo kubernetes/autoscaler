@@ -12,3 +12,6 @@ reviewers:
 - mrajashree
 - arunmk
 - shysank
+
+labels:
+- area/provider/cluster-api

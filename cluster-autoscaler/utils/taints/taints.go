@@ -26,6 +26,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	kube_client "k8s.io/client-go/kubernetes"
 	kube_record "k8s.io/client-go/tools/record"
@@ -40,19 +41,29 @@ const (
 	// DeletionCandidateTaint is a taint used to mark unneeded node as preferably unschedulable.
 	DeletionCandidateTaint = "DeletionCandidateOfClusterAutoscaler"
 
-	// ReschedulerTaintKey is the name of the taint created by rescheduler.
-	ReschedulerTaintKey = "CriticalAddonsOnly"
 	// IgnoreTaintPrefix any taint starting with it will be filtered out from autoscaler template node.
 	IgnoreTaintPrefix = "ignore-taint.cluster-autoscaler.kubernetes.io/"
+
+	// StartupTaintPrefix (Same as IgnoreTaintPrefix) any taint starting with it will be filtered out from autoscaler template node.
+	StartupTaintPrefix = "startup-taint.cluster-autoscaler.kubernetes.io/"
+
+	// StatusTaintPrefix any taint starting with it will be filtered out from autoscaler template node but unlike IgnoreTaintPrefix & StartupTaintPrefix it should not be trated as unready.
+	StatusTaintPrefix = "status-taint.cluster-autoscaler.kubernetes.io/"
 
 	gkeNodeTerminationHandlerTaint = "cloud.google.com/impending-node-termination"
 
 	// AWS: Indicates that a node has volumes stuck in attaching state and hence it is not fit for scheduling more pods
 	awsNodeWithImpairedVolumesTaint = "NodeWithImpairedVolumes"
-)
 
-// TaintKeySet is a set of taint key
-type TaintKeySet map[string]bool
+	// statusNodeTaintReportedType is the value used when reporting node taint count defined as status taint in given taintConfig.
+	statusNodeTaintReportedType = "status-taint"
+
+	// startupNodeTaintReportedType is the value used when reporting node taint count defined as startup taint in given taintConfig.
+	startupNodeTaintReportedType = "startup-taint"
+
+	// unlistedNodeTaintReportedType is the value used when reporting node taint count in case taint key is other than defined in explicitlyReportedNodeTaints and taintConfig.
+	unlistedNodeTaintReportedType = "other"
+)
 
 var (
 	// NodeConditionTaints lists taint keys used as node conditions
@@ -75,6 +86,71 @@ var (
 	conflictRetryInterval time.Duration = 750 * time.Millisecond
 )
 
+// TaintKeySet is a set of taint key
+type TaintKeySet map[string]bool
+
+// TaintConfig is a config of taints that require special handling
+type TaintConfig struct {
+	startupTaints            TaintKeySet
+	statusTaints             TaintKeySet
+	startupTaintPrefixes     []string
+	statusTaintPrefixes      []string
+	explicitlyReportedTaints TaintKeySet
+}
+
+// NewTaintConfig returns the taint config extracted from options
+func NewTaintConfig(opts config.AutoscalingOptions) TaintConfig {
+	startupTaints := make(TaintKeySet)
+	for _, taintKey := range opts.StartupTaints {
+		klog.V(4).Infof("Startup taint %s on all NodeGroups", taintKey)
+		startupTaints[taintKey] = true
+	}
+
+	statusTaints := make(TaintKeySet)
+	for _, taintKey := range opts.StatusTaints {
+		klog.V(4).Infof("Status taint %s on all NodeGroups", taintKey)
+		statusTaints[taintKey] = true
+	}
+
+	explicitlyReportedTaints := TaintKeySet{
+		ToBeDeletedTaint:       true,
+		DeletionCandidateTaint: true,
+	}
+
+	for k, v := range NodeConditionTaints {
+		explicitlyReportedTaints[k] = v
+	}
+
+	return TaintConfig{
+		startupTaints:            startupTaints,
+		statusTaints:             statusTaints,
+		startupTaintPrefixes:     []string{IgnoreTaintPrefix, StartupTaintPrefix},
+		statusTaintPrefixes:      []string{StatusTaintPrefix},
+		explicitlyReportedTaints: explicitlyReportedTaints,
+	}
+}
+
+// IsStartupTaint checks whether given taint is a startup taint.
+func (tc TaintConfig) IsStartupTaint(taint string) bool {
+	if _, ok := tc.startupTaints[taint]; ok {
+		return true
+	}
+	return matchesAnyPrefix(tc.startupTaintPrefixes, taint)
+}
+
+// IsStatusTaint checks whether given taint is a status taint.
+func (tc TaintConfig) IsStatusTaint(taint string) bool {
+	if _, ok := tc.statusTaints[taint]; ok {
+		return true
+	}
+	return matchesAnyPrefix(tc.statusTaintPrefixes, taint)
+}
+
+func (tc TaintConfig) isExplicitlyReportedTaint(taint string) bool {
+	_, ok := tc.explicitlyReportedTaints[taint]
+	return ok
+}
+
 // getKeyShortName converts taint key to short name for logging
 func getKeyShortName(key string) string {
 	switch key {
@@ -89,16 +165,26 @@ func getKeyShortName(key string) string {
 
 // MarkToBeDeleted sets a taint that makes the node unschedulable.
 func MarkToBeDeleted(node *apiv1.Node, client kube_client.Interface, cordonNode bool) error {
-	return AddTaint(node, client, ToBeDeletedTaint, apiv1.TaintEffectNoSchedule, cordonNode)
+	taint := apiv1.Taint{
+		Key:    ToBeDeletedTaint,
+		Value:  fmt.Sprint(time.Now().Unix()),
+		Effect: apiv1.TaintEffectNoSchedule,
+	}
+	return AddTaint(node, client, taint, cordonNode)
 }
 
 // MarkDeletionCandidate sets a soft taint that makes the node preferably unschedulable.
 func MarkDeletionCandidate(node *apiv1.Node, client kube_client.Interface) error {
-	return AddTaint(node, client, DeletionCandidateTaint, apiv1.TaintEffectPreferNoSchedule, false)
+	taint := apiv1.Taint{
+		Key:    DeletionCandidateTaint,
+		Value:  fmt.Sprint(time.Now().Unix()),
+		Effect: apiv1.TaintEffectPreferNoSchedule,
+	}
+	return AddTaint(node, client, taint, false)
 }
 
 // AddTaint sets the specified taint on the node.
-func AddTaint(node *apiv1.Node, client kube_client.Interface, taintKey string, effect apiv1.TaintEffect, cordonNode bool) error {
+func AddTaint(node *apiv1.Node, client kube_client.Interface, taint apiv1.Taint, cordonNode bool) error {
 	retryDeadline := time.Now().Add(maxRetryDeadline)
 	freshNode := node.DeepCopy()
 	var err error
@@ -108,12 +194,12 @@ func AddTaint(node *apiv1.Node, client kube_client.Interface, taintKey string, e
 			// Get the newest version of the node.
 			freshNode, err = client.CoreV1().Nodes().Get(context.TODO(), node.Name, metav1.GetOptions{})
 			if err != nil || freshNode == nil {
-				klog.Warningf("Error while adding %v taint on node %v: %v", getKeyShortName(taintKey), node.Name, err)
+				klog.Warningf("Error while adding %v taint on node %v: %v", getKeyShortName(taint.Key), node.Name, err)
 				return fmt.Errorf("failed to get node %v: %v", node.Name, err)
 			}
 		}
 
-		if !addTaintToSpec(freshNode, taintKey, effect, cordonNode) {
+		if !addTaintToSpec(freshNode, taint, cordonNode) {
 			if !refresh {
 				// Make sure we have the latest version before skipping update.
 				refresh = true
@@ -129,26 +215,22 @@ func AddTaint(node *apiv1.Node, client kube_client.Interface, taintKey string, e
 		}
 
 		if err != nil {
-			klog.Warningf("Error while adding %v taint on node %v: %v", getKeyShortName(taintKey), node.Name, err)
+			klog.Warningf("Error while adding %v taint on node %v: %v", getKeyShortName(taint.Key), node.Name, err)
 			return err
 		}
-		klog.V(1).Infof("Successfully added %v on node %v", getKeyShortName(taintKey), node.Name)
+		klog.V(1).Infof("Successfully added %v on node %v", getKeyShortName(taint.Key), node.Name)
 		return nil
 	}
 }
 
-func addTaintToSpec(node *apiv1.Node, taintKey string, effect apiv1.TaintEffect, cordonNode bool) bool {
-	for _, taint := range node.Spec.Taints {
-		if taint.Key == taintKey {
-			klog.V(2).Infof("%v already present on node %v, taint: %v", taintKey, node.Name, taint)
+func addTaintToSpec(node *apiv1.Node, taint apiv1.Taint, cordonNode bool) bool {
+	for _, t := range node.Spec.Taints {
+		if t.Key == taint.Key {
+			klog.V(2).Infof("%v already present on node %v, t: %v", taint.Key, node.Name, t)
 			return false
 		}
 	}
-	node.Spec.Taints = append(node.Spec.Taints, apiv1.Taint{
-		Key:    taintKey,
-		Value:  fmt.Sprint(time.Now().Unix()),
-		Effect: effect,
-	})
+	node.Spec.Taints = append(node.Spec.Taints, taint)
 	if cordonNode {
 		klog.V(1).Infof("Marking node %v to be cordoned by Cluster Autoscaler", node.Name)
 		node.Spec.Unschedulable = true
@@ -292,17 +374,20 @@ func CleanAllTaints(nodes []*apiv1.Node, client kube_client.Interface, recorder 
 	}
 }
 
+func matchesAnyPrefix(prefixes []string, key string) bool {
+	for _, prefix := range prefixes {
+		if strings.HasPrefix(key, prefix) {
+			return true
+		}
+	}
+	return false
+}
+
 // SanitizeTaints returns filtered taints
-func SanitizeTaints(taints []apiv1.Taint, ignoredTaints TaintKeySet) []apiv1.Taint {
+func SanitizeTaints(taints []apiv1.Taint, taintConfig TaintConfig) []apiv1.Taint {
 	var newTaints []apiv1.Taint
 	for _, taint := range taints {
-		// Rescheduler can put this taint on a node while evicting non-critical pods.
-		// New nodes will not have this taint and so we should strip it when creating
-		// template node.
 		switch taint.Key {
-		case ReschedulerTaintKey:
-			klog.V(4).Info("Removing rescheduler taint when creating template")
-			continue
 		case ToBeDeletedTaint:
 			klog.V(4).Infof("Removing autoscaler taint when creating template from node")
 			continue
@@ -317,13 +402,8 @@ func SanitizeTaints(taints []apiv1.Taint, ignoredTaints TaintKeySet) []apiv1.Tai
 			continue
 		}
 
-		if _, exists := ignoredTaints[taint.Key]; exists {
-			klog.V(4).Infof("Removing ignored taint %s, when creating template from node", taint.Key)
-			continue
-		}
-
-		if strings.HasPrefix(taint.Key, IgnoreTaintPrefix) {
-			klog.V(4).Infof("Removing taint %s based on prefix, when creation template from node", taint.Key)
+		if taintConfig.IsStartupTaint(taint.Key) || taintConfig.IsStatusTaint(taint.Key) {
+			klog.V(4).Infof("Removing taint %s, when creating template from node", taint.Key)
 			continue
 		}
 
@@ -332,12 +412,12 @@ func SanitizeTaints(taints []apiv1.Taint, ignoredTaints TaintKeySet) []apiv1.Tai
 	return newTaints
 }
 
-// FilterOutNodesWithIgnoredTaints override the condition status of the given nodes to mark them as NotReady when they have
+// FilterOutNodesWithStartupTaints override the condition status of the given nodes to mark them as NotReady when they have
 // filtered taints.
-func FilterOutNodesWithIgnoredTaints(ignoredTaints TaintKeySet, allNodes, readyNodes []*apiv1.Node) ([]*apiv1.Node, []*apiv1.Node) {
+func FilterOutNodesWithStartupTaints(taintConfig TaintConfig, allNodes, readyNodes []*apiv1.Node) ([]*apiv1.Node, []*apiv1.Node) {
 	newAllNodes := make([]*apiv1.Node, 0)
 	newReadyNodes := make([]*apiv1.Node, 0)
-	nodesWithIgnoredTaints := make(map[string]*apiv1.Node)
+	nodesWithStartupTaints := make(map[string]*apiv1.Node)
 	for _, node := range readyNodes {
 		if len(node.Spec.Taints) == 0 {
 			newReadyNodes = append(newReadyNodes, node)
@@ -345,11 +425,10 @@ func FilterOutNodesWithIgnoredTaints(ignoredTaints TaintKeySet, allNodes, readyN
 		}
 		ready := true
 		for _, t := range node.Spec.Taints {
-			_, hasIgnoredTaint := ignoredTaints[t.Key]
-			if hasIgnoredTaint || strings.HasPrefix(t.Key, IgnoreTaintPrefix) {
+			if taintConfig.IsStartupTaint(t.Key) {
 				ready = false
-				nodesWithIgnoredTaints[node.Name] = kubernetes.GetUnreadyNodeCopy(node, kubernetes.IgnoreTaint)
-				klog.V(3).Infof("Overriding status of node %v, which seems to have ignored taint %q", node.Name, t.Key)
+				nodesWithStartupTaints[node.Name] = kubernetes.GetUnreadyNodeCopy(node, kubernetes.StartupNodes)
+				klog.V(3).Infof("Overriding status of node %v, which seems to have startup taint %q", node.Name, t.Key)
 				break
 			}
 		}
@@ -359,11 +438,41 @@ func FilterOutNodesWithIgnoredTaints(ignoredTaints TaintKeySet, allNodes, readyN
 	}
 	// Override any node with ignored taint with its "unready" copy
 	for _, node := range allNodes {
-		if newNode, found := nodesWithIgnoredTaints[node.Name]; found {
+		if newNode, found := nodesWithStartupTaints[node.Name]; found {
 			newAllNodes = append(newAllNodes, newNode)
 		} else {
 			newAllNodes = append(newAllNodes, node)
 		}
 	}
 	return newAllNodes, newReadyNodes
+}
+
+// CountNodeTaints counts used node taints.
+func CountNodeTaints(nodes []*apiv1.Node, taintConfig TaintConfig) map[string]int {
+	foundTaintsCount := make(map[string]int)
+	for _, node := range nodes {
+		for _, taint := range node.Spec.Taints {
+			key := getTaintTypeToReport(taint.Key, taintConfig)
+			foundTaintsCount[key] += 1
+		}
+	}
+	return foundTaintsCount
+}
+
+func getTaintTypeToReport(key string, taintConfig TaintConfig) string {
+	// Track deprecated taints.
+	if strings.HasPrefix(key, IgnoreTaintPrefix) {
+		return IgnoreTaintPrefix
+	}
+
+	if taintConfig.isExplicitlyReportedTaint(key) {
+		return key
+	}
+	if taintConfig.IsStartupTaint(key) {
+		return startupNodeTaintReportedType
+	}
+	if taintConfig.IsStatusTaint(key) {
+		return statusNodeTaintReportedType
+	}
+	return unlistedNodeTaintReportedType
 }

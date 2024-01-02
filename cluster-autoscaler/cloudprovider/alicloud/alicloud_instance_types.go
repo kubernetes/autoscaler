@@ -107,7 +107,7 @@ func newInstanceWrapper(cfg *cloudConfig) (*instanceWrapper, error) {
 		return nil, fmt.Errorf("your cloud config is not valid")
 	}
 	iw := &instanceWrapper{}
-	if cfg.STSEnabled == true {
+	if cfg.STSEnabled {
 		go func(iw *instanceWrapper, cfg *cloudConfig) {
 			timer := time.NewTicker(refreshClientInterval)
 			defer timer.Stop()
@@ -140,6 +140,11 @@ func getEcsClient(cfg *cloudConfig) (client *ecs.Client, err error) {
 		client, err = ecs.NewClientWithStsToken(region, auth.AccessKeyId, auth.AccessKeySecret, auth.SecurityToken)
 		if err != nil {
 			klog.Errorf("failed to create client with sts in metadata,because of %s", err.Error())
+		}
+	} else if cfg.RRSAEnabled {
+		client, err = ecs.NewClientWithRRSA(region, cfg.RoleARN, cfg.OIDCProviderARN, cfg.OIDCTokenFilePath, cfg.RoleSessionName)
+		if err != nil {
+			klog.Errorf("Failed to create ess client with RRSA, because of %s", err.Error())
 		}
 	} else {
 		client, err = ecs.NewClientWithAccessKey(region, cfg.AccessKeyID, cfg.AccessKeySecret)

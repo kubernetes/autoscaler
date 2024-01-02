@@ -67,7 +67,7 @@ func BuildOVHcloud(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDis
 
 		configFile, err = os.Open(opts.CloudConfig)
 		if err != nil {
-			klog.Fatalf("Failed to open cloud provider configuration %s: %v", opts.CloudConfig)
+			klog.Fatalf("Failed to open cloud provider configuration %s: %v", opts.CloudConfig, err)
 		}
 
 		defer configFile.Close()
@@ -268,7 +268,7 @@ func (provider *OVHCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
 
 	flavorsByName, err := provider.manager.getFlavorsByName()
 	if err != nil {
-		klog.Errorf("Failed to get flavors: %w", err)
+		klog.Errorf("Failed to get flavors: %v", err)
 		return nil
 	}
 

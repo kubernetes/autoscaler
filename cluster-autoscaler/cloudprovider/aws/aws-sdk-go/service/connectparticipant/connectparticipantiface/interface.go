@@ -68,6 +68,10 @@ type ConnectParticipantAPI interface {
 	CreateParticipantConnectionWithContext(aws.Context, *connectparticipant.CreateParticipantConnectionInput, ...request.Option) (*connectparticipant.CreateParticipantConnectionOutput, error)
 	CreateParticipantConnectionRequest(*connectparticipant.CreateParticipantConnectionInput) (*request.Request, *connectparticipant.CreateParticipantConnectionOutput)
 
+	DescribeView(*connectparticipant.DescribeViewInput) (*connectparticipant.DescribeViewOutput, error)
+	DescribeViewWithContext(aws.Context, *connectparticipant.DescribeViewInput, ...request.Option) (*connectparticipant.DescribeViewOutput, error)
+	DescribeViewRequest(*connectparticipant.DescribeViewInput) (*request.Request, *connectparticipant.DescribeViewOutput)
+
 	DisconnectParticipant(*connectparticipant.DisconnectParticipantInput) (*connectparticipant.DisconnectParticipantOutput, error)
 	DisconnectParticipantWithContext(aws.Context, *connectparticipant.DisconnectParticipantInput, ...request.Option) (*connectparticipant.DisconnectParticipantOutput, error)
 	DisconnectParticipantRequest(*connectparticipant.DisconnectParticipantInput) (*request.Request, *connectparticipant.DisconnectParticipantOutput)

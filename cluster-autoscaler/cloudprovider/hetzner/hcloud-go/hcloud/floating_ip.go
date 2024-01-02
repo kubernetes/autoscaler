@@ -1,19 +1,3 @@
-/*
-Copyright 2018 The Kubernetes Authors.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
 package hcloud
 
 import (
@@ -32,7 +16,7 @@ import (
 
 // FloatingIP represents a Floating IP in the Hetzner Cloud.
 type FloatingIP struct {
-	ID           int
+	ID           int64
 	Description  string
 	Created      time.Time
 	IP           net.IP
@@ -58,7 +42,7 @@ type FloatingIPProtection struct {
 	Delete bool
 }
 
-// FloatingIPType represents the type of a Floating IP.
+// FloatingIPType represents the type of Floating IP.
 type FloatingIPType string
 
 // Floating IP types.
@@ -67,7 +51,7 @@ const (
 	FloatingIPTypeIPv6 FloatingIPType = "ipv6"
 )
 
-// changeDNSPtr changes or resets the reverse DNS pointer for a IP address.
+// changeDNSPtr changes or resets the reverse DNS pointer for an IP address.
 // Pass a nil ptr to reset the reverse DNS pointer to its default value.
 func (f *FloatingIP) changeDNSPtr(ctx context.Context, client *Client, ip net.IP, ptr *string) (*Action, *Response, error) {
 	reqBody := schema.FloatingIPActionChangeDNSPtrRequest{
@@ -107,11 +91,12 @@ func (f *FloatingIP) GetDNSPtrForIP(ip net.IP) (string, error) {
 // FloatingIPClient is a client for the Floating IP API.
 type FloatingIPClient struct {
 	client *Client
+	Action *ResourceActionClient
 }
 
 // GetByID retrieves a Floating IP by its ID. If the Floating IP does not exist,
 // nil is returned.
-func (c *FloatingIPClient) GetByID(ctx context.Context, id int) (*FloatingIP, *Response, error) {
+func (c *FloatingIPClient) GetByID(ctx context.Context, id int64) (*FloatingIP, *Response, error) {
 	req, err := c.client.NewRequest(ctx, "GET", fmt.Sprintf("/floating_ips/%d", id), nil)
 	if err != nil {
 		return nil, nil, err
@@ -143,8 +128,8 @@ func (c *FloatingIPClient) GetByName(ctx context.Context, name string) (*Floatin
 // Get retrieves a Floating IP by its ID if the input can be parsed as an integer, otherwise it
 // retrieves a Floating IP by its name. If the Floating IP does not exist, nil is returned.
 func (c *FloatingIPClient) Get(ctx context.Context, idOrName string) (*FloatingIP, *Response, error) {
-	if id, err := strconv.Atoi(idOrName); err == nil {
-		return c.GetByID(ctx, int(id))
+	if id, err := strconv.ParseInt(idOrName, 10, 64); err == nil {
+		return c.GetByID(ctx, id)
 	}
 	return c.GetByName(ctx, idOrName)
 }
@@ -157,7 +142,7 @@ type FloatingIPListOpts struct {
 }
 
 func (l FloatingIPListOpts) values() url.Values {
-	vals := l.ListOpts.values()
+	vals := l.ListOpts.Values()
 	if l.Name != "" {
 		vals.Add("name", l.Name)
 	}

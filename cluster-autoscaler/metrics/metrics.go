@@ -44,6 +44,9 @@ type FunctionLabel string
 // NodeGroupType describes node group relation to CA
 type NodeGroupType string
 
+// PodEvictionResult describes result of the pod eviction attempt
+type PodEvictionResult string
+
 const (
 	caNamespace           = "cluster_autoscaler"
 	readyLabel            = "ready"
@@ -87,6 +90,10 @@ const (
 	// This is meant to help find unexpectedly long function execution times for
 	// debugging purposes.
 	LogLongDurationThreshold = 5 * time.Second
+	// PodEvictionSucceed means creation of the pod eviction object succeed
+	PodEvictionSucceed PodEvictionResult = "succeeded"
+	// PodEvictionFailed means creation of the pod eviction object failed
+	PodEvictionFailed PodEvictionResult = "failed"
 )
 
 // Names of Cluster Autoscaler operations
@@ -97,6 +104,8 @@ const (
 	ScaleDownMiscOperations    FunctionLabel = "scaleDown:miscOperations"
 	ScaleDownSoftTaintUnneeded FunctionLabel = "scaleDown:softTaintUnneeded"
 	ScaleUp                    FunctionLabel = "scaleUp"
+	BuildPodEquivalenceGroups  FunctionLabel = "scaleUp:buildPodEquivalenceGroups"
+	Estimate                   FunctionLabel = "scaleUp:estimate"
 	FindUnneeded               FunctionLabel = "findUnneeded"
 	UpdateState                FunctionLabel = "updateClusterState"
 	FilterOutSchedulable       FunctionLabel = "filterOutSchedulable"
@@ -133,12 +142,13 @@ var (
 		}, []string{"node_group_type"},
 	)
 
-	unschedulablePodsCount = k8smetrics.NewGauge(
+	// Unschedulable pod count can be from scheduler-marked-unschedulable pods or not-yet-processed pods (unknown)
+	unschedulablePodsCount = k8smetrics.NewGaugeVec(
 		&k8smetrics.GaugeOpts{
 			Namespace: caNamespace,
 			Name:      "unschedulable_pods_count",
 			Help:      "Number of unschedulable pods in the cluster.",
-		},
+		}, []string{"type"},
 	)
 
 	maxNodesCount = k8smetrics.NewGauge(
@@ -197,6 +207,14 @@ var (
 		}, []string{"node_group"},
 	)
 
+	nodesGroupTargetSize = k8smetrics.NewGaugeVec(
+		&k8smetrics.GaugeOpts{
+			Namespace: caNamespace,
+			Name:      "node_group_target_count",
+			Help:      "Target number of nodes in the node group by CA.",
+		}, []string{"node_group"},
+	)
+
 	/**** Metrics related to autoscaler execution ****/
 	lastActivity = k8smetrics.NewGaugeVec(
 		&k8smetrics.GaugeOpts{
@@ -222,6 +240,14 @@ var (
 			Help:      "Quantiles of time taken by various parts of CA main loop.",
 			MaxAge:    time.Hour,
 		}, []string{"function"},
+	)
+
+	pendingNodeDeletions = k8smetrics.NewGauge(
+		&k8smetrics.GaugeOpts{
+			Namespace: caNamespace,
+			Name:      "pending_node_deletions",
+			Help:      "Number of nodes that haven't been removed or aborted after finished scale-down phase.",
+		},
 	)
 
 	/**** Metrics related to autoscaler operations ****/
@@ -257,6 +283,14 @@ var (
 		}, []string{"reason"},
 	)
 
+	failedGPUScaleUpCount = k8smetrics.NewCounterVec(
+		&k8smetrics.CounterOpts{
+			Namespace: caNamespace,
+			Name:      "failed_gpu_scale_ups_total",
+			Help:      "Number of times scale-up operation has failed.",
+		}, []string{"reason", "gpu_resource_name", "gpu_name"},
+	)
+
 	scaleDownCount = k8smetrics.NewCounterVec(
 		&k8smetrics.CounterOpts{
 			Namespace: caNamespace,
@@ -273,12 +307,12 @@ var (
 		}, []string{"reason", "gpu_resource_name", "gpu_name"},
 	)
 
-	evictionsCount = k8smetrics.NewCounter(
+	evictionsCount = k8smetrics.NewCounterVec(
 		&k8smetrics.CounterOpts{
 			Namespace: caNamespace,
 			Name:      "evicted_pods_total",
 			Help:      "Number of pods evicted by CA",
-		},
+		}, []string{"eviction_result"},
 	)
 
 	unneededNodesCount = k8smetrics.NewGauge(
@@ -355,6 +389,15 @@ var (
 			Help:      "Number of node groups deleted by Node Autoprovisioning.",
 		},
 	)
+
+	nodeTaintsCount = k8smetrics.NewGaugeVec(
+		&k8smetrics.GaugeOpts{
+			Namespace: caNamespace,
+			Name:      "node_taints_count",
+			Help:      "Number of taints per type used in the cluster.",
+		},
+		[]string{"type"},
+	)
 )
 
 // RegisterAll registers all metrics.
@@ -375,6 +418,7 @@ func RegisterAll(emitPerNodeGroupMetrics bool) {
 	legacyregistry.MustRegister(scaleUpCount)
 	legacyregistry.MustRegister(gpuScaleUpCount)
 	legacyregistry.MustRegister(failedScaleUpCount)
+	legacyregistry.MustRegister(failedGPUScaleUpCount)
 	legacyregistry.MustRegister(scaleDownCount)
 	legacyregistry.MustRegister(gpuScaleDownCount)
 	legacyregistry.MustRegister(evictionsCount)
@@ -387,10 +431,13 @@ func RegisterAll(emitPerNodeGroupMetrics bool) {
 	legacyregistry.MustRegister(napEnabled)
 	legacyregistry.MustRegister(nodeGroupCreationCount)
 	legacyregistry.MustRegister(nodeGroupDeletionCount)
+	legacyregistry.MustRegister(pendingNodeDeletions)
+	legacyregistry.MustRegister(nodeTaintsCount)
 
 	if emitPerNodeGroupMetrics {
 		legacyregistry.MustRegister(nodesGroupMinNodes)
 		legacyregistry.MustRegister(nodesGroupMaxNodes)
+		legacyregistry.MustRegister(nodesGroupTargetSize)
 	}
 }
 
@@ -442,8 +489,14 @@ func UpdateNodeGroupsCount(autoscaled, autoprovisioned int) {
 }
 
 // UpdateUnschedulablePodsCount records number of currently unschedulable pods
-func UpdateUnschedulablePodsCount(podsCount int) {
-	unschedulablePodsCount.Set(float64(podsCount))
+func UpdateUnschedulablePodsCount(uschedulablePodsCount, schedulerUnprocessedCount int) {
+	UpdateUnschedulablePodsCountWithLabel(uschedulablePodsCount, "unschedulable")
+	UpdateUnschedulablePodsCountWithLabel(schedulerUnprocessedCount, "scheduler_unprocessed")
+}
+
+// UpdateUnschedulablePodsCountWithLabel records number of currently unschedulable pods wil label "type" value "label"
+func UpdateUnschedulablePodsCountWithLabel(uschedulablePodsCount int, label string) {
+	unschedulablePodsCount.WithLabelValues(label).Set(float64(uschedulablePodsCount))
 }
 
 // UpdateMaxNodesCount records the current maximum number of nodes being set for all node groups
@@ -483,6 +536,13 @@ func UpdateNodeGroupMax(nodeGroup string, maxNodes int) {
 	nodesGroupMaxNodes.WithLabelValues(nodeGroup).Set(float64(maxNodes))
 }
 
+// UpdateNodeGroupTargetSize records the node group target size
+func UpdateNodeGroupTargetSize(targetSizes map[string]int) {
+	for nodeGroup, targetSize := range targetSizes {
+		nodesGroupTargetSize.WithLabelValues(nodeGroup).Set(float64(targetSize))
+	}
+}
+
 // RegisterError records any errors preventing Cluster Autoscaler from working.
 // No more than one error should be recorded per loop.
 func RegisterError(err errors.AutoscalerError) {
@@ -498,8 +558,11 @@ func RegisterScaleUp(nodesCount int, gpuResourceName, gpuType string) {
 }
 
 // RegisterFailedScaleUp records a failed scale-up operation
-func RegisterFailedScaleUp(reason FailedScaleUpReason) {
+func RegisterFailedScaleUp(reason FailedScaleUpReason, gpuResourceName, gpuType string) {
 	failedScaleUpCount.WithLabelValues(string(reason)).Inc()
+	if gpuType != gpu.MetricsNoGPU {
+		failedGPUScaleUpCount.WithLabelValues(string(reason), gpuResourceName, gpuType).Inc()
+	}
 }
 
 // RegisterScaleDown records number of nodes removed by scale down
@@ -510,9 +573,9 @@ func RegisterScaleDown(nodesCount int, gpuResourceName, gpuType string, reason N
 	}
 }
 
-// RegisterEvictions records number of evicted pods
-func RegisterEvictions(podsCount int) {
-	evictionsCount.Add(float64(podsCount))
+// RegisterEvictions records number of evicted pods succeed or failed
+func RegisterEvictions(podsCount int, result PodEvictionResult) {
+	evictionsCount.WithLabelValues(string(result)).Add(float64(podsCount))
 }
 
 // UpdateUnneededNodesCount records number of currently unneeded nodes
@@ -586,4 +649,14 @@ func RegisterSkippedScaleUpCPU() {
 // RegisterSkippedScaleUpMemory increases the count of skipped scale outs because of Memory resource limits
 func RegisterSkippedScaleUpMemory() {
 	skippedScaleEventsCount.WithLabelValues(DirectionScaleUp, MemoryResourceLimit).Add(1.0)
+}
+
+// ObservePendingNodeDeletions records the current value of nodes_pending_deletion metric
+func ObservePendingNodeDeletions(value int) {
+	pendingNodeDeletions.Set(float64(value))
+}
+
+// ObserveNodeTaintsCount records the node taints count of given type.
+func ObserveNodeTaintsCount(taintType string, count float64) {
+	nodeTaintsCount.WithLabelValues(taintType).Set(count)
 }

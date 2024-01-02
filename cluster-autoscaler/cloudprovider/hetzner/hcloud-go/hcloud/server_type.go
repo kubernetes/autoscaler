@@ -1,19 +1,3 @@
-/*
-Copyright 2018 The Kubernetes Authors.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
 package hcloud
 
 import (
@@ -27,7 +11,7 @@ import (
 
 // ServerType represents a server type in the Hetzner Cloud.
 type ServerType struct {
-	ID           int
+	ID           int64
 	Name         string
 	Description  string
 	Cores        int
@@ -36,7 +20,10 @@ type ServerType struct {
 	StorageType  StorageType
 	CPUType      CPUType
 	Architecture Architecture
-	Pricings     []ServerTypeLocationPricing
+	// IncludedTraffic is the free traffic per month in bytes
+	IncludedTraffic int64
+	Pricings        []ServerTypeLocationPricing
+	DeprecatableResource
 }
 
 // StorageType specifies the type of storage.
@@ -67,7 +54,7 @@ type ServerTypeClient struct {
 }
 
 // GetByID retrieves a server type by its ID. If the server type does not exist, nil is returned.
-func (c *ServerTypeClient) GetByID(ctx context.Context, id int) (*ServerType, *Response, error) {
+func (c *ServerTypeClient) GetByID(ctx context.Context, id int64) (*ServerType, *Response, error) {
 	req, err := c.client.NewRequest(ctx, "GET", fmt.Sprintf("/server_types/%d", id), nil)
 	if err != nil {
 		return nil, nil, err
@@ -99,8 +86,8 @@ func (c *ServerTypeClient) GetByName(ctx context.Context, name string) (*ServerT
 // Get retrieves a server type by its ID if the input can be parsed as an integer, otherwise it
 // retrieves a server type by its name. If the server type does not exist, nil is returned.
 func (c *ServerTypeClient) Get(ctx context.Context, idOrName string) (*ServerType, *Response, error) {
-	if id, err := strconv.Atoi(idOrName); err == nil {
-		return c.GetByID(ctx, int(id))
+	if id, err := strconv.ParseInt(idOrName, 10, 64); err == nil {
+		return c.GetByID(ctx, id)
 	}
 	return c.GetByName(ctx, idOrName)
 }
@@ -113,7 +100,7 @@ type ServerTypeListOpts struct {
 }
 
 func (l ServerTypeListOpts) values() url.Values {
-	vals := l.ListOpts.values()
+	vals := l.ListOpts.Values()
 	if l.Name != "" {
 		vals.Add("name", l.Name)
 	}
@@ -148,10 +135,12 @@ func (c *ServerTypeClient) List(ctx context.Context, opts ServerTypeListOpts) ([
 
 // All returns all server types.
 func (c *ServerTypeClient) All(ctx context.Context) ([]*ServerType, error) {
-	allServerTypes := []*ServerType{}
+	return c.AllWithOpts(ctx, ServerTypeListOpts{ListOpts: ListOpts{PerPage: 50}})
+}
 
-	opts := ServerTypeListOpts{}
-	opts.PerPage = 50
+// AllWithOpts returns all server types for the given options.
+func (c *ServerTypeClient) AllWithOpts(ctx context.Context, opts ServerTypeListOpts) ([]*ServerType, error) {
+	allServerTypes := []*ServerType{}
 
 	err := c.client.all(func(page int) (*Response, error) {
 		opts.Page = page

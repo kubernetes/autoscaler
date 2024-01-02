@@ -70,9 +70,11 @@ const (
 var (
 	predefinedCpuPricePerHour = map[string]float64{
 		"a2":  0.031611,
+		"g2":  0.024988,
 		"c2":  0.03398,
 		"c2d": 0.029563,
 		"c3":  0.03398,
+		"c3d": 0.02956,
 		"e2":  0.021811,
 		"m1":  0.0348,
 		"n1":  0.031611,
@@ -82,9 +84,11 @@ var (
 	}
 	predefinedMemoryPricePerHourPerGb = map[string]float64{
 		"a2":  0.004237,
+		"g2":  0.002927,
 		"c2":  0.00455,
 		"c2d": 0.003959,
 		"c3":  0.00456,
+		"c3d": 0.003956,
 		"e2":  0.002923,
 		"m1":  0.0051,
 		"n1":  0.004237,
@@ -94,9 +98,11 @@ var (
 	}
 	predefinedPreemptibleDiscount = map[string]float64{
 		"a2":  0.009483 / 0.031611,
+		"g2":  0.007496 / 0.024988,
 		"c2":  0.00822 / 0.03398,
 		"c2d": 0.007154 / 0.029563,
 		"c3":  0.003086 / 0.03398,
+		"c3d": 0.011825 / 0.02956,
 		"e2":  0.006543 / 0.021811,
 		"m1":  0.00733 / 0.0348,
 		"n1":  0.006655 / 0.031611,
@@ -136,6 +142,14 @@ var (
 		"a2-ultragpu-1g":   5.0688,
 		"a2-ultragpu-2g":   10.1376,
 		"a2-ultragpu-4g":   20.2752,
+		"g2-standard-4":    0.76,
+		"g2-standard-8":    0.91,
+		"g2-standard-12":   1.06,
+		"g2-standard-16":   1.20,
+		"g2-standard-24":   2.11,
+		"g2-standard-32":   1.79,
+		"g2-standard-48":   4.23,
+		"g2-standard-96":   8.46,
 		"a2-ultragpu-8g":   40.5504,
 		"c2-standard-4":    0.2088,
 		"c2-standard-8":    0.4176,
@@ -181,6 +195,30 @@ var (
 		"c3-highcpu-44":    1.8964,
 		"c3-highcpu-88":    3.7928,
 		"c3-highcpu-176":   7.5856,
+		"c3d-standard-4":   0.1816,
+		"c3d-standard-8":   0.3632,
+		"c3d-standard-16":  0.7264,
+		"c3d-standard-30":  1.362,
+		"c3d-standard-60":  2.724,
+		"c3d-standard-90":  4.086,
+		"c3d-standard-180": 8.172,
+		"c3d-standard-360": 16.344,
+		"c3d-highmem-4":    0.24496,
+		"c3d-highmem-8":    0.48992,
+		"c3d-highmem-16":   0.97984,
+		"c3d-highmem-30":   1.8372,
+		"c3d-highmem-60":   3.6744,
+		"c3d-highmem-90":   5.5116,
+		"c3d-highmem-180":  11.0232,
+		"c3d-highmem-360":  22.0464,
+		"c3d-highcpu-4":    0.14992,
+		"c3d-highcpu-8":    0.29984,
+		"c3d-highcpu-16":   0.59968,
+		"c3d-highcpu-30":   1.1244,
+		"c3d-highcpu-60":   2.2488,
+		"c3d-highcpu-90":   3.3732,
+		"c3d-highcpu-180":  6.7464,
+		"c3d-highcpu-360":  13.4928,
 		"e2-highcpu-2":     0.04947,
 		"e2-highcpu-4":     0.09894,
 		"e2-highcpu-8":     0.19788,
@@ -309,6 +347,14 @@ var (
 		"a2-ultragpu-2g":   3.2,
 		"a2-ultragpu-4g":   6.4,
 		"a2-ultragpu-8g":   12.8,
+		"g2-standard-4":    0.23,
+		"g2-standard-8":    0.27,
+		"g2-standard-12":   0.32,
+		"g2-standard-16":   0.36,
+		"g2-standard-24":   0.63,
+		"g2-standard-32":   0.54,
+		"g2-standard-48":   1.27,
+		"g2-standard-96":   2.54,
 		"c2-standard-4":    0.0505,
 		"c2-standard-8":    0.1011,
 		"c2-standard-16":   0.2021,
@@ -476,6 +522,7 @@ var (
 		"nvidia-tesla-k80":  0.45,
 		"nvidia-tesla-a100": 0, // price of this gpu is counted into A2 machine-type price
 		"nvidia-a100-80gb":  0, // price of this gpu is counted into A2 machine-type price
+		"nvidia-l4":         0, // price of this gpu is counted into G2 machine-type price
 	}
 	preemptibleGpuPrices = map[string]float64{
 		"nvidia-tesla-t4":   0.11,
@@ -485,6 +532,7 @@ var (
 		"nvidia-tesla-k80":  0.037500,
 		"nvidia-tesla-a100": 0, // price of this gpu is counted into A2 machine-type price
 		"nvidia-a100-80gb":  0, // price of this gpu is counted into A2 machine-type price
+		"nvidia-l4":         0, // price of this gpu is counted into G2 machine-type price
 	}
 	bootDiskPricePerHour = map[string]float64{
 		"pd-standard": 0.04 / hoursInMonth,

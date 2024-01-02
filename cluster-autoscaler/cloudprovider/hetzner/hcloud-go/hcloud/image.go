@@ -1,19 +1,3 @@
-/*
-Copyright 2018 The Kubernetes Authors.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
 package hcloud
 
 import (
@@ -30,7 +14,7 @@ import (
 
 // Image represents an Image in the Hetzner Cloud.
 type Image struct {
-	ID          int
+	ID          int64
 	Name        string
 	Type        ImageType
 	Status      ImageStatus
@@ -94,10 +78,11 @@ const (
 // ImageClient is a client for the image API.
 type ImageClient struct {
 	client *Client
+	Action *ResourceActionClient
 }
 
 // GetByID retrieves an image by its ID. If the image does not exist, nil is returned.
-func (c *ImageClient) GetByID(ctx context.Context, id int) (*Image, *Response, error) {
+func (c *ImageClient) GetByID(ctx context.Context, id int64) (*Image, *Response, error) {
 	req, err := c.client.NewRequest(ctx, "GET", fmt.Sprintf("/images/%d", id), nil)
 	if err != nil {
 		return nil, nil, err
@@ -148,7 +133,7 @@ func (c *ImageClient) GetByNameAndArchitecture(ctx context.Context, name string,
 //
 // Deprecated: Use [ImageClient.GetForArchitecture] instead.
 func (c *ImageClient) Get(ctx context.Context, idOrName string) (*Image, *Response, error) {
-	if id, err := strconv.Atoi(idOrName); err == nil {
+	if id, err := strconv.ParseInt(idOrName, 10, 64); err == nil {
 		return c.GetByID(ctx, id)
 	}
 	return c.GetByName(ctx, idOrName)
@@ -160,7 +145,7 @@ func (c *ImageClient) Get(ctx context.Context, idOrName string) (*Image, *Respon
 // In contrast to [ImageClient.Get], this method also returns deprecated images. Depending on your needs you should
 // check for this in your calling method.
 func (c *ImageClient) GetForArchitecture(ctx context.Context, idOrName string, architecture Architecture) (*Image, *Response, error) {
-	if id, err := strconv.Atoi(idOrName); err == nil {
+	if id, err := strconv.ParseInt(idOrName, 10, 64); err == nil {
 		return c.GetByID(ctx, id)
 	}
 	return c.GetByNameAndArchitecture(ctx, idOrName, architecture)
@@ -179,12 +164,12 @@ type ImageListOpts struct {
 }
 
 func (l ImageListOpts) values() url.Values {
-	vals := l.ListOpts.values()
+	vals := l.ListOpts.Values()
 	for _, typ := range l.Type {
 		vals.Add("type", string(typ))
 	}
 	if l.BoundTo != nil {
-		vals.Add("bound_to", strconv.Itoa(l.BoundTo.ID))
+		vals.Add("bound_to", strconv.FormatInt(l.BoundTo.ID, 10))
 	}
 	if l.Name != "" {
 		vals.Add("name", l.Name)

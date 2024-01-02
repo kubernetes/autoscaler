@@ -26,6 +26,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/status"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	"k8s.io/kubernetes/test/e2e/framework"
 	podsecurity "k8s.io/pod-security-admission/api"
 
@@ -60,34 +61,122 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 		}()
 		statusUpdater.Run(stopCh)
 
-		podList := setupPodsForEviction(f)
+		podList := setupPodsForUpscalingEviction(f)
 
 		ginkgo.By("Waiting for pods to be evicted")
 		err := WaitForPodsEvicted(f, podList)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
 
+	ginkgo.It("evicts pods for downscaling", func() {
+		const statusUpdateInterval = 10 * time.Second
+
+		ginkgo.By("Setting up the Admission Controller status")
+		stopCh := make(chan struct{})
+		statusUpdater := status.NewUpdater(
+			f.ClientSet,
+			status.AdmissionControllerStatusName,
+			status.AdmissionControllerStatusNamespace,
+			statusUpdateInterval,
+			"e2e test",
+		)
+		defer func() {
+			// Schedule a cleanup of the Admission Controller status.
+			// Status is created outside the test namespace.
+			ginkgo.By("Deleting the Admission Controller status")
+			close(stopCh)
+			err := f.ClientSet.CoordinationV1().Leases(status.AdmissionControllerStatusNamespace).
+				Delete(context.TODO(), status.AdmissionControllerStatusName, metav1.DeleteOptions{})
+			gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		}()
+		statusUpdater.Run(stopCh)
+
+		podList := setupPodsForDownscalingEviction(f, nil)
+
+		ginkgo.By("Waiting for pods to be evicted")
+		err := WaitForPodsEvicted(f, podList)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+	})
+
+	ginkgo.It("does not evict pods for downscaling when EvictionRequirement prevents it", func() {
+		const statusUpdateInterval = 10 * time.Second
+
+		ginkgo.By("Setting up the Admission Controller status")
+		stopCh := make(chan struct{})
+		statusUpdater := status.NewUpdater(
+			f.ClientSet,
+			status.AdmissionControllerStatusName,
+			status.AdmissionControllerStatusNamespace,
+			statusUpdateInterval,
+			"e2e test",
+		)
+		defer func() {
+			// Schedule a cleanup of the Admission Controller status.
+			// Status is created outside the test namespace.
+			ginkgo.By("Deleting the Admission Controller status")
+			close(stopCh)
+			err := f.ClientSet.CoordinationV1().Leases(status.AdmissionControllerStatusNamespace).
+				Delete(context.TODO(), status.AdmissionControllerStatusName, metav1.DeleteOptions{})
+			gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		}()
+		statusUpdater.Run(stopCh)
+		er := []*vpa_types.EvictionRequirement{
+			{
+				Resources:         []apiv1.ResourceName{apiv1.ResourceCPU},
+				ChangeRequirement: vpa_types.TargetHigherThanRequests,
+			},
+		}
+		podList := setupPodsForDownscalingEviction(f, er)
+
+		ginkgo.By(fmt.Sprintf("Waiting for pods to be evicted, hoping it won't happen, sleep for %s", VpaEvictionTimeout.String()))
+		CheckNoPodsEvicted(f, MakePodSet(podList))
+	})
+
 	ginkgo.It("doesn't evict pods when Admission Controller status unavailable", func() {
-		podList := setupPodsForEviction(f)
+		podList := setupPodsForUpscalingEviction(f)
 
 		ginkgo.By(fmt.Sprintf("Waiting for pods to be evicted, hoping it won't happen, sleep for %s", VpaEvictionTimeout.String()))
 		CheckNoPodsEvicted(f, MakePodSet(podList))
 	})
 })
 
-func setupPodsForEviction(f *framework.Framework) *apiv1.PodList {
+func setupPodsForUpscalingEviction(f *framework.Framework) *apiv1.PodList {
+	return setupPodsForEviction(f, "100m", "100Mi", nil)
+}
+
+func setupPodsForDownscalingEviction(f *framework.Framework, er []*vpa_types.EvictionRequirement) *apiv1.PodList {
+	return setupPodsForEviction(f, "500m", "500Mi", er)
+}
+
+func setupPodsForEviction(f *framework.Framework, hamsterCPU, hamsterMemory string, er []*vpa_types.EvictionRequirement) *apiv1.PodList {
 	controller := &autoscaling.CrossVersionObjectReference{
 		APIVersion: "apps/v1",
 		Kind:       "Deployment",
 		Name:       "hamster-deployment",
 	}
 	ginkgo.By(fmt.Sprintf("Setting up a hamster %v", controller.Kind))
-	setupHamsterController(f, controller.Kind, "100m", "100Mi", defaultHamsterReplicas)
+	setupHamsterController(f, controller.Kind, hamsterCPU, hamsterMemory, defaultHamsterReplicas)
 	podList, err := GetHamsterPods(f)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 	ginkgo.By("Setting up a VPA CRD")
-	SetupVPA(f, "200m", vpa_types.UpdateModeAuto, controller)
+	containerName := GetHamsterContainerNameByIndex(0)
+	vpaCRD := test.VerticalPodAutoscaler().
+		WithName("hamster-vpa").
+		WithNamespace(f.Namespace.Name).
+		WithTargetRef(controller).
+		WithEvictionRequirements(er).
+		WithContainer(containerName).
+		AppendRecommendation(
+			test.Recommendation().
+				WithContainer(containerName).
+				WithTarget(containerName, "200m").
+				WithLowerBound(containerName, "200m").
+				WithUpperBound(containerName, "200m").
+				GetContainerResources()).
+		Get()
+
+	InstallVPA(f, vpaCRD)
 
 	return podList
 }

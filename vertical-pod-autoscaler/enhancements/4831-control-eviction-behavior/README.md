@@ -21,13 +21,13 @@ For some workloads, each eviction introduces disruptions for users. Examples inc
 * Allow for resource-specific decisions: The desired policy may be different for CPU and Memory
 
 ## Proposal
-Add a new field `EvictionRequirements` to [`PodUpdatePolicy`](https://github.com/kubernetes/autoscaler/blob/2f4385b72e304216cf745893747da45ef314898f/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L109) of type `[]*EvictionRequirement`. A single `EvictionRequirement` defines a condition which must be `true` to allow eviction for the corresponding `Pod`. When multiple `EvictionRequirements` are specified for a `Pod`, all of them must evaluate to `true` to allow eviction.
+Add a new field `EvictionRequirements` to [`PodUpdatePolicy`](https://github.com/kubernetes/autoscaler/blob/2f4385b72e304216cf745893747da45ef314898f/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L109) of type `[]*EvictionRequirement`. A single `EvictionRequirement` defines a condition which must be `true` to allow eviction for the corresponding `Pod`. When multiple `EvictionRequirements` are specified for a `Pod`, all of them must evaluate to `true` to allow eviction. For Pods with multiple Containers, an `EvictionRequirement` evaluates to `true` when _at least one Container that is under VPA control_ fulfills the  `EvictionRequirement`.
 
-A single `EvictionRequirement` specifies `Resources` and a `ChangeRequirement` comparing the new recommendation (`Target`) with the existing requests on a Pod (`Requests`). Possible values for `Resources` are `[CPU]` and `[Memory]` or both `[CPU,Memory]`. If `Resources: [CPU, Memory]`, the condition must be true for either of the two resources to allow for eviction. Possible values for `ChangeRequirement` are `TargetHigherThanRequests`, `TargetHigherThanOrEqualToRequests`, `TargetLowerThanRequests` and `TargetLowerThanOrEqualToRequests`.
+A single `EvictionRequirement` specifies `Resources` and a `ChangeRequirement` comparing the new recommendation (`Target`) with the existing requests on a Pod (`Requests`). Possible values for `Resources` are `[CPU]` and `[Memory]` or both `[CPU,Memory]`. If `Resources: [CPU, Memory]`, the condition must be true for either of the two resources to allow for eviction. Possible values for `ChangeRequirement` are `TargetHigherThanRequests` and `TargetLowerThanRequests`.
 
 Add validation to prevent users from adding `EvictionRequirements` which can never evaluate to `true`:
 * Reject if more than one `EvictionRequirement` for a single resource is found
-* Reject if `Resource: [CPU, Memory]` is specified on one `EvictionRequirement` together with `Resource: [CPU]` or `Resource: [Memory]` on another `EvictionRequirement`
+* Reject if `Resources: [CPU, Memory]` is specified on one `EvictionRequirement` together with `Resources: [CPU]` or `Resources: [Memory]` on another `EvictionRequirement`
 
 ## Design Details
 ### Test Plan

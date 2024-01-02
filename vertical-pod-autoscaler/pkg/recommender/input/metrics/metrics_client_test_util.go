@@ -29,9 +29,10 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	core "k8s.io/client-go/testing"
 
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	metricsapi "k8s.io/metrics/pkg/apis/metrics/v1beta1"
 	"k8s.io/metrics/pkg/client/clientset/versioned/fake"
+
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 )
 
 type metricsClientTestCase struct {
@@ -84,7 +85,7 @@ func (tc *metricsClientTestCase) createFakeMetricsClient() MetricsClient {
 	fakeMetricsGetter.AddReactor("list", "pods", func(action core.Action) (handled bool, ret runtime.Object, err error) {
 		return true, tc.getFakePodMetricsList(), nil
 	})
-	return NewMetricsClient(fakeMetricsGetter.MetricsV1beta1(), "", "fake")
+	return NewMetricsClient(NewPodMetricsesSource(fakeMetricsGetter.MetricsV1beta1()), "", "fake")
 }
 
 func (tc *metricsClientTestCase) getFakePodMetricsList() *metricsapi.PodMetricsList {

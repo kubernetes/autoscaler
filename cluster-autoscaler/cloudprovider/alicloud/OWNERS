@@ -2,3 +2,7 @@ approvers:
 - ringtail
 reviewers:
 - ringtail
+
+
+labels:
+- area/provider/alicloud

@@ -36,6 +36,12 @@ const (
 	// Only Nitro instance types are currently supported.
 	ErrCodeEC2InstanceTypeInvalidException = "EC2InstanceTypeInvalidException"
 
+	// ErrCodeEC2InstanceUnavailableException for service response error code
+	// "EC2InstanceUnavailableException".
+	//
+	// The instance is currently unavailable. Wait a few minutes and try again.
+	ErrCodeEC2InstanceUnavailableException = "EC2InstanceUnavailableException"
+
 	// ErrCodeInvalidArgsException for service response error code
 	// "InvalidArgsException".
 	//
@@ -85,6 +91,7 @@ var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
 	"EC2InstanceNotFoundException":               newErrorEC2InstanceNotFoundException,
 	"EC2InstanceStateInvalidException":           newErrorEC2InstanceStateInvalidException,
 	"EC2InstanceTypeInvalidException":            newErrorEC2InstanceTypeInvalidException,
+	"EC2InstanceUnavailableException":            newErrorEC2InstanceUnavailableException,
 	"InvalidArgsException":                       newErrorInvalidArgsException,
 	"SerialConsoleAccessDisabledException":       newErrorSerialConsoleAccessDisabledException,
 	"SerialConsoleSessionLimitExceededException": newErrorSerialConsoleSessionLimitExceededException,
