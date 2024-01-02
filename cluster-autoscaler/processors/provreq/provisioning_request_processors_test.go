@@ -73,7 +73,7 @@ func TestProvisioningRequestPodsFilter(t *testing.T) {
 		if len(test.expectedUnscheduledPods) < len(test.expectedUnscheduledPods) {
 			select {
 			case event := <-eventRecorder.Events:
-				assert.Contains(t, event, "Unschedulable pod ignored in scale-up loop, because it's consuming ProvisioningRequest default/pr-class")
+				assert.Contains(t, event, "Unschedulable pod didn't trigger scale-up, because it's consuming ProvisioningRequest default/pr-class")
 			case <-time.After(1 * time.Second):
 				t.Errorf("Timeout waiting for event")
 			}
@@ -103,7 +103,7 @@ func TestEventManager(t *testing.T) {
 	for i := 0; i < eventLimit; i++ {
 		select {
 		case event := <-eventRecorder.Events:
-			assert.Contains(t, event, "Unschedulable pod ignored in scale-up loop, because it's consuming ProvisioningRequest default/pr-class")
+			assert.Contains(t, event, "Unschedulable pod didn't trigger scale-up, because it's consuming ProvisioningRequest default/pr-class")
 		case <-time.After(1 * time.Second):
 			t.Errorf("Timeout waiting for event")
 		}

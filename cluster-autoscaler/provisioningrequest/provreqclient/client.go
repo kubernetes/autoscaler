@@ -41,13 +41,6 @@ const (
 	provisioningRequestClientCallTimeout = 4 * time.Second
 )
 
-// ProvisioningRequestClient represents the service that is able to list
-// and access different Provisioning Requests.
-type ProvisioningRequestClient interface {
-	ProvisioningRequest(namespace, name string) (*provreqwrapper.ProvisioningRequest, error)
-	ProvisioningRequests() ([]*provreqwrapper.ProvisioningRequest, error)
-}
-
 // ProvisioningRequestClientV1beta1 represents client for v1beta1 ProvReq CRD.
 type ProvisioningRequestClientV1beta1 struct {
 	client         versioned.Interface
@@ -56,7 +49,7 @@ type ProvisioningRequestClientV1beta1 struct {
 }
 
 // NewProvisioningRequestClient configures and returns a provisioningRequestClient.
-func NewProvisioningRequestClient(kubeConfig *rest.Config) (ProvisioningRequestClient, error) {
+func NewProvisioningRequestClient(kubeConfig *rest.Config) (*ProvisioningRequestClientV1beta1, error) {
 	prClient, err := newPRClient(kubeConfig)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create Provisioning Request client: %v", err)

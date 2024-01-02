@@ -50,7 +50,7 @@ func NewDefautlEventManager() *defaultEventManager {
 
 // LogIgnoredInScaleUpEvent adds event about ignored scale up for unscheduled pod, that consumes Provisioning Request.
 func (e *defaultEventManager) LogIgnoredInScaleUpEvent(context *context.AutoscalingContext, now time.Time, pod *apiv1.Pod, prName string) {
-	message := fmt.Sprintf("Unschedulable pod ignored in scale-up loop, because it's consuming ProvisioningRequest %s/%s", pod.Namespace, prName)
+	message := fmt.Sprintf("Unschedulable pod didn't trigger scale-up, because it's consuming ProvisioningRequest %s/%s", pod.Namespace, prName)
 	if e.loggedEvents < e.limit {
 		context.Recorder.Event(pod, apiv1.EventTypeNormal, "", message)
 		e.loggedEvents++

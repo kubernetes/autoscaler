@@ -23,14 +23,12 @@ import (
 
 // NewDefaultPodListProcessor returns a default implementation of the pod list
 // processor, which wraps and sequentially runs other sub-processors.
-func NewDefaultPodListProcessor(predicateChecker predicatechecker.PredicateChecker) *pods.ListedPodListProcessor {
-	return &pods.ListedPodListProcessor{
-		Processors: []pods.PodListProcessor{
-			NewClearTPURequestsPodListProcessor(),
-			NewFilterOutExpendablePodListProcessor(),
-			NewCurrentlyDrainedNodesPodListProcessor(),
-			NewFilterOutSchedulablePodListProcessor(predicateChecker),
-			NewFilterOutDaemonSetPodListProcessor(),
-		},
-	}
+func NewDefaultPodListProcessor(predicateChecker predicatechecker.PredicateChecker) *pods.CombinedPodListProcessor {
+	return pods.NewCombinedPodListProcessor([]pods.PodListProcessor{
+		NewClearTPURequestsPodListProcessor(),
+		NewFilterOutExpendablePodListProcessor(),
+		NewCurrentlyDrainedNodesPodListProcessor(),
+		NewFilterOutSchedulablePodListProcessor(predicateChecker),
+		NewFilterOutDaemonSetPodListProcessor(),
+	})
 }
