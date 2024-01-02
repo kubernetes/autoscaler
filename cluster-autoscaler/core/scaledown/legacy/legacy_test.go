@@ -826,7 +826,7 @@ var defaultScaleDownOptions = config.AutoscalingOptions{
 		ScaleDownGpuUtilizationThreshold: 0.5,
 	},
 	MaxGracefulTerminationSec: 60,
-	MaxEmptyBulkDelete:        10,
+	MaxScaleDownParallelism:   10,
 	MinCoresTotal:             0,
 	MinMemoryTotal:            0,
 	MaxCoresTotal:             config.DefaultMaxClusterCores,

@@ -153,7 +153,6 @@ var (
 		"Cloud provider type. Available values: ["+strings.Join(cloudBuilder.AvailableCloudProviders, ",")+"]")
 	maxBulkSoftTaintCount      = flag.Int("max-bulk-soft-taint-count", 10, "Maximum number of nodes that can be tainted/untainted PreferNoSchedule at the same time. Set to 0 to turn off such tainting.")
 	maxBulkSoftTaintTime       = flag.Duration("max-bulk-soft-taint-time", 3*time.Second, "Maximum duration of tainting/untainting nodes as PreferNoSchedule at the same time.")
-	maxEmptyBulkDeleteFlag     = flag.Int("max-empty-bulk-delete", 10, "Maximum number of empty nodes that can be deleted at the same time.")
 	maxGracefulTerminationFlag = flag.Int("max-graceful-termination-sec", 10*60, "Maximum number of seconds CA waits for pod termination when trying to scale down a node. "+
 		"This flag is mutually exclusion with drain-priority-config flag which allows more configuration options.")
 	maxTotalUnreadyPercentage = flag.Float64("max-total-unready-percentage", 45, "Maximum percentage of unready nodes in the cluster.  After this is exceeded, CA halts operations")
@@ -283,16 +282,6 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		klog.Fatalf("Invalid configuration, could not use --max-drain-parallelism > 1 if --parallel-drain is false")
 	}
 
-	// in order to avoid inconsistent deletion thresholds for the legacy planner and the new actuator, the max-empty-bulk-delete,
-	// and max-scale-down-parallelism flags must be set to the same value.
-	if isFlagPassed("max-empty-bulk-delete") && !isFlagPassed("max-scale-down-parallelism") {
-		*maxScaleDownParallelismFlag = *maxEmptyBulkDeleteFlag
-		klog.Warning("The max-empty-bulk-delete flag will be deprecated in k8s version 1.29. Please use max-scale-down-parallelism instead.")
-		klog.Infof("Setting max-scale-down-parallelism to %d, based on the max-empty-bulk-delete value %d", *maxScaleDownParallelismFlag, *maxEmptyBulkDeleteFlag)
-	} else if !isFlagPassed("max-empty-bulk-delete") && isFlagPassed("max-scale-down-parallelism") {
-		*maxEmptyBulkDeleteFlag = *maxScaleDownParallelismFlag
-	}
-
 	if isFlagPassed("node-autoprovisioning-enabled") {
 		klog.Warning("The node-autoprovisioning-enabled flag is deprecated and will be removed in k8s version 1.31.")
 	}
@@ -345,7 +334,6 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		IgnoreMirrorPodsUtilization:      *ignoreMirrorPodsUtilization,
 		MaxBulkSoftTaintCount:            *maxBulkSoftTaintCount,
 		MaxBulkSoftTaintTime:             *maxBulkSoftTaintTime,
-		MaxEmptyBulkDelete:               *maxEmptyBulkDeleteFlag,
 		MaxGracefulTerminationSec:        *maxGracefulTerminationFlag,
 		MaxPodEvictionTime:               *maxPodEvictionTime,
 		MaxNodesTotal:                    *maxNodesTotal,

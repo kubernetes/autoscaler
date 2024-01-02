@@ -303,7 +303,7 @@ func (sd *ScaleDown) NodesToDelete(currentTime time.Time) (_, drain []*apiv1.Nod
 	// try to delete not-so-empty nodes, possibly killing some pods and allowing them
 	// to recreate on other nodes.
 	emptyNodesToRemove := sd.getEmptyNodesToRemove(candidateNames, scaleDownResourcesLeft, currentTime)
-	emptyNodesToRemove = sd.processors.ScaleDownSetProcessor.GetNodesToRemove(sd.context, emptyNodesToRemove, sd.context.MaxEmptyBulkDelete)
+	emptyNodesToRemove = sd.processors.ScaleDownSetProcessor.GetNodesToRemove(sd.context, emptyNodesToRemove, sd.context.MaxScaleDownParallelism)
 	if len(emptyNodesToRemove) > 0 {
 		var nodes []*apiv1.Node
 		for _, node := range emptyNodesToRemove {
