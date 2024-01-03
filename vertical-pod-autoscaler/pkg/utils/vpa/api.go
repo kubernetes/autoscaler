@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -30,14 +31,13 @@ import (
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/tools/cache"
-	"k8s.io/klog/v2"
-
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	vpa_api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1"
 	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
+	"k8s.io/client-go/tools/cache"
+	"k8s.io/klog/v2"
 )
 
 // VpaWithSelector is a pair of VPA and its selector.
@@ -95,6 +95,27 @@ func NewVpasLister(vpaClient *vpa_clientset.Clientset, stopChannel <-chan struct
 		klog.InfoS("Initial VPA synced successfully")
 	}
 	return vpaLister
+}
+
+// NewVpaCheckpointLister returns VerticalPodAutoscalerCheckpointLister configured to fetch all VPACheckpoint objects from namespace,
+// set namespace to k8sapiv1.NamespaceAll to select all namespaces.
+// The method blocks until vpaCheckpointLister is initially populated.
+func NewVpaCheckpointLister(vpaClient *vpa_clientset.Clientset, stopChannel <-chan struct{}, namespace string) vpa_lister.VerticalPodAutoscalerCheckpointLister {
+	vpaListWatch := cache.NewListWatchFromClient(vpaClient.AutoscalingV1().RESTClient(), "verticalpodautoscalercheckpoints", namespace, fields.Everything())
+	indexer, controller := cache.NewIndexerInformer(vpaListWatch,
+		&vpa_types.VerticalPodAutoscalerCheckpoint{},
+		1*time.Hour,
+		&cache.ResourceEventHandlerFuncs{},
+		cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
+	vpaCheckpointLister := vpa_lister.NewVerticalPodAutoscalerCheckpointLister(indexer)
+	go controller.Run(stopChannel)
+	if !cache.WaitForCacheSync(make(chan struct{}), controller.HasSynced) {
+		klog.ErrorS(nil, "Failed to sync VPA checkpoint cache during initialization")
+		os.Exit(255)
+	} else {
+		klog.InfoS("Initial VPA checkpoint synced successfully")
+	}
+	return vpaCheckpointLister
 }
 
 // PodMatchesVPA returns true iff the vpaWithSelector matches the Pod.
