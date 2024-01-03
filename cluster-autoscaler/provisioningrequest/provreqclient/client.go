@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1beta1client
+package provreqclient
 
 import (
 	"fmt"
@@ -28,6 +28,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/client/clientset/versioned"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/client/informers/externalversions"
 	listers "k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/client/listers/autoscaling.x-k8s.io/v1beta1"
+	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
 	v1 "k8s.io/client-go/listers/core/v1"
@@ -40,15 +41,15 @@ const (
 	provisioningRequestClientCallTimeout = 4 * time.Second
 )
 
-// ProvisioningRequestClient represents client for v1beta1 ProvReq CRD.
-type ProvisioningRequestClient struct {
+// ProvisioningRequestClientV1beta1 represents client for v1beta1 ProvReq CRD.
+type ProvisioningRequestClientV1beta1 struct {
 	client         versioned.Interface
 	provReqLister  listers.ProvisioningRequestLister
 	podTemplLister v1.PodTemplateLister
 }
 
 // NewProvisioningRequestClient configures and returns a provisioningRequestClient.
-func NewProvisioningRequestClient(kubeConfig *rest.Config) (*ProvisioningRequestClient, error) {
+func NewProvisioningRequestClient(kubeConfig *rest.Config) (*ProvisioningRequestClientV1beta1, error) {
 	prClient, err := newPRClient(kubeConfig)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create Provisioning Request client: %v", err)
@@ -69,7 +70,7 @@ func NewProvisioningRequestClient(kubeConfig *rest.Config) (*ProvisioningRequest
 		return nil, err
 	}
 
-	return &ProvisioningRequestClient{
+	return &ProvisioningRequestClientV1beta1{
 		client:         prClient,
 		provReqLister:  provReqLister,
 		podTemplLister: podTemplLister,
@@ -77,21 +78,37 @@ func NewProvisioningRequestClient(kubeConfig *rest.Config) (*ProvisioningRequest
 }
 
 // ProvisioningRequest gets a specific ProvisioningRequest CR.
-func (c *ProvisioningRequestClient) ProvisioningRequest(namespace, name string) (*v1beta1.ProvisioningRequest, error) {
-	return c.provReqLister.ProvisioningRequests(namespace).Get(name)
+func (c *ProvisioningRequestClientV1beta1) ProvisioningRequest(namespace, name string) (*provreqwrapper.ProvisioningRequest, error) {
+	v1Beta1PR, err := c.provReqLister.ProvisioningRequests(namespace).Get(name)
+	if err != nil {
+		return nil, err
+	}
+	podTemplates, err := c.FetchPodTemplates(v1Beta1PR)
+	if err != nil {
+		return nil, fmt.Errorf("while fetching pod templates for Get Provisioning Request %s/%s got error: %v", namespace, name, err)
+	}
+	return provreqwrapper.NewV1Beta1ProvisioningRequest(v1Beta1PR, podTemplates), nil
 }
 
 // ProvisioningRequests gets all ProvisioningRequest CRs.
-func (c *ProvisioningRequestClient) ProvisioningRequests() ([]*v1beta1.ProvisioningRequest, error) {
-	provisioningRequests, err := c.provReqLister.List(labels.Everything())
+func (c *ProvisioningRequestClientV1beta1) ProvisioningRequests() ([]*provreqwrapper.ProvisioningRequest, error) {
+	v1Beta1PRs, err := c.provReqLister.List(labels.Everything())
 	if err != nil {
 		return nil, fmt.Errorf("error fetching provisioningRequests: %w", err)
 	}
-	return provisioningRequests, nil
+	prs := make([]*provreqwrapper.ProvisioningRequest, 0, len(v1Beta1PRs))
+	for _, v1Beta1PR := range v1Beta1PRs {
+		podTemplates, errPodTemplates := c.FetchPodTemplates(v1Beta1PR)
+		if errPodTemplates != nil {
+			return nil, fmt.Errorf("while fetching pod templates for List Provisioning Request %s/%s got error: %v", v1Beta1PR.Namespace, v1Beta1PR.Name, errPodTemplates)
+		}
+		prs = append(prs, provreqwrapper.NewV1Beta1ProvisioningRequest(v1Beta1PR, podTemplates))
+	}
+	return prs, nil
 }
 
 // FetchPodTemplates fetches PodTemplates referenced by the Provisioning Request.
-func (c *ProvisioningRequestClient) FetchPodTemplates(pr *v1beta1.ProvisioningRequest) ([]*apiv1.PodTemplate, error) {
+func (c *ProvisioningRequestClientV1beta1) FetchPodTemplates(pr *v1beta1.ProvisioningRequest) ([]*apiv1.PodTemplate, error) {
 	podTemplates := make([]*apiv1.PodTemplate, 0, len(pr.Spec.PodSets))
 	for _, podSpec := range pr.Spec.PodSets {
 		podTemplate, err := c.podTemplLister.PodTemplates(pr.Namespace).Get(podSpec.PodTemplateRef.Name)
