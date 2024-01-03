@@ -48,3 +48,37 @@ func (p *NoOpPodListProcessor) Process(
 // CleanUp cleans up the processor's internal structures.
 func (p *NoOpPodListProcessor) CleanUp() {
 }
+
+// CombinedPodListProcessor is a list of PodListProcessors
+type CombinedPodListProcessor struct {
+	processors []PodListProcessor
+}
+
+// NewCombinedPodListProcessor construct CombinedPodListProcessor.
+func NewCombinedPodListProcessor(processors []PodListProcessor) *CombinedPodListProcessor {
+	return &CombinedPodListProcessor{processors}
+}
+
+// AddProcessor append processor to the list.
+func (p *CombinedPodListProcessor) AddProcessor(processor PodListProcessor) {
+	p.processors = append(p.processors, processor)
+}
+
+// Process runs sub-processors sequentially
+func (p *CombinedPodListProcessor) Process(ctx *context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
+	var err error
+	for _, processor := range p.processors {
+		unschedulablePods, err = processor.Process(ctx, unschedulablePods)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return unschedulablePods, nil
+}
+
+// CleanUp cleans up the processor's internal structures.
+func (p *CombinedPodListProcessor) CleanUp() {
+	for _, processor := range p.processors {
+		processor.CleanUp()
+	}
+}

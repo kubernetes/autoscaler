@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1beta1client
+package provreqclient
 
 import (
 	"context"
@@ -35,7 +35,7 @@ import (
 )
 
 // NewFakeProvisioningRequestClient mock ProvisioningRequestClient for tests.
-func NewFakeProvisioningRequestClient(ctx context.Context, t *testing.T, prs ...*provreqwrapper.ProvisioningRequest) (*ProvisioningRequestClient, *FakeProvisioningRequestForceClient) {
+func NewFakeProvisioningRequestClient(ctx context.Context, t *testing.T, prs ...*provreqwrapper.ProvisioningRequest) (*ProvisioningRequestClientV1beta1, *FakeProvisioningRequestForceClient) {
 	t.Helper()
 	provReqClient := fake.NewSimpleClientset()
 	podTemplClient := fake_kubernetes.NewSimpleClientset()
@@ -60,7 +60,7 @@ func NewFakeProvisioningRequestClient(ctx context.Context, t *testing.T, prs ...
 	if err != nil {
 		t.Fatalf("Failed to create Provisioning Request lister. Error was: %v", err)
 	}
-	return &ProvisioningRequestClient{
+	return &ProvisioningRequestClientV1beta1{
 			client:         provReqClient,
 			provReqLister:  provReqLister,
 			podTemplLister: podTemplLister,
