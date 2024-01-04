@@ -36,6 +36,8 @@ const (
 	PodSafeToEvictKey = "cluster-autoscaler.kubernetes.io/safe-to-evict"
 	// SafeToEvictLocalVolumesKey - annotation that ignores (doesn't block on) a local storage volume during node scale down
 	SafeToEvictLocalVolumesKey = "cluster-autoscaler.kubernetes.io/safe-to-evict-local-volumes"
+	// IgnoredVolumesOnScaleDownKey - annotation that ignores volumes (remove from pod before check) during node scale down.
+	IgnoredVolumesOnScaleDownKey = "cluster-autoscaler.kubernetes.io/ignored-volumes-on-scale-down"
 )
 
 // BlockingPod represents a pod which is blocking the scale down of a node.
@@ -150,6 +152,35 @@ func HasSafeToEvictAnnotation(pod *apiv1.Pod) bool {
 // set to false.
 func HasNotSafeToEvictAnnotation(pod *apiv1.Pod) bool {
 	return pod.GetAnnotations()[PodSafeToEvictKey] == "false"
+}
+
+// RemoveIgnoredVolumes removes ignored volumes from pod
+func RemoveIgnoredVolumes(pod *apiv1.Pod) {
+	isIgnored := getIgnoredVolumes(pod)
+	if len(isIgnored) == 0 {
+		return
+	}
+
+	var volumes []apiv1.Volume
+	for i, volume := range pod.Spec.Volumes {
+		if !isIgnored[volume.Name] {
+			volumes = append(volumes, pod.Spec.Volumes[i])
+		}
+	}
+
+	pod.Spec.Volumes = volumes
+}
+
+func getIgnoredVolumes(pod *apiv1.Pod) map[string]bool {
+	isIgnored := map[string]bool{}
+	annotationVal := pod.GetAnnotations()[IgnoredVolumesOnScaleDownKey]
+	if annotationVal != "" {
+		vols := strings.Split(annotationVal, ",")
+		for _, v := range vols {
+			isIgnored[v] = true
+		}
+	}
+	return isIgnored
 }
 
 // IsPodLongTerminating checks if a pod has been terminating for a long time (pod's terminationGracePeriod + an additional const buffer)
