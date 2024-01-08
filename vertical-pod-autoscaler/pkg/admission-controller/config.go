@@ -65,6 +65,15 @@ func selfRegistration(clientset *kubernetes.Clientset, caCert []byte, namespace,
 	sideEffects := admissionregistration.SideEffectClassNone
 	failurePolicy := admissionregistration.Ignore
 	RegisterClientConfig.CABundle = caCert
+	namespaceSelector := metav1.LabelSelector{
+		MatchExpressions: []metav1.LabelSelectorRequirement{
+			{
+				Key:      "kubernetes.io/metadata.name",
+				Operator: metav1.LabelSelectorOperator.LabelSelectorOpNotIn,
+				Values:   []string{"kube-system", "kube-node-lease"},
+			},
+		},
+	}
 	webhookConfig := &admissionregistration.MutatingWebhookConfiguration{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: webhookConfigName,
@@ -91,10 +100,11 @@ func selfRegistration(clientset *kubernetes.Clientset, caCert []byte, namespace,
 						},
 					},
 				},
-				FailurePolicy:  &failurePolicy,
-				ClientConfig:   RegisterClientConfig,
-				SideEffects:    &sideEffects,
-				TimeoutSeconds: &timeoutSeconds,
+				FailurePolicy:     &failurePolicy,
+				ClientConfig:      RegisterClientConfig,
+				SideEffects:       &sideEffects,
+				TimeoutSeconds:    &timeoutSeconds,
+				NamespaceSelector: &namespaceSelector,
 			},
 		},
 	}
