@@ -31,6 +31,9 @@ const (
 	// It can be repeated multiplied times for multiple groups.
 	ImpersonateGroupHeader = "Impersonate-Group"
 
+	// ImpersonateUIDHeader is used to impersonate a particular UID during an API server request
+	ImpersonateUIDHeader = "Impersonate-Uid"
+
 	// ImpersonateUserExtraHeaderPrefix is a prefix for any header used to impersonate an entry in the
 	// extra map[string][]string for user.Info.  The key will be every after the prefix.
 	// It can be repeated multiplied times for multiple map keys and the same key can be repeated multiple
@@ -48,6 +51,8 @@ const (
 // plugin in the kube-apiserver.
 type TokenReview struct {
 	metav1.TypeMeta `json:",inline"`
+	// Standard object's metadata.
+	// More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
 	// +optional
 	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
 
@@ -130,10 +135,15 @@ func (t ExtraValue) String() string {
 // TokenRequest requests a token for a given service account.
 type TokenRequest struct {
 	metav1.TypeMeta `json:",inline"`
+	// Standard object's metadata.
+	// More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
 	// +optional
 	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
 
+	// Spec holds information about the request being evaluated
 	Spec TokenRequestSpec `json:"spec" protobuf:"bytes,2,opt,name=spec"`
+
+	// Status is filled in by the server and indicates whether the token can be authenticated.
 	// +optional
 	Status TokenRequestStatus `json:"status,omitempty" protobuf:"bytes,3,opt,name=status"`
 }
@@ -141,7 +151,7 @@ type TokenRequest struct {
 // TokenRequestSpec contains client provided parameters of a token request.
 type TokenRequestSpec struct {
 	// Audiences are the intendend audiences of the token. A recipient of a
-	// token must identitfy themself with an identifier in the list of
+	// token must identify themself with an identifier in the list of
 	// audiences of the token, and otherwise should reject the token. A
 	// token issued for multiple audiences may be used to authenticate
 	// against any of the audiences listed but implies a high degree of
@@ -186,4 +196,29 @@ type BoundObjectReference struct {
 	// UID of the referent.
 	// +optional
 	UID types.UID `json:"uid,omitempty" protobuf:"bytes,4,opt,name=uID,casttype=k8s.io/apimachinery/pkg/types.UID"`
+}
+
+// +genclient
+// +genclient:nonNamespaced
+// +genclient:onlyVerbs=create
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// SelfSubjectReview contains the user information that the kube-apiserver has about the user making this request.
+// When using impersonation, users will receive the user info of the user being impersonated.  If impersonation or
+// request header authentication is used, any extra keys will have their case ignored and returned as lowercase.
+type SelfSubjectReview struct {
+	metav1.TypeMeta `json:",inline"`
+	// Standard object's metadata.
+	// More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
+	// +optional
+	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
+	// Status is filled in by the server with the user attributes.
+	Status SelfSubjectReviewStatus `json:"status,omitempty" protobuf:"bytes,2,opt,name=status"`
+}
+
+// SelfSubjectReviewStatus is filled by the kube-apiserver and sent back to a user.
+type SelfSubjectReviewStatus struct {
+	// User attributes of the user making this request.
+	// +optional
+	UserInfo UserInfo `json:"userInfo,omitempty" protobuf:"bytes,1,opt,name=userInfo"`
 }
