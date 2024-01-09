@@ -19,6 +19,7 @@ package controllerfetcher
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -81,6 +82,7 @@ type ControllerFetcher interface {
 type controllerFetcher struct {
 	scaleNamespacer              scale.ScalesGetter
 	mapper                       apimeta.RESTMapper
+	cachedDiscoveryClient        discovery.DiscoveryInterface
 	informersMap                 map[wellKnownController]cache.SharedIndexInformer
 	scaleSubresourceCacheStorage controllerCacheStorage
 }
@@ -146,6 +148,7 @@ func NewControllerFetcher(config *rest.Config, kubeClient kube_client.Interface,
 	return &controllerFetcher{
 		scaleNamespacer:              scaleNamespacer,
 		mapper:                       mapper,
+		cachedDiscoveryClient:        cachedDiscoveryClient,
 		informersMap:                 informersMap,
 		scaleSubresourceCacheStorage: newControllerCacheStorage(betweenRefreshes, lifeTime, jitterFactor),
 	}
@@ -206,6 +209,12 @@ func (f *controllerFetcher) getParentOfController(controllerKey ControllerKeyWit
 		return getParentOfWellKnownController(informer, controllerKey)
 	}
 
+	// check if it's scalable
+	scalable := f.isScalable(controllerKey.ApiVersion, controllerKey.Kind)
+	if !scalable {
+		return nil, nil
+	}
+
 	groupKind, err := controllerKey.groupKind()
 	if err != nil {
 		return nil, err
@@ -261,23 +270,20 @@ func (f *controllerFetcher) isWellKnownOrScalable(key *ControllerKeyWithAPIVersi
 		return false
 	}
 
-	//if not well known check if it supports scaling
-	groupKind, err := key.groupKind()
+	return f.isScalable(key.ApiVersion, key.Kind)
+}
+
+// isScalable returns true if the given controller is scalable.
+// isScalable checks if the controller is scalable by checking if the resource "<key>/scale" exists in the cached discovery client.
+func (f *controllerFetcher) isScalable(apiVersion string, kind string) bool {
+	resourceList, err := f.cachedDiscoveryClient.ServerResourcesForGroupVersion(apiVersion)
 	if err != nil {
-		klog.Errorf("Could not find groupKind for %s/%s: %v", key.Namespace, key.Name, err)
+		klog.Errorf("Could not find resources for %s: %v", apiVersion, err)
 		return false
 	}
-
-	mappings, err := f.mapper.RESTMappings(groupKind)
-	if err != nil {
-		klog.Errorf("Could not find mappings for %s: %v", groupKind, err)
-		return false
-	}
-
-	for _, mapping := range mappings {
-		groupResource := mapping.Resource.GroupResource()
-		scale, err := f.getScaleForResource(key.Namespace, groupResource, key.Name)
-		if err == nil && scale != nil {
+	expectedScaleResource := fmt.Sprintf("%ss/%s", strings.ToLower(kind), "scale")
+	for _, r := range resourceList.APIResources {
+		if r.Name == expectedScaleResource {
 			return true
 		}
 	}
