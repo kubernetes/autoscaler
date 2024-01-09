@@ -32,6 +32,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	cacheddiscovery "k8s.io/client-go/discovery/cached"
+	"k8s.io/client-go/discovery/fake"
 	"k8s.io/client-go/restmapper"
 	scalefake "k8s.io/client-go/scale/fake"
 	core "k8s.io/client-go/testing"
@@ -61,6 +63,57 @@ func simpleControllerFetcher() *controllerFetcher {
 	versioned := map[string][]metav1.APIResource{
 		"Foo": {{Kind: "Foo", Name: "bah", Group: "foo"}, {Kind: "Scale", Name: "iCanScale", Group: "foo"}},
 	}
+	fakeDiscoveryClient := &fake.FakeDiscovery{
+		Fake: &core.Fake{Resources: []*metav1.APIResourceList{
+			{
+				TypeMeta: metav1.TypeMeta{
+					Kind:       "APIResourceList",
+					APIVersion: "v1",
+				},
+				GroupVersion: "Foo/Foo",
+				APIResources: []metav1.APIResource{
+					{
+						Name:       "foos",
+						Namespaced: true,
+						Kind:       "Foo",
+						Group:      "Foo",
+						Version:    "Foo",
+					},
+					{
+						Name:       "scales",
+						Namespaced: true,
+						Kind:       "Scale",
+						Group:      "Foo",
+						Version:    "Foo",
+					},
+					{
+						Name:       "scales/scale",
+						Namespaced: true,
+						Kind:       "Scale",
+						Group:      "Foo",
+						Version:    "Foo",
+					},
+				},
+			},
+			{
+				TypeMeta: metav1.TypeMeta{
+					Kind:       "APIResourceList",
+					APIVersion: "v1",
+				},
+				GroupVersion: "v1",
+				APIResources: []metav1.APIResource{
+					{
+						Name:         "deployments",
+						SingularName: "deployment",
+						Namespaced:   true,
+						Kind:         "Deployment",
+						Group:        "",
+						Version:      "v1",
+					},
+				},
+			}}},
+	}
+	f.cachedDiscoveryClient = cacheddiscovery.NewMemCacheClient(fakeDiscoveryClient)
 	fakeMapper := []*restmapper.APIGroupResources{
 		{
 			Group: metav1.APIGroup{
@@ -76,7 +129,7 @@ func simpleControllerFetcher() *controllerFetcher {
 	scaleNamespacer := &scalefake.FakeScaleClient{}
 	f.scaleNamespacer = scaleNamespacer
 
-	// return not found if if tries to find the scale subresource on bah
+	// return not found if it tries to find the scale subresource on bah
 	scaleNamespacer.AddReactor("get", "bah", func(action core.Action) (handled bool, ret runtime.Object, err error) {
 		groupResource := schema.GroupResource{}
 		error := apierrors.NewNotFound(groupResource, "Foo")
@@ -389,8 +442,9 @@ func TestControllerFetcher(t *testing.T) {
 					},
 				},
 			}},
-			expectedKey:   nil,
-			expectedError: fmt.Errorf("Unhandled targetRef v1 / Node / node, last error node is not a valid owner"),
+			expectedKey: &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
+				Name: testDeployment, Kind: "Deployment", Namespace: testNamespace}}, // Node does not support scale subresource so should return itself"
+			expectedError: nil,
 		},
 		{
 			name: "custom resource with no scale subresource",

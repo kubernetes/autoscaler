@@ -81,6 +81,7 @@ type ControllerFetcher interface {
 type controllerFetcher struct {
 	scaleNamespacer              scale.ScalesGetter
 	mapper                       apimeta.RESTMapper
+	cachedDiscoveryClient        discovery.DiscoveryInterface
 	informersMap                 map[wellKnownController]cache.SharedIndexInformer
 	scaleSubresourceCacheStorage controllerCacheStorage
 }
@@ -146,6 +147,7 @@ func NewControllerFetcher(config *rest.Config, kubeClient kube_client.Interface,
 	return &controllerFetcher{
 		scaleNamespacer:              scaleNamespacer,
 		mapper:                       mapper,
+		cachedDiscoveryClient:        cachedDiscoveryClient,
 		informersMap:                 informersMap,
 		scaleSubresourceCacheStorage: newControllerCacheStorage(betweenRefreshes, lifeTime, jitterFactor),
 	}
@@ -206,6 +208,12 @@ func (f *controllerFetcher) getParentOfController(ctx context.Context, controlle
 		return getParentOfWellKnownController(informer, controllerKey)
 	}
 
+	// check if it's scalable
+	scalable := f.isScalable(controllerKey.ApiVersion, controllerKey.Kind)
+	if !scalable {
+		return nil, nil
+	}
+
 	groupKind, err := controllerKey.groupKind()
 	if err != nil {
 		return nil, err
@@ -258,27 +266,33 @@ func (f *controllerFetcher) isWellKnownOrScalable(ctx context.Context, key *Cont
 		return true
 	}
 
-	//if not well known check if it supports scaling
-	groupKind, err := key.groupKind()
+	return f.isScalable(key.ApiVersion, key.Kind)
+}
+
+// isScalable returns true if the given controller is scalable.
+// isScalable checks if the controller is scalable by checking if the resource "<key>/scale" exists in the cached discovery client.
+func (f *controllerFetcher) isScalable(apiVersion string, kind string) bool {
+	resourceList, err := f.cachedDiscoveryClient.ServerResourcesForGroupVersion(apiVersion)
 	if err != nil {
-		klog.ErrorS(err, "Could not find groupKind", "object", klog.KRef(key.Namespace, key.Name))
+		klog.ErrorS(err, "Could not find groupKind", "kind", kind)
 		return false
 	}
-
-	if wellKnownController(groupKind.Kind) == node {
+	var plural string
+	for _, r := range resourceList.APIResources {
+		// Ref https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+		// the kind is the singular name of the resource
+		if r.Kind == kind {
+			plural = r.Name
+			break
+		}
+	}
+	if plural == "" {
+		klog.ErrorS(fmt.Errorf("could not find plural name"), "Could not find plural name", "kind", kind)
 		return false
 	}
-
-	mappings, err := f.mapper.RESTMappings(groupKind)
-	if err != nil {
-		klog.ErrorS(err, "Could not find mappings", "groupKind", groupKind, "object", klog.KRef(key.Namespace, key.Name))
-		return false
-	}
-
-	for _, mapping := range mappings {
-		groupResource := mapping.Resource.GroupResource()
-		scale, err := f.getScaleForResource(ctx, key.Namespace, groupResource, key.Name)
-		if err == nil && scale != nil {
+	expectedScaleResource := fmt.Sprintf("%s/%s", plural, "scale")
+	for _, r := range resourceList.APIResources {
+		if r.Name == expectedScaleResource {
 			return true
 		}
 	}
