@@ -69,7 +69,7 @@ func selfRegistration(clientset *kubernetes.Clientset, caCert []byte, namespace,
 		MatchExpressions: []metav1.LabelSelectorRequirement{
 			{
 				Key:      "kubernetes.io/metadata.name",
-				Operator: metav1.LabelSelectorOperator.LabelSelectorOpNotIn,
+				Operator: metav1.LabelSelectorOpNotIn,
 				Values:   []string{"kube-system", "kube-node-lease"},
 			},
 		},
