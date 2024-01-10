@@ -130,6 +130,9 @@ type Config struct {
 	CloudProviderBackoffDuration int     `json:"cloudProviderBackoffDuration,omitempty" yaml:"cloudProviderBackoffDuration,omitempty"`
 	CloudProviderBackoffJitter   float64 `json:"cloudProviderBackoffJitter,omitempty" yaml:"cloudProviderBackoffJitter,omitempty"`
 
+	// EnableForceDelete defines whether to enable force deletion on the APIs
+	EnableForceDelete bool `json:"enableForceDelete,omitempty" yaml:"enableForceDelete,omitempty"`
+
 	// EnableDynamicInstanceList defines whether to enable dynamic instance workflow for instance information check
 	EnableDynamicInstanceList bool `json:"enableDynamicInstanceList,omitempty" yaml:"enableDynamicInstanceList,omitempty"`
 
@@ -300,6 +303,13 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 		cfg.CloudProviderRateLimit, err = strconv.ParseBool(cloudProviderRateLimit)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse CLOUD_PROVIDER_RATE_LIMIT: %q, %v", cloudProviderRateLimit, err)
+		}
+	}
+
+	if enableForceDelete := os.Getenv("AZURE_ENABLE_FORCE_DELETE"); enableForceDelete != "" {
+		cfg.EnableForceDelete, err = strconv.ParseBool(enableForceDelete)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse AZURE_ENABLE_FORCE_DELETE: %q, %v", enableForceDelete, err)
 		}
 	}
 
