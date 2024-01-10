@@ -37,9 +37,10 @@ func newTestScaleSet(manager *AzureManager, name string) *ScaleSet {
 		azureRef: azureRef{
 			Name: name,
 		},
-		manager: manager,
-		minSize: 1,
-		maxSize: 5,
+		manager:           manager,
+		minSize:           1,
+		maxSize:           5,
+		enableForceDelete: manager.config.EnableForceDelete,
 	}
 }
 
@@ -405,18 +406,48 @@ func TestDeleteNodes(t *testing.T) {
 
 	vmssName := "test-asg"
 	var vmssCapacity int64 = 3
-	orchestrationModes := [2]compute.OrchestrationMode{compute.Uniform, compute.Flexible}
-	expectedVMSSVMs := newTestVMSSVMList(3)
-	expectedVMs := newTestVMList(3)
+	cases := []struct {
+		name              string
+		orchestrationMode compute.OrchestrationMode
+		enableForceDelete bool
+	}{
+		{
+			name:              "uniform, force delete enabled",
+			orchestrationMode: compute.Uniform,
+			enableForceDelete: true,
+		},
+		{
+			name:              "uniform, force delete disabled",
+			orchestrationMode: compute.Uniform,
+			enableForceDelete: false,
+		},
+		{
+			name:              "flexible, force delete enabled",
+			orchestrationMode: compute.Flexible,
+			enableForceDelete: true,
+		},
+		{
+			name:              "flexible, force delete disabled",
+			orchestrationMode: compute.Flexible,
+			enableForceDelete: false,
+		},
+	}
 
-	for _, orchMode := range orchestrationModes {
+	for _, tc := range cases {
+		orchMode := tc.orchestrationMode
+		enableForceDelete := tc.enableForceDelete
+
+		expectedVMSSVMs := newTestVMSSVMList(3)
+		expectedVMs := newTestVMList(3)
 
 		manager := newTestAzureManager(t)
+		manager.config.EnableForceDelete = enableForceDelete
 		expectedScaleSets := newTestVMSSList(vmssCapacity, vmssName, "eastus", orchMode)
+		fmt.Printf("orchMode: %s, enableForceDelete: %t\n", orchMode, enableForceDelete)
 
 		mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
 		mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil).Times(2)
-		mockVMSSClient.EXPECT().DeleteInstancesAsync(gomock.Any(), manager.config.ResourceGroup, gomock.Any(), gomock.Any(), false).Return(nil, nil)
+		mockVMSSClient.EXPECT().DeleteInstancesAsync(gomock.Any(), manager.config.ResourceGroup, gomock.Any(), gomock.Any(), enableForceDelete).Return(nil, nil)
 		mockVMSSClient.EXPECT().WaitForDeleteInstancesResult(gomock.Any(), gomock.Any(), manager.config.ResourceGroup).Return(&http.Response{StatusCode: http.StatusOK}, nil).AnyTimes()
 		manager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
 
@@ -497,7 +528,6 @@ func TestDeleteNodes(t *testing.T) {
 		instance2, found := scaleSet.getInstanceByProviderID(nodesToDelete[1].Spec.ProviderID)
 		assert.True(t, found, true)
 		assert.Equal(t, instance2.Status.State, cloudprovider.InstanceDeleting)
-
 	}
 }
 

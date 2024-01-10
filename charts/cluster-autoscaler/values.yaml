@@ -96,6 +96,9 @@ azureUseWorkloadIdentityExtension: false
 # azureVMType -- Azure VM type.
 azureVMType: "vmss"
 
+# azureEnableForceDelete -- Whether to force delete VMs or VMSS instances when scaling down.
+azureEnableForceDelete: false
+
 # cloudConfigPath -- Configuration file for cloud provider.
 cloudConfigPath: ""
 
