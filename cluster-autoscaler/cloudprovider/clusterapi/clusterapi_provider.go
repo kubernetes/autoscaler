@@ -164,11 +164,15 @@ func BuildClusterAPI(opts config.AutoscalingOptions, do cloudprovider.NodeGroupD
 	if err != nil {
 		klog.Fatalf("could not generate dynamic client for config")
 	}
+	managementConfig.QPS = opts.KubeClientQPS
+	managementConfig.Burst = opts.KubeClientBurst
 
 	workloadClient, err := kubernetes.NewForConfig(workloadConfig)
 	if err != nil {
 		klog.Fatalf("create kube clientset failed: %v", err)
 	}
+	workloadConfig.QPS = opts.KubeClientQPS
+	workloadConfig.Burst = opts.KubeClientBurst
 
 	managementDiscoveryClient, err := discovery.NewDiscoveryClientForConfig(managementConfig)
 	if err != nil {
