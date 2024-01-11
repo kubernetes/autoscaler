@@ -254,6 +254,16 @@ func (scaleSet *ScaleSet) SetScaleSetSize(size int64) error {
 		Sku:      vmssInfo.Sku,
 		Location: vmssInfo.Location,
 	}
+
+	if vmssInfo.ExtendedLocation != nil {
+		op.ExtendedLocation = &compute.ExtendedLocation{
+			Name: vmssInfo.ExtendedLocation.Name,
+			Type: vmssInfo.ExtendedLocation.Type,
+		}
+
+		klog.V(3).Infof("Passing ExtendedLocation information if it is not nil, with Edge Zone name:(%s)", *op.ExtendedLocation.Name)
+	}
+
 	ctx, cancel := getContextWithTimeout(vmssContextTimeout)
 	defer cancel()
 	klog.V(3).Infof("Waiting for virtualMachineScaleSetsClient.CreateOrUpdateAsync(%s)", scaleSet.Name)
