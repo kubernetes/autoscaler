@@ -66,6 +66,9 @@ var SchemaSchemaYAML = `types:
     - name: untyped
       type:
         namedType: untyped
+    - name: elementRelationship
+      type:
+        scalar: string
 - name: scalar
   scalar: string
 - name: map
@@ -107,7 +110,7 @@ var SchemaSchemaYAML = `types:
         scalar: string
     - name: deduceInvalidDiscriminator
       type:
-        scalar: bool
+        scalar: boolean
     - name: fields
       type:
         list:
@@ -142,6 +145,7 @@ var SchemaSchemaYAML = `types:
         list:
           elementType:
             scalar: string
+          elementRelationship: atomic
 - name: untyped
   map:
     fields:
