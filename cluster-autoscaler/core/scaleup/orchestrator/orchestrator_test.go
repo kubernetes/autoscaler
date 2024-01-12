@@ -973,6 +973,7 @@ func runSimpleScaleUpTest(t *testing.T, config *ScaleUpTestConfig) *ScaleUpTestR
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(options.NodeGroupDefaults))
 	clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
 	processors := NewTestProcessors(&context)
+	processors.ScaleStateNotifier.Register(clusterState)
 	orchestrator := New()
 	orchestrator.Initialize(&context, processors, clusterState, taints.TaintConfig{})
 	expander := NewMockRepotingStrategy(t, config.ExpansionOptionToChoose)

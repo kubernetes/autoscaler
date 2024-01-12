@@ -24,16 +24,13 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
-	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
-	clusterstate_utils "k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupconfig"
+	"k8s.io/autoscaler/cluster-autoscaler/observers/nodegroupchange"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	"k8s.io/client-go/kubernetes/fake"
 	core "k8s.io/client-go/testing"
-	kube_record "k8s.io/client-go/tools/record"
 )
 
 func TestAddNodeToBucket(t *testing.T) {
@@ -85,7 +82,7 @@ func TestAddNodeToBucket(t *testing.T) {
 	for _, test := range testcases {
 		d := NodeDeletionBatcher{
 			ctx:                   &ctx,
-			clusterState:          nil,
+			scaleStateNotifier:    nil,
 			nodeDeletionTracker:   nil,
 			deletionsPerNodeGroup: make(map[string][]*apiv1.Node),
 			drainedNodeDeletions:  make(map[string]bool),
@@ -139,7 +136,6 @@ func TestRemove(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			test := test
 			fakeClient := &fake.Clientset{}
-			fakeLogRecorder, _ := clusterstate_utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false, "my-cool-configmap")
 
 			failedNodeDeletion := make(map[string]bool)
 			deletedNodes := make(chan string, 10)
@@ -163,10 +159,11 @@ func TestRemove(t *testing.T) {
 				})
 
 			ctx, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{}, fakeClient, nil, provider, nil, nil)
-			clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}))
 			if err != nil {
 				t.Fatalf("Couldn't set up autoscaling context: %v", err)
 			}
+
+			scaleStateNotifier := nodegroupchange.NewNodeGroupChangeObserversList()
 
 			ng := "ng"
 			provider.AddNodeGroup(ng, 1, 10, test.numNodes)
@@ -174,9 +171,9 @@ func TestRemove(t *testing.T) {
 
 			d := NodeDeletionBatcher{
 				ctx:                   &ctx,
-				clusterState:          clusterStateRegistry,
 				nodeDeletionTracker:   deletiontracker.NewNodeDeletionTracker(1 * time.Minute),
 				deletionsPerNodeGroup: make(map[string][]*apiv1.Node),
+				scaleStateNotifier:    scaleStateNotifier,
 				drainedNodeDeletions:  make(map[string]bool),
 			}
 			nodes := generateNodes(0, test.numNodes, ng)
