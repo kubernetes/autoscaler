@@ -30,7 +30,7 @@ func TestFetchPodTemplates(t *testing.T) {
 	mockProvisioningRequests := []*provreqwrapper.ProvisioningRequest{pr1, pr2}
 
 	ctx := context.Background()
-	c, _ := NewFakeProvisioningRequestClient(ctx, t, mockProvisioningRequests...)
+	c := NewFakeProvisioningRequestClient(ctx, t, mockProvisioningRequests...)
 	got, err := c.FetchPodTemplates(pr1.V1Beta1())
 	if err != nil {
 		t.Errorf("provisioningRequestClient.ProvisioningRequests() error: %v", err)

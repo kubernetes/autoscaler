@@ -178,6 +178,13 @@ const (
 	// CapacityAvailable indicates that all of the requested resources were
 	// already available in the cluster.
 	CapacityAvailable string = "CapacityAvailable"
+	// Expired indicates that the ProvisioningRequest had CapacityAvailable condition before
+	// and the reservation time is expired or the ProvisioningRequest had Pending condition before
+	// and expiration time is expired.
+	Expired string = "Expired"
+	// Pending indicates that no capacity for ProvisioningRequest was found in the cluster
+	// and ClusterAutoscaler will try to find capacity later.
+	Pending string = "Pending"
 	// Provisioned indicates that all of the requested resources were created
 	// and are available in the cluster. CA will set this condition when the
 	// VM creation finishes successfully.
