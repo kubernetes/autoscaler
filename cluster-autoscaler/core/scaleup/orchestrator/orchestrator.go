@@ -88,7 +88,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 	nodeInfos map[string]*schedulerframework.NodeInfo,
 ) (*status.ScaleUpStatus, errors.AutoscalerError) {
 	if !o.initialized {
-		return scaleUpError(&status.ScaleUpStatus{}, errors.NewAutoscalerError(errors.InternalError, "ScaleUpOrchestrator is not initialized"))
+		return status.UpdateScaleUpError(&status.ScaleUpStatus{}, errors.NewAutoscalerError(errors.InternalError, "ScaleUpOrchestrator is not initialized"))
 	}
 
 	loggingQuota := klogx.PodsLoggingQuota()
@@ -103,7 +103,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 
 	upcomingNodes, aErr := o.UpcomingNodes(nodeInfos)
 	if aErr != nil {
-		return scaleUpError(&status.ScaleUpStatus{}, aErr.AddPrefix("could not get upcoming nodes: "))
+		return status.UpdateScaleUpError(&status.ScaleUpStatus{}, aErr.AddPrefix("could not get upcoming nodes: "))
 	}
 	klog.V(4).Infof("Upcoming %d nodes", len(upcomingNodes))
 
@@ -112,7 +112,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 		var err error
 		nodeGroups, nodeInfos, err = o.processors.NodeGroupListProcessor.Process(o.autoscalingContext, nodeGroups, nodeInfos, unschedulablePods)
 		if err != nil {
-			return scaleUpError(&status.ScaleUpStatus{}, errors.ToAutoscalerError(errors.InternalError, err))
+			return status.UpdateScaleUpError(&status.ScaleUpStatus{}, errors.ToAutoscalerError(errors.InternalError, err))
 		}
 	}
 
@@ -121,7 +121,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 
 	resourcesLeft, aErr := o.resourceManager.ResourcesLeft(o.autoscalingContext, nodeInfos, nodes)
 	if aErr != nil {
-		return scaleUpError(&status.ScaleUpStatus{}, aErr.AddPrefix("could not compute total resources: "))
+		return status.UpdateScaleUpError(&status.ScaleUpStatus{}, aErr.AddPrefix("could not compute total resources: "))
 	}
 
 	now := time.Now()
@@ -186,7 +186,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 
 	newNodes, aErr := o.GetCappedNewNodeCount(bestOption.NodeCount, len(nodes)+len(upcomingNodes))
 	if aErr != nil {
-		return scaleUpError(&status.ScaleUpStatus{PodsTriggeredScaleUp: bestOption.Pods}, aErr)
+		return status.UpdateScaleUpError(&status.ScaleUpStatus{PodsTriggeredScaleUp: bestOption.Pods}, aErr)
 	}
 
 	createNodeGroupResults := make([]nodegroups.CreateNodeGroupResult, 0)
@@ -194,7 +194,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 		oldId := bestOption.NodeGroup.Id()
 		createNodeGroupResult, aErr := o.processors.NodeGroupManager.CreateNodeGroup(o.autoscalingContext, bestOption.NodeGroup)
 		if aErr != nil {
-			return scaleUpError(
+			return status.UpdateScaleUpError(
 				&status.ScaleUpStatus{FailedCreationNodeGroups: []cloudprovider.NodeGroup{bestOption.NodeGroup}, PodsTriggeredScaleUp: bestOption.Pods},
 				aErr)
 		}
@@ -253,7 +253,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 	if !found {
 		// This should never happen, as we already should have retrieved nodeInfo for any considered nodegroup.
 		klog.Errorf("No node info for: %s", bestOption.NodeGroup.Id())
-		return scaleUpError(
+		return status.UpdateScaleUpError(
 			&status.ScaleUpStatus{CreateNodeGroupResults: createNodeGroupResults, PodsTriggeredScaleUp: bestOption.Pods},
 			errors.NewAutoscalerError(
 				errors.CloudProviderError,
@@ -263,7 +263,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 	// Apply upper limits for CPU and memory.
 	newNodes, aErr = o.resourceManager.ApplyLimits(o.autoscalingContext, newNodes, resourcesLeft, nodeInfo, bestOption.NodeGroup)
 	if aErr != nil {
-		return scaleUpError(
+		return status.UpdateScaleUpError(
 			&status.ScaleUpStatus{CreateNodeGroupResults: createNodeGroupResults, PodsTriggeredScaleUp: bestOption.Pods},
 			aErr)
 	}
@@ -283,7 +283,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 
 	scaleUpInfos, aErr := o.processors.NodeGroupSetProcessor.BalanceScaleUpBetweenGroups(o.autoscalingContext, targetNodeGroups, newNodes)
 	if aErr != nil {
-		return scaleUpError(
+		return status.UpdateScaleUpError(
 			&status.ScaleUpStatus{CreateNodeGroupResults: createNodeGroupResults, PodsTriggeredScaleUp: bestOption.Pods},
 			aErr)
 	}
@@ -291,7 +291,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 	klog.V(1).Infof("Final scale-up plan: %v", scaleUpInfos)
 	aErr, failedNodeGroups := o.scaleUpExecutor.ExecuteScaleUps(scaleUpInfos, nodeInfos, now)
 	if aErr != nil {
-		return scaleUpError(
+		return status.UpdateScaleUpError(
 			&status.ScaleUpStatus{
 				CreateNodeGroupResults: createNodeGroupResults,
 				FailedResizeNodeGroups: failedNodeGroups,
@@ -322,7 +322,7 @@ func (o *ScaleUpOrchestrator) ScaleUpToNodeGroupMinSize(
 	nodeInfos map[string]*schedulerframework.NodeInfo,
 ) (*status.ScaleUpStatus, errors.AutoscalerError) {
 	if !o.initialized {
-		return scaleUpError(&status.ScaleUpStatus{}, errors.NewAutoscalerError(errors.InternalError, "ScaleUpOrchestrator is not initialized"))
+		return status.UpdateScaleUpError(&status.ScaleUpStatus{}, errors.NewAutoscalerError(errors.InternalError, "ScaleUpOrchestrator is not initialized"))
 	}
 
 	now := time.Now()
@@ -331,7 +331,7 @@ func (o *ScaleUpOrchestrator) ScaleUpToNodeGroupMinSize(
 
 	resourcesLeft, aErr := o.resourceManager.ResourcesLeft(o.autoscalingContext, nodeInfos, nodes)
 	if aErr != nil {
-		return scaleUpError(&status.ScaleUpStatus{}, aErr.AddPrefix("could not compute total resources: "))
+		return status.UpdateScaleUpError(&status.ScaleUpStatus{}, aErr.AddPrefix("could not compute total resources: "))
 	}
 
 	for _, ng := range nodeGroups {
@@ -397,7 +397,7 @@ func (o *ScaleUpOrchestrator) ScaleUpToNodeGroupMinSize(
 	klog.V(1).Infof("ScaleUpToNodeGroupMinSize: final scale-up plan: %v", scaleUpInfos)
 	aErr, failedNodeGroups := o.scaleUpExecutor.ExecuteScaleUps(scaleUpInfos, nodeInfos, now)
 	if aErr != nil {
-		return scaleUpError(
+		return status.UpdateScaleUpError(
 			&status.ScaleUpStatus{
 				FailedResizeNodeGroups: failedNodeGroups,
 			},
@@ -716,10 +716,4 @@ func GetPodsAwaitingEvaluation(egs []*equivalence.PodGroup, bestOption string) [
 		}
 	}
 	return awaitsEvaluation
-}
-
-func scaleUpError(s *status.ScaleUpStatus, err errors.AutoscalerError) (*status.ScaleUpStatus, errors.AutoscalerError) {
-	s.ScaleUpError = &err
-	s.Result = status.ScaleUpError
-	return s, err
 }

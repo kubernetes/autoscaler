@@ -29,6 +29,7 @@ import (
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/actuation"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup/orchestrator"
 	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	kubelet_config "k8s.io/kubernetes/pkg/kubelet/apis/config"
@@ -465,6 +466,15 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 	deleteOptions := options.NewNodeDeleteOptions(autoscalingOptions)
 	drainabilityRules := rules.Default(deleteOptions)
 
+	scaleUpOrchestrator := orchestrator.New()
+	if *provisioningRequestsEnabled {
+		kubeClient := kube_util.GetKubeConfig(autoscalingOptions.KubeClientOpts)
+		scaleUpOrchestrator, err = orchestrator.NewWrapperOrchestrator(kubeClient)
+		if err != nil{
+			return nil, err
+		}
+	}
+
 	opts := core.AutoscalerOptions{
 		AutoscalingOptions:   autoscalingOptions,
 		ClusterSnapshot:      clustersnapshot.NewDeltaClusterSnapshot(),
@@ -474,6 +484,7 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 		PredicateChecker:     predicateChecker,
 		DeleteOptions:        deleteOptions,
 		DrainabilityRules:    drainabilityRules,
+		ScaleUpOrchestrator:  scaleUpOrchestrator,
 	}
 
 	opts.Processors = ca_processors.DefaultProcessors(autoscalingOptions)

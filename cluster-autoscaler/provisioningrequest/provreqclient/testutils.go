@@ -35,7 +35,7 @@ import (
 )
 
 // NewFakeProvisioningRequestClient mock ProvisioningRequestClient for tests.
-func NewFakeProvisioningRequestClient(ctx context.Context, t *testing.T, prs ...*provreqwrapper.ProvisioningRequest) (*ProvisioningRequestClientV1beta1, *FakeProvisioningRequestForceClient) {
+func NewFakeProvisioningRequestClient(ctx context.Context, t *testing.T, prs ...*provreqwrapper.ProvisioningRequest) *ProvisioningRequestClientV1beta1 {
 	t.Helper()
 	provReqClient := fake.NewSimpleClientset()
 	podTemplClient := fake_kubernetes.NewSimpleClientset()
@@ -64,21 +64,7 @@ func NewFakeProvisioningRequestClient(ctx context.Context, t *testing.T, prs ...
 			client:         provReqClient,
 			provReqLister:  provReqLister,
 			podTemplLister: podTemplLister,
-		}, &FakeProvisioningRequestForceClient{
-			client: provReqClient,
 		}
-}
-
-// FakeProvisioningRequestForceClient that allows to skip cache.
-type FakeProvisioningRequestForceClient struct {
-	client *fake.Clientset
-}
-
-// ProvisioningRequest gets a specific ProvisioningRequest CR, skipping cache.
-func (c *FakeProvisioningRequestForceClient) ProvisioningRequest(namespace, name string) (*v1beta1.ProvisioningRequest, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), provisioningRequestClientCallTimeout)
-	defer cancel()
-	return c.client.AutoscalingV1beta1().ProvisioningRequests(namespace).Get(ctx, name, metav1.GetOptions{})
 }
 
 // newFakePodTemplatesLister creates a fake lister for the Pod Templates in the cluster.
