@@ -74,7 +74,7 @@ func (o *ScaleUpOrchestrator) Initialize(
 	o.clusterStateRegistry = clusterStateRegistry
 	o.taintConfig = taintConfig
 	o.resourceManager = resource.NewManager(processors.CustomResourcesProcessor)
-	o.scaleUpExecutor = newScaleUpExecutor(autoscalingContext, clusterStateRegistry)
+	o.scaleUpExecutor = newScaleUpExecutor(autoscalingContext, processors.ScaleStateNotifier)
 	o.initialized = true
 }
 

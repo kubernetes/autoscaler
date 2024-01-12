@@ -40,7 +40,8 @@ const (
 	DefaultMaxNodeProvisionTimeKey = "maxnodeprovisiontime"
 	// DefaultIgnoreDaemonSetsUtilizationKey identifies IgnoreDaemonSetsUtilization autoscaling option
 	DefaultIgnoreDaemonSetsUtilizationKey = "ignoredaemonsetsutilization"
-	// DefaultScaleDownUnneededTime identifies ScaleDownUnneededTime autoscaling option
+
+	// DefaultScaleDownUnneededTime is the default time duration for which CA waits before deleting an unneeded node
 	DefaultScaleDownUnneededTime = 10 * time.Minute
 	// DefaultScaleDownUnreadyTime identifies ScaleDownUnreadyTime autoscaling option
 	DefaultScaleDownUnreadyTime = 20 * time.Minute
@@ -48,4 +49,8 @@ const (
 	DefaultScaleDownUtilizationThreshold = 0.5
 	// DefaultScaleDownGpuUtilizationThreshold identifies ScaleDownGpuUtilizationThreshold autoscaling option
 	DefaultScaleDownGpuUtilizationThreshold = 0.5
+	// DefaultScaleDownDelayAfterFailure is the default value for ScaleDownDelayAfterFailure autoscaling option
+	DefaultScaleDownDelayAfterFailure = 3 * time.Minute
+	// DefaultScanInterval is the default scan interval for CA
+	DefaultScanInterval = 10 * time.Second
 )
