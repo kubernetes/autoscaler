@@ -116,6 +116,9 @@ type ScaleUpFailure struct {
 	Time      time.Time
 }
 
+// BackoffReasonStatus contains information about backoff status and reason
+type BackoffReasonStatus map[string]int
+
 // ClusterStateRegistry is a structure to keep track the current state of the cluster.
 type ClusterStateRegistry struct {
 	sync.Mutex
@@ -132,6 +135,7 @@ type ClusterStateRegistry struct {
 	unregisteredNodes                  map[string]UnregisteredNode
 	deletedNodes                       map[string]struct{}
 	candidatesForScaleDown             map[string][]string
+	backoffReasonStatus                map[string]BackoffReasonStatus
 	backoff                            backoff.Backoff
 	lastStatus                         *api.ClusterAutoscalerStatus
 	lastScaleDownUpdateTime            time.Time
@@ -168,6 +172,7 @@ func NewClusterStateRegistry(cloudProvider cloudprovider.CloudProvider, config C
 		unregisteredNodes:               make(map[string]UnregisteredNode),
 		deletedNodes:                    make(map[string]struct{}),
 		candidatesForScaleDown:          make(map[string][]string),
+		backoffReasonStatus:             make(map[string]BackoffReasonStatus),
 		backoff:                         backoff,
 		lastStatus:                      utils.EmptyClusterAutoscalerStatus(),
 		logRecorder:                     logRecorder,
@@ -470,8 +475,28 @@ func (csr *ClusterStateRegistry) UpdateSafeScaleUpMetricsForNodeGroup(now time.T
 		}
 		metrics.UpdateNodeGroupHealthStatus(nodeGroup.Id(), csr.IsNodeGroupHealthy(nodeGroup.Id()))
 		backoffStatus := csr.backoff.BackoffStatus(nodeGroup, csr.nodeInfosForGroups[nodeGroup.Id()], now)
-		metrics.UpdateNodeGroupBackOffStatus(nodeGroup.Id(), backoffStatus.IsBackedOff, backoffStatus.ErrorInfo.ErrorClass)
+		csr.updateNodeGroupBackoffStatusMetrics(nodeGroup.Id(), backoffStatus)
 	}
+}
+
+// updateNodeGroupBackoffStatusMetrics returns information about backoff situation and reason of the node group
+func (csr *ClusterStateRegistry) updateNodeGroupBackoffStatusMetrics(nodeGroup string, backoffStatus backoff.Status) {
+	backoffReasonStatus := make(BackoffReasonStatus)
+	if oldStatus, ok := csr.backoffReasonStatus[nodeGroup]; ok {
+		for reason := range oldStatus {
+			backoffReasonStatus[reason] = 0
+		}
+	}
+	if backoffStatus.IsBackedOff {
+		errorCode := backoffStatus.ErrorInfo.ErrorCode
+		if errorCode == "" {
+			// prevent error code from being empty.
+			errorCode = cloudprovider.UnknownErrorCode
+		}
+		backoffReasonStatus[errorCode] = 1
+	}
+	csr.backoffReasonStatus[nodeGroup] = backoffReasonStatus
+	metrics.UpdateNodeGroupBackOffStatus(nodeGroup, backoffReasonStatus)
 }
 
 // NodeGroupScaleUpSafety returns information about node group safety to be scaled up now.
