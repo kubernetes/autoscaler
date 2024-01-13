@@ -571,12 +571,16 @@ func UpdateNodeGroupHealthStatus(nodeGroup string, healthy bool) {
 }
 
 // UpdateNodeGroupBackOffStatus records if node group is backoff for not autoscaling
-func UpdateNodeGroupBackOffStatus(nodeGroup string, backoffReasonStatus map[string]int) {
+func UpdateNodeGroupBackOffStatus(nodeGroup string, backoffReasonStatus map[string]bool) {
 	if len(backoffReasonStatus) == 0 {
 		nodeGroupBackOffStatus.WithLabelValues(nodeGroup, "").Set(0)
 	} else {
-		for reason, status := range backoffReasonStatus {
-			nodeGroupBackOffStatus.WithLabelValues(nodeGroup, reason).Set(float64(status))
+		for reason, backoff := range backoffReasonStatus {
+			if backoff {
+				nodeGroupBackOffStatus.WithLabelValues(nodeGroup, reason).Set(1)
+			} else {
+				nodeGroupBackOffStatus.WithLabelValues(nodeGroup, reason).Set(0)
+			}
 		}
 	}
 }
