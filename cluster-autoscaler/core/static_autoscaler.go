@@ -406,7 +406,6 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 		if err != nil {
 			klog.Errorf("AutoscalingStatusProcessor error: %v.", err)
 		}
-		a.clusterStateRegistry.UpdateSafeScaleUpMetricsForNodeGroup(currentTime)
 	}()
 
 	// Check if there are any nodes that failed to register in Kubernetes
