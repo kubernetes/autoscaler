@@ -267,11 +267,6 @@ const (
 	InstanceDeleting InstanceState = 3
 )
 
-const (
-	// UnknownErrorCode means that the cloud provider has not provided an error code.
-	UnknownErrorCode = "unknown"
-)
-
 // InstanceErrorInfo provides information about error condition on instance
 type InstanceErrorInfo struct {
 	// ErrorClass tells what is class of error on instance
