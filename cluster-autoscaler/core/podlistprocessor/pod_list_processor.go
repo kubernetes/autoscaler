@@ -24,37 +24,40 @@ import (
 )
 
 type defaultPodListProcessor struct {
-	processors    []pods.PodListProcessor
-	scheduledPods []*apiv1.Pod
-	allNodes      []*apiv1.Node
+	processors map[string]pods.PodListProcessor
 }
 
 // NewDefaultPodListProcessor returns a default implementation of the pod list
 // processor, which wraps and sequentially runs other sub-processors.
-func NewDefaultPodListProcessor(predicateChecker predicatechecker.PredicateChecker) *defaultPodListProcessor {
+func NewDefaultPodListProcessor(predicateChecker predicatechecker.PredicateChecker) (*defaultPodListProcessor, error) {
 
-	processors := []pods.PodListProcessor{
-		NewCurrentlyDrainedNodesPodListProcessor(),
-		NewFilterOutSchedulablePodListProcessor(predicateChecker),
-		NewFilterOutDaemonSetPodListProcessor(),
+	f, err := NewFilterOutNoPreemptionPodsListProcessor()
+	if err != nil {
+		return nil, err
+	}
+
+	processors := map[string]pods.PodListProcessor{
+		CurrentlyDrainedNodes: NewCurrentlyDrainedNodesPodListProcessor(),
+		FilterOutSchedulable:  NewFilterOutSchedulablePodListProcessor(predicateChecker),
+		FilterOutDaemonSet:    NewFilterOutDaemonSetPodListProcessor(),
+		FilterOutNoPreemption: f,
 	}
 
 	return &defaultPodListProcessor{
 		processors: processors,
-	}
+	}, nil
 }
 
 // Update updates the state of defaultPodListProcessor with extra info which can be passed
 // down to the pod list processors (if they need it)
 func (p *defaultPodListProcessor) Update(scheduledPods []*apiv1.Pod, allNodes []*apiv1.Node) error {
-	p.allNodes = allNodes
-	p.scheduledPods = scheduledPods
-
-	f, err := NewFilterOutNoPreemptionPodsListProcessor(p.scheduledPods, p.allNodes)
-	if err != nil {
-		return err
+	// as of now, only FilterOutNoPreemptionPodsListProcessor needs scheduledPods and allNodes
+	if _, ok := p.processors[FilterOutNoPreemption]; ok {
+		if err := p.processors[FilterOutNoPreemption].Update(scheduledPods, allNodes); err != nil {
+			return err
+		}
 	}
-	p.processors = append(p.processors, f)
+
 	return nil
 }
 

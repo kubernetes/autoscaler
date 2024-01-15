@@ -40,7 +40,7 @@ func NewDefaultPodListProcessor() PodListProcessor {
 }
 
 // Update updates internal state of the processor
-func (p *NoOpPodListProcessor) Update(scheduledPods []*apiv1.Pod, allNodes []*apiv1.Node) error {
+func (p *NoOpPodListProcessor) Update(_ []*apiv1.Pod, _ []*apiv1.Node) error {
 	return nil
 }
 

@@ -26,6 +26,8 @@ import (
 type currentlyDrainedNodesPodListProcessor struct {
 }
 
+const CurrentlyDrainedNodes = "CurrentlyDrainedNodes"
+
 // NewCurrentlyDrainedNodesPodListProcessor returns a new processor adding pods
 // from currently drained nodes to the unschedulable pods.
 func NewCurrentlyDrainedNodesPodListProcessor() *currentlyDrainedNodesPodListProcessor {
@@ -41,7 +43,7 @@ func (p *currentlyDrainedNodesPodListProcessor) Process(context *context.Autosca
 func (p *currentlyDrainedNodesPodListProcessor) CleanUp() {
 }
 
-func (p *currentlyDrainedNodesPodListProcessor) Update(scheduledPods []*apiv1.Pod, allNodes []*apiv1.Node) error {
+func (p *currentlyDrainedNodesPodListProcessor) Update(_ []*apiv1.Pod, _ []*apiv1.Node) error {
 	return nil
 }
 

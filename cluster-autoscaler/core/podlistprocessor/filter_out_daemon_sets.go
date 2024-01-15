@@ -23,6 +23,8 @@ import (
 	klog "k8s.io/klog/v2"
 )
 
+const FilterOutDaemonSet = "FilterOutDaemonSet"
+
 type filterOutDaemonSetPodListProcessor struct {
 }
 

@@ -31,6 +31,8 @@ import (
 	klog "k8s.io/klog/v2"
 )
 
+const FilterOutSchedulable = "FilterOutSchedulable"
+
 type filterOutSchedulablePodListProcessor struct {
 	schedulingSimulator *scheduling.HintingSimulator
 }

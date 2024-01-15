@@ -16,7 +16,7 @@ limitations under the License.
 
 package clustersnapshot
 
-// NewDefaultClusterSnapshot creates instances of default cluster snapshot.
+// NewDefaultClusterSnapshot creates an instance of default cluster snapshot.
 func NewDefaultClusterSnapshot() ClusterSnapshot {
 	return NewDeltaClusterSnapshot()
 }

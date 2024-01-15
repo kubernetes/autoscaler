@@ -23,22 +23,26 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 )
 
+const FilterOutNoPreemption = "FilterOutNoPreemption"
+
 type filterOutNoPreemptionPodsListProcessor struct {
 	clusterSnapshot clustersnapshot.ClusterSnapshot
 }
 
-func NewFilterOutNoPreemptionPodsListProcessor(scheduledPods []*apiv1.Pod, allNodes []*apiv1.Node) (*filterOutNoPreemptionPodsListProcessor, error) {
+func NewFilterOutNoPreemptionPodsListProcessor() (*filterOutNoPreemptionPodsListProcessor, error) {
 	f := filterOutNoPreemptionPodsListProcessor{
 		clusterSnapshot: clustersnapshot.NewDefaultClusterSnapshot(),
 	}
 
-	if err := core_utils.InitializeClusterSnapshot(f.clusterSnapshot, allNodes, scheduledPods); err != nil {
-		return nil, err
-	}
 	return &f, nil
 }
 
-func (p *filterOutNoPreemptionPodsListProcessor) Update(_ []*apiv1.Pod, _ []*apiv1.Node) error {
+func (p *filterOutNoPreemptionPodsListProcessor) Update(scheduledPods []*apiv1.Pod, allNodes []*apiv1.Node) error {
+
+	if err := core_utils.InitializeClusterSnapshot(p.clusterSnapshot, allNodes, scheduledPods); err != nil {
+		return err
+	}
+
 	return nil
 }
 
