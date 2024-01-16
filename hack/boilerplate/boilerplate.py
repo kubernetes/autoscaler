@@ -163,9 +163,7 @@ skipped_dirs = ['Godeps', 'third_party', '_gopath', '_output', '.git', 'cluster/
                 "cluster-autoscaler/cloudprovider/mcm",
                 "cluster-autoscaler/integration",
                 "cluster-autoscaler/hack",
-                "cluster-autoscaler/cloudprovider/builder/builder_all.go",
-                ".ci/read-vpa-version.sh",
-                ".ci/write-vpa-version.sh"
+                "cluster-autoscaler/cloudprovider/builder/builder_all.go"
                 ]
 
 # list all the files contain 'DO NOT EDIT', but are not generated
