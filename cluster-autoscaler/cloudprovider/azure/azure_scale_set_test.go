@@ -535,20 +535,49 @@ func TestDeleteNodeUnregistered(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	orchestrationModes := [2]compute.OrchestrationMode{compute.Uniform, compute.Flexible}
-
 	vmssName := "test-asg"
 	var vmssCapacity int64 = 2
-	expectedVMSSVMs := newTestVMSSVMList(2)
-	expectedVMs := newTestVMList(2)
 
-	for _, orchMode := range orchestrationModes {
+	cases := []struct {
+		name              string
+		orchestrationMode compute.OrchestrationMode
+		enableForceDelete bool
+	}{
+		{
+			name:              "uniform, force delete enabled",
+			orchestrationMode: compute.Uniform,
+			enableForceDelete: true,
+		},
+		{
+			name:              "uniform, force delete disabled",
+			orchestrationMode: compute.Uniform,
+			enableForceDelete: false,
+		},
+		{
+			name:              "flexible, force delete enabled",
+			orchestrationMode: compute.Flexible,
+			enableForceDelete: true,
+		},
+		{
+			name:              "flexible, force delete disabled",
+			orchestrationMode: compute.Flexible,
+			enableForceDelete: false,
+		},
+	}
+
+	for _, tc := range cases {
+		orchMode := tc.orchestrationMode
+		enableForceDelete := tc.enableForceDelete
+		expectedVMSSVMs := newTestVMSSVMList(2)
+		expectedVMs := newTestVMList(2)
+
 		manager := newTestAzureManager(t)
+		manager.config.EnableForceDelete = enableForceDelete
 		expectedScaleSets := newTestVMSSList(vmssCapacity, vmssName, "eastus", orchMode)
 
 		mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
 		mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil).Times(2)
-		mockVMSSClient.EXPECT().DeleteInstancesAsync(gomock.Any(), manager.config.ResourceGroup, gomock.Any(), gomock.Any(), false).Return(nil, nil)
+		mockVMSSClient.EXPECT().DeleteInstancesAsync(gomock.Any(), manager.config.ResourceGroup, gomock.Any(), gomock.Any(), enableForceDelete).Return(nil, nil)
 		mockVMSSClient.EXPECT().WaitForDeleteInstancesResult(gomock.Any(), gomock.Any(), manager.config.ResourceGroup).Return(&http.Response{StatusCode: http.StatusOK}, nil).AnyTimes()
 		manager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
 
