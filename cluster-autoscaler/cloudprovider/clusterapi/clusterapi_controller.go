@@ -49,21 +49,25 @@ const (
 	// CAPIGroupEnvVar contains the environment variable name which allows overriding defaultCAPIGroup.
 	CAPIGroupEnvVar = "CAPI_GROUP"
 	// CAPIVersionEnvVar contains the environment variable name which allows overriding the Cluster API group version.
-	CAPIVersionEnvVar             = "CAPI_VERSION"
-	resourceNameMachine           = "machines"
-	resourceNameMachineSet        = "machinesets"
-	resourceNameMachineDeployment = "machinedeployments"
-	resourceNameMachinePool       = "machinepools"
-	failedMachinePrefix           = "failed-machine-"
-	pendingMachinePrefix          = "pending-machine-"
-	machineTemplateKind           = "MachineTemplate"
-	machineDeploymentKind         = "MachineDeployment"
-	machineSetKind                = "MachineSet"
-	machinePoolKind               = "MachinePool"
-	machineKind                   = "Machine"
-	autoDiscovererTypeClusterAPI  = "clusterapi"
-	autoDiscovererClusterNameKey  = "clusterName"
-	autoDiscovererNamespaceKey    = "namespace"
+	CAPIVersionEnvVar                   = "CAPI_VERSION"
+	resourceNameMachine                 = "machines"
+	resourceNameMachineSet              = "machinesets"
+	resourceNameMachineDeployment       = "machinedeployments"
+	resourceNameMachinePool             = "machinepools"
+	failedMachinePrefix                 = "failed-machine-"
+	pendingMachinePrefix                = "pending-machine-"
+	machineTemplateKind                 = "MachineTemplate"
+	machineDeploymentKind               = "MachineDeployment"
+	machineSetKind                      = "MachineSet"
+	machinePoolKind                     = "MachinePool"
+	machineKind                         = "Machine"
+	autoDiscovererTypeClusterAPI        = "clusterapi"
+	autoDiscovererClusterNameKey        = "clusterName"
+	autoDiscovererNamespaceKey          = "namespace"
+	azureMachinePoolMachineApiGroup     = "infrastructure.cluster.x-k8s.io"
+	azureMachinePoolMachineApiVersion   = "v1beta1"
+	azureMachinePoolMachineKind         = "AzureMachinePoolMachine"
+	resourceNameAzureMachinePoolMachine = "azuremachinepoolmachines"
 )
 
 // machineController watches for Nodes, Machines, MachinePools, MachineSets, and
@@ -71,23 +75,26 @@ const (
 // cluster. Additionally, it adds indices to the node informers to
 // satisfy lookup by node.Spec.ProviderID.
 type machineController struct {
-	workloadInformerFactory     kubeinformers.SharedInformerFactory
-	managementInformerFactory   dynamicinformer.DynamicSharedInformerFactory
-	machineDeploymentInformer   informers.GenericInformer
-	machineInformer             informers.GenericInformer
-	machineSetInformer          informers.GenericInformer
-	machinePoolInformer         informers.GenericInformer
-	nodeInformer                cache.SharedIndexInformer
-	managementClient            dynamic.Interface
-	managementScaleClient       scale.ScalesGetter
-	machineSetResource          schema.GroupVersionResource
-	machineResource             schema.GroupVersionResource
-	machinePoolResource         schema.GroupVersionResource
-	machinePoolsAvailable       bool
-	machineDeploymentResource   schema.GroupVersionResource
-	machineDeploymentsAvailable bool
-	accessLock                  sync.Mutex
-	autoDiscoverySpecs          []*clusterAPIAutoDiscoveryConfig
+	workloadInformerFactory          kubeinformers.SharedInformerFactory
+	managementInformerFactory        dynamicinformer.DynamicSharedInformerFactory
+	machineDeploymentInformer        informers.GenericInformer
+	machineInformer                  informers.GenericInformer
+	machineSetInformer               informers.GenericInformer
+	machinePoolInformer              informers.GenericInformer
+	azureMachinePoolMachineInformer  informers.GenericInformer
+	nodeInformer                     cache.SharedIndexInformer
+	managementClient                 dynamic.Interface
+	managementScaleClient            scale.ScalesGetter
+	machineSetResource               schema.GroupVersionResource
+	machineResource                  schema.GroupVersionResource
+	machinePoolResource              schema.GroupVersionResource
+	machinePoolsAvailable            bool
+	machineDeploymentResource        schema.GroupVersionResource
+	machineDeploymentsAvailable      bool
+	azureMachinePoolMachineResource  schema.GroupVersionResource
+	azureMachinePoolMachineAvailable bool
+	accessLock                       sync.Mutex
+	autoDiscoverySpecs               []*clusterAPIAutoDiscoveryConfig
 	// stopChannel is used for running the shared informers, and for starting
 	// informers associated with infrastructure machine templates that are
 	// discovered during operation.
@@ -296,7 +303,17 @@ func (c *machineController) findMachinePoolByProviderID(providerID normalizedPro
 // findMachineByProviderID finds machine matching providerID. A
 // DeepCopy() of the object is returned on success.
 func (c *machineController) findMachineByProviderID(providerID normalizedProviderID) (*unstructured.Unstructured, error) {
-	objs, err := c.machineInformer.Informer().GetIndexer().ByIndex(machineProviderIDIndex, string(providerID))
+	var objs []interface{}
+	var err error
+
+	// First check for an AzureMachinePoolMachine if the resource type is available.
+	if c.azureMachinePoolMachineAvailable {
+		objs, err = c.azureMachinePoolMachineInformer.Informer().GetIndexer().ByIndex(machineProviderIDIndex, string(providerID))
+	}
+	// If no AzureMachinePoolMachine was found, check for a Machine.
+	if len(objs) == 0 {
+		objs, err = c.machineInformer.Informer().GetIndexer().ByIndex(machineProviderIDIndex, string(providerID))
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -510,24 +527,54 @@ func newMachineController(
 		return nil, fmt.Errorf("cannot add node indexer: %v", err)
 	}
 
+	var azureMachinePoolInformer informers.GenericInformer
+	gvrAzureMachinePoolMachine := schema.GroupVersionResource{
+		Group:    azureMachinePoolMachineApiGroup,
+		Version:  azureMachinePoolMachineApiVersion,
+		Resource: resourceNameAzureMachinePoolMachine,
+	}
+
+	azureMachinePoolMachineAvailable, err := groupVersionHasResource(managementDiscoveryClient,
+		fmt.Sprintf("%s/%s", azureMachinePoolMachineApiGroup, azureMachinePoolMachineApiVersion), resourceNameAzureMachinePoolMachine)
+	if err != nil {
+		return nil, fmt.Errorf("failed to validate if resource %q is available for group %q: %v",
+			resourceNameAzureMachinePoolMachine, fmt.Sprintf("%s/%s", azureMachinePoolMachineApiGroup, azureMachinePoolMachineApiVersion), err)
+	}
+
+	if azureMachinePoolMachineAvailable {
+		azureMachinePoolInformer = managementInformerFactory.ForResource(gvrAzureMachinePoolMachine)
+		if _, err := azureMachinePoolInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{}); err != nil {
+			return nil, fmt.Errorf("failed to add event handler for resource %q: %v", resourceNameAzureMachinePoolMachine, err)
+		}
+
+		if err := azureMachinePoolInformer.Informer().GetIndexer().AddIndexers(cache.Indexers{
+			machineProviderIDIndex: indexMachineByProviderID,
+		}); err != nil {
+			return nil, fmt.Errorf("cannot add azure machine pool machine to machine indexer: %v", err)
+		}
+	}
+
 	return &machineController{
-		autoDiscoverySpecs:          autoDiscoverySpecs,
-		workloadInformerFactory:     workloadInformerFactory,
-		managementInformerFactory:   managementInformerFactory,
-		machineDeploymentInformer:   machineDeploymentInformer,
-		machineInformer:             machineInformer,
-		machineSetInformer:          machineSetInformer,
-		machinePoolInformer:         machinePoolInformer,
-		nodeInformer:                nodeInformer,
-		managementClient:            managementClient,
-		managementScaleClient:       managementScaleClient,
-		machineSetResource:          gvrMachineSet,
-		machinePoolResource:         gvrMachinePool,
-		machinePoolsAvailable:       machinePoolsAvailable,
-		machineResource:             gvrMachine,
-		machineDeploymentResource:   gvrMachineDeployment,
-		machineDeploymentsAvailable: machineDeploymentAvailable,
-		stopChannel:                 stopChannel,
+		autoDiscoverySpecs:               autoDiscoverySpecs,
+		workloadInformerFactory:          workloadInformerFactory,
+		managementInformerFactory:        managementInformerFactory,
+		machineDeploymentInformer:        machineDeploymentInformer,
+		machineInformer:                  machineInformer,
+		machineSetInformer:               machineSetInformer,
+		machinePoolInformer:              machinePoolInformer,
+		azureMachinePoolMachineInformer:  azureMachinePoolInformer,
+		nodeInformer:                     nodeInformer,
+		managementClient:                 managementClient,
+		managementScaleClient:            managementScaleClient,
+		machineSetResource:               gvrMachineSet,
+		machinePoolResource:              gvrMachinePool,
+		machinePoolsAvailable:            machinePoolsAvailable,
+		machineResource:                  gvrMachine,
+		machineDeploymentResource:        gvrMachineDeployment,
+		machineDeploymentsAvailable:      machineDeploymentAvailable,
+		azureMachinePoolMachineResource:  gvrAzureMachinePoolMachine,
+		azureMachinePoolMachineAvailable: azureMachinePoolMachineAvailable,
+		stopChannel:                      stopChannel,
 	}, nil
 }
 

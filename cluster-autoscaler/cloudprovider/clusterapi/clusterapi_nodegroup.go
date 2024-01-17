@@ -17,6 +17,7 @@ limitations under the License.
 package clusterapi
 
 import (
+	ctx "context"
 	"fmt"
 	"math/rand"
 
@@ -157,6 +158,20 @@ func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
 			return err
 		}
 
+		// Workaround for race condition between scaling down MachinePool (1) and AzureMachinePoolMachine deletion (2)
+		// resulting in up to 2 nodes being deleted. Where:
+		// 1. Scaling down MachinePool deletes a random Machine from the MachinePool
+		// 2. Cluster Autoscaler deletes the correct AzureMachinePoolMachine
+		// If the machine is an AzureMachinePoolMachine, we need to delete the corresponding
+		// AzureMachinePoolMachine resource just before we scale down the AzureMachinePool
+		// This should probably be implemented in CAPI/CAPZ controller to respect ClusterAutoScaler taints
+		if machine.GetKind() == azureMachinePoolMachineKind {
+			err := ng.machineController.managementClient.Resource(ng.machineController.azureMachinePoolMachineResource).Namespace(machine.GetNamespace()).Delete(ctx.TODO(), machine.GetName(), metav1.DeleteOptions{})
+			if err != nil {
+				_ = nodeGroup.scalableResource.UnmarkMachineForDeletion(machine)
+				return err
+			}
+		}
 		if err := ng.scalableResource.SetSize(replicas - 1); err != nil {
 			_ = nodeGroup.scalableResource.UnmarkMachineForDeletion(machine)
 			return err
