@@ -425,7 +425,7 @@ func TestUtilNormalizedProviderID(t *testing.T) {
 	}, {
 		description: "azure standard vm",
 		providerID:  "azure:///subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/resourceGroupName/providers/Microsoft.Compute/virtualMachines/control-plane-1cbe5-d4dx7",
-		expectedID:  "control-plane-1cbe5-d4dx7",
+		expectedID:  "azure:///subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/resourceGroupName/providers/Microsoft.Compute/virtualMachines/control-plane-1cbe5-d4dx7",
 	}, {
 		description: "azure vmss",
 		providerID:  "azure:///subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/resourceGroupName/providers/Microsoft.Compute/virtualMachineScaleSets/vmssName/virtualMachines/0",
