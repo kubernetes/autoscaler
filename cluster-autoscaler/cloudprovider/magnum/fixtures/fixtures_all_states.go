@@ -21,8 +21,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
-	"text/template"
 
+	template "github.com/google/safetext/yamltemplate"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 )
 

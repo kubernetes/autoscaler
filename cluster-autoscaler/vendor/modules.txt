@@ -415,6 +415,11 @@ github.com/google/s2a-go/internal/v2/remotesigner
 github.com/google/s2a-go/internal/v2/tlsconfigstore
 github.com/google/s2a-go/retry
 github.com/google/s2a-go/stream
+# github.com/google/safetext v0.0.0-20240104143208-7a7d9b3d812f
+## explicit; go 1.21
+github.com/google/safetext/common
+github.com/google/safetext/lockedcallbacks
+github.com/google/safetext/yamltemplate
 # github.com/google/uuid v1.3.0
 ## explicit
 github.com/google/uuid
@@ -577,6 +582,9 @@ github.com/opencontainers/runtime-spec/specs-go
 github.com/opencontainers/selinux/go-selinux
 github.com/opencontainers/selinux/go-selinux/label
 github.com/opencontainers/selinux/pkg/pwalkdir
+# github.com/pborman/uuid v1.2.1
+## explicit
+github.com/pborman/uuid
 # github.com/pkg/errors v0.9.1
 ## explicit
 github.com/pkg/errors
@@ -2201,7 +2209,6 @@ sigs.k8s.io/cloud-provider-azure/pkg/azureclients
 sigs.k8s.io/cloud-provider-azure/pkg/azureclients/armclient
 sigs.k8s.io/cloud-provider-azure/pkg/azureclients/blobclient
 sigs.k8s.io/cloud-provider-azure/pkg/azureclients/containerserviceclient
-sigs.k8s.io/cloud-provider-azure/pkg/azureclients/containerserviceclient/mockcontainerserviceclient
 sigs.k8s.io/cloud-provider-azure/pkg/azureclients/deploymentclient
 sigs.k8s.io/cloud-provider-azure/pkg/azureclients/diskclient
 sigs.k8s.io/cloud-provider-azure/pkg/azureclients/diskclient/mockdiskclient

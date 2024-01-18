@@ -18,6 +18,7 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/google/go-cmp v0.6.0
 	github.com/google/go-querystring v1.0.0
+	github.com/google/safetext v0.0.0-20240104143208-7a7d9b3d812f
 	github.com/google/uuid v1.3.0
 	github.com/jmespath/go-jmespath v0.4.0
 	github.com/json-iterator/go v1.1.12
@@ -137,6 +138,7 @@ require (
 	github.com/opencontainers/runc v1.1.9 // indirect
 	github.com/opencontainers/runtime-spec v1.0.3-0.20220909204839-494a5a6aca78 // indirect
 	github.com/opencontainers/selinux v1.11.0 // indirect
+	github.com/pborman/uuid v1.2.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_model v0.4.0 // indirect
 	github.com/prometheus/common v0.44.0 // indirect
