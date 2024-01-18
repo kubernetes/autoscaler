@@ -22,6 +22,7 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/apis/autoscaling.x-k8s.io/v1beta1"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
+	"k8s.io/klog/v2"
 )
 
 const (
@@ -29,32 +30,57 @@ const (
 	defaultExpirationTime  = 7 * 24 * time.Hour // 7 days
 )
 
-// HasBookCapacityCondition return if PR has BookCapacity condition
-func HasBookCapacityCondition(pr *provreqwrapper.ProvisioningRequest) bool {
+func shouldCapacityBeBooked(pr *provreqwrapper.ProvisioningRequest) bool {
 	if pr.V1Beta1().Spec.ProvisioningClassName != v1beta1.ProvisioningClassCheckCapacity {
 		return false
 	}
 	if pr.Conditions() == nil || len(pr.Conditions()) == 0 {
 		return false
 	}
-	condition := pr.Conditions()[len(pr.Conditions())-1]
-	if condition.Type == string(v1beta1.CapacityAvailable) && condition.Status == v1.ConditionTrue {
-		return true
+	book := false
+	for _, condition := range pr.Conditions() {
+		if checkConditionType(condition, v1beta1.Expired) || checkConditionType(condition, v1beta1.Failed) {
+			return false
+		}
+		if checkConditionType(condition, v1beta1.CapacityFound) {
+			book = true
+		}
 	}
-	return false
+	return book
 }
 
-func setCondition(pr *provreqwrapper.ProvisioningRequest, conditionType string, reason, message string) {
-	conditions := pr.Conditions()
-	conditions = []v1.Condition{
-		{
-			Type:               conditionType,
-			Status:             v1.ConditionTrue,
-			ObservedGeneration: pr.V1Beta1().GetObjectMeta().GetGeneration(),
-			LastTransitionTime: v1.Now(),
-			Reason:             reason,
-			Message:            message,
-		},
+func setCondition(pr *provreqwrapper.ProvisioningRequest, conditionType string, conditionStatus v1.ConditionStatus, reason, message string) {
+	var newConditions []v1.Condition
+	newCondition := v1.Condition{
+		Type:               conditionType,
+		Status:             conditionStatus,
+		ObservedGeneration: pr.V1Beta1().GetObjectMeta().GetGeneration(),
+		LastTransitionTime: v1.Now(),
+		Reason:             reason,
+		Message:            message,
 	}
-	pr.SetConditions(conditions)
+	prevConditions := pr.Conditions()
+	switch conditionType {
+	case v1beta1.CapacityFound, v1beta1.Expired, v1beta1.Failed:
+		conditionFound := false
+		for _, condition := range prevConditions {
+			if condition.Type == conditionType {
+				conditionFound = true
+				newConditions = append(newConditions, newCondition)
+			} else {
+				newConditions = append(newConditions, condition)
+			}
+		}
+		if !conditionFound {
+			newConditions = append(prevConditions, newCondition)
+		}
+	default:
+		klog.Errorf("Unknown conditionType: %s", conditionType)
+		newConditions = prevConditions
+	}
+	pr.SetConditions(newConditions)
+}
+
+func checkConditionType(condition v1.Condition, conditionType string) bool {
+	return condition.Type == conditionType && condition.Status == v1.ConditionTrue
 }

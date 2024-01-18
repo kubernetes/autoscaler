@@ -74,7 +74,6 @@ func (o *WrapperOrchestrator) ScaleUp(
 	daemonSets []*appsv1.DaemonSet,
 	nodeInfos map[string]*schedulerframework.NodeInfo,
 ) (*status.ScaleUpStatus, errors.AutoscalerError) {
-
 	defer func() { o.scaleUpRegularPods = !o.scaleUpRegularPods }()
 
 	provReqPods, regularPods := splitOut(unschedulablePods)

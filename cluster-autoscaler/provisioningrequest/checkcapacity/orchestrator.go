@@ -21,6 +21,7 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
@@ -117,13 +118,13 @@ func (o *provReqOrchestrator) bookCapacity() error {
 	}
 	podsToCreate := []*apiv1.Pod{}
 	for _, provReq := range provReqs {
-		if HasBookCapacityCondition(provReq) {
+		if shouldCapacityBeBooked(provReq) {
 			pods, err := provreq_pods.PodsForProvisioningRequest(provReq)
 			if err != nil {
 				// ClusterAutoscaler was able to create pods before, so we shouldn't have error here.
 				// If there is an error, mark PR as invalid, because we won't be able to book capacity
 				// for it anyway.
-				setCondition(provReq, v1beta1.Failed, "Couldn't book capacity", fmt.Sprintf("couldn't create pods, err: %v", err))
+				setCondition(provReq, v1beta1.Failed, metav1.ConditionTrue, "Couldn't book capacity", fmt.Sprintf("couldn't create pods, err: %v", err))
 				continue
 			}
 			podsToCreate = append(podsToCreate, pods...)
@@ -147,10 +148,10 @@ func (o *provReqOrchestrator) scaleUp(unschedulablePods []*apiv1.Pod) (bool, err
 	}
 	st, _, err := o.injector.TrySchedulePods(o.context.ClusterSnapshot, unschedulablePods, scheduling.ScheduleAnywhere, true)
 	if len(st) < len(unschedulablePods) || err != nil {
-		setCondition(provReq, v1beta1.Pending, "Capacity is not found", "")
+		setCondition(provReq, v1beta1.CapacityFound, metav1.ConditionFalse, "Capacity is not found, CA will try to find later", "")
 		return false, err
 	}
-	setCondition(provReq, v1beta1.CapacityAvailable, "Capacity is found", "")
+	setCondition(provReq, v1beta1.CapacityFound, metav1.ConditionTrue, "Capacity is found", "")
 	return true, nil
 }
 
