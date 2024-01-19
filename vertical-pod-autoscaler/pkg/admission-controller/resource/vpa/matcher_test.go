@@ -19,10 +19,13 @@ package vpa
 import (
 	"testing"
 
+	v1 "k8s.io/api/autoscaling/v1"
 	core "k8s.io/api/core/v1"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	target_mock "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/mock"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 
@@ -37,7 +40,22 @@ func parseLabelSelector(selector string) labels.Selector {
 }
 
 func TestGetMatchingVpa(t *testing.T) {
-	podBuilder := test.Pod().WithName("test-pod").WithLabels(map[string]string{"app": "test"}).
+	rc := core.ReplicationController{
+		TypeMeta: meta.TypeMeta{
+			Kind:       "ReplicationController",
+			APIVersion: "apps/v1",
+		},
+		ObjectMeta: meta.ObjectMeta{
+			Name:      "rc",
+			Namespace: "default",
+		},
+	}
+	targetRef := &v1.CrossVersionObjectReference{
+		Kind:       rc.Kind,
+		Name:       rc.Name,
+		APIVersion: rc.APIVersion,
+	}
+	podBuilder := test.Pod().WithName("test-pod").WithLabels(map[string]string{"app": "test"}).WithCreator(&rc.ObjectMeta, &rc.TypeMeta).
 		AddContainer(test.Container().WithName("i-am-container").Get())
 	vpaBuilder := test.VerticalPodAutoscaler().WithContainer("i-am-container")
 	testCases := []struct {
@@ -52,7 +70,7 @@ func TestGetMatchingVpa(t *testing.T) {
 			name: "matching selector",
 			pod:  podBuilder.Get(),
 			vpas: []*vpa_types.VerticalPodAutoscaler{
-				vpaBuilder.WithUpdateMode(vpa_types.UpdateModeAuto).WithName("auto-vpa").Get(),
+				vpaBuilder.WithUpdateMode(vpa_types.UpdateModeAuto).WithName("auto-vpa").WithTargetRef(targetRef).Get(),
 			},
 			labelSelector:   "app = test",
 			expectedFound:   true,
@@ -61,7 +79,7 @@ func TestGetMatchingVpa(t *testing.T) {
 			name: "not matching selector",
 			pod:  podBuilder.Get(),
 			vpas: []*vpa_types.VerticalPodAutoscaler{
-				vpaBuilder.WithUpdateMode(vpa_types.UpdateModeAuto).WithName("auto-vpa").Get(),
+				vpaBuilder.WithUpdateMode(vpa_types.UpdateModeAuto).WithName("auto-vpa").WithTargetRef(targetRef).Get(),
 			},
 			labelSelector: "app = differentApp",
 			expectedFound: false,
@@ -69,7 +87,7 @@ func TestGetMatchingVpa(t *testing.T) {
 			name: "off mode",
 			pod:  podBuilder.Get(),
 			vpas: []*vpa_types.VerticalPodAutoscaler{
-				vpaBuilder.WithUpdateMode(vpa_types.UpdateModeOff).WithName("off-vpa").Get(),
+				vpaBuilder.WithUpdateMode(vpa_types.UpdateModeOff).WithName("off-vpa").WithTargetRef(targetRef).Get(),
 			},
 			labelSelector: "app = test",
 			expectedFound: false,
@@ -77,8 +95,8 @@ func TestGetMatchingVpa(t *testing.T) {
 			name: "two vpas one in off mode",
 			pod:  podBuilder.Get(),
 			vpas: []*vpa_types.VerticalPodAutoscaler{
-				vpaBuilder.WithUpdateMode(vpa_types.UpdateModeOff).WithName("off-vpa").Get(),
-				vpaBuilder.WithUpdateMode(vpa_types.UpdateModeAuto).WithName("auto-vpa").Get(),
+				vpaBuilder.WithUpdateMode(vpa_types.UpdateModeOff).WithName("off-vpa").WithTargetRef(targetRef).Get(),
+				vpaBuilder.WithUpdateMode(vpa_types.UpdateModeAuto).WithName("auto-vpa").WithTargetRef(targetRef).Get(),
 			},
 			labelSelector:   "app = test",
 			expectedFound:   true,
@@ -87,7 +105,7 @@ func TestGetMatchingVpa(t *testing.T) {
 			name: "initial mode",
 			pod:  podBuilder.Get(),
 			vpas: []*vpa_types.VerticalPodAutoscaler{
-				vpaBuilder.WithUpdateMode(vpa_types.UpdateModeInitial).WithName("initial-vpa").Get(),
+				vpaBuilder.WithUpdateMode(vpa_types.UpdateModeInitial).WithName("initial-vpa").WithTargetRef(targetRef).Get(),
 			},
 			labelSelector:   "app = test",
 			expectedFound:   true,
@@ -114,7 +132,7 @@ func TestGetMatchingVpa(t *testing.T) {
 			vpaLister.On("VerticalPodAutoscalers", "default").Return(vpaNamespaceLister)
 
 			mockSelectorFetcher.EXPECT().Fetch(gomock.Any()).AnyTimes().Return(parseLabelSelector(tc.labelSelector), nil)
-			matcher := NewMatcher(vpaLister, mockSelectorFetcher)
+			matcher := NewMatcher(vpaLister, mockSelectorFetcher, controllerfetcher.FakeControllerFetcher{})
 
 			vpa := matcher.GetMatchingVPA(tc.pod)
 			if tc.expectedFound && assert.NotNil(t, vpa) {
