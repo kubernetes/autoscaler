@@ -164,7 +164,7 @@ func TestSetCondition(t *testing.T) {
 			},
 		},
 		{
-			name: "Unknown type, conditions are not updated",
+			name: "Provisioned condition type, conditions are not updated",
 			oldConditions: []v1.Condition{
 				{
 					Type:   v1beta1.CapacityFound,
@@ -173,6 +173,44 @@ func TestSetCondition(t *testing.T) {
 			},
 			newType:   v1beta1.Provisioned,
 			newStatus: v1.ConditionFalse,
+			want: []v1.Condition{
+				{
+					Type:   v1beta1.CapacityFound,
+					Status: v1.ConditionTrue,
+				},
+			},
+		},
+		{
+			name: "Unknown condition status, conditions are updated",
+			oldConditions: []v1.Condition{
+				{
+					Type:   v1beta1.CapacityFound,
+					Status: v1.ConditionTrue,
+				},
+			},
+			newType:   v1beta1.Failed,
+			newStatus: v1.ConditionUnknown,
+			want: []v1.Condition{
+				{
+					Type:   v1beta1.CapacityFound,
+					Status: v1.ConditionTrue,
+				},
+				{
+					Type:   v1beta1.Failed,
+					Status: v1.ConditionUnknown,
+				},
+			},
+		},
+		{
+			name: "Unknown condition type, conditions are not updated",
+			oldConditions: []v1.Condition{
+				{
+					Type:   v1beta1.CapacityFound,
+					Status: v1.ConditionTrue,
+				},
+			},
+			newType:   "Unknown",
+			newStatus: v1.ConditionTrue,
 			want: []v1.Condition{
 				{
 					Type:   v1beta1.CapacityFound,

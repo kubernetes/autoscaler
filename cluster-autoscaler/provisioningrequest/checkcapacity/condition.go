@@ -30,6 +30,12 @@ const (
 	defaultExpirationTime  = 7 * 24 * time.Hour // 7 days
 )
 
+const (
+	capacityIsNotFoundReason = "Capacity is not found"
+	capacityIsFound          = "Capacity is found"
+	failedToBookCapacity     = "Failed to book capacity"
+)
+
 func shouldCapacityBeBooked(pr *provreqwrapper.ProvisioningRequest) bool {
 	if pr.V1Beta1().Spec.ProvisioningClassName != v1beta1.ProvisioningClassCheckCapacity {
 		return false
@@ -41,8 +47,7 @@ func shouldCapacityBeBooked(pr *provreqwrapper.ProvisioningRequest) bool {
 	for _, condition := range pr.Conditions() {
 		if checkConditionType(condition, v1beta1.Expired) || checkConditionType(condition, v1beta1.Failed) {
 			return false
-		}
-		if checkConditionType(condition, v1beta1.CapacityFound) {
+		} else if checkConditionType(condition, v1beta1.CapacityFound) {
 			book = true
 		}
 	}
@@ -75,7 +80,7 @@ func setCondition(pr *provreqwrapper.ProvisioningRequest, conditionType string, 
 			newConditions = append(prevConditions, newCondition)
 		}
 	default:
-		klog.Errorf("Unknown conditionType: %s", conditionType)
+		klog.Errorf("Unknown (conditionType; conditionStatus) pair: (%s; %s) ", conditionType, conditionStatus)
 		newConditions = prevConditions
 	}
 	pr.SetConditions(newConditions)

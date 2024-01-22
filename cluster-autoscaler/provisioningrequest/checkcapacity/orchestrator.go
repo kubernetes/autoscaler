@@ -124,7 +124,7 @@ func (o *provReqOrchestrator) bookCapacity() error {
 				// ClusterAutoscaler was able to create pods before, so we shouldn't have error here.
 				// If there is an error, mark PR as invalid, because we won't be able to book capacity
 				// for it anyway.
-				setCondition(provReq, v1beta1.Failed, metav1.ConditionTrue, "Couldn't book capacity", fmt.Sprintf("couldn't create pods, err: %v", err))
+				setCondition(provReq, v1beta1.Failed, metav1.ConditionTrue, failedToBookCapacity, fmt.Sprintf("couldn't create pods, err: %v", err))
 				continue
 			}
 			podsToCreate = append(podsToCreate, pods...)
@@ -148,10 +148,10 @@ func (o *provReqOrchestrator) scaleUp(unschedulablePods []*apiv1.Pod) (bool, err
 	}
 	st, _, err := o.injector.TrySchedulePods(o.context.ClusterSnapshot, unschedulablePods, scheduling.ScheduleAnywhere, true)
 	if len(st) < len(unschedulablePods) || err != nil {
-		setCondition(provReq, v1beta1.CapacityFound, metav1.ConditionFalse, "Capacity is not found, CA will try to find later", "")
+		setCondition(provReq, v1beta1.CapacityFound, metav1.ConditionFalse, capacityIsNotFoundReason, "Capacity is not found, CA will try to find later")
 		return false, err
 	}
-	setCondition(provReq, v1beta1.CapacityFound, metav1.ConditionTrue, "Capacity is found", "")
+	setCondition(provReq, v1beta1.CapacityFound, metav1.ConditionTrue, capacityIsFound, "")
 	return true, nil
 }
 
