@@ -59,9 +59,12 @@ func (r *Rule) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod) dr
 		return drainability.NewUndefinedStatus()
 	}
 
-	groupVersionKind := schema.FromAPIVersionAndKind(controllerRef.APIVersion, controllerRef.Kind)
-	refGroup := groupVersionKind.Group
-	refKind := groupVersionKind.Kind
+	refGroup, err := schema.ParseGroupVersion(controllerRef.APIVersion)
+	if err != nil {
+		return drainability.NewUndefinedStatus()
+	}
+
+	refKind := controllerRef.Kind
 
 	if refKind == "ReplicationController" {
 		rc, err := drainCtx.Listers.ReplicationControllerLister().ReplicationControllers(controllerNamespace).Get(controllerRef.Name)
@@ -75,7 +78,7 @@ func (r *Rule) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod) dr
 			return drainability.NewBlockedStatus(drain.MinReplicasReached, fmt.Errorf("replication controller for %s/%s has too few replicas spec: %d min: %d", pod.Namespace, pod.Name, rc.Spec.Replicas, r.minReplicaCount))
 		}
 	} else if pod_util.IsDaemonSetPod(pod) {
-		if refGroup != "apps" || refKind != "DaemonSet" {
+		if refGroup.Group != "apps" || refKind != "DaemonSet" {
 			// We don't have a listener for the other DaemonSet group or kind.
 			// TODO: Use a generic client for checking the reference.
 			return drainability.NewUndefinedStatus()
