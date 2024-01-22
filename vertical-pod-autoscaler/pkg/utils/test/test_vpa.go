@@ -248,7 +248,12 @@ func (b *verticalPodAutoscalerBuilder) Get() *vpa_types.VerticalPodAutoscaler {
 			Mode:             b.scalingMode[containerName],
 		})
 	}
-	recommendation = b.recommendation.WithContainer(b.containerNames[0]).Get()
+	// VPAs with a single container may still use the old/implicit way of adding recommendations
+	r := b.recommendation.WithContainer(b.containerNames[0]).Get()
+	if r.ContainerRecommendations[0].Target != nil {
+		recommendation = r
+	}
+
 	recommendation.ContainerRecommendations = append(recommendation.ContainerRecommendations, b.appendedRecommendations...)
 
 	return &vpa_types.VerticalPodAutoscaler{
