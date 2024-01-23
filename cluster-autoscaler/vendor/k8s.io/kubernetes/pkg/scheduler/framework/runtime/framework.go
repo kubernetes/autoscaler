@@ -37,6 +37,7 @@ import (
 	"k8s.io/kubernetes/pkg/scheduler/framework"
 	"k8s.io/kubernetes/pkg/scheduler/framework/parallelize"
 	"k8s.io/kubernetes/pkg/scheduler/metrics"
+	"k8s.io/kubernetes/pkg/util/slice"
 )
 
 const (
@@ -258,6 +259,14 @@ func NewFramework(ctx context.Context, r Registry, profile *config.KubeScheduler
 		PodNominator:         options.podNominator,
 		parallelizer:         options.parallelizer,
 		logger:               logger,
+	}
+
+	if len(f.extenders) > 0 {
+		// Extender doesn't support any kind of requeueing feature like EnqueueExtensions in the scheduling framework.
+		// We register a defaultEnqueueExtension to framework.ExtenderName here.
+		// And, in the scheduling cycle, when Extenders reject some Nodes and the pod ends up being unschedulable,
+		// we put framework.ExtenderName to pInfo.UnschedulablePlugins.
+		f.enqueueExtensions = []framework.EnqueueExtensions{&defaultEnqueueExtension{pluginName: framework.ExtenderName}}
 	}
 
 	if profile == nil {
@@ -526,7 +535,7 @@ func (f *frameworkImpl) expandMultiPointPlugins(logger klog.Logger, profile *con
 		// - part 3: other plugins (excluded by part 1 & 2) in regular extension point.
 		newPlugins := reflect.New(reflect.TypeOf(e.slicePtr).Elem()).Elem()
 		// part 1
-		for _, name := range enabledSet.list {
+		for _, name := range slice.CopyStrings(enabledSet.list) {
 			if overridePlugins.has(name) {
 				newPlugins = reflect.Append(newPlugins, reflect.ValueOf(pluginsMap[name]))
 				enabledSet.delete(name)
@@ -1015,7 +1024,7 @@ func (f *frameworkImpl) RunScorePlugins(ctx context.Context, state *framework.Cy
 		metrics.FrameworkExtensionPointDuration.WithLabelValues(metrics.Score, status.Code().String(), f.profileName).Observe(metrics.SinceInSeconds(startTime))
 	}()
 	allNodePluginScores := make([]framework.NodePluginScores, len(nodes))
-	numPlugins := len(f.scorePlugins) - state.SkipScorePlugins.Len()
+	numPlugins := len(f.scorePlugins)
 	plugins := make([]framework.ScorePlugin, 0, numPlugins)
 	pluginToNodeScores := make(map[string]framework.NodeScoreList, numPlugins)
 	for _, pl := range f.scorePlugins {
