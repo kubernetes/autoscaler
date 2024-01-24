@@ -57,7 +57,7 @@ const (
 	rateLimitWriteBucketsEnvVar         = "RATE_LIMIT_WRITE_BUCKETS"
 
 	// refresh period in seconds
-	vmssSizeRefreshPeriodDefault = 30
+	VmssSizeRefreshPeriodDefault = 30
 
 	// auth methods
 	authMethodPrincipal = "principal"
@@ -260,7 +260,7 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 				return nil, fmt.Errorf("failed to parse AZURE_GET_VMSS_SIZE_REFRESH_PERIOD %q: %v", getVmssSizeRefreshPeriod, err)
 			}
 		} else {
-			cfg.GetVmssSizeRefreshPeriod = vmssSizeRefreshPeriodDefault
+			cfg.GetVmssSizeRefreshPeriod = VmssSizeRefreshPeriodDefault
 		}
 
 		if enableVmssFlex := os.Getenv("AZURE_ENABLE_VMSS_FLEX"); enableVmssFlex != "" {
