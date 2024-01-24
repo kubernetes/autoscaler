@@ -56,7 +56,7 @@ const (
 	rateLimitWriteQPSEnvVar             = "RATE_LIMIT_WRITE_QPS"
 	rateLimitWriteBucketsEnvVar         = "RATE_LIMIT_WRITE_BUCKETS"
 
-	// refresh period in seconds
+	// VmssSizeRefreshPeriodDefault in seconds
 	VmssSizeRefreshPeriodDefault = 30
 
 	// auth methods
