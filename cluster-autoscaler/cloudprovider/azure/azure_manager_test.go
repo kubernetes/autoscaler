@@ -360,6 +360,7 @@ func TestCreateAzureManagerWithNilConfig(t *testing.T) {
 		VmssCacheTTL:                 100,
 		VmssVmsCacheTTL:              110,
 		VmssVmsCacheJitter:           90,
+		GetVmssSizeRefreshPeriod:     30,
 		MaxDeploymentsCount:          8,
 		CloudProviderBackoff:         true,
 		CloudProviderBackoffRetries:  1,
@@ -467,6 +468,14 @@ func TestCreateAzureManagerWithNilConfig(t *testing.T) {
 		t.Setenv("AZURE_VMSS_CACHE_TTL", "invalidint")
 		manager, err := createAzureManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)
 		expectedErr := fmt.Errorf("failed to parse AZURE_VMSS_CACHE_TTL \"invalidint\": strconv.ParseInt: parsing \"invalidint\": invalid syntax")
+		assert.Nil(t, manager)
+		assert.Equal(t, expectedErr, err, "Return err does not match, expected: %v, actual: %v", expectedErr, err)
+	})
+
+	t.Run("invalid int for AZURE_GET_VMSS_SIZE_REFRESH_PERIOD", func(t *testing.T) {
+		t.Setenv("AZURE_GET_VMSS_SIZE_REFRESH_PERIOD", "invalidint")
+		manager, err := createAzureManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)
+		expectedErr := fmt.Errorf("failed to parse AZURE_GET_VMSS_SIZE_REFRESH_PERIOD \"invalidint\": strconv.Atoi: parsing \"invalidint\": invalid syntax")
 		assert.Nil(t, manager)
 		assert.Equal(t, expectedErr, err, "Return err does not match, expected: %v, actual: %v", expectedErr, err)
 	})
