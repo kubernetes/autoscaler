@@ -39,6 +39,7 @@ var (
 	defaultVmssInstancesRefreshPeriod = 5 * time.Minute
 	vmssContextTimeout                = 3 * time.Minute
 	vmssSizeMutex                     sync.Mutex
+	defaultGetVmssSizeRefreshPeriod   = VmssSizeRefreshPeriodDefault * time.Second
 )
 
 const (
@@ -65,8 +66,9 @@ type ScaleSet struct {
 
 	enableDynamicInstanceList bool
 
-	lastSizeRefresh   time.Time
-	sizeRefreshPeriod time.Duration
+	lastSizeRefresh          time.Time
+	sizeRefreshPeriod        time.Duration
+	getVmssSizeRefreshPeriod time.Duration
 
 	instancesRefreshPeriod time.Duration
 	instancesRefreshJitter int
@@ -96,6 +98,12 @@ func NewScaleSet(spec *dynamic.NodeGroupSpec, az *AzureManager, curSize int64) (
 		scaleSet.instancesRefreshPeriod = time.Duration(az.config.VmssVmsCacheTTL) * time.Second
 	} else {
 		scaleSet.instancesRefreshPeriod = defaultVmssInstancesRefreshPeriod
+	}
+
+	if az.config.GetVmssSizeRefreshPeriod != 0 {
+		scaleSet.getVmssSizeRefreshPeriod = time.Duration(az.config.GetVmssSizeRefreshPeriod) * time.Second
+	} else {
+		scaleSet.getVmssSizeRefreshPeriod = time.Duration(VmssSizeRefreshPeriodDefault) * time.Second
 	}
 
 	return scaleSet, nil
@@ -157,15 +165,42 @@ func (scaleSet *ScaleSet) getCurSize() (int64, error) {
 	scaleSet.sizeMutex.Lock()
 	defer scaleSet.sizeMutex.Unlock()
 
-	if scaleSet.lastSizeRefresh.Add(scaleSet.sizeRefreshPeriod).After(time.Now()) {
-		klog.V(3).Infof("VMSS: %s, returning in-memory size: %d", scaleSet.Name, scaleSet.curSize)
-		return scaleSet.curSize, nil
-	}
-
 	set, err := scaleSet.getVMSSFromCache()
 	if err != nil {
 		klog.Errorf("failed to get information for VMSS: %s, error: %v", scaleSet.Name, err)
 		return -1, err
+	}
+
+	effectiveSizeRefreshPeriod := scaleSet.sizeRefreshPeriod
+
+	// If the scale set is Spot, we want to have a more fresh view of the Sku.Capacity field.
+	// This is because evictions can happen at any given point in time,
+	// even before VMs are materialized as nodes. We should be able to
+	// react to those and have the autoscaler readjust the goal again to force restoration.
+	// Taking into account only if orchestrationMode == Uniform because flex mode can have
+	// combination of spot and regular vms
+	if isSpotAndUniform(&set) {
+		effectiveSizeRefreshPeriod = scaleSet.getVmssSizeRefreshPeriod
+	}
+
+	if scaleSet.lastSizeRefresh.Add(effectiveSizeRefreshPeriod).After(time.Now()) {
+		klog.V(3).Infof("VMSS: %s, returning in-memory size: %d", scaleSet.Name, scaleSet.curSize)
+		return scaleSet.curSize, nil
+	}
+
+	// If the toggle to utilize the GET VMSS is enabled or the scale set is on Spot,
+	// make a GET VMSS call to fetch more updated fresh info
+	if isSpotAndUniform(&set) {
+		ctx, cancel := getContextWithCancel()
+		defer cancel()
+
+		var rerr *retry.Error
+		set, rerr = scaleSet.manager.azClient.virtualMachineScaleSetsClient.Get(ctx, scaleSet.manager.config.ResourceGroup,
+			scaleSet.Name)
+		if rerr != nil {
+			klog.Errorf("failed to get information for VMSS: %s, error: %v", scaleSet.Name, rerr)
+			return -1, err
+		}
 	}
 
 	vmssSizeMutex.Lock()
@@ -182,6 +217,12 @@ func (scaleSet *ScaleSet) getCurSize() (int64, error) {
 	scaleSet.curSize = curSize
 	scaleSet.lastSizeRefresh = time.Now()
 	return scaleSet.curSize, nil
+}
+
+func isSpotAndUniform(vmss *compute.VirtualMachineScaleSet) bool {
+	return vmss != nil && vmss.VirtualMachineScaleSetProperties != nil &&
+		vmss.VirtualMachineScaleSetProperties.VirtualMachineProfile != nil &&
+		vmss.VirtualMachineScaleSetProperties.VirtualMachineProfile.Priority == compute.Spot
 }
 
 // GetScaleSetSize gets Scale Set size.
