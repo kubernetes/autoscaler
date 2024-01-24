@@ -179,7 +179,7 @@ func (scaleSet *ScaleSet) getCurSize() (int64, error) {
 	// react to those and have the autoscaler readjust the goal again to force restoration.
 	// Taking into account only if orchestrationMode == Uniform because flex mode can have
 	// combination of spot and regular vms
-	if isSpotAndUniform(&set) {
+	if isSpot(&set) {
 		effectiveSizeRefreshPeriod = scaleSet.getVmssSizeRefreshPeriod
 	}
 
@@ -190,7 +190,7 @@ func (scaleSet *ScaleSet) getCurSize() (int64, error) {
 
 	// If the toggle to utilize the GET VMSS is enabled or the scale set is on Spot,
 	// make a GET VMSS call to fetch more updated fresh info
-	if isSpotAndUniform(&set) {
+	if isSpot(&set) {
 		ctx, cancel := getContextWithCancel()
 		defer cancel()
 
@@ -219,7 +219,7 @@ func (scaleSet *ScaleSet) getCurSize() (int64, error) {
 	return scaleSet.curSize, nil
 }
 
-func isSpotAndUniform(vmss *compute.VirtualMachineScaleSet) bool {
+func isSpot(vmss *compute.VirtualMachineScaleSet) bool {
 	return vmss != nil && vmss.VirtualMachineScaleSetProperties != nil &&
 		vmss.VirtualMachineScaleSetProperties.VirtualMachineProfile != nil &&
 		vmss.VirtualMachineScaleSetProperties.VirtualMachineProfile.Priority == compute.Spot
