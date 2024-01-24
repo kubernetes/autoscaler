@@ -462,6 +462,11 @@ func (csr *ClusterStateRegistry) updateNodeGroupMetrics() {
 	metrics.UpdateNodeGroupsCount(autoscaled, autoprovisioned)
 }
 
+// BackoffStatusForNodeGroup queries the backoff status of the node group
+func (csr *ClusterStateRegistry) BackoffStatusForNodeGroup(nodeGroup cloudprovider.NodeGroup, now time.Time) backoff.Status {
+	return csr.backoff.BackoffStatus(nodeGroup, csr.nodeInfosForGroups[nodeGroup.Id()], now)
+}
+
 // NodeGroupScaleUpSafety returns information about node group safety to be scaled up now.
 func (csr *ClusterStateRegistry) NodeGroupScaleUpSafety(nodeGroup cloudprovider.NodeGroup, now time.Time) NodeGroupScalingSafety {
 	isHealthy := csr.IsNodeGroupHealthy(nodeGroup.Id())
