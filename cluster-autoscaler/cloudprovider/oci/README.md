@@ -24,13 +24,29 @@ We recommend setting up and configuring the Cluster Autoscaler to use
 [Instance Principals](https://docs.oracle.com/en-us/iaas/Content/Identity/Tasks/callingservicesfrominstances.htm)
 to authenticate to the OCI APIs.
 
-The following policy provides the minimum privileges necessary for Cluster Autoscaler to run:
+The following policy provides the privileges necessary for Cluster Autoscaler to run:
 
 1: Create a compartment-level dynamic group containing the nodes (compute instances) in the cluster:
 
 ```
 All {instance.compartment.id = 'ocid1.compartment.oc1..aaaaaaaa7ey4sg3a6b5wnv5hlkjlkjadslkfjalskfjalsadfadsf'}
 ```
+
+**WARNING:** The above dynamic group with its tenancy-level policy in
+the next step will allow all machines in the specified compartment
+to handle all important computing resources. This may lead to some serious
+security problems on your system. It's highly recommended to limit the
+scope of this setting by for example
+
+  1. Using a proper `nodeSelector` for the `cluster-autoscaler`'s pods and
+  2. Setting up `Defined-Tag` for all selected nodes (via node pools' setting):
+    `MyTagNamespace.MyNodeRole=ClusterAutoscaler`
+  3. Refining the dynamic group with those defined tags, for example,
+
+      ```
+      All {instance.compartment.id = 'ocid1.compartment.oc1.....',
+       tag.MyTagNamespace.MyNodeRole = 'ClusterAutoscaler'}
+      ```
 
 2: Create a *tenancy-level* policy to allow nodes to manage node-pools and/or instance-pools:
 
@@ -51,7 +67,7 @@ Allow dynamic-group acme-oci-cluster-autoscaler-dyn-grp to inspect compartments 
 
 ### If using Workload Identity
 
-Note: This is available to use with OKE Node Pools or OCI Managed Instance Pools with OKE Enhanced Clusters only. 
+Note: This is available to use with OKE Node Pools or OCI Managed Instance Pools with OKE Enhanced Clusters only.
 
 See the [documentation](https://docs.oracle.com/en-us/iaas/Content/ContEng/Tasks/contenggrantingworkloadaccesstoresources.htm) for more details
 
@@ -235,7 +251,7 @@ OCI config file based authentication deployment:
 kubectl apply -f ./cloudprovider/oci/examples/oci-ip-cluster-autoscaler-w-config.yaml
 ```
 
-OCI with node pool yamls: 
+OCI with node pool yamls:
 
 ```
 # First substitute any values mentioned in the file and then apply
