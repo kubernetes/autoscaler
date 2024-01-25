@@ -99,7 +99,7 @@ func (p *ScaleDownCandidatesDelayProcessor) RegisterScaleUp(nodeGroup cloudprovi
 
 // RegisterScaleDown records when the last scale down happened for a nodegroup.
 func (p *ScaleDownCandidatesDelayProcessor) RegisterScaleDown(nodeGroup cloudprovider.NodeGroup,
-	nodeName string, currentTime time.Time, _ time.Time) {
+	node *apiv1.Node, currentTime time.Time, _ time.Time) {
 	p.scaleDowns[nodeGroup.Id()] = currentTime
 }
 

@@ -489,6 +489,8 @@ func TestStaticAutoscalerRunOnceWithScaleDownDelayPerNG(t *testing.T) {
 	SetNodeReadyState(n1, true, time.Now())
 	n2 := BuildTestNode("n2", 1000, 1000)
 	SetNodeReadyState(n2, true, time.Now())
+	n3 := BuildTestNode("n3", 1000, 1000)
+	SetNodeReadyState(n3, true, time.Now())
 
 	tn := BuildTestNode("tn", 1000, 1000)
 	tni := schedulerframework.NewNodeInfo()
@@ -618,7 +620,7 @@ func TestStaticAutoscalerRunOnceWithScaleDownDelayPerNG(t *testing.T) {
 			description: "ng2 scaled down recently - both ng1 and ng2 have under-utilized nodes",
 			beforeTest: func(processors *ca_processors.AutoscalingProcessors) {
 				// make CA think ng2 scaled down recently
-				processors.ScaleStateNotifier.RegisterScaleDown(ng2, "n3", time.Now().Add(-3*time.Minute), time.Now())
+				processors.ScaleStateNotifier.RegisterScaleDown(ng2, n3, time.Now().Add(-3*time.Minute), time.Now())
 			},
 			expectedScaleDownNG:   "ng1",
 			expectedScaleDownNode: "n1",
@@ -626,8 +628,8 @@ func TestStaticAutoscalerRunOnceWithScaleDownDelayPerNG(t *testing.T) {
 				// reset scale down in ng1 and ng2 so that it doesn't block scale down in the next test
 				// scale down is always recorded relative to time.Now(), no matter
 				// what currentTime time is passed to RunOnce()
-				processors.ScaleStateNotifier.RegisterScaleDown(ng2, "n3", time.Time{}, time.Time{})
-				processors.ScaleStateNotifier.RegisterScaleDown(ng1, "n1", time.Time{}, time.Time{})
+				processors.ScaleStateNotifier.RegisterScaleDown(ng2, n3, time.Time{}, time.Time{})
+				processors.ScaleStateNotifier.RegisterScaleDown(ng1, n1, time.Time{}, time.Time{})
 			},
 		},
 

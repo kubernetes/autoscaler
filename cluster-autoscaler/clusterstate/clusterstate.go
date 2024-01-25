@@ -69,8 +69,8 @@ type ScaleUpRequest struct {
 
 // ScaleDownRequest contains information about the requested node deletion.
 type ScaleDownRequest struct {
-	// NodeName is the name of the node to be deleted.
-	NodeName string
+	// Node is the node to be deleted.
+	Node *apiv1.Node
 	// NodeGroup is the node group of the deleted node.
 	NodeGroup cloudprovider.NodeGroup
 	// Time is the time when the node deletion was requested.
@@ -242,10 +242,10 @@ func (csr *ClusterStateRegistry) registerOrUpdateScaleUpNoLock(nodeGroup cloudpr
 
 // RegisterScaleDown registers node scale down.
 func (csr *ClusterStateRegistry) RegisterScaleDown(nodeGroup cloudprovider.NodeGroup,
-	nodeName string, currentTime time.Time, expectedDeleteTime time.Time) {
+	node *apiv1.Node, currentTime time.Time, expectedDeleteTime time.Time) {
 	request := &ScaleDownRequest{
 		NodeGroup:          nodeGroup,
-		NodeName:           nodeName,
+		Node:               node,
 		Time:               currentTime,
 		ExpectedDeleteTime: expectedDeleteTime,
 	}
@@ -295,6 +295,12 @@ func (csr *ClusterStateRegistry) updateScaleRequests(currentTime time.Time) {
 
 	newScaleDownRequests := make([]*ScaleDownRequest, 0)
 	for _, scaleDownRequest := range csr.scaleDownRequests {
+		// delete scaleDownRequest if there's no instance in cloud provider side
+		// otherwise we check the delete time
+		hasInstance, err := csr.cloudProvider.HasInstance(scaleDownRequest.Node)
+		if err == nil && !hasInstance {
+			continue
+		}
 		if scaleDownRequest.ExpectedDeleteTime.After(currentTime) {
 			newScaleDownRequests = append(newScaleDownRequests, scaleDownRequest)
 		}
@@ -524,6 +530,16 @@ func (csr *ClusterStateRegistry) IsNodeGroupScalingUp(nodeGroupName string) bool
 	}
 	_, found := csr.scaleUpRequests[nodeGroupName]
 	return found
+}
+
+// IsNodeGroupScalingDown returns true if the node group is currently scaling down.
+func (csr *ClusterStateRegistry) IsNodeGroupScalingDown(nodeGroupName string) bool {
+	for _, scaleDownRequest := range csr.scaleDownRequests {
+		if scaleDownRequest.NodeGroup.Id() == nodeGroupName {
+			return true
+		}
+	}
+	return false
 }
 
 // HasNodeGroupStartedScaleUp returns true if the node group has started scale up regardless
@@ -1005,7 +1021,7 @@ func (csr *ClusterStateRegistry) GetUpcomingNodes() (upcomingCounts map[string]i
 // as returned by NodeGroup.Nodes().
 func (csr *ClusterStateRegistry) getCloudProviderNodeInstances() (map[string][]cloudprovider.Instance, error) {
 	for _, nodeGroup := range csr.cloudProvider.NodeGroups() {
-		if csr.IsNodeGroupScalingUp(nodeGroup.Id()) {
+		if csr.IsNodeGroupScalingUp(nodeGroup.Id()) || csr.IsNodeGroupScalingDown(nodeGroup.Id()) {
 			csr.cloudProviderNodeInstancesCache.InvalidateCacheEntry(nodeGroup)
 		}
 	}
