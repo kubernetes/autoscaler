@@ -31,14 +31,14 @@ func TestBookCapacity(t *testing.T) {
 		want         bool
 	}{
 		{
-			name: "Expired",
+			name: "BookingExpired",
 			prConditions: []v1.Condition{
 				{
 					Type:   v1beta1.CapacityFound,
 					Status: v1.ConditionTrue,
 				},
 				{
-					Type:   v1beta1.Expired,
+					Type:   v1beta1.BookingExpired,
 					Status: v1.ConditionTrue,
 				},
 			},
@@ -219,12 +219,12 @@ func TestSetCondition(t *testing.T) {
 			},
 		},
 		{
-			name:      "Expired, empty conditions before",
-			newType:   v1beta1.Expired,
+			name:      "BookingExpired, empty conditions before",
+			newType:   v1beta1.BookingExpired,
 			newStatus: v1.ConditionFalse,
 			want: []v1.Condition{
 				{
-					Type:   v1beta1.Expired,
+					Type:   v1beta1.BookingExpired,
 					Status: v1.ConditionFalse,
 				},
 			},

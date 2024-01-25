@@ -31,9 +31,12 @@ const (
 )
 
 const (
-	capacityIsNotFoundReason = "Capacity is not found"
-	capacityIsFound          = "Capacity is found"
-	failedToBookCapacity     = "Failed to book capacity"
+	//CapacityIsNotFoundReason is added when capacity was not found in the cluster.
+	CapacityIsNotFoundReason = "CapacityIsNotFound"
+	//CapacityIsFoundReason is added when capacity was found in the cluster.
+	CapacityIsFoundReason = "CapacityIsFound"
+	//FailedToBookCapacityReason is added when Cluster Autoscaler failed to book capacity in the cluster.
+	FailedToBookCapacityReason = "FailedToBookCapacity"
 )
 
 func shouldCapacityBeBooked(pr *provreqwrapper.ProvisioningRequest) bool {
@@ -45,7 +48,7 @@ func shouldCapacityBeBooked(pr *provreqwrapper.ProvisioningRequest) bool {
 	}
 	book := false
 	for _, condition := range pr.Conditions() {
-		if checkConditionType(condition, v1beta1.Expired) || checkConditionType(condition, v1beta1.Failed) {
+		if checkConditionType(condition, v1beta1.BookingExpired) || checkConditionType(condition, v1beta1.Failed) {
 			return false
 		} else if checkConditionType(condition, v1beta1.CapacityFound) {
 			book = true
@@ -66,7 +69,7 @@ func setCondition(pr *provreqwrapper.ProvisioningRequest, conditionType string, 
 	}
 	prevConditions := pr.Conditions()
 	switch conditionType {
-	case v1beta1.CapacityFound, v1beta1.Expired, v1beta1.Failed:
+	case v1beta1.CapacityFound, v1beta1.BookingExpired, v1beta1.Failed:
 		conditionFound := false
 		for _, condition := range prevConditions {
 			if condition.Type == conditionType {

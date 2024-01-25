@@ -178,10 +178,9 @@ const (
 	// CapacityFound indicates that all of the requested resources were
 	// fount in the cluster.
 	CapacityFound string = "CapacityFound"
-	// Expired indicates that the ProvisioningRequest had CapacityAvailable condition before
-	// and the reservation time is expired or the ProvisioningRequest had Pending condition before
-	// and expiration time is expired.
-	Expired string = "Expired"
+	// Expired indicates that the ProvisioningRequest had CapacityFound condition before
+	// and the reservation time is expired.
+	BookingExpired string = "BookingExpired"
 	// Provisioned indicates that all of the requested resources were created
 	// and are available in the cluster. CA will set this condition when the
 	// VM creation finishes successfully.
