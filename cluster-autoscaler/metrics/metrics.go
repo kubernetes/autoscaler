@@ -398,6 +398,14 @@ var (
 		},
 		[]string{"type"},
 	)
+
+	RunOnceLoopDurationInSeconds = k8smetrics.NewGauge(
+		&k8smetrics.GaugeOpts{
+			Namespace: caNamespace,
+			Name:      "runonce_duration_seconds",
+			Help:      "Duration of the run once loop in seconds.",
+		},
+	)
 )
 
 // RegisterAll registers all metrics.
@@ -433,6 +441,7 @@ func RegisterAll(emitPerNodeGroupMetrics bool) {
 	legacyregistry.MustRegister(nodeGroupDeletionCount)
 	legacyregistry.MustRegister(pendingNodeDeletions)
 	legacyregistry.MustRegister(nodeTaintsCount)
+	legacyregistry.MustRegister(RunOnceLoopDurationInSeconds)
 
 	if emitPerNodeGroupMetrics {
 		legacyregistry.MustRegister(nodesGroupMinNodes)
