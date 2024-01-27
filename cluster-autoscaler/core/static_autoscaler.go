@@ -283,17 +283,17 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 	a.clusterStateRegistry.PeriodicCleanup()
 	a.DebuggingSnapshotter.StartDataCollection()
 	defer a.DebuggingSnapshotter.Flush()
-			
+
 	podLister := a.AllPodLister()
 	autoscalingContext := a.AutoscalingContext
 
 	stateUpdateStart := time.Now()
 	klog.V(3).Infof("Starting main loop at %v", currentTime)
 	defer func() {
-		endOfLoop := time.Now() 
-		runOnceLoopDuration := endOfLoop.Sub(currentTime) 
+		endOfLoop := time.Now()
+		runOnceLoopDuration := endOfLoop.Sub(currentTime)
 		metrics.RunOnceLoopDurationInSeconds.Set(runOnceLoopDuration.Seconds())
-		klog.V(3).Infof("Finished main loop at %v", endOfLoop) 
+		klog.V(3).Infof("Finished main loop at %v", endOfLoop)
 	}()
 
 	// Get nodes and pods currently living on cluster
