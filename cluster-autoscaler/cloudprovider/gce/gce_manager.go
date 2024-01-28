@@ -82,7 +82,7 @@ type GceManager interface {
 	// GetMigs returns list of registered MIGs.
 	GetMigs() []Mig
 	// GetMigNodes returns mig nodes.
-	GetMigNodes(mig Mig) ([]cloudprovider.Instance, error)
+	GetMigNodes(mig Mig) ([]GceInstance, error)
 	// GetMigForInstance returns MIG to which the given instance belongs.
 	GetMigForInstance(instance GceRef) (Mig, error)
 	// GetMigTemplateNode returns a template node for MIG.
@@ -286,7 +286,7 @@ func (m *gceManagerImpl) GetMigForInstance(instance GceRef) (Mig, error) {
 }
 
 // GetMigNodes returns mig nodes.
-func (m *gceManagerImpl) GetMigNodes(mig Mig) ([]cloudprovider.Instance, error) {
+func (m *gceManagerImpl) GetMigNodes(mig Mig) ([]GceInstance, error) {
 	return m.migInfoProvider.GetMigInstances(mig.GceRef())
 }
 
