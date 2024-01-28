@@ -26,7 +26,6 @@ import (
 	"time"
 
 	gce "google.golang.org/api/compute/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/client-go/util/workqueue"
 	klog "k8s.io/klog/v2"
 )
@@ -34,7 +33,7 @@ import (
 // MigInfoProvider allows obtaining information about MIGs
 type MigInfoProvider interface {
 	// GetMigInstances returns instances for a given MIG ref
-	GetMigInstances(migRef GceRef) ([]cloudprovider.Instance, error)
+	GetMigInstances(migRef GceRef) ([]GceInstance, error)
 	// GetMigForInstance returns MIG ref for a given instance
 	GetMigForInstance(instanceRef GceRef) (Mig, error)
 	// RegenerateMigInstancesCache regenerates MIGs to instances mapping cache
@@ -89,7 +88,7 @@ func NewCachingMigInfoProvider(cache *GceCache, migLister MigLister, gceClient A
 }
 
 // GetMigInstances returns instances for a given MIG ref
-func (c *cachingMigInfoProvider) GetMigInstances(migRef GceRef) ([]cloudprovider.Instance, error) {
+func (c *cachingMigInfoProvider) GetMigInstances(migRef GceRef) ([]GceInstance, error) {
 	instances, found := c.cache.GetMigInstances(migRef)
 	if found {
 		return instances, nil
