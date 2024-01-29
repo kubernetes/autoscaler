@@ -262,7 +262,7 @@ func (p *Planner) categorizeNodes(podDestinations map[string]bool, scaleDownCand
 	unremovableTimeout := p.latestUpdate.Add(p.context.AutoscalingOptions.UnremovableNodeRecheckTimeout)
 	unremovableCount := 0
 	var removableList []simulator.NodeToBeRemoved
-	atmomicScaleDownNodesCount := 0
+	atomicScaleDownNodesCount := 0
 	p.unremovableNodes.Update(p.context.ClusterSnapshot.NodeInfos(), p.latestUpdate)
 	currentlyUnneededNodeNames, utilizationMap, ineligible := p.eligibilityChecker.FilterOutUnremovable(p.context, scaleDownCandidates, p.latestUpdate, p.unremovableNodes)
 	for _, n := range ineligible {
@@ -276,7 +276,7 @@ func (p *Planner) categorizeNodes(podDestinations map[string]bool, scaleDownCand
 			klog.Warningf("%d out of %d nodes skipped in scale down simulation due to timeout.", len(currentlyUnneededNodeNames)-i, len(currentlyUnneededNodeNames))
 			break
 		}
-		if len(removableList)-atmomicScaleDownNodesCount >= p.unneededNodesLimit() {
+		if len(removableList)-atomicScaleDownNodesCount >= p.unneededNodesLimit() {
 			klog.V(4).Infof("%d out of %d nodes skipped in scale down simulation: there are already %d unneeded nodes so no point in looking for more.", len(currentlyUnneededNodeNames)-i, len(currentlyUnneededNodeNames), len(removableList))
 			break
 		}
@@ -290,7 +290,7 @@ func (p *Planner) categorizeNodes(podDestinations map[string]bool, scaleDownCand
 			p.context.RemainingPdbTracker.RemovePods(removable.PodsToReschedule)
 			removableList = append(removableList, *removable)
 			if p.atomicScaleDownNode(removable) {
-				atmomicScaleDownNodesCount++
+				atomicScaleDownNodesCount++
 			}
 		}
 		if unremovable != nil {
@@ -304,7 +304,7 @@ func (p *Planner) categorizeNodes(podDestinations map[string]bool, scaleDownCand
 	}
 }
 
-// atomicScaleDownNode checks if the removable node would be considered for atmonic scale down.
+// atomicScaleDownNode checks if the removable node would be considered for atomic scale down.
 func (p *Planner) atomicScaleDownNode(node *simulator.NodeToBeRemoved) bool {
 	nodeGroup, err := p.context.CloudProvider.NodeGroupForNode(node.Node)
 	if err != nil {
