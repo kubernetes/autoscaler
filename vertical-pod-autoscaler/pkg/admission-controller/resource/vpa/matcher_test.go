@@ -19,6 +19,7 @@ package vpa
 import (
 	"testing"
 
+	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/autoscaling/v1"
 	core "k8s.io/api/core/v1"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -40,22 +41,22 @@ func parseLabelSelector(selector string) labels.Selector {
 }
 
 func TestGetMatchingVpa(t *testing.T) {
-	rc := core.ReplicationController{
+	sts := appsv1.StatefulSet{
 		TypeMeta: meta.TypeMeta{
-			Kind:       "ReplicationController",
+			Kind:       "StatefulSet",
 			APIVersion: "apps/v1",
 		},
 		ObjectMeta: meta.ObjectMeta{
-			Name:      "rc",
+			Name:      "sts",
 			Namespace: "default",
 		},
 	}
 	targetRef := &v1.CrossVersionObjectReference{
-		Kind:       rc.Kind,
-		Name:       rc.Name,
-		APIVersion: rc.APIVersion,
+		Kind:       sts.Kind,
+		Name:       sts.Name,
+		APIVersion: sts.APIVersion,
 	}
-	podBuilder := test.Pod().WithName("test-pod").WithLabels(map[string]string{"app": "test"}).WithCreator(&rc.ObjectMeta, &rc.TypeMeta).
+	podBuilder := test.Pod().WithName("test-pod").WithLabels(map[string]string{"app": "test"}).WithCreator(&sts.ObjectMeta, &sts.TypeMeta).
 		AddContainer(test.Container().WithName("i-am-container").Get())
 	vpaBuilder := test.VerticalPodAutoscaler().WithContainer("i-am-container")
 	testCases := []struct {
