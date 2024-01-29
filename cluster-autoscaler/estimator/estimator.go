@@ -39,11 +39,12 @@ var AvailableEstimators = []string{BinpackingEstimatorName}
 // It returns the number of new nodes needed as well as the list of pods it managed
 // to schedule on those nodes.
 type Estimator interface {
+	SetContext(context EstimationContext)
 	Estimate([]*apiv1.Pod, *schedulerframework.NodeInfo, cloudprovider.NodeGroup) (int, []*apiv1.Pod)
 }
 
 // EstimatorBuilder creates a new estimator object.
-type EstimatorBuilder func(predicatechecker.PredicateChecker, clustersnapshot.ClusterSnapshot, EstimationContext) Estimator
+type EstimatorBuilder func(predicatechecker.PredicateChecker, clustersnapshot.ClusterSnapshot) Estimator
 
 // EstimationAnalyserFunc to be run at the end of the estimation logic.
 type EstimationAnalyserFunc func(clustersnapshot.ClusterSnapshot, cloudprovider.NodeGroup, map[string]bool)
@@ -54,9 +55,8 @@ func NewEstimatorBuilder(name string, limiter EstimationLimiter, orderer Estimat
 	case BinpackingEstimatorName:
 		return func(
 			predicateChecker predicatechecker.PredicateChecker,
-			clusterSnapshot clustersnapshot.ClusterSnapshot,
-			context EstimationContext) Estimator {
-			return NewBinpackingNodeEstimator(predicateChecker, clusterSnapshot, limiter, orderer, context, estimationAnalyserFunc)
+			clusterSnapshot clustersnapshot.ClusterSnapshot) Estimator {
+			return NewBinpackingNodeEstimator(predicateChecker, clusterSnapshot, limiter, orderer, estimationAnalyserFunc)
 		}, nil
 	}
 	return nil, fmt.Errorf("unknown estimator: %s", name)

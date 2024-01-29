@@ -51,6 +51,7 @@ type ScaleUpOrchestrator struct {
 	resourceManager      *resource.Manager
 	clusterStateRegistry *clusterstate.ClusterStateRegistry
 	scaleUpExecutor      *scaleUpExecutor
+	expansionEstimator   estimator.Estimator
 	taintConfig          taints.TaintConfig
 	initialized          bool
 }
@@ -67,11 +68,13 @@ func (o *ScaleUpOrchestrator) Initialize(
 	autoscalingContext *context.AutoscalingContext,
 	processors *ca_processors.AutoscalingProcessors,
 	clusterStateRegistry *clusterstate.ClusterStateRegistry,
+	expansionEstimator estimator.Estimator,
 	taintConfig taints.TaintConfig,
 ) {
 	o.autoscalingContext = autoscalingContext
 	o.processors = processors
 	o.clusterStateRegistry = clusterStateRegistry
+	o.expansionEstimator = expansionEstimator
 	o.taintConfig = taintConfig
 	o.resourceManager = resource.NewManager(processors.CustomResourcesProcessor)
 	o.scaleUpExecutor = newScaleUpExecutor(autoscalingContext, processors.ScaleStateNotifier)
@@ -489,13 +492,12 @@ func (o *ScaleUpOrchestrator) ComputeExpansionOption(
 
 	option.SimilarNodeGroups = o.ComputeSimilarNodeGroups(nodeGroup, nodeInfos, schedulablePods, now)
 
-	estimateStart := time.Now()
-	expansionEstimator := o.autoscalingContext.EstimatorBuilder(
-		o.autoscalingContext.PredicateChecker,
-		o.autoscalingContext.ClusterSnapshot,
+	o.expansionEstimator.SetContext(
 		estimator.NewEstimationContext(o.autoscalingContext.MaxNodesTotal, option.SimilarNodeGroups, currentNodeCount),
 	)
-	option.NodeCount, option.Pods = expansionEstimator.Estimate(pods, nodeInfo, nodeGroup)
+
+	estimateStart := time.Now()
+	option.NodeCount, option.Pods = o.expansionEstimator.Estimate(pods, nodeInfo, nodeGroup)
 	metrics.UpdateDurationFromStart(metrics.Estimate, estimateStart)
 
 	autoscalingOptions, err := nodeGroup.GetOptions(o.autoscalingContext.NodeGroupDefaults)

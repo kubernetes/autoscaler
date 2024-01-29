@@ -27,7 +27,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup"
 	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
-	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/factory"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
@@ -51,7 +50,6 @@ type AutoscalerOptions struct {
 	PredicateChecker       predicatechecker.PredicateChecker
 	ClusterSnapshot        clustersnapshot.ClusterSnapshot
 	ExpanderStrategy       expander.Strategy
-	EstimatorBuilder       estimator.EstimatorBuilder
 	Processors             *ca_processors.AutoscalingProcessors
 	Backoff                backoff.Backoff
 	DebuggingSnapshotter   debuggingsnapshot.DebuggingSnapshotter
@@ -86,7 +84,6 @@ func NewAutoscaler(opts AutoscalerOptions, informerFactory informers.SharedInfor
 		opts.Processors,
 		opts.CloudProvider,
 		opts.ExpanderStrategy,
-		opts.EstimatorBuilder,
 		opts.Backoff,
 		opts.DebuggingSnapshotter,
 		opts.RemainingPdbTracker,
@@ -121,23 +118,6 @@ func initializeDefaultOptions(opts *AutoscalerOptions, informerFactory informers
 			return err
 		}
 		opts.ExpanderStrategy = expanderStrategy
-	}
-	if opts.EstimatorBuilder == nil {
-		thresholds := []estimator.Threshold{
-			estimator.NewStaticThreshold(opts.MaxNodesPerScaleUp, opts.MaxNodeGroupBinpackingDuration),
-			estimator.NewSngCapacityThreshold(),
-			estimator.NewClusterCapacityThreshold(),
-		}
-		estimatorBuilder, err := estimator.NewEstimatorBuilder(
-			opts.EstimatorName,
-			estimator.NewThresholdBasedEstimationLimiter(thresholds),
-			estimator.NewDecreasingPodOrderer(),
-			/* EstimationAnalyserFunc */ nil,
-		)
-		if err != nil {
-			return err
-		}
-		opts.EstimatorBuilder = estimatorBuilder
 	}
 	if opts.Backoff == nil {
 		opts.Backoff =

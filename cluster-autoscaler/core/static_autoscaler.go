@@ -138,7 +138,6 @@ func NewStaticAutoscaler(
 	processors *ca_processors.AutoscalingProcessors,
 	cloudProvider cloudprovider.CloudProvider,
 	expanderStrategy expander.Strategy,
-	estimatorBuilder estimator.EstimatorBuilder,
 	backoff backoff.Backoff,
 	debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter,
 	remainingPdbTracker pdb.RemainingPdbTracker,
@@ -159,7 +158,6 @@ func NewStaticAutoscaler(
 		autoscalingKubeClients,
 		cloudProvider,
 		expanderStrategy,
-		estimatorBuilder,
 		processorCallbacks,
 		debuggingSnapshotter,
 		remainingPdbTracker,
@@ -189,10 +187,27 @@ func NewStaticAutoscaler(
 	}
 	processorCallbacks.scaleDownPlanner = scaleDownPlanner
 
+	// estimator
+	thresholds := []estimator.Threshold{
+		estimator.NewStaticThreshold(opts.MaxNodesPerScaleUp, opts.MaxNodeGroupBinpackingDuration),
+		estimator.NewSngCapacityThreshold(),
+		estimator.NewClusterCapacityThreshold(),
+	}
+	estimatorBuilder, _ := estimator.NewEstimatorBuilder(
+		opts.EstimatorName,
+		estimator.NewThresholdBasedEstimationLimiter(thresholds),
+		estimator.NewDecreasingPodOrderer(),
+		/* EstimationAnalyserFunc */ nil,
+	)
+	expanderEstimator := estimatorBuilder(
+		predicateChecker,
+		clusterSnapshot,
+	)
+
 	if scaleUpOrchestrator == nil {
 		scaleUpOrchestrator = orchestrator.New()
 	}
-	scaleUpOrchestrator.Initialize(autoscalingContext, processors, clusterStateRegistry, taintConfig)
+	scaleUpOrchestrator.Initialize(autoscalingContext, processors, clusterStateRegistry, expanderEstimator, taintConfig)
 
 	// Set the initial scale times to be less than the start time so as to
 	// not start in cooldown mode.

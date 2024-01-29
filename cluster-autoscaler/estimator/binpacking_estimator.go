@@ -44,7 +44,6 @@ func NewBinpackingNodeEstimator(
 	clusterSnapshot clustersnapshot.ClusterSnapshot,
 	limiter EstimationLimiter,
 	podOrderer EstimationPodOrderer,
-	context EstimationContext,
 	estimationAnalyserFunc EstimationAnalyserFunc,
 ) *BinpackingNodeEstimator {
 	return &BinpackingNodeEstimator{
@@ -52,9 +51,14 @@ func NewBinpackingNodeEstimator(
 		clusterSnapshot:        clusterSnapshot,
 		limiter:                limiter,
 		podOrderer:             podOrderer,
-		context:                context,
+		context:                nil, // context SHOULD be set on Estimate
 		estimationAnalyserFunc: estimationAnalyserFunc,
 	}
+}
+
+// SetContext
+func (e *BinpackingNodeEstimator) SetContext(context EstimationContext) {
+	e.context = context
 }
 
 // Estimate implements First-Fit bin-packing approximation algorithm
