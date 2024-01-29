@@ -56,8 +56,9 @@ func TestGetMatchingVpa(t *testing.T) {
 		Name:       sts.Name,
 		APIVersion: sts.APIVersion,
 	}
-	podBuilder := test.Pod().WithName("test-pod").WithLabels(map[string]string{"app": "test"}).WithCreator(&sts.ObjectMeta, &sts.TypeMeta).
+	podBuilderWithoutCreator := test.Pod().WithName("test-pod").WithLabels(map[string]string{"app": "test"}).
 		AddContainer(test.Container().WithName("i-am-container").Get())
+	podBuilder := podBuilderWithoutCreator.WithCreator(&sts.ObjectMeta, &sts.TypeMeta)
 	vpaBuilder := test.VerticalPodAutoscaler().WithContainer("i-am-container")
 	testCases := []struct {
 		name            string
@@ -76,6 +77,14 @@ func TestGetMatchingVpa(t *testing.T) {
 			labelSelector:   "app = test",
 			expectedFound:   true,
 			expectedVpaName: "auto-vpa",
+		}, {
+			name: "matching selector but not match ownerRef (orphan pod)",
+			pod:  podBuilderWithoutCreator.Get(),
+			vpas: []*vpa_types.VerticalPodAutoscaler{
+				vpaBuilder.WithUpdateMode(vpa_types.UpdateModeAuto).WithName("auto-vpa").WithTargetRef(targetRef).Get(),
+			},
+			labelSelector: "app = test",
+			expectedFound: false,
 		}, {
 			name: "not matching selector",
 			pod:  podBuilder.Get(),
