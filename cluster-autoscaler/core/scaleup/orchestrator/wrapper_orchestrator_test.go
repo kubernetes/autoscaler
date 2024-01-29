@@ -35,7 +35,7 @@ import (
 
 const (
 	provisioningRequestErrorMsg = "provisioningRequestError"
-	regularPodsErrorMsg         = "regularPodsErrorMsg"
+	regularPodsErrorMsg         = "regularPodsError"
 )
 
 func TestScaleUp(t *testing.T) {
