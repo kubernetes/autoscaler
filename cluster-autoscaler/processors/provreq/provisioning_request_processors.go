@@ -28,7 +28,8 @@ import (
 )
 
 const (
-	provisioningRequestPodAnnotationKey = "cluster-autoscaler.kubernetes.io/consume-provisioning-request"
+	// ProvisioningRequestPodAnnotationKey is an annotation on pod that indicate that pod was created by ProvisioningRequest.
+	ProvisioningRequestPodAnnotationKey = "cluster-autoscaler.kubernetes.io/consume-provisioning-request"
 	maxProvReqEvent                     = 50
 )
 
@@ -101,6 +102,6 @@ func provisioningRequestName(pod *v1.Pod) (string, bool) {
 	if pod == nil || pod.Annotations == nil {
 		return "", false
 	}
-	provReqName, found := pod.Annotations[provisioningRequestPodAnnotationKey]
+	provReqName, found := pod.Annotations[ProvisioningRequestPodAnnotationKey]
 	return provReqName, found
 }

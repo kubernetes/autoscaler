@@ -35,11 +35,11 @@ const (
 
 // CreateKubeClient creates kube client based on AutoscalingOptions.KubeClientOptions
 func CreateKubeClient(opts config.KubeClientOptions) kube_client.Interface {
-	return kube_client.NewForConfigOrDie(getKubeConfig(opts))
+	return kube_client.NewForConfigOrDie(GetKubeConfig(opts))
 }
 
-// getKubeConfig returns the rest config from AutoscalingOptions.KubeClientOptions.
-func getKubeConfig(opts config.KubeClientOptions) *rest.Config {
+// GetKubeConfig returns the rest config from AutoscalingOptions.KubeClientOptions.
+func GetKubeConfig(opts config.KubeClientOptions) *rest.Config {
 	var kubeConfig *rest.Config
 	var err error
 
