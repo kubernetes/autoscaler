@@ -215,6 +215,22 @@ var (
 		}, []string{"node_group"},
 	)
 
+	nodesGroupHealthiness = k8smetrics.NewGaugeVec(
+		&k8smetrics.GaugeOpts{
+			Namespace: caNamespace,
+			Name:      "node_group_healthiness",
+			Help:      "Whether or not node group is healthy enough for autoscaling. 1 if it is, 0 otherwise.",
+		}, []string{"node_group"},
+	)
+
+	nodeGroupBackOffStatus = k8smetrics.NewGaugeVec(
+		&k8smetrics.GaugeOpts{
+			Namespace: caNamespace,
+			Name:      "node_group_backoff_status",
+			Help:      "Whether or not node group is backoff for not autoscaling. 1 if it is, 0 otherwise.",
+		}, []string{"node_group", "reason"},
+	)
+
 	/**** Metrics related to autoscaler execution ****/
 	lastActivity = k8smetrics.NewGaugeVec(
 		&k8smetrics.GaugeOpts{
@@ -229,7 +245,7 @@ var (
 			Namespace: caNamespace,
 			Name:      "function_duration_seconds",
 			Help:      "Time taken by various parts of CA main loop.",
-			Buckets:   []float64{0.01, 0.05, 0.1, 0.5, 1.0, 2.5, 5.0, 7.5, 10.0, 12.5, 15.0, 17.5, 20.0, 22.5, 25.0, 27.5, 30.0, 50.0, 75.0, 100.0, 1000.0},
+			Buckets:   k8smetrics.ExponentialBuckets(0.01, 1.5, 30), // 0.01, 0.015, 0.0225, ..., 852.2269299239293, 1278.3403948858938
 		}, []string{"function"},
 	)
 
@@ -438,6 +454,8 @@ func RegisterAll(emitPerNodeGroupMetrics bool) {
 		legacyregistry.MustRegister(nodesGroupMinNodes)
 		legacyregistry.MustRegister(nodesGroupMaxNodes)
 		legacyregistry.MustRegister(nodesGroupTargetSize)
+		legacyregistry.MustRegister(nodesGroupHealthiness)
+		legacyregistry.MustRegister(nodeGroupBackOffStatus)
 	}
 }
 
@@ -540,6 +558,30 @@ func UpdateNodeGroupMax(nodeGroup string, maxNodes int) {
 func UpdateNodeGroupTargetSize(targetSizes map[string]int) {
 	for nodeGroup, targetSize := range targetSizes {
 		nodesGroupTargetSize.WithLabelValues(nodeGroup).Set(float64(targetSize))
+	}
+}
+
+// UpdateNodeGroupHealthStatus records if node group is healthy to autoscaling
+func UpdateNodeGroupHealthStatus(nodeGroup string, healthy bool) {
+	if healthy {
+		nodesGroupHealthiness.WithLabelValues(nodeGroup).Set(1)
+	} else {
+		nodesGroupHealthiness.WithLabelValues(nodeGroup).Set(0)
+	}
+}
+
+// UpdateNodeGroupBackOffStatus records if node group is backoff for not autoscaling
+func UpdateNodeGroupBackOffStatus(nodeGroup string, backoffReasonStatus map[string]bool) {
+	if len(backoffReasonStatus) == 0 {
+		nodeGroupBackOffStatus.WithLabelValues(nodeGroup, "").Set(0)
+	} else {
+		for reason, backoff := range backoffReasonStatus {
+			if backoff {
+				nodeGroupBackOffStatus.WithLabelValues(nodeGroup, reason).Set(1)
+			} else {
+				nodeGroupBackOffStatus.WithLabelValues(nodeGroup, reason).Set(0)
+			}
+		}
 	}
 }
 

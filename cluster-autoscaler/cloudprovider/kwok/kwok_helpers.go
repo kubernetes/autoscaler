@@ -25,7 +25,8 @@ import (
 	"log"
 	"strconv"
 	"strings"
-	"time"
+
+	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -33,11 +34,10 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/apimachinery/pkg/util/yaml"
-	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/client-go/kubernetes"
 	clientscheme "k8s.io/client-go/kubernetes/scheme"
 	v1lister "k8s.io/client-go/listers/core/v1"
-	klog "k8s.io/klog/v2"
+	"k8s.io/klog/v2"
 )
 
 const (
@@ -155,13 +155,19 @@ func createNodegroups(nodes []*apiv1.Node, kubeClient kubernetes.Interface, kc *
 		}
 
 		ngName := getNGName(nodes[i], kc)
+		if ngName == "" {
+			klog.Fatalf("%s '%s' for node '%s' not present in the manifest",
+				kc.status.groupNodesBy, kc.status.key,
+				nodes[i].GetName())
+		}
+
 		if ngs[ngName] != nil {
 			ngs[ngName].targetSize += 1
 			continue
 		}
 
 		ng := parseAnnotations(nodes[i], kc)
-		ng.name = getNGName(nodes[i], kc)
+		ng.name = ngName
 		sanitizeNode(nodes[i])
 		prepareNode(nodes[i], ng.name)
 		ng.nodeTemplate = nodes[i]
@@ -250,6 +256,8 @@ func parseAnnotations(no *apiv1.Node, kc *KwokProviderConfig) *NodeGroup {
 	}
 }
 
+// getNGName returns the node group name of the given k8s node object.
+// Return empty string if no node group is found.
 func getNGName(no *apiv1.Node, kc *KwokProviderConfig) string {
 
 	if no.GetAnnotations()[NGNameAnnotation] != "" {
@@ -263,16 +271,8 @@ func getNGName(no *apiv1.Node, kc *KwokProviderConfig) string {
 	case "label":
 		ngName = no.GetLabels()[kc.status.key]
 	default:
-		klog.Fatal("grouping criteria for nodes is not set (expected: 'annotation' or 'label')")
+		klog.Warning("grouping criteria for nodes is not set (expected: 'annotation' or 'label')")
 	}
-
-	if ngName == "" {
-		klog.Fatalf("%s '%s' for node '%s' not present in the manifest",
-			kc.status.groupNodesBy, kc.status.key,
-			no.GetName())
-	}
-
-	ngName = fmt.Sprintf("%s-%v", ngName, time.Now().Unix())
 
 	return ngName
 }
