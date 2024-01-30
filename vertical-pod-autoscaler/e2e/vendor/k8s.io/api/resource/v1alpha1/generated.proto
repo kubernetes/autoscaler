@@ -248,8 +248,7 @@ message ResourceClaimStatus {
   // There can be at most 32 such reservations. This may get increased in
   // the future, but not reduced.
   //
-  // +listType=map
-  // +listMapKey=uid
+  // +listType=set
   // +optional
   repeated ResourceClaimConsumerReference reservedFor = 3;
 

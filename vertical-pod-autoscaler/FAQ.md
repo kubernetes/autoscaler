@@ -3,6 +3,7 @@
 ## Contents
 
 - [VPA restarts my pods but does not modify CPU or memory settings. Why?](#vpa-restarts-my-pods-but-does-not-modify-CPU-or-memory-settings)
+- [How can I apply VPA to my Custom Resource?](#how-can-i-apply-vpa-to-my-custom-resource)
 - [How can I use Prometheus as a history provider for the VPA recommender?](#how-can-i-use-prometheus-as-a-history-provider-for-the-vpa-recommender)
 - [I get recommendations for my single pod replicaSet, but they are not applied. Why?](#i-get-recommendations-for-my-single-pod-replicaset-but-they-are-not-applied)
 - [What are the parameters to VPA recommender?](#what-are-the-parameters-to-vpa-recommender)
@@ -106,6 +107,18 @@ You can also curl the service's endpoint from within the cluster to make sure it
 is serving.
 
 Note: the commands will differ if you deploy VPA in a different namespace.
+
+### How can I apply VPA to my Custom Resource?
+
+The VPA can scale not only the built-in resources like Deployment or StatefulSet, but also Custom Resources which manage
+Pods. Just like the Horizontal Pod Autoscaler, the VPA requires that the Custom Resource implements the
+[`/scale` subresource](https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/#scale-subresource)
+with the optional field `labelSelector`,
+which corresponds to `.scale.status.selector`. VPA doesn't use the `/scale` subresource for the actual scaling, but uses
+this label selector to identify the Pods managed by a Custom Resource. As VPA relies on Pod eviction to apply new
+resource recommendations, this ensures that all Pods with a matching VPA object are managed by a controller that will
+recreate them after eviction. Furthermore, it avoids misconfigurations that happened in the past when label selectors
+were specified manually.
 
 ### How can I use Prometheus as a history provider for the VPA recommender
 

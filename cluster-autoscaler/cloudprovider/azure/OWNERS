@@ -10,3 +10,7 @@ reviewers:
 - tallaxes
 emeritus_approvers:
 - marwanad
+
+
+labels:
+- area/provider/azure

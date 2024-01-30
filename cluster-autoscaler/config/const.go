@@ -16,7 +16,13 @@ limitations under the License.
 
 package config
 
+import "time"
+
 const (
+	// SchedulerConfigFileFlag is the name of the flag
+	// for passing in custom scheduler config for in-tree scheduelr plugins
+	SchedulerConfigFileFlag = "scheduler-config-file"
+
 	// DefaultMaxClusterCores is the default maximum number of cores in the cluster.
 	DefaultMaxClusterCores = 5000 * 64
 	// DefaultMaxClusterMemory is the default maximum number of gigabytes of memory in cluster.
@@ -32,4 +38,14 @@ const (
 	DefaultScaleDownUnreadyTimeKey = "scaledownunreadytime"
 	// DefaultMaxNodeProvisionTimeKey identifies MaxNodeProvisionTime autoscaling option
 	DefaultMaxNodeProvisionTimeKey = "maxnodeprovisiontime"
+	// DefaultIgnoreDaemonSetsUtilizationKey identifies IgnoreDaemonSetsUtilization autoscaling option
+	DefaultIgnoreDaemonSetsUtilizationKey = "ignoredaemonsetsutilization"
+	// DefaultScaleDownUnneededTime identifies ScaleDownUnneededTime autoscaling option
+	DefaultScaleDownUnneededTime = 10 * time.Minute
+	// DefaultScaleDownUnreadyTime identifies ScaleDownUnreadyTime autoscaling option
+	DefaultScaleDownUnreadyTime = 20 * time.Minute
+	// DefaultScaleDownUtilizationThreshold identifies ScaleDownUtilizationThreshold autoscaling option
+	DefaultScaleDownUtilizationThreshold = 0.5
+	// DefaultScaleDownGpuUtilizationThreshold identifies ScaleDownGpuUtilizationThreshold autoscaling option
+	DefaultScaleDownGpuUtilizationThreshold = 0.5
 )

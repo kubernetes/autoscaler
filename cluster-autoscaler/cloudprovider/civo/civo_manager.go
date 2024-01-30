@@ -119,51 +119,92 @@ func newManager(configReader io.Reader, discoveryOpts cloudprovider.NodeGroupDis
 // Refresh refreshes the cache holding the nodegroups. This is called by the CA
 // based on the `--scan-interval`. By default it's 10 seconds.
 func (m *Manager) Refresh() error {
-	var minSize int
-	var maxSize int
-	var workerConfigFound = false
-	for _, specString := range m.discoveryOpts.NodeGroupSpecs {
-		spec, err := dynamic.SpecFromString(specString, true)
-		if err != nil {
-			return fmt.Errorf("failed to parse node group spec: %v", err)
-		}
-		if spec.Name == "workers" {
-			minSize = spec.MinSize
-			maxSize = spec.MaxSize
-			workerConfigFound = true
-			klog.V(4).Infof("found configuration for workers node group: min: %d max: %d", minSize, maxSize)
-		}
-	}
-	if !workerConfigFound {
-		return fmt.Errorf("no workers node group configuration found")
-	}
+	var (
+		minSize           int
+		maxSize           int
+		workerConfigFound = false
+		poolConfigFound   = false
+		poolGroups        []*NodeGroup
+		workerGroups      []*NodeGroup
+	)
 
 	pools, err := m.client.ListKubernetesClusterPools(m.clusterID)
 	if err != nil {
 		return fmt.Errorf("couldn't list Kubernetes cluster pools: %s", err)
 	}
 
-	klog.V(4).Infof("refreshing workers node group kubernetes cluster: %q min: %d max: %d", m.clusterID, minSize, maxSize)
+	klog.V(4).Infof("refreshing workers node group kubernetes cluster: %q", m.clusterID)
 
-	var group []*NodeGroup
-	for _, nodePool := range pools {
-		np := nodePool
-		klog.V(4).Infof("adding node pool: %q", nodePool.ID)
+	for _, specString := range m.discoveryOpts.NodeGroupSpecs {
+		spec, err := dynamic.SpecFromString(specString, true)
+		if err != nil {
+			return fmt.Errorf("failed to parse node group spec: %v", err)
+		}
 
-		group = append(group, &NodeGroup{
-			id:        nodePool.ID,
-			clusterID: m.clusterID,
-			client:    m.client,
-			nodePool:  &np,
-			minSize:   minSize,
-			maxSize:   maxSize,
-		})
+		if spec.Name == "workers" {
+			minSize = spec.MinSize
+			maxSize = spec.MaxSize
+			workerConfigFound = true
+			klog.V(4).Infof("found configuration for workers node group: min: %d max: %d", minSize, maxSize)
+		} else {
+			poolConfigFound = true
+			pool := m.getNodeGroupConfig(spec, pools)
+			if pool != nil {
+				poolGroups = append(poolGroups, pool)
+			}
+			klog.V(4).Infof("found configuration for pool node group: min: %d max: %d", minSize, maxSize)
+		}
 	}
 
-	if len(group) == 0 {
+	if poolConfigFound {
+		m.nodeGroups = poolGroups
+	} else if workerConfigFound {
+		for _, nodePool := range pools {
+			np := nodePool
+			klog.V(4).Infof("adding node pool: %q", nodePool.ID)
+
+			workerGroups = append(workerGroups, &NodeGroup{
+				id:        nodePool.ID,
+				clusterID: m.clusterID,
+				client:    m.client,
+				nodePool:  &np,
+				minSize:   minSize,
+				maxSize:   maxSize,
+			})
+		}
+		m.nodeGroups = workerGroups
+	} else {
+		return fmt.Errorf("no workers node group configuration found")
+	}
+
+	// If both config found, pool config get precedence
+	if poolConfigFound && workerConfigFound {
+		m.nodeGroups = poolGroups
+	}
+
+	if len(m.nodeGroups) == 0 {
 		klog.V(4).Info("cluster-autoscaler is disabled. no node pools are configured")
 	}
 
-	m.nodeGroups = group
+	return nil
+}
+
+// getNodeGroupConfig get the node group configuration from the cluster pool configuration
+func (m *Manager) getNodeGroupConfig(spec *dynamic.NodeGroupSpec, pools []civocloud.KubernetesPool) *NodeGroup {
+	for _, nodePool := range pools {
+		if spec.Name == nodePool.ID {
+			np := nodePool
+			klog.V(4).Infof("adding node pool: %q min: %d max: %d", nodePool.ID, spec.MinSize, spec.MaxSize)
+
+			return &NodeGroup{
+				id:        nodePool.ID,
+				clusterID: m.clusterID,
+				client:    m.client,
+				nodePool:  &np,
+				minSize:   spec.MinSize,
+				maxSize:   spec.MaxSize,
+			}
+		}
+	}
 	return nil
 }

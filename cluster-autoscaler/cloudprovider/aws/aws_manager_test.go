@@ -103,12 +103,34 @@ func TestExtractAllocatableResourcesFromAsg(t *testing.T) {
 	assert.Equal(t, resource.NewQuantity(5, resource.DecimalSI).String(), labels["custom-resource"].String())
 }
 
+func TestExtractAllocatableResourcesFromTags(t *testing.T) {
+	tags := map[string]string{
+		"k8s.io/cluster-autoscaler/node-template/resources/cpu":               "100m",
+		"k8s.io/cluster-autoscaler/node-template/resources/memory":            "100M",
+		"k8s.io/cluster-autoscaler/node-template/resources/ephemeral-storage": "20G",
+		"k8s.io/cluster-autoscaler/node-template/resources/custom-resource":   "5",
+		"k8s.io/cluster-autoscaler/node-template/resources/error-resource":    "GG",
+	}
+
+	labels := extractAllocatableResourcesFromTags(tags)
+
+	assert.Equal(t, 4, len(labels))
+	assert.NotContains(t, labels, "error-resource")
+	assert.Equal(t, resource.NewMilliQuantity(100, resource.DecimalSI).String(), labels["cpu"].String())
+	expectedMemory := resource.MustParse("100M")
+	assert.Equal(t, (&expectedMemory).String(), labels["memory"].String())
+	expectedEphemeralStorage := resource.MustParse("20G")
+	assert.Equal(t, (&expectedEphemeralStorage).String(), labels["ephemeral-storage"].String())
+	assert.Equal(t, resource.NewQuantity(5, resource.DecimalSI).String(), labels["custom-resource"].String())
+}
+
 func TestGetAsgOptions(t *testing.T) {
 	defaultOptions := config.NodeGroupAutoscalingOptions{
 		ScaleDownUtilizationThreshold:    0.1,
 		ScaleDownGpuUtilizationThreshold: 0.2,
 		ScaleDownUnneededTime:            time.Second,
 		ScaleDownUnreadyTime:             time.Minute,
+		IgnoreDaemonSetsUtilization:      false,
 	}
 
 	tests := []struct {
@@ -124,39 +146,60 @@ func TestGetAsgOptions(t *testing.T) {
 		{
 			description: "keep defaults on invalid tags values",
 			tags: map[string]string{
-				"scaledownutilizationthreshold": "not-a-float",
-				"scaledownunneededtime":         "not-a-duration",
-				"ScaleDownUnreadyTime":          "",
+				config.DefaultScaleDownUtilizationThresholdKey: "not-a-float",
+				config.DefaultScaleDownUnneededTimeKey:         "not-a-duration",
+				"ScaleDownUnreadyTime":                         "",
+				config.DefaultIgnoreDaemonSetsUtilizationKey:   "not-a-bool",
 			},
 			expected: &defaultOptions,
 		},
 		{
 			description: "use provided tags and fill missing with defaults",
 			tags: map[string]string{
-				"scaledownutilizationthreshold": "0.42",
-				"scaledownunneededtime":         "1h",
+				config.DefaultScaleDownUtilizationThresholdKey: "0.42",
+				config.DefaultScaleDownUnneededTimeKey:         "1h",
+				config.DefaultIgnoreDaemonSetsUtilizationKey:   "true",
 			},
 			expected: &config.NodeGroupAutoscalingOptions{
 				ScaleDownUtilizationThreshold:    0.42,
 				ScaleDownGpuUtilizationThreshold: defaultOptions.ScaleDownGpuUtilizationThreshold,
 				ScaleDownUnneededTime:            time.Hour,
 				ScaleDownUnreadyTime:             defaultOptions.ScaleDownUnreadyTime,
+				IgnoreDaemonSetsUtilization:      true,
+			},
+		},
+		{
+			description: "use provided tags (happy path)",
+			tags: map[string]string{
+				config.DefaultScaleDownUtilizationThresholdKey:    "0.42",
+				config.DefaultScaleDownUnneededTimeKey:            "1h",
+				config.DefaultScaleDownGpuUtilizationThresholdKey: "0.7",
+				config.DefaultScaleDownUnreadyTimeKey:             "25m",
+				config.DefaultIgnoreDaemonSetsUtilizationKey:      "true",
+			},
+			expected: &config.NodeGroupAutoscalingOptions{
+				ScaleDownUtilizationThreshold:    0.42,
+				ScaleDownGpuUtilizationThreshold: 0.7,
+				ScaleDownUnneededTime:            time.Hour,
+				ScaleDownUnreadyTime:             25 * time.Minute,
+				IgnoreDaemonSetsUtilization:      true,
 			},
 		},
 		{
 			description: "ignore unknown tags",
 			tags: map[string]string{
-				"scaledownutilizationthreshold":    "0.6",
-				"scaledowngpuutilizationthreshold": "0.7",
-				"scaledownunneededtime":            "1m",
-				"scaledownunreadytime":             "1h",
-				"notyetspecified":                  "42",
+				config.DefaultScaleDownUtilizationThresholdKey:    "0.6",
+				config.DefaultScaleDownGpuUtilizationThresholdKey: "0.7",
+				config.DefaultScaleDownUnneededTimeKey:            "1m",
+				config.DefaultScaleDownUnreadyTimeKey:             "1h",
+				"notyetspecified":                                 "42",
 			},
 			expected: &config.NodeGroupAutoscalingOptions{
 				ScaleDownUtilizationThreshold:    0.6,
 				ScaleDownGpuUtilizationThreshold: 0.7,
 				ScaleDownUnneededTime:            time.Minute,
 				ScaleDownUnreadyTime:             time.Hour,
+				IgnoreDaemonSetsUtilization:      false,
 			},
 		},
 	}
@@ -212,11 +255,17 @@ func TestBuildNodeFromTemplateWithManagedNodegroup(t *testing.T) {
 		Value:  taintValue2,
 	}
 
+	ephemeralStorageKey := "ephemeral-storage"
+	diskSizeGb := 80
+	tagKey1 := fmt.Sprintf("k8s.io/cluster-autoscaler/node-template/resources/%s", ephemeralStorageKey)
+	tagValue1 := fmt.Sprintf("%dGi", diskSizeGb)
+
 	err := mngCache.Add(managedNodegroupCachedObject{
 		name:        ngNameLabelValue,
 		clusterName: clusterNameLabelValue,
 		taints:      []apiv1.Taint{taint1, taint2},
 		labels:      map[string]string{labelKey1: labelValue1, labelKey2: labelValue2},
+		tags:        map[string]string{tagKey1: tagValue1},
 	})
 	require.NoError(t, err)
 
@@ -239,6 +288,9 @@ func TestBuildNodeFromTemplateWithManagedNodegroup(t *testing.T) {
 		},
 	})
 	assert.NoError(t, observedErr)
+	esValue, esExist := observedNode.Status.Capacity[apiv1.ResourceName(ephemeralStorageKey)]
+	assert.True(t, esExist)
+	assert.Equal(t, int64(diskSizeGb*1024*1024*1024), esValue.Value())
 	assert.GreaterOrEqual(t, len(observedNode.Labels), 4)
 	ngNameValue, ngLabelExist := observedNode.Labels["nodegroup-name"]
 	assert.True(t, ngLabelExist)

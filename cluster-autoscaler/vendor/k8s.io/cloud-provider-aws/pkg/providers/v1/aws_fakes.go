@@ -91,12 +91,6 @@ func (s *FakeAWSServices) WithAz(az string) *FakeAWSServices {
 	return s
 }
 
-// WithRegion sets the AWS region
-func (s *FakeAWSServices) WithRegion(region string) *FakeAWSServices {
-	s.region = region
-	return s
-}
-
 // Compute returns a fake EC2 client
 func (s *FakeAWSServices) Compute(region string) (EC2, error) {
 	return s.ec2, nil
@@ -430,11 +424,6 @@ func (m *FakeMetadata) GetMetadata(key string) (string, error) {
 	}
 
 	return "", nil
-}
-
-// Region returns AWS region
-func (m *FakeMetadata) Region() (string, error) {
-	return m.aws.region, nil
 }
 
 // FakeELB is a fake ELB client used for testing

@@ -28,7 +28,9 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/api"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupconfig"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 
@@ -45,10 +47,9 @@ const (
 	MaxNodeStartupTime = 15 * time.Minute
 )
 
-type maxNodeProvisionTimeProvider interface {
-	// GetMaxNodeProvisionTime returns MaxNodeProvisionTime value that should be used for the given NodeGroup.
-	GetMaxNodeProvisionTime(nodeGroup cloudprovider.NodeGroup) (time.Duration, error)
-}
+var (
+	errMaxNodeProvisionTimeProviderNotSet = errors.New("MaxNodeProvisionTimeProvider was not set in cluster state")
+)
 
 // ScaleUpRequest contains information about the requested node group scale up.
 type ScaleUpRequest struct {
@@ -135,7 +136,7 @@ type ClusterStateRegistry struct {
 	previousCloudProviderNodeInstances map[string][]cloudprovider.Instance
 	cloudProviderNodeInstancesCache    *utils.CloudProviderNodeInstancesCache
 	interrupt                          chan struct{}
-	maxNodeProvisionTimeProvider       maxNodeProvisionTimeProvider
+	nodeGroupConfigProcessor           nodegroupconfig.NodeGroupConfigProcessor
 
 	// scaleUpFailures contains information about scale-up failures for each node group. It should be
 	// cleared periodically to avoid unnecessary accumulation.
@@ -143,7 +144,7 @@ type ClusterStateRegistry struct {
 }
 
 // NewClusterStateRegistry creates new ClusterStateRegistry.
-func NewClusterStateRegistry(cloudProvider cloudprovider.CloudProvider, config ClusterStateRegistryConfig, logRecorder *utils.LogEventRecorder, backoff backoff.Backoff, maxNodeProvisionTimeProvider maxNodeProvisionTimeProvider) *ClusterStateRegistry {
+func NewClusterStateRegistry(cloudProvider cloudprovider.CloudProvider, config ClusterStateRegistryConfig, logRecorder *utils.LogEventRecorder, backoff backoff.Backoff, nodeGroupConfigProcessor nodegroupconfig.NodeGroupConfigProcessor) *ClusterStateRegistry {
 	emptyStatus := &api.ClusterAutoscalerStatus{
 		ClusterwideConditions: make([]api.ClusterAutoscalerCondition, 0),
 		NodeGroupStatuses:     make([]api.NodeGroupStatus, 0),
@@ -167,7 +168,7 @@ func NewClusterStateRegistry(cloudProvider cloudprovider.CloudProvider, config C
 		cloudProviderNodeInstancesCache: utils.NewCloudProviderNodeInstancesCache(cloudProvider),
 		interrupt:                       make(chan struct{}),
 		scaleUpFailures:                 make(map[string][]ScaleUpFailure),
-		maxNodeProvisionTimeProvider:    maxNodeProvisionTimeProvider,
+		nodeGroupConfigProcessor:        nodeGroupConfigProcessor,
 	}
 }
 
@@ -194,12 +195,13 @@ func (csr *ClusterStateRegistry) RegisterOrUpdateScaleUp(nodeGroup cloudprovider
 }
 
 // MaxNodeProvisionTime returns MaxNodeProvisionTime value that should be used for the given NodeGroup.
+// TODO(BigDarkClown): remove this method entirely, it is a redundant wrapper
 func (csr *ClusterStateRegistry) MaxNodeProvisionTime(nodeGroup cloudprovider.NodeGroup) (time.Duration, error) {
-	return csr.maxNodeProvisionTimeProvider.GetMaxNodeProvisionTime(nodeGroup)
+	return csr.nodeGroupConfigProcessor.GetMaxNodeProvisionTime(nodeGroup)
 }
 
 func (csr *ClusterStateRegistry) registerOrUpdateScaleUpNoLock(nodeGroup cloudprovider.NodeGroup, delta int, currentTime time.Time) {
-	maxNodeProvisionTime, err := csr.maxNodeProvisionTimeProvider.GetMaxNodeProvisionTime(nodeGroup)
+	maxNodeProvisionTime, err := csr.MaxNodeProvisionTime(nodeGroup)
 	if err != nil {
 		klog.Warningf("Couldn't update scale up request: failed to get maxNodeProvisionTime for node group %s: %w", nodeGroup.Id(), err)
 		return
@@ -266,7 +268,15 @@ func (csr *ClusterStateRegistry) updateScaleRequests(currentTime time.Time) {
 			csr.logRecorder.Eventf(apiv1.EventTypeWarning, "ScaleUpTimedOut",
 				"Nodes added to group %s failed to register within %v",
 				scaleUpRequest.NodeGroup.Id(), currentTime.Sub(scaleUpRequest.Time))
-			csr.registerFailedScaleUpNoLock(scaleUpRequest.NodeGroup, metrics.Timeout, cloudprovider.OtherErrorClass, "timeout", currentTime)
+			availableGPUTypes := csr.cloudProvider.GetAvailableGPUTypes()
+			gpuResource, gpuType := "", ""
+			nodeInfo, err := scaleUpRequest.NodeGroup.TemplateNodeInfo()
+			if err != nil {
+				klog.Warningf("Failed to get template node info for a node group: %s", err)
+			} else {
+				gpuResource, gpuType = gpu.GetGpuInfoForMetrics(csr.cloudProvider.GetNodeGpuConfig(nodeInfo.Node()), availableGPUTypes, nodeInfo.Node(), scaleUpRequest.NodeGroup)
+			}
+			csr.registerFailedScaleUpNoLock(scaleUpRequest.NodeGroup, metrics.Timeout, cloudprovider.OtherErrorClass, "timeout", gpuResource, gpuType, currentTime)
 			delete(csr.scaleUpRequests, nodeGroupName)
 		}
 	}
@@ -290,15 +300,15 @@ func (csr *ClusterStateRegistry) backoffNodeGroup(nodeGroup cloudprovider.NodeGr
 // RegisterFailedScaleUp should be called after getting error from cloudprovider
 // when trying to scale-up node group. It will mark this group as not safe to autoscale
 // for some time.
-func (csr *ClusterStateRegistry) RegisterFailedScaleUp(nodeGroup cloudprovider.NodeGroup, reason metrics.FailedScaleUpReason, currentTime time.Time) {
+func (csr *ClusterStateRegistry) RegisterFailedScaleUp(nodeGroup cloudprovider.NodeGroup, reason metrics.FailedScaleUpReason, gpuResourceName, gpuType string, currentTime time.Time) {
 	csr.Lock()
 	defer csr.Unlock()
-	csr.registerFailedScaleUpNoLock(nodeGroup, reason, cloudprovider.OtherErrorClass, string(reason), currentTime)
+	csr.registerFailedScaleUpNoLock(nodeGroup, reason, cloudprovider.OtherErrorClass, string(reason), gpuResourceName, gpuType, currentTime)
 }
 
-func (csr *ClusterStateRegistry) registerFailedScaleUpNoLock(nodeGroup cloudprovider.NodeGroup, reason metrics.FailedScaleUpReason, errorClass cloudprovider.InstanceErrorClass, errorCode string, currentTime time.Time) {
+func (csr *ClusterStateRegistry) registerFailedScaleUpNoLock(nodeGroup cloudprovider.NodeGroup, reason metrics.FailedScaleUpReason, errorClass cloudprovider.InstanceErrorClass, errorCode string, gpuResourceName, gpuType string, currentTime time.Time) {
 	csr.scaleUpFailures[nodeGroup.Id()] = append(csr.scaleUpFailures[nodeGroup.Id()], ScaleUpFailure{NodeGroup: nodeGroup, Reason: reason, Time: currentTime})
-	metrics.RegisterFailedScaleUp(reason)
+	metrics.RegisterFailedScaleUp(reason, gpuResourceName, gpuType)
 	csr.backoffNodeGroup(nodeGroup, errorClass, errorCode, currentTime)
 }
 
@@ -605,7 +615,7 @@ func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
 			continue
 		}
 		perNgCopy := perNodeGroup[nodeGroup.Id()]
-		maxNodeProvisionTime, err := csr.maxNodeProvisionTimeProvider.GetMaxNodeProvisionTime(nodeGroup)
+		maxNodeProvisionTime, err := csr.MaxNodeProvisionTime(nodeGroup)
 		if err != nil {
 			klog.Warningf("Failed to get maxNodeProvisionTime for node %s in node group %s: %w", unregistered.Node.Name, nodeGroup.Id(), err)
 			continue
@@ -648,8 +658,9 @@ func (csr *ClusterStateRegistry) updateIncorrectNodeGroupSizes(currentTime time.
 			}
 			continue
 		}
-		if len(readiness.Registered) > acceptableRange.MaxNodes ||
-			len(readiness.Registered) < acceptableRange.MinNodes {
+		unregisteredNodes := len(readiness.Unregistered) + len(readiness.LongUnregistered)
+		if len(readiness.Registered) > acceptableRange.CurrentTarget ||
+			len(readiness.Registered) < acceptableRange.CurrentTarget-unregisteredNodes {
 			incorrect := IncorrectNodeGroupSize{
 				CurrentSize:   len(readiness.Registered),
 				ExpectedSize:  acceptableRange.CurrentTarget,
@@ -976,7 +987,9 @@ func (csr *ClusterStateRegistry) getCloudProviderNodeInstances() (map[string][]c
 	return csr.cloudProviderNodeInstancesCache.GetCloudProviderNodeInstances()
 }
 
-// Calculates which of the existing cloud provider nodes are not registered in Kubernetes.
+// Calculates which of the existing cloud provider nodes are not yet registered in Kubernetes.
+// As we are expecting for those instances to be Ready soon (O(~minutes)), to speed up the scaling process,
+// we are injecting a temporary, fake nodes to continue scaling based on in-memory cluster state.
 func getNotRegisteredNodes(allNodes []*apiv1.Node, cloudProviderNodeInstances map[string][]cloudprovider.Instance, time time.Time) []UnregisteredNode {
 	registered := sets.NewString()
 	for _, node := range allNodes {
@@ -985,15 +998,19 @@ func getNotRegisteredNodes(allNodes []*apiv1.Node, cloudProviderNodeInstances ma
 	notRegistered := make([]UnregisteredNode, 0)
 	for _, instances := range cloudProviderNodeInstances {
 		for _, instance := range instances {
-			if !registered.Has(instance.Id) {
+			if !registered.Has(instance.Id) && expectedToRegister(instance) {
 				notRegistered = append(notRegistered, UnregisteredNode{
-					Node:              fakeNode(instance, cloudprovider.FakeNodeUnregistered),
+					Node:              FakeNode(instance, cloudprovider.FakeNodeUnregistered),
 					UnregisteredSince: time,
 				})
 			}
 		}
 	}
 	return notRegistered
+}
+
+func expectedToRegister(instance cloudprovider.Instance) bool {
+	return instance.Status != nil && instance.Status.State != cloudprovider.InstanceDeleting && instance.Status.ErrorInfo == nil
 }
 
 // Calculates which of the registered nodes in Kubernetes that do not exist in cloud provider.
@@ -1085,9 +1102,17 @@ func (csr *ClusterStateRegistry) handleInstanceCreationErrorsForNodeGroup(
 				errorCode,
 				csr.buildErrorMessageEventString(currentUniqueErrorMessagesForErrorCode[errorCode]))
 
+			availableGPUTypes := csr.cloudProvider.GetAvailableGPUTypes()
+			gpuResource, gpuType := "", ""
+			nodeInfo, err := nodeGroup.TemplateNodeInfo()
+			if err != nil {
+				klog.Warningf("Failed to get template node info for a node group: %s", err)
+			} else {
+				gpuResource, gpuType = gpu.GetGpuInfoForMetrics(csr.cloudProvider.GetNodeGpuConfig(nodeInfo.Node()), availableGPUTypes, nodeInfo.Node(), nodeGroup)
+			}
 			// Decrease the scale up request by the number of deleted nodes
 			csr.registerOrUpdateScaleUpNoLock(nodeGroup, -len(unseenInstanceIds), currentTime)
-			csr.registerFailedScaleUpNoLock(nodeGroup, metrics.FailedScaleUpReason(errorCode.code), errorCode.class, errorCode.code, currentTime)
+			csr.registerFailedScaleUpNoLock(nodeGroup, metrics.FailedScaleUpReason(errorCode.code), errorCode.class, errorCode.code, gpuResource, gpuType, currentTime)
 		}
 	}
 }
@@ -1156,7 +1181,7 @@ func (csr *ClusterStateRegistry) GetCreatedNodesWithErrors() []*apiv1.Node {
 		_, _, instancesByErrorCode := csr.buildInstanceToErrorCodeMappings(nodeGroupInstances)
 		for _, instances := range instancesByErrorCode {
 			for _, instance := range instances {
-				nodesWithCreateErrors = append(nodesWithCreateErrors, fakeNode(instance, cloudprovider.FakeNodeCreateError))
+				nodesWithCreateErrors = append(nodesWithCreateErrors, FakeNode(instance, cloudprovider.FakeNodeCreateError))
 			}
 		}
 	}
@@ -1173,7 +1198,8 @@ func (csr *ClusterStateRegistry) InvalidateNodeInstancesCacheEntry(nodeGroup clo
 	csr.cloudProviderNodeInstancesCache.InvalidateCacheEntry(nodeGroup)
 }
 
-func fakeNode(instance cloudprovider.Instance, reason string) *apiv1.Node {
+// FakeNode creates a fake node with Name field populated and FakeNodeReasonAnnotation added
+func FakeNode(instance cloudprovider.Instance, reason string) *apiv1.Node {
 	return &apiv1.Node{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: instance.Id,

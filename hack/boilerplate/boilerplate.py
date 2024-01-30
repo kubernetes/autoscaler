@@ -160,6 +160,7 @@ skipped_dirs = ['Godeps', 'third_party', '_gopath', '_output', '.git', 'cluster/
                 "cluster-autoscaler/cloudprovider/ionoscloud/ionos-cloud-sdk-go",
                 "cluster-autoscaler/cloudprovider/hetzner/hcloud-go",
                 "cluster-autoscaler/cloudprovider/oci",
+                "cluster-autoscaler/cloudprovider/volcengine/volcengine-go-sdk",
                 "cluster-autoscaler/cloudprovider/mcm",
                 "cluster-autoscaler/integration",
                 "cluster-autoscaler/hack",

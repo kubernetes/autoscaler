@@ -44,7 +44,7 @@ func TestMaxResourceLimitReached(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := MaxResourceLimitReached(tt.resources); !reflect.DeepEqual(got.Reasons(), tt.wantReasons) {
+			if got := NewMaxResourceLimitReached(tt.resources); !reflect.DeepEqual(got.Reasons(), tt.wantReasons) {
 				t.Errorf("MaxResourceLimitReached(%v) = %v, want %v", tt.resources, got.Reasons(), tt.wantReasons)
 			}
 		})

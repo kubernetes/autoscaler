@@ -31,6 +31,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/factory"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
@@ -54,6 +55,7 @@ type AutoscalerOptions struct {
 	DebuggingSnapshotter   debuggingsnapshot.DebuggingSnapshotter
 	RemainingPdbTracker    pdb.RemainingPdbTracker
 	ScaleUpOrchestrator    scaleup.Orchestrator
+	DeleteOptions          simulator.NodeDeleteOptions
 }
 
 // Autoscaler is the main component of CA which scales up/down node groups according to its configuration
@@ -85,13 +87,14 @@ func NewAutoscaler(opts AutoscalerOptions) (Autoscaler, errors.AutoscalerError) 
 		opts.Backoff,
 		opts.DebuggingSnapshotter,
 		opts.RemainingPdbTracker,
-		opts.ScaleUpOrchestrator), nil
+		opts.ScaleUpOrchestrator,
+		opts.DeleteOptions), nil
 }
 
 // Initialize default options if not provided.
 func initializeDefaultOptions(opts *AutoscalerOptions) error {
 	if opts.Processors == nil {
-		opts.Processors = ca_processors.DefaultProcessors()
+		opts.Processors = ca_processors.DefaultProcessors(opts.AutoscalingOptions)
 	}
 	if opts.AutoscalingKubeClients == nil {
 		opts.AutoscalingKubeClients = context.NewAutoscalingKubeClients(opts.AutoscalingOptions, opts.KubeClient, opts.EventsKubeClient)
@@ -115,7 +118,17 @@ func initializeDefaultOptions(opts *AutoscalerOptions) error {
 		opts.ExpanderStrategy = expanderStrategy
 	}
 	if opts.EstimatorBuilder == nil {
-		estimatorBuilder, err := estimator.NewEstimatorBuilder(opts.EstimatorName, estimator.NewThresholdBasedEstimationLimiter(opts.MaxNodesPerScaleUp, opts.MaxNodeGroupBinpackingDuration))
+		thresholds := []estimator.Threshold{
+			estimator.NewStaticThreshold(opts.MaxNodesPerScaleUp, opts.MaxNodeGroupBinpackingDuration),
+			estimator.NewSngCapacityThreshold(),
+			estimator.NewClusterCapacityThreshold(),
+		}
+		estimatorBuilder, err := estimator.NewEstimatorBuilder(
+			opts.EstimatorName,
+			estimator.NewThresholdBasedEstimationLimiter(thresholds),
+			estimator.NewDecreasingPodOrderer(),
+			/* EstimationAnalyserFunc */ nil,
+		)
 		if err != nil {
 			return err
 		}

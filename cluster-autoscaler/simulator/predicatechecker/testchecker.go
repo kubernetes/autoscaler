@@ -18,10 +18,27 @@ package predicatechecker
 
 import (
 	clientsetfake "k8s.io/client-go/kubernetes/fake"
+	"k8s.io/kubernetes/pkg/scheduler/apis/config"
+	scheduler_config_latest "k8s.io/kubernetes/pkg/scheduler/apis/config/latest"
 )
 
 // NewTestPredicateChecker builds test version of PredicateChecker.
 func NewTestPredicateChecker() (PredicateChecker, error) {
+	schedConfig, err := scheduler_config_latest.Default()
+	if err != nil {
+		return nil, err
+	}
+
 	// just call out to NewSchedulerBasedPredicateChecker but use fake kubeClient
-	return NewSchedulerBasedPredicateChecker(clientsetfake.NewSimpleClientset(), make(chan struct{}))
+	return NewSchedulerBasedPredicateChecker(clientsetfake.NewSimpleClientset(), schedConfig, make(chan struct{}))
+}
+
+// NewTestPredicateCheckerWithCustomConfig builds test version of PredicateChecker with custom scheduler config.
+func NewTestPredicateCheckerWithCustomConfig(schedConfig *config.KubeSchedulerConfiguration) (PredicateChecker, error) {
+	if schedConfig != nil {
+		// just call out to NewSchedulerBasedPredicateChecker but use fake kubeClient
+		return NewSchedulerBasedPredicateChecker(clientsetfake.NewSimpleClientset(), schedConfig, make(chan struct{}))
+	}
+
+	return NewTestPredicateChecker()
 }

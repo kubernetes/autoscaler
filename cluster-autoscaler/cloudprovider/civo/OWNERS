@@ -1,10 +1,8 @@
-#approvers:
-#- DMajrekar
-#- birdiesanders
-#- vishalanarase
-#- RealHarshThakur
-#reviewers:
-#- DMajrekar
-#- birdiesanders
-#- vishalanarase
-#- RealHarshThakur
+approvers:
+- vishalanarase
+
+reviewers:
+- vishalanarase
+
+labels:
+- area/provider/civo

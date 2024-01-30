@@ -28,9 +28,9 @@ const (
 	// AzureAlternativeTenantID is a constant for a key name of a secret containing the Azure credentials (tenant id).
 	AzureAlternativeTenantID = "tenantID"
 
-	// MachineSetKindAvailabilitySet is the machine set kind for AvailabilitySet
+	// MachineSetKindAvailabilitySet is the machine set kind for AvailabilitySet.
 	MachineSetKindAvailabilitySet string = "availabilityset"
-	// MachineSetKindVMO is the machine set kind for VirtualMachineScaleSet Orchestration Mode VM (VMO)
+	// MachineSetKindVMO is the machine set kind for VirtualMachineScaleSet Orchestration Mode VM (VMO).
 	MachineSetKindVMO string = "vmo"
 )
 
@@ -43,7 +43,7 @@ type AzureProviderSpec struct {
 	SubnetInfo    AzureSubnetInfo               `json:"subnetInfo,omitempty"`
 }
 
-// AzureVirtualMachineProperties is describes the properties of a Virtual Machine.
+// AzureVirtualMachineProperties describes the properties of a Virtual Machine.
 type AzureVirtualMachineProperties struct {
 	HardwareProfile AzureHardwareProfile   `json:"hardwareProfile,omitempty"`
 	StorageProfile  AzureStorageProfile    `json:"storageProfile,omitempty"`
@@ -55,31 +55,31 @@ type AzureVirtualMachineProperties struct {
 	MachineSet      *AzureMachineSetConfig `json:"machineSet,omitempty"`
 }
 
-// AzureHardwareProfile is specifies the hardware settings for the virtual machine.
-// Refer github.com/Azure/azure-sdk-for-go/arm/compute/models.go for VMSizes
+// AzureHardwareProfile specifies the hardware settings for the virtual machine.
+// Refer to the [azure-sdk-for-go repository](https://github.com/Azure/azure-sdk-for-go/blob/main/sdk/resourcemanager/compute/armcompute/models.go) for VMSizes.
 type AzureHardwareProfile struct {
 	VMSize string `json:"vmSize,omitempty"`
 }
 
-// AzureMachineSetConfig contains the information about the machine set
+// AzureMachineSetConfig contains the information about the machine set.
 type AzureMachineSetConfig struct {
 	ID   string `json:"id"`
 	Kind string `json:"kind"`
 }
 
-// AzureStorageProfile is specifies the storage settings for the virtual machine disks.
+// AzureStorageProfile specifies the storage settings for the virtual machine disks.
 type AzureStorageProfile struct {
 	ImageReference AzureImageReference `json:"imageReference,omitempty"`
 	OsDisk         AzureOSDisk         `json:"osDisk,omitempty"`
 	DataDisks      []AzureDataDisk     `json:"dataDisks,omitempty"`
 }
 
-// AzureImageReference is specifies information about the image to use. You can specify information about platform images,
+// AzureImageReference specifies information about the image to use. You can specify information about platform images,
 // marketplace images, community images, shared gallery images or virtual machine images. This element is required when you want to use a platform image,
 // marketplace image, community image, shared gallery image or virtual machine image, but is not used in other creation operations.
 type AzureImageReference struct {
 	ID string `json:"id,omitempty"`
-	// Uniform Resource Name of the OS image to be used , it has the format 'publisher:offer:sku:version'
+	// Uniform Resource Name of the OS image to be used, it has the format 'publisher:offer:sku:version'
 	URN *string `json:"urn,omitempty"`
 	// CommunityGalleryImageID is the id of the OS image to be used, hosted within an Azure Community Image Gallery.
 	CommunityGalleryImageID *string `json:"communityGalleryImageID,omitempty"`
@@ -87,9 +87,9 @@ type AzureImageReference struct {
 	SharedGalleryImageID *string `json:"sharedGalleryImageID,omitempty"`
 }
 
-// AzureOSDisk is specifies information about the operating system disk used by the virtual machine. <br><br> For more
-// information about disks, see [About disks and VHDs for Azure virtual
-// machines](https://docs.microsoft.com/azure/virtual-machines/virtual-machines-windows-about-disks-vhds?toc=%2fazure%2fvirtual-machines%2fwindows%2ftoc.json).
+// AzureOSDisk specifies information about the operating system disk used by the virtual machine. <br><br> For more
+// information about disks, see [Introduction to Azure Managed
+// Disks](https://learn.microsoft.com/en-us/azure/virtual-machines/managed-disks-overview).
 type AzureOSDisk struct {
 	Name         string                     `json:"name,omitempty"`
 	Caching      string                     `json:"caching,omitempty"`
@@ -113,7 +113,7 @@ type AzureManagedDiskParameters struct {
 	StorageAccountType string `json:"storageAccountType,omitempty"`
 }
 
-// AzureOSProfile is specifies the operating system settings for the virtual machine.
+// AzureOSProfile specifies the operating system settings for the virtual machine.
 type AzureOSProfile struct {
 	ComputerName       string                  `json:"computerName,omitempty"`
 	AdminUsername      string                  `json:"adminUsername,omitempty"`
@@ -122,17 +122,15 @@ type AzureOSProfile struct {
 	LinuxConfiguration AzureLinuxConfiguration `json:"linuxConfiguration,omitempty"`
 }
 
-// AzureLinuxConfiguration is specifies the Linux operating system settings on the virtual machine. <br><br>For a list of
+// AzureLinuxConfiguration specifies the Linux operating system settings on the virtual machine. <br><br>For a list of
 // supported Linux distributions, see [Linux on Azure-Endorsed
-// Distributions](https://docs.microsoft.com/azure/virtual-machines/virtual-machines-linux-endorsed-distros?toc=%2fazure%2fvirtual-machines%2flinux%2ftoc.json)
-// <br><br> For running non-endorsed distributions, see [Information for Non-Endorsed
-// Distributions](https://docs.microsoft.com/azure/virtual-machines/virtual-machines-linux-create-upload-generic?toc=%2fazure%2fvirtual-machines%2flinux%2ftoc.json).
+// Distributions](https://learn.microsoft.com/en-us/azure/virtual-machines/linux/endorsed-distros).
 type AzureLinuxConfiguration struct {
 	DisablePasswordAuthentication bool                  `json:"disablePasswordAuthentication,omitempty"`
 	SSH                           AzureSSHConfiguration `json:"ssh,omitempty"`
 }
 
-// AzureSSHConfiguration is SSH configuration for Linux based VMs running on Azure
+// AzureSSHConfiguration is SSH configuration for Linux based VMs running on Azure.
 type AzureSSHConfiguration struct {
 	PublicKeys AzureSSHPublicKey `json:"publicKeys,omitempty"`
 }
@@ -144,19 +142,19 @@ type AzureSSHPublicKey struct {
 	KeyData string `json:"keyData,omitempty"`
 }
 
-// AzureNetworkProfile is specifies the network interfaces of the virtual machine.
+// AzureNetworkProfile specifies the network interfaces of the virtual machine.
 type AzureNetworkProfile struct {
 	NetworkInterfaces     AzureNetworkInterfaceReference `json:"networkInterfaces,omitempty"`
 	AcceleratedNetworking *bool                          `json:"acceleratedNetworking,omitempty"`
 }
 
-// AzureNetworkInterfaceReference is describes a network interface reference.
+// AzureNetworkInterfaceReference describes a network interface reference.
 type AzureNetworkInterfaceReference struct {
 	ID                                        string `json:"id,omitempty"`
 	*AzureNetworkInterfaceReferenceProperties `json:"properties,omitempty"`
 }
 
-// AzureNetworkInterfaceReferenceProperties is describes a network interface reference properties.
+// AzureNetworkInterfaceReferenceProperties describes a network interface reference properties.
 type AzureNetworkInterfaceReferenceProperties struct {
 	Primary bool `json:"primary,omitempty"`
 }
@@ -166,7 +164,7 @@ type AzureSubResource struct {
 	ID string `json:"id,omitempty"`
 }
 
-// AzureSubnetInfo is the information containing the subnet details
+// AzureSubnetInfo is the information containing the subnet details.
 type AzureSubnetInfo struct {
 	VnetName          string  `json:"vnetName,omitempty"`
 	VnetResourceGroup *string `json:"vnetResourceGroup,omitempty"`

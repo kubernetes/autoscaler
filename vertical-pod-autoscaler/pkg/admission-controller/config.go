@@ -37,6 +37,7 @@ func configTLS(serverCert, serverKey []byte) *tls.Config {
 		klog.Fatal(err)
 	}
 	return &tls.Config{
+		MinVersion:   tls.VersionTLS12,
 		Certificates: []tls.Certificate{sCert},
 	}
 }

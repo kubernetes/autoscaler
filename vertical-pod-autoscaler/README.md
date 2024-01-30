@@ -15,6 +15,7 @@
   - [Troubleshooting](#troubleshooting)
   - [Components of VPA](#components-of-vpa)
   - [Tear down](#tear-down)
+- [Limits control](#limits-control)
 - [Examples](#examples)
   - [Keeping limit proportional to request](#keeping-limit-proportional-to-request)
   - [Capping to Limit Range](#capping-to-limit-range)
@@ -48,12 +49,13 @@ procedure described below.
 
 # Installation
 
-The current default version is Vertical Pod Autoscaler 0.13.0
+The current default version is Vertical Pod Autoscaler 0.14.0
 
 ### Compatibility
 
 | VPA version     | Kubernetes version |
 |-----------------|--------------------|
+| 0.14            | 1.25+              |
 | 0.13            | 1.25+              |
 | 0.12            | 1.25+              |
 | 0.11            | 1.22 - 1.24        |
@@ -67,7 +69,7 @@ The current default version is Vertical Pod Autoscaler 0.13.0
 **NOTE:** In 0.13.0 we deprecate `autoscaling.k8s.io/v1beta2` API. We plan to
 remove this API version. While for now you can continue to use `v1beta2` API we
 recommend using `autoscaling.k8s.io/v1` instead. `v1` and `v1beta2` APIs are
-almost identical (`v1` API has some fields which are not present in `v1beta2)
+almost identical (`v1` API has some fields which are not present in `v1beta2`)
 so simply changing which API version you're calling should be enough in almost
 all cases.
 
@@ -258,13 +260,15 @@ kubectl delete clusterrolebinding myname-cluster-admin-binding
 # Limits control
 
 When setting limits VPA will conform to
-[resource policies](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L82).
+[resource policies](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L100).
 It will maintain limit to request ratio specified for all containers.
 
 VPA will try to cap recommendations between min and max of
 [limit ranges](https://kubernetes.io/docs/concepts/policy/limit-range/). If limit range conflicts
 and VPA resource policy conflict, VPA will follow VPA policy (and set values outside the limit
 range).
+
+To disable getting VPA recommendations for an individual container, set `mode` to `"Off"` in `containerPolicies`.
 
 ## Examples
 
@@ -307,7 +311,7 @@ You can then choose which recommender to use by setting `recommenders` inside th
 
 
 ### Custom memory bump-up after OOMKill
-After an OOMKill event was observed, VPA increases the memory recommendation based on the observed memory usage in the event according to this formula: `recommendation = memory-usage-in-oomkill-event + max(oom-min-bump-up-bytes, memory-usage-in-oomkill-event * oom-bump-up-ratio)`. 
+After an OOMKill event was observed, VPA increases the memory recommendation based on the observed memory usage in the event according to this formula: `recommendation = memory-usage-in-oomkill-event + max(oom-min-bump-up-bytes, memory-usage-in-oomkill-event * oom-bump-up-ratio)`.
 You can configure the minimum bump-up as well as the multiplier by specifying startup arguments for the recommender:
 `oom-bump-up-ratio` specifies the memory bump up ratio when OOM occurred, default is `1.2`. This means, memory will be increased by 20% after an OOMKill event.
 `oom-min-bump-up-bytes` specifies minimal increase of memory after observing OOM. Defaults to `100 * 1024 * 1024` (=100MiB)
@@ -324,8 +328,8 @@ Usage in recommender deployment
 ### Using CPU management with static policy
 
 If you are using the [CPU management with static policy](https://kubernetes.io/docs/tasks/administer-cluster/cpu-management-policies/#static-policy) for some containers,
-you probably want the CPU recommendation to be an integer. A dedicated recommendation pre-processor can perform a round up on the CPU recommendation. Recommendation capping still applies after the round up.   
-To activate this feature, pass the flag `--cpu-integer-post-processor-enabled` when you start the recommender. 
+you probably want the CPU recommendation to be an integer. A dedicated recommendation pre-processor can perform a round up on the CPU recommendation. Recommendation capping still applies after the round up.
+To activate this feature, pass the flag `--cpu-integer-post-processor-enabled` when you start the recommender.
 The pre-processor only acts on containers having a specific configuration. This configuration consists in an annotation on your VPA object for each impacted container.
 The annotation format is the following:
 ```
@@ -341,8 +345,7 @@ vpa-post-processor.kubernetes.io/{containerName}_integerCPU=true
   (when configured in `Auto` and `Recreate` modes) will be successfully
   recreated. This can be partly
   addressed by using VPA together with [Cluster Autoscaler](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#basics).
-* VPA does not evict pods which are not run under a controller. For such pods
-  `Auto` mode is currently equivalent to `Initial`.
+* VPA does not update resources of pods which are not run under a controller.
 * Vertical Pod Autoscaler **should not be used with the [Horizontal Pod Autoscaler](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#support-for-resource-metrics) (HPA) on CPU or memory** at this moment.
   However, you can use VPA with [HPA on custom and external metrics](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#scaling-on-custom-metrics).
 * The VPA admission controller is an admission webhook. If you add other admission webhooks

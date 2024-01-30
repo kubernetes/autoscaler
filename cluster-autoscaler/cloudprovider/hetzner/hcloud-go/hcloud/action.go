@@ -1,19 +1,3 @@
-/*
-Copyright 2018 The Kubernetes Authors.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
 package hcloud
 
 import (
@@ -27,7 +11,7 @@ import (
 
 // Action represents an action in the Hetzner Cloud.
 type Action struct {
-	ID           int
+	ID           int64
 	Status       ActionStatus
 	Command      string
 	Progress     int
@@ -50,7 +34,7 @@ const (
 
 // ActionResource references other resources from an action.
 type ActionResource struct {
-	ID   int
+	ID   int64
 	Type ActionResourceType
 }
 
@@ -92,7 +76,7 @@ type ActionClient struct {
 }
 
 // GetByID retrieves an action by its ID. If the action does not exist, nil is returned.
-func (c *ActionClient) GetByID(ctx context.Context, id int) (*Action, *Response, error) {
+func (c *ActionClient) GetByID(ctx context.Context, id int64) (*Action, *Response, error) {
 	req, err := c.client.NewRequest(ctx, "GET", fmt.Sprintf("/actions/%d", id), nil)
 	if err != nil {
 		return nil, nil, err
@@ -112,13 +96,13 @@ func (c *ActionClient) GetByID(ctx context.Context, id int) (*Action, *Response,
 // ActionListOpts specifies options for listing actions.
 type ActionListOpts struct {
 	ListOpts
-	ID     []int
+	ID     []int64
 	Status []ActionStatus
 	Sort   []string
 }
 
 func (l ActionListOpts) values() url.Values {
-	vals := l.ListOpts.values()
+	vals := l.ListOpts.Values()
 	for _, id := range l.ID {
 		vals.Add("id", fmt.Sprintf("%d", id))
 	}
@@ -156,30 +140,12 @@ func (c *ActionClient) List(ctx context.Context, opts ActionListOpts) ([]*Action
 
 // All returns all actions.
 func (c *ActionClient) All(ctx context.Context) ([]*Action, error) {
-	allActions := []*Action{}
-
-	opts := ActionListOpts{}
-	opts.PerPage = 50
-
-	err := c.client.all(func(page int) (*Response, error) {
-		opts.Page = page
-		actions, resp, err := c.List(ctx, opts)
-		if err != nil {
-			return resp, err
-		}
-		allActions = append(allActions, actions...)
-		return resp, nil
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return allActions, nil
+	return c.AllWithOpts(ctx, ActionListOpts{ListOpts: ListOpts{PerPage: 50}})
 }
 
 // AllWithOpts returns all actions for the given options.
 func (c *ActionClient) AllWithOpts(ctx context.Context, opts ActionListOpts) ([]*Action, error) {
-	allActions := []*Action{}
+	var allActions []*Action
 
 	err := c.client.all(func(page int) (*Response, error) {
 		opts.Page = page
@@ -208,7 +174,7 @@ func (c *ActionClient) AllWithOpts(ctx context.Context, opts ActionListOpts) ([]
 //     complete successfully, as well as any errors that happened while
 //     querying the API.
 //
-// By default the method keeps watching until all actions have finished
+// By default, the method keeps watching until all actions have finished
 // processing. If you want to be able to cancel the method or configure a
 // timeout, use the [context.Context]. Once the method has stopped watching,
 // both returned channels are closed.
@@ -223,8 +189,8 @@ func (c *ActionClient) WatchOverallProgress(ctx context.Context, actions []*Acti
 		defer close(errCh)
 		defer close(progressCh)
 
-		successIDs := make([]int, 0, len(actions))
-		watchIDs := make(map[int]struct{}, len(actions))
+		successIDs := make([]int64, 0, len(actions))
+		watchIDs := make(map[int64]struct{}, len(actions))
 		for _, action := range actions {
 			watchIDs[action.ID] = struct{}{}
 		}
@@ -257,7 +223,7 @@ func (c *ActionClient) WatchOverallProgress(ctx context.Context, actions []*Acti
 					continue
 				case ActionStatusSuccess:
 					delete(watchIDs, a.ID)
-					successIDs := append(successIDs, a.ID)
+					successIDs = append(successIDs, a.ID)
 					sendProgress(progressCh, int(float64(len(actions)-len(successIDs))/float64(len(actions))*100))
 				case ActionStatusError:
 					delete(watchIDs, a.ID)
@@ -285,7 +251,7 @@ func (c *ActionClient) WatchOverallProgress(ctx context.Context, actions []*Acti
 //     API, as well as the error of the action if it did not complete
 //     successfully, or nil if it did.
 //
-// By default the method keeps watching until the action has finished
+// By default, the method keeps watching until the action has finished
 // processing. If you want to be able to cancel the method or configure a
 // timeout, use the [context.Context]. Once the method has stopped watching,
 // both returned channels are closed.

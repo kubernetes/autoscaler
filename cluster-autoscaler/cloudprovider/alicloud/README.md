@@ -12,7 +12,7 @@ Cluster autoscaler must run on v1.9.3 or greater.
 
 
 ## ACS Console Deployment 
-doc: https://www.alibabacloud.com/help/doc-detail/89733.html
+doc: https://www.alibabacloud.com/help/en/container-service-for-kubernetes/latest/auto-scaling-of-nodes
 
 ## Custom Deployment
 ### 1.Prepare Identity authentication
@@ -119,9 +119,9 @@ spec:
                 key: access-key-secret
           - name: REGION_ID
             valueFrom:
-            secretKeyRef:
-              name: cloud-config
-              key: region-id
+              secretKeyRef:
+                name: cloud-config
+                key: region-id
           volumeMounts:
             - name: ssl-certs
               mountPath: /etc/ssl/certs/ca-certificates.crt

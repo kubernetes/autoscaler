@@ -113,7 +113,7 @@ func TestPodMatchesVPA(t *testing.T) {
 		result          bool
 	}
 
-	pod := test.Pod().WithName("test-pod").AddContainer(test.BuildTestContainer(containerName, "1", "100M")).Get()
+	pod := test.Pod().WithName("test-pod").AddContainer(test.Container().WithName(containerName).WithCPURequest(resource.MustParse("1")).WithMemRequest(resource.MustParse("100M")).Get()).Get()
 	pod.Labels = map[string]string{"app": "testingApp"}
 
 	vpaBuilder := test.VerticalPodAutoscaler().
@@ -137,7 +137,7 @@ func TestPodMatchesVPA(t *testing.T) {
 }
 
 func TestGetControllingVPAForPod(t *testing.T) {
-	pod := test.Pod().WithName("test-pod").AddContainer(test.BuildTestContainer(containerName, "1", "100M")).Get()
+	pod := test.Pod().WithName("test-pod").AddContainer(test.Container().WithName(containerName).WithCPURequest(resource.MustParse("1")).WithMemRequest(resource.MustParse("100M")).Get()).Get()
 	pod.Labels = map[string]string{"app": "testingApp"}
 
 	vpaBuilder := test.VerticalPodAutoscaler().

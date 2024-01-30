@@ -16,39 +16,39 @@ limitations under the License.
 
 package clusterstate
 
-import (
-	"time"
+// import (
+// 	"time"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupconfig"
-)
+// 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+// 	"k8s.io/autoscaler/cluster-autoscaler/context"
+// 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupconfig"
+// )
 
-// NewDefaultMaxNodeProvisionTimeProvider returns the default maxNodeProvisionTimeProvider which uses the NodeGroupConfigProcessor.
-func NewDefaultMaxNodeProvisionTimeProvider(context *context.AutoscalingContext, nodeGroupConfigProcessor nodegroupconfig.NodeGroupConfigProcessor) maxNodeProvisionTimeProvider {
-	return &defultMaxNodeProvisionTimeProvider{context: context, nodeGroupConfigProcessor: nodeGroupConfigProcessor}
-}
+// // NewDefaultMaxNodeProvisionTimeProvider returns the default maxNodeProvisionTimeProvider which uses the NodeGroupConfigProcessor.
+// func NewDefaultMaxNodeProvisionTimeProvider(context *context.AutoscalingContext, nodeGroupConfigProcessor nodegroupconfig.NodeGroupConfigProcessor) maxNodeProvisionTimeProvider {
+// 	return &defultMaxNodeProvisionTimeProvider{context: context, nodeGroupConfigProcessor: nodeGroupConfigProcessor}
+// }
 
-type defultMaxNodeProvisionTimeProvider struct {
-	context                  *context.AutoscalingContext
-	nodeGroupConfigProcessor nodegroupconfig.NodeGroupConfigProcessor
-}
+// type defultMaxNodeProvisionTimeProvider struct {
+// 	context                  *context.AutoscalingContext
+// 	nodeGroupConfigProcessor nodegroupconfig.NodeGroupConfigProcessor
+// }
 
-// GetMaxNodeProvisionTime returns MaxNodeProvisionTime value that should be used for the given NodeGroup.
-func (p *defultMaxNodeProvisionTimeProvider) GetMaxNodeProvisionTime(nodeGroup cloudprovider.NodeGroup) (time.Duration, error) {
-	return p.nodeGroupConfigProcessor.GetMaxNodeProvisionTime(p.context, nodeGroup)
-}
+// // GetMaxNodeProvisionTime returns MaxNodeProvisionTime value that should be used for the given NodeGroup.
+// func (p *defultMaxNodeProvisionTimeProvider) GetMaxNodeProvisionTime(nodeGroup cloudprovider.NodeGroup) (time.Duration, error) {
+// 	return p.nodeGroupConfigProcessor.GetMaxNodeProvisionTime(p.context, nodeGroup)
+// }
 
-// NewStaticMaxNodeProvisionTimeProvider returns static maxNodeProvisionTimeProvider which returns constant MaxNodeProvisionTime for every NodeGroup. Can be used for convenient testing.
-func NewStaticMaxNodeProvisionTimeProvider(maxNodeProvisionTime time.Duration) maxNodeProvisionTimeProvider {
-	return &staticMaxNodeProvisionTimeProvider{maxNodeProvisionTime}
-}
+// // NewStaticMaxNodeProvisionTimeProvider returns static maxNodeProvisionTimeProvider which returns constant MaxNodeProvisionTime for every NodeGroup. Can be used for convenient testing.
+// func NewStaticMaxNodeProvisionTimeProvider(maxNodeProvisionTime time.Duration) maxNodeProvisionTimeProvider {
+// 	return &staticMaxNodeProvisionTimeProvider{maxNodeProvisionTime}
+// }
 
-type staticMaxNodeProvisionTimeProvider struct {
-	staticMaxNodeProvisionTime time.Duration
-}
+// type staticMaxNodeProvisionTimeProvider struct {
+// 	staticMaxNodeProvisionTime time.Duration
+// }
 
-// GetMaxNodeProvisionTime returns constant MaxNodeProvisionTime value that should be used for every NodeGroup.
-func (p *staticMaxNodeProvisionTimeProvider) GetMaxNodeProvisionTime(cloudprovider.NodeGroup) (time.Duration, error) {
-	return p.staticMaxNodeProvisionTime, nil
-}
+// // GetMaxNodeProvisionTime returns constant MaxNodeProvisionTime value that should be used for every NodeGroup.
+// func (p *staticMaxNodeProvisionTimeProvider) GetMaxNodeProvisionTime(cloudprovider.NodeGroup) (time.Duration, error) {
+// 	return p.staticMaxNodeProvisionTime, nil
+// }

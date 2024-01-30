@@ -66,7 +66,6 @@ type cachingMigInfoProvider struct {
 	concurrentGceRefreshes         int
 	migInstanceMutex               sync.Mutex
 	migInstancesMinRefreshWaitTime time.Duration
-	migInstancesLastRefreshedInfo  map[string]time.Time
 	timeProvider                   timeProvider
 }
 
@@ -85,7 +84,6 @@ func NewCachingMigInfoProvider(cache *GceCache, migLister MigLister, gceClient A
 		projectId:                      projectId,
 		concurrentGceRefreshes:         concurrentGceRefreshes,
 		migInstancesMinRefreshWaitTime: migInstancesMinRefreshWaitTime,
-		migInstancesLastRefreshedInfo:  make(map[string]time.Time),
 		timeProvider:                   &realTime{},
 	}
 }
@@ -175,7 +173,7 @@ func (c *cachingMigInfoProvider) findMigWithMatchingBasename(instanceRef GceRef)
 }
 
 func (c *cachingMigInfoProvider) fillMigInstances(migRef GceRef) error {
-	if val, ok := c.migInstancesLastRefreshedInfo[migRef.String()]; ok {
+	if val, ok := c.cache.GetMigInstancesUpdateTime(migRef); ok {
 		// do not regenerate MIG instances cache if last refresh happened recently.
 		if c.timeProvider.Now().Sub(val) < c.migInstancesMinRefreshWaitTime {
 			klog.V(4).Infof("Not regenerating MIG instances cache for %s, as it was refreshed in last MinRefreshWaitTime (%s).", migRef.String(), c.migInstancesMinRefreshWaitTime)
@@ -189,8 +187,7 @@ func (c *cachingMigInfoProvider) fillMigInstances(migRef GceRef) error {
 		return err
 	}
 	// only save information for successful calls, given the errors above may be transient.
-	c.migInstancesLastRefreshedInfo[migRef.String()] = c.timeProvider.Now()
-	return c.cache.SetMigInstances(migRef, instances)
+	return c.cache.SetMigInstances(migRef, instances, c.timeProvider.Now())
 }
 
 func (c *cachingMigInfoProvider) GetMigTargetSize(migRef GceRef) (int64, error) {
@@ -301,14 +298,29 @@ func (c *cachingMigInfoProvider) fillMigInfoCache() error {
 		migs[piece], errors[piece] = c.gceClient.FetchAllMigs(zones[piece])
 	})
 
+	failedZones := map[string]error{}
+	failedZoneCount := 0
 	for idx, err := range errors {
 		if err != nil {
 			klog.Errorf("Error listing migs from zone %v; err=%v", zones[idx], err)
-			return fmt.Errorf("%v", errors)
+			failedZones[zones[idx]] = err
+			failedZoneCount++
 		}
 	}
 
+	if failedZoneCount > 0 && failedZoneCount == len(zones) {
+		return fmt.Errorf("%v", errors)
+	}
+
 	registeredMigRefs := c.getRegisteredMigRefs()
+
+	for migRef := range registeredMigRefs {
+		err, ok := failedZones[migRef.Zone]
+		if ok {
+			c.migLister.HandleMigIssue(migRef, err)
+		}
+	}
+
 	for idx, zone := range zones {
 		for _, zoneMig := range migs[idx] {
 			zoneMigRef := GceRef{

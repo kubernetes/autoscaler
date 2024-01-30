@@ -230,7 +230,7 @@ image:
   # image.repository -- Image repository
   repository: registry.k8s.io/autoscaling/cluster-autoscaler
   # image.tag -- Image tag
-  tag: v1.26.2
+  tag: v1.27.2
   # image.pullPolicy -- Image pull policy
   pullPolicy: IfNotPresent
   ## Optionally specify an array of imagePullSecrets.
@@ -396,3 +396,6 @@ vpa:
   updateMode: "Auto"
   # vpa.containerPolicy -- [ContainerResourcePolicy](https://github.com/kubernetes/autoscaler/blob/vertical-pod-autoscaler/v0.13.0/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L159). The containerName is always et to the deployment's container name. This value is required if VPA is enabled.
   containerPolicy: {}
+
+# secretKeyRefNameOverride -- Overrides the name of the Secret to use when loading the secretKeyRef for AWS and Azure env variables
+secretKeyRefNameOverride: ""

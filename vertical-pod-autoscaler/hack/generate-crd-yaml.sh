@@ -40,7 +40,7 @@ else
 fi
 
 # The following commands always returns an error because controller-gen does not accept keys other than strings.
-${CONTROLLER_GEN} ${CRD_OPTS} paths="${APIS_PATH}/..." output:crd:dir=${WORKSPACE} >& ${WORKSPACE}/errors.log ||:
+${CONTROLLER_GEN} ${CRD_OPTS} paths="${APIS_PATH}/..." output:crd:dir="\"${WORKSPACE}\"" >& ${WORKSPACE}/errors.log ||:
 grep -v -e 'map keys must be strings, not int' -e 'not all generators ran successfully' -e 'usage' ${WORKSPACE}/errors.log \
     && { echo "Failed to generate CRD YAMLs."; exit 1; }
 
