@@ -291,6 +291,7 @@ func (p *Planner) categorizeNodes(podDestinations map[string]bool, scaleDownCand
 			removableList = append(removableList, *removable)
 			if p.atomicScaleDownNode(removable) {
 				atomicScaleDownNodesCount++
+				klog.V(2).Infof("Considering node %s for atomic scale down. Total atomic scale down nodes count: %d", removable.Node.Name, atomicScaleDownNodesCount)
 			}
 		}
 		if unremovable != nil {
