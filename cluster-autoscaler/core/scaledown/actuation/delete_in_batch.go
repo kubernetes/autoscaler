@@ -18,6 +18,7 @@ package actuation
 
 import (
 	"fmt"
+	"reflect"
 	"sync"
 	"time"
 
@@ -71,7 +72,7 @@ func NewNodeDeletionBatcher(ctx *context.AutoscalingContext, scaleStateNotifier 
 func (d *NodeDeletionBatcher) AddNodes(nodes []*apiv1.Node, nodeGroup cloudprovider.NodeGroup, drain bool) {
 	// If delete interval is 0, than instantly start node deletion.
 	if d.deleteInterval == 0 {
-		go d.deleteNodesAndRegisterStatus(nodes, drain)
+		go d.deleteNodesAndRegisterStatus(nodes, nodeGroup.Id(), drain)
 		return
 	}
 	first := d.addNodesToBucket(nodes, nodeGroup, drain)
@@ -84,12 +85,12 @@ func (d *NodeDeletionBatcher) AddNodes(nodes []*apiv1.Node, nodeGroup cloudprovi
 	}
 }
 
-func (d *NodeDeletionBatcher) deleteNodesAndRegisterStatus(nodes []*apiv1.Node, drain bool) {
+func (d *NodeDeletionBatcher) deleteNodesAndRegisterStatus(nodes []*apiv1.Node, nodeGroupId string, drain bool) {
 	nodeGroup, err := deleteNodesFromCloudProvider(d.ctx, d.scaleStateNotifier, nodes)
 	for _, node := range nodes {
 		if err != nil {
 			result := status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToDelete, Err: err}
-			CleanUpAndRecordFailedScaleDownEvent(d.ctx, node, nodeGroup.Id(), drain, d.nodeDeletionTracker, "", result)
+			CleanUpAndRecordFailedScaleDownEvent(d.ctx, node, nodeGroupId, drain, d.nodeDeletionTracker, "", result)
 		} else {
 			RegisterAndRecordSuccessfulScaleDownEvent(d.ctx, d.scaleStateNotifier, node, nodeGroup, drain, d.nodeDeletionTracker)
 		}
@@ -149,6 +150,9 @@ func deleteNodesFromCloudProvider(ctx *context.AutoscalingContext, scaleStateNot
 	nodeGroup, err := ctx.CloudProvider.NodeGroupForNode(nodes[0])
 	if err != nil {
 		return nodeGroup, errors.NewAutoscalerError(errors.CloudProviderError, "failed to find node group for %s: %v", nodes[0].Name, err)
+	}
+	if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
+		return nil, errors.NewAutoscalerError(errors.InternalError, "picked node that doesn't belong to a node group: %s", nodes[0].Name)
 	}
 	if err := nodeGroup.DeleteNodes(nodes); err != nil {
 		scaleStateNotifier.RegisterFailedScaleDown(nodeGroup,
