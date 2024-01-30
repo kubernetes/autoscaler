@@ -99,3 +99,10 @@ func (p *NoOpScaleUpStatusProcessor) Process(context *context.AutoscalingContext
 // CleanUp cleans up the processor's internal structures.
 func (p *NoOpScaleUpStatusProcessor) CleanUp() {
 }
+
+// UpdateScaleUpError updates ScaleUpStatus.
+func UpdateScaleUpError(s *ScaleUpStatus, err errors.AutoscalerError) (*ScaleUpStatus, errors.AutoscalerError) {
+	s.ScaleUpError = &err
+	s.Result = ScaleUpError
+	return s, err
+}

@@ -31,10 +31,10 @@ import (
 
 func TestProvisioningRequestPodsFilter(t *testing.T) {
 	prPod1 := BuildTestPod("pr-pod-1", 500, 10)
-	prPod1.Annotations[provisioningRequestPodAnnotationKey] = "pr-class"
+	prPod1.Annotations[ProvisioningRequestPodAnnotationKey] = "pr-class"
 
 	prPod2 := BuildTestPod("pr-pod-2", 500, 10)
-	prPod2.Annotations[provisioningRequestPodAnnotationKey] = "pr-class-2"
+	prPod2.Annotations[ProvisioningRequestPodAnnotationKey] = "pr-class-2"
 
 	pod1 := BuildTestPod("pod-1", 500, 10)
 	pod2 := BuildTestPod("pod-2", 500, 10)
@@ -91,7 +91,7 @@ func TestEventManager(t *testing.T) {
 
 	for i := 0; i < 10; i++ {
 		prPod := BuildTestPod(fmt.Sprintf("pr-pod-%d", i), 10, 10)
-		prPod.Annotations[provisioningRequestPodAnnotationKey] = "pr-class"
+		prPod.Annotations[ProvisioningRequestPodAnnotationKey] = "pr-class"
 		unscheduledPods = append(unscheduledPods, prPod)
 	}
 	got, err := prFilter.Process(ctx, unscheduledPods)
