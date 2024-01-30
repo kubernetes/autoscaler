@@ -226,6 +226,23 @@ func TestDeleteNodes(t *testing.T) {
 			},
 		},
 		{
+			"should not scale down a machine deployment when the corresponding machine is already in failed state",
+			setup{
+				nodes:              newNodes(2, "fakeID", []bool{true, false}),
+				machines:           newMachines(2, "fakeID", &v1alpha1.MachineStatus{CurrentStatus: v1alpha1.CurrentStatus{Phase: v1alpha1.MachineFailed}}, "machinedeployment-1", "machineset-1", []string{"3", "3"}, []bool{false, false}),
+				machineSets:        newMachineSets(1, "machinedeployment-1"),
+				machineDeployments: newMachineDeployments(1, 2, nil, nil, nil),
+				nodeGroups:         []string{nodeGroup1},
+			},
+			action{node: newNodes(1, "fakeID", []bool{false})[0]},
+			expect{
+				machines:   newMachines(2, "fakeID", &v1alpha1.MachineStatus{CurrentStatus: v1alpha1.CurrentStatus{Phase: v1alpha1.MachineFailed}}, "machinedeployment-1", "machineset-1", []string{"3", "3"}, []bool{false, false}),
+				mdName:     "machinedeployment-1",
+				mdReplicas: 2,
+				err:        nil,
+			},
+		},
+		{
 			"should not scale down a machine deployment below the minimum",
 			setup{
 				nodes:              newNodes(1, "fakeID", []bool{true}),

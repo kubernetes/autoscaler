@@ -521,7 +521,7 @@ func (m *McmManager) prioritizeMachinesForDeletion(targetMachineRefs []*Ref, mdN
 				klog.Errorf("Unable to fetch Machine object %s, Error: %v", machineRef.Name, err)
 				return true, err
 			}
-			if isMachineTerminating(mc) {
+			if isMachineFailedOrTerminating(mc) {
 				return false, nil
 			}
 			expectedToTerminateMachineNodePairs[mc.Name] = mc.Labels["node"]
@@ -530,8 +530,6 @@ func (m *McmManager) prioritizeMachinesForDeletion(targetMachineRefs []*Ref, mdN
 			klog.Errorf("could not prioritize machine %s for deletion, aborting scale in of machine deployment, Error: %v", machineRef.Name, err)
 			return 0, fmt.Errorf("could not prioritize machine %s for deletion, aborting scale in of machine deployment, Error: %v", machineRef.Name, err)
 		}
-		// Break out of loop when update succeeds
-		klog.Infof("Machine %s of machineDeployment %s marked with priority 1 successfully", machineRef.Name, mdName)
 	}
 	klog.V(2).Infof("Expected to remove following {machineRef: corresponding node} pairs %s", expectedToTerminateMachineNodePairs)
 	return len(expectedToTerminateMachineNodePairs), nil
@@ -560,6 +558,9 @@ func (m *McmManager) updateAnnotationOnMachine(ctx context.Context, mcName strin
 		clone.Annotations[key] = val
 	}
 	_, err = m.machineClient.Machines(machine.Namespace).Update(ctx, clone, metav1.UpdateOptions{})
+	if err == nil {
+		klog.Infof("Machine %s marked with priority 1 successfully", mcName)
+	}
 	return true, err
 }
 
@@ -988,10 +989,10 @@ func buildGenericLabels(template *nodeTemplate, nodeName string) map[string]stri
 	return result
 }
 
-// isMachineTerminating returns true if machine is already being terminated or considered for termination by autoscaler.
-func isMachineTerminating(machine *v1alpha1.Machine) bool {
-	if !machine.GetDeletionTimestamp().IsZero() {
-		klog.Infof("Machine %q is already being terminated, and hence skipping the deletion", machine.Name)
+// isMachineFailedOrTerminating returns true if machine is already being terminated or considered for termination by autoscaler.
+func isMachineFailedOrTerminating(machine *v1alpha1.Machine) bool {
+	if !machine.GetDeletionTimestamp().IsZero() || machine.Status.CurrentStatus.Phase == v1alpha1.MachineFailed {
+		klog.Infof("Machine %q is already being terminated or in a failed phase, and hence skipping the deletion", machine.Name)
 		return true
 	}
 	return false
