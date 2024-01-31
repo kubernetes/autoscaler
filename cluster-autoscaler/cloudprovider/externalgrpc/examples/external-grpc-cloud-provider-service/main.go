@@ -20,6 +20,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"net"
 	"strings"
@@ -81,7 +82,8 @@ var (
 func main() {
 	klog.InitFlags(nil)
 	kube_flag.InitFlags()
-
+	klog.V(1).Info("no cert specified, using insecure")
+	fmt.Println(*cloudProviderFlag)
 	var s *grpc.Server
 
 	// tls config
