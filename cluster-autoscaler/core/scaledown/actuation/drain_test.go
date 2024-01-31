@@ -34,6 +34,7 @@ import (
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	acontext "k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
 	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
@@ -707,6 +708,55 @@ func TestPodsToEvict(t *testing.T) {
 			if diff := cmp.Diff(tc.wantNonDsPods, gotNonDsPods, cmpopts.EquateEmpty()); diff != "" {
 				t.Errorf("podsToEvict nonDsPods diff (-want +got):\n%s", diff)
 			}
+		})
+	}
+}
+
+func TestExpectedEvictionTime(t *testing.T) {
+	testScenarios := []struct {
+		name                      string
+		evictionResults           map[string]status.PodEvictionResult
+		maxAllowedTerminationTime int64
+		expectedTerminationTime   int64
+	}{
+		{
+			name:                      "no eviction results defaults to max",
+			maxAllowedTerminationTime: 30,
+			expectedTerminationTime:   30,
+		},
+		{
+			name: "large termination period reduced to max allowed",
+			evictionResults: map[string]status.PodEvictionResult{
+				"p1": {
+					Pod:      BuildTestPod("p1", 1, 1, WithTerminationGracePeriod(60)),
+					TimedOut: false,
+					Err:      nil,
+				},
+			},
+			maxAllowedTerminationTime: 30,
+			expectedTerminationTime:   30,
+		},
+		{
+			name: "termination period reduced to largest pod",
+			evictionResults: map[string]status.PodEvictionResult{
+				"p1": {
+					Pod:      BuildTestPod("p1", 0, 0, WithTerminationGracePeriod(15)),
+					TimedOut: false,
+					Err:      nil,
+				},
+				"p2": {
+					Pod:      BuildTestPod("p2", 0, 0, WithTerminationGracePeriod(10)),
+					TimedOut: false,
+					Err:      nil,
+				},
+			},
+			maxAllowedTerminationTime: 30,
+			expectedTerminationTime:   15,
+		},
+	}
+	for _, scenario := range testScenarios {
+		t.Run(scenario.name, func(t *testing.T) {
+			assert.Equal(t, scenario.expectedTerminationTime, curtailTerminationGracePeriod(scenario.evictionResults, scenario.maxAllowedTerminationTime))
 		})
 	}
 }

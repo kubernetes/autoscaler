@@ -103,6 +103,13 @@ func WithNodeName(nodeName string) func(*apiv1.Pod) {
 	}
 }
 
+// WithTerminationGracePeriod sets a termination grace period on the pod.
+func WithTerminationGracePeriod(period int64) func(pod *apiv1.Pod) {
+	return func(pod *apiv1.Pod) {
+		pod.Spec.TerminationGracePeriodSeconds = &period
+	}
+}
+
 // BuildTestPodWithEphemeralStorage creates a pod with cpu, memory and ephemeral storage resources.
 func BuildTestPodWithEphemeralStorage(name string, cpu, mem, ephemeralStorage int64) *apiv1.Pod {
 	startTime := metav1.Unix(0, 0)

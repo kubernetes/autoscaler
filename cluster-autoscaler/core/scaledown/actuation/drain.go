@@ -122,8 +122,9 @@ func (e Evictor) drainNodeWithPodsBasedOnPodPriority(ctx *acontext.AutoscalingCo
 			return evictionResults, err
 		}
 
-		// Evictions created successfully, wait ShutdownGracePeriodSeconds + podEvictionHeadroom to see if fullEviction pods really disappeared.
-		evictionResults, err = e.waitPodsToDisappear(ctx, node, group.FullEvictionPods, evictionResults, group.ShutdownGracePeriodSeconds)
+		// Evictions created successfully, wait up to ShutdownGracePeriodSeconds + podEvictionHeadroom to see if fullEviction pods really disappeared.
+		maxTerminationGracePeriodSeconds := curtailTerminationGracePeriod(evictionResults, group.ShutdownGracePeriodSeconds)
+		evictionResults, err = e.waitPodsToDisappear(ctx, node, group.FullEvictionPods, evictionResults, maxTerminationGracePeriodSeconds)
 		if err != nil {
 			return evictionResults, err
 		}
@@ -218,14 +219,7 @@ func (e Evictor) initiateEviction(ctx *acontext.AutoscalingContext, node *apiv1.
 func (e Evictor) evictPod(ctx *acontext.AutoscalingContext, podToEvict *apiv1.Pod, retryUntil time.Time, maxTermination int64, fullEvictionPod bool) status.PodEvictionResult {
 	ctx.Recorder.Eventf(podToEvict, apiv1.EventTypeNormal, "ScaleDown", "deleting pod for node scale down")
 
-	termination := int64(apiv1.DefaultTerminationGracePeriodSeconds)
-	if podToEvict.Spec.TerminationGracePeriodSeconds != nil {
-		termination = *podToEvict.Spec.TerminationGracePeriodSeconds
-	}
-	if maxTermination > 0 && termination > maxTermination {
-		termination = maxTermination
-	}
-
+	termination := maxTerminationGracePeriodForPod(podToEvict, maxTermination)
 	var lastError error
 	for first := true; first || time.Now().Before(retryUntil); time.Sleep(e.EvictionRetryTime) {
 		first = false
@@ -251,6 +245,35 @@ func (e Evictor) evictPod(ctx *acontext.AutoscalingContext, podToEvict *apiv1.Po
 		ctx.Recorder.Eventf(podToEvict, apiv1.EventTypeWarning, "ScaleDownFailed", "failed to delete pod for ScaleDown")
 	}
 	return status.PodEvictionResult{Pod: podToEvict, TimedOut: true, Err: fmt.Errorf("failed to evict pod %s/%s within allowed timeout (last error: %v)", podToEvict.Namespace, podToEvict.Name, lastError)}
+}
+
+func maxTerminationGracePeriodForPod(pod *apiv1.Pod, maxTermination int64) int64 {
+	termination := int64(apiv1.DefaultTerminationGracePeriodSeconds)
+	if pod.Spec.TerminationGracePeriodSeconds != nil {
+		termination = *pod.Spec.TerminationGracePeriodSeconds
+	}
+	if maxTermination > 0 && termination > maxTermination {
+		termination = maxTermination
+	}
+
+	return termination
+}
+
+// Given PodEvictionResults and an upper bound, return the shortest period that would allow for all pods to be evicted
+func curtailTerminationGracePeriod(evictionResults map[string]status.PodEvictionResult, maxAllowedGracePeriod int64) int64 {
+	largestGracePeriod := int64(0)
+	for _, evictionResult := range evictionResults {
+		period := maxTerminationGracePeriodForPod(evictionResult.Pod, maxAllowedGracePeriod)
+		if period > largestGracePeriod {
+			largestGracePeriod = period
+		}
+	}
+
+	// Default to maxAllowedGracePeriod if there were no evictionResults
+	if largestGracePeriod == 0 {
+		largestGracePeriod = maxAllowedGracePeriod
+	}
+	return largestGracePeriod
 }
 
 func podsToEvict(nodeInfo *framework.NodeInfo, evictDsByDefault bool) (dsPods, nonDsPods []*apiv1.Pod) {
