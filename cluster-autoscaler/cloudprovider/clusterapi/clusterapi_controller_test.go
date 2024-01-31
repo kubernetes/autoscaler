@@ -122,6 +122,7 @@ func mustCreateTestController(t testing.TB, testConfigs ...*testConfig) (*machin
 		},
 		machineObjects...,
 	)
+	mgmtclientSet := fakekube.NewSimpleClientset()
 	discoveryClient := &fakediscovery.FakeDiscovery{
 		Fake: &clientgotesting.Fake{
 			Resources: []*metav1.APIResourceList{
@@ -293,7 +294,7 @@ func mustCreateTestController(t testing.TB, testConfigs ...*testConfig) (*machin
 	scaleClient.AddReactor("*", "*", scaleReactor)
 
 	stopCh := make(chan struct{})
-	controller, err := newMachineController(dynamicClientset, kubeclientSet, discoveryClient, scaleClient, cloudprovider.NodeGroupDiscoveryOptions{}, stopCh)
+	controller, err := newMachineController(dynamicClientset, mgmtclientSet, kubeclientSet, discoveryClient, scaleClient, cloudprovider.NodeGroupDiscoveryOptions{}, stopCh)
 	if err != nil {
 		t.Fatal("failed to create test controller")
 	}
@@ -381,6 +382,7 @@ func createTestConfigs(specs ...testSpec) []*testConfig {
 								"apiVersion": "infrastructure.cluster.x-k8s.io/v1beta1",
 								"kind":       machineTemplateKind,
 								"name":       "TestMachineTemplate",
+								"namespace":  spec.namespace,
 							},
 						},
 					},
@@ -419,6 +421,7 @@ func createTestConfigs(specs ...testSpec) []*testConfig {
 									"apiVersion": "infrastructure.cluster.x-k8s.io/v1beta1",
 									"kind":       machineTemplateKind,
 									"name":       "TestMachineTemplate",
+									"namespace":  spec.namespace,
 								},
 							},
 						},
