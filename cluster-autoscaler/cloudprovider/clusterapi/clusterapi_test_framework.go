@@ -26,6 +26,7 @@ import (
 	"testing"
 	"time"
 
+	authv1 "k8s.io/api/authorization/v1"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -269,6 +270,7 @@ func createTestConfigs(specs ...TestSpec) []*TestConfig {
 								"apiVersion": "infrastructure.cluster.x-k8s.io/v1beta1",
 								"kind":       machineTemplateKind,
 								"name":       "TestMachineTemplate",
+								"namespace":  spec.namespace,
 							},
 							"metadata": map[string]interface{}{
 								"labels": map[string]interface{}{},
@@ -323,9 +325,10 @@ func createTestConfigs(specs ...TestSpec) []*TestConfig {
 						"template": map[string]interface{}{
 							"spec": map[string]interface{}{
 								"infrastructureRef": map[string]interface{}{
-									"apiGroup": "infrastructure.cluster.x-k8s.io",
-									"kind":     machineTemplateKind,
-									"name":     "TestMachineTemplate",
+									"apiGroup":  "infrastructure.cluster.x-k8s.io",
+									"kind":      machineTemplateKind,
+									"name":      "TestMachineTemplate",
+									"namespace": spec.namespace,
 								},
 								"metadata": map[string]interface{}{
 									"labels": map[string]interface{}{},
@@ -643,6 +646,13 @@ func NewTestMachineController(t testing.TB) *testMachineController {
 	t.Helper()
 
 	kubeclientSet := fakekube.NewSimpleClientset()
+	mgmtclientSet := fakekube.NewSimpleClientset()
+	// allow all SelfSubjectAccessReviews so that infrastructure references can be read
+	mgmtclientSet.PrependReactor("create", "selfsubjectaccessreviews", func(action clientgotesting.Action) (bool, runtime.Object, error) {
+		review := action.(clientgotesting.CreateAction).GetObject().(*authv1.SelfSubjectAccessReview).DeepCopy()
+		review.Status.Allowed = true
+		return true, review, nil
+	})
 	dynamicClientset := fakedynamic.NewSimpleDynamicClientWithCustomListKinds(
 		runtime.NewScheme(),
 		map[schema.GroupVersionResource]string{
@@ -832,7 +842,7 @@ func NewTestMachineController(t testing.TB) *testMachineController {
 	scaleClient.AddReactor("*", "*", scaleReactor)
 
 	stopCh := make(chan struct{})
-	controller, err := newMachineController(dynamicClientset, kubeclientSet, discoveryClient, scaleClient, cloudprovider.NodeGroupDiscoveryOptions{}, stopCh)
+	controller, err := newMachineController(dynamicClientset, mgmtclientSet, kubeclientSet, discoveryClient, scaleClient, cloudprovider.NodeGroupDiscoveryOptions{}, stopCh)
 	if err != nil {
 		t.Fatal("failed to create test controller")
 	}

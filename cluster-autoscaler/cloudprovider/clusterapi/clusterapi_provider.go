@@ -194,6 +194,10 @@ func BuildClusterAPI(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeG
 	if err != nil {
 		klog.Fatalf("could not generate dynamic client for config: %v", err)
 	}
+	managementClientSet, err := kubernetes.NewForConfig(managementConfig)
+	if err != nil {
+		klog.Fatalf("could not generate kube clientset from mgmt config")
+	}
 
 	workloadClient, err := kubernetes.NewForConfig(workloadConfig)
 	if err != nil {
@@ -219,7 +223,7 @@ func BuildClusterAPI(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeG
 	// currently organised to do so.
 	stopCh := make(chan struct{})
 
-	controller, err := newMachineController(managementClient, workloadClient, managementDiscoveryClient, managementScaleClient, do, stopCh)
+	controller, err := newMachineController(managementClient, managementClientSet, workloadClient, managementDiscoveryClient, managementScaleClient, do, stopCh)
 	if err != nil {
 		klog.Fatal(err)
 	}

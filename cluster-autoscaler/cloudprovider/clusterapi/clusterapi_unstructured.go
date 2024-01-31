@@ -27,6 +27,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	authv1 "k8s.io/api/authorization/v1"
 	corev1 "k8s.io/api/core/v1"
 	resourceapi "k8s.io/api/resource/v1"
 	storagev1 "k8s.io/api/storage/v1"
@@ -348,6 +349,8 @@ func (r *unstructuredScalableResource) InstanceCapacity() (map[corev1.ResourceNa
 
 	infraObj, err := r.readInfrastructureReferenceResource()
 	if err != nil || infraObj == nil {
+		// err="machinetemplates.infrastructure.cluster.x-k8s.io \"TestMachineTemplate\" not found"
+		// infraObj=nil
 		// because it is possible that the infrastructure provider does not implement
 		// the capacity in the infrastructure reference, if there are annotations we
 		// should return them here.
@@ -531,6 +534,27 @@ func (r *unstructuredScalableResource) readInfrastructureReferenceResource() (*u
 	kind = fmt.Sprintf("%ss", strings.ToLower(kind))
 	gvk := schema.FromAPIVersionAndKind(apiversion, kind)
 	res := schema.GroupVersionResource{Group: gvk.Group, Version: gvk.Version, Resource: gvk.Kind}
+	for _, v := range []string{"list", "watch"} {
+		action := authv1.ResourceAttributes{
+			Namespace: r.Namespace(),
+			Verb:      v,
+			Resource:  gvk.Kind,
+			Version:   gvk.Version,
+			Group:     gvk.Group,
+		}
+		selfCheck := authv1.SelfSubjectAccessReview{
+			Spec: authv1.SelfSubjectAccessReviewSpec{
+				ResourceAttributes: &action,
+			},
+		}
+		resp, err := r.controller.managementClientset.AuthorizationV1().
+			SelfSubjectAccessReviews().
+			Create(context.TODO(), &selfCheck, metav1.CreateOptions{})
+		if err != nil || !resp.Status.Allowed {
+			klog.V(4).Infof("Unable to validate infrastructure reference authorization, error: %v", err)
+			return nil, err
+		}
+	}
 
 	infra, err := r.controller.getInfrastructureResource(res, name, r.Namespace())
 	if err != nil {
