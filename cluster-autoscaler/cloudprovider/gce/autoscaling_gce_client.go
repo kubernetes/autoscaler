@@ -88,6 +88,12 @@ var (
 	}
 )
 
+// GceInstance extends cloudprovider.Instance with GCE specific numeric id.
+type GceInstance struct {
+	cloudprovider.Instance
+	NumericId uint64
+}
+
 // AutoscalingGceClient is used for communicating with GCE API.
 type AutoscalingGceClient interface {
 	// reading resources
@@ -96,7 +102,7 @@ type AutoscalingGceClient interface {
 	FetchAllMigs(zone string) ([]*gce.InstanceGroupManager, error)
 	FetchMigTargetSize(GceRef) (int64, error)
 	FetchMigBasename(GceRef) (string, error)
-	FetchMigInstances(GceRef) ([]cloudprovider.Instance, error)
+	FetchMigInstances(GceRef) ([]GceInstance, error)
 	FetchMigTemplateName(migRef GceRef) (string, error)
 	FetchMigTemplate(migRef GceRef, templateName string) (*gce.InstanceTemplate, error)
 	FetchMigsWithName(zone string, filter *regexp.Regexp) ([]string, error)
@@ -306,7 +312,7 @@ func (client *autoscalingGceClientV1) DeleteInstances(migRef GceRef, instances [
 	return client.waitForOp(op, migRef.Project, migRef.Zone, true)
 }
 
-func (client *autoscalingGceClientV1) FetchMigInstances(migRef GceRef) ([]cloudprovider.Instance, error) {
+func (client *autoscalingGceClientV1) FetchMigInstances(migRef GceRef) ([]GceInstance, error) {
 	registerRequest("instance_group_managers", "list_managed_instances")
 	b := newInstanceListBuilder(migRef)
 	err := client.gceService.InstanceGroupManagers.ListManagedInstances(migRef.Project, migRef.Zone, migRef.Name).Pages(context.Background(), b.loadPage)
@@ -321,7 +327,7 @@ type instanceListBuilder struct {
 	migRef            GceRef
 	errorCodeCounts   map[string]int
 	errorLoggingQuota *klogx.Quota
-	infos             []cloudprovider.Instance
+	infos             []GceInstance
 }
 
 func newInstanceListBuilder(migRef GceRef) *instanceListBuilder {
@@ -334,7 +340,7 @@ func newInstanceListBuilder(migRef GceRef) *instanceListBuilder {
 
 func (i *instanceListBuilder) loadPage(page *gce.InstanceGroupManagersListManagedInstancesResponse) error {
 	if i.infos == nil {
-		i.infos = make([]cloudprovider.Instance, 0, len(page.ManagedInstances))
+		i.infos = make([]GceInstance, 0, len(page.ManagedInstances))
 	}
 	for _, gceInstance := range page.ManagedInstances {
 		ref, err := ParseInstanceUrlRef(gceInstance.Instance)
@@ -348,12 +354,15 @@ func (i *instanceListBuilder) loadPage(page *gce.InstanceGroupManagersListManage
 	return nil
 }
 
-func (i *instanceListBuilder) gceInstanceToInstance(ref GceRef, gceInstance *gce.ManagedInstance) cloudprovider.Instance {
-	instance := cloudprovider.Instance{
-		Id: ref.ToProviderId(),
-		Status: &cloudprovider.InstanceStatus{
-			State: getInstanceState(gceInstance.CurrentAction),
+func (i *instanceListBuilder) gceInstanceToInstance(ref GceRef, gceInstance *gce.ManagedInstance) GceInstance {
+	instance := GceInstance{
+		Instance: cloudprovider.Instance{
+			Id: ref.ToProviderId(),
+			Status: &cloudprovider.InstanceStatus{
+				State: getInstanceState(gceInstance.CurrentAction),
+			},
 		},
+		NumericId: gceInstance.Id,
 	}
 
 	if instance.Status.State != cloudprovider.InstanceCreating {
@@ -395,7 +404,7 @@ func (i *instanceListBuilder) gceInstanceToInstance(ref GceRef, gceInstance *gce
 	return instance
 }
 
-func (i *instanceListBuilder) build() []cloudprovider.Instance {
+func (i *instanceListBuilder) build() []GceInstance {
 	klogx.V(4).Over(i.errorLoggingQuota).Infof("Got %v other GCE instances being created with lastAttemptErrors", -i.errorLoggingQuota.Left())
 	if len(i.errorCodeCounts) > 0 {
 		klog.Warningf("Spotted following instance creation error codes: %#v", i.errorCodeCounts)

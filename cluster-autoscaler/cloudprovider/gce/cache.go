@@ -57,7 +57,7 @@ type GceCache struct {
 
 	// Cache content.
 	migs                      map[GceRef]Mig
-	instances                 map[GceRef][]cloudprovider.Instance
+	instances                 map[GceRef][]GceInstance
 	instancesUpdateTime       map[GceRef]time.Time
 	instancesToMig            map[GceRef]GceRef
 	instancesFromUnknownMig   map[GceRef]bool
@@ -74,7 +74,7 @@ type GceCache struct {
 func NewGceCache() *GceCache {
 	return &GceCache{
 		migs:                      map[GceRef]Mig{},
-		instances:                 map[GceRef][]cloudprovider.Instance{},
+		instances:                 map[GceRef][]GceInstance{},
 		instancesUpdateTime:       map[GceRef]time.Time{},
 		instancesToMig:            map[GceRef]GceRef{},
 		instancesFromUnknownMig:   map[GceRef]bool{},
@@ -144,7 +144,7 @@ func (gc *GceCache) GetMigs() []Mig {
 }
 
 // GetMigInstances returns the cached instances for a given MIG GceRef
-func (gc *GceCache) GetMigInstances(migRef GceRef) ([]cloudprovider.Instance, bool) {
+func (gc *GceCache) GetMigInstances(migRef GceRef) ([]GceInstance, bool) {
 	gc.cacheMutex.Lock()
 	defer gc.cacheMutex.Unlock()
 
@@ -152,7 +152,7 @@ func (gc *GceCache) GetMigInstances(migRef GceRef) ([]cloudprovider.Instance, bo
 	if found {
 		klog.V(5).Infof("Instances cache hit for %s", migRef)
 	}
-	return append([]cloudprovider.Instance{}, instances...), found
+	return append([]GceInstance{}, instances...), found
 }
 
 // GetMigInstancesUpdateTime returns the timestamp when the cached instances
@@ -194,12 +194,12 @@ func (gc *GceCache) IsMigUnknownForInstance(instanceRef GceRef) bool {
 }
 
 // SetMigInstances sets instances for a given Mig ref
-func (gc *GceCache) SetMigInstances(migRef GceRef, instances []cloudprovider.Instance, timeNow time.Time) error {
+func (gc *GceCache) SetMigInstances(migRef GceRef, instances []GceInstance, timeNow time.Time) error {
 	gc.cacheMutex.Lock()
 	defer gc.cacheMutex.Unlock()
 
 	gc.removeMigInstances(migRef)
-	gc.instances[migRef] = append([]cloudprovider.Instance{}, instances...)
+	gc.instances[migRef] = append([]GceInstance{}, instances...)
 	gc.instancesUpdateTime[migRef] = timeNow
 	for _, instance := range instances {
 		instanceRef, err := GceRefFromProviderId(instance.Id)
@@ -227,7 +227,7 @@ func (gc *GceCache) InvalidateAllMigInstances() {
 	defer gc.cacheMutex.Unlock()
 
 	klog.V(5).Infof("Mig instances cache invalidated")
-	gc.instances = make(map[GceRef][]cloudprovider.Instance)
+	gc.instances = make(map[GceRef][]GceInstance)
 	gc.instancesUpdateTime = make(map[GceRef]time.Time)
 }
 
