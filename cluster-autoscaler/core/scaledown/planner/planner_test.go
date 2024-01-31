@@ -484,6 +484,10 @@ func TestUpdateClusterState(t *testing.T) {
 			assert.NoError(t, err)
 			registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, rsLister, nil)
 			provider := testprovider.NewTestCloudProvider(nil, nil)
+			provider.AddNodeGroup("ng1", 0, 0, 0)
+			for _, node := range tc.nodes {
+				provider.AddNode("ng1", node)
+			}
 			context, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{
 				NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 					ScaleDownUnneededTime: 10 * time.Minute,
@@ -521,6 +525,7 @@ func TestUpdateClusterStatUnneededNodesLimit(t *testing.T) {
 		name               string
 		previouslyUnneeded int
 		nodes              int
+		opts               *config.NodeGroupAutoscalingOptions
 		maxParallelism     int
 		maxUnneededTime    time.Duration
 		updateInterval     time.Duration
@@ -589,6 +594,78 @@ func TestUpdateClusterStatUnneededNodesLimit(t *testing.T) {
 			updateInterval:     30 * time.Second,
 			wantUnneeded:       30,
 		},
+		{
+			name:               "atomic sclale down - default settings",
+			previouslyUnneeded: 5,
+			nodes:              100,
+			maxParallelism:     10,
+			maxUnneededTime:    1 * time.Minute,
+			updateInterval:     10 * time.Second,
+			wantUnneeded:       100,
+			opts: &config.NodeGroupAutoscalingOptions{
+				ZeroOrMaxNodeScaling: true,
+			},
+		},
+		{
+			name:               "atomic sclale down - quick loops",
+			previouslyUnneeded: 5,
+			nodes:              100,
+			maxParallelism:     10,
+			maxUnneededTime:    1 * time.Minute,
+			updateInterval:     1 * time.Second,
+			wantUnneeded:       100,
+			opts: &config.NodeGroupAutoscalingOptions{
+				ZeroOrMaxNodeScaling: true,
+			},
+		},
+		{
+			name:               "atomic sclale down - slow loops",
+			previouslyUnneeded: 5,
+			nodes:              100,
+			maxParallelism:     10,
+			maxUnneededTime:    1 * time.Minute,
+			updateInterval:     30 * time.Second,
+			wantUnneeded:       100,
+			opts: &config.NodeGroupAutoscalingOptions{
+				ZeroOrMaxNodeScaling: true,
+			},
+		},
+		{
+			name:               "atomic sclale down - too many unneeded",
+			previouslyUnneeded: 77,
+			nodes:              100,
+			maxParallelism:     10,
+			maxUnneededTime:    1 * time.Minute,
+			updateInterval:     30 * time.Second,
+			wantUnneeded:       100,
+			opts: &config.NodeGroupAutoscalingOptions{
+				ZeroOrMaxNodeScaling: true,
+			},
+		},
+		{
+			name:               "atomic sclale down - no uneeded",
+			previouslyUnneeded: 0,
+			nodes:              100,
+			maxParallelism:     10,
+			maxUnneededTime:    1 * time.Minute,
+			updateInterval:     30 * time.Second,
+			wantUnneeded:       100,
+			opts: &config.NodeGroupAutoscalingOptions{
+				ZeroOrMaxNodeScaling: true,
+			},
+		},
+		{
+			name:               "atomic sclale down - short uneeded time and short update interval",
+			previouslyUnneeded: 0,
+			nodes:              500,
+			maxParallelism:     1,
+			maxUnneededTime:    1 * time.Second,
+			updateInterval:     1 * time.Second,
+			wantUnneeded:       500,
+			opts: &config.NodeGroupAutoscalingOptions{
+				ZeroOrMaxNodeScaling: true,
+			},
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc
@@ -603,6 +680,10 @@ func TestUpdateClusterStatUnneededNodesLimit(t *testing.T) {
 				previouslyUnneeded[i] = simulator.NodeToBeRemoved{Node: nodes[i]}
 			}
 			provider := testprovider.NewTestCloudProvider(nil, nil)
+			provider.AddNodeGroupWithCustomOptions("ng1", 0, 0, 0, tc.opts)
+			for _, node := range nodes {
+				provider.AddNode("ng1", node)
+			}
 			context, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{
 				NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 					ScaleDownUnneededTime: tc.maxUnneededTime,
