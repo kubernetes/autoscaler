@@ -142,6 +142,10 @@ func TestGetMatchingVpa(t *testing.T) {
 			vpaLister.On("VerticalPodAutoscalers", "default").Return(vpaNamespaceLister)
 
 			mockSelectorFetcher.EXPECT().Fetch(gomock.Any()).AnyTimes().Return(parseLabelSelector(tc.labelSelector), nil)
+			// This test is using a FakeControllerFetcher which returns the same ownerRef that is passed to it.
+			// In other words, it cannot go through the hierarchy of controllers like "ReplicaSet => Deployment"
+			// For this reason we are using "StatefulSet" as the ownerRef kind in the test, since it is a direct link.
+			// The hierarchy part is being test in the "TestControllerFetcher" test.
 			matcher := NewMatcher(vpaLister, mockSelectorFetcher, controllerfetcher.FakeControllerFetcher{})
 
 			vpa := matcher.GetMatchingVPA(tc.pod)
