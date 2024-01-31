@@ -25,8 +25,8 @@ import (
 )
 
 func TestFetchPodTemplates(t *testing.T) {
-	pr1 := provisioningRequestBetaForTests("namespace", "name-1")
-	pr2 := provisioningRequestBetaForTests("namespace", "name-2")
+	pr1 := ProvisioningRequestWrapperForTesting("namespace", "name-1")
+	pr2 := ProvisioningRequestWrapperForTesting("namespace", "name-2")
 	mockProvisioningRequests := []*provreqwrapper.ProvisioningRequest{pr1, pr2}
 
 	ctx := context.Background()
