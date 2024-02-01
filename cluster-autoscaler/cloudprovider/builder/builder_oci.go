@@ -23,6 +23,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	oci "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/instancepools"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/client-go/informers"
 )
 
 // AvailableCloudProviders supported by the cloud provider builder.
@@ -33,7 +34,7 @@ var AvailableCloudProviders = []string{
 // DefaultCloudProvider for oci-only build is oci.
 const DefaultCloudProvider = cloudprovider.OracleCloudProviderName
 
-func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, _ informers.SharedInformerFactory) cloudprovider.CloudProvider {
 	switch opts.CloudProviderName {
 	case cloudprovider.OracleCloudProviderName:
 		return oci.BuildOCI(opts, do, rl)
