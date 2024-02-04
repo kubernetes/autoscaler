@@ -32,7 +32,9 @@ The following policy provides the privileges necessary for Cluster Autoscaler to
 All {instance.compartment.id = 'ocid1.compartment.oc1..aaaaaaaa7ey4sg3a6b5wnv5hlkjlkjadslkfjalskfjalsadfadsf'}
 ```
 
-or even better
+Note: the matching rule in the dynamic group above includes all instances
+in the specified compartment. If this is too broad for your requirements,
+you can add more conditions for example
 
 ```
 All {instance.compartment.id = '...', tag.MyTagNamespace.MyNodeRole = 'MyTagValue'}
