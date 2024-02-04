@@ -42,8 +42,10 @@ All {instance.compartment.id = '...', tag.MyTagNamespace.MyNodeRole = 'MyTagValu
 
 here `MyTagValue` is the defined-tag assigned to all nodes where `cluster-autoscaler` pods will be scheduled
 (for example, with `nodeSeletor`).
-See also [node-pool](https://docs.oracle.com/en-us/iaas/Content/ContEng/Tasks/contengtaggingclusterresources_tagging-oke-resources_node-tags.htm)
+See [node-pool](https://docs.oracle.com/en-us/iaas/Content/ContEng/Tasks/contengtaggingclusterresources_tagging-oke-resources_node-tags.htm)
 or [instance-pool](https://docs.oracle.com/en-us/iaas/Content/Compute/Tasks/creatinginstanceconfig.htm)
+and also [managing dynamic groups](https://docs.oracle.com/en-us/iaas/Content/Identity/Tasks/managingdynamicgroups.htm).
+
 
 2: Create a *tenancy-level* policy to allow nodes to manage node-pools and/or instance-pools:
 
