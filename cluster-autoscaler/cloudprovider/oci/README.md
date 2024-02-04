@@ -32,21 +32,16 @@ The following policy provides the privileges necessary for Cluster Autoscaler to
 All {instance.compartment.id = 'ocid1.compartment.oc1..aaaaaaaa7ey4sg3a6b5wnv5hlkjlkjadslkfjalskfjalsadfadsf'}
 ```
 
-**WARNING:** The above dynamic group with its tenancy-level policy in
-the next step will allow all machines in the specified compartment
-to handle all important computing resources. This may lead to some serious
-security problems on your system. It's highly recommended to limit the
-scope of this setting by for example
+or even better
 
-  1. Using a proper `nodeSelector` for the `cluster-autoscaler`'s pods and
-  2. Setting up `Defined-Tag` for all selected nodes (via node pools' setting):
-    `MyTagNamespace.MyNodeRole=ClusterAutoscaler`
-  3. Refining the dynamic group with those defined tags, for example,
+```
+All {instance.compartment.id = '...', tag.MyTagNamespace.MyNodeRole = 'MyTagValue'}
+```
 
-      ```
-      All {instance.compartment.id = 'ocid1.compartment.oc1.....',
-       tag.MyTagNamespace.MyNodeRole = 'ClusterAutoscaler'}
-      ```
+here `MyTagValue` is the defined-tag assigned to all nodes where `cluster-autoscaler` pods will be scheduled
+(for example, with `nodeSeletor`).
+See also [node-pool](https://docs.oracle.com/en-us/iaas/Content/ContEng/Tasks/contengtaggingclusterresources_tagging-oke-resources_node-tags.htm)
+or [instance-pool](https://docs.oracle.com/en-us/iaas/Content/Compute/Tasks/creatinginstanceconfig.htm)
 
 2: Create a *tenancy-level* policy to allow nodes to manage node-pools and/or instance-pools:
 
