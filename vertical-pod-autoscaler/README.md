@@ -50,7 +50,7 @@ procedure described below.
 
 # Installation
 
-The current default version is Vertical Pod Autoscaler 0.14.0
+The current default version is Vertical Pod Autoscaler 1.0.0
 
 ### Compatibility
 
