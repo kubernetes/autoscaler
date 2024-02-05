@@ -267,7 +267,7 @@ The following parameters are required:
 - `extraEnv.HCLOUD_TOKEN=...`
 - `autoscalingGroups=...`
 
-In addition, each autoscaling group requires an additional `instanceType` and `region` key to be set.
+Each autoscaling group requires an additional `instanceType` and `region` key to be set.
 
 Read [cluster-autoscaler/cloudprovider/hetzner/README.md](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/hetzner/README.md) for further information on the setup without helm.
 
