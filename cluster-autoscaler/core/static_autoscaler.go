@@ -318,6 +318,8 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 		return caerrors.ToAutoscalerError(caerrors.ApiCallError, err)
 	}
 
+	// Snapshot scale-down actuation status before cache refresh.
+	scaleDownActuationStatus := a.scaleDownActuator.CheckStatus()
 	// Call CloudProvider.Refresh before any other calls to cloud provider.
 	refreshStart := time.Now()
 	err = a.AutoscalingContext.CloudProvider.Refresh()
@@ -601,8 +603,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 			}
 		}
 
-		actuationStatus := a.scaleDownActuator.CheckStatus()
-		typedErr := a.scaleDownPlanner.UpdateClusterState(podDestinations, scaleDownCandidates, actuationStatus, currentTime)
+		typedErr := a.scaleDownPlanner.UpdateClusterState(podDestinations, scaleDownCandidates, scaleDownActuationStatus, currentTime)
 		// Update clusterStateRegistry and metrics regardless of whether ScaleDown was successful or not.
 		unneededNodes := a.scaleDownPlanner.UnneededNodes()
 		a.processors.ScaleDownCandidatesNotifier.Update(unneededNodes, currentTime)
