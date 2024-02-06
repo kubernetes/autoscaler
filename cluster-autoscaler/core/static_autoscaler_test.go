@@ -18,6 +18,7 @@ package core
 
 import (
 	"bytes"
+	stdcontext "context"
 	"flag"
 	"fmt"
 	"os"
@@ -459,7 +460,7 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 	mock.AssertExpectationsForObjects(t, allPodListerMock,
 		podDisruptionBudgetListerMock, daemonSetListerMock, onScaleUpMock, onScaleDownMock)
 
-	// Scale up to node gorup min size.
+	// Scale up to node group min size.
 	readyNodeLister.SetNodes([]*apiv1.Node{n4})
 	allNodeLister.SetNodes([]*apiv1.Node{n4})
 	allPodListerMock.On("List").Return([]*apiv1.Pod{}, nil).Twice()
@@ -1335,6 +1336,106 @@ func TestStaticAutoscalerRunOnceWithFilteringOnUpcomingNodesEnabledNoScaleUp(t *
 
 	mock.AssertExpectationsForObjects(t, allPodListerMock,
 		podDisruptionBudgetListerMock, daemonSetListerMock, onScaleUpMock, onScaleDownMock)
+}
+
+// We should not touch taints from unselected node groups.
+func TestStaticAutoscalerRunOnceWithUnselectedNodeGroups(t *testing.T) {
+	n1 := BuildTestNode("n1", 1000, 1000)
+	n1.Spec.Taints = append(n1.Spec.Taints, apiv1.Taint{
+		Key:    taints.DeletionCandidateTaint,
+		Value:  fmt.Sprint(time.Now().Unix()),
+		Effect: apiv1.TaintEffectPreferNoSchedule,
+	})
+	SetNodeReadyState(n1, true, time.Now())
+	n2 := BuildTestNode("n2", 1000, 1000)
+	n2.Spec.Taints = append(n2.Spec.Taints, apiv1.Taint{
+		Key:    taints.DeletionCandidateTaint,
+		Value:  fmt.Sprint(time.Now().Unix()),
+		Effect: apiv1.TaintEffectPreferNoSchedule,
+	})
+	SetNodeReadyState(n2, true, time.Now())
+
+	p1 := BuildTestPod("p1", 600, 100)
+	p1.Spec.NodeName = n1.Name
+
+	// set minimal cloud provider where only ng1 is defined as selected node group
+	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider.AddNodeGroup("ng1", 1, 10, 1)
+	provider.AddNode("ng1", n1)
+	assert.NotNil(t, provider)
+
+	tests := map[string]struct {
+		node           *apiv1.Node
+		pods           []*apiv1.Pod
+		expectedTaints []apiv1.Taint
+	}{
+		"Node from selected node groups can get their deletion candidate taints removed": {
+			node:           n1,
+			pods:           []*apiv1.Pod{p1},
+			expectedTaints: []apiv1.Taint{},
+		},
+		"Node from non-selected node groups should keep their deletion candidate taints": {
+			node:           n2,
+			pods:           nil,
+			expectedTaints: n2.Spec.Taints,
+		},
+	}
+
+	for name, test := range tests {
+		// prevent issues with scoping, we should be able to get rid of that with Go 1.22
+		test := test
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			// Create fake listers for the generated nodes, nothing returned by the rest (but the ones used in the tested path have to be defined).
+			readyNodeLister := kubernetes.NewTestNodeLister([]*apiv1.Node{test.node})
+			allNodeLister := kubernetes.NewTestNodeLister([]*apiv1.Node{test.node})
+			allPodListerMock := kubernetes.NewTestPodLister(test.pods)
+			daemonSetLister, err := kubernetes.NewTestDaemonSetLister(nil)
+			assert.NoError(t, err)
+			listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, allPodListerMock,
+				kubernetes.NewTestPodDisruptionBudgetLister(nil), daemonSetLister,
+				nil, nil, nil, nil)
+
+			// Create context with minimal autoscalingOptions that guarantee we reach the tested logic.
+			autoscalingOptions := config.AutoscalingOptions{
+				ScaleDownEnabled:      true,
+				MaxBulkSoftTaintCount: 10,
+				MaxBulkSoftTaintTime:  3 * time.Second,
+			}
+			processorCallbacks := newStaticAutoscalerProcessorCallbacks()
+			clientset := fake.NewSimpleClientset(test.node)
+			context, err := NewScaleTestAutoscalingContext(autoscalingOptions, clientset, listerRegistry, provider, processorCallbacks, nil)
+			assert.NoError(t, err)
+
+			// Create CSR with unhealthy cluster protection effectively disabled, to guarantee we reach the tested logic.
+			clusterStateConfig := clusterstate.ClusterStateRegistryConfig{
+				OkTotalUnreadyCount: 1,
+			}
+			clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(autoscalingOptions.NodeGroupDefaults))
+
+			// Setting the Actuator is necessary for testing any scale-down logic, it shouldn't have anything to do in this test.
+			sdActuator := actuation.NewActuator(&context, clusterState, deletiontracker.NewNodeDeletionTracker(0*time.Second), options.NodeDeleteOptions{}, nil, NewTestProcessors(&context).NodeGroupConfigProcessor)
+			context.ScaleDownActuator = sdActuator
+
+			// Fake planner that keeps track of the scale-down candidates passed to UpdateClusterState.
+			sdPlanner := &candidateTrackingFakePlanner{}
+
+			autoscaler := &StaticAutoscaler{
+				AutoscalingContext:   &context,
+				clusterStateRegistry: clusterState,
+				scaleDownPlanner:     sdPlanner,
+				scaleDownActuator:    sdActuator,
+				processors:           NewTestProcessors(&context),
+				processorCallbacks:   processorCallbacks,
+			}
+
+			err = autoscaler.RunOnce(time.Now().Add(5 * time.Hour))
+			assert.NoError(t, err)
+			newNode, err := clientset.CoreV1().Nodes().Get(stdcontext.TODO(), test.node.Name, metav1.GetOptions{})
+			assert.NoError(t, err)
+			assert.Equal(t, test.expectedTaints, newNode.Spec.Taints)
+		})
+	}
 }
 
 func TestStaticAutoscalerRunOnceWithBypassedSchedulers(t *testing.T) {
