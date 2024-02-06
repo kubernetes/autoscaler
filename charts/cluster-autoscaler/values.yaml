@@ -40,8 +40,8 @@ autoDiscovery:
 # <pre>
 # - name: mypool<br />
 #   maxSize: 2<br />
-#   minSize: 1
-#   instanceType: CPX21
+#   minSize: 1<br />
+#   instanceType: CPX21<br />
 #   region: FSN1
 # </pre>
 autoscalingGroups: []
