@@ -19,11 +19,13 @@ package vpa
 import (
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/klog/v2"
+
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
+	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
-	"k8s.io/klog/v2"
 )
 
 // Matcher is capable of returning a single matching VPA object
@@ -33,15 +35,18 @@ type Matcher interface {
 }
 
 type matcher struct {
-	vpaLister       vpa_lister.VerticalPodAutoscalerLister
-	selectorFetcher target.VpaTargetSelectorFetcher
+	vpaLister         vpa_lister.VerticalPodAutoscalerLister
+	selectorFetcher   target.VpaTargetSelectorFetcher
+	controllerFetcher controllerfetcher.ControllerFetcher
 }
 
 // NewMatcher returns a new VPA matcher.
 func NewMatcher(vpaLister vpa_lister.VerticalPodAutoscalerLister,
-	selectorFetcher target.VpaTargetSelectorFetcher) Matcher {
+	selectorFetcher target.VpaTargetSelectorFetcher,
+	controllerFetcher controllerfetcher.ControllerFetcher) Matcher {
 	return &matcher{vpaLister: vpaLister,
-		selectorFetcher: selectorFetcher}
+		selectorFetcher:   selectorFetcher,
+		controllerFetcher: controllerFetcher}
 }
 
 func (m *matcher) GetMatchingVPA(pod *core.Pod) *vpa_types.VerticalPodAutoscaler {
@@ -66,7 +71,7 @@ func (m *matcher) GetMatchingVPA(pod *core.Pod) *vpa_types.VerticalPodAutoscaler
 		})
 	}
 	klog.V(2).Infof("Let's choose from %d configs for pod %s/%s", len(onConfigs), pod.Namespace, pod.Name)
-	result := vpa_api_util.GetControllingVPAForPod(pod, onConfigs)
+	result := vpa_api_util.GetControllingVPAForPod(pod, onConfigs, m.controllerFetcher)
 	if result != nil {
 		return result.Vpa
 	}
