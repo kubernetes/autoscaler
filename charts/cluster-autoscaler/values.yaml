@@ -36,6 +36,15 @@ autoDiscovery:
 #   maxSize: 2<br />
 #   minSize: 1
 # </pre>
+#
+# For Hetzner Cloud, the `instanceType` and `region` keys are also required.
+# <pre>
+# - name: mypool<br />
+#   maxSize: 2<br />
+#   minSize: 1
+#   instanceType: CPX21
+#   region: FSN1
+# </pre>
 autoscalingGroups: []
 # - name: asg1
 #   maxSize: 2
