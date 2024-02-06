@@ -4,4 +4,4 @@ reviewers:
 - gjtempleton
 
 labels:
-- helm-charts
+- area/helm-charts
