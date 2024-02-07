@@ -129,21 +129,27 @@ type autoscalingGceClientV1 struct {
 	operationDeletionPollInterval time.Duration
 }
 
-// NewAutoscalingGceClientV1 creates a new client for communicating with GCE v1 API.
-func NewAutoscalingGceClientV1(client *http.Client, projectId string, userAgent string) (*autoscalingGceClientV1, error) {
+// NewAutoscalingGceClientV1WithTimeout creates a new client with custom timeouts
+// for communicating with GCE v1 API
+func NewAutoscalingGceClientV1WithTimeout(client *http.Client, projectId string, userAgent string,
+	waitTimeout, pollInterval, deletionPollInterval time.Duration) (*autoscalingGceClientV1, error) {
 	gceService, err := gce.New(client)
 	if err != nil {
 		return nil, err
 	}
 	gceService.UserAgent = userAgent
-
 	return &autoscalingGceClientV1{
 		projectId:                     projectId,
 		gceService:                    gceService,
-		operationWaitTimeout:          defaultOperationWaitTimeout,
-		operationPollInterval:         defaultOperationPollInterval,
-		operationDeletionPollInterval: defaultOperationDeletionPollInterval,
+		operationWaitTimeout:          waitTimeout,
+		operationPollInterval:         pollInterval,
+		operationDeletionPollInterval: deletionPollInterval,
 	}, nil
+}
+
+// NewAutoscalingGceClientV1 creates a new client for communicating with GCE v1 API.
+func NewAutoscalingGceClientV1(client *http.Client, projectId string, userAgent string) (*autoscalingGceClientV1, error) {
+	return NewAutoscalingGceClientV1WithTimeout(client, projectId, userAgent, defaultOperationWaitTimeout, defaultOperationPollInterval, defaultOperationDeletionPollInterval)
 }
 
 // NewCustomAutoscalingGceClientV1 creates a new client using custom server url and timeouts
