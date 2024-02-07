@@ -25,6 +25,12 @@ const (
 	// MaxPodsLoggedV5 is the maximum number of pods for which we will
 	// log detailed information every loop at verbosity >= 5.
 	MaxPodsLoggedV5 = 1000
+	// MaxNodesLogged is the maximum number of nodes for which we will
+	// log detailed information every loop at verbosity < 5.
+	MaxNodesLogged = 20
+	// MaxNodesLoggedV5 is the maximum number of nodes for which we will
+	// log detailed information every loop at verbosity >= 5.
+	MaxNodesLoggedV5 = 1000
 )
 
 // PodsLoggingQuota returns a new quota with default limit for pods at current verbosity.
@@ -33,4 +39,12 @@ func PodsLoggingQuota() *Quota {
 		return NewLoggingQuota(MaxPodsLoggedV5)
 	}
 	return NewLoggingQuota(MaxPodsLogged)
+}
+
+// NodesLoggingQuota returns a new quota with default limit for nodes at current verbosity.
+func NodesLoggingQuota() *Quota {
+	if klog.V(5).Enabled() {
+		return NewLoggingQuota(MaxNodesLoggedV5)
+	}
+	return NewLoggingQuota(MaxNodesLogged)
 }
