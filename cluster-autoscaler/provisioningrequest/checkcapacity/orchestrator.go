@@ -24,6 +24,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/apis/autoscaling.x-k8s.io/v1beta1"
 	provreq_pods "k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/pods"
@@ -66,6 +67,7 @@ func (o *provReqOrchestrator) Initialize(
 	autoscalingContext *context.AutoscalingContext,
 	processors *ca_processors.AutoscalingProcessors,
 	clusterStateRegistry *clusterstate.ClusterStateRegistry,
+	estimatorBuilder estimator.EstimatorBuilder,
 	taintConfig taints.TaintConfig,
 ) {
 	o.initialized = true
