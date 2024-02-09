@@ -159,7 +159,6 @@ func NewStaticAutoscaler(
 		autoscalingKubeClients,
 		cloudProvider,
 		expanderStrategy,
-		estimatorBuilder,
 		processorCallbacks,
 		debuggingSnapshotter,
 		remainingPdbTracker,
@@ -192,7 +191,7 @@ func NewStaticAutoscaler(
 	if scaleUpOrchestrator == nil {
 		scaleUpOrchestrator = orchestrator.New()
 	}
-	scaleUpOrchestrator.Initialize(autoscalingContext, processors, clusterStateRegistry, taintConfig)
+	scaleUpOrchestrator.Initialize(autoscalingContext, processors, clusterStateRegistry, estimatorBuilder, taintConfig)
 
 	// Set the initial scale times to be less than the start time so as to
 	// not start in cooldown mode.
