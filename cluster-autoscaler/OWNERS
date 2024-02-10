@@ -11,4 +11,4 @@ reviewers:
 emeritus_approvers:
 - aleksandra-malinowska # 2022-09-30
 labels:
-- cluster-autoscaler
+- area/cluster-autoscaler
