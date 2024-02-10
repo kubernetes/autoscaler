@@ -159,7 +159,6 @@ func NewStaticAutoscaler(
 		autoscalingKubeClients,
 		cloudProvider,
 		expanderStrategy,
-		estimatorBuilder,
 		processorCallbacks,
 		debuggingSnapshotter,
 		remainingPdbTracker,
@@ -192,7 +191,7 @@ func NewStaticAutoscaler(
 	if scaleUpOrchestrator == nil {
 		scaleUpOrchestrator = orchestrator.New()
 	}
-	scaleUpOrchestrator.Initialize(autoscalingContext, processors, clusterStateRegistry, taintConfig)
+	scaleUpOrchestrator.Initialize(autoscalingContext, processors, clusterStateRegistry, estimatorBuilder, taintConfig)
 
 	// Set the initial scale times to be less than the start time so as to
 	// not start in cooldown mode.
@@ -229,7 +228,9 @@ func (a *StaticAutoscaler) cleanUpIfRequired() {
 	if allNodes, err := a.AllNodeLister().List(); err != nil {
 		klog.Errorf("Failed to list ready nodes, not cleaning up taints: %v", err)
 	} else {
-		taints.CleanAllToBeDeleted(allNodes,
+		// Make sure we are only cleaning taints from selected node groups.
+		selectedNodes := filterNodesFromSelectedGroups(a.CloudProvider, allNodes...)
+		taints.CleanAllToBeDeleted(selectedNodes,
 			a.AutoscalingContext.ClientSet, a.Recorder, a.CordonNodeBeforeTerminate)
 		if a.AutoscalingContext.AutoscalingOptions.MaxBulkSoftTaintCount == 0 {
 			// Clean old taints if soft taints handling is disabled
@@ -293,7 +294,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 	stateUpdateStart := time.Now()
 
 	// Get nodes and pods currently living on cluster
-	allNodes, readyNodes, typedErr := a.obtainNodeLists(a.CloudProvider)
+	allNodes, readyNodes, typedErr := a.obtainNodeLists()
 	if typedErr != nil {
 		klog.Errorf("Failed to get node list: %v", typedErr)
 		return typedErr
@@ -656,7 +657,14 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 				scaleDownStatus.Result == scaledownstatus.ScaleDownNoUnneeded) &&
 				a.AutoscalingContext.AutoscalingOptions.MaxBulkSoftTaintCount != 0 {
 				taintableNodes := a.scaleDownPlanner.UnneededNodes()
-				untaintableNodes := subtractNodes(allNodes, taintableNodes)
+
+				// Make sure we are only cleaning taints from selected node groups.
+				selectedNodes := filterNodesFromSelectedGroups(a.CloudProvider, allNodes...)
+
+				// This is a sanity check to make sure `taintableNodes` only includes
+				// nodes from selected nodes.
+				taintableNodes = intersectNodes(selectedNodes, taintableNodes)
+				untaintableNodes := subtractNodes(selectedNodes, taintableNodes)
 				actuation.UpdateSoftDeletionTaints(a.AutoscalingContext, taintableNodes, untaintableNodes)
 			}
 
@@ -949,7 +957,7 @@ func (a *StaticAutoscaler) ExitCleanUp() {
 	a.clusterStateRegistry.Stop()
 }
 
-func (a *StaticAutoscaler) obtainNodeLists(cp cloudprovider.CloudProvider) ([]*apiv1.Node, []*apiv1.Node, caerrors.AutoscalerError) {
+func (a *StaticAutoscaler) obtainNodeLists() ([]*apiv1.Node, []*apiv1.Node, caerrors.AutoscalerError) {
 	allNodes, err := a.AllNodeLister().List()
 	if err != nil {
 		klog.Errorf("Failed to list all nodes: %v", err)
@@ -970,6 +978,18 @@ func (a *StaticAutoscaler) obtainNodeLists(cp cloudprovider.CloudProvider) ([]*a
 	allNodes, readyNodes = a.processors.CustomResourcesProcessor.FilterOutNodesWithUnreadyResources(a.AutoscalingContext, allNodes, readyNodes)
 	allNodes, readyNodes = taints.FilterOutNodesWithStartupTaints(a.taintConfig, allNodes, readyNodes)
 	return allNodes, readyNodes, nil
+}
+
+func filterNodesFromSelectedGroups(cp cloudprovider.CloudProvider, nodes ...*apiv1.Node) []*apiv1.Node {
+	filtered := make([]*apiv1.Node, 0, len(nodes))
+	for _, n := range nodes {
+		if ng, err := cp.NodeGroupForNode(n); err != nil {
+			klog.Errorf("Failed to get a node group node node: %v", err)
+		} else if ng != nil {
+			filtered = append(filtered, n)
+		}
+	}
+	return filtered
 }
 
 func (a *StaticAutoscaler) updateClusterState(allNodes []*apiv1.Node, nodeInfosForGroups map[string]*schedulerframework.NodeInfo, currentTime time.Time) caerrors.AutoscalerError {
@@ -1068,6 +1088,25 @@ func subtractNodesByName(nodes []*apiv1.Node, namesToRemove []string) []*apiv1.N
 
 func subtractNodes(a []*apiv1.Node, b []*apiv1.Node) []*apiv1.Node {
 	return subtractNodesByName(a, nodeNames(b))
+}
+
+func filterNodesByName(nodes []*apiv1.Node, names []string) []*apiv1.Node {
+	c := make([]*apiv1.Node, 0, len(names))
+	filterSet := make(map[string]bool, len(names))
+	for _, name := range names {
+		filterSet[name] = true
+	}
+	for _, n := range nodes {
+		if filterSet[n.Name] {
+			c = append(c, n)
+		}
+	}
+	return c
+}
+
+// intersectNodes gives intersection of 2 node lists
+func intersectNodes(a []*apiv1.Node, b []*apiv1.Node) []*apiv1.Node {
+	return filterNodesByName(a, nodeNames(b))
 }
 
 func nodeNames(ns []*apiv1.Node) []string {
