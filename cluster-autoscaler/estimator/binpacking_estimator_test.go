@@ -23,6 +23,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	cactx "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
@@ -187,12 +188,16 @@ func TestBinpackingEstimate(t *testing.T) {
 			assert.NoError(t, err)
 			limiter := NewThresholdBasedEstimationLimiter([]Threshold{NewStaticThreshold(tc.maxNodes, time.Duration(0))})
 			processor := NewDecreasingPodOrderer()
-			estimator := NewBinpackingNodeEstimator(predicateChecker, clusterSnapshot, limiter, processor, nil /* EstimationContext */, nil /* EstimationAnalyserFunc */)
+			ctx := &cactx.AutoscalingContext{
+				ClusterSnapshot:  clusterSnapshot,
+				PredicateChecker: predicateChecker,
+			}
+			estimator := NewBinpackingNodeEstimator(limiter, processor, nil /* EstimationContext */, nil /* EstimationAnalyserFunc */)
 			node := makeNode(tc.millicores, tc.memory, "template", "zone-mars")
 			nodeInfo := schedulerframework.NewNodeInfo()
 			nodeInfo.SetNode(node)
 
-			estimatedNodes, estimatedPods := estimator.Estimate(tc.pods, nodeInfo, nil)
+			estimatedNodes, estimatedPods := estimator.Estimate(ctx, tc.pods, nodeInfo, nil)
 			assert.Equal(t, tc.expectNodeCount, estimatedNodes)
 			assert.Equal(t, tc.expectPodCount, len(estimatedPods))
 			if tc.expectProcessedPods != nil {
