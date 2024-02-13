@@ -65,8 +65,6 @@ type ScaleUpRequest struct {
 	ExpectedAddTime time.Time
 	// How much the node group is increased.
 	Increase int
-	// ErrorClasses is a set of the classes of errors encountered during a scale-up, if any.
-	ErrorClasses map[cloudprovider.InstanceErrorClass]struct{}
 }
 
 // ScaleDownRequest contains information about the requested node deletion.
@@ -88,11 +86,6 @@ type ClusterStateRegistryConfig struct {
 	// Minimum number of nodes that must be unready for MaxTotalUnreadyPercentage to apply.
 	// This is to ensure that in very small clusters (e.g. 2 nodes) a single node's failure doesn't disable autoscaling.
 	OkTotalUnreadyCount int
-	// NodeGroupRemovePersistentErrorBackoffEarly is whether a backoff can be removed before expiration when
-	// a scale-up partially fails due to a likely persistent error.
-	// If true (default), the backoff will be removed early regardless of the error.
-	// If false and the backoff is due to a likely persistent error, e.g. OutOfResourcesError, it will not be removed early.
-	NodeGroupRemovePersistentErrorBackoffEarly bool
 }
 
 // IncorrectNodeGroupSize contains information about how much the current size of the node group
@@ -222,7 +215,6 @@ func (csr *ClusterStateRegistry) registerOrUpdateScaleUpNoLock(nodeGroup cloudpr
 			Increase:        delta,
 			Time:            currentTime,
 			ExpectedAddTime: currentTime.Add(maxNodeProvisionTime),
-			ErrorClasses:    make(map[cloudprovider.InstanceErrorClass]struct{}),
 		}
 		csr.scaleUpRequests[nodeGroup.Id()] = scaleUpRequest
 		return
@@ -272,18 +264,7 @@ func (csr *ClusterStateRegistry) updateScaleRequests(currentTime time.Time) {
 			// scale-out finished successfully
 			// remove it and reset node group backoff
 			delete(csr.scaleUpRequests, nodeGroupName)
-			// If a node group is backed off during a scale-up due to instance creation errors but partially succeeds,
-			// the backoff could be removed early, allowing the CA to retry scaling the same node group.
-			// Optionally, the backoff can be retained for persistent errors given the risk of recurrence.
-			// The backoff will be removed early if either of the following conditions are true:
-			// 1. NodeGroupRemovePersistentErrorBackoffEarly is enabled (default)
-			// 2. There is no persistent error class attached to the scale-up request
-			_, persistentError := scaleUpRequest.ErrorClasses[cloudprovider.OutOfResourcesErrorClass]
-			shouldRemoveBackoffEarly := csr.config.NodeGroupRemovePersistentErrorBackoffEarly || !persistentError
-			if shouldRemoveBackoffEarly {
-				klog.V(4).Infof("Removing backoff early for node group %v", scaleUpRequest.NodeGroup.Id())
-				csr.backoff.RemoveBackoff(scaleUpRequest.NodeGroup, csr.nodeInfosForGroups[scaleUpRequest.NodeGroup.Id()])
-			}
+			csr.backoff.RemoveBackoff(scaleUpRequest.NodeGroup, csr.nodeInfosForGroups[scaleUpRequest.NodeGroup.Id()])
 			klog.V(4).Infof("Scale up in group %v finished successfully in %v",
 				nodeGroupName, currentTime.Sub(scaleUpRequest.Time))
 			continue
@@ -350,13 +331,6 @@ func (csr *ClusterStateRegistry) registerFailedScaleUpNoLock(nodeGroup cloudprov
 	csr.scaleUpFailures[nodeGroup.Id()] = append(csr.scaleUpFailures[nodeGroup.Id()], ScaleUpFailure{NodeGroup: nodeGroup, Reason: reason, Time: currentTime})
 	metrics.RegisterFailedScaleUp(reason, gpuResourceName, gpuType)
 	csr.backoffNodeGroup(nodeGroup, errorInfo, currentTime)
-	// attach the error class to the scale-up request if it exists
-	// it will be used to determine whether to remove the backoff early when updating scale-up requests
-	scaleUpRequest, found := csr.scaleUpRequests[nodeGroup.Id()]
-	if found {
-		scaleUpRequest.ErrorClasses[errorClass] = struct{}{}
-	}
-	csr.backoffNodeGroup(nodeGroup, errorClass, errorCode, currentTime)
 }
 
 // UpdateNodes updates the state of the nodes in the ClusterStateRegistry and recalculates the stats
@@ -1131,7 +1105,7 @@ func (csr *ClusterStateRegistry) handleInstanceCreationErrorsForNodeGroup(
 	// If node group is scaling up and there are new node-create requests which cannot be satisfied because of
 	// out-of-resources errors we:
 	//  - emit event
-	//  - alter the scale-up and attach the error class
+	//  - alter the scale-up
 	//  - increase scale-up failure metric
 	//  - backoff the node group
 	for errorCode, instances := range currentErrorCodeToInstance {

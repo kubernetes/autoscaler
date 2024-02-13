@@ -38,7 +38,6 @@ type exponentialBackoffInfo struct {
 	backoffUntil        time.Time
 	lastFailedExecution time.Time
 	errorInfo           cloudprovider.InstanceErrorInfo
-	errorClass          cloudprovider.InstanceErrorClass
 }
 
 // NewExponentialBackoff creates an instance of exponential backoff.
@@ -90,7 +89,6 @@ func (b *exponentialBackoff) Backoff(nodeGroup cloudprovider.NodeGroup, nodeInfo
 		backoffUntil:        backoffUntil,
 		lastFailedExecution: currentTime,
 		errorInfo:           errorInfo,
-		errorClass:          errorClass,
 	}
 	return backoffUntil
 }
