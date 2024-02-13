@@ -261,10 +261,8 @@ func (csr *ClusterStateRegistry) updateScaleRequests(currentTime time.Time) {
 
 	for nodeGroupName, scaleUpRequest := range csr.scaleUpRequests {
 		if !csr.areThereUpcomingNodesInNodeGroup(nodeGroupName) {
-			// scale-out finished successfully
-			// remove it and reset node group backoff
+			// scale up finished successfully, remove request
 			delete(csr.scaleUpRequests, nodeGroupName)
-			csr.backoff.RemoveBackoff(scaleUpRequest.NodeGroup, csr.nodeInfosForGroups[scaleUpRequest.NodeGroup.Id()])
 			klog.V(4).Infof("Scale up in group %v finished successfully in %v",
 				nodeGroupName, currentTime.Sub(scaleUpRequest.Time))
 			continue
