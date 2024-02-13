@@ -854,7 +854,7 @@ func TestScaleUpBackoff(t *testing.T) {
 		},
 	}, clusterstate.NodeGroupScaleUpSafety(ng1, now))
 
-	// The backoff should be cleared after a successful scale-up
+	// After successful scale-up, node group should still be backed off
 	clusterstate.RegisterScaleUp(provider.GetNodeGroup("ng1"), 1, now)
 	ng1_4 := BuildTestNode("ng1-4", 1000, 1000)
 	SetNodeReadyState(ng1_4, true, now.Add(-1*time.Minute))
@@ -863,8 +863,25 @@ func TestScaleUpBackoff(t *testing.T) {
 	assert.NoError(t, err)
 	assert.True(t, clusterstate.IsClusterHealthy())
 	assert.True(t, clusterstate.IsNodeGroupHealthy("ng1"))
-	assert.Equal(t, NodeGroupScalingSafety{SafeToScale: true, Healthy: true}, clusterstate.NodeGroupScaleUpSafety(ng1, now))
-	assert.Equal(t, backoff.Status{IsBackedOff: false}, clusterstate.backoff.BackoffStatus(ng1, nil, now))
+	assert.Equal(t, NodeGroupScalingSafety{
+		SafeToScale: false,
+		Healthy:     true,
+		BackoffStatus: backoff.Status{
+			IsBackedOff: true,
+			ErrorInfo: cloudprovider.InstanceErrorInfo{
+				ErrorClass:   cloudprovider.OtherErrorClass,
+				ErrorCode:    "timeout",
+				ErrorMessage: "Scale-up timed out for node group ng1 after 2m1s",
+			},
+		},
+	}, clusterstate.NodeGroupScaleUpSafety(ng1, now))
+	assert.Equal(t, backoff.Status{
+		IsBackedOff: true,
+		ErrorInfo: cloudprovider.InstanceErrorInfo{
+			ErrorClass:   cloudprovider.OtherErrorClass,
+			ErrorCode:    "timeout",
+			ErrorMessage: "Scale-up timed out for node group ng1 after 2m1s",
+		}}, clusterstate.backoff.BackoffStatus(ng1, nil, now))
 }
 
 func TestGetClusterSize(t *testing.T) {
