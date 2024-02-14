@@ -31,6 +31,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/actuation"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup/orchestrator"
 	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/checkcapacity"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	kubelet_config "k8s.io/kubernetes/pkg/kubelet/apis/config"
 
@@ -49,6 +50,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
+	"k8s.io/autoscaler/cluster-autoscaler/observers/loopstart"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfosprovider"
@@ -469,15 +471,6 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 	deleteOptions := options.NewNodeDeleteOptions(autoscalingOptions)
 	drainabilityRules := rules.Default(deleteOptions)
 
-	scaleUpOrchestrator := orchestrator.New()
-	if *provisioningRequestsEnabled {
-		kubeClient := kube_util.GetKubeConfig(autoscalingOptions.KubeClientOpts)
-		scaleUpOrchestrator, err = orchestrator.NewWrapperOrchestrator(kubeClient)
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	opts := core.AutoscalerOptions{
 		AutoscalingOptions:   autoscalingOptions,
 		ClusterSnapshot:      clustersnapshot.NewDeltaClusterSnapshot(),
@@ -487,14 +480,27 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 		PredicateChecker:     predicateChecker,
 		DeleteOptions:        deleteOptions,
 		DrainabilityRules:    drainabilityRules,
-		ScaleUpOrchestrator:  scaleUpOrchestrator,
+		ScaleUpOrchestrator:  orchestrator.New(),
 	}
 
 	opts.Processors = ca_processors.DefaultProcessors(autoscalingOptions)
 	opts.Processors.TemplateNodeInfoProvider = nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nodeInfoCacheExpireTime, *forceDaemonSets)
 	podListProcessor := podlistprocessor.NewDefaultPodListProcessor(opts.PredicateChecker)
+
 	if autoscalingOptions.ProvisioningRequestEnabled {
 		podListProcessor.AddProcessor(provreq.NewProvisioningRequestPodsFilter(provreq.NewDefautlEventManager()))
+
+		restConfig := kube_util.GetKubeConfig(autoscalingOptions.KubeClientOpts)
+		scaleUpOrchestrator, err := orchestrator.NewWrapperOrchestrator(restConfig)
+		if err != nil {
+			return nil, err
+		}
+		opts.ScaleUpOrchestrator = scaleUpOrchestrator
+		provreqProcesor, err := provreq.NewCombinedProvReqProcessor(restConfig, []provreq.ProvisioningRequestProcessor{checkcapacity.NewCheckCapacityProcessor()})
+		if err != nil {
+			return nil, err
+		}
+		opts.LoopStartNotifier = loopstart.NewObserversList([]loopstart.Observer{provreqProcesor})
 	}
 	opts.Processors.PodListProcessor = podListProcessor
 	scaleDownCandidatesComparers := []scaledowncandidates.CandidatesComparer{}

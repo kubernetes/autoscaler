@@ -35,7 +35,7 @@ import (
 )
 
 // NewFakeProvisioningRequestClient mock ProvisioningRequestClient for tests.
-func NewFakeProvisioningRequestClient(ctx context.Context, t *testing.T, prs ...*provreqwrapper.ProvisioningRequest) *ProvisioningRequestClientV1beta1 {
+func NewFakeProvisioningRequestClient(ctx context.Context, t *testing.T, prs ...*provreqwrapper.ProvisioningRequest) *ProvisioningRequestClient {
 	t.Helper()
 	provReqClient := fake.NewSimpleClientset()
 	podTemplClient := fake_kubernetes.NewSimpleClientset()
@@ -60,7 +60,7 @@ func NewFakeProvisioningRequestClient(ctx context.Context, t *testing.T, prs ...
 	if err != nil {
 		t.Fatalf("Failed to create Provisioning Request lister. Error was: %v", err)
 	}
-	return &ProvisioningRequestClientV1beta1{
+	return &ProvisioningRequestClient{
 		client:         provReqClient,
 		provReqLister:  provReqLister,
 		podTemplLister: podTemplLister,
@@ -83,7 +83,8 @@ func newFakePodTemplatesLister(t *testing.T, client kubernetes.Interface, channe
 	return podTemplLister, nil
 }
 
-func provisioningRequestBetaForTests(namespace, name string) *provreqwrapper.ProvisioningRequest {
+// ProvisioningRequestWrapperForTesting mock ProvisioningRequest for tests.
+func ProvisioningRequestWrapperForTesting(namespace, name string) *provreqwrapper.ProvisioningRequest {
 	if namespace == "" {
 		namespace = "default"
 	}
