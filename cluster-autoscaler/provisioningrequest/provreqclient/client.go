@@ -41,15 +41,15 @@ const (
 	provisioningRequestClientCallTimeout = 4 * time.Second
 )
 
-// ProvisioningRequestClientV1beta1 represents client for v1beta1 ProvReq CRD.
-type ProvisioningRequestClientV1beta1 struct {
+// ProvisioningRequestClient represents client for v1beta1 ProvReq CRD.
+type ProvisioningRequestClient struct {
 	client         versioned.Interface
 	provReqLister  listers.ProvisioningRequestLister
 	podTemplLister v1.PodTemplateLister
 }
 
 // NewProvisioningRequestClient configures and returns a provisioningRequestClient.
-func NewProvisioningRequestClient(kubeConfig *rest.Config) (*ProvisioningRequestClientV1beta1, error) {
+func NewProvisioningRequestClient(kubeConfig *rest.Config) (*ProvisioningRequestClient, error) {
 	prClient, err := newPRClient(kubeConfig)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create Provisioning Request client: %v", err)
@@ -70,7 +70,7 @@ func NewProvisioningRequestClient(kubeConfig *rest.Config) (*ProvisioningRequest
 		return nil, err
 	}
 
-	return &ProvisioningRequestClientV1beta1{
+	return &ProvisioningRequestClient{
 		client:         prClient,
 		provReqLister:  provReqLister,
 		podTemplLister: podTemplLister,
@@ -78,7 +78,7 @@ func NewProvisioningRequestClient(kubeConfig *rest.Config) (*ProvisioningRequest
 }
 
 // ProvisioningRequest gets a specific ProvisioningRequest CR.
-func (c *ProvisioningRequestClientV1beta1) ProvisioningRequest(namespace, name string) (*provreqwrapper.ProvisioningRequest, error) {
+func (c *ProvisioningRequestClient) ProvisioningRequest(namespace, name string) (*provreqwrapper.ProvisioningRequest, error) {
 	v1Beta1PR, err := c.provReqLister.ProvisioningRequests(namespace).Get(name)
 	if err != nil {
 		return nil, err
@@ -91,7 +91,7 @@ func (c *ProvisioningRequestClientV1beta1) ProvisioningRequest(namespace, name s
 }
 
 // ProvisioningRequests gets all ProvisioningRequest CRs.
-func (c *ProvisioningRequestClientV1beta1) ProvisioningRequests() ([]*provreqwrapper.ProvisioningRequest, error) {
+func (c *ProvisioningRequestClient) ProvisioningRequests() ([]*provreqwrapper.ProvisioningRequest, error) {
 	v1Beta1PRs, err := c.provReqLister.List(labels.Everything())
 	if err != nil {
 		return nil, fmt.Errorf("error fetching provisioningRequests: %w", err)
@@ -108,7 +108,7 @@ func (c *ProvisioningRequestClientV1beta1) ProvisioningRequests() ([]*provreqwra
 }
 
 // FetchPodTemplates fetches PodTemplates referenced by the Provisioning Request.
-func (c *ProvisioningRequestClientV1beta1) FetchPodTemplates(pr *v1beta1.ProvisioningRequest) ([]*apiv1.PodTemplate, error) {
+func (c *ProvisioningRequestClient) FetchPodTemplates(pr *v1beta1.ProvisioningRequest) ([]*apiv1.PodTemplate, error) {
 	podTemplates := make([]*apiv1.PodTemplate, 0, len(pr.Spec.PodSets))
 	for _, podSpec := range pr.Spec.PodSets {
 		podTemplate, err := c.podTemplLister.PodTemplates(pr.Namespace).Get(podSpec.PodTemplateRef.Name)
