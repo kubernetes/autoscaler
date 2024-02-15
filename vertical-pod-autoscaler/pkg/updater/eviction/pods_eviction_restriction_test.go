@@ -26,12 +26,13 @@ import (
 	batchv1 "k8s.io/api/batch/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	appsinformer "k8s.io/client-go/informers/apps/v1"
 	coreinformer "k8s.io/client-go/informers/core/v1"
 	"k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/tools/cache"
+
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 )
 
 type podWithExpectations struct {
@@ -39,6 +40,8 @@ type podWithExpectations struct {
 	canEvict        bool
 	evictionSuccess bool
 }
+
+var readyConditions = []apiv1.PodCondition{{Type: apiv1.PodReady, Status: apiv1.ConditionTrue}}
 
 func getBasicVpa() *vpa_types.VerticalPodAutoscaler {
 	return test.VerticalPodAutoscaler().WithContainer("any").Get()
@@ -79,17 +82,17 @@ func TestEvictReplicatedByController(t *testing.T) {
 			vpa:               getBasicVpa(),
 			pods: []podWithExpectations{
 				{
-					pod:             generatePod().Get(),
+					pod:             generatePod().WithConditions(readyConditions).Get(),
 					canEvict:        true,
 					evictionSuccess: true,
 				},
 				{
-					pod:             generatePod().Get(),
+					pod:             generatePod().WithConditions(readyConditions).Get(),
 					canEvict:        true,
 					evictionSuccess: false,
 				},
 				{
-					pod:             generatePod().Get(),
+					pod:             generatePod().WithConditions(readyConditions).Get(),
 					canEvict:        true,
 					evictionSuccess: false,
 				},
@@ -103,22 +106,22 @@ func TestEvictReplicatedByController(t *testing.T) {
 			pods: []podWithExpectations{
 				{
 
-					pod:             generatePod().Get(),
+					pod:             generatePod().WithConditions(readyConditions).Get(),
 					canEvict:        true,
 					evictionSuccess: true,
 				},
 				{
-					pod:             generatePod().Get(),
+					pod:             generatePod().WithConditions(readyConditions).Get(),
 					canEvict:        true,
 					evictionSuccess: true,
 				},
 				{
-					pod:             generatePod().Get(),
+					pod:             generatePod().WithConditions(readyConditions).Get(),
 					canEvict:        true,
 					evictionSuccess: false,
 				},
 				{
-					pod:             generatePod().Get(),
+					pod:             generatePod().WithConditions(readyConditions).Get(),
 					canEvict:        true,
 					evictionSuccess: false,
 				},
@@ -131,17 +134,17 @@ func TestEvictReplicatedByController(t *testing.T) {
 			vpa:               getBasicVpa(),
 			pods: []podWithExpectations{
 				{
-					pod:             generatePod().Get(),
+					pod:             generatePod().WithConditions(readyConditions).Get(),
 					canEvict:        true,
 					evictionSuccess: true,
 				},
 				{
-					pod:             generatePod().Get(),
+					pod:             generatePod().WithConditions(readyConditions).Get(),
 					canEvict:        true,
 					evictionSuccess: false,
 				},
 				{
-					pod:             generatePod().Get(),
+					pod:             generatePod().WithConditions(readyConditions).Get(),
 					canEvict:        true,
 					evictionSuccess: false,
 				},
@@ -154,17 +157,17 @@ func TestEvictReplicatedByController(t *testing.T) {
 			vpa:               getBasicVpa(),
 			pods: []podWithExpectations{
 				{
-					pod:             generatePod().Get(),
+					pod:             generatePod().WithConditions(readyConditions).Get(),
 					canEvict:        true,
 					evictionSuccess: true,
 				},
 				{
-					pod:             generatePod().Get(),
+					pod:             generatePod().WithConditions(readyConditions).Get(),
 					canEvict:        true,
 					evictionSuccess: false,
 				},
 				{
-					pod:             generatePod().Get(),
+					pod:             generatePod().WithConditions(readyConditions).Get(),
 					canEvict:        true,
 					evictionSuccess: false,
 				},
@@ -177,12 +180,12 @@ func TestEvictReplicatedByController(t *testing.T) {
 			vpa:               getBasicVpa(),
 			pods: []podWithExpectations{
 				{
-					pod:             generatePod().Get(),
+					pod:             generatePod().WithConditions(readyConditions).Get(),
 					canEvict:        false,
 					evictionSuccess: false,
 				},
 				{
-					pod:             generatePod().Get(),
+					pod:             generatePod().WithConditions(readyConditions).Get(),
 					canEvict:        false,
 					evictionSuccess: false,
 				},
@@ -195,7 +198,7 @@ func TestEvictReplicatedByController(t *testing.T) {
 			vpa:               getBasicVpa(),
 			pods: []podWithExpectations{
 				{
-					pod:             generatePod().Get(),
+					pod:             generatePod().WithConditions(readyConditions).Get(),
 					canEvict:        false,
 					evictionSuccess: false,
 				},
@@ -205,7 +208,7 @@ func TestEvictReplicatedByController(t *testing.T) {
 					evictionSuccess: true,
 				},
 				{
-					pod:             generatePod().Get(),
+					pod:             generatePod().WithConditions(readyConditions).Get(),
 					canEvict:        false,
 					evictionSuccess: false,
 				},
@@ -218,7 +221,7 @@ func TestEvictReplicatedByController(t *testing.T) {
 			vpa:               getBasicVpa(),
 			pods: []podWithExpectations{
 				{
-					pod:             generatePod().Get(),
+					pod:             generatePod().WithConditions(readyConditions).Get(),
 					canEvict:        false,
 					evictionSuccess: false,
 				},
@@ -246,7 +249,7 @@ func TestEvictReplicatedByController(t *testing.T) {
 			vpa:               getBasicVpa(),
 			pods: []podWithExpectations{
 				{
-					pod:             generatePod().Get(),
+					pod:             generatePod().WithConditions(readyConditions).Get(),
 					canEvict:        false,
 					evictionSuccess: false,
 				},
@@ -259,9 +262,38 @@ func TestEvictReplicatedByController(t *testing.T) {
 			vpa:               vpaSingleReplica,
 			pods: []podWithExpectations{
 				{
-					pod:             generatePod().Get(),
+					pod:             generatePod().WithConditions(readyConditions).Get(),
 					canEvict:        true,
 					evictionSuccess: true,
+				},
+			},
+		},
+		{
+			name:              "Evict one pod (should evict half of 4, but one pod is not ready.",
+			replicas:          4,
+			evictionTolerance: 0.5,
+			vpa:               getBasicVpa(),
+			pods: []podWithExpectations{
+				{
+
+					pod:             generatePod().Get(),
+					canEvict:        false,
+					evictionSuccess: false,
+				},
+				{
+					pod:             generatePod().WithConditions(readyConditions).Get(),
+					canEvict:        true,
+					evictionSuccess: true,
+				},
+				{
+					pod:             generatePod().WithConditions(readyConditions).Get(),
+					canEvict:        true,
+					evictionSuccess: false,
+				},
+				{
+					pod:             generatePod().WithConditions(readyConditions).Get(),
+					canEvict:        true,
+					evictionSuccess: false,
 				},
 			},
 		},
@@ -311,7 +343,7 @@ func TestEvictReplicatedByReplicaSet(t *testing.T) {
 
 	pods := make([]*apiv1.Pod, livePods)
 	for i := range pods {
-		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&rs.ObjectMeta, &rs.TypeMeta).Get()
+		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&rs.ObjectMeta, &rs.TypeMeta).WithConditions(readyConditions).Get()
 	}
 
 	factory, _ := getEvictionRestrictionFactory(nil, &rs, nil, nil, 2, 0.5)
@@ -350,7 +382,7 @@ func TestEvictReplicatedByStatefulSet(t *testing.T) {
 
 	pods := make([]*apiv1.Pod, livePods)
 	for i := range pods {
-		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&ss.ObjectMeta, &ss.TypeMeta).Get()
+		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&ss.ObjectMeta, &ss.TypeMeta).WithConditions(readyConditions).Get()
 	}
 
 	factory, _ := getEvictionRestrictionFactory(nil, nil, &ss, nil, 2, 0.5)
@@ -382,13 +414,13 @@ func TestEvictReplicatedByDaemonSet(t *testing.T) {
 			Kind: "DaemonSet",
 		},
 		Status: appsv1.DaemonSetStatus{
-			NumberReady: livePods,
+			DesiredNumberScheduled: livePods,
 		},
 	}
 
 	pods := make([]*apiv1.Pod, livePods)
 	for i := range pods {
-		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&ds.ObjectMeta, &ds.TypeMeta).Get()
+		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&ds.ObjectMeta, &ds.TypeMeta).WithConditions(readyConditions).Get()
 	}
 	factory, _ := getEvictionRestrictionFactory(nil, nil, nil, &ds, 2, 0.5)
 	eviction := factory.NewPodsEvictionRestriction(pods, getBasicVpa())
@@ -422,7 +454,7 @@ func TestEvictReplicatedByJob(t *testing.T) {
 
 	pods := make([]*apiv1.Pod, livePods)
 	for i := range pods {
-		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&job.ObjectMeta, &job.TypeMeta).Get()
+		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&job.ObjectMeta, &job.TypeMeta).WithConditions(readyConditions).Get()
 	}
 
 	factory, _ := getEvictionRestrictionFactory(nil, nil, nil, nil, 2, 0.5)
@@ -461,7 +493,7 @@ func TestEvictTooFewReplicas(t *testing.T) {
 
 	pods := make([]*apiv1.Pod, livePods)
 	for i := range pods {
-		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get()
+		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&rc.ObjectMeta, &rc.TypeMeta).WithConditions(readyConditions).Get()
 	}
 
 	factory, _ := getEvictionRestrictionFactory(&rc, nil, nil, nil, 10, 0.5)
@@ -497,7 +529,7 @@ func TestEvictionTolerance(t *testing.T) {
 
 	pods := make([]*apiv1.Pod, livePods)
 	for i := range pods {
-		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get()
+		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&rc.ObjectMeta, &rc.TypeMeta).WithConditions(readyConditions).Get()
 	}
 
 	factory, _ := getEvictionRestrictionFactory(&rc, nil, nil, nil, 2 /*minReplicas*/, tolerance)
@@ -537,7 +569,7 @@ func TestEvictAtLeastOne(t *testing.T) {
 
 	pods := make([]*apiv1.Pod, livePods)
 	for i := range pods {
-		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get()
+		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&rc.ObjectMeta, &rc.TypeMeta).WithConditions(readyConditions).Get()
 	}
 
 	factory, _ := getEvictionRestrictionFactory(&rc, nil, nil, nil, 2, tolerance)

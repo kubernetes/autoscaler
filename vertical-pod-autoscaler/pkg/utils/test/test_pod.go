@@ -30,6 +30,7 @@ type PodBuilder interface {
 	WithAnnotations(annotations map[string]string) PodBuilder
 	WithPhase(phase apiv1.PodPhase) PodBuilder
 	Get() *apiv1.Pod
+	WithConditions(conditions []apiv1.PodCondition) PodBuilder
 }
 
 // Pod returns new PodBuilder.
@@ -47,6 +48,7 @@ type podBuilderImpl struct {
 	labels            map[string]string
 	annotations       map[string]string
 	phase             apiv1.PodPhase
+	conditions        []apiv1.PodCondition
 }
 
 func (pb *podBuilderImpl) WithLabels(labels map[string]string) PodBuilder {
@@ -83,6 +85,12 @@ func (pb *podBuilderImpl) WithCreator(creatorObjectMeta *metav1.ObjectMeta, crea
 func (pb *podBuilderImpl) WithPhase(phase apiv1.PodPhase) PodBuilder {
 	r := *pb
 	r.phase = phase
+	return &r
+}
+
+func (pb *podBuilderImpl) WithConditions(conditions []apiv1.PodCondition) PodBuilder {
+	r := *pb
+	r.conditions = conditions
 	return &r
 }
 
@@ -127,5 +135,8 @@ func (pb *podBuilderImpl) Get() *apiv1.Pod {
 		pod.Status.Phase = pb.phase
 	}
 
+	if pb.conditions != nil {
+		pod.Status.Conditions = pb.conditions
+	}
 	return pod
 }
