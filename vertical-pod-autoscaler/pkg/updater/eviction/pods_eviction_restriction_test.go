@@ -403,8 +403,6 @@ func TestEvictReplicatedByStatefulSet(t *testing.T) {
 }
 
 func TestEvictReplicatedByDaemonSet(t *testing.T) {
-	livePods := int32(5)
-
 	ds := appsv1.DaemonSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "ds",
@@ -413,29 +411,118 @@ func TestEvictReplicatedByDaemonSet(t *testing.T) {
 		TypeMeta: metav1.TypeMeta{
 			Kind: "DaemonSet",
 		},
-		Status: appsv1.DaemonSetStatus{
-			DesiredNumberScheduled: livePods,
+	}
+
+	index := 0
+	generatePod := func() test.PodBuilder {
+		index++
+		return test.Pod().WithName(fmt.Sprintf("test-%v", index)).WithCreator(&ds.ObjectMeta, &ds.TypeMeta)
+	}
+
+	testCases := []struct {
+		name              string
+		replicas          int32
+		evictionTolerance float64
+		vpa               *vpa_types.VerticalPodAutoscaler
+		pods              []podWithExpectations
+	}{
+		{
+			name:              "Evict only first pod (half of 3).",
+			replicas:          3,
+			evictionTolerance: 0.5,
+			vpa:               getBasicVpa(),
+			pods: []podWithExpectations{
+				{
+					pod:             generatePod().WithConditions(readyConditions).Get(),
+					canEvict:        true,
+					evictionSuccess: true,
+				},
+				{
+					pod:             generatePod().WithConditions(readyConditions).Get(),
+					canEvict:        true,
+					evictionSuccess: false,
+				},
+				{
+					pod:             generatePod().WithConditions(readyConditions).Get(),
+					canEvict:        true,
+					evictionSuccess: false,
+				},
+			},
+		},
+		{
+			name:              "Evict two pods (should evict half of 8, but two pods is not ready.",
+			replicas:          8,
+			evictionTolerance: 0.5,
+			vpa:               getBasicVpa(),
+			pods: []podWithExpectations{
+				{
+					pod:             generatePod().Get(),
+					canEvict:        false,
+					evictionSuccess: false,
+				},
+				{
+					pod:             generatePod().WithConditions(readyConditions).Get(),
+					canEvict:        true,
+					evictionSuccess: true,
+				},
+				{
+					pod:             generatePod().WithConditions(readyConditions).Get(),
+					canEvict:        true,
+					evictionSuccess: true,
+				},
+				{
+					pod:             generatePod().WithConditions(readyConditions).Get(),
+					canEvict:        true,
+					evictionSuccess: false,
+				},
+				{
+					pod:             generatePod().WithConditions(readyConditions).Get(),
+					canEvict:        true,
+					evictionSuccess: false,
+				},
+				{
+					pod:             generatePod().WithConditions(readyConditions).Get(),
+					canEvict:        true,
+					evictionSuccess: false,
+				},
+				{
+					pod:             generatePod().WithConditions(readyConditions).Get(),
+					canEvict:        true,
+					evictionSuccess: false,
+				},
+				{
+					pod:             generatePod().Get(),
+					canEvict:        false,
+					evictionSuccess: false,
+				},
+			},
 		},
 	}
 
-	pods := make([]*apiv1.Pod, livePods)
-	for i := range pods {
-		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&ds.ObjectMeta, &ds.TypeMeta).WithConditions(readyConditions).Get()
-	}
-	factory, _ := getEvictionRestrictionFactory(nil, nil, nil, &ds, 2, 0.5)
-	eviction := factory.NewPodsEvictionRestriction(pods, getBasicVpa())
+	for _, testCase := range testCases {
+		ds.Status = appsv1.DaemonSetStatus{
+			DesiredNumberScheduled: testCase.replicas,
+		}
 
-	for _, pod := range pods {
-		assert.True(t, eviction.CanEvict(pod))
-	}
+		pods := make([]*apiv1.Pod, 0, len(testCase.pods))
+		for _, p := range testCase.pods {
+			pods = append(pods, p.pod)
+		}
 
-	for _, pod := range pods[:2] {
-		err := eviction.Evict(pod, test.FakeEventRecorder())
-		assert.Nil(t, err, "Should evict with no error")
-	}
-	for _, pod := range pods[2:] {
-		err := eviction.Evict(pod, test.FakeEventRecorder())
-		assert.Error(t, err, "Error expected")
+		factory, _ := getEvictionRestrictionFactory(nil, nil, nil, &ds, 2, 0.5)
+		eviction := factory.NewPodsEvictionRestriction(pods, testCase.vpa)
+
+		for i, p := range testCase.pods {
+			assert.Equalf(t, p.canEvict, eviction.CanEvict(p.pod), "TC %v - unexpected CanEvict result for pod-%v %#v", testCase.name, i, p.pod)
+		}
+		for i, p := range testCase.pods {
+			err := eviction.Evict(p.pod, test.FakeEventRecorder())
+			if p.evictionSuccess {
+				assert.NoErrorf(t, err, "TC %v - unexpected Evict result for pod-%v %#v", testCase.name, i, p.pod)
+			} else {
+				assert.Errorf(t, err, "TC %v - unexpected Evict result for pod-%v %#v", testCase.name, i, p.pod)
+			}
+		}
 	}
 }
 
