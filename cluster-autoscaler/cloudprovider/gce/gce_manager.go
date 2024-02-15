@@ -345,12 +345,12 @@ func (m *gceManagerImpl) refreshAutoscalingOptions() {
 			klog.Warningf("Failed to extract autoscaling options from %q metadata: instance template is incomplete", template.Name)
 			continue
 		}
-		kubeEnvValue, err := getKubeEnvValueFromTemplateMetadata(template)
+		kubeEnv, err := m.migInfoProvider.GetMigKubeEnv(mig.GceRef())
 		if err != nil {
 			klog.Warningf("Failed to extract autoscaling options from %q instance template's metadata: can't get KubeEnv: %v", template.Name, err)
 			continue
 		}
-		options, err := extractAutoscalingOptionsFromKubeEnv(kubeEnvValue)
+		options, err := extractAutoscalingOptionsFromKubeEnv(kubeEnv)
 		if err != nil {
 			klog.Warningf("Failed to extract autoscaling options from %q instance template's metadata: %v", template.Name, err)
 			continue
@@ -591,15 +591,19 @@ func (m *gceManagerImpl) GetMigTemplateNode(mig Mig) (*apiv1.Node, error) {
 	if err != nil {
 		return nil, err
 	}
+	kubeEnv, err := m.migInfoProvider.GetMigKubeEnv(mig.GceRef())
+	if err != nil {
+		return nil, err
+	}
 	machineType, err := m.migInfoProvider.GetMigMachineType(mig.GceRef())
 	if err != nil {
 		return nil, err
 	}
-	migOsInfo, err := m.templates.MigOsInfo(mig.Id(), template)
+	migOsInfo, err := m.templates.MigOsInfo(mig.Id(), kubeEnv)
 	if err != nil {
 		return nil, err
 	}
-	return m.templates.BuildNodeFromTemplate(mig, migOsInfo, template, machineType.CPU, machineType.Memory, nil, m.reserved)
+	return m.templates.BuildNodeFromTemplate(mig, migOsInfo, template, kubeEnv, machineType.CPU, machineType.Memory, nil, m.reserved)
 }
 
 // parseMIGAutoDiscoverySpecs returns any provided NodeGroupAutoDiscoverySpecs
