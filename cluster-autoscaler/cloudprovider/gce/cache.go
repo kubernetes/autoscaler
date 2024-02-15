@@ -68,6 +68,7 @@ type GceCache struct {
 	migBaseNameCache          map[GceRef]string
 	instanceTemplateNameCache map[GceRef]string
 	instanceTemplatesCache    map[GceRef]*gce.InstanceTemplate
+	kubeEnvCache              map[GceRef]KubeEnv
 }
 
 // NewGceCache creates empty GceCache.
@@ -84,6 +85,7 @@ func NewGceCache() *GceCache {
 		migBaseNameCache:          map[GceRef]string{},
 		instanceTemplateNameCache: map[GceRef]string{},
 		instanceTemplatesCache:    map[GceRef]*gce.InstanceTemplate{},
+		kubeEnvCache:              map[GceRef]KubeEnv{},
 	}
 }
 
@@ -407,6 +409,46 @@ func (gc *GceCache) InvalidateAllMigInstanceTemplates() {
 
 	klog.V(5).Infof("Instance template cache invalidated")
 	gc.instanceTemplatesCache = map[GceRef]*gce.InstanceTemplate{}
+}
+
+// GetMigKubeEnv returns the cached KubeEnv for a mig GceRef
+func (gc *GceCache) GetMigKubeEnv(ref GceRef) (KubeEnv, bool) {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+
+	kubeEnv, found := gc.kubeEnvCache[ref]
+	if found {
+		klog.V(5).Infof("Kube-env cache hit for %s", ref)
+	}
+	return kubeEnv, found
+}
+
+// SetMigKubeEnv sets KubeEnv for a mig GceRef
+func (gc *GceCache) SetMigKubeEnv(ref GceRef, kubeEnv KubeEnv) {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+
+	gc.kubeEnvCache[ref] = kubeEnv
+}
+
+// InvalidateMigKubeEnv clears the kube-env cache for a mig GceRef
+func (gc *GceCache) InvalidateMigKubeEnv(ref GceRef) {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+
+	if _, found := gc.kubeEnvCache[ref]; found {
+		klog.V(5).Infof("Kube-env cache invalidated for %s", ref)
+		delete(gc.kubeEnvCache, ref)
+	}
+}
+
+// InvalidateAllMigKubeEnvs clears the kube-env cache
+func (gc *GceCache) InvalidateAllMigKubeEnvs() {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+
+	klog.V(5).Infof("Kube-env cache invalidated")
+	gc.kubeEnvCache = map[GceRef]KubeEnv{}
 }
 
 // GetMachine retrieves machine type from cache under lock.
