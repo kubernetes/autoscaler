@@ -22,6 +22,7 @@ import (
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce/localssdsize"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 
@@ -30,13 +31,15 @@ import (
 
 // GcePriceModel implements PriceModel interface for GCE.
 type GcePriceModel struct {
-	PriceInfo PriceInfo
+	PriceInfo            PriceInfo
+	localSSDSizeProvider localssdsize.LocalSSDSizeProvider
 }
 
 // NewGcePriceModel gets a new instance of GcePriceModel
-func NewGcePriceModel(info PriceInfo) *GcePriceModel {
+func NewGcePriceModel(info PriceInfo, localSSDSizeProvider localssdsize.LocalSSDSizeProvider) *GcePriceModel {
 	return &GcePriceModel{
-		PriceInfo: info,
+		PriceInfo:            info,
+		localSSDSizeProvider: localSSDSizeProvider,
 	}
 }
 
@@ -55,27 +58,26 @@ const DefaultBootDiskSizeGB = 100
 func (model *GcePriceModel) NodePrice(node *apiv1.Node, startTime time.Time, endTime time.Time) (float64, error) {
 	price := 0.0
 	basePriceFound := false
-
-	// Base instance price
+	machineType := ""
 	if node.Labels != nil {
-		if machineType, found := getInstanceTypeFromLabels(node.Labels); found {
-			priceMapToUse := model.PriceInfo.InstancePrices()
-			if hasPreemptiblePricing(node) {
-				priceMapToUse = model.PriceInfo.PreemptibleInstancePrices()
-			}
-			if basePricePerHour, found := priceMapToUse[machineType]; found {
-				price = basePricePerHour * getHours(startTime, endTime)
-				basePriceFound = true
-			} else {
-				klog.Warningf("Pricing information not found for instance type %v; will fallback to default pricing", machineType)
-			}
+		if _machineType, found := getInstanceTypeFromLabels(node.Labels); found {
+			machineType = _machineType
 		}
 	}
+	// Base instance price
+	priceMapToUse := model.PriceInfo.InstancePrices()
+	if hasPreemptiblePricing(node) {
+		priceMapToUse = model.PriceInfo.PreemptibleInstancePrices()
+	}
+	if basePricePerHour, found := priceMapToUse[machineType]; found {
+		price = basePricePerHour * getHours(startTime, endTime)
+		basePriceFound = true
+	} else {
+		klog.Warningf("Pricing information not found for instance type %v; will fallback to default pricing", machineType)
+	}
 	if !basePriceFound {
-		if machineType, found := getInstanceTypeFromLabels(node.Labels); found {
-			price = model.getBasePrice(node.Status.Capacity, machineType, startTime, endTime)
-			price = price * model.getPreemptibleDiscount(node)
-		}
+		price = model.getBasePrice(node.Status.Capacity, machineType, startTime, endTime)
+		price = price * model.getPreemptibleDiscount(node)
 	}
 
 	// Ephemeral Storage
@@ -86,7 +88,7 @@ func (model *GcePriceModel) NodePrice(node *apiv1.Node, startTime time.Time, end
 		if hasPreemptiblePricing(node) {
 			localSsdPrice = model.PriceInfo.SpotLocalSsdPricePerHour()
 		}
-		price += localSsdCount * float64(LocalSSDDiskSizeInGiB) * localSsdPrice * getHours(startTime, endTime)
+		price += localSsdCount * float64(model.localSSDSizeProvider.SSDSizeInGiB(machineType)) * localSsdPrice * getHours(startTime, endTime)
 	}
 
 	// Boot disk price
