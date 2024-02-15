@@ -23,6 +23,7 @@ import (
 	"strings"
 	"testing"
 
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce/localssdsize"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	gpuUtils "k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
@@ -267,7 +268,8 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 				assert.Error(t, err)
 				return
 			}
-			node, err := tb.BuildNodeFromTemplate(mig, migOsInfo, template, tc.physicalCpu, tc.physicalMemory, tc.pods, &GceReserved{})
+			localSSDDiskSize := localssdsize.NewSimpleLocalSSDProvider()
+			node, err := tb.BuildNodeFromTemplate(mig, migOsInfo, template, tc.physicalCpu, tc.physicalMemory, tc.pods, &GceReserved{}, localSSDDiskSize)
 			if tc.expectedNodeTemplateErr {
 				assert.Error(t, err)
 			} else {
@@ -293,7 +295,7 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 				// specifying physicalEphemeralStorageGiB in the testCase struct
 				physicalEphemeralStorageGiB := tc.bootDiskSizeGiB
 				if tc.ephemeralStorageLocalSSDCount > 0 {
-					physicalEphemeralStorageGiB = tc.ephemeralStorageLocalSSDCount * LocalSSDDiskSizeInGiB
+					physicalEphemeralStorageGiB = tc.ephemeralStorageLocalSSDCount * int64(localSSDDiskSize.SSDSizeInGiB(template.Properties.MachineType))
 				} else if tc.isEphemeralStorageBlocked {
 					physicalEphemeralStorageGiB = 0
 				}
@@ -1414,7 +1416,8 @@ func TestBuildNodeFromTemplateArch(t *testing.T) {
 			if gotErr != nil {
 				t.Fatalf("MigOsInfo unexpected error: %v", gotErr)
 			}
-			gotNode, gotErr := tb.BuildNodeFromTemplate(mig, migOsInfo, template, 16, 128, nil, &GceReserved{})
+			localSSDDiskSize := localssdsize.NewSimpleLocalSSDProvider()
+			gotNode, gotErr := tb.BuildNodeFromTemplate(mig, migOsInfo, template, 16, 128, nil, &GceReserved{}, localSSDDiskSize)
 			if gotErr != nil {
 				t.Fatalf("BuildNodeFromTemplate unexpected error: %v", gotErr)
 			}
