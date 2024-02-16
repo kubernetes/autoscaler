@@ -29,42 +29,45 @@ const (
 )
 
 // KubeEnv stores kube-env information from InstanceTemplate
-type KubeEnv map[string]string
+type KubeEnv struct {
+	templateName string
+	env          map[string]string
+}
 
 // ExtractKubeEnv extracts kube-env from InstanceTemplate
 func ExtractKubeEnv(template *gce.InstanceTemplate) (KubeEnv, error) {
 	if template == nil {
-		return nil, errors.New("instance template is nil")
+		return KubeEnv{}, errors.New("instance template is nil")
 	}
 	if template.Properties == nil || template.Properties.Metadata == nil {
-		return nil, fmt.Errorf("instance template %s has no metadata", template.Name)
+		return KubeEnv{}, fmt.Errorf("instance template %s has no metadata", template.Name)
 	}
 	for _, item := range template.Properties.Metadata.Items {
 		if item.Key == kubeEnvKey {
 			if item.Value == nil {
-				return nil, fmt.Errorf("no kube-env content in metadata")
+				return KubeEnv{}, fmt.Errorf("no kube-env content in metadata")
 			}
-			return ParseKubeEnv(*item.Value)
+			return ParseKubeEnv(template.Name, *item.Value)
 		}
 	}
-	return nil, nil
+	return KubeEnv{templateName: template.Name}, nil
 }
 
 // ParseKubeEnv parses kube-env from its string representation
-func ParseKubeEnv(kubeEnvValue string) (KubeEnv, error) {
-	kubeEnv := make(map[string]string)
-	err := yaml.Unmarshal([]byte(kubeEnvValue), &kubeEnv)
+func ParseKubeEnv(templateName, kubeEnvValue string) (KubeEnv, error) {
+	env := make(map[string]string)
+	err := yaml.Unmarshal([]byte(kubeEnvValue), &env)
 	if err != nil {
-		return nil, fmt.Errorf("error unmarshalling kubeEnv: %v", err)
+		return KubeEnv{}, fmt.Errorf("error unmarshalling kubeEnv: %v", err)
 	}
-	return kubeEnv, nil
+	return KubeEnv{templateName: templateName, env: env}, nil
 }
 
 // Var extracts variable from KubeEnv
 func (ke KubeEnv) Var(name string) (string, bool) {
-	if ke == nil {
+	if ke.env == nil {
 		return "", false
 	}
-	val, found := ke[name]
+	val, found := ke.env[name]
 	return val, found
 }

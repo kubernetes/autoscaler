@@ -481,7 +481,7 @@ func TestBuildAllocatableFromKubeEnv(t *testing.T) {
 		assert.NoError(t, err)
 		tb := GceTemplateBuilder{}
 		var allocatable apiv1.ResourceList
-		kubeEnv, err := ParseKubeEnv(tc.kubeEnvValue)
+		kubeEnv, err := ParseKubeEnv("test", tc.kubeEnvValue)
 		if err == nil {
 			allocatable, err = tb.BuildAllocatableFromKubeEnv(capacity, kubeEnv, ParseEvictionHardOrGetDefault(nil))
 		}
@@ -671,7 +671,7 @@ func TestExtractAutoscalingOptionsFromKubeEnv(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.desc, func(t *testing.T) {
 			var value map[string]string
-			kubeEnv, err := ParseKubeEnv(c.kubeEnvValue)
+			kubeEnv, err := ParseKubeEnv("test", c.kubeEnvValue)
 			if err == nil {
 				value, err = extractAutoscalingOptionsFromKubeEnv(kubeEnv)
 			}
@@ -739,7 +739,7 @@ func TestExtractAutoscalerVarFromKubeEnv(t *testing.T) {
 		t.Run(c.desc, func(t *testing.T) {
 			var value string
 			var found bool
-			kubeEnv, err := ParseKubeEnv(c.kubeEnvValue)
+			kubeEnv, err := ParseKubeEnv("test", c.kubeEnvValue)
 			if err == nil {
 				value, found, err = extractAutoscalerVarFromKubeEnv(kubeEnv, c.name)
 			}
@@ -794,7 +794,7 @@ func TestExtractLabelsFromKubeEnv(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.desc, func(t *testing.T) {
 			var labels map[string]string
-			kubeEnv, err := ParseKubeEnv(c.kubeEnvValue)
+			kubeEnv, err := ParseKubeEnv("test", c.kubeEnvValue)
 			if err == nil {
 				labels, err = extractLabelsFromKubeEnv(kubeEnv)
 			}
@@ -891,7 +891,7 @@ func TestExtractTaintsFromKubeEnv(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.desc, func(t *testing.T) {
 			var taints []apiv1.Taint
-			kubeEnv, err := ParseKubeEnv(c.kubeEnvValue)
+			kubeEnv, err := ParseKubeEnv("test", c.kubeEnvValue)
 			if err == nil {
 				taints, err = extractTaintsFromKubeEnv(kubeEnv)
 			}
@@ -989,7 +989,7 @@ func TestExtractKubeReservedFromKubeEnv(t *testing.T) {
 
 	for _, tc := range testCases {
 		var reserved string
-		kubeEnv, err := ParseKubeEnv(tc.kubeEnvValue)
+		kubeEnv, err := ParseKubeEnv("test", tc.kubeEnvValue)
 		if err == nil {
 			reserved, err = extractKubeReservedFromKubeEnv(kubeEnv)
 		}
@@ -1077,7 +1077,7 @@ func TestExtractOperatingSystemFromKubeEnv(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			kubeEnv, err := ParseKubeEnv(tc.kubeEnvValue)
+			kubeEnv, err := ParseKubeEnv("test", tc.kubeEnvValue)
 			assert.NoError(t, err)
 			actualOperatingSystem := extractOperatingSystemFromKubeEnv(kubeEnv)
 			assert.Equal(t, tc.expectedOperatingSystem, actualOperatingSystem)
@@ -1204,7 +1204,7 @@ func TestExtractOperatingSystemDistributionFromKubeEnv(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			kubeEnv, err := ParseKubeEnv(tc.kubeEnvValue)
+			kubeEnv, err := ParseKubeEnv("test", tc.kubeEnvValue)
 			assert.NoError(t, err)
 			actualOperatingSystem := extractOperatingSystemDistributionFromKubeEnv(kubeEnv)
 			assert.Equal(t, tc.expectedOperatingSystemDistribution, actualOperatingSystem)
@@ -1307,7 +1307,7 @@ func TestExtractExtendedResourcesFromKubeEnv(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			var extendedResources apiv1.ResourceList
-			kubeEnv, err := ParseKubeEnv(tc.kubeEnvValue)
+			kubeEnv, err := ParseKubeEnv("test", tc.kubeEnvValue)
 			if err == nil {
 				extendedResources, err = extractExtendedResourcesFromKubeEnv(kubeEnv)
 			}
@@ -1417,7 +1417,7 @@ func TestExtractSystemArchitectureFromKubeEnv(t *testing.T) {
 	} {
 		t.Run(tn, func(t *testing.T) {
 			var gotArch SystemArchitecture
-			kubeEnv, gotErr := ParseKubeEnv(tc.kubeEnvValue)
+			kubeEnv, gotErr := ParseKubeEnv("test", tc.kubeEnvValue)
 			if gotErr == nil {
 				gotArch, gotErr = extractSystemArchitectureFromKubeEnv(kubeEnv)
 			}

@@ -289,22 +289,21 @@ func (c *cachingMigInfoProvider) GetMigInstanceTemplate(migRef GceRef) (*gce.Ins
 func (c *cachingMigInfoProvider) GetMigKubeEnv(migRef GceRef) (KubeEnv, error) {
 	templateName, err := c.GetMigInstanceTemplateName(migRef)
 	if err != nil {
-		return nil, err
+		return KubeEnv{}, err
 	}
 
-	template, templateFound := c.cache.GetMigInstanceTemplate(migRef)
 	kubeEnv, kubeEnvFound := c.cache.GetMigKubeEnv(migRef)
-	if templateFound && template.Name == templateName && kubeEnvFound {
+	if kubeEnvFound && kubeEnv.templateName == templateName {
 		return kubeEnv, nil
 	}
 
-	template, err = c.GetMigInstanceTemplate(migRef)
+	template, err := c.GetMigInstanceTemplate(migRef)
 	if err != nil {
-		return nil, err
+		return KubeEnv{}, err
 	}
 	kubeEnv, err = ExtractKubeEnv(template)
 	if err != nil {
-		return nil, err
+		return KubeEnv{}, err
 	}
 	c.cache.SetMigKubeEnv(migRef, kubeEnv)
 	return kubeEnv, nil

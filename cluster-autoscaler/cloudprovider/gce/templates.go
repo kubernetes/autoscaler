@@ -213,7 +213,7 @@ func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, migOsInfo MigOsInfo,
 	}
 	var nodeAllocatable apiv1.ResourceList
 
-	if kubeEnv != nil {
+	if kubeEnv.env != nil {
 		// Extract labels
 		kubeEnvLabels, err := extractLabelsFromKubeEnv(kubeEnv)
 		if err != nil {
