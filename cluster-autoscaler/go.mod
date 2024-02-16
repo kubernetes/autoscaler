@@ -23,8 +23,6 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/jmespath/go-jmespath v0.4.0
 	github.com/json-iterator/go v1.1.12
-	github.com/onsi/ginkgo/v2 v2.15.0
-	github.com/onsi/gomega v1.31.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.16.0
 	github.com/spf13/pflag v1.0.5
@@ -41,10 +39,10 @@ require (
 	k8s.io/api v0.30.0-alpha.3
 	k8s.io/apimachinery v0.30.0-alpha.3
 	k8s.io/apiserver v0.30.0-alpha.3
+	k8s.io/autoscaler/cluster-autoscaler/apis v0.0.0-00010101000000-000000000000
 	k8s.io/client-go v0.30.0-alpha.3
 	k8s.io/cloud-provider v0.30.0-alpha.3
 	k8s.io/cloud-provider-aws v1.27.0
-	k8s.io/code-generator v0.30.0-alpha.3
 	k8s.io/component-base v0.30.0-alpha.3
 	k8s.io/component-helpers v0.30.0-alpha.3
 	k8s.io/klog/v2 v2.120.1
@@ -134,6 +132,8 @@ require (
 	github.com/mrunalp/fileutils v0.5.1 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f // indirect
+	github.com/onsi/ginkgo/v2 v2.15.0 // indirect
+	github.com/onsi/gomega v1.31.0 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/runc v1.1.12 // indirect
 	github.com/opencontainers/runtime-spec v1.0.3-0.20220909204839-494a5a6aca78 // indirect
@@ -195,6 +195,7 @@ require (
 	k8s.io/mount-utils v0.26.0-alpha.0 // indirect
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.29.0 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
+	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
 )
 
 replace github.com/aws/aws-sdk-go/service/eks => github.com/aws/aws-sdk-go/service/eks v1.38.49

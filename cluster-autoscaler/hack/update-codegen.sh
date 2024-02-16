@@ -25,7 +25,7 @@ set -o pipefail
 
 SCRIPT_ROOT=$(realpath $(dirname "${BASH_SOURCE[0]}"))/..
 CODEGEN_PKG="../vendor/k8s.io/code-generator"
-cd "${SCRIPT_ROOT}/apis"
+pushd "${SCRIPT_ROOT}/apis"
 
 chmod +x "${CODEGEN_PKG}"/generate-groups.sh
 chmod +x "${CODEGEN_PKG}"/generate-internal-groups.sh
@@ -38,3 +38,4 @@ bash "${CODEGEN_PKG}"/generate-groups.sh "applyconfiguration,client,deepcopy,inf
 
 chmod -x "${CODEGEN_PKG}"/generate-groups.sh
 chmod -x "${CODEGEN_PKG}"/generate-internal-groups.sh
+popd
