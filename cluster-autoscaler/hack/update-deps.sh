@@ -48,22 +48,32 @@ MODS=($(
 popd
 rm -rf ${WORKDIR}
 
-for MOD in "${MODS[@]}"; do
-    V=$(
-        GOMOD="${MOD}@kubernetes-${VERSION}"
-        JSON=$(go mod download -json "${GOMOD}")
-        retval=$?
-        if [ $retval -ne 0 ]; then
-            echo "Error downloading module ${GOMOD}."
-            exit 1
-        fi
-        echo "${JSON}" | sed -n 's|.*"Version": "\(.*\)".*|\1|p'
-    )
-    go mod edit "-replace=${MOD}=${MOD}@${V}"
-done
-go get "k8s.io/kubernetes@v${VERSION}"
-go mod tidy
-go mod vendor
-git rm -r --force --ignore-unmatch kubernetes
+PKGS=("." "./apis")
+for pkg in "${PKGS[@]}"; do
+  pushd "${pkg}"
 
-sed -i "s|\(const ClusterAutoscalerVersion = \)\".*\"|\1\"$VERSION\"|" version/version.go
+  for MOD in "${MODS[@]}"; do
+      V=$(
+          GOMOD="${MOD}@kubernetes-${VERSION}"
+          JSON=$(go mod download -json "${GOMOD}")
+          retval=$?
+          if [ $retval -ne 0 ]; then
+              echo "Error downloading module ${GOMOD}."
+              exit 1
+          fi
+          echo "${JSON}" | sed -n 's|.*"Version": "\(.*\)".*|\1|p'
+      )
+      go mod edit "-replace=${MOD}=${MOD}@${V}"
+  done
+
+  go get "k8s.io/kubernetes@v${VERSION}"
+  go mod tidy
+  if [ "$(pkg)" = "." ]; then \
+    go mod vendor
+    sed -i "s|\(const ClusterAutoscalerVersion = \)\".*\"|\1\"$VERSION\"|" version/version.go
+  fi
+  git rm -r --force --ignore-unmatch kubernetes
+
+  popd
+done
+
