@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/golang/glog v1.2.0
-	github.com/prometheus/client_model v0.5.0
+	github.com/prometheus/client_model v0.6.0
 	github.com/prometheus/common v0.47.0
 	github.com/spf13/pflag v1.0.5
 	gopkg.in/inf.v0 v0.9.1
