@@ -121,6 +121,10 @@ func (client *mockAutoscalingGceClient) CreateInstances(_ GceRef, _ string, _ in
 	return nil
 }
 
+func (client *mockAutoscalingGceClient) WaitForOperation(_, _, _, _ string) error {
+	return nil
+}
+
 func TestFillMigInstances(t *testing.T) {
 	migRef := GceRef{Project: "test", Zone: "zone-A", Name: "some-mig"}
 	oldInstances := []GceInstance{

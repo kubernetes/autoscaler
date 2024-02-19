@@ -17,6 +17,7 @@ limitations under the License.
 package gce
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -92,15 +93,13 @@ func TestWaitForOp(t *testing.T) {
 	defer server.Close()
 	g := newTestAutoscalingGceClient(t, "project1", server.URL, "")
 
+	// default polling interval is too big for testing purposes
 	g.operationPollInterval = 1 * time.Millisecond
-	g.operationWaitTimeout = 500 * time.Millisecond
 
-	server.On("handle", "/projects/project1/zones/us-central1-b/operations/operation-1505728466148-d16f5197").Return(operationRunningResponse).Times(3)
-	server.On("handle", "/projects/project1/zones/us-central1-b/operations/operation-1505728466148-d16f5197").Return(operationDoneResponse).Once()
+	server.On("handle", "/projects/project1/zones/us-central1-b/operations/operation-1505728466148-d16f5197/wait").Return(operationRunningResponse).Times(3)
+	server.On("handle", "/projects/project1/zones/us-central1-b/operations/operation-1505728466148-d16f5197/wait").Return(operationDoneResponse).Once()
 
-	operation := &gce_api.Operation{Name: "operation-1505728466148-d16f5197"}
-
-	err := g.waitForOp(operation, projectId, zoneB, false)
+	err := g.WaitForOperation("operation-1505728466148-d16f5197", "TestWaitForOp", projectId, zoneB)
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, server)
 }
@@ -110,12 +109,11 @@ func TestWaitForOpError(t *testing.T) {
 	defer server.Close()
 	g := newTestAutoscalingGceClient(t, "project1", server.URL, "")
 
-	server.On("handle", "/projects/project1/zones/us-central1-b/operations/operation-1505728466148-d16f5197").Return(operationDoneResponseError).Once()
+	server.On("handle", "/projects/project1/zones/us-central1-b/operations/operation-1505728466148-d16f5197/wait").Return(operationDoneResponseError).Once()
 
-	operation := &gce_api.Operation{Name: "operation-1505728466148-d16f5197"}
-
-	err := g.waitForOp(operation, projectId, zoneB, false)
+	err := g.WaitForOperation("operation-1505728466148-d16f5197", "TestWaitForOpError", projectId, zoneB)
 	assert.Error(t, err)
+	mock.AssertExpectationsForObjects(t, server)
 }
 
 func TestWaitForOpTimeout(t *testing.T) {
@@ -123,19 +121,29 @@ func TestWaitForOpTimeout(t *testing.T) {
 	defer server.Close()
 	g := newTestAutoscalingGceClient(t, "project1", server.URL, "")
 
-	// The values here are higher than in other tests since we're aiming for timeout.
-	// Lower values make this fragile and flakey.
-	g.operationPollInterval = 10 * time.Millisecond
-	g.operationWaitTimeout = 49 * time.Millisecond
+	// default polling interval and wait time are too big for the test
+	g.operationWaitTimeout = 10 * time.Millisecond
+	g.operationPollInterval = 20 * time.Millisecond
 
-	// Sometimes, only 3 calls are made, but it doesn't really matter,
-	// so let's not assert expectations for this mock, just check for timeout error.
-	server.On("handle", "/projects/project1/zones/us-central1-b/operations/operation-1505728466148-d16f5197").Return(operationRunningResponse).Times(5)
+	server.On("handle", "/projects/project1/zones/us-central1-b/operations/operation-1505728466148-d16f5197/wait").Return(operationRunningResponse).Once()
 
-	operation := &gce_api.Operation{Name: "operation-1505728466148-d16f5197"}
-
-	err := g.waitForOp(operation, projectId, zoneB, false)
+	err := g.WaitForOperation("operation-1505728466148-d16f5197", "TestWaitForOpTimeout", projectId, zoneB)
 	assert.Error(t, err)
+	mock.AssertExpectationsForObjects(t, server)
+}
+
+func TestWaitForOpContextTimeout(t *testing.T) {
+	server := test_util.NewHttpServerMock()
+	defer server.Close()
+	g := newTestAutoscalingGceClient(t, "project1", server.URL, "")
+
+	g.operationWaitTimeout = 10 * time.Millisecond
+
+	server.On("handle", "/projects/project1/zones/us-central1-b/operations/operation-1505728466148-d16f5197/wait").After(time.Minute).Return(operationDoneResponse).Once()
+
+	err := g.WaitForOperation("operation-1505728466148-d16f5197", "TestWaitForOpContextTimeout", projectId, zoneB)
+	assert.ErrorIs(t, err, context.DeadlineExceeded)
+	mock.AssertExpectationsForObjects(t, server)
 }
 
 func TestErrors(t *testing.T) {
@@ -553,12 +561,10 @@ func TestUserAgent(t *testing.T) {
 	defer server.Close()
 	g := newTestAutoscalingGceClient(t, "project1", server.URL, "testuseragent")
 
-	g.operationPollInterval = 10 * time.Millisecond
-	g.operationWaitTimeout = 49 * time.Millisecond
+	server.On("handle", "/projects/project1/zones/us-central1-b/operations/operation-1505728466148-d16f5197/wait").Return("testuseragent", operationDoneResponse).Maybe()
 
-	server.On("handle", "/projects/project1/zones/us-central1-b/operations/operation-1505728466148-d16f5197").Return("testuseragent", operationRunningResponse).Maybe()
+	err := g.WaitForOperation("operation-1505728466148-d16f5197", "TestUserAgent", projectId, zoneB)
 
-	operation := &gce_api.Operation{Name: "operation-1505728466148-d16f5197"}
-
-	g.waitForOp(operation, projectId, zoneB, false)
+	assert.NoError(t, err)
+	mock.AssertExpectationsForObjects(t, server)
 }
