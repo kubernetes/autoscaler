@@ -21,7 +21,9 @@ import (
 	stdcontext "context"
 	"flag"
 	"fmt"
+	testconfig "k8s.io/autoscaler/cluster-autoscaler/config/test"
 	"os"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
@@ -1469,6 +1471,22 @@ func TestStaticAutoscalerRunOnceWithUnselectedNodeGroups(t *testing.T) {
 func TestStaticAutoscalerRunOnceWithBypassedSchedulers(t *testing.T) {
 	bypassedScheduler := "bypassed-scheduler"
 	nonBypassedScheduler := "non-bypassed-scheduler"
+
+	tmpDir, err := os.MkdirTemp("", "scheduler-configs")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(tmpDir)
+	customConfigFile := filepath.Join(tmpDir, "custom_config.yaml")
+	if err := os.WriteFile(customConfigFile,
+		generateSchedulerConfig(apiv1.DefaultSchedulerName, bypassedScheduler, nonBypassedScheduler),
+		os.FileMode(0600)); err != nil {
+		t.Fatal(err)
+	}
+
+	customConfig, err := scheduler.ConfigFromPath(customConfigFile)
+	assert.NoError(t, err)
+
 	options := config.AutoscalingOptions{
 		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 			ScaleDownUnneededTime:         time.Minute,
@@ -1485,6 +1503,7 @@ func TestStaticAutoscalerRunOnceWithBypassedSchedulers(t *testing.T) {
 			apiv1.DefaultSchedulerName,
 			bypassedScheduler,
 		}),
+		SchedulerConfig: customConfig,
 	}
 	now := time.Now()
 
@@ -2617,4 +2636,12 @@ func newEstimatorBuilder() estimator.EstimatorBuilder {
 	)
 
 	return estimatorBuilder
+}
+
+func generateSchedulerConfig(schedulerNames ...string) []byte {
+	schedulerConfig := testconfig.SchedulerConfigMinimalCorrect + "\nprofiles:\n"
+	for _, name := range schedulerNames {
+		schedulerConfig += "- schedulerName: " + name + "\n"
+	}
+	return []byte(schedulerConfig)
 }
