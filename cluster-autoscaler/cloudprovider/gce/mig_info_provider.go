@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"net/url"
 	"path"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -44,7 +45,7 @@ type MigInfoProvider interface {
 	// GetMigBasename returns basename for given MIG ref
 	GetMigBasename(migRef GceRef) (string, error)
 	// GetMigInstanceTemplateName returns instance template name for given MIG ref
-	GetMigInstanceTemplateName(migRef GceRef) (string, error)
+	GetMigInstanceTemplateName(migRef GceRef) (InstanceTemplateNameType, error)
 	// GetMigInstanceTemplate returns instance template for given MIG ref
 	GetMigInstanceTemplate(migRef GceRef) (*gce.InstanceTemplate, error)
 	// GetMigMachineType returns machine type used by a MIG.
@@ -240,44 +241,44 @@ func (c *cachingMigInfoProvider) GetMigBasename(migRef GceRef) (string, error) {
 	return basename, nil
 }
 
-func (c *cachingMigInfoProvider) GetMigInstanceTemplateName(migRef GceRef) (string, error) {
+func (c *cachingMigInfoProvider) GetMigInstanceTemplateName(migRef GceRef) (InstanceTemplateNameType, error) {
 	c.migInfoMutex.Lock()
 	defer c.migInfoMutex.Unlock()
 
-	templateName, found := c.cache.GetMigInstanceTemplateName(migRef)
+	instanceTemplateNameType, found := c.cache.GetMigInstanceTemplateName(migRef)
 	if found {
-		return templateName, nil
+		return instanceTemplateNameType, nil
 	}
 
 	err := c.fillMigInfoCache()
-	templateName, found = c.cache.GetMigInstanceTemplateName(migRef)
+	instanceTemplateNameType, found = c.cache.GetMigInstanceTemplateName(migRef)
 	if err == nil && found {
-		return templateName, nil
+		return instanceTemplateNameType, nil
 	}
 
 	// fallback to querying for single mig
-	templateName, err = c.gceClient.FetchMigTemplateName(migRef)
+	instanceTemplateNameType, err = c.gceClient.FetchMigTemplateName(migRef)
 	if err != nil {
 		c.migLister.HandleMigIssue(migRef, err)
-		return "", err
+		return InstanceTemplateNameType{}, err
 	}
-	c.cache.SetMigInstanceTemplateName(migRef, templateName)
-	return templateName, nil
+	c.cache.SetMigInstanceTemplateName(migRef, instanceTemplateNameType)
+	return instanceTemplateNameType, nil
 }
 
 func (c *cachingMigInfoProvider) GetMigInstanceTemplate(migRef GceRef) (*gce.InstanceTemplate, error) {
-	templateName, err := c.GetMigInstanceTemplateName(migRef)
+	instanceTemplateNameType, err := c.GetMigInstanceTemplateName(migRef)
 	if err != nil {
 		return nil, err
 	}
 
 	template, found := c.cache.GetMigInstanceTemplate(migRef)
-	if found && template.Name == templateName {
+	if found && template.Name == instanceTemplateNameType.Name {
 		return template, nil
 	}
 
-	klog.V(2).Infof("Instance template of mig %v changed to %v", migRef.Name, templateName)
-	template, err = c.gceClient.FetchMigTemplate(migRef, templateName)
+	klog.V(2).Infof("Instance template of mig %v changed to %v", migRef.Name, instanceTemplateNameType.Name)
+	template, err = c.gceClient.FetchMigTemplate(migRef, instanceTemplateNameType.Name, instanceTemplateNameType.Regional)
 	if err != nil {
 		return nil, err
 	}
@@ -336,7 +337,8 @@ func (c *cachingMigInfoProvider) fillMigInfoCache() error {
 				templateUrl, err := url.Parse(zoneMig.InstanceTemplate)
 				if err == nil {
 					_, templateName := path.Split(templateUrl.EscapedPath())
-					c.cache.SetMigInstanceTemplateName(zoneMigRef, templateName)
+					regional, _ := regexp.MatchString("(/projects/.*[A-Za-z0-9]+.*/regions/)", templateUrl.String())
+					c.cache.SetMigInstanceTemplateName(zoneMigRef, InstanceTemplateNameType{templateName, regional})
 				}
 			}
 		}

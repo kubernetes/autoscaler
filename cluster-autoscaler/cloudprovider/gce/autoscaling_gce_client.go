@@ -80,9 +80,9 @@ type AutoscalingGceClient interface {
 	FetchAllMigs(zone string) ([]*gce.InstanceGroupManager, error)
 	FetchMigTargetSize(GceRef) (int64, error)
 	FetchMigBasename(GceRef) (string, error)
-	FetchMigInstances(GceRef) ([]cloudprovider.Instance, error)
-	FetchMigTemplateName(migRef GceRef) (string, error)
-	FetchMigTemplate(migRef GceRef, templateName string) (*gce.InstanceTemplate, error)
+	FetchMigInstances(GceRef) ([]GceInstance, error)
+	FetchMigTemplateName(migRef GceRef) (InstanceTemplateNameType, error)
+	FetchMigTemplate(migRef GceRef, templateName string, regional bool) (*gce.InstanceTemplate, error)
 	FetchMigsWithName(zone string, filter *regexp.Regexp) ([]string, error)
 	FetchZones(region string) ([]string, error)
 	FetchAvailableCpuPlatforms() (map[string][]string, error)
@@ -509,26 +509,33 @@ func (client *autoscalingGceClientV1) FetchAvailableCpuPlatforms() (map[string][
 	return availableCpuPlatforms, nil
 }
 
-func (client *autoscalingGceClientV1) FetchMigTemplateName(migRef GceRef) (string, error) {
+func (client *autoscalingGceClientV1) FetchMigTemplateName(migRef GceRef) (InstanceTemplateNameType, error) {
 	registerRequest("instance_group_managers", "get")
 	igm, err := client.gceService.InstanceGroupManagers.Get(migRef.Project, migRef.Zone, migRef.Name).Do()
 	if err != nil {
 		if err, ok := err.(*googleapi.Error); ok {
 			if err.Code == http.StatusNotFound {
-				return "", errors.NewAutoscalerError(errors.NodeGroupDoesNotExistError, "%s", err.Error())
+				return InstanceTemplateNameType{}, errors.NewAutoscalerError(errors.NodeGroupDoesNotExistError, "%s", err.Error())
 			}
 		}
-		return "", err
+		return InstanceTemplateNameType{}, err
 	}
 	templateUrl, err := url.Parse(igm.InstanceTemplate)
+	regional, _ := regexp.MatchString("(/projects/.*[A-Za-z0-9]+.*/regions/)", templateUrl.String())
 	if err != nil {
-		return "", err
+		return InstanceTemplateNameType{}, err
 	}
 	_, templateName := path.Split(templateUrl.EscapedPath())
-	return templateName, nil
+	return InstanceTemplateNameType{templateName, regional}, nil
 }
 
-func (client *autoscalingGceClientV1) FetchMigTemplate(migRef GceRef, templateName string) (*gce.InstanceTemplate, error) {
+func (client *autoscalingGceClientV1) FetchMigTemplate(migRef GceRef, templateName string, regional bool) (*gce.InstanceTemplate, error) {
+	if regional {
+		zoneHyphenIndex := strings.LastIndex(migRef.Zone, "-")
+		region := migRef.Zone[:zoneHyphenIndex]
+		registerRequest("region_instance_templates", "get")
+		return client.gceService.RegionInstanceTemplates.Get(migRef.Project, region, templateName).Do()
+	}
 	registerRequest("instance_templates", "get")
 	return client.gceService.InstanceTemplates.Get(migRef.Project, templateName).Do()
 }
