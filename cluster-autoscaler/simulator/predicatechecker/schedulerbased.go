@@ -110,7 +110,7 @@ func (p *SchedulerBasedPredicateChecker) FitsAnyNodeMatching(clusterSnapshot clu
 	if err != nil {
 		// This shouldn't happen, because we only accept for scheduling the pods
 		// which specify a scheduler name that matches one of the profiles.
-		klog.Errorf("Error obtaining framework for pod %v", err)
+		klog.Errorf("Error obtaining framework for pod %s: %v", pod.Name, err)
 		return "", fmt.Errorf("error obtaining framework for pod")
 	}
 
@@ -160,7 +160,7 @@ func (p *SchedulerBasedPredicateChecker) CheckPredicates(clusterSnapshot cluster
 
 	fwk, err := p.frameworkForPod(pod)
 	if err != nil {
-		klog.Errorf("Error obtaining framework for pod %v", err)
+		klog.Errorf("Error obtaining framework for pod %s: %v", pod.Name, err)
 		return NewPredicateError(InternalPredicateError, "", "error obtaining framework for pod", nil, emptyString)
 	}
 
