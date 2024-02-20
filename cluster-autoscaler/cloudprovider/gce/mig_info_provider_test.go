@@ -951,6 +951,163 @@ func TestGetMigInstanceTemplate(t *testing.T) {
 	}
 }
 
+func TestGetMigInstanceKubeEnv(t *testing.T) {
+	templateName := "template-name"
+	kubeEnvValue := "VAR1: VALUE1\nVAR2: VALUE2"
+	kubeEnv, err := ParseKubeEnv(templateName, kubeEnvValue)
+	assert.NoError(t, err)
+	template := &gce.InstanceTemplate{
+		Name:        templateName,
+		Description: "instance template",
+		Properties: &gce.InstanceProperties{
+			Metadata: &gce.Metadata{
+				Items: []*gce.MetadataItems{
+					{Key: "kube-env", Value: &kubeEnvValue},
+				},
+			},
+		},
+	}
+
+	oldTemplateName := "old-template-name"
+	oldKubeEnvValue := "VAR3: VALUE3\nVAR4: VALUE4"
+	oldKubeEnv, err := ParseKubeEnv(oldTemplateName, oldKubeEnvValue)
+	assert.NoError(t, err)
+	oldTemplate := &gce.InstanceTemplate{
+		Name:        oldTemplateName,
+		Description: "old instance template",
+		Properties: &gce.InstanceProperties{
+			Metadata: &gce.Metadata{
+				Items: []*gce.MetadataItems{
+					{Key: "kube-env", Value: &oldKubeEnvValue},
+				},
+			},
+		},
+	}
+
+	testCases := []struct {
+		name                  string
+		cache                 *GceCache
+		fetchMigs             func(string) ([]*gce.InstanceGroupManager, error)
+		fetchMigTemplateName  func(GceRef) (string, error)
+		fetchMigTemplate      func(GceRef, string) (*gce.InstanceTemplate, error)
+		expectedKubeEnv       KubeEnv
+		expectedCachedKubeEnv KubeEnv
+		expectedErr           error
+	}{
+		{
+			name: "kube-env in cache",
+			cache: &GceCache{
+				migs:                      map[GceRef]Mig{mig.GceRef(): mig},
+				instanceTemplateNameCache: map[GceRef]string{mig.GceRef(): templateName},
+				kubeEnvCache:              map[GceRef]KubeEnv{mig.GceRef(): kubeEnv},
+			},
+			expectedKubeEnv:       kubeEnv,
+			expectedCachedKubeEnv: kubeEnv,
+		},
+		{
+			name: "cache without kube-env, template in cache",
+			cache: &GceCache{
+				migs:                      map[GceRef]Mig{mig.GceRef(): mig},
+				instanceTemplateNameCache: map[GceRef]string{mig.GceRef(): templateName},
+				instanceTemplatesCache:    map[GceRef]*gce.InstanceTemplate{mig.GceRef(): template},
+				kubeEnvCache:              make(map[GceRef]KubeEnv),
+			},
+			expectedKubeEnv:       kubeEnv,
+			expectedCachedKubeEnv: kubeEnv,
+		},
+		{
+			name: "cache without kube-env, fetch success",
+			cache: &GceCache{
+				migs:                      map[GceRef]Mig{mig.GceRef(): mig},
+				instanceTemplateNameCache: map[GceRef]string{mig.GceRef(): templateName},
+				instanceTemplatesCache:    make(map[GceRef]*gce.InstanceTemplate),
+				kubeEnvCache:              make(map[GceRef]KubeEnv),
+			},
+			fetchMigTemplate:      fetchMigTemplateConst(template),
+			expectedKubeEnv:       kubeEnv,
+			expectedCachedKubeEnv: kubeEnv,
+		},
+		{
+			name: "cache with old kube-env, new template cached",
+			cache: &GceCache{
+				migs:                      map[GceRef]Mig{mig.GceRef(): mig},
+				instanceTemplateNameCache: map[GceRef]string{mig.GceRef(): templateName},
+				instanceTemplatesCache:    map[GceRef]*gce.InstanceTemplate{mig.GceRef(): template},
+				kubeEnvCache:              map[GceRef]KubeEnv{mig.GceRef(): oldKubeEnv},
+			},
+			expectedKubeEnv:       kubeEnv,
+			expectedCachedKubeEnv: kubeEnv,
+		},
+		{
+			name: "cache with old kube-env, fetch success",
+			cache: &GceCache{
+				migs:                      map[GceRef]Mig{mig.GceRef(): mig},
+				instanceTemplateNameCache: map[GceRef]string{mig.GceRef(): templateName},
+				instanceTemplatesCache:    map[GceRef]*gce.InstanceTemplate{mig.GceRef(): oldTemplate},
+				kubeEnvCache:              map[GceRef]KubeEnv{mig.GceRef(): oldKubeEnv},
+			},
+			fetchMigTemplate:      fetchMigTemplateConst(template),
+			expectedKubeEnv:       kubeEnv,
+			expectedCachedKubeEnv: kubeEnv,
+		},
+		{
+			name: "cache without kube-env, fetch failure",
+			cache: &GceCache{
+				migs:                      map[GceRef]Mig{mig.GceRef(): mig},
+				instanceTemplateNameCache: map[GceRef]string{mig.GceRef(): templateName},
+				instanceTemplatesCache:    make(map[GceRef]*gce.InstanceTemplate),
+				kubeEnvCache:              make(map[GceRef]KubeEnv),
+			},
+			fetchMigTemplate: fetchMigTemplateFail,
+			expectedErr:      errFetchMigTemplate,
+		},
+		{
+			name: "cache with old kube-env, fetch failure",
+			cache: &GceCache{
+				migs:                      map[GceRef]Mig{mig.GceRef(): mig},
+				instanceTemplateNameCache: map[GceRef]string{mig.GceRef(): templateName},
+				instanceTemplatesCache:    map[GceRef]*gce.InstanceTemplate{mig.GceRef(): oldTemplate},
+				kubeEnvCache:              map[GceRef]KubeEnv{mig.GceRef(): oldKubeEnv},
+			},
+			fetchMigTemplate:      fetchMigTemplateFail,
+			expectedCachedKubeEnv: oldKubeEnv,
+			expectedErr:           errFetchMigTemplate,
+		},
+		{
+			name:                 "template name fetch failure",
+			cache:                emptyCache(),
+			fetchMigs:            fetchMigsFail,
+			fetchMigTemplateName: fetchMigTemplateNameFail,
+			expectedErr:          errFetchMigTemplateName,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			client := &mockAutoscalingGceClient{
+				fetchMigs:            tc.fetchMigs,
+				fetchMigTemplateName: tc.fetchMigTemplateName,
+				fetchMigTemplate:     tc.fetchMigTemplate,
+			}
+			migLister := NewMigLister(tc.cache)
+			provider := NewCachingMigInfoProvider(tc.cache, migLister, client, mig.GceRef().Project, 1, 0*time.Second)
+
+			kubeEnv, err := provider.GetMigKubeEnv(mig.GceRef())
+			cachedKubeEnv, found := tc.cache.GetMigKubeEnv(mig.GceRef())
+
+			assert.Equal(t, tc.expectedErr, err)
+			if tc.expectedErr == nil {
+				assert.Equal(t, tc.expectedKubeEnv, kubeEnv)
+			}
+
+			assert.Equal(t, tc.expectedCachedKubeEnv.env != nil, found)
+			if tc.expectedCachedKubeEnv.env != nil {
+				assert.Equal(t, tc.expectedCachedKubeEnv, cachedKubeEnv)
+			}
+		})
+	}
+}
+
 func TestGetMigMachineType(t *testing.T) {
 	knownZone := "us-cache1-a"
 	unknownZone := "us-nocache42-c"
