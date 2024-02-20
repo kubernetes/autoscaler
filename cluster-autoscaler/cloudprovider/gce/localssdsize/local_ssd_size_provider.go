@@ -22,9 +22,9 @@ type LocalSSDSizeProvider interface {
 	SSDSizeInGiB(string) uint64
 }
 
-// LocalSSDDiskSizeInGiB is the size of each local SSD in GiB
+// localSSDDiskSizeInGiB is the size of each local SSD in GiB
 // (cf. https://cloud.google.com/compute/docs/disks/local-ssd)
-const LocalSSDDiskSizeInGiB = uint64(375)
+const localSSDDiskSizeInGiB = uint64(375)
 
 // SimpleLocalSSDProvider implements LocalSSDSizeProvider
 // It always returns a constant size
@@ -35,7 +35,7 @@ type SimpleLocalSSDProvider struct {
 // NewSimpleLocalSSDProvider creates an instance of SimpleLocalSSDProvider with `LocalSSDDiskSizeInGiB` as the disk size and returns a pointer to it
 func NewSimpleLocalSSDProvider() LocalSSDSizeProvider {
 	return &SimpleLocalSSDProvider{
-		ssdDiskSize: LocalSSDDiskSizeInGiB,
+		ssdDiskSize: localSSDDiskSizeInGiB,
 	}
 }
 
