@@ -46,6 +46,8 @@ type MigInfoProvider interface {
 	GetMigInstanceTemplateName(migRef GceRef) (string, error)
 	// GetMigInstanceTemplate returns instance template for given MIG ref
 	GetMigInstanceTemplate(migRef GceRef) (*gce.InstanceTemplate, error)
+	// GetMigKubeEnv returns kube-env for given MIG ref
+	GetMigKubeEnv(migRef GceRef) (KubeEnv, error)
 	// GetMigMachineType returns machine type used by a MIG.
 	// For custom machines cpu and memory information is based on parsing
 	// machine name. For standard types it's retrieved from GCE API.
@@ -282,6 +284,29 @@ func (c *cachingMigInfoProvider) GetMigInstanceTemplate(migRef GceRef) (*gce.Ins
 	}
 	c.cache.SetMigInstanceTemplate(migRef, template)
 	return template, nil
+}
+
+func (c *cachingMigInfoProvider) GetMigKubeEnv(migRef GceRef) (KubeEnv, error) {
+	templateName, err := c.GetMigInstanceTemplateName(migRef)
+	if err != nil {
+		return KubeEnv{}, err
+	}
+
+	kubeEnv, kubeEnvFound := c.cache.GetMigKubeEnv(migRef)
+	if kubeEnvFound && kubeEnv.templateName == templateName {
+		return kubeEnv, nil
+	}
+
+	template, err := c.GetMigInstanceTemplate(migRef)
+	if err != nil {
+		return KubeEnv{}, err
+	}
+	kubeEnv, err = ExtractKubeEnv(template)
+	if err != nil {
+		return KubeEnv{}, err
+	}
+	c.cache.SetMigKubeEnv(migRef, kubeEnv)
+	return kubeEnv, nil
 }
 
 // filMigInfoCache needs to be called with migInfoMutex locked
