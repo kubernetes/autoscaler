@@ -63,6 +63,7 @@ const (
 	// toggle
 	dynamicInstanceListDefault = false
 	enableVmssFlexDefault      = false
+	enableForceDeleteDefault   = false
 )
 
 // CloudProviderRateLimitConfig indicates the rate limit config for each clients.
@@ -311,6 +312,8 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse AZURE_ENABLE_FORCE_DELETE: %q, %v", enableForceDelete, err)
 		}
+
+		cfg.EnableForceDelete = enableForceDeleteDefault
 	}
 
 	err = initializeCloudProviderRateLimitConfig(&cfg.CloudProviderRateLimitConfig)
