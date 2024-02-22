@@ -10,12 +10,17 @@ Comment: This is a fork of kubernetes/autoscaler (https://github.com/kubernetes/
 # --------------------------------------------------
 # source code
 
-Files: **
+Files: *
 Copyright: 2016-2018 The Kubernetes Authors.
 License: Apache-2.0
 
-Files: .ci/**
-Copyright: 2018-2020 SAP SE or an SAP affiliate company and Gardener contributors
+Files: 
+  .ci/*
+  cluster-autoscaler/cloudprovider/mcm/test_utils.go
+  cluster-autoscaler/cloudprovider/mcm/mcm_cloud_provider_test.go
+  cluster-autoscaler/cloudprovider/mcm/machine_client_builder.go
+  cluster-autoscaler/cloudprovider/mcm/fakeclient/client.go
+Copyright: 2024 SAP SE or an SAP affiliate company and Gardener contributors
 License: Apache-2.0
 
 # --------------------------------------------------
@@ -24,689 +29,1813 @@ License: Apache-2.0
 Files:
   CONTRIBUTING.md
   FORK.md
-Copyright: 2020 SAP SE or an SAP affiliate company and Gardener contributors
+Copyright: 2024 SAP SE or an SAP affiliate company and Gardener contributors
 License: CC-BY-4.0
 
 # --------------------------------------------------
-# source dependencies
+# third-party
 
-Files: cluster-autoscaler/vendor/cloud.google.com/go/**
-Copyright: 2014 Google Inc. All Rights Reserved.
+# --- vendor folder dependencies ---
+Files: cluster-autoscaler/vendor/github.com/opencontainers/runtime-spec/*
+Copyright: 2024 runtime-spec contributors.
 License: Apache-2.0
 
-Files: cluster-autoscaler/vendor/contrib.go.opencensus.io/exporter/ocagent/**
-Copyright: 2018, OpenCensus Authors
+Files: cluster-autoscaler/vendor/github.com/googleapis/enterprise-certificate-proxy/*
+Copyright: 2024 enterprise-certificate-proxy contributors.
 License: Apache-2.0
 
-Files: cluster-autoscaler/vendor/github.com/aliyun/alibaba-cloud-sdk-go/**
-Copyright: 2009-present, Alibaba Cloud All rights reserved.
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/armon/circbuf/**
-Copyright: 2013 Armon Dadgar
-License: MIT
-
-Files: cluster-autoscaler/vendor/github.com/aws/aws-sdk-go/**
-Copyright: 2014-2015 Stripe, Inc.
-Copyright: 2015 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/Azure/azure-sdk-for-go/**
-Copyright: Microsoft and contributors.
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/Azure/go-ansiterm/**
-Copyright: 2015 Microsoft Corporatio
-License: MIT
-
-Files: cluster-autoscaler/vendor/github.com/Azure/go-autorest/**
-Copyright: 2015 Microsoft Corporation
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/beorn7/perks/**
-Copyright: 2013 Blake Mizerany
-License: MIT
-
-Files: cluster-autoscaler/vendor/github.com/blang/semver/**
-Copyright: 2014 Benedikt Lang <github at benediktlang.de>
-License: MIT
-
-Files: cluster-autoscaler/vendor/github.com/census-instrumentation/opencensus-proto/**
-Copyright: 2018, OpenCensus Authors
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/clusterhq/flocker-go/**
-Copyright: 2014-2016 ClusterHQ
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/codedellemc/goscaleio/**
-Copyright: 2015 Clint Kitson
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/container-storage-interface/spec/**
-Copyright: 2017 Saad Ali 
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/containerd/console/**
-Copyright: 2017 Michael Crosby
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/containerd/containerd/**
-Copyright: 2013-2016 Docker, Inc
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/containernetworking/cni/**
-Copyright: 2015 CNI authors
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/coreos/etcd/**
-Copyright: 2015 The etcd Authors
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/coreos/go-semver/**
-Copyright: Copyright 2018 CoreOS, Inc
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/coreos/go-systemd/**
-Copyright: 2014-2016 Docker, Inc.
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/coreos/pkg/**
-Copyright: 2014 CoreOS, Inc
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/coreos/rkt/**
-Copyright: 2015 The rkt Authors
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/cyphar/filepath-securejoin/**
-Copyright: 2014-2015 Docker Inc & Go Authors. All rights reserved.
-Copyright: 2017 SUSE LLC. All rights reserved.
+Files: cluster-autoscaler/vendor/github.com/antlr/antlr4/runtime/Go/antlr/v4/*
+Copyright: 2024 v4 contributors.
 License: BSD-3-Clause
 
-Files: cluster-autoscaler/vendor/github.com/d2g/dhcp4/**
-Copyright: 2013 Skagerrak Software Limited. All rights reserved.
+Files: vertical-pod-autoscaler/vendor/github.com/cespare/xxhash/v2/*
+Copyright: 2024 v2 contributors.
+License: MIT
+
+Files: cluster-autoscaler/vendor/github.com/json-iterator/go/*
+Copyright: 2024 go contributors.
+License: MIT
+
+Files: vertical-pod-autoscaler/vendor/google.golang.org/appengine/*
+Copyright: 2024 appengine contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/jmespath/go-jmespath/*
+Copyright: 2024 go-jmespath contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/cespare/xxhash/v2/*
+Copyright: 2024 v2 contributors.
+License: MIT
+
+Files: cluster-autoscaler/vendor/sigs.k8s.io/apiserver-network-proxy/konnectivity-client/*
+Copyright: 2024 konnectivity-client contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/aws/aws-sdk-go/internal/sync/singleflight/*
+Copyright: 2024 singleflight contributors.
 License: BSD-3-Clause
 
-Files: cluster-autoscaler/vendor/github.com/d2g/dhcp4client/**
-Copyright: 2020 Dan Goldsmith
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/prometheus/client_model/*
+Copyright: 2024 client_model contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/go.opentelemetry.io/otel/*
+Copyright: 2024 otel contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/vendor/github.com/imdario/mergo/*
+Copyright: 2024 mergo contributors.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/github.com/google/cadvisor/third_party/containerd/*
+Copyright: 2024 containerd contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc/*
+Copyright: 2024 otlptracegrpc contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/vendor/github.com/modern-go/concurrent/*
+Copyright: 2024 concurrent contributors.
+License: Apache-2.0
+
+Files: addon-resizer/vendor/k8s.io/client-go/*
+Copyright: 2024 client-go contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/opencontainers/runtime-spec/*
+Copyright: 2024 runtime-spec contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/gardener/machine-controller-manager-provider-aws/*
+Copyright: 2024 machine-controller-manager-provider-aws contributors.
+License: Apache-2.0
+
+Files: addon-resizer/vendor/github.com/google/btree/*
+Copyright: 2024 btree contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/lithammer/dedent/*
+Copyright: 2024 dedent contributors.
+License: MIT
+
+Files: addon-resizer/vendor/golang.org/x/net/*
+Copyright: 2024 net contributors.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/github.com/matttproud/golang_protobuf_extensions/*
+Copyright: 2024 golang_protobuf_extensions contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/gofrs/flock/*
+Copyright: 2024 flock contributors.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/github.com/google/uuid/*
+Copyright: 2024 uuid contributors.
+License: BSD-3-Clause
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/google/cadvisor/*
+Copyright: 2024 cadvisor contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/k8s.io/kube-openapi/pkg/validation/spec/*
+Copyright: 2024 spec contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/k8s.io/api/*
+Copyright: 2024 api contributors.
+License: Apache-2.0
+
+Files: addon-resizer/vendor/github.com/google/gofuzz/*
+Copyright: 2024 gofuzz contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/vendor/github.com/google/go-cmp/*
+Copyright: 2024 go-cmp contributors.
+License: BSD-3-Clause
+
+Files: vertical-pod-autoscaler/e2e/vendor/google.golang.org/protobuf/*
+Copyright: 2024 protobuf contributors.
+License: BSD-3-Clause
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/nxadm/tail/*
+Copyright: 2024 tail contributors.
+License: MIT
+
+Files: cluster-autoscaler/vendor/go.opencensus.io/*
+Copyright: 2024 go.opencensus.io contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/k8s.io/controller-manager/*
+Copyright: 2024 controller-manager contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/go.opentelemetry.io/otel/sdk/*
+Copyright: 2024 sdk contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/josharian/intern/*
+Copyright: 2024 intern contributors.
+License: MIT
+
+Files: vertical-pod-autoscaler/e2e/vendor/go.opentelemetry.io/proto/otlp/*
+Copyright: 2024 otlp contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/golang.org/x/oauth2/*
+Copyright: 2024 oauth2 contributors.
+License: BSD-3-Clause
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/syndtr/gocapability/*
+Copyright: 2024 gocapability contributors.
+License: BSD-2-Clause
+
+Files: cluster-autoscaler/vendor/golang.org/x/exp/*
+Copyright: 2024 exp contributors.
+License: BSD-3-Clause
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/fsnotify/fsnotify/*
+Copyright: 2024 fsnotify contributors.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/github.com/grpc-ecosystem/go-grpc-prometheus/*
+Copyright: 2024 go-grpc-prometheus contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/vendor/github.com/blang/semver/v4/*
+Copyright: 2024 v4 contributors.
+License: MIT
+
+Files: cluster-autoscaler/vendor/k8s.io/component-helpers/*
+Copyright: 2024 component-helpers contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/vendor/github.com/stretchr/testify/*
+Copyright: 2024 testify contributors.
+License: MIT
+
+Files: cluster-autoscaler/vendor/github.com/Azure/go-autorest/autorest/*
+Copyright: 2024 autorest contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/spf13/cobra/*
+Copyright: 2024 cobra contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/stoewer/go-strcase/*
+Copyright: 2024 go-strcase contributors.
+License: MIT
+
+Files: cluster-autoscaler/vendor/google.golang.org/grpc/*
+Copyright: 2024 grpc contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/opencontainers/runc/*
+Copyright: 2024 runc contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/checkpoint-restore/go-criu/v5/*
+Copyright: 2024 v5 contributors.
+License: Apache-2.0
+
+Files: addon-resizer/vendor/github.com/spf13/pflag/*
+Copyright: 2024 pflag contributors.
+License: BSD-3-Clause
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/aws/aws-sdk-go/*
+Copyright: 2024 aws-sdk-go contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/golang.org/x/crypto/*
+Copyright: 2024 crypto contributors.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/k8s.io/kube-openapi/pkg/validation/errors/*
+Copyright: 2024 errors contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/k8s.io/kube-openapi/*
+Copyright: 2024 kube-openapi contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/vendor/github.com/mailru/easyjson/*
+Copyright: 2024 easyjson contributors.
+License: MIT
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/containerd/cgroups/*
+Copyright: 2024 cgroups contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/gopkg.in/inf.v0/*
+Copyright: 2024 inf.v0 contributors.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/k8s.io/kubernetes/third_party/forked/golang/*
+Copyright: 2024 golang contributors.
+License: BSD-3-Clause
+
+Files: vertical-pod-autoscaler/vendor/golang.org/x/term/*
+Copyright: 2024 term contributors.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/github.com/mitchellh/go-homedir/*
+Copyright: 2024 go-homedir contributors.
+License: MIT
+
+Files: cluster-autoscaler/vendor/github.com/modern-go/reflect2/*
+Copyright: 2024 reflect2 contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/k8s.io/utils/internal/third_party/forked/golang/*
+Copyright: 2024 golang contributors.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/github.com/google/go-querystring/*
+Copyright: 2024 go-querystring contributors.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/go.opentelemetry.io/contrib/instrumentation/github.com/emicklei/go-restful/otelrestful/*
+Copyright: 2024 otelrestful contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/prometheus/common/*
+Copyright: 2024 common contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/vendor/github.com/golang/mock/*
+Copyright: 2024 mock contributors.
+License: Apache-2.0
+
+Files: addon-resizer/vendor/github.com/googleapis/gnostic/*
+Copyright: 2024 gnostic contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/cloudprovider/aws/aws-sdk-go/*
+Copyright: 2024 aws-sdk-go contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/vendor/github.com/prometheus/client_golang/*
+Copyright: 2024 client_golang contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/gopkg.in/warnings.v0/*
+Copyright: 2024 warnings.v0 contributors.
+License: BSD-2-Clause
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/NYTimes/gziphandler/*
+Copyright: 2024 gziphandler contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/k8s.io/kube-scheduler/*
+Copyright: 2024 kube-scheduler contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/vendor/k8s.io/kube-openapi/pkg/internal/third_party/go-json-experiment/json/*
+Copyright: 2024 json contributors.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/github.com/google/cel-go/*
+Copyright: 2024 cel-go contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/k8s.io/cloud-provider/*
+Copyright: 2024 cloud-provider contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/Azure/go-autorest/autorest/date/*
+Copyright: 2024 date contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/mindprince/gonvml/*
+Copyright: 2024 gonvml contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/asaskevich/govalidator/*
+Copyright: 2024 govalidator contributors.
+License: MIT
+
+Files: vertical-pod-autoscaler/vendor/github.com/matttproud/golang_protobuf_extensions/*
+Copyright: 2024 golang_protobuf_extensions contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/beorn7/perks/*
+Copyright: 2024 perks contributors.
+License: MIT
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/golang/mock/*
+Copyright: 2024 mock contributors.
+License: Apache-2.0
+
+Files: addon-resizer/vendor/gopkg.in/yaml.v2/*
+Copyright: 2024 yaml.v2 contributors.
+License: MIT
+
+Files: cluster-autoscaler/vendor/github.com/emicklei/go-restful/v3/*
+Copyright: 2024 v3 contributors.
+License: MIT
+
+Files: cluster-autoscaler/vendor/github.com/mailru/easyjson/*
+Copyright: 2024 easyjson contributors.
+License: MIT
+
+Files: vertical-pod-autoscaler/e2e/vendor/go.opentelemetry.io/otel/metric/*
+Copyright: 2024 metric contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/Microsoft/go-winio/*
+Copyright: 2024 go-winio contributors.
+License: MIT
+
+Files: cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v65/*
+Copyright: 2024 v65 contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/golang.org/x/text/*
+Copyright: 2024 text contributors.
+License: BSD-3-Clause
+
+Files: addon-resizer/vendor/golang.org/x/text/*
+Copyright: 2024 text contributors.
+License: BSD-3-Clause
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/modern-go/concurrent/*
+Copyright: 2024 concurrent contributors.
+License: Apache-2.0
+
+Files: addon-resizer/vendor/github.com/hashicorp/golang-lru/*
+Copyright: 2024 golang-lru contributors.
 License: MPL-2.0
 
-Files: cluster-autoscaler/vendor/github.com/davecgh/go-spew/**
-Copyright: 2012-2016 Dave Collins <dave@davec.name>
+Files: cluster-autoscaler/cloudprovider/bizflycloud/gobizfly/*
+Copyright: 2024 gobizfly contributors.
+License: MIT
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/blang/semver/v4/*
+Copyright: 2024 v4 contributors.
+License: MIT
+
+Files: vertical-pod-autoscaler/e2e/vendor/go.opentelemetry.io/otel/trace/*
+Copyright: 2024 trace contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/golang/groupcache/*
+Copyright: 2024 groupcache contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/go-openapi/swag/*
+Copyright: 2024 swag contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/k8s.io/cri-api/*
+Copyright: 2024 cri-api contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/vendor/github.com/pmezard/go-difflib/*
+Copyright: 2024 go-difflib contributors.
+License: BSD-3-Clause
+
+Files: vertical-pod-autoscaler/vendor/golang.org/x/oauth2/*
+Copyright: 2024 oauth2 contributors.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/cloudprovider/exoscale/internal/k8s.io/klog/*
+Copyright: 2024 klog contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/k8s.io/kubernetes/*
+Copyright: 2024 kubernetes contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/k8s.io/component-base/*
+Copyright: 2024 component-base contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/gopkg.in/inf.v0/*
+Copyright: 2024 inf.v0 contributors.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/cloudprovider/exoscale/internal/github.com/deepmap/oapi-codegen/*
+Copyright: 2024 oapi-codegen contributors.
+License: Apache-2.0
+
+Files: addon-resizer/vendor/github.com/golang/protobuf/*
+Copyright: 2024 protobuf contributors.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/k8s.io/dynamic-resource-allocation/*
+Copyright: 2024 dynamic-resource-allocation contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/go-logr/stdr/*
+Copyright: 2024 stdr contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/google.golang.org/api/internal/third_party/uritemplates/*
+Copyright: 2024 uritemplates contributors.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/cloudprovider/tencentcloud/tencentcloud-sdk-go/tencentcloud/as/*
+Copyright: 2024 as contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/cilium/ebpf/*
+Copyright: 2024 ebpf contributors.
+License: MIT
+
+Files: cluster-autoscaler/vendor/github.com/cyphar/filepath-securejoin/*
+Copyright: 2024 filepath-securejoin contributors.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/k8s.io/api/*
+Copyright: 2024 api contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/Azure/go-autorest/autorest/adal/*
+Copyright: 2024 adal contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/google.golang.org/api/*
+Copyright: 2024 api contributors.
+License: BSD-3-Clause
+
+Files: vertical-pod-autoscaler/e2e/vendor/gopkg.in/yaml.v2/*
+Copyright: 2024 yaml.v2 contributors.
+License: MIT
+
+Files: vertical-pod-autoscaler/e2e/vendor/gopkg.in/yaml.v3/*
+Copyright: 2024 yaml.v3 contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/vendor/k8s.io/utils/internal/third_party/forked/golang/*
+Copyright: 2024 golang contributors.
+License: BSD-3-Clause
+
+Files: vertical-pod-autoscaler/vendor/golang.org/x/sys/*
+Copyright: 2024 sys contributors.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/github.com/imdario/mergo/*
+Copyright: 2024 mergo contributors.
+License: BSD-3-Clause
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/moby/spdystream/*
+Copyright: 2024 spdystream contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/vendor/github.com/beorn7/perks/*
+Copyright: 2024 perks contributors.
+License: MIT
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/opencontainers/go-digest/*
+Copyright: 2024 go-digest contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/go.opentelemetry.io/otel/exporters/otlp/internal/retry/*
+Copyright: 2024 retry contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/prometheus/common/*
+Copyright: 2024 common contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/cenkalti/backoff/v4/*
+Copyright: 2024 v4 contributors.
+License: MIT
+
+Files: cluster-autoscaler/vendor/k8s.io/apiextensions-apiserver/*
+Copyright: 2024 apiextensions-apiserver contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/Microsoft/go-winio/*
+Copyright: 2024 go-winio contributors.
+License: MIT
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/google/go-cmp/*
+Copyright: 2024 go-cmp contributors.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/cloudprovider/brightbox/go-cache/*
+Copyright: 2024 go-cache contributors.
+License: MIT
+
+Files: cluster-autoscaler/vendor/github.com/vishvananda/netlink/*
+Copyright: 2024 netlink contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/golang.org/x/sync/*
+Copyright: 2024 sync contributors.
+License: BSD-3-Clause
+
+Files: vertical-pod-autoscaler/vendor/github.com/prometheus/client_model/*
+Copyright: 2024 client_model contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/googleapis/gax-go/v2/*
+Copyright: 2024 v2 contributors.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/github.com/google/gofuzz/*
+Copyright: 2024 gofuzz contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp/*
+Copyright: 2024 otelhttp contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/go-openapi/jsonreference/*
+Copyright: 2024 jsonreference contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/k8s.io/utils/inotify/*
+Copyright: 2024 inotify contributors.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/github.com/grpc-ecosystem/grpc-gateway/v2/*
+Copyright: 2024 v2 contributors.
+License: BSD-3-Clause
+
+Files: vertical-pod-autoscaler/vendor/github.com/davecgh/go-spew/*
+Copyright: 2024 go-spew contributors.
 License: ISC
 
-Files: cluster-autoscaler/vendor/github.com/dgrijalva/jwt-go/**
-Copyright: 2012 Dave Grijalva
+Files: cluster-autoscaler/vendor/github.com/Azure/go-autorest/autorest/to/*
+Copyright: 2024 to contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/sigs.k8s.io/structured-merge-diff/v4/*
+Copyright: 2024 v4 contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/onsi/gomega/*
+Copyright: 2024 gomega contributors.
 License: MIT
 
-Files: cluster-autoscaler/vendor/github.com/docker/distribution/**
-Copyright: 2013 Damien Le Berrigaud and Nick Wade
+Files: cluster-autoscaler/vendor/cloud.google.com/go/compute/metadata/*
+Copyright: 2024 metadata contributors.
 License: Apache-2.0
 
-Files: cluster-autoscaler/vendor/github.com/docker/docker/**
-Copyright: 2013-2018 Docker, Inc.
+Files: vertical-pod-autoscaler/e2e/vendor/go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc/*
+Copyright: 2024 otelgrpc contributors.
 License: Apache-2.0
 
-Files: cluster-autoscaler/vendor/github.com/docker/go-connections/**
-Copyright: 2015 Docker, Inc.
+Files: cluster-autoscaler/vendor/k8s.io/apiserver/*
+Copyright: 2024 apiserver contributors.
 License: Apache-2.0
 
-Files: cluster-autoscaler/vendor/github.com/docker/go-units/**
-Copyright: 2015 Docker, Inc.
+Files: cluster-autoscaler/vendor/go.opentelemetry.io/otel/metric/*
+Copyright: 2024 metric contributors.
 License: Apache-2.0
 
-Files: cluster-autoscaler/vendor/github.com/docker/libnetwork/**
-Copyright: 2015 Docker, inc.
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/mistifyio/go-zfs/*
+Copyright: 2024 go-zfs contributors.
 License: Apache-2.0
 
-Files: cluster-autoscaler/vendor/github.com/docker/spdystream/**
-Copyright: 2011 The Go Authors. All rights reserved.
+Files: vertical-pod-autoscaler/e2e/vendor/k8s.io/klog/v2/*
+Copyright: 2024 v2 contributors.
 License: Apache-2.0
 
-Files: cluster-autoscaler/vendor/github.com/elazarl/go-bindata-assetfs/**
-Copyright: 2014, Elazar Leibovich
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/inconshreveable/mousetrap/*
+Copyright: 2024 mousetrap contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/vendor/github.com/go-openapi/jsonpointer/*
+Copyright: 2024 jsonpointer contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/armon/circbuf/*
+Copyright: 2024 circbuf contributors.
+License: MIT
+
+Files: cluster-autoscaler/vendor/github.com/moby/sys/mountinfo/*
+Copyright: 2024 mountinfo contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/go.opentelemetry.io/otel/exporters/otlp/otlptrace/*
+Copyright: 2024 otlptrace contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/golang.org/x/sync/*
+Copyright: 2024 sync contributors.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/github.com/Azure/go-autorest/tracing/*
+Copyright: 2024 tracing contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/munnerz/goautoneg/*
+Copyright: 2024 goautoneg contributors.
+License: BSD-3-Clause
+
+Files: vertical-pod-autoscaler/e2e/vendor/k8s.io/legacy-cloud-providers/*
+Copyright: 2024 legacy-cloud-providers contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/mohae/deepcopy/*
+Copyright: 2024 deepcopy contributors.
+License: MIT
+
+Files: vertical-pod-autoscaler/vendor/k8s.io/utils/*
+Copyright: 2024 utils contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/stretchr/objx/*
+Copyright: 2024 objx contributors.
+License: MIT
+
+Files: cluster-autoscaler/vendor/k8s.io/csi-translation-lib/*
+Copyright: 2024 csi-translation-lib contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/mxk/go-flowrate/*
+Copyright: 2024 go-flowrate contributors.
+License: BSD-3-Clause
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/GoogleCloudPlatform/k8s-cloud-provider/*
+Copyright: 2024 k8s-cloud-provider contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/karrick/godirwalk/*
+Copyright: 2024 godirwalk contributors.
 License: BSD-2-Clause
 
-Files: cluster-autoscaler/vendor/github.com/emicklei/go-restful/**
-Copyright: 2012,2013 Ernest Micklei
-License: MIT
-
-Files: cluster-autoscaler/vendor/github.com/emicklei/go-restful-swagger12/**
-Copyright: 2017 Ernest Micklei
-License: MIT
-
-Files: cluster-autoscaler/vendor/github.com/euank/go-kmsg-parser/**
-Copyright: 2016 Euan Kemp
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/evanphx/json-patch/**
-Copyright: 2014, Evan Phoenix
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/cyphar/filepath-securejoin/*
+Copyright: 2024 filepath-securejoin contributors.
 License: BSD-3-Clause
 
-Files: cluster-autoscaler/vendor/github.com/fatih/camelcase/**
-Copyright: 2015 Fatih Arslan
-License: MIT
-
-Files: cluster-autoscaler/vendor/github.com/fsnotify/fsnotify/**
-Copyright: 2012 The Go Authors. All rights reserved.
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/gogo/protobuf/*
+Copyright: 2024 protobuf contributors.
 License: BSD-3-Clause
 
-Files: cluster-autoscaler/vendor/github.com/gardener/machine-controller-manager/**
-Copyright: 2018-2020 SAP SE or an SAP affiliate company and Gardener contributors
+Files: addon-resizer/vendor/github.com/modern-go/concurrent/*
+Copyright: 2024 concurrent contributors.
 License: Apache-2.0
 
-Files: cluster-autoscaler/vendor/github.com/ghodss/yaml/**
-Copyright: 2012 The Go Authors. All rights reserved.
-Copyright: 2014 Sam Ghods
+Files: vertical-pod-autoscaler/vendor/github.com/gogo/protobuf/*
+Copyright: 2024 protobuf contributors.
+License: BSD-3-Clause
+
+Files: vertical-pod-autoscaler/e2e/vendor/go.opentelemetry.io/otel/sdk/*
+Copyright: 2024 sdk contributors.
+License: Apache-2.0
+
+Files: addon-resizer/vendor/k8s.io/api/*
+Copyright: 2024 api contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/checkpoint-restore/go-criu/v5/*
+Copyright: 2024 v5 contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/opencontainers/selinux/*
+Copyright: 2024 selinux contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/vendor/github.com/go-openapi/swag/*
+Copyright: 2024 swag contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/golang.org/x/net/*
+Copyright: 2024 net contributors.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/cloudprovider/magnum/gophercloud/*
+Copyright: 2024 gophercloud contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/vendor/github.com/munnerz/goautoneg/*
+Copyright: 2024 goautoneg contributors.
+License: BSD-3-Clause
+
+Files: vertical-pod-autoscaler/vendor/github.com/prometheus/procfs/*
+Copyright: 2024 procfs contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/satori/go.uuid/*
+Copyright: 2024 go.uuid contributors.
 License: MIT
 
-Files: cluster-autoscaler/vendor/github.com/go-ini/ini/**
-Copyright: 2016 Unknown
+Files: cluster-autoscaler/vendor/sigs.k8s.io/json/*
+Copyright: 2024 json contributors.
 License: Apache-2.0
 
-Files: cluster-autoscaler/vendor/github.com/go-openapi/jsonpointer/**
-Copyright: 2013 sigu-399 ( https://github.com/sigu-399 )
+Files: cluster-autoscaler/vendor/github.com/felixge/httpsnoop/*
+Copyright: 2024 httpsnoop contributors.
+License: MIT
+
+Files: vertical-pod-autoscaler/e2e/vendor/k8s.io/component-helpers/*
+Copyright: 2024 component-helpers contributors.
 License: Apache-2.0
 
-Files: cluster-autoscaler/vendor/github.com/go-openapi/jsonreference/**
-Copyright: 2013 sigu-399 ( https://github.com/sigu-399 )
+Files: cluster-autoscaler/vendor/github.com/docker/distribution/*
+Copyright: 2024 distribution contributors.
 License: Apache-2.0
 
-Files: cluster-autoscaler/vendor/github.com/go-openapi/spec/**
-Copyright: 2015 go-swagger maintainers
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/go-openapi/swag/**
-Copyright: 2015 go-swagger maintainers
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/godbus/dbus/**
-Copyright: 2013, Georg Reinke (<guelfey at gmail dot com>), Google
+Files: cluster-autoscaler/vendor/github.com/godbus/dbus/v5/*
+Copyright: 2024 v5 contributors.
 License: BSD-2-Clause
 
-Files: cluster-autoscaler/vendor/github.com/gogo/protobuf/**
-Copyright: 2013, The GoGo Authors. All rights reserved.
-Copyright: 2010 The Go Authors.  All rights reserved.
-License: BSD-3-Clause
-
-Files: cluster-autoscaler/vendor/github.com/golang/glog/**
-Copyright: BSD-3-Clause
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/golang/groupcache/**
-Copyright: 2013 Google Inc.
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/golang/mock/**
-Copyright: 2010 Google Inc.
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/golang/protobuf/**
-Copyright: 2010-2017 The Go Authors.  All rights reserved.
-Copyright: 2008 Google Inc.  All rights reserved.
-License: BSD-3-Clause
-
-Files: cluster-autoscaler/vendor/github.com/google/btree/**
-Copyright: 2014 Google Inc.
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/google/cadvisor/**
-Copyright: 2014-2016 Google Inc. All Rights Reserved.
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/google/gofuzz/**
-Copyright: 2014 Google Inc. All rights reserved.
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/google/uuid/**
-Copyright: 2009,2014 Google Inc. All rights reserved.
-License: BSD-3-Clause
-
-Files: cluster-autoscaler/vendor/github.com/googleapis/gnostic/**
-Copyright: 2017 Google Inc. All Rights Reserved.
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/gophercloud/gophercloud/**
-Copyright: 2017 Google Inc. All Rights Reserved.
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/gorilla/websocket/**
-Copyright: 2013 The Gorilla WebSocket Authors. All rights reserved.
+Files: cluster-autoscaler/vendor/gopkg.in/warnings.v0/*
+Copyright: 2024 warnings.v0 contributors.
 License: BSD-2-Clause
 
-Files: cluster-autoscaler/vendor/github.com/gregjones/httpcache/**
-Copyright: 2013 The Gorilla WebSocket Authors. All rights reserved.
+Files: cluster-autoscaler/vendor/gopkg.in/natefinch/lumberjack.v2/*
+Copyright: 2024 lumberjack.v2 contributors.
 License: MIT
 
-Files: cluster-autoscaler/vendor/github.com/hashicorp/golang-lru/**
-Copyright: 2020 Armon Dadgar, Hashicorp
-License: MPL-2.0
-
-Files: cluster-autoscaler/vendor/github.com/heketi/heketi/**
-Copyright: 2015-2016 The heketi Authors
-License: LGPL-3.0-or-later or Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/imdario/mergo/**
-Copyright: 2012 The Go Authors. All rights reserved.
-Copyright: 2013 Dario Castañé. All rights reserved.
-License: BSD-3-Clause
-
-Files: cluster-autoscaler/vendor/github.com/inconshreveable/mousetrap/**
-Copyright: 2014 Alan Shreve
+Files: cluster-autoscaler/vendor/github.com/mistifyio/go-zfs/*
+Copyright: 2024 go-zfs contributors.
 License: Apache-2.0
 
-Files: cluster-autoscaler/vendor/github.com/JeffAshton/win_pdh/**
-Copyright: 2010 The win_pdh Authors. All rights reserved.
-License: BSD-3-Clause
-
-Files: cluster-autoscaler/vendor/github.com/jmespath/go-jmespath/**
-Copyright: 2015 James Saryerwinnie
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/json-iterator/go/**
-Copyright: 2016 json-iterator
+Files: vertical-pod-autoscaler/vendor/gopkg.in/yaml.v2/*
+Copyright: 2024 yaml.v2 contributors.
 License: MIT
 
-Files: cluster-autoscaler/vendor/github.com/kardianos/osext/**
-Copyright: 2012 The Go Authors. All rights reserved.
-License: BSD-3-Clause
-
-Files: cluster-autoscaler/vendor/github.com/kr/fs/**
-Copyright: 2012 The Go Authors. All rights reserved.
-License: BSD-3-Clause
-
-Files: cluster-autoscaler/vendor/github.com/libopenstorage/openstorage/**
-Copyright: 2015 Openstorage.org
+Files: vertical-pod-autoscaler/vendor/gopkg.in/yaml.v3/*
+Copyright: 2024 yaml.v3 contributors.
 License: Apache-2.0
 
-Files: cluster-autoscaler/vendor/github.com/lpabon/godbc/**
-Copyright: 2014 The godbc Authors
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/mailru/easyjson/**
-Copyright: 2016 Mail.Ru Group
-License: MIT
-
-Files: cluster-autoscaler/vendor/github.com/marstr/guid/**
-Copyright: 2016 Martin Strobel
-License: MIT
-
-Files: cluster-autoscaler/vendor/github.com/mattn/go-shellwords/**
-Copyright: 2017 Yasuhiro Matsumoto
-License: MIT
-
-Files: cluster-autoscaler/vendor/github.com/matttproud/golang_protobuf_extensions/**
-Copyright: 2012 Matt T. Proud (matt.proud@gmail.com)
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/mesos/mesos-go/**
-Copyright: 2013-2015, Mesosphere, Inc.
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/Microsoft/go-winio/**
-Copyright: 2015 Microsoft
-License: MIT
-
-Files: cluster-autoscaler/vendor/github.com/Microsoft/hcsshim/**
-Copyright: 2015 Microsoft
-License: MIT
-
-Files: cluster-autoscaler/vendor/github.com/miekg/dns/**
-Copyright: 2009 The Go Authors. All rights reserved.
-License: BSD-3-Clause
-
-Files: cluster-autoscaler/vendor/github.com/mindprince/gonvml/**
-Copyright: 1993-2016 NVIDIA Corporation.  All rights reserved.
-Copyright: 2017 Google Inc.
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/mistifyio/go-zfs/**
-Copyright: 2014, OmniTI Computer Consulting, Inc.
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/mitchellh/mapstructure/**
-Copyright: 2013 Mitchell Hashimoto
-License: MIT
-
-Files: cluster-autoscaler/vendor/github.com/modern-go/concurrent/**
-Copyright: 2018 Tao Wen
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/modern-go/reflect2/**
-Copyright: 2018 Tao Wen
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/mohae/deepcopy/**
-Copyright: 2014-2016, Joel Scoble (github.com/mohae), all rights reserved.
-License: MIT
-
-Files: cluster-autoscaler/vendor/github.com/mrunalp/fileutils/**
-Copyright: 2014 Docker, Inc.
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/mxk/go-flowrate/**
-Copyright: 2014 The Go-FlowRate Authors. All rights reserved.
-License: BSD-3-Clause
-
-Files: cluster-autoscaler/vendor/github.com/Nvveen/Gotty/**
-Copyright: 2012 Neal van Veen. All rights reserved.
-License: BSD-2-Clause-FreeBSD
-
-Files: cluster-autoscaler/vendor/github.com/NYTimes/gziphandler/**
-Copyright: 2015 The New York Times Company
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/opencontainers/go-digest/**
-Copyright: 2016 Docker, Inc. All rights reserved
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/opencontainers/image-spec/**
-Copyright: Copyright 2016 The Linux Foundation
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/opencontainers/runc/**
-Copyright: 2012-2015 Docker, Inc.
-Copyright: 2016, 2017 SUSE LLC
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/opencontainers/runtime-spec/**
-Copyright: 2015 The Linux Foundation.
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/opencontainers/selinux/**
-Copyright: 2017 Daniel J Walsh
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/pborman/uuid/**
-Copyright: 2009,2014 Google Inc. All rights reserved.
-License: BSD-3-Clause
-
-Files: cluster-autoscaler/vendor/github.com/peterbourgon/diskv/**
-Copyright: 2011-2012 Peter Bourgon
-License: MIT
-
-Files: cluster-autoscaler/vendor/github.com/pkg/errors/**
-Copyright: 2015, Dave Cheney <dave@cheney.net>
+Files: vertical-pod-autoscaler/vendor/github.com/pkg/errors/*
+Copyright: 2024 errors contributors.
 License: BSD-2-Clause
 
-Files: cluster-autoscaler/vendor/github.com/pkg/sftp/**
-Copyright: 2013, Dave Cheney
+Files: vertical-pod-autoscaler/vendor/github.com/spf13/cobra/*
+Copyright: 2024 cobra contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/Azure/go-autorest/autorest/mocks/*
+Copyright: 2024 mocks contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/onsi/gomega/*
+Copyright: 2024 gomega contributors.
+License: MIT
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/onsi/ginkgo/v2/*
+Copyright: 2024 v2 contributors.
+License: MIT
+
+Files: addon-resizer/vendor/k8s.io/apimachinery/*
+Copyright: 2024 apimachinery contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/k8s.io/kms/*
+Copyright: 2024 kms contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/k8s.io/cloud-provider/*
+Copyright: 2024 cloud-provider contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/prometheus/procfs/*
+Copyright: 2024 procfs contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/vendor/github.com/go-openapi/jsonreference/*
+Copyright: 2024 jsonreference contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/cloudprovider/hetzner/hcloud-go/*
+Copyright: 2024 hcloud-go contributors.
+License: MIT
+
+Files: cluster-autoscaler/vendor/go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc/*
+Copyright: 2024 otelgrpc contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/docker/go-units/*
+Copyright: 2024 go-units contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/stretchr/testify/*
+Copyright: 2024 testify contributors.
+License: MIT
+
+Files: cluster-autoscaler/vendor/github.com/coreos/go-systemd/v22/*
+Copyright: 2024 v22 contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/k8s.io/kubelet/*
+Copyright: 2024 kubelet contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/k8s.io/kubectl/*
+Copyright: 2024 kubectl contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/seccomp/libseccomp-golang/*
+Copyright: 2024 libseccomp-golang contributors.
 License: BSD-2-Clause
 
-Files: cluster-autoscaler/vendor/github.com/pmezard/go-difflib/**
-Copyright: 2013, Patrick Mezard
+Files: cluster-autoscaler/vendor/k8s.io/cri-api/*
+Copyright: 2024 cri-api contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/k8s.io/legacy-cloud-providers/*
+Copyright: 2024 legacy-cloud-providers contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/go-logr/stdr/*
+Copyright: 2024 stdr contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/google.golang.org/api/*
+Copyright: 2024 api contributors.
 License: BSD-3-Clause
 
-Files: cluster-autoscaler/vendor/github.com/pquerna/ffjson/**
-Copyright: 2014, Paul Querna
-Copyright: 2009-2015 The Go Authors. All rights reserved.
-Copyright: 2007-2014, Lloyd Hilaiel <me@lloyd.io>
+Files: cluster-autoscaler/vendor/github.com/aws/aws-sdk-go/*
+Copyright: 2024 aws-sdk-go contributors.
 License: Apache-2.0
 
-Files: cluster-autoscaler/vendor/github.com/prometheus/client_golang/**
-Copyright: 2010 The Go Authors
-Copyright: 2012-2015 The Prometheus Authors
-Copyright: 2013 Matt T. Proud
-Copyright: 2013-2015 Blake Mizerany, Björn Rabenstein
+Files: cluster-autoscaler/vendor/github.com/opencontainers/go-digest/*
+Copyright: 2024 go-digest contributors.
 License: Apache-2.0
 
-Files: cluster-autoscaler/vendor/github.com/prometheus/client_model/**
-Copyright:  2012-2015 The Prometheus Authors
-License: Apache-2.0
+Files: cluster-autoscaler/cloudprovider/brightbox/gobrightbox/*
+Copyright: 2024 gobrightbox contributors.
+License: MIT
 
-Files: cluster-autoscaler/vendor/github.com/prometheus/common/**
-Copyright: 2013-2015 The Prometheus Authors
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/prometheus/procfs/**
-Copyright: 2014-2018 The Prometheus Authors
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/PuerkitoBio/purell/**
-Copyright: 2012, Martin Angers
+Files: vertical-pod-autoscaler/vendor/k8s.io/apimachinery/third_party/forked/golang/*
+Copyright: 2024 golang contributors.
 License: BSD-3-Clause
 
-Files: cluster-autoscaler/vendor/github.com/PuerkitoBio/urlesc/**
-Copyright: 2009-2012 The Go Authors. All rights reserved.
-License: BSD-3-Clause
-
-Files: cluster-autoscaler/vendor/github.com/quobyte/api/**
-Copyright: 2016, Quobyte Inc.
-License: BSD-3-Clause
-
-Files: cluster-autoscaler/vendor/github.com/rancher/go-rancher/**
-Copyright: 2014-2015 [Rancher Labs, Inc.](http://rancher.com)
+Files: cluster-autoscaler/vendor/go.etcd.io/etcd/client/v3/*
+Copyright: 2024 v3 contributors.
 License: Apache-2.0
 
-Files: cluster-autoscaler/vendor/github.com/renstrom/dedent/**
-Copyright: 2015 Peter Renström
+Files: cluster-autoscaler/vendor/golang.org/x/net/*
+Copyright: 2024 net contributors.
+License: BSD-3-Clause
+
+Files: vertical-pod-autoscaler/e2e/vendor/google.golang.org/genproto/*
+Copyright: 2024 genproto contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/golang/protobuf/*
+Copyright: 2024 protobuf contributors.
+License: BSD-3-Clause
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/mailru/easyjson/*
+Copyright: 2024 easyjson contributors.
 License: MIT
 
-Files: cluster-autoscaler/vendor/github.com/Rican7/retry/**
-Copyright: 2016 Trevor N. Suarez (Rican7)
+Files: cluster-autoscaler/vendor/github.com/vmware/govmomi/vim25/xml/*
+Copyright: 2024 xml contributors.
+License: BSD-3-Clause
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/moby/sys/mountinfo/*
+Copyright: 2024 mountinfo contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/cloudprovider/brightbox/linkheader/*
+Copyright: 2024 linkheader contributors.
 License: MIT
 
-Files: cluster-autoscaler/vendor/github.com/rubiojr/go-vhd/**
-Copyright: 2015 Sergio Rubio
+Files: cluster-autoscaler/vendor/go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp/*
+Copyright: 2024 otelhttp contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/google.golang.org/grpc/*
+Copyright: 2024 grpc contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/golang.org/x/oauth2/*
+Copyright: 2024 oauth2 contributors.
+License: BSD-3-Clause
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/go-logr/logr/*
+Copyright: 2024 logr contributors.
+License: Apache-2.0
+
+Files: addon-resizer/vendor/github.com/imdario/mergo/*
+Copyright: 2024 mergo contributors.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/golang.org/x/time/*
+Copyright: 2024 time contributors.
+License: BSD-3-Clause
+
+Files: vertical-pod-autoscaler/e2e/vendor/k8s.io/pod-security-admission/*
+Copyright: 2024 pod-security-admission contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/go.opentelemetry.io/otel/exporters/otlp/internal/retry/*
+Copyright: 2024 retry contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/moby/spdystream/*
+Copyright: 2024 spdystream contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/vishvananda/netns/*
+Copyright: 2024 netns contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/euank/go-kmsg-parser/*
+Copyright: 2024 go-kmsg-parser contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/go.uber.org/zap/*
+Copyright: 2024 zap contributors.
 License: MIT
 
-Files: cluster-autoscaler/vendor/github.com/satori/go.uuid/**
-Copyright: 2013-2018 by Maxim Bublis <b@codemonkey.ru>
+Files: vertical-pod-autoscaler/e2e/vendor/sigs.k8s.io/json/*
+Copyright: 2024 json contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/spf13/cobra/*
+Copyright: 2024 cobra contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/Azure/go-autorest/logger/*
+Copyright: 2024 logger contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc/*
+Copyright: 2024 otlptracegrpc contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/mrunalp/fileutils/*
+Copyright: 2024 fileutils contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/containerd/console/*
+Copyright: 2024 console contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/davecgh/go-spew/*
+Copyright: 2024 go-spew contributors.
+License: ISC
+
+Files: cluster-autoscaler/vendor/github.com/mxk/go-flowrate/*
+Copyright: 2024 go-flowrate contributors.
+License: BSD-3-Clause
+
+Files: vertical-pod-autoscaler/vendor/github.com/google/gofuzz/*
+Copyright: 2024 gofuzz contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/cloudprovider/tencentcloud/tencentcloud-sdk-go/tencentcloud/tke/*
+Copyright: 2024 tke contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/vendor/golang.org/x/time/*
+Copyright: 2024 time contributors.
+License: BSD-3-Clause
+
+Files: addon-resizer/vendor/golang.org/x/time/*
+Copyright: 2024 time contributors.
+License: BSD-3-Clause
+
+Files: vertical-pod-autoscaler/vendor/k8s.io/client-go/*
+Copyright: 2024 client-go contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/go-openapi/swag/*
+Copyright: 2024 swag contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/golang/protobuf/*
+Copyright: 2024 protobuf contributors.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/sigs.k8s.io/cloud-provider-azure/*
+Copyright: 2024 cloud-provider-azure contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/vendor/golang.org/x/net/*
+Copyright: 2024 net contributors.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/github.com/opencontainers/runc/*
+Copyright: 2024 runc contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/golang/mock/*
+Copyright: 2024 mock contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/k8s.io/apimachinery/third_party/forked/golang/*
+Copyright: 2024 golang contributors.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/cloudprovider/aws/aws-sdk-go/internal/sync/singleflight/*
+Copyright: 2024 singleflight contributors.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/k8s.io/mount-utils/*
+Copyright: 2024 mount-utils contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/prometheus/client_golang/*
+Copyright: 2024 client_golang contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/k8s.io/utils/*
+Copyright: 2024 utils contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/Microsoft/hcsshim/*
+Copyright: 2024 hcsshim contributors.
 License: MIT
 
-Files: cluster-autoscaler/vendor/github.com/seccomp/libseccomp-golang/**
-Copyright: 2015 Matthew Heon <mheon@redhat.com>
-Copyright: 2015 Paul Moore <pmoore@redhat.com>
+Files: cluster-autoscaler/vendor/golang.org/x/crypto/*
+Copyright: 2024 crypto contributors.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/github.com/container-storage-interface/spec/*
+Copyright: 2024 spec contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/vendor/k8s.io/component-base/*
+Copyright: 2024 component-base contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/vendor/github.com/golang/groupcache/*
+Copyright: 2024 groupcache contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/grpc-ecosystem/grpc-gateway/v2/*
+Copyright: 2024 v2 contributors.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/go.opentelemetry.io/otel/trace/*
+Copyright: 2024 trace contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/k8s.io/mount-utils/*
+Copyright: 2024 mount-utils contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/go-openapi/jsonreference/*
+Copyright: 2024 jsonreference contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/karrick/godirwalk/*
+Copyright: 2024 godirwalk contributors.
 License: BSD-2-Clause
 
-Files: cluster-autoscaler/vendor/github.com/sirupsen/logrus/**
-Copyright: 2012 Miki Tebeka <miki.tebeka@gmail.com>.
-Copyright: 2013 The Go Authors. All rights reserved.
+Files: cluster-autoscaler/vendor/google.golang.org/genproto/googleapis/rpc/*
+Copyright: 2024 rpc contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/vendor/github.com/emicklei/go-restful/v3/*
+Copyright: 2024 v3 contributors.
 License: MIT
 
-Files: cluster-autoscaler/vendor/github.com/spf13/afero/**
-Copyright: 2013 tsuru authors. All rights reserved.
-Copyright: 2014 Steve Francia <spf@spf13.com>.
-Copyright: 2015 The Go Authors
-Copyright: 2015 Jerry Jacobs <jerry.jacobs@xor-gate.org>.
-Copyright: 2016-present Bjørn Erik Pedersen <bjorn.erik.pedersen@gmail.com>
-Copyright: 2015 The Hugo Authors
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/spf13/cobra/**
-Copyright: 2013 Steve Francia <spf@spf13.com>.
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/spf13/pflag/**
-Copyright: 2012 Alex Ogier. All rights reserved.
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/google/uuid/*
+Copyright: 2024 uuid contributors.
 License: BSD-3-Clause
 
-Files: cluster-autoscaler/vendor/github.com/stretchr/objx/**
-Copyright: 2014 Stretchr, Inc.
+Files: cluster-autoscaler/vendor/github.com/golang-jwt/jwt/v4/*
+Copyright: 2024 v4 contributors.
 License: MIT
 
-Files: cluster-autoscaler/vendor/github.com/stretchr/testify/**
-Copyright: 2012 - 2013 Mat Ryer and Tyler Bunnell
+Files: cluster-autoscaler/vendor/github.com/prometheus/procfs/*
+Copyright: 2024 procfs contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/dimchansky/utfbom/*
+Copyright: 2024 utfbom contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/go-openapi/jsonpointer/*
+Copyright: 2024 jsonpointer contributors.
+License: Apache-2.0
+
+Files: addon-resizer/vendor/github.com/gogo/protobuf/*
+Copyright: 2024 protobuf contributors.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/github.com/evanphx/json-patch/*
+Copyright: 2024 json-patch contributors.
+License: BSD-3-Clause
+
+Files: addon-resizer/vendor/github.com/davecgh/go-spew/*
+Copyright: 2024 go-spew contributors.
+License: ISC
+
+Files: cluster-autoscaler/vendor/github.com/vmware/govmomi/*
+Copyright: 2024 govmomi contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/go.opentelemetry.io/contrib/instrumentation/github.com/emicklei/go-restful/otelrestful/*
+Copyright: 2024 otelrestful contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/k8s.io/kube-scheduler/*
+Copyright: 2024 kube-scheduler contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/inconshreveable/mousetrap/*
+Copyright: 2024 mousetrap contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/gardener/machine-controller-manager/*
+Copyright: 2024 machine-controller-manager contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/go.etcd.io/etcd/api/v3/*
+Copyright: 2024 v3 contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/sigs.k8s.io/structured-merge-diff/v4/*
+Copyright: 2024 v4 contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/felixge/httpsnoop/*
+Copyright: 2024 httpsnoop contributors.
 License: MIT
 
-Files: cluster-autoscaler/vendor/github.com/syndtr/gocapability/**
-Copyright: 2013 Suryandaru Triandana <syndtr@gmail.com>
+Files: cluster-autoscaler/vendor/github.com/munnerz/goautoneg/*
+Copyright: 2024 goautoneg contributors.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/github.com/gogo/protobuf/*
+Copyright: 2024 protobuf contributors.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/cloudprovider/tencentcloud/tencentcloud-sdk-go/tencentcloud/vpc/*
+Copyright: 2024 vpc contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/vendor/github.com/json-iterator/go/*
+Copyright: 2024 go contributors.
+License: MIT
+
+Files: vertical-pod-autoscaler/vendor/sigs.k8s.io/structured-merge-diff/v4/*
+Copyright: 2024 v4 contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/k8s.io/utils/internal/third_party/forked/golang/*
+Copyright: 2024 golang contributors.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/github.com/go-task/slim-sprig/*
+Copyright: 2024 slim-sprig contributors.
+License: MIT
+
+Files: vertical-pod-autoscaler/e2e/vendor/cloud.google.com/go/*
+Copyright: 2024 go contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/google.golang.org/genproto/googleapis/api/*
+Copyright: 2024 api contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/coreos/go-semver/*
+Copyright: 2024 go-semver contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/NYTimes/gziphandler/*
+Copyright: 2024 gziphandler contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/go.opencensus.io/*
+Copyright: 2024 go.opencensus.io contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/cloudprovider/exoscale/internal/github.com/gofrs/uuid/*
+Copyright: 2024 uuid contributors.
+License: MIT
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/modern-go/reflect2/*
+Copyright: 2024 reflect2 contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/docker/distribution/*
+Copyright: 2024 distribution contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/google.golang.org/protobuf/*
+Copyright: 2024 protobuf contributors.
+License: BSD-3-Clause
+
+Files: vertical-pod-autoscaler/vendor/k8s.io/klog/v2/*
+Copyright: 2024 v2 contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/imdario/mergo/*
+Copyright: 2024 mergo contributors.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/k8s.io/klog/v2/*
+Copyright: 2024 v2 contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/k8s.io/client-go/*
+Copyright: 2024 client-go contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/vendor/sigs.k8s.io/json/*
+Copyright: 2024 json contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/vendor/github.com/modern-go/reflect2/*
+Copyright: 2024 reflect2 contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/go.uber.org/multierr/*
+Copyright: 2024 multierr contributors.
+License: MIT
+
+Files: vertical-pod-autoscaler/e2e/vendor/k8s.io/apiserver/*
+Copyright: 2024 apiserver contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/vendor/github.com/spf13/pflag/*
+Copyright: 2024 pflag contributors.
+License: BSD-3-Clause
+
+Files: vertical-pod-autoscaler/e2e/vendor/go.opentelemetry.io/otel/exporters/otlp/otlptrace/*
+Copyright: 2024 otlptrace contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/pkg/errors/*
+Copyright: 2024 errors contributors.
 License: BSD-2-Clause
 
-Files: cluster-autoscaler/vendor/github.com/ugorji/go/**
-Copyright: 2012-2015 Ugorji Nwoke. All rights reserved.
+Files: cluster-autoscaler/vendor/cloud.google.com/go/compute/*
+Copyright: 2024 compute contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/go.opentelemetry.io/otel/*
+Copyright: 2024 otel contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/vendor/github.com/stretchr/objx/*
+Copyright: 2024 objx contributors.
 License: MIT
 
-Files: cluster-autoscaler/vendor/github.com/vishvananda/netlink/**
-Copyright: 2014 Docker, Inc.
-Copyright: 2014 Vishvananda Ishaya.
+Files: cluster-autoscaler/vendor/k8s.io/kube-openapi/*
+Copyright: 2024 kube-openapi contributors.
 License: Apache-2.0
 
-Files: cluster-autoscaler/vendor/github.com/vishvananda/netns/**
-Copyright: 2014 Docker, Inc.
-Copyright: 2014 Vishvananda Ishaya.
+Files: cluster-autoscaler/vendor/go.opentelemetry.io/proto/otlp/*
+Copyright: 2024 otlp contributors.
 License: Apache-2.0
 
-Files: cluster-autoscaler/vendor/github.com/vmware/govmomi/**
-Copyright: 2014-2018 VMware, Inc. All Rights Reserved
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/vmware/govmomi/vim25/xml/**
-Copyright: Copyright: 2009-2014 The Go Authors. All rights reserved.
-Copyright: 2014 VMware, Inc. All Rights Reserved. 
-License: BSD-3-Clause
-
-Files: cluster-autoscaler/vendor/github.com/vmware/photon-controller-go-sdk/**
-Copyright: 2016-2017 VMware, Inc. All Rights Reserved.
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/vmware/photon-controller-go-sdk/SSPI/**
-Copyright: 2012 The Go Authors. All rights reserved.
-Copyright: 2017 VMware, Inc. All Rights Reserved.
-License: BSD-3-Clause
-
-Files: cluster-autoscaler/vendor/github.com/xanzy/go-cloudstack/**
-Copyright: 2016, Sander van Harmelen
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/github.com/xanzy/go-cloudstack/cloudstack/**
-Copyright: 2016, Sander van Harmelen
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/go.opencensus.io/**
-Copyright: 2017-2018, OpenCensus Authors
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/golang.org/x/crypto/**
-Copyright: 2009 The Go Authors. All rights reserved.
-License: BSD-3-Clause
-
-Files: cluster-autoscaler/vendor/golang.org/x/exp/**
-Copyright: 2009 The Go Authors. All rights reserved.
-License: BSD-3-Clause
-
-Files: cluster-autoscaler/vendor/golang.org/x/net/**
-Copyright: 2009 The Go Authors. All rights reserved.
-License: BSD-3-Clause
-
-Files: cluster-autoscaler/vendor/golang.org/x/oauth2/**
-Copyright: 2009 The Go Authors. All rights reserved.
-License: BSD-3-Clause
-
-Files: cluster-autoscaler/vendor/golang.org/x/sync/**
-Copyright: 2009 The Go Authors. All rights reserved.
-License: BSD-3-Clause
-
-Files: cluster-autoscaler/vendor/golang.org/x/sys/**
-Copyright: 2009 The Go Authors. All rights reserved.
-License: BSD-3-Clause
-
-Files: cluster-autoscaler/vendor/golang.org/x/text/**
-Copyright: 2009 The Go Authors. All rights reserved.
-License: BSD-3-Clause
-
-Files: cluster-autoscaler/vendor/golang.org/x/time/**
-Copyright: 2009 The Go Authors. All rights reserved.
-License: BSD-3-Clause
-
-Files: cluster-autoscaler/vendor/google.golang.org/api/**
-Copyright: 2011 Google Inc. All rights reserved.
-License: BSD-3-Clause
-
-Files: cluster-autoscaler/vendor/google.golang.org/api/googleapi/internal/uritemplates/**
-Copyright: 2013 Joshua Tacoma
+Files: cluster-autoscaler/vendor/go.uber.org/atomic/*
+Copyright: 2024 atomic contributors.
 License: MIT
 
-Files: cluster-autoscaler/vendor/google.golang.org/genproto/**
-Copyright: 2019 Google LLC
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/google.golang.org/grpc/**
-Copyright: 2014-2017 gRPC authors.
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/gopkg.in/gcfg.v1/**
-Copyright: 2012 Péter Surányi.
-Copyright: 2009 The Go Authors. All rights reserved.
+Files: vertical-pod-autoscaler/vendor/github.com/golang/protobuf/*
+Copyright: 2024 protobuf contributors.
 License: BSD-3-Clause
 
-Files: cluster-autoscaler/vendor/gopkg.in/inf.v0/**
-Copyright: 2012 Péter Surányi.
-Copyright: 2009 The Go Authors. All rights reserved. 
-License: BSD-3-Clause
-
-Files: cluster-autoscaler/vendor/gopkg.in/square/go-jose.v2/**
-Copyright: 2010-2016 Square Inc.
-Copyright: 2016 Zbigniew Mandziejewicz
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/matttproud/golang_protobuf_extensions/*
+Copyright: 2024 golang_protobuf_extensions contributors.
 License: Apache-2.0
 
-Files: cluster-autoscaler/vendor/gopkg.in/square/go-jose.v2/json/**
-Copyright: 2012 The Go Authors. All rights reserved.
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/coreos/go-systemd/v22/*
+Copyright: 2024 v22 contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/golang.org/x/time/*
+Copyright: 2024 time contributors.
 License: BSD-3-Clause
 
-Files: cluster-autoscaler/vendor/gopkg.in/warnings.v0/**
-Copyright: 2012 The Go Authors. All rights reserved.
+Files: cluster-autoscaler/vendor/github.com/jmespath/go-jmespath/*
+Copyright: 2024 go-jmespath contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/golang/groupcache/*
+Copyright: 2024 groupcache contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/JeffAshton/win_pdh/*
+Copyright: 2024 win_pdh contributors.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/k8s.io/kube-openapi/pkg/validation/strfmt/*
+Copyright: 2024 strfmt contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/vendor/k8s.io/kube-openapi/pkg/validation/spec/*
+Copyright: 2024 spec contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/pmezard/go-difflib/*
+Copyright: 2024 go-difflib contributors.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/github.com/Azure/go-autorest/autorest/azure/auth/*
+Copyright: 2024 auth contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/k8s.io/kube-openapi/pkg/internal/third_party/go-json-experiment/json/*
+Copyright: 2024 json contributors.
+License: BSD-3-Clause
+
+Files: vertical-pod-autoscaler/vendor/k8s.io/api/*
+Copyright: 2024 api contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/vendor/google.golang.org/protobuf/*
+Copyright: 2024 protobuf contributors.
+License: BSD-3-Clause
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/sirupsen/logrus/*
+Copyright: 2024 logrus contributors.
+License: MIT
+
+Files: cluster-autoscaler/vendor/github.com/containerd/cgroups/*
+Copyright: 2024 cgroups contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/google/gnostic/*
+Copyright: 2024 gnostic contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/go-logr/logr/*
+Copyright: 2024 logr contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/docker/go-units/*
+Copyright: 2024 go-units contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/Microsoft/hcsshim/*
+Copyright: 2024 hcsshim contributors.
+License: MIT
+
+Files: cluster-autoscaler/vendor/k8s.io/apimachinery/*
+Copyright: 2024 apimachinery contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/k8s.io/kube-openapi/pkg/validation/spec/*
+Copyright: 2024 spec contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/gofrs/uuid/*
+Copyright: 2024 uuid contributors.
+License: MIT
+
+Files: vertical-pod-autoscaler/e2e/vendor/k8s.io/utils/*
+Copyright: 2024 utils contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/vendor/github.com/inconshreveable/mousetrap/*
+Copyright: 2024 mousetrap contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/go.etcd.io/etcd/client/pkg/v3/*
+Copyright: 2024 v3 contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/google.golang.org/api/internal/third_party/uritemplates/*
+Copyright: 2024 uritemplates contributors.
+License: BSD-3-Clause
+
+Files: addon-resizer/vendor/github.com/peterbourgon/diskv/*
+Copyright: 2024 diskv contributors.
+License: MIT
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/cenkalti/backoff/v4/*
+Copyright: 2024 v4 contributors.
+License: MIT
+
+Files: addon-resizer/vendor/github.com/gregjones/httpcache/*
+Copyright: 2024 httpcache contributors.
+License: MIT
+
+Files: vertical-pod-autoscaler/e2e/vendor/k8s.io/apiextensions-apiserver/*
+Copyright: 2024 apiextensions-apiserver contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/golang.org/x/tools/*
+Copyright: 2024 tools contributors.
+License: BSD-3-Clause
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/godbus/dbus/v5/*
+Copyright: 2024 v5 contributors.
 License: BSD-2-Clause
 
-Files: cluster-autoscaler/vendor/gopkg.in/yaml.v2/**
-Copyright: 2006 Kirill Simonov
-Copyright: 2011-2016 Canonical Ltd.
+Files: addon-resizer/vendor/golang.org/x/sys/*
+Copyright: 2024 sys contributors.
+License: BSD-3-Clause
+
+Files: vertical-pod-autoscaler/vendor/k8s.io/apimachinery/*
+Copyright: 2024 apimachinery contributors.
 License: Apache-2.0
 
-Files: cluster-autoscaler/vendor/k8s.io/api/**
-Copyright: 2014-2018 The Kubernetes Authors.
-License: Apache-2.0
+Files: cluster-autoscaler/vendor/golang.org/x/sys/*
+Copyright: 2024 sys contributors.
+License: BSD-3-Clause
 
-Files: cluster-autoscaler/vendor/k8s.io/apiextensions-apiserver/**
-Copyright: 2017 The Kubernetes Authors.
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/k8s.io/apimachinery/**
-Copyright: The Kubernetes Authors.
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/k8s.io/apiserver/**
-Copyright: 2014-2017 The Kubernetes Authors.
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/k8s.io/cli-runtime/**
-Copyright: 2014-2018 The Kubernetes Authors.
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/k8s.io/client-go/**
-Copyright: 2014-2018 The Kubernetes Authors.
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/k8s.io/csi-api/**
-Copyright: 2018 The Kubernetes Authors.
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/k8s.io/kube-openapi/**
-Copyright: 2016 The Kubernetes Authors.
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/k8s.io/kube-proxy/**
-Copyright: 2017 The Kubernetes Authors.
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/k8s.io/kubelet/**
-Copyright: 2017 The Kubernetes Authors.
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/k8s.io/kubernetes/**
-Copyright: 2014 The Kubernetes Authors.
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/k8s.io/utils/**
-Copyright: 2014 The Kubernetes Authors.
-License: Apache-2.0
-
-Files: cluster-autoscaler/vendor/sigs.k8s.io/yaml/**
-Copyright: 2012 The Go Authors. All rights reserved.
-Copyright: 2014 Sam Ghods
-License: MIT and BSD-3-Clause
-
-Files: cluster-autoscaler/vendor/vbom.ml/util/**
-Copyright: 2015 Frits van Bommel
+Files: cluster-autoscaler/vendor/github.com/josharian/intern/*
+Copyright: 2024 intern contributors.
 License: MIT
+
+Files: cluster-autoscaler/vendor/github.com/cespare/xxhash/v2/*
+Copyright: 2024 v2 contributors.
+License: MIT
+
+Files: cluster-autoscaler/vendor/github.com/Azure/go-autorest/*
+Copyright: 2024 go-autorest contributors.
+License: Apache-2.0
+
+Files: addon-resizer/vendor/gopkg.in/inf.v0/*
+Copyright: 2024 inf.v0 contributors.
+License: BSD-3-Clause
+
+Files: addon-resizer/vendor/github.com/json-iterator/go/*
+Copyright: 2024 go contributors.
+License: MIT
+
+Files: cluster-autoscaler/vendor/github.com/prometheus/client_golang/*
+Copyright: 2024 client_golang contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/google.golang.org/genproto/*
+Copyright: 2024 genproto contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/google/go-cmp/*
+Copyright: 2024 go-cmp contributors.
+License: BSD-3-Clause
+
+Files: vertical-pod-autoscaler/e2e/vendor/k8s.io/apimachinery/*
+Copyright: 2024 apimachinery contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/k8s.io/apimachinery/third_party/forked/golang/*
+Copyright: 2024 golang contributors.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/github.com/Azure/azure-sdk-for-go/*
+Copyright: 2024 azure-sdk-for-go contributors.
+License: MIT
+
+Files: cluster-autoscaler/vendor/github.com/modern-go/concurrent/*
+Copyright: 2024 concurrent contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/vishvananda/netlink/*
+Copyright: 2024 netlink contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/vendor/k8s.io/metrics/*
+Copyright: 2024 metrics contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/k8s.io/utils/inotify/*
+Copyright: 2024 inotify contributors.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/github.com/mrunalp/fileutils/*
+Copyright: 2024 fileutils contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/Azure/skewer/*
+Copyright: 2024 skewer contributors.
+License: MIT
+
+Files: cluster-autoscaler/vendor/github.com/google/gnostic-models/*
+Copyright: 2024 gnostic-models contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/golang.org/x/term/*
+Copyright: 2024 term contributors.
+License: BSD-3-Clause
+
+Files: addon-resizer/vendor/github.com/modern-go/reflect2/*
+Copyright: 2024 reflect2 contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/gopkg.in/yaml.v3/*
+Copyright: 2024 yaml.v3 contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/gopkg.in/yaml.v2/*
+Copyright: 2024 yaml.v2 contributors.
+License: MIT
+
+Files: vertical-pod-autoscaler/e2e/vendor/k8s.io/kubelet/*
+Copyright: 2024 kubelet contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/k8s.io/kubectl/*
+Copyright: 2024 kubectl contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/json-iterator/go/*
+Copyright: 2024 go contributors.
+License: MIT
+
+Files: cluster-autoscaler/vendor/github.com/moby/ipvs/*
+Copyright: 2024 ipvs contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/JeffAshton/win_pdh/*
+Copyright: 2024 win_pdh contributors.
+License: BSD-3-Clause
+
+Files: vertical-pod-autoscaler/e2e/vendor/golang.org/x/term/*
+Copyright: 2024 term contributors.
+License: BSD-3-Clause
+
+Files: vertical-pod-autoscaler/vendor/github.com/prometheus/common/*
+Copyright: 2024 common contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/google/gofuzz/*
+Copyright: 2024 gofuzz contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/davecgh/go-spew/*
+Copyright: 2024 go-spew contributors.
+License: ISC
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/aws/aws-sdk-go/internal/sync/singleflight/*
+Copyright: 2024 singleflight contributors.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/github.com/onsi/ginkgo/v2/*
+Copyright: 2024 v2 contributors.
+License: MIT
+
+Files: cluster-autoscaler/vendor/github.com/libopenstorage/openstorage/*
+Copyright: 2024 openstorage contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/cilium/ebpf/*
+Copyright: 2024 ebpf contributors.
+License: MIT
+
+Files: cluster-autoscaler/vendor/golang.org/x/mod/*
+Copyright: 2024 mod contributors.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/github.com/Azure/go-autorest/autorest/azure/cli/*
+Copyright: 2024 cli contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/armon/circbuf/*
+Copyright: 2024 circbuf contributors.
+License: MIT
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/containerd/console/*
+Copyright: 2024 console contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/google/pprof/*
+Copyright: 2024 pprof contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/rubiojr/go-vhd/*
+Copyright: 2024 go-vhd contributors.
+License: MIT
+
+Files: vertical-pod-autoscaler/vendor/github.com/josharian/intern/*
+Copyright: 2024 intern contributors.
+License: MIT
+
+Files: cluster-autoscaler/vendor/github.com/Azure/go-autorest/autorest/validation/*
+Copyright: 2024 validation contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/sigs.k8s.io/apiserver-network-proxy/konnectivity-client/*
+Copyright: 2024 konnectivity-client contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/spf13/pflag/*
+Copyright: 2024 pflag contributors.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/golang.org/x/text/*
+Copyright: 2024 text contributors.
+License: BSD-3-Clause
+
+Files: vertical-pod-autoscaler/e2e/vendor/k8s.io/kubernetes/third_party/forked/golang/*
+Copyright: 2024 golang contributors.
+License: BSD-3-Clause
+
+Files: addon-resizer/vendor/github.com/golang/glog/*
+Copyright: 2024 glog contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/blang/semver/v4/*
+Copyright: 2024 v4 contributors.
+License: MIT
+
+Files: vertical-pod-autoscaler/e2e/vendor/k8s.io/kube-openapi/pkg/internal/third_party/go-json-experiment/json/*
+Copyright: 2024 json contributors.
+License: BSD-3-Clause
+
+Files: vertical-pod-autoscaler/e2e/vendor/k8s.io/csi-translation-lib/*
+Copyright: 2024 csi-translation-lib contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/containerd/ttrpc/*
+Copyright: 2024 ttrpc contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/golang.org/x/sys/*
+Copyright: 2024 sys contributors.
+License: BSD-3-Clause
+
+Files: addon-resizer/vendor/golang.org/x/crypto/*
+Copyright: 2024 crypto contributors.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/github.com/opencontainers/selinux/*
+Copyright: 2024 selinux contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/google.golang.org/appengine/*
+Copyright: 2024 appengine contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/googleapis/gax-go/v2/*
+Copyright: 2024 v2 contributors.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/k8s.io/client-go/*
+Copyright: 2024 client-go contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/fsnotify/fsnotify/*
+Copyright: 2024 fsnotify contributors.
+License: BSD-3-Clause
+
+Files: vertical-pod-autoscaler/e2e/vendor/gopkg.in/gcfg.v1/*
+Copyright: 2024 gcfg.v1 contributors.
+License: BSD-3-Clause
+
+Files: vertical-pod-autoscaler/vendor/github.com/go-logr/logr/*
+Copyright: 2024 logr contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/pkg/errors/*
+Copyright: 2024 errors contributors.
+License: BSD-2-Clause
+
+Files: cluster-autoscaler/cloudprovider/ionoscloud/ionos-cloud-sdk-go/*
+Copyright: 2024 ionos-cloud-sdk-go contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/emicklei/go-restful/v3/*
+Copyright: 2024 v3 contributors.
+License: MIT
+
+Files: vertical-pod-autoscaler/vendor/golang.org/x/text/*
+Copyright: 2024 text contributors.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/cloudprovider/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/*
+Copyright: 2024 common contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/vendor/github.com/google/gnostic/*
+Copyright: 2024 gnostic contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/cloudprovider/brightbox/k8ssdk/*
+Copyright: 2024 k8ssdk contributors.
+License: MIT
+
+Files: cluster-autoscaler/vendor/gopkg.in/gcfg.v1/*
+Copyright: 2024 gcfg.v1 contributors.
+License: BSD-3-Clause
+
+Files: vertical-pod-autoscaler/vendor/github.com/evanphx/json-patch/*
+Copyright: 2024 json-patch contributors.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/github.com/google/cadvisor/*
+Copyright: 2024 cadvisor contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/GoogleCloudPlatform/k8s-cloud-provider/*
+Copyright: 2024 k8s-cloud-provider contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/google.golang.org/appengine/*
+Copyright: 2024 appengine contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/k8s.io/component-base/*
+Copyright: 2024 component-base contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/spf13/pflag/*
+Copyright: 2024 pflag contributors.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/github.com/prometheus/client_model/*
+Copyright: 2024 client_model contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/k8s.io/cloud-provider-aws/*
+Copyright: 2024 cloud-provider-aws contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/containerd/ttrpc/*
+Copyright: 2024 ttrpc contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/vendor/github.com/beorn7/perks/*
+Copyright: 2024 perks contributors.
+License: MIT
+
+Files: cluster-autoscaler/vendor/github.com/syndtr/gocapability/*
+Copyright: 2024 gocapability contributors.
+License: BSD-2-Clause
+
+Files: vertical-pod-autoscaler/e2e/vendor/k8s.io/kubernetes/*
+Copyright: 2024 kubernetes contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/k8s.io/dynamic-resource-allocation/*
+Copyright: 2024 dynamic-resource-allocation contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/cloudprovider/tencentcloud/tencentcloud-sdk-go/tencentcloud/cvm/*
+Copyright: 2024 cvm contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/vendor/k8s.io/kube-openapi/*
+Copyright: 2024 kube-openapi contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/evanphx/json-patch/*
+Copyright: 2024 json-patch contributors.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/github.com/sirupsen/logrus/*
+Copyright: 2024 logrus contributors.
+License: MIT
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/container-storage-interface/spec/*
+Copyright: 2024 spec contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/google/cadvisor/third_party/containerd/*
+Copyright: 2024 containerd contributors.
+License: Apache-2.0
+
+Files: cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/sony/gobreaker/*
+Copyright: 2024 gobreaker contributors.
+License: MIT
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/euank/go-kmsg-parser/*
+Copyright: 2024 go-kmsg-parser contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/vishvananda/netns/*
+Copyright: 2024 netns contributors.
+License: Apache-2.0
+
+Files: vertical-pod-autoscaler/e2e/vendor/github.com/seccomp/libseccomp-golang/*
+Copyright: 2024 libseccomp-golang contributors.
+License: BSD-2-Clause
+
+Files: vertical-pod-autoscaler/vendor/gopkg.in/inf.v0/*
+Copyright: 2024 inf.v0 contributors.
+License: BSD-3-Clause
+
+Files: cluster-autoscaler/vendor/github.com/go-openapi/jsonpointer/*
+Copyright: 2024 jsonpointer contributors.
+License: Apache-2.0
