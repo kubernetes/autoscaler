@@ -115,6 +115,17 @@ func TestSetCondition(t *testing.T) {
 		want          []v1.Condition
 	}{
 		{
+			name:      "Accepted added, empty conditions before",
+			newType:   v1beta1.Accepted,
+			newStatus: v1.ConditionTrue,
+			want: []v1.Condition{
+				{
+					Type:   v1beta1.Accepted,
+					Status: v1.ConditionTrue,
+				},
+			},
+		},
+		{
 			name:      "Provisioned added, empty conditions before",
 			newType:   v1beta1.Provisioned,
 			newStatus: v1.ConditionTrue,
