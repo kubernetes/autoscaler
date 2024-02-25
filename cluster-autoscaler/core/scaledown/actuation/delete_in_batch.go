@@ -195,6 +195,9 @@ func CleanUpAndRecordFailedScaleDownEvent(ctx *context.AutoscalingContext, node 
 		klog.Errorf("Scale-down: couldn't delete empty node, %v, status error: %v", errMsg, status.Err)
 		ctx.Recorder.Eventf(node, apiv1.EventTypeWarning, "ScaleDownFailed", "failed to delete empty node: %v", status.Err)
 	}
+	gpuConfig := ctx.CloudProvider.GetNodeGpuConfig(node)
+	metricResourceName, metricGpuType := gpu.GetGpuInfoForMetrics(gpuConfig, ctx.CloudProvider.GetAvailableGPUTypes(), node, nil)
+	metrics.RegisterFailedScaleDown(metrics.CloudProviderError, metricResourceName, metricGpuType)
 	taints.CleanToBeDeleted(node, ctx.ClientSet, ctx.CordonNodeBeforeTerminate)
 	nodeDeletionTracker.EndDeletion(nodeGroupId, node.Name, status)
 }
