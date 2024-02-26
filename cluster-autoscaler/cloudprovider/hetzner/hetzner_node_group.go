@@ -364,10 +364,10 @@ func getMachineTypeResourceList(m *hetznerManager, instanceType string) (apiv1.R
 
 	return apiv1.ResourceList{
 		// TODO somehow determine the actual pods that will be running
-		apiv1.ResourcePods:    *resource.NewQuantity(defaultPodAmountsLimit, resource.DecimalSI),
-		apiv1.ResourceCPU:     *resource.NewQuantity(int64(typeInfo.Cores), resource.DecimalSI),
-		apiv1.ResourceMemory:  *resource.NewQuantity(int64(typeInfo.Memory*1024*1024*1024), resource.DecimalSI),
-		apiv1.ResourceStorage: *resource.NewQuantity(int64(typeInfo.Disk*1024*1024*1024), resource.DecimalSI),
+		apiv1.ResourcePods:             *resource.NewQuantity(defaultPodAmountsLimit, resource.DecimalSI),
+		apiv1.ResourceCPU:              *resource.NewQuantity(int64(typeInfo.Cores), resource.DecimalSI),
+		apiv1.ResourceMemory:           *resource.NewQuantity(int64(typeInfo.Memory*1024*1024*1024), resource.DecimalSI),
+		apiv1.ResourceEphemeralStorage: *resource.NewQuantity(int64(typeInfo.Disk*1024*1024*1024), resource.DecimalSI),
 	}, nil
 }
 
