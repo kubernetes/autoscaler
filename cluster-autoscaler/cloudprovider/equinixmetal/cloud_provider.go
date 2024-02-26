@@ -36,7 +36,7 @@ import (
 
 const (
 	// GPULabel is the label added to nodes with GPU resource.
-	GPULabel = "cloud.google.com/gke-accelerator"
+	GPULabel = "accelerator"
 	// DefaultControllerNodeLabelKey is the label added to Master/Controller to identify as
 	// master/controller node.
 	DefaultControllerNodeLabelKey = "node-role.kubernetes.io/master"
@@ -48,11 +48,9 @@ const (
 	ControllerNodeIdentifierMetalEnv = "METAL_CONTROLLER_NODE_IDENTIFIER_LABEL"
 )
 
-var (
-	availableGPUTypes = map[string]struct{}{
-		"nvidia-tesla-v100": {},
-	}
-)
+var availableGPUTypes = map[string]struct{}{
+	"nvidia-tesla-v100": {},
+}
 
 // equinixMetalCloudProvider implements CloudProvider interface from cluster-autoscaler/cloudprovider module.
 type equinixMetalCloudProvider struct {
@@ -152,7 +150,8 @@ func (pcp *equinixMetalCloudProvider) GetAvailableMachineTypes() ([]string, erro
 
 // NewNodeGroup is not implemented.
 func (pcp *equinixMetalCloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string,
-	taints []apiv1.Taint, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
+	taints []apiv1.Taint, extraResources map[string]resource.Quantity,
+) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 

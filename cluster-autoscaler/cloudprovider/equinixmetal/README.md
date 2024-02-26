@@ -26,13 +26,15 @@ In the above file you can modify the following fields:
 | cluster-autoscaler-equinixmetal | authtoken               | Your Equinix Metal API token. It must be base64 encoded.                                                                                 |
 | cluster-autoscaler-cloud-config     | Global/project-id       | Your Equinix Metal project id                                                                                                             |
 | cluster-autoscaler-cloud-config     | Global/api-server       | The ip:port for you cluster's k8s api (e.g. K8S_MASTER_PUBLIC_IP:6443)                                                             |
-| cluster-autoscaler-cloud-config     | Global/facility         | The Equinix Metal facility for the devices in your nodepool (eg: sv15)                                                                    |
+| cluster-autoscaler-cloud-config     | Global/metro         | The Equinix Metal metro for the devices in your nodepool (eg: sv)                                                                    |
 | cluster-autoscaler-cloud-config     | Global/plan             | The Equinix Metal plan (aka size/flavor) for new nodes in the nodepool (eg: c3.small.x86)                                                 |
 | cluster-autoscaler-cloud-config     | Global/billing          | The billing interval for new nodes (default: hourly)                                                                               |
 | cluster-autoscaler-cloud-config     | Global/os               | The OS image to use for new nodes (default: ubuntu_18_04). If you change this also update cloudinit.                               |
 | cluster-autoscaler-cloud-config     | Global/cloudinit        | The base64 encoded [user data](https://metal.equinix.com/developers/docs/servers/user-data/) submitted when provisioning devices. In the example file, the default value has been tested with Ubuntu 18.04 to install Docker & kubelet and then to bootstrap the node into the cluster using kubeadm. The kubeadm, kubelet, kubectl are pinned to version 1.17.4. For a different base OS or bootstrap method, this needs to be customized accordingly|
 | cluster-autoscaler-cloud-config     | Global/reservation      | The values "require" or "prefer" will request the next available hardware reservation for new devices in selected facility & plan. If no hardware reservations match, "require" will trigger a failure, while "prefer" will launch on-demand devices instead (default: none)  |
 | cluster-autoscaler-cloud-config     | Global/hostname-pattern | The pattern for the names of new Equinix Metal devices (default: "k8s-{{.ClusterName}}-{{.NodeGroup}}-{{.RandString8}}" )                  |
+| cluster-autoscaler-cloud-config     | Global/ipxe-script-url  | The iPXE script to use for provisioning devices. |
+| cluster-autoscaler-cloud-config     | Global/always-ipxe    | Whether iPXE should be used on every boot. Defaults to first boot only. |
 
 You can always update the secret with more nodepool definitions (with different plans etc.) as shown in the example, but you should always provide a default nodepool configuration.
 
@@ -57,7 +59,8 @@ to match your cluster.
 In case you want to target a specific nodepool(s) for e.g. a deployment, you can add a `nodeAffinity` with the key `pool` and with value the nodepool name that you want to target. This functionality is not backwards compatible, which means that nodes provisioned with older cluster-autoscaler images won't have the key `pool`. But you can overcome this limitation by manually adding the correct labels. Here are some examples:
 
 Target a nodepool with a specific name:
-```
+
+```yaml
 affinity:
   nodeAffinity:
     requiredDuringSchedulingIgnoredDuringExecution:
@@ -68,8 +71,10 @@ affinity:
           values:
           - pool3
 ```
+
 Target a nodepool with a specific Equinix Metal instance:
-```
+
+```yaml
 affinity:
   nodeAffinity:
     requiredDuringSchedulingIgnoredDuringExecution:
@@ -84,14 +89,17 @@ affinity:
 ## CCM and Controller node labels
 
 ### CCM
+
 By default, autoscaler assumes that you have an older deprecated version of `packet-ccm` installed in your
 cluster.  If however, that is not the case and you've migrated to the new `cloud-provider-equinix-metal` CCM,
 then this must be told to autoscaler. This can be done via setting an environment variable in the deployment:
-```
+
+```yaml
 env:
   - name: INSTALLED_CCM
     value: cloud-provider-equinix-metal
 ```
+
 **NOTE**: As a prerequisite, ensure that all worker nodes in your cluster have the prefix `equinixmetal://` in
 the Node spec `.spec.providerID`. If there are any existing worker nodes with prefix `packet://`, then drain
 the node, remove the node and restart the kubelet on that worker node to re-register the node in the cluster,
@@ -104,7 +112,7 @@ Autoscaler assumes that control plane nodes in your cluster are identified by th
 `node-role.kubernetes.io/master`. If for some reason, this assumption is not true in your case, then set the
 environment variable in the deployment:
 
-```
+```yaml
 env:
   - name: METAL_CONTROLLER_NODE_IDENTIFIER_LABEL
     value: <label>
