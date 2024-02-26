@@ -146,7 +146,7 @@ spec:
       serviceAccountName: kube-admin
       tolerations:
       - effect: NoSchedule
-        key: node-role.kubernetes.io/master
+        key: node-role.kubernetes.io/control-plane
       volumes:
       - hostPath:
           path: /etc/localtime
