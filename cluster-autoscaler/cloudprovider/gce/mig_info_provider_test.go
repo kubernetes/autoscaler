@@ -867,7 +867,7 @@ func TestGetMigInstanceTemplateName(t *testing.T) {
 			name: "template name in cache",
 			cache: &GceCache{
 				migs:                      map[GceRef]Mig{mig.GceRef(): mig},
-				instanceTemplateNameCache: map[GceRef]InstanceTemplateNameType{mig.GceRef(): InstanceTemplateNameType{templateName, false}},
+				instanceTemplateNameCache: map[GceRef]InstanceTemplateNameType{mig.GceRef(): {templateName, false}},
 			},
 			expectedTemplateName: templateName,
 		},
@@ -954,7 +954,7 @@ func TestGetMigInstanceTemplate(t *testing.T) {
 			name: "template in cache",
 			cache: &GceCache{
 				migs:                      map[GceRef]Mig{mig.GceRef(): mig},
-				instanceTemplateNameCache: map[GceRef]InstanceTemplateNameType{mig.GceRef(): InstanceTemplateNameType{templateName, false}},
+				instanceTemplateNameCache: map[GceRef]InstanceTemplateNameType{mig.GceRef(): {templateName, false}},
 				instanceTemplatesCache:    map[GceRef]*gce.InstanceTemplate{mig.GceRef(): template},
 			},
 			expectedTemplate:       template,
@@ -964,7 +964,7 @@ func TestGetMigInstanceTemplate(t *testing.T) {
 			name: "cache without template, fetch success",
 			cache: &GceCache{
 				migs:                      map[GceRef]Mig{mig.GceRef(): mig},
-				instanceTemplateNameCache: map[GceRef]InstanceTemplateNameType{mig.GceRef(): InstanceTemplateNameType{templateName, false}},
+				instanceTemplateNameCache: map[GceRef]InstanceTemplateNameType{mig.GceRef(): {templateName, false}},
 				instanceTemplatesCache:    make(map[GceRef]*gce.InstanceTemplate),
 			},
 			fetchMigTemplate:       fetchMigTemplateConst(template),
@@ -975,7 +975,7 @@ func TestGetMigInstanceTemplate(t *testing.T) {
 			name: "cache with old template, fetch success",
 			cache: &GceCache{
 				migs:                      map[GceRef]Mig{mig.GceRef(): mig},
-				instanceTemplateNameCache: map[GceRef]InstanceTemplateNameType{mig.GceRef(): InstanceTemplateNameType{templateName, false}},
+				instanceTemplateNameCache: map[GceRef]InstanceTemplateNameType{mig.GceRef(): {templateName, false}},
 				instanceTemplatesCache:    map[GceRef]*gce.InstanceTemplate{mig.GceRef(): oldTemplate},
 			},
 			fetchMigTemplate:       fetchMigTemplateConst(template),
@@ -986,7 +986,7 @@ func TestGetMigInstanceTemplate(t *testing.T) {
 			name: "cache without template, fetch failure",
 			cache: &GceCache{
 				migs:                      map[GceRef]Mig{mig.GceRef(): mig},
-				instanceTemplateNameCache: map[GceRef]InstanceTemplateNameType{mig.GceRef(): InstanceTemplateNameType{templateName, false}},
+				instanceTemplateNameCache: map[GceRef]InstanceTemplateNameType{mig.GceRef(): {templateName, false}},
 				instanceTemplatesCache:    make(map[GceRef]*gce.InstanceTemplate),
 			},
 			fetchMigTemplate: fetchMigTemplateFail,
@@ -996,7 +996,7 @@ func TestGetMigInstanceTemplate(t *testing.T) {
 			name: "cache with old template, fetch failure",
 			cache: &GceCache{
 				migs:                      map[GceRef]Mig{mig.GceRef(): mig},
-				instanceTemplateNameCache: map[GceRef]InstanceTemplateNameType{mig.GceRef(): InstanceTemplateNameType{templateName, false}},
+				instanceTemplateNameCache: map[GceRef]InstanceTemplateNameType{mig.GceRef(): {templateName, false}},
 				instanceTemplatesCache:    map[GceRef]*gce.InstanceTemplate{mig.GceRef(): oldTemplate},
 			},
 			fetchMigTemplate:       fetchMigTemplateFail,
@@ -1251,7 +1251,7 @@ func TestGetMigMachineType(t *testing.T) {
 				},
 			}
 			cache := &GceCache{
-				instanceTemplateNameCache: map[GceRef]InstanceTemplateNameType{mig.GceRef(): InstanceTemplateNameType{"template", false}},
+				instanceTemplateNameCache: map[GceRef]InstanceTemplateNameType{mig.GceRef(): {"template", false}},
 				instanceTemplatesCache: map[GceRef]*gce.InstanceTemplate{
 					mig.GceRef(): {
 						Name: "template",
