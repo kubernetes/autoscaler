@@ -109,7 +109,7 @@ func (c *Checker) FilterOutUnremovable(context *context.AutoscalingContext, scal
 func (c *Checker) unremovableReasonAndNodeUtilization(context *context.AutoscalingContext, timestamp time.Time, nodeInfo *schedulerframework.NodeInfo, utilLogsQuota *klogx.Quota) (simulator.UnremovableReason, *utilization.Info) {
 	node := nodeInfo.Node()
 
-	if actuation.IsNodeBeingDeleted(node, timestamp) {
+	if actuation.IsNodeBeingDeleted(context, node, timestamp) {
 		klog.V(1).Infof("Skipping %s from delete consideration - the node is currently being deleted", node.Name)
 		return simulator.CurrentlyBeingDeleted, nil
 	}
