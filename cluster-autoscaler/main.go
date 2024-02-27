@@ -257,7 +257,8 @@ var (
 			"--max-graceful-termination-sec flag should not be set when this flag is set. Not setting this flag will use unordered evictor by default."+
 			"Priority evictor reuses the concepts of drain logic in kubelet(https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/2712-pod-priority-based-graceful-node-shutdown#migration-from-the-node-graceful-shutdown-feature)."+
 			"Eg. flag usage:  '10000:20,1000:100,0:60'")
-	provisioningRequestsEnabled = flag.Bool("enable-provisioning-requests", false, "Whether the clusterautoscaler will be handling the ProvisioningRequest CRs.")
+	provisioningRequestsEnabled      = flag.Bool("enable-provisioning-requests", false, "Whether the clusterautoscaler will be handling the ProvisioningRequest CRs.")
+	maxCloudProviderNodeDeletionTime = flag.Duration("max-cloud-provider-node-deletion-time", 5*time.Minute, "Maximum time needed by cloud provider to delete a node")
 )
 
 func isFlagPassed(name string) bool {
