@@ -56,12 +56,15 @@ type Actuator interface {
 	// function are not guaranteed to be deleted, it is possible for the
 	// Actuator to ignore some of them e.g. if max configured level of
 	// parallelism is reached.
-	StartDeletion(empty, needDrain []*apiv1.Node) (*status.ScaleDownStatus, errors.AutoscalerError)
+	StartDeletion(empty, needDrain []*apiv1.Node) (status.ScaleDownResult, []*status.ScaleDownNode, errors.AutoscalerError)
 	// CheckStatus returns an immutable snapshot of ongoing deletions.
 	CheckStatus() ActuationStatus
 	// ClearResultsNotNewerThan removes information about deletions finished
 	// before or exactly at the provided timestamp.
 	ClearResultsNotNewerThan(time.Time)
+	// DeletionResults returns deletion results since the last ClearResultsNotNewerThan call
+	// in a map form, along with the timestamp of last result.
+	DeletionResults() (map[string]status.NodeDeleteResult, time.Time)
 }
 
 // ActuationStatus is used for feeding Actuator status back into Planner

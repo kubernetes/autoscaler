@@ -269,8 +269,8 @@ type mockActuator struct {
 	status *mockActuationStatus
 }
 
-func (m *mockActuator) StartDeletion(_, _ []*apiv1.Node) (*status.ScaleDownStatus, errors.AutoscalerError) {
-	return nil, nil
+func (m *mockActuator) StartDeletion(_, _ []*apiv1.Node) (status.ScaleDownResult, []*status.ScaleDownNode, errors.AutoscalerError) {
+	return status.ScaleDownError, []*status.ScaleDownNode{}, nil
 }
 
 func (m *mockActuator) CheckStatus() scaledown.ActuationStatus {
@@ -279,6 +279,10 @@ func (m *mockActuator) CheckStatus() scaledown.ActuationStatus {
 
 func (m *mockActuator) ClearResultsNotNewerThan(time.Time) {
 
+}
+
+func (m *mockActuator) DeletionResults() (map[string]status.NodeDeleteResult, time.Time) {
+	return map[string]status.NodeDeleteResult{}, time.Now()
 }
 
 type mockActuationStatus struct {
