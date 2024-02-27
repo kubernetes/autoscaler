@@ -33,6 +33,8 @@ type MachineTypeKey struct {
 	MachineTypeName string
 }
 
+// InstanceTemplateNameType is used to store the name, and
+// whether or not the instance template is regional
 type InstanceTemplateNameType struct {
 	Name     string
 	Regional bool
