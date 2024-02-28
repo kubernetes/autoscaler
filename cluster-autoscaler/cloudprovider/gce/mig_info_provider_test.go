@@ -53,7 +53,7 @@ type mockAutoscalingGceClient struct {
 	fetchMigTargetSize               func(GceRef) (int64, error)
 	fetchMigBasename                 func(GceRef) (string, error)
 	fetchMigInstances                func(GceRef) ([]GceInstance, error)
-	fetchMigTemplateName             func(GceRef) (InstanceTemplateNameType, error)
+	fetchMigTemplate                 func(GceRef, string, bool) (*gce.InstanceTemplate, error)
 	fetchMigTemplate                 func(GceRef, string) (*gce.InstanceTemplate, error)
 	fetchMachineType                 func(string, string) (*gce.MachineType, error)
 	fetchListManagedInstancesResults func(GceRef) (string, error)
@@ -87,7 +87,7 @@ func (client *mockAutoscalingGceClient) FetchMigInstances(migRef GceRef) ([]GceI
 	return client.fetchMigInstances(migRef)
 }
 
-func (client *mockAutoscalingGceClient) FetchMigTemplateName(migRef GceRef) (InstanceTemplateNameType, error) {
+func (client *mockAutoscalingGceClient) FetchMigTemplateName(migRef GceRef) (InstanceTemplateName, error) {
 	return client.fetchMigTemplateName(migRef)
 }
 
@@ -859,7 +859,7 @@ func TestGetMigInstanceTemplateName(t *testing.T) {
 		name                 string
 		cache                *GceCache
 		fetchMigs            func(string) ([]*gce.InstanceGroupManager, error)
-		fetchMigTemplateName func(GceRef) (InstanceTemplateNameType, error)
+		fetchMigTemplateName func(GceRef) (InstanceTemplateName, error)
 		expectedTemplateName string
 		expectedErr          error
 	}{
@@ -867,7 +867,7 @@ func TestGetMigInstanceTemplateName(t *testing.T) {
 			name: "template name in cache",
 			cache: &GceCache{
 				migs:                      map[GceRef]Mig{mig.GceRef(): mig},
-				instanceTemplateNameCache: map[GceRef]InstanceTemplateNameType{mig.GceRef(): {templateName, false}},
+				instanceTemplateNameCache: map[GceRef]InstanceTemplateName{mig.GceRef(): {templateName, false}},
 			},
 			expectedTemplateName: templateName,
 		},
@@ -881,14 +881,14 @@ func TestGetMigInstanceTemplateName(t *testing.T) {
 			name:                 "cache fill without mig, fallback success",
 			cache:                emptyCache(),
 			fetchMigs:            fetchMigsConst([]*gce.InstanceGroupManager{}),
-			fetchMigTemplateName: fetchMigTemplateNameConst(InstanceTemplateNameType{templateName, false}),
+			fetchMigTemplateName: fetchMigTemplateNameConst(InstanceTemplateName{templateName, false}),
 			expectedTemplateName: templateName,
 		},
 		{
 			name:                 "cache fill failure, fallback success",
 			cache:                emptyCache(),
 			fetchMigs:            fetchMigsFail,
-			fetchMigTemplateName: fetchMigTemplateNameConst(InstanceTemplateNameType{templateName, false}),
+			fetchMigTemplateName: fetchMigTemplateNameConst(InstanceTemplateName{templateName, false}),
 			expectedTemplateName: templateName,
 		},
 		{
@@ -916,14 +916,14 @@ func TestGetMigInstanceTemplateName(t *testing.T) {
 			migLister := NewMigLister(tc.cache)
 			provider := NewCachingMigInfoProvider(tc.cache, migLister, client, mig.GceRef().Project, 1, 0*time.Second)
 
-			instanceTemplateNameType, err := provider.GetMigInstanceTemplateName(mig.GceRef())
-			cachedInstanceTemplateNameType, found := tc.cache.GetMigInstanceTemplateName(mig.GceRef())
+			instanceTemplateName, err := provider.GetMigInstanceTemplateName(mig.GceRef())
+			cachedInstanceTemplateName, found := tc.cache.GetMigInstanceTemplateName(mig.GceRef())
 
 			assert.Equal(t, tc.expectedErr, err)
 			assert.Equal(t, tc.expectedErr == nil, found)
 			if tc.expectedErr == nil {
-				assert.Equal(t, tc.expectedTemplateName, instanceTemplateNameType.Name)
-				assert.Equal(t, tc.expectedTemplateName, cachedInstanceTemplateNameType.Name)
+				assert.Equal(t, tc.expectedTemplateName, instanceTemplateName.Name)
+				assert.Equal(t, tc.expectedTemplateName, cachedInstanceTemplateName.Name)
 			}
 		})
 	}
@@ -944,7 +944,7 @@ func TestGetMigInstanceTemplate(t *testing.T) {
 		name                   string
 		cache                  *GceCache
 		fetchMigs              func(string) ([]*gce.InstanceGroupManager, error)
-		fetchMigTemplateName   func(GceRef) (InstanceTemplateNameType, error)
+		fetchMigTemplateName   func(GceRef) (InstanceTemplateName, error)
 		fetchMigTemplate       func(GceRef, string, bool) (*gce.InstanceTemplate, error)
 		expectedTemplate       *gce.InstanceTemplate
 		expectedCachedTemplate *gce.InstanceTemplate
@@ -954,7 +954,7 @@ func TestGetMigInstanceTemplate(t *testing.T) {
 			name: "template in cache",
 			cache: &GceCache{
 				migs:                      map[GceRef]Mig{mig.GceRef(): mig},
-				instanceTemplateNameCache: map[GceRef]InstanceTemplateNameType{mig.GceRef(): {templateName, false}},
+				instanceTemplateNameCache: map[GceRef]InstanceTemplateName{mig.GceRef(): {templateName, false}},
 				instanceTemplatesCache:    map[GceRef]*gce.InstanceTemplate{mig.GceRef(): template},
 			},
 			expectedTemplate:       template,
@@ -964,7 +964,7 @@ func TestGetMigInstanceTemplate(t *testing.T) {
 			name: "cache without template, fetch success",
 			cache: &GceCache{
 				migs:                      map[GceRef]Mig{mig.GceRef(): mig},
-				instanceTemplateNameCache: map[GceRef]InstanceTemplateNameType{mig.GceRef(): {templateName, false}},
+				instanceTemplateNameCache: map[GceRef]InstanceTemplateName{mig.GceRef(): {templateName, false}},
 				instanceTemplatesCache:    make(map[GceRef]*gce.InstanceTemplate),
 			},
 			fetchMigTemplate:       fetchMigTemplateConst(template),
@@ -975,7 +975,7 @@ func TestGetMigInstanceTemplate(t *testing.T) {
 			name: "cache with old template, fetch success",
 			cache: &GceCache{
 				migs:                      map[GceRef]Mig{mig.GceRef(): mig},
-				instanceTemplateNameCache: map[GceRef]InstanceTemplateNameType{mig.GceRef(): {templateName, false}},
+				instanceTemplateNameCache: map[GceRef]InstanceTemplateName{mig.GceRef(): {templateName, false}},
 				instanceTemplatesCache:    map[GceRef]*gce.InstanceTemplate{mig.GceRef(): oldTemplate},
 			},
 			fetchMigTemplate:       fetchMigTemplateConst(template),
@@ -986,7 +986,7 @@ func TestGetMigInstanceTemplate(t *testing.T) {
 			name: "cache without template, fetch failure",
 			cache: &GceCache{
 				migs:                      map[GceRef]Mig{mig.GceRef(): mig},
-				instanceTemplateNameCache: map[GceRef]InstanceTemplateNameType{mig.GceRef(): {templateName, false}},
+				instanceTemplateNameCache: map[GceRef]InstanceTemplateName{mig.GceRef(): {templateName, false}},
 				instanceTemplatesCache:    make(map[GceRef]*gce.InstanceTemplate),
 			},
 			fetchMigTemplate: fetchMigTemplateFail,
@@ -996,7 +996,7 @@ func TestGetMigInstanceTemplate(t *testing.T) {
 			name: "cache with old template, fetch failure",
 			cache: &GceCache{
 				migs:                      map[GceRef]Mig{mig.GceRef(): mig},
-				instanceTemplateNameCache: map[GceRef]InstanceTemplateNameType{mig.GceRef(): {templateName, false}},
+				instanceTemplateNameCache: map[GceRef]InstanceTemplateName{mig.GceRef(): {templateName, false}},
 				instanceTemplatesCache:    map[GceRef]*gce.InstanceTemplate{mig.GceRef(): oldTemplate},
 			},
 			fetchMigTemplate:       fetchMigTemplateFail,
@@ -1075,7 +1075,7 @@ func TestGetMigInstanceKubeEnv(t *testing.T) {
 		name                  string
 		cache                 *GceCache
 		fetchMigs             func(string) ([]*gce.InstanceGroupManager, error)
-		fetchMigTemplateName  func(GceRef) (InstanceTemplateNameType, error)
+		fetchMigTemplateName  func(GceRef) (InstanceTemplateName, error)
 		fetchMigTemplate      func(GceRef, string, bool) (*gce.InstanceTemplate, error)
 		expectedKubeEnv       KubeEnv
 		expectedCachedKubeEnv KubeEnv
@@ -1085,7 +1085,7 @@ func TestGetMigInstanceKubeEnv(t *testing.T) {
 			name: "kube-env in cache",
 			cache: &GceCache{
 				migs:                      map[GceRef]Mig{mig.GceRef(): mig},
-				instanceTemplateNameCache: map[GceRef]InstanceTemplateNameType{mig.GceRef(): {templateName, false}},
+				instanceTemplateNameCache: map[GceRef]InstanceTemplateName{mig.GceRef(): {templateName, false}},
 				kubeEnvCache:              map[GceRef]KubeEnv{mig.GceRef(): kubeEnv},
 			},
 			expectedKubeEnv:       kubeEnv,
@@ -1095,7 +1095,7 @@ func TestGetMigInstanceKubeEnv(t *testing.T) {
 			name: "cache without kube-env, template in cache",
 			cache: &GceCache{
 				migs:                      map[GceRef]Mig{mig.GceRef(): mig},
-				instanceTemplateNameCache: map[GceRef]InstanceTemplateNameType{mig.GceRef(): {templateName, false}},
+				instanceTemplateNameCache: map[GceRef]InstanceTemplateName{mig.GceRef(): {templateName, false}},
 				instanceTemplatesCache:    map[GceRef]*gce.InstanceTemplate{mig.GceRef(): template},
 				kubeEnvCache:              make(map[GceRef]KubeEnv),
 			},
@@ -1106,7 +1106,7 @@ func TestGetMigInstanceKubeEnv(t *testing.T) {
 			name: "cache without kube-env, fetch success",
 			cache: &GceCache{
 				migs:                      map[GceRef]Mig{mig.GceRef(): mig},
-				instanceTemplateNameCache: map[GceRef]InstanceTemplateNameType{mig.GceRef(): {templateName, false}},
+				instanceTemplateNameCache: map[GceRef]InstanceTemplateName{mig.GceRef(): {templateName, false}},
 				instanceTemplatesCache:    make(map[GceRef]*gce.InstanceTemplate),
 				kubeEnvCache:              make(map[GceRef]KubeEnv),
 			},
@@ -1118,7 +1118,7 @@ func TestGetMigInstanceKubeEnv(t *testing.T) {
 			name: "cache with old kube-env, new template cached",
 			cache: &GceCache{
 				migs:                      map[GceRef]Mig{mig.GceRef(): mig},
-				instanceTemplateNameCache: map[GceRef]InstanceTemplateNameType{mig.GceRef(): {templateName, false}},
+				instanceTemplateNameCache: map[GceRef]InstanceTemplateName{mig.GceRef(): {templateName, false}},
 				instanceTemplatesCache:    map[GceRef]*gce.InstanceTemplate{mig.GceRef(): template},
 				kubeEnvCache:              map[GceRef]KubeEnv{mig.GceRef(): oldKubeEnv},
 			},
@@ -1129,7 +1129,7 @@ func TestGetMigInstanceKubeEnv(t *testing.T) {
 			name: "cache with old kube-env, fetch success",
 			cache: &GceCache{
 				migs:                      map[GceRef]Mig{mig.GceRef(): mig},
-				instanceTemplateNameCache: map[GceRef]InstanceTemplateNameType{mig.GceRef(): {templateName, false}},
+				instanceTemplateNameCache: map[GceRef]InstanceTemplateName{mig.GceRef(): {templateName, false}},
 				instanceTemplatesCache:    map[GceRef]*gce.InstanceTemplate{mig.GceRef(): oldTemplate},
 				kubeEnvCache:              map[GceRef]KubeEnv{mig.GceRef(): oldKubeEnv},
 			},
@@ -1141,7 +1141,7 @@ func TestGetMigInstanceKubeEnv(t *testing.T) {
 			name: "cache without kube-env, fetch failure",
 			cache: &GceCache{
 				migs:                      map[GceRef]Mig{mig.GceRef(): mig},
-				instanceTemplateNameCache: map[GceRef]InstanceTemplateNameType{mig.GceRef(): {templateName, false}},
+				instanceTemplateNameCache: map[GceRef]InstanceTemplateName{mig.GceRef(): {templateName, false}},
 				instanceTemplatesCache:    make(map[GceRef]*gce.InstanceTemplate),
 				kubeEnvCache:              make(map[GceRef]KubeEnv),
 			},
@@ -1152,7 +1152,7 @@ func TestGetMigInstanceKubeEnv(t *testing.T) {
 			name: "cache with old kube-env, fetch failure",
 			cache: &GceCache{
 				migs:                      map[GceRef]Mig{mig.GceRef(): mig},
-				instanceTemplateNameCache: map[GceRef]InstanceTemplateNameType{mig.GceRef(): {templateName, false}},
+				instanceTemplateNameCache: map[GceRef]InstanceTemplateName{mig.GceRef(): {templateName, false}},
 				instanceTemplatesCache:    map[GceRef]*gce.InstanceTemplate{mig.GceRef(): oldTemplate},
 				kubeEnvCache:              map[GceRef]KubeEnv{mig.GceRef(): oldKubeEnv},
 			},
@@ -1251,7 +1251,7 @@ func TestGetMigMachineType(t *testing.T) {
 				},
 			}
 			cache := &GceCache{
-				instanceTemplateNameCache: map[GceRef]InstanceTemplateNameType{mig.GceRef(): {"template", false}},
+				instanceTemplateNameCache: map[GceRef]InstanceTemplateName{mig.GceRef(): {"template", false}},
 				instanceTemplatesCache: map[GceRef]*gce.InstanceTemplate{
 					mig.GceRef(): {
 						Name: "template",
@@ -1371,6 +1371,7 @@ func (f *fakeTime) Now() time.Time {
 
 func emptyCache() *GceCache {
 	return &GceCache{
+<<<<<<< HEAD
 		migs:                             map[GceRef]Mig{mig.GceRef(): mig},
 		instances:                        make(map[GceRef][]GceInstance),
 		instancesUpdateTime:              make(map[GceRef]time.Time),
@@ -1380,6 +1381,16 @@ func emptyCache() *GceCache {
 		instanceTemplateNameCache:        make(map[GceRef]InstanceTemplateNameType),
 		instanceTemplatesCache:           make(map[GceRef]*gce.InstanceTemplate),
 		instancesFromUnknownMig:          make(map[GceRef]bool),
+=======
+		migs:                      map[GceRef]Mig{mig.GceRef(): mig},
+		instances:                 make(map[GceRef][]GceInstance),
+		instancesUpdateTime:       make(map[GceRef]time.Time),
+		migTargetSizeCache:        make(map[GceRef]int64),
+		migBaseNameCache:          make(map[GceRef]string),
+		instanceTemplateNameCache: make(map[GceRef]InstanceTemplateName),
+		instanceTemplatesCache:    make(map[GceRef]*gce.InstanceTemplate),
+		instancesFromUnknownMig:   make(map[GceRef]bool),
+>>>>>>> 2aeec4097 (changed InstanceTemplateNameType to InstanceTemplateName)
 	}
 }
 
@@ -1436,13 +1447,13 @@ func fetchMigBasenameConst(basename string) func(GceRef) (string, error) {
 	}
 }
 
-func fetchMigTemplateNameFail(_ GceRef) (InstanceTemplateNameType, error) {
-	return InstanceTemplateNameType{}, errFetchMigTemplateName
+func fetchMigTemplateNameFail(_ GceRef) (InstanceTemplateName, error) {
+	return InstanceTemplateName{}, errFetchMigTemplateName
 }
 
-func fetchMigTemplateNameConst(instanceTemplateNameType InstanceTemplateNameType) func(GceRef) (InstanceTemplateNameType, error) {
-	return func(GceRef) (InstanceTemplateNameType, error) {
-		return instanceTemplateNameType, nil
+func fetchMigTemplateNameConst(instanceTemplateName InstanceTemplateName) func(GceRef) (InstanceTemplateName, error) {
+	return func(GceRef) (InstanceTemplateName, error) {
+		return instanceTemplateName, nil
 	}
 }
 
