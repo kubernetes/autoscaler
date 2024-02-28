@@ -30,6 +30,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqclient"
 	"k8s.io/client-go/rest"
 	"k8s.io/klog/v2"
+	"k8s.io/utils/clock"
 )
 
 const (
@@ -42,7 +43,7 @@ var SupportedProvisioningClasses = []string{v1beta1.ProvisioningClassCheckCapaci
 // ProvisioningRequestPodsInjector creates in-memory pods from ProvisioningRequest and inject them to unscheduled pods list.
 type ProvisioningRequestPodsInjector struct {
 	client provisioningRequestClient
-	now    func() time.Time
+	clock  clock.PassiveClock
 }
 
 // Process pick one ProvisioningRequest, update Accepted condition and inject pods to unscheduled pods list.
@@ -64,16 +65,23 @@ func (p *ProvisioningRequestPodsInjector) Process(
 
 		//TODO(yaroslava): support exponential backoff
 		// Inject pods if ProvReq wasn't scaled up before or it has Provisioned == False condition more than defaultRetryTime
-		if provisioned == nil || (provisioned != nil && provisioned.Status == metav1.ConditionFalse &&
-			provisioned.LastTransitionTime.Add(defaultRetryTime).Before(p.now())) {
+		inject := true
+		if provisioned != nil {
+			if provisioned.Status == metav1.ConditionFalse && provisioned.LastTransitionTime.Add(defaultRetryTime).Before(p.clock.Now()) {
+				inject = true
+			} else {
+				inject = false
+			}
+		}
+		if inject {
 			provreqpods, err := provreqpods.PodsForProvisioningRequest(pr)
 			if err != nil {
 				klog.Errorf("Failed to get pods for ProvisioningRequest %v", pr.Name())
-				provreqconditions.AddOrUpdateCondition(pr, v1beta1.Failed, metav1.ConditionTrue, provreqconditions.FailedToCreatePodsReason, err.Error(), metav1.NewTime(p.now()))
+				provreqconditions.AddOrUpdateCondition(pr, v1beta1.Failed, metav1.ConditionTrue, provreqconditions.FailedToCreatePodsReason, err.Error(), metav1.NewTime(p.clock.Now()))
 				continue
 			}
 			unschedulablePods := append(unschedulablePods, provreqpods...)
-			provreqconditions.AddOrUpdateCondition(pr, v1beta1.Accepted, metav1.ConditionTrue, provreqconditions.AcceptedReason, provreqconditions.AcceptedMsg, metav1.NewTime(p.now()))
+			provreqconditions.AddOrUpdateCondition(pr, v1beta1.Accepted, metav1.ConditionTrue, provreqconditions.AcceptedReason, provreqconditions.AcceptedMsg, metav1.NewTime(p.clock.Now()))
 			return unschedulablePods, nil
 		}
 	}
@@ -89,5 +97,5 @@ func NewProvisioningRequestPodsInjector(kubeConfig *rest.Config) (pods.PodListPr
 	if err != nil {
 		return nil, err
 	}
-	return &ProvisioningRequestPodsInjector{client: client, now: time.Now}, nil
+	return &ProvisioningRequestPodsInjector{client: client, clock: clock.RealClock{}}, nil
 }
