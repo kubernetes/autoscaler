@@ -81,7 +81,7 @@ type AutoscalingGceClient interface {
 	FetchMigTargetSize(GceRef) (int64, error)
 	FetchMigBasename(GceRef) (string, error)
 	FetchMigInstances(GceRef) ([]GceInstance, error)
-	FetchMigTemplateName(migRef GceRef) (InstanceTemplateNameType, error)
+	FetchMigTemplateName(migRef GceRef) (InstanceTemplateName, error)
 	FetchMigTemplate(migRef GceRef, templateName string, regional bool) (*gce.InstanceTemplate, error)
 	FetchMigsWithName(zone string, filter *regexp.Regexp) ([]string, error)
 	FetchZones(region string) ([]string, error)
@@ -509,28 +509,28 @@ func (client *autoscalingGceClientV1) FetchAvailableCpuPlatforms() (map[string][
 	return availableCpuPlatforms, nil
 }
 
-func (client *autoscalingGceClientV1) FetchMigTemplateName(migRef GceRef) (InstanceTemplateNameType, error) {
+func (client *autoscalingGceClientV1) FetchMigTemplateName(migRef GceRef) (InstanceTemplateName, error) {
 	registerRequest("instance_group_managers", "get")
 	igm, err := client.gceService.InstanceGroupManagers.Get(migRef.Project, migRef.Zone, migRef.Name).Do()
 	if err != nil {
 		if err, ok := err.(*googleapi.Error); ok {
 			if err.Code == http.StatusNotFound {
-				return InstanceTemplateNameType{}, errors.NewAutoscalerError(errors.NodeGroupDoesNotExistError, "%s", err.Error())
+				return InstanceTemplateName{}, errors.NewAutoscalerError(errors.NodeGroupDoesNotExistError, "%s", err.Error())
 			}
 		}
-		return InstanceTemplateNameType{}, err
+		return InstanceTemplateName{}, err
 	}
 	templateUrl, err := url.Parse(igm.InstanceTemplate)
 	if err != nil {
-		return InstanceTemplateNameType{}, err
+		return InstanceTemplateName{}, err
 	}
 	regional, err := regexp.MatchString("(/projects/.*[A-Za-z0-9]+.*/regions/)", templateUrl.String())
 	if err != nil {
-		return InstanceTemplateNameType{}, err
+		return InstanceTemplateName{}, err
 	}
 
 	_, templateName := path.Split(templateUrl.EscapedPath())
-	return InstanceTemplateNameType{templateName, regional}, nil
+	return InstanceTemplateName{templateName, regional}, nil
 }
 
 func (client *autoscalingGceClientV1) FetchMigTemplate(migRef GceRef, templateName string, regional bool) (*gce.InstanceTemplate, error) {
