@@ -562,10 +562,14 @@ func (client *autoscalingGceClientV1) FetchMigTemplateName(migRef GceRef) (Insta
 		return InstanceTemplateNameType{}, err
 	}
 	templateUrl, err := url.Parse(igm.InstanceTemplate)
-	regional, _ := regexp.MatchString("(/projects/.*[A-Za-z0-9]+.*/regions/)", templateUrl.String())
 	if err != nil {
 		return InstanceTemplateNameType{}, err
 	}
+	regional, err := regexp.MatchString("(/projects/.*[A-Za-z0-9]+.*/regions/)", templateUrl.String())
+	if err != nil {
+		return InstanceTemplateNameType{}, err
+	}
+
 	_, templateName := path.Split(templateUrl.EscapedPath())
 	return InstanceTemplateNameType{templateName, regional}, nil
 }
