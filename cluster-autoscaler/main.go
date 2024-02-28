@@ -503,6 +503,11 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 			return nil, err
 		}
 		opts.LoopStartNotifier = loopstart.NewObserversList([]loopstart.Observer{provreqProcesor})
+		injector, err := provreq.NewProvisioningRequestPodsInjector(restConfig)
+		if err != nil {
+			return nil, err
+		}
+		podListProcessor.AddProcessor(injector)
 	}
 	opts.Processors.PodListProcessor = podListProcessor
 	scaleDownCandidatesComparers := []scaledowncandidates.CandidatesComparer{}

@@ -175,9 +175,14 @@ type Detail string
 // The following constants list all currently available Conditions Type values.
 // See: https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Condition
 const (
+	// Accepted indicates that the ProvisioningRequest was accepted by ClusterAutoscaler,
+	// so ClusterAutoscaler will attempt to provision the nodes for it.
+	Accepted string = "Accepted"
 	// BookingExpired indicates that the ProvisioningRequest had Provisioned condition before
 	// and capacity reservation time is expired.
 	BookingExpired string = "BookingExpired"
+	// CapacityRevoked indicates that requested resources are not longer valid.
+	CapacityRevoked string = "CapacityRevoked"
 	// Provisioned indicates that all of the requested resources were created
 	// and are available in the cluster. CA will set this condition when the
 	// VM creation finishes successfully.

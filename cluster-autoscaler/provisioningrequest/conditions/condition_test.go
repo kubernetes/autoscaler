@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package checkcapacity
+package conditions
 
 import (
 	"testing"
@@ -98,7 +98,7 @@ func TestBookCapacity(t *testing.T) {
 						Conditions: test.prConditions,
 					},
 				}, nil)
-			got := shouldCapacityBeBooked(pr)
+			got := ShouldCapacityBeBooked(pr)
 			if got != test.want {
 				t.Errorf("Want: %v, got: %v", test.want, got)
 			}
@@ -114,6 +114,17 @@ func TestSetCondition(t *testing.T) {
 		newStatus     v1.ConditionStatus
 		want          []v1.Condition
 	}{
+		{
+			name:      "Accepted added, empty conditions before",
+			newType:   v1beta1.Accepted,
+			newStatus: v1.ConditionTrue,
+			want: []v1.Condition{
+				{
+					Type:   v1beta1.Accepted,
+					Status: v1.ConditionTrue,
+				},
+			},
+		},
 		{
 			name:      "Provisioned added, empty conditions before",
 			newType:   v1beta1.Provisioned,
@@ -242,7 +253,7 @@ func TestSetCondition(t *testing.T) {
 						Conditions: test.oldConditions,
 					},
 				}, nil)
-			setCondition(pr, test.newType, test.newStatus, "", "", v1.Now())
+			AddOrUpdateCondition(pr, test.newType, test.newStatus, "", "", v1.Now())
 			got := pr.Conditions()
 			if len(got) > 2 || len(got) != len(test.want) || got[0].Type != test.want[0].Type || got[0].Status != test.want[0].Status {
 				t.Errorf("want %v, got: %v", test.want, got)

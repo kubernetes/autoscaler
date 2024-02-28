@@ -24,6 +24,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/apis/autoscaling.x-k8s.io/v1beta1"
+	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/conditions"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqclient"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
 )
@@ -51,8 +52,8 @@ func TestProcess(t *testing.T) {
 					Type:               v1beta1.Failed,
 					Status:             metav1.ConditionTrue,
 					LastTransitionTime: metav1.NewTime(now),
-					Reason:             ExpiredReason,
-					Message:            ExpiredMsg,
+					Reason:             conditions.ExpiredReason,
+					Message:            conditions.ExpiredMsg,
 				},
 			},
 		},
@@ -64,8 +65,8 @@ func TestProcess(t *testing.T) {
 					Type:               v1beta1.Provisioned,
 					Status:             metav1.ConditionFalse,
 					LastTransitionTime: metav1.NewTime(dayAgo),
-					Reason:             ExpiredReason,
-					Message:            ExpiredMsg,
+					Reason:             conditions.ExpiredReason,
+					Message:            conditions.ExpiredMsg,
 				},
 			},
 			wantConditions: []metav1.Condition{
@@ -73,15 +74,15 @@ func TestProcess(t *testing.T) {
 					Type:               v1beta1.Provisioned,
 					Status:             metav1.ConditionFalse,
 					LastTransitionTime: metav1.NewTime(dayAgo),
-					Reason:             ExpiredReason,
-					Message:            ExpiredMsg,
+					Reason:             conditions.ExpiredReason,
+					Message:            conditions.ExpiredMsg,
 				},
 				{
 					Type:               v1beta1.Failed,
 					Status:             metav1.ConditionTrue,
 					LastTransitionTime: metav1.NewTime(now),
-					Reason:             ExpiredReason,
-					Message:            ExpiredMsg,
+					Reason:             conditions.ExpiredReason,
+					Message:            conditions.ExpiredMsg,
 				},
 			},
 		},
@@ -93,8 +94,8 @@ func TestProcess(t *testing.T) {
 					Type:               v1beta1.Provisioned,
 					Status:             metav1.ConditionTrue,
 					LastTransitionTime: metav1.NewTime(dayAgo),
-					Reason:             ExpiredReason,
-					Message:            ExpiredMsg,
+					Reason:             conditions.ExpiredReason,
+					Message:            conditions.ExpiredMsg,
 				},
 			},
 			wantConditions: []metav1.Condition{
@@ -102,15 +103,15 @@ func TestProcess(t *testing.T) {
 					Type:               v1beta1.Provisioned,
 					Status:             metav1.ConditionTrue,
 					LastTransitionTime: metav1.NewTime(dayAgo),
-					Reason:             ExpiredReason,
-					Message:            ExpiredMsg,
+					Reason:             conditions.ExpiredReason,
+					Message:            conditions.ExpiredMsg,
 				},
 				{
 					Type:               v1beta1.BookingExpired,
 					Status:             metav1.ConditionTrue,
 					LastTransitionTime: metav1.NewTime(now),
-					Reason:             CapacityReservationTimeExpiredReason,
-					Message:            CapacityReservationTimeExpiredMsg,
+					Reason:             conditions.CapacityReservationTimeExpiredReason,
+					Message:            conditions.CapacityReservationTimeExpiredMsg,
 				},
 			},
 		},
@@ -154,8 +155,8 @@ func TestProcess(t *testing.T) {
 					Type:               v1beta1.Failed,
 					Status:             metav1.ConditionTrue,
 					LastTransitionTime: metav1.NewTime(now),
-					Reason:             ExpiredReason,
-					Message:            ExpiredMsg,
+					Reason:             conditions.ExpiredReason,
+					Message:            conditions.ExpiredMsg,
 				},
 			}, additionalPr.Conditions())
 		} else {
