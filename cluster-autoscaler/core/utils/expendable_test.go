@@ -88,20 +88,92 @@ func TestFilterOutExpendablePods(t *testing.T) {
 	assert.Equal(t, podWaitingForPreemption2, res[2])
 }
 
-func TestIsExpendablePod(t *testing.T) {
-	pod1 := BuildTestPod("p1", 1500, 200000)
-	pod2 := BuildTestPod("w1", 1500, 200000)
-	var priority1 int32 = -10
-	pod2.Spec.Priority = &priority1
-	pod2.Status.NominatedNodeName = "node1"
+func TestIsExpandablePod(t *testing.T) {
+	preemptLowerPriorityPolicy := apiv1.PreemptLowerPriority
+	neverPolicy := apiv1.PreemptNever
 
-	assert.False(t, IsExpendablePod(pod1, 0))
-	assert.False(t, IsExpendablePod(pod1, -9))
-	assert.False(t, IsExpendablePod(pod1, -10))
-	assert.False(t, IsExpendablePod(pod1, -11))
-	assert.True(t, IsExpendablePod(pod2, 0))
-	assert.True(t, IsExpendablePod(pod2, -9))
-	assert.False(t, IsExpendablePod(pod2, -10))
-	assert.False(t, IsExpendablePod(pod2, -11))
+	testCases := []struct {
+		name   string
+		pod    *apiv1.Pod
+		cutoff int
+		want   bool
+	}{
+		{
+			name:   "pod priority not set, zero cutoff",
+			pod:    BuildTestPod("p", 0, 0),
+			cutoff: 0,
+			want:   false,
+		},
+		{
+			name:   "pod priority not set, negative cutoff",
+			pod:    BuildTestPod("p", 0, 0),
+			cutoff: -1,
+			want:   false,
+		},
+		{
+			name:   "pod priority set, default preemption policy, higher cutoff",
+			pod:    withPodPriority(BuildTestPod("p", 0, 0), -1, nil),
+			cutoff: 0,
+			want:   true,
+		},
+		{
+			name:   "pod priority set, default preemption policy, equal cutoff",
+			pod:    withPodPriority(BuildTestPod("p", 0, 0), -1, nil),
+			cutoff: -1,
+			want:   false,
+		},
+		{
+			name:   "pod priority set, default preemption policy, smaller cutoff",
+			pod:    withPodPriority(BuildTestPod("p", 0, 0), -1, nil),
+			cutoff: -2,
+			want:   false,
+		},
+		{
+			name:   "pod priority set, preempt lower priority preemption policy, higher cutoff",
+			pod:    withPodPriority(BuildTestPod("p", 0, 0), -1, &preemptLowerPriorityPolicy),
+			cutoff: 0,
+			want:   true,
+		},
+		{
+			name:   "pod priority set, preempt lower priority preemption policy, equal cutoff",
+			pod:    withPodPriority(BuildTestPod("p", 0, 0), -1, &preemptLowerPriorityPolicy),
+			cutoff: -1,
+			want:   false,
+		},
+		{
+			name:   "pod priority set, preempt lower priority preemption policy, smaller cutoff",
+			pod:    withPodPriority(BuildTestPod("p", 0, 0), -1, &preemptLowerPriorityPolicy),
+			cutoff: -2,
+			want:   false,
+		},
+		{
+			name:   "pod priority set, never preemption policy, higher cutoff",
+			pod:    withPodPriority(BuildTestPod("p", 0, 0), -1, &neverPolicy),
+			cutoff: 0,
+			want:   false,
+		},
+		{
+			name:   "pod priority set, never preemption policy, equal cutoff",
+			pod:    withPodPriority(BuildTestPod("p", 0, 0), -1, &neverPolicy),
+			cutoff: -1,
+			want:   false,
+		},
+		{
+			name:   "pod priority set, never preemption policy, smaller cutoff",
+			pod:    withPodPriority(BuildTestPod("p", 0, 0), -1, &neverPolicy),
+			cutoff: -2,
+			want:   false,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.want, IsExpendablePod(tc.pod, tc.cutoff))
+		})
+	}
+}
 
+func withPodPriority(pod *apiv1.Pod, priority int32, preemptionPolicy *apiv1.PreemptionPolicy) *apiv1.Pod {
+	pod.Spec.Priority = &priority
+	pod.Spec.PreemptionPolicy = preemptionPolicy
+	return pod
 }
