@@ -17,9 +17,10 @@ limitations under the License.
 package ionoscloud
 
 import (
-	"fmt"
+	"errors"
 	"testing"
 
+	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -27,12 +28,14 @@ import (
 
 type NodeGroupTestSuite struct {
 	suite.Suite
+	*require.Assertions
 	manager    *MockIonosCloudManager
 	nodePool   *nodePool
 	deleteNode []*apiv1.Node
 }
 
 func (s *NodeGroupTestSuite) SetupTest() {
+	s.Assertions = s.Require()
 	s.manager = NewMockIonosCloudManager(s.T())
 	s.nodePool = &nodePool{
 		id:      "test",
@@ -41,7 +44,7 @@ func (s *NodeGroupTestSuite) SetupTest() {
 		manager: s.manager,
 	}
 	s.deleteNode = []*apiv1.Node{
-		{Spec: apiv1.NodeSpec{ProviderID: convertToInstanceId("testnode")}},
+		{Spec: apiv1.NodeSpec{ProviderID: convertToInstanceID("testnode")}},
 	}
 }
 
@@ -54,7 +57,7 @@ func (s *NodeGroupTestSuite) TestId() {
 }
 
 func (s *NodeGroupTestSuite) TestDebug() {
-	s.Equal("Id=test, Min=1, Max=3", s.nodePool.Debug())
+	s.Equal("ID=test, Min=1, Max=3", s.nodePool.Debug())
 }
 
 func (s *NodeGroupTestSuite) TestMaxSize() {
@@ -93,7 +96,7 @@ func (s *NodeGroupTestSuite) TestAutoprovisioned() {
 }
 
 func (s *NodeGroupTestSuite) TestTargetSize_Error() {
-	s.manager.On("GetNodeGroupTargetSize", s.nodePool).Return(0, fmt.Errorf("error")).Once()
+	s.manager.On("GetNodeGroupTargetSize", s.nodePool).Return(0, errors.New("error")).Once()
 	_, err := s.nodePool.TargetSize()
 	s.Error(err)
 }
@@ -110,7 +113,7 @@ func (s *NodeGroupTestSuite) TestIncreaseSize_InvalidDelta() {
 }
 
 func (s *NodeGroupTestSuite) TestIncreaseSize_GetSizeError() {
-	s.manager.On("GetNodeGroupSize", s.nodePool).Return(0, fmt.Errorf("error")).Once()
+	s.manager.On("GetNodeGroupSize", s.nodePool).Return(0, errors.New("error")).Once()
 	s.Error(s.nodePool.IncreaseSize(2))
 }
 
@@ -121,7 +124,7 @@ func (s *NodeGroupTestSuite) TestIncreaseSize_ExceedMax() {
 
 func (s *NodeGroupTestSuite) TestIncreaseSize_SetSizeError() {
 	s.manager.On("GetNodeGroupSize", s.nodePool).Return(2, nil).Once()
-	s.manager.On("SetNodeGroupSize", s.nodePool, 3).Return(fmt.Errorf("error")).Once()
+	s.manager.On("SetNodeGroupSize", s.nodePool, 3).Return(errors.New("error")).Once()
 	s.Error(s.nodePool.IncreaseSize(1))
 }
 
@@ -139,7 +142,7 @@ func (s *NodeGroupTestSuite) TestDeleteNodes_Locked() {
 func (s *NodeGroupTestSuite) TestDeleteNodes_DeleteError() {
 	s.manager.On("TryLockNodeGroup", s.nodePool).Return(true).Once()
 	s.manager.On("UnlockNodeGroup", s.nodePool).Return().Once()
-	s.manager.On("DeleteNode", s.nodePool, "testnode").Return(fmt.Errorf("error")).Once()
+	s.manager.On("DeleteNode", s.nodePool, "testnode").Return(errors.New("error")).Once()
 	s.Error(s.nodePool.DeleteNodes(s.deleteNode))
 }
 
@@ -155,7 +158,7 @@ func (s *NodeGroupTestSuite) TestDecreaseTargetSize_InvalidDelta() {
 }
 
 func (s *NodeGroupTestSuite) TestDecreaseTargetSize_GetTargetSizeError() {
-	s.manager.On("GetNodeGroupTargetSize", s.nodePool).Return(0, fmt.Errorf("error")).Once()
+	s.manager.On("GetNodeGroupTargetSize", s.nodePool).Return(0, errors.New("error")).Once()
 	s.Error(s.nodePool.DecreaseTargetSize(-1))
 }
 
@@ -171,11 +174,13 @@ func (s *NodeGroupTestSuite) TestDecreaseTargetSize_NotImplemented() {
 
 type CloudProviderTestSuite struct {
 	suite.Suite
+	*require.Assertions
 	manager  *MockIonosCloudManager
 	provider *IonosCloudCloudProvider
 }
 
 func (s *CloudProviderTestSuite) SetupTest() {
+	s.Assertions = s.Require()
 	s.manager = NewMockIonosCloudManager(s.T())
 	s.provider = BuildIonosCloudCloudProvider(s.manager, &cloudprovider.ResourceLimiter{})
 }
@@ -208,7 +213,7 @@ func (s *CloudProviderTestSuite) TestNodeGroupForNode_Error() {
 	nodePool := &nodePool{id: "test", manager: s.manager}
 	s.manager.On("GetNodeGroupForNode", node).Return(nil).Once()
 	s.manager.On("GetNodeGroups").Return([]cloudprovider.NodeGroup{nodePool}).Once()
-	s.manager.On("GetInstancesForNodeGroup", nodePool).Return(nil, fmt.Errorf("error")).Once()
+	s.manager.On("GetInstancesForNodeGroup", nodePool).Return(nil, errors.New("error")).Once()
 
 	nodeGroup, err := s.provider.NodeGroupForNode(node)
 	s.Nil(nodeGroup)
