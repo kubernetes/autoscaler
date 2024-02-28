@@ -14,20 +14,29 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package checkcapacity
+package conditions
 
 import (
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	apimeta "k8s.io/apimachinery/pkg/api/meta"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/apis/autoscaling.x-k8s.io/v1beta1"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
 	"k8s.io/klog/v2"
 )
 
 const (
+	//AcceptedReason is added when ProvisioningRequest is accepted by ClusterAutoscaler
+	AcceptedReason = "Accepted"
+	//AcceptedMsg is added when ProvisioningRequest is accepted by ClusterAutoscaler
+	AcceptedMsg = "ProvisioningRequest is accepted by ClusterAutoscaler"
 	//CapacityIsNotFoundReason is added when capacity was not found in the cluster.
 	CapacityIsNotFoundReason = "CapacityIsNotFound"
 	//CapacityIsFoundReason is added when capacity was found in the cluster.
 	CapacityIsFoundReason = "CapacityIsFound"
+	// CapacityIsFoundMsg is added when capacity was found in the cluster.
+	CapacityIsFoundMsg = "Capacity is found in the cluster"
+	//FailedToCreatePodsReason is added when CA failed to create pods for ProvisioningRequest.
+	FailedToCreatePodsReason = "FailedToCreatePods"
 	//FailedToBookCapacityReason is added when Cluster Autoscaler failed to book capacity in the cluster.
 	FailedToBookCapacityReason = "FailedToBookCapacity"
 	//CapacityReservationTimeExpiredReason is added whed capacity reservation time is expired.
@@ -40,27 +49,24 @@ const (
 	ExpiredMsg = "ProvisioningRequest is expired"
 )
 
-func shouldCapacityBeBooked(pr *provreqwrapper.ProvisioningRequest) bool {
+// ShouldCapacityBeBooked returns whether capacity should be booked.
+func ShouldCapacityBeBooked(pr *provreqwrapper.ProvisioningRequest) bool {
 	if pr.V1Beta1().Spec.ProvisioningClassName != v1beta1.ProvisioningClassCheckCapacity {
 		return false
 	}
-	if pr.Conditions() == nil || len(pr.Conditions()) == 0 {
+	conditions := pr.Conditions()
+	if apimeta.IsStatusConditionTrue(conditions, v1beta1.Failed) || apimeta.IsStatusConditionTrue(conditions, v1beta1.BookingExpired) {
 		return false
+	} else if apimeta.IsStatusConditionTrue(conditions, v1beta1.Provisioned) {
+		return true
 	}
-	book := false
-	for _, condition := range pr.Conditions() {
-		if checkConditionType(condition, v1beta1.BookingExpired) || checkConditionType(condition, v1beta1.Failed) {
-			return false
-		} else if checkConditionType(condition, v1beta1.Provisioned) {
-			book = true
-		}
-	}
-	return book
+	return false
 }
 
-func setCondition(pr *provreqwrapper.ProvisioningRequest, conditionType string, conditionStatus v1.ConditionStatus, reason, message string, now v1.Time) {
-	var newConditions []v1.Condition
-	newCondition := v1.Condition{
+// AddOrUpdateCondition adds a Condition if the condition is not present amond ProvisioningRequest conditions or updte it otherwise.
+func AddOrUpdateCondition(pr *provreqwrapper.ProvisioningRequest, conditionType string, conditionStatus metav1.ConditionStatus, reason, message string, now metav1.Time) {
+	var newConditions []metav1.Condition
+	newCondition := metav1.Condition{
 		Type:               conditionType,
 		Status:             conditionStatus,
 		ObservedGeneration: pr.V1Beta1().GetObjectMeta().GetGeneration(),
@@ -70,7 +76,7 @@ func setCondition(pr *provreqwrapper.ProvisioningRequest, conditionType string, 
 	}
 	prevConditions := pr.Conditions()
 	switch conditionType {
-	case v1beta1.Provisioned, v1beta1.BookingExpired, v1beta1.Failed:
+	case v1beta1.Provisioned, v1beta1.BookingExpired, v1beta1.Failed, v1beta1.Accepted:
 		conditionFound := false
 		for _, condition := range prevConditions {
 			if condition.Type == conditionType {
@@ -88,8 +94,4 @@ func setCondition(pr *provreqwrapper.ProvisioningRequest, conditionType string, 
 		newConditions = prevConditions
 	}
 	pr.SetConditions(newConditions)
-}
-
-func checkConditionType(condition v1.Condition, conditionType string) bool {
-	return condition.Type == conditionType && condition.Status == v1.ConditionTrue
 }

@@ -22,6 +22,7 @@ import (
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/apis/autoscaling.x-k8s.io/v1beta1"
+	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/conditions"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
 )
 
@@ -75,14 +76,14 @@ func (p *checkCapacityProcessor) Process(provReqs []*provreqwrapper.Provisioning
 		if updated >= p.maxUpdated {
 			break
 		}
-		setCondition(provReq, v1beta1.BookingExpired, metav1.ConditionTrue, CapacityReservationTimeExpiredReason, CapacityReservationTimeExpiredMsg, metav1.NewTime(p.now()))
+		conditions.AddOrUpdateCondition(provReq, v1beta1.BookingExpired, metav1.ConditionTrue, conditions.CapacityReservationTimeExpiredReason, conditions.CapacityReservationTimeExpiredMsg, metav1.NewTime(p.now()))
 		updated++
 	}
 	for _, provReq := range failedProvReq {
 		if updated >= p.maxUpdated {
 			break
 		}
-		setCondition(provReq, v1beta1.Failed, metav1.ConditionTrue, ExpiredReason, ExpiredMsg, metav1.NewTime(p.now()))
+		conditions.AddOrUpdateCondition(provReq, v1beta1.Failed, metav1.ConditionTrue, conditions.ExpiredReason, conditions.ExpiredMsg, metav1.NewTime(p.now()))
 		updated++
 	}
 }
