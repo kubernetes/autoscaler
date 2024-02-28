@@ -829,14 +829,14 @@ func TestGetMigInstanceTemplateName(t *testing.T) {
 			migLister := NewMigLister(tc.cache)
 			provider := NewCachingMigInfoProvider(tc.cache, migLister, client, mig.GceRef().Project, 1, 0*time.Second)
 
-			templateName, err := provider.GetMigInstanceTemplateName(mig.GceRef())
-			cachedTemplateName, found := tc.cache.GetMigInstanceTemplateName(mig.GceRef())
+			instanceTemplateNameType, err := provider.GetMigInstanceTemplateName(mig.GceRef())
+			cachedInstanceTemplateNameType, found := tc.cache.GetMigInstanceTemplateName(mig.GceRef())
 
 			assert.Equal(t, tc.expectedErr, err)
 			assert.Equal(t, tc.expectedErr == nil, found)
 			if tc.expectedErr == nil {
-				assert.Equal(t, tc.expectedTemplateName, templateName)
-				assert.Equal(t, tc.expectedTemplateName, cachedTemplateName)
+				assert.Equal(t, tc.expectedTemplateName, instanceTemplateNameType.Name)
+				assert.Equal(t, tc.expectedTemplateName, cachedInstanceTemplateNameType.Name)
 			}
 		})
 	}
