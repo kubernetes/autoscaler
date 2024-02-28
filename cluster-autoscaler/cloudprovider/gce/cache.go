@@ -33,9 +33,9 @@ type MachineTypeKey struct {
 	MachineTypeName string
 }
 
-// InstanceTemplateNameType is used to store the name, and
+// InstanceTemplateName is used to store the name, and
 // whether or not the instance template is regional
-type InstanceTemplateNameType struct {
+type InstanceTemplateName struct {
 	Name     string
 	Regional bool
 }
@@ -74,7 +74,7 @@ type GceCache struct {
 	migTargetSizeCache               map[GceRef]int64
 	migBaseNameCache                 map[GceRef]string
 	listManagedInstancesResultsCache map[GceRef]string
-	instanceTemplateNameCache        map[GceRef]InstanceTemplateNameType
+	instanceTemplateNameCache        map[GceRef]InstanceTemplateName
 	instanceTemplatesCache           map[GceRef]*gce.InstanceTemplate
 	kubeEnvCache                     map[GceRef]KubeEnv
 }
@@ -92,7 +92,7 @@ func NewGceCache() *GceCache {
 		migTargetSizeCache:               map[GceRef]int64{},
 		migBaseNameCache:                 map[GceRef]string{},
 		listManagedInstancesResultsCache: map[GceRef]string{},
-		instanceTemplateNameCache:        map[GceRef]InstanceTemplateNameType{},
+		instanceTemplateNameCache:        map[GceRef]InstanceTemplateName{},
 		instanceTemplatesCache:           map[GceRef]*gce.InstanceTemplate{},
 		kubeEnvCache:                     map[GceRef]KubeEnv{},
 	}
@@ -341,23 +341,23 @@ func (gc *GceCache) InvalidateAllMigTargetSizes() {
 }
 
 // GetMigInstanceTemplateName returns the cached instance template ref for a mig GceRef
-func (gc *GceCache) GetMigInstanceTemplateName(ref GceRef) (InstanceTemplateNameType, bool) {
+func (gc *GceCache) GetMigInstanceTemplateName(ref GceRef) (InstanceTemplateName, bool) {
 	gc.cacheMutex.Lock()
 	defer gc.cacheMutex.Unlock()
 
-	instanceTemplateNameType, found := gc.instanceTemplateNameCache[ref]
+	instanceTemplateName, found := gc.instanceTemplateNameCache[ref]
 	if found {
 		klog.V(5).Infof("Instance template names cache hit for %s", ref)
 	}
-	return instanceTemplateNameType, found
+	return instanceTemplateName, found
 }
 
 // SetMigInstanceTemplateName sets instance template ref for a mig GceRef
-func (gc *GceCache) SetMigInstanceTemplateName(ref GceRef, instanceTemplateNameType InstanceTemplateNameType) {
+func (gc *GceCache) SetMigInstanceTemplateName(ref GceRef, instanceTemplateName InstanceTemplateName) {
 	gc.cacheMutex.Lock()
 	defer gc.cacheMutex.Unlock()
 
-	gc.instanceTemplateNameCache[ref] = instanceTemplateNameType
+	gc.instanceTemplateNameCache[ref] = instanceTemplateName
 }
 
 // InvalidateMigInstanceTemplateName clears the instance template ref cache for a mig GceRef
@@ -377,7 +377,7 @@ func (gc *GceCache) InvalidateAllMigInstanceTemplateNames() {
 	defer gc.cacheMutex.Unlock()
 
 	klog.V(5).Infof("Instance template names cache invalidated")
-	gc.instanceTemplateNameCache = map[GceRef]InstanceTemplateNameType{}
+	gc.instanceTemplateNameCache = map[GceRef]InstanceTemplateName{}
 }
 
 // GetMigInstanceTemplate returns the cached gce.InstanceTemplate for a mig GceRef
