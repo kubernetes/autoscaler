@@ -98,7 +98,7 @@ func (a *Actuator) ClearResultsNotNewerThan(t time.Time) {
 
 // StartDeletion triggers a new deletion process.
 func (a *Actuator) StartDeletion(empty, drain []*apiv1.Node) (*status.ScaleDownStatus, errors.AutoscalerError) {
-	a.nodeDeletionScheduler.ReportMetrics()
+	a.nodeDeletionScheduler.ResetAndReportMetrics()
 	deletionStartTime := time.Now()
 	defer func() { metrics.UpdateDuration(metrics.ScaleDownNodeDeletion, time.Since(deletionStartTime)) }()
 

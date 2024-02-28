@@ -61,13 +61,14 @@ func NewGroupDeletionScheduler(ctx *context.AutoscalingContext, ndt *deletiontra
 }
 
 // ReportMetrics should be invoked for GroupDeletionScheduler before each scale-down phase.
-func (ds *GroupDeletionScheduler) ReportMetrics() {
+func (ds *GroupDeletionScheduler) ResetAndReportMetrics() {
 	ds.Lock()
 	defer ds.Unlock()
 	pendingNodeDeletions := 0
 	for _, nodes := range ds.nodeQueue {
 		pendingNodeDeletions += len(nodes)
 	}
+	ds.failuresForGroup = map[string]bool{}
 	// Since the nodes are deleted asynchronously, it's easier to
 	// monitor the pending ones at the beginning of the next scale-down phase.
 	metrics.ObservePendingNodeDeletions(pendingNodeDeletions)
