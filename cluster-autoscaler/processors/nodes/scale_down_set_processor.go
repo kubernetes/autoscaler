@@ -20,6 +20,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/klogx"
 	klog "k8s.io/klog/v2"
 )
 
@@ -83,6 +84,8 @@ type AtomicResizeFilteringProcessor struct {
 
 // GetNodesToRemove selects up to maxCount nodes for deletion, by selecting a first maxCount candidates
 func (p *AtomicResizeFilteringProcessor) GetNodesToRemove(ctx *context.AutoscalingContext, candidates []simulator.NodeToBeRemoved, maxCount int) []simulator.NodeToBeRemoved {
+	atomicQuota := klogx.NodesLoggingQuota()
+	standardQuota := klogx.NodesLoggingQuota()
 	nodesByGroup := map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{}
 	result := []simulator.NodeToBeRemoved{}
 	for _, node := range candidates {
@@ -97,13 +100,15 @@ func (p *AtomicResizeFilteringProcessor) GetNodesToRemove(ctx *context.Autoscali
 			continue
 		}
 		if autoscalingOptions != nil && autoscalingOptions.ZeroOrMaxNodeScaling {
-			klog.V(2).Infof("Considering node %s for atomic scale down", node.Node.Name)
+			klogx.V(2).UpTo(atomicQuota).Infof("Considering node %s for atomic scale down", node.Node.Name)
 			nodesByGroup[nodeGroup] = append(nodesByGroup[nodeGroup], node)
 		} else {
-			klog.V(2).Infof("Considering node %s for standard scale down", node.Node.Name)
+			klogx.V(2).UpTo(standardQuota).Infof("Considering node %s for standard scale down", node.Node.Name)
 			result = append(result, node)
 		}
 	}
+	klogx.V(2).Over(atomicQuota).Infof("Considering %d other nodes for atomic scale down", -atomicQuota.Left())
+	klogx.V(2).Over(standardQuota).Infof("Considering %d other nodes for standard scale down", -atomicQuota.Left())
 	for nodeGroup, nodes := range nodesByGroup {
 		ngSize, err := nodeGroup.TargetSize()
 		if err != nil {

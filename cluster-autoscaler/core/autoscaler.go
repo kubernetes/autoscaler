@@ -30,6 +30,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/factory"
+	"k8s.io/autoscaler/cluster-autoscaler/observers/loopstart"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules"
@@ -53,6 +54,7 @@ type AutoscalerOptions struct {
 	ExpanderStrategy       expander.Strategy
 	EstimatorBuilder       estimator.EstimatorBuilder
 	Processors             *ca_processors.AutoscalingProcessors
+	LoopStartNotifier      *loopstart.ObserversList
 	Backoff                backoff.Backoff
 	DebuggingSnapshotter   debuggingsnapshot.DebuggingSnapshotter
 	RemainingPdbTracker    pdb.RemainingPdbTracker
@@ -84,6 +86,7 @@ func NewAutoscaler(opts AutoscalerOptions, informerFactory informers.SharedInfor
 		opts.ClusterSnapshot,
 		opts.AutoscalingKubeClients,
 		opts.Processors,
+		opts.LoopStartNotifier,
 		opts.CloudProvider,
 		opts.ExpanderStrategy,
 		opts.EstimatorBuilder,
@@ -100,6 +103,9 @@ func NewAutoscaler(opts AutoscalerOptions, informerFactory informers.SharedInfor
 func initializeDefaultOptions(opts *AutoscalerOptions, informerFactory informers.SharedInformerFactory) error {
 	if opts.Processors == nil {
 		opts.Processors = ca_processors.DefaultProcessors(opts.AutoscalingOptions)
+	}
+	if opts.LoopStartNotifier == nil {
+		opts.LoopStartNotifier = loopstart.NewObserversList(nil)
 	}
 	if opts.AutoscalingKubeClients == nil {
 		opts.AutoscalingKubeClients = context.NewAutoscalingKubeClients(opts.AutoscalingOptions, opts.KubeClient, opts.InformerFactory)
