@@ -19,6 +19,7 @@ package config
 import (
 	"time"
 
+	gce_localssdsize "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce/localssdsize"
 	kubelet_config "k8s.io/kubernetes/pkg/kubelet/apis/config"
 	scheduler_config "k8s.io/kubernetes/pkg/scheduler/apis/config"
 )
@@ -63,6 +64,8 @@ type GCEOptions struct {
 	MigInstancesMinRefreshWaitTime time.Duration
 	// DomainUrl is the GCE url used to make calls to GCE API.
 	DomainUrl string
+	// LocalSSDDiskSizeProvider provides local ssd disk size based on machine type
+	LocalSSDDiskSizeProvider gce_localssdsize.LocalSSDSizeProvider
 }
 
 const (

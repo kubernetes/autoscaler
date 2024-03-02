@@ -42,6 +42,7 @@ import (
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
 	core_utils "k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
+	"k8s.io/autoscaler/cluster-autoscaler/observers/loopstart"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/callbacks"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupconfig"
@@ -281,6 +282,7 @@ func setupAutoscaler(config *autoscalerSetupConfig) (*StaticAutoscaler, error) {
 		scaleDownActuator:    sdActuator,
 		scaleUpOrchestrator:  suOrchestrator,
 		processors:           processors,
+		loopStartNotifier:    loopstart.NewObserversList(nil),
 		processorCallbacks:   processorCallbacks,
 	}
 
@@ -374,6 +376,7 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 		scaleDownActuator:     sdActuator,
 		scaleUpOrchestrator:   suOrchestrator,
 		processors:            processors,
+		loopStartNotifier:     loopstart.NewObserversList(nil),
 		processorCallbacks:    processorCallbacks,
 		initialized:           true,
 	}
@@ -573,6 +576,7 @@ func TestStaticAutoscalerRunOnceWithScaleDownDelayPerNG(t *testing.T) {
 		scaleDownActuator:     sdActuator,
 		scaleUpOrchestrator:   suOrchestrator,
 		processors:            processors,
+		loopStartNotifier:     loopstart.NewObserversList(nil),
 		processorCallbacks:    processorCallbacks,
 		initialized:           true,
 	}
@@ -798,6 +802,7 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 		scaleDownActuator:     sdActuator,
 		scaleUpOrchestrator:   suOrchestrator,
 		processors:            processors,
+		loopStartNotifier:     loopstart.NewObserversList(nil),
 		processorCallbacks:    processorCallbacks,
 		initialized:           true,
 	}
@@ -948,6 +953,7 @@ func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
 		scaleDownActuator:     sdActuator,
 		scaleUpOrchestrator:   suOrchestrator,
 		processors:            processors,
+		loopStartNotifier:     loopstart.NewObserversList(nil),
 		processorCallbacks:    processorCallbacks,
 	}
 
@@ -1096,6 +1102,7 @@ func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
 		scaleDownActuator:     sdActuator,
 		scaleUpOrchestrator:   suOrchestrator,
 		processors:            processors,
+		loopStartNotifier:     loopstart.NewObserversList(nil),
 		processorCallbacks:    processorCallbacks,
 	}
 
@@ -1224,6 +1231,7 @@ func TestStaticAutoscalerRunOnceWithFilteringOnBinPackingEstimator(t *testing.T)
 		scaleDownPlanner:      sdPlanner,
 		scaleDownActuator:     sdActuator,
 		processors:            processors,
+		loopStartNotifier:     loopstart.NewObserversList(nil),
 		processorCallbacks:    processorCallbacks,
 	}
 
@@ -1322,6 +1330,7 @@ func TestStaticAutoscalerRunOnceWithFilteringOnUpcomingNodesEnabledNoScaleUp(t *
 		scaleDownPlanner:      sdPlanner,
 		scaleDownActuator:     sdActuator,
 		processors:            processors,
+		loopStartNotifier:     loopstart.NewObserversList(nil),
 		processorCallbacks:    processorCallbacks,
 	}
 
@@ -1427,6 +1436,7 @@ func TestStaticAutoscalerRunOnceWithUnselectedNodeGroups(t *testing.T) {
 				scaleDownPlanner:     sdPlanner,
 				scaleDownActuator:    sdActuator,
 				processors:           NewTestProcessors(&context),
+				loopStartNotifier:    loopstart.NewObserversList(nil),
 				processorCallbacks:   processorCallbacks,
 			}
 
@@ -2023,6 +2033,7 @@ func TestStaticAutoscalerUpcomingScaleDownCandidates(t *testing.T) {
 		scaleDownActuator:    actuator,
 		scaleDownPlanner:     planner,
 		processors:           NewTestProcessors(&ctx),
+		loopStartNotifier:    loopstart.NewObserversList(nil),
 		processorCallbacks:   processorCallbacks,
 	}
 

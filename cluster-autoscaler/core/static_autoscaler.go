@@ -47,6 +47,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
+	"k8s.io/autoscaler/cluster-autoscaler/observers/loopstart"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
@@ -90,6 +91,7 @@ type StaticAutoscaler struct {
 	scaleDownActuator       scaledown.Actuator
 	scaleUpOrchestrator     scaleup.Orchestrator
 	processors              *ca_processors.AutoscalingProcessors
+	loopStartNotifier       *loopstart.ObserversList
 	processorCallbacks      *staticAutoscalerProcessorCallbacks
 	initialized             bool
 	taintConfig             taints.TaintConfig
@@ -136,6 +138,7 @@ func NewStaticAutoscaler(
 	clusterSnapshot clustersnapshot.ClusterSnapshot,
 	autoscalingKubeClients *context.AutoscalingKubeClients,
 	processors *ca_processors.AutoscalingProcessors,
+	loopStartNotifier *loopstart.ObserversList,
 	cloudProvider cloudprovider.CloudProvider,
 	expanderStrategy expander.Strategy,
 	estimatorBuilder estimator.EstimatorBuilder,
@@ -205,6 +208,7 @@ func NewStaticAutoscaler(
 		scaleDownActuator:       scaleDownActuator,
 		scaleUpOrchestrator:     scaleUpOrchestrator,
 		processors:              processors,
+		loopStartNotifier:       loopStartNotifier,
 		processorCallbacks:      processorCallbacks,
 		clusterStateRegistry:    clusterStateRegistry,
 		taintConfig:             taintConfig,
@@ -337,6 +341,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 		klog.Errorf("Failed to refresh cloud provider config: %v", err)
 		return caerrors.ToAutoscalerError(caerrors.CloudProviderError, err)
 	}
+	a.loopStartNotifier.Refresh()
 
 	// Update node groups min/max and maximum number of nodes being set for all node groups after cloud provider refresh
 	maxNodesCount := 0

@@ -96,8 +96,13 @@ Cluster Autoscaler decreases the size of the cluster when some nodes are consist
       "cluster-autoscaler.kubernetes.io/safe-to-evict-local-volumes": "volume-1,volume-2,.."
       ```
       and all of the pod's local volumes are listed in the annotation value.
-* Pods that cannot be moved elsewhere due to various constraints (lack of resources, non-matching node selectors or affinity,
-matching anti-affinity, etc)
+* Pods that cannot be moved elsewhere due to scheduling constraints. CA simulates kube-scheduler behavior, and if there's no other node where a given pod can schedule, the pod's node won't be scaled down.
+  * This can be particularly visible if a given workloads' pods are configured to only fit one pod per node on some subset of nodes. Such pods will always block CA from scaling down their nodes, because all
+    other valid nodes are either taken by another pod, or empty (and CA prefers scaling down empty nodes).
+  * Examples of scenarios where scheduling constraints prevent CA from deleting a node:
+    * No other node has enough resources to satisfy a pod's request
+    * No other node has available ports to satisfy a pod's `hostPort` configuration.
+    * No other node with enough resources has the labels required by a pod's node selector
 * Pods that have the following annotation set:
 ```
 "cluster-autoscaler.kubernetes.io/safe-to-evict": "false"
