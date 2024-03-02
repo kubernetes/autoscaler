@@ -340,7 +340,7 @@ var (
 		"t2d-standard-48":  2.0278,
 		"t2d-standard-60":  2.5348,
 		"z3-highmem-88":    13.0,
-		"z3-highmem-176":   22.06,
+		"z3-highmem-176":   22.05,
 	}
 	preemptiblePrices = map[string]float64{
 		"a2-highgpu-1g":    1.102016,
@@ -518,8 +518,8 @@ var (
 		"t2d-standard-32":  0.3271,
 		"t2d-standard-48":  0.4907,
 		"t2d-standard-60":  0.6134,
-		"z3-highmem-88":    6.75,
-		"z3-highmem-176":   10.37,
+		"z3-highmem-88":    5.2,
+		"z3-highmem-176":   8.82,
 	}
 	gpuPrices = map[string]float64{
 		"nvidia-tesla-t4":   0.35,
