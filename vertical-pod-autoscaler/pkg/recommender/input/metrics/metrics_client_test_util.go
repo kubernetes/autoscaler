@@ -42,7 +42,7 @@ type metricsClientTestCase struct {
 	pod1Snaps, pod2Snaps []*ContainerMetricsSnapshot
 }
 
-func newMetricsClientTestCase() *metricsClientTestCase {
+func newMetricsClientTestCase() (*metricsClientTestCase, map[model.PodID]bool) {
 	namespaceName := "test-namespace"
 
 	testCase := &metricsClientTestCase{
@@ -61,7 +61,11 @@ func newMetricsClientTestCase() *metricsClientTestCase {
 	testCase.pod2Snaps = append(testCase.pod2Snaps, testCase.newContainerMetricsSnapshot(id3, 401, 334))
 	testCase.pod2Snaps = append(testCase.pod2Snaps, testCase.newContainerMetricsSnapshot(id4, 801, 667))
 
-	return testCase
+	podList := map[model.PodID]bool{
+		{Namespace: namespaceName, PodName: "Pod1"}: true,
+		{Namespace: namespaceName, PodName: "Pod2"}: true,
+	}
+	return testCase, podList
 }
 
 func newEmptyMetricsClientTestCase() *metricsClientTestCase {
