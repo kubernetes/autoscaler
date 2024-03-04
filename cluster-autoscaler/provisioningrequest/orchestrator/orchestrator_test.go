@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package checkcapacity
+package orchestrator
 
 import (
 	"context"
@@ -31,6 +31,7 @@ import (
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/apis/autoscaling.x-k8s.io/v1beta1"
+	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/checkcapacity"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/pods"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqclient"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
@@ -107,11 +108,14 @@ func TestScaleUp(t *testing.T) {
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, autoscalingContext.ClusterSnapshot, allNodes, nil)
 			prPods, err := pods.PodsForProvisioningRequest(tc.provReqToScaleUp)
 			assert.NoError(t, err)
+			client := provreqclient.NewFakeProvisioningRequestClient(context.Background(), t, tc.provReqs...)
+			injector := scheduling.NewHintingSimulator(autoscalingContext.PredicateChecker)
 			orchestrator := &provReqOrchestrator{
-				initialized: true,
-				context:     &autoscalingContext,
-				client:      provreqclient.NewFakeProvisioningRequestClient(context.Background(), t, tc.provReqs...),
-				injector:    scheduling.NewHintingSimulator(autoscalingContext.PredicateChecker),
+				initialized:  true,
+				context:      &autoscalingContext,
+				client:       client,
+				injector:     injector,
+				scaleUpModes: []scaleUpMode{checkcapacity.New(&autoscalingContext, client, injector)},
 			}
 			st, err := orchestrator.ScaleUp(prPods, []*apiv1.Node{}, []*v1.DaemonSet{}, map[string]*framework.NodeInfo{})
 			if !tc.err {

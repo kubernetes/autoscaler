@@ -17,8 +17,6 @@ limitations under the License.
 package orchestrator
 
 import (
-	"fmt"
-
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
@@ -28,10 +26,8 @@ import (
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/provreq"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
-	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/checkcapacity"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
-	"k8s.io/client-go/rest"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
@@ -41,20 +37,16 @@ import (
 type WrapperOrchestrator struct {
 	// scaleUpRegularPods indicates that ScaleUp for regular pods will be run in the current CA loop, if they are present.
 	scaleUpRegularPods  bool
-	scaleUpOrchestrator scaleup.Orchestrator
+	podsOrchestrator    scaleup.Orchestrator
 	provReqOrchestrator scaleup.Orchestrator
 }
 
 // NewWrapperOrchestrator return WrapperOrchestrator
-func NewWrapperOrchestrator(kubeConfig *rest.Config) (scaleup.Orchestrator, error) {
-	provReqOrchestrator, err := checkcapacity.New(kubeConfig)
-	if err != nil {
-		return nil, fmt.Errorf("failed create ScaleUp orchestrator for ProvisioningRequests, error: %v", err)
-	}
+func NewWrapperOrchestrator(provReqOrchestrator scaleup.Orchestrator) *WrapperOrchestrator {
 	return &WrapperOrchestrator{
-		scaleUpOrchestrator: New(),
+		podsOrchestrator:    New(),
 		provReqOrchestrator: provReqOrchestrator,
-	}, nil
+	}
 }
 
 // Initialize initializes the orchestrator object with required fields.
@@ -65,7 +57,7 @@ func (o *WrapperOrchestrator) Initialize(
 	estimatorBuilder estimator.EstimatorBuilder,
 	taintConfig taints.TaintConfig,
 ) {
-	o.scaleUpOrchestrator.Initialize(autoscalingContext, processors, clusterStateRegistry, estimatorBuilder, taintConfig)
+	o.podsOrchestrator.Initialize(autoscalingContext, processors, clusterStateRegistry, estimatorBuilder, taintConfig)
 	o.provReqOrchestrator.Initialize(autoscalingContext, processors, clusterStateRegistry, estimatorBuilder, taintConfig)
 }
 
@@ -86,7 +78,7 @@ func (o *WrapperOrchestrator) ScaleUp(
 	}
 
 	if o.scaleUpRegularPods {
-		return o.scaleUpOrchestrator.ScaleUp(regularPods, nodes, daemonSets, nodeInfos)
+		return o.podsOrchestrator.ScaleUp(regularPods, nodes, daemonSets, nodeInfos)
 	}
 	return o.provReqOrchestrator.ScaleUp(provReqPods, nodes, daemonSets, nodeInfos)
 }
@@ -110,5 +102,5 @@ func (o *WrapperOrchestrator) ScaleUpToNodeGroupMinSize(
 	nodes []*apiv1.Node,
 	nodeInfos map[string]*schedulerframework.NodeInfo,
 ) (*status.ScaleUpStatus, errors.AutoscalerError) {
-	return o.scaleUpOrchestrator.ScaleUpToNodeGroupMinSize(nodes, nodeInfos)
+	return o.podsOrchestrator.ScaleUpToNodeGroupMinSize(nodes, nodeInfos)
 }
