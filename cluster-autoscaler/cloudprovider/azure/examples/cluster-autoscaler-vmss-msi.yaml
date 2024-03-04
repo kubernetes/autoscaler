@@ -153,9 +153,9 @@ spec:
         - effect: NoSchedule
           operator: "Equal"
           value: "true"
-          key: node-role.kubernetes.io/master
+          key: node-role.kubernetes.io/control-plane
       nodeSelector:
-        kubernetes.io/role: master
+        kubernetes.io/role: control-plane
       containers:
         - image: registry.k8s.io/autoscaling/cluster-autoscaler:{{ ca_version }}
           imagePullPolicy: Always
