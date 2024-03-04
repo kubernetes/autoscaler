@@ -48,6 +48,7 @@ func PodsForProvisioningRequest(pr *provreqwrapper.ProvisioningRequest) ([]*v1.P
 	for i, podSet := range podSets {
 		for j := 0; j < int(podSet.Count); j++ {
 			pod, err := controller.GetPodFromTemplate(&podSet.PodTemplate, pr.RuntimeObject(), ownerReference(pr))
+			pod.OwnerReferences = []metav1.OwnerReference{*ownerReference(pr)}
 			if err != nil {
 				return nil, fmt.Errorf("while creating pod for pr: %s/%s podSet: %d, got error: %w", pr.Namespace(), pr.Name(), i, err)
 			}
