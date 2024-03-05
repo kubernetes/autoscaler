@@ -27,7 +27,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/apis/autoscaling.x-k8s.io/v1beta1"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/conditions"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqclient"
-	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 
@@ -59,7 +58,7 @@ func (o *scaleUpMode) ScaleUp(
 	if len(unschedulablePods) == 0 {
 		return &status.ScaleUpStatus{}, nil
 	}
-	if _, err := o.verifyProvisioningRequestClass(unschedulablePods); err != nil {
+	if _, err := provreqclient.VerifyProvisioningRequestClass(o.client, unschedulablePods, v1beta1.ProvisioningClassCheckCapacity); err != nil {
 		return status.UpdateScaleUpError(&status.ScaleUpStatus{}, errors.NewAutoscalerError(errors.InternalError, err.Error()))
 	}
 
@@ -89,24 +88,4 @@ func (o *scaleUpMode) scaleUp(unschedulablePods []*apiv1.Pod) (bool, error) {
 	}
 	conditions.AddOrUpdateCondition(provReq, v1beta1.Provisioned, metav1.ConditionTrue, conditions.CapacityIsFoundReason, conditions.CapacityIsFoundMsg, metav1.Now())
 	return true, nil
-}
-
-// verifyPods check that all pods belong to one ProvisioningRequest that belongs to check-capacity ProvisioningRequst class.
-func (o *scaleUpMode) verifyProvisioningRequestClass(unschedulablePods []*apiv1.Pod) (*provreqwrapper.ProvisioningRequest, error) {
-	provReq, err := o.client.ProvisioningRequest(unschedulablePods[0].Namespace, unschedulablePods[0].OwnerReferences[0].Name)
-	if err != nil {
-		return nil, fmt.Errorf("failed retrive ProvisioningRequest from unscheduled pods, err: %v", err)
-	}
-	if provReq.V1Beta1().Spec.ProvisioningClassName != v1beta1.ProvisioningClassCheckCapacity {
-		return nil, fmt.Errorf("provisioningRequestClass is not %s", v1beta1.ProvisioningClassCheckCapacity)
-	}
-	for _, pod := range unschedulablePods {
-		if pod.Namespace != unschedulablePods[0].Namespace {
-			return nil, fmt.Errorf("pods %s and %s are from different namespaces", pod.Name, unschedulablePods[0].Name)
-		}
-		if pod.OwnerReferences[0].Name != unschedulablePods[0].OwnerReferences[0].Name {
-			return nil, fmt.Errorf("pods %s and %s have different OwnerReference", pod.Name, unschedulablePods[0].Name)
-		}
-	}
-	return provReq, nil
 }
