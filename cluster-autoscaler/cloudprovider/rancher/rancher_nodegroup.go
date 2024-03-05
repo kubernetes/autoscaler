@@ -163,6 +163,11 @@ func (ng *nodeGroup) IncreaseSize(delta int) error {
 	return ng.setSize(newSize)
 }
 
+// AtomicIncreaseSize is not implemented.
+func (ng *nodeGroup) AtomicIncreaseSize(delta int) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // TargetSize returns the current TARGET size of the node group. It is possible that the
 // number is different from the number of nodes registered in Kubernetes.
 func (ng *nodeGroup) TargetSize() (int, error) {

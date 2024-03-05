@@ -182,6 +182,10 @@ type NodeGroup interface {
 	// node group size is updated. Implementation required.
 	IncreaseSize(delta int) error
 
+	// AtomicIncreaseSize tries to increase the size of the node group atomically.
+	// If some of nodes couldn't be created, the error is returned. Implementation is optional.
+	AtomicIncreaseSize(delta int) error
+
 	// DeleteNodes deletes nodes from this node group. Error is returned either on
 	// failure or if the given node doesn't belong to this node group. This function
 	// should wait until node group size is updated. Implementation required.
