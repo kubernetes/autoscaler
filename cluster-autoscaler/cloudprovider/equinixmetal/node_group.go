@@ -97,6 +97,11 @@ func (ng *equinixMetalNodeGroup) IncreaseSize(delta int) error {
 	return nil
 }
 
+// AtomicIncreaseSize is not implemented.
+func (ng *equinixMetalNodeGroup) AtomicIncreaseSize(delta int) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // deleteNodes deletes a set of nodes chosen by the autoscaler.
 //
 // The process of deletion depends on the implementation of equinixMetalManager,
