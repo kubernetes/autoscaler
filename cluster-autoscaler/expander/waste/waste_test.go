@@ -39,6 +39,7 @@ func (f *FakeNodeGroup) MaxSize() int                       { return 2 }
 func (f *FakeNodeGroup) MinSize() int                       { return 1 }
 func (f *FakeNodeGroup) TargetSize() (int, error)           { return 2, nil }
 func (f *FakeNodeGroup) IncreaseSize(delta int) error       { return nil }
+func (f *FakeNodeGroup) AtomicIncreaseSize(delta int) error { return cloudprovider.ErrNotImplemented }
 func (f *FakeNodeGroup) DecreaseTargetSize(delta int) error { return nil }
 func (f *FakeNodeGroup) DeleteNodes([]*apiv1.Node) error    { return nil }
 func (f *FakeNodeGroup) Id() string                         { return f.id }

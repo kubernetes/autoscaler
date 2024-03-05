@@ -254,6 +254,11 @@ func (nodeGroup *NodeGroup) IncreaseSize(delta int) error {
 	return nodeGroup.kubemarkController.SetNodeGroupSize(nodeGroup.Name, newSize)
 }
 
+// AtomicIncreaseSize is not implemented.
+func (nodeGroup *NodeGroup) AtomicIncreaseSize(delta int) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // TargetSize returns the current TARGET size of the node group. It is possible that the
 // number is different from the number of nodes registered in Kubernetes.
 func (nodeGroup *NodeGroup) TargetSize() (int, error) {
