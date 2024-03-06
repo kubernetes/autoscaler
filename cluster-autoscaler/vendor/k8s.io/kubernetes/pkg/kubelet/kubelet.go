@@ -33,7 +33,6 @@ import (
 
 	cadvisorapi "github.com/google/cadvisor/info/v1"
 	"github.com/google/go-cmp/cmp"
-	libcontaineruserns "github.com/opencontainers/runc/libcontainer/userns"
 	"github.com/opencontainers/selinux/go-selinux"
 	"go.opentelemetry.io/otel/attribute"
 	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
@@ -41,7 +40,6 @@ import (
 	"k8s.io/client-go/informers"
 
 	"k8s.io/mount-utils"
-	"k8s.io/utils/integer"
 	netutils "k8s.io/utils/net"
 
 	v1 "k8s.io/api/core/v1"
@@ -75,6 +73,7 @@ import (
 	"k8s.io/kubernetes/pkg/kubelet/cadvisor"
 	kubeletcertificate "k8s.io/kubernetes/pkg/kubelet/certificate"
 	"k8s.io/kubernetes/pkg/kubelet/cloudresource"
+	"k8s.io/kubernetes/pkg/kubelet/clustertrustbundle"
 	"k8s.io/kubernetes/pkg/kubelet/cm"
 	draplugin "k8s.io/kubernetes/pkg/kubelet/cm/dra/plugin"
 	"k8s.io/kubernetes/pkg/kubelet/config"
@@ -110,6 +109,7 @@ import (
 	"k8s.io/kubernetes/pkg/kubelet/token"
 	kubetypes "k8s.io/kubernetes/pkg/kubelet/types"
 	"k8s.io/kubernetes/pkg/kubelet/userns"
+	"k8s.io/kubernetes/pkg/kubelet/userns/inuserns"
 	"k8s.io/kubernetes/pkg/kubelet/util"
 	"k8s.io/kubernetes/pkg/kubelet/util/manager"
 	"k8s.io/kubernetes/pkg/kubelet/util/queue"
@@ -451,7 +451,7 @@ func NewMainKubelet(kubeCfg *kubeletconfiginternal.KubeletConfiguration,
 	var serviceLister corelisters.ServiceLister
 	var serviceHasSynced cache.InformerSynced
 	if kubeDeps.KubeClient != nil {
-		kubeInformers := informers.NewSharedInformerFactory(kubeDeps.KubeClient, 0)
+		kubeInformers := informers.NewSharedInformerFactoryWithOptions(kubeDeps.KubeClient, 0)
 		serviceLister = kubeInformers.Core().V1().Services().Lister()
 		serviceHasSynced = kubeInformers.Core().V1().Services().Informer().HasSynced
 		kubeInformers.Start(wait.NeverStop)
@@ -471,7 +471,7 @@ func NewMainKubelet(kubeCfg *kubeletconfiginternal.KubeletConfiguration,
 
 	oomWatcher, err := oomwatcher.NewWatcher(kubeDeps.Recorder)
 	if err != nil {
-		if libcontaineruserns.RunningInUserNS() {
+		if inuserns.RunningInUserNS() {
 			if utilfeature.DefaultFeatureGate.Enabled(features.KubeletInUserNamespace) {
 				// oomwatcher.NewWatcher returns "open /dev/kmsg: operation not permitted" error,
 				// when running in a user namespace with sysctl value `kernel.dmesg_restrict=1`.
@@ -501,13 +501,11 @@ func NewMainKubelet(kubeCfg *kubeletconfiginternal.KubeletConfiguration,
 	//
 	// This client must not be modified to include credentials, because it is
 	// critical that credentials not leak from the client to arbitrary hosts.
-	insecureContainerLifecycleHTTPClient := &http.Client{}
-	if utilfeature.DefaultFeatureGate.Enabled(features.ConsistentHTTPGetHandlers) {
-		insecureTLSTransport := &http.Transport{
+	insecureContainerLifecycleHTTPClient := &http.Client{
+		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-		}
-		insecureContainerLifecycleHTTPClient.Transport = insecureTLSTransport
-		insecureContainerLifecycleHTTPClient.CheckRedirect = httpprobe.RedirectChecker(false)
+		},
+		CheckRedirect: httpprobe.RedirectChecker(false),
 	}
 
 	tracer := kubeDeps.TracerProvider.Tracer(instrumentationScope)
@@ -625,6 +623,8 @@ func NewMainKubelet(kubeCfg *kubeletconfiginternal.KubeletConfiguration,
 		kubeDeps.OSInterface,
 		kubeCfg.ContainerLogMaxSize,
 		int(kubeCfg.ContainerLogMaxFiles),
+		int(kubeCfg.ContainerLogMaxWorkers),
+		kubeCfg.ContainerLogMonitorInterval,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize container log manager: %v", err)
@@ -756,7 +756,7 @@ func NewMainKubelet(kubeCfg *kubeletconfiginternal.KubeletConfiguration,
 		return nil, err
 	}
 	klet.containerGC = containerGC
-	klet.containerDeletor = newPodContainerDeletor(klet.containerRuntime, integer.IntMax(containerGCPolicy.MaxPerPodContainer, minDeadContainerInPod))
+	klet.containerDeletor = newPodContainerDeletor(klet.containerRuntime, max(containerGCPolicy.MaxPerPodContainer, minDeadContainerInPod))
 
 	// setup imageManager
 	imageManager, err := images.NewImageGCManager(klet.containerRuntime, klet.StatsProvider, kubeDeps.Recorder, nodeRef, imageGCPolicy, kubeDeps.TracerProvider)
@@ -793,11 +793,26 @@ func NewMainKubelet(kubeCfg *kubeletconfiginternal.KubeletConfiguration,
 
 	tokenManager := token.NewManager(kubeDeps.KubeClient)
 
+	var clusterTrustBundleManager clustertrustbundle.Manager
+	if kubeDeps.KubeClient != nil && utilfeature.DefaultFeatureGate.Enabled(features.ClusterTrustBundleProjection) {
+		kubeInformers := informers.NewSharedInformerFactoryWithOptions(kubeDeps.KubeClient, 0)
+		clusterTrustBundleManager, err = clustertrustbundle.NewInformerManager(kubeInformers.Certificates().V1alpha1().ClusterTrustBundles(), 2*int(kubeCfg.MaxPods), 5*time.Minute)
+		if err != nil {
+			return nil, fmt.Errorf("while starting informer-based ClusterTrustBundle manager: %w", err)
+		}
+		kubeInformers.Start(wait.NeverStop)
+		klog.InfoS("Started ClusterTrustBundle informer")
+	} else {
+		// In static kubelet mode, use a no-op manager.
+		clusterTrustBundleManager = &clustertrustbundle.NoopManager{}
+		klog.InfoS("Not starting ClusterTrustBundle informer because we are in static kubelet mode")
+	}
+
 	// NewInitializedVolumePluginMgr initializes some storageErrors on the Kubelet runtimeState (in csi_plugin.go init)
 	// which affects node ready status. This function must be called before Kubelet is initialized so that the Node
 	// ReadyState is accurate with the storage state.
 	klet.volumePluginMgr, err =
-		NewInitializedVolumePluginMgr(klet, secretManager, configMapManager, tokenManager, kubeDeps.VolumePlugins, kubeDeps.DynamicPluginProber)
+		NewInitializedVolumePluginMgr(klet, secretManager, configMapManager, tokenManager, clusterTrustBundleManager, kubeDeps.VolumePlugins, kubeDeps.DynamicPluginProber)
 	if err != nil {
 		return nil, err
 	}
@@ -1326,7 +1341,7 @@ func (kl *Kubelet) ListPodStatsAndUpdateCPUNanoCoreUsage(ctx context.Context) ([
 }
 
 // ImageFsStats is delegated to StatsProvider, which implements stats.Provider interface
-func (kl *Kubelet) ImageFsStats(ctx context.Context) (*statsapi.FsStats, error) {
+func (kl *Kubelet) ImageFsStats(ctx context.Context) (*statsapi.FsStats, *statsapi.FsStats, error) {
 	return kl.StatsProvider.ImageFsStats(ctx)
 }
 
@@ -1343,16 +1358,6 @@ func (kl *Kubelet) GetCgroupCPUAndMemoryStats(cgroupName string, updateStats boo
 // RootFsStats is delegated to StatsProvider, which implements stats.Provider interface
 func (kl *Kubelet) RootFsStats() (*statsapi.FsStats, error) {
 	return kl.StatsProvider.RootFsStats()
-}
-
-// GetContainerInfo is delegated to StatsProvider, which implements stats.Provider interface
-func (kl *Kubelet) GetContainerInfo(ctx context.Context, podFullName string, uid types.UID, containerName string, req *cadvisorapi.ContainerInfoRequest) (*cadvisorapi.ContainerInfo, error) {
-	return kl.StatsProvider.GetContainerInfo(ctx, podFullName, uid, containerName, req)
-}
-
-// GetRawContainerInfo is delegated to StatsProvider, which implements stats.Provider interface
-func (kl *Kubelet) GetRawContainerInfo(containerName string, req *cadvisorapi.ContainerInfoRequest, subcontainers bool) (map[string]*cadvisorapi.ContainerInfo, error) {
-	return kl.StatsProvider.GetRawContainerInfo(containerName, req, subcontainers)
 }
 
 // RlimitStats is delegated to StatsProvider, which implements stats.Provider interface
@@ -1428,16 +1433,19 @@ func (kl *Kubelet) StartGarbageCollection() {
 		}
 	}, ContainerGCPeriod, wait.NeverStop)
 
-	// when the high threshold is set to 100, stub the image GC manager
-	if kl.kubeletConfiguration.ImageGCHighThresholdPercent == 100 {
-		klog.V(2).InfoS("ImageGCHighThresholdPercent is set 100, Disable image GC")
+	// when the high threshold is set to 100, and the max age is 0 (or the max age feature is disabled)
+	// stub the image GC manager
+	if kl.kubeletConfiguration.ImageGCHighThresholdPercent == 100 &&
+		(!utilfeature.DefaultFeatureGate.Enabled(features.ImageMaximumGCAge) || kl.kubeletConfiguration.ImageMaximumGCAge.Duration == 0) {
+		klog.V(2).InfoS("ImageGCHighThresholdPercent is set 100 and ImageMaximumGCAge is 0, Disable image GC")
 		return
 	}
 
 	prevImageGCFailed := false
+	beganGC := time.Now()
 	go wait.Until(func() {
 		ctx := context.Background()
-		if err := kl.imageManager.GarbageCollect(ctx); err != nil {
+		if err := kl.imageManager.GarbageCollect(ctx, beganGC); err != nil {
 			if prevImageGCFailed {
 				klog.ErrorS(err, "Image garbage collection failed multiple times in a row")
 				// Only create an event for repeated failures
@@ -1897,7 +1905,9 @@ func (kl *Kubelet) SyncPod(ctx context.Context, updateType kubetypes.SyncPodType
 		}
 		if mirrorPod == nil || deleted {
 			node, err := kl.GetNode()
-			if err != nil || node.DeletionTimestamp != nil {
+			if err != nil {
+				klog.V(4).ErrorS(err, "No need to create a mirror pod, since failed to get node info from the cluster", "node", klog.KRef("", string(kl.nodeName)))
+			} else if node.DeletionTimestamp != nil {
 				klog.V(4).InfoS("No need to create a mirror pod, since node has been removed from the cluster", "node", klog.KRef("", string(kl.nodeName)))
 			} else {
 				klog.V(4).InfoS("Creating a mirror pod for static pod", "pod", klog.KObj(pod))
@@ -1940,13 +1950,14 @@ func (kl *Kubelet) SyncPod(ctx context.Context, updateType kubetypes.SyncPodType
 		}
 	}
 
-	// TODO(#113606): connect this with the incoming context parameter, which comes from the pod worker.
-	// Currently, using that context causes test failures. To remove this todoCtx, any wait.Interrupted
-	// errors need to be filtered from result and bypass the reasonCache - cancelling the context for
-	// SyncPod is a known and deliberate error, not a generic error.
-	todoCtx := context.TODO()
+	// TODO(#113606): use cancellation from the incoming context parameter, which comes from the pod worker.
+	// Currently, using cancellation from that context causes test failures. To remove this WithoutCancel,
+	// any wait.Interrupted errors need to be filtered from result and bypass the reasonCache - cancelling
+	// the context for SyncPod is a known and deliberate error, not a generic error.
+	// Use WithoutCancel instead of a new context.TODO() to propagate trace context
 	// Call the container runtime's SyncPod callback
-	result := kl.containerRuntime.SyncPod(todoCtx, pod, podStatus, pullSecrets, kl.backOff)
+	sctx := context.WithoutCancel(ctx)
+	result := kl.containerRuntime.SyncPod(sctx, pod, podStatus, pullSecrets, kl.backOff)
 	kl.reasonCache.Update(pod.UID, result)
 	if err := result.Error(); err != nil {
 		// Do not return error if the only failures were pods in backoff
