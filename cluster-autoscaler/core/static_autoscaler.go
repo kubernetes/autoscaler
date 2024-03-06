@@ -215,6 +215,16 @@ func NewStaticAutoscaler(
 	}
 }
 
+// LastScaleUpTime returns last scale up time
+func (a *StaticAutoscaler) LastScaleUpTime() time.Time {
+	return a.lastScaleUpTime
+}
+
+// LastScaleDownDeleteTime returns the last successful scale down time
+func (a *StaticAutoscaler) LastScaleDownDeleteTime() time.Time {
+	return a.lastScaleDownDeleteTime
+}
+
 // Start starts components running in background.
 func (a *StaticAutoscaler) Start() error {
 	a.clusterStateRegistry.Start()
