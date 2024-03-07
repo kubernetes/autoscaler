@@ -52,8 +52,8 @@ type mockAutoscalingGceClient struct {
 	fetchMigTargetSize               func(GceRef) (int64, error)
 	fetchMigBasename                 func(GceRef) (string, error)
 	fetchMigInstances                func(GceRef) ([]GceInstance, error)
+	fetchMigTemplateName             func(GceRef) (InstanceTemplateName, error)
 	fetchMigTemplate                 func(GceRef, string, bool) (*gce.InstanceTemplate, error)
-	fetchMigTemplate                 func(GceRef, string) (*gce.InstanceTemplate, error)
 	fetchMachineType                 func(string, string) (*gce.MachineType, error)
 	fetchListManagedInstancesResults func(GceRef) (string, error)
 }
@@ -765,7 +765,13 @@ func TestGetMigInstanceTemplateName(t *testing.T) {
 	instanceGroupManager := &gce.InstanceGroupManager{
 		Zone:             mig.GceRef().Zone,
 		Name:             mig.GceRef().Name,
-		InstanceTemplate: templateName,
+		InstanceTemplate: "https://www.googleapis.com/compute/v1/projects/test-project/global/instanceTemplates/template-name",
+	}
+
+	instanceGroupManagerRegional := &gce.InstanceGroupManager{
+		Zone:             mig.GceRef().Zone,
+		Name:             mig.GceRef().Name,
+		InstanceTemplate: "https://www.googleapis.com/compute/v1/projects/test-project/regions/us-central1/instanceTemplates/template-name",
 	}
 
 	testCases := []struct {
@@ -774,6 +780,7 @@ func TestGetMigInstanceTemplateName(t *testing.T) {
 		fetchMigs            func(string) ([]*gce.InstanceGroupManager, error)
 		fetchMigTemplateName func(GceRef) (InstanceTemplateName, error)
 		expectedTemplateName string
+		expectedRegion       bool
 		expectedErr          error
 	}{
 		{
@@ -788,6 +795,12 @@ func TestGetMigInstanceTemplateName(t *testing.T) {
 			name:                 "target size from cache fill",
 			cache:                emptyCache(),
 			fetchMigs:            fetchMigsConst([]*gce.InstanceGroupManager{instanceGroupManager}),
+			expectedTemplateName: templateName,
+		},
+		{
+			name:                 "target size from cache fill, regional",
+			cache:                emptyCache(),
+			fetchMigs:            fetchMigsConst([]*gce.InstanceGroupManager{instanceGroupManagerRegional}),
 			expectedTemplateName: templateName,
 		},
 		{
@@ -1127,26 +1140,15 @@ func (f *fakeTime) Now() time.Time {
 
 func emptyCache() *GceCache {
 	return &GceCache{
-<<<<<<< HEAD
 		migs:                             map[GceRef]Mig{mig.GceRef(): mig},
 		instances:                        make(map[GceRef][]GceInstance),
 		instancesUpdateTime:              make(map[GceRef]time.Time),
 		migTargetSizeCache:               make(map[GceRef]int64),
 		migBaseNameCache:                 make(map[GceRef]string),
 		listManagedInstancesResultsCache: make(map[GceRef]string),
-		instanceTemplateNameCache:        make(map[GceRef]InstanceTemplateNameType),
+		instanceTemplateNameCache:        make(map[GceRef]InstanceTemplateName),
 		instanceTemplatesCache:           make(map[GceRef]*gce.InstanceTemplate),
 		instancesFromUnknownMig:          make(map[GceRef]bool),
-=======
-		migs:                      map[GceRef]Mig{mig.GceRef(): mig},
-		instances:                 make(map[GceRef][]GceInstance),
-		instancesUpdateTime:       make(map[GceRef]time.Time),
-		migTargetSizeCache:        make(map[GceRef]int64),
-		migBaseNameCache:          make(map[GceRef]string),
-		instanceTemplateNameCache: make(map[GceRef]InstanceTemplateName),
-		instanceTemplatesCache:    make(map[GceRef]*gce.InstanceTemplate),
-		instancesFromUnknownMig:   make(map[GceRef]bool),
->>>>>>> 2aeec4097 (changed InstanceTemplateNameType to InstanceTemplateName)
 	}
 }
 
