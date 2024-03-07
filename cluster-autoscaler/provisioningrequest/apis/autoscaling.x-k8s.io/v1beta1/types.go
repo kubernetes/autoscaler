@@ -90,9 +90,9 @@ type ProvisioningRequestSpec struct {
 	//   do not reserve the capacity. Users should provide a reference to a valid PodTemplate object.
 	//   CA will check if there is enough capacity in cluster to fulfill the request and put
 	//   the answer in 'CapacityAvailable' condition.
-	// * atomic-scale-up.kubernetes.io - provision the resources in an atomic manner.
+	// * generic-scale-up.kubernetes.io - provision the resources in cluster.
 	//   Users should provide a reference to a valid PodTemplate object.
-	//   CA will try to create the VMs in an atomic manner, clean any partially provisioned VMs
+	//   CA will try to create the VMs, clean any partially provisioned VMs
 	//   and re-try the operation in a exponential back-off manner. Users can configure the timeout
 	//   duration after which the request will fail by 'ValidUntilSeconds' key in 'Parameters'.
 	//   CA will set 'Failed=true' or 'Provisioned=true' condition according to the outcome.
@@ -106,7 +106,7 @@ type ProvisioningRequestSpec struct {
 	ProvisioningClassName string `json:"provisioningClassName"`
 
 	// Parameters contains all other parameters classes may require.
-	// 'atomic-scale-up.kubernetes.io' supports 'ValidUntilSeconds' parameter, which should contain
+	// 'generic-scale-up.kubernetes.io' supports 'ValidUntilSeconds' parameter, which should contain
 	//  a string denoting duration for which we should retry (measured since creation fo the CR).
 	//
 	// +optional
@@ -198,6 +198,6 @@ const (
 	// is available in the cluster.
 	ProvisioningClassCheckCapacity string = "check-capacity.kubernetes.io"
 	// ProvisioningClassAtomicScaleUp denotes that CA try to provision the capacity
-	// in an atomic manner.
-	ProvisioningClassAtomicScaleUp string = "atomic-scale-up.kubernetes.io"
+	// in the cluster.
+	ProvisioningClassGenericScaleUp string = "generic-scale-up.kubernetes.io"
 )

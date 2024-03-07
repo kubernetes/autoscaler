@@ -162,3 +162,23 @@ func newPodTemplatesLister(client *kubernetes.Clientset, stopChannel <-chan stru
 	klog.V(2).Info("Successful initial Pod Template sync")
 	return podTemplLister, nil
 }
+
+// VerifyProvisioningRequestClass check that all pods belong to one ProvisioningRequest that belongs to check-capacity ProvisioningRequst class.
+func VerifyProvisioningRequestClass(client ProvisioningRequestClient, unschedulablePods []*apiv1.Pod, className string) (*provreqwrapper.ProvisioningRequest, error) {
+	provReq, err := client.ProvisioningRequest(unschedulablePods[0].Namespace, unschedulablePods[0].OwnerReferences[0].Name)
+	if err != nil {
+		return nil, fmt.Errorf("failed retrive ProvisioningRequest from unscheduled pods, err: %v", err)
+	}
+	if provReq.V1Beta1().Spec.ProvisioningClassName != className {
+		return nil, fmt.Errorf("provisioningRequestClass is not %s", v1beta1.ProvisioningClassCheckCapacity)
+	}
+	for _, pod := range unschedulablePods {
+		if pod.Namespace != unschedulablePods[0].Namespace {
+			return nil, fmt.Errorf("pods %s and %s are from different namespaces", pod.Name, unschedulablePods[0].Name)
+		}
+		if pod.OwnerReferences[0].Name != unschedulablePods[0].OwnerReferences[0].Name {
+			return nil, fmt.Errorf("pods %s and %s have different OwnerReference", pod.Name, unschedulablePods[0].Name)
+		}
+	}
+	return provReq, nil
+}
