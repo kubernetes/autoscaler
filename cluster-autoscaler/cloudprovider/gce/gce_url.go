@@ -78,6 +78,7 @@ func GenerateMigUrl(domainUrl string, ref GceRef) string {
 	return fmt.Sprintf(migUrlTemplate, ref.Project, ref.Zone, ref.Name)
 }
 
+// IsInstanceTemplateRegional determines whether or not an instance template is regional based on the url
 func IsInstanceTemplateRegional(templateUrl string) (bool, error) {
 	return regexp.MatchString("(/projects/.*[A-Za-z0-9]+.*/regions/)", templateUrl)
 }
