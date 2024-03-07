@@ -73,6 +73,11 @@ func GenerateMigUrl(ref GceRef) string {
 	return fmt.Sprintf(migUrlTemplate, ref.Project, ref.Zone, ref.Name)
 }
 
+// IsInstanceTemplateRegional verifies if the instance template is regional or global
+func IsInstanceTemplateRegional(templateUrl string) (bool, error) {
+	return regexp.MatchString("(/projects/.*[A-Za-z0-9]+.*/regions/)", templateUrl)
+}
+
 func parseGceUrl(url, expectedResource string) (project string, zone string, name string, err error) {
 	errMsg := fmt.Errorf("wrong url: expected format https://www.googleapis.com/compute/v1/projects/<project-id>/zones/<zone>/%s/<name>, got %s", expectedResource, url)
 	if !strings.Contains(url, gceDomainSuffix) {

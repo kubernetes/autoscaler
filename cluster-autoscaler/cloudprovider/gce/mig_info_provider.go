@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"net/url"
 	"path"
-	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -337,8 +336,12 @@ func (c *cachingMigInfoProvider) fillMigInfoCache() error {
 				templateUrl, err := url.Parse(zoneMig.InstanceTemplate)
 				if err == nil {
 					_, templateName := path.Split(templateUrl.EscapedPath())
-					regional, _ := regexp.MatchString("(/projects/.*[A-Za-z0-9]+.*/regions/)", templateUrl.String())
-					c.cache.SetMigInstanceTemplateName(zoneMigRef, InstanceTemplateName{templateName, regional})
+					regional, err := IsInstanceTemplateRegional(templateUrl.String())
+					if err != nil {
+						klog.Errorf("Error parsing instance template url: %v; err=%v ", templateUrl.String(), err)
+					} else {
+						c.cache.SetMigInstanceTemplateName(zoneMigRef, InstanceTemplateName{templateName, regional})
+					}
 				}
 			}
 		}
