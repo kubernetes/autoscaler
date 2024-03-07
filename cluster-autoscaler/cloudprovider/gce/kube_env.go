@@ -71,22 +71,3 @@ func (ke KubeEnv) Var(name string) (string, bool) {
 	val, found := ke.env[name]
 	return val, found
 }
-
-// ParseKubeEnv parses kube-env from its string representation
-func ParseKubeEnv(templateName, kubeEnvValue string) (KubeEnv, error) {
-	env := make(map[string]string)
-	err := yaml.Unmarshal([]byte(kubeEnvValue), &env)
-	if err != nil {
-		return KubeEnv{}, fmt.Errorf("error unmarshalling kubeEnv: %v", err)
-	}
-	return KubeEnv{templateName: templateName, env: env}, nil
-}
-
-// Var extracts variable from KubeEnv
-func (ke KubeEnv) Var(name string) (string, bool) {
-	if ke.env == nil {
-		return "", false
-	}
-	val, found := ke.env[name]
-	return val, found
-}
