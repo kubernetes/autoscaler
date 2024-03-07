@@ -52,6 +52,8 @@ type MigInfoProvider interface {
 	// For custom machines cpu and memory information is based on parsing
 	// machine name. For standard types it's retrieved from GCE API.
 	GetMigMachineType(migRef GceRef) (MachineType, error)
+	// Returns the pagination behavior of the listManagedInstances API method for a given MIG ref
+	GetListManagedInstancesResults(migRef GceRef) (string, error)
 }
 
 type timeProvider interface {
@@ -356,6 +358,7 @@ func (c *cachingMigInfoProvider) fillMigInfoCache() error {
 			if registeredMigRefs[zoneMigRef] {
 				c.cache.SetMigTargetSize(zoneMigRef, zoneMig.TargetSize)
 				c.cache.SetMigBasename(zoneMigRef, zoneMig.BaseInstanceName)
+				c.cache.SetListManagedInstancesResults(zoneMigRef, zoneMig.ListManagedInstancesResults)
 
 				templateUrl, err := url.Parse(zoneMig.InstanceTemplate)
 				if err == nil {
@@ -410,4 +413,29 @@ func (c *cachingMigInfoProvider) GetMigMachineType(migRef GceRef) (MachineType, 
 		c.cache.AddMachine(machine, zone)
 	}
 	return machine, nil
+}
+
+func (c *cachingMigInfoProvider) GetListManagedInstancesResults(migRef GceRef) (string, error) {
+	c.migInfoMutex.Lock()
+	defer c.migInfoMutex.Unlock()
+
+	listManagedInstancesResults, found := c.cache.GetListManagedInstancesResults(migRef)
+	if found {
+		return listManagedInstancesResults, nil
+	}
+
+	err := c.fillMigInfoCache()
+	listManagedInstancesResults, found = c.cache.GetListManagedInstancesResults(migRef)
+	if err == nil && found {
+		return listManagedInstancesResults, nil
+	}
+
+	// fallback to querying for a single mig
+	listManagedInstancesResults, err = c.gceClient.FetchListManagedInstancesResults(migRef)
+	if err != nil {
+		c.migLister.HandleMigIssue(migRef, err)
+		return "", err
+	}
+	c.cache.SetListManagedInstancesResults(migRef, listManagedInstancesResults)
+	return listManagedInstancesResults, nil
 }

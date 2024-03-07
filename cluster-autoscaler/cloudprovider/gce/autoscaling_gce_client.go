@@ -110,6 +110,7 @@ type AutoscalingGceClient interface {
 	FetchAvailableCpuPlatforms() (map[string][]string, error)
 	FetchReservations() ([]*gce.Reservation, error)
 	FetchReservationsInProject(projectId string) ([]*gce.Reservation, error)
+	FetchListManagedInstancesResults(migRef GceRef) (string, error)
 
 	// modifying resources
 	ResizeMig(GceRef, int64) error
@@ -232,6 +233,20 @@ func (client *autoscalingGceClientV1) FetchMigBasename(migRef GceRef) (string, e
 		return "", err
 	}
 	return igm.BaseInstanceName, nil
+}
+
+func (client *autoscalingGceClientV1) FetchListManagedInstancesResults(migRef GceRef) (string, error) {
+	registerRequest("instance_group_managers", "get")
+	igm, err := client.gceService.InstanceGroupManagers.Get(migRef.Project, migRef.Zone, migRef.Name).Fields("listManagedInstancesResults").Do()
+	if err != nil {
+		if err, ok := err.(*googleapi.Error); ok {
+			if err.Code == http.StatusNotFound {
+				return "", errors.NewAutoscalerError(errors.NodeGroupDoesNotExistError, "%s", err.Error())
+			}
+		}
+		return "", err
+	}
+	return igm.ListManagedInstancesResults, nil
 }
 
 func (client *autoscalingGceClientV1) ResizeMig(migRef GceRef, size int64) error {
