@@ -565,7 +565,7 @@ func (client *autoscalingGceClientV1) FetchMigTemplateName(migRef GceRef) (Insta
 	if err != nil {
 		return InstanceTemplateName{}, err
 	}
-	regional, err := regexp.MatchString("(/projects/.*[A-Za-z0-9]+.*/regions/)", templateUrl.String())
+	regional, err := IsInstanceTemplateRegional(templateUrl.String())
 	if err != nil {
 		return InstanceTemplateName{}, err
 	}
