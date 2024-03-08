@@ -173,6 +173,9 @@ func (n *NodeDeletionTracker) ClearResultsNotNewerThan(t time.Time) {
 func (n *NodeDeletionTracker) Snapshot() *NodeDeletionTracker {
 	n.Lock()
 	defer n.Unlock()
+
+	n.evictions.DropNotNewerThan(n.clock.Now().Add(-n.evictionsTTL))
+
 	snapshot := NewNodeDeletionTracker(n.evictionsTTL)
 	for k, val := range n.emptyNodeDeletions {
 		snapshot.emptyNodeDeletions[k] = val
