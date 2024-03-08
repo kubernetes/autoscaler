@@ -139,6 +139,7 @@ type ScheduleResult struct {
 	SuggestedHost string
 	// The number of nodes the scheduler evaluated the pod against in the filtering
 	// phase and beyond.
+	// Note that it contains the number of nodes that filtered out by PreFilterResult.
 	EvaluatedNodes int
 	// The number of nodes out of the evaluated ones that fit the pod.
 	FeasibleNodes int
@@ -291,6 +292,8 @@ func New(ctx context.Context,
 
 	snapshot := internalcache.NewEmptySnapshot()
 	metricsRecorder := metrics.NewMetricsAsyncRecorder(1000, time.Second, stopEverything)
+	// waitingPods holds all the pods that are in the scheduler and waiting in the permit stage
+	waitingPods := frameworkruntime.NewWaitingPodsMap()
 
 	profiles, err := profile.NewMap(ctx, options.profiles, registry, recorderFactory,
 		frameworkruntime.WithComponentConfigVersion(options.componentConfigVersion),
@@ -302,6 +305,7 @@ func New(ctx context.Context,
 		frameworkruntime.WithParallelism(int(options.parallelism)),
 		frameworkruntime.WithExtenders(extenders),
 		frameworkruntime.WithMetricsRecorder(metricsRecorder),
+		frameworkruntime.WithWaitingPods(waitingPods),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("initializing profiles: %v", err)
@@ -373,6 +377,13 @@ func buildQueueingHintMap(es []framework.EnqueueExtensions) internalqueue.Queuei
 	for _, e := range es {
 		events := e.EventsToRegister()
 
+		// This will happen when plugin registers with empty events, it's usually the case a pod
+		// will become reschedulable only for self-update, e.g. schedulingGates plugin, the pod
+		// will enter into the activeQ via priorityQueue.Update().
+		if len(events) == 0 {
+			continue
+		}
+
 		// Note: Rarely, a plugin implements EnqueueExtensions but returns nil.
 		// We treat it as: the plugin is not interested in any event, and hence pod failed by that plugin
 		// cannot be moved by any regular cluster event.
@@ -408,6 +419,12 @@ func (sched *Scheduler) Run(ctx context.Context) {
 
 	<-ctx.Done()
 	sched.SchedulingQueue.Close()
+
+	// If the plugins satisfy the io.Closer interface, they are closed.
+	err := sched.Profiles.Close()
+	if err != nil {
+		logger.Error(err, "Failed to close plugins")
+	}
 }
 
 // NewInformerFactory creates a SharedInformerFactory and initializes a scheduler specific

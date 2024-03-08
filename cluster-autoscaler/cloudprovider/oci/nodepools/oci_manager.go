@@ -32,7 +32,8 @@ import (
 )
 
 const (
-	maxAddTaintRetries = 5
+	maxAddTaintRetries    = 5
+	maxGetNodepoolRetries = 3
 )
 
 var (
@@ -249,11 +250,15 @@ func (m *ociManagerImpl) TaintToPreventFurtherSchedulingOnRestart(nodes []*apiv1
 }
 
 func (m *ociManagerImpl) forceRefresh() error {
-	err := m.nodePoolCache.rebuild(m.staticNodePools)
+	httpStatusCode, err := m.nodePoolCache.rebuild(m.staticNodePools, maxGetNodepoolRetries)
 	if err != nil {
+		if httpStatusCode == 404 {
+			m.lastRefresh = time.Now()
+			klog.Errorf("Failed to fetch the nodepools. Retrying after %v", m.lastRefresh.Add(m.cfg.Global.RefreshInterval))
+			return err
+		}
 		return err
 	}
-
 	m.lastRefresh = time.Now()
 	klog.Infof("Refreshed NodePool list, next refresh after %v", m.lastRefresh.Add(m.cfg.Global.RefreshInterval))
 	return nil
@@ -441,7 +446,7 @@ func (m *ociManagerImpl) GetNodePoolForInstance(instance ocicommon.OciRef) (Node
 
 	np, found := m.staticNodePools[instance.NodePoolID]
 	if !found {
-		klog.Infof("did not find node pool for reference: %+v", instance)
+		klog.V(4).Infof("did not find node pool for reference: %+v", instance)
 		return nil, errInstanceNodePoolNotFound
 	}
 

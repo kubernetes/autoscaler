@@ -23,6 +23,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/digitalocean"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/client-go/informers"
 )
 
 // AvailableCloudProviders supported by the digtalocean cloud provider builder.
@@ -33,7 +34,7 @@ var AvailableCloudProviders = []string{
 // DefaultCloudProvider for do-only build is DigitalOcean.
 const DefaultCloudProvider = cloudprovider.DigitalOceanProviderName
 
-func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, _ informers.SharedInformerFactory) cloudprovider.CloudProvider {
 	switch opts.CloudProviderName {
 	case cloudprovider.DigitalOceanProviderName:
 		return digitalocean.BuildDigitalOcean(opts, do, rl)
