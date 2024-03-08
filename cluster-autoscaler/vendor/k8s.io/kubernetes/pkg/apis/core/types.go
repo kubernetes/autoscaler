@@ -392,7 +392,7 @@ type PersistentVolumeStatus struct {
 	Reason string
 	// LastPhaseTransitionTime is the time the phase transitioned from one to another
 	// and automatically resets to current time everytime a volume phase transitions.
-	// This is an alpha field and requires enabling PersistentVolumeLastPhaseTransitionTime feature.
+	// This is a beta field and requires the PersistentVolumeLastPhaseTransitionTime feature to be enabled (enabled by default).
 	// +featureGate=PersistentVolumeLastPhaseTransitionTime
 	// +optional
 	LastPhaseTransitionTime *metav1.Time
@@ -1759,6 +1759,29 @@ type ServiceAccountTokenProjection struct {
 	Path string
 }
 
+// ClusterTrustBundleProjection allows a pod to access the
+// `.spec.trustBundle` field of a ClusterTrustBundle object in an auto-updating
+// file.
+type ClusterTrustBundleProjection struct {
+	// Select a single ClusterTrustBundle by object name.   Mutually-exclusive
+	// with SignerName and LabelSelector.
+	Name *string
+
+	// Select all ClusterTrustBundles for this signer that match LabelSelector.
+	// Mutually-exclusive with Name.
+	SignerName *string
+
+	// Select all ClusterTrustBundles that match this LabelSelecotr.
+	// Mutually-exclusive with Name.
+	LabelSelector *metav1.LabelSelector
+
+	// Block pod startup if the selected ClusterTrustBundle(s) aren't available?
+	Optional *bool
+
+	// Relative path from the volume root to write the bundle.
+	Path string
+}
+
 // ProjectedVolumeSource represents a projected volume source
 type ProjectedVolumeSource struct {
 	// list of volume projections
@@ -1784,6 +1807,8 @@ type VolumeProjection struct {
 	ConfigMap *ConfigMapProjection
 	// information about the serviceAccountToken data to project
 	ServiceAccountToken *ServiceAccountTokenProjection
+	// information about the ClusterTrustBundle data to project
+	ClusterTrustBundle *ClusterTrustBundleProjection
 }
 
 // KeyToPath maps a string key to a path within a volume.
@@ -4875,9 +4900,8 @@ const (
 // NodeConditionType defines node's condition
 type NodeConditionType string
 
-// These are valid conditions of node. Currently, we don't have enough information to decide
-// node condition. In the future, we will add more. The proposed set of conditions are:
-// NodeReady, NodeReachable
+// These are valid but not exhaustive conditions of node. A cloud provider may set a condition not listed here.
+// Relevant events contain "NodeReady", "NodeNotReady", "NodeSchedulable", and "NodeNotSchedulable".
 const (
 	// NodeReady means kubelet is healthy and ready to accept pods.
 	NodeReady NodeConditionType = "Ready"
@@ -4978,7 +5002,6 @@ const (
 	// Volume size, in bytes (e,g. 5Gi = 5GiB = 5 * 1024 * 1024 * 1024)
 	ResourceStorage ResourceName = "storage"
 	// Local ephemeral storage, in bytes. (500Gi = 500GiB = 500 * 1024 * 1024 * 1024)
-	// The resource name for ResourceEphemeralStorage is alpha and it can change across releases.
 	ResourceEphemeralStorage ResourceName = "ephemeral-storage"
 )
 
