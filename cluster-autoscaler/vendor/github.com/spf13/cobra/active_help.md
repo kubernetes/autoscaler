@@ -2,7 +2,7 @@
 
 Active Help is a framework provided by Cobra which allows a program to define messages (hints, warnings, etc) that will be printed during program usage.  It aims to make it easier for your users to learn how to use your program.  If configured by the program, Active Help is printed when the user triggers shell completion.
 
-For example, 
+For example,
 ```
 bash-5.1$ helm repo add [tab]
 You must choose a name for the repo you are adding.
@@ -91,7 +91,7 @@ You may want to allow your users to disable Active Help or choose between differ
 Allowing to configure Active Help is entirely optional; you can use Active Help in your program without doing anything about Active Help configuration.
 
 The way to configure Active Help is to use the program's Active Help environment
-variable.  That variable is named `<PROGRAM>_ACTIVE_HELP` where `<PROGRAM>` is the name of your 
+variable.  That variable is named `<PROGRAM>_ACTIVE_HELP` where `<PROGRAM>` is the name of your
 program in uppercase with any `-` replaced by an `_`.  The variable should be set by the user to whatever
 Active Help configuration values are supported by the program.
 
@@ -128,7 +128,7 @@ ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([
 
 **Note 2**: If a user wants to disable Active Help for every single program based on Cobra, she can set the environment variable `COBRA_ACTIVE_HELP` to "0".  In this case `cobra.GetActiveHelpConfig(cmd)` will return "0" no matter what the variable `<PROGRAM>_ACTIVE_HELP` is set to.
 
-**Note 3**: If the user does not set `<PROGRAM>_ACTIVE_HELP` or `COBRA_ACTIVE_HELP` (which will be a common case), the default value for the Active Help configuration returned by `cobra.GetActiveHelpConfig(cmd)` will be the empty string. 
+**Note 3**: If the user does not set `<PROGRAM>_ACTIVE_HELP` or `COBRA_ACTIVE_HELP` (which will be a common case), the default value for the Active Help configuration returned by `cobra.GetActiveHelpConfig(cmd)` will be the empty string.
 ## Active Help with Cobra's default completion command
 
 Cobra provides a default `completion` command for programs that wish to use it.

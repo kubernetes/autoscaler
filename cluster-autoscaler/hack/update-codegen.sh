@@ -15,7 +15,7 @@
 # limitations under the License.
 
 ###
-# This script is to be used when updating the generated clients of 
+# This script is to be used when updating the generated clients of
 # the Provisoning Request CRD.
 ###
 
@@ -28,7 +28,7 @@ CODEGEN_PKG="./vendor/k8s.io/code-generator"
 
 chmod +x "${CODEGEN_PKG}"/generate-groups.sh
 chmod +x "${CODEGEN_PKG}"/generate-internal-groups.sh
- 
+
 bash "${CODEGEN_PKG}"/generate-groups.sh "applyconfiguration,client,deepcopy,informer,lister" \
   k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/client \
   k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/apis \

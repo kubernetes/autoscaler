@@ -198,4 +198,3 @@ message ExtraValue {
 
   repeated string items = 1;
 }
-

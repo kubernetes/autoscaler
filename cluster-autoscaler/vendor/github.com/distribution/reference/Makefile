@@ -2,8 +2,8 @@
 PACKAGES=$(shell go list ./...)
 
 # Flags passed to `go test`
-BUILDFLAGS ?= 
-TESTFLAGS ?= 
+BUILDFLAGS ?=
+TESTFLAGS ?=
 
 .PHONY: all build test coverage
 .DEFAULT: all

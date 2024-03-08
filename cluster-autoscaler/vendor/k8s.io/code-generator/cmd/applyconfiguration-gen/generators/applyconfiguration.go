@@ -334,7 +334,7 @@ func (b *$.ApplyConfig.ApplyConfiguration|public$) ensure$.MemberType.Elem|publi
 
 var clientgenTypeConstructorNamespaced = `
 // $.ApplyConfig.Type|public$ constructs an declarative configuration of the $.ApplyConfig.Type|public$ type for use with
-// apply. 
+// apply.
 func $.ApplyConfig.Type|public$(name, namespace string) *$.ApplyConfig.ApplyConfiguration|public$ {
   b := &$.ApplyConfig.ApplyConfiguration|public${}
   b.WithName(name)

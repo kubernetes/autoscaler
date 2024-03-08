@@ -1,9 +1,9 @@
-# Cluster Autoscaler on Huawei Cloud 
+# Cluster Autoscaler on Huawei Cloud
 
 ## Overview
 The cluster autoscaler works with self-built Kubernetes cluster on [Huaweicloud ECS](https://www.huaweicloud.com/intl/en-us/product/ecs.html) and
-specified [Huaweicloud Auto Scaling Groups](https://www.huaweicloud.com/intl/en-us/product/as.html) 
-It runs as a Deployment on a worker node in the cluster. This README will go over some of the necessary steps required 
+specified [Huaweicloud Auto Scaling Groups](https://www.huaweicloud.com/intl/en-us/product/as.html)
+It runs as a Deployment on a worker node in the cluster. This README will go over some of the necessary steps required
 to get the cluster autoscaler up and running.
 
 ## Deployment Steps
@@ -11,19 +11,19 @@ to get the cluster autoscaler up and running.
 #### Environment
 1. Download Project
 
-    Get the latest `autoscaler` project and download it to `${GOPATH}/src/k8s.io`. 
-    
-    This is used for building your image, so the machine you use here should be able to access GCR. Do not use a Huawei 
+    Get the latest `autoscaler` project and download it to `${GOPATH}/src/k8s.io`.
+
+    This is used for building your image, so the machine you use here should be able to access GCR. Do not use a Huawei
     Cloud ECS.
 
 2. Go environment
 
     Make sure you have Go installed in the above machine.
-    
+
 3. Docker environment
 
     Make sure you have Docker installed in the above machine.
-    
+
 #### Build and push the image
 Execute the following commands in the directory of `autoscaler/cluster-autoscaler` of the autoscaler project downloaded previously.
 The following steps use Huawei SoftWare Repository for Container (SWR) as an example registry.
@@ -42,37 +42,37 @@ The following steps use Huawei SoftWare Repository for Container (SWR) as an exa
     ```
    Follow the `Pull/Push Image` section of `Interactive Walkthroughs` under the SWR console to find the image repository address and organization name,
    and also refer to `My Images` -> `Upload Through Docker Client` in SWR console.
-    
+
 3. Login to SWR:
     ```
     docker login -u {Encoded username} -p {Encoded password} {SWR endpoint}
     ```
-    
+
     For example:
     ```
     docker login -u cn-north-4@ABCD1EFGH2IJ34KLMN -p 1a23bc45678def9g01hi23jk4l56m789nop01q2r3s4t567u89v0w1x23y4z5678 swr.cn-north-4.myhuaweicloud.com
     ```
    Follow the `Pull/Push Image` section of `Interactive Walkthroughs` under the SWR console to find the encoded username, encoded password and swr endpoint,
    and also refer to `My Images` -> `Upload Through Docker Client` in SWR console.
-   
+
 4. Push the docker image to SWR:
     ```
     docker push {Image repository address}/{Organization name}/{Image name:tag}
     ```
-   
+
     For example:
     ```
     docker push swr.cn-north-4.myhuaweicloud.com/{Organization name}/cluster-autoscaler:dev
     ```
-   
+
 5. For the cluster autoscaler to function normally, make sure the `Sharing Type` of the image is `Public`.
-    If the cluster has trouble pulling the image, go to SWR console and check whether the `Sharing Type` of the image is 
-    `Private`. If it is, click `Edit` button on top right and set the `Sharing Type` to `Public`.  
-  
+    If the cluster has trouble pulling the image, go to SWR console and check whether the `Sharing Type` of the image is
+    `Private`. If it is, click `Edit` button on top right and set the `Sharing Type` to `Public`.
 
-## Build Kubernetes Cluster on ECS   
 
-### 1. Install kubelet, kubeadm and kubectl   
+## Build Kubernetes Cluster on ECS
+
+### 1. Install kubelet, kubeadm and kubectl
 
 Please see installation [here](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/)
 
@@ -190,7 +190,7 @@ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 ```
 
 ### 4. Install Flannel Network
-```bash 
+```bash
 kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
 ```
 ### 5. Generate Token
@@ -289,19 +289,19 @@ openssl x509 -in /etc/kubernetes/pki/ca.crt -noout -pubkey | openssl rsa -pubin 
 
 ### Deploy Cluster Autoscaler
 #### Configure credentials
-The autoscaler needs a `ServiceAccount` which is granted permissions to the cluster's resources and a `Secret` which 
+The autoscaler needs a `ServiceAccount` which is granted permissions to the cluster's resources and a `Secret` which
 stores credential (AK/SK in this case) information for authenticating with Huawei cloud.
-    
+
 Examples of `ServiceAccount` and `Secret` are provided in [examples/cluster-autoscaler-svcaccount.yaml](examples/cluster-autoscaler-svcaccount.yaml)
-and [examples/cluster-autoscaler-secret.yaml](examples/cluster-autoscaler-secret.yaml). Modify the Secret 
+and [examples/cluster-autoscaler-secret.yaml](examples/cluster-autoscaler-secret.yaml). Modify the Secret
 object yaml file with your credentials.
 
 The following parameters are required in the Secret object yaml file:
 
 - `as-endpoint`
 
-    Find the as endpoint for different regions [here](https://developer.huaweicloud.com/endpoint?AS), 
-        
+    Find the as endpoint for different regions [here](https://developer.huaweicloud.com/endpoint?AS),
+
     For example, for region `cn-north-4`, the endpoint is
     ```
     as.cn-north-4.myhuaweicloud.com
@@ -309,15 +309,15 @@ The following parameters are required in the Secret object yaml file:
 
 - `ecs-endpoint`
 
-    Find the ecs endpoint for different regions [here](https://developer.huaweicloud.com/endpoint?ECS), 
-        
-    For example, for region `cn-north-4`, the endpoint is 
+    Find the ecs endpoint for different regions [here](https://developer.huaweicloud.com/endpoint?ECS),
+
+    For example, for region `cn-north-4`, the endpoint is
     ```
     ecs.cn-north-4.myhuaweicloud.com
     ```
 
 - `project-id`
-    
+
     Follow this link to find the project-id: [Obtaining a Project ID](https://support.huaweicloud.com/en-us/api-servicestage/servicestage_api_0023.html)
 
 - `access-key` and `secret-key`
@@ -328,14 +328,14 @@ and [My Credentials](https://support.huaweicloud.com/en-us/usermanual-ca/ca_01_0
 
 
 #### Configure deployment
-   An example deployment file is provided at [examples/cluster-autoscaler-deployment.yaml](examples/cluster-autoscaler-deployment.yaml). 
+   An example deployment file is provided at [examples/cluster-autoscaler-deployment.yaml](examples/cluster-autoscaler-deployment.yaml).
    Change the `image` to the image you just pushed, the `cluster-name` to the cluster's id and `nodes` to your
    own configurations of the node pool with format
    ```
    {Minimum number of nodes}:{Maximum number of nodes}:{Node pool name}
    ```
    The above parameters should match the parameters of the AS Group you created.
-   
+
    More configuration options can be added to the cluster autoscaler, such as `scale-down-delay-after-add`, `scale-down-unneeded-time`, etc.
    See available configuration options [here](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#what-are-the-parameters-to-ca).
 
@@ -376,37 +376,37 @@ A simple testing method is like this:
     by executing something like this:
         ```
         kubectl autoscale deployment [Deployment name] --cpu-percent=10 --min=1 --max=20
-        ```  
-        The above command creates an HPA policy on the deployment with target average cpu usage of 10%. The number of 
+        ```
+        The above command creates an HPA policy on the deployment with target average cpu usage of 10%. The number of
         pods will grow if average cpu usage is above 10%, and will shrink otherwise. The `min` and `max` parameters set
         the minimum and maximum number of pods of this deployment.
 - Generate load to the above service
 
     Example tools for generating workload to an http service are:
-    * [Use `hey` command](https://github.com/rakyll/hey) 
+    * [Use `hey` command](https://github.com/rakyll/hey)
     * Use `busybox` image:
         ```
         kubectl run --generator=run-pod/v1 -it --rm load-generator --image=busybox /bin/sh
-  
+
         # send an infinite loop of queries to the service
         while true; do wget -q -O- {Service access address}; done
         ```
-    
+
     Feel free to use other tools which have a similar function.
-    
+
 - Wait for pods to be added: as load increases, more pods will be added by HPA
 
-- Wait for nodes to be added: when there's insufficient resource for additional pods, new nodes will be added to the 
+- Wait for nodes to be added: when there's insufficient resource for additional pods, new nodes will be added to the
 cluster by the cluster autoscaler
 
 - Stop the load
 
 - Wait for pods to be removed: as load decreases, pods will be removed by HPA
 
-- Wait for nodes to be removed: as pods being removed from nodes, several nodes will become underutilized or empty, 
+- Wait for nodes to be removed: as pods being removed from nodes, several nodes will become underutilized or empty,
 and will be removed by the cluster autoscaler
 
-    
+
 ## Support & Contact Info
 
 Interested in Cluster Autoscaler on Huawei Cloud? Want to talk? Have questions, concerns or great ideas?

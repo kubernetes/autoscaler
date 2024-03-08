@@ -431,7 +431,7 @@ Unless your program already uses the legacy dynamic completion solution, it is r
 completion V2 solution which provides the following extra features:
 - Supports completion descriptions (like the other shells)
 - Small completion script of less than 300 lines (v1 generates scripts of thousands of lines; `kubectl` for example has a bash v1 completion script of over 13K lines)
-- Streamlined user experience thanks to a completion behavior aligned with the other shells 
+- Streamlined user experience thanks to a completion behavior aligned with the other shells
 
 `Bash` completion V2 supports descriptions for completions. When calling `GenBashCompletionV2()` or `GenBashCompletionFileV2()`
 you must provide these functions with a parameter indicating if the completions should be annotated with a description; Cobra
@@ -448,7 +448,7 @@ show    (show information of a chart)
 $ helm s[tab][tab]
 search  show  status
 ```
-**Note**: Cobra's default `completion` command uses bash completion V2.  If for some reason you need to use bash completion V1, you will need to implement your own `completion` command. 
+**Note**: Cobra's default `completion` command uses bash completion V2.  If for some reason you need to use bash completion V1, you will need to implement your own `completion` command.
 ## Zsh completions
 
 Cobra supports native zsh completion generated from the root `cobra.Command`.
@@ -535,7 +535,7 @@ search  (search for a keyword in charts)  show  (show information of a chart)  s
 
 # With descriptions and Mode 'MenuComplete' The description of the current selected value will be displayed below the suggestions.
 $ helm s[tab]
-search    show     status  
+search    show     status
 
 search for a keyword in charts
 

@@ -343,7 +343,7 @@ message NodeGroupAutoscalingOptions {
   // if cpu or memory utilization is over threshold.
   double scaleDownUtilizationThreshold = 1;
 
-  // ScaleDownGpuUtilizationThreshold sets threshold for gpu nodes to be 
+  // ScaleDownGpuUtilizationThreshold sets threshold for gpu nodes to be
   // considered for scale down if gpu utilization is over threshold.
   double scaleDownGpuUtilizationThreshold = 2;
 

@@ -84,7 +84,7 @@ This library is considered production ready.  Feedback and feature requests are 
 
 This project uses [Semantic Versioning 2.0.0](http://semver.org).  Accepted pull requests will land on `main`.  Periodically, versions will be tagged from `main`.  You can find all the releases on [the project releases page](https://github.com/golang-jwt/jwt/releases).
 
-**BREAKING CHANGES:*** 
+**BREAKING CHANGES:***
 A full list of breaking changes is available in `VERSION_HISTORY.md`.  See `MIGRATION_GUIDE.md` for more information on updating your code.
 
 ## Usage Tips

@@ -277,14 +277,14 @@ metadata:
     capacity.cluster-autoscaler.kubernetes.io/taints: "key1=value1:NoSchedule,key2=value2:NoExecute"
 ```
 
-#### CPU Architecture awareness for single-arch clusters 
+#### CPU Architecture awareness for single-arch clusters
 
-Users of single-arch non-amd64 clusters who are using scale from zero 
+Users of single-arch non-amd64 clusters who are using scale from zero
 support should also set the `CAPI_SCALE_ZERO_DEFAULT_ARCH` environment variable
 to set the architecture of the nodes they want to default the node group templates to.
-The autoscaler will default to `amd64` if it is not set, and the node 
-group templates may not match the nodes' architecture, specifically when 
-the workload triggering the scale-up uses a node affinity predicate checking 
+The autoscaler will default to `amd64` if it is not set, and the node
+group templates may not match the nodes' architecture, specifically when
+the workload triggering the scale-up uses a node affinity predicate checking
 for the node's architecture.
 
 ## Specifying a Custom Resource Group
@@ -454,4 +454,3 @@ here as a reference for users who might be deploying on these infrastructures.
 | IBM Cloud | `ibm-cloud.kubernetes.io/worker-id` | Used by the IBM Cloud Cloud Controller Manager to identify the node |
 | IBM Cloud | `vpc-block-csi-driver-labels` | Used by the IBM Cloud CSI driver as a target for persistent volume node affinity |
 | IBM Cloud | `ibm-cloud.kubernetes.io/vpc-instance-id` | Used when a VPC is in use on IBM Cloud |
-

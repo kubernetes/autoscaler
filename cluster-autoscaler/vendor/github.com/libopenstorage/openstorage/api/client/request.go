@@ -3,36 +3,37 @@ package client
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"path"
 	"strconv"
 	"strings"
 	"time"
-	"math/rand"
 )
 
 // Request is contructed iteratively by the client and finally dispatched.
 // A REST endpoint is accessed with the following convention:
 // base_url/<version>/<resource>/[<instance>]
 type Request struct {
-	client   *http.Client
-	version  string
-	verb     string
-	path     string
-	base     *url.URL
-	params   url.Values
-	headers  http.Header
-	resource string
-	instance string
-	err      error
-	body     []byte
-	req      *http.Request
-	resp     *http.Response
-	timeout  time.Duration
-	authstring string
+	client      *http.Client
+	version     string
+	verb        string
+	path        string
+	base        *url.URL
+	params      url.Values
+	headers     http.Header
+	resource    string
+	instance    string
+	err         error
+	body        []byte
+	req         *http.Request
+	resp        *http.Response
+	timeout     time.Duration
+	authstring  string
 	accesstoken string
 }
 
@@ -53,11 +54,11 @@ type Status struct {
 // NewRequest instance
 func NewRequest(client *http.Client, base *url.URL, verb string, version string, authstring, userAgent string) *Request {
 	r := &Request{
-		client:  client,
-		verb:    verb,
-		base:    base,
-		path:    base.Path,
-		version: version,
+		client:     client,
+		verb:       verb,
+		base:       base,
+		path:       base.Path,
+		version:    version,
 		authstring: authstring,
 	}
 	r.SetHeader("User-Agent", userAgent)
@@ -209,31 +210,18 @@ func headerVal(key string, resp *http.Response) (int, bool) {
 }
 
 func parseHTTPStatus(resp *http.Response, body []byte) error {
-
-	var (
-		status *Status
-		err    error
-	)
-
-	httpOK := resp.StatusCode >= http.StatusOK && resp.StatusCode <= http.StatusPartialContent
-	hasStatus := false
-	if body != nil {
-		err = json.Unmarshal(body, status)
-		if err == nil && status.Message != "" {
-			hasStatus = true
-		}
-	}
-	// If the status is NG, return an error regardless of HTTP status.
-	if hasStatus && status.ErrorCode != 0 {
-		return fmt.Errorf("Error %v : %v", status.ErrorCode, status.Message)
-	}
-
-	// Status is good and HTTP status is good, everything is good
-	if httpOK {
+	if resp.StatusCode >= http.StatusOK &&
+		resp.StatusCode <= http.StatusPartialContent {
+		// Status is good and HTTP status is good, everything is good
 		return nil
 	}
 
-	// If HTTP status is NG, return an error.
+	// Get error from body if any
+	if len(string(body)) != 0 {
+		return errors.New(string(body))
+	}
+
+	// If no error was in the body, return a generic one
 	return fmt.Errorf("HTTP error %d", resp.StatusCode)
 }
 
@@ -263,7 +251,7 @@ func (r *Request) Do() *Response {
 	req.Header.Set("Date", time.Now().String())
 
 	if len(r.authstring) > 0 {
-		req.Header.Set("Authorization", "Basic "+ r.authstring)
+		req.Header.Set("Authorization", "Basic "+r.authstring)
 	}
 
 	if len(r.accesstoken) > 0 {

@@ -39,15 +39,15 @@ This is what a DescribeNodegroup API response looks like (also see [here][]):
 HTTP/1.1 200
 Content-type: application/json
 {
-   "nodegroup": { 
+   "nodegroup": {
       "amiType": "*string*",
       "capacityType": "*string*",
       "clusterName": "*string*",
       "createdAt": *number*,
       "diskSize": *number*,
-      "health": { 
-         "issues": [ 
-            { 
+      "health": {
+         "issues": [
+            {
                "code": "*string*",
                "message": "*string*",
                "resourceIds": [ "*string*" ]
@@ -55,10 +55,10 @@ Content-type: application/json
          ]
       },
       "instanceTypes": [ "*string*" ],
-      "labels": { 
-         "*string*" : "*string*" 
+      "labels": {
+         "*string*" : "*string*"
       },
-      "launchTemplate": { 
+      "launchTemplate": {
          "id": "*string*",
          "name": "*string*",
          "version": "*string*"
@@ -68,27 +68,27 @@ Content-type: application/json
       "nodegroupName": "*string*",
       "nodeRole": "*string*",
       "releaseVersion": "*string*",
-      "remoteAccess": { 
+      "remoteAccess": {
          "ec2SshKey": "*string*",
          "sourceSecurityGroups": [ "*string*" ]
       },
-      "resources": { 
-         "autoScalingGroups": [ 
-            { 
+      "resources": {
+         "autoScalingGroups": [
+            {
                "name": "*string*"
             }
          ],
          "remoteAccessSecurityGroup": "*string*"
       },
-      "scalingConfig": { 
+      "scalingConfig": {
          "desiredSize": *number*,
          "maxSize": *number*,
          "minSize": *number*
       },
       "status": "*string*",
       "subnets": [ "*string*" ],
-      "tags": { 
-         "*string*" : "*string*" 
+      "tags": {
+         "*string*" : "*string*"
       },
       "version": "*string*"
    }
@@ -127,7 +127,7 @@ Content-type: application/json
 
 Latency and throttling:
 
-By default, Cluster Autoscaler runs every 10 seconds. Our best practices documentation notes that this short interval can cause throttling because Cluster Autoscaler already makes AWS API calls during each loop. Our documentation recommends that customers increase the interval, so adding this API shouldn’t cause latency problems for customers. ([EKS Best Practices][]) Also, the API call will only happen for EKS ManagedNodegroups. If this increase in latency is too much for even one run of the loop, we will look into moving the API calls into parallel goroutines. 
+By default, Cluster Autoscaler runs every 10 seconds. Our best practices documentation notes that this short interval can cause throttling because Cluster Autoscaler already makes AWS API calls during each loop. Our documentation recommends that customers increase the interval, so adding this API shouldn’t cause latency problems for customers. ([EKS Best Practices][]) Also, the API call will only happen for EKS ManagedNodegroups. If this increase in latency is too much for even one run of the loop, we will look into moving the API calls into parallel goroutines.
 
 EKS also throttles describe API calls by default. To mitigate this issue, Cluster Autoscaler will keep a cache of DescribeNodegroup responses: ManagedNodegroupCache. Each cache bucket will have a TTL and, when the TTL expires, DescribeNodegroup will be called again. If there are errors during the call to DescribeNodegroup, Cluster Autoscaler will move on and just look at the ASG tags and existing default allocatable resource values.
 

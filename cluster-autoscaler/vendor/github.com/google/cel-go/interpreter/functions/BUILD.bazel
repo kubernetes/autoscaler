@@ -7,7 +7,7 @@ package(
 
 go_library(
     name = "go_default_library",
-    srcs = [ 
+    srcs = [
         "functions.go",
     ],
     importpath = "github.com/google/cel-go/interpreter/functions",

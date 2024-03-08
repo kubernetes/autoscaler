@@ -101,7 +101,7 @@ affinity:
 By default, autoscaler assumes that you have a recent version of
 [Cherry Servers CCM](https://github.com/cherryservers/cloud-provider-cherry)
 installed in your
-cluster. 
+cluster.
 
 ## Notes
 
@@ -145,7 +145,7 @@ To run the CherryServers cluster-autoscaler locally:
 The command-line format is:
 
 ```
-cluster-autoscaler --alsologtostderr --cluster-name=$CLUSTER_NAME --cloud-config=$CLOUD_CONFIG \     
+cluster-autoscaler --alsologtostderr --cluster-name=$CLUSTER_NAME --cloud-config=$CLOUD_CONFIG \
   --cloud-provider=cherryservers \
   --nodes=0:10:pool1 \
   --nodes=0:10:pool2 \
@@ -170,7 +170,7 @@ but this must be run from the `cluster-autoscaler` directory, i.e. not within th
 cloudprovider implementation:
 
 ```
-go run . --alsologtostderr --cluster-name=$CLUSTER_NAME --cloud-config=$CLOUD_CONFIG \     
+go run . --alsologtostderr --cluster-name=$CLUSTER_NAME --cloud-config=$CLOUD_CONFIG \
   --cloud-provider=cherryservers \
   --nodes=0:10:pool1 \
   --nodes=0:10:pool2 \

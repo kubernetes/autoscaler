@@ -399,4 +399,3 @@ message ResourceHandle {
   // +optional
   optional string data = 2;
 }
-

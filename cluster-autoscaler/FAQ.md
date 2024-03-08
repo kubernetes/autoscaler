@@ -274,7 +274,7 @@ Status taints are meant to be used when a given node should not be used to run p
 
 Cluster Autoscaler internally treats nodes tainted with `status taints` as ready, but filtered out during scale up logic.
 
-This means that even though the node is ready, no pods should run there as long as the node is tainted and if necessary a scale-up should occur. 
+This means that even though the node is ready, no pods should run there as long as the node is tainted and if necessary a scale-up should occur.
 
 Status taints are defined as:
 - all taints with the prefix `status-taint.cluster-autoscaler.kubernetes.io/`,
@@ -963,13 +963,13 @@ an increased amount of logs, prepare your deployments and storage accordingly.
 
 ### How Can I change the log format that the CA outputs?
 
-There are 2 log format options, `text` and `json`. By default (`text`), the Cluster Autoscaler will output 
+There are 2 log format options, `text` and `json`. By default (`text`), the Cluster Autoscaler will output
 logs in the [klog native format](https://kubernetes.io/docs/concepts/cluster-administration/system-logs/#klog-output).
 ```
 I0823 17:15:11.472183   29944 main.go:569] Cluster Autoscaler 1.28.0-beta.0
 ```
 
-Alternatively, adding the flag `--logging-format=json` changes the 
+Alternatively, adding the flag `--logging-format=json` changes the
 [log output to json](https://kubernetes.io/docs/concepts/cluster-administration/system-logs/#klog-output).
 ```
 {"ts":1692825334994.433,"caller":"cluster-autoscaler/main.go:569","msg":"Cluster Autoscaler 1.28.0-beta.0\n","v":1}

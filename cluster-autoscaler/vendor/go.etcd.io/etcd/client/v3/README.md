@@ -11,9 +11,9 @@
 go get go.etcd.io/etcd/client/v3
 ```
 
-Warning: As etcd 3.5.0 was not yet released, the command above does not work. 
-After first pre-release of 3.5.0 [#12498](https://github.com/etcd-io/etcd/issues/12498), 
-etcd can be referenced using: 
+Warning: As etcd 3.5.0 was not yet released, the command above does not work.
+After first pre-release of 3.5.0 [#12498](https://github.com/etcd-io/etcd/issues/12498),
+etcd can be referenced using:
 ```
 go get go.etcd.io/etcd/client/v3@v3.5.0-pre
 ```

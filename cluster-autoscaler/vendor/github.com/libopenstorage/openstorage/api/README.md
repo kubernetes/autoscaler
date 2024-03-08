@@ -7,7 +7,7 @@ Any storage product that uses the openstorage API can be managed via this API.  
 
 import (
     ...
-    
+
     "github.com/libopenstorage/gossip/types"
     "github.com/libopenstorage/openstorage/api"
     "github.com/libopenstorage/openstorage/api/client/cluster"
@@ -34,10 +34,10 @@ func (c *myapp) listNodes() {
         cmdError(context, fn, err)
         return
     }
-    
+
     // cluster is now a hashmap of nodes... do something useful with it:
     for _, n := range cluster.Nodes {
-    
+
      }
 }
 ```
@@ -47,7 +47,7 @@ func (c *myapp) listNodes() {
 
 import (
     ...
-    
+
     "github.com/libopenstorage/openstorage/api"
     volumeclient "github.com/libopenstorage/openstorage/api/client/volume"
     "github.com/libopenstorage/openstorage/volume"
@@ -73,7 +73,7 @@ func (c *myapp) inspect(id string) {
     if err != nil {
         return
     }
-    
+
     // stats is an object that has various volume properties and statistics.
 }
 ```

@@ -5,7 +5,7 @@ The package utfbom implements the detection of the BOM (Unicode Byte Order Mark)
 ## Installation
 
     go get -u github.com/dimchansky/utfbom
-    
+
 ## Example
 
 ```go
@@ -62,5 +62,3 @@ ReadAll with BOM skipping [104 101 108 108 111]
 Detected encoding: Unknown
 ReadAll with BOM detection and skipping [104 101 108 108 111]
 ```
-
-

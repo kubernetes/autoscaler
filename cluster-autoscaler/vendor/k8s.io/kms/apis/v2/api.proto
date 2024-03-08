@@ -71,8 +71,8 @@ message EncryptRequest {
 
 message EncryptResponse {
     // The encrypted data.
-    // ciphertext must satisfy the following constraints:  
-    // 1. The ciphertext is not empty.  
+    // ciphertext must satisfy the following constraints:
+    // 1. The ciphertext is not empty.
     // 2. The ciphertext is less than 1 kB.
     bytes ciphertext = 1;
     // The KMS key ID used to encrypt the data. This must always refer to the KMS KEK and not any local KEKs that may be in use.

@@ -136,4 +136,3 @@ message ServiceCIDRStatus {
   // +listMapKey=type
   repeated k8s.io.apimachinery.pkg.apis.meta.v1.Condition conditions = 1;
 }
-

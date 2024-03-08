@@ -606,4 +606,3 @@ message Variable {
   // The CEL expression has access to the same identifiers as the CEL expressions in Validation.
   optional string Expression = 2;
 }
-

@@ -15,7 +15,7 @@
 
 * **Import Path Change**: See MIGRATION_GUIDE.md for tips on updating your code
 	* Changed the import path from `github.com/dgrijalva/jwt-go` to `github.com/golang-jwt/jwt`
-* Fixed type confusing issue between `string` and `[]string` in `VerifyAudience` ([#12](https://github.com/golang-jwt/jwt/pull/12)). This fixes CVE-2020-26160 
+* Fixed type confusing issue between `string` and `[]string` in `VerifyAudience` ([#12](https://github.com/golang-jwt/jwt/pull/12)). This fixes CVE-2020-26160
 
 #### 3.2.0
 

@@ -512,4 +512,3 @@ message UserSubject {
   // Required.
   optional string name = 1;
 }
-

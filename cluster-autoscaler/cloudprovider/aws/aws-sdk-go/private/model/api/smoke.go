@@ -177,7 +177,7 @@ var smokeTestTmpl = template.Must(template.New(`smokeTestTmpl`).Parse(`
 	func TestInteg_{{ printf "%02d" $i }}_{{ $op.ExportedName }}(t *testing.T) {
 		ctx, cancelFn := context.WithTimeout(context.Background(), 5 *time.Second)
 		defer cancelFn()
-	
+
 		sess := integration.SessionWithDefaultRegion("{{ $.DefaultRegion }}")
 		svc := {{ $.API.PackageName }}.New(sess)
 		params := {{ $testCase.BuildInputShape $op.InputRef }}

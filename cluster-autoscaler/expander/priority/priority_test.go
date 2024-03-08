@@ -46,20 +46,20 @@ var (
 	config = `
 5:
   - ".*t2\\.micro.*"
-10: 
+10:
   - ".*t2\\.large.*"
   - ".*t3\\.large.*"
-50: 
+50:
   - ".*m4\\.4xlarge.*"
 `
 	oneEntryConfig = `
-10: 
+10:
   - ".*t2\\.large.*"
 `
 	notMatchingConfig = `
 5:
   - ".*t\\.micro.*"
-10: 
+10:
   - ".*t\\.large.*"
 `
 	wildcardMatchConfig = `

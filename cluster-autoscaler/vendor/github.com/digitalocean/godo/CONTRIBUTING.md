@@ -48,7 +48,7 @@ Releasing a new version of godo is currently a manual process.
 
 2. Update the `libraryVersion` number in `godo.go`.
 3. Make a pull request with these changes.  This PR should be separate from the PR containing the godo changes.
-4. Once the pull request has been merged, [draft a new release](https://github.com/digitalocean/godo/releases/new).  
-5. Update the `Tag version` and `Release title` field with the new godo version.  Be sure the version has a `v` prefixed in both places. Ex `v1.8.0`.  
+4. Once the pull request has been merged, [draft a new release](https://github.com/digitalocean/godo/releases/new).
+5. Update the `Tag version` and `Release title` field with the new godo version.  Be sure the version has a `v` prefixed in both places. Ex `v1.8.0`.
 6. Copy the changelog bullet points to the description field.
 7. Publish the release.

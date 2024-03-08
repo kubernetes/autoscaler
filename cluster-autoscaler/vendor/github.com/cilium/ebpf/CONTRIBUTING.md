@@ -37,4 +37,3 @@ Examples:
 # Run a subset of tests:
 ./run-tests.sh 5.4 go test ./link
 ```
-

@@ -49,7 +49,7 @@ environment.
 You can restrict API operation your IAM key can perform:
 
 * When deploying the Cluster Autoscaler in SKS, your can restrict your IAM access key
-to these API operations : 
+to these API operations :
 
 ```
 evict-sks-nodepool-members

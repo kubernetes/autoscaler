@@ -454,25 +454,25 @@ func IsCreditCard(str string) bool {
 	if !rxCreditCard.MatchString(sanitized) {
 		return false
 	}
-	
+
 	number, _ := ToInt(sanitized)
-	number, lastDigit := number / 10, number % 10	
+	number, lastDigit := number / 10, number % 10
 
 	var sum int64
 	for i:=0; number > 0; i++ {
 		digit := number % 10
-		
+
 		if i % 2 == 0 {
 			digit *= 2
 			if digit > 9 {
 				digit -= 9
 			}
 		}
-		
+
 		sum += digit
 		number = number / 10
 	}
-	
+
 	return (sum + lastDigit) % 10 == 0
 }
 

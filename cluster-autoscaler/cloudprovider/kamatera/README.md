@@ -5,7 +5,7 @@ The cluster autoscaler for Kamatera scales nodes in a Kamatera cluster.
 ## Kamatera Kubernetes
 
 [Kamatera](https://www.kamatera.com/express/compute/) supports Kubernetes clusters using our Rancher app
-or by creating a self-managed cluster directly on Kamatera compute servers, the autoscaler supports 
+or by creating a self-managed cluster directly on Kamatera compute servers, the autoscaler supports
 both methods.
 
 ## Cluster Autoscaler Node Groups
@@ -112,7 +112,7 @@ how you create and manage the cluster.
 See below for some common configurations, but the exact script may need to be modified depending on your requirements
 and server image.
 
-The script needs to be provided as a base64 encoded string. You can encode your script using the following command: 
+The script needs to be provided as a base64 encoded string. You can encode your script using the following command:
 `cat script.sh | base64 -w0`.
 
 #### Kamatera Rancher Server Initialization Script

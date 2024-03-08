@@ -31,5 +31,3 @@ func main() {
 // URL: https://api.github.com/user/58276/repos?page=2; Rel: next
 // URL: https://api.github.com/user/58276/repos?page=2; Rel: last
 ```
-
-

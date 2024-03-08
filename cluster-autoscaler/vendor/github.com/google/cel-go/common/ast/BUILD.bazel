@@ -17,7 +17,7 @@ go_library(
         "expr.go",
     ],
     importpath = "github.com/google/cel-go/common/ast",
-    deps = [    
+    deps = [
         "//common/types:go_default_library",
         "//common/types/ref:go_default_library",
         "@org_golang_google_genproto_googleapis_api//expr/v1alpha1:go_default_library",
@@ -34,7 +34,7 @@ go_test(
     embed = [
         ":go_default_library",
     ],
-    deps = [    
+    deps = [
         "//checker:go_default_library",
         "//checker/decls:go_default_library",
         "//common:go_default_library",

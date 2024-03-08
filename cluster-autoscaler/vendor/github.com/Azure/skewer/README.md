@@ -118,7 +118,7 @@ $ golangci-lint run --fix
 Test and calculate coverage:
 ```
 $ just cover
-$ 
+$
 $ go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
 $ go tool cover -html=coverage.out -o coverage.html
 ```

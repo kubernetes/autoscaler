@@ -116,7 +116,7 @@ func addHTTPChecksumCustomDocumentation(a *API) error {
 				request payload checksum. This feature is available in the AWS
 				SDK for Go v2. If a value is specified for this parameter, the
 				matching algorithm's checksum member must be populated with the
-				algorithm's checksum of the request payload. 
+				algorithm's checksum of the request payload.
 			`)
 			if o.RequestChecksumRequired() {
 				ref.Documentation = AppendDocstring(ref.Documentation, `

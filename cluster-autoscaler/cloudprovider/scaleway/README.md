@@ -8,7 +8,7 @@ The cluster pools need to have the option `Autoscaling` set to true to be manage
 
 Cluster Autoscaler can be configured with 2 options
 ### Config file
-a config file can be passed with the `--cloud-config` flag.  
+a config file can be passed with the `--cloud-config` flag.
 here is the corresponding JSON schema:
 * `cluster_id`: Kapsule Cluster Id
 * `secret_key`: Secret Key used to manage associated Kapsule resources

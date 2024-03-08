@@ -41,7 +41,7 @@ type asyncGomegaHaltExecutionError struct{}
 
 func (a asyncGomegaHaltExecutionError) GinkgoRecoverShouldIgnoreThisPanic() {}
 func (a asyncGomegaHaltExecutionError) Error() string {
-	return `An assertion has failed in a goroutine.  You should call 
+	return `An assertion has failed in a goroutine.  You should call
 
     defer GinkgoRecover()
 

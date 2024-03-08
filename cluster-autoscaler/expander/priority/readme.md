@@ -23,10 +23,10 @@ metadata:
   namespace: kube-system
 data:
   priorities: |-
-    10: 
+    10:
       - .*t2\.large.*
       - .*t3\.large.*
-    50: 
+    50:
       - .*m4\.4xlarge.*
 ```
 

@@ -34,7 +34,7 @@ To nest traces:
 func doSomething() {
     rootTrace := trace.New("rootOperation")
     defer rootTrace.LogIfLong(100 * time.Millisecond)
-    
+
     func() {
         nestedTrace := rootTrace.Nest("nested", Field{Key: "nestedFieldKey1", Value: "nestedFieldValue1"})
         defer nestedTrace.LogIfLong(50 * time.Millisecond)
@@ -52,7 +52,7 @@ opTrace.Log() // unconditionally log the trace
 
 ### Using context.Context to nest traces
 
-`context.Context` can be used to manage nested traces. Create traces by calling `trace.GetTraceFromContext(ctx).Nest`. 
+`context.Context` can be used to manage nested traces. Create traces by calling `trace.GetTraceFromContext(ctx).Nest`.
 This is safe even if there is no parent trace already in the context because `(*(Trace)nil).Nest()` returns
 a top level trace.
 
@@ -61,7 +61,7 @@ func doSomething(ctx context.Context) {
     opTrace := trace.FromContext(ctx).Nest("operation") // create a trace, possibly nested
     ctx = trace.ContextWithTrace(ctx, opTrace) // make this trace the parent trace of the context
     defer opTrace.LogIfLong(50 * time.Millisecond)
-    
+
     doSomethingElse(ctx)
 }
 ```

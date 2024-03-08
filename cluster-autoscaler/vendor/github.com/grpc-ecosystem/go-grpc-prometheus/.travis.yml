@@ -19,7 +19,7 @@ install:
   - go get golang.org/x/net/context
   - go get github.com/stretchr/testify
 script:
- - make test 
+ - make test
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)

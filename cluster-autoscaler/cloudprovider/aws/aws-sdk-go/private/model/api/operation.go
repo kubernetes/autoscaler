@@ -231,7 +231,7 @@ func (c *{{ .API.StructName }}) {{ .ExportedName }}Request(` +
 	{{- end }}
 
 	{{- if .HasAccountIDMemberWithARN }}
-		// update account id or check if provided input for account id member matches 
+		// update account id or check if provided input for account id member matches
 		// the account id present in ARN
 		req.Handlers.Validate.PushFrontNamed(updateAccountIDWithARNHandler)
 	{{- end }}

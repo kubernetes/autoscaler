@@ -1,7 +1,7 @@
 # Oracle Cloud Infrastructure Golang SDK
 [![wercker status](https://app.wercker.com/status/09bc4818e7b1d70b04285331a9bdbc41/s/master "wercker status")](https://app.wercker.com/project/byKey/09bc4818e7b1d70b04285331a9bdbc41)
 
-This is the Go SDK for Oracle Cloud Infrastructure. This project is open source and maintained by Oracle Corp. 
+This is the Go SDK for Oracle Cloud Infrastructure. This project is open source and maintained by Oracle Corp.
 The home page for the project is [here](https://godoc.org/github.com/oracle/oci-go-sdk/v65/).
 
 ## Survey
@@ -11,7 +11,7 @@ Are you a Developer using the OCI SDK? If so, please fill out our survey to help
 ## Dependencies
 - Install [Go programming language](https://golang.org/dl/), Go1.14, 1.15, 1.16, 1.17 and 1.18 is supported By OCI Go SDK.
 - Install [GNU Make](https://www.gnu.org/software/make/), using the package manager or binary distribution tool appropriate for your platform.
- 
+
 ## Versioning
 - The breaking changes in service client APIs will no longer result in a major version bump (x+1.y.z relative to the last published version). Instead, we will bump the minor version of the SDK (x.y+1.z relative to the last published version).
 - If there are no breaking changes in a release, we will bump the patch version of the SDK (x.y.z+1 relative to the last published version).
@@ -43,7 +43,7 @@ import "github.com/oracle/oci-go-sdk/v49/common"  // or whatever major version y
 ## Working with the Go SDK
 To start working with the Go SDK, you import the service package, create a client, and then use that client to make calls.
 
-### Configuring 
+### Configuring
 Before using the SDK, set up a config file with the required credentials. See [SDK and Tool Configuration](https://docs.cloud.oracle.com/Content/API/Concepts/sdkconfig.htm) for instructions.
 
 Note that the Go SDK does not support profile inheritance or defining custom values in the configuration file.
@@ -56,9 +56,9 @@ Once a config file has been setup, call `common.DefaultConfigProvider()` functio
 	"github.com/oracle/oci-go-sdk/v49/common"
 	"github.com/oracle/oci-go-sdk/v49/identity" // Identity or any other service you wish to make requests to
 )
- 
+
  //...
- 
+
 configProvider := common.DefaultConfigProvider()
 ```
 
@@ -81,14 +81,14 @@ Or simply use one of  structs exposed by the `oci-go-sdk` that already implement
 To make a request to an Oracle Cloud Infrastructure service, create a client for the service and then use the client to call a function from the service.
 
 - *Creating a client*: All packages provide a function to create clients, using the naming convention `New<ServiceName>ClientWithConfigurationProvider`,
-such as `NewVirtualNetworkClientWithConfigurationProvider` or `NewIdentityClientWithConfigurationProvider`. To create a new client, 
+such as `NewVirtualNetworkClientWithConfigurationProvider` or `NewIdentityClientWithConfigurationProvider`. To create a new client,
 pass a struct that conforms to the `ConfigurationProvider` interface, or use the `DefaultConfigProvider()` function in the common package.
 
-For example: 
+For example:
 ```go
 config := common.DefaultConfigProvider()
 client, err := identity.NewIdentityClientWithConfigurationProvider(config)
-if err != nil { 
+if err != nil {
      panic(err)
 }
 ```
@@ -121,13 +121,13 @@ export OCI_SDK_DEFAULT_CIRCUITBREAKER_ENABLED=FALSE
 - *Cicuit Breaker*: Circuit Breaker error message includes a set of previous failed responses. By default, the number of the failed responses is set to 5. It can be explicitly set using the env var:
 ```sh
 export OCI_SDK_CIRCUITBREAKER_NUM_HISTORY_RESPONSE=<int value>
-``` 
+```
 
 ## Organization of the SDK
 The `oci-go-sdk` contains the following:
-- **Service packages**: All packages except `common` and any other package found inside `cmd`. These packages represent 
-the Oracle Cloud Infrastructure services supported by the Go SDK. Each package represents a service. 
-These packages include methods to interact with the service, structs that model 
+- **Service packages**: All packages except `common` and any other package found inside `cmd`. These packages represent
+the Oracle Cloud Infrastructure services supported by the Go SDK. Each package represents a service.
+These packages include methods to interact with the service, structs that model
 input and output parameters, and a client struct that acts as receiver for the above methods.
 
 - **Common package**: Found in the `common` directory. The common package provides supporting functions and structs used by service packages.

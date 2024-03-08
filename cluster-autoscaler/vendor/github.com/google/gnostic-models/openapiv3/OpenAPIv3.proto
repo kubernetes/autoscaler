@@ -669,4 +669,3 @@ message Xml {
   bool wrapped = 5;
   repeated NamedAny specification_extension = 6;
 }
-

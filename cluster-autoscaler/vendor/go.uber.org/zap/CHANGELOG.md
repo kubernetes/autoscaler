@@ -25,7 +25,7 @@ Enhancements:
 * [#1273][]: Add `Name` to `Logger` which returns the Logger's name if one is set.
 * [#1281][]: Add `zap/exp/expfield` package which contains helper methods
 `Str` and `Strs` for constructing String-like zap.Fields.
-* [#1310][]: Reduce stack size on `Any`. 
+* [#1310][]: Reduce stack size on `Any`.
 
 Thanks to @knight42, @dzakaammar, @bcspragu, and @rexywork for their contributions
 to this release.

@@ -663,4 +663,3 @@ message Xml {
   bool wrapped = 5;
   repeated NamedAny vendor_extension = 6;
 }
-

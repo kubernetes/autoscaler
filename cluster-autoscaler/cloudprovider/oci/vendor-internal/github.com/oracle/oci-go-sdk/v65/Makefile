@@ -29,7 +29,7 @@ test: build $(TARGETS_TEST)
 
 test-all: build build-autotest test test-integ
 
-test-integ: 
+test-integ:
 	@if [ -d $(TARGETS_WITH_INTEG_TESTS) ]; then\
 		make build $(TARGETS_INTEG_TEST);\
 	fi
