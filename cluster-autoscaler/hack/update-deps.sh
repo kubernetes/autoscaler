@@ -24,56 +24,91 @@
 set -o errexit
 set -o pipefail
 
+KUBE_ROOT="$(dirname "${BASH_SOURCE[0]}")/../.."
+cd "${KUBE_ROOT}"
+
 VERSION=${1#"v"}
-FORK=${2:-git@github.com:kubernetes/kubernetes.git}
-if [ -z "$VERSION" ]; then
-    echo "Usage: hack/update-vendor.sh <k8s version> <k8s fork:-git@github.com:kubernetes/kubernetes.git>"
+APIS_VERSION=${2#"v"}
+FORK=${3:-git@github.com:kubernetes/kubernetes.git}
+SED=${4:-sed}
+
+# $1: The k8s version to download.
+cluster_autoscaler:list_mods:init() {
+  k8s_version="${1:-${VERSION}}"
+
+  workdir="$(mktemp -d)"
+  repo="${workdir}/kubernetes"
+  git clone --depth 1 "${FORK}" "${repo}"
+  pushd "${repo}"
+  git fetch --depth 1 origin "v${k8s_version}"
+  git checkout FETCH_HEAD
+}
+
+cluster_autoscaler:list_mods:cleanup() {
+  popd
+  rm -rf "${workdir}"
+}
+
+# $1: The k8s version to download.
+cluster_autoscaler:list_mods() {
+  k8s_version="${1:-${VERSION}}"
+
+  if [ -z "${k8s_version}" ]; then
+    echo "Usage: hack/update-vendor.sh <k8s version> <k8s version for apis> <k8s fork:-git@github.com:kubernetes/kubernetes.git>"
     exit 1
-fi
+  fi
+  cluster_autoscaler:list_mods:init "${k8s_version}" > /dev/null
+  mods=($(
+        cat go.mod | sed -n 's|.*k8s.io/\(.*\) => ./staging/src/k8s.io/.*|k8s.io/\1|p'
+  ))
+  cluster_autoscaler:list_mods:cleanup > /dev/null
+  echo "${mods[@]}"
+}
 
-set -x
+# $1: The package path.
+# $2: The k8s version.
+# $3: and later: The module names.
+cluster_autoscaler:update_deps() {
+  args=("${@}")
+  pkg="${args[0]}"
+  k8s_version="${args[1]}"
+  mods=("${args[@]:2}")
 
-WORKDIR=$(mktemp -d)
-REPO="${WORKDIR}/kubernetes"
-git clone --depth 1 ${FORK} ${REPO}
-
-pushd ${REPO}
-git fetch --depth 1 origin v${VERSION}
-git checkout FETCH_HEAD
-
-MODS=($(
-    cat go.mod | sed -n 's|.*k8s.io/\(.*\) => ./staging/src/k8s.io/.*|k8s.io/\1|p'
-))
-
-popd
-rm -rf ${WORKDIR}
-
-PKGS=("." "./apis")
-for pkg in "${PKGS[@]}"; do
   pushd "${pkg}"
 
-  for MOD in "${MODS[@]}"; do
-      V=$(
-          GOMOD="${MOD}@kubernetes-${VERSION}"
-          JSON=$(go mod download -json "${GOMOD}")
-          retval=$?
-          if [ $retval -ne 0 ]; then
-              echo "Error downloading module ${GOMOD}."
-              exit 1
-          fi
-          echo "${JSON}" | sed -n 's|.*"Version": "\(.*\)".*|\1|p'
-      )
-      go mod edit "-replace=${MOD}=${MOD}@${V}"
+  for mod in "${mods[@]}"; do
+    echo "${pkg}: ${mod}"
+    gomod="${mod}@kubernetes-${k8s_version}"
+    gomod_json="$(go mod download -json "${gomod}")"
+    retval="${?}"
+    if [ "${retval}" -ne 0 ]; then
+      echo "Error downloading module ${gomod}."
+      exit 1
+    fi
+    mod_version=$(echo "${gomod_json}" | "${SED}" -n 's|.*"Version": "\(.*\)".*|\1|p')
+    if [ "${pkg}" = "./cluster-autoscaler" ]; then
+      go mod edit "-replace=${mod}=${mod}@${mod_version}"
+    else
+      go get "${mod}@${mod_version}"
+      go mod tidy
+    fi
   done
 
-  go get "k8s.io/kubernetes@v${VERSION}"
-  go mod tidy
-  if [ "$(pkg)" = "." ]; then \
+  if [ "${pkg}" = "./cluster-autoscaler" ]; then
+    go get "k8s.io/kubernetes@v${k8s_version}"
+    go mod tidy
     go mod vendor
-    sed -i "s|\(const ClusterAutoscalerVersion = \)\".*\"|\1\"$VERSION\"|" version/version.go
+    "${SED}" -i "s|\(const ClusterAutoscalerVersion = \)\".*\"|\1\"${k8s_version}\"|" "version/version.go"
   fi
+
   git rm -r --force --ignore-unmatch kubernetes
-
   popd
-done
+}
 
+# k8s.io/autoscaler/cluster-autoscaler/go.mod
+mods=($(cluster_autoscaler:list_mods "${VERSION}"))
+cluster_autoscaler:update_deps "./cluster-autoscaler" "${VERSION}" "${mods[@]}"
+
+# k8s.io/autoscaler/cluster-autoscaler/apis/go.mod
+apis_mods=($(cluster_autoscaler:list_mods "${APIS_VERSION}"))
+cluster_autoscaler:update_deps "./cluster-autoscaler/apis" "${APIS_VERSION}" "${apis_mods[@]}"
