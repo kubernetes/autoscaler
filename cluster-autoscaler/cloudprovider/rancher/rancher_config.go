@@ -23,12 +23,34 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+const (
+	envUrl          = "RANCHER_URL"
+	envClusterName  = "RANCHER_CLUSTER_NAME"
+	envClusterToken = "RANCHER_TOKEN"
+)
+
 type cloudConfig struct {
 	URL               string `yaml:"url"`
 	Token             string `yaml:"token"`
 	ClusterName       string `yaml:"clusterName"`
 	ClusterNamespace  string `yaml:"clusterNamespace"`
 	ClusterAPIVersion string `yaml:"clusterAPIVersion"`
+}
+
+func overrideFromEnv(c *cloudConfig) *cloudConfig {
+	url := os.Getenv(envUrl)
+	cName := os.Getenv(envClusterName)
+	token := os.Getenv(envClusterToken)
+	if url != "" {
+		c.URL = url
+	}
+	if cName != "" {
+		c.ClusterName = cName
+	}
+	if token != "" {
+		c.Token = token
+	}
+	return c
 }
 
 func newConfig(file string) (*cloudConfig, error) {
@@ -41,6 +63,8 @@ func newConfig(file string) (*cloudConfig, error) {
 	if err := yaml.Unmarshal(b, config); err != nil {
 		return nil, fmt.Errorf("unable to unmarshal config file: %w", err)
 	}
+
+	config = overrideFromEnv(config)
 
 	return config, nil
 }
