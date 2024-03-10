@@ -89,6 +89,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 	nodes []*apiv1.Node,
 	daemonSets []*appsv1.DaemonSet,
 	nodeInfos map[string]*schedulerframework.NodeInfo,
+	allOrNothing bool,
 ) (*status.ScaleUpStatus, errors.AutoscalerError) {
 	if !o.initialized {
 		return status.UpdateScaleUpError(&status.ScaleUpStatus{}, errors.NewAutoscalerError(errors.InternalError, "ScaleUpOrchestrator is not initialized"))
@@ -151,6 +152,9 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 
 		if len(option.Pods) == 0 || option.NodeCount == 0 {
 			klog.V(4).Infof("No pod can fit to %s", nodeGroup.Id())
+		} else if allOrNothing && len(option.Pods) < len(unschedulablePods){
+			klog.V(4).Infof("Some pods don't fit to %s", nodeGroup.Id())
+			continue
 		} else {
 			options = append(options, option)
 		}
