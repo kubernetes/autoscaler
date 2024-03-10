@@ -14,41 +14,40 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package checkcapacity
+package genericscaleup
 
 import (
-	"fmt"
-
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup/orchestrator"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
+	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/apis/autoscaling.x-k8s.io/v1beta1"
-	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/conditions"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqclient"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
-
-	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 type scaleUpMode struct {
-	context  *context.AutoscalingContext
-	client   provreqclient.ProvisioningRequestClient
-	injector *scheduling.HintingSimulator
+	context     *context.AutoscalingContext
+	injector    *scheduling.HintingSimulator
+	client      provreqclient.ProvisioningRequestClient
+	podsScaleUp *orchestrator.ScaleUpOrchestrator
 }
 
-// New create check-capacity scale-up mode.
+// New returns new generic-scale-up mode.
 func New(client provreqclient.ProvisioningRequestClient) *scaleUpMode {
-	return &scaleUpMode{client: client}
+	return &scaleUpMode{client: client, podsScaleUp: orchestrator.New()}
 }
 
-func (s *scaleUpMode) Initialize(autoscalingContext *context.AutoscalingContext,
+func (s *scaleUpMode) Initialize(
+	autoscalingContext *context.AutoscalingContext,
 	processors *ca_processors.AutoscalingProcessors,
 	clusterStateRegistry *clusterstate.ClusterStateRegistry,
 	estimatorBuilder estimator.EstimatorBuilder,
@@ -56,17 +55,17 @@ func (s *scaleUpMode) Initialize(autoscalingContext *context.AutoscalingContext,
 	injector *scheduling.HintingSimulator) {
 	s.context = autoscalingContext
 	s.injector = injector
+	s.podsScaleUp.Initialize(autoscalingContext, processors, clusterStateRegistry, estimatorBuilder, taintConfig)
 }
 
-// ScaleUp return if there is capacity in the cluster for pods from ProvisioningRequest.
 func (s *scaleUpMode) ScaleUp(
 	unschedulablePods []*apiv1.Pod,
 	nodes []*apiv1.Node,
 	daemonSets []*appsv1.DaemonSet,
 	nodeInfos map[string]*schedulerframework.NodeInfo,
 ) (*status.ScaleUpStatus, errors.AutoscalerError) {
-	if pr, err := provreqclient.VerifyProvisioningRequestClass(s.client, unschedulablePods, v1beta1.ProvisioningClassCheckCapacity); err != nil {
-		return status.UpdateScaleUpError(&status.ScaleUpStatus{}, errors.NewAutoscalerError(errors.InternalError, err.Error()))
+	if pr, err := provreqclient.VerifyProvisioningRequestClass(s.client, unschedulablePods, v1beta1.ProvisioningClassGenericScaleUp); err != nil {
+		return status.UpdateScaleUpError(&status.ScaleUpStatus{}, errors.NewAutoscalerError(errors.InternalError, "error during ScaleUp: %s", err.Error()))
 	} else if pr == nil {
 		return &status.ScaleUpStatus{}, nil
 	}
@@ -74,27 +73,30 @@ func (s *scaleUpMode) ScaleUp(
 	s.context.ClusterSnapshot.Fork()
 	defer s.context.ClusterSnapshot.Revert()
 
-	scaleUpIsSuccessful, err := s.scaleUp(unschedulablePods)
+	unschedulablePods, err := s.filterSchedulable(unschedulablePods)
 	if err != nil {
 		return status.UpdateScaleUpError(&status.ScaleUpStatus{}, errors.NewAutoscalerError(errors.InternalError, "error during ScaleUp: %s", err.Error()))
 	}
-	if scaleUpIsSuccessful {
-		return &status.ScaleUpStatus{Result: status.ScaleUpSuccessful}, nil
-	}
-	return &status.ScaleUpStatus{Result: status.ScaleUpNoOptionsAvailable}, nil
+
+	return s.podsScaleUp.ScaleUp(unschedulablePods, nodes, daemonSets, nodeInfos, true)
 }
 
-// Assuming that all unschedulable pods comes from one ProvisioningRequest.
-func (s *scaleUpMode) scaleUp(unschedulablePods []*apiv1.Pod) (bool, error) {
-	provReq, err := s.client.ProvisioningRequest(unschedulablePods[0].Namespace, unschedulablePods[0].OwnerReferences[0].Name)
+func (s *scaleUpMode) filterSchedulable(unschedulableCandidates []*apiv1.Pod) ([]*apiv1.Pod, error) {
+	statuses, _, err := s.injector.TrySchedulePods(s.context.ClusterSnapshot, unschedulableCandidates, scheduling.ScheduleAnywhere, false)
 	if err != nil {
-		return false, fmt.Errorf("failed retrive ProvisioningRequest from unscheduled pods, err: %v", err)
+		return nil, err
 	}
-	st, _, err := s.injector.TrySchedulePods(s.context.ClusterSnapshot, unschedulablePods, scheduling.ScheduleAnywhere, true)
-	if len(st) < len(unschedulablePods) || err != nil {
-		conditions.AddOrUpdateCondition(provReq, v1beta1.Provisioned, metav1.ConditionFalse, conditions.CapacityIsNotFoundReason, "Capacity is not found, CA will try to find it later.", metav1.Now())
-		return false, err
+
+	scheduledPods := make(map[types.UID]bool)
+	for _, status := range statuses {
+		scheduledPods[status.Pod.UID] = true
 	}
-	conditions.AddOrUpdateCondition(provReq, v1beta1.Provisioned, metav1.ConditionTrue, conditions.CapacityIsFoundReason, conditions.CapacityIsFoundMsg, metav1.Now())
-	return true, nil
+
+	var unschedulablePods []*apiv1.Pod
+	for _, pod := range unschedulableCandidates {
+		if !scheduledPods[pod.UID] {
+			unschedulablePods = append(unschedulablePods, pod)
+		}
+	}
+	return unschedulablePods, nil
 }

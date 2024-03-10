@@ -41,6 +41,7 @@ const (
 	provisioningRequestClientCallTimeout = 4 * time.Second
 )
 
+// ProvisioningRequestClient is an interface with methods for v1beta1 ProvReq CRD client.
 type ProvisioningRequestClient interface {
 	ProvisioningRequests() ([]*provreqwrapper.ProvisioningRequest, error)
 	ProvisioningRequest(namespace, name string) (*provreqwrapper.ProvisioningRequest, error)
@@ -165,12 +166,15 @@ func newPodTemplatesLister(client *kubernetes.Clientset, stopChannel <-chan stru
 
 // VerifyProvisioningRequestClass check that all pods belong to one ProvisioningRequest that belongs to check-capacity ProvisioningRequst class.
 func VerifyProvisioningRequestClass(client ProvisioningRequestClient, unschedulablePods []*apiv1.Pod, className string) (*provreqwrapper.ProvisioningRequest, error) {
+	if len(unschedulablePods) == 0 {
+		return nil, nil
+	}
 	provReq, err := client.ProvisioningRequest(unschedulablePods[0].Namespace, unschedulablePods[0].OwnerReferences[0].Name)
 	if err != nil {
 		return nil, fmt.Errorf("failed retrive ProvisioningRequest from unscheduled pods, err: %v", err)
 	}
 	if provReq.V1Beta1().Spec.ProvisioningClassName != className {
-		return nil, fmt.Errorf("provisioningRequestClass is not %s", v1beta1.ProvisioningClassCheckCapacity)
+		return nil, nil
 	}
 	for _, pod := range unschedulablePods {
 		if pod.Namespace != unschedulablePods[0].Namespace {

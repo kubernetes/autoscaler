@@ -29,7 +29,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
-	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup/equivalence"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
@@ -57,7 +56,7 @@ type ScaleUpOrchestrator struct {
 }
 
 // New returns new instance of scale up Orchestrator.
-func New() scaleup.Orchestrator {
+func New() *ScaleUpOrchestrator {
 	return &ScaleUpOrchestrator{
 		initialized: false,
 	}
@@ -152,7 +151,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 
 		if len(option.Pods) == 0 || option.NodeCount == 0 {
 			klog.V(4).Infof("No pod can fit to %s", nodeGroup.Id())
-		} else if allOrNothing && len(option.Pods) < len(unschedulablePods){
+		} else if allOrNothing && len(option.Pods) < len(unschedulablePods) {
 			klog.V(4).Infof("Some pods don't fit to %s", nodeGroup.Id())
 			continue
 		} else {

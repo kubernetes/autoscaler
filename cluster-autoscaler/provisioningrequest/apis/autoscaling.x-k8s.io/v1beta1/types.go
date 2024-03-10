@@ -197,7 +197,7 @@ const (
 	// ProvisioningClassCheckCapacity denotes that CA will check if free capacity
 	// is available in the cluster.
 	ProvisioningClassCheckCapacity string = "check-capacity.kubernetes.io"
-	// ProvisioningClassAtomicScaleUp denotes that CA try to provision the capacity
+	// ProvisioningClassGenericScaleUp denotes that CA try to provision the capacity
 	// in the cluster.
 	ProvisioningClassGenericScaleUp string = "generic-scale-up.kubernetes.io"
 )

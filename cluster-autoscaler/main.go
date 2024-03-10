@@ -494,7 +494,7 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 		podListProcessor.AddProcessor(provreq.NewProvisioningRequestPodsFilter(provreq.NewDefautlEventManager()))
 
 		restConfig := kube_util.GetKubeConfig(autoscalingOptions.KubeClientOpts)
-		provreqOrchestrator, err := provreqorchestrator.New(restConfig)
+		provreqOrchestrator, err := provreqorchestrator.New(restConfig, opts.PredicateChecker)
 		if err != nil {
 			return nil, err
 		}

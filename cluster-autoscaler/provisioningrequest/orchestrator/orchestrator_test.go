@@ -37,6 +37,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/client-go/kubernetes/fake"
 	"k8s.io/kubernetes/pkg/scheduler/framework"
@@ -54,13 +55,13 @@ func TestScaleUp(t *testing.T) {
 		node := BuildTestNode(name, 1, 1000)
 		allNodes = append(allNodes, node)
 	}
-	newCpuProvReq := provreqwrapper.BuildTestProvisioningRequest("ns", "newCpuProvReq", "5m", "5", "", int32(100), false, time.Now(), v1beta1.ProvisioningClassCheckCapacity)
-	newMemProvReq := provreqwrapper.BuildTestProvisioningRequest("ns", "newMemProvReq", "1m", "100", "", int32(100), false, time.Now(), v1beta1.ProvisioningClassCheckCapacity)
+	bookCapacityCpuProvReq := provreqwrapper.BuildTestProvisioningRequest("ns", "bookCapacityCpuProvReq", "5m", "5", "", int32(100), false, time.Now(), v1beta1.ProvisioningClassCheckCapacity)
+	bookCapacityMemProvReq := provreqwrapper.BuildTestProvisioningRequest("ns", "bookCapacityMemProvReq", "1m", "100", "", int32(100), false, time.Now(), v1beta1.ProvisioningClassCheckCapacity)
 	bookedCapacityProvReq := provreqwrapper.BuildTestProvisioningRequest("ns", "bookedCapacity", "1m", "200", "", int32(100), false, time.Now(), v1beta1.ProvisioningClassCheckCapacity)
 	bookedCapacityProvReq.SetConditions([]metav1.Condition{{Type: v1beta1.Provisioned, Status: metav1.ConditionTrue, LastTransitionTime: metav1.Now()}})
 	expiredProvReq := provreqwrapper.BuildTestProvisioningRequest("ns", "bookedCapacity", "1m", "200", "", int32(100), false, time.Now(), v1beta1.ProvisioningClassCheckCapacity)
 	expiredProvReq.SetConditions([]metav1.Condition{{Type: v1beta1.BookingExpired, Status: metav1.ConditionTrue, LastTransitionTime: metav1.Now()}})
-	differentProvReqClass := provreqwrapper.BuildTestProvisioningRequest("ns", "differentProvReqClass", "1", "1", "", int32(5), false, time.Now(), v1beta1.ProvisioningClassGenericScaleUp)
+	genericScaleUpProvReqClass := provreqwrapper.BuildTestProvisioningRequest("ns", "genericScaleUpProvReqClass", "1", "1", "", int32(5), false, time.Now(), v1beta1.ProvisioningClassGenericScaleUp)
 	testCases := []struct {
 		name             string
 		provReqs         []*provreqwrapper.ProvisioningRequest
@@ -73,27 +74,27 @@ func TestScaleUp(t *testing.T) {
 			provReqs: []*provreqwrapper.ProvisioningRequest{},
 		},
 		{
-			name:             "one ProvisioningRequest",
-			provReqs:         []*provreqwrapper.ProvisioningRequest{newCpuProvReq},
-			provReqToScaleUp: newCpuProvReq,
+			name:             "check-capacity ProvisioningClass",
+			provReqs:         []*provreqwrapper.ProvisioningRequest{bookCapacityCpuProvReq},
+			provReqToScaleUp: bookCapacityCpuProvReq,
 			scaleUpResult:    status.ScaleUpSuccessful,
 		},
 		{
 			name:             "capacity in the cluster is booked",
-			provReqs:         []*provreqwrapper.ProvisioningRequest{newMemProvReq, bookedCapacityProvReq},
-			provReqToScaleUp: newMemProvReq,
+			provReqs:         []*provreqwrapper.ProvisioningRequest{bookCapacityMemProvReq, bookedCapacityProvReq},
+			provReqToScaleUp: bookCapacityMemProvReq,
 			scaleUpResult:    status.ScaleUpNoOptionsAvailable,
 		},
 		{
-			name:             "pods from different ProvisioningRequest class",
-			provReqs:         []*provreqwrapper.ProvisioningRequest{newCpuProvReq, bookedCapacityProvReq, differentProvReqClass},
-			provReqToScaleUp: differentProvReqClass,
-			err:              true,
+			name:             "generic-scale-up ProvisioningClass",
+			provReqs:         []*provreqwrapper.ProvisioningRequest{bookCapacityCpuProvReq, bookedCapacityProvReq, genericScaleUpProvReqClass},
+			provReqToScaleUp: genericScaleUpProvReqClass,
+			err:              false,
 		},
 		{
 			name:             "some capacity is booked, succesfull ScaleUp",
-			provReqs:         []*provreqwrapper.ProvisioningRequest{newCpuProvReq, bookedCapacityProvReq, differentProvReqClass},
-			provReqToScaleUp: newCpuProvReq,
+			provReqs:         []*provreqwrapper.ProvisioningRequest{bookCapacityCpuProvReq, bookedCapacityProvReq, genericScaleUpProvReqClass},
+			provReqToScaleUp: bookCapacityCpuProvReq,
 			scaleUpResult:    status.ScaleUpSuccessful,
 		},
 	}
@@ -115,9 +116,10 @@ func TestScaleUp(t *testing.T) {
 				context:      &autoscalingContext,
 				client:       client,
 				injector:     injector,
-				scaleUpModes: []scaleUpMode{checkcapacity.New(&autoscalingContext, client, injector)},
+				scaleUpModes: []scaleUpMode{checkcapacity.New(client)},
 			}
-			st, err := orchestrator.ScaleUp(prPods, []*apiv1.Node{}, []*v1.DaemonSet{}, map[string]*framework.NodeInfo{})
+			orchestrator.Initialize(&autoscalingContext, nil, nil, nil, taints.TaintConfig{})
+			st, err := orchestrator.ScaleUp(prPods, []*apiv1.Node{}, []*v1.DaemonSet{}, map[string]*framework.NodeInfo{}, false)
 			if !tc.err {
 				assert.NoError(t, err)
 				assert.Equal(t, tc.scaleUpResult, st.Result)

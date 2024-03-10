@@ -30,8 +30,10 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/apis/autoscaling.x-k8s.io/v1beta1"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/checkcapacity"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/conditions"
+	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/genericscaleup"
 	provreq_pods "k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/pods"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqclient"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
 	ca_errors "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
@@ -45,6 +47,12 @@ import (
 type scaleUpMode interface {
 	ScaleUp([]*apiv1.Pod, []*apiv1.Node, []*appsv1.DaemonSet,
 		map[string]*schedulerframework.NodeInfo) (*status.ScaleUpStatus, ca_errors.AutoscalerError)
+	Initialize(autoscalingContext *context.AutoscalingContext,
+		processors *ca_processors.AutoscalingProcessors,
+		clusterStateRegistry *clusterstate.ClusterStateRegistry,
+		estimatorBuilder estimator.EstimatorBuilder,
+		taintConfig taints.TaintConfig,
+		injector *scheduling.HintingSimulator)
 }
 
 // provReqOrchestrator is an orchestrator that contains orchestrators for all supported Provisioning Classes.
@@ -57,13 +65,16 @@ type provReqOrchestrator struct {
 }
 
 // New return new orchestrator.
-func New(kubeConfig *rest.Config) (*provReqOrchestrator, error) {
+func New(kubeConfig *rest.Config, predicateChecker predicatechecker.PredicateChecker) (*provReqOrchestrator, error) {
 	client, err := provreqclient.NewProvisioningRequestClient(kubeConfig)
 	if err != nil {
 		return nil, err
 	}
-
-	return &provReqOrchestrator{client: client}, nil
+	return &provReqOrchestrator{client: client,
+			injector:     scheduling.NewHintingSimulator(predicateChecker),
+			scaleUpModes: []scaleUpMode{checkcapacity.New(client), genericscaleup.New(client)},
+		},
+		nil
 }
 
 // Initialize initialize orchestrator.
@@ -75,18 +86,21 @@ func (o *provReqOrchestrator) Initialize(
 	taintConfig taints.TaintConfig,
 ) {
 	o.initialized = true
-	checkCapacityMode := checkcapacity.New(autoscalingContext, o.client, o.injector)
-	o.scaleUpModes = []scaleUpMode{checkCapacityMode}
+	o.context = autoscalingContext
+	for _, mode := range o.scaleUpModes {
+		mode.Initialize(autoscalingContext, processors, clusterStateRegistry, estimatorBuilder, taintConfig, o.injector)
+	}
 }
 
 // ScaleUp run ScaleUp for each Provisionining Class. As of now, CA pick one ProvisioningRequest,
 // so only one ProvisioningClass return non empty scaleUp result.
-// In case we implement multiple ProvisioningRequest ScaleUp, the funtion should return combined status
+// In case we implement multiple ProvisioningRequest ScaleUp, the function should return combined status
 func (o *provReqOrchestrator) ScaleUp(
 	unschedulablePods []*apiv1.Pod,
 	nodes []*apiv1.Node,
 	daemonSets []*appsv1.DaemonSet,
 	nodeInfos map[string]*schedulerframework.NodeInfo,
+	_ bool,
 ) (*status.ScaleUpStatus, ca_errors.AutoscalerError) {
 	var status *status.ScaleUpStatus
 	var combinedError error
@@ -100,7 +114,10 @@ func (o *provReqOrchestrator) ScaleUp(
 			status = st
 		}
 	}
-	return status, ca_errors.ToAutoscalerError(ca_errors.InternalError, combinedError)
+	if combinedError != nil {
+		return status, ca_errors.ToAutoscalerError(ca_errors.InternalError, combinedError)
+	}
+	return status, nil
 }
 
 // ScaleUpToNodeGroupMinSize doesn't have implementation for ProvisioningRequest Orchestrator.

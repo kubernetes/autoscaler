@@ -42,7 +42,7 @@ const (
 func TestScaleUp(t *testing.T) {
 	o := WrapperOrchestrator{
 		provReqOrchestrator: &fakeScaleUp{provisioningRequestErrorMsg},
-		podsOrchestrator: &fakeScaleUp{regularPodsErrorMsg},
+		podsOrchestrator:    &fakeScaleUp{regularPodsErrorMsg},
 	}
 	regularPods := []*apiv1.Pod{
 		BuildTestPod("pod-1", 1, 100),
