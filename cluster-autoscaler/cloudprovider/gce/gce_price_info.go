@@ -546,8 +546,9 @@ var (
 		"pd-balanced": 0.100 / hoursInMonth,
 		"pd-ssd":      0.170 / hoursInMonth,
 	}
-	// DefaultBootDiskType is pd-standard disk type.
-	DefaultBootDiskType = "pd-standard"
+	// DefaultBootDiskType is pd-balanced disk type.
+	// ref: https://cloud.google.com/kubernetes-engine/docs/how-to/custom-boot-disks#specify
+	DefaultBootDiskType = "pd-balanced"
 )
 
 // GcePriceInfo is the GCE specific implementation of the PricingInfo.
