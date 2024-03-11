@@ -82,6 +82,7 @@ var (
 		"n2d": 0.027502,
 		"t2d": 0.027502,
 		"z3":  0.04965,
+                "n4":  0.03082073,
 	}
 	predefinedMemoryPricePerHourPerGb = map[string]float64{
 		"a2":  0.004237,
@@ -97,6 +98,7 @@ var (
 		"n2d": 0.003686,
 		"t2d": 0.003686,
 		"z3":  0.00666,
+                "n4":  0.004131075,
 	}
 	predefinedPreemptibleDiscount = map[string]float64{
 		"a2":  0.009483 / 0.031611,
@@ -112,6 +114,7 @@ var (
 		"n2d": 0.002773 / 0.027502,
 		"t2d": 0.006655 / 0.027502,
 		"z3":  0.01986 / 0.04965,
+                "n4":  0.0079755 / 0.03082073,
 	}
 	customCpuPricePerHour = map[string]float64{
 		"e2":  0.022890,
