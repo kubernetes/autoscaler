@@ -348,6 +348,7 @@ func (machinedeployment *MachineDeployment) Delete() error {
 
 // IncreaseSize of the Machinedeployment.
 func (machinedeployment *MachineDeployment) IncreaseSize(delta int) error {
+	klog.V(0).Infof("Received request to increase size of machine deployment %s by %d", machinedeployment.Name, delta)
 	if delta <= 0 {
 		return fmt.Errorf("size increase must be positive")
 	}
@@ -370,6 +371,7 @@ func (machinedeployment *MachineDeployment) IncreaseSize(delta int) error {
 // It is assumed that cloud provider will not delete the existing nodes if the size
 // when there is an option to just decrease the target.
 func (machinedeployment *MachineDeployment) DecreaseTargetSize(delta int) error {
+	klog.V(0).Infof("Received request to decrease target size of machine deployment %s by %d", machinedeployment.Name, delta)
 	if delta >= 0 {
 		return fmt.Errorf("size decrease size must be negative")
 	}
@@ -410,6 +412,8 @@ func (machinedeployment *MachineDeployment) Belongs(node *apiv1.Node) (bool, err
 // DeleteNodes deletes the nodes from the group. It is expected that this method will not be called
 // for nodes which are not part of ANY machine deployment.
 func (machinedeployment *MachineDeployment) DeleteNodes(nodes []*apiv1.Node) error {
+	nodeNames := getNodeNames(nodes)
+	klog.V(0).Infof("Received request to delete nodes:- %v", nodeNames)
 	size, err := machinedeployment.mcmManager.GetMachineDeploymentSize(machinedeployment)
 	if err != nil {
 		return err
@@ -434,6 +438,14 @@ func (machinedeployment *MachineDeployment) DeleteNodes(nodes []*apiv1.Node) err
 	return machinedeployment.mcmManager.DeleteMachines(machines)
 }
 
+func getNodeNames(nodes []*apiv1.Node) interface{} {
+	nodeNames := make([]string, 0, len(nodes))
+	for _, node := range nodes {
+		nodeNames = append(nodeNames, node.Name)
+	}
+	return nodeNames
+}
+
 // Id returns machinedeployment id.
 func (machinedeployment *MachineDeployment) Id() string {
 	return machinedeployment.Name
@@ -450,7 +462,15 @@ func (machinedeployment *MachineDeployment) Nodes() ([]cloudprovider.Instance, e
 	if err != nil {
 		return nil, fmt.Errorf("failed to get the cloudprovider.Instance for machines backed by the machinedeployment %q, error: %v", machinedeployment.Name, err)
 	}
-
+	erroneousInstanceInfos := make([]string, 0, len(instances))
+	for _, instance := range instances {
+		if instance.Status != nil && instance.Status.ErrorInfo != nil {
+			erroneousInstanceInfos = append(erroneousInstanceInfos, fmt.Sprintf("[Instance: %s, ErrorClass: %s, ErrorCode: %s]", instance.Id, instance.Status.ErrorInfo.ErrorClass.String(), instance.Status.ErrorInfo.ErrorCode))
+		}
+	}
+	if len(erroneousInstanceInfos) != 0 {
+		klog.V(0).Infof("Found erroneous instances:- %v", erroneousInstanceInfos)
+	}
 	return instances, nil
 }
 
