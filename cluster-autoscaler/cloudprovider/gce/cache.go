@@ -56,36 +56,38 @@ type GceCache struct {
 	cacheMutex sync.Mutex
 
 	// Cache content.
-	migs                      map[GceRef]Mig
-	instances                 map[GceRef][]GceInstance
-	instancesUpdateTime       map[GceRef]time.Time
-	instancesToMig            map[GceRef]GceRef
-	instancesFromUnknownMig   map[GceRef]bool
-	resourceLimiter           *cloudprovider.ResourceLimiter
-	autoscalingOptionsCache   map[GceRef]map[string]string
-	machinesCache             map[MachineTypeKey]MachineType
-	migTargetSizeCache        map[GceRef]int64
-	migBaseNameCache          map[GceRef]string
-	instanceTemplateNameCache map[GceRef]string
-	instanceTemplatesCache    map[GceRef]*gce.InstanceTemplate
-	kubeEnvCache              map[GceRef]KubeEnv
+	migs                             map[GceRef]Mig
+	instances                        map[GceRef][]GceInstance
+	instancesUpdateTime              map[GceRef]time.Time
+	instancesToMig                   map[GceRef]GceRef
+	instancesFromUnknownMig          map[GceRef]bool
+	resourceLimiter                  *cloudprovider.ResourceLimiter
+	autoscalingOptionsCache          map[GceRef]map[string]string
+	machinesCache                    map[MachineTypeKey]MachineType
+	migTargetSizeCache               map[GceRef]int64
+	migBaseNameCache                 map[GceRef]string
+	listManagedInstancesResultsCache map[GceRef]string
+	instanceTemplateNameCache        map[GceRef]string
+	instanceTemplatesCache           map[GceRef]*gce.InstanceTemplate
+	kubeEnvCache                     map[GceRef]KubeEnv
 }
 
 // NewGceCache creates empty GceCache.
 func NewGceCache() *GceCache {
 	return &GceCache{
-		migs:                      map[GceRef]Mig{},
-		instances:                 map[GceRef][]GceInstance{},
-		instancesUpdateTime:       map[GceRef]time.Time{},
-		instancesToMig:            map[GceRef]GceRef{},
-		instancesFromUnknownMig:   map[GceRef]bool{},
-		autoscalingOptionsCache:   map[GceRef]map[string]string{},
-		machinesCache:             map[MachineTypeKey]MachineType{},
-		migTargetSizeCache:        map[GceRef]int64{},
-		migBaseNameCache:          map[GceRef]string{},
-		instanceTemplateNameCache: map[GceRef]string{},
-		instanceTemplatesCache:    map[GceRef]*gce.InstanceTemplate{},
-		kubeEnvCache:              map[GceRef]KubeEnv{},
+		migs:                             map[GceRef]Mig{},
+		instances:                        map[GceRef][]GceInstance{},
+		instancesUpdateTime:              map[GceRef]time.Time{},
+		instancesToMig:                   map[GceRef]GceRef{},
+		instancesFromUnknownMig:          map[GceRef]bool{},
+		autoscalingOptionsCache:          map[GceRef]map[string]string{},
+		machinesCache:                    map[MachineTypeKey]MachineType{},
+		migTargetSizeCache:               map[GceRef]int64{},
+		migBaseNameCache:                 map[GceRef]string{},
+		listManagedInstancesResultsCache: map[GceRef]string{},
+		instanceTemplateNameCache:        map[GceRef]string{},
+		instanceTemplatesCache:           map[GceRef]*gce.InstanceTemplate{},
+		kubeEnvCache:                     map[GceRef]KubeEnv{},
 	}
 }
 
@@ -514,4 +516,26 @@ func (gc *GceCache) InvalidateAllMigBasenames() {
 	gc.cacheMutex.Lock()
 	defer gc.cacheMutex.Unlock()
 	gc.migBaseNameCache = make(map[GceRef]string)
+}
+
+// SetListManagedInstancesResults sets listManagedInstancesResults for a given mig in cache
+func (gc *GceCache) SetListManagedInstancesResults(migRef GceRef, listManagedInstancesResults string) {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+	gc.listManagedInstancesResultsCache[migRef] = listManagedInstancesResults
+}
+
+// GetListManagedInstancesResults gets listManagedInstancesResults for a given mig from cache.
+func (gc *GceCache) GetListManagedInstancesResults(migRef GceRef) (string, bool) {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+	listManagedInstancesResults, found := gc.listManagedInstancesResultsCache[migRef]
+	return listManagedInstancesResults, found
+}
+
+// InvalidateAllListManagedInstancesResults invalidates all listManagedInstancesResults entries.
+func (gc *GceCache) InvalidateAllListManagedInstancesResults() {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+	gc.listManagedInstancesResultsCache = make(map[GceRef]string)
 }
