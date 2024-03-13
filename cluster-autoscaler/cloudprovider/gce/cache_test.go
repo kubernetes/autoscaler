@@ -87,3 +87,29 @@ func TestMachineCache(t *testing.T) {
 		})
 	}
 }
+
+func TestListManagedInstancesResultsCache(t *testing.T) {
+	checkInCache := func(c *GceCache, migRef GceRef, expectedResults string) {
+		result, found := c.GetListManagedInstancesResults(migRef)
+		if !found {
+			t.Errorf("Results not found for MIG ref: %s", migRef.String())
+		}
+		if result != expectedResults {
+			t.Errorf("Expected results %s for MIG ref: %s, but got: %s", expectedResults, migRef.String(), result)
+		}
+	}
+	migRef := GceRef{
+		Project: "project",
+		Zone:    "us-test1",
+		Name:    "mig",
+	}
+	c := NewGceCache()
+	c.SetListManagedInstancesResults(migRef, "PAGINATED")
+	checkInCache(c, migRef, "PAGINATED")
+	c.SetListManagedInstancesResults(migRef, "PAGELESS")
+	checkInCache(c, migRef, "PAGELESS")
+	c.InvalidateAllListManagedInstancesResults()
+	if cacheSize := len(c.listManagedInstancesResultsCache); cacheSize > 0 {
+		t.Errorf("Expected listManagedInstancesResultsCache to be empty, but it still contains %d entries", cacheSize)
+	}
+}
