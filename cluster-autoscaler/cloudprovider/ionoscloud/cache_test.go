@@ -18,15 +18,10 @@ package ionoscloud
 
 import (
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/require"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 )
-
-func newCacheEntry(data cloudprovider.NodeGroup, ts time.Time) nodeGroupCacheEntry {
-	return nodeGroupCacheEntry{data: data, ts: ts}
-}
 
 func TestCache_AddNodeGroup(t *testing.T) {
 	cache := NewIonosCache()
@@ -36,17 +31,14 @@ func TestCache_AddNodeGroup(t *testing.T) {
 }
 
 func TestCache_RemoveInstanceFromCache(t *testing.T) {
-	firstTime := timeNow().Add(-2*time.Minute - 1*time.Second)
 	cache := NewIonosCache()
-	cache.nodeGroups["2"] = newCacheEntry(&nodePool{id: "2"}, firstTime)
+	cache.nodeGroups["2"] = &nodePool{id: "2"}
 	cache.nodesToNodeGroups["b2"] = "2"
 
 	require.NotNil(t, cache.GetNodeGroupForNode("b2"))
-	require.True(t, cache.NodeGroupNeedsRefresh("2"))
 
 	cache.RemoveInstanceFromCache("b2")
 	require.Nil(t, cache.GetNodeGroupForNode("b2"))
-	require.False(t, cache.NodeGroupNeedsRefresh("2"))
 }
 
 func TestCache_SetInstancesCacheForNodeGroup(t *testing.T) {
@@ -65,11 +57,11 @@ func TestCache_SetInstancesCacheForNodeGroup(t *testing.T) {
 
 func TestCache_GetNodeGroupIDs(t *testing.T) {
 	cache := NewIonosCache()
-	require.Empty(t, cache.GetNodeGroupIds())
+	require.Empty(t, cache.GetNodeGroupIDs())
 	cache.AddNodeGroup(&nodePool{id: "1"})
-	require.Equal(t, []string{"1"}, cache.GetNodeGroupIds())
+	require.Equal(t, []string{"1"}, cache.GetNodeGroupIDs())
 	cache.AddNodeGroup(&nodePool{id: "2"})
-	require.ElementsMatch(t, []string{"1", "2"}, cache.GetNodeGroupIds())
+	require.ElementsMatch(t, []string{"1", "2"}, cache.GetNodeGroupIDs())
 }
 
 func TestCache_GetNodeGroups(t *testing.T) {
@@ -138,23 +130,4 @@ func TestCache_GetSetNodeGroupTargetSize(t *testing.T) {
 	size, found = cache.GetNodeGroupTargetSize("1")
 	require.False(t, found)
 	require.Zero(t, size)
-}
-
-func TestCache_NodeGroupNeedsRefresh(t *testing.T) {
-	fixedTime := time.Now().Round(time.Second)
-	timeNow = func() time.Time { return fixedTime }
-	defer func() { timeNow = time.Now }()
-
-	cache := NewIonosCache()
-	require.True(t, cache.NodeGroupNeedsRefresh("test"))
-
-	cache.AddNodeGroup(&nodePool{id: "test"})
-	require.True(t, cache.NodeGroupNeedsRefresh("test"))
-	cache.SetInstancesCacheForNodeGroup("test", nil)
-	require.False(t, cache.NodeGroupNeedsRefresh("test"))
-
-	timeNow = func() time.Time { return fixedTime.Add(nodeGroupCacheEntryTimeout) }
-	require.False(t, cache.NodeGroupNeedsRefresh("test"))
-	timeNow = func() time.Time { return fixedTime.Add(nodeGroupCacheEntryTimeout + 1*time.Second) }
-	require.True(t, cache.NodeGroupNeedsRefresh("test"))
 }

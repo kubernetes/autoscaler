@@ -40,7 +40,7 @@ func NewUserPostWithDefaults() *UserPost {
 }
 
 // GetProperties returns the Properties field value
-// If the value is explicit nil, the zero value for UserPropertiesPost will be returned
+// If the value is explicit nil, nil is returned
 func (o *UserPost) GetProperties() *UserPropertiesPost {
 	if o == nil {
 		return nil
@@ -82,6 +82,7 @@ func (o UserPost) MarshalJSON() ([]byte, error) {
 	if o.Properties != nil {
 		toSerialize["properties"] = o.Properties
 	}
+
 	return json.Marshal(toSerialize)
 }
 

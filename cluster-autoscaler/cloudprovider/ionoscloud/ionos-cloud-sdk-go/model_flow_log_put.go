@@ -16,13 +16,13 @@ import (
 
 // FlowLogPut struct for FlowLogPut
 type FlowLogPut struct {
+	// URL to the object representation (absolute path).
+	Href *string `json:"href,omitempty"`
 	// The resource's unique identifier.
-	Id *string `json:"id,omitempty"`
+	Id         *string            `json:"id,omitempty"`
+	Properties *FlowLogProperties `json:"properties"`
 	// The type of object that has been created.
 	Type *Type `json:"type,omitempty"`
-	// URL to the object representation (absolute path).
-	Href       *string            `json:"href,omitempty"`
-	Properties *FlowLogProperties `json:"properties"`
 }
 
 // NewFlowLogPut instantiates a new FlowLogPut object
@@ -45,84 +45,8 @@ func NewFlowLogPutWithDefaults() *FlowLogPut {
 	return &this
 }
 
-// GetId returns the Id field value
-// If the value is explicit nil, the zero value for string will be returned
-func (o *FlowLogPut) GetId() *string {
-	if o == nil {
-		return nil
-	}
-
-	return o.Id
-
-}
-
-// GetIdOk returns a tuple with the Id field value
-// and a boolean to check if the value has been set.
-// NOTE: If the value is an explicit nil, `nil, true` will be returned
-func (o *FlowLogPut) GetIdOk() (*string, bool) {
-	if o == nil {
-		return nil, false
-	}
-
-	return o.Id, true
-}
-
-// SetId sets field value
-func (o *FlowLogPut) SetId(v string) {
-
-	o.Id = &v
-
-}
-
-// HasId returns a boolean if a field has been set.
-func (o *FlowLogPut) HasId() bool {
-	if o != nil && o.Id != nil {
-		return true
-	}
-
-	return false
-}
-
-// GetType returns the Type field value
-// If the value is explicit nil, the zero value for Type will be returned
-func (o *FlowLogPut) GetType() *Type {
-	if o == nil {
-		return nil
-	}
-
-	return o.Type
-
-}
-
-// GetTypeOk returns a tuple with the Type field value
-// and a boolean to check if the value has been set.
-// NOTE: If the value is an explicit nil, `nil, true` will be returned
-func (o *FlowLogPut) GetTypeOk() (*Type, bool) {
-	if o == nil {
-		return nil, false
-	}
-
-	return o.Type, true
-}
-
-// SetType sets field value
-func (o *FlowLogPut) SetType(v Type) {
-
-	o.Type = &v
-
-}
-
-// HasType returns a boolean if a field has been set.
-func (o *FlowLogPut) HasType() bool {
-	if o != nil && o.Type != nil {
-		return true
-	}
-
-	return false
-}
-
 // GetHref returns the Href field value
-// If the value is explicit nil, the zero value for string will be returned
+// If the value is explicit nil, nil is returned
 func (o *FlowLogPut) GetHref() *string {
 	if o == nil {
 		return nil
@@ -159,8 +83,46 @@ func (o *FlowLogPut) HasHref() bool {
 	return false
 }
 
+// GetId returns the Id field value
+// If the value is explicit nil, nil is returned
+func (o *FlowLogPut) GetId() *string {
+	if o == nil {
+		return nil
+	}
+
+	return o.Id
+
+}
+
+// GetIdOk returns a tuple with the Id field value
+// and a boolean to check if the value has been set.
+// NOTE: If the value is an explicit nil, `nil, true` will be returned
+func (o *FlowLogPut) GetIdOk() (*string, bool) {
+	if o == nil {
+		return nil, false
+	}
+
+	return o.Id, true
+}
+
+// SetId sets field value
+func (o *FlowLogPut) SetId(v string) {
+
+	o.Id = &v
+
+}
+
+// HasId returns a boolean if a field has been set.
+func (o *FlowLogPut) HasId() bool {
+	if o != nil && o.Id != nil {
+		return true
+	}
+
+	return false
+}
+
 // GetProperties returns the Properties field value
-// If the value is explicit nil, the zero value for FlowLogProperties will be returned
+// If the value is explicit nil, nil is returned
 func (o *FlowLogPut) GetProperties() *FlowLogProperties {
 	if o == nil {
 		return nil
@@ -197,20 +159,62 @@ func (o *FlowLogPut) HasProperties() bool {
 	return false
 }
 
+// GetType returns the Type field value
+// If the value is explicit nil, nil is returned
+func (o *FlowLogPut) GetType() *Type {
+	if o == nil {
+		return nil
+	}
+
+	return o.Type
+
+}
+
+// GetTypeOk returns a tuple with the Type field value
+// and a boolean to check if the value has been set.
+// NOTE: If the value is an explicit nil, `nil, true` will be returned
+func (o *FlowLogPut) GetTypeOk() (*Type, bool) {
+	if o == nil {
+		return nil, false
+	}
+
+	return o.Type, true
+}
+
+// SetType sets field value
+func (o *FlowLogPut) SetType(v Type) {
+
+	o.Type = &v
+
+}
+
+// HasType returns a boolean if a field has been set.
+func (o *FlowLogPut) HasType() bool {
+	if o != nil && o.Type != nil {
+		return true
+	}
+
+	return false
+}
+
 func (o FlowLogPut) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
-	if o.Id != nil {
-		toSerialize["id"] = o.Id
-	}
-	if o.Type != nil {
-		toSerialize["type"] = o.Type
-	}
 	if o.Href != nil {
 		toSerialize["href"] = o.Href
 	}
+
+	if o.Id != nil {
+		toSerialize["id"] = o.Id
+	}
+
 	if o.Properties != nil {
 		toSerialize["properties"] = o.Properties
 	}
+
+	if o.Type != nil {
+		toSerialize["type"] = o.Type
+	}
+
 	return json.Marshal(toSerialize)
 }
 

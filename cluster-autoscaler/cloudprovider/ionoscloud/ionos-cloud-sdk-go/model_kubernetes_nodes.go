@@ -16,14 +16,14 @@ import (
 
 // KubernetesNodes struct for KubernetesNodes
 type KubernetesNodes struct {
+	// The URL to the collection representation (absolute path).
+	Href *string `json:"href,omitempty"`
 	// A unique representation of the Kubernetes node pool as a resource collection.
 	Id *string `json:"id,omitempty"`
-	// The type of resource within a collection.
-	Type *string `json:"type,omitempty"`
-	// URL to the collection representation (absolute path).
-	Href *string `json:"href,omitempty"`
 	// Array of items in the collection.
 	Items *[]KubernetesNode `json:"items,omitempty"`
+	// The resource type within a collection.
+	Type *string `json:"type,omitempty"`
 }
 
 // NewKubernetesNodes instantiates a new KubernetesNodes object
@@ -44,84 +44,8 @@ func NewKubernetesNodesWithDefaults() *KubernetesNodes {
 	return &this
 }
 
-// GetId returns the Id field value
-// If the value is explicit nil, the zero value for string will be returned
-func (o *KubernetesNodes) GetId() *string {
-	if o == nil {
-		return nil
-	}
-
-	return o.Id
-
-}
-
-// GetIdOk returns a tuple with the Id field value
-// and a boolean to check if the value has been set.
-// NOTE: If the value is an explicit nil, `nil, true` will be returned
-func (o *KubernetesNodes) GetIdOk() (*string, bool) {
-	if o == nil {
-		return nil, false
-	}
-
-	return o.Id, true
-}
-
-// SetId sets field value
-func (o *KubernetesNodes) SetId(v string) {
-
-	o.Id = &v
-
-}
-
-// HasId returns a boolean if a field has been set.
-func (o *KubernetesNodes) HasId() bool {
-	if o != nil && o.Id != nil {
-		return true
-	}
-
-	return false
-}
-
-// GetType returns the Type field value
-// If the value is explicit nil, the zero value for string will be returned
-func (o *KubernetesNodes) GetType() *string {
-	if o == nil {
-		return nil
-	}
-
-	return o.Type
-
-}
-
-// GetTypeOk returns a tuple with the Type field value
-// and a boolean to check if the value has been set.
-// NOTE: If the value is an explicit nil, `nil, true` will be returned
-func (o *KubernetesNodes) GetTypeOk() (*string, bool) {
-	if o == nil {
-		return nil, false
-	}
-
-	return o.Type, true
-}
-
-// SetType sets field value
-func (o *KubernetesNodes) SetType(v string) {
-
-	o.Type = &v
-
-}
-
-// HasType returns a boolean if a field has been set.
-func (o *KubernetesNodes) HasType() bool {
-	if o != nil && o.Type != nil {
-		return true
-	}
-
-	return false
-}
-
 // GetHref returns the Href field value
-// If the value is explicit nil, the zero value for string will be returned
+// If the value is explicit nil, nil is returned
 func (o *KubernetesNodes) GetHref() *string {
 	if o == nil {
 		return nil
@@ -158,8 +82,46 @@ func (o *KubernetesNodes) HasHref() bool {
 	return false
 }
 
+// GetId returns the Id field value
+// If the value is explicit nil, nil is returned
+func (o *KubernetesNodes) GetId() *string {
+	if o == nil {
+		return nil
+	}
+
+	return o.Id
+
+}
+
+// GetIdOk returns a tuple with the Id field value
+// and a boolean to check if the value has been set.
+// NOTE: If the value is an explicit nil, `nil, true` will be returned
+func (o *KubernetesNodes) GetIdOk() (*string, bool) {
+	if o == nil {
+		return nil, false
+	}
+
+	return o.Id, true
+}
+
+// SetId sets field value
+func (o *KubernetesNodes) SetId(v string) {
+
+	o.Id = &v
+
+}
+
+// HasId returns a boolean if a field has been set.
+func (o *KubernetesNodes) HasId() bool {
+	if o != nil && o.Id != nil {
+		return true
+	}
+
+	return false
+}
+
 // GetItems returns the Items field value
-// If the value is explicit nil, the zero value for []KubernetesNode will be returned
+// If the value is explicit nil, nil is returned
 func (o *KubernetesNodes) GetItems() *[]KubernetesNode {
 	if o == nil {
 		return nil
@@ -196,20 +158,62 @@ func (o *KubernetesNodes) HasItems() bool {
 	return false
 }
 
+// GetType returns the Type field value
+// If the value is explicit nil, nil is returned
+func (o *KubernetesNodes) GetType() *string {
+	if o == nil {
+		return nil
+	}
+
+	return o.Type
+
+}
+
+// GetTypeOk returns a tuple with the Type field value
+// and a boolean to check if the value has been set.
+// NOTE: If the value is an explicit nil, `nil, true` will be returned
+func (o *KubernetesNodes) GetTypeOk() (*string, bool) {
+	if o == nil {
+		return nil, false
+	}
+
+	return o.Type, true
+}
+
+// SetType sets field value
+func (o *KubernetesNodes) SetType(v string) {
+
+	o.Type = &v
+
+}
+
+// HasType returns a boolean if a field has been set.
+func (o *KubernetesNodes) HasType() bool {
+	if o != nil && o.Type != nil {
+		return true
+	}
+
+	return false
+}
+
 func (o KubernetesNodes) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
-	if o.Id != nil {
-		toSerialize["id"] = o.Id
-	}
-	if o.Type != nil {
-		toSerialize["type"] = o.Type
-	}
 	if o.Href != nil {
 		toSerialize["href"] = o.Href
 	}
+
+	if o.Id != nil {
+		toSerialize["id"] = o.Id
+	}
+
 	if o.Items != nil {
 		toSerialize["items"] = o.Items
 	}
+
+	if o.Type != nil {
+		toSerialize["type"] = o.Type
+	}
+
 	return json.Marshal(toSerialize)
 }
 

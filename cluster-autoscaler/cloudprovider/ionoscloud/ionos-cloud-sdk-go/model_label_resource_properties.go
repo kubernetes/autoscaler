@@ -41,7 +41,7 @@ func NewLabelResourcePropertiesWithDefaults() *LabelResourceProperties {
 }
 
 // GetKey returns the Key field value
-// If the value is explicit nil, the zero value for string will be returned
+// If the value is explicit nil, nil is returned
 func (o *LabelResourceProperties) GetKey() *string {
 	if o == nil {
 		return nil
@@ -79,7 +79,7 @@ func (o *LabelResourceProperties) HasKey() bool {
 }
 
 // GetValue returns the Value field value
-// If the value is explicit nil, the zero value for string will be returned
+// If the value is explicit nil, nil is returned
 func (o *LabelResourceProperties) GetValue() *string {
 	if o == nil {
 		return nil
@@ -121,9 +121,11 @@ func (o LabelResourceProperties) MarshalJSON() ([]byte, error) {
 	if o.Key != nil {
 		toSerialize["key"] = o.Key
 	}
+
 	if o.Value != nil {
 		toSerialize["value"] = o.Value
 	}
+
 	return json.Marshal(toSerialize)
 }
 

@@ -16,12 +16,12 @@ import (
 
 // BackupUnitProperties struct for BackupUnitProperties
 type BackupUnitProperties struct {
+	// The email associated with the backup unit. Bear in mind that this email does not be the same email as of the user.
+	Email *string `json:"email,omitempty"`
 	// The name of the  resource (alphanumeric characters only).
 	Name *string `json:"name"`
 	// The password associated with that resource.
 	Password *string `json:"password,omitempty"`
-	// The email associated with the backup unit. Bear in mind that this email does not be the same email as of the user.
-	Email *string `json:"email,omitempty"`
 }
 
 // NewBackupUnitProperties instantiates a new BackupUnitProperties object
@@ -44,8 +44,46 @@ func NewBackupUnitPropertiesWithDefaults() *BackupUnitProperties {
 	return &this
 }
 
+// GetEmail returns the Email field value
+// If the value is explicit nil, nil is returned
+func (o *BackupUnitProperties) GetEmail() *string {
+	if o == nil {
+		return nil
+	}
+
+	return o.Email
+
+}
+
+// GetEmailOk returns a tuple with the Email field value
+// and a boolean to check if the value has been set.
+// NOTE: If the value is an explicit nil, `nil, true` will be returned
+func (o *BackupUnitProperties) GetEmailOk() (*string, bool) {
+	if o == nil {
+		return nil, false
+	}
+
+	return o.Email, true
+}
+
+// SetEmail sets field value
+func (o *BackupUnitProperties) SetEmail(v string) {
+
+	o.Email = &v
+
+}
+
+// HasEmail returns a boolean if a field has been set.
+func (o *BackupUnitProperties) HasEmail() bool {
+	if o != nil && o.Email != nil {
+		return true
+	}
+
+	return false
+}
+
 // GetName returns the Name field value
-// If the value is explicit nil, the zero value for string will be returned
+// If the value is explicit nil, nil is returned
 func (o *BackupUnitProperties) GetName() *string {
 	if o == nil {
 		return nil
@@ -83,7 +121,7 @@ func (o *BackupUnitProperties) HasName() bool {
 }
 
 // GetPassword returns the Password field value
-// If the value is explicit nil, the zero value for string will be returned
+// If the value is explicit nil, nil is returned
 func (o *BackupUnitProperties) GetPassword() *string {
 	if o == nil {
 		return nil
@@ -120,55 +158,20 @@ func (o *BackupUnitProperties) HasPassword() bool {
 	return false
 }
 
-// GetEmail returns the Email field value
-// If the value is explicit nil, the zero value for string will be returned
-func (o *BackupUnitProperties) GetEmail() *string {
-	if o == nil {
-		return nil
-	}
-
-	return o.Email
-
-}
-
-// GetEmailOk returns a tuple with the Email field value
-// and a boolean to check if the value has been set.
-// NOTE: If the value is an explicit nil, `nil, true` will be returned
-func (o *BackupUnitProperties) GetEmailOk() (*string, bool) {
-	if o == nil {
-		return nil, false
-	}
-
-	return o.Email, true
-}
-
-// SetEmail sets field value
-func (o *BackupUnitProperties) SetEmail(v string) {
-
-	o.Email = &v
-
-}
-
-// HasEmail returns a boolean if a field has been set.
-func (o *BackupUnitProperties) HasEmail() bool {
-	if o != nil && o.Email != nil {
-		return true
-	}
-
-	return false
-}
-
 func (o BackupUnitProperties) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
-	if o.Name != nil {
-		toSerialize["name"] = o.Name
-	}
-	if o.Password != nil {
-		toSerialize["password"] = o.Password
-	}
 	if o.Email != nil {
 		toSerialize["email"] = o.Email
 	}
+
+	if o.Name != nil {
+		toSerialize["name"] = o.Name
+	}
+
+	if o.Password != nil {
+		toSerialize["password"] = o.Password
+	}
+
 	return json.Marshal(toSerialize)
 }
 

@@ -24,27 +24,24 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestCustomClientProvider(t *testing.T) {
+func TestCustomGetClient(t *testing.T) {
 	tokensPath := t.TempDir()
-	require.NoError(t, os.WriteFile(filepath.Join(tokensPath, "..ignoreme"), []byte(`{"invalid"}`), 0644))
+	require.NoError(t, os.WriteFile(filepath.Join(tokensPath, "..ignoreme"), []byte(`{"invalid"}`), 0o600))
 
-	// missing files
-	provider := customClientProvider{tokensPath, "https://api.ionos.com", "test", true}
-	_, err := provider.GetClient()
+	client := NewAutoscalingClient(&Config{
+		TokensPath:        tokensPath,
+		Endpoint:          "https://api.ionos.com",
+		Insecure:          true,
+		AdditionalHeaders: map[string]string{"Foo": "Bar"},
+	}, "test")
+
+	_, err := client.getClient()
 	require.Error(t, err)
 
-	require.NoError(t, os.WriteFile(filepath.Join(tokensPath, "a"), []byte(`{"tokens":["token1"]}`), 0644))
-	require.NoError(t, os.WriteFile(filepath.Join(tokensPath, "b"), []byte(`{"tokens":["token2"]}`), 0644))
+	require.NoError(t, os.WriteFile(filepath.Join(tokensPath, "a"), []byte(`{"tokens":["token1"]}`), 0o600))
+	require.NoError(t, os.WriteFile(filepath.Join(tokensPath, "b"), []byte(`{"tokens":["token2"]}`), 0o600))
 
-	c, err := provider.GetClient()
+	c, err := client.getClient()
 	require.NoError(t, err)
 	require.NotNil(t, c)
-}
-
-type fakeClientProvider struct {
-	client *MockAPIClient
-}
-
-func (f fakeClientProvider) GetClient() (APIClient, error) {
-	return f.client, nil
 }

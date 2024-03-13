@@ -11,6 +11,7 @@
 package ionoscloud
 
 import (
+	"log"
 	"net/http"
 	"time"
 )
@@ -48,4 +49,25 @@ func NewAPIResponseWithError(errorMessage string) *APIResponse {
 
 	response := &APIResponse{Message: errorMessage}
 	return response
+}
+
+// HttpNotFound - returns true if a 404 status code was returned
+// returns false for nil APIResponse values
+func (resp *APIResponse) HttpNotFound() bool {
+	if resp != nil && resp.Response != nil && resp.StatusCode == http.StatusNotFound {
+		return true
+	}
+	return false
+}
+
+// LogInfo - logs APIResponse values like RequestTime, Operation and StatusCode
+// does not print anything for nil APIResponse values
+func (resp *APIResponse) LogInfo() {
+	if resp != nil {
+		log.Printf("[DEBUG] Request time : %s for operation : %s",
+			resp.RequestTime, resp.Operation)
+		if resp.Response != nil {
+			log.Printf("[DEBUG] response status code : %d\n", resp.StatusCode)
+		}
+	}
 }

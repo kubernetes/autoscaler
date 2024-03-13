@@ -16,13 +16,15 @@ import (
 
 // NetworkLoadBalancerForwardingRuleTarget struct for NetworkLoadBalancerForwardingRuleTarget
 type NetworkLoadBalancerForwardingRuleTarget struct {
+	HealthCheck *NetworkLoadBalancerForwardingRuleTargetHealthCheck `json:"healthCheck,omitempty"`
 	// The IP of the balanced target VM.
 	Ip *string `json:"ip"`
 	// The port of the balanced target service; valid range is 1 to 65535.
 	Port *int32 `json:"port"`
 	// Traffic is distributed in proportion to target weight, relative to the combined weight of all targets. A target with higher weight receives a greater share of traffic. Valid range is 0 to 256 and default is 1. Targets with weight of 0 do not participate in load balancing but still accept persistent connections. It is best to assign weights in the middle of the range to leave room for later adjustments.
-	Weight      *int32                                              `json:"weight"`
-	HealthCheck *NetworkLoadBalancerForwardingRuleTargetHealthCheck `json:"healthCheck,omitempty"`
+	Weight *int32 `json:"weight"`
+	// ProxyProtocol is used to set the proxy protocol version.
+	ProxyProtocol *string `json:"proxyProtocol,omitempty"`
 }
 
 // NewNetworkLoadBalancerForwardingRuleTarget instantiates a new NetworkLoadBalancerForwardingRuleTarget object
@@ -35,6 +37,8 @@ func NewNetworkLoadBalancerForwardingRuleTarget(ip string, port int32, weight in
 	this.Ip = &ip
 	this.Port = &port
 	this.Weight = &weight
+	var proxyProtocol string = "none"
+	this.ProxyProtocol = &proxyProtocol
 
 	return &this
 }
@@ -44,11 +48,51 @@ func NewNetworkLoadBalancerForwardingRuleTarget(ip string, port int32, weight in
 // but it doesn't guarantee that properties required by API are set
 func NewNetworkLoadBalancerForwardingRuleTargetWithDefaults() *NetworkLoadBalancerForwardingRuleTarget {
 	this := NetworkLoadBalancerForwardingRuleTarget{}
+	var proxyProtocol string = "none"
+	this.ProxyProtocol = &proxyProtocol
 	return &this
 }
 
+// GetHealthCheck returns the HealthCheck field value
+// If the value is explicit nil, nil is returned
+func (o *NetworkLoadBalancerForwardingRuleTarget) GetHealthCheck() *NetworkLoadBalancerForwardingRuleTargetHealthCheck {
+	if o == nil {
+		return nil
+	}
+
+	return o.HealthCheck
+
+}
+
+// GetHealthCheckOk returns a tuple with the HealthCheck field value
+// and a boolean to check if the value has been set.
+// NOTE: If the value is an explicit nil, `nil, true` will be returned
+func (o *NetworkLoadBalancerForwardingRuleTarget) GetHealthCheckOk() (*NetworkLoadBalancerForwardingRuleTargetHealthCheck, bool) {
+	if o == nil {
+		return nil, false
+	}
+
+	return o.HealthCheck, true
+}
+
+// SetHealthCheck sets field value
+func (o *NetworkLoadBalancerForwardingRuleTarget) SetHealthCheck(v NetworkLoadBalancerForwardingRuleTargetHealthCheck) {
+
+	o.HealthCheck = &v
+
+}
+
+// HasHealthCheck returns a boolean if a field has been set.
+func (o *NetworkLoadBalancerForwardingRuleTarget) HasHealthCheck() bool {
+	if o != nil && o.HealthCheck != nil {
+		return true
+	}
+
+	return false
+}
+
 // GetIp returns the Ip field value
-// If the value is explicit nil, the zero value for string will be returned
+// If the value is explicit nil, nil is returned
 func (o *NetworkLoadBalancerForwardingRuleTarget) GetIp() *string {
 	if o == nil {
 		return nil
@@ -86,7 +130,7 @@ func (o *NetworkLoadBalancerForwardingRuleTarget) HasIp() bool {
 }
 
 // GetPort returns the Port field value
-// If the value is explicit nil, the zero value for int32 will be returned
+// If the value is explicit nil, nil is returned
 func (o *NetworkLoadBalancerForwardingRuleTarget) GetPort() *int32 {
 	if o == nil {
 		return nil
@@ -124,7 +168,7 @@ func (o *NetworkLoadBalancerForwardingRuleTarget) HasPort() bool {
 }
 
 // GetWeight returns the Weight field value
-// If the value is explicit nil, the zero value for int32 will be returned
+// If the value is explicit nil, nil is returned
 func (o *NetworkLoadBalancerForwardingRuleTarget) GetWeight() *int32 {
 	if o == nil {
 		return nil
@@ -161,38 +205,38 @@ func (o *NetworkLoadBalancerForwardingRuleTarget) HasWeight() bool {
 	return false
 }
 
-// GetHealthCheck returns the HealthCheck field value
-// If the value is explicit nil, the zero value for NetworkLoadBalancerForwardingRuleTargetHealthCheck will be returned
-func (o *NetworkLoadBalancerForwardingRuleTarget) GetHealthCheck() *NetworkLoadBalancerForwardingRuleTargetHealthCheck {
+// GetProxyProtocol returns the ProxyProtocol field value
+// If the value is explicit nil, nil is returned
+func (o *NetworkLoadBalancerForwardingRuleTarget) GetProxyProtocol() *string {
 	if o == nil {
 		return nil
 	}
 
-	return o.HealthCheck
+	return o.ProxyProtocol
 
 }
 
-// GetHealthCheckOk returns a tuple with the HealthCheck field value
+// GetProxyProtocolOk returns a tuple with the ProxyProtocol field value
 // and a boolean to check if the value has been set.
 // NOTE: If the value is an explicit nil, `nil, true` will be returned
-func (o *NetworkLoadBalancerForwardingRuleTarget) GetHealthCheckOk() (*NetworkLoadBalancerForwardingRuleTargetHealthCheck, bool) {
+func (o *NetworkLoadBalancerForwardingRuleTarget) GetProxyProtocolOk() (*string, bool) {
 	if o == nil {
 		return nil, false
 	}
 
-	return o.HealthCheck, true
+	return o.ProxyProtocol, true
 }
 
-// SetHealthCheck sets field value
-func (o *NetworkLoadBalancerForwardingRuleTarget) SetHealthCheck(v NetworkLoadBalancerForwardingRuleTargetHealthCheck) {
+// SetProxyProtocol sets field value
+func (o *NetworkLoadBalancerForwardingRuleTarget) SetProxyProtocol(v string) {
 
-	o.HealthCheck = &v
+	o.ProxyProtocol = &v
 
 }
 
-// HasHealthCheck returns a boolean if a field has been set.
-func (o *NetworkLoadBalancerForwardingRuleTarget) HasHealthCheck() bool {
-	if o != nil && o.HealthCheck != nil {
+// HasProxyProtocol returns a boolean if a field has been set.
+func (o *NetworkLoadBalancerForwardingRuleTarget) HasProxyProtocol() bool {
+	if o != nil && o.ProxyProtocol != nil {
 		return true
 	}
 
@@ -201,18 +245,26 @@ func (o *NetworkLoadBalancerForwardingRuleTarget) HasHealthCheck() bool {
 
 func (o NetworkLoadBalancerForwardingRuleTarget) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
-	if o.Ip != nil {
-		toSerialize["ip"] = o.Ip
-	}
-	if o.Port != nil {
-		toSerialize["port"] = o.Port
-	}
-	if o.Weight != nil {
-		toSerialize["weight"] = o.Weight
-	}
 	if o.HealthCheck != nil {
 		toSerialize["healthCheck"] = o.HealthCheck
 	}
+
+	if o.Ip != nil {
+		toSerialize["ip"] = o.Ip
+	}
+
+	if o.Port != nil {
+		toSerialize["port"] = o.Port
+	}
+
+	if o.Weight != nil {
+		toSerialize["weight"] = o.Weight
+	}
+
+	if o.ProxyProtocol != nil {
+		toSerialize["proxyProtocol"] = o.ProxyProtocol
+	}
+
 	return json.Marshal(toSerialize)
 }
 

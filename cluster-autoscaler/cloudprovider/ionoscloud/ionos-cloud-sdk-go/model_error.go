@@ -40,7 +40,7 @@ func NewErrorWithDefaults() *Error {
 }
 
 // GetHttpStatus returns the HttpStatus field value
-// If the value is explicit nil, the zero value for int32 will be returned
+// If the value is explicit nil, nil is returned
 func (o *Error) GetHttpStatus() *int32 {
 	if o == nil {
 		return nil
@@ -78,7 +78,7 @@ func (o *Error) HasHttpStatus() bool {
 }
 
 // GetMessages returns the Messages field value
-// If the value is explicit nil, the zero value for []ErrorMessage will be returned
+// If the value is explicit nil, nil is returned
 func (o *Error) GetMessages() *[]ErrorMessage {
 	if o == nil {
 		return nil
@@ -120,9 +120,11 @@ func (o Error) MarshalJSON() ([]byte, error) {
 	if o.HttpStatus != nil {
 		toSerialize["httpStatus"] = o.HttpStatus
 	}
+
 	if o.Messages != nil {
 		toSerialize["messages"] = o.Messages
 	}
+
 	return json.Marshal(toSerialize)
 }
 

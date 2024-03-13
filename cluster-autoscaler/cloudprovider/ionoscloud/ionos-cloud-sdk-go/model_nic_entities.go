@@ -16,8 +16,8 @@ import (
 
 // NicEntities struct for NicEntities
 type NicEntities struct {
-	Flowlogs      *FlowLogs      `json:"flowlogs,omitempty"`
 	Firewallrules *FirewallRules `json:"firewallrules,omitempty"`
+	Flowlogs      *FlowLogs      `json:"flowlogs,omitempty"`
 }
 
 // NewNicEntities instantiates a new NicEntities object
@@ -38,46 +38,8 @@ func NewNicEntitiesWithDefaults() *NicEntities {
 	return &this
 }
 
-// GetFlowlogs returns the Flowlogs field value
-// If the value is explicit nil, the zero value for FlowLogs will be returned
-func (o *NicEntities) GetFlowlogs() *FlowLogs {
-	if o == nil {
-		return nil
-	}
-
-	return o.Flowlogs
-
-}
-
-// GetFlowlogsOk returns a tuple with the Flowlogs field value
-// and a boolean to check if the value has been set.
-// NOTE: If the value is an explicit nil, `nil, true` will be returned
-func (o *NicEntities) GetFlowlogsOk() (*FlowLogs, bool) {
-	if o == nil {
-		return nil, false
-	}
-
-	return o.Flowlogs, true
-}
-
-// SetFlowlogs sets field value
-func (o *NicEntities) SetFlowlogs(v FlowLogs) {
-
-	o.Flowlogs = &v
-
-}
-
-// HasFlowlogs returns a boolean if a field has been set.
-func (o *NicEntities) HasFlowlogs() bool {
-	if o != nil && o.Flowlogs != nil {
-		return true
-	}
-
-	return false
-}
-
 // GetFirewallrules returns the Firewallrules field value
-// If the value is explicit nil, the zero value for FirewallRules will be returned
+// If the value is explicit nil, nil is returned
 func (o *NicEntities) GetFirewallrules() *FirewallRules {
 	if o == nil {
 		return nil
@@ -114,14 +76,54 @@ func (o *NicEntities) HasFirewallrules() bool {
 	return false
 }
 
+// GetFlowlogs returns the Flowlogs field value
+// If the value is explicit nil, nil is returned
+func (o *NicEntities) GetFlowlogs() *FlowLogs {
+	if o == nil {
+		return nil
+	}
+
+	return o.Flowlogs
+
+}
+
+// GetFlowlogsOk returns a tuple with the Flowlogs field value
+// and a boolean to check if the value has been set.
+// NOTE: If the value is an explicit nil, `nil, true` will be returned
+func (o *NicEntities) GetFlowlogsOk() (*FlowLogs, bool) {
+	if o == nil {
+		return nil, false
+	}
+
+	return o.Flowlogs, true
+}
+
+// SetFlowlogs sets field value
+func (o *NicEntities) SetFlowlogs(v FlowLogs) {
+
+	o.Flowlogs = &v
+
+}
+
+// HasFlowlogs returns a boolean if a field has been set.
+func (o *NicEntities) HasFlowlogs() bool {
+	if o != nil && o.Flowlogs != nil {
+		return true
+	}
+
+	return false
+}
+
 func (o NicEntities) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
-	if o.Flowlogs != nil {
-		toSerialize["flowlogs"] = o.Flowlogs
-	}
 	if o.Firewallrules != nil {
 		toSerialize["firewallrules"] = o.Firewallrules
 	}
+
+	if o.Flowlogs != nil {
+		toSerialize["flowlogs"] = o.Flowlogs
+	}
+
 	return json.Marshal(toSerialize)
 }
 
