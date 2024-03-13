@@ -110,7 +110,7 @@ func TestGetNodePrice(t *testing.T) {
 		"custom node price scales linearly": {
 			cheaperNode:                testNode(t, "small_custom", "custom-1", 1000, 3.75*units.GiB, "", 0, false, false),
 			expensiveNode:              testNode(t, "large_custom", "custom-8", 8000, 30*units.GiB, "", 0, false, false),
-			priceComparisonCoefficient: 0.14,
+			priceComparisonCoefficient: 0.16,
 		},
 		"custom node price scales linearly 2": {
 			cheaperNode:                testNode(t, "large_custom", "custom-8", 8000, 30*units.GiB, "", 0, false, false),
