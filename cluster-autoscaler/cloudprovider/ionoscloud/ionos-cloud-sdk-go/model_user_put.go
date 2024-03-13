@@ -42,7 +42,7 @@ func NewUserPutWithDefaults() *UserPut {
 }
 
 // GetId returns the Id field value
-// If the value is explicit nil, the zero value for string will be returned
+// If the value is explicit nil, nil is returned
 func (o *UserPut) GetId() *string {
 	if o == nil {
 		return nil
@@ -80,7 +80,7 @@ func (o *UserPut) HasId() bool {
 }
 
 // GetProperties returns the Properties field value
-// If the value is explicit nil, the zero value for UserPropertiesPut will be returned
+// If the value is explicit nil, nil is returned
 func (o *UserPut) GetProperties() *UserPropertiesPut {
 	if o == nil {
 		return nil
@@ -122,9 +122,11 @@ func (o UserPut) MarshalJSON() ([]byte, error) {
 	if o.Id != nil {
 		toSerialize["id"] = o.Id
 	}
+
 	if o.Properties != nil {
 		toSerialize["properties"] = o.Properties
 	}
+
 	return json.Marshal(toSerialize)
 }
 
