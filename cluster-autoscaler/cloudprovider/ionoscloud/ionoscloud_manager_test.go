@@ -31,7 +31,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	ionos "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/ionoscloud/ionos-cloud-sdk-go"
-	"k8s.io/utils/ptr"
 )
 
 var (
@@ -137,16 +136,16 @@ func TestCreateIonosCloudManager(t *testing.T) {
 
 func newKubernetesNodePool(state string, size int32) *ionos.KubernetesNodePool {
 	return &ionos.KubernetesNodePool{
-		Id:         ptr.To("test"),
-		Metadata:   &ionos.DatacenterElementMetadata{State: ptr.To(state)},
-		Properties: &ionos.KubernetesNodePoolProperties{NodeCount: ptr.To(size)},
+		Id:         ptrTo("test"),
+		Metadata:   &ionos.DatacenterElementMetadata{State: ptrTo(state)},
+		Properties: &ionos.KubernetesNodePoolProperties{NodeCount: ptrTo(size)},
 	}
 }
 
 func newKubernetesNode(id, state string) ionos.KubernetesNode {
 	return ionos.KubernetesNode{
-		Id:       ptr.To(id),
-		Metadata: &ionos.KubernetesNodeMetadata{State: ptr.To(state)},
+		Id:       ptrTo(id),
+		Metadata: &ionos.KubernetesNodeMetadata{State: ptrTo(state)},
 	}
 }
 

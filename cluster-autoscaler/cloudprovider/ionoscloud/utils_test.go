@@ -22,54 +22,57 @@ import (
 	"github.com/stretchr/testify/require"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	ionos "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/ionoscloud/ionos-cloud-sdk-go"
-	"k8s.io/utils/ptr"
 )
+
+func ptrTo[T any](v T) *T {
+	return &v
+}
 
 var (
 	kubernetesNodes = []ionos.KubernetesNode{
 		{
-			Id: ptr.To("1"),
+			Id: ptrTo("1"),
 			Metadata: &ionos.KubernetesNodeMetadata{
-				State: ptr.To(K8sNodeStateProvisioning),
+				State: ptrTo(K8sNodeStateProvisioning),
 			},
 			Properties: &ionos.KubernetesNodeProperties{
-				Name: ptr.To("node1"),
+				Name: ptrTo("node1"),
 			},
 		},
 		{
-			Id: ptr.To("2"),
+			Id: ptrTo("2"),
 			Metadata: &ionos.KubernetesNodeMetadata{
-				State: ptr.To(K8sNodeStateProvisioned),
+				State: ptrTo(K8sNodeStateProvisioned),
 			},
 			Properties: &ionos.KubernetesNodeProperties{
-				Name: ptr.To("node2"),
+				Name: ptrTo("node2"),
 			},
 		},
 		{
-			Id: ptr.To("3"),
+			Id: ptrTo("3"),
 			Metadata: &ionos.KubernetesNodeMetadata{
-				State: ptr.To(K8sNodeStateRebuilding),
+				State: ptrTo(K8sNodeStateRebuilding),
 			},
 			Properties: &ionos.KubernetesNodeProperties{
-				Name: ptr.To("node3"),
+				Name: ptrTo("node3"),
 			},
 		},
 		{
-			Id: ptr.To("4"),
+			Id: ptrTo("4"),
 			Metadata: &ionos.KubernetesNodeMetadata{
-				State: ptr.To(K8sNodeStateTerminating),
+				State: ptrTo(K8sNodeStateTerminating),
 			},
 			Properties: &ionos.KubernetesNodeProperties{
-				Name: ptr.To("node4"),
+				Name: ptrTo("node4"),
 			},
 		},
 		{
-			Id: ptr.To("5"),
+			Id: ptrTo("5"),
 			Metadata: &ionos.KubernetesNodeMetadata{
-				State: ptr.To(K8sNodeStateReady),
+				State: ptrTo(K8sNodeStateReady),
 			},
 			Properties: &ionos.KubernetesNodeProperties{
-				Name: ptr.To("node5"),
+				Name: ptrTo("node5"),
 			},
 		},
 	}
@@ -138,9 +141,9 @@ func TestUtils_ConvertToInstances(t *testing.T) {
 func TestUtils_ConvertToInstance(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		in := ionos.KubernetesNode{
-			Id: ptr.To("1"),
+			Id: ptrTo("1"),
 			Metadata: &ionos.KubernetesNodeMetadata{
-				State: ptr.To(K8sNodeStateReady),
+				State: ptrTo(K8sNodeStateReady),
 			},
 		}
 		want := cloudprovider.Instance{
