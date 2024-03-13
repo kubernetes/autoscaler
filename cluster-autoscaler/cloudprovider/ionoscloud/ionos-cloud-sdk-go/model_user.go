@@ -16,15 +16,15 @@ import (
 
 // User struct for User
 type User struct {
-	// The resource's unique identifier.
-	Id *string `json:"id,omitempty"`
-	// The type of object that has been created.
-	Type *Type `json:"type,omitempty"`
+	Entities *UsersEntities `json:"entities,omitempty"`
 	// URL to the object representation (absolute path).
-	Href       *string         `json:"href,omitempty"`
+	Href *string `json:"href,omitempty"`
+	// The resource's unique identifier.
+	Id         *string         `json:"id,omitempty"`
 	Metadata   *UserMetadata   `json:"metadata,omitempty"`
 	Properties *UserProperties `json:"properties"`
-	Entities   *UsersEntities  `json:"entities,omitempty"`
+	// The type of object that has been created.
+	Type *Type `json:"type,omitempty"`
 }
 
 // NewUser instantiates a new User object
@@ -47,76 +47,38 @@ func NewUserWithDefaults() *User {
 	return &this
 }
 
-// GetId returns the Id field value
-// If the value is explicit nil, the zero value for string will be returned
-func (o *User) GetId() *string {
+// GetEntities returns the Entities field value
+// If the value is explicit nil, nil is returned
+func (o *User) GetEntities() *UsersEntities {
 	if o == nil {
 		return nil
 	}
 
-	return o.Id
+	return o.Entities
 
 }
 
-// GetIdOk returns a tuple with the Id field value
+// GetEntitiesOk returns a tuple with the Entities field value
 // and a boolean to check if the value has been set.
 // NOTE: If the value is an explicit nil, `nil, true` will be returned
-func (o *User) GetIdOk() (*string, bool) {
+func (o *User) GetEntitiesOk() (*UsersEntities, bool) {
 	if o == nil {
 		return nil, false
 	}
 
-	return o.Id, true
+	return o.Entities, true
 }
 
-// SetId sets field value
-func (o *User) SetId(v string) {
+// SetEntities sets field value
+func (o *User) SetEntities(v UsersEntities) {
 
-	o.Id = &v
-
-}
-
-// HasId returns a boolean if a field has been set.
-func (o *User) HasId() bool {
-	if o != nil && o.Id != nil {
-		return true
-	}
-
-	return false
-}
-
-// GetType returns the Type field value
-// If the value is explicit nil, the zero value for Type will be returned
-func (o *User) GetType() *Type {
-	if o == nil {
-		return nil
-	}
-
-	return o.Type
+	o.Entities = &v
 
 }
 
-// GetTypeOk returns a tuple with the Type field value
-// and a boolean to check if the value has been set.
-// NOTE: If the value is an explicit nil, `nil, true` will be returned
-func (o *User) GetTypeOk() (*Type, bool) {
-	if o == nil {
-		return nil, false
-	}
-
-	return o.Type, true
-}
-
-// SetType sets field value
-func (o *User) SetType(v Type) {
-
-	o.Type = &v
-
-}
-
-// HasType returns a boolean if a field has been set.
-func (o *User) HasType() bool {
-	if o != nil && o.Type != nil {
+// HasEntities returns a boolean if a field has been set.
+func (o *User) HasEntities() bool {
+	if o != nil && o.Entities != nil {
 		return true
 	}
 
@@ -124,7 +86,7 @@ func (o *User) HasType() bool {
 }
 
 // GetHref returns the Href field value
-// If the value is explicit nil, the zero value for string will be returned
+// If the value is explicit nil, nil is returned
 func (o *User) GetHref() *string {
 	if o == nil {
 		return nil
@@ -161,8 +123,46 @@ func (o *User) HasHref() bool {
 	return false
 }
 
+// GetId returns the Id field value
+// If the value is explicit nil, nil is returned
+func (o *User) GetId() *string {
+	if o == nil {
+		return nil
+	}
+
+	return o.Id
+
+}
+
+// GetIdOk returns a tuple with the Id field value
+// and a boolean to check if the value has been set.
+// NOTE: If the value is an explicit nil, `nil, true` will be returned
+func (o *User) GetIdOk() (*string, bool) {
+	if o == nil {
+		return nil, false
+	}
+
+	return o.Id, true
+}
+
+// SetId sets field value
+func (o *User) SetId(v string) {
+
+	o.Id = &v
+
+}
+
+// HasId returns a boolean if a field has been set.
+func (o *User) HasId() bool {
+	if o != nil && o.Id != nil {
+		return true
+	}
+
+	return false
+}
+
 // GetMetadata returns the Metadata field value
-// If the value is explicit nil, the zero value for UserMetadata will be returned
+// If the value is explicit nil, nil is returned
 func (o *User) GetMetadata() *UserMetadata {
 	if o == nil {
 		return nil
@@ -200,7 +200,7 @@ func (o *User) HasMetadata() bool {
 }
 
 // GetProperties returns the Properties field value
-// If the value is explicit nil, the zero value for UserProperties will be returned
+// If the value is explicit nil, nil is returned
 func (o *User) GetProperties() *UserProperties {
 	if o == nil {
 		return nil
@@ -237,38 +237,38 @@ func (o *User) HasProperties() bool {
 	return false
 }
 
-// GetEntities returns the Entities field value
-// If the value is explicit nil, the zero value for UsersEntities will be returned
-func (o *User) GetEntities() *UsersEntities {
+// GetType returns the Type field value
+// If the value is explicit nil, nil is returned
+func (o *User) GetType() *Type {
 	if o == nil {
 		return nil
 	}
 
-	return o.Entities
+	return o.Type
 
 }
 
-// GetEntitiesOk returns a tuple with the Entities field value
+// GetTypeOk returns a tuple with the Type field value
 // and a boolean to check if the value has been set.
 // NOTE: If the value is an explicit nil, `nil, true` will be returned
-func (o *User) GetEntitiesOk() (*UsersEntities, bool) {
+func (o *User) GetTypeOk() (*Type, bool) {
 	if o == nil {
 		return nil, false
 	}
 
-	return o.Entities, true
+	return o.Type, true
 }
 
-// SetEntities sets field value
-func (o *User) SetEntities(v UsersEntities) {
+// SetType sets field value
+func (o *User) SetType(v Type) {
 
-	o.Entities = &v
+	o.Type = &v
 
 }
 
-// HasEntities returns a boolean if a field has been set.
-func (o *User) HasEntities() bool {
-	if o != nil && o.Entities != nil {
+// HasType returns a boolean if a field has been set.
+func (o *User) HasType() bool {
+	if o != nil && o.Type != nil {
 		return true
 	}
 
@@ -277,24 +277,30 @@ func (o *User) HasEntities() bool {
 
 func (o User) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
-	if o.Id != nil {
-		toSerialize["id"] = o.Id
-	}
-	if o.Type != nil {
-		toSerialize["type"] = o.Type
-	}
-	if o.Href != nil {
-		toSerialize["href"] = o.Href
-	}
-	if o.Metadata != nil {
-		toSerialize["metadata"] = o.Metadata
-	}
-	if o.Properties != nil {
-		toSerialize["properties"] = o.Properties
-	}
 	if o.Entities != nil {
 		toSerialize["entities"] = o.Entities
 	}
+
+	if o.Href != nil {
+		toSerialize["href"] = o.Href
+	}
+
+	if o.Id != nil {
+		toSerialize["id"] = o.Id
+	}
+
+	if o.Metadata != nil {
+		toSerialize["metadata"] = o.Metadata
+	}
+
+	if o.Properties != nil {
+		toSerialize["properties"] = o.Properties
+	}
+
+	if o.Type != nil {
+		toSerialize["type"] = o.Type
+	}
+
 	return json.Marshal(toSerialize)
 }
 

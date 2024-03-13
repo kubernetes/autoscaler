@@ -17,10 +17,10 @@ import (
 
 // RequestMetadata struct for RequestMetadata
 type RequestMetadata struct {
-	// The last time the resource was created.
-	CreatedDate *IonosTime
 	// The user who created the resource.
 	CreatedBy *string `json:"createdBy,omitempty"`
+	// The last time the resource was created.
+	CreatedDate *IonosTime
 	// Resource's Entity Tag as defined in http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.11  Entity Tag is also added as an 'ETag response header to requests which don't use 'depth' parameter.
 	Etag          *string        `json:"etag,omitempty"`
 	RequestStatus *RequestStatus `json:"requestStatus,omitempty"`
@@ -44,8 +44,46 @@ func NewRequestMetadataWithDefaults() *RequestMetadata {
 	return &this
 }
 
+// GetCreatedBy returns the CreatedBy field value
+// If the value is explicit nil, nil is returned
+func (o *RequestMetadata) GetCreatedBy() *string {
+	if o == nil {
+		return nil
+	}
+
+	return o.CreatedBy
+
+}
+
+// GetCreatedByOk returns a tuple with the CreatedBy field value
+// and a boolean to check if the value has been set.
+// NOTE: If the value is an explicit nil, `nil, true` will be returned
+func (o *RequestMetadata) GetCreatedByOk() (*string, bool) {
+	if o == nil {
+		return nil, false
+	}
+
+	return o.CreatedBy, true
+}
+
+// SetCreatedBy sets field value
+func (o *RequestMetadata) SetCreatedBy(v string) {
+
+	o.CreatedBy = &v
+
+}
+
+// HasCreatedBy returns a boolean if a field has been set.
+func (o *RequestMetadata) HasCreatedBy() bool {
+	if o != nil && o.CreatedBy != nil {
+		return true
+	}
+
+	return false
+}
+
 // GetCreatedDate returns the CreatedDate field value
-// If the value is explicit nil, the zero value for time.Time will be returned
+// If the value is explicit nil, nil is returned
 func (o *RequestMetadata) GetCreatedDate() *time.Time {
 	if o == nil {
 		return nil
@@ -89,46 +127,8 @@ func (o *RequestMetadata) HasCreatedDate() bool {
 	return false
 }
 
-// GetCreatedBy returns the CreatedBy field value
-// If the value is explicit nil, the zero value for string will be returned
-func (o *RequestMetadata) GetCreatedBy() *string {
-	if o == nil {
-		return nil
-	}
-
-	return o.CreatedBy
-
-}
-
-// GetCreatedByOk returns a tuple with the CreatedBy field value
-// and a boolean to check if the value has been set.
-// NOTE: If the value is an explicit nil, `nil, true` will be returned
-func (o *RequestMetadata) GetCreatedByOk() (*string, bool) {
-	if o == nil {
-		return nil, false
-	}
-
-	return o.CreatedBy, true
-}
-
-// SetCreatedBy sets field value
-func (o *RequestMetadata) SetCreatedBy(v string) {
-
-	o.CreatedBy = &v
-
-}
-
-// HasCreatedBy returns a boolean if a field has been set.
-func (o *RequestMetadata) HasCreatedBy() bool {
-	if o != nil && o.CreatedBy != nil {
-		return true
-	}
-
-	return false
-}
-
 // GetEtag returns the Etag field value
-// If the value is explicit nil, the zero value for string will be returned
+// If the value is explicit nil, nil is returned
 func (o *RequestMetadata) GetEtag() *string {
 	if o == nil {
 		return nil
@@ -166,7 +166,7 @@ func (o *RequestMetadata) HasEtag() bool {
 }
 
 // GetRequestStatus returns the RequestStatus field value
-// If the value is explicit nil, the zero value for RequestStatus will be returned
+// If the value is explicit nil, nil is returned
 func (o *RequestMetadata) GetRequestStatus() *RequestStatus {
 	if o == nil {
 		return nil
@@ -205,18 +205,22 @@ func (o *RequestMetadata) HasRequestStatus() bool {
 
 func (o RequestMetadata) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
-	if o.CreatedDate != nil {
-		toSerialize["createdDate"] = o.CreatedDate
-	}
 	if o.CreatedBy != nil {
 		toSerialize["createdBy"] = o.CreatedBy
 	}
+
+	if o.CreatedDate != nil {
+		toSerialize["createdDate"] = o.CreatedDate
+	}
+
 	if o.Etag != nil {
 		toSerialize["etag"] = o.Etag
 	}
+
 	if o.RequestStatus != nil {
 		toSerialize["requestStatus"] = o.RequestStatus
 	}
+
 	return json.Marshal(toSerialize)
 }
 
