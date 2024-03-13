@@ -16,56 +16,54 @@ import (
 
 // KubernetesNodePoolPropertiesForPost struct for KubernetesNodePoolPropertiesForPost
 type KubernetesNodePoolPropertiesForPost struct {
-	// A Kubernetes node pool name. Valid Kubernetes node pool name must be 63 characters or less and must be empty or begin and end with an alphanumeric character ([a-z0-9A-Z]) with dashes (-), underscores (_), dots (.), and alphanumerics between.
-	Name *string `json:"name"`
-	// A valid ID of the data center, to which the user has access.
-	DatacenterId *string `json:"datacenterId"`
-	// The number of nodes that make up the node pool.
-	NodeCount *int32 `json:"nodeCount"`
-	// A valid CPU family name.
-	CpuFamily *string `json:"cpuFamily"`
-	// The number of cores for the node.
-	CoresCount *int32 `json:"coresCount"`
-	// The RAM size for the node. Must be set in multiples of 1024 MB, with minimum size is of 2048 MB.
-	RamSize *int32 `json:"ramSize"`
+	// The annotations attached to the node pool.
+	Annotations *map[string]string     `json:"annotations,omitempty"`
+	AutoScaling *KubernetesAutoScaling `json:"autoScaling,omitempty"`
 	// The availability zone in which the target VM should be provisioned.
 	AvailabilityZone *string `json:"availabilityZone"`
-	// The type of hardware for the volume.
-	StorageType *string `json:"storageType"`
-	// The size of the volume in GB. The size should be greater than 10GB.
-	StorageSize *int32 `json:"storageSize"`
-	// The Kubernetes version the nodepool is running. This imposes restrictions on what Kubernetes versions can be run in a cluster's nodepools. Additionally, not all Kubernetes versions are viable upgrade targets for all prior versions.
-	K8sVersion        *string                      `json:"k8sVersion,omitempty"`
-	MaintenanceWindow *KubernetesMaintenanceWindow `json:"maintenanceWindow,omitempty"`
-	AutoScaling       *KubernetesAutoScaling       `json:"autoScaling,omitempty"`
-	// array of additional LANs attached to worker nodes
-	Lans *[]KubernetesNodePoolLan `json:"lans,omitempty"`
-	// map of labels attached to node pool.
+	// The total number of cores for the nodes.
+	CoresCount *int32 `json:"coresCount"`
+	// The CPU type for the nodes.
+	CpuFamily *string `json:"cpuFamily"`
+	// The unique identifier of the VDC where the worker nodes of the node pool are provisioned.Note that the data center is located in the exact place where the parent cluster of the node pool is located.
+	DatacenterId *string `json:"datacenterId"`
+	// The Kubernetes version running in the node pool. Note that this imposes restrictions on which Kubernetes versions can run in the node pools of a cluster. Also, not all Kubernetes versions are suitable upgrade targets for all earlier versions.
+	K8sVersion *string `json:"k8sVersion,omitempty"`
+	// The labels attached to the node pool.
 	Labels *map[string]string `json:"labels,omitempty"`
-	// map of annotations attached to node pool.
-	Annotations *map[string]string `json:"annotations,omitempty"`
-	// Optional array of reserved public IP addresses to be used by the nodes. IPs must be from same location as the data center used for the node pool. The array must contain one more IP than the maximum possible number of nodes (nodeCount+1 for fixed number of nodes or maxNodeCount+1 when auto scaling is used). The extra IP is used when the nodes are rebuilt.
+	// The array of existing private LANs to attach to worker nodes.
+	Lans              *[]KubernetesNodePoolLan     `json:"lans,omitempty"`
+	MaintenanceWindow *KubernetesMaintenanceWindow `json:"maintenanceWindow,omitempty"`
+	// A Kubernetes node pool name. Valid Kubernetes node pool name must be 63 characters or less and must be empty or begin and end with an alphanumeric character ([a-z0-9A-Z]) with dashes (-), underscores (_), dots (.), and alphanumerics between.
+	Name *string `json:"name"`
+	// The number of worker nodes of the node pool.
+	NodeCount *int32 `json:"nodeCount"`
+	// Optional array of reserved public IP addresses to be used by the nodes. The IPs must be from the exact location of the node pool's data center. If autoscaling is used, the array must contain one more IP than the maximum possible number of nodes (nodeCount+1 for a fixed number of nodes or maxNodeCount+1). The extra IP is used when the nodes are rebuilt.
 	PublicIps *[]string `json:"publicIps,omitempty"`
-	// Public IP address for the gateway performing source NAT for the node pool's nodes belonging to a private cluster. Required only if the node pool belongs to a private cluster.
-	GatewayIp *string `json:"gatewayIp,omitempty"`
+	// The RAM size for the nodes. Must be specified in multiples of 1024 MB, with a minimum size of 2048 MB.
+	RamSize *int32 `json:"ramSize"`
+	// The allocated volume size in GB. The allocated volume size in GB. To achieve good performance, we recommend a size greater than 100GB for SSD.
+	StorageSize *int32 `json:"storageSize"`
+	// The storage type for the nodes.
+	StorageType *string `json:"storageType"`
 }
 
 // NewKubernetesNodePoolPropertiesForPost instantiates a new KubernetesNodePoolPropertiesForPost object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewKubernetesNodePoolPropertiesForPost(name string, datacenterId string, nodeCount int32, cpuFamily string, coresCount int32, ramSize int32, availabilityZone string, storageType string, storageSize int32) *KubernetesNodePoolPropertiesForPost {
+func NewKubernetesNodePoolPropertiesForPost(availabilityZone string, coresCount int32, cpuFamily string, datacenterId string, name string, nodeCount int32, ramSize int32, storageSize int32, storageType string) *KubernetesNodePoolPropertiesForPost {
 	this := KubernetesNodePoolPropertiesForPost{}
 
-	this.Name = &name
-	this.DatacenterId = &datacenterId
-	this.NodeCount = &nodeCount
-	this.CpuFamily = &cpuFamily
-	this.CoresCount = &coresCount
-	this.RamSize = &ramSize
 	this.AvailabilityZone = &availabilityZone
-	this.StorageType = &storageType
+	this.CoresCount = &coresCount
+	this.CpuFamily = &cpuFamily
+	this.DatacenterId = &datacenterId
+	this.Name = &name
+	this.NodeCount = &nodeCount
+	this.RamSize = &ramSize
 	this.StorageSize = &storageSize
+	this.StorageType = &storageType
 
 	return &this
 }
@@ -78,540 +76,8 @@ func NewKubernetesNodePoolPropertiesForPostWithDefaults() *KubernetesNodePoolPro
 	return &this
 }
 
-// GetName returns the Name field value
-// If the value is explicit nil, the zero value for string will be returned
-func (o *KubernetesNodePoolPropertiesForPost) GetName() *string {
-	if o == nil {
-		return nil
-	}
-
-	return o.Name
-
-}
-
-// GetNameOk returns a tuple with the Name field value
-// and a boolean to check if the value has been set.
-// NOTE: If the value is an explicit nil, `nil, true` will be returned
-func (o *KubernetesNodePoolPropertiesForPost) GetNameOk() (*string, bool) {
-	if o == nil {
-		return nil, false
-	}
-
-	return o.Name, true
-}
-
-// SetName sets field value
-func (o *KubernetesNodePoolPropertiesForPost) SetName(v string) {
-
-	o.Name = &v
-
-}
-
-// HasName returns a boolean if a field has been set.
-func (o *KubernetesNodePoolPropertiesForPost) HasName() bool {
-	if o != nil && o.Name != nil {
-		return true
-	}
-
-	return false
-}
-
-// GetDatacenterId returns the DatacenterId field value
-// If the value is explicit nil, the zero value for string will be returned
-func (o *KubernetesNodePoolPropertiesForPost) GetDatacenterId() *string {
-	if o == nil {
-		return nil
-	}
-
-	return o.DatacenterId
-
-}
-
-// GetDatacenterIdOk returns a tuple with the DatacenterId field value
-// and a boolean to check if the value has been set.
-// NOTE: If the value is an explicit nil, `nil, true` will be returned
-func (o *KubernetesNodePoolPropertiesForPost) GetDatacenterIdOk() (*string, bool) {
-	if o == nil {
-		return nil, false
-	}
-
-	return o.DatacenterId, true
-}
-
-// SetDatacenterId sets field value
-func (o *KubernetesNodePoolPropertiesForPost) SetDatacenterId(v string) {
-
-	o.DatacenterId = &v
-
-}
-
-// HasDatacenterId returns a boolean if a field has been set.
-func (o *KubernetesNodePoolPropertiesForPost) HasDatacenterId() bool {
-	if o != nil && o.DatacenterId != nil {
-		return true
-	}
-
-	return false
-}
-
-// GetNodeCount returns the NodeCount field value
-// If the value is explicit nil, the zero value for int32 will be returned
-func (o *KubernetesNodePoolPropertiesForPost) GetNodeCount() *int32 {
-	if o == nil {
-		return nil
-	}
-
-	return o.NodeCount
-
-}
-
-// GetNodeCountOk returns a tuple with the NodeCount field value
-// and a boolean to check if the value has been set.
-// NOTE: If the value is an explicit nil, `nil, true` will be returned
-func (o *KubernetesNodePoolPropertiesForPost) GetNodeCountOk() (*int32, bool) {
-	if o == nil {
-		return nil, false
-	}
-
-	return o.NodeCount, true
-}
-
-// SetNodeCount sets field value
-func (o *KubernetesNodePoolPropertiesForPost) SetNodeCount(v int32) {
-
-	o.NodeCount = &v
-
-}
-
-// HasNodeCount returns a boolean if a field has been set.
-func (o *KubernetesNodePoolPropertiesForPost) HasNodeCount() bool {
-	if o != nil && o.NodeCount != nil {
-		return true
-	}
-
-	return false
-}
-
-// GetCpuFamily returns the CpuFamily field value
-// If the value is explicit nil, the zero value for string will be returned
-func (o *KubernetesNodePoolPropertiesForPost) GetCpuFamily() *string {
-	if o == nil {
-		return nil
-	}
-
-	return o.CpuFamily
-
-}
-
-// GetCpuFamilyOk returns a tuple with the CpuFamily field value
-// and a boolean to check if the value has been set.
-// NOTE: If the value is an explicit nil, `nil, true` will be returned
-func (o *KubernetesNodePoolPropertiesForPost) GetCpuFamilyOk() (*string, bool) {
-	if o == nil {
-		return nil, false
-	}
-
-	return o.CpuFamily, true
-}
-
-// SetCpuFamily sets field value
-func (o *KubernetesNodePoolPropertiesForPost) SetCpuFamily(v string) {
-
-	o.CpuFamily = &v
-
-}
-
-// HasCpuFamily returns a boolean if a field has been set.
-func (o *KubernetesNodePoolPropertiesForPost) HasCpuFamily() bool {
-	if o != nil && o.CpuFamily != nil {
-		return true
-	}
-
-	return false
-}
-
-// GetCoresCount returns the CoresCount field value
-// If the value is explicit nil, the zero value for int32 will be returned
-func (o *KubernetesNodePoolPropertiesForPost) GetCoresCount() *int32 {
-	if o == nil {
-		return nil
-	}
-
-	return o.CoresCount
-
-}
-
-// GetCoresCountOk returns a tuple with the CoresCount field value
-// and a boolean to check if the value has been set.
-// NOTE: If the value is an explicit nil, `nil, true` will be returned
-func (o *KubernetesNodePoolPropertiesForPost) GetCoresCountOk() (*int32, bool) {
-	if o == nil {
-		return nil, false
-	}
-
-	return o.CoresCount, true
-}
-
-// SetCoresCount sets field value
-func (o *KubernetesNodePoolPropertiesForPost) SetCoresCount(v int32) {
-
-	o.CoresCount = &v
-
-}
-
-// HasCoresCount returns a boolean if a field has been set.
-func (o *KubernetesNodePoolPropertiesForPost) HasCoresCount() bool {
-	if o != nil && o.CoresCount != nil {
-		return true
-	}
-
-	return false
-}
-
-// GetRamSize returns the RamSize field value
-// If the value is explicit nil, the zero value for int32 will be returned
-func (o *KubernetesNodePoolPropertiesForPost) GetRamSize() *int32 {
-	if o == nil {
-		return nil
-	}
-
-	return o.RamSize
-
-}
-
-// GetRamSizeOk returns a tuple with the RamSize field value
-// and a boolean to check if the value has been set.
-// NOTE: If the value is an explicit nil, `nil, true` will be returned
-func (o *KubernetesNodePoolPropertiesForPost) GetRamSizeOk() (*int32, bool) {
-	if o == nil {
-		return nil, false
-	}
-
-	return o.RamSize, true
-}
-
-// SetRamSize sets field value
-func (o *KubernetesNodePoolPropertiesForPost) SetRamSize(v int32) {
-
-	o.RamSize = &v
-
-}
-
-// HasRamSize returns a boolean if a field has been set.
-func (o *KubernetesNodePoolPropertiesForPost) HasRamSize() bool {
-	if o != nil && o.RamSize != nil {
-		return true
-	}
-
-	return false
-}
-
-// GetAvailabilityZone returns the AvailabilityZone field value
-// If the value is explicit nil, the zero value for string will be returned
-func (o *KubernetesNodePoolPropertiesForPost) GetAvailabilityZone() *string {
-	if o == nil {
-		return nil
-	}
-
-	return o.AvailabilityZone
-
-}
-
-// GetAvailabilityZoneOk returns a tuple with the AvailabilityZone field value
-// and a boolean to check if the value has been set.
-// NOTE: If the value is an explicit nil, `nil, true` will be returned
-func (o *KubernetesNodePoolPropertiesForPost) GetAvailabilityZoneOk() (*string, bool) {
-	if o == nil {
-		return nil, false
-	}
-
-	return o.AvailabilityZone, true
-}
-
-// SetAvailabilityZone sets field value
-func (o *KubernetesNodePoolPropertiesForPost) SetAvailabilityZone(v string) {
-
-	o.AvailabilityZone = &v
-
-}
-
-// HasAvailabilityZone returns a boolean if a field has been set.
-func (o *KubernetesNodePoolPropertiesForPost) HasAvailabilityZone() bool {
-	if o != nil && o.AvailabilityZone != nil {
-		return true
-	}
-
-	return false
-}
-
-// GetStorageType returns the StorageType field value
-// If the value is explicit nil, the zero value for string will be returned
-func (o *KubernetesNodePoolPropertiesForPost) GetStorageType() *string {
-	if o == nil {
-		return nil
-	}
-
-	return o.StorageType
-
-}
-
-// GetStorageTypeOk returns a tuple with the StorageType field value
-// and a boolean to check if the value has been set.
-// NOTE: If the value is an explicit nil, `nil, true` will be returned
-func (o *KubernetesNodePoolPropertiesForPost) GetStorageTypeOk() (*string, bool) {
-	if o == nil {
-		return nil, false
-	}
-
-	return o.StorageType, true
-}
-
-// SetStorageType sets field value
-func (o *KubernetesNodePoolPropertiesForPost) SetStorageType(v string) {
-
-	o.StorageType = &v
-
-}
-
-// HasStorageType returns a boolean if a field has been set.
-func (o *KubernetesNodePoolPropertiesForPost) HasStorageType() bool {
-	if o != nil && o.StorageType != nil {
-		return true
-	}
-
-	return false
-}
-
-// GetStorageSize returns the StorageSize field value
-// If the value is explicit nil, the zero value for int32 will be returned
-func (o *KubernetesNodePoolPropertiesForPost) GetStorageSize() *int32 {
-	if o == nil {
-		return nil
-	}
-
-	return o.StorageSize
-
-}
-
-// GetStorageSizeOk returns a tuple with the StorageSize field value
-// and a boolean to check if the value has been set.
-// NOTE: If the value is an explicit nil, `nil, true` will be returned
-func (o *KubernetesNodePoolPropertiesForPost) GetStorageSizeOk() (*int32, bool) {
-	if o == nil {
-		return nil, false
-	}
-
-	return o.StorageSize, true
-}
-
-// SetStorageSize sets field value
-func (o *KubernetesNodePoolPropertiesForPost) SetStorageSize(v int32) {
-
-	o.StorageSize = &v
-
-}
-
-// HasStorageSize returns a boolean if a field has been set.
-func (o *KubernetesNodePoolPropertiesForPost) HasStorageSize() bool {
-	if o != nil && o.StorageSize != nil {
-		return true
-	}
-
-	return false
-}
-
-// GetK8sVersion returns the K8sVersion field value
-// If the value is explicit nil, the zero value for string will be returned
-func (o *KubernetesNodePoolPropertiesForPost) GetK8sVersion() *string {
-	if o == nil {
-		return nil
-	}
-
-	return o.K8sVersion
-
-}
-
-// GetK8sVersionOk returns a tuple with the K8sVersion field value
-// and a boolean to check if the value has been set.
-// NOTE: If the value is an explicit nil, `nil, true` will be returned
-func (o *KubernetesNodePoolPropertiesForPost) GetK8sVersionOk() (*string, bool) {
-	if o == nil {
-		return nil, false
-	}
-
-	return o.K8sVersion, true
-}
-
-// SetK8sVersion sets field value
-func (o *KubernetesNodePoolPropertiesForPost) SetK8sVersion(v string) {
-
-	o.K8sVersion = &v
-
-}
-
-// HasK8sVersion returns a boolean if a field has been set.
-func (o *KubernetesNodePoolPropertiesForPost) HasK8sVersion() bool {
-	if o != nil && o.K8sVersion != nil {
-		return true
-	}
-
-	return false
-}
-
-// GetMaintenanceWindow returns the MaintenanceWindow field value
-// If the value is explicit nil, the zero value for KubernetesMaintenanceWindow will be returned
-func (o *KubernetesNodePoolPropertiesForPost) GetMaintenanceWindow() *KubernetesMaintenanceWindow {
-	if o == nil {
-		return nil
-	}
-
-	return o.MaintenanceWindow
-
-}
-
-// GetMaintenanceWindowOk returns a tuple with the MaintenanceWindow field value
-// and a boolean to check if the value has been set.
-// NOTE: If the value is an explicit nil, `nil, true` will be returned
-func (o *KubernetesNodePoolPropertiesForPost) GetMaintenanceWindowOk() (*KubernetesMaintenanceWindow, bool) {
-	if o == nil {
-		return nil, false
-	}
-
-	return o.MaintenanceWindow, true
-}
-
-// SetMaintenanceWindow sets field value
-func (o *KubernetesNodePoolPropertiesForPost) SetMaintenanceWindow(v KubernetesMaintenanceWindow) {
-
-	o.MaintenanceWindow = &v
-
-}
-
-// HasMaintenanceWindow returns a boolean if a field has been set.
-func (o *KubernetesNodePoolPropertiesForPost) HasMaintenanceWindow() bool {
-	if o != nil && o.MaintenanceWindow != nil {
-		return true
-	}
-
-	return false
-}
-
-// GetAutoScaling returns the AutoScaling field value
-// If the value is explicit nil, the zero value for KubernetesAutoScaling will be returned
-func (o *KubernetesNodePoolPropertiesForPost) GetAutoScaling() *KubernetesAutoScaling {
-	if o == nil {
-		return nil
-	}
-
-	return o.AutoScaling
-
-}
-
-// GetAutoScalingOk returns a tuple with the AutoScaling field value
-// and a boolean to check if the value has been set.
-// NOTE: If the value is an explicit nil, `nil, true` will be returned
-func (o *KubernetesNodePoolPropertiesForPost) GetAutoScalingOk() (*KubernetesAutoScaling, bool) {
-	if o == nil {
-		return nil, false
-	}
-
-	return o.AutoScaling, true
-}
-
-// SetAutoScaling sets field value
-func (o *KubernetesNodePoolPropertiesForPost) SetAutoScaling(v KubernetesAutoScaling) {
-
-	o.AutoScaling = &v
-
-}
-
-// HasAutoScaling returns a boolean if a field has been set.
-func (o *KubernetesNodePoolPropertiesForPost) HasAutoScaling() bool {
-	if o != nil && o.AutoScaling != nil {
-		return true
-	}
-
-	return false
-}
-
-// GetLans returns the Lans field value
-// If the value is explicit nil, the zero value for []KubernetesNodePoolLan will be returned
-func (o *KubernetesNodePoolPropertiesForPost) GetLans() *[]KubernetesNodePoolLan {
-	if o == nil {
-		return nil
-	}
-
-	return o.Lans
-
-}
-
-// GetLansOk returns a tuple with the Lans field value
-// and a boolean to check if the value has been set.
-// NOTE: If the value is an explicit nil, `nil, true` will be returned
-func (o *KubernetesNodePoolPropertiesForPost) GetLansOk() (*[]KubernetesNodePoolLan, bool) {
-	if o == nil {
-		return nil, false
-	}
-
-	return o.Lans, true
-}
-
-// SetLans sets field value
-func (o *KubernetesNodePoolPropertiesForPost) SetLans(v []KubernetesNodePoolLan) {
-
-	o.Lans = &v
-
-}
-
-// HasLans returns a boolean if a field has been set.
-func (o *KubernetesNodePoolPropertiesForPost) HasLans() bool {
-	if o != nil && o.Lans != nil {
-		return true
-	}
-
-	return false
-}
-
-// GetLabels returns the Labels field value
-// If the value is explicit nil, the zero value for map[string]string will be returned
-func (o *KubernetesNodePoolPropertiesForPost) GetLabels() *map[string]string {
-	if o == nil {
-		return nil
-	}
-
-	return o.Labels
-
-}
-
-// GetLabelsOk returns a tuple with the Labels field value
-// and a boolean to check if the value has been set.
-// NOTE: If the value is an explicit nil, `nil, true` will be returned
-func (o *KubernetesNodePoolPropertiesForPost) GetLabelsOk() (*map[string]string, bool) {
-	if o == nil {
-		return nil, false
-	}
-
-	return o.Labels, true
-}
-
-// SetLabels sets field value
-func (o *KubernetesNodePoolPropertiesForPost) SetLabels(v map[string]string) {
-
-	o.Labels = &v
-
-}
-
-// HasLabels returns a boolean if a field has been set.
-func (o *KubernetesNodePoolPropertiesForPost) HasLabels() bool {
-	if o != nil && o.Labels != nil {
-		return true
-	}
-
-	return false
-}
-
 // GetAnnotations returns the Annotations field value
-// If the value is explicit nil, the zero value for map[string]string will be returned
+// If the value is explicit nil, nil is returned
 func (o *KubernetesNodePoolPropertiesForPost) GetAnnotations() *map[string]string {
 	if o == nil {
 		return nil
@@ -648,8 +114,426 @@ func (o *KubernetesNodePoolPropertiesForPost) HasAnnotations() bool {
 	return false
 }
 
+// GetAutoScaling returns the AutoScaling field value
+// If the value is explicit nil, nil is returned
+func (o *KubernetesNodePoolPropertiesForPost) GetAutoScaling() *KubernetesAutoScaling {
+	if o == nil {
+		return nil
+	}
+
+	return o.AutoScaling
+
+}
+
+// GetAutoScalingOk returns a tuple with the AutoScaling field value
+// and a boolean to check if the value has been set.
+// NOTE: If the value is an explicit nil, `nil, true` will be returned
+func (o *KubernetesNodePoolPropertiesForPost) GetAutoScalingOk() (*KubernetesAutoScaling, bool) {
+	if o == nil {
+		return nil, false
+	}
+
+	return o.AutoScaling, true
+}
+
+// SetAutoScaling sets field value
+func (o *KubernetesNodePoolPropertiesForPost) SetAutoScaling(v KubernetesAutoScaling) {
+
+	o.AutoScaling = &v
+
+}
+
+// HasAutoScaling returns a boolean if a field has been set.
+func (o *KubernetesNodePoolPropertiesForPost) HasAutoScaling() bool {
+	if o != nil && o.AutoScaling != nil {
+		return true
+	}
+
+	return false
+}
+
+// GetAvailabilityZone returns the AvailabilityZone field value
+// If the value is explicit nil, nil is returned
+func (o *KubernetesNodePoolPropertiesForPost) GetAvailabilityZone() *string {
+	if o == nil {
+		return nil
+	}
+
+	return o.AvailabilityZone
+
+}
+
+// GetAvailabilityZoneOk returns a tuple with the AvailabilityZone field value
+// and a boolean to check if the value has been set.
+// NOTE: If the value is an explicit nil, `nil, true` will be returned
+func (o *KubernetesNodePoolPropertiesForPost) GetAvailabilityZoneOk() (*string, bool) {
+	if o == nil {
+		return nil, false
+	}
+
+	return o.AvailabilityZone, true
+}
+
+// SetAvailabilityZone sets field value
+func (o *KubernetesNodePoolPropertiesForPost) SetAvailabilityZone(v string) {
+
+	o.AvailabilityZone = &v
+
+}
+
+// HasAvailabilityZone returns a boolean if a field has been set.
+func (o *KubernetesNodePoolPropertiesForPost) HasAvailabilityZone() bool {
+	if o != nil && o.AvailabilityZone != nil {
+		return true
+	}
+
+	return false
+}
+
+// GetCoresCount returns the CoresCount field value
+// If the value is explicit nil, nil is returned
+func (o *KubernetesNodePoolPropertiesForPost) GetCoresCount() *int32 {
+	if o == nil {
+		return nil
+	}
+
+	return o.CoresCount
+
+}
+
+// GetCoresCountOk returns a tuple with the CoresCount field value
+// and a boolean to check if the value has been set.
+// NOTE: If the value is an explicit nil, `nil, true` will be returned
+func (o *KubernetesNodePoolPropertiesForPost) GetCoresCountOk() (*int32, bool) {
+	if o == nil {
+		return nil, false
+	}
+
+	return o.CoresCount, true
+}
+
+// SetCoresCount sets field value
+func (o *KubernetesNodePoolPropertiesForPost) SetCoresCount(v int32) {
+
+	o.CoresCount = &v
+
+}
+
+// HasCoresCount returns a boolean if a field has been set.
+func (o *KubernetesNodePoolPropertiesForPost) HasCoresCount() bool {
+	if o != nil && o.CoresCount != nil {
+		return true
+	}
+
+	return false
+}
+
+// GetCpuFamily returns the CpuFamily field value
+// If the value is explicit nil, nil is returned
+func (o *KubernetesNodePoolPropertiesForPost) GetCpuFamily() *string {
+	if o == nil {
+		return nil
+	}
+
+	return o.CpuFamily
+
+}
+
+// GetCpuFamilyOk returns a tuple with the CpuFamily field value
+// and a boolean to check if the value has been set.
+// NOTE: If the value is an explicit nil, `nil, true` will be returned
+func (o *KubernetesNodePoolPropertiesForPost) GetCpuFamilyOk() (*string, bool) {
+	if o == nil {
+		return nil, false
+	}
+
+	return o.CpuFamily, true
+}
+
+// SetCpuFamily sets field value
+func (o *KubernetesNodePoolPropertiesForPost) SetCpuFamily(v string) {
+
+	o.CpuFamily = &v
+
+}
+
+// HasCpuFamily returns a boolean if a field has been set.
+func (o *KubernetesNodePoolPropertiesForPost) HasCpuFamily() bool {
+	if o != nil && o.CpuFamily != nil {
+		return true
+	}
+
+	return false
+}
+
+// GetDatacenterId returns the DatacenterId field value
+// If the value is explicit nil, nil is returned
+func (o *KubernetesNodePoolPropertiesForPost) GetDatacenterId() *string {
+	if o == nil {
+		return nil
+	}
+
+	return o.DatacenterId
+
+}
+
+// GetDatacenterIdOk returns a tuple with the DatacenterId field value
+// and a boolean to check if the value has been set.
+// NOTE: If the value is an explicit nil, `nil, true` will be returned
+func (o *KubernetesNodePoolPropertiesForPost) GetDatacenterIdOk() (*string, bool) {
+	if o == nil {
+		return nil, false
+	}
+
+	return o.DatacenterId, true
+}
+
+// SetDatacenterId sets field value
+func (o *KubernetesNodePoolPropertiesForPost) SetDatacenterId(v string) {
+
+	o.DatacenterId = &v
+
+}
+
+// HasDatacenterId returns a boolean if a field has been set.
+func (o *KubernetesNodePoolPropertiesForPost) HasDatacenterId() bool {
+	if o != nil && o.DatacenterId != nil {
+		return true
+	}
+
+	return false
+}
+
+// GetK8sVersion returns the K8sVersion field value
+// If the value is explicit nil, nil is returned
+func (o *KubernetesNodePoolPropertiesForPost) GetK8sVersion() *string {
+	if o == nil {
+		return nil
+	}
+
+	return o.K8sVersion
+
+}
+
+// GetK8sVersionOk returns a tuple with the K8sVersion field value
+// and a boolean to check if the value has been set.
+// NOTE: If the value is an explicit nil, `nil, true` will be returned
+func (o *KubernetesNodePoolPropertiesForPost) GetK8sVersionOk() (*string, bool) {
+	if o == nil {
+		return nil, false
+	}
+
+	return o.K8sVersion, true
+}
+
+// SetK8sVersion sets field value
+func (o *KubernetesNodePoolPropertiesForPost) SetK8sVersion(v string) {
+
+	o.K8sVersion = &v
+
+}
+
+// HasK8sVersion returns a boolean if a field has been set.
+func (o *KubernetesNodePoolPropertiesForPost) HasK8sVersion() bool {
+	if o != nil && o.K8sVersion != nil {
+		return true
+	}
+
+	return false
+}
+
+// GetLabels returns the Labels field value
+// If the value is explicit nil, nil is returned
+func (o *KubernetesNodePoolPropertiesForPost) GetLabels() *map[string]string {
+	if o == nil {
+		return nil
+	}
+
+	return o.Labels
+
+}
+
+// GetLabelsOk returns a tuple with the Labels field value
+// and a boolean to check if the value has been set.
+// NOTE: If the value is an explicit nil, `nil, true` will be returned
+func (o *KubernetesNodePoolPropertiesForPost) GetLabelsOk() (*map[string]string, bool) {
+	if o == nil {
+		return nil, false
+	}
+
+	return o.Labels, true
+}
+
+// SetLabels sets field value
+func (o *KubernetesNodePoolPropertiesForPost) SetLabels(v map[string]string) {
+
+	o.Labels = &v
+
+}
+
+// HasLabels returns a boolean if a field has been set.
+func (o *KubernetesNodePoolPropertiesForPost) HasLabels() bool {
+	if o != nil && o.Labels != nil {
+		return true
+	}
+
+	return false
+}
+
+// GetLans returns the Lans field value
+// If the value is explicit nil, nil is returned
+func (o *KubernetesNodePoolPropertiesForPost) GetLans() *[]KubernetesNodePoolLan {
+	if o == nil {
+		return nil
+	}
+
+	return o.Lans
+
+}
+
+// GetLansOk returns a tuple with the Lans field value
+// and a boolean to check if the value has been set.
+// NOTE: If the value is an explicit nil, `nil, true` will be returned
+func (o *KubernetesNodePoolPropertiesForPost) GetLansOk() (*[]KubernetesNodePoolLan, bool) {
+	if o == nil {
+		return nil, false
+	}
+
+	return o.Lans, true
+}
+
+// SetLans sets field value
+func (o *KubernetesNodePoolPropertiesForPost) SetLans(v []KubernetesNodePoolLan) {
+
+	o.Lans = &v
+
+}
+
+// HasLans returns a boolean if a field has been set.
+func (o *KubernetesNodePoolPropertiesForPost) HasLans() bool {
+	if o != nil && o.Lans != nil {
+		return true
+	}
+
+	return false
+}
+
+// GetMaintenanceWindow returns the MaintenanceWindow field value
+// If the value is explicit nil, nil is returned
+func (o *KubernetesNodePoolPropertiesForPost) GetMaintenanceWindow() *KubernetesMaintenanceWindow {
+	if o == nil {
+		return nil
+	}
+
+	return o.MaintenanceWindow
+
+}
+
+// GetMaintenanceWindowOk returns a tuple with the MaintenanceWindow field value
+// and a boolean to check if the value has been set.
+// NOTE: If the value is an explicit nil, `nil, true` will be returned
+func (o *KubernetesNodePoolPropertiesForPost) GetMaintenanceWindowOk() (*KubernetesMaintenanceWindow, bool) {
+	if o == nil {
+		return nil, false
+	}
+
+	return o.MaintenanceWindow, true
+}
+
+// SetMaintenanceWindow sets field value
+func (o *KubernetesNodePoolPropertiesForPost) SetMaintenanceWindow(v KubernetesMaintenanceWindow) {
+
+	o.MaintenanceWindow = &v
+
+}
+
+// HasMaintenanceWindow returns a boolean if a field has been set.
+func (o *KubernetesNodePoolPropertiesForPost) HasMaintenanceWindow() bool {
+	if o != nil && o.MaintenanceWindow != nil {
+		return true
+	}
+
+	return false
+}
+
+// GetName returns the Name field value
+// If the value is explicit nil, nil is returned
+func (o *KubernetesNodePoolPropertiesForPost) GetName() *string {
+	if o == nil {
+		return nil
+	}
+
+	return o.Name
+
+}
+
+// GetNameOk returns a tuple with the Name field value
+// and a boolean to check if the value has been set.
+// NOTE: If the value is an explicit nil, `nil, true` will be returned
+func (o *KubernetesNodePoolPropertiesForPost) GetNameOk() (*string, bool) {
+	if o == nil {
+		return nil, false
+	}
+
+	return o.Name, true
+}
+
+// SetName sets field value
+func (o *KubernetesNodePoolPropertiesForPost) SetName(v string) {
+
+	o.Name = &v
+
+}
+
+// HasName returns a boolean if a field has been set.
+func (o *KubernetesNodePoolPropertiesForPost) HasName() bool {
+	if o != nil && o.Name != nil {
+		return true
+	}
+
+	return false
+}
+
+// GetNodeCount returns the NodeCount field value
+// If the value is explicit nil, nil is returned
+func (o *KubernetesNodePoolPropertiesForPost) GetNodeCount() *int32 {
+	if o == nil {
+		return nil
+	}
+
+	return o.NodeCount
+
+}
+
+// GetNodeCountOk returns a tuple with the NodeCount field value
+// and a boolean to check if the value has been set.
+// NOTE: If the value is an explicit nil, `nil, true` will be returned
+func (o *KubernetesNodePoolPropertiesForPost) GetNodeCountOk() (*int32, bool) {
+	if o == nil {
+		return nil, false
+	}
+
+	return o.NodeCount, true
+}
+
+// SetNodeCount sets field value
+func (o *KubernetesNodePoolPropertiesForPost) SetNodeCount(v int32) {
+
+	o.NodeCount = &v
+
+}
+
+// HasNodeCount returns a boolean if a field has been set.
+func (o *KubernetesNodePoolPropertiesForPost) HasNodeCount() bool {
+	if o != nil && o.NodeCount != nil {
+		return true
+	}
+
+	return false
+}
+
 // GetPublicIps returns the PublicIps field value
-// If the value is explicit nil, the zero value for []string will be returned
+// If the value is explicit nil, nil is returned
 func (o *KubernetesNodePoolPropertiesForPost) GetPublicIps() *[]string {
 	if o == nil {
 		return nil
@@ -686,38 +570,114 @@ func (o *KubernetesNodePoolPropertiesForPost) HasPublicIps() bool {
 	return false
 }
 
-// GetGatewayIp returns the GatewayIp field value
-// If the value is explicit nil, the zero value for string will be returned
-func (o *KubernetesNodePoolPropertiesForPost) GetGatewayIp() *string {
+// GetRamSize returns the RamSize field value
+// If the value is explicit nil, nil is returned
+func (o *KubernetesNodePoolPropertiesForPost) GetRamSize() *int32 {
 	if o == nil {
 		return nil
 	}
 
-	return o.GatewayIp
+	return o.RamSize
 
 }
 
-// GetGatewayIpOk returns a tuple with the GatewayIp field value
+// GetRamSizeOk returns a tuple with the RamSize field value
 // and a boolean to check if the value has been set.
 // NOTE: If the value is an explicit nil, `nil, true` will be returned
-func (o *KubernetesNodePoolPropertiesForPost) GetGatewayIpOk() (*string, bool) {
+func (o *KubernetesNodePoolPropertiesForPost) GetRamSizeOk() (*int32, bool) {
 	if o == nil {
 		return nil, false
 	}
 
-	return o.GatewayIp, true
+	return o.RamSize, true
 }
 
-// SetGatewayIp sets field value
-func (o *KubernetesNodePoolPropertiesForPost) SetGatewayIp(v string) {
+// SetRamSize sets field value
+func (o *KubernetesNodePoolPropertiesForPost) SetRamSize(v int32) {
 
-	o.GatewayIp = &v
+	o.RamSize = &v
 
 }
 
-// HasGatewayIp returns a boolean if a field has been set.
-func (o *KubernetesNodePoolPropertiesForPost) HasGatewayIp() bool {
-	if o != nil && o.GatewayIp != nil {
+// HasRamSize returns a boolean if a field has been set.
+func (o *KubernetesNodePoolPropertiesForPost) HasRamSize() bool {
+	if o != nil && o.RamSize != nil {
+		return true
+	}
+
+	return false
+}
+
+// GetStorageSize returns the StorageSize field value
+// If the value is explicit nil, nil is returned
+func (o *KubernetesNodePoolPropertiesForPost) GetStorageSize() *int32 {
+	if o == nil {
+		return nil
+	}
+
+	return o.StorageSize
+
+}
+
+// GetStorageSizeOk returns a tuple with the StorageSize field value
+// and a boolean to check if the value has been set.
+// NOTE: If the value is an explicit nil, `nil, true` will be returned
+func (o *KubernetesNodePoolPropertiesForPost) GetStorageSizeOk() (*int32, bool) {
+	if o == nil {
+		return nil, false
+	}
+
+	return o.StorageSize, true
+}
+
+// SetStorageSize sets field value
+func (o *KubernetesNodePoolPropertiesForPost) SetStorageSize(v int32) {
+
+	o.StorageSize = &v
+
+}
+
+// HasStorageSize returns a boolean if a field has been set.
+func (o *KubernetesNodePoolPropertiesForPost) HasStorageSize() bool {
+	if o != nil && o.StorageSize != nil {
+		return true
+	}
+
+	return false
+}
+
+// GetStorageType returns the StorageType field value
+// If the value is explicit nil, nil is returned
+func (o *KubernetesNodePoolPropertiesForPost) GetStorageType() *string {
+	if o == nil {
+		return nil
+	}
+
+	return o.StorageType
+
+}
+
+// GetStorageTypeOk returns a tuple with the StorageType field value
+// and a boolean to check if the value has been set.
+// NOTE: If the value is an explicit nil, `nil, true` will be returned
+func (o *KubernetesNodePoolPropertiesForPost) GetStorageTypeOk() (*string, bool) {
+	if o == nil {
+		return nil, false
+	}
+
+	return o.StorageType, true
+}
+
+// SetStorageType sets field value
+func (o *KubernetesNodePoolPropertiesForPost) SetStorageType(v string) {
+
+	o.StorageType = &v
+
+}
+
+// HasStorageType returns a boolean if a field has been set.
+func (o *KubernetesNodePoolPropertiesForPost) HasStorageType() bool {
+	if o != nil && o.StorageType != nil {
 		return true
 	}
 
@@ -726,57 +686,70 @@ func (o *KubernetesNodePoolPropertiesForPost) HasGatewayIp() bool {
 
 func (o KubernetesNodePoolPropertiesForPost) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
-	if o.Name != nil {
-		toSerialize["name"] = o.Name
-	}
-	if o.DatacenterId != nil {
-		toSerialize["datacenterId"] = o.DatacenterId
-	}
-	if o.NodeCount != nil {
-		toSerialize["nodeCount"] = o.NodeCount
-	}
-	if o.CpuFamily != nil {
-		toSerialize["cpuFamily"] = o.CpuFamily
-	}
-	if o.CoresCount != nil {
-		toSerialize["coresCount"] = o.CoresCount
-	}
-	if o.RamSize != nil {
-		toSerialize["ramSize"] = o.RamSize
-	}
-	if o.AvailabilityZone != nil {
-		toSerialize["availabilityZone"] = o.AvailabilityZone
-	}
-	if o.StorageType != nil {
-		toSerialize["storageType"] = o.StorageType
-	}
-	if o.StorageSize != nil {
-		toSerialize["storageSize"] = o.StorageSize
-	}
-	if o.K8sVersion != nil {
-		toSerialize["k8sVersion"] = o.K8sVersion
-	}
-	if o.MaintenanceWindow != nil {
-		toSerialize["maintenanceWindow"] = o.MaintenanceWindow
-	}
-	if o.AutoScaling != nil {
-		toSerialize["autoScaling"] = o.AutoScaling
-	}
-	if o.Lans != nil {
-		toSerialize["lans"] = o.Lans
-	}
-	if o.Labels != nil {
-		toSerialize["labels"] = o.Labels
-	}
 	if o.Annotations != nil {
 		toSerialize["annotations"] = o.Annotations
 	}
+
+	if o.AutoScaling != nil {
+		toSerialize["autoScaling"] = o.AutoScaling
+	}
+
+	if o.AvailabilityZone != nil {
+		toSerialize["availabilityZone"] = o.AvailabilityZone
+	}
+
+	if o.CoresCount != nil {
+		toSerialize["coresCount"] = o.CoresCount
+	}
+
+	if o.CpuFamily != nil {
+		toSerialize["cpuFamily"] = o.CpuFamily
+	}
+
+	if o.DatacenterId != nil {
+		toSerialize["datacenterId"] = o.DatacenterId
+	}
+
+	if o.K8sVersion != nil {
+		toSerialize["k8sVersion"] = o.K8sVersion
+	}
+
+	if o.Labels != nil {
+		toSerialize["labels"] = o.Labels
+	}
+
+	if o.Lans != nil {
+		toSerialize["lans"] = o.Lans
+	}
+
+	if o.MaintenanceWindow != nil {
+		toSerialize["maintenanceWindow"] = o.MaintenanceWindow
+	}
+
+	if o.Name != nil {
+		toSerialize["name"] = o.Name
+	}
+
+	if o.NodeCount != nil {
+		toSerialize["nodeCount"] = o.NodeCount
+	}
+
 	if o.PublicIps != nil {
 		toSerialize["publicIps"] = o.PublicIps
 	}
-	if o.GatewayIp != nil {
-		toSerialize["gatewayIp"] = o.GatewayIp
+
+	if o.RamSize != nil {
+		toSerialize["ramSize"] = o.RamSize
 	}
+
+	if o.StorageSize != nil {
+		toSerialize["storageSize"] = o.StorageSize
+	}
+
+	if o.StorageType != nil {
+		toSerialize["storageType"] = o.StorageType
+	}
+
 	return json.Marshal(toSerialize)
 }
 

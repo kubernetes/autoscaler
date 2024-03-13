@@ -13,7 +13,7 @@ package ionoscloud
 import (
 	_context "context"
 	"fmt"
-	_ioutil "io/ioutil"
+	"io"
 	_nethttp "net/http"
 	_neturl "net/url"
 	"strings"
@@ -44,14 +44,12 @@ func (r ApiTemplatesFindByIdRequest) Execute() (Template, *APIResponse, error) {
 }
 
 /*
-  - TemplatesFindById Retrieve Cubes Templates
-  - Retrieve the properties of the specified Cubes Template.
-
-This operation is only supported for the Cubes.
-  - @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-  - @param templateId The unique Template ID.
-  - @return ApiTemplatesFindByIdRequest
-*/
+ * TemplatesFindById Get Cubes Template by ID
+ * Retrieves the properties of the Cubes template specified by its ID.
+ * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ * @param templateId The unique template ID.
+ * @return ApiTemplatesFindByIdRequest
+ */
 func (a *TemplatesApiService) TemplatesFindById(ctx _context.Context, templateId string) ApiTemplatesFindByIdRequest {
 	return ApiTemplatesFindByIdRequest{
 		ApiService: a,
@@ -145,7 +143,7 @@ func (a *TemplatesApiService) TemplatesFindByIdExecute(r ApiTemplatesFindByIdReq
 		return localVarReturnValue, localVarAPIResponse, err
 	}
 
-	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
 	localVarAPIResponse.Payload = localVarBody
 	if err != nil {
@@ -198,7 +196,7 @@ func (r ApiTemplatesGetRequest) Depth(depth int32) ApiTemplatesGetRequest {
 // Filters query parameters limit results to those containing a matching value for a specific property.
 func (r ApiTemplatesGetRequest) Filter(key string, value string) ApiTemplatesGetRequest {
 	filterKey := fmt.Sprintf(FilterQueryParam, key)
-	r.filters[filterKey] = []string{value}
+	r.filters[filterKey] = append(r.filters[filterKey], value)
 	return r
 }
 
@@ -219,12 +217,14 @@ func (r ApiTemplatesGetRequest) Execute() (Templates, *APIResponse, error) {
 }
 
 /*
-  - TemplatesGet List Cubes Templates
-  - List all of the available Cubes Templates.
+  - TemplatesGet Get Cubes Templates
+  - Retrieves all available templates.
 
-This operation is only supported for the Cubes.
-  - @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
-  - @return ApiTemplatesGetRequest
+Templates provide a pre-defined configuration for Cube servers.
+
+	>Templates are read-only and cannot be created, modified, or deleted by users.
+	* @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	* @return ApiTemplatesGetRequest
 */
 func (a *TemplatesApiService) TemplatesGet(ctx _context.Context) ApiTemplatesGetRequest {
 	return ApiTemplatesGetRequest{
@@ -331,7 +331,7 @@ func (a *TemplatesApiService) TemplatesGetExecute(r ApiTemplatesGetRequest) (Tem
 		return localVarReturnValue, localVarAPIResponse, err
 	}
 
-	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
 	localVarAPIResponse.Payload = localVarBody
 	if err != nil {
