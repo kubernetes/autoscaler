@@ -133,6 +133,12 @@ func (m *PodsEvictionRestrictionMock) CanInPlaceUpdate(pod *apiv1.Pod) bool {
 	return args.Bool(0)
 }
 
+// IsInPlaceUpdating is a mock implementation of PodsEvictionRestriction.IsInPlaceUpdating
+func (m *PodsEvictionRestrictionMock) IsInPlaceUpdating(pod *apiv1.Pod) bool {
+	args := m.Called(pod)
+	return args.Bool(0)
+}
+
 // PodListerMock is a mock of PodLister
 type PodListerMock struct {
 	mock.Mock
