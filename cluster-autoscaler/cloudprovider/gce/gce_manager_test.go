@@ -329,7 +329,6 @@ func newTestGceManager(t *testing.T, testServerURL string, regional bool) *gceMa
 
 	// Override wait for op timeouts.
 	gceService.operationWaitTimeout = 50 * time.Millisecond
-	gceService.operationPollInterval = 1 * time.Millisecond
 
 	cache := &GceCache{
 		migs:                    make(map[GceRef]Mig),
@@ -475,7 +474,7 @@ func TestDeleteInstances(t *testing.T) {
 	server.On("handle", "/projects/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool/listManagedInstances").Return(buildFourRunningInstancesOnDefaultMigManagedInstancesResponse(zoneB)).Once()
 
 	server.On("handle", "/projects/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool/deleteInstances").Return(deleteInstancesResponse).Once()
-	server.On("handle", "/projects/project1/zones/us-central1-b/operations/operation-1505802641136-55984ff86d980-a99e8c2b-0c8aaaaa").Return(deleteInstancesOperationResponse).Once()
+	server.On("handle", "/projects/project1/zones/us-central1-b/operations/operation-1505802641136-55984ff86d980-a99e8c2b-0c8aaaaa/wait").Return(deleteInstancesOperationResponse).Once()
 
 	instances := []GceRef{
 		{
@@ -585,7 +584,7 @@ func TestGetAndSetMigSize(t *testing.T) {
 
 	// set target size for extraPoolMig; will require resize API call and API call for polling for resize operation
 	server.On("handle", fmt.Sprintf("/projects/project1/zones/us-central1-b/instanceGroupManagers/%s/resize", extraPoolMigName)).Return(setMigSizeResponse).Once()
-	server.On("handle", "/projects/project1/zones/us-central1-b/operations/operation-1505739408819-5597646964339-eb839c88-28805931").Return(setMigSizeOperationResponse).Once()
+	server.On("handle", "/projects/project1/zones/us-central1-b/operations/operation-1505739408819-5597646964339-eb839c88-28805931/wait").Return(setMigSizeOperationResponse).Once()
 	err = g.SetMigSize(extraPoolMig, 4)
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, server)
@@ -1511,7 +1510,7 @@ func TestAppendInstances(t *testing.T) {
 	defaultPoolMig := setupTestDefaultPool(g, true)
 	server.On("handle", "/projects/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool/listManagedInstances").Return(buildFourRunningInstancesOnDefaultMigManagedInstancesResponse(zoneB)).Once()
 	server.On("handle", fmt.Sprintf("/projects/project1/zones/us-central1-b/instanceGroupManagers/%v/createInstances", defaultPoolMig.gceRef.Name)).Return(createInstancesResponse).Once()
-	server.On("handle", "/projects/project1/zones/us-central1-b/operations/operation-1624366531120-5c55a4e128c15-fc5daa90-e1ef6c32").Return(createInstancesOperationResponse).Once()
+	server.On("handle", "/projects/project1/zones/us-central1-b/operations/operation-1624366531120-5c55a4e128c15-fc5daa90-e1ef6c32/wait").Return(createInstancesOperationResponse).Once()
 	err := g.CreateInstances(defaultPoolMig, 2)
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, server)
