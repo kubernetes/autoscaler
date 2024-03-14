@@ -397,6 +397,11 @@ func (tng *TestNodeGroup) IncreaseSize(delta int) error {
 	return tng.cloudProvider.onScaleUp(tng.id, delta)
 }
 
+// AtomicIncreaseSize is not implemented.
+func (tng *TestNodeGroup) AtomicIncreaseSize(delta int) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // Exist checks if the node group really exists on the cloud provider side. Allows to tell the
 // theoretical node group from the real one.
 func (tng *TestNodeGroup) Exist() bool {

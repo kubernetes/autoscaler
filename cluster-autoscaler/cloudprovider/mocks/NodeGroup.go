@@ -190,6 +190,20 @@ func (_m *NodeGroup) IncreaseSize(delta int) error {
 	return r0
 }
 
+// AtomicIncreaseSize provides a mock function with given fields: delta
+func (_m *NodeGroup) AtomicIncreaseSize(delta int) error {
+	ret := _m.Called(delta)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(int) error); ok {
+		r0 = rf(delta)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // MaxSize provides a mock function with given fields:
 func (_m *NodeGroup) MaxSize() int {
 	ret := _m.Called()

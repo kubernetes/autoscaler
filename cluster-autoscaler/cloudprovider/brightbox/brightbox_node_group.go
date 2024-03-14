@@ -123,6 +123,11 @@ func (ng *brightboxNodeGroup) IncreaseSize(delta int) error {
 	)
 }
 
+// AtomicIncreaseSize is not implemented.
+func (ng *brightboxNodeGroup) AtomicIncreaseSize(delta int) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // DeleteNodes deletes nodes from this node group. Error is returned
 // either on failure or if the given node doesn't belong to this
 // node group. This function should wait until node group size is

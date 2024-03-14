@@ -113,6 +113,11 @@ func (ng *cherryNodeGroup) IncreaseSize(delta int) error {
 	return nil
 }
 
+// AtomicIncreaseSize is not implemented.
+func (ng *cherryNodeGroup) AtomicIncreaseSize(delta int) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // DeleteNodes deletes a set of nodes chosen by the autoscaler.
 func (ng *cherryNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	// Batch simultaneous deletes on individual nodes

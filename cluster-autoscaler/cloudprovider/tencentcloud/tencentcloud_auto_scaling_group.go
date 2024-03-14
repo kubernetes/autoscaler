@@ -125,6 +125,11 @@ func (asg *tcAsg) IncreaseSize(delta int) error {
 	return asg.tencentcloudManager.SetAsgSize(asg, size+int64(delta))
 }
 
+// AtomicIncreaseSize is not implemented.
+func (asg *tcAsg) AtomicIncreaseSize(delta int) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // DecreaseTargetSize decreases the target size of the node group. This function
 // doesn't permit to delete any existing node and can be used only to reduce the
 // request for new nodes that have not been yet fulfilled. Delta should be negative.
