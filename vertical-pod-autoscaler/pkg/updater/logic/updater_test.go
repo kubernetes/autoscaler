@@ -159,6 +159,10 @@ func testRunOnceBase(
 			Get()
 
 		pods[i].Labels = labels
+		// We will test in-place separately, but we do need to account for these calls
+		eviction.On("CanInPlaceUpdate", pods[i]).Return(false)
+		eviction.On("IsInPlaceUpdating", pods[i]).Return(false)
+
 		eviction.On("CanEvict", pods[i]).Return(true)
 		eviction.On("Evict", pods[i], nil).Return(nil)
 	}
