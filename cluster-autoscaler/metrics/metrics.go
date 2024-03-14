@@ -648,7 +648,7 @@ func RegisterNodeGroupCreation() {
 	RegisterNodeGroupCreationWithLabelValues("")
 }
 
-// RegisterQueuedProvisioningNodeGroupCreation registers node group creation with the provided labels
+// RegisterNodeGroupCreationWithLabelValues registers node group creation with the provided labels
 func RegisterNodeGroupCreationWithLabelValues(groupType string) {
 	nodeGroupCreationCount.WithLabelValues(groupType).Add(1.0)
 }
@@ -658,7 +658,7 @@ func RegisterNodeGroupDeletion() {
 	RegisterNodeGroupDeletionWithLabelValues("")
 }
 
-// RegisterNodeGroupDeletion registers node group deletion with the provided labels
+// RegisterNodeGroupDeletionWithLabelValues registers node group deletion with the provided labels
 func RegisterNodeGroupDeletionWithLabelValues(groupType string) {
 	nodeGroupDeletionCount.WithLabelValues(groupType).Add(1.0)
 }
