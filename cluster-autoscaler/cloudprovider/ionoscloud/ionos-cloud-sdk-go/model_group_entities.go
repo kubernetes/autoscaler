@@ -16,8 +16,8 @@ import (
 
 // GroupEntities struct for GroupEntities
 type GroupEntities struct {
-	Users     *GroupMembers   `json:"users,omitempty"`
 	Resources *ResourceGroups `json:"resources,omitempty"`
+	Users     *GroupMembers   `json:"users,omitempty"`
 }
 
 // NewGroupEntities instantiates a new GroupEntities object
@@ -38,46 +38,8 @@ func NewGroupEntitiesWithDefaults() *GroupEntities {
 	return &this
 }
 
-// GetUsers returns the Users field value
-// If the value is explicit nil, the zero value for GroupMembers will be returned
-func (o *GroupEntities) GetUsers() *GroupMembers {
-	if o == nil {
-		return nil
-	}
-
-	return o.Users
-
-}
-
-// GetUsersOk returns a tuple with the Users field value
-// and a boolean to check if the value has been set.
-// NOTE: If the value is an explicit nil, `nil, true` will be returned
-func (o *GroupEntities) GetUsersOk() (*GroupMembers, bool) {
-	if o == nil {
-		return nil, false
-	}
-
-	return o.Users, true
-}
-
-// SetUsers sets field value
-func (o *GroupEntities) SetUsers(v GroupMembers) {
-
-	o.Users = &v
-
-}
-
-// HasUsers returns a boolean if a field has been set.
-func (o *GroupEntities) HasUsers() bool {
-	if o != nil && o.Users != nil {
-		return true
-	}
-
-	return false
-}
-
 // GetResources returns the Resources field value
-// If the value is explicit nil, the zero value for ResourceGroups will be returned
+// If the value is explicit nil, nil is returned
 func (o *GroupEntities) GetResources() *ResourceGroups {
 	if o == nil {
 		return nil
@@ -114,14 +76,54 @@ func (o *GroupEntities) HasResources() bool {
 	return false
 }
 
+// GetUsers returns the Users field value
+// If the value is explicit nil, nil is returned
+func (o *GroupEntities) GetUsers() *GroupMembers {
+	if o == nil {
+		return nil
+	}
+
+	return o.Users
+
+}
+
+// GetUsersOk returns a tuple with the Users field value
+// and a boolean to check if the value has been set.
+// NOTE: If the value is an explicit nil, `nil, true` will be returned
+func (o *GroupEntities) GetUsersOk() (*GroupMembers, bool) {
+	if o == nil {
+		return nil, false
+	}
+
+	return o.Users, true
+}
+
+// SetUsers sets field value
+func (o *GroupEntities) SetUsers(v GroupMembers) {
+
+	o.Users = &v
+
+}
+
+// HasUsers returns a boolean if a field has been set.
+func (o *GroupEntities) HasUsers() bool {
+	if o != nil && o.Users != nil {
+		return true
+	}
+
+	return false
+}
+
 func (o GroupEntities) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
-	if o.Users != nil {
-		toSerialize["users"] = o.Users
-	}
 	if o.Resources != nil {
 		toSerialize["resources"] = o.Resources
 	}
+
+	if o.Users != nil {
+		toSerialize["users"] = o.Users
+	}
+
 	return json.Marshal(toSerialize)
 }
 

@@ -22,54 +22,54 @@ import (
 	"github.com/stretchr/testify/require"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	ionos "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/ionoscloud/ionos-cloud-sdk-go"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 )
 
 var (
 	kubernetesNodes = []ionos.KubernetesNode{
 		{
-			Id: pointer.StringPtr("1"),
+			Id: ptr.To("1"),
 			Metadata: &ionos.KubernetesNodeMetadata{
-				State: pointer.StringPtr(K8sNodeStateProvisioning),
+				State: ptr.To(K8sNodeStateProvisioning),
 			},
 			Properties: &ionos.KubernetesNodeProperties{
-				Name: pointer.StringPtr("node1"),
+				Name: ptr.To("node1"),
 			},
 		},
 		{
-			Id: pointer.StringPtr("2"),
+			Id: ptr.To("2"),
 			Metadata: &ionos.KubernetesNodeMetadata{
-				State: pointer.StringPtr(K8sNodeStateProvisioned),
+				State: ptr.To(K8sNodeStateProvisioned),
 			},
 			Properties: &ionos.KubernetesNodeProperties{
-				Name: pointer.StringPtr("node2"),
+				Name: ptr.To("node2"),
 			},
 		},
 		{
-			Id: pointer.StringPtr("3"),
+			Id: ptr.To("3"),
 			Metadata: &ionos.KubernetesNodeMetadata{
-				State: pointer.StringPtr(K8sNodeStateRebuilding),
+				State: ptr.To(K8sNodeStateRebuilding),
 			},
 			Properties: &ionos.KubernetesNodeProperties{
-				Name: pointer.StringPtr("node3"),
+				Name: ptr.To("node3"),
 			},
 		},
 		{
-			Id: pointer.StringPtr("4"),
+			Id: ptr.To("4"),
 			Metadata: &ionos.KubernetesNodeMetadata{
-				State: pointer.StringPtr(K8sNodeStateTerminating),
+				State: ptr.To(K8sNodeStateTerminating),
 			},
 			Properties: &ionos.KubernetesNodeProperties{
-				Name: pointer.StringPtr("node4"),
+				Name: ptr.To("node4"),
 			},
 		},
 		{
-			Id: pointer.StringPtr("5"),
+			Id: ptr.To("5"),
 			Metadata: &ionos.KubernetesNodeMetadata{
-				State: pointer.StringPtr(K8sNodeStateReady),
+				State: ptr.To(K8sNodeStateReady),
 			},
 			Properties: &ionos.KubernetesNodeProperties{
-				Name: pointer.StringPtr("node5"),
+				Name: ptr.To("node5"),
 			},
 		},
 	}
@@ -107,7 +107,7 @@ func TestUtils_ConvertToInstanceId(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		in := "1-2-3-4"
 		want := "ionos://1-2-3-4"
-		got := convertToInstanceId(in)
+		got := convertToInstanceID(in)
 		require.Equal(t, want, got)
 	})
 }
@@ -116,7 +116,7 @@ func TestUtils_ConvertToNodeId(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		in := "ionos://1-2-3-4"
 		want := "1-2-3-4"
-		got := convertToNodeId(in)
+		got := convertToNodeID(in)
 		require.Equal(t, want, got)
 	})
 }
@@ -138,9 +138,9 @@ func TestUtils_ConvertToInstances(t *testing.T) {
 func TestUtils_ConvertToInstance(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		in := ionos.KubernetesNode{
-			Id: pointer.StringPtr("1"),
+			Id: ptr.To("1"),
 			Metadata: &ionos.KubernetesNodeMetadata{
-				State: pointer.StringPtr(K8sNodeStateReady),
+				State: ptr.To(K8sNodeStateReady),
 			},
 		}
 		want := cloudprovider.Instance{

@@ -13,7 +13,7 @@ package ionoscloud
 import (
 	_context "context"
 	"fmt"
-	_ioutil "io/ioutil"
+	"io"
 	_nethttp "net/http"
 	_neturl "net/url"
 	"strings"
@@ -54,8 +54,8 @@ func (r ApiK8sDeleteRequest) Execute() (*APIResponse, error) {
 }
 
 /*
- * K8sDelete Delete Kubernetes clusters
- * Delete the specified Kubernetes cluster.
+ * K8sDelete Delete a Kubernetes Cluster by ID
+ * Deletes the K8s cluster specified  by its ID.
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param k8sClusterId The unique ID of the Kubernetes cluster.
  * @return ApiK8sDeleteRequest
@@ -162,7 +162,7 @@ func (a *KubernetesApiService) K8sDeleteExecute(r ApiK8sDeleteRequest) (*APIResp
 		return localVarAPIResponse, err
 	}
 
-	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
 	localVarAPIResponse.Payload = localVarBody
 	if err != nil {
@@ -215,10 +215,10 @@ func (r ApiK8sFindByClusterIdRequest) Execute() (KubernetesCluster, *APIResponse
 }
 
 /*
- * K8sFindByClusterId Retrieve Kubernetes clusters
- * Retrieve the specified Kubernetes cluster.
+ * K8sFindByClusterId Get a Kubernetes Cluster by ID
+ * Retrieves the K8s cluster specified by its ID.
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param k8sClusterId The unique ID of the Kubernetes cluster.
+ * @param k8sClusterId The unique ID of the K8s cluster to be retrieved.
  * @return ApiK8sFindByClusterIdRequest
  */
 func (a *KubernetesApiService) K8sFindByClusterId(ctx _context.Context, k8sClusterId string) ApiK8sFindByClusterIdRequest {
@@ -325,7 +325,7 @@ func (a *KubernetesApiService) K8sFindByClusterIdExecute(r ApiK8sFindByClusterId
 		return localVarReturnValue, localVarAPIResponse, err
 	}
 
-	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
 	localVarAPIResponse.Payload = localVarBody
 	if err != nil {
@@ -388,7 +388,7 @@ func (r ApiK8sGetRequest) XContractNumber(xContractNumber int32) ApiK8sGetReques
 // Filters query parameters limit results to those containing a matching value for a specific property.
 func (r ApiK8sGetRequest) Filter(key string, value string) ApiK8sGetRequest {
 	filterKey := fmt.Sprintf(FilterQueryParam, key)
-	r.filters[filterKey] = []string{value}
+	r.filters[filterKey] = append(r.filters[filterKey], value)
 	return r
 }
 
@@ -409,8 +409,8 @@ func (r ApiK8sGetRequest) Execute() (KubernetesClusters, *APIResponse, error) {
 }
 
 /*
- * K8sGet List Kubernetes clusters
- * List all available Kubernetes clusters.
+ * K8sGet Get Kubernetes Clusters
+ * Retrieves a list of all K8s clusters provisioned under your account.
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @return ApiK8sGetRequest
  */
@@ -530,7 +530,7 @@ func (a *KubernetesApiService) K8sGetExecute(r ApiK8sGetRequest) (KubernetesClus
 		return localVarReturnValue, localVarAPIResponse, err
 	}
 
-	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
 	localVarAPIResponse.Payload = localVarBody
 	if err != nil {
@@ -594,7 +594,7 @@ func (r ApiK8sKubeconfigGetRequest) XContractNumber(xContractNumber int32) ApiK8
 // Filters query parameters limit results to those containing a matching value for a specific property.
 func (r ApiK8sKubeconfigGetRequest) Filter(key string, value string) ApiK8sKubeconfigGetRequest {
 	filterKey := fmt.Sprintf(FilterQueryParam, key)
-	r.filters[filterKey] = []string{value}
+	r.filters[filterKey] = append(r.filters[filterKey], value)
 	return r
 }
 
@@ -615,8 +615,8 @@ func (r ApiK8sKubeconfigGetRequest) Execute() (string, *APIResponse, error) {
 }
 
 /*
- * K8sKubeconfigGet Retrieve Kubernetes configuration files
- * Retrieve a configuration file for the specified Kubernetes cluster, in YAML or JSON format as defined in the Accept header; the default Accept header is application/yaml.
+ * K8sKubeconfigGet Get Kubernetes Configuration File
+ * Retrieves the configuration file for the specified K8s cluster. You can define the format (YAML or JSON) of the returned file in the Accept header. By default, 'application/yaml' is specified.
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param k8sClusterId The unique ID of the Kubernetes cluster.
  * @return ApiK8sKubeconfigGetRequest
@@ -739,7 +739,7 @@ func (a *KubernetesApiService) K8sKubeconfigGetExecute(r ApiK8sKubeconfigGetRequ
 		return localVarReturnValue, localVarAPIResponse, err
 	}
 
-	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
 	localVarAPIResponse.Payload = localVarBody
 	if err != nil {
@@ -803,8 +803,8 @@ func (r ApiK8sNodepoolsDeleteRequest) Execute() (*APIResponse, error) {
 }
 
 /*
- * K8sNodepoolsDelete Delete Kubernetes node pools
- * Delete the specified Kubernetes node pool.
+ * K8sNodepoolsDelete Delete a Kubernetes Node Pool by ID
+ * Deletes the K8s node pool specified by its ID.
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param k8sClusterId The unique ID of the Kubernetes cluster.
  * @param nodepoolId The unique ID of the Kubernetes node pool.
@@ -914,7 +914,7 @@ func (a *KubernetesApiService) K8sNodepoolsDeleteExecute(r ApiK8sNodepoolsDelete
 		return localVarAPIResponse, err
 	}
 
-	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
 	localVarAPIResponse.Payload = localVarBody
 	if err != nil {
@@ -968,8 +968,8 @@ func (r ApiK8sNodepoolsFindByIdRequest) Execute() (KubernetesNodePool, *APIRespo
 }
 
 /*
- * K8sNodepoolsFindById Retrieve Kubernetes node pools
- * Retrieve the specified Kubernetes node pool.
+ * K8sNodepoolsFindById Get a Kubernetes Node Pool by ID
+ * Retrieves the K8s node pool specified by its ID.
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param k8sClusterId The unique ID of the Kubernetes cluster.
  * @param nodepoolId The unique ID of the Kubernetes node pool.
@@ -1081,7 +1081,7 @@ func (a *KubernetesApiService) K8sNodepoolsFindByIdExecute(r ApiK8sNodepoolsFind
 		return localVarReturnValue, localVarAPIResponse, err
 	}
 
-	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
 	localVarAPIResponse.Payload = localVarBody
 	if err != nil {
@@ -1145,7 +1145,7 @@ func (r ApiK8sNodepoolsGetRequest) XContractNumber(xContractNumber int32) ApiK8s
 // Filters query parameters limit results to those containing a matching value for a specific property.
 func (r ApiK8sNodepoolsGetRequest) Filter(key string, value string) ApiK8sNodepoolsGetRequest {
 	filterKey := fmt.Sprintf(FilterQueryParam, key)
-	r.filters[filterKey] = []string{value}
+	r.filters[filterKey] = append(r.filters[filterKey], value)
 	return r
 }
 
@@ -1166,8 +1166,8 @@ func (r ApiK8sNodepoolsGetRequest) Execute() (KubernetesNodePools, *APIResponse,
 }
 
 /*
- * K8sNodepoolsGet List Kubernetes node pools
- * List all Kubernetes node pools, included the specified Kubernetes cluster.
+ * K8sNodepoolsGet Get Kubernetes Node Pools
+ * Retrieves a list of K8s node pools of a cluster specified by its ID.
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param k8sClusterId The unique ID of the Kubernetes cluster.
  * @return ApiK8sNodepoolsGetRequest
@@ -1290,7 +1290,7 @@ func (a *KubernetesApiService) K8sNodepoolsGetExecute(r ApiK8sNodepoolsGetReques
 		return localVarReturnValue, localVarAPIResponse, err
 	}
 
-	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
 	localVarAPIResponse.Payload = localVarBody
 	if err != nil {
@@ -1355,8 +1355,8 @@ func (r ApiK8sNodepoolsNodesDeleteRequest) Execute() (*APIResponse, error) {
 }
 
 /*
- * K8sNodepoolsNodesDelete Delete Kubernetes nodes
- * Delete the specified Kubernetes node.
+ * K8sNodepoolsNodesDelete Delete a Kubernetes Node by ID
+ * Deletes the K8s node specified by its ID.
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param k8sClusterId The unique ID of the Kubernetes cluster.
  * @param nodepoolId The unique ID of the Kubernetes node pool.
@@ -1469,7 +1469,7 @@ func (a *KubernetesApiService) K8sNodepoolsNodesDeleteExecute(r ApiK8sNodepoolsN
 		return localVarAPIResponse, err
 	}
 
-	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
 	localVarAPIResponse.Payload = localVarBody
 	if err != nil {
@@ -1524,8 +1524,8 @@ func (r ApiK8sNodepoolsNodesFindByIdRequest) Execute() (KubernetesNode, *APIResp
 }
 
 /*
- * K8sNodepoolsNodesFindById Retrieve Kubernetes nodes
- * Retrieve the specified Kubernetes node.
+ * K8sNodepoolsNodesFindById Get Kubernetes Node by ID
+ * Retrieves the K8s node specified by its ID.
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param k8sClusterId The unique ID of the Kubernetes cluster.
  * @param nodepoolId The unique ID of the Kubernetes node pool.
@@ -1640,7 +1640,7 @@ func (a *KubernetesApiService) K8sNodepoolsNodesFindByIdExecute(r ApiK8sNodepool
 		return localVarReturnValue, localVarAPIResponse, err
 	}
 
-	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
 	localVarAPIResponse.Payload = localVarBody
 	if err != nil {
@@ -1705,7 +1705,7 @@ func (r ApiK8sNodepoolsNodesGetRequest) XContractNumber(xContractNumber int32) A
 // Filters query parameters limit results to those containing a matching value for a specific property.
 func (r ApiK8sNodepoolsNodesGetRequest) Filter(key string, value string) ApiK8sNodepoolsNodesGetRequest {
 	filterKey := fmt.Sprintf(FilterQueryParam, key)
-	r.filters[filterKey] = []string{value}
+	r.filters[filterKey] = append(r.filters[filterKey], value)
 	return r
 }
 
@@ -1726,8 +1726,8 @@ func (r ApiK8sNodepoolsNodesGetRequest) Execute() (KubernetesNodes, *APIResponse
 }
 
 /*
- * K8sNodepoolsNodesGet List Kubernetes nodes
- * List all the nodes, included in the specified Kubernetes node pool.
+ * K8sNodepoolsNodesGet Get Kubernetes Nodes
+ * Retrieves the list of all K8s nodes of the specified node pool.
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param k8sClusterId The unique ID of the Kubernetes cluster.
  * @param nodepoolId The unique ID of the Kubernetes node pool.
@@ -1853,7 +1853,7 @@ func (a *KubernetesApiService) K8sNodepoolsNodesGetExecute(r ApiK8sNodepoolsNode
 		return localVarReturnValue, localVarAPIResponse, err
 	}
 
-	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
 	localVarAPIResponse.Payload = localVarBody
 	if err != nil {
@@ -1918,10 +1918,10 @@ func (r ApiK8sNodepoolsNodesReplacePostRequest) Execute() (*APIResponse, error) 
 }
 
 /*
-  - K8sNodepoolsNodesReplacePost Recreate Kubernetes nodes
-  - Recreate the specified Kubernetes node.
+  - K8sNodepoolsNodesReplacePost Recreate a Kubernetes Node by ID
+  - Recreates the K8s node specified by its ID.
 
-A new node is created and configured by Managed Kubernetes, based on the node pool template. Once the status is  "Active", all the pods are migrated from the faulty node, which is then deleted once empty. During this operation, the node pool will have an additional billable  "Active" node.
+If a node becomes unusable, Managed Kubernetes allows you to recreate it with a configuration based on the node pool template. Once the status is 'Active,' all the pods from the failed node will be migrated to the new node. The node pool has an additional billable 'active' node during this process.
   - @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
   - @param k8sClusterId The unique ID of the Kubernetes cluster.
   - @param nodepoolId The unique ID of the Kubernetes node pool.
@@ -2034,7 +2034,7 @@ func (a *KubernetesApiService) K8sNodepoolsNodesReplacePostExecute(r ApiK8sNodep
 		return localVarAPIResponse, err
 	}
 
-	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
 	localVarAPIResponse.Payload = localVarBody
 	if err != nil {
@@ -2092,8 +2092,8 @@ func (r ApiK8sNodepoolsPostRequest) Execute() (KubernetesNodePool, *APIResponse,
 }
 
 /*
- * K8sNodepoolsPost Create Kubernetes node pools
- * Create a Kubernetes node pool inside the specified Kubernetes cluster.
+ * K8sNodepoolsPost Create a Kubernetes Node Pool
+ * Creates a node pool inside the specified K8s cluster.
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param k8sClusterId The unique ID of the Kubernetes cluster.
  * @return ApiK8sNodepoolsPostRequest
@@ -2207,7 +2207,7 @@ func (a *KubernetesApiService) K8sNodepoolsPostExecute(r ApiK8sNodepoolsPostRequ
 		return localVarReturnValue, localVarAPIResponse, err
 	}
 
-	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
 	localVarAPIResponse.Payload = localVarBody
 	if err != nil {
@@ -2276,8 +2276,8 @@ func (r ApiK8sNodepoolsPutRequest) Execute() (KubernetesNodePool, *APIResponse, 
 }
 
 /*
- * K8sNodepoolsPut Modify Kubernetes node pools
- * Modify the specified Kubernetes node pool.
+ * K8sNodepoolsPut Modify a Kubernetes Node Pool by ID
+ * Modifies the K8s node pool specified by its ID.
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param k8sClusterId The unique ID of the Kubernetes cluster.
  * @param nodepoolId The unique ID of the Kubernetes node pool.
@@ -2394,7 +2394,7 @@ func (a *KubernetesApiService) K8sNodepoolsPutExecute(r ApiK8sNodepoolsPutReques
 		return localVarReturnValue, localVarAPIResponse, err
 	}
 
-	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
 	localVarAPIResponse.Payload = localVarBody
 	if err != nil {
@@ -2461,8 +2461,8 @@ func (r ApiK8sPostRequest) Execute() (KubernetesCluster, *APIResponse, error) {
 }
 
 /*
- * K8sPost Create Kubernetes clusters
- * Create a Kubernetes cluster.
+ * K8sPost Create a Kubernetes Cluster
+ * Creates a K8s cluster provisioned under your account.
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @return ApiK8sPostRequest
  */
@@ -2573,7 +2573,7 @@ func (a *KubernetesApiService) K8sPostExecute(r ApiK8sPostRequest) (KubernetesCl
 		return localVarReturnValue, localVarAPIResponse, err
 	}
 
-	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
 	localVarAPIResponse.Payload = localVarBody
 	if err != nil {
@@ -2641,8 +2641,8 @@ func (r ApiK8sPutRequest) Execute() (KubernetesCluster, *APIResponse, error) {
 }
 
 /*
- * K8sPut Modify Kubernetes clusters
- * Modify the specified Kubernetes cluster.
+ * K8sPut Modify a Kubernetes Cluster by ID
+ * Modifies the K8s cluster specified by its ID.
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param k8sClusterId The unique ID of the Kubernetes cluster.
  * @return ApiK8sPutRequest
@@ -2756,7 +2756,7 @@ func (a *KubernetesApiService) K8sPutExecute(r ApiK8sPutRequest) (KubernetesClus
 		return localVarReturnValue, localVarAPIResponse, err
 	}
 
-	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
 	localVarAPIResponse.Payload = localVarBody
 	if err != nil {
@@ -2803,7 +2803,7 @@ type ApiK8sVersionsDefaultGetRequest struct {
 // Filters query parameters limit results to those containing a matching value for a specific property.
 func (r ApiK8sVersionsDefaultGetRequest) Filter(key string, value string) ApiK8sVersionsDefaultGetRequest {
 	filterKey := fmt.Sprintf(FilterQueryParam, key)
-	r.filters[filterKey] = []string{value}
+	r.filters[filterKey] = append(r.filters[filterKey], value)
 	return r
 }
 
@@ -2824,8 +2824,8 @@ func (r ApiK8sVersionsDefaultGetRequest) Execute() (string, *APIResponse, error)
 }
 
 /*
- * K8sVersionsDefaultGet Retrieve current default Kubernetes version
- * Retrieve current default Kubernetes version for clusters and nodepools.
+ * K8sVersionsDefaultGet Get Default Kubernetes Version
+ * Retrieves the current default K8s version to be used by the clusters and node pools.
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @return ApiK8sVersionsDefaultGetRequest
  */
@@ -2926,7 +2926,7 @@ func (a *KubernetesApiService) K8sVersionsDefaultGetExecute(r ApiK8sVersionsDefa
 		return localVarReturnValue, localVarAPIResponse, err
 	}
 
-	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
 	localVarAPIResponse.Payload = localVarBody
 	if err != nil {
@@ -2973,7 +2973,7 @@ type ApiK8sVersionsGetRequest struct {
 // Filters query parameters limit results to those containing a matching value for a specific property.
 func (r ApiK8sVersionsGetRequest) Filter(key string, value string) ApiK8sVersionsGetRequest {
 	filterKey := fmt.Sprintf(FilterQueryParam, key)
-	r.filters[filterKey] = []string{value}
+	r.filters[filterKey] = append(r.filters[filterKey], value)
 	return r
 }
 
@@ -2994,8 +2994,8 @@ func (r ApiK8sVersionsGetRequest) Execute() ([]string, *APIResponse, error) {
 }
 
 /*
- * K8sVersionsGet List Kubernetes versions
- * List available Kubernetes versions.
+ * K8sVersionsGet Get Kubernetes Versions
+ * Lists available K8s versions.
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @return ApiK8sVersionsGetRequest
  */
@@ -3096,7 +3096,7 @@ func (a *KubernetesApiService) K8sVersionsGetExecute(r ApiK8sVersionsGetRequest)
 		return localVarReturnValue, localVarAPIResponse, err
 	}
 
-	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
 	localVarAPIResponse.Payload = localVarBody
 	if err != nil {
