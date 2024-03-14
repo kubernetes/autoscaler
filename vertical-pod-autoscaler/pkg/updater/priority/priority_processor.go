@@ -51,7 +51,7 @@ func (*defaultPriorityProcessor) GetUpdatePriority(pod *apiv1.Pod, vpa *vpa_type
 
 	hasObservedContainers, vpaContainerSet := parseVpaObservedContainers(pod)
 
-	for _, podContainer := range pod.Spec.Containers {
+	for num, podContainer := range pod.Spec.Containers {
 		if hasObservedContainers && !vpaContainerSet.Has(podContainer.Name) {
 			klog.V(4).InfoS("Not listed in VPA observed containers label. Skipping container priority calculations", "label", annotations.VpaObservedContainersLabel, "observedContainers", pod.GetAnnotations()[annotations.VpaObservedContainersLabel], "containerName", podContainer.Name, "vpa", klog.KObj(vpa))
 			continue
@@ -73,6 +73,35 @@ func (*defaultPriorityProcessor) GetUpdatePriority(pod *apiv1.Pod, vpa *vpa_type
 					(hasUpperBound && request.Cmp(upperBound) > 0) {
 					outsideRecommendedRange = true
 				}
+
+				// TODO(jkyros): I think we're picking up early zeroes here from the VPA when it has no recommendation, I think that's why I have to wait
+				// for the recommendation later before I try to scale in-place
+				// TODO(jkyros): For in place VPA, this might be gross, but we need this pod to be in the eviction list because it doesn't actually have
+				// the resources it asked for even if the spec is right, and we might need to fall back to evicting it
+				// TODO(jkyros): Can we have empty container status at this point for real? It's at least failing the tests if we don't check, but
+				// we could just populate the status in the tests
+				// Statuses can be missing, or status resources can be nil
+				if len(pod.Status.ContainerStatuses) > num && pod.Status.ContainerStatuses[num].Resources != nil {
+					if statusRequest, hasStatusRequest := pod.Status.ContainerStatuses[num].Resources.Requests[resourceName]; hasStatusRequest {
+						// If we're updating, but we still don't have what we asked for, we may still need to act on this pod
+						if request.MilliValue() > statusRequest.MilliValue() {
+							scaleUp = true
+							// It's okay if we're actually still resizing, but if we can't now or we're stuck, make sure the pod
+							// is still in the list so we can evict it to go live on a fatter node or something
+							if pod.Status.Resize == apiv1.PodResizeStatusDeferred || pod.Status.Resize == apiv1.PodResizeStatusInfeasible {
+								klog.V(4).Infof("Pod %s looks like it's stuck scaling up (%v state), leaving it in for eviction", pod.Name, pod.Status.Resize)
+							} else {
+								klog.V(4).Infof("Pod %s is in the process of scaling up (%v state), leaving it in so we can see if it's taking too long", pod.Name, pod.Status.Resize)
+							}
+						}
+						// I guess if it's not outside of compliance, it's probably okay it's stuck here?
+						if (hasLowerBound && statusRequest.Cmp(lowerBound) < 0) ||
+							(hasUpperBound && statusRequest.Cmp(upperBound) > 0) {
+							outsideRecommendedRange = true
+						}
+					}
+				}
+
 			} else {
 				// Note: if the request is not specified, the container will use the
 				// namespace default request. Currently we ignore it and treat such
@@ -83,6 +112,10 @@ func (*defaultPriorityProcessor) GetUpdatePriority(pod *apiv1.Pod, vpa *vpa_type
 			}
 		}
 	}
+
+	// TODO(jkyros): hmm this gets hairy here because if "status" is what let us into the list,
+	// we probably need to do these calculations vs the status rather than the spec, because the
+	// spec is a "lie"
 	resourceDiff := 0.0
 	for resource, totalRecommended := range totalRecommendedPerResource {
 		totalRequest := math.Max(float64(totalRequestPerResource[resource]), 1.0)
