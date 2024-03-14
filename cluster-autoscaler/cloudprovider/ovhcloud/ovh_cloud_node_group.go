@@ -111,6 +111,11 @@ func (ng *NodeGroup) IncreaseSize(delta int) error {
 	return nil
 }
 
+// AtomicIncreaseSize is not implemented.
+func (ng *NodeGroup) AtomicIncreaseSize(delta int) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // DeleteNodes deletes the nodes from the group.
 func (ng *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	// DeleteNodes is called in goroutine so it can run in parallel

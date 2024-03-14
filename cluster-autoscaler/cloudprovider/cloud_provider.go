@@ -182,6 +182,17 @@ type NodeGroup interface {
 	// node group size is updated. Implementation required.
 	IncreaseSize(delta int) error
 
+	// AtomicIncreaseSize tries to increase the size of the node group atomically.
+	// - If the method returns nil, it guarantees that delta instances will be added to the node group
+	//   within its MaxNodeProvisionTime. The function should wait until node group size is updated.
+	//   The cloud provider is responsible for tracking and ensuring successful scale up asynchronously.
+	// - If the method returns an error, it guarantees that no new instances will be added to the node group
+	//   as a result of this call. The cloud provider is responsible for ensuring that before returning from the method.
+	// Implementation is optional. If implemented, CA will take advantage of the method while scaling up
+	// GenericScaleUp ProvisioningClass, guaranteeing that all instances required for such a ProvisioningRequest
+	// are provisioned atomically.
+	AtomicIncreaseSize(delta int) error
+
 	// DeleteNodes deletes nodes from this node group. Error is returned either on
 	// failure or if the given node doesn't belong to this node group. This function
 	// should wait until node group size is updated. Implementation required.

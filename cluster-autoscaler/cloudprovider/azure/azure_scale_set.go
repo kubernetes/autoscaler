@@ -297,6 +297,11 @@ func (scaleSet *ScaleSet) IncreaseSize(delta int) error {
 	return scaleSet.SetScaleSetSize(size + int64(delta))
 }
 
+// AtomicIncreaseSize is not implemented.
+func (scaleSet *ScaleSet) AtomicIncreaseSize(delta int) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // GetScaleSetVms returns list of nodes for the given scale set.
 func (scaleSet *ScaleSet) GetScaleSetVms() ([]compute.VirtualMachineScaleSetVM, *retry.Error) {
 	klog.V(4).Infof("GetScaleSetVms: starts")
