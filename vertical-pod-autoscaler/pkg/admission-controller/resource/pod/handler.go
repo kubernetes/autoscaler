@@ -77,6 +77,16 @@ func (h *resourceHandler) GetPatches(ctx context.Context, ar *admissionv1.Admiss
 		pod.Name = pod.GenerateName + "%"
 		pod.Namespace = namespace
 	}
+
+	// We're watching for updates now also because of in-place VPA, but we only want to act on the ones
+	// that were triggered by the updater so we don't violate disruption quotas
+	if ar.Operation == admissionv1.Update {
+		// The patcher will remove this annotation, it's just the signal that the updater okayed this
+		if _, ok := pod.Annotations["autoscaling.k8s.io/resize"]; !ok {
+			return nil, nil
+		}
+	}
+
 	klog.V(4).InfoS("Admitting pod", "pod", klog.KObj(&pod))
 	controllingVpa := h.vpaMatcher.GetMatchingVPA(ctx, &pod)
 	if controllingVpa == nil {
@@ -92,6 +102,13 @@ func (h *resourceHandler) GetPatches(ctx context.Context, ar *admissionv1.Admiss
 	if pod.Annotations == nil {
 		patches = append(patches, patch.GetAddEmptyAnnotationsPatch())
 	}
+	// TODO(jkyros): this is weird here, work it out with the above block somehow, but
+	// we need to have this annotation patched out
+	if ar.Operation == admissionv1.Update {
+		// TODO(jkyros): the squiggle is escaping the / in the annotation
+		patches = append(patches, patch.GetRemoveAnnotationPatch("autoscaling.k8s.io~1resize"))
+	}
+
 	for _, c := range h.patchCalculators {
 		partialPatches, err := c.CalculatePatches(&pod, controllingVpa)
 		if err != nil {
