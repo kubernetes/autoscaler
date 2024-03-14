@@ -335,6 +335,11 @@ func (as *AgentPool) IncreaseSize(delta int) error {
 	return realError
 }
 
+// AtomicIncreaseSize is not implemented.
+func (as *AgentPool) AtomicIncreaseSize(delta int) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // DecreaseTargetSize decreases the target size of the node group. This function
 // doesn't permit to delete any existing node and can be used only to reduce the
 // request for new nodes that have not been yet fulfilled. Delta should be negative.

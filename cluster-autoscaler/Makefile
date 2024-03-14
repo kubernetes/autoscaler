@@ -36,7 +36,10 @@ IMAGE=$(REGISTRY)/cluster-autoscaler$(PROVIDER)
 
 export DOCKER_CLI_EXPERIMENTAL := enabled
 
-build: build-arch-$(GOARCH)
+build:
+	@echo "⚠️  WARNING: The vendor directory will be removed soon. \
+	Please make sure your dependencies are managed via Go modules."
+	@$(MAKE) build-arch-$(GOARCH)
 
 build-arch-%: clean-arch-%
 	$(ENVVAR) GOOS=$(GOOS) GOARCH=$* go build -o cluster-autoscaler-$* ${LDFLAGS_FLAG} ${TAGS_FLAG}
