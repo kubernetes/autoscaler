@@ -114,6 +114,7 @@ const (
 	Poll                       FunctionLabel = "poll"
 	Reconfigure                FunctionLabel = "reconfigure"
 	Autoscaling                FunctionLabel = "autoscaling"
+	LoopWait                   FunctionLabel = "loopWait"
 )
 
 var (
