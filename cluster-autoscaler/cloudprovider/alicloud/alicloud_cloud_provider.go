@@ -126,6 +126,10 @@ func (ali *aliCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 
 // NodeGroupForNode returns the node group for the given node.
 func (ali *aliCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+	if len(node.Spec.ProviderID) == 0 {
+		klog.Warningf("Node %v has no providerId", node.Name)
+		return nil, nil
+	}
 	instanceId, err := ecsInstanceIdFromProviderId(node.Spec.ProviderID)
 	if err != nil {
 		klog.Errorf("failed to get instance Id from provider Id:%s,because of %s", node.Spec.ProviderID, err.Error())
