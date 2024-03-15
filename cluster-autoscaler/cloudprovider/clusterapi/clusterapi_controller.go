@@ -474,7 +474,9 @@ func newMachineController(
 			Resource: resourceNameMachinePool,
 		}
 		machinePoolInformer = managementInformerFactory.ForResource(gvrMachinePool)
-		machinePoolInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{})
+		if _, err := machinePoolInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{}); err != nil {
+			return nil, fmt.Errorf("failed to add event handler for resource %q: %w", resourceNameMachinePool, err)
+		}
 
 		if err := machinePoolInformer.Informer().GetIndexer().AddIndexers(cache.Indexers{
 			machinePoolProviderIDIndex: indexMachinePoolByProviderID,
