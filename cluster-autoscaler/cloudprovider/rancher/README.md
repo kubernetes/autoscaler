@@ -10,6 +10,12 @@ The `cluster-autoscaler` for Rancher needs a configuration file to work by
 using `--cloud-config` parameter. An up-to-date example can be found in
 [examples/config.yaml](./examples/config.yaml).
 
+### Configuration via environment variables
+In order to override URL, token or clustername use following environment variables:
+ - RANCHER_URL
+ - RANCHER_TOKEN
+ - RANCHER_CLUSTER_NAME
+
 ### Permissions
 
 The Rancher server account provided in the `cloud-config` requires the

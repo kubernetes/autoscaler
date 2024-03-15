@@ -16,7 +16,10 @@ limitations under the License.
 
 package rancher
 
-import "testing"
+import (
+	"os"
+	"testing"
+)
 
 func TestNewConfig(t *testing.T) {
 	cfg, err := newConfig("./examples/config.yaml")
@@ -38,5 +41,27 @@ func TestNewConfig(t *testing.T) {
 
 	if len(cfg.ClusterNamespace) == 0 {
 		t.Fatal("expected cluster namespace to be set")
+	}
+}
+
+func TestEnvOverride(t *testing.T) {
+	expectedUrl := "http://rancher-site.com"
+	overrideToken := "token:changed"
+	overrideClusterName := "cluster-changed"
+	os.Setenv(envUrl, expectedUrl)
+	os.Setenv(envClusterToken, overrideToken)
+	os.Setenv(envClusterName, overrideClusterName)
+	cfg, err := newConfig("./examples/config.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cfg.URL != expectedUrl {
+		t.Fatal("expected url to be set")
+	}
+	if cfg.Token != overrideToken {
+		t.Fatal("expected token to be set")
+	}
+	if cfg.ClusterName != overrideClusterName {
+		t.Fatal("expected cluster name to be set")
 	}
 }
