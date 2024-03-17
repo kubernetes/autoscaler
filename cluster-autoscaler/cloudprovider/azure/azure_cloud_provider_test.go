@@ -53,6 +53,7 @@ func newTestAzureManager(t *testing.T) *AzureManager {
 			VMType:              vmTypeVMSS,
 			MaxDeploymentsCount: 2,
 			Deployment:          "deployment",
+			EnableForceDelete:   true,
 		},
 		azClient: &azClient{
 			virtualMachineScaleSetsClient:   mockVMSSClient,
