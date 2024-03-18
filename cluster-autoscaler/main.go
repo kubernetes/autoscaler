@@ -31,6 +31,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/actuation"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup/orchestrator"
 	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/loop"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/checkcapacity"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	kubelet_config "k8s.io/kubernetes/pkg/kubelet/apis/config"
@@ -62,7 +63,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	scheduler_util "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
@@ -258,6 +258,7 @@ var (
 			"Priority evictor reuses the concepts of drain logic in kubelet(https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/2712-pod-priority-based-graceful-node-shutdown#migration-from-the-node-graceful-shutdown-feature)."+
 			"Eg. flag usage:  '10000:20,1000:100,0:60'")
 	provisioningRequestsEnabled = flag.Bool("enable-provisioning-requests", false, "Whether the clusterautoscaler will be handling the ProvisioningRequest CRs.")
+	frequentLoopsEnabled        = flag.Bool("frequent-loops-enabled", false, "Whether clusterautoscaler triggers new iterations more frequently when it's needed")
 )
 
 func isFlagPassed(name string) bool {
@@ -591,23 +592,21 @@ func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapsho
 	}
 
 	// Autoscale ad infinitum.
-	for {
-		select {
-		case <-time.After(*scanInterval):
-			{
-				loopStart := time.Now()
-				metrics.UpdateLastTime(metrics.Main, loopStart)
-				healthCheck.UpdateLastActivity(loopStart)
-
-				err := autoscaler.RunOnce(loopStart)
-				if err != nil && err.Type() != errors.TransientError {
-					metrics.RegisterError(err)
-				} else {
-					healthCheck.UpdateLastSuccessfulRun(time.Now())
-				}
-
-				metrics.UpdateDurationFromStart(metrics.Main, loopStart)
-			}
+	context, cancel := ctx.WithCancel(ctx.Background())
+	defer cancel()
+	if *frequentLoopsEnabled {
+		podObserver := loop.StartPodObserver(context, kube_util.CreateKubeClient(createAutoscalingOptions().KubeClientOpts))
+		trigger := loop.NewLoopTrigger(podObserver, autoscaler, *scanInterval)
+		lastRun := time.Now()
+		for {
+			trigger.Wait(lastRun)
+			lastRun = time.Now()
+			loop.RunAutoscalerOnce(autoscaler, healthCheck, lastRun)
+		}
+	} else {
+		for {
+			time.Sleep(*scanInterval)
+			loop.RunAutoscalerOnce(autoscaler, healthCheck, time.Now())
 		}
 	}
 }
