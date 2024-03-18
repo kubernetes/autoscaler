@@ -50,9 +50,7 @@ most likely need other command line flags. For more information you can invoke
 
 ## Configuring node group auto discovery
 
-If you do not configure node group auto discovery, cluster autoscaler will attempt
-to match nodes against any scalable resources found in any namespace and belonging
-to any Cluster.
+You must configure node group auto discovery to inform cluster autoscaler which cluster in which to find for scalable node groups.
 
 Limiting cluster autoscaler to only match against resources in the blue namespace
 
@@ -454,4 +452,3 @@ here as a reference for users who might be deploying on these infrastructures.
 | IBM Cloud | `ibm-cloud.kubernetes.io/worker-id` | Used by the IBM Cloud Cloud Controller Manager to identify the node |
 | IBM Cloud | `vpc-block-csi-driver-labels` | Used by the IBM Cloud CSI driver as a target for persistent volume node affinity |
 | IBM Cloud | `ibm-cloud.kubernetes.io/vpc-instance-id` | Used when a VPC is in use on IBM Cloud |
-
