@@ -398,7 +398,6 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 	scaleUpStatus := &status.ScaleUpStatus{Result: status.ScaleUpNotTried}
 	scaleUpStatusProcessorAlreadyCalled := false
 	scaleDownStatus := &scaledownstatus.ScaleDownStatus{Result: scaledownstatus.ScaleDownNotTried}
-	scaleDownStatusProcessorAlreadyCalled := false
 
 	defer func() {
 		// Update status information when the loop is done (regardless of reason)
@@ -413,14 +412,22 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 		if !scaleUpStatusProcessorAlreadyCalled && a.processors != nil && a.processors.ScaleUpStatusProcessor != nil {
 			a.processors.ScaleUpStatusProcessor.Process(a.AutoscalingContext, scaleUpStatus)
 		}
-		if !scaleDownStatusProcessorAlreadyCalled && a.processors != nil && a.processors.ScaleDownStatusProcessor != nil {
+		if a.processors != nil && a.processors.ScaleDownStatusProcessor != nil {
+			// Gather status before scaledown status processor invocation
+			nodeDeletionResults, nodeDeletionResultsAsOf := a.scaleDownActuator.DeletionResults()
+			scaleDownStatus.NodeDeleteResults = nodeDeletionResults
+			scaleDownStatus.NodeDeleteResultsAsOf = nodeDeletionResultsAsOf
+			a.scaleDownActuator.ClearResultsNotNewerThan(scaleDownStatus.NodeDeleteResultsAsOf)
 			scaleDownStatus.SetUnremovableNodesInfo(a.scaleDownPlanner.UnremovableNodes(), a.scaleDownPlanner.NodeUtilizationMap(), a.CloudProvider)
+
 			a.processors.ScaleDownStatusProcessor.Process(a.AutoscalingContext, scaleDownStatus)
 		}
 
-		err := a.processors.AutoscalingStatusProcessor.Process(a.AutoscalingContext, a.clusterStateRegistry, currentTime)
-		if err != nil {
-			klog.Errorf("AutoscalingStatusProcessor error: %v.", err)
+		if a.processors != nil && a.processors.AutoscalingStatusProcessor != nil {
+			err := a.processors.AutoscalingStatusProcessor.Process(a.AutoscalingContext, a.clusterStateRegistry, currentTime)
+			if err != nil {
+				klog.Errorf("AutoscalingStatusProcessor error: %v.", err)
+			}
 		}
 	}()
 
@@ -647,17 +654,15 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 
 		if scaleDownInCooldown {
 			scaleDownStatus.Result = scaledownstatus.ScaleDownInCooldown
-			if len(removedNodeGroups) > 0 {
-				a.processors.ScaleDownStatusProcessor.Process(autoscalingContext, scaleDownStatus)
-			}
 		} else {
 			klog.V(4).Infof("Starting scale down")
 
 			scaleDownStart := time.Now()
 			metrics.UpdateLastTime(metrics.ScaleDown, scaleDownStart)
 			empty, needDrain := a.scaleDownPlanner.NodesToDelete(currentTime)
-			scaleDownStatus, typedErr := a.scaleDownActuator.StartDeletion(empty, needDrain)
-			a.scaleDownActuator.ClearResultsNotNewerThan(scaleDownStatus.NodeDeleteResultsAsOf)
+			scaleDownResult, scaledDownNodes, typedErr := a.scaleDownActuator.StartDeletion(empty, needDrain)
+			scaleDownStatus.Result = scaleDownResult
+			scaleDownStatus.ScaledDownNodes = scaledDownNodes
 			metrics.UpdateDurationFromStart(metrics.ScaleDown, scaleDownStart)
 			metrics.UpdateUnremovableNodesCount(countsByReason(a.scaleDownPlanner.UnremovableNodes()))
 
@@ -681,12 +686,6 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 				taintableNodes = intersectNodes(selectedNodes, taintableNodes)
 				untaintableNodes := subtractNodes(selectedNodes, taintableNodes)
 				actuation.UpdateSoftDeletionTaints(a.AutoscalingContext, taintableNodes, untaintableNodes)
-			}
-
-			if a.processors != nil && a.processors.ScaleDownStatusProcessor != nil {
-				scaleDownStatus.SetUnremovableNodesInfo(a.scaleDownPlanner.UnremovableNodes(), a.scaleDownPlanner.NodeUtilizationMap(), a.CloudProvider)
-				a.processors.ScaleDownStatusProcessor.Process(autoscalingContext, scaleDownStatus)
-				scaleDownStatusProcessorAlreadyCalled = true
 			}
 
 			if typedErr != nil {
