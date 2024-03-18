@@ -3,6 +3,23 @@ entries:
   cluster-autoscaler:
   - apiVersion: v2
     appVersion: 1.29.0
+    created: "2024-03-18T10:14:14.539658771Z"
+    description: Scales Kubernetes worker nodes within autoscaling groups.
+    digest: 2cc8639e82a1e02396e6e86b00223461468dc13be24bf3155b5411ed0ba7a4f6
+    home: https://github.com/kubernetes/autoscaler
+    icon: https://github.com/kubernetes/kubernetes/raw/master/logo/logo.png
+    maintainers:
+    - email: guyjtempleton@googlemail.com
+      name: gjtempleton
+    name: cluster-autoscaler
+    sources:
+    - https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler
+    type: application
+    urls:
+    - https://github.com/kubernetes/autoscaler/releases/download/cluster-autoscaler-chart-9.36.0/cluster-autoscaler-9.36.0.tgz
+    version: 9.36.0
+  - apiVersion: v2
+    appVersion: 1.29.0
     created: "2024-02-05T15:00:07.664673131Z"
     description: Scales Kubernetes worker nodes within autoscaling groups.
     digest: a07a135b79119a8bd4ff9184731a63fda3fc77462c2e5310553f3d5ad8b5ff7d
