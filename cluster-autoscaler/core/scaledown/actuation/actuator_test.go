@@ -1174,9 +1174,7 @@ func TestStartDeletion(t *testing.T) {
 					}
 				}
 
-				wantScaleDownStatus := &status.ScaleDownStatus{
-					Result: tc.wantStatus.result,
-				}
+				wantScaleDownNodes := []*status.ScaleDownNode{}
 				for _, scaleDownNodeInfo := range tc.wantStatus.scaledDownNodes {
 					statusScaledDownNode := &status.ScaleDownNode{
 						Node:        generateNode(scaleDownNodeInfo.name),
@@ -1184,7 +1182,7 @@ func TestStartDeletion(t *testing.T) {
 						EvictedPods: scaleDownNodeInfo.evictedPods,
 						UtilInfo:    scaleDownNodeInfo.utilInfo,
 					}
-					wantScaleDownStatus.ScaledDownNodes = append(wantScaleDownStatus.ScaledDownNodes, statusScaledDownNode)
+					wantScaleDownNodes = append(wantScaleDownNodes, statusScaledDownNode)
 				}
 
 				scaleStateNotifier := nodegroupchange.NewNodeGroupChangeObserversList()
@@ -1201,18 +1199,22 @@ func TestStartDeletion(t *testing.T) {
 					budgetProcessor:       budgets.NewScaleDownBudgetProcessor(&ctx),
 					configGetter:          nodegroupconfig.NewDefaultNodeGroupConfigProcessor(ctx.NodeGroupDefaults),
 				}
-				gotStatus, gotErr := actuator.StartDeletion(allEmptyNodes, allDrainNodes)
+				gotResult, gotScaleDownNodes, gotErr := actuator.StartDeletion(allEmptyNodes, allDrainNodes)
 				if diff := cmp.Diff(tc.wantErr, gotErr, cmpopts.EquateErrors()); diff != "" {
 					t.Errorf("StartDeletion error diff (-want +got):\n%s", diff)
 				}
 
-				// Verify ScaleDownStatus looks as expected.
+				// Verify ScaleDownResult looks as expected.
+				if diff := cmp.Diff(tc.wantStatus.result, gotResult); diff != "" {
+					t.Errorf("StartDeletion result diff (-want +got):\n%s", diff)
+				}
+
+				// Verify ScaleDownNodes looks as expected.
 				ignoreSdNodeOrder := cmpopts.SortSlices(func(a, b *status.ScaleDownNode) bool { return a.Node.Name < b.Node.Name })
-				ignoreTimestamps := cmpopts.IgnoreFields(status.ScaleDownStatus{}, "NodeDeleteResultsAsOf")
 				cmpNg := cmp.Comparer(func(a, b *testprovider.TestNodeGroup) bool { return a.Id() == b.Id() })
-				statusCmpOpts := cmp.Options{ignoreSdNodeOrder, ignoreTimestamps, cmpNg, cmpopts.EquateEmpty()}
-				if diff := cmp.Diff(wantScaleDownStatus, gotStatus, statusCmpOpts); diff != "" {
-					t.Errorf("StartDeletion status diff (-want +got):\n%s", diff)
+				statusCmpOpts := cmp.Options{ignoreSdNodeOrder, cmpNg, cmpopts.EquateEmpty()}
+				if diff := cmp.Diff(wantScaleDownNodes, gotScaleDownNodes, statusCmpOpts); diff != "" {
+					t.Errorf("StartDeletion scaled down nodes diff (-want +got):\n%s", diff)
 				}
 
 				// Verify that all expected nodes were deleted using the cloud provider hook.
@@ -1278,13 +1280,9 @@ func TestStartDeletion(t *testing.T) {
 					t.Errorf("Timeout while waiting for node deletion results")
 				}
 
-				// Run StartDeletion again to gather node deletion results for deletions started in the previous call, and verify
-				// that they look as expected.
-				gotNextStatus, gotNextErr := actuator.StartDeletion(nil, nil)
-				if gotNextErr != nil {
-					t.Errorf("StartDeletion unexpected error: %v", gotNextErr)
-				}
-				if diff := cmp.Diff(tc.wantNodeDeleteResults, gotNextStatus.NodeDeleteResults, cmpopts.EquateEmpty(), cmpopts.EquateErrors()); diff != "" {
+				// Gather node deletion results for deletions started in the previous call, and verify that they look as expected.
+				nodeDeleteResults, _ := actuator.DeletionResults()
+				if diff := cmp.Diff(tc.wantNodeDeleteResults, nodeDeleteResults, cmpopts.EquateEmpty(), cmpopts.EquateErrors()); diff != "" {
 					t.Errorf("NodeDeleteResults diff (-want +got):\n%s", diff)
 				}
 			})
