@@ -73,6 +73,8 @@ To create a valid configuration, follow instructions for your cloud provider:
 - [Azure](#azure)
 - [OpenStack Magnum](#openstack-magnum)
 - [Cluster API](#cluster-api)
+- [Exoscale](#exoscale)
+- [Hetzner Cloud](#hetzner-cloud)
 
 ### Templating the autoDiscovery.clusterName
 
@@ -259,6 +261,18 @@ $ helm install my-release autoscaler/cluster-autoscaler \
 
 Read [cluster-autoscaler/cloudprovider/exoscale/README.md](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/exoscale/README.md) for further information on the setup without helm.
 
+### Hetzner Cloud
+
+The following parameters are required:
+
+- `cloudProvider=hetzner`
+- `extraEnv.HCLOUD_TOKEN=...`
+- `autoscalingGroups=...`
+
+Each autoscaling group requires an additional `instanceType` and `region` key to be set.
+
+Read [cluster-autoscaler/cloudprovider/hetzner/README.md](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/hetzner/README.md) for further information on the setup without helm.
+
 ## Uninstalling the Chart
 
 To uninstall `my-release`:
@@ -375,7 +389,7 @@ vpa:
 | autoDiscovery.labels | list | `[]` | Cluster-API labels to match  https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/clusterapi/README.md#configuring-node-group-auto-discovery |
 | autoDiscovery.roles | list | `["worker"]` | Magnum node group roles to match. |
 | autoDiscovery.tags | list | `["k8s.io/cluster-autoscaler/enabled","k8s.io/cluster-autoscaler/{{ .Values.autoDiscovery.clusterName }}"]` | ASG tags to match, run through `tpl`. |
-| autoscalingGroups | list | `[]` | For AWS, Azure AKS or Magnum. At least one element is required if not using `autoDiscovery`. For example: <pre> - name: asg1<br />   maxSize: 2<br />   minSize: 1 </pre> |
+| autoscalingGroups | list | `[]` | For AWS, Azure AKS or Magnum. At least one element is required if not using `autoDiscovery`. For example: <pre> - name: asg1<br />   maxSize: 2<br />   minSize: 1 </pre> For Hetzner Cloud, the `instanceType` and `region` keys are also required. <pre> - name: mypool<br />   maxSize: 2<br />   minSize: 1<br />   instanceType: CPX21<br />   region: FSN1 </pre> |
 | autoscalingGroupsnamePrefix | list | `[]` | For GCE. At least one element is required if not using `autoDiscovery`. For example: <pre> - name: ig01<br />   maxSize: 10<br />   minSize: 0 </pre> |
 | awsAccessKeyID | string | `""` | AWS access key ID ([if AWS user keys used](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md#using-aws-credentials)) |
 | awsRegion | string | `"us-east-1"` | AWS region (required if `cloudProvider=aws`) |

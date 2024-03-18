@@ -60,7 +60,11 @@ spec:
           {{- end }}
           {{- if .Values.autoscalingGroups }}
             {{- range .Values.autoscalingGroups }}
+            {{- if eq $.Values.cloudProvider "hetzner" }}
+            - --nodes={{ .minSize }}:{{ .maxSize }}:{{ .instanceType }}:{{ .region }}:{{ .name }}
+            {{- else }}
             - --nodes={{ .minSize }}:{{ .maxSize }}:{{ .name }}
+            {{- end }}
             {{- end }}
           {{- end }}
           {{- if eq .Values.cloudProvider "rancher" }}
