@@ -32,6 +32,8 @@ up the changes: ```sudo systemctl restart kubelet.service```
    for pods on their creation & updates.
 1. You can specify a path for it to register as a part of the installation process
    by setting `--register-by-url=true` and passing `--webhook-address` and `--webhook-port`.
+1. You can specify a minimum TLS version with `--min-tls-version` with acceptable values being `tls1_2` (default), or `tls1_3`.
+1. You can also specify a comma or colon separated list of ciphers for the server to use with `--tls-ciphers` if `--min-tls-version` is set to `tls1_2`.
 
 ## Implementation
 
