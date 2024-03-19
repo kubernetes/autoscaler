@@ -188,8 +188,7 @@ func (scaleSet *ScaleSet) getCurSize() (int64, error) {
 		return scaleSet.curSize, nil
 	}
 
-	// If the toggle to utilize the GET VMSS is enabled or the scale set is on Spot,
-	// make a GET VMSS call to fetch more updated fresh info
+	// If the scale set is on Spot, make a GET VMSS call to fetch more updated fresh info
 	if isSpot(&set) {
 		ctx, cancel := getContextWithCancel()
 		defer cancel()
