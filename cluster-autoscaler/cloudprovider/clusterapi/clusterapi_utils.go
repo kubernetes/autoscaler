@@ -201,6 +201,9 @@ func machineSetHasMachineDeploymentOwnerRef(machineSet *unstructured.Unstructure
 // normalizedProviderString splits s on '/' returning everything after
 // the last '/'.
 func normalizedProviderString(s string) normalizedProviderID {
+	if strings.HasPrefix(s, "azure://") && strings.Contains(s, "virtualMachineScaleSets") {
+		return normalizedProviderID(s)
+	}
 	split := strings.Split(s, "/")
 	return normalizedProviderID(split[len(split)-1])
 }
