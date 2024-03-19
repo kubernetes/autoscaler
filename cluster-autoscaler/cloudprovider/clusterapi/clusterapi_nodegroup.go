@@ -18,6 +18,7 @@ package clusterapi
 
 import (
 	"fmt"
+	"k8s.io/klog/v2"
 	"math/rand"
 
 	"github.com/pkg/errors"
@@ -360,7 +361,12 @@ func newNodeGroupFromScalableResource(controller *machineController, unstructure
 	}
 
 	// Ensure the node group would have the capacity to scale
-	if scalableResource.MaxSize()-scalableResource.MinSize() < 1 {
+	// allow MinSize = 0
+	// allow MaxSize = MinSize
+	// don't allow MaxSize < MinSize
+	// don't allow MaxSize = MinSize = 0
+	if scalableResource.MaxSize()-scalableResource.MinSize() < 0 || scalableResource.MaxSize() == 0 {
+		klog.V(4).Infof("nodegroup %s has no scaling capacity, skipping", scalableResource.Name())
 		return nil, nil
 	}
 

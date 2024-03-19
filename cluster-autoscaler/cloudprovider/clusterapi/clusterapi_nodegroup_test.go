@@ -109,6 +109,18 @@ func TestNodeGroupNewNodeGroupConstructor(t *testing.T) {
 		nodeCount: 5,
 		errors:    false,
 		expectNil: true,
+	}, {
+		description: "no error and expect notNil: min=max=2",
+		annotations: map[string]string{
+			nodeGroupMinSizeAnnotationKey: "2",
+			nodeGroupMaxSizeAnnotationKey: "2",
+		},
+		nodeCount: 1,
+		minSize:   2,
+		maxSize:   2,
+		replicas:  1,
+		errors:    false,
+		expectNil: false,
 	}}
 
 	newNodeGroup := func(controller *machineController, testConfig *testConfig) (*nodegroup, error) {
