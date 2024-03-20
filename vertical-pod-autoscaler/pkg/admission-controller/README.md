@@ -32,6 +32,8 @@ up the changes: ```sudo systemctl restart kubelet.service```
    for pods on their creation & updates.
 1. You can specify a path for it to register as a part of the installation process
    by setting `--register-by-url=true` and passing `--webhook-address` and `--webhook-port`.
+1. You can optionally provide a of comma separated list of namespaces for the webhook
+   to ignore using `--webhook-ignore-namespaces`.
 
 ## Implementation
 
