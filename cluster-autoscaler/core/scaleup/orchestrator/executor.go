@@ -28,9 +28,9 @@ import (
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
+	"k8s.io/autoscaler/cluster-autoscaler/observers/nodegroupchange"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
@@ -38,18 +38,18 @@ import (
 
 // ScaleUpExecutor scales up node groups.
 type scaleUpExecutor struct {
-	autoscalingContext   *context.AutoscalingContext
-	clusterStateRegistry *clusterstate.ClusterStateRegistry
+	autoscalingContext *context.AutoscalingContext
+	scaleStateNotifier nodegroupchange.NodeGroupChangeObserver
 }
 
 // New returns new instance of scale up executor.
 func newScaleUpExecutor(
 	autoscalingContext *context.AutoscalingContext,
-	clusterStateRegistry *clusterstate.ClusterStateRegistry,
+	scaleStateNotifier nodegroupchange.NodeGroupChangeObserver,
 ) *scaleUpExecutor {
 	return &scaleUpExecutor{
-		autoscalingContext:   autoscalingContext,
-		clusterStateRegistry: clusterStateRegistry,
+		autoscalingContext: autoscalingContext,
+		scaleStateNotifier: scaleStateNotifier,
 	}
 }
 
@@ -151,13 +151,13 @@ func (e *scaleUpExecutor) executeScaleUp(
 	if err := info.Group.IncreaseSize(increase); err != nil {
 		e.autoscalingContext.LogRecorder.Eventf(apiv1.EventTypeWarning, "FailedToScaleUpGroup", "Scale-up failed for group %s: %v", info.Group.Id(), err)
 		aerr := errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("failed to increase node group size: ")
-		e.clusterStateRegistry.RegisterFailedScaleUp(info.Group, metrics.FailedScaleUpReason(string(aerr.Type())), aerr.Error(), gpuResourceName, gpuType, now)
+		e.scaleStateNotifier.RegisterFailedScaleUp(info.Group, string(aerr.Type()), aerr.Error(), gpuResourceName, gpuType, now)
 		return aerr
 	}
-	e.clusterStateRegistry.RegisterOrUpdateScaleUp(
-		info.Group,
-		increase,
-		time.Now())
+	if increase < 0 {
+		return errors.NewAutoscalerError(errors.InternalError, fmt.Sprintf("increase in number of nodes cannot be negative, got: %v", increase))
+	}
+	e.scaleStateNotifier.RegisterScaleUp(info.Group, increase, time.Now())
 	metrics.RegisterScaleUp(increase, gpuResourceName, gpuType)
 	e.autoscalingContext.LogRecorder.Eventf(apiv1.EventTypeNormal, "ScaledUpGroup",
 		"Scale-up: group %s size set to %d instead of %d (max: %d)", info.Group.Id(), info.NewSize, info.CurrentSize, info.MaxSize)

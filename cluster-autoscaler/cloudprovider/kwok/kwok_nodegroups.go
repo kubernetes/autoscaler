@@ -81,11 +81,15 @@ func (nodeGroup *NodeGroup) IncreaseSize(delta int) error {
 		if err != nil {
 			return fmt.Errorf("couldn't create new node '%s': %v", node.Name, err)
 		}
+		nodeGroup.targetSize += 1
 	}
 
-	nodeGroup.targetSize = newSize
-
 	return nil
+}
+
+// AtomicIncreaseSize is not implemented.
+func (nodeGroup *NodeGroup) AtomicIncreaseSize(delta int) error {
+	return cloudprovider.ErrNotImplemented
 }
 
 // DeleteNodes deletes the specified nodes from the node group.
@@ -111,6 +115,7 @@ func (nodeGroup *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 		if err != nil {
 			return err
 		}
+		nodeGroup.targetSize -= 1
 	}
 	return nil
 }

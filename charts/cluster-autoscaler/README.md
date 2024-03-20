@@ -73,6 +73,8 @@ To create a valid configuration, follow instructions for your cloud provider:
 - [Azure](#azure)
 - [OpenStack Magnum](#openstack-magnum)
 - [Cluster API](#cluster-api)
+- [Exoscale](#exoscale)
+- [Hetzner Cloud](#hetzner-cloud)
 
 ### Templating the autoDiscovery.clusterName
 
@@ -222,6 +224,7 @@ $ helm install my-release autoscaler/cluster-autoscaler -f myvalues.yaml
 `cloudProvider: clusterapi` must be set, and then one or more of
 
 - `autoDiscovery.clusterName`
+- or `autoDiscovery.namespace`
 - or `autoDiscovery.labels`
 
 See [here](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/clusterapi/README.md#configuring-node-group-auto-discovery) for more details.
@@ -258,6 +261,18 @@ $ helm install my-release autoscaler/cluster-autoscaler \
 ```
 
 Read [cluster-autoscaler/cloudprovider/exoscale/README.md](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/exoscale/README.md) for further information on the setup without helm.
+
+### Hetzner Cloud
+
+The following parameters are required:
+
+- `cloudProvider=hetzner`
+- `extraEnv.HCLOUD_TOKEN=...`
+- `autoscalingGroups=...`
+
+Each autoscaling group requires an additional `instanceType` and `region` key to be set.
+
+Read [cluster-autoscaler/cloudprovider/hetzner/README.md](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/hetzner/README.md) for further information on the setup without helm.
 
 ## Uninstalling the Chart
 
@@ -373,15 +388,17 @@ vpa:
 | affinity | object | `{}` | Affinity for pod assignment |
 | autoDiscovery.clusterName | string | `nil` | Enable autodiscovery for `cloudProvider=aws`, for groups matching `autoDiscovery.tags`. autoDiscovery.clusterName -- Enable autodiscovery for `cloudProvider=azure`, using tags defined in https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/azure/README.md#auto-discovery-setup. Enable autodiscovery for `cloudProvider=clusterapi`, for groups matching `autoDiscovery.labels`. Enable autodiscovery for `cloudProvider=gce`, but no MIG tagging required. Enable autodiscovery for `cloudProvider=magnum`, for groups matching `autoDiscovery.roles`. |
 | autoDiscovery.labels | list | `[]` | Cluster-API labels to match  https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/clusterapi/README.md#configuring-node-group-auto-discovery |
+| autoDiscovery.namespace | string | `nil` | Enable autodiscovery via cluster namespace for for `cloudProvider=clusterapi` |
 | autoDiscovery.roles | list | `["worker"]` | Magnum node group roles to match. |
 | autoDiscovery.tags | list | `["k8s.io/cluster-autoscaler/enabled","k8s.io/cluster-autoscaler/{{ .Values.autoDiscovery.clusterName }}"]` | ASG tags to match, run through `tpl`. |
-| autoscalingGroups | list | `[]` | For AWS, Azure AKS or Magnum. At least one element is required if not using `autoDiscovery`. For example: <pre> - name: asg1<br />   maxSize: 2<br />   minSize: 1 </pre> |
+| autoscalingGroups | list | `[]` | For AWS, Azure AKS or Magnum. At least one element is required if not using `autoDiscovery`. For example: <pre> - name: asg1<br />   maxSize: 2<br />   minSize: 1 </pre> For Hetzner Cloud, the `instanceType` and `region` keys are also required. <pre> - name: mypool<br />   maxSize: 2<br />   minSize: 1<br />   instanceType: CPX21<br />   region: FSN1 </pre> |
 | autoscalingGroupsnamePrefix | list | `[]` | For GCE. At least one element is required if not using `autoDiscovery`. For example: <pre> - name: ig01<br />   maxSize: 10<br />   minSize: 0 </pre> |
 | awsAccessKeyID | string | `""` | AWS access key ID ([if AWS user keys used](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md#using-aws-credentials)) |
 | awsRegion | string | `"us-east-1"` | AWS region (required if `cloudProvider=aws`) |
 | awsSecretAccessKey | string | `""` | AWS access secret key ([if AWS user keys used](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md#using-aws-credentials)) |
 | azureClientID | string | `""` | Service Principal ClientID with contributor permission to Cluster and Node ResourceGroup. Required if `cloudProvider=azure` |
 | azureClientSecret | string | `""` | Service Principal ClientSecret with contributor permission to Cluster and Node ResourceGroup. Required if `cloudProvider=azure` |
+| azureEnableForceDelete | bool | `false` | Whether to force delete VMs or VMSS instances when scaling down. |
 | azureResourceGroup | string | `""` | Azure resource group that the cluster is located. Required if `cloudProvider=azure` |
 | azureSubscriptionID | string | `""` | Azure subscription where the resources are located. Required if `cloudProvider=azure` |
 | azureTenantID | string | `""` | Azure tenant where the resources are located. Required if `cloudProvider=azure` |
@@ -413,7 +430,7 @@ vpa:
 | image.pullPolicy | string | `"IfNotPresent"` | Image pull policy |
 | image.pullSecrets | list | `[]` | Image pull secrets |
 | image.repository | string | `"registry.k8s.io/autoscaling/cluster-autoscaler"` | Image repository |
-| image.tag | string | `"v1.28.2"` | Image tag |
+| image.tag | string | `"v1.29.0"` | Image tag |
 | kubeTargetVersionOverride | string | `""` | Allow overriding the `.Capabilities.KubeVersion.GitVersion` check. Useful for `helm template` commands. |
 | kwokConfigMapName | string | `"kwok-provider-config"` | configmap for configuring kwok provider |
 | magnumCABundlePath | string | `"/etc/kubernetes/ca-bundle.crt"` | Path to the host's CA bundle, from `ca-file` in the cloud-config file. |

@@ -51,6 +51,7 @@ type ScaleUpOrchestrator struct {
 	resourceManager      *resource.Manager
 	clusterStateRegistry *clusterstate.ClusterStateRegistry
 	scaleUpExecutor      *scaleUpExecutor
+	estimatorBuilder     estimator.EstimatorBuilder
 	taintConfig          taints.TaintConfig
 	initialized          bool
 }
@@ -67,14 +68,16 @@ func (o *ScaleUpOrchestrator) Initialize(
 	autoscalingContext *context.AutoscalingContext,
 	processors *ca_processors.AutoscalingProcessors,
 	clusterStateRegistry *clusterstate.ClusterStateRegistry,
+	estimatorBuilder estimator.EstimatorBuilder,
 	taintConfig taints.TaintConfig,
 ) {
 	o.autoscalingContext = autoscalingContext
 	o.processors = processors
 	o.clusterStateRegistry = clusterStateRegistry
+	o.estimatorBuilder = estimatorBuilder
 	o.taintConfig = taintConfig
 	o.resourceManager = resource.NewManager(processors.CustomResourcesProcessor)
-	o.scaleUpExecutor = newScaleUpExecutor(autoscalingContext, clusterStateRegistry)
+	o.scaleUpExecutor = newScaleUpExecutor(autoscalingContext, processors.ScaleStateNotifier)
 	o.initialized = true
 }
 
@@ -88,7 +91,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 	nodeInfos map[string]*schedulerframework.NodeInfo,
 ) (*status.ScaleUpStatus, errors.AutoscalerError) {
 	if !o.initialized {
-		return scaleUpError(&status.ScaleUpStatus{}, errors.NewAutoscalerError(errors.InternalError, "ScaleUpOrchestrator is not initialized"))
+		return status.UpdateScaleUpError(&status.ScaleUpStatus{}, errors.NewAutoscalerError(errors.InternalError, "ScaleUpOrchestrator is not initialized"))
 	}
 
 	loggingQuota := klogx.PodsLoggingQuota()
@@ -103,7 +106,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 
 	upcomingNodes, aErr := o.UpcomingNodes(nodeInfos)
 	if aErr != nil {
-		return scaleUpError(&status.ScaleUpStatus{}, aErr.AddPrefix("could not get upcoming nodes: "))
+		return status.UpdateScaleUpError(&status.ScaleUpStatus{}, aErr.AddPrefix("could not get upcoming nodes: "))
 	}
 	klog.V(4).Infof("Upcoming %d nodes", len(upcomingNodes))
 
@@ -112,7 +115,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 		var err error
 		nodeGroups, nodeInfos, err = o.processors.NodeGroupListProcessor.Process(o.autoscalingContext, nodeGroups, nodeInfos, unschedulablePods)
 		if err != nil {
-			return scaleUpError(&status.ScaleUpStatus{}, errors.ToAutoscalerError(errors.InternalError, err))
+			return status.UpdateScaleUpError(&status.ScaleUpStatus{}, errors.ToAutoscalerError(errors.InternalError, err))
 		}
 	}
 
@@ -121,7 +124,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 
 	resourcesLeft, aErr := o.resourceManager.ResourcesLeft(o.autoscalingContext, nodeInfos, nodes)
 	if aErr != nil {
-		return scaleUpError(&status.ScaleUpStatus{}, aErr.AddPrefix("could not compute total resources: "))
+		return status.UpdateScaleUpError(&status.ScaleUpStatus{}, aErr.AddPrefix("could not compute total resources: "))
 	}
 
 	now := time.Now()
@@ -186,53 +189,16 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 
 	newNodes, aErr := o.GetCappedNewNodeCount(bestOption.NodeCount, len(nodes)+len(upcomingNodes))
 	if aErr != nil {
-		return scaleUpError(&status.ScaleUpStatus{PodsTriggeredScaleUp: bestOption.Pods}, aErr)
+		return status.UpdateScaleUpError(&status.ScaleUpStatus{PodsTriggeredScaleUp: bestOption.Pods}, aErr)
 	}
 
 	createNodeGroupResults := make([]nodegroups.CreateNodeGroupResult, 0)
 	if !bestOption.NodeGroup.Exist() {
-		oldId := bestOption.NodeGroup.Id()
-		createNodeGroupResult, aErr := o.processors.NodeGroupManager.CreateNodeGroup(o.autoscalingContext, bestOption.NodeGroup)
+		var scaleUpStatus *status.ScaleUpStatus
+		createNodeGroupResults, scaleUpStatus, aErr = o.CreateNodeGroup(bestOption, nodeInfos, schedulablePods, podEquivalenceGroups, daemonSets)
 		if aErr != nil {
-			return scaleUpError(
-				&status.ScaleUpStatus{FailedCreationNodeGroups: []cloudprovider.NodeGroup{bestOption.NodeGroup}, PodsTriggeredScaleUp: bestOption.Pods},
-				aErr)
+			return scaleUpStatus, aErr
 		}
-		createNodeGroupResults = append(createNodeGroupResults, createNodeGroupResult)
-		bestOption.NodeGroup = createNodeGroupResult.MainCreatedNodeGroup
-
-		// If possible replace candidate node-info with node info based on crated node group. The latter
-		// one should be more in line with nodes which will be created by node group.
-		mainCreatedNodeInfo, aErr := utils.GetNodeInfoFromTemplate(createNodeGroupResult.MainCreatedNodeGroup, daemonSets, o.taintConfig)
-		if aErr == nil {
-			nodeInfos[createNodeGroupResult.MainCreatedNodeGroup.Id()] = mainCreatedNodeInfo
-			schedulablePods[createNodeGroupResult.MainCreatedNodeGroup.Id()] = o.SchedulablePods(podEquivalenceGroups, createNodeGroupResult.MainCreatedNodeGroup, mainCreatedNodeInfo)
-		} else {
-			klog.Warningf("Cannot build node info for newly created main node group %v; balancing similar node groups may not work; err=%v", createNodeGroupResult.MainCreatedNodeGroup.Id(), aErr)
-			// Use node info based on expansion candidate but update Id which likely changed when node group was created.
-			nodeInfos[createNodeGroupResult.MainCreatedNodeGroup.Id()] = nodeInfos[oldId]
-			schedulablePods[createNodeGroupResult.MainCreatedNodeGroup.Id()] = schedulablePods[oldId]
-		}
-
-		if oldId != createNodeGroupResult.MainCreatedNodeGroup.Id() {
-			delete(nodeInfos, oldId)
-			delete(schedulablePods, oldId)
-		}
-
-		for _, nodeGroup := range createNodeGroupResult.ExtraCreatedNodeGroups {
-			nodeInfo, aErr := utils.GetNodeInfoFromTemplate(nodeGroup, daemonSets, o.taintConfig)
-			if aErr != nil {
-				klog.Warningf("Cannot build node info for newly created extra node group %v; balancing similar node groups will not work; err=%v", nodeGroup.Id(), aErr)
-				continue
-			}
-			nodeInfos[nodeGroup.Id()] = nodeInfo
-			schedulablePods[nodeGroup.Id()] = o.SchedulablePods(podEquivalenceGroups, nodeGroup, nodeInfo)
-		}
-
-		// Update ClusterStateRegistry so similar nodegroups rebalancing works.
-		// TODO(lukaszos) when pursuing scalability update this call with one which takes list of changed node groups so we do not
-		//                do extra API calls. (the call at the bottom of ScaleUp() could be also changed then)
-		o.clusterStateRegistry.Recalculate()
 	}
 
 	// Recompute similar node groups in case they need to be updated
@@ -253,7 +219,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 	if !found {
 		// This should never happen, as we already should have retrieved nodeInfo for any considered nodegroup.
 		klog.Errorf("No node info for: %s", bestOption.NodeGroup.Id())
-		return scaleUpError(
+		return status.UpdateScaleUpError(
 			&status.ScaleUpStatus{CreateNodeGroupResults: createNodeGroupResults, PodsTriggeredScaleUp: bestOption.Pods},
 			errors.NewAutoscalerError(
 				errors.CloudProviderError,
@@ -263,7 +229,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 	// Apply upper limits for CPU and memory.
 	newNodes, aErr = o.resourceManager.ApplyLimits(o.autoscalingContext, newNodes, resourcesLeft, nodeInfo, bestOption.NodeGroup)
 	if aErr != nil {
-		return scaleUpError(
+		return status.UpdateScaleUpError(
 			&status.ScaleUpStatus{CreateNodeGroupResults: createNodeGroupResults, PodsTriggeredScaleUp: bestOption.Pods},
 			aErr)
 	}
@@ -283,7 +249,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 
 	scaleUpInfos, aErr := o.processors.NodeGroupSetProcessor.BalanceScaleUpBetweenGroups(o.autoscalingContext, targetNodeGroups, newNodes)
 	if aErr != nil {
-		return scaleUpError(
+		return status.UpdateScaleUpError(
 			&status.ScaleUpStatus{CreateNodeGroupResults: createNodeGroupResults, PodsTriggeredScaleUp: bestOption.Pods},
 			aErr)
 	}
@@ -291,7 +257,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 	klog.V(1).Infof("Final scale-up plan: %v", scaleUpInfos)
 	aErr, failedNodeGroups := o.scaleUpExecutor.ExecuteScaleUps(scaleUpInfos, nodeInfos, now)
 	if aErr != nil {
-		return scaleUpError(
+		return status.UpdateScaleUpError(
 			&status.ScaleUpStatus{
 				CreateNodeGroupResults: createNodeGroupResults,
 				FailedResizeNodeGroups: failedNodeGroups,
@@ -322,7 +288,7 @@ func (o *ScaleUpOrchestrator) ScaleUpToNodeGroupMinSize(
 	nodeInfos map[string]*schedulerframework.NodeInfo,
 ) (*status.ScaleUpStatus, errors.AutoscalerError) {
 	if !o.initialized {
-		return scaleUpError(&status.ScaleUpStatus{}, errors.NewAutoscalerError(errors.InternalError, "ScaleUpOrchestrator is not initialized"))
+		return status.UpdateScaleUpError(&status.ScaleUpStatus{}, errors.NewAutoscalerError(errors.InternalError, "ScaleUpOrchestrator is not initialized"))
 	}
 
 	now := time.Now()
@@ -331,7 +297,7 @@ func (o *ScaleUpOrchestrator) ScaleUpToNodeGroupMinSize(
 
 	resourcesLeft, aErr := o.resourceManager.ResourcesLeft(o.autoscalingContext, nodeInfos, nodes)
 	if aErr != nil {
-		return scaleUpError(&status.ScaleUpStatus{}, aErr.AddPrefix("could not compute total resources: "))
+		return status.UpdateScaleUpError(&status.ScaleUpStatus{}, aErr.AddPrefix("could not compute total resources: "))
 	}
 
 	for _, ng := range nodeGroups {
@@ -397,7 +363,7 @@ func (o *ScaleUpOrchestrator) ScaleUpToNodeGroupMinSize(
 	klog.V(1).Infof("ScaleUpToNodeGroupMinSize: final scale-up plan: %v", scaleUpInfos)
 	aErr, failedNodeGroups := o.scaleUpExecutor.ExecuteScaleUps(scaleUpInfos, nodeInfos, now)
 	if aErr != nil {
-		return scaleUpError(
+		return status.UpdateScaleUpError(
 			&status.ScaleUpStatus{
 				FailedResizeNodeGroups: failedNodeGroups,
 			},
@@ -490,7 +456,7 @@ func (o *ScaleUpOrchestrator) ComputeExpansionOption(
 	option.SimilarNodeGroups = o.ComputeSimilarNodeGroups(nodeGroup, nodeInfos, schedulablePods, now)
 
 	estimateStart := time.Now()
-	expansionEstimator := o.autoscalingContext.EstimatorBuilder(
+	expansionEstimator := o.estimatorBuilder(
 		o.autoscalingContext.PredicateChecker,
 		o.autoscalingContext.ClusterSnapshot,
 		estimator.NewEstimationContext(o.autoscalingContext.MaxNodesTotal, option.SimilarNodeGroups, currentNodeCount),
@@ -508,6 +474,61 @@ func (o *ScaleUpOrchestrator) ComputeExpansionOption(
 		}
 	}
 	return option
+}
+
+// CreateNodeGroup will try to create a new node group based on the initialOption.
+func (o *ScaleUpOrchestrator) CreateNodeGroup(
+	initialOption *expander.Option,
+	nodeInfos map[string]*schedulerframework.NodeInfo,
+	schedulablePods map[string][]*apiv1.Pod,
+	podEquivalenceGroups []*equivalence.PodGroup,
+	daemonSets []*appsv1.DaemonSet,
+) ([]nodegroups.CreateNodeGroupResult, *status.ScaleUpStatus, errors.AutoscalerError) {
+	createNodeGroupResults := make([]nodegroups.CreateNodeGroupResult, 0)
+
+	oldId := initialOption.NodeGroup.Id()
+	createNodeGroupResult, aErr := o.processors.NodeGroupManager.CreateNodeGroup(o.autoscalingContext, initialOption.NodeGroup)
+	if aErr != nil {
+		status, err := status.UpdateScaleUpError(
+			&status.ScaleUpStatus{FailedCreationNodeGroups: []cloudprovider.NodeGroup{initialOption.NodeGroup}, PodsTriggeredScaleUp: initialOption.Pods},
+			aErr)
+		return createNodeGroupResults, status, err
+	}
+
+	createNodeGroupResults = append(createNodeGroupResults, createNodeGroupResult)
+	initialOption.NodeGroup = createNodeGroupResult.MainCreatedNodeGroup
+
+	// If possible replace candidate node-info with node info based on crated node group. The latter
+	// one should be more in line with nodes which will be created by node group.
+	mainCreatedNodeInfo, aErr := utils.GetNodeInfoFromTemplate(createNodeGroupResult.MainCreatedNodeGroup, daemonSets, o.taintConfig)
+	if aErr == nil {
+		nodeInfos[createNodeGroupResult.MainCreatedNodeGroup.Id()] = mainCreatedNodeInfo
+		schedulablePods[createNodeGroupResult.MainCreatedNodeGroup.Id()] = o.SchedulablePods(podEquivalenceGroups, createNodeGroupResult.MainCreatedNodeGroup, mainCreatedNodeInfo)
+	} else {
+		klog.Warningf("Cannot build node info for newly created main node group %v; balancing similar node groups may not work; err=%v", createNodeGroupResult.MainCreatedNodeGroup.Id(), aErr)
+		// Use node info based on expansion candidate but update Id which likely changed when node group was created.
+		nodeInfos[createNodeGroupResult.MainCreatedNodeGroup.Id()] = nodeInfos[oldId]
+		schedulablePods[createNodeGroupResult.MainCreatedNodeGroup.Id()] = schedulablePods[oldId]
+	}
+	if oldId != createNodeGroupResult.MainCreatedNodeGroup.Id() {
+		delete(nodeInfos, oldId)
+		delete(schedulablePods, oldId)
+	}
+	for _, nodeGroup := range createNodeGroupResult.ExtraCreatedNodeGroups {
+		nodeInfo, aErr := utils.GetNodeInfoFromTemplate(nodeGroup, daemonSets, o.taintConfig)
+		if aErr != nil {
+			klog.Warningf("Cannot build node info for newly created extra node group %v; balancing similar node groups will not work; err=%v", nodeGroup.Id(), aErr)
+			continue
+		}
+		nodeInfos[nodeGroup.Id()] = nodeInfo
+		schedulablePods[nodeGroup.Id()] = o.SchedulablePods(podEquivalenceGroups, nodeGroup, nodeInfo)
+	}
+
+	// Update ClusterStateRegistry so similar nodegroups rebalancing works.
+	// TODO(lukaszos) when pursuing scalability update this call with one which takes list of changed node groups so we do not
+	//                do extra API calls. (the call at the bottom of ScaleUp() could be also changed then)
+	o.clusterStateRegistry.Recalculate()
+	return createNodeGroupResults, nil, nil
 }
 
 // SchedulablePods returns a list of pods that could be scheduled
@@ -716,10 +737,4 @@ func GetPodsAwaitingEvaluation(egs []*equivalence.PodGroup, bestOption string) [
 		}
 	}
 	return awaitsEvaluation
-}
-
-func scaleUpError(s *status.ScaleUpStatus, err errors.AutoscalerError) (*status.ScaleUpStatus, errors.AutoscalerError) {
-	s.ScaleUpError = &err
-	s.Result = status.ScaleUpError
-	return s, err
 }

@@ -779,10 +779,10 @@ func TestScaleDown(t *testing.T) {
 	autoscalererr = wrapper.UpdateClusterState(nodes, nodes, nil, time.Now().Add(-5*time.Minute))
 	assert.NoError(t, autoscalererr)
 	empty, drain := wrapper.NodesToDelete(time.Now())
-	scaleDownStatus, err := wrapper.StartDeletion(empty, drain)
+	scaleDownResult, _, err := wrapper.StartDeletion(empty, drain)
 	waitForDeleteToFinish(t, wrapper)
 	assert.NoError(t, err)
-	assert.Equal(t, status.ScaleDownNodeDeleteStarted, scaleDownStatus.Result)
+	assert.Equal(t, status.ScaleDownNodeDeleteStarted, scaleDownResult)
 	assert.Equal(t, n1.Name, utils.GetStringFromChan(deletedNodes))
 	assert.Equal(t, n1.Name, utils.GetStringFromChan(updatedNodes))
 }
@@ -1036,7 +1036,7 @@ func simpleScaleDownEmpty(t *testing.T, config *ScaleTestConfig) {
 	autoscalererr = wrapper.UpdateClusterState(nodes, nodes, nil, time.Now().Add(-5*time.Minute))
 	assert.NoError(t, autoscalererr)
 	empty, drain := wrapper.NodesToDelete(time.Now())
-	scaleDownStatus, err := wrapper.StartDeletion(empty, drain)
+	scaleDownResult, _, err := wrapper.StartDeletion(empty, drain)
 
 	assert.NoError(t, err)
 	var expectedScaleDownResult status.ScaleDownResult
@@ -1045,7 +1045,7 @@ func simpleScaleDownEmpty(t *testing.T, config *ScaleTestConfig) {
 	} else {
 		expectedScaleDownResult = status.ScaleDownNoUnneeded
 	}
-	assert.Equal(t, expectedScaleDownResult, scaleDownStatus.Result)
+	assert.Equal(t, expectedScaleDownResult, scaleDownResult)
 
 	expectedScaleDownCount := config.ExpectedScaleDownCount
 	if config.ExpectedScaleDownCount == 0 {
@@ -1131,11 +1131,11 @@ func TestNoScaleDownUnready(t *testing.T) {
 	autoscalererr = wrapper.UpdateClusterState(nodes, nodes, nil, time.Now().Add(-5*time.Minute))
 	assert.NoError(t, autoscalererr)
 	empty, drain := wrapper.NodesToDelete(time.Now())
-	scaleDownStatus, err := wrapper.StartDeletion(empty, drain)
+	scaleDownResult, _, err := wrapper.StartDeletion(empty, drain)
 	waitForDeleteToFinish(t, wrapper)
 
 	assert.NoError(t, err)
-	assert.Equal(t, status.ScaleDownNoUnneeded, scaleDownStatus.Result)
+	assert.Equal(t, status.ScaleDownNoUnneeded, scaleDownResult)
 
 	deletedNodes := make(chan string, 10)
 
@@ -1155,11 +1155,11 @@ func TestNoScaleDownUnready(t *testing.T) {
 	autoscalererr = wrapper.UpdateClusterState(nodes, nodes, nil, time.Now().Add(-2*time.Hour))
 	assert.NoError(t, autoscalererr)
 	empty, drain = wrapper.NodesToDelete(time.Now())
-	scaleDownStatus, err = wrapper.StartDeletion(empty, drain)
+	scaleDownResult, _, err = wrapper.StartDeletion(empty, drain)
 	waitForDeleteToFinish(t, wrapper)
 
 	assert.NoError(t, err)
-	assert.Equal(t, status.ScaleDownNodeDeleteStarted, scaleDownStatus.Result)
+	assert.Equal(t, status.ScaleDownNodeDeleteStarted, scaleDownResult)
 	assert.Equal(t, n1.Name, utils.GetStringFromChan(deletedNodes))
 }
 
@@ -1245,11 +1245,11 @@ func TestScaleDownNoMove(t *testing.T) {
 	autoscalererr = wrapper.UpdateClusterState(nodes, nodes, nil, time.Now().Add(-5*time.Minute))
 	assert.NoError(t, autoscalererr)
 	empty, drain := wrapper.NodesToDelete(time.Now())
-	scaleDownStatus, err := wrapper.StartDeletion(empty, drain)
+	scaleDownResult, _, err := wrapper.StartDeletion(empty, drain)
 	waitForDeleteToFinish(t, wrapper)
 
 	assert.NoError(t, err)
-	assert.Equal(t, status.ScaleDownNoUnneeded, scaleDownStatus.Result)
+	assert.Equal(t, status.ScaleDownNoUnneeded, scaleDownResult)
 }
 
 func getCountOfChan(c chan string) int {

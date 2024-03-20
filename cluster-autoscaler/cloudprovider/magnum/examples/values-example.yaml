@@ -12,16 +12,16 @@ image:
   tag: v1.23.0
 
 nodeSelector:
-  node-role.kubernetes.io/master: ""
+  node-role.kubernetes.io/control-plane: ""
 
 tolerations:
 - key: CriticalAddonsOnly
   value: "True"
   effect: NoSchedule
 - key: dedicated
-  value: "master"
+  value: "control-plane"
   effect: NoSchedule
-- key: node-role.kubernetes.io/master
+- key: node-role.kubernetes.io/control-plane
   effect: NoSchedule
 
 cloudConfigPath: "/etc/kubernetes/cloud-config"

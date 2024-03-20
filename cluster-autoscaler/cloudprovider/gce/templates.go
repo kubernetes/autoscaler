@@ -29,20 +29,15 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/klog/v2"
-	"sigs.k8s.io/yaml"
-
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce/localssdsize"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
+	"k8s.io/klog/v2"
 )
 
 // GceTemplateBuilder builds templates for GCE nodes.
 type GceTemplateBuilder struct{}
-
-// LocalSSDDiskSizeInGiB is the size of each local SSD in GiB
-// (cf. https://cloud.google.com/compute/docs/disks/local-ssd)
-const LocalSSDDiskSizeInGiB = 375
 
 // These annotations are used internally only to store information in node temlate and use it later in CA, the actuall nodes won't have these annotations.
 const (
@@ -107,13 +102,7 @@ func (t *GceTemplateBuilder) BuildCapacity(m MigOsInfo, cpu int64, mem int64, ac
 
 // BuildAllocatableFromKubeEnv builds node allocatable based on capacity of the node and
 // value of kubeEnv.
-// KubeEnv is a multi-line string containing entries in the form of
-// <RESOURCE_NAME>:<string>. One of the resources it contains is a list of
-// kubelet arguments from which we can extract the resources reserved by
-// the kubelet for its operation. Allocated resources are capacity minus reserved.
-// If we fail to extract the reserved resources from kubeEnv (e.g it is in a
-// wrong format or does not contain kubelet arguments), we return an error.
-func (t *GceTemplateBuilder) BuildAllocatableFromKubeEnv(capacity apiv1.ResourceList, kubeEnv string, evictionHard *EvictionHard) (apiv1.ResourceList, error) {
+func (t *GceTemplateBuilder) BuildAllocatableFromKubeEnv(capacity apiv1.ResourceList, kubeEnv KubeEnv, evictionHard *EvictionHard) (apiv1.ResourceList, error) {
 	kubeReserved, err := extractKubeReservedFromKubeEnv(kubeEnv)
 	if err != nil {
 		return nil, err
@@ -145,39 +134,20 @@ func (t *GceTemplateBuilder) CalculateAllocatable(capacity apiv1.ResourceList, k
 	return allocatable
 }
 
-func getKubeEnvValueFromTemplateMetadata(template *gce.InstanceTemplate) (string, error) {
-	if template.Properties.Metadata == nil {
-		return "", fmt.Errorf("instance template %s has no metadata", template.Name)
-	}
-	for _, item := range template.Properties.Metadata.Items {
-		if item.Key == "kube-env" {
-			if item.Value == nil {
-				return "", fmt.Errorf("no kube-env content in metadata")
-			}
-			return *item.Value, nil
-		}
-	}
-	return "", nil
-}
-
 // MigOsInfo return os detailes information that stored in template.
-func (t *GceTemplateBuilder) MigOsInfo(migId string, template *gce.InstanceTemplate) (MigOsInfo, error) {
-	kubeEnvValue, err := getKubeEnvValueFromTemplateMetadata(template)
-	if err != nil {
-		return nil, fmt.Errorf("could not obtain kube-env from template metadata; %v", err)
-	}
-	os := extractOperatingSystemFromKubeEnv(kubeEnvValue)
+func (t *GceTemplateBuilder) MigOsInfo(migId string, kubeEnv KubeEnv) (MigOsInfo, error) {
+	os := extractOperatingSystemFromKubeEnv(kubeEnv)
 	if os == OperatingSystemUnknown {
 		return nil, fmt.Errorf("could not obtain os from kube-env from template metadata")
 	}
 
-	osDistribution := extractOperatingSystemDistributionFromKubeEnv(kubeEnvValue)
+	osDistribution := extractOperatingSystemDistributionFromKubeEnv(kubeEnv)
 	if osDistribution == OperatingSystemDistributionUnknown {
 		osDistribution = OperatingSystemDistributionDefault
 		klog.Errorf("could not obtain os-distribution from kube-env from template metadata, falling back to %q", osDistribution)
 	}
 
-	arch, err := extractSystemArchitectureFromKubeEnv(kubeEnvValue)
+	arch, err := extractSystemArchitectureFromKubeEnv(kubeEnv)
 	if err != nil {
 		arch = DefaultArch
 		klog.Errorf("Couldn't extract architecture from kube-env for MIG %q, falling back to %q. Error: %v", migId, arch, err)
@@ -186,7 +156,7 @@ func (t *GceTemplateBuilder) MigOsInfo(migId string, template *gce.InstanceTempl
 }
 
 // BuildNodeFromTemplate builds node from provided GCE template.
-func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, migOsInfo MigOsInfo, template *gce.InstanceTemplate, cpu int64, mem int64, pods *int64, reserved OsReservedCalculator) (*apiv1.Node, error) {
+func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, migOsInfo MigOsInfo, template *gce.InstanceTemplate, kubeEnv KubeEnv, cpu int64, mem int64, pods *int64, reserved OsReservedCalculator, localSSDSizeProvider localssdsize.LocalSSDSizeProvider) (*apiv1.Node, error) {
 
 	if template.Properties == nil {
 		return nil, fmt.Errorf("instance template %s has no properties", template.Name)
@@ -194,11 +164,6 @@ func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, migOsInfo MigOsInfo,
 
 	node := apiv1.Node{}
 	nodeName := fmt.Sprintf("%s-template-%d", template.Name, rand.Int63())
-
-	kubeEnvValue, err := getKubeEnvValueFromTemplateMetadata(template)
-	if err != nil {
-		return nil, fmt.Errorf("could not obtain kube-env from template metadata; %v", err)
-	}
 
 	node.ObjectMeta = metav1.ObjectMeta{
 		Name:     nodeName,
@@ -208,7 +173,8 @@ func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, migOsInfo MigOsInfo,
 
 	addBootDiskAnnotations(&node, template.Properties)
 	var ephemeralStorage int64 = -1
-	if !isBootDiskEphemeralStorageWithInstanceTemplateDisabled(kubeEnvValue) {
+	var err error
+	if !isBootDiskEphemeralStorageWithInstanceTemplateDisabled(kubeEnv) {
 		// ephemeral storage is backed up by boot disk
 		ephemeralStorage, err = getBootDiskEphemeralStorageFromInstanceTemplateProperties(template.Properties)
 	} else {
@@ -220,15 +186,16 @@ func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, migOsInfo MigOsInfo,
 	if localSsdCount > 0 {
 		addAnnotation(&node, LocalSsdCountAnnotation, strconv.FormatInt(localSsdCount, 10))
 	}
-	ephemeralStorageLocalSsdCount := ephemeralStorageLocalSSDCount(kubeEnvValue)
+	ephemeralStorageLocalSsdCount := ephemeralStorageLocalSSDCount(kubeEnv)
 	if err == nil && ephemeralStorageLocalSsdCount > 0 {
-		ephemeralStorage, err = getEphemeralStorageOnLocalSsd(localSsdCount, ephemeralStorageLocalSsdCount)
+		localSSDDiskSize := localSSDSizeProvider.SSDSizeInGiB(template.Properties.MachineType)
+		ephemeralStorage, err = getEphemeralStorageOnLocalSsd(localSsdCount, ephemeralStorageLocalSsdCount, int64(localSSDDiskSize))
 	}
 	if err != nil {
 		return nil, fmt.Errorf("could not fetch ephemeral storage from instance template: %v", err)
 	}
 
-	extendedResources, err := extractExtendedResourcesFromKubeEnv(kubeEnvValue)
+	extendedResources, err := extractExtendedResourcesFromKubeEnv(kubeEnv)
 	if err != nil {
 		// External Resources are optional and should not break the template creation
 		klog.Errorf("could not fetch extended resources from instance template: %v", err)
@@ -244,29 +211,29 @@ func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, migOsInfo MigOsInfo,
 	}
 	var nodeAllocatable apiv1.ResourceList
 
-	if kubeEnvValue != "" {
+	if kubeEnv.env != nil {
 		// Extract labels
-		kubeEnvLabels, err := extractLabelsFromKubeEnv(kubeEnvValue)
+		kubeEnvLabels, err := extractLabelsFromKubeEnv(kubeEnv)
 		if err != nil {
 			return nil, err
 		}
 		node.Labels = cloudprovider.JoinStringMaps(node.Labels, kubeEnvLabels)
 
 		// Extract taints
-		kubeEnvTaints, err := extractTaintsFromKubeEnv(kubeEnvValue)
+		kubeEnvTaints, err := extractTaintsFromKubeEnv(kubeEnv)
 		if err != nil {
 			return nil, err
 		}
 		node.Spec.Taints = append(node.Spec.Taints, kubeEnvTaints...)
 
 		// Extract Eviction Hard
-		evictionHardFromKubeEnv, err := extractEvictionHardFromKubeEnv(kubeEnvValue)
+		evictionHardFromKubeEnv, err := extractEvictionHardFromKubeEnv(kubeEnv)
 		if err != nil || len(evictionHardFromKubeEnv) == 0 {
 			klog.Warning("unable to get evictionHardFromKubeEnv values, continuing without it.")
 		}
 		evictionHard := ParseEvictionHardOrGetDefault(evictionHardFromKubeEnv)
 
-		if allocatable, err := t.BuildAllocatableFromKubeEnv(node.Status.Capacity, kubeEnvValue, evictionHard); err == nil {
+		if allocatable, err := t.BuildAllocatableFromKubeEnv(node.Status.Capacity, kubeEnv, evictionHard); err == nil {
 			nodeAllocatable = allocatable
 		}
 	}
@@ -289,8 +256,8 @@ func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, migOsInfo MigOsInfo,
 	return &node, nil
 }
 
-func ephemeralStorageLocalSSDCount(kubeEnvValue string) int64 {
-	v, found, err := extractAutoscalerVarFromKubeEnv(kubeEnvValue, "ephemeral_storage_local_ssd_count")
+func ephemeralStorageLocalSSDCount(kubeEnv KubeEnv) int64 {
+	v, found, err := extractAutoscalerVarFromKubeEnv(kubeEnv, "ephemeral_storage_local_ssd_count")
 	if err != nil {
 		klog.Warningf("cannot extract ephemeral_storage_local_ssd_count from kube-env, default to 0: %v", err)
 		return 0
@@ -324,18 +291,18 @@ func getLocalSsdCount(instanceProperties *gce.InstanceProperties) (int64, error)
 	return count, nil
 }
 
-func getEphemeralStorageOnLocalSsd(localSsdCount, ephemeralStorageLocalSsdCount int64) (int64, error) {
+func getEphemeralStorageOnLocalSsd(localSsdCount, ephemeralStorageLocalSsdCount, localSSDDiskSizeInGiB int64) (int64, error) {
 	if localSsdCount < ephemeralStorageLocalSsdCount {
 		return 0, fmt.Errorf("actual local SSD count is lower than ephemeral_storage_local_ssd_count")
 	}
-	return ephemeralStorageLocalSsdCount * LocalSSDDiskSizeInGiB * units.GiB, nil
+	return ephemeralStorageLocalSsdCount * localSSDDiskSizeInGiB * units.GiB, nil
 }
 
 // isBootDiskEphemeralStorageWithInstanceTemplateDisabled will allow bypassing Disk Size of Boot Disk from being
 // picked up from Instance Template and used as Ephemeral Storage, in case other type of storage are used
 // as ephemeral storage
-func isBootDiskEphemeralStorageWithInstanceTemplateDisabled(kubeEnvValue string) bool {
-	v, found, err := extractAutoscalerVarFromKubeEnv(kubeEnvValue, "BLOCK_EPH_STORAGE_BOOT_DISK")
+func isBootDiskEphemeralStorageWithInstanceTemplateDisabled(kubeEnv KubeEnv) bool {
+	v, found, err := extractAutoscalerVarFromKubeEnv(kubeEnv, "BLOCK_EPH_STORAGE_BOOT_DISK")
 	if err == nil && found && v == "true" {
 		return true
 	}
@@ -402,16 +369,12 @@ func parseKubeReserved(kubeReserved string) (apiv1.ResourceList, error) {
 	return reservedResources, nil
 }
 
-// GetLabelsFromTemplate returns labels from instance template
-func GetLabelsFromTemplate(template *gce.InstanceTemplate) (map[string]string, error) {
-	kubeEnv, err := getKubeEnvValueFromTemplateMetadata(template)
-	if err != nil {
-		return nil, err
-	}
+// GetLabelsFromKubeEnv returns labels from kube-env
+func GetLabelsFromKubeEnv(kubeEnv KubeEnv) (map[string]string, error) {
 	return extractLabelsFromKubeEnv(kubeEnv)
 }
 
-func extractLabelsFromKubeEnv(kubeEnv string) (map[string]string, error) {
+func extractLabelsFromKubeEnv(kubeEnv KubeEnv) (map[string]string, error) {
 	// In v1.10+, labels are only exposed for the autoscaler via AUTOSCALER_ENV_VARS
 	// see kubernetes/kubernetes#61119. We try AUTOSCALER_ENV_VARS first, then
 	// fall back to the old way.
@@ -420,24 +383,17 @@ func extractLabelsFromKubeEnv(kubeEnv string) (map[string]string, error) {
 		klog.Errorf("error while trying to extract node_labels from AUTOSCALER_ENV_VARS: %v", err)
 	}
 	if !found {
-		labels, err = extractFromKubeEnv(kubeEnv, "NODE_LABELS")
-		if err != nil {
-			return nil, err
-		}
+		labels, _ = kubeEnv.Var("NODE_LABELS")
 	}
 	return parseKeyValueListToMap(labels)
 }
 
-// GetTaintsFromTemplate returns labels from instance template
-func GetTaintsFromTemplate(template *gce.InstanceTemplate) ([]apiv1.Taint, error) {
-	kubeEnv, err := getKubeEnvValueFromTemplateMetadata(template)
-	if err != nil {
-		return nil, err
-	}
+// GetTaintsFromKubeEnv returns labels from kube-env
+func GetTaintsFromKubeEnv(kubeEnv KubeEnv) ([]apiv1.Taint, error) {
 	return extractTaintsFromKubeEnv(kubeEnv)
 }
 
-func extractTaintsFromKubeEnv(kubeEnv string) ([]apiv1.Taint, error) {
+func extractTaintsFromKubeEnv(kubeEnv KubeEnv) ([]apiv1.Taint, error) {
 	// In v1.10+, taints are only exposed for the autoscaler via AUTOSCALER_ENV_VARS
 	// see kubernetes/kubernetes#61119. We try AUTOSCALER_ENV_VARS first, then
 	// fall back to the old way.
@@ -446,10 +402,7 @@ func extractTaintsFromKubeEnv(kubeEnv string) ([]apiv1.Taint, error) {
 		klog.Errorf("error while trying to extract node_taints from AUTOSCALER_ENV_VARS: %v", err)
 	}
 	if !found {
-		taints, err = extractFromKubeEnv(kubeEnv, "NODE_TAINTS")
-		if err != nil {
-			return nil, err
-		}
+		taints, _ = kubeEnv.Var("NODE_TAINTS")
 	}
 	taintMap, err := parseKeyValueListToMap(taints)
 	if err != nil {
@@ -458,7 +411,7 @@ func extractTaintsFromKubeEnv(kubeEnv string) ([]apiv1.Taint, error) {
 	return buildTaints(taintMap)
 }
 
-func extractKubeReservedFromKubeEnv(kubeEnv string) (string, error) {
+func extractKubeReservedFromKubeEnv(kubeEnv KubeEnv) (string, error) {
 	// In v1.10+, kube-reserved is only exposed for the autoscaler via AUTOSCALER_ENV_VARS
 	// see kubernetes/kubernetes#61119. We try AUTOSCALER_ENV_VARS first, then
 	// fall back to the old way.
@@ -467,10 +420,7 @@ func extractKubeReservedFromKubeEnv(kubeEnv string) (string, error) {
 		klog.Errorf("error while trying to extract kube_reserved from AUTOSCALER_ENV_VARS: %v", err)
 	}
 	if !found {
-		kubeletArgs, err := extractFromKubeEnv(kubeEnv, "KUBELET_TEST_ARGS")
-		if err != nil {
-			return "", err
-		}
+		kubeletArgs, _ := kubeEnv.Var("KUBELET_TEST_ARGS")
 		resourcesRegexp := regexp.MustCompile(`--kube-reserved=([^ ]+)`)
 
 		matches := resourcesRegexp.FindStringSubmatch(kubeletArgs)
@@ -482,8 +432,8 @@ func extractKubeReservedFromKubeEnv(kubeEnv string) (string, error) {
 	return kubeReserved, nil
 }
 
-func extractExtendedResourcesFromKubeEnv(kubeEnvValue string) (apiv1.ResourceList, error) {
-	extendedResourcesAsString, found, err := extractAutoscalerVarFromKubeEnv(kubeEnvValue, "extended_resources")
+func extractExtendedResourcesFromKubeEnv(kubeEnv KubeEnv) (apiv1.ResourceList, error) {
+	extendedResourcesAsString, found, err := extractAutoscalerVarFromKubeEnv(kubeEnv, "extended_resources")
 	if err != nil {
 		klog.Warningf("error while obtaining extended_resources from AUTOSCALER_ENV_VARS; %v", err)
 		return nil, err
@@ -524,7 +474,7 @@ const (
 	OperatingSystemDefault = OperatingSystemLinux
 )
 
-func extractOperatingSystemFromKubeEnv(kubeEnv string) OperatingSystem {
+func extractOperatingSystemFromKubeEnv(kubeEnv KubeEnv) OperatingSystem {
 	osValue, found, err := extractAutoscalerVarFromKubeEnv(kubeEnv, "os")
 	if err != nil {
 		klog.Errorf("error while obtaining os from AUTOSCALER_ENV_VARS; %v", err)
@@ -627,7 +577,7 @@ func (s SystemArchitecture) Name() string {
 	return string(s)
 }
 
-func extractSystemArchitectureFromKubeEnv(kubeEnv string) (SystemArchitecture, error) {
+func extractSystemArchitectureFromKubeEnv(kubeEnv KubeEnv) (SystemArchitecture, error) {
 	archName, found, err := extractAutoscalerVarFromKubeEnv(kubeEnv, "arch")
 	if err != nil {
 		return UnknownArch, fmt.Errorf("error while obtaining arch from AUTOSCALER_ENV_VARS: %v", err)
@@ -655,7 +605,7 @@ func ToSystemArchitecture(arch string) SystemArchitecture {
 	}
 }
 
-func extractOperatingSystemDistributionFromKubeEnv(kubeEnv string) OperatingSystemDistribution {
+func extractOperatingSystemDistributionFromKubeEnv(kubeEnv KubeEnv) OperatingSystemDistribution {
 	osDistributionValue, found, err := extractAutoscalerVarFromKubeEnv(kubeEnv, "os_distribution")
 	if err != nil {
 		klog.Errorf("error while obtaining os from AUTOSCALER_ENV_VARS; %v", err)
@@ -721,8 +671,8 @@ func getDurationOption(options map[string]string, templateName, name string) (ti
 	return option, true
 }
 
-func extractAutoscalingOptionsFromKubeEnv(kubeEnvValue string) (map[string]string, error) {
-	optionsAsString, found, err := extractAutoscalerVarFromKubeEnv(kubeEnvValue, "autoscaling_options")
+func extractAutoscalingOptionsFromKubeEnv(kubeEnv KubeEnv) (map[string]string, error) {
+	optionsAsString, found, err := extractAutoscalerVarFromKubeEnv(kubeEnv, "autoscaling_options")
 	if err != nil {
 		klog.Warningf("error while obtaining autoscaling_options from AUTOSCALER_ENV_VARS: %v", err)
 		return nil, err
@@ -736,8 +686,8 @@ func extractAutoscalingOptionsFromKubeEnv(kubeEnvValue string) (map[string]strin
 	return parseKeyValueListToMap(optionsAsString)
 }
 
-func extractEvictionHardFromKubeEnv(kubeEnvValue string) (map[string]string, error) {
-	evictionHardAsString, found, err := extractAutoscalerVarFromKubeEnv(kubeEnvValue, "evictionHard")
+func extractEvictionHardFromKubeEnv(kubeEnv KubeEnv) (map[string]string, error) {
+	evictionHardAsString, found, err := extractAutoscalerVarFromKubeEnv(kubeEnv, "evictionHard")
 	if err != nil {
 		klog.Warningf("error while obtaining eviction-hard from AUTOSCALER_ENV_VARS; %v", err)
 		return nil, err
@@ -751,11 +701,11 @@ func extractEvictionHardFromKubeEnv(kubeEnvValue string) (map[string]string, err
 	return parseKeyValueListToMap(evictionHardAsString)
 }
 
-func extractAutoscalerVarFromKubeEnv(kubeEnv, name string) (value string, found bool, err error) {
+func extractAutoscalerVarFromKubeEnv(kubeEnv KubeEnv, name string) (value string, found bool, err error) {
 	const autoscalerVars = "AUTOSCALER_ENV_VARS"
-	autoscalerVals, err := extractFromKubeEnv(kubeEnv, autoscalerVars)
-	if err != nil {
-		return "", false, err
+	autoscalerVals, found := kubeEnv.Var(autoscalerVars)
+	if !found {
+		return "", false, nil
 	}
 
 	if strings.Trim(autoscalerVals, " ") == "" {
@@ -775,15 +725,6 @@ func extractAutoscalerVarFromKubeEnv(kubeEnv, name string) (value string, found 
 	}
 	klog.V(5).Infof("var %s not found in %s: %v", name, autoscalerVars, autoscalerVals)
 	return "", false, nil
-}
-
-func extractFromKubeEnv(kubeEnv, resource string) (string, error) {
-	kubeEnvMap := make(map[string]string)
-	err := yaml.Unmarshal([]byte(kubeEnv), &kubeEnvMap)
-	if err != nil {
-		return "", fmt.Errorf("error unmarshalling kubeEnv: %v", err)
-	}
-	return kubeEnvMap[resource], nil
 }
 
 func parseKeyValueListToMap(kvList string) (map[string]string, error) {

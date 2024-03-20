@@ -9,7 +9,7 @@ AEP - Autoscaler Enhancement Proposal
   - [Goals](#goals)
   - [Non-Goals](#non-goals)
 - [Proposal](#proposal)
-  - [User Stories](#user-stories-optional)
+  - [User Stories](#user-stories)
     - [A New MPA Framework with Reinforcement Learning](#a-new-mpa-framework-with-reinforcement-learning)
     - [Different Scaling Actions for Different Types of Resources](#different-scaling-actions-for-different-types-of-resources)
 - [Design Details](#design-details)
@@ -17,16 +17,11 @@ AEP - Autoscaler Enhancement Proposal
     - [Unit Tests](#unit-tests)
     - [Integration Tests](#integration-tests)
     - [End-to-end Tests](#end-to-end-tests)
-  - [Graduation Criteria](#graduation-criteria)
 - [Production Readiness Review Questionnaire](#production-readiness-review-questionnaire)
   - [Feature Enablement and Rollback](#feature-enablement-and-rollback)
-  - [Rollout, Upgrade and Rollback Planning](#rollout-upgrade-and-rollback-planning)
-  - [Monitoring Requirements](#monitoring-requirements)
   - [Dependencies](#dependencies)
   - [Scalability](#scalability)
   - [Troubleshooting](#troubleshooting)
-- [Implementation History](#implementation-history)
-- [Drawbacks](#drawbacks)
 - [Alternatives](#alternatives)
 <!-- /toc -->
 
@@ -38,10 +33,10 @@ Items marked with (R) are required *prior to targeting to a milestone / release*
 - [ ] (R) Design details are appropriately documented
 - [ ] (R) Test plan is in place, giving consideration to SIG Architecture and SIG Testing input (including test refactors)
   - [ ] e2e Tests for all Beta API Operations (endpoints)
-  - [ ] (R) Ensure GA e2e tests meet requirements for [Conformance Tests](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/conformance-tests.md) 
+  - [ ] (R) Ensure GA e2e tests meet requirements for [Conformance Tests](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/conformance-tests.md)
   - [ ] (R) Minimum Two Week Window for GA e2e tests to prove flake free
 - [ ] (R) Graduation criteria is in place
-  - [ ] (R) [all GA Endpoints](https://github.com/kubernetes/community/pull/1806) must be hit by [Conformance Tests](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/conformance-tests.md) 
+  - [ ] (R) [all GA Endpoints](https://github.com/kubernetes/community/pull/1806) must be hit by [Conformance Tests](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/conformance-tests.md)
 - [ ] (R) Production readiness review completed
 - [ ] (R) Production readiness review approved
 - [ ] "Implementation History" section is up-to-date for milestone
@@ -98,7 +93,7 @@ Manual fine-tuning the timing or frequency to do vertical/horizontal scaling and
 
 ### Non-Goals
 
-- Design of new multi-dimensional pod autoscaling algorithms. Although this proposal will enable alternate recommenders, no alternate recommenders will be created as part of this proposal. 
+- Design of new multi-dimensional pod autoscaling algorithms. Although this proposal will enable alternate recommenders, no alternate recommenders will be created as part of this proposal.
 - Rewrite functionalities that have been implemented with existing HPA and VPA.
 - This proposal will not support running multiple recommenders for the same MPA object. Each MPA object is supposed to use only one recommender.
 

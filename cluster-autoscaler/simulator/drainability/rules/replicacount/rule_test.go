@@ -145,6 +145,30 @@ func TestDrainable(t *testing.T) {
 			wantReason: drain.ControllerNotFound,
 			wantError:  true,
 		},
+		"DS-managed pod by a custom API Group": {
+			pod: &apiv1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:            "bar",
+					Namespace:       "default",
+					OwnerReferences: test.GenerateOwnerReferences(ds.Name, "DaemonSet", "crd/v1", ""),
+				},
+				Spec: apiv1.PodSpec{
+					NodeName: "node",
+				},
+			},
+		},
+		"DS-managed pod by a custom API Group with missing reference": {
+			pod: &apiv1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:            "bar",
+					Namespace:       "default",
+					OwnerReferences: test.GenerateOwnerReferences("missing", "DaemonSet", "crd/v1", ""),
+				},
+				Spec: apiv1.PodSpec{
+					NodeName: "node",
+				},
+			},
+		},
 		"DS-managed pod by a custom Daemonset": {
 			pod: &apiv1.Pod{
 				ObjectMeta: metav1.ObjectMeta{

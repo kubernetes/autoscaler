@@ -134,6 +134,11 @@ func (n *hetznerNodeGroup) IncreaseSize(delta int) error {
 	return nil
 }
 
+// AtomicIncreaseSize is not implemented.
+func (n *hetznerNodeGroup) AtomicIncreaseSize(delta int) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // DeleteNodes deletes nodes from this node group (and also increasing the size
 // of the node group with that). Error is returned either on failure or if the
 // given node doesn't belong to this node group. This function should wait
@@ -364,10 +369,10 @@ func getMachineTypeResourceList(m *hetznerManager, instanceType string) (apiv1.R
 
 	return apiv1.ResourceList{
 		// TODO somehow determine the actual pods that will be running
-		apiv1.ResourcePods:    *resource.NewQuantity(defaultPodAmountsLimit, resource.DecimalSI),
-		apiv1.ResourceCPU:     *resource.NewQuantity(int64(typeInfo.Cores), resource.DecimalSI),
-		apiv1.ResourceMemory:  *resource.NewQuantity(int64(typeInfo.Memory*1024*1024*1024), resource.DecimalSI),
-		apiv1.ResourceStorage: *resource.NewQuantity(int64(typeInfo.Disk*1024*1024*1024), resource.DecimalSI),
+		apiv1.ResourcePods:             *resource.NewQuantity(defaultPodAmountsLimit, resource.DecimalSI),
+		apiv1.ResourceCPU:              *resource.NewQuantity(int64(typeInfo.Cores), resource.DecimalSI),
+		apiv1.ResourceMemory:           *resource.NewQuantity(int64(typeInfo.Memory*1024*1024*1024), resource.DecimalSI),
+		apiv1.ResourceEphemeralStorage: *resource.NewQuantity(int64(typeInfo.Disk*1024*1024*1024), resource.DecimalSI),
 	}, nil
 }
 

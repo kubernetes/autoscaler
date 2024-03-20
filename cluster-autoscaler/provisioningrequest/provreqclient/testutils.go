@@ -24,8 +24,8 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/apis/autoscaling.x-k8s.io/v1beta1"
-	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/client/clientset/versioned/fake"
+	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1beta1"
+	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/clientset/versioned/fake"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
@@ -35,7 +35,7 @@ import (
 )
 
 // NewFakeProvisioningRequestClient mock ProvisioningRequestClient for tests.
-func NewFakeProvisioningRequestClient(ctx context.Context, t *testing.T, prs ...*provreqwrapper.ProvisioningRequest) (*ProvisioningRequestClientV1beta1, *FakeProvisioningRequestForceClient) {
+func NewFakeProvisioningRequestClient(ctx context.Context, t *testing.T, prs ...*provreqwrapper.ProvisioningRequest) *ProvisioningRequestClient {
 	t.Helper()
 	provReqClient := fake.NewSimpleClientset()
 	podTemplClient := fake_kubernetes.NewSimpleClientset()
@@ -60,25 +60,11 @@ func NewFakeProvisioningRequestClient(ctx context.Context, t *testing.T, prs ...
 	if err != nil {
 		t.Fatalf("Failed to create Provisioning Request lister. Error was: %v", err)
 	}
-	return &ProvisioningRequestClientV1beta1{
-			client:         provReqClient,
-			provReqLister:  provReqLister,
-			podTemplLister: podTemplLister,
-		}, &FakeProvisioningRequestForceClient{
-			client: provReqClient,
-		}
-}
-
-// FakeProvisioningRequestForceClient that allows to skip cache.
-type FakeProvisioningRequestForceClient struct {
-	client *fake.Clientset
-}
-
-// ProvisioningRequest gets a specific ProvisioningRequest CR, skipping cache.
-func (c *FakeProvisioningRequestForceClient) ProvisioningRequest(namespace, name string) (*v1beta1.ProvisioningRequest, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), provisioningRequestClientCallTimeout)
-	defer cancel()
-	return c.client.AutoscalingV1beta1().ProvisioningRequests(namespace).Get(ctx, name, metav1.GetOptions{})
+	return &ProvisioningRequestClient{
+		client:         provReqClient,
+		provReqLister:  provReqLister,
+		podTemplLister: podTemplLister,
+	}
 }
 
 // newFakePodTemplatesLister creates a fake lister for the Pod Templates in the cluster.
@@ -97,7 +83,8 @@ func newFakePodTemplatesLister(t *testing.T, client kubernetes.Interface, channe
 	return podTemplLister, nil
 }
 
-func provisioningRequestBetaForTests(namespace, name string) *provreqwrapper.ProvisioningRequest {
+// ProvisioningRequestWrapperForTesting mock ProvisioningRequest for tests.
+func ProvisioningRequestWrapperForTesting(namespace, name string) *provreqwrapper.ProvisioningRequest {
 	if namespace == "" {
 		namespace = "default"
 	}

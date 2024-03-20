@@ -188,13 +188,8 @@ func (csr *ClusterStateRegistry) Stop() {
 	close(csr.interrupt)
 }
 
-// RegisterOrUpdateScaleUp registers scale-up for give node group or changes requested node increase
-// count.
-// If delta is positive then number of new nodes requested is increased; Time and expectedAddTime
-// are reset.
-// If delta is negative the number of new nodes requested is decreased; Time and expectedAddTime are
-// left intact.
-func (csr *ClusterStateRegistry) RegisterOrUpdateScaleUp(nodeGroup cloudprovider.NodeGroup, delta int, currentTime time.Time) {
+// RegisterScaleUp registers scale-up for give node group
+func (csr *ClusterStateRegistry) RegisterScaleUp(nodeGroup cloudprovider.NodeGroup, delta int, currentTime time.Time) {
 	csr.Lock()
 	defer csr.Unlock()
 	csr.registerOrUpdateScaleUpNoLock(nodeGroup, delta, currentTime)
@@ -246,7 +241,14 @@ func (csr *ClusterStateRegistry) registerOrUpdateScaleUpNoLock(nodeGroup cloudpr
 }
 
 // RegisterScaleDown registers node scale down.
-func (csr *ClusterStateRegistry) RegisterScaleDown(request *ScaleDownRequest) {
+func (csr *ClusterStateRegistry) RegisterScaleDown(nodeGroup cloudprovider.NodeGroup,
+	nodeName string, currentTime time.Time, expectedDeleteTime time.Time) {
+	request := &ScaleDownRequest{
+		NodeGroup:          nodeGroup,
+		NodeName:           nodeName,
+		Time:               currentTime,
+		ExpectedDeleteTime: expectedDeleteTime,
+	}
 	csr.Lock()
 	defer csr.Unlock()
 	csr.scaleDownRequests = append(csr.scaleDownRequests, request)
@@ -259,10 +261,8 @@ func (csr *ClusterStateRegistry) updateScaleRequests(currentTime time.Time) {
 
 	for nodeGroupName, scaleUpRequest := range csr.scaleUpRequests {
 		if !csr.areThereUpcomingNodesInNodeGroup(nodeGroupName) {
-			// scale-out finished successfully
-			// remove it and reset node group backoff
+			// scale up finished successfully, remove request
 			delete(csr.scaleUpRequests, nodeGroupName)
-			csr.backoff.RemoveBackoff(scaleUpRequest.NodeGroup, csr.nodeInfosForGroups[scaleUpRequest.NodeGroup.Id()])
 			klog.V(4).Infof("Scale up in group %v finished successfully in %v",
 				nodeGroupName, currentTime.Sub(scaleUpRequest.Time))
 			continue
@@ -310,14 +310,19 @@ func (csr *ClusterStateRegistry) backoffNodeGroup(nodeGroup cloudprovider.NodeGr
 // RegisterFailedScaleUp should be called after getting error from cloudprovider
 // when trying to scale-up node group. It will mark this group as not safe to autoscale
 // for some time.
-func (csr *ClusterStateRegistry) RegisterFailedScaleUp(nodeGroup cloudprovider.NodeGroup, reason metrics.FailedScaleUpReason, errorMessage, gpuResourceName, gpuType string, currentTime time.Time) {
+func (csr *ClusterStateRegistry) RegisterFailedScaleUp(nodeGroup cloudprovider.NodeGroup, reason string, errorMessage, gpuResourceName, gpuType string, currentTime time.Time) {
 	csr.Lock()
 	defer csr.Unlock()
-	csr.registerFailedScaleUpNoLock(nodeGroup, reason, cloudprovider.InstanceErrorInfo{
+	csr.registerFailedScaleUpNoLock(nodeGroup, metrics.FailedScaleUpReason(reason), cloudprovider.InstanceErrorInfo{
 		ErrorClass:   cloudprovider.OtherErrorClass,
 		ErrorCode:    string(reason),
 		ErrorMessage: errorMessage,
 	}, gpuResourceName, gpuType, currentTime)
+}
+
+// RegisterFailedScaleDown records failed scale-down for a nodegroup.
+// We don't need to implement this function for cluster state registry
+func (csr *ClusterStateRegistry) RegisterFailedScaleDown(_ cloudprovider.NodeGroup, _ string, _ time.Time) {
 }
 
 func (csr *ClusterStateRegistry) registerFailedScaleUpNoLock(nodeGroup cloudprovider.NodeGroup, reason metrics.FailedScaleUpReason, errorInfo cloudprovider.InstanceErrorInfo, gpuResourceName, gpuType string, currentTime time.Time) {
@@ -453,6 +458,11 @@ func (csr *ClusterStateRegistry) updateNodeGroupMetrics() {
 		}
 	}
 	metrics.UpdateNodeGroupsCount(autoscaled, autoprovisioned)
+}
+
+// BackoffStatusForNodeGroup queries the backoff status of the node group
+func (csr *ClusterStateRegistry) BackoffStatusForNodeGroup(nodeGroup cloudprovider.NodeGroup, now time.Time) backoff.Status {
+	return csr.backoff.BackoffStatus(nodeGroup, csr.nodeInfosForGroups[nodeGroup.Id()], now)
 }
 
 // NodeGroupScaleUpSafety returns information about node group safety to be scaled up now.
@@ -1023,7 +1033,7 @@ func getNotRegisteredNodes(allNodes []*apiv1.Node, cloudProviderNodeInstances ma
 }
 
 func expectedToRegister(instance cloudprovider.Instance) bool {
-	return instance.Status != nil && instance.Status.State != cloudprovider.InstanceDeleting && instance.Status.ErrorInfo == nil
+	return instance.Status == nil || (instance.Status.State != cloudprovider.InstanceDeleting && instance.Status.ErrorInfo == nil)
 }
 
 // Calculates which of the registered nodes in Kubernetes that do not exist in cloud provider.

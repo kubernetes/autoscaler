@@ -16,6 +16,9 @@ autoDiscovery:
   # Enable autodiscovery for `cloudProvider=magnum`, for groups matching `autoDiscovery.roles`.
   clusterName:  # cluster.local
 
+  # autoDiscovery.namespace -- Enable autodiscovery via cluster namespace for for `cloudProvider=clusterapi`
+  namespace:  # default
+
   # autoDiscovery.tags -- ASG tags to match, run through `tpl`.
   tags:
     - k8s.io/cluster-autoscaler/enabled
@@ -35,6 +38,14 @@ autoDiscovery:
 # - name: asg1<br />
 #   maxSize: 2<br />
 #   minSize: 1
+# </pre>
+# For Hetzner Cloud, the `instanceType` and `region` keys are also required.
+# <pre>
+# - name: mypool<br />
+#   maxSize: 2<br />
+#   minSize: 1<br />
+#   instanceType: CPX21<br />
+#   region: FSN1
 # </pre>
 autoscalingGroups: []
 # - name: asg1
@@ -95,6 +106,9 @@ azureUseWorkloadIdentityExtension: false
 
 # azureVMType -- Azure VM type.
 azureVMType: "vmss"
+
+# azureEnableForceDelete -- Whether to force delete VMs or VMSS instances when scaling down.
+azureEnableForceDelete: false
 
 # cloudConfigPath -- Configuration file for cloud provider.
 cloudConfigPath: ""
@@ -222,7 +236,7 @@ image:
   # image.repository -- Image repository
   repository: registry.k8s.io/autoscaling/cluster-autoscaler
   # image.tag -- Image tag
-  tag: v1.28.2
+  tag: v1.29.0
   # image.pullPolicy -- Image pull policy
   pullPolicy: IfNotPresent
   ## Optionally specify an array of imagePullSecrets.

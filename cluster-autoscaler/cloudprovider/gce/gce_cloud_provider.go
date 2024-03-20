@@ -237,6 +237,11 @@ func (mig *gceMig) IncreaseSize(delta int) error {
 	return mig.gceManager.CreateInstances(mig, int64(delta))
 }
 
+// AtomicIncreaseSize is not implemented.
+func (mig *gceMig) AtomicIncreaseSize(delta int) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // DecreaseTargetSize decreases the target size of the node group. This function
 // doesn't permit to delete any existing node and can be used only to reduce the
 // request for new nodes that have not been yet fulfilled. Delta should be negative.
@@ -318,7 +323,15 @@ func (mig *gceMig) Debug() string {
 
 // Nodes returns a list of all nodes that belong to this node group.
 func (mig *gceMig) Nodes() ([]cloudprovider.Instance, error) {
-	return mig.gceManager.GetMigNodes(mig)
+	gceInstances, err := mig.gceManager.GetMigNodes(mig)
+	if err != nil {
+		return nil, err
+	}
+	instances := make([]cloudprovider.Instance, len(gceInstances), len(gceInstances))
+	for i, inst := range gceInstances {
+		instances[i] = inst.Instance
+	}
+	return instances, nil
 }
 
 // Exist checks if the node group really exists on the cloud provider side.
@@ -370,12 +383,12 @@ func BuildGCE(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscover
 		defer config.Close()
 	}
 
-	manager, err := CreateGceManager(config, do, opts.Regional, opts.GCEOptions.ConcurrentRefreshes, opts.UserAgent, opts.GCEOptions.DomainUrl, opts.GCEOptions.MigInstancesMinRefreshWaitTime)
+	manager, err := CreateGceManager(config, do, opts.GCEOptions.LocalSSDDiskSizeProvider, opts.Regional, opts.GCEOptions.ConcurrentRefreshes, opts.UserAgent, opts.GCEOptions.DomainUrl, opts.GCEOptions.MigInstancesMinRefreshWaitTime)
 	if err != nil {
 		klog.Fatalf("Failed to create GCE Manager: %v", err)
 	}
 
-	pricingModel := NewGcePriceModel(NewGcePriceInfo())
+	pricingModel := NewGcePriceModel(NewGcePriceInfo(), opts.GCEOptions.LocalSSDDiskSizeProvider)
 	provider, err := BuildGceCloudProvider(manager, rl, pricingModel)
 	if err != nil {
 		klog.Fatalf("Failed to create GCE cloud provider: %v", err)

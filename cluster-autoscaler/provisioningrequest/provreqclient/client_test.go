@@ -25,12 +25,12 @@ import (
 )
 
 func TestFetchPodTemplates(t *testing.T) {
-	pr1 := provisioningRequestBetaForTests("namespace", "name-1")
-	pr2 := provisioningRequestBetaForTests("namespace", "name-2")
+	pr1 := ProvisioningRequestWrapperForTesting("namespace", "name-1")
+	pr2 := ProvisioningRequestWrapperForTesting("namespace", "name-2")
 	mockProvisioningRequests := []*provreqwrapper.ProvisioningRequest{pr1, pr2}
 
 	ctx := context.Background()
-	c, _ := NewFakeProvisioningRequestClient(ctx, t, mockProvisioningRequests...)
+	c := NewFakeProvisioningRequestClient(ctx, t, mockProvisioningRequests...)
 	got, err := c.FetchPodTemplates(pr1.V1Beta1())
 	if err != nil {
 		t.Errorf("provisioningRequestClient.ProvisioningRequests() error: %v", err)
