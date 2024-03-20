@@ -1,5 +1,9 @@
 # Cluster Autoscaler for Linode
 
+**⚠️ The Linode Cluster Autoscaler has been deprecated and will be removed some time in 2025. This implementation has only ever scaled the Linode Kubernetes Engine (LKE)
+deployments and [this product has had native autoscaling for years](https://www.linode.com/blog/kubernetes/horizontal-cluster-autoscaling-on-linode-kubernetes-engine/).
+This implementation is thus redundant.**
+
 The cluster autoscaler for Linode scales nodes in a LKE cluster.
 
 ## Linode Kubernetes Engine
