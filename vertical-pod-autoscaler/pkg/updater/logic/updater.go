@@ -380,7 +380,7 @@ func (u *updater) AttemptInPlaceScalingIfPossible(ctx context.Context, vpaSize i
 		return
 	}
 
-	if vpa_api_util.GetUpdateMode(vpa) == vpa_types.UpdateModeInPlaceOrRecreate || vpa_api_util.GetUpdateMode(vpa) == vpa_types.UpdateModeAuto {
+	if vpa_api_util.GetUpdateMode(vpa) == vpa_types.UpdateModeInPlaceOrRecreate {
 
 		// separate counters/stats for in-place updates
 		withInPlaceUpdatable := false
