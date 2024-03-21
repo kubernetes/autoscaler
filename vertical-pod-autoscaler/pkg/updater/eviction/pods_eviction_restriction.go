@@ -579,3 +579,10 @@ func IsInPlaceUpdating(podToCheck *apiv1.Pod) (isUpdating bool) {
 	return false
 
 }
+
+/*
+func BadResizeStatus(pod *apiv1.Pod) bool {
+	if pod.Status.Resize == apiv1.PodResizeStatusInfeasible{
+
+	}
+}*/
