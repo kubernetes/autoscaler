@@ -1613,6 +1613,7 @@ func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 	nodeGroupA.On("Exist").Return(true)
 	nodeGroupA.On("Autoprovisioned").Return(false)
 	nodeGroupA.On("TargetSize").Return(5, nil)
+	nodeGroupA.On("MinSize").Return(1, nil)
 	nodeGroupA.On("Id").Return("A")
 	nodeGroupA.On("DeleteNodes", mock.Anything).Return(nil)
 	nodeGroupA.On("GetOptions", options.NodeGroupDefaults).Return(&options.NodeGroupDefaults, nil)
@@ -1852,6 +1853,7 @@ func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 	nodeGroupAtomic.On("Exist").Return(true)
 	nodeGroupAtomic.On("Autoprovisioned").Return(false)
 	nodeGroupAtomic.On("TargetSize").Return(3, nil)
+	nodeGroupA.On("MinSize").Return(1, nil)
 	nodeGroupAtomic.On("Id").Return("D")
 	nodeGroupAtomic.On("DeleteNodes", mock.Anything).Return(nil)
 	nodeGroupAtomic.On("GetOptions", options.NodeGroupDefaults).Return(
