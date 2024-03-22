@@ -740,6 +740,17 @@ func fixNodeGroupSize(context *context.AutoscalingContext, clusterStateRegistry 
 					incorrectSize.ExpectedSize,
 					incorrectSize.CurrentSize,
 					delta)
+
+				possibleDelta := nodeGroup.MinSize() - incorrectSize.ExpectedSize
+				if possibleDelta >= 0 {
+					klog.Warningf("Skip decrease asg target size, because asg %s current size %d <= min size %d", nodeGroup.Id(), incorrectSize.CurrentSize, nodeGroup.MinSize())
+					continue
+				}
+				if delta < possibleDelta {
+					klog.Warningf("Capping node group %s removal to %d, decrease taregt size %d would exceed min size constaint", nodeGroup.Id(), possibleDelta, delta)
+					delta = possibleDelta
+				}
+
 				if err := nodeGroup.DecreaseTargetSize(delta); err != nil {
 					return fixed, fmt.Errorf("failed to decrease %s: %v", nodeGroup.Id(), err)
 				}
@@ -878,6 +889,22 @@ func (a *StaticAutoscaler) deleteCreatedNodesWithErrors() (bool, error) {
 		if nodeGroup == nil {
 			err = fmt.Errorf("node group %s not found", nodeGroupId)
 		} else {
+			targetSize := 0
+			targetSize, err = nodeGroup.TargetSize()
+			if err != nil {
+				klog.Warningf("Failed to get node group size; nodeGroup=%v; err=%v", nodeGroup.Id(), err)
+				continue
+			}
+			possibleToDelete := targetSize - nodeGroup.MinSize()
+			if possibleToDelete <= 0 {
+				klog.Warningf("Node group %s min size reached, skipping removal of %v create error nodes", nodeGroupId, len(nodesToBeDeleted))
+				continue
+			}
+			if len(nodesToBeDeleted) > possibleToDelete {
+				klog.Warningf("Capping node group %s create error node removal to %d nodes, removing all %d would exceed min size constaint", nodeGroupId, possibleToDelete, len(nodesToBeDeleted))
+				nodesToBeDeleted = nodesToBeDeleted[:possibleToDelete]
+			}
+
 			var opts *config.NodeGroupAutoscalingOptions
 			opts, err = nodeGroup.GetOptions(a.NodeGroupDefaults)
 			if err != nil {
