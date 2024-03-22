@@ -1886,7 +1886,7 @@ func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 				return nodeGroupAtomic
 			}
 			return nil
-		}, nil).Times(3)
+		}, nil).Times(4)
 
 	clusterState = clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff(), nodeGroupConfigProcessor)
 	clusterState.RefreshCloudProviderNodeInstancesCache()
