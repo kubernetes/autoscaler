@@ -33,7 +33,7 @@ import (
 )
 
 var (
-	defaultUpdateThreshold = flag.Float64("pod-update-threshold", 0.1, "Ignore updates that have priority lower than the value of this flag")
+	defaultUpdateThreshold = flag.Float64("pod-update-threshold", 0.1, "Ignore disruptive updates that have priority lower than the value of this flag")
 
 	podLifetimeUpdateThreshold = flag.Duration("in-recommendation-bounds-eviction-lifetime-threshold", time.Hour*12, "Pods that live for at least that long can be evicted even if their request is within the [MinRecommended...MaxRecommended] range")
 
@@ -48,7 +48,7 @@ var (
 // than pod with 100M current memory and 150M recommendation (100% increase vs 50% increase)
 type UpdatePriorityCalculator struct {
 	vpa                     *vpa_types.VerticalPodAutoscaler
-	pods                    []prioritizedPod
+	pods                    []PrioritizedPod
 	config                  *UpdateConfig
 	recommendationProcessor vpa_api_util.RecommendationProcessor
 	priorityProcessor       PriorityProcessor
@@ -116,6 +116,8 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, now time.Time) {
 		}
 	}
 
+	disruptionlessRecommendation := calc.CalcualteDisruptionFreeActions(pod, processedRecommendation)
+
 	// The update is allowed in following cases:
 	// - the request is outside the recommended range for some container.
 	// - the pod lives for at least 24h and the resource diff is >= MinChangePriority.
@@ -127,6 +129,16 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, now time.Time) {
 			return
 		}
 		if now.Before(pod.Status.StartTime.Add(*podLifetimeUpdateThreshold)) {
+			// TODO(jkyros): do we need an in-place update threshold arg ?
+			// If our recommendations are disruptionless, we can bypass the threshold limit
+			if len(disruptionlessRecommendation.ContainerRecommendations) > 0 {
+				klog.V(2).Infof("pod accepted for DISRUPTIONLESS (%d/%d) update %v/%v with priority %v", len(disruptionlessRecommendation.ContainerRecommendations), len(processedRecommendation.ContainerRecommendations), pod.Namespace, pod.Name, updatePriority.ResourceDiff)
+				updatePriority.Disruptionless = true
+				calc.pods = append(calc.pods, PrioritizedPod{
+					pod:            pod,
+					priority:       updatePriority,
+					recommendation: disruptionlessRecommendation})
+			}
 			klog.V(4).InfoS("Not updating a short-lived pod, request within recommended range", "pod", klog.KObj(pod))
 			return
 		}
@@ -142,10 +154,28 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, now time.Time) {
 		return
 	}
 	klog.V(2).InfoS("Pod accepted for update", "pod", klog.KObj(pod), "updatePriority", updatePriority.ResourceDiff, "processedRecommendations", calc.GetProcessedRecommendationTargets(processedRecommendation))
-	calc.pods = append(calc.pods, prioritizedPod{
+	calc.pods = append(calc.pods, PrioritizedPod{
 		pod:            pod,
 		priority:       updatePriority,
 		recommendation: processedRecommendation})
+}
+
+// GetSortedPrioritizedPods returns a list of prioritized pods ordered by update priority (highest update priority first). Used instead
+// of GetSortedPods when we need access to the priority information
+func (calc *UpdatePriorityCalculator) GetSortedPrioritizedPods(admission PodEvictionAdmission) []*PrioritizedPod {
+	sort.Sort(byPriorityDesc(calc.pods))
+
+	//result := []*apiv1.Pod{}
+	result := []*PrioritizedPod{}
+	for num, podPrio := range calc.pods {
+		if admission.Admit(podPrio.pod, podPrio.recommendation) {
+			result = append(result, &calc.pods[num])
+		} else {
+			klog.V(2).Infof("pod removed from update queue by PodEvictionAdmission: %v", podPrio.pod.Name)
+		}
+	}
+
+	return result
 }
 
 // GetSortedPods returns a list of pods ordered by update priority (highest update priority first)
@@ -206,10 +236,23 @@ func parseVpaObservedContainers(pod *apiv1.Pod) (bool, sets.Set[string]) {
 	return hasObservedContainers, vpaContainerSet
 }
 
-type prioritizedPod struct {
+// PrioritizedPod contains the priority and recommendation details for a pod.
+// TODO(jkyros): I made this public, but there may be a cleaner way
+type PrioritizedPod struct {
 	pod            *apiv1.Pod
 	priority       PodPriority
 	recommendation *vpa_types.RecommendedPodResources
+}
+
+// IsDisruptionless returns the disruptionless status of the underlying pod priority
+// TODO(jkyros): scope issues, maybe not the best place to put Disruptionless
+func (p PrioritizedPod) IsDisruptionless() bool {
+	return p.priority.Disruptionless
+}
+
+// Pod returns the underlying private pod
+func (p PrioritizedPod) Pod() *apiv1.Pod {
+	return p.pod
 }
 
 // PodPriority contains data for a pod update that can be used to prioritize between updates.
@@ -220,9 +263,11 @@ type PodPriority struct {
 	ScaleUp bool
 	// Relative difference between the total requested and total recommended resources.
 	ResourceDiff float64
+	// Is this update disruptionless
+	Disruptionless bool
 }
 
-type byPriorityDesc []prioritizedPod
+type byPriorityDesc []PrioritizedPod
 
 func (list byPriorityDesc) Len() int {
 	return len(list)
@@ -249,4 +294,68 @@ func (p PodPriority) Less(other PodPriority) bool {
 	}
 	// 2. A pod with larger value of resourceDiff takes precedence.
 	return p.ResourceDiff < other.ResourceDiff
+}
+
+// CalcualteDisruptionFreeActions calculates the set of actions we think we can perform without disruption based on the pod/container resize/restart
+// policies and returns that set of actions.
+func (calc *UpdatePriorityCalculator) CalcualteDisruptionFreeActions(pod *apiv1.Pod, recommendation *vpa_types.RecommendedPodResources) *vpa_types.RecommendedPodResources {
+
+	var disruptionlessRecommendation = &vpa_types.RecommendedPodResources{}
+
+	for _, container := range pod.Spec.Containers {
+		// If we don't have a resize policy, we can't check it
+		if len(container.ResizePolicy) == 0 {
+			continue
+		}
+
+		// So we get whatever the recommendation was for this container
+		resourceRec := getRecommendationForContainerName(container.Name, recommendation)
+		// If we didn't find a recommendation for this container, we don't have anything to do
+		if resourceRec == nil {
+			continue
+		}
+		// Then we go through all the resource recommendations it has
+		for resource := range resourceRec.Target {
+			// And we look up what the restart policy is for those resources
+			resourceRestartPolicy := getRestartPolicyForResource(resource, container.ResizePolicy)
+			// If we don't have one, that's probably bad
+			if resourceRestartPolicy == nil {
+				continue
+			}
+			// If we do have one, and it's disruptive, then we know this won't work
+			if *resourceRestartPolicy != apiv1.NotRequired {
+				continue
+			}
+
+		}
+
+		// And if we made it here, we should theoretically be able to do this without disruption
+		disruptionlessRecommendation.ContainerRecommendations = append(disruptionlessRecommendation.ContainerRecommendations, *resourceRec)
+
+	}
+
+	return disruptionlessRecommendation
+}
+
+// getRecommendationForContainerName searches through the list of ContainerRecommendations until it finds one matching the named container. Used
+// to match up containers with their recommendations (we have container, we want resource recommendation)
+func getRecommendationForContainerName(name string, recommendation *vpa_types.RecommendedPodResources) *vpa_types.RecommendedContainerResources {
+	for _, recommendationContainer := range recommendation.ContainerRecommendations {
+		if recommendationContainer.ContainerName == name {
+			return &recommendationContainer
+		}
+	}
+	return nil
+}
+
+// getRestartPolicyForResource searches through the list of resources in the resize policy until it finds the one matching the named resource. Used
+// to match up restart policies with our resource recommendations (we have resource, we want policy).
+func getRestartPolicyForResource(resourceName apiv1.ResourceName, policy []apiv1.ContainerResizePolicy) *apiv1.ResourceResizeRestartPolicy {
+	// TODO(jkyros): can there be duplicate policies for resources? we just take the first one now
+	for _, resizePolicy := range policy {
+		if resizePolicy.ResourceName == resourceName {
+			return &resizePolicy.RestartPolicy
+		}
+	}
+	return nil
 }
