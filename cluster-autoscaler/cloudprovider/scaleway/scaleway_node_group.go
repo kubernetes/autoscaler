@@ -104,7 +104,7 @@ func (ng *NodeGroup) IncreaseSize(delta int) error {
 // DeleteNodes deletes nodes from this node group. Error is returned either on
 // failure or if the given node doesn't belong to this node group. This function
 // should wait until node group size is updated.
-func (ng *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
+func (ng *NodeGroup) DeleteNodes(nodes []*apiv1.Node, _ bool) error {
 	ctx := context.Background()
 	klog.V(4).Info("DeleteNodes,", len(nodes), " nodes to reclaim")
 	for _, n := range nodes {

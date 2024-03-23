@@ -92,7 +92,7 @@ func (ng *nodegroup) IncreaseSize(delta int) error {
 // either on failure or if the given node doesn't belong to this node
 // group. This function should wait until node group size is updated.
 // Implementation required.
-func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
+func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node, respectMinCount bool) error {
 	ng.machineController.accessLock.Lock()
 	defer ng.machineController.accessLock.Unlock()
 
@@ -101,8 +101,8 @@ func (ng *nodegroup) DeleteNodes(nodes []*corev1.Node) error {
 		return err
 	}
 
-	// if we are at minSize already we wail early.
-	if replicas <= ng.MinSize() {
+	// if we are at minSize already we bail early.
+	if replicas <= ng.MinSize()  && respectMinCount {
 		return fmt.Errorf("min size reached, nodes will not be deleted")
 	}
 

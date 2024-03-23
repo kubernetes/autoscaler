@@ -185,7 +185,7 @@ func TestNodeGroup_DeleteNodes(t *testing.T) {
 	client.On("DeleteNode", ctx, &scalewaygo.DeleteNodeRequest{NodeID: ng.nodes["scaleway://instance/fr-srr-1/6c22c989-ddce-41d8-98cb-2aea83c72066"].ID}).Return(&scalewaygo.Node{Status: scalewaygo.NodeStatusDeleting}, nil).Once()
 	client.On("DeleteNode", ctx, &scalewaygo.DeleteNodeRequest{NodeID: ng.nodes["scaleway://instance/fr-srr-1/fcc3abe0-3a72-4178-8182-2a93fdc72529"].ID}).Return(&scalewaygo.Node{Status: scalewaygo.NodeStatusDeleting}, nil).Once()
 
-	err := ng.DeleteNodes(nodes)
+	err := ng.DeleteNodes(nodes, false)
 	assert.NoError(t, err)
 	assert.Equal(t, uint32(0), ng.p.Size)
 }
@@ -204,7 +204,7 @@ func TestNodeGroup_DeleteNodesErr(t *testing.T) {
 	}
 	client.On("DeleteNode", ctx, &scalewaygo.DeleteNodeRequest{NodeID: "unknown"}).Return(&scalewaygo.Node{}, errors.New("nonexistent")).Once()
 
-	err := ng.DeleteNodes(nodes)
+	err := ng.DeleteNodes(nodes, false)
 	assert.Error(t, err)
 }
 

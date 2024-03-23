@@ -221,7 +221,7 @@ func TestNodeGroupDeleteNodes(t *testing.T) {
 			// store delta before deleting nodes
 			delta := tc.nodeGroup.replicas - tc.expectedTargetSize
 
-			if err := tc.nodeGroup.DeleteNodes(tc.toDelete); err != nil {
+			if err := tc.nodeGroup.DeleteNodes(tc.toDelete, true); err != nil {
 				if tc.expectedErrContains == "" || !strings.Contains(err.Error(), tc.expectedErrContains) {
 					t.Fatalf("expected err to contain %q, got %q", tc.expectedErrContains, err)
 				}

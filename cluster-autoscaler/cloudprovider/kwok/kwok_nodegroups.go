@@ -89,9 +89,9 @@ func (nodeGroup *NodeGroup) IncreaseSize(delta int) error {
 }
 
 // DeleteNodes deletes the specified nodes from the node group.
-func (nodeGroup *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
+func (nodeGroup *NodeGroup) DeleteNodes(nodes []*apiv1.Node, respectMinCount bool) error {
 	size := nodeGroup.targetSize
-	if size <= nodeGroup.MinSize() {
+	if size <= nodeGroup.MinSize() && respectMinCount {
 		return fmt.Errorf(minSizeReachedErr)
 	}
 

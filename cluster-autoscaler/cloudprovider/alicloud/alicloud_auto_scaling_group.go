@@ -116,13 +116,13 @@ func (asg *Asg) Belongs(node *apiv1.Node) (bool, error) {
 }
 
 // DeleteNodes deletes the nodes from the group.
-func (asg *Asg) DeleteNodes(nodes []*apiv1.Node) error {
+func (asg *Asg) DeleteNodes(nodes []*apiv1.Node, respectMinCount bool) error {
 	size, err := asg.manager.GetAsgSize(asg)
 	if err != nil {
 		klog.Errorf("failed to get ASG size because of %s", err.Error())
 		return err
 	}
-	if int(size) <= asg.MinSize() {
+	if int(size) <= asg.MinSize()  && respectMinCount {
 		return fmt.Errorf("min size reached, nodes will not be deleted")
 	}
 	nodeIds := make([]string, 0, len(nodes))

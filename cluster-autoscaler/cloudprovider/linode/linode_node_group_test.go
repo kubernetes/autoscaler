@@ -139,7 +139,7 @@ func TestNodeGroup_DeleteNodes(t *testing.T) {
 	}
 
 	// test of on deleting nodes
-	err := ng.DeleteNodes(nodes)
+	err := ng.DeleteNodes(nodes, true)
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(ng.lkePools))
 	assert.NotNil(t, ng.lkePools[3])
@@ -149,21 +149,21 @@ func TestNodeGroup_DeleteNodes(t *testing.T) {
 	nodes = []*apiv1.Node{
 		{Spec: apiv1.NodeSpec{ProviderID: "linode://aaa"}},
 	}
-	err = ng.DeleteNodes(nodes)
+	err = ng.DeleteNodes(nodes, true)
 	assert.Error(t, err)
 
 	// test error on deleting a node we are not managing
 	nodes = []*apiv1.Node{
 		{Spec: apiv1.NodeSpec{ProviderID: "linode://555"}},
 	}
-	err = ng.DeleteNodes(nodes)
+	err = ng.DeleteNodes(nodes, true)
 	assert.Error(t, err)
 
 	// test error on deleting a node when the linode API call fails
 	nodes = []*apiv1.Node{
 		{Spec: apiv1.NodeSpec{ProviderID: "linode://423"}},
 	}
-	err = ng.DeleteNodes(nodes)
+	err = ng.DeleteNodes(nodes, true)
 	assert.Error(t, err)
 }
 

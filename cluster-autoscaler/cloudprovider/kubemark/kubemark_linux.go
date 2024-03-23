@@ -222,12 +222,12 @@ func (nodeGroup *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 }
 
 // DeleteNodes deletes the specified nodes from the node group.
-func (nodeGroup *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
+func (nodeGroup *NodeGroup) DeleteNodes(nodes []*apiv1.Node, respectMinCount bool) error {
 	size, err := nodeGroup.kubemarkController.GetNodeGroupTargetSize(nodeGroup.Name)
 	if err != nil {
 		return err
 	}
-	if size <= nodeGroup.MinSize() {
+	if size <= nodeGroup.MinSize() && respectMinCount {
 		return fmt.Errorf("min size reached, nodes will not be deleted")
 	}
 	for _, node := range nodes {

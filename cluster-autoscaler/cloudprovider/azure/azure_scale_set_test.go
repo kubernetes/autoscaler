@@ -463,7 +463,7 @@ func TestDeleteNodes(t *testing.T) {
 			newApiNode(orchMode, 0),
 			newApiNode(orchMode, 2),
 		}
-		err = scaleSet.DeleteNodes(nodesToDelete)
+		err = scaleSet.DeleteNodes(nodesToDelete, false)
 		assert.NoError(t, err)
 
 		// create scale set with vmss capacity 1
@@ -566,7 +566,7 @@ func TestDeleteNodeUnregistered(t *testing.T) {
 		}
 		nodesToDelete[0].ObjectMeta.Annotations = annotations
 
-		err = scaleSet.DeleteNodes(nodesToDelete)
+		err = scaleSet.DeleteNodes(nodesToDelete, false)
 		assert.NoError(t, err)
 
 		// Ensure the the cached size has NOT been proactively decremented
@@ -640,7 +640,7 @@ func TestDeleteNoConflictRequest(t *testing.T) {
 	scaleSet, ok := provider.NodeGroups()[0].(*ScaleSet)
 	assert.True(t, ok)
 
-	err = scaleSet.DeleteNodes([]*apiv1.Node{node})
+	err = scaleSet.DeleteNodes([]*apiv1.Node{node}, false)
 }
 
 func TestId(t *testing.T) {

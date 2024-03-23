@@ -244,10 +244,10 @@ func TestIncreaseDecreaseSize(t *testing.T) {
 		}
 	}
 
-	err = ngPool2.DeleteNodes(nodesPool2)
+	err = ngPool2.DeleteNodes(nodesPool2, true)
 	assert.NoError(t, err)
 
-	err = ngPool3.DeleteNodes(nodesPool3)
+	err = ngPool3.DeleteNodes(nodesPool3, true)
 	assert.NoError(t, err)
 
 	// Wait a few seconds if talking to the actual Cherry API

@@ -763,7 +763,7 @@ func (a *StaticAutoscaler) removeOldUnregisteredNodes(allUnregisteredNodes []clu
 			klog.Warningf("Node group %s min size reached, skipping removal of %v unregistered nodes", nodeGroupId, len(unregisteredNodesToDelete))
 			continue
 		}
-		if len(unregisteredNodesToDelete) > possibleToDelete {
+		if len(unregisteredNodesToDelete) > possibleToDelete  && !a.DeleteUnregisteredRegardlessOfMinCount {
 			klog.Warningf("Capping node group %s unregistered node removal to %d nodes, removing all %d would exceed min size constaint", nodeGroupId, possibleToDelete, len(unregisteredNodesToDelete))
 			unregisteredNodesToDelete = unregisteredNodesToDelete[:possibleToDelete]
 		}
@@ -785,7 +785,7 @@ func (a *StaticAutoscaler) removeOldUnregisteredNodes(allUnregisteredNodes []clu
 			nodesToDelete = instancesToFakeNodes(instances)
 		}
 
-		err = nodeGroup.DeleteNodes(nodesToDelete)
+		err = nodeGroup.DeleteNodes(nodesToDelete, a.DeleteUnregisteredRegardlessOfMinCount)
 		csr.InvalidateNodeInstancesCacheEntry(nodeGroup)
 		if err != nil {
 			klog.Warningf("Failed to remove %v unregistered nodes from node group %s: %v", len(nodesToDelete), nodeGroupId, err)
@@ -863,7 +863,7 @@ func (a *StaticAutoscaler) deleteCreatedNodesWithErrors() (bool, error) {
 				}
 				nodesToBeDeleted = instancesToFakeNodes(instances)
 			}
-			err = nodeGroup.DeleteNodes(nodesToBeDeleted)
+			err = nodeGroup.DeleteNodes(nodesToBeDeleted, true)
 		}
 
 		if err != nil {

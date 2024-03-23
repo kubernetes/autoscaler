@@ -203,7 +203,7 @@ func TestNodeGroup_DeleteNodes(t *testing.T) {
 
 		client.On("DeleteNodePoolInstance", ctx, ng.clusterID, ng.id, "a").Return(nil).Once()
 
-		err := ng.DeleteNodes(nodes)
+		err := ng.DeleteNodes(nodes, true)
 		assert.NoError(t, err)
 	})
 
@@ -218,7 +218,7 @@ func TestNodeGroup_DeleteNodes(t *testing.T) {
 
 		client.On("DeleteNodePoolInstance", ctx, ng.clusterID, ng.id, "a").Return(errors.New("error")).Once()
 
-		err := ng.DeleteNodes(nodes)
+		err := ng.DeleteNodes(nodes, true)
 		assert.Error(t, err)
 	})
 }

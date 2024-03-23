@@ -179,7 +179,7 @@ func (ts *cloudProviderTestSuite) TestSKSNodepoolNodeGroup_DeleteNodes() {
 		m: ts.p.manager,
 	}
 
-	ts.Require().NoError(nodeGroup.DeleteNodes([]*apiv1.Node{node}))
+	ts.Require().NoError(nodeGroup.DeleteNodes([]*apiv1.Node{node}, false))
 }
 
 func (ts *cloudProviderTestSuite) TestSKSNodepoolNodeGroup_Id() {

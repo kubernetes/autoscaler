@@ -114,7 +114,7 @@ func (ng *cherryNodeGroup) IncreaseSize(delta int) error {
 }
 
 // DeleteNodes deletes a set of nodes chosen by the autoscaler.
-func (ng *cherryNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
+func (ng *cherryNodeGroup) DeleteNodes(nodes []*apiv1.Node, respectMinCount bool) error {
 	// Batch simultaneous deletes on individual nodes
 	if err := ng.addNodesToDelete(nodes); err != nil {
 		return err
@@ -145,7 +145,7 @@ func (ng *cherryNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	}
 
 	// Double check that the total number of batched nodes for deletion will not take the node group below its minimum size
-	if cachedSize-len(nodes) < ng.MinSize() {
+	if cachedSize-len(nodes) < ng.MinSize() && respectMinCount {
 		return fmt.Errorf("size decrease too large, desired:%d min:%d", cachedSize-len(nodes), ng.MinSize())
 	}
 	klog.V(0).Infof("Deleting nodes: %v", nodeNames)

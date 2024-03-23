@@ -440,7 +440,7 @@ func TestAgentPoolDeleteNodes(t *testing.T) {
 			Spec:       apiv1.NodeSpec{ProviderID: testInvalidProviderID},
 			ObjectMeta: v1.ObjectMeta{Name: "node"},
 		},
-	})
+	}, true)
 	expectedErr := fmt.Errorf("node doesn't belong to a known agent pool")
 	assert.Equal(t, expectedErr, err)
 
@@ -451,7 +451,7 @@ func TestAgentPoolDeleteNodes(t *testing.T) {
 			Spec:       apiv1.NodeSpec{ProviderID: testValidProviderID0},
 			ObjectMeta: v1.ObjectMeta{Name: "node"},
 		},
-	})
+	}, true)
 	expectedErr = fmt.Errorf("node belongs to a different asg than as")
 	assert.Equal(t, expectedErr, err)
 
@@ -468,12 +468,12 @@ func TestAgentPoolDeleteNodes(t *testing.T) {
 			Spec:       apiv1.NodeSpec{ProviderID: testValidProviderID0},
 			ObjectMeta: v1.ObjectMeta{Name: "node"},
 		},
-	})
+	}, true)
 	expectedErrStr := "The specified account is disabled."
 	assert.True(t, strings.Contains(err.Error(), expectedErrStr))
 
 	as.minSize = 3
-	err = as.DeleteNodes([]*apiv1.Node{})
+	err = as.DeleteNodes([]*apiv1.Node{}, true)
 	expectedErr = fmt.Errorf("min size reached, nodes will not be deleted")
 	assert.Equal(t, expectedErr, err)
 }

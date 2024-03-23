@@ -225,11 +225,11 @@ func TestDeleteNodes(t *testing.T) {
 		On("Server", fakeServer).
 		Return(fakeServertesty(), nil)
 	t.Run("Empty Nodes", func(t *testing.T) {
-		err := nodeGroup.DeleteNodes(nil)
+		err := nodeGroup.DeleteNodes(nil, true)
 		assert.NoError(t, err)
 	})
 	t.Run("Foreign Node", func(t *testing.T) {
-		err := nodeGroup.DeleteNodes([]*v1.Node{makeNode(fakeServer)})
+		err := nodeGroup.DeleteNodes([]*v1.Node{makeNode(fakeServer)}, true)
 		assert.Error(t, err)
 	})
 	t.Run("Delete Node", func(t *testing.T) {
@@ -240,7 +240,7 @@ func TestDeleteNodes(t *testing.T) {
 			Once().
 			On("DestroyServer", "srv-rp897").
 			Return(nil).Once()
-		err := nodeGroup.DeleteNodes([]*v1.Node{makeNode("srv-rp897")})
+		err := nodeGroup.DeleteNodes([]*v1.Node{makeNode("srv-rp897")}, true)
 		assert.NoError(t, err)
 	})
 	t.Run("Delete All Nodes", func(t *testing.T) {
@@ -255,7 +255,7 @@ func TestDeleteNodes(t *testing.T) {
 		err := nodeGroup.DeleteNodes([]*v1.Node{
 			makeNode("srv-rp897"),
 			makeNode("srv-lv426"),
-		})
+		}, true)
 		assert.Error(t, err)
 	})
 

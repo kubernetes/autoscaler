@@ -240,7 +240,7 @@ func TestDeleteNodes(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		ng.targetSize = 10
 		manager.On("deleteNodes", testNodeGroupUUID, nodeRefs, 5).Return(nil).Once()
-		err := ng.DeleteNodes(nodesToDelete)
+		err := ng.DeleteNodes(nodesToDelete, true)
 		assert.NoError(t, err)
 		assert.Equal(t, 5, ng.targetSize)
 	})
@@ -249,7 +249,7 @@ func TestDeleteNodes(t *testing.T) {
 	t.Run("error", func(t *testing.T) {
 		ng.targetSize = 10
 		manager.On("deleteNodes", testNodeGroupUUID, nodeRefs, 5).Return(errors.New("manager error")).Once()
-		err := ng.DeleteNodes(nodesToDelete)
+		err := ng.DeleteNodes(nodesToDelete, true)
 		assert.Error(t, err)
 		assert.Equal(t, "manager error deleting nodes: manager error", err.Error())
 	})
@@ -293,7 +293,7 @@ func TestNodes(t *testing.T) {
 	}
 
 	manager.On("deleteNodes", mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
-	err := ng.DeleteNodes(nodesToDelete)
+	err := ng.DeleteNodes(nodesToDelete, false)
 	require.NoError(t, err)
 
 	allNodes := append(runningNodes, deletingNodes...)

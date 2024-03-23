@@ -422,41 +422,25 @@ func (as *AgentPool) DeleteInstances(instances []*azureRef) error {
 	return nil
 }
 
+
+
 // DeleteNodes deletes the nodes from the group.
-func (as *AgentPool) DeleteNodes(nodes []*apiv1.Node) error {
-	klog.V(6).Infof("Delete nodes requested: %v\n", nodes)
-	indexes, _, err := as.GetVMIndexes()
-	if err != nil {
-		return err
-	}
+func (as *AgentPool) DeleteNodes(nodes []*apiv1.Node, respectMinCount bool) error {
+    indexes, _, err := as.GetVMIndexes()
+    if err != nil {
+        return err
+    }
 
-	if len(indexes) <= as.MinSize() {
-		return fmt.Errorf("min size reached, nodes will not be deleted")
-	}
+    if len(indexes) <= as.MinSize() && respectMinCount {
+        return fmt.Errorf("min size reached, nodes will not be deleted")
+    }
 
-	refs := make([]*azureRef, 0, len(nodes))
-	for _, node := range nodes {
-		belongs, err := as.Belongs(node)
-		if err != nil {
-			return err
-		}
+    refs, err := as.prepareNodeDeletion(nodes)
+    if err != nil {
+        return err
+    }
 
-		if belongs != true {
-			return fmt.Errorf("%s belongs to a different asg than %s", node.Name, as.Name)
-		}
-
-		ref := &azureRef{
-			Name: node.Spec.ProviderID,
-		}
-		refs = append(refs, ref)
-	}
-
-	err = as.deleteOutdatedDeployments()
-	if err != nil {
-		klog.Warningf("DeleteNodes: failed to cleanup outdated deployments with err: %v.", err)
-	}
-
-	return as.DeleteInstances(refs)
+    return as.DeleteInstances(refs)
 }
 
 // Debug returns a debug string for the agent pool.
@@ -616,3 +600,33 @@ func (as *AgentPool) deleteVirtualMachine(name string) error {
 func (as *AgentPool) getAzureRef() azureRef {
 	return as.azureRef
 }
+
+// prepareNodeDeletion prepares the nodes for deletion by verifying their ownership and creating references.
+func (as *AgentPool) prepareNodeDeletion(nodes []*apiv1.Node) ([]*azureRef, error) {
+    klog.V(6).Infof("Prepare nodes for deletion: %v\n", nodes)
+
+    refs := make([]*azureRef, 0, len(nodes))
+    for _, node := range nodes {
+        belongs, err := as.Belongs(node)
+        if err != nil {
+            return nil, err
+        }
+
+        if !belongs {
+            return nil, fmt.Errorf("%s belongs to a different asg than %s", node.Name, as.Name)
+        }
+
+        ref := &azureRef{
+            Name: node.Spec.ProviderID,
+        }
+        refs = append(refs, ref)
+    }
+
+    err := as.deleteOutdatedDeployments()
+    if err != nil {
+        klog.Warningf("prepareNodeDeletion: failed to cleanup outdated deployments with err: %v.", err)
+    }
+
+    return refs, nil
+}
+

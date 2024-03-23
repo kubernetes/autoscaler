@@ -147,7 +147,7 @@ func TestNodeGroup_DeleteNodes(t *testing.T) {
 		{Spec: apiv1.NodeSpec{ProviderID: serverName1}},
 		{Spec: apiv1.NodeSpec{ProviderID: serverName2}},
 		{Spec: apiv1.NodeSpec{ProviderID: serverName6}},
-	})
+	}, true)
 	assert.NoError(t, err)
 	assert.Equal(t, 3, len(ng.instances))
 	assert.Equal(t, serverName3, ng.instances[serverName3].Id)
@@ -155,7 +155,7 @@ func TestNodeGroup_DeleteNodes(t *testing.T) {
 	assert.Equal(t, serverName5, ng.instances[serverName5].Id)
 
 	// test error on deleting a node we are not managing
-	err = ng.DeleteNodes([]*apiv1.Node{{Spec: apiv1.NodeSpec{ProviderID: mockKamateraServerName()}}})
+	err = ng.DeleteNodes([]*apiv1.Node{{Spec: apiv1.NodeSpec{ProviderID: mockKamateraServerName()}}}, true)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "cannot find this node in the node group")
 
@@ -165,7 +165,7 @@ func TestNodeGroup_DeleteNodes(t *testing.T) {
 	).Return(fmt.Errorf("error on API call")).Once()
 	err = ng.DeleteNodes([]*apiv1.Node{
 		{Spec: apiv1.NodeSpec{ProviderID: serverName4}},
-	})
+	}, true)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "error on API call")
 }

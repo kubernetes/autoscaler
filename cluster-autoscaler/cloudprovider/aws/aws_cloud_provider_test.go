@@ -446,7 +446,7 @@ func TestDeleteNodes(t *testing.T) {
 			ProviderID: "aws:///us-east-1a/test-instance-id",
 		},
 	}
-	err = asgs[0].DeleteNodes([]*apiv1.Node{node})
+	err = asgs[0].DeleteNodes([]*apiv1.Node{node}, true)
 	assert.NoError(t, err)
 	a.AssertNumberOfCalls(t, "TerminateInstanceInAutoScalingGroup", 1)
 	a.AssertNumberOfCalls(t, "DescribeAutoScalingGroupsPages", 1)
@@ -494,7 +494,7 @@ func TestDeleteNodesTerminatingInstances(t *testing.T) {
 			ProviderID: "aws:///us-east-1a/test-instance-id",
 		},
 	}
-	err = asgs[0].DeleteNodes([]*apiv1.Node{node})
+	err = asgs[0].DeleteNodes([]*apiv1.Node{node}, false)
 	assert.NoError(t, err)
 	a.AssertNumberOfCalls(t, "TerminateInstanceInAutoScalingGroup", 0) // instances which are terminating don't need to be terminated again
 	a.AssertNumberOfCalls(t, "DescribeAutoScalingGroupsPages", 1)
@@ -542,7 +542,7 @@ func TestDeleteNodesTerminatedInstances(t *testing.T) {
 			ProviderID: "aws:///us-east-1a/test-instance-id",
 		},
 	}
-	err = asgs[0].DeleteNodes([]*apiv1.Node{node})
+	err = asgs[0].DeleteNodes([]*apiv1.Node{node}, false)
 	assert.NoError(t, err)
 	// we expect no calls to TerminateInstanceInAutoScalingGroup,
 	// because the Node we tried to Delete was already terminating.
@@ -600,7 +600,7 @@ func TestDeleteNodesWithPlaceholder(t *testing.T) {
 			ProviderID: "aws:///us-east-1a/i-placeholder-test-asg-1",
 		},
 	}
-	err = asgs[0].DeleteNodes([]*apiv1.Node{node})
+	err = asgs[0].DeleteNodes([]*apiv1.Node{node}, true)
 	assert.NoError(t, err)
 	a.AssertNumberOfCalls(t, "SetDesiredCapacity", 1)
 	a.AssertNumberOfCalls(t, "DescribeAutoScalingGroupsPages", 1)
@@ -644,7 +644,7 @@ func TestDeleteNodesAfterMultipleRefreshes(t *testing.T) {
 			ProviderID: "aws:///us-east-1a/test-instance-id",
 		},
 	}
-	err := asgs[0].DeleteNodes([]*apiv1.Node{node})
+	err := asgs[0].DeleteNodes([]*apiv1.Node{node}, true)
 	assert.NoError(t, err)
 }
 

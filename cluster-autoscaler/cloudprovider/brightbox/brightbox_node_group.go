@@ -127,7 +127,7 @@ func (ng *brightboxNodeGroup) IncreaseSize(delta int) error {
 // either on failure or if the given node doesn't belong to this
 // node group. This function should wait until node group size is
 // updated. Implementation required.
-func (ng *brightboxNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
+func (ng *brightboxNodeGroup) DeleteNodes(nodes []*apiv1.Node, respectMinCount bool) error {
 	klog.V(4).Info("DeleteNodes")
 	klog.V(4).Infof("Nodes: %+v", nodes)
 	for _, node := range nodes {
@@ -135,7 +135,7 @@ func (ng *brightboxNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 		if err != nil {
 			return err
 		}
-		if size <= ng.MinSize() {
+		if size <= ng.MinSize() && respectMinCount {
 			return fmt.Errorf("min size reached, no further nodes will be deleted")
 		}
 		serverID := k8ssdk.MapProviderIDToServerID(node.Spec.ProviderID)

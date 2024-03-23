@@ -133,21 +133,21 @@ func (s *NodeGroupTestSuite) TestIncreaseSize_OK() {
 
 func (s *NodeGroupTestSuite) TestDeleteNodes_Locked() {
 	s.manager.On("TryLockNodeGroup", s.nodePool).Return(false).Once()
-	s.Error(s.nodePool.DeleteNodes(s.deleteNode))
+	s.Error(s.nodePool.DeleteNodes(s.deleteNode, true))
 }
 
 func (s *NodeGroupTestSuite) TestDeleteNodes_DeleteError() {
 	s.manager.On("TryLockNodeGroup", s.nodePool).Return(true).Once()
 	s.manager.On("UnlockNodeGroup", s.nodePool).Return().Once()
 	s.manager.On("DeleteNode", s.nodePool, "testnode").Return(fmt.Errorf("error")).Once()
-	s.Error(s.nodePool.DeleteNodes(s.deleteNode))
+	s.Error(s.nodePool.DeleteNodes(s.deleteNode, true))
 }
 
 func (s *NodeGroupTestSuite) TestDeleteNodes_OK() {
 	s.manager.On("TryLockNodeGroup", s.nodePool).Return(true).Once()
 	s.manager.On("UnlockNodeGroup", s.nodePool).Return().Once()
 	s.manager.On("DeleteNode", s.nodePool, "testnode").Return(nil).Once()
-	s.NoError(s.nodePool.DeleteNodes(s.deleteNode))
+	s.NoError(s.nodePool.DeleteNodes(s.deleteNode, true))
 }
 
 func (s *NodeGroupTestSuite) TestDecreaseTargetSize_InvalidDelta() {

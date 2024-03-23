@@ -89,7 +89,7 @@ func (ng *magnumNodeGroup) IncreaseSize(delta int) error {
 }
 
 // deleteNodes deletes a set of nodes chosen by the autoscaler.
-func (ng *magnumNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
+func (ng *magnumNodeGroup) DeleteNodes(nodes []*apiv1.Node, respectMinCount bool) error {
 	ng.clusterUpdateLock.Lock()
 	defer ng.clusterUpdateLock.Unlock()
 
@@ -102,7 +102,7 @@ func (ng *magnumNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	klog.V(2).Infof("Deleting nodes: %v", nodeNames)
 
 	// Check that the total number of nodes to be deleted will not take the node group below its minimum size
-	if size-len(nodes) < ng.MinSize() {
+	if size-len(nodes) < ng.MinSize() && respectMinCount {
 		return fmt.Errorf("size decrease too large, desired:%d min:%d", size-len(nodes), ng.MinSize())
 	}
 

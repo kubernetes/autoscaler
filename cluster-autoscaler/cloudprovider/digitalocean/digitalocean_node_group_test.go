@@ -275,7 +275,7 @@ func TestNodeGroup_DeleteNodes(t *testing.T) {
 		client.On("DeleteNode", ctx, ng.clusterID, ng.id, "2", nil).Return(&godo.Response{}, nil).Once()
 		client.On("DeleteNode", ctx, ng.clusterID, ng.id, "3", nil).Return(&godo.Response{}, nil).Once()
 
-		err := ng.DeleteNodes(nodes)
+		err := ng.DeleteNodes(nodes, true)
 		assert.NoError(t, err)
 	})
 
@@ -297,7 +297,7 @@ func TestNodeGroup_DeleteNodes(t *testing.T) {
 		client.On("DeleteNode", ctx, ng.clusterID, ng.id, "2", nil).
 			Return(&godo.Response{}, errors.New("random error")).Once()
 
-		err := ng.DeleteNodes(nodes)
+		err := ng.DeleteNodes(nodes, true)
 		assert.Error(t, err)
 	})
 }

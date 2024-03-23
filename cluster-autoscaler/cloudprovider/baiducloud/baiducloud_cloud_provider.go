@@ -281,12 +281,12 @@ func (asg *Asg) IncreaseSize(delta int) error {
 // DeleteNodes deletes nodes from this node group. Error is returned either on
 // failure or if the given node doesn't belong to this node group. This function
 // should wait until node group size is updated. Implementation required.
-func (asg *Asg) DeleteNodes(nodes []*apiv1.Node) error {
+func (asg *Asg) DeleteNodes(nodes []*apiv1.Node, respectMinCount bool) error {
 	size, err := asg.baiducloudManager.GetAsgSize(asg)
 	if err != nil {
 		return err
 	}
-	if int(size) <= asg.MinSize() {
+	if int(size) <= asg.MinSize() && respectMinCount {
 		return fmt.Errorf("min size reached, nodes will not be deleted")
 	}
 	nodeID := make([]string, len(nodes))

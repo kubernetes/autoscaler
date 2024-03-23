@@ -150,7 +150,7 @@ func deleteNodesFromCloudProvider(ctx *context.AutoscalingContext, nodes []*apiv
 	if err != nil {
 		return nodeGroup, errors.NewAutoscalerError(errors.CloudProviderError, "failed to find node group for %s: %v", nodes[0].Name, err)
 	}
-	if err := nodeGroup.DeleteNodes(nodes); err != nil {
+	if err := nodeGroup.DeleteNodes(nodes, true); err != nil {
 		return nodeGroup, errors.NewAutoscalerError(errors.CloudProviderError, "failed to delete nodes from group %s: %v", nodeGroup.Id(), err)
 	}
 	return nodeGroup, nil

@@ -684,7 +684,7 @@ func TestNodeGroupDeleteNodes(t *testing.T) {
 			}
 		}
 
-		if err := ng.DeleteNodes(testConfig.nodes[5:]); err != nil {
+		if err := ng.DeleteNodes(testConfig.nodes[5:], true); err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}
 
@@ -781,7 +781,7 @@ func TestNodeGroupMachineSetDeleteNodesWithMismatchedNodes(t *testing.T) {
 		}
 
 		// Deleting nodes that are not in ng0 should fail.
-		err0 := ng0.DeleteNodes(testConfig1.nodes)
+		err0 := ng0.DeleteNodes(testConfig1.nodes, true)
 		if err0 == nil {
 			t.Error("expected an error")
 		}
@@ -793,7 +793,7 @@ func TestNodeGroupMachineSetDeleteNodesWithMismatchedNodes(t *testing.T) {
 		}
 
 		// Deleting nodes that are not in ng1 should fail.
-		err1 := ng1.DeleteNodes(testConfig0.nodes)
+		err1 := ng1.DeleteNodes(testConfig0.nodes, true)
 		if err1 == nil {
 			t.Error("expected an error")
 		}
@@ -804,13 +804,13 @@ func TestNodeGroupMachineSetDeleteNodesWithMismatchedNodes(t *testing.T) {
 
 		// Deleting from correct node group should fail because
 		// replicas would become <= 0.
-		if err := ng0.DeleteNodes(testConfig0.nodes); err == nil {
+		if err := ng0.DeleteNodes(testConfig0.nodes, true); err == nil {
 			t.Error("expected error")
 		}
 
 		// Deleting from correct node group should fail because
 		// replicas would become <= 0.
-		if err := ng1.DeleteNodes(testConfig1.nodes); err == nil {
+		if err := ng1.DeleteNodes(testConfig1.nodes, true); err == nil {
 			t.Error("expected error")
 		}
 	}
@@ -919,7 +919,7 @@ func TestNodeGroupDeleteNodesTwice(t *testing.T) {
 		}
 
 		// Delete all nodes over the expectedSize
-		if err := ng.DeleteNodes(nodesToBeDeleted); err != nil {
+		if err := ng.DeleteNodes(nodesToBeDeleted, true); err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
 
@@ -979,7 +979,7 @@ func TestNodeGroupDeleteNodesTwice(t *testing.T) {
 		// Attempt to delete the nodes again which verifies
 		// that nodegroup.DeleteNodes() skips over nodes that
 		// have a non-nil DeletionTimestamp value.
-		if err := ng.DeleteNodes(nodesToBeDeleted); err != nil {
+		if err := ng.DeleteNodes(nodesToBeDeleted, true); err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
 
@@ -1110,7 +1110,7 @@ func TestNodeGroupDeleteNodesSequential(t *testing.T) {
 		}
 
 		for node, nodeGroup := range nodeToNodeGroup {
-			if err := nodeGroup.DeleteNodes([]*corev1.Node{node}); err != nil {
+			if err := nodeGroup.DeleteNodes([]*corev1.Node{node}, true); err != nil {
 				t.Fatalf("unexpected error deleting node: %v", err)
 			}
 		}

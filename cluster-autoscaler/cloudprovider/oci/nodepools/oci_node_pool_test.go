@@ -46,7 +46,7 @@ func TestDeletePastMinSize(t *testing.T) {
 		}
 		nodesToDelete = append(nodesToDelete, node)
 	}
-	err := np.DeleteNodes(nodesToDelete)
+	err := np.DeleteNodes(nodesToDelete, true)
 	if err == nil {
 		t.Fatalf("expected to have an error because node pool is at the min size")
 	}

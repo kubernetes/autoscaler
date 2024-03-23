@@ -268,7 +268,7 @@ func TestOVHCloudNodeGroup_DeleteNodes(t *testing.T) {
 					ProviderID: "openstack:///instance-1",
 				},
 			},
-		})
+		}, true)
 		assert.NoError(t, err)
 
 		targetSize, err := ng.TargetSize()
@@ -280,7 +280,7 @@ func TestOVHCloudNodeGroup_DeleteNodes(t *testing.T) {
 	t.Run("check delete nodes empty nodes array", func(t *testing.T) {
 		ng.mockCallUpdateNodePool(2, []string{})
 
-		err := ng.DeleteNodes(nil)
+		err := ng.DeleteNodes(nil, true)
 		assert.NoError(t, err)
 
 		targetSize, err := ng.TargetSize()
@@ -315,7 +315,7 @@ func TestOVHCloudNodeGroup_DeleteNodes(t *testing.T) {
 					},
 				},
 			},
-		})
+		}, true)
 		assert.Error(t, err)
 	})
 }

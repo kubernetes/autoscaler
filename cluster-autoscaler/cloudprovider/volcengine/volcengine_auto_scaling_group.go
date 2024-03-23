@@ -72,13 +72,13 @@ func (asg *AutoScalingGroup) IncreaseSize(delta int) error {
 // DeleteNodes deletes nodes from this node group. Error is returned either on
 // failure or if the given node doesn't belong to this node group. This function
 // should wait until node group size is updated. Implementation required.
-func (asg *AutoScalingGroup) DeleteNodes(nodes []*apiv1.Node) error {
+func (asg *AutoScalingGroup) DeleteNodes(nodes []*apiv1.Node, respectMinCount bool) error {
 	size, err := asg.manager.GetAsgDesireCapacity(asg.asgId)
 	if err != nil {
 		klog.Errorf("Failed to get desire capacity for %s: %v", asg.asgId, err)
 		return err
 	}
-	if size <= asg.MinSize() {
+	if size <= asg.MinSize() && respectMinCount {
 		klog.Errorf("Failed to delete nodes from %s: min size reached", asg.asgId)
 		return fmt.Errorf("asg min size reached")
 	}

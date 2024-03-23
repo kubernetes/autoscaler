@@ -112,7 +112,7 @@ func (ng *NodeGroup) IncreaseSize(delta int) error {
 }
 
 // DeleteNodes deletes the nodes from the group.
-func (ng *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
+func (ng *NodeGroup) DeleteNodes(nodes []*apiv1.Node, respectMinCount bool) error {
 	// DeleteNodes is called in goroutine so it can run in parallel
 	// Goroutines created in: ScaleDown.scheduleDeleteEmptyNodes()
 	// Adding mutex to ensure CurrentSize attribute keeps consistency
@@ -132,7 +132,7 @@ func (ng *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 		return fmt.Errorf("failed to get NodeGroup target size")
 	}
 
-	if size-len(nodes) < ng.MinSize() {
+	if size-len(nodes) < ng.MinSize() && respectMinCount {
 		return fmt.Errorf("node group size would be below minimum size - desired: %d, max: %d", size-len(nodes), ng.MinSize())
 	}
 

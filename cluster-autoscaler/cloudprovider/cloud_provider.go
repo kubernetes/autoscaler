@@ -184,8 +184,9 @@ type NodeGroup interface {
 
 	// DeleteNodes deletes nodes from this node group. Error is returned either on
 	// failure or if the given node doesn't belong to this node group. This function
-	// should wait until node group size is updated. Implementation required.
-	DeleteNodes([]*apiv1.Node) error
+	// should wait until node group size is updated. It takes an optional parameter to do a deletion violating min count. Implementation required.
+	DeleteNodes([]*apiv1.Node, bool) error
+	
 
 	// DecreaseTargetSize decreases the target size of the node group. This function
 	// doesn't permit to delete any existing node and can be used only to reduce the

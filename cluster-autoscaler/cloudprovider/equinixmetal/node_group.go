@@ -104,7 +104,7 @@ func (ng *equinixMetalNodeGroup) IncreaseSize(delta int) error {
 //   - simultaneous but separate calls from the autoscaler are batched together
 //   - does not allow scaling while the cluster is already in an UPDATE_IN_PROGRESS state
 //   - after scaling down, blocks until the cluster has reached UPDATE_COMPLETE
-func (ng *equinixMetalNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
+func (ng *equinixMetalNodeGroup) DeleteNodes(nodes []*apiv1.Node, respectMinCount bool) error {
 	klog.V(1).Infof("Locking nodesToDeleteMutex")
 
 	// Batch simultaneous deletes on individual nodes
@@ -130,7 +130,7 @@ func (ng *equinixMetalNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	}
 
 	// Check that these nodes would not make the batch delete more nodes than the minimum would allow
-	if cachedSize-len(ng.nodesToDelete)-len(nodes) < ng.MinSize() {
+	if cachedSize-len(ng.nodesToDelete)-len(nodes) < ng.MinSize() && respectMinCount {
 		ng.nodesToDeleteMutex.Unlock()
 		klog.V(1).Infof("UnLocking nodesToDeleteMutex")
 		return fmt.Errorf("deleting nodes would take nodegroup below minimum size %d", ng.minSize)

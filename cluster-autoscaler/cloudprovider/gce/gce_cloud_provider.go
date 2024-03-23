@@ -279,12 +279,12 @@ func (mig *gceMig) Belongs(node *apiv1.Node) (bool, error) {
 }
 
 // DeleteNodes deletes the nodes from the group.
-func (mig *gceMig) DeleteNodes(nodes []*apiv1.Node) error {
+func (mig *gceMig) DeleteNodes(nodes []*apiv1.Node, respectMinCount bool) error {
 	size, err := mig.gceManager.GetMigSize(mig)
 	if err != nil {
 		return err
 	}
-	if int(size) <= mig.MinSize() {
+	if int(size) <= mig.MinSize() && respectMinCount {
 		return fmt.Errorf("min size reached, nodes will not be deleted")
 	}
 	refs := make([]GceRef, 0, len(nodes))

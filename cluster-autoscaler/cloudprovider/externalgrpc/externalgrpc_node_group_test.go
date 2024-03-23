@@ -504,7 +504,7 @@ func TestCloudProvider_DeleteNodes(t *testing.T) {
 		grpcTimeout: defaultGRPCTimeout,
 	}
 
-	err := ng1.DeleteNodes(nodes)
+	err := ng1.DeleteNodes(nodes, true)
 	assert.NoError(t, err)
 
 	// test grpc error
@@ -523,7 +523,7 @@ func TestCloudProvider_DeleteNodes(t *testing.T) {
 		grpcTimeout: defaultGRPCTimeout,
 	}
 
-	err = ng2.DeleteNodes(nodes)
+	err = ng2.DeleteNodes(nodes, true)
 	assert.Error(t, err)
 
 }

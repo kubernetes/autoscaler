@@ -146,14 +146,14 @@ func TestDeleteNodes(t *testing.T) {
 	}
 
 	// usual case
-	err := ng.DeleteNodes([]*apiv1.Node{nodeToDelete1})
+	err := ng.DeleteNodes([]*apiv1.Node{nodeToDelete1}, true)
 	assert.Nil(t, err)
 	assert.True(t, deletedNodes[nodeToDelete1.GetName()])
 
 	// min size reached
 	deletedNodes = make(map[string]bool)
 	ng.targetSize = 0
-	err = ng.DeleteNodes([]*apiv1.Node{nodeToDelete1})
+	err = ng.DeleteNodes([]*apiv1.Node{nodeToDelete1}, true)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), minSizeReachedErr)
 	assert.False(t, deletedNodes[nodeToDelete1.GetName()])
@@ -161,7 +161,7 @@ func TestDeleteNodes(t *testing.T) {
 
 	// too many nodes to delete - goes below ng's minSize
 	deletedNodes = make(map[string]bool)
-	err = ng.DeleteNodes([]*apiv1.Node{nodeToDelete1, nodeToDelete2})
+	err = ng.DeleteNodes([]*apiv1.Node{nodeToDelete1, nodeToDelete2}, true)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), belowMinSizeErr)
 	assert.False(t, deletedNodes[nodeToDelete1.GetName()])
@@ -169,7 +169,7 @@ func TestDeleteNodes(t *testing.T) {
 
 	// kwok annotation is not present on the node to delete
 	deletedNodes = make(map[string]bool)
-	err = ng.DeleteNodes([]*apiv1.Node{nodeWithoutKwokAnnotation})
+	err = ng.DeleteNodes([]*apiv1.Node{nodeWithoutKwokAnnotation}, true)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "not managed by kwok")
 	assert.False(t, deletedNodes[nodeWithoutKwokAnnotation.GetName()])

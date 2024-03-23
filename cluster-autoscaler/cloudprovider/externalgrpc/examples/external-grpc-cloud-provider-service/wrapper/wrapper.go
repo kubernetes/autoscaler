@@ -258,7 +258,7 @@ func (w *Wrapper) NodeGroupDeleteNodes(_ context.Context, req *protos.NodeGroupD
 	for _, n := range req.GetNodes() {
 		nodes = append(nodes, apiv1Node(n))
 	}
-	err := ng.DeleteNodes(nodes)
+	err := ng.DeleteNodes(nodes, true)
 	if err != nil {
 		return nil, err
 	}

@@ -438,7 +438,7 @@ func (tng *TestNodeGroup) DecreaseTargetSize(delta int) error {
 // DeleteNodes deletes nodes from this node group. Error is returned either on
 // failure or if the given node doesn't belong to this node group. This function
 // should wait until node group size is updated.
-func (tng *TestNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
+func (tng *TestNodeGroup) DeleteNodes(nodes []*apiv1.Node, _ bool) error {
 	tng.Lock()
 	id := tng.id
 	tng.targetSize -= len(nodes)

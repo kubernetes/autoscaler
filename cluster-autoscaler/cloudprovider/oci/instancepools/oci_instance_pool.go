@@ -67,7 +67,7 @@ func (ip *InstancePoolNodeGroup) IncreaseSize(delta int) error {
 // DeleteNodes deletes nodes from this instance-pool. Error is returned either on
 // failure or if the given node doesn't belong to this instance-pool. This function
 // should wait until instance-pool size is updated. Implementation required.
-func (ip *InstancePoolNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
+func (ip *InstancePoolNodeGroup) DeleteNodes(nodes []*apiv1.Node, respectMinCount bool) error {
 
 	// FYI, unregistered nodes come in as the provider id as node name.
 
@@ -78,7 +78,7 @@ func (ip *InstancePoolNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 		return err
 	}
 
-	if size <= ip.MinSize() {
+	if size <= ip.MinSize() && respectMinCount {
 		return fmt.Errorf("min size reached, nodes will not be deleted")
 	}
 

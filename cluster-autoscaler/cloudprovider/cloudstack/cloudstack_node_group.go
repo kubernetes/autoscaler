@@ -94,8 +94,8 @@ func (asg *asg) Belongs(node *apiv1.Node) (bool, error) {
 }
 
 // DeleteNodes deletes the nodes from the group.
-func (asg *asg) DeleteNodes(nodes []*apiv1.Node) error {
-	if asg.cluster.WorkerCount-len(nodes) < asg.MinSize() {
+func (asg *asg) DeleteNodes(nodes []*apiv1.Node, respectMinCount bool) error {
+	if asg.cluster.WorkerCount-len(nodes) < asg.MinSize() && respectMinCount {
 		return fmt.Errorf("Goes below minsize. Can not delete %v nodes", len(nodes))
 	}
 

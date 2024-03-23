@@ -197,13 +197,13 @@ func (asg *tcAsg) Autoprovisioned() bool {
 }
 
 // DeleteNodes deletes the nodes from the group.
-func (asg *tcAsg) DeleteNodes(nodes []*apiv1.Node) error {
+func (asg *tcAsg) DeleteNodes(nodes []*apiv1.Node, respectMinCount bool) error {
 	size, err := asg.tencentcloudManager.GetAsgSize(asg)
 	if err != nil {
 		return err
 	}
 
-	if int(size) <= asg.MinSize() {
+	if int(size) <= asg.MinSize() && respectMinCount {
 		return fmt.Errorf("min size reached, nodes will not be deleted")
 	}
 

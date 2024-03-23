@@ -97,7 +97,7 @@ func (asg *AutoScalingGroup) IncreaseSize(delta int) error {
 // DeleteNodes deletes nodes from this node group. Error is returned either on
 // failure or if the given node doesn't belong to this node group. This function
 // should wait until node group size is updated. Implementation required.
-func (asg *AutoScalingGroup) DeleteNodes(nodes []*apiv1.Node) error {
+func (asg *AutoScalingGroup) DeleteNodes(nodes []*apiv1.Node, _ bool) error {
 	instances, err := asg.cloudServiceManager.GetInstances(asg.groupID)
 	if err != nil {
 		klog.Warningf("failed to get instances from group: %s, error: %v", asg.groupID, err)

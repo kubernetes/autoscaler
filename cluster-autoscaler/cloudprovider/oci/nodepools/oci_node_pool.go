@@ -111,7 +111,7 @@ func (np *nodePool) IncreaseSize(delta int) error {
 // DeleteNodes deletes nodes from this node group. Error is returned either on
 // failure or if the given node doesn't belong to this node group. This function
 // should wait until node group size is updated. Implementation required.
-func (np *nodePool) DeleteNodes(nodes []*apiv1.Node) (err error) {
+func (np *nodePool) DeleteNodes(nodes []*apiv1.Node, respectMinCount bool) (err error) {
 	// Unregistered nodes come in as the provider id as node name.
 
 	// although technically we only need the mutex around the api calls, we should wrap the mutex
@@ -128,7 +128,7 @@ func (np *nodePool) DeleteNodes(nodes []*apiv1.Node) (err error) {
 	}
 
 	klog.Infof("Nodepool %s has size %d", np.id, size)
-	if int(size) <= np.MinSize() {
+	if int(size) <= np.MinSize() && respectMinCount {
 		return fmt.Errorf("min size reached, nodes will not be deleted")
 	}
 
