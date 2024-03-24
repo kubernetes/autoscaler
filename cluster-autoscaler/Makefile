@@ -122,7 +122,7 @@ $(LOCALBIN):
 CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
 
 ## Tool Versions
-CONTROLLER_TOOLS_VERSION ?= v0.13.0
+CONTROLLER_TOOLS_VERSION ?= v0.14.0
 
 .PHONY: controller-gen
 controller-gen: $(CONTROLLER_GEN) ## Download controller-gen locally if necessary.
@@ -131,4 +131,4 @@ $(CONTROLLER_GEN): $(LOCALBIN)
 
 .PHONY: manifest
 manifest: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
-	$(CONTROLLER_GEN) rbac:roleName=manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd
+	$(CONTROLLER_GEN) rbac:roleName=manager-role crd webhook paths="./apis/..." output:crd:artifacts:config=apis/config/crd
