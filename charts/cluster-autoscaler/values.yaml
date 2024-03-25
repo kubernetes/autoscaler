@@ -110,13 +110,30 @@ azureVMType: "vmss"
 # azureEnableForceDelete -- Whether to force delete VMs or VMSS instances when scaling down.
 azureEnableForceDelete: false
 
+# civoApiUrl -- URL for the Civo API.
+# Required if `cloudProvider=civo`
+civoApiUrl: "https://api.civo.com"
+
+# civoApiKey -- API key for the Civo API.
+# Required if `cloudProvider=civo`
+civoApiKey: ""
+
+# civoClusterID -- Cluster ID for the Civo cluster.
+# Required if `cloudProvider=civo`
+civoClusterID: ""
+
+# civoRegion -- Region for the Civo cluster.
+# Required if `cloudProvider=civo`
+civoRegion: ""
+
 # cloudConfigPath -- Configuration file for cloud provider.
 cloudConfigPath: ""
 
 # cloudProvider -- The cloud provider where the autoscaler runs.
-# Currently only `gce`, `aws`, `azure`, `magnum` and `clusterapi` are supported.
+# Currently only `gce`, `aws`, `azure`, `magnum`, `clusterapi` and `civo` are supported.
 # `aws` supported for AWS. `gce` for GCE. `azure` for Azure AKS.
 # `magnum` for OpenStack Magnum, `clusterapi` for Cluster API.
+# `civo` for Civo Cloud.
 cloudProvider: aws
 
 # clusterAPICloudConfigPath -- Path to kubeconfig for connecting to Cluster API Management Cluster, only used if `clusterAPIMode=kubeconfig-kubeconfig or incluster-kubeconfig`
