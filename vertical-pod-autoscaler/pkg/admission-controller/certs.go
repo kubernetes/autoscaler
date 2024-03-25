@@ -32,13 +32,17 @@ import (
 type KeypairReloader struct {
 	certMu   sync.RWMutex
 	cert     *tls.Certificate
-	caCert   []byte
 	certPath string
 	keyPath  string
 }
 
 type certsConfig struct {
 	clientCaFile, tlsCertFile, tlsPrivateKey *string
+	reload                                   *bool
+}
+
+func (cc *certsConfig) ReadCA() []byte {
+	return readFile(*cc.clientCaFile)
 }
 
 func readFile(filePath string) []byte {
@@ -57,7 +61,6 @@ func NewKeypairReloader(config certsConfig) (*KeypairReloader, error) {
 	result := &KeypairReloader{
 		certPath: *config.tlsCertFile,
 		keyPath:  *config.tlsPrivateKey,
-		caCert:   readFile(*config.clientCaFile),
 	}
 	cert, err := tls.LoadX509KeyPair(*config.tlsCertFile, *config.tlsPrivateKey)
 	if err != nil {

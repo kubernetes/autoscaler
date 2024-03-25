@@ -33,7 +33,7 @@ const (
 	webhookConfigName = "vpa-webhook-config"
 )
 
-func configTLS(kpr *KeypairReloader, minTlsVersion, ciphers string) *tls.Config {
+func configTLS(cfg certsConfig, minTlsVersion, ciphers string) (*tls.Config, error) {
 	var tlsVersion uint16
 	var ciphersuites []uint16
 	reverseCipherMap := make(map[string]uint16)
@@ -62,12 +62,25 @@ func configTLS(kpr *KeypairReloader, minTlsVersion, ciphers string) *tls.Config 
 		klog.Fatal(fmt.Errorf("Unable to determine value for --min-tls-version (%s), must be either tls1_2 or tls1_3", minTlsVersion))
 	}
 
-	return &tls.Config{
+	config := &tls.Config{
 		MinVersion:   tlsVersion,
 		CipherSuites: ciphersuites,
-		// this will check if there are new certs before every tls handshake
-		GetCertificate: kpr.GetCertificate,
 	}
+	if *cfg.reload {
+		kpr, err := NewKeypairReloader(cfg)
+		if err != nil {
+			return nil, err
+		}
+		// this will check if there are new certs before every tls handshake
+		config.GetCertificate = kpr.GetCertificate
+	} else {
+		cert, err := tls.LoadX509KeyPair(*cfg.tlsCertFile, *cfg.tlsPrivateKey)
+		if err != nil {
+			return nil, err
+		}
+		config.Certificates = []tls.Certificate{cert}
+	}
+	return config, nil
 }
 
 // register this webhook admission controller with the kube-apiserver

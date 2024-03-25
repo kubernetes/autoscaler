@@ -58,6 +58,7 @@ var (
 		clientCaFile:  flag.String("client-ca-file", "/etc/tls-certs/caCert.pem", "Path to CA PEM file."),
 		tlsCertFile:   flag.String("tls-cert-file", "/etc/tls-certs/serverCert.pem", "Path to server certificate PEM file."),
 		tlsPrivateKey: flag.String("tls-private-key", "/etc/tls-certs/serverKey.pem", "Path to server certificate key PEM file."),
+		reload:        flag.Bool("reload-cert", false, "If true, reload leaf certificate on file changes"),
 	}
 	ciphers       = flag.String("tls-ciphers", "", "A comma-separated or colon-separated list of ciphers to accept.  Only works when min-tls-version is set to tls1_2.")
 	minTlsVersion = flag.String("min-tls-version", "tls1_2", "The minimum TLS version to accept.  Must be set to either tls1_2 (default) or tls1_3.")
@@ -87,11 +88,6 @@ func main() {
 	metrics_admission.Register()
 
 	config := common.CreateKubeConfigOrDie(*kubeconfig, float32(*kubeApiQps), int(*kubeApiBurst))
-	// load certs
-	kpr, err := NewKeypairReloader(*certsConfiguration)
-	if err != nil {
-		klog.Fatalf("Failed to load certificate on startup: %v", err)
-	}
 
 	vpaClient := vpa_clientset.NewForConfigOrDie(config)
 	vpaLister := vpa_api_util.NewVpasLister(vpaClient, make(chan struct{}), *vpaObjectNamespace)
@@ -102,6 +98,7 @@ func main() {
 	podPreprocessor := pod.NewDefaultPreProcessor()
 	vpaPreprocessor := vpa.NewDefaultPreProcessor()
 	var limitRangeCalculator limitrange.LimitRangeCalculator
+	var err error
 	limitRangeCalculator, err = limitrange.NewLimitsRangeCalculator(factory)
 	if err != nil {
 		klog.Errorf("Failed to create limitRangeCalculator, falling back to not checking limits. Error message: %s", err)
@@ -135,15 +132,19 @@ func main() {
 		as.Serve(w, r)
 		healthCheck.UpdateLastActivity()
 	})
+	tlsConfig, err := configTLS(*certsConfiguration, *minTlsVersion, *ciphers)
+	if err != nil {
+		klog.Fatalf("failed to configure TLS: %s", err)
+	}
 	server := &http.Server{
 		Addr:      fmt.Sprintf(":%d", *port),
-		TLSConfig: configTLS(kpr, *minTlsVersion, *ciphers),
+		TLSConfig: tlsConfig,
 	}
 
 	url := fmt.Sprintf("%v:%v", *webhookAddress, *webhookPort)
 	go func() {
 		if *registerWebhook {
-			selfRegistration(kubeClient, kpr.caCert, namespace, *serviceName, url, *registerByURL, int32(*webhookTimeout))
+			selfRegistration(kubeClient, certsConfiguration.ReadCA(), namespace, *serviceName, url, *registerByURL, int32(*webhookTimeout))
 		}
 		// Start status updates after the webhook is initialized.
 		statusUpdater.Run(stopCh)
