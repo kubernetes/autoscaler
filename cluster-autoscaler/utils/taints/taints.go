@@ -63,6 +63,9 @@ const (
 
 	// unlistedNodeTaintReportedType is the value used when reporting node taint count in case taint key is other than defined in explicitlyReportedNodeTaints and taintConfig.
 	unlistedNodeTaintReportedType = "other"
+
+	// ForceScaleDownTaint is the key of taint marking nodes to be forced scale down by cluster-autoscaler.
+	ForceScaleDownTaint = "cluster-autoscaler.kubernetes.io/force-scale-down-with-grace-period-minutes"
 )
 
 var (
@@ -110,6 +113,9 @@ func NewTaintConfig(opts config.AutoscalingOptions) TaintConfig {
 	for _, taintKey := range opts.StatusTaints {
 		klog.V(4).Infof("Status taint %s on all NodeGroups", taintKey)
 		statusTaints[taintKey] = true
+	}
+	if opts.ForceScaleDownEnabled {
+		statusTaints[ForceScaleDownTaint] = true
 	}
 
 	explicitlyReportedTaints := TaintKeySet{
@@ -486,4 +492,53 @@ func getTaintTypeToReport(key string, taintConfig TaintConfig) string {
 		return statusNodeTaintReportedType
 	}
 	return unlistedNodeTaintReportedType
+}
+
+// HasForceScaleDownTaint returns true if the node has the force-scale-down taint, false otherwise.
+func HasForceScaleDownTaint(node *apiv1.Node) bool {
+	taints := getForceScaleDownTaints(node)
+	return len(taints) > 0
+}
+
+// GetForceScaleDownDeadline returns the deadline of the graceful pod eviction.
+// Returns nil, if the taint vaue is empty or the taint time added is nil.
+func GetForceScaleDownDeadline(node *apiv1.Node) *time.Time {
+	taints := getForceScaleDownTaints(node)
+	getDeadline := func(taint apiv1.Taint) *time.Time {
+		if taint.TimeAdded == nil || len(taint.Value) == 0 {
+			return nil
+		}
+		val, err := strconv.Atoi(taint.Value)
+		if err != nil {
+			klog.Warningf("Failed to parse force-scale-down taint on node %s: %+v", node.Name, taint)
+			return nil
+		}
+		deadline := taint.TimeAdded.Add(time.Duration(val) * time.Minute)
+		return &deadline
+	}
+	var minDeadline *time.Time
+	for _, taint := range taints {
+		deadline := getDeadline(taint)
+		if deadline == nil {
+			continue
+		}
+		if minDeadline == nil {
+			minDeadline = deadline
+			continue
+		}
+		if deadline.Before(*minDeadline) {
+			minDeadline = deadline
+		}
+	}
+	return minDeadline
+}
+
+func getForceScaleDownTaints(node *apiv1.Node) []apiv1.Taint {
+	result := []apiv1.Taint{}
+	for _, taint := range node.Spec.Taints {
+		if taint.Key == ForceScaleDownTaint {
+			result = append(result, taint)
+		}
+	}
+	return result
 }

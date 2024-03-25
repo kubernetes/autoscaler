@@ -723,3 +723,125 @@ func TestCountNodeTaints(t *testing.T) {
 	got := CountNodeTaints([]*apiv1.Node{node, node2}, taintConfig)
 	assert.Equal(t, want, got)
 }
+
+func TestHasForceScaleDownTaint(t *testing.T) {
+	testCases := []struct {
+		desc string
+		node *apiv1.Node
+		want bool
+	}{
+		{
+			desc: "node does not have force-scale-down taint",
+			node: &apiv1.Node{},
+			want: false,
+		},
+		{
+			desc: "node has force-scale-down taint",
+			node: &apiv1.Node{
+				Spec: apiv1.NodeSpec{
+					Taints: []apiv1.Taint{
+						{
+							Key:    ForceScaleDownTaint,
+							Effect: apiv1.TaintEffectNoSchedule,
+						},
+					},
+				},
+			},
+			want: true,
+		},
+	}
+
+	for index := range testCases {
+		tc := testCases[index]
+		t.Run(tc.desc, func(t *testing.T) {
+			t.Parallel()
+			got := HasForceScaleDownTaint(tc.node)
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}
+
+func TestGetForceScaleDownDeadline(t *testing.T) {
+	testTime := time.Date(2024, time.March, 9, 0, 0, 0, 0, time.UTC)
+	testCases := []struct {
+		desc string
+		node *apiv1.Node
+		want *time.Time
+	}{
+		{
+			desc: "no force-scale-down taint",
+			node: &apiv1.Node{},
+			want: nil,
+		},
+		{
+			desc: "force-scale-down taint has no time added",
+			node: &apiv1.Node{
+				Spec: apiv1.NodeSpec{
+					Taints: []apiv1.Taint{
+						{
+							Key:    ForceScaleDownTaint,
+							Effect: apiv1.TaintEffectNoSchedule,
+						},
+					},
+				},
+			},
+			want: nil,
+		},
+		{
+			desc: "force-scale-down taint has no value",
+			node: &apiv1.Node{
+				Spec: apiv1.NodeSpec{
+					Taints: []apiv1.Taint{
+						{
+							Key:       ForceScaleDownTaint,
+							Effect:    apiv1.TaintEffectNoSchedule,
+							TimeAdded: &metav1.Time{Time: testTime},
+						},
+					},
+				},
+			},
+			want: nil,
+		},
+		{
+			desc: "force-scale-down taint has invalid value",
+			node: &apiv1.Node{
+				Spec: apiv1.NodeSpec{
+					Taints: []apiv1.Taint{
+						{
+							Key:       ForceScaleDownTaint,
+							Value:     "true",
+							Effect:    apiv1.TaintEffectNoSchedule,
+							TimeAdded: &metav1.Time{Time: testTime},
+						},
+					},
+				},
+			},
+			want: nil,
+		},
+		{
+			desc: "force-scale-down taint has valid deadline",
+			node: &apiv1.Node{
+				Spec: apiv1.NodeSpec{
+					Taints: []apiv1.Taint{
+						{
+							Key:       ForceScaleDownTaint,
+							Value:     "30",
+							Effect:    apiv1.TaintEffectNoSchedule,
+							TimeAdded: &metav1.Time{Time: testTime.Add(-30 * time.Minute)},
+						},
+					},
+				},
+			},
+			want: &testTime,
+		},
+	}
+
+	for index := range testCases {
+		tc := testCases[index]
+		t.Run(tc.desc, func(t *testing.T) {
+			t.Parallel()
+			got := GetForceScaleDownDeadline(tc.node)
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}

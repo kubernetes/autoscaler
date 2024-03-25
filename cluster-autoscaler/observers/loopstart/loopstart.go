@@ -34,6 +34,11 @@ func (l *ObserversList) Refresh() {
 	}
 }
 
+// Register appends observer to the observers list.
+func (l *ObserversList) Register(observer Observer) {
+	l.observers = append(l.observers, observer)
+}
+
 // NewObserversList return new ObserversList.
 func NewObserversList(observers []Observer) *ObserversList {
 	return &ObserversList{observers}

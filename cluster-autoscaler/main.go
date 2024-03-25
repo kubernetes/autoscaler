@@ -54,6 +54,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/observers/loopstart"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/forcescaledown"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfosprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/provreq"
@@ -259,6 +260,7 @@ var (
 			"Eg. flag usage:  '10000:20,1000:100,0:60'")
 	provisioningRequestsEnabled = flag.Bool("enable-provisioning-requests", false, "Whether the clusterautoscaler will be handling the ProvisioningRequest CRs.")
 	frequentLoopsEnabled        = flag.Bool("frequent-loops-enabled", false, "Whether clusterautoscaler triggers new iterations more frequently when it's needed")
+	forceScaleDownEnabled       = flag.Bool("force-scale-down-enabled", false, "Whether the clusterautoscaler will be handling the force-scale-down node taint.")
 )
 
 func isFlagPassed(name string) bool {
@@ -432,6 +434,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		DynamicNodeDeleteDelayAfterTaintEnabled: *dynamicNodeDeleteDelayAfterTaintEnabled,
 		BypassedSchedulers:                      scheduler_util.GetBypassedSchedulersMap(*bypassedSchedulers),
 		ProvisioningRequestEnabled:              *provisioningRequestsEnabled,
+		ForceScaleDownEnabled:                   *forceScaleDownEnabled,
 	}
 }
 
@@ -489,6 +492,7 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 	opts.Processors = ca_processors.DefaultProcessors(autoscalingOptions)
 	opts.Processors.TemplateNodeInfoProvider = nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nodeInfoCacheExpireTime, *forceDaemonSets)
 	podListProcessor := podlistprocessor.NewDefaultPodListProcessor(opts.PredicateChecker)
+	opts.LoopStartNotifier = loopstart.NewObserversList([]loopstart.Observer{})
 
 	if autoscalingOptions.ProvisioningRequestEnabled {
 		podListProcessor.AddProcessor(provreq.NewProvisioningRequestPodsFilter(provreq.NewDefautlEventManager()))
@@ -503,14 +507,19 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 		if err != nil {
 			return nil, err
 		}
-		opts.LoopStartNotifier = loopstart.NewObserversList([]loopstart.Observer{provreqProcesor})
+		opts.LoopStartNotifier.Register(provreqProcesor)
 		injector, err := provreq.NewProvisioningRequestPodsInjector(restConfig)
 		if err != nil {
 			return nil, err
 		}
 		podListProcessor.AddProcessor(injector)
 	}
+	if autoscalingOptions.ForceScaleDownEnabled {
+		podListProcessor.AddProcessor(forcescaledown.NewScaleUpUnschedulablePodsProcessor())
+		opts.LoopStartNotifier.Register(forcescaledown.NewForceScaleDownNodeTaintsObserver(kubeClient, informerFactory))
+	}
 	opts.Processors.PodListProcessor = podListProcessor
+
 	scaleDownCandidatesComparers := []scaledowncandidates.CandidatesComparer{}
 	if autoscalingOptions.ParallelDrain {
 		sdCandidatesSorting := previouscandidates.NewPreviousCandidates()
@@ -520,10 +529,16 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 		}
 		opts.Processors.ScaleDownCandidatesNotifier.Register(sdCandidatesSorting)
 	}
+	if autoscalingOptions.ForceScaleDownEnabled {
+		comparer := forcescaledown.NewScaleDownCandidateNodesCompare()
+		scaleDownCandidatesComparers = append([]scaledowncandidates.CandidatesComparer{comparer}, scaleDownCandidatesComparers...)
+	}
 
 	cp := scaledowncandidates.NewCombinedScaleDownCandidatesProcessor()
 	cp.Register(scaledowncandidates.NewScaleDownCandidatesSortingProcessor(scaleDownCandidatesComparers))
-
+	if autoscalingOptions.ForceScaleDownEnabled {
+		cp.Register(forcescaledown.NewScaleDownCandidateNodesProcessor())
+	}
 	if autoscalingOptions.ScaleDownDelayTypeLocal {
 		sdp := scaledowncandidates.NewScaleDownCandidatesDelayProcessor()
 		cp.Register(sdp)

@@ -35,6 +35,10 @@ type NodeDeleteOptions struct {
 	// set or replication controller should have to allow pod deletion during
 	// scale down.
 	MinReplicaCount int
+	// ForceScaleDownEnabled determines whether nodes with force-scale-down taint
+	// should be handled separately, either always drainable or skip drain, based
+	// on the pod eviction deadline.
+	ForceScaleDownEnabled bool
 }
 
 // NewNodeDeleteOptions returns new node delete options extracted from autoscaling options.
@@ -44,5 +48,6 @@ func NewNodeDeleteOptions(opts config.AutoscalingOptions) NodeDeleteOptions {
 		SkipNodesWithLocalStorage:         opts.SkipNodesWithLocalStorage,
 		SkipNodesWithCustomControllerPods: opts.SkipNodesWithCustomControllerPods,
 		MinReplicaCount:                   opts.MinReplicaCount,
+		ForceScaleDownEnabled:             opts.ForceScaleDownEnabled,
 	}
 }

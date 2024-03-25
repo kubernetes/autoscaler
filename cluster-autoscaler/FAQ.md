@@ -36,6 +36,7 @@ this document:
   * [How can I scale a node group to 0?](#how-can-i-scale-a-node-group-to-0)
   * [How can I prevent Cluster Autoscaler from scaling down a particular node?](#how-can-i-prevent-cluster-autoscaler-from-scaling-down-a-particular-node)
   * [How can I prevent Cluster Autoscaler from scaling down non-empty nodes?](#how-can-i-prevent-cluster-autoscaler-from-scaling-down-non-empty-nodes)
+  # [How can I request Clsuter Autoscaler to scale down a particular node?](#how-can-i-request-clsuter-autoscaler-to-scale-down-a-particular-node)
   * [How can I modify Cluster Autoscaler reaction time?](#how-can-i-modify-cluster-autoscaler-reaction-time)
   * [How can I configure overprovisioning with Cluster Autoscaler?](#how-can-i-configure-overprovisioning-with-cluster-autoscaler)
   * [How can I enable/disable eviction for a specific DaemonSet](#how-can-i-enabledisable-eviction-for-a-specific-daemonset)
@@ -398,6 +399,30 @@ then they may be considered by the CA for a possible scale-up.
 
 Scaling down of unneeded nodes can be configured by setting `--scale-down-unneeded-time`. Increasing value will make nodes stay
 up longer, waiting for pods to be scheduled while decreasing value will make nodes be deleted sooner.
+
+### How can I request Clsuter Autoscaler to scale down a particular node?
+
+CA supports scaling down a particular node with a special taint.
+* The taint `Key` is required. It should be `cluster-autoscaler.kubernetes.io/force-scale-down-with-grace-period-minutes`.
+* The taint `Vaue` is optional. It can be empty or an integer indicating the time to evict a pod before deleting it. If empty, the pods on the node will always be evicted gracefully.
+* The taint `Effect` is required. It can be `NoSchedule`, `PreferNoSchedule` or `NoExecute`.
+* The taint `TimeAdded` is optional. It can be empty or an UTC time indicating the start time of the force scale down. If empty, CA will backfill the added time when CA observes the new taint in the next scan, usually within 10 seconds (configurable by `--scan-interval` flag).
+
+The node scale-down deadline is calculated based on the taint `Value` and the taint `TimeAdded`.
+* Before the deadline, pods on the node will be evicted gracefully. PDBs are respected during the pod eviction.
+* After the deadline, the node will be deleted directly, then the pods on the node will be deleted as well.
+
+The force scale down operation mainly has 3 stages:
+1. Clsuter scale-up: When the `force-scale-down` is added to a node, all pods on the node will be marked as `Pending` virtually. CA will try to schedule the pods on different nodes, and a cluster scale-up might be triggered if needed. The scale-up will also be triggered if the node group is at the min size. In addition, the cluster usually dealys scale-down for 10 mintues after adding new nodes (configurable by `--scale-down-delay-after-add` flag). However, the 10-minute cool down period will be skipped if there is a force-scale-down node.
+2. Node draining: Once CA finds places for all these pods, the node scale-down starts. All pods on the node will be marked as drainable, and node draining starts.
+3. Node deletion: When the node draining is completed or the configured deadline is exceeded, the node deletion starts. CA will call cloud-provide to delete the node.
+
+To avoid node churning caused by the force-scale-down nodes:
+* The scale-up will be triggered only if the pods on the force-scale-down node cannot be rescheduled on existing nodes.
+* The scale-down will be triggered only if the node is still unneeded after rescheduling all pods on the force-scale-down node.
+* If the scale-down candidates have multiple nodes, the force-scale-down node will have higher priority.
+
+This feature is controlled by a new flag `force-scale-down-enabled`. The current default value is `false`, please update it to `true` if you need it.
 
 ### How can I configure overprovisioning with Cluster Autoscaler?
 
@@ -779,6 +804,7 @@ The following startup parameters are supported for cluster autoscaler:
 | `scale-down-non-empty-candidates-count` | Maximum number of non empty nodes considered in one iteration as candidates for scale down with drain<br>Lower value means better CA responsiveness but possible slower scale down latency<br>Higher value can affect CA performance with big clusters (hundreds of nodes)<br>Set to non positive value to turn this heuristic off - CA will not limit the number of nodes it considers." | 30
 | `scale-down-candidates-pool-ratio` | A ratio of nodes that are considered as additional non empty candidates for<br>scale down when some candidates from previous iteration are no longer valid<br>Lower value means better CA responsiveness but possible slower scale down latency<br>Higher value can affect CA performance with big clusters (hundreds of nodes)<br>Set to 1.0 to turn this heuristics off - CA will take all nodes as additional candidates.  | 0.1
 | `scale-down-candidates-pool-min-count` | Minimum number of nodes that are considered as additional non empty candidates<br>for scale down when some candidates from previous iteration are no longer valid.<br>When calculating the pool size for additional candidates we take<br>`max(#nodes * scale-down-candidates-pool-ratio, scale-down-candidates-pool-min-count)` | 50
+| `force-scale-down-enabled` | Should CA handle nodes with `cluster-autoscaler.kubernetes.io/force-scale-down-with-grace-period-minutes` taint. | false
 | `scan-interval` | How often cluster is reevaluated for scale up or down | 10 seconds
 | `max-nodes-total` | Maximum number of nodes in all node groups. Cluster autoscaler will not grow the cluster beyond this number. | 0
 | `cores-total` | Minimum and maximum number of cores in cluster, in the format \<min>:\<max>. Cluster autoscaler will not scale the cluster beyond these numbers. | 320000

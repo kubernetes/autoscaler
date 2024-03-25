@@ -47,15 +47,17 @@ import (
 
 func TestUpdateClusterState(t *testing.T) {
 	testCases := []struct {
-		name                string
-		nodes               []*apiv1.Node
-		pods                []*apiv1.Pod
-		actuationStatus     *fakeActuationStatus
-		eligible            []string
-		wantUnneeded        []string
-		wantUnremovable     []string
-		replicasSets        []*appsv1.ReplicaSet
-		isSimulationTimeout bool
+		name                  string
+		nodes                 []*apiv1.Node
+		pods                  []*apiv1.Pod
+		actuationStatus       *fakeActuationStatus
+		eligible              []string
+		forcedNodes           []string
+		wantUnneeded          []string
+		wantUnremovable       []string
+		replicasSets          []*appsv1.ReplicaSet
+		isSimulationTimeout   bool
+		forceScaleDownEnabled bool
 	}{
 		{
 			name: "empty nodes, all eligible",
@@ -472,6 +474,38 @@ func TestUpdateClusterState(t *testing.T) {
 			wantUnneeded:        []string{"n1"},
 			isSimulationTimeout: true,
 		},
+		{
+			name: "empty node should scale down when force-scale-down is enabled",
+			nodes: []*apiv1.Node{
+				BuildTestNode("n1", 1000, 10),
+				BuildTestNode("n2", 1000, 10),
+			},
+			pods: []*apiv1.Pod{
+				SetRSPodSpec(BuildScheduledTestPod("p1", 600, 1, "n2"), "rs"),
+			},
+			forcedNodes:           []string{},
+			forceScaleDownEnabled: true,
+			actuationStatus:       &fakeActuationStatus{},
+			eligible:              []string{"n1", "n2"},
+			wantUnneeded:          []string{"n1"},
+			wantUnremovable:       []string{"n2"},
+		},
+		{
+			name: "forced node should scale down, empty node should not",
+			nodes: []*apiv1.Node{
+				BuildTestNode("n1", 1000, 10),
+				BuildTestNode("n2", 1000, 10),
+			},
+			pods: []*apiv1.Pod{
+				SetRSPodSpec(BuildScheduledTestPod("p1", 600, 1, "n2"), "rs"),
+			},
+			forcedNodes:           []string{"n2"},
+			forceScaleDownEnabled: true,
+			actuationStatus:       &fakeActuationStatus{},
+			eligible:              []string{"n1", "n2"},
+			wantUnneeded:          []string{"n2"},
+			wantUnremovable:       []string{"n1"},
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc
@@ -482,7 +516,18 @@ func TestUpdateClusterState(t *testing.T) {
 			}
 			rsLister, err := kube_util.NewTestReplicaSetLister(tc.replicasSets)
 			assert.NoError(t, err)
-			registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, rsLister, nil)
+			forcedNodeNames := map[string]bool{}
+			for _, name := range tc.forcedNodes {
+				forcedNodeNames[name] = true
+			}
+			for index := range tc.nodes {
+				if forcedNodeNames[tc.nodes[index].Name] {
+					tc.nodes[index].Spec.Taints = append(tc.nodes[index].Spec.Taints, apiv1.Taint{Key: taints.ForceScaleDownTaint, Effect: apiv1.TaintEffectNoSchedule})
+				}
+			}
+			nodeLister := kube_util.NewTestNodeLister(tc.nodes)
+			podLister := kube_util.NewTestPodLister(tc.pods)
+			registry := kube_util.NewListerRegistry(nodeLister, nil, podLister, nil, nil, nil, nil, rsLister, nil)
 			provider := testprovider.NewTestCloudProvider(nil, nil)
 			provider.AddNodeGroup("ng1", 0, 0, 0)
 			for _, node := range tc.nodes {
@@ -494,6 +539,7 @@ func TestUpdateClusterState(t *testing.T) {
 				},
 				ScaleDownSimulationTimeout: 1 * time.Second,
 				MaxScaleDownParallelism:    10,
+				ForceScaleDownEnabled:      tc.forceScaleDownEnabled,
 			}, &fake.Clientset{}, registry, provider, nil, nil)
 			assert.NoError(t, err)
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, tc.nodes, tc.pods)

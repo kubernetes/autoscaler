@@ -180,6 +180,32 @@ func (m *Manager) ApplyLimits(ctx *context.AutoscalingContext, newCount int, res
 	return newCount, nil
 }
 
+// UpdateLimits updates the resources of required number of nodes from resources left and return the updated resources left and error if any.
+func UpdateLimits(left Limits, delta Delta, count int) (Limits, error) {
+	newLeft := Limits{}
+	for resourceType, resourceLeft := range left {
+		newLeft[resourceType] = resourceLeft
+	}
+	for resourceType, resourceDelta := range delta {
+		if resourceDelta == 0 {
+			continue
+		}
+		resourceLeft, found := left[resourceType]
+		if !found {
+			continue
+		}
+		if resourceLeft == LimitUnknown {
+			return left, fmt.Errorf("limit unknown for resource %s", resourceType)
+		}
+		resourceRequired := resourceDelta * int64(count)
+		if resourceLeft < resourceRequired {
+			return left, fmt.Errorf("cannot create %d nodes: %s resource left (%d) is less than resource required (%d)", count, resourceType, resourceLeft, resourceRequired)
+		}
+		newLeft[resourceType] -= resourceRequired
+	}
+	return newLeft, nil
+}
+
 // CheckDeltaWithinLimits compares the resource limit and resource delta, and returns the limit check result.
 func CheckDeltaWithinLimits(left Limits, delta Delta) LimitsCheckResult {
 	exceededResources := sets.NewString()

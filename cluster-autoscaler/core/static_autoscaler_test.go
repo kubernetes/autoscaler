@@ -324,6 +324,8 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 	SetNodeReadyState(n2, true, time.Now())
 	n3 := BuildTestNode("n3", 1000, 1000)
 	n4 := BuildTestNode("n4", 1000, 1000)
+	n5 := BuildTestNode("n5", 1000, 1000)
+	n5.Spec.Taints = []apiv1.Taint{{Key: taints.ForceScaleDownTaint, Effect: apiv1.TaintEffectNoSchedule}}
 
 	p1 := BuildTestPod("p1", 600, 100)
 	p1.Spec.NodeName = "n1"
@@ -342,7 +344,7 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 			return ret
 		},
 		nil, nil,
-		nil, map[string]*schedulerframework.NodeInfo{"ng1": tni, "ng2": tni, "ng3": tni})
+		nil, map[string]*schedulerframework.NodeInfo{"ng1": tni, "ng2": tni, "ng3": tni, "ng4": tni, "ng5": tni})
 	provider.AddNodeGroup("ng1", 1, 10, 1)
 	provider.AddNode("ng1", n1)
 	ng1 := reflect.ValueOf(provider.GetNodeGroup("ng1")).Interface().(*testprovider.TestNodeGroup)
@@ -359,6 +361,7 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 		},
 		EstimatorName:           estimator.BinpackingEstimatorName,
 		EnforceNodeGroupMinSize: true,
+		ForceScaleDownEnabled:   true,
 		ScaleDownEnabled:        true,
 		MaxNodesTotal:           1,
 		MaxCoresTotal:           10,
@@ -487,10 +490,25 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 	allPodListerMock.On("List").Return([]*apiv1.Pod{}, nil).Twice()
 	daemonSetListerMock.On("List", labels.Everything()).Return([]*appsv1.DaemonSet{}, nil)
 	podDisruptionBudgetListerMock.On("List").Return([]*policyv1.PodDisruptionBudget{}, nil)
-	onScaleUpMock.On("ScaleUp", "ng3", 2).Return(nil).Once() // 2 new nodes are supposed to be scaled up.
+	onScaleUpMock.On("ScaleUp", "ng4", 2).Return(nil).Once() // 2 new nodes are supposed to be scaled up
 
-	provider.AddNodeGroup("ng3", 3, 10, 1)
-	provider.AddNode("ng3", n4)
+	provider.AddNodeGroup("ng4", 3, 10, 1)
+	provider.AddNode("ng4", n4)
+
+	err = autoscaler.RunOnce(time.Now().Add(5 * time.Hour))
+	assert.NoError(t, err)
+	mock.AssertExpectationsForObjects(t, onScaleUpMock)
+
+	// Scale up to node group min size.
+	readyNodeLister.SetNodes([]*apiv1.Node{n5})
+	allNodeLister.SetNodes([]*apiv1.Node{n5})
+	allPodListerMock.On("List").Return([]*apiv1.Pod{}, nil).Twice()
+	daemonSetListerMock.On("List", labels.Everything()).Return([]*appsv1.DaemonSet{}, nil)
+	podDisruptionBudgetListerMock.On("List").Return([]*policyv1.PodDisruptionBudget{}, nil)
+	onScaleUpMock.On("ScaleUp", "ng5", 1).Return(nil).Once() // 1 new node is supposed to be scaled up
+
+	provider.AddNodeGroup("ng5", 1, 10, 1)
+	provider.AddNode("ng5", n5)
 
 	err = autoscaler.RunOnce(time.Now().Add(5 * time.Hour))
 	assert.NoError(t, err)

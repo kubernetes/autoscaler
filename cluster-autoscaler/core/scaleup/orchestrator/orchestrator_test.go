@@ -1531,54 +1531,342 @@ func TestScaleUpBalanceAutoprovisionedNodeGroups(t *testing.T) {
 	assert.True(t, expandedGroupMap["autoprovisioned-T1-2-1"])
 }
 
-func TestScaleUpToMeetNodeGroupMinSize(t *testing.T) {
-	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
-	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
-	provider := testprovider.NewTestCloudProvider(func(nodeGroup string, increase int) error {
-		assert.Equal(t, "ng1", nodeGroup)
-		assert.Equal(t, 1, increase)
-		return nil
-	}, nil)
-	resourceLimiter := cloudprovider.NewResourceLimiter(
-		map[string]int64{cloudprovider.ResourceNameCores: 0, cloudprovider.ResourceNameMemory: 0},
-		map[string]int64{cloudprovider.ResourceNameCores: 48, cloudprovider.ResourceNameMemory: 1000},
-	)
-	provider.SetResourceLimiter(resourceLimiter)
-
-	// Test cases:
-	// ng1: current size 1, min size 3, cores limit 48, memory limit 1000 => scale up with 1 new node.
-	// ng2: current size 1, min size 1, cores limit 48, memory limit 1000 => no scale up.
-	n1 := BuildTestNode("n1", 16000, 32)
-	SetNodeReadyState(n1, true, time.Now())
-	n2 := BuildTestNode("n2", 16000, 32)
-	SetNodeReadyState(n2, true, time.Now())
-	provider.AddNodeGroup("ng1", 3, 10, 1)
-	provider.AddNode("ng1", n1)
-	provider.AddNodeGroup("ng2", 1, 10, 1)
-	provider.AddNode("ng2", n2)
-
-	options := config.AutoscalingOptions{
-		EstimatorName:  estimator.BinpackingEstimatorName,
-		MaxCoresTotal:  config.DefaultMaxClusterCores,
-		MaxMemoryTotal: config.DefaultMaxClusterMemory,
+func TestScaleUpToNodeGroupMinSize(t *testing.T) {
+	type nodeGroup struct {
+		id             string
+		min, max, size int
 	}
-	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil)
-	assert.NoError(t, err)
+	testCases := []struct {
+		name                    string
+		nodeGroups              []nodeGroup
+		nodes                   map[string][]*apiv1.Node
+		forcedNodes             []string
+		cpuLimit                int64
+		memoryLimit             int64
+		maxNodesTotal           int
+		enforceNodeGroupMinSize bool
+		forceScaleDownEnabled   bool
+		wantResult              status.ScaleUpResult
+		wantScaleUpGroupSizes   map[string]int
+	}{
+		{
+			name: "no scale up when min size is not enforced",
+			nodeGroups: []nodeGroup{
+				{"ng1", 2, 10, 1},
+				{"ng2", 1, 10, 1},
+			},
+			nodes: map[string][]*apiv1.Node{
+				"ng1": {
+					BuildTestNode("n1", 16000, 32),
+				},
+				"ng2": {
+					BuildTestNode("n2", 16000, 32),
+				},
+			},
+			cpuLimit:                1000,
+			memoryLimit:             1000,
+			enforceNodeGroupMinSize: false,
+			forceScaleDownEnabled:   false,
+			wantResult:              status.ScaleUpNotNeeded,
+			wantScaleUpGroupSizes:   map[string]int{},
+		},
+		{
+			name: "no scale up when min size is not enforced and force scale down is enabled",
+			nodeGroups: []nodeGroup{
+				{"ng1", 2, 10, 1},
+				{"ng2", 1, 10, 1},
+			},
+			nodes: map[string][]*apiv1.Node{
+				"ng1": {
+					BuildTestNode("n1", 16000, 32),
+				},
+				"ng2": {
+					BuildTestNode("n2", 16000, 32),
+				},
+			},
+			cpuLimit:                1000,
+			memoryLimit:             1000,
+			maxNodesTotal:           100,
+			enforceNodeGroupMinSize: false,
+			forceScaleDownEnabled:   true,
+			wantResult:              status.ScaleUpNotNeeded,
+			wantScaleUpGroupSizes:   map[string]int{},
+		},
+		{
+			name: "scale up when min size is enforced",
+			nodeGroups: []nodeGroup{
+				{"ng1", 2, 10, 1},
+				{"ng2", 1, 10, 1},
+			},
+			nodes: map[string][]*apiv1.Node{
+				"ng1": {
+					BuildTestNode("n1", 16000, 32),
+				},
+				"ng2": {
+					BuildTestNode("n2", 16000, 32),
+				},
+			},
+			cpuLimit:                1000,
+			memoryLimit:             1000,
+			maxNodesTotal:           100,
+			enforceNodeGroupMinSize: true,
+			forceScaleDownEnabled:   false,
+			wantResult:              status.ScaleUpSuccessful,
+			wantScaleUpGroupSizes: map[string]int{
+				"ng1": 2,
+			},
+		},
+		{
+			name: "scale up when force scale down is enabled",
+			nodeGroups: []nodeGroup{
+				{"ng1", 1, 10, 1},
+				{"ng2", 1, 10, 1},
+			},
+			nodes: map[string][]*apiv1.Node{
+				"ng1": {
+					BuildTestNode("n1", 16000, 32),
+				},
+				"ng2": {
+					BuildTestNode("n2", 16000, 32),
+				},
+			},
+			forcedNodes:             []string{"n1"},
+			cpuLimit:                1000,
+			memoryLimit:             1000,
+			maxNodesTotal:           100,
+			enforceNodeGroupMinSize: true,
+			forceScaleDownEnabled:   true,
+			wantResult:              status.ScaleUpSuccessful,
+			wantScaleUpGroupSizes: map[string]int{
+				"ng1": 2,
+			},
+		},
+		{
+			name: "scale up when min size is enforced and force scale down is enabled",
+			nodeGroups: []nodeGroup{
+				{"ng1", 1, 10, 1},
+				{"ng2", 2, 10, 1},
+			},
+			nodes: map[string][]*apiv1.Node{
+				"ng1": {
+					BuildTestNode("n1", 16000, 32),
+				},
+				"ng2": {
+					BuildTestNode("n2", 16000, 32),
+				},
+			},
+			forcedNodes:             []string{"n1"},
+			cpuLimit:                1000,
+			memoryLimit:             1000,
+			maxNodesTotal:           100,
+			enforceNodeGroupMinSize: true,
+			forceScaleDownEnabled:   true,
+			wantResult:              status.ScaleUpSuccessful,
+			wantScaleUpGroupSizes: map[string]int{
+				"ng1": 2,
+				"ng2": 2,
+			},
+		},
+		{
+			name: "scale up partially with cpu resource limit cap",
+			nodeGroups: []nodeGroup{
+				{"ng1", 5, 10, 1},
+				{"ng2", 1, 10, 1},
+			},
+			nodes: map[string][]*apiv1.Node{
+				"ng1": {
+					BuildTestNode("n1", 16000, 32),
+				},
+				"ng2": {
+					BuildTestNode("n2", 16000, 32),
+				},
+			},
+			cpuLimit:                64,
+			memoryLimit:             10000,
+			maxNodesTotal:           100,
+			enforceNodeGroupMinSize: true,
+			forceScaleDownEnabled:   true,
+			wantResult:              status.ScaleUpSuccessful,
+			wantScaleUpGroupSizes: map[string]int{
+				"ng1": 3,
+			},
+		},
+		{
+			name: "scale up partially with cluster node count cap",
+			nodeGroups: []nodeGroup{
+				{"ng1", 5, 10, 1},
+				{"ng2", 1, 10, 1},
+			},
+			nodes: map[string][]*apiv1.Node{
+				"ng1": {
+					BuildTestNode("n1", 16000, 32),
+				},
+				"ng2": {
+					BuildTestNode("n2", 16000, 32),
+				},
+			},
+			cpuLimit:                1000,
+			memoryLimit:             1000,
+			maxNodesTotal:           5,
+			enforceNodeGroupMinSize: true,
+			forceScaleDownEnabled:   true,
+			wantResult:              status.ScaleUpSuccessful,
+			wantScaleUpGroupSizes: map[string]int{
+				"ng1": 4,
+			},
+		},
+		{
+			name: "scale up partially with max group size cap",
+			nodeGroups: []nodeGroup{
+				{"ng1", 1, 3, 2},
+				{"ng2", 1, 10, 1},
+			},
+			nodes: map[string][]*apiv1.Node{
+				"ng1": {
+					BuildTestNode("n1", 16000, 32),
+					BuildTestNode("n2", 16000, 32),
+				},
+				"ng2": {
+					BuildTestNode("n3", 16000, 32),
+				},
+			},
+			forcedNodes:             []string{"n1", "n2"},
+			cpuLimit:                1000,
+			memoryLimit:             1000,
+			maxNodesTotal:           100,
+			enforceNodeGroupMinSize: true,
+			forceScaleDownEnabled:   true,
+			wantResult:              status.ScaleUpSuccessful,
+			wantScaleUpGroupSizes: map[string]int{
+				"ng1": 3,
+			},
+		},
+		{
+			name: "scale up failed due to lack of cpu resource",
+			nodeGroups: []nodeGroup{
+				{"ng1", 2, 10, 1},
+				{"ng2", 1, 10, 1},
+			},
+			nodes: map[string][]*apiv1.Node{
+				"ng1": {
+					BuildTestNode("n1", 16000, 32),
+				},
+				"ng2": {
+					BuildTestNode("n2", 16000, 32),
+				},
+			},
+			cpuLimit:                32,
+			memoryLimit:             1000,
+			maxNodesTotal:           100,
+			enforceNodeGroupMinSize: true,
+			forceScaleDownEnabled:   true,
+			wantResult:              status.ScaleUpError,
+		},
+		{
+			name: "scale up multiple node groups at the same time",
+			nodeGroups: []nodeGroup{
+				{"ng1", 3, 10, 1},
+				{"ng2", 3, 10, 1},
+			},
+			nodes: map[string][]*apiv1.Node{
+				"ng1": {
+					BuildTestNode("n1", 16000, 32),
+				},
+				"ng2": {
+					BuildTestNode("n2", 16000, 32),
+				},
+			},
+			forcedNodes:             []string{"n1"},
+			cpuLimit:                1000,
+			memoryLimit:             1000,
+			maxNodesTotal:           100,
+			enforceNodeGroupMinSize: true,
+			forceScaleDownEnabled:   true,
+			wantResult:              status.ScaleUpSuccessful,
+			wantScaleUpGroupSizes: map[string]int{
+				"ng1": 4,
+				"ng2": 3,
+			},
+		},
+		{
+			name: "scale up not needed when node groups have right sizes",
+			nodeGroups: []nodeGroup{
+				{"ng1", 1, 1, 1},
+				{"ng2", 1, 1, 1},
+			},
+			nodes: map[string][]*apiv1.Node{
+				"ng1": {
+					BuildTestNode("n1", 16000, 32),
+				},
+				"ng2": {
+					BuildTestNode("n2", 16000, 32),
+				},
+			},
+			cpuLimit:                32,
+			memoryLimit:             64,
+			maxNodesTotal:           2,
+			enforceNodeGroupMinSize: true,
+			forceScaleDownEnabled:   true,
+			wantResult:              status.ScaleUpNotNeeded,
+		},
+	}
 
-	nodes := []*apiv1.Node{n1, n2}
-	nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&context, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, time.Now())
-	processors := NewTestProcessors(&context)
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}))
-	clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
+			listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
+			provider := testprovider.NewTestCloudProvider(func(nodeGroup string, increase int) error { return nil }, nil)
+			resourceLimiter := cloudprovider.NewResourceLimiter(
+				map[string]int64{cloudprovider.ResourceNameCores: 0, cloudprovider.ResourceNameMemory: 0},
+				map[string]int64{cloudprovider.ResourceNameCores: tc.cpuLimit, cloudprovider.ResourceNameMemory: tc.memoryLimit},
+			)
+			provider.SetResourceLimiter(resourceLimiter)
 
-	suOrchestrator := New()
-	suOrchestrator.Initialize(&context, processors, clusterState, newEstimatorBuilder(), taints.TaintConfig{})
-	scaleUpStatus, err := suOrchestrator.ScaleUpToNodeGroupMinSize(nodes, nodeInfos)
-	assert.NoError(t, err)
-	assert.True(t, scaleUpStatus.WasSuccessful())
-	assert.Equal(t, 1, len(scaleUpStatus.ScaleUpInfos))
-	assert.Equal(t, 2, scaleUpStatus.ScaleUpInfos[0].NewSize)
-	assert.Equal(t, "ng1", scaleUpStatus.ScaleUpInfos[0].Group.Id())
+			options := config.AutoscalingOptions{
+				EstimatorName:           estimator.BinpackingEstimatorName,
+				MaxCoresTotal:           config.DefaultMaxClusterCores,
+				MaxMemoryTotal:          config.DefaultMaxClusterMemory,
+				EnforceNodeGroupMinSize: tc.enforceNodeGroupMinSize,
+				ForceScaleDownEnabled:   tc.forceScaleDownEnabled,
+				MaxNodesTotal:           tc.maxNodesTotal,
+			}
+			context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil)
+			assert.NoError(t, err)
+
+			allNodes := []*apiv1.Node{}
+			forcedNodes := map[string]bool{}
+			for _, node := range tc.forcedNodes {
+				forcedNodes[node] = true
+			}
+			for _, group := range tc.nodeGroups {
+				provider.AddNodeGroup(group.id, group.min, group.max, group.size)
+			}
+			for group, nodes := range tc.nodes {
+				for _, node := range nodes {
+					if forcedNodes[node.Name] {
+						node.Spec.Taints = append(node.Spec.Taints, apiv1.Taint{Key: taints.ForceScaleDownTaint, Effect: apiv1.TaintEffectNoSchedule})
+					}
+					SetNodeReadyState(node, true, time.Now())
+					allNodes = append(allNodes, node)
+					provider.AddNode(group, node)
+				}
+			}
+
+			nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&context, allNodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, time.Now())
+			processors := NewTestProcessors(&context)
+			clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}))
+			clusterState.UpdateNodes(allNodes, nodeInfos, time.Now())
+
+			suOrchestrator := New()
+			suOrchestrator.Initialize(&context, processors, clusterState, newEstimatorBuilder(), taints.TaintConfig{})
+			result, _ := suOrchestrator.ScaleUpToNodeGroupMinSize(allNodes, nodeInfos)
+			assert.Equal(t, tc.wantResult, result.Result)
+			assert.Equal(t, len(tc.wantScaleUpGroupSizes), len(result.ScaleUpInfos))
+			for _, info := range result.ScaleUpInfos {
+				assert.Equal(t, tc.wantScaleUpGroupSizes[info.Group.Id()], info.NewSize)
+			}
+		})
+	}
 }
 
 func TestCheckDeltaWithinLimits(t *testing.T) {

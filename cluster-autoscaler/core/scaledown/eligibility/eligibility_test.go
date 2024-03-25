@@ -41,6 +41,7 @@ type testCase struct {
 	pods                        []*apiv1.Pod
 	want                        []string
 	scaleDownUnready            bool
+	forceScaleDownEnabled       bool
 	ignoreDaemonSetsUtilization bool
 }
 
@@ -60,6 +61,11 @@ func getTestCases(ignoreDaemonSetsUtilization bool, suffix string, now time.Time
 	unreadyNode := BuildTestNode("unready", 1000, 10)
 	SetNodeReadyState(unreadyNode, false, time.Time{})
 
+	forceScaleDownNode := BuildTestNode("forceScaleDown", 1000, 10)
+	SetNodeReadyState(regularNode, true, time.Time{})
+	forceScaleDownTaint := apiv1.Taint{Key: taints.ForceScaleDownTaint, Effect: apiv1.TaintEffectNoSchedule}
+	forceScaleDownNode.Spec.Taints = append(forceScaleDownNode.Spec.Taints, forceScaleDownTaint)
+
 	bigPod := BuildTestPod("bigPod", 600, 0)
 	bigPod.Spec.NodeName = "regular"
 
@@ -68,6 +74,9 @@ func getTestCases(ignoreDaemonSetsUtilization bool, suffix string, now time.Time
 
 	dsPod := BuildTestPod("dsPod", 500, 0, WithDSController())
 	dsPod.Spec.NodeName = "regular"
+
+	bigPodOnForceScaleDownNode := BuildTestPod("bigPodOnForceScaleDownNode", 600, 0)
+	bigPodOnForceScaleDownNode.Spec.NodeName = "forceScaleDown"
 
 	testCases := []testCase{
 		{
@@ -114,6 +123,21 @@ func getTestCases(ignoreDaemonSetsUtilization bool, suffix string, now time.Time
 			want:             []string{},
 			scaleDownUnready: false,
 		},
+		{
+			desc:                  "highly utilized force-scale-down node stays",
+			nodes:                 []*apiv1.Node{forceScaleDownNode},
+			pods:                  []*apiv1.Pod{bigPodOnForceScaleDownNode},
+			want:                  []string{"forceScaleDown"},
+			forceScaleDownEnabled: true,
+			scaleDownUnready:      true,
+		},
+		{
+			desc:                  "underutilized force-scale-down node stays",
+			nodes:                 []*apiv1.Node{forceScaleDownNode},
+			want:                  []string{"forceScaleDown"},
+			forceScaleDownEnabled: true,
+			scaleDownUnready:      true,
+		},
 	}
 
 	finalTestCases := []testCase{}
@@ -157,6 +181,7 @@ func TestFilterOutUnremovable(t *testing.T) {
 			options := config.AutoscalingOptions{
 				UnremovableNodeRecheckTimeout: 5 * time.Minute,
 				ScaleDownUnreadyEnabled:       tc.scaleDownUnready,
+				ForceScaleDownEnabled:         tc.forceScaleDownEnabled,
 				NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
 					ScaleDownUtilizationThreshold:    config.DefaultScaleDownUtilizationThreshold,
 					ScaleDownGpuUtilizationThreshold: config.DefaultScaleDownGpuUtilizationThreshold,

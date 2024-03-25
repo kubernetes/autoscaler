@@ -696,9 +696,9 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 		}
 	}
 
-	if a.EnforceNodeGroupMinSize {
+	if a.EnforceNodeGroupMinSize || a.ForceScaleDownEnabled {
 		scaleUpStart := preScaleUp()
-		scaleUpStatus, typedErr = a.scaleUpOrchestrator.ScaleUpToNodeGroupMinSize(readyNodes, nodeInfosForGroups)
+		scaleUpStatus, typedErr = a.scaleUpOrchestrator.ScaleUpToNodeGroupMinSize(allNodes, nodeInfosForGroups)
 		if exit, err := postScaleUp(scaleUpStart); exit {
 			return err
 		}
@@ -709,7 +709,14 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 
 func (a *StaticAutoscaler) isScaleDownInCooldown(currentTime time.Time, scaleDownCandidates []*apiv1.Node) bool {
 	scaleDownInCooldown := a.processorCallbacks.disableScaleDownForLoop || len(scaleDownCandidates) == 0
-
+	if a.ForceScaleDownEnabled && !scaleDownInCooldown {
+		for _, node := range scaleDownCandidates {
+			if taints.HasForceScaleDownTaint(node) {
+				klog.V(2).Infof("Scale down is not in cooldown because node %s has force-scale-down taint: %+v", node.Name, node.Spec.Taints)
+				return false
+			}
+		}
+	}
 	if a.ScaleDownDelayTypeLocal {
 		return scaleDownInCooldown
 	}

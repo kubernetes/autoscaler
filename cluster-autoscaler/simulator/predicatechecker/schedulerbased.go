@@ -130,6 +130,9 @@ func (p *SchedulerBasedPredicateChecker) FitsAnyNodeMatching(clusterSnapshot clu
 			p.lastIndex = (p.lastIndex + i + 1) % len(nodeInfosList)
 			return nodeInfo.Node().Name, nil
 		}
+		if filterStatus != nil {
+			klog.V(6).Infof("Pod %s/%s cannot be scheduled on node %s: %+v", pod.Namespace, pod.Name, nodeInfo.Node().Name, *filterStatus)
+		}
 	}
 	return "", fmt.Errorf("cannot put pod %s on any node", pod.Name)
 }
