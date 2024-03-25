@@ -26,7 +26,6 @@ import (
 	admissionregistration "k8s.io/api/admissionregistration/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
 	"k8s.io/klog/v2"
 )
 
@@ -34,14 +33,10 @@ const (
 	webhookConfigName = "vpa-webhook-config"
 )
 
-func configTLS(serverCert, serverKey []byte, minTlsVersion, ciphers string) *tls.Config {
+func configTLS(kpr *KeypairReloader, minTlsVersion, ciphers string) *tls.Config {
 	var tlsVersion uint16
 	var ciphersuites []uint16
 	reverseCipherMap := make(map[string]uint16)
-	sCert, err := tls.X509KeyPair(serverCert, serverKey)
-	if err != nil {
-		klog.Fatal(err)
-	}
 
 	for _, c := range tls.CipherSuites() {
 		reverseCipherMap[c.Name] = c.ID
@@ -69,22 +64,10 @@ func configTLS(serverCert, serverKey []byte, minTlsVersion, ciphers string) *tls
 
 	return &tls.Config{
 		MinVersion:   tlsVersion,
-		Certificates: []tls.Certificate{sCert},
 		CipherSuites: ciphersuites,
+		// this will check if there are new certs before every tls handshake
+		GetCertificate: kpr.GetCertificate,
 	}
-}
-
-// get a clientset with in-cluster config.
-func getClient() *kubernetes.Clientset {
-	config, err := rest.InClusterConfig()
-	if err != nil {
-		klog.Fatal(err)
-	}
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		klog.Fatal(err)
-	}
-	return clientset
 }
 
 // register this webhook admission controller with the kube-apiserver

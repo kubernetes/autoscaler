@@ -17,7 +17,6 @@ limitations under the License.
 package main
 
 import (
-	"crypto/tls"
 	"flag"
 	"fmt"
 	"net/http"
@@ -91,7 +90,7 @@ func main() {
 	// load certs
 	kpr, err := NewKeypairReloader(*certsConfiguration)
 	if err != nil {
-		klog.Fatal(err)
+		klog.Fatalf("Failed to load certificate on startup: %v", err)
 	}
 
 	vpaClient := vpa_clientset.NewForConfigOrDie(config)
@@ -137,11 +136,9 @@ func main() {
 		healthCheck.UpdateLastActivity()
 	})
 	server := &http.Server{
-		Addr: fmt.Sprintf(":%d", *port),
+		Addr:      fmt.Sprintf(":%d", *port),
+		TLSConfig: configTLS(kpr, *minTlsVersion, *ciphers),
 	}
-	// this will check if there are new certs before every tls handshake
-	t := &tls.Config{GetCertificate: kpr.GetCertificateFunc()}
-	server.TLSConfig = t
 
 	url := fmt.Sprintf("%v:%v", *webhookAddress, *webhookPort)
 	go func() {

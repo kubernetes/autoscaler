@@ -18,6 +18,7 @@ package main
 
 import (
 	"os"
+	"path"
 
 	"crypto/tls"
 	"sync"
@@ -34,11 +35,6 @@ type KeypairReloader struct {
 	caCert   []byte
 	certPath string
 	keyPath  string
-	caPath   string
-}
-
-type certsContainer struct {
-	caCert, serverKey, serverCert []byte
 }
 
 type certsConfig struct {
@@ -81,7 +77,10 @@ func NewKeypairReloader(config certsConfig) (*KeypairReloader, error) {
 		}
 	}()
 
-	if err := watcher.Add("/etc/tls-certs"); err != nil {
+	if err := watcher.Add(path.Dir(*config.tlsCertFile)); err != nil {
+		return nil, err
+	}
+	if err := watcher.Add(path.Dir(*config.tlsPrivateKey)); err != nil {
 		return nil, err
 	}
 
@@ -91,16 +90,16 @@ func NewKeypairReloader(config certsConfig) (*KeypairReloader, error) {
 			// watch for events
 			case event := <-watcher.Events:
 				// fsnotify.create events will tell us if there are new certs
-				if event.Op&fsnotify.Create == fsnotify.Create {
-					klog.Info("Reloading certs")
+				if event.Op.Has(fsnotify.Create) || event.Op.Has(fsnotify.Write) {
+					klog.V(2).Info("New certificate found, reloading")
 					if err := result.reload(); err != nil {
-						klog.Infof("Could not load new certs: %v", err)
+						klog.Warningf("Could not load new certs: %v", err)
 					}
 				}
 
 				// watch for errors
 			case err := <-watcher.Errors:
-				klog.Infof("error: %v", err)
+				klog.Warningf("Error watching certificate: %v", err)
 			}
 		}
 	}()
@@ -120,11 +119,9 @@ func (kpr *KeypairReloader) reload() error {
 	return nil
 }
 
-// GetCertificateFunc will return function which will be used as tls.Config.GetCertificate
-func (kpr *KeypairReloader) GetCertificateFunc() func(*tls.ClientHelloInfo) (*tls.Certificate, error) {
-	return func(clientHello *tls.ClientHelloInfo) (*tls.Certificate, error) {
-		kpr.certMu.RLock()
-		defer kpr.certMu.RUnlock()
-		return kpr.cert, nil
-	}
+// GetCertificate is the function which will be used as tls.Config.GetCertificate
+func (kpr *KeypairReloader) GetCertificate(_ *tls.ClientHelloInfo) (*tls.Certificate, error) {
+	kpr.certMu.RLock()
+	defer kpr.certMu.RUnlock()
+	return kpr.cert, nil
 }
