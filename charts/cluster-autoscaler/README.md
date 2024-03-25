@@ -75,6 +75,7 @@ To create a valid configuration, follow instructions for your cloud provider:
 - [Cluster API](#cluster-api)
 - [Exoscale](#exoscale)
 - [Hetzner Cloud](#hetzner-cloud)
+- [Civo](#civo)
 
 ### Templating the autoDiscovery.clusterName
 
@@ -282,6 +283,23 @@ Each autoscaling group requires an additional `instanceType` and `region` key to
 
 Read [cluster-autoscaler/cloudprovider/hetzner/README.md](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/hetzner/README.md) for further information on the setup without helm.
 
+### Civo
+
+The following parameters are required:
+
+- `cloudProvider=civo`
+- `autoscalingGroups=...`
+
+When installing the helm chart to the namespace `kube-system`, you can set `secretKeyRefNameOverride` to `civo-api-access`.
+Otherwise specify the following parameters:
+
+- `civoApiUrl=https://api.civo.com`
+- `civoApiKey=...`
+- `civoClusterID=...`
+- `civoRegion=...`
+
+Read [cluster-autoscaler/cloudprovider/civo/README.md](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/civo/README.md) for further information on the setup without helm.
+
 ## Uninstalling the Chart
 
 To uninstall `my-release`:
@@ -421,8 +439,12 @@ vpa:
 | azureUseManagedIdentityExtension | bool | `false` | Whether to use Azure's managed identity extension for credentials. If using MSI, ensure subscription ID, resource group, and azure AKS cluster name are set. You can only use one authentication method at a time, either azureUseWorkloadIdentityExtension or azureUseManagedIdentityExtension should be set. |
 | azureUseWorkloadIdentityExtension | bool | `false` | Whether to use Azure's workload identity extension for credentials. See the project here: https://github.com/Azure/azure-workload-identity for more details. You can only use one authentication method at a time, either azureUseWorkloadIdentityExtension or azureUseManagedIdentityExtension should be set. |
 | azureVMType | string | `"vmss"` | Azure VM type. |
+| civoApiKey | string | `""` | API key for the Civo API. Required if `cloudProvider=civo` |
+| civoApiUrl | string | `"https://api.civo.com"` | URL for the Civo API. Required if `cloudProvider=civo` |
+| civoClusterID | string | `""` | Cluster ID for the Civo cluster. Required if `cloudProvider=civo` |
+| civoRegion | string | `""` | Region for the Civo cluster. Required if `cloudProvider=civo` |
 | cloudConfigPath | string | `""` | Configuration file for cloud provider. |
-| cloudProvider | string | `"aws"` | The cloud provider where the autoscaler runs. Currently only `gce`, `aws`, `azure`, `magnum` and `clusterapi` are supported. `aws` supported for AWS. `gce` for GCE. `azure` for Azure AKS. `magnum` for OpenStack Magnum, `clusterapi` for Cluster API. |
+| cloudProvider | string | `"aws"` | The cloud provider where the autoscaler runs. Currently only `gce`, `aws`, `azure`, `magnum`, `clusterapi` and `civo` are supported. `aws` supported for AWS. `gce` for GCE. `azure` for Azure AKS. `magnum` for OpenStack Magnum, `clusterapi` for Cluster API. `civo` for Civo Cloud. |
 | clusterAPICloudConfigPath | string | `"/etc/kubernetes/mgmt-kubeconfig"` | Path to kubeconfig for connecting to Cluster API Management Cluster, only used if `clusterAPIMode=kubeconfig-kubeconfig or incluster-kubeconfig` |
 | clusterAPIConfigMapsNamespace | string | `""` | Namespace on the workload cluster to store Leader election and status configmaps |
 | clusterAPIKubeconfigSecret | string | `""` | Secret containing kubeconfig for connecting to Cluster API managed workloadcluster Required if `cloudProvider=clusterapi` and `clusterAPIMode=kubeconfig-kubeconfig,kubeconfig-incluster or incluster-kubeconfig` |
@@ -476,7 +498,7 @@ vpa:
 | replicaCount | int | `1` | Desired number of pods |
 | resources | object | `{}` | Pod resource requests and limits. |
 | revisionHistoryLimit | int | `10` | The number of revisions to keep. |
-| secretKeyRefNameOverride | string | `""` | Overrides the name of the Secret to use when loading the secretKeyRef for AWS and Azure env variables |
+| secretKeyRefNameOverride | string | `""` | Overrides the name of the Secret to use when loading the secretKeyRef for AWS, Azure and Civo env variables |
 | securityContext | object | `{}` | [Security context for pod](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/) |
 | service.annotations | object | `{}` | Annotations to add to service |
 | service.clusterIP | string | `""` | IP address to assign to service |
