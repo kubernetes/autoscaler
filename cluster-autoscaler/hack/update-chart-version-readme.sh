@@ -6,7 +6,12 @@ if [[ -n $(git status -s) ]]; then
     exit 1
 fi
 
-CA_VERSION=${1:?"usage: update-chart-version-readme.sh <cluster-autoscaler-version> (must be a row present in README.md)"}
+CA_VERSION=${1:?"usage: update-chart-version-readme.sh <cluster-autoscaler-version> (must be a row present in README.md) [<num_revisions>]"}
+
+NUM_REVISIONS=${2:-"10"}
+
+echo "Checking last $NUM_REVISIONS for changes" >&2
+VERSIONS_FILTER="tail -n $NUM_REVISIONS"
 
 BASE=$(dirname $0)
 
@@ -22,7 +27,7 @@ trap cleanup EXIT
 
 # Build version map
 VERSIONS=$(
-    git tag | grep cluster-autoscaler-chart | sort -V | while read ver; do
+    git tag | grep cluster-autoscaler-chart | sort -V | $VERSIONS_FILTER | while read ver; do
         echo "Checking chart release: $ver" >&2
         git checkout $ver &>/dev/null
 
