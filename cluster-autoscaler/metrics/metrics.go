@@ -114,6 +114,7 @@ const (
 	Poll                       FunctionLabel = "poll"
 	Reconfigure                FunctionLabel = "reconfigure"
 	Autoscaling                FunctionLabel = "autoscaling"
+	LoopWait                   FunctionLabel = "loopWait"
 )
 
 var (
@@ -390,20 +391,22 @@ var (
 		},
 	)
 
-	nodeGroupCreationCount = k8smetrics.NewCounter(
+	nodeGroupCreationCount = k8smetrics.NewCounterVec(
 		&k8smetrics.CounterOpts{
 			Namespace: caNamespace,
 			Name:      "created_node_groups_total",
 			Help:      "Number of node groups created by Node Autoprovisioning.",
 		},
+		[]string{"group_type"},
 	)
 
-	nodeGroupDeletionCount = k8smetrics.NewCounter(
+	nodeGroupDeletionCount = k8smetrics.NewCounterVec(
 		&k8smetrics.CounterOpts{
 			Namespace: caNamespace,
 			Name:      "deleted_node_groups_total",
 			Help:      "Number of node groups deleted by Node Autoprovisioning.",
 		},
+		[]string{"group_type"},
 	)
 
 	nodeTaintsCount = k8smetrics.NewGaugeVec(
@@ -643,12 +646,22 @@ func UpdateNapEnabled(enabled bool) {
 
 // RegisterNodeGroupCreation registers node group creation
 func RegisterNodeGroupCreation() {
-	nodeGroupCreationCount.Add(1.0)
+	RegisterNodeGroupCreationWithLabelValues("")
+}
+
+// RegisterNodeGroupCreationWithLabelValues registers node group creation with the provided labels
+func RegisterNodeGroupCreationWithLabelValues(groupType string) {
+	nodeGroupCreationCount.WithLabelValues(groupType).Add(1.0)
 }
 
 // RegisterNodeGroupDeletion registers node group deletion
 func RegisterNodeGroupDeletion() {
-	nodeGroupDeletionCount.Add(1.0)
+	RegisterNodeGroupDeletionWithLabelValues("")
+}
+
+// RegisterNodeGroupDeletionWithLabelValues registers node group deletion with the provided labels
+func RegisterNodeGroupDeletionWithLabelValues(groupType string) {
+	nodeGroupDeletionCount.WithLabelValues(groupType).Add(1.0)
 }
 
 // UpdateScaleDownInCooldown registers if the cluster autoscaler

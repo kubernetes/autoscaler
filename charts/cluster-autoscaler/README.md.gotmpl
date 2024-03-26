@@ -73,6 +73,8 @@ To create a valid configuration, follow instructions for your cloud provider:
 - [Azure](#azure)
 - [OpenStack Magnum](#openstack-magnum)
 - [Cluster API](#cluster-api)
+- [Exoscale](#exoscale)
+- [Hetzner Cloud](#hetzner-cloud)
 
 ### Templating the autoDiscovery.clusterName
 
@@ -222,6 +224,7 @@ $ helm install my-release autoscaler/cluster-autoscaler -f myvalues.yaml
 `cloudProvider: clusterapi` must be set, and then one or more of
 
 - `autoDiscovery.clusterName`
+- or `autoDiscovery.namespace`
 - or `autoDiscovery.labels`
 
 See [here](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/clusterapi/README.md#configuring-node-group-auto-discovery) for more details.
@@ -258,6 +261,18 @@ $ helm install my-release autoscaler/cluster-autoscaler \
 ```
 
 Read [cluster-autoscaler/cloudprovider/exoscale/README.md](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/exoscale/README.md) for further information on the setup without helm.
+
+### Hetzner Cloud
+
+The following parameters are required:
+
+- `cloudProvider=hetzner`
+- `extraEnv.HCLOUD_TOKEN=...`
+- `autoscalingGroups=...`
+
+Each autoscaling group requires an additional `instanceType` and `region` key to be set.
+
+Read [cluster-autoscaler/cloudprovider/hetzner/README.md](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/hetzner/README.md) for further information on the setup without helm.
 
 ## Uninstalling the Chart
 

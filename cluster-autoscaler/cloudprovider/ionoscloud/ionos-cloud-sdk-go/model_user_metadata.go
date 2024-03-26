@@ -17,10 +17,10 @@ import (
 
 // UserMetadata struct for UserMetadata
 type UserMetadata struct {
-	// Resource's Entity Tag as defined in http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.11  Entity Tag is also added as an 'ETag response header to requests which don't use 'depth' parameter.
-	Etag *string `json:"etag,omitempty"`
 	// The time the user was created.
 	CreatedDate *IonosTime
+	// Resource's Entity Tag as defined in http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.11  Entity Tag is also added as an 'ETag response header to requests which don't use 'depth' parameter.
+	Etag *string `json:"etag,omitempty"`
 	// The time of the last login by the user.
 	LastLogin *IonosTime
 }
@@ -43,46 +43,8 @@ func NewUserMetadataWithDefaults() *UserMetadata {
 	return &this
 }
 
-// GetEtag returns the Etag field value
-// If the value is explicit nil, the zero value for string will be returned
-func (o *UserMetadata) GetEtag() *string {
-	if o == nil {
-		return nil
-	}
-
-	return o.Etag
-
-}
-
-// GetEtagOk returns a tuple with the Etag field value
-// and a boolean to check if the value has been set.
-// NOTE: If the value is an explicit nil, `nil, true` will be returned
-func (o *UserMetadata) GetEtagOk() (*string, bool) {
-	if o == nil {
-		return nil, false
-	}
-
-	return o.Etag, true
-}
-
-// SetEtag sets field value
-func (o *UserMetadata) SetEtag(v string) {
-
-	o.Etag = &v
-
-}
-
-// HasEtag returns a boolean if a field has been set.
-func (o *UserMetadata) HasEtag() bool {
-	if o != nil && o.Etag != nil {
-		return true
-	}
-
-	return false
-}
-
 // GetCreatedDate returns the CreatedDate field value
-// If the value is explicit nil, the zero value for time.Time will be returned
+// If the value is explicit nil, nil is returned
 func (o *UserMetadata) GetCreatedDate() *time.Time {
 	if o == nil {
 		return nil
@@ -126,8 +88,46 @@ func (o *UserMetadata) HasCreatedDate() bool {
 	return false
 }
 
+// GetEtag returns the Etag field value
+// If the value is explicit nil, nil is returned
+func (o *UserMetadata) GetEtag() *string {
+	if o == nil {
+		return nil
+	}
+
+	return o.Etag
+
+}
+
+// GetEtagOk returns a tuple with the Etag field value
+// and a boolean to check if the value has been set.
+// NOTE: If the value is an explicit nil, `nil, true` will be returned
+func (o *UserMetadata) GetEtagOk() (*string, bool) {
+	if o == nil {
+		return nil, false
+	}
+
+	return o.Etag, true
+}
+
+// SetEtag sets field value
+func (o *UserMetadata) SetEtag(v string) {
+
+	o.Etag = &v
+
+}
+
+// HasEtag returns a boolean if a field has been set.
+func (o *UserMetadata) HasEtag() bool {
+	if o != nil && o.Etag != nil {
+		return true
+	}
+
+	return false
+}
+
 // GetLastLogin returns the LastLogin field value
-// If the value is explicit nil, the zero value for time.Time will be returned
+// If the value is explicit nil, nil is returned
 func (o *UserMetadata) GetLastLogin() *time.Time {
 	if o == nil {
 		return nil
@@ -173,15 +173,18 @@ func (o *UserMetadata) HasLastLogin() bool {
 
 func (o UserMetadata) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
-	if o.Etag != nil {
-		toSerialize["etag"] = o.Etag
-	}
 	if o.CreatedDate != nil {
 		toSerialize["createdDate"] = o.CreatedDate
 	}
+
+	if o.Etag != nil {
+		toSerialize["etag"] = o.Etag
+	}
+
 	if o.LastLogin != nil {
 		toSerialize["lastLogin"] = o.LastLogin
 	}
+
 	return json.Marshal(toSerialize)
 }
 
