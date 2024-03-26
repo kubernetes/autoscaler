@@ -28,7 +28,7 @@ VERSIONS=$(
 
         (
             set -eo pipefail
-            cat $BASE/../charts/cluster-autoscaler/Chart.yaml \
+            cat $BASE/../../charts/cluster-autoscaler/Chart.yaml \
                 | grep -e version -e appVersion
         ) \
             | sed -E -e 's/^([^:]+): (.*)/"\1": "\2"/g' \
@@ -54,6 +54,6 @@ cleanup
 awk "!/^\|/ { versions=0 }
 /$CA_VERSION/ { if (versions) print(\"\", \$2, \$3, \"$MIN_COMPATIBLE_VERSION+\" \"\", \"\"); else print(\$0) }
 !/$CA_VERSION/ { print }
-/Kubernetes Version/ { versions=1; FS=\"|\"; OFS=\"|\"; }" $BASE/README.md > README.md.tmp
+/Kubernetes Version/ { versions=1; FS=\"|\"; OFS=\"|\"; }" $BASE/../README.md > README.md.tmp
 
-mv README.md.tmp $BASE/README.md
+mv README.md.tmp $BASE/../README.md
