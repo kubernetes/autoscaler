@@ -167,6 +167,7 @@ type ScalingGroup struct {
 	RemovingCapacity             int             `json:"RemovingCapacity" xml:"RemovingCapacity"`
 	ScalingGroupName             string          `json:"ScalingGroupName" xml:"ScalingGroupName"`
 	ActiveCapacity               int             `json:"ActiveCapacity" xml:"ActiveCapacity"`
+	DesiredCapacity              int             `json:"DesiredCapacity" xml:"DesiredCapacity"`
 	StandbyCapacity              int             `json:"StandbyCapacity" xml:"StandbyCapacity"`
 	ProtectedCapacity            int             `json:"ProtectedCapacity" xml:"ProtectedCapacity"`
 	ActiveScalingConfigurationId string          `json:"ActiveScalingConfigurationId" xml:"ActiveScalingConfigurationId"`
