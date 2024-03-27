@@ -42,7 +42,7 @@ var SupportedProvisioningClasses = []string{v1beta1.ProvisioningClassCheckCapaci
 
 // ProvisioningRequestPodsInjector creates in-memory pods from ProvisioningRequest and inject them to unscheduled pods list.
 type ProvisioningRequestPodsInjector struct {
-	client provreqclient.ProvisioningRequestClient
+	client *provreqclient.ProvisioningRequestClient
 	clock  clock.PassiveClock
 }
 

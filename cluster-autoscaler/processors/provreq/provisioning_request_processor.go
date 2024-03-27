@@ -33,7 +33,7 @@ type ProvisioningRequestProcessor interface {
 // CombinedProvReqProcessor is responsible for processing ProvisioningRequest for each ProvisioningClass
 // every CA loop and updating conditions for expired ProvisioningRequests.
 type CombinedProvReqProcessor struct {
-	client     provreqclient.ProvisioningRequestClient
+	client     *provreqclient.ProvisioningRequestClient
 	processors []ProvisioningRequestProcessor
 }
 

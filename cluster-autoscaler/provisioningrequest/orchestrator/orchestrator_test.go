@@ -111,8 +111,8 @@ func TestScaleUp(t *testing.T) {
 			assert.NoError(t, err)
 			client := provreqclient.NewFakeProvisioningRequestClient(context.Background(), t, tc.provReqs...)
 			orchestrator := &provReqOrchestrator{
-				client:       client,
-				scaleUpModes: []scaleUpMode{checkcapacity.New(client)},
+				client:              client,
+				provisioningClasses: []provisioningClass{checkcapacity.New(client)},
 			}
 			orchestrator.Initialize(&autoscalingContext, nil, nil, nil, taints.TaintConfig{})
 			st, err := orchestrator.ScaleUp(prPods, []*apiv1.Node{}, []*v1.DaemonSet{}, map[string]*framework.NodeInfo{})

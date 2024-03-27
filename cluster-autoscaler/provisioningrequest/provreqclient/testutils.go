@@ -35,7 +35,7 @@ import (
 )
 
 // NewFakeProvisioningRequestClient mock ProvisioningRequestClient for tests.
-func NewFakeProvisioningRequestClient(ctx context.Context, t *testing.T, prs ...*provreqwrapper.ProvisioningRequest) *provisioningRequestClient {
+func NewFakeProvisioningRequestClient(ctx context.Context, t *testing.T, prs ...*provreqwrapper.ProvisioningRequest) *ProvisioningRequestClient {
 	t.Helper()
 	provReqClient := fake.NewSimpleClientset()
 	podTemplClient := fake_kubernetes.NewSimpleClientset()
@@ -60,7 +60,7 @@ func NewFakeProvisioningRequestClient(ctx context.Context, t *testing.T, prs ...
 	if err != nil {
 		t.Fatalf("Failed to create Provisioning Request lister. Error was: %v", err)
 	}
-	return &provisioningRequestClient{
+	return &ProvisioningRequestClient{
 		client:         provReqClient,
 		provReqLister:  provReqLister,
 		podTemplLister: podTemplLister,
