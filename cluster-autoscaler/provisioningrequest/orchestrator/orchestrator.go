@@ -17,7 +17,6 @@ limitations under the License.
 package orchestrator
 
 import (
-	"errors"
 	"fmt"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -42,8 +41,8 @@ import (
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
-type scaleUpMode interface {
-	ScaleUp([]*apiv1.Pod, []*apiv1.Node, []*appsv1.DaemonSet,
+type provisioningClass interface {
+	Provision([]*apiv1.Pod, []*apiv1.Node, []*appsv1.DaemonSet,
 		map[string]*schedulerframework.NodeInfo) (*status.ScaleUpStatus, ca_errors.AutoscalerError)
 	Initialize(*context.AutoscalingContext, *ca_processors.AutoscalingProcessors, *clusterstate.ClusterStateRegistry,
 		estimator.EstimatorBuilder, taints.TaintConfig, *scheduling.HintingSimulator)
@@ -51,11 +50,11 @@ type scaleUpMode interface {
 
 // provReqOrchestrator is an orchestrator that contains orchestrators for all supported Provisioning Classes.
 type provReqOrchestrator struct {
-	initialized  bool
-	context      *context.AutoscalingContext
-	client       provreqclient.ProvisioningRequestClient
-	injector     *scheduling.HintingSimulator
-	scaleUpModes []scaleUpMode
+	initialized         bool
+	context             *context.AutoscalingContext
+	client              *provreqclient.ProvisioningRequestClient
+	injector            *scheduling.HintingSimulator
+	provisioningClasses []provisioningClass
 }
 
 // New return new orchestrator.
@@ -65,7 +64,7 @@ func New(kubeConfig *rest.Config) (*provReqOrchestrator, error) {
 		return nil, err
 	}
 
-	return &provReqOrchestrator{client: client, scaleUpModes: []scaleUpMode{checkcapacity.New(client)}}, nil
+	return &provReqOrchestrator{client: client, provisioningClasses: []provisioningClass{checkcapacity.New(client)}}, nil
 }
 
 // Initialize initialize orchestrator.
@@ -79,7 +78,7 @@ func (o *provReqOrchestrator) Initialize(
 	o.initialized = true
 	o.context = autoscalingContext
 	o.injector = scheduling.NewHintingSimulator(autoscalingContext.PredicateChecker)
-	for _, mode := range o.scaleUpModes {
+	for _, mode := range o.provisioningClasses {
 		mode.Initialize(autoscalingContext, processors, clusterStateRegistry, estimatorBuilder, taintConfig, o.injector)
 	}
 }
@@ -93,22 +92,22 @@ func (o *provReqOrchestrator) ScaleUp(
 	daemonSets []*appsv1.DaemonSet,
 	nodeInfos map[string]*schedulerframework.NodeInfo,
 ) (*status.ScaleUpStatus, ca_errors.AutoscalerError) {
-	var orchestratorStatus *status.ScaleUpStatus
-	var combinedError error
+	if !o.initialized {
+		return &status.ScaleUpStatus{}, ca_errors.ToAutoscalerError(ca_errors.InternalError, fmt.Errorf("provisioningrequest.Orchestrator is not initialized"))
+	}
+
 	o.context.ClusterSnapshot.Fork()
 	defer o.context.ClusterSnapshot.Revert()
 	o.bookCapacity()
-	for _, scaleUpMode := range o.scaleUpModes {
-		st, err := scaleUpMode.ScaleUp(unschedulablePods, nodes, daemonSets, nodeInfos)
-		errors.Join(combinedError, err)
-		if st != nil && st.Result != status.ScaleUpNotTried {
-			orchestratorStatus = st
+
+	// unschedulablePods pods should belong to one ProvisioningClass, so only one provClass should try to ScaleUp. 
+	for _, provClass := range o.provisioningClasses {
+		st, err := provClass.Provision(unschedulablePods, nodes, daemonSets, nodeInfos)
+		if err != nil || st != nil && st.Result != status.ScaleUpNotTried {
+			return st, err
 		}
 	}
-	if orchestratorStatus == nil {
-		orchestratorStatus = &status.ScaleUpStatus{Result: status.ScaleUpNotTried}
-	}
-	return orchestratorStatus, ca_errors.ToAutoscalerError(ca_errors.InternalError, combinedError)
+	return &status.ScaleUpStatus{Result: status.ScaleUpNotTried}, nil
 }
 
 // ScaleUpToNodeGroupMinSize doesn't have implementation for ProvisioningRequest Orchestrator.

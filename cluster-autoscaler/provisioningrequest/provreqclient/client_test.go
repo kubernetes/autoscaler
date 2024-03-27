@@ -49,7 +49,7 @@ func TestFetchPodTemplates(t *testing.T) {
 	}
 }
 
-func TestVerifyProvisioningRequestClass(t *testing.T) {
+func TestProvisioningRequestForPods(t *testing.T) {
 	checkCapacityProvReq := provreqwrapper.BuildTestProvisioningRequest("ns", "check-capacity", "1m", "100", "", int32(100), false, time.Now(), v1beta1.ProvisioningClassCheckCapacity)
 	customProvReq := provreqwrapper.BuildTestProvisioningRequest("ns", "custom", "1m", "100", "", int32(100), false, time.Now(), "custom")
 	checkCapacityPods, _ := pods.PodsForProvisioningRequest(checkCapacityProvReq)
@@ -67,6 +67,7 @@ func TestVerifyProvisioningRequestClass(t *testing.T) {
 			name:      "no pods",
 			pods:      []*apiv1.Pod{},
 			className: "some-class",
+			err:       true,
 		},
 		{
 			name:      "pods from one Provisioning Class",
@@ -92,22 +93,18 @@ func TestVerifyProvisioningRequestClass(t *testing.T) {
 			className: v1beta1.ProvisioningClassCheckCapacity,
 			err:       true,
 		},
-		{
-			name:      "wrong Provisioning Class name",
-			pods:      customProvReqPods,
-			className: v1beta1.ProvisioningClassCheckCapacity,
-		},
 	}
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			pr, err := VerifyProvisioningRequestClass(client, tc.pods, tc.className)
-			assert.Equal(t, pr, tc.pr)
+			pr, err := ProvisioningRequestForPods(client, tc.pods)
 			if tc.err {
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
+				assert.Equal(t, pr, tc.pr)
+				assert.Equal(t, pr.Spec.ProvisioningClassName, tc.className)
 			}
 		})
 	}

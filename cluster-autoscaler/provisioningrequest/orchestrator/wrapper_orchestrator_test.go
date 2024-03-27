@@ -39,7 +39,7 @@ const (
 	regularPodsErrorMsg         = "regularPodsError"
 )
 
-func TestScaleUp(t *testing.T) {
+func TestWrapperScaleUp(t *testing.T) {
 	o := WrapperOrchestrator{
 		provReqOrchestrator: &fakeScaleUp{provisioningRequestErrorMsg},
 		podsOrchestrator:    &fakeScaleUp{regularPodsErrorMsg},

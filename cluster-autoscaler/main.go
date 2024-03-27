@@ -499,7 +499,7 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 		if err != nil {
 			return nil, err
 		}
-		scaleUpOrchestrator := orchestrator.NewWrapperOrchestrator(provreqOrchestrator)
+		scaleUpOrchestrator := provreqorchestrator.NewWrapperOrchestrator(provreqOrchestrator)
 
 		opts.ScaleUpOrchestrator = scaleUpOrchestrator
 		provreqProcesor, err := provreq.NewCombinedProvReqProcessor(restConfig, []provreq.ProvisioningRequestProcessor{checkcapacity.NewCheckCapacityProcessor()})
