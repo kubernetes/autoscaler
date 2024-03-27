@@ -43,7 +43,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupconfig"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfos"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfosprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodes"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/scaledowncandidates"
@@ -187,7 +186,6 @@ func NewTestProcessors(context *context.AutoscalingContext) *processors.Autoscal
 		ScaleDownStatusProcessor:    &status.NoOpScaleDownStatusProcessor{},
 		AutoscalingStatusProcessor:  &status.NoOpAutoscalingStatusProcessor{},
 		NodeGroupManager:            nodegroups.NewDefaultNodeGroupManager(),
-		NodeInfoProcessor:           nodeinfos.NewDefaultNodeInfoProcessor(),
 		TemplateNodeInfoProvider:    nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false),
 		NodeGroupConfigProcessor:    nodegroupconfig.NewDefaultNodeGroupConfigProcessor(context.NodeGroupDefaults),
 		CustomResourcesProcessor:    customresources.NewDefaultCustomResourcesProcessor(),
