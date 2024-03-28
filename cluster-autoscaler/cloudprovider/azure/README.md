@@ -197,7 +197,8 @@ The `AZURE_ENABLE_VMSS_FLEX` environment variable enables VMSS Flex support. By 
 |---------------------------|---------|-----------------------------------------|---------------------------|
 | enableVmssFlex            | false   | AZURE_ENABLE_VMSS_FLEX                  | enableVmssFlex            |
 
-The `AZURE_GET_VMSS_SIZE_REFRESH_PERIOD` environment variable defines in seconds how frequently to call GET VMSS API to fetch VMSS info per nodegroup instance. By default, value is 30 seconds.
+The AZURE_GET_VMSS_SIZE_REFRESH_PERIOD environment variable defines, in seconds, the frequency to call the GET VMSS API to fetch VMSS info per spot nodegroup instance. 
+By default, the value is 30 seconds. Currently, this API is only utilized for spot instances.
 
 | Config Name               | Default | Environment Variable                | Cloud Config File         |
 |---------------------------|---------|-------------------------------------|---------------------------|
