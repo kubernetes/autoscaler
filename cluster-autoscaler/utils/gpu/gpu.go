@@ -23,16 +23,6 @@ import (
 )
 
 const (
-	// ResourceNvidiaGPU is the name of the Nvidia GPU resource.
-	ResourceNvidiaGPU = "nvidia.com/gpu"
-	// ResourceDirectX is the name of the DirectX resource on windows.
-	ResourceDirectX = "microsoft.com/directx"
-	// DefaultGPUType is the type of GPU used in NAP if the user
-	// don't specify what type of GPU his pod wants.
-	DefaultGPUType = "nvidia-tesla-k80"
-)
-
-const (
 	// MetricsGenericGPU - for when there is no information about GPU type
 	MetricsGenericGPU = "generic"
 	// MetricsMissingGPU - for when there's a label, but GPU didn't appear
@@ -92,36 +82,4 @@ func validateGpuType(availableGPUTypes map[string]struct{}, gpu string) string {
 		return gpu
 	}
 	return MetricsUnknownGPU
-}
-
-// NodeHasGpu returns true if a given node has GPU hardware.
-// The result will be true if there is hardware capability. It doesn't matter
-// if the drivers are installed and GPU is ready to use.
-func NodeHasGpu(GPULabel string, node *apiv1.Node) bool {
-	_, hasGpuLabel := node.Labels[GPULabel]
-	gpuAllocatable, hasGpuAllocatable := node.Status.Allocatable[ResourceNvidiaGPU]
-	return hasGpuLabel || (hasGpuAllocatable && !gpuAllocatable.IsZero())
-}
-
-// PodRequestsGpu returns true if a given pod has GPU request.
-func PodRequestsGpu(pod *apiv1.Pod) bool {
-	for _, container := range pod.Spec.Containers {
-		if container.Resources.Requests != nil {
-			_, gpuFound := container.Resources.Requests[ResourceNvidiaGPU]
-			if gpuFound {
-				return true
-			}
-		}
-	}
-	return false
-}
-
-// GetNodeGPUFromCloudProvider returns the GPU the node has. Returned GPU has the GPU label of the
-// passed in cloud provider. If the node doesn't have a GPU, returns nil.
-func GetNodeGPUFromCloudProvider(provider cloudprovider.CloudProvider, node *apiv1.Node) *cloudprovider.GpuConfig {
-	gpuLabel := provider.GPULabel()
-	if NodeHasGpu(gpuLabel, node) {
-		return &cloudprovider.GpuConfig{Label: gpuLabel, Type: node.Labels[gpuLabel], ResourceName: ResourceNvidiaGPU}
-	}
-	return nil
 }

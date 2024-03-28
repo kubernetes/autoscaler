@@ -36,6 +36,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/util"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
@@ -53,7 +54,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 )
 
@@ -906,7 +906,7 @@ func TestScaleDownEmptyMinGpuLimitHit(t *testing.T) {
 	options := defaultScaleDownOptions
 	options.GpuTotal = []config.GpuLimits{
 		{
-			GpuType: gpu.DefaultGPUType,
+			GpuType: util.DefaultGPUType,
 			Min:     4,
 			Max:     50,
 		},
@@ -982,7 +982,7 @@ func simpleScaleDownEmpty(t *testing.T, config *ScaleTestConfig) {
 		node := BuildTestNode(n.Name, n.Cpu, n.Memory)
 		if n.Gpu > 0 {
 			AddGpusToNode(node, n.Gpu)
-			node.Labels[provider.GPULabel()] = gpu.DefaultGPUType
+			node.Labels[provider.GPULabel()] = util.DefaultGPUType
 		}
 		SetNodeReadyState(node, n.Ready, time.Time{})
 		nodesMap[n.Name] = node

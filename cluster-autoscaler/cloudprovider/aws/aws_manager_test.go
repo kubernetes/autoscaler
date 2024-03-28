@@ -34,8 +34,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/service/autoscaling"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/service/ec2"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/util"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 )
 
 func TestJoinNodeLabelsChoosingUserValuesOverAPIValues(t *testing.T) {
@@ -531,7 +531,7 @@ func TestBuildNodeFromTemplate(t *testing.T) {
 	assert.Equal(t, int64(4*1024*1024), observedMemoryRequirement.Value())
 	observedVCpuRequirement := observedNode.Status.Capacity[apiv1.ResourceCPU]
 	assert.Equal(t, int64(4), observedVCpuRequirement.Value())
-	observedGpuRequirement := observedNode.Status.Capacity[gpu.ResourceNvidiaGPU]
+	observedGpuRequirement := observedNode.Status.Capacity[util.ResourceNvidiaGPU]
 	assert.Equal(t, int64(4), observedGpuRequirement.Value())
 }
 

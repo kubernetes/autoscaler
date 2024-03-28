@@ -33,7 +33,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	gpuapis "k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	gpuapis "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/util"
 )
 
 const (

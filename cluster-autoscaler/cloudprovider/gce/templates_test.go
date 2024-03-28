@@ -24,8 +24,8 @@ import (
 	"testing"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce/localssdsize"
+	util "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/util"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
-	gpuUtils "k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 
 	"github.com/google/go-cmp/cmp"
@@ -1505,7 +1505,7 @@ func makeResourceList(cpu string, memory string, gpu int64, ephemeralStorage str
 		if err != nil {
 			return nil, err
 		}
-		result[gpuUtils.ResourceNvidiaGPU] = resultGpu
+		result[util.ResourceNvidiaGPU] = resultGpu
 	}
 	if len(ephemeralStorage) != 0 {
 		resultEphemeralStorage, err := resource.ParseQuantity(ephemeralStorage)
@@ -1522,7 +1522,7 @@ func makeResourceList2(cpu int64, memory int64, gpu int64, pods int64) (apiv1.Re
 	result[apiv1.ResourceCPU] = *resource.NewQuantity(cpu, resource.DecimalSI)
 	result[apiv1.ResourceMemory] = *resource.NewQuantity(memory, resource.BinarySI)
 	if gpu > 0 {
-		result[gpuUtils.ResourceNvidiaGPU] = *resource.NewQuantity(gpu, resource.DecimalSI)
+		result[util.ResourceNvidiaGPU] = *resource.NewQuantity(gpu, resource.DecimalSI)
 	}
 	if pods > 0 {
 		result[apiv1.ResourcePods] = *resource.NewQuantity(pods, resource.DecimalSI)
@@ -1538,7 +1538,7 @@ func assertEqualResourceLists(t *testing.T, name string, expected, actual apiv1.
 
 func stringifyResourceList(resourceList apiv1.ResourceList) string {
 	resourceNames := []apiv1.ResourceName{
-		apiv1.ResourcePods, apiv1.ResourceCPU, gpuUtils.ResourceNvidiaGPU, apiv1.ResourceMemory, apiv1.ResourceEphemeralStorage}
+		apiv1.ResourcePods, apiv1.ResourceCPU, util.ResourceNvidiaGPU, apiv1.ResourceMemory, apiv1.ResourceEphemeralStorage}
 	var results []string
 	for _, name := range resourceNames {
 		quantity, found := resourceList[name]

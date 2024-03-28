@@ -31,9 +31,9 @@ import (
 	klog "k8s.io/klog/v2"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/util"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 )
 
 const (
@@ -132,7 +132,7 @@ func (p *provider) GPULabel() string {
 // GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
 // any GPUs, it returns nil.
 func (p *provider) GetNodeGpuConfig(node *corev1.Node) *cloudprovider.GpuConfig {
-	return gpu.GetNodeGPUFromCloudProvider(p, node)
+	return util.GetNodeGPUFromCloudProvider(p, node)
 }
 
 func newProvider(

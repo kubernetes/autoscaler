@@ -28,9 +28,9 @@ import (
 	brightbox "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/brightbox/gobrightbox"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/brightbox/gobrightbox/status"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/brightbox/k8ssdk"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/util"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	klog "k8s.io/klog/v2"
 )
 
@@ -209,7 +209,7 @@ func (b *brightboxCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
 // any GPUs, it returns nil.
 func (b *brightboxCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider.GpuConfig {
 	klog.V(4).Info("GetNodeGpuConfig")
-	return gpu.GetNodeGPUFromCloudProvider(b, node)
+	return util.GetNodeGPUFromCloudProvider(b, node)
 }
 
 // Cleanup cleans up open resources before the cloud provider is
