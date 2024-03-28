@@ -602,7 +602,7 @@ func TestDeleteNodesWithPlaceholder(t *testing.T) {
 	}
 	err = asgs[0].DeleteNodes([]*apiv1.Node{node})
 	assert.NoError(t, err)
-	a.AssertNumberOfCalls(t, "SetDesiredCapacity", 1)
+	a.AssertNumberOfCalls(t, "SetDesiredCapacity", 0)
 	a.AssertNumberOfCalls(t, "DescribeAutoScalingGroupsPages", 1)
 
 	newSize, err := asgs[0].TargetSize()

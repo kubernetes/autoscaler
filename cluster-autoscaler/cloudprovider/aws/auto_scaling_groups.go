@@ -279,10 +279,6 @@ func (m *asgCache) setAsgSizeNoLock(asg *asg, size int) error {
 	return nil
 }
 
-func (m *asgCache) decreaseAsgSizeByOneNoLock(asg *asg) error {
-	return m.setAsgSizeNoLock(asg, asg.curSize-1)
-}
-
 // DeleteInstances deletes the given instances. All instances must be controlled by the same ASG.
 func (m *asgCache) DeleteInstances(instances []*AwsInstanceRef) error {
 	m.mutex.Lock()
@@ -310,11 +306,9 @@ func (m *asgCache) DeleteInstances(instances []*AwsInstanceRef) error {
 
 	for _, instance := range instances {
 		// check if the instance is a placeholder - a requested instance that was never created by the node group
-		// if it is, just decrease the size of the node group, as there's no specific instance we can remove
+		// if it is, simply remove it from the cache
 		if m.isPlaceholderInstance(instance) {
-			klog.V(4).Infof("instance %s is detected as a placeholder, decreasing ASG requested size instead "+
-				"of deleting instance", instance.Name)
-			m.decreaseAsgSizeByOneNoLock(commonAsg)
+			klog.V(4).Infof("instance %s is detected as a placeholder", instance.Name)
 		} else {
 			// check if the instance is already terminating - if it is, don't bother terminating again
 			// as doing so causes unnecessary API calls and can cause the curSize cached value to decrement
@@ -344,10 +338,10 @@ func (m *asgCache) DeleteInstances(instances []*AwsInstanceRef) error {
 				return err
 			}
 			klog.V(4).Infof(*resp.Activity.Description)
-
-			// Proactively decrement the size so autoscaler makes better decisions
-			commonAsg.curSize--
 		}
+
+		// Proactively decrement the size so autoscaler makes better decisions
+		commonAsg.curSize--
 	}
 	return nil
 }
