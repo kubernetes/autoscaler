@@ -42,7 +42,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/spec"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
+	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	metrics_recommender "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/recommender"
 )
 
@@ -416,7 +416,12 @@ func (feeder *clusterStateFeeder) LoadPods() {
 }
 
 func (feeder *clusterStateFeeder) LoadRealTimeMetrics() {
-	containersMetrics, err := feeder.metricsClient.GetContainersMetrics()
+	// create a list that only contains Pod that has VPA enabled
+	podList := make(map[model.PodID]bool)
+	for podID := range feeder.clusterState.Pods {
+		podList[podID] = true
+	}
+	containersMetrics, err := feeder.metricsClient.GetContainersMetrics(podList, feeder.memorySaveMode)
 	if err != nil {
 		klog.Errorf("Cannot get ContainerMetricsSnapshot from MetricsClient. Reason: %+v", err)
 	}

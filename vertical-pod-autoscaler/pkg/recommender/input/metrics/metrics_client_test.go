@@ -20,23 +20,24 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 )
 
 func TestGetContainersMetricsReturnsEmptyList(t *testing.T) {
 	tc := newEmptyMetricsClientTestCase()
 	emptyMetricsClient := tc.createFakeMetricsClient()
 
-	containerMetricsSnapshots, err := emptyMetricsClient.GetContainersMetrics()
+	containerMetricsSnapshots, err := emptyMetricsClient.GetContainersMetrics(make(map[model.PodID]bool), true)
 
 	assert.NoError(t, err)
 	assert.Empty(t, containerMetricsSnapshots, "should be empty for empty MetricsGetter")
 }
 
 func TestGetContainersMetricsReturnsResults(t *testing.T) {
-	tc := newMetricsClientTestCase()
+	tc, podList := newMetricsClientTestCase()
 	fakeMetricsClient := tc.createFakeMetricsClient()
 
-	snapshots, err := fakeMetricsClient.GetContainersMetrics()
+	snapshots, err := fakeMetricsClient.GetContainersMetrics(podList, true)
 
 	assert.NoError(t, err)
 	assert.Len(t, snapshots, len(tc.getAllSnaps()), "It should return right number of snapshots")
