@@ -20,6 +20,8 @@ import (
 	"sync"
 	"time"
 
+	apiv1 "k8s.io/api/core/v1"
+
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 )
 
@@ -32,7 +34,7 @@ type NodeGroupChangeObserver interface {
 	// RegisterScaleUp records scale up for a nodegroup.
 	RegisterScaleUp(nodeGroup cloudprovider.NodeGroup, delta int, currentTime time.Time)
 	// RegisterScaleDowns records scale down for a nodegroup.
-	RegisterScaleDown(nodeGroup cloudprovider.NodeGroup, nodeName string, currentTime time.Time, expectedDeleteTime time.Time)
+	RegisterScaleDown(nodeGroup cloudprovider.NodeGroup, node *apiv1.Node, currentTime time.Time, expectedDeleteTime time.Time)
 	// RegisterFailedScaleUp records failed scale-up for a nodegroup.
 	// reason denotes optional reason for failed scale-up
 	// errMsg denotes the actual error message
@@ -66,11 +68,11 @@ func (l *NodeGroupChangeObserversList) RegisterScaleUp(nodeGroup cloudprovider.N
 
 // RegisterScaleDown calls RegisterScaleDown for each observer.
 func (l *NodeGroupChangeObserversList) RegisterScaleDown(nodeGroup cloudprovider.NodeGroup,
-	nodeName string, currentTime time.Time, expectedDeleteTime time.Time) {
+	node *apiv1.Node, currentTime time.Time, expectedDeleteTime time.Time) {
 	l.mutex.Lock()
 	defer l.mutex.Unlock()
 	for _, observer := range l.observers {
-		observer.RegisterScaleDown(nodeGroup, nodeName, currentTime, expectedDeleteTime)
+		observer.RegisterScaleDown(nodeGroup, node, currentTime, expectedDeleteTime)
 	}
 }
 
