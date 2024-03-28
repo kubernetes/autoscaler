@@ -383,12 +383,6 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 
 	a.DebuggingSnapshotter.SetTemplateNodes(nodeInfosForGroups)
 
-	nodeInfosForGroups, err = a.processors.NodeInfoProcessor.Process(autoscalingContext, nodeInfosForGroups)
-	if err != nil {
-		klog.Errorf("Failed to process nodeInfos: %v", err)
-		return caerrors.ToAutoscalerError(caerrors.InternalError, err)
-	}
-
 	if typedErr := a.updateClusterState(allNodes, nodeInfosForGroups, currentTime); typedErr != nil {
 		klog.Errorf("Failed to update cluster state: %v", typedErr)
 		return typedErr
