@@ -79,6 +79,7 @@ type machineController struct {
 	machinePoolInformer         informers.GenericInformer
 	nodeInformer                cache.SharedIndexInformer
 	managementClient            dynamic.Interface
+	managementClientset         kubeclient.Interface
 	managementScaleClient       scale.ScalesGetter
 	machineSetResource          schema.GroupVersionResource
 	machineResource             schema.GroupVersionResource
@@ -403,6 +404,7 @@ func getCAPIVersion() string {
 // the cluster.
 func newMachineController(
 	managementClient dynamic.Interface,
+	managementClientset kubeclient.Interface,
 	workloadClient kubeclient.Interface,
 	managementDiscoveryClient discovery.DiscoveryInterface,
 	managementScaleClient scale.ScalesGetter,
@@ -522,6 +524,7 @@ func newMachineController(
 		machinePoolInformer:         machinePoolInformer,
 		nodeInformer:                nodeInformer,
 		managementClient:            managementClient,
+		managementClientset:         managementClientset,
 		managementScaleClient:       managementScaleClient,
 		machineSetResource:          gvrMachineSet,
 		machinePoolResource:         gvrMachinePool,
