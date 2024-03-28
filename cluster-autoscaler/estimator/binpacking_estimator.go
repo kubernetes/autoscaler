@@ -68,14 +68,14 @@ func NewBinpackingNodeEstimator(
 // It is assumed that all pods from the given list can fit to nodeTemplate.
 // Returns the number of nodes needed to accommodate all pods from the list.
 func (e *BinpackingNodeEstimator) Estimate(
-	pods []*apiv1.Pod,
+	podsEquivalenceGroups []PodEquivalenceGroup,
 	nodeTemplate *schedulerframework.NodeInfo,
 	nodeGroup cloudprovider.NodeGroup) (int, []*apiv1.Pod) {
 
-	e.limiter.StartEstimation(pods, nodeGroup, e.context)
+	e.limiter.StartEstimation(podsEquivalenceGroups, nodeGroup, e.context)
 	defer e.limiter.EndEstimation()
 
-	pods = e.podOrderer.Order(pods, nodeTemplate, nodeGroup)
+	podsEquivalenceGroups = e.podOrderer.Order(podsEquivalenceGroups, nodeTemplate, nodeGroup)
 
 	newNodeNames := make(map[string]bool)
 	newNodesWithPods := make(map[string]bool)
@@ -89,63 +89,65 @@ func (e *BinpackingNodeEstimator) Estimate(
 	scheduledPods := []*apiv1.Pod{}
 	lastNodeName := ""
 
-	for _, pod := range pods {
-		found := false
+	for _, podsEquivalenceGroup := range podsEquivalenceGroups {
+		for _, pod := range podsEquivalenceGroup.Pods {
+			found := false
 
-		nodeName, err := e.predicateChecker.FitsAnyNodeMatching(e.clusterSnapshot, pod, func(nodeInfo *schedulerframework.NodeInfo) bool {
-			return newNodeNames[nodeInfo.Node().Name]
-		})
-		if err == nil {
-			found = true
-			if err := e.clusterSnapshot.AddPod(pod, nodeName); err != nil {
-				klog.Errorf("Error adding pod %v.%v to node %v in ClusterSnapshot; %v", pod.Namespace, pod.Name, nodeName, err)
-				return 0, nil
-			}
-			scheduledPods = append(scheduledPods, pod)
-			newNodesWithPods[nodeName] = true
-		}
-
-		if !found {
-			// If the last node we've added is empty and the pod couldn't schedule on it, it wouldn't be able to schedule
-			// on a new node either. There is no point adding more nodes to snapshot in such case, especially because of
-			// performance cost each extra node adds to future FitsAnyNodeMatching calls.
-			if lastNodeName != "" && !newNodesWithPods[lastNodeName] {
-				continue
+			nodeName, err := e.predicateChecker.FitsAnyNodeMatching(e.clusterSnapshot, pod, func(nodeInfo *schedulerframework.NodeInfo) bool {
+				return newNodeNames[nodeInfo.Node().Name]
+			})
+			if err == nil {
+				found = true
+				if err := e.clusterSnapshot.AddPod(pod, nodeName); err != nil {
+					klog.Errorf("Error adding pod %v.%v to node %v in ClusterSnapshot; %v", pod.Namespace, pod.Name, nodeName, err)
+					return 0, nil
+				}
+				scheduledPods = append(scheduledPods, pod)
+				newNodesWithPods[nodeName] = true
 			}
 
-			// Stop binpacking if we reach the limit of nodes we can add.
-			// We return the result of the binpacking that we already performed.
-			//
-			// The thresholdBasedEstimationLimiter implementation assumes that for
-			// each call that returns true, one node gets added. Therefore this
-			// must be the last check right before really adding a node.
-			if !e.limiter.PermissionToAddNode() {
-				break
-			}
+			if !found {
+				// If the last node we've added is empty and the pod couldn't schedule on it, it wouldn't be able to schedule
+				// on a new node either. There is no point adding more nodes to snapshot in such case, especially because of
+				// performance cost each extra node adds to future FitsAnyNodeMatching calls.
+				if lastNodeName != "" && !newNodesWithPods[lastNodeName] {
+					continue
+				}
 
-			// Add new node
-			newNodeName, err := e.addNewNodeToSnapshot(nodeTemplate, newNodeNameIndex)
-			if err != nil {
-				klog.Errorf("Error while adding new node for template to ClusterSnapshot; %v", err)
-				return 0, nil
-			}
-			newNodeNameIndex++
-			newNodeNames[newNodeName] = true
-			lastNodeName = newNodeName
+				// Stop binpacking if we reach the limit of nodes we can add.
+				// We return the result of the binpacking that we already performed.
+				//
+				// The thresholdBasedEstimationLimiter implementation assumes that for
+				// each call that returns true, one node gets added. Therefore this
+				// must be the last check right before really adding a node.
+				if !e.limiter.PermissionToAddNode() {
+					break
+				}
 
-			// And try to schedule pod to it.
-			// Note that this may still fail (ex. if topology spreading with zonal topologyKey is used);
-			// in this case we can't help the pending pod. We keep the node in clusterSnapshot to avoid
-			// adding and removing node to snapshot for each such pod.
-			if err := e.predicateChecker.CheckPredicates(e.clusterSnapshot, pod, newNodeName); err != nil {
-				continue
+				// Add new node
+				newNodeName, err := e.addNewNodeToSnapshot(nodeTemplate, newNodeNameIndex)
+				if err != nil {
+					klog.Errorf("Error while adding new node for template to ClusterSnapshot; %v", err)
+					return 0, nil
+				}
+				newNodeNameIndex++
+				newNodeNames[newNodeName] = true
+				lastNodeName = newNodeName
+
+				// And try to schedule pod to it.
+				// Note that this may still fail (ex. if topology spreading with zonal topologyKey is used);
+				// in this case we can't help the pending pod. We keep the node in clusterSnapshot to avoid
+				// adding and removing node to snapshot for each such pod.
+				if err := e.predicateChecker.CheckPredicates(e.clusterSnapshot, pod, newNodeName); err != nil {
+					continue
+				}
+				if err := e.clusterSnapshot.AddPod(pod, newNodeName); err != nil {
+					klog.Errorf("Error adding pod %v.%v to node %v in ClusterSnapshot; %v", pod.Namespace, pod.Name, newNodeName, err)
+					return 0, nil
+				}
+				newNodesWithPods[newNodeName] = true
+				scheduledPods = append(scheduledPods, pod)
 			}
-			if err := e.clusterSnapshot.AddPod(pod, newNodeName); err != nil {
-				klog.Errorf("Error adding pod %v.%v to node %v in ClusterSnapshot; %v", pod.Namespace, pod.Name, newNodeName, err)
-				return 0, nil
-			}
-			newNodesWithPods[newNodeName] = true
-			scheduledPods = append(scheduledPods, pod)
 		}
 	}
 
