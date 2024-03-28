@@ -87,7 +87,7 @@ func setupPodsForEviction(f *framework.Framework) *apiv1.PodList {
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 	ginkgo.By("Setting up a VPA CRD")
-	SetupVPA(f, "200m", vpa_types.UpdateModeAuto, controller)
+	SetupVPA(f, "200m", vpa_types.UpdateModeRecreate, controller)
 
 	return podList
 }

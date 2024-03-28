@@ -26,7 +26,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/listers/core/v1"
+	v1 "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/tools/record"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
@@ -117,6 +117,24 @@ func (m *PodsEvictionRestrictionMock) Evict(pod *apiv1.Pod, eventRecorder record
 
 // CanEvict is a mock implementation of PodsEvictionRestriction.CanEvict
 func (m *PodsEvictionRestrictionMock) CanEvict(pod *apiv1.Pod) bool {
+	args := m.Called(pod)
+	return args.Bool(0)
+}
+
+// InPlaceUpdate is a mock implementation of PodsEvictionRestriction.InPlaceUpdate
+func (m *PodsEvictionRestrictionMock) InPlaceUpdate(pod *apiv1.Pod, eventRecorder record.EventRecorder) error {
+	args := m.Called(pod, eventRecorder)
+	return args.Error(0)
+}
+
+// CanInPlaceUpdate is a mock implementation of PodsEvictionRestriction.CanInPlaceUpdate
+func (m *PodsEvictionRestrictionMock) CanInPlaceUpdate(pod *apiv1.Pod) bool {
+	args := m.Called(pod)
+	return args.Bool(0)
+}
+
+// IsInPlaceUpdating is a mock implementation of PodsEvictionRestriction.IsInPlaceUpdating
+func (m *PodsEvictionRestrictionMock) IsInPlaceUpdating(pod *apiv1.Pod) bool {
 	args := m.Called(pod)
 	return args.Bool(0)
 }
