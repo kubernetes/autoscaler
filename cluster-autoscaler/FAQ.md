@@ -627,7 +627,7 @@ DaemonSet pods may also be evicted. This can be configured separately for empty
 `--daemonset-eviction-for-empty-nodes` and
 `--daemonset-eviction-for-occupied-nodes` flags, respectively. Note that the
 default behavior is different on each flag: by default DaemonSet pods eviction
-will happen only on occupied nodes.  Individual DaemonSet pods can also
+will happen only on empty nodes.  Individual DaemonSet pods can also
 explicitly choose to be evicted (or not). See [How can I enable/disable eviction
 for a specific
 DaemonSet](#how-can-i-enabledisable-eviction-for-a-specific-daemonset) for more
@@ -819,8 +819,8 @@ The following startup parameters are supported for cluster autoscaler:
 | `skip-nodes-with-local-storage`| If true cluster autoscaler will never delete nodes with pods with local storage, e.g. EmptyDir or HostPath | true
 | `skip-nodes-with-custom-controller-pods` | If true cluster autoscaler will never delete nodes with pods owned by custom controllers | true
 | `min-replica-count` | Minimum number or replicas that a replica set or replication controller should have to allow their pods deletion in scale down | 0
-| `daemonset-eviction-for-empty-nodes` | Whether DaemonSet pods will be gracefully terminated from empty nodes | false
-| `daemonset-eviction-for-occupied-nodes` | Whether DaemonSet pods will be gracefully terminated from non-empty nodes | true
+| `daemonset-eviction-for-empty-nodes` | Whether DaemonSet pods will be gracefully terminated from empty nodes | true
+| `daemonset-eviction-for-occupied-nodes` | Whether DaemonSet pods will be gracefully terminated from non-empty nodes | false
 | `feature-gates` | A set of key=value pairs that describe feature gates for alpha/experimental features. | ""
 | `cordon-node-before-terminating` | Should CA cordon nodes before terminating during downscale process | false
 | `record-duplicated-events` | Enable the autoscaler to print duplicated events within a 5 minute window. | false
