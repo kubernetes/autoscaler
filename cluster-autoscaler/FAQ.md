@@ -36,7 +36,7 @@ this document:
   * [How can I scale a node group to 0?](#how-can-i-scale-a-node-group-to-0)
   * [How can I prevent Cluster Autoscaler from scaling down a particular node?](#how-can-i-prevent-cluster-autoscaler-from-scaling-down-a-particular-node)
   * [How can I prevent Cluster Autoscaler from scaling down non-empty nodes?](#how-can-i-prevent-cluster-autoscaler-from-scaling-down-non-empty-nodes)
-  # [How can I request Clsuter Autoscaler to scale down a particular node?](#how-can-i-request-clsuter-autoscaler-to-scale-down-a-particular-node)
+  * [How can I request Cluster Autoscaler to scale down a particular node?](#how-can-i-request-cluster-autoscaler-to-scale-down-a-particular-node)
   * [How can I modify Cluster Autoscaler reaction time?](#how-can-i-modify-cluster-autoscaler-reaction-time)
   * [How can I configure overprovisioning with Cluster Autoscaler?](#how-can-i-configure-overprovisioning-with-cluster-autoscaler)
   * [How can I enable/disable eviction for a specific DaemonSet](#how-can-i-enabledisable-eviction-for-a-specific-daemonset)
@@ -400,11 +400,11 @@ then they may be considered by the CA for a possible scale-up.
 Scaling down of unneeded nodes can be configured by setting `--scale-down-unneeded-time`. Increasing value will make nodes stay
 up longer, waiting for pods to be scheduled while decreasing value will make nodes be deleted sooner.
 
-### How can I request Clsuter Autoscaler to scale down a particular node?
+### How can I request Cluster Autoscaler to scale down a particular node?
 
 CA supports scaling down a particular node with a special taint.
 * The taint `Key` is required. It should be `cluster-autoscaler.kubernetes.io/force-scale-down-with-grace-period-minutes`.
-* The taint `Vaue` is optional. It can be empty or an integer indicating the time to evict a pod before deleting it. If empty, the pods on the node will always be evicted gracefully.
+* The taint `Value` is optional. It can be empty or an integer indicating the time to evict a pod before deleting it. If empty, the pods on the node will always be evicted gracefully.
 * The taint `Effect` is required. It can be `NoSchedule`, `PreferNoSchedule` or `NoExecute`.
 * The taint `TimeAdded` is optional. It can be empty or an UTC time indicating the start time of the force scale down. If empty, CA will backfill the added time when CA observes the new taint in the next scan, usually within 10 seconds (configurable by `--scan-interval` flag).
 
@@ -413,16 +413,18 @@ The node scale-down deadline is calculated based on the taint `Value` and the ta
 * After the deadline, the node will be deleted directly, then the pods on the node will be deleted as well.
 
 The force scale down operation mainly has 3 stages:
-1. Clsuter scale-up: When the `force-scale-down` is added to a node, all pods on the node will be marked as `Pending` virtually. CA will try to schedule the pods on different nodes, and a cluster scale-up might be triggered if needed. The scale-up will also be triggered if the node group is at the min size. In addition, the cluster usually dealys scale-down for 10 mintues after adding new nodes (configurable by `--scale-down-delay-after-add` flag). However, the 10-minute cool down period will be skipped if there is a force-scale-down node.
+1. Cluster scale-up: When the force-scale-down taint is added to a node, all pods on the node will be marked as `Pending` virtually. CA will try to schedule the pods on different nodes, and a cluster scale-up might be triggered if needed. The scale-up will also be triggered if the node group is at the min size. In addition, the cluster usually delays scale-down for 10 minutes after adding new nodes (configurable by `--scale-down-delay-after-add` flag). However, the 10-minute cool down period will be skipped if there is a node with force-scale-down taint.
 2. Node draining: Once CA finds places for all these pods, the node scale-down starts. All pods on the node will be marked as drainable, and node draining starts.
-3. Node deletion: When the node draining is completed or the configured deadline is exceeded, the node deletion starts. CA will call cloud-provide to delete the node.
+3. Node deletion: When the node draining is completed or the configured deadline is exceeded, the node deletion starts. CA will call the cloud provider to delete the node.
 
 To avoid node churning caused by the force-scale-down nodes:
 * The scale-up will be triggered only if the pods on the force-scale-down node cannot be rescheduled on existing nodes.
-* The scale-down will be triggered only if the node is still unneeded after rescheduling all pods on the force-scale-down node.
+* The scale-down will be triggered only if the node is still unneeded after rescheduling all pods from the force-scale-down nodes.
 * If the scale-down candidates have multiple nodes, the force-scale-down node will have higher priority.
 
-This feature is controlled by a new flag `force-scale-down-enabled`. The current default value is `false`, please update it to `true` if you need it.
+By the way, the force-scale-down taint can be removed at any time, but it doesn't guarantee the node won't be removed. If CA already started draining the node, removing the taint will have no effect.
+
+This feature is fully controlled by a new flag `--force-scale-down-enabled`. The current default value is `false`, please update it to `true` if you need it.
 
 ### How can I configure overprovisioning with Cluster Autoscaler?
 
