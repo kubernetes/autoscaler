@@ -67,17 +67,17 @@ func configTLS(cfg certsConfig, minTlsVersion, ciphers string, stop <-chan struc
 		CipherSuites: ciphersuites,
 	}
 	if *cfg.reload {
-		cr := CertReloader{
+		cr := certReloader{
 			tlsCertPath: *cfg.tlsCertFile,
 			tlsKeyPath:  *cfg.tlsPrivateKey,
 		}
-		if err := cr.Load(); err != nil {
+		if err := cr.load(); err != nil {
 			klog.Fatal(err)
 		}
-		if err := cr.Start(stop); err != nil {
+		if err := cr.start(stop); err != nil {
 			klog.Fatal(err)
 		}
-		config.GetCertificate = cr.GetCertificate
+		config.GetCertificate = cr.getCertificate
 	} else {
 		cert, err := tls.LoadX509KeyPair(*cfg.tlsCertFile, *cfg.tlsPrivateKey)
 		if err != nil {

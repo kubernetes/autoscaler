@@ -122,7 +122,7 @@ func TestKeypairReloader(t *testing.T) {
 		t.Error(err)
 	}
 
-	reloader := CertReloader{
+	reloader := certReloader{
 		tlsCertPath: certPath,
 		tlsKeyPath:  keyPath,
 	}
@@ -131,7 +131,7 @@ func TestKeypairReloader(t *testing.T) {
 	}
 	stop := make(chan struct{})
 	defer close(stop)
-	if err = reloader.Start(stop); err != nil {
+	if err = reloader.start(stop); err != nil {
 		t.Error(err)
 	}
 
@@ -143,7 +143,7 @@ func TestKeypairReloader(t *testing.T) {
 		t.Error(err)
 	}
 	time.Sleep(40 * time.Millisecond)
-	tlsCert, err := reloader.GetCertificate(nil)
+	tlsCert, err := reloader.getCertificate(nil)
 	if err != nil {
 		t.Error(err)
 	}

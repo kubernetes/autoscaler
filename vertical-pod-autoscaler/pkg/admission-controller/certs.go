@@ -42,14 +42,14 @@ func readFile(filePath string) []byte {
 	return res
 }
 
-type CertReloader struct {
+type certReloader struct {
 	tlsCertPath string
 	tlsKeyPath  string
 	cert        *tls.Certificate
 	mu          sync.RWMutex
 }
 
-func (cr *CertReloader) Start(stop <-chan struct{}) error {
+func (cr *certReloader) start(stop <-chan struct{}) error {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		return err
@@ -68,7 +68,7 @@ func (cr *CertReloader) Start(stop <-chan struct{}) error {
 			case event := <-watcher.Events:
 				if event.Has(fsnotify.Create) || event.Has(fsnotify.Write) {
 					klog.V(2).Info("New certificate found, reloading")
-					if err := cr.Load(); err != nil {
+					if err := cr.load(); err != nil {
 						klog.Errorf("Failed to reload certificate: %s", err)
 					}
 				}
@@ -82,7 +82,7 @@ func (cr *CertReloader) Start(stop <-chan struct{}) error {
 	return nil
 }
 
-func (cr *CertReloader) Load() error {
+func (cr *certReloader) load() error {
 	cert, err := tls.LoadX509KeyPair(cr.tlsCertPath, cr.tlsKeyPath)
 	if err != nil {
 		return err
@@ -93,7 +93,7 @@ func (cr *CertReloader) Load() error {
 	return nil
 }
 
-func (cr *CertReloader) GetCertificate(_ *tls.ClientHelloInfo) (*tls.Certificate, error) {
+func (cr *certReloader) getCertificate(_ *tls.ClientHelloInfo) (*tls.Certificate, error) {
 	cr.mu.RLock()
 	defer cr.mu.RUnlock()
 	return cr.cert, nil
