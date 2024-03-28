@@ -90,11 +90,33 @@ func (e *BinpackingNodeEstimator) Estimate(
 	lastNodeName := ""
 
 	for _, podsEquivalenceGroup := range podsEquivalenceGroups {
-		for _, pod := range podsEquivalenceGroup.Pods {
-			found := false
+		index := 0
+		for index = 0; index < len(podsEquivalenceGroup.Pods); index++ {
+			pod := podsEquivalenceGroup.Pods[index]
 
+			// Check schedulability on all nodes created during simulation
 			nodeName, err := e.predicateChecker.FitsAnyNodeMatching(e.clusterSnapshot, pod, func(nodeInfo *schedulerframework.NodeInfo) bool {
 				return newNodeNames[nodeInfo.Node().Name]
+			})
+			if err != nil {
+				break
+			}
+
+			if err := e.clusterSnapshot.AddPod(pod, nodeName); err != nil {
+				klog.Errorf("Error adding pod %v.%v to node %v in ClusterSnapshot; %v", pod.Namespace, pod.Name, nodeName, err)
+				return 0, nil
+			}
+			scheduledPods = append(scheduledPods, pod)
+			newNodesWithPods[nodeName] = true
+		}
+
+		for ; index < len(podsEquivalenceGroup.Pods); index++ {
+			pod := podsEquivalenceGroup.Pods[index]
+			found := false
+
+			// Check schedulability on only newly created node
+			nodeName, err := e.predicateChecker.FitsAnyNodeMatching(e.clusterSnapshot, pod, func(nodeInfo *schedulerframework.NodeInfo) bool {
+				return nodeInfo.Node().Name == lastNodeName
 			})
 			if err == nil {
 				found = true
