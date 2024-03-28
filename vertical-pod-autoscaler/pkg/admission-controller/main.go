@@ -58,6 +58,7 @@ var (
 		clientCaFile:  flag.String("client-ca-file", "/etc/tls-certs/caCert.pem", "Path to CA PEM file."),
 		tlsCertFile:   flag.String("tls-cert-file", "/etc/tls-certs/serverCert.pem", "Path to server certificate PEM file."),
 		tlsPrivateKey: flag.String("tls-private-key", "/etc/tls-certs/serverKey.pem", "Path to server certificate key PEM file."),
+		reload:        flag.Bool("reload-cert", false, "If set to true, reload leaf certificate."),
 	}
 	ciphers       = flag.String("tls-ciphers", "", "A comma-separated or colon-separated list of ciphers to accept.  Only works when min-tls-version is set to tls1_2.")
 	minTlsVersion = flag.String("min-tls-version", "tls1_2", "The minimum TLS version to accept.  Must be set to either tls1_2 (default) or tls1_3.")
@@ -86,7 +87,6 @@ func main() {
 	metrics.Initialize(*address, healthCheck)
 	metrics_admission.Register()
 
-	certs := initCerts(*certsConfiguration)
 	config := common.CreateKubeConfigOrDie(*kubeconfig, float32(*kubeApiQps), int(*kubeApiBurst))
 
 	vpaClient := vpa_clientset.NewForConfigOrDie(config)
@@ -133,12 +133,12 @@ func main() {
 	})
 	server := &http.Server{
 		Addr:      fmt.Sprintf(":%d", *port),
-		TLSConfig: configTLS(certs.serverCert, certs.serverKey, *minTlsVersion, *ciphers),
+		TLSConfig: configTLS(*certsConfiguration, *minTlsVersion, *ciphers, stopCh),
 	}
 	url := fmt.Sprintf("%v:%v", *webhookAddress, *webhookPort)
 	go func() {
 		if *registerWebhook {
-			selfRegistration(kubeClient, certs.caCert, namespace, *serviceName, url, *registerByURL, int32(*webhookTimeout))
+			selfRegistration(kubeClient, readFile(*certsConfiguration.clientCaFile), namespace, *serviceName, url, *registerByURL, int32(*webhookTimeout))
 		}
 		// Start status updates after the webhook is initialized.
 		statusUpdater.Run(stopCh)
