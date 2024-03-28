@@ -21,8 +21,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
+	cactx "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/kubernetes/pkg/scheduler/framework"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
@@ -39,24 +38,22 @@ var AvailableEstimators = []string{BinpackingEstimatorName}
 // It returns the number of new nodes needed as well as the list of pods it managed
 // to schedule on those nodes.
 type Estimator interface {
-	Estimate([]*apiv1.Pod, *schedulerframework.NodeInfo, cloudprovider.NodeGroup) (int, []*apiv1.Pod)
+	Estimate(*cactx.AutoscalingContext, []*apiv1.Pod, *schedulerframework.NodeInfo, cloudprovider.NodeGroup) (int, []*apiv1.Pod)
 }
 
 // EstimatorBuilder creates a new estimator object.
-type EstimatorBuilder func(predicatechecker.PredicateChecker, clustersnapshot.ClusterSnapshot, EstimationContext) Estimator
+type EstimatorBuilder func(EstimationContext) Estimator
 
 // EstimationAnalyserFunc to be run at the end of the estimation logic.
-type EstimationAnalyserFunc func(clustersnapshot.ClusterSnapshot, cloudprovider.NodeGroup, map[string]bool)
+type EstimationAnalyserFunc func(*cactx.AutoscalingContext, cloudprovider.NodeGroup, map[string]bool)
 
 // NewEstimatorBuilder creates a new estimator object from flag.
 func NewEstimatorBuilder(name string, limiter EstimationLimiter, orderer EstimationPodOrderer, estimationAnalyserFunc EstimationAnalyserFunc) (EstimatorBuilder, error) {
 	switch name {
 	case BinpackingEstimatorName:
 		return func(
-			predicateChecker predicatechecker.PredicateChecker,
-			clusterSnapshot clustersnapshot.ClusterSnapshot,
-			context EstimationContext) Estimator {
-			return NewBinpackingNodeEstimator(predicateChecker, clusterSnapshot, limiter, orderer, context, estimationAnalyserFunc)
+			ectx EstimationContext) Estimator {
+			return NewBinpackingNodeEstimator(limiter, orderer, ectx, estimationAnalyserFunc)
 		}, nil
 	}
 	return nil, fmt.Errorf("unknown estimator: %s", name)
