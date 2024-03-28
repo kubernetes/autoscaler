@@ -158,6 +158,8 @@ type equinixMetalManagerNodePool struct {
 	cloudinit         string
 	reservation       string
 	hostnamePattern   string
+	ipxeScriptURL     string
+	alwaysPXE         bool
 }
 
 type equinixMetalManagerRest struct {
@@ -165,7 +167,7 @@ type equinixMetalManagerRest struct {
 	equinixMetalManagerNodePools map[string]*equinixMetalManagerNodePool
 }
 
-// ConfigNodepool options only include the project-id for now
+// ConfigNodepool options for an Equinix Metal Nodepool
 type ConfigNodepool struct {
 	ClusterName       string `gcfg:"cluster-name"`
 	ProjectID         string `gcfg:"project-id"`
@@ -177,6 +179,8 @@ type ConfigNodepool struct {
 	CloudInit         string `gcfg:"cloudinit"`
 	Reservation       string `gcfg:"reservation"`
 	HostnamePattern   string `gcfg:"hostname-pattern"`
+	IPXEScriptURL     string `gcfg:"ipxe-script-url"`
+	AlwaysPXE         bool   `gcfg:"always-pxe"`
 }
 
 // ConfigFile is used to read and store information from the cloud configuration file
@@ -218,6 +222,8 @@ type DeviceCreateRequest struct {
 	Storage               string                   `json:"storage,omitempty"`
 	Tags                  []string                 `json:"tags"`
 	CustomData            string                   `json:"customdata,omitempty"`
+	IPXEScriptURL         string                   `json:"ipxe_script_url,omitempty"`
+	AlwaysPXE             bool                     `json:"always_pxe,omitempty"`
 	IPAddresses           []IPAddressCreateRequest `json:"ip_addresses,omitempty"`
 	HardwareReservationID string                   `json:"hardware_reservation_id,omitempty"`
 }
@@ -330,6 +336,8 @@ func createEquinixMetalManagerRest(configReader io.Reader, discoverOpts cloudpro
 			cloudinit:         cfg.Nodegroupdef[nodepool].CloudInit,
 			reservation:       cfg.Nodegroupdef[nodepool].Reservation,
 			hostnamePattern:   cfg.Nodegroupdef[nodepool].HostnamePattern,
+			ipxeScriptURL:     cfg.Nodegroupdef[nodepool].IPXEScriptURL,
+			alwaysPXE:         cfg.Nodegroupdef[nodepool].AlwaysPXE,
 		}
 	}
 
@@ -535,6 +543,8 @@ func (mgr *equinixMetalManagerRest) createDevice(ctx context.Context, hostname, 
 		UserData:              userData,
 		Tags:                  []string{"k8s-cluster-" + mgr.getNodePoolDefinition(nodegroup).clusterName, "k8s-nodepool-" + nodegroup},
 		HardwareReservationID: reservation,
+		IPXEScriptURL:         mgr.getNodePoolDefinition(nodegroup).ipxeScriptURL,
+		AlwaysPXE:             mgr.getNodePoolDefinition(nodegroup).alwaysPXE,
 	}
 
 	if err := mgr.createDeviceRequest(ctx, cr, nodegroup); err != nil {
@@ -624,7 +634,6 @@ func (mgr *equinixMetalManagerRest) deleteDevice(ctx context.Context, nodegroup,
 
 	klog.Infof("Deleted device %s: %v", id, result)
 	return nil
-
 }
 
 // deleteNodes deletes nodes by passing a comma separated list of names or IPs
@@ -675,13 +684,15 @@ func (mgr *equinixMetalManagerRest) deleteNodes(nodegroup string, nodes []NodeRe
 }
 
 // BuildGenericLabels builds basic labels for equinix metal nodes
-func BuildGenericLabels(nodegroup string, instanceType string) map[string]string {
+func BuildGenericLabels(nodegroup string, instanceType, instanceMetro string) map[string]string {
 	result := make(map[string]string)
 
 	result[apiv1.LabelInstanceType] = instanceType
-	//result[apiv1.LabelZoneRegion] = ""
-	//result[apiv1.LabelZoneFailureDomain] = "0"
-	//result[apiv1.LabelHostname] = ""
+	result[apiv1.LabelInstanceTypeStable] = instanceType
+	result[apiv1.LabelZoneRegion] = instanceMetro
+
+	// result[apiv1.LabelZoneRegion] = ""
+	// result[apiv1.LabelZoneFailureDomain] = "0"
 	result["pool"] = nodegroup
 
 	return result
@@ -695,7 +706,9 @@ func (mgr *equinixMetalManagerRest) templateNodeInfo(nodegroup string) (*schedul
 	node.ObjectMeta = metav1.ObjectMeta{
 		Name:     nodeName,
 		SelfLink: fmt.Sprintf("/api/v1/nodes/%s", nodeName),
-		Labels:   map[string]string{},
+		Labels:   map[string]string{
+			// apiv1.LabelHostname: nodeName,
+		},
 	}
 	node.Status = apiv1.NodeStatus{
 		Capacity: apiv1.ResourceList{},
@@ -714,7 +727,7 @@ func (mgr *equinixMetalManagerRest) templateNodeInfo(nodegroup string) (*schedul
 	node.Status.Conditions = cloudprovider.BuildReadyConditions()
 
 	// GenericLabels
-	node.Labels = cloudprovider.JoinStringMaps(node.Labels, BuildGenericLabels(nodegroup, mgr.getNodePoolDefinition(nodegroup).plan))
+	node.Labels = cloudprovider.JoinStringMaps(node.Labels, BuildGenericLabels(nodegroup, mgr.getNodePoolDefinition(nodegroup).plan, mgr.getNodePoolDefinition(nodegroup).metro))
 
 	nodeInfo := schedulerframework.NewNodeInfo(cloudprovider.BuildKubeProxy(nodegroup))
 	nodeInfo.SetNode(&node)
