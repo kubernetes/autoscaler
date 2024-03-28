@@ -32,49 +32,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func makePodEquivalenceGroup(cpuPerPod int64, memoryPerPod int64, hostport int32, maxSkew int32, topologySpreadingKey string, podCount int) PodEquivalenceGroup {
-	pod := &apiv1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "estimatee",
-			Namespace: "universe",
-			Labels: map[string]string{
-				"app": "estimatee",
-			},
-		},
-		Spec: apiv1.PodSpec{
-			Containers: []apiv1.Container{
-				{
-					Resources: apiv1.ResourceRequirements{
-						Requests: apiv1.ResourceList{
-							apiv1.ResourceCPU:    *resource.NewMilliQuantity(cpuPerPod, resource.DecimalSI),
-							apiv1.ResourceMemory: *resource.NewQuantity(memoryPerPod*units.MiB, resource.DecimalSI),
-						},
-					},
-				},
-			},
-		},
-	}
-	if hostport > 0 {
-		pod.Spec.Containers[0].Ports = []apiv1.ContainerPort{
-			{
-				HostPort: hostport,
-			},
-		}
-	}
-	if maxSkew > 0 {
-		pod.Spec.TopologySpreadConstraints = []apiv1.TopologySpreadConstraint{
-			{
-				MaxSkew:           maxSkew,
-				TopologyKey:       topologySpreadingKey,
-				WhenUnsatisfiable: "DoNotSchedule",
-				LabelSelector: &metav1.LabelSelector{
-					MatchLabels: map[string]string{
-						"app": "estimatee",
-					},
-				},
-			},
-		}
-	}
+func makePodEquivalenceGroup(pod *apiv1.Pod, podCount int) PodEquivalenceGroup {
 	pods := []*apiv1.Pod{}
 	for i := 0; i < podCount; i++ {
 		pods = append(pods, pod)
@@ -107,7 +65,18 @@ func makeNode(cpu, mem, podCount int64, name string, zone string) *apiv1.Node {
 }
 
 func TestBinpackingEstimate(t *testing.T) {
-	highResourcePodGroup := makePodEquivalenceGroup(500, 1000, 0, 0, "", 10)
+	highResourcePodGroup := makePodEquivalenceGroup(
+		BuildTestPod(
+			"estimatee",
+			500,
+			1000,
+			WithNamespace("universe"),
+			WithLabels(map[string]string{
+				"app": "estimatee",
+			}),
+		),
+		10,
+	)
 	testCases := []struct {
 		name                 string
 		millicores           int64
@@ -120,63 +89,122 @@ func TestBinpackingEstimate(t *testing.T) {
 		expectProcessedPods  []*apiv1.Pod
 	}{
 		{
-			name:                 "simple resource-based binpacking",
-			millicores:           350*3 - 50,
-			memory:               2 * 1000,
-			podsEquivalenceGroup: []PodEquivalenceGroup{makePodEquivalenceGroup(350, 1000, 0, 0, "", 10)},
-			expectNodeCount:      5,
-			expectPodCount:       10,
+			name:       "simple resource-based binpacking",
+			millicores: 350*3 - 50,
+			memory:     2 * 1000,
+			podsEquivalenceGroup: []PodEquivalenceGroup{makePodEquivalenceGroup(
+				BuildTestPod(
+					"estimatee",
+					350,
+					1000,
+					WithNamespace("universe"),
+					WithLabels(map[string]string{
+						"app": "estimatee",
+					})), 10)},
+			expectNodeCount: 5,
+			expectPodCount:  10,
 		},
 		{
-			name:                 "pods-per-node bound binpacking",
-			millicores:           10000,
-			memory:               20000,
-			podsEquivalenceGroup: []PodEquivalenceGroup{makePodEquivalenceGroup(10, 100, 0, 0, "", 20)},
-			expectNodeCount:      2,
-			expectPodCount:       20,
+			name:       "pods-per-node bound binpacking",
+			millicores: 10000,
+			memory:     20000,
+			podsEquivalenceGroup: []PodEquivalenceGroup{makePodEquivalenceGroup(
+				BuildTestPod(
+					"estimatee",
+					10,
+					100,
+					WithNamespace("universe"),
+					WithLabels(map[string]string{
+						"app": "estimatee",
+					})), 20)},
+			expectNodeCount: 2,
+			expectPodCount:  20,
 		},
 		{
-			name:                 "hostport conflict forces pod-per-node",
-			millicores:           1000,
-			memory:               5000,
-			podsEquivalenceGroup: []PodEquivalenceGroup{makePodEquivalenceGroup(200, 1000, 5555, 0, "", 8)},
-			expectNodeCount:      8,
-			expectPodCount:       8,
+			name:       "hostport conflict forces pod-per-node",
+			millicores: 1000,
+			memory:     5000,
+			podsEquivalenceGroup: []PodEquivalenceGroup{makePodEquivalenceGroup(
+				BuildTestPod(
+					"estimatee",
+					200,
+					1000,
+					WithNamespace("universe"),
+					WithLabels(map[string]string{
+						"app": "estimatee",
+					}),
+					WithHostPort(5555)), 8)},
+			expectNodeCount: 8,
+			expectPodCount:  8,
 		},
 		{
-			name:                 "limiter cuts binpacking",
-			millicores:           1000,
-			memory:               5000,
-			podsEquivalenceGroup: []PodEquivalenceGroup{makePodEquivalenceGroup(500, 1000, 0, 0, "", 20)},
-			maxNodes:             5,
-			expectNodeCount:      5,
-			expectPodCount:       10,
+			name:       "limiter cuts binpacking",
+			millicores: 1000,
+			memory:     5000,
+			podsEquivalenceGroup: []PodEquivalenceGroup{makePodEquivalenceGroup(
+				BuildTestPod(
+					"estimatee",
+					500,
+					1000,
+					WithNamespace("universe"),
+					WithLabels(map[string]string{
+						"app": "estimatee",
+					})), 20)},
+			maxNodes:        5,
+			expectNodeCount: 5,
+			expectPodCount:  10,
 		},
 		{
-			name:                 "decreasing ordered pods are processed first",
-			millicores:           1000,
-			memory:               5000,
-			podsEquivalenceGroup: append([]PodEquivalenceGroup{makePodEquivalenceGroup(50, 1000, 0, 0, "", 10)}, highResourcePodGroup),
-			maxNodes:             5,
-			expectNodeCount:      5,
-			expectPodCount:       10,
-			expectProcessedPods:  highResourcePodGroup.Pods,
+			name:       "decreasing ordered pods are processed first",
+			millicores: 1000,
+			memory:     5000,
+			podsEquivalenceGroup: append([]PodEquivalenceGroup{makePodEquivalenceGroup(
+				BuildTestPod(
+					"estimatee",
+					50,
+					1000,
+					WithNamespace("universe"),
+					WithLabels(map[string]string{
+						"app": "estimatee",
+					})), 10)}, highResourcePodGroup),
+			maxNodes:            5,
+			expectNodeCount:     5,
+			expectPodCount:      10,
+			expectProcessedPods: highResourcePodGroup.Pods,
 		},
 		{
-			name:                 "hostname topology spreading with maxSkew=2 forces 2 pods/node",
-			millicores:           1000,
-			memory:               5000,
-			podsEquivalenceGroup: []PodEquivalenceGroup{makePodEquivalenceGroup(20, 100, 0, 2, "kubernetes.io/hostname", 8)},
-			expectNodeCount:      4,
-			expectPodCount:       8,
+			name:       "hostname topology spreading with maxSkew=2 forces 2 pods/node",
+			millicores: 1000,
+			memory:     5000,
+			podsEquivalenceGroup: []PodEquivalenceGroup{makePodEquivalenceGroup(
+				BuildTestPod(
+					"estimatee",
+					20,
+					100,
+					WithNamespace("universe"),
+					WithLabels(map[string]string{
+						"app": "estimatee",
+					}),
+					WithMaxSkew(2, "kubernetes.io/hostname")), 8)},
+			expectNodeCount: 4,
+			expectPodCount:  8,
 		},
 		{
-			name:                 "zonal topology spreading with maxSkew=2 only allows 2 pods to schedule",
-			millicores:           1000,
-			memory:               5000,
-			podsEquivalenceGroup: []PodEquivalenceGroup{makePodEquivalenceGroup(20, 100, 0, 2, "topology.kubernetes.io/zone", 8)},
-			expectNodeCount:      1,
-			expectPodCount:       2,
+			name:       "zonal topology spreading with maxSkew=2 only allows 2 pods to schedule",
+			millicores: 1000,
+			memory:     5000,
+			podsEquivalenceGroup: []PodEquivalenceGroup{makePodEquivalenceGroup(
+				BuildTestPod(
+					"estimatee",
+					20,
+					100,
+					WithNamespace("universe"),
+					WithLabels(map[string]string{
+						"app": "estimatee",
+					}),
+					WithMaxSkew(2, "topology.kubernetes.io/zone")), 8)},
+			expectNodeCount: 1,
+			expectPodCount:  2,
 		},
 	}
 	for _, tc := range testCases {
@@ -211,7 +239,30 @@ func BenchmarkBinpackingEstimate(b *testing.B) {
 	maxNodes := 3000
 	expectNodeCount := 2595
 	expectPodCount := 51000
-	podsEquivalenceGroup := []PodEquivalenceGroup{makePodEquivalenceGroup(50, 100, 0, 0, "", 50000), makePodEquivalenceGroup(95, 190, 0, 0, "", 1000)}
+	podsEquivalenceGroup := []PodEquivalenceGroup{
+		makePodEquivalenceGroup(
+			BuildTestPod(
+				"estimatee",
+				50,
+				100,
+				WithNamespace("universe"),
+				WithLabels(map[string]string{
+					"app": "estimatee",
+				})),
+			50000,
+		),
+		makePodEquivalenceGroup(
+			BuildTestPod(
+				"estimatee",
+				95,
+				190,
+				WithNamespace("universe"),
+				WithLabels(map[string]string{
+					"app": "estimatee",
+				})),
+			1000,
+		),
+	}
 
 	for i := 0; i < b.N; i++ {
 		clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot()

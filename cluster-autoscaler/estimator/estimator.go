@@ -41,6 +41,14 @@ type PodEquivalenceGroup struct {
 	Pods []*apiv1.Pod
 }
 
+// Exemplar returns an example pod from the group.
+func (p *PodEquivalenceGroup) Exemplar() *apiv1.Pod {
+	if len(p.Pods) == 0 {
+		return nil
+	}
+	return p.Pods[0]
+}
+
 // Estimator calculates the number of nodes of given type needed to schedule pods.
 // It returns the number of new nodes needed as well as the list of pods it managed
 // to schedule on those nodes.

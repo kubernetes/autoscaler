@@ -696,10 +696,10 @@ func (o *ScaleUpOrchestrator) ComputeSimilarNodeGroups(
 func matchingSchedulablePodGroups(podGroups []estimator.PodEquivalenceGroup, similarPodGroups []estimator.PodEquivalenceGroup) bool {
 	schedulableSamplePods := make(map[*apiv1.Pod]bool)
 	for _, podGroup := range similarPodGroups {
-		schedulableSamplePods[podGroup.Pods[0]] = true
+		schedulableSamplePods[podGroup.Exemplar()] = true
 	}
 	for _, podGroup := range podGroups {
-		if _, found := schedulableSamplePods[podGroup.Pods[0]]; !found {
+		if _, found := schedulableSamplePods[podGroup.Exemplar()]; !found {
 			return false
 		}
 	}

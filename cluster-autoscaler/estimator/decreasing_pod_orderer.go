@@ -60,14 +60,14 @@ func (d *DecreasingPodOrderer) Order(podsEquivalentGroups []PodEquivalenceGroup,
 // Score is defined as cpu_sum/node_capacity + mem_sum/node_capacity.
 // Pods that have bigger requirements should be processed first, thus have higher scores.
 func (d *DecreasingPodOrderer) calculatePodScore(podsEquivalentGroup PodEquivalenceGroup, nodeTemplate *framework.NodeInfo) *podScoreInfo {
-	if len(podsEquivalentGroup.Pods) == 0 {
+	samplePod := podsEquivalentGroup.Exemplar()
+	if samplePod == nil {
 		return &podScoreInfo{
 			score:               0,
 			podsEquivalentGroup: podsEquivalentGroup,
 		}
 	}
 
-	samplePod := podsEquivalentGroup.Pods[0]
 	cpuSum := resource.Quantity{}
 	memorySum := resource.Quantity{}
 
