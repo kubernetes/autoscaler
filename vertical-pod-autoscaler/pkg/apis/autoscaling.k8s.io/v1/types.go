@@ -84,13 +84,14 @@ type VerticalPodAutoscalerSpec struct {
 	// of scale subresource - it will not use it to modify the replica count.
 	// The only thing retrieved is a label selector matching pods grouped by
 	// the target resource.
-	TargetRef *autoscaling.CrossVersionObjectReference `json:"targetRef" protobuf:"bytes,1,name=targetRef"`
+	TargetRef *autoscaling.CrossVersionObjectReference `json:"targetRef,omitempty" protobuf:"bytes,1,name=targetRef"`
+	Selector  *metav1.LabelSelector                    `json:"selector,omitempty" protobuf:"bytes,2,name=selector"`
 
 	// Describes the rules on how changes are applied to the pods.
 	// If not specified, all fields in the `PodUpdatePolicy` are set to their
 	// default values.
 	// +optional
-	UpdatePolicy *PodUpdatePolicy `json:"updatePolicy,omitempty" protobuf:"bytes,2,opt,name=updatePolicy"`
+	UpdatePolicy *PodUpdatePolicy `json:"updatePolicy,omitempty" protobuf:"bytes,3,opt,name=updatePolicy"`
 
 	// Controls how the autoscaler computes recommended resources.
 	// The resource policy may be used to set constraints on the recommendations
@@ -100,13 +101,13 @@ type VerticalPodAutoscalerSpec struct {
 	// If not specified, the autoscaler computes recommended resources for all containers in the pod,
 	// without additional constraints.
 	// +optional
-	ResourcePolicy *PodResourcePolicy `json:"resourcePolicy,omitempty" protobuf:"bytes,3,opt,name=resourcePolicy"`
+	ResourcePolicy *PodResourcePolicy `json:"resourcePolicy,omitempty" protobuf:"bytes,4,opt,name=resourcePolicy"`
 
 	// Recommender responsible for generating recommendation for this object.
 	// List should be empty (then the default recommender will generate the
 	// recommendation) or contain exactly one recommender.
 	// +optional
-	Recommenders []*VerticalPodAutoscalerRecommenderSelector `json:"recommenders,omitempty" protobuf:"bytes,4,opt,name=recommenders"`
+	Recommenders []*VerticalPodAutoscalerRecommenderSelector `json:"recommenders,omitempty" protobuf:"bytes,5,opt,name=recommenders"`
 }
 
 // EvictionChangeRequirement refers to the relationship between the new target recommendation for a Pod and its current requests, what kind of change is necessary for the Pod to be evicted

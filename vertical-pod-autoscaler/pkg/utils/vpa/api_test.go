@@ -30,7 +30,6 @@ import (
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_fake "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/fake"
-	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 )
 
@@ -169,7 +168,7 @@ func TestGetControllingVPAForPod(t *testing.T) {
 		{vpaB, parseLabelSelector("app = testingApp")},
 		{vpaA, parseLabelSelector("app = testingApp")},
 		{nonMatchingVPA, parseLabelSelector("app = other")},
-	}, &controllerfetcher.FakeControllerFetcher{})
+	})
 	assert.Equal(t, vpaA, chosen.Vpa)
 }
 

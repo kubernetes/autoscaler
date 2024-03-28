@@ -24,6 +24,7 @@ import (
 	"golang.org/x/time/rate"
 
 	apiv1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
 	kube_client "k8s.io/client-go/kubernetes"
@@ -142,10 +143,19 @@ func (u *updater) RunOnce(ctx context.Context) {
 			klog.V(3).Infof("skipping VPA object %v because its mode is not \"Recreate\" or \"Auto\"", vpa.Name)
 			continue
 		}
-		selector, err := u.selectorFetcher.Fetch(vpa)
-		if err != nil {
-			klog.V(3).Infof("skipping VPA object %v because we cannot fetch selector", vpa.Name)
-			continue
+		var selector labels.Selector
+		if vpa.Spec.TargetRef != nil {
+			selector, err = u.selectorFetcher.Fetch(vpa)
+			if err != nil {
+				klog.V(3).Infof("skipping VPA object %v because we cannot fetch selector", vpa.Name)
+				continue
+			}
+		} else {
+			selector, err = metav1.LabelSelectorAsSelector(vpa.Spec.Selector)
+			if err != nil {
+				klog.V(3).Infof("skipping VPA object %v because we cannot parse selector: %s", vpa.Name, err)
+				continue
+			}
 		}
 
 		vpas = append(vpas, &vpa_api_util.VpaWithSelector{
@@ -172,7 +182,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 
 	controlledPods := make(map[*vpa_types.VerticalPodAutoscaler][]*apiv1.Pod)
 	for _, pod := range allLivePods {
-		controllingVPA := vpa_api_util.GetControllingVPAForPod(pod, vpas, u.controllerFetcher)
+		controllingVPA := vpa_api_util.GetControllingVPAForPod(pod, vpas)
 		if controllingVPA != nil {
 			controlledPods[controllingVPA.Vpa] = append(controlledPods[controllingVPA.Vpa], pod)
 		}

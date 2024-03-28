@@ -36,7 +36,6 @@ import (
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	vpa_api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1"
 	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1"
-	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 )
 
 // VpaWithSelector is a pair of VPA and its selector.
@@ -96,12 +95,12 @@ func NewVpasLister(vpaClient *vpa_clientset.Clientset, stopChannel <-chan struct
 	return vpaLister
 }
 
-// PodMatchesVPA returns true iff the vpaWithSelector matches the Pod.
+// PodMatchesVPA returns true if the vpaWithSelector matches the Pod.
 func PodMatchesVPA(pod *core.Pod, vpaWithSelector *VpaWithSelector) bool {
 	return PodLabelsMatchVPA(pod.Namespace, labels.Set(pod.GetLabels()), vpaWithSelector.Vpa.Namespace, vpaWithSelector.Selector)
 }
 
-// PodLabelsMatchVPA returns true iff the vpaWithSelector matches the pod labels.
+// PodLabelsMatchVPA returns true if the vpaWithSelector matches the pod labels.
 func PodLabelsMatchVPA(podNamespace string, labels labels.Set, vpaNamespace string, vpaSelector labels.Selector) bool {
 	if podNamespace != vpaNamespace {
 		return false
@@ -109,7 +108,7 @@ func PodLabelsMatchVPA(podNamespace string, labels labels.Set, vpaNamespace stri
 	return vpaSelector.Matches(labels)
 }
 
-// stronger returns true iff a is before b in the order to control a Pod (that matches both VPAs).
+// stronger returns true if a is before b in the order to control a Pod (that matches both VPAs).
 func stronger(a, b *vpa_types.VerticalPodAutoscaler) bool {
 	// Assume a is not nil and each valid object is before nil object.
 	if b == nil {
@@ -127,45 +126,12 @@ func stronger(a, b *vpa_types.VerticalPodAutoscaler) bool {
 }
 
 // GetControllingVPAForPod chooses the earliest created VPA from the input list that matches the given Pod.
-func GetControllingVPAForPod(pod *core.Pod, vpas []*VpaWithSelector, ctrlFetcher controllerfetcher.ControllerFetcher) *VpaWithSelector {
-
-	var ownerRefrence *meta.OwnerReference
-	for i := range pod.OwnerReferences {
-		r := pod.OwnerReferences[i]
-		if r.Controller != nil && *r.Controller {
-			ownerRefrence = &r
-		}
-	}
-	if ownerRefrence == nil {
-		// If the pod has no ownerReference, it cannot be under a VPA.
-		return nil
-	}
-	k := &controllerfetcher.ControllerKeyWithAPIVersion{
-		ControllerKey: controllerfetcher.ControllerKey{
-			Namespace: pod.Namespace,
-			Kind:      ownerRefrence.Kind,
-			Name:      ownerRefrence.Name,
-		},
-		ApiVersion: ownerRefrence.APIVersion,
-	}
-	parentController, err := ctrlFetcher.FindTopMostWellKnownOrScalable(k)
-	if err != nil {
-		klog.Errorf("fail to get pod controller: pod=%s err=%s", pod.Name, err.Error())
-		return nil
-	}
+func GetControllingVPAForPod(pod *core.Pod, vpas []*VpaWithSelector) *VpaWithSelector {
 
 	var controlling *VpaWithSelector
 	var controllingVpa *vpa_types.VerticalPodAutoscaler
 	// Choose the strongest VPA from the ones that match this Pod.
 	for _, vpaWithSelector := range vpas {
-		if vpaWithSelector.Vpa.Spec.TargetRef == nil {
-			continue
-		}
-		if vpaWithSelector.Vpa.Spec.TargetRef.Kind != parentController.Kind ||
-			vpaWithSelector.Vpa.Namespace != parentController.Namespace ||
-			vpaWithSelector.Vpa.Spec.TargetRef.Name != parentController.Name {
-			continue // This pod is not associated to the right controller
-		}
 		if PodMatchesVPA(pod, vpaWithSelector) && stronger(vpaWithSelector.Vpa, controllingVpa) {
 			controlling = vpaWithSelector
 			controllingVpa = controlling.Vpa

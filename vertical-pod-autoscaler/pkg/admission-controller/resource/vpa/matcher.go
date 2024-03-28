@@ -18,6 +18,7 @@ package vpa
 
 import (
 	core "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/klog/v2"
 
@@ -60,10 +61,19 @@ func (m *matcher) GetMatchingVPA(pod *core.Pod) *vpa_types.VerticalPodAutoscaler
 		if vpa_api_util.GetUpdateMode(vpaConfig) == vpa_types.UpdateModeOff {
 			continue
 		}
-		selector, err := m.selectorFetcher.Fetch(vpaConfig)
-		if err != nil {
-			klog.V(3).Infof("skipping VPA object %v because we cannot fetch selector: %s", vpaConfig.Name, err)
-			continue
+		var selector labels.Selector
+		if vpaConfig.Spec.TargetRef != nil {
+			selector, err = m.selectorFetcher.Fetch(vpaConfig)
+			if err != nil {
+				klog.V(3).Infof("skipping VPA object %v because we cannot fetch selector: %s", vpaConfig.Name, err)
+				continue
+			}
+		} else {
+			selector, err = metav1.LabelSelectorAsSelector(vpaConfig.Spec.Selector)
+			if err != nil {
+				klog.V(3).Infof("skipping VPA object %v because we cannot parse selector: %s", vpaConfig.Name, err)
+				continue
+			}
 		}
 		onConfigs = append(onConfigs, &vpa_api_util.VpaWithSelector{
 			Vpa:      vpaConfig,
@@ -71,7 +81,7 @@ func (m *matcher) GetMatchingVPA(pod *core.Pod) *vpa_types.VerticalPodAutoscaler
 		})
 	}
 	klog.V(2).Infof("Let's choose from %d configs for pod %s/%s", len(onConfigs), pod.Namespace, pod.Name)
-	result := vpa_api_util.GetControllingVPAForPod(pod, onConfigs, m.controllerFetcher)
+	result := vpa_api_util.GetControllingVPAForPod(pod, onConfigs)
 	if result != nil {
 		return result.Vpa
 	}

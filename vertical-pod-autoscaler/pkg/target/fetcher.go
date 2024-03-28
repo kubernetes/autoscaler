@@ -116,6 +116,8 @@ type vpaTargetSelectorFetcher struct {
 	informersMap    map[wellKnownController]cache.SharedIndexInformer
 }
 
+// Fetch returns a labelSelector used to gather Pods controlled by the given VPA.
+// It's supposed to be called only for vpa.spec.targetRef isn't null.
 func (f *vpaTargetSelectorFetcher) Fetch(vpa *vpa_types.VerticalPodAutoscaler) (labels.Selector, error) {
 	if vpa.Spec.TargetRef == nil {
 		return nil, fmt.Errorf("targetRef not defined. If this is a v1beta1 object switch to v1beta2.")

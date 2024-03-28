@@ -486,11 +486,9 @@ type condition struct {
 	message       string
 }
 
+// validateTargetRef checks if the targetRef is a topmost well-known or scalable controller.
+// It's supposed to be called only if targetRef is not nil.
 func (feeder *clusterStateFeeder) validateTargetRef(vpa *vpa_types.VerticalPodAutoscaler) (bool, condition) {
-	//
-	if vpa.Spec.TargetRef == nil {
-		return false, condition{}
-	}
 	k := controllerfetcher.ControllerKeyWithAPIVersion{
 		ControllerKey: controllerfetcher.ControllerKey{
 			Namespace: vpa.Namespace,
@@ -513,6 +511,27 @@ func (feeder *clusterStateFeeder) validateTargetRef(vpa *vpa_types.VerticalPodAu
 }
 
 func (feeder *clusterStateFeeder) getSelector(vpa *vpa_types.VerticalPodAutoscaler) (labels.Selector, []condition) {
+	if vpa.Spec.TargetRef == nil {
+		if vpa.Spec.Selector == nil {
+			klog.Errorf("VPA %s/%s has neither targetRef nor selector", vpa.Namespace, vpa.Name)
+			return labels.Nothing(), []condition{
+				{conditionType: vpa_types.ConfigUnsupported, delete: false, message: "VPA has neither targetRef nor selector"},
+				{conditionType: vpa_types.ConfigDeprecated, delete: true},
+			}
+		}
+		selector, err := metav1.LabelSelectorAsSelector(vpa.Spec.Selector)
+		if err != nil {
+			klog.Errorf("Cannot parse selector from VPA %s/%s. Reason: %+v", vpa.Namespace, vpa.Name, err)
+			return labels.Nothing(), []condition{
+				{conditionType: vpa_types.ConfigUnsupported, delete: false, message: fmt.Sprintf("Cannot parse selector. Reason: %s", err)},
+				{conditionType: vpa_types.ConfigDeprecated, delete: true},
+			}
+		}
+		return selector, []condition{
+			{conditionType: vpa_types.ConfigUnsupported, delete: true},
+			{conditionType: vpa_types.ConfigDeprecated, delete: true},
+		}
+	}
 	selector, fetchErr := feeder.selectorFetcher.Fetch(vpa)
 	if selector != nil {
 		validTargetRef, unsupportedCondition := feeder.validateTargetRef(vpa)
