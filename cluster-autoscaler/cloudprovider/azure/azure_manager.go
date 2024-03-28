@@ -117,14 +117,11 @@ func createAzureManagerInternal(configReader io.Reader, discoveryOpts cloudprovi
 		Cap:      10 * time.Minute,
 	}
 
-	if err := manager.forceRefresh(); err != nil {
-		err = kretry.OnError(retryBackoff, retry.IsErrorRetriable, func() (err error) {
-			return manager.forceRefresh()
-		})
-		if err != nil {
-			return nil, err
-		}
-		return manager, nil
+	err = kretry.OnError(retryBackoff, retry.IsErrorRetriable, func() (err error) {
+		return manager.forceRefresh()
+	})
+	if err != nil {
+		return nil, err
 	}
 
 	return manager, nil
