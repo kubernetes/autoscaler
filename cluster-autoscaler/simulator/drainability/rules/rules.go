@@ -21,6 +21,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/daemonset"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/forcescaledown"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/localstorage"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/longterminating"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/mirror"
@@ -61,6 +62,7 @@ func Default(deleteOptions options.NodeDeleteOptions) Rules {
 		{rule: daemonset.New()},
 		{rule: safetoevict.New()},
 		{rule: terminal.New()},
+		{rule: forcescaledown.New(), skip: !deleteOptions.ForceScaleDownEnabled},
 
 		// Blocking checks
 		{rule: replicated.New(deleteOptions.SkipNodesWithCustomControllerPods)},

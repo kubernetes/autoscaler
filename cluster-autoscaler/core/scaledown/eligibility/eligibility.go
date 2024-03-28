@@ -27,6 +27,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/utilization"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/klogx"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 
 	apiv1 "k8s.io/api/core/v1"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -142,6 +143,11 @@ func (c *Checker) unremovableReasonAndNodeUtilization(context *context.Autoscali
 	utilInfo, err := utilization.Calculate(nodeInfo, ignoreDaemonSetsUtilization, context.IgnoreMirrorPodsUtilization, gpuConfig, timestamp)
 	if err != nil {
 		klog.Warningf("Failed to calculate utilization for %s: %v", node.Name, err)
+	}
+
+	if context.ForceScaleDownEnabled && taints.HasForceScaleDownTaint(node) {
+		klog.V(2).Infof("Node %s is forced to be scaled down, skipping resource utilization check", node.Name)
+		return simulator.NoReason, &utilInfo
 	}
 
 	// If scale down of unready nodes is disabled, skip the node if it is unready

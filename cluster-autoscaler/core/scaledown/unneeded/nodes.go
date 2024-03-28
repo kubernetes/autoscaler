@@ -29,6 +29,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 
 	apiv1 "k8s.io/api/core/v1"
 	klog "k8s.io/klog/v2"
@@ -160,25 +161,29 @@ func (n *Nodes) unremovableReason(context *context.AutoscalingContext, v *node, 
 		return simulator.NotAutoscaled
 	}
 
-	if ready {
-		// Check how long a ready node was underutilized.
-		unneededTime, err := n.sdtg.GetScaleDownUnneededTime(nodeGroup)
-		if err != nil {
-			klog.Errorf("Error trying to get ScaleDownUnneededTime for node %s (in group: %s)", node.Name, nodeGroup.Id())
-			return simulator.UnexpectedError
-		}
-		if !v.since.Add(unneededTime).Before(ts) {
-			return simulator.NotUnneededLongEnough
-		}
+	if context.ForceScaleDownEnabled && taints.HasForceScaleDownTaint(node) {
+		klog.V(2).Infof("Node %s is forced to be scaled down, skipping unneeded/unready time check", node.Name)
 	} else {
-		// Unready nodes may be deleted after a different time than underutilized nodes.
-		unreadyTime, err := n.sdtg.GetScaleDownUnreadyTime(nodeGroup)
-		if err != nil {
-			klog.Errorf("Error trying to get ScaleDownUnreadyTime for node %s (in group: %s)", node.Name, nodeGroup.Id())
-			return simulator.UnexpectedError
-		}
-		if !v.since.Add(unreadyTime).Before(ts) {
-			return simulator.NotUnreadyLongEnough
+		if ready {
+			// Check how long a ready node was underutilized.
+			unneededTime, err := n.sdtg.GetScaleDownUnneededTime(nodeGroup)
+			if err != nil {
+				klog.Errorf("Error trying to get ScaleDownUnneededTime for node %s (in group: %s)", node.Name, nodeGroup.Id())
+				return simulator.UnexpectedError
+			}
+			if !v.since.Add(unneededTime).Before(ts) {
+				return simulator.NotUnneededLongEnough
+			}
+		} else {
+			// Unready nodes may be deleted after a different time than underutilized nodes.
+			unreadyTime, err := n.sdtg.GetScaleDownUnreadyTime(nodeGroup)
+			if err != nil {
+				klog.Errorf("Error trying to get ScaleDownUnreadyTime for node %s (in group: %s)", node.Name, nodeGroup.Id())
+				return simulator.UnexpectedError
+			}
+			if !v.since.Add(unreadyTime).Before(ts) {
+				return simulator.NotUnreadyLongEnough
+			}
 		}
 	}
 

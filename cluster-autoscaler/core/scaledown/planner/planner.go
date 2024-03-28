@@ -41,6 +41,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/utilization"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	pod_util "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	klog "k8s.io/klog/v2"
 )
 
@@ -117,6 +118,11 @@ func (p *Planner) UpdateClusterState(podDestinations, scaleDownCandidates []*api
 	err := p.injectRecentlyEvictedPods()
 	if err != nil {
 		klog.Warningf("Not all recently evicted pods could be injected")
+	}
+	if p.context.ForceScaleDownEnabled {
+		if err := p.injectForceScaleDownPods(); err != nil {
+			klog.Warningf("Not all force-scale-down pods could be injected: %v", err)
+		}
 	}
 	deletions := asMap(merged(as.DeletionsInProgress()))
 	podDestinations = filterOutOngoingDeletions(podDestinations, deletions)
@@ -214,6 +220,50 @@ func (p *Planner) NodeUtilizationMap() map[string]utilization.Info {
 func (p *Planner) injectRecentlyEvictedPods() error {
 	recentlyEvictedRecreatablePods := pod_util.FilterRecreatablePods(p.actuationStatus.RecentEvictions())
 	return p.injectPods(filterOutRecreatedPods(recentlyEvictedRecreatablePods, p.cc))
+}
+
+// injectForceScaleDownPods injects pods on force-scale-down nodes into ClusterSnapshot
+// for the subsequent simulations. This will avoid unnecessary scale down and accelerate
+// the draining of the force-scale-down nodes.
+//
+// Note that the pod being deleted should not be injected, because k8s scheduler should
+// have created a new replica, and the pod state should be either pending or scheduled.
+func (p *Planner) injectForceScaleDownPods() error {
+	nodes, err := p.context.ListerRegistry.AllNodeLister().List()
+	if err != nil {
+		return fmt.Errorf("failed to list all nodes: %w", err)
+	}
+	pods, err := p.context.AllPodLister().List()
+	if err != nil {
+		return fmt.Errorf("failed to list all pods: %w", err)
+	}
+	forceScaleDownNodeNames := map[string]bool{}
+	for _, node := range nodes {
+		if taints.HasForceScaleDownTaint(node) {
+			forceScaleDownNodeNames[node.Name] = true
+		}
+	}
+	forceScaleDownPods := []*apiv1.Pod{}
+	for _, pod := range pods {
+		if pod.DeletionTimestamp == nil && forceScaleDownNodeNames[pod.Spec.NodeName] {
+			forceScaleDownPods = append(forceScaleDownPods, pod)
+		}
+	}
+
+	podsToInject := filterOutRecreatedPods(pod_util.FilterRecreatablePods(forceScaleDownPods), p.cc)
+	if len(forceScaleDownNodeNames) > 0 {
+		klog.V(4).Infof("Injecting %d out of %d pods on %d force-scale-down nodes for simulation: %v",
+			len(podsToInject), len(forceScaleDownPods), len(forceScaleDownNodeNames), forceScaleDownNodeNames)
+	}
+	if err := p.injectPods(podsToInject); err != nil {
+		return fmt.Errorf("failed to inject %d pods to snapshot: %w", len(podsToInject), err)
+	}
+	for _, pod := range forceScaleDownPods {
+		if err := p.context.ClusterSnapshot.RemovePod(pod.Namespace, pod.Name, pod.Spec.NodeName); err != nil {
+			return fmt.Errorf("failed to remove injected force-scale-down pod %s/%s from snapshot: %w", pod.Namespace, pod.Name, err)
+		}
+	}
+	return nil
 }
 
 func filterOutRecreatedPods(pods []*apiv1.Pod, cc controllerReplicasCalculator) []*apiv1.Pod {

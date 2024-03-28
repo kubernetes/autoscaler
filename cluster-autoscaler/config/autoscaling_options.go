@@ -289,6 +289,8 @@ type AutoscalingOptions struct {
 	BypassedSchedulers map[string]bool
 	// ProvisioningRequestEnabled tells if CA processes ProvisioningRequest.
 	ProvisioningRequestEnabled bool
+	// ForceScaleDownEnabled tells if CA processes the force-scale-down node taint.
+	ForceScaleDownEnabled bool
 }
 
 // KubeClientOptions specify options for kube client

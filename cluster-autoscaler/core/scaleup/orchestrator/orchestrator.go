@@ -17,6 +17,8 @@ limitations under the License.
 package orchestrator
 
 import (
+	"fmt"
+	"reflect"
 	"strings"
 	"time"
 
@@ -280,97 +282,141 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 }
 
 // ScaleUpToNodeGroupMinSize tries to scale up node groups that have less nodes
-// than the configured min size. The source of truth for the current node group
-// size is the TargetSize queried directly from cloud providers. Returns
+// than the required min size, which is calculated based on the node group min
+// size configuration and the number of force-scale-down tainted nodes. Returns
 // appropriate status or error if an unexpected error occurred.
 func (o *ScaleUpOrchestrator) ScaleUpToNodeGroupMinSize(
-	nodes []*apiv1.Node,
+	allNodes []*apiv1.Node,
 	nodeInfos map[string]*schedulerframework.NodeInfo,
 ) (*status.ScaleUpStatus, errors.AutoscalerError) {
 	if !o.initialized {
-		return status.UpdateScaleUpError(&status.ScaleUpStatus{}, errors.NewAutoscalerError(errors.InternalError, "ScaleUpOrchestrator is not initialized"))
+		return status.UpdateScaleUpError(&status.ScaleUpStatus{},
+			errors.NewAutoscalerError(errors.InternalError, "ScaleUpOrchestrator is not initialized in ScaleUpToNodeGroupMinSize"))
 	}
 
 	now := time.Now()
+	clusterNodeCount := len(allNodes)
 	nodeGroups := o.autoscalingContext.CloudProvider.NodeGroups()
-	scaleUpInfos := make([]nodegroupset.ScaleUpInfo, 0)
-
-	resourcesLeft, aErr := o.resourceManager.ResourcesLeft(o.autoscalingContext, nodeInfos, nodes)
-	if aErr != nil {
-		return status.UpdateScaleUpError(&status.ScaleUpStatus{}, aErr.AddPrefix("could not compute total resources: "))
+	resourcesLeft, aerr := o.resourceManager.ResourcesLeft(o.autoscalingContext, nodeInfos, allNodes)
+	if aerr != nil {
+		return status.UpdateScaleUpError(&status.ScaleUpStatus{},
+			aerr.AddPrefix("failed to get resources left: "))
 	}
 
-	for _, ng := range nodeGroups {
-		if !ng.Exist() {
-			klog.Warningf("ScaleUpToNodeGroupMinSize: NodeGroup %s does not exist", ng.Id())
-			continue
+	forcedNodesPerGroup := map[string][]string{}
+	if o.autoscalingContext.ForceScaleDownEnabled {
+		for _, node := range allNodes {
+			if !taints.HasForceScaleDownTaint(node) {
+				continue
+			}
+			nodeGroup, err := o.autoscalingContext.CloudProvider.NodeGroupForNode(node)
+			if err != nil || nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
+				klog.Warningf("Failed to get node group for node %s in ScaleUpToNodeGroupMinSize: %v", node.Name, err)
+				continue
+			}
+			forcedNodesPerGroup[nodeGroup.Id()] = append(forcedNodesPerGroup[nodeGroup.Id()], node.Name)
 		}
+		klog.V(2).Infof("Got force-scale-down nodes per group: %+v", forcedNodesPerGroup)
+	}
 
-		targetSize, err := ng.TargetSize()
+	errorsPerGroup := map[string]error{}
+	scaleUpInfos := make([]nodegroupset.ScaleUpInfo, 0)
+	_, invalidNodeGroups := o.filterValidScaleUpNodeGroups(nodeGroups, nodeInfos, resourcesLeft, len(allNodes), now)
+	for _, nodeGroup := range nodeGroups {
+		if !o.autoscalingContext.EnforceNodeGroupMinSize {
+			if _, ok := forcedNodesPerGroup[nodeGroup.Id()]; !ok {
+				continue
+			}
+		}
+		targetSize, err := nodeGroup.TargetSize()
 		if err != nil {
-			klog.Warningf("ScaleUpToNodeGroupMinSize: failed to get target size of node group %s", ng.Id())
+			errorsPerGroup[nodeGroup.Id()] = fmt.Errorf("failed to get node group target size %s: %w", nodeGroup.Id(), err)
+			continue
+		}
+		nodeInfo, ok := nodeInfos[nodeGroup.Id()]
+		if !ok {
+			errorsPerGroup[nodeGroup.Id()] = fmt.Errorf("failed to get node group %s from node infos", nodeGroup.Id())
+			continue
+		}
+		minNodeCount := nodeGroup.MinSize() + len(forcedNodesPerGroup[nodeGroup.Id()])
+		if targetSize >= minNodeCount {
+			klog.V(4).Infof("No need to scale up node group %s, because current size %d is greater than required node count %d", nodeGroup.Id(), targetSize, minNodeCount)
 			continue
 		}
 
-		klog.V(4).Infof("ScaleUpToNodeGroupMinSize: NodeGroup %s, TargetSize %d, MinSize %d, MaxSize %d", ng.Id(), targetSize, ng.MinSize(), ng.MaxSize())
-		if targetSize >= ng.MinSize() {
+		nodeCountGap := minNodeCount - targetSize
+		klog.V(2).Infof("Node group %s needs to be scaled up from %d to %d per node group min size and force-scale-down nodes", nodeGroup.Id(), targetSize, minNodeCount)
+		if reason, ok := invalidNodeGroups[nodeGroup.Id()]; ok {
+			errorsPerGroup[nodeGroup.Id()] = fmt.Errorf("failed to valid node group %s: %+v", nodeGroup.Id(), reason.Reasons())
 			continue
 		}
-
-		if skipReason := o.IsNodeGroupReadyToScaleUp(ng, now); skipReason != nil {
-			klog.Warningf("ScaleUpToNodeGroupMinSize: node group is ready to scale up: %v", skipReason)
-			continue
+		if targetSize+nodeCountGap > nodeGroup.MaxSize() {
+			nodeCountGap = nodeGroup.MaxSize() - targetSize
 		}
-
-		nodeInfo, found := nodeInfos[ng.Id()]
-		if !found {
-			klog.Warningf("ScaleUpToNodeGroupMinSize: no node info for %s", ng.Id())
-			continue
-		}
-
-		if skipReason := o.IsNodeGroupResourceExceeded(resourcesLeft, ng, nodeInfo, 1); skipReason != nil {
-			klog.Warningf("ScaleUpToNodeGroupMinSize: node group resource excceded: %v", skipReason)
-			continue
-		}
-
-		newNodeCount := ng.MinSize() - targetSize
-		newNodeCount, err = o.resourceManager.ApplyLimits(o.autoscalingContext, newNodeCount, resourcesLeft, nodeInfo, ng)
+		nodeCountGap, err = o.GetCappedNewNodeCount(nodeCountGap, clusterNodeCount)
 		if err != nil {
-			klog.Warningf("ScaleUpToNodeGroupMinSize: failed to apply resource limits: %v", err)
+			errorsPerGroup[nodeGroup.Id()] = fmt.Errorf("failed to get capped new node count %s: %w", nodeGroup.Id(), err)
 			continue
 		}
-
-		newNodeCount, err = o.GetCappedNewNodeCount(newNodeCount, targetSize)
+		nodeCountGap, err = o.resourceManager.ApplyLimits(o.autoscalingContext, nodeCountGap, resourcesLeft, nodeInfo, nodeGroup)
 		if err != nil {
-			klog.Warningf("ScaleUpToNodeGroupMinSize: failed to get capped node count: %v", err)
+			errorsPerGroup[nodeGroup.Id()] = fmt.Errorf("failed to apply resource limits %s: %w", nodeGroup.Id(), err)
+			continue
+		}
+		if nodeCountGap == 0 {
+			errorsPerGroup[nodeGroup.Id()] = fmt.Errorf("no nodes can be added after applying resource limits and cluster node count cap")
 			continue
 		}
 
+		klog.V(2).Infof("Scaling up node group %s from %d to %d (min size %d, max size %d, forced node count %d)",
+			nodeGroup.Id(), targetSize, targetSize+nodeCountGap, nodeGroup.MinSize(), nodeGroup.MaxSize(), len(forcedNodesPerGroup))
+		delta, err := o.resourceManager.DeltaForNode(o.autoscalingContext, nodeInfo, nodeGroup)
+		if err != nil {
+			errorsPerGroup[nodeGroup.Id()] = fmt.Errorf("failed to get resource delta for node: %w", err)
+			continue
+		}
+		resourcesLeft, err = resource.UpdateLimits(resourcesLeft, delta, nodeCountGap)
+		if err != nil {
+			errorsPerGroup[nodeGroup.Id()] = fmt.Errorf("failed to allocate %d nodes from resource left: %w", nodeCountGap, err)
+			continue
+		}
+		clusterNodeCount += nodeCountGap
 		info := nodegroupset.ScaleUpInfo{
-			Group:       ng,
+			Group:       nodeGroup,
 			CurrentSize: targetSize,
-			NewSize:     targetSize + newNodeCount,
-			MaxSize:     ng.MaxSize(),
+			NewSize:     targetSize + nodeCountGap,
+			MaxSize:     nodeGroup.MaxSize(),
 		}
 		scaleUpInfos = append(scaleUpInfos, info)
 	}
-
-	if len(scaleUpInfos) == 0 {
-		klog.V(1).Info("ScaleUpToNodeGroupMinSize: scale up not needed")
+	if len(errorsPerGroup) > 0 {
+		msg := fmt.Sprintf("Failed to create scale up info for %d groups: %+v", len(errorsPerGroup), errorsPerGroup)
+		klog.Warningf(msg)
+		if len(scaleUpInfos) == 0 {
+			failedGroups := []cloudprovider.NodeGroup{}
+			for _, nodeGroup := range nodeGroups {
+				if _, ok := errorsPerGroup[nodeGroup.Id()]; ok {
+					failedGroups = append(failedGroups, nodeGroup)
+				}
+			}
+			return status.UpdateScaleUpError(
+				&status.ScaleUpStatus{FailedResizeNodeGroups: failedGroups},
+				errors.NewAutoscalerError(errors.InternalError, msg))
+		}
+	}
+	if len(scaleUpInfos) == 0 && len(errorsPerGroup) == 0 {
+		klog.V(2).Infof("Scaling up %d node groups to min size is not needed", len(nodeGroups))
 		return &status.ScaleUpStatus{Result: status.ScaleUpNotNeeded}, nil
 	}
 
-	klog.V(1).Infof("ScaleUpToNodeGroupMinSize: final scale-up plan: %v", scaleUpInfos)
-	aErr, failedNodeGroups := o.scaleUpExecutor.ExecuteScaleUps(scaleUpInfos, nodeInfos, now)
-	if aErr != nil {
+	klog.V(2).Infof("Final node group min size scale-up plan: %+v", scaleUpInfos)
+	aerr, failedNodeGroups := o.scaleUpExecutor.ExecuteScaleUps(scaleUpInfos, nodeInfos, now)
+	if aerr != nil {
 		return status.UpdateScaleUpError(
-			&status.ScaleUpStatus{
-				FailedResizeNodeGroups: failedNodeGroups,
-			},
-			aErr,
+			&status.ScaleUpStatus{FailedResizeNodeGroups: failedNodeGroups},
+			aerr.AddPrefix("failed to execute scale ups on %d groups: ", len(failedNodeGroups)),
 		)
 	}
-
 	o.clusterStateRegistry.Recalculate()
 	return &status.ScaleUpStatus{
 		Result:               status.ScaleUpSuccessful,

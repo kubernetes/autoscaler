@@ -18,6 +18,7 @@ package resource
 
 import (
 	"fmt"
+	"reflect"
 	"testing"
 	"time"
 
@@ -167,6 +168,63 @@ func TestApplyLimits(t *testing.T) {
 		newCount, err := rm.ApplyLimits(&ctx, testCase.newNodeCount, testCase.resourcesLeft, nodeInfos[testCase.nodeGroupConfig.Name], group)
 		assert.NoError(t, err)
 		assert.Equal(t, testCase.expectedOutput, newCount)
+	}
+}
+
+type updateLimitsTestCase struct {
+	resourcesLeft  Limits
+	resourcesDelta Delta
+	nodeCount      int
+	expectedLeft   Limits
+	expectedErr    error
+}
+
+func TestUpdateLimits(t *testing.T) {
+	testCases := []updateLimitsTestCase{
+		{
+			resourcesLeft:  Limits{"cpu": 10, "memory": 20},
+			resourcesDelta: Delta{"cpu": 8, "memory": 16},
+			nodeCount:      1,
+			expectedLeft:   Limits{"cpu": 2, "memory": 4},
+			expectedErr:    nil,
+		},
+		{
+			resourcesLeft:  Limits{"cpu": 10, "memory": 40},
+			resourcesDelta: Delta{"cpu": 8, "memory": 16},
+			nodeCount:      2,
+			expectedLeft:   Limits{"cpu": 10, "memory": 40},
+			expectedErr:    fmt.Errorf("cannot create 2 nodes: cpu resource left (10) is less than resource required (16)"),
+		},
+		{
+			resourcesLeft:  Limits{"cpu": 20, "memory": 20},
+			resourcesDelta: Delta{"cpu": 8, "memory": 16},
+			nodeCount:      2,
+			expectedLeft:   Limits{"cpu": 20, "memory": 20},
+			expectedErr:    fmt.Errorf("cannot create 2 nodes: memory resource left (20) is less than resource required (32)"),
+		},
+		{
+			resourcesLeft:  Limits{"cpu": 10, "memory": LimitUnknown},
+			resourcesDelta: Delta{"cpu": 8, "memory": 16},
+			nodeCount:      1,
+			expectedLeft:   Limits{"cpu": 10, "memory": LimitUnknown},
+			expectedErr:    fmt.Errorf("limit unknown for resource memory"),
+		},
+		{
+			resourcesLeft:  Limits{"memory": 20},
+			resourcesDelta: Delta{"cpu": 8, "memory": 16},
+			nodeCount:      1,
+			expectedLeft:   Limits{"memory": 4},
+			expectedErr:    nil,
+		},
+	}
+	for _, testCase := range testCases {
+		actualLeft, actualErr := UpdateLimits(testCase.resourcesLeft, testCase.resourcesDelta, testCase.nodeCount)
+		assert.True(t, reflect.DeepEqual(actualLeft, testCase.expectedLeft))
+		if testCase.expectedErr == nil {
+			assert.Nil(t, actualErr)
+		} else {
+			assert.EqualError(t, actualErr, testCase.expectedErr.Error())
+		}
 	}
 }
 
