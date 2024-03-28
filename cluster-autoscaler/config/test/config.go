@@ -47,6 +47,22 @@ profiles:
         weight: 1
   schedulerName: custom-scheduler`
 
+	// SchedulerConfigMultiProfiles is scheduler config
+	// with multiple profiles,
+	// default-scheduler all plugin enabled, custom-scheduler `NodeResourcesFit` plugin disabled
+	SchedulerConfigMultiProfiles = `
+apiVersion: kubescheduler.config.k8s.io/v1
+kind: KubeSchedulerConfiguration
+profiles:
+- schedulerName: default-scheduler
+- pluginConfig:
+  plugins:
+    multiPoint:
+      disabled:
+      - name: NodeResourcesFit
+        weight: 1
+  schedulerName: custom-scheduler`
+
 	// SchedulerConfigMinimalCorrect is the minimal
 	// correct scheduler config
 	SchedulerConfigMinimalCorrect = `
