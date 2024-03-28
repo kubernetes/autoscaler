@@ -169,6 +169,12 @@ Name | Type | Description | Default
 `recommendation-margin-fraction` | Float64 | Fraction of usage added as the safety margin to the recommended request | 0.15
 `pod-recommendation-min-cpu-millicores` | Float64 | Minimum CPU recommendation for a pod | 25
 `pod-recommendation-min-memory-mb` | Float64 | Minimum memory recommendation for a pod | 250
+`target-cpu-percentile` | Float64 | CPU usage percentile that will be used as a base for CPU target recommendation | 0.9
+`recommendation-lower-bound-cpu-percentile` | Float64 | CPU usage percentile that will be used for the lower bound on CPU recommendation | 0.5
+`recommendation-upper-bound-cpu-percentile` | Float64 | CPU usage percentile that will be used for the upper bound on CPU recommendation | 0.95
+`target-memory-percentile` | Float64 | Memory usage percentile that will be used as a base for memory target recommendation | 0.9
+`recommendation-lower-bound-memory-percentile` | Float64 | Memory usage percentile that will be used for the lower bound on memory recommendation | 0.5
+`recommendation-upper-bound-memory-percentile` | Float64 | Memory usage percentile that will be used for the upper bound on memory recommendation | 0.95
 `checkpoints-timeout` | Duration | Timeout for writing checkpoints since the start of the recommender's main loop | time.Minute
 `min-checkpoints` | Int | Minimum number of checkpoints to write per recommender's main loop | 10
 `memory-saver` | Bool | If true, only track pods which have an associated VPA | false

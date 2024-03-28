@@ -25,10 +25,15 @@ import (
 )
 
 var (
-	safetyMarginFraction = flag.Float64("recommendation-margin-fraction", 0.15, `Fraction of usage added as the safety margin to the recommended request`)
-	podMinCPUMillicores  = flag.Float64("pod-recommendation-min-cpu-millicores", 25, `Minimum CPU recommendation for a pod`)
-	podMinMemoryMb       = flag.Float64("pod-recommendation-min-memory-mb", 250, `Minimum memory recommendation for a pod`)
-	targetCPUPercentile  = flag.Float64("target-cpu-percentile", 0.9, "CPU usage percentile that will be used as a base for CPU target recommendation. Doesn't affect CPU lower bound, CPU upper bound nor memory recommendations.")
+	safetyMarginFraction       = flag.Float64("recommendation-margin-fraction", 0.15, `Fraction of usage added as the safety margin to the recommended request`)
+	podMinCPUMillicores        = flag.Float64("pod-recommendation-min-cpu-millicores", 25, `Minimum CPU recommendation for a pod`)
+	podMinMemoryMb             = flag.Float64("pod-recommendation-min-memory-mb", 250, `Minimum memory recommendation for a pod`)
+	targetCPUPercentile        = flag.Float64("target-cpu-percentile", 0.9, "CPU usage percentile that will be used as a base for CPU target recommendation. Doesn't affect CPU lower bound, CPU upper bound nor memory recommendations.")
+	lowerBoundCPUPercentile    = flag.Float64("recommendation-lower-bound-cpu-percentile", 0.5, `CPU usage percentile that will be used for the lower bound on CPU recommendation.`)
+	upperBoundCPUPercentile    = flag.Float64("recommendation-upper-bound-cpu-percentile", 0.95, `CPU usage percentile that will be used for the upper bound on CPU recommendation.`)
+	targetMemoryPercentile     = flag.Float64("target-memory-percentile", 0.9, "Memory usage percentile that will be used as a base for memory target recommendation. Doesn't affect memory lower bound nor memory upper bound.")
+	lowerBoundMemoryPercentile = flag.Float64("recommendation-lower-bound-memory-percentile", 0.5, `Memory usage percentile that will be used for the lower bound on memory recommendation.`)
+	upperBoundMemoryPercentile = flag.Float64("recommendation-upper-bound-memory-percentile", 0.95, `Memory usage percentile that will be used for the upper bound on memory recommendation.`)
 )
 
 // PodResourceRecommender computes resource recommendation for a Vpa object.
@@ -102,16 +107,9 @@ func FilterControlledResources(estimation model.Resources, controlledResources [
 
 // CreatePodResourceRecommender returns the primary recommender.
 func CreatePodResourceRecommender() PodResourceRecommender {
-	lowerBoundCPUPercentile := 0.5
-	upperBoundCPUPercentile := 0.95
-
-	targetMemoryPeaksPercentile := 0.9
-	lowerBoundMemoryPeaksPercentile := 0.5
-	upperBoundMemoryPeaksPercentile := 0.95
-
-	targetEstimator := NewPercentileEstimator(*targetCPUPercentile, targetMemoryPeaksPercentile)
-	lowerBoundEstimator := NewPercentileEstimator(lowerBoundCPUPercentile, lowerBoundMemoryPeaksPercentile)
-	upperBoundEstimator := NewPercentileEstimator(upperBoundCPUPercentile, upperBoundMemoryPeaksPercentile)
+	targetEstimator := NewPercentileEstimator(*targetCPUPercentile, *targetMemoryPercentile)
+	lowerBoundEstimator := NewPercentileEstimator(*lowerBoundCPUPercentile, *lowerBoundMemoryPercentile)
+	upperBoundEstimator := NewPercentileEstimator(*upperBoundCPUPercentile, *upperBoundMemoryPercentile)
 
 	targetEstimator = WithMargin(*safetyMarginFraction, targetEstimator)
 	lowerBoundEstimator = WithMargin(*safetyMarginFraction, lowerBoundEstimator)
