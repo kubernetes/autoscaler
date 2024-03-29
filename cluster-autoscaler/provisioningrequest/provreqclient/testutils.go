@@ -43,12 +43,12 @@ func NewFakeProvisioningRequestClient(ctx context.Context, t *testing.T, prs ...
 		if pr == nil {
 			continue
 		}
-		if _, err := provReqClient.AutoscalingV1beta1().ProvisioningRequests(pr.Namespace()).Create(ctx, pr.V1Beta1(), metav1.CreateOptions{}); err != nil {
-			t.Errorf("While adding a ProvisioningRequest: %s/%s to fake client, got error: %v", pr.Namespace(), pr.Name(), err)
+		if _, err := provReqClient.AutoscalingV1beta1().ProvisioningRequests(pr.Namespace).Create(ctx, pr.ProvisioningRequest, metav1.CreateOptions{}); err != nil {
+			t.Errorf("While adding a ProvisioningRequest: %s/%s to fake client, got error: %v", pr.Namespace, pr.Name, err)
 		}
-		for _, pd := range pr.PodTemplates() {
-			if _, err := podTemplClient.CoreV1().PodTemplates(pr.Namespace()).Create(ctx, pd, metav1.CreateOptions{}); err != nil {
-				t.Errorf("While adding a PodTemplate: %s/%s to fake client, got error: %v", pr.Namespace(), pd.Name, err)
+		for _, pd := range pr.PodTemplates {
+			if _, err := podTemplClient.CoreV1().PodTemplates(pr.Namespace).Create(ctx, pd, metav1.CreateOptions{}); err != nil {
+				t.Errorf("While adding a PodTemplate: %s/%s to fake client, got error: %v", pr.Namespace, pd.Name, err)
 			}
 		}
 	}
@@ -127,7 +127,7 @@ func ProvisioningRequestWrapperForTesting(namespace, name string) *provreqwrappe
 		},
 	}
 
-	pr := provreqwrapper.NewV1Beta1ProvisioningRequest(v1Beta1PR, podTemplates)
+	pr := provreqwrapper.NewProvisioningRequest(v1Beta1PR, podTemplates)
 	return pr
 }
 

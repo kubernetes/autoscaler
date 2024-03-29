@@ -165,7 +165,7 @@ func (o *provReqOrchestrator) verifyProvisioningRequestClass(unschedulablePods [
 	if err != nil {
 		return nil, fmt.Errorf("Failed retrive ProvisioningRequest from unscheduled pods, err: %v", err)
 	}
-	if provReq.V1Beta1().Spec.ProvisioningClassName != v1beta1.ProvisioningClassCheckCapacity {
+	if provReq.Spec.ProvisioningClassName != v1beta1.ProvisioningClassCheckCapacity {
 		return nil, fmt.Errorf("ProvisioningRequestClass is not %s", v1beta1.ProvisioningClassCheckCapacity)
 	}
 	for _, pod := range unschedulablePods {

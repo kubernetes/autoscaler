@@ -87,7 +87,7 @@ func (c *ProvisioningRequestClient) ProvisioningRequest(namespace, name string) 
 	if err != nil {
 		return nil, fmt.Errorf("while fetching pod templates for Get Provisioning Request %s/%s got error: %v", namespace, name, err)
 	}
-	return provreqwrapper.NewV1Beta1ProvisioningRequest(v1Beta1PR, podTemplates), nil
+	return provreqwrapper.NewProvisioningRequest(v1Beta1PR, podTemplates), nil
 }
 
 // ProvisioningRequests gets all ProvisioningRequest CRs.
@@ -102,7 +102,7 @@ func (c *ProvisioningRequestClient) ProvisioningRequests() ([]*provreqwrapper.Pr
 		if errPodTemplates != nil {
 			return nil, fmt.Errorf("while fetching pod templates for List Provisioning Request %s/%s got error: %v", v1Beta1PR.Namespace, v1Beta1PR.Name, errPodTemplates)
 		}
-		prs = append(prs, provreqwrapper.NewV1Beta1ProvisioningRequest(v1Beta1PR, podTemplates))
+		prs = append(prs, provreqwrapper.NewProvisioningRequest(v1Beta1PR, podTemplates))
 	}
 	return prs, nil
 }

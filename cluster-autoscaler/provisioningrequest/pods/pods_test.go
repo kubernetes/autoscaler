@@ -23,7 +23,6 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"google.golang.org/protobuf/proto"
 
-	// "google.golang.org/protobuf/testing/protocmp"
 	apiv1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -256,7 +255,7 @@ func TestPodsForProvisioningRequest(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(tc.desc, func(t *testing.T) {
-			got, err := PodsForProvisioningRequest(provreqwrapper.NewV1Beta1ProvisioningRequest(tc.pr, tc.podTemplates))
+			got, err := PodsForProvisioningRequest(provreqwrapper.NewProvisioningRequest(tc.pr, tc.podTemplates))
 			if (err != nil) != tc.wantErr {
 				t.Errorf("PodsForProvisioningRequest() error = %v, wantErr %v", err, tc.wantErr)
 				return
