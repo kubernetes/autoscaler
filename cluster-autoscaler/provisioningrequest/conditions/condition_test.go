@@ -89,7 +89,7 @@ func TestBookCapacity(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			pr := provreqwrapper.NewV1Beta1ProvisioningRequest(
+			pr := provreqwrapper.NewProvisioningRequest(
 				&v1beta1.ProvisioningRequest{
 					Spec: v1beta1.ProvisioningRequestSpec{
 						ProvisioningClassName: v1beta1.ProvisioningClassCheckCapacity,
@@ -247,14 +247,14 @@ func TestSetCondition(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			pr := provreqwrapper.NewV1Beta1ProvisioningRequest(
+			pr := provreqwrapper.NewProvisioningRequest(
 				&v1beta1.ProvisioningRequest{
 					Status: v1beta1.ProvisioningRequestStatus{
 						Conditions: test.oldConditions,
 					},
 				}, nil)
 			AddOrUpdateCondition(pr, test.newType, test.newStatus, "", "", v1.Now())
-			got := pr.Conditions()
+			got := pr.Status.Conditions
 			if len(got) > 2 || len(got) != len(test.want) || got[0].Type != test.want[0].Type || got[0].Status != test.want[0].Status {
 				t.Errorf("want %v, got: %v", test.want, got)
 			}

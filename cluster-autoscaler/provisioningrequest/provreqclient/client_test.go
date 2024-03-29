@@ -31,14 +31,14 @@ func TestFetchPodTemplates(t *testing.T) {
 
 	ctx := context.Background()
 	c := NewFakeProvisioningRequestClient(ctx, t, mockProvisioningRequests...)
-	got, err := c.FetchPodTemplates(pr1.V1Beta1())
+	got, err := c.FetchPodTemplates(pr1.ProvisioningRequest)
 	if err != nil {
 		t.Errorf("provisioningRequestClient.ProvisioningRequests() error: %v", err)
 	}
 	if len(got) != 1 {
 		t.Errorf("provisioningRequestClient.ProvisioningRequests() got: %v, want 1 element", err)
 	}
-	if diff := cmp.Diff(pr1.PodTemplates(), got); diff != "" {
+	if diff := cmp.Diff(pr1.PodTemplates, got); diff != "" {
 		t.Errorf("Template mismatch, diff (-want +got):\n%s", diff)
 	}
 }

@@ -140,15 +140,15 @@ func TestProcess(t *testing.T) {
 	}
 	for _, test := range testCases {
 		pr := provreqclient.ProvisioningRequestWrapperForTesting("namespace", "name-1")
-		pr.V1Beta1().Status.Conditions = test.conditions
-		pr.V1Beta1().CreationTimestamp = metav1.NewTime(test.creationTime)
-		pr.V1Beta1().Spec.ProvisioningClassName = v1beta1.ProvisioningClassCheckCapacity
+		pr.Status.Conditions = test.conditions
+		pr.CreationTimestamp = metav1.NewTime(test.creationTime)
+		pr.Spec.ProvisioningClassName = v1beta1.ProvisioningClassCheckCapacity
 		additionalPr := provreqclient.ProvisioningRequestWrapperForTesting("namespace", "additional")
-		additionalPr.V1Beta1().CreationTimestamp = metav1.NewTime(weekAgo)
-		additionalPr.V1Beta1().Spec.ProvisioningClassName = v1beta1.ProvisioningClassCheckCapacity
+		additionalPr.CreationTimestamp = metav1.NewTime(weekAgo)
+		additionalPr.Spec.ProvisioningClassName = v1beta1.ProvisioningClassCheckCapacity
 		processor := checkCapacityProcessor{func() time.Time { return now }, 1}
 		processor.Process([]*provreqwrapper.ProvisioningRequest{pr, additionalPr})
-		assert.ElementsMatch(t, test.wantConditions, pr.Conditions())
+		assert.ElementsMatch(t, test.wantConditions, pr.Status.Conditions)
 		if len(test.conditions) == len(test.wantConditions) {
 			assert.ElementsMatch(t, []metav1.Condition{
 				{
@@ -158,9 +158,9 @@ func TestProcess(t *testing.T) {
 					Reason:             conditions.ExpiredReason,
 					Message:            conditions.ExpiredMsg,
 				},
-			}, additionalPr.Conditions())
+			}, additionalPr.Status.Conditions)
 		} else {
-			assert.ElementsMatch(t, []metav1.Condition{}, additionalPr.Conditions())
+			assert.ElementsMatch(t, []metav1.Condition{}, additionalPr.Status.Conditions)
 		}
 	}
 }

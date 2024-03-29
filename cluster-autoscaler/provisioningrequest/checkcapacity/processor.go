@@ -54,8 +54,8 @@ func (p *checkCapacityProcessor) Process(provReqs []*provreqwrapper.Provisioning
 		if len(expiredProvReq) >= p.maxUpdated {
 			break
 		}
-		conditions := provReq.Conditions()
-		if provReq.V1Beta1().Spec.ProvisioningClassName != v1beta1.ProvisioningClassCheckCapacity ||
+		conditions := provReq.Status.Conditions
+		if provReq.Spec.ProvisioningClassName != v1beta1.ProvisioningClassCheckCapacity ||
 			apimeta.IsStatusConditionTrue(conditions, v1beta1.BookingExpired) || apimeta.IsStatusConditionTrue(conditions, v1beta1.Failed) {
 			continue
 		}
@@ -65,7 +65,7 @@ func (p *checkCapacityProcessor) Process(provReqs []*provreqwrapper.Provisioning
 				expiredProvReq = append(expiredProvReq, provReq)
 			}
 		} else if len(failedProvReq) < p.maxUpdated-len(expiredProvReq) {
-			created := provReq.CreationTimestamp()
+			created := provReq.CreationTimestamp
 			if created.Add(defaultExpirationTime).Before(p.now()) {
 				failedProvReq = append(failedProvReq, provReq)
 			}
