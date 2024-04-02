@@ -321,13 +321,14 @@ set, the autoscaler will use the behavior described above.
 
 ## Sample manifest
 
-A sample manifest that will create a deployment running the autoscaler is
+A [sample manifest](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/clusterapi/examples/deployment.yaml)
+that will create a deployment running the autoscaler is
 available. It can be deployed by passing it through `envsubst`, providing
 these environment variables to set the namespace to deploy into as well as the image and tag to use:
 
 ```
 export AUTOSCALER_NS=kube-system
-export AUTOSCALER_IMAGE=us.gcr.io/k8s-artifacts-prod/autoscaling/cluster-autoscaler:v1.20.0
+export AUTOSCALER_IMAGE=registry.k8s.io/autoscaling/cluster-autoscaler:v1.29.0
 envsubst < examples/deployment.yaml | kubectl apply -f-
 ```
 
