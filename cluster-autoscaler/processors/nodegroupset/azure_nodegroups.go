@@ -69,7 +69,7 @@ func CreateAzureNodeInfoComparator(extraIgnoredLabels []string, ratioOpts config
 	azureIgnoredLabels[resourceNameSuffix] = true
 	azureIgnoredLabels[aksNodeImageVersion] = true
 	azureIgnoredLabels[aksConsolidatedAdditionalProperties] = true
-	
+
 	for _, k := range extraIgnoredLabels {
 		azureIgnoredLabels[k] = true
 	}
