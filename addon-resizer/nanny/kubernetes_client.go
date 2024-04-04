@@ -43,7 +43,8 @@ const (
 	// podResourceName is the label value for Pods in objectCountFallbackMetricName and objectCountMetricName metrics.
 	podResourceName = "pods"
 	// resourceLabel is the label name for resource.
-	resourceLabel = "resource"
+	resourceLabel               = "resource"
+	fmtText       expfmt.Format = `text/plain; version=` + expfmt.TextVersion + `; charset=utf-8`
 )
 
 type kubernetesClient struct {
@@ -179,7 +180,7 @@ func (k *kubernetesClient) countResourcesThroughMetrics(resourceName string) (ui
 	if err != nil {
 		return 0, err
 	}
-	return getResourceCountFromDecoder(resourceName, expfmt.NewDecoder(reader, expfmt.FmtText))
+	return getResourceCountFromDecoder(resourceName, expfmt.NewDecoder(reader, fmtText))
 }
 
 func (k *kubernetesClient) ContainerResources() (*corev1.ResourceRequirements, error) {
