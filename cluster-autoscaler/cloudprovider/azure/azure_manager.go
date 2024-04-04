@@ -147,6 +147,11 @@ func (m *AzureManager) buildNodeGroupFromSpec(spec string) (cloudprovider.NodeGr
 		return nil, fmt.Errorf("failed to parse node group spec: %v", err)
 	}
 
+	vmsPoolMap := m.azureCache.getVMsPoolMap()
+	if _, ok := vmsPoolMap[s.Name]; ok {
+		return NewVMsPool(s, m), nil
+	}
+
 	switch m.config.VMType {
 	case vmTypeStandard:
 		return NewAgentPool(s, m)
