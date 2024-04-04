@@ -433,6 +433,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		DynamicNodeDeleteDelayAfterTaintEnabled: *dynamicNodeDeleteDelayAfterTaintEnabled,
 		BypassedSchedulers:                      scheduler_util.GetBypassedSchedulersMap(*bypassedSchedulers),
 		ProvisioningRequestEnabled:              *provisioningRequestsEnabled,
+		MaxCloudProviderNodeDeletionTime:        *maxCloudProviderNodeDeletionTime,
 	}
 }
 
