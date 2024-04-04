@@ -355,6 +355,7 @@ func (m *azureCache) getAutoscalingOptions(ref azureRef) map[string]string {
 
 // FindForInstance returns node group of the given Instance
 func (m *azureCache) FindForInstance(instance *azureRef, vmType string) (cloudprovider.NodeGroup, error) {
+	vmsPoolMap := m.getVMsPoolMap()
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -372,7 +373,8 @@ func (m *azureCache) FindForInstance(instance *azureRef, vmType string) (cloudpr
 		return nil, nil
 	}
 
-	if vmType == vmTypeVMSS {
+	// cluster with vmss pool only
+	if vmType == vmTypeVMSS && len(vmsPoolMap) == 0 {
 		if m.areAllScaleSetsUniform() {
 			// Omit virtual machines not managed by vmss only in case of uniform scale set.
 			if ok := virtualMachineRE.Match([]byte(inst.Name)); ok {
