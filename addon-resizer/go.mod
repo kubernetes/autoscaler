@@ -3,7 +3,7 @@ module k8s.io/autoscaler/addon-resizer
 go 1.21
 
 require (
-	github.com/golang/glog v1.2.0
+	github.com/golang/glog v1.2.1
 	github.com/prometheus/client_model v0.6.1
 	github.com/prometheus/common v0.52.2
 	github.com/spf13/pflag v1.0.5
