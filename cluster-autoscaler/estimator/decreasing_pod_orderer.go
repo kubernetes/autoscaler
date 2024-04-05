@@ -27,8 +27,8 @@ import (
 
 // podScoreInfo contains Pod and score that corresponds to how important it is to handle the pod first.
 type podScoreInfo struct {
-	score float64
-	pod   *apiv1.Pod
+	score               float64
+	podsEquivalentGroup PodEquivalenceGroup
 }
 
 // DecreasingPodOrderer is the default implementation of the EstimationPodOrderer
@@ -42,29 +42,36 @@ func NewDecreasingPodOrderer() *DecreasingPodOrderer {
 }
 
 // Order is the processing func that sorts the pods based on the size of the pod
-func (d *DecreasingPodOrderer) Order(pods []*apiv1.Pod, nodeTemplate *framework.NodeInfo, _ cloudprovider.NodeGroup) []*apiv1.Pod {
-	podInfos := make([]*podScoreInfo, 0, len(pods))
-	for _, pod := range pods {
-		podInfos = append(podInfos, d.calculatePodScore(pod, nodeTemplate))
+func (d *DecreasingPodOrderer) Order(podsEquivalentGroups []PodEquivalenceGroup, nodeTemplate *framework.NodeInfo, _ cloudprovider.NodeGroup) []PodEquivalenceGroup {
+	podInfos := make([]*podScoreInfo, 0, len(podsEquivalentGroups))
+	for _, podsEquivalentGroup := range podsEquivalentGroups {
+		podInfos = append(podInfos, d.calculatePodScore(podsEquivalentGroup, nodeTemplate))
 	}
 	sort.Slice(podInfos, func(i, j int) bool { return podInfos[i].score > podInfos[j].score })
-	podList := make([]*apiv1.Pod, 0, len(pods))
+	sorted := make([]PodEquivalenceGroup, 0, len(podsEquivalentGroups))
 	for _, podInfo := range podInfos {
-		podList = append(podList, podInfo.pod)
+		sorted = append(sorted, podInfo.podsEquivalentGroup)
 	}
 
-	return podList
+	return sorted
 }
 
 // calculatePodScore score for  pod and returns podScoreInfo structure.
 // Score is defined as cpu_sum/node_capacity + mem_sum/node_capacity.
 // Pods that have bigger requirements should be processed first, thus have higher scores.
-func (d *DecreasingPodOrderer) calculatePodScore(pod *apiv1.Pod, nodeTemplate *framework.NodeInfo) *podScoreInfo {
+func (d *DecreasingPodOrderer) calculatePodScore(podsEquivalentGroup PodEquivalenceGroup, nodeTemplate *framework.NodeInfo) *podScoreInfo {
+	samplePod := podsEquivalentGroup.Exemplar()
+	if samplePod == nil {
+		return &podScoreInfo{
+			score:               0,
+			podsEquivalentGroup: podsEquivalentGroup,
+		}
+	}
 
 	cpuSum := resource.Quantity{}
 	memorySum := resource.Quantity{}
 
-	for _, container := range pod.Spec.Containers {
+	for _, container := range samplePod.Spec.Containers {
 		if request, ok := container.Resources.Requests[apiv1.ResourceCPU]; ok {
 			cpuSum.Add(request)
 		}
@@ -81,7 +88,7 @@ func (d *DecreasingPodOrderer) calculatePodScore(pod *apiv1.Pod, nodeTemplate *f
 	}
 
 	return &podScoreInfo{
-		score: score,
-		pod:   pod,
+		score:               score,
+		podsEquivalentGroup: podsEquivalentGroup,
 	}
 }
