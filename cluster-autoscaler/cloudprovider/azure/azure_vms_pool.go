@@ -19,6 +19,7 @@ package azure
 import (
 	"fmt"
 
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
@@ -135,10 +136,36 @@ func (agentPool *VMsPool) Debug() string {
 	return fmt.Sprintf("%s (%d:%d)", agentPool.Id(), agentPool.MinSize(), agentPool.MaxSize())
 }
 
+func (agentPool *VMsPool) getVMsFromCache() ([]compute.VirtualMachine, error) {
+	// vmsPoolMap is a map of agent pool name to the list of virtual machines
+	vmsPoolMap := agentPool.manager.azureCache.getVirtualMachines()
+	if _, ok := vmsPoolMap[agentPool.Name]; !ok {
+		return []compute.VirtualMachine{}, fmt.Errorf("vms pool %s not found in the cache", agentPool.Name)
+	}
+
+	return vmsPoolMap[agentPool.Name], nil
+}
+
 // Nodes returns the list of nodes in the vms agentPool.
 func (agentPool *VMsPool) Nodes() ([]cloudprovider.Instance, error) {
-	// TODO(wenxuan): Implement this method
-	return nil, cloudprovider.ErrNotImplemented
+	vms, err := agentPool.getVMsFromCache()
+	if err != nil {
+		return nil, err
+	}
+
+	nodes := make([]cloudprovider.Instance, 0, len(vms))
+	for _, vm := range vms {
+		if len(*vm.ID) == 0 {
+			continue
+		}
+		resourceID, err := convertResourceGroupNameToLower("azure://" + *vm.ID)
+		if err != nil {
+			return nil, err
+		}
+		nodes = append(nodes, cloudprovider.Instance{Id: resourceID})
+	}
+
+	return nodes, nil
 }
 
 // TemplateNodeInfo is not implemented.

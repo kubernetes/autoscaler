@@ -137,7 +137,7 @@ func TestTargetSize(t *testing.T) {
 		mockVMSSClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
 		provider.azureManager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
 		mockVMClient := mockvmclient.NewMockInterface(ctrl)
-		mockVMClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return(expectedVMs, nil).AnyTimes()
+		mockVMClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return([]compute.VirtualMachine{}, nil).AnyTimes()
 		provider.azureManager.azClient.virtualMachinesClient = mockVMClient
 
 		if orchMode == compute.Uniform {
@@ -185,7 +185,7 @@ func TestIncreaseSize(t *testing.T) {
 		mockVMSSClient.EXPECT().WaitForCreateOrUpdateResult(gomock.Any(), gomock.Any(), provider.azureManager.config.ResourceGroup).Return(&http.Response{StatusCode: http.StatusOK}, nil).AnyTimes()
 		provider.azureManager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
 		mockVMClient := mockvmclient.NewMockInterface(ctrl)
-		mockVMClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return(expectedVMs, nil).AnyTimes()
+		mockVMClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return([]compute.VirtualMachine{}, nil).AnyTimes()
 		provider.azureManager.azClient.virtualMachinesClient = mockVMClient
 
 		if orchMode == compute.Uniform {
@@ -366,7 +366,7 @@ func TestBelongs(t *testing.T) {
 		mockVMSSClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return(expectedScaleSets, nil)
 		provider.azureManager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
 		mockVMClient := mockvmclient.NewMockInterface(ctrl)
-		mockVMClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return(expectedVMs, nil).AnyTimes()
+		mockVMClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return([]compute.VirtualMachine{}, nil).AnyTimes()
 		provider.azureManager.azClient.virtualMachinesClient = mockVMClient
 
 		if orchMode == compute.Uniform {
@@ -688,7 +688,7 @@ func TestScaleSetNodes(t *testing.T) {
 		mockVMSSClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
 		provider.azureManager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
 		mockVMClient := mockvmclient.NewMockInterface(ctrl)
-		mockVMClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return(expectedVMs, nil).AnyTimes()
+		mockVMClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return([]compute.VirtualMachine{}, nil).AnyTimes()
 		provider.azureManager.azClient.virtualMachinesClient = mockVMClient
 
 		if orchMode == compute.Uniform {
@@ -754,7 +754,7 @@ func TestEnableVmssFlexFlag(t *testing.T) {
 	provider.azureManager.config.EnableVmssFlex = false
 	provider.azureManager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
 	mockVMClient := mockvmclient.NewMockInterface(ctrl)
-	mockVMClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return(expectedVMs, nil).AnyTimes()
+	mockVMClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return([]compute.VirtualMachine{}, nil).AnyTimes()
 	mockVMClient.EXPECT().ListVmssFlexVMsWithoutInstanceView(gomock.Any(), "test-asg").Return(expectedVMs, nil).AnyTimes()
 	provider.azureManager.azClient.virtualMachinesClient = mockVMClient
 
