@@ -28,7 +28,7 @@ type InstanceType struct {
 }
 
 // StaticListLastUpdateTime is a string declaring the last time the static list was updated.
-var StaticListLastUpdateTime = "2023-11-29"
+var StaticListLastUpdateTime = "2024-04-08"
 
 // InstanceTypes is a map of ec2 resources
 var InstanceTypes = map[string]*InstanceType{
@@ -1599,6 +1599,76 @@ var InstanceTypes = map[string]*InstanceType{
 		MemoryMb:     8192,
 		GPU:          1,
 		Architecture: "arm64",
+	},
+	"g6.12xlarge": {
+		InstanceType: "g6.12xlarge",
+		VCPU:         48,
+		MemoryMb:     196608,
+		GPU:          4,
+		Architecture: "amd64",
+	},
+	"g6.16xlarge": {
+		InstanceType: "g6.16xlarge",
+		VCPU:         64,
+		MemoryMb:     262144,
+		GPU:          1,
+		Architecture: "amd64",
+	},
+	"g6.24xlarge": {
+		InstanceType: "g6.24xlarge",
+		VCPU:         96,
+		MemoryMb:     393216,
+		GPU:          4,
+		Architecture: "amd64",
+	},
+	"g6.2xlarge": {
+		InstanceType: "g6.2xlarge",
+		VCPU:         8,
+		MemoryMb:     32768,
+		GPU:          1,
+		Architecture: "amd64",
+	},
+	"g6.48xlarge": {
+		InstanceType: "g6.48xlarge",
+		VCPU:         192,
+		MemoryMb:     786432,
+		GPU:          8,
+		Architecture: "amd64",
+	},
+	"g6.4xlarge": {
+		InstanceType: "g6.4xlarge",
+		VCPU:         16,
+		MemoryMb:     65536,
+		GPU:          1,
+		Architecture: "amd64",
+	},
+	"g6.8xlarge": {
+		InstanceType: "g6.8xlarge",
+		VCPU:         32,
+		MemoryMb:     131072,
+		GPU:          1,
+		Architecture: "amd64",
+	},
+	"g6.xlarge": {
+		InstanceType: "g6.xlarge",
+		VCPU:         4,
+		MemoryMb:     16384,
+		GPU:          1,
+		Architecture: "amd64",
+	},
+	"gr6.4xlarge": {
+		InstanceType: "gr6.4xlarge",
+		VCPU:         16,
+		MemoryMb:     131072,
+		GPU:          1,
+		Architecture: "amd64",
+	},
+	"gr6.8xlarge": {
+		InstanceType: "gr6.8xlarge",
+		VCPU:         32,
+		MemoryMb:     262144,
+		GPU:          1,
+		Architecture: "amd64",
 	},
 	"h1.16xlarge": {
 		InstanceType: "h1.16xlarge",
