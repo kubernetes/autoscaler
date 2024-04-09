@@ -195,9 +195,10 @@ func (m *azureCache) fetchAzureResources() error {
 }
 
 const (
-	agentpoolNameTag = "aks-managed-poolName"
-	agentpoolTypeTag = "aks-managed-agentpool-type"
-	vmsPoolType      = "VirtualMachines"
+	legacyAgentpoolNameTag = "poolName"
+	agentpoolNameTag       = "aks-managed-poolName"
+	agentpoolTypeTag       = "aks-managed-agentpool-type"
+	vmsPoolType            = "VirtualMachines"
 )
 
 // fetchVirtualMachines returns the updated list of virtual machines in the config resource group using the Azure API.
@@ -223,7 +224,7 @@ func (m *azureCache) fetchVirtualMachines() (map[string][]compute.VirtualMachine
 		vmPoolName := tags[agentpoolNameTag]
 		// fall back to legacy tag name if not found
 		if vmPoolName == nil {
-			vmPoolName = tags["poolName"]
+			vmPoolName = tags[legacyAgentpoolNameTag]
 		}
 
 		if vmPoolName == nil {
