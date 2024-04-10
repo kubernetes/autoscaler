@@ -165,9 +165,8 @@ func (scaleSet *ScaleSet) getCurSize() (int64, error) {
 
 	set, exists := scaleSet.getVMSSFromCache()
 	if !exists {
-		err := fmt.Errorf("failed to get information for VMSS: %s", scaleSet.Name)
-		klog.Error(err)
-		return -1, err
+		klog.Errorf("failed to get information for VMSS: %s", scaleSet.Name)
+		return -1, nil
 	}
 
 	vmssSizeMutex.Lock()
@@ -563,6 +562,10 @@ func (scaleSet *ScaleSet) Nodes() ([]cloudprovider.Instance, error) {
 	curSize, err := scaleSet.getCurSize()
 	if err != nil {
 		klog.Errorf("Failed to get current size for vmss %q: %v", scaleSet.Name, err)
+		return nil, err
+	}
+
+	if curSize == -1 {
 		return nil, nil
 	}
 
