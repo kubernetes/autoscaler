@@ -165,8 +165,9 @@ func (scaleSet *ScaleSet) getCurSize() (int64, error) {
 
 	set, exists := scaleSet.getVMSSFromCache()
 	if !exists {
-		klog.Errorf("failed to get information for VMSS: %s", scaleSet.Name)
-		return -1, nil
+		err := fmt.Errorf("failed to get information for VMSS: %s", scaleSet.Name)
+		klog.Error(err)
+		return -1, err
 	}
 
 	vmssSizeMutex.Lock()
@@ -193,18 +194,6 @@ func (scaleSet *ScaleSet) GetScaleSetSize() (int64, error) {
 	if size == -1 || err != nil {
 		klog.V(3).Infof("getScaleSetSize: either size is -1 (actual: %d) or error exists (actual err:%v)", size, err)
 		return size, err
-	}
-	// If the policy for this ScaleSet is Deallocate, the TargetSize is the capacity reported by VMSS minus the nodes in deallocated and deallocating states
-	if scaleSet.scaleDownPolicy == cloudprovider.Deallocate {
-		totalDeallocationInstances, err := scaleSet.countDeallocatedDeallocatingInstances()
-		if err != nil {
-			klog.Errorf("getScaleSetSize: error countDeallocatedDeallocatingInstances for scaleSet %s,err: %v",
-				scaleSet.Name, err)
-			return -1, err
-		}
-		size -= int64(totalDeallocationInstances)
-		klog.V(3).Infof("Found: %d instances in deallocated state, returning target size: %d for scaleSet %s",
-			totalDeallocationInstances, size, scaleSet.Name)
 	}
 	return size, nil
 }
@@ -259,7 +248,7 @@ func (scaleSet *ScaleSet) SetScaleSetSize(size int64) error {
 
 	vmssInfo, exists := scaleSet.getVMSSFromCache()
 	if !exists {
-		klog.Errorf("Failed to get information for VMSS (%q)", scaleSet.Name)
+		klog.Errorf("Failed to get information for VMSS: (%q)", scaleSet.Name)
 		return nil
 	}
 
@@ -362,7 +351,7 @@ func (scaleSet *ScaleSet) GetFlexibleScaleSetVms() ([]compute.VirtualMachine, *r
 	vmssInfo, exists := scaleSet.getVMSSFromCache()
 
 	if !exists {
-		klog.Errorf("Failed to get information for VMSS (%q)", scaleSet.Name)
+		klog.Errorf("Failed to get information for VMSS: (%q)", scaleSet.Name)
 		var rerr = &retry.Error{
 			RawError: fmt.Errorf("VMSS not found"),
 		}
@@ -574,7 +563,7 @@ func (scaleSet *ScaleSet) Nodes() ([]cloudprovider.Instance, error) {
 	curSize, err := scaleSet.getCurSize()
 	if err != nil {
 		klog.Errorf("Failed to get current size for vmss %q: %v", scaleSet.Name, err)
-		return nil, err
+		return nil, nil
 	}
 
 	scaleSet.instanceMutex.Lock()
