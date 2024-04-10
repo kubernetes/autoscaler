@@ -151,7 +151,7 @@ func (scaleSet *ScaleSet) getVMSSFromCache() (compute.VirtualMachineScaleSet, bo
 		return compute.VirtualMachineScaleSet{}, exists
 	}
 
-	return allVMSS[scaleSet.Name], exists
+	return allVMSS[scaleSet.Name], nil
 }
 
 func (scaleSet *ScaleSet) getCurSize() (int64, error) {
