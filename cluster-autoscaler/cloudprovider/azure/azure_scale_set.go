@@ -581,7 +581,7 @@ func (scaleSet *ScaleSet) Nodes() ([]cloudprovider.Instance, error) {
 	lastRefresh := time.Now().Add(-time.Second * time.Duration(splay))
 
 	orchestrationMode, err := scaleSet.getOrchestrationMode()
-	if orchestrationMode == "" || err != nil{
+	if orchestrationMode == "" || err != nil {
 		klog.Errorf("failed to get information for VMSS: %s, error: %v", scaleSet.Name, err)
 		return nil, err
 	}
