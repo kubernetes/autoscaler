@@ -133,6 +133,7 @@ func (scaleSet *ScaleSet) Autoprovisioned() bool {
 func (scaleSet *ScaleSet) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
 	template, exists := scaleSet.getVMSSFromCache()
 	if !exists {
+		klog.Errorf("failed to get information for VMSS: %s", scaleSet.Name)
 		return nil, nil
 	}
 	return scaleSet.manager.GetScaleSetOptions(*template.Name, defaults), nil
@@ -192,9 +193,8 @@ func (scaleSet *ScaleSet) GetScaleSetSize() (int64, error) {
 	size, err := scaleSet.getCurSize()
 	if size == -1 || err != nil {
 		klog.V(3).Infof("getScaleSetSize: either size is -1 (actual: %d) or error exists (actual err:%v)", size, err)
-		return size, err
 	}
-	return size, nil
+	return size, err
 }
 
 func (scaleSet *ScaleSet) waitForDeleteInstances(future *azure.Future, requiredIds *compute.VirtualMachineScaleSetVMInstanceRequiredIDs) {
@@ -350,9 +350,10 @@ func (scaleSet *ScaleSet) GetFlexibleScaleSetVms() ([]compute.VirtualMachine, *r
 	vmssInfo, exists := scaleSet.getVMSSFromCache()
 
 	if !exists {
-		klog.Errorf("Failed to get information for VMSS: (%q)", scaleSet.Name)
+		err := fmt.Errorf("Failed to get information for VMSS: (%q)", scaleSet.Name)
+		klog.Errorf(err)
 		var rerr = &retry.Error{
-			RawError: fmt.Errorf("VMSS not found"),
+			RawError: err,
 		}
 		return nil, rerr
 	}
@@ -543,7 +544,7 @@ func (scaleSet *ScaleSet) Debug() string {
 func (scaleSet *ScaleSet) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
 	template, exists := scaleSet.getVMSSFromCache()
 	if !exists {
-		return nil, fmt.Errorf("VMSS %s not found", scaleSet.Name)
+		return nil, fmt.Errorf("Failed to get information for VMSS: (%q)", scaleSet.Name)
 	}
 
 	node, err := buildNodeFromTemplate(scaleSet.Name, template, scaleSet.manager)
