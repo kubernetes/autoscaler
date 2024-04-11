@@ -152,7 +152,7 @@ func (scaleSet *ScaleSet) getVMSSFromCache() (compute.VirtualMachineScaleSet, bo
 		return compute.VirtualMachineScaleSet{}, exists
 	}
 
-	return allVMSS[scaleSet.Name], nil
+	return allVMSS[scaleSet.Name], true
 }
 
 func (scaleSet *ScaleSet) getCurSize() (int64, error) {
@@ -351,7 +351,7 @@ func (scaleSet *ScaleSet) GetFlexibleScaleSetVms() ([]compute.VirtualMachine, *r
 
 	if !exists {
 		err := fmt.Errorf("Failed to get information for VMSS: (%q)", scaleSet.Name)
-		klog.Errorf(err)
+		klog.Error(err)
 		var rerr = &retry.Error{
 			RawError: err,
 		}
