@@ -17,6 +17,7 @@ limitations under the License.
 package clusterapi
 
 import (
+	"fmt"
 	"reflect"
 
 	corev1 "k8s.io/api/core/v1"
@@ -84,7 +85,14 @@ func (p *provider) NodeGroupForNode(node *corev1.Node) (cloudprovider.NodeGroup,
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
 func (p *provider) HasInstance(node *corev1.Node) (bool, error) {
-	return true, cloudprovider.ErrNotImplemented
+	machineID := node.Annotations[machineAnnotationKey]
+
+	machine, err := p.controller.findMachine(machineID)
+	if machine != nil {
+		return true, nil
+	}
+
+	return false, fmt.Errorf("machine not found for node %s: %v", node.Name, err)
 }
 
 func (*provider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
