@@ -47,9 +47,9 @@ func PodsForProvisioningRequest(pr *provreqwrapper.ProvisioningRequest) ([]*v1.P
 	pods := make([]*v1.Pod, 0)
 	for i, podSet := range podSets {
 		for j := 0; j < int(podSet.Count); j++ {
-			pod, err := controller.GetPodFromTemplate(&podSet.PodTemplate, pr.RuntimeObject(), ownerReference(pr))
+			pod, err := controller.GetPodFromTemplate(&podSet.PodTemplate, pr.ProvisioningRequest, ownerReference(pr))
 			if err != nil {
-				return nil, fmt.Errorf("while creating pod for pr: %s/%s podSet: %d, got error: %w", pr.Namespace(), pr.Name(), i, err)
+				return nil, fmt.Errorf("while creating pod for pr: %s/%s podSet: %d, got error: %w", pr.Namespace, pr.Name, i, err)
 			}
 			populatePodFields(pr, pod, i, j)
 			pods = append(pods, pod)
@@ -63,22 +63,22 @@ func PodsForProvisioningRequest(pr *provreqwrapper.ProvisioningRequest) ([]*v1.P
 // the scale-up simulation logic and number of logs lines emitted.
 func ownerReference(pr *provreqwrapper.ProvisioningRequest) *metav1.OwnerReference {
 	return &metav1.OwnerReference{
-		APIVersion: pr.APIVersion(),
-		Kind:       pr.Kind(),
-		Name:       pr.Name(),
-		UID:        pr.UID(),
+		APIVersion: pr.APIVersion,
+		Kind:       pr.Kind,
+		Name:       pr.Name,
+		UID:        pr.UID,
 		Controller: proto.Bool(true),
 	}
 }
 
 func populatePodFields(pr *provreqwrapper.ProvisioningRequest, pod *v1.Pod, i, j int) {
 	pod.Name = fmt.Sprintf("%s%d-%d", pod.GenerateName, i, j)
-	pod.Namespace = pr.Namespace()
+	pod.Namespace = pr.Namespace
 	if pod.Annotations == nil {
 		pod.Annotations = make(map[string]string)
 	}
-	pod.Annotations[ProvisioningRequestPodAnnotationKey] = pr.Name()
-	pod.Annotations[ProvisioningClassPodAnnotationKey] = pr.V1Beta1().Spec.ProvisioningClassName
+	pod.Annotations[ProvisioningRequestPodAnnotationKey] = pr.Name
+	pod.Annotations[ProvisioningClassPodAnnotationKey] = pr.Spec.ProvisioningClassName
 	pod.UID = types.UID(fmt.Sprintf("%s/%s", pod.Namespace, pod.Name))
-	pod.CreationTimestamp = pr.CreationTimestamp()
+	pod.CreationTimestamp = pr.CreationTimestamp
 }
