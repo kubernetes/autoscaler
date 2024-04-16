@@ -209,6 +209,13 @@ func (vpa *Vpa) AggregateStateByContainerName() ContainerNameToAggregateStateMap
 	return containerNameToAggregateStateMap
 }
 
+// AggregateStateByContainerNameWithoutCheckpoints returns a map from container name to the aggregated state
+// of all containers with that name, belonging to pods matched by the VPA, omitting any checkpoints.
+func (vpa *Vpa) AggregateStateByContainerNameWithoutCheckpoints() ContainerNameToAggregateStateMap {
+	containerNameToAggregateStateMap := AggregateStateByContainerName(vpa.aggregateContainerStates)
+	return containerNameToAggregateStateMap
+}
+
 // AggregateContainerStates returns the underlying internal aggregate state map.
 func (vpa *Vpa) AggregateContainerStates() aggregateContainerStatesMap {
 	return vpa.aggregateContainerStates

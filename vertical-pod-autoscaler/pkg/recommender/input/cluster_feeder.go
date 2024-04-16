@@ -428,7 +428,33 @@ func (feeder *clusterStateFeeder) LoadPods() {
 	}
 }
 
+// PruneContainers prunes any containers from the intial aggregate states
+// that are no longer present in the aggregate states. This is important
+// for cases where a container has been renamed or removed, as otherwise
+// the VPA will split the recommended resources across containers that
+// are no longer present, resulting in the containers that are still
+// present being under-resourced
 func (feeder *clusterStateFeeder) PruneContainers() {
+
+	var keysPruned int
+	// Look through all of our VPAs
+	for _, vpa := range feeder.clusterState.Vpas {
+		aggregates := vpa.AggregateStateByContainerNameWithoutCheckpoints()
+		// Check each initial state to see if it's still "real"
+		for container := range vpa.ContainersInitialAggregateState {
+			if _, ok := aggregates[container]; !ok {
+				delete(vpa.ContainersInitialAggregateState, container)
+				keysPruned = keysPruned + 1
+
+			}
+		}
+	}
+	if keysPruned > 0 {
+		klog.Infof("Pruned %d stale initial aggregate container keys", keysPruned)
+	}
+}
+
+func (feeder *clusterStateFeeder) PruneContainers2() {
 	klog.Infof("Pruning containers")
 
 	// Find all the containers that are legitimately in pods
