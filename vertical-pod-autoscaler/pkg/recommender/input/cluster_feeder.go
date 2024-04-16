@@ -68,6 +68,9 @@ type ClusterStateFeeder interface {
 	// LoadPods updates clusterState with current specification of Pods and their Containers.
 	LoadPods()
 
+	// PruneContainers removes any containers from the cluster state that are no longer present in pods.
+	PruneContainers()
+
 	// LoadRealTimeMetrics updates clusterState with current usage metrics of containers.
 	LoadRealTimeMetrics()
 
@@ -421,6 +424,35 @@ func (feeder *clusterStateFeeder) LoadPods() {
 			if err = feeder.clusterState.AddOrUpdateContainer(container.ID, container.Request); err != nil {
 				klog.V(0).InfoS("Failed to add container", "container", container.ID, "error", err)
 			}
+		}
+	}
+}
+
+func (feeder *clusterStateFeeder) PruneContainers() {
+
+	// Find all the containers that are legitimately in pods
+	containersInPods := make(map[string]*model.ContainerState)
+	for _, pod := range feeder.clusterState.Pods {
+		for containerID, container := range pod.Containers {
+			containersInPods[containerID] = container
+		}
+	}
+
+	// Go through the VPAs
+	for _, vpa := range feeder.clusterState.Vpas {
+		// Look at the aggregates
+		for container := range vpa.AggregateContainerStates() {
+			// If the aggregate isn't in the pod according to the state, remove it
+			if _, ok := containersInPods[container.ContainerName()]; !ok {
+				klog.Infof("Deleting container %s, not present in any pods", container.ContainerName())
+				vpa.DeleteAggregation(container)
+				// If this container is also in the initlal state, say, from a checkpoint, remove it from there too
+				if _, ok := vpa.ContainersInitialAggregateState[container.ContainerName()]; ok {
+					klog.Infof("Also removing container %s, from initial aggregate state", container.ContainerName())
+					delete(vpa.ContainersInitialAggregateState, container.ContainerName())
+				}
+			}
+
 		}
 	}
 }
