@@ -17,8 +17,6 @@ limitations under the License.
 package checkcapacity
 
 import (
-	"fmt"
-
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -29,6 +27,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/conditions"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqclient"
+	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
@@ -83,7 +82,7 @@ func (o *checkCapacityProvClass) Provision(
 	o.context.ClusterSnapshot.Fork()
 	defer o.context.ClusterSnapshot.Revert()
 
-	scaleUpIsSuccessful, err := o.checkcapacity(unschedulablePods)
+	scaleUpIsSuccessful, err := o.checkcapacity(unschedulablePods, pr)
 	if err != nil {
 		return status.UpdateScaleUpError(&status.ScaleUpStatus{}, errors.NewAutoscalerError(errors.InternalError, "error during ScaleUp: %s", err.Error()))
 	}
@@ -94,11 +93,7 @@ func (o *checkCapacityProvClass) Provision(
 }
 
 // Assuming that all unschedulable pods comes from one ProvisioningRequest.
-func (o *checkCapacityProvClass) checkcapacity(unschedulablePods []*apiv1.Pod) (bool, error) {
-	provReq, err := o.client.ProvisioningRequest(unschedulablePods[0].Namespace, unschedulablePods[0].OwnerReferences[0].Name)
-	if err != nil {
-		return false, fmt.Errorf("failed retrive ProvisioningRequest from unscheduled pods, err: %v", err)
-	}
+func (o *checkCapacityProvClass) checkcapacity(unschedulablePods []*apiv1.Pod, provReq *provreqwrapper.ProvisioningRequest) (bool, error) {
 	st, _, err := o.injector.TrySchedulePods(o.context.ClusterSnapshot, unschedulablePods, scheduling.ScheduleAnywhere, true)
 	if len(st) < len(unschedulablePods) || err != nil {
 		conditions.AddOrUpdateCondition(provReq, v1beta1.Provisioned, metav1.ConditionFalse, conditions.CapacityIsNotFoundReason, "Capacity is not found, CA will try to find it later.", metav1.Now())

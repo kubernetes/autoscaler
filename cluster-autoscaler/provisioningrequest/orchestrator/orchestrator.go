@@ -100,7 +100,7 @@ func (o *provReqOrchestrator) ScaleUp(
 	defer o.context.ClusterSnapshot.Revert()
 	o.bookCapacity()
 
-	// unschedulablePods pods should belong to one ProvisioningClass, so only one provClass should try to ScaleUp. 
+	// unschedulablePods pods should belong to one ProvisioningClass, so only one provClass should try to ScaleUp.
 	for _, provClass := range o.provisioningClasses {
 		st, err := provClass.Provision(unschedulablePods, nodes, daemonSets, nodeInfos)
 		if err != nil || st != nil && st.Result != status.ScaleUpNotTried {
