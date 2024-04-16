@@ -67,3 +67,66 @@ The following is an excerpt from a CloudFormation template showing how a MixedIn
 [r5.2xlarge](https://aws.amazon.com/ec2/instance-types/#Memory_Optimized) is the 'base' instance type, with overrides for r5d.2xlarge, i3.2xlarge, r5a.2xlarge and r5ad.2xlarge. 
 
 Note how one Auto Scaling Group is created per Availability Zone, since CA does not currently support ASGs that span multiple Availability Zones. See [Common Notes and Gotchas](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler/cloudprovider/aws#common-notes-and-gotchas).
+
+Adding similar example in terraform due to its wide adoption.
+```
+resource "aws_launch_template" "memory-opt-2xlarge" {
+  name = "memory-opt-2xlarge"
+  
+  block_device_mappings {
+    device_name = "/dev/sda1"
+    ebs {
+      volume_size = 100
+      volume_type = "gp2"
+    }
+  }
+
+  instance_type = "r5.2xlarge"
+}
+
+resource "aws_autoscaling_group" "ASGA" {
+  min_size = 1
+  max_size = 10
+
+  mixed_instances_policy {
+    instances_distribution {
+      on_demand_base_capacity                 = 0
+      on_demand_percentage_above_base_capacity = 0
+    }
+
+    launch_template {
+      launch_template_specification {
+        launch_template_id   = aws_launch_template.memory-opt-2xlarge.id
+        version              = aws_launch_template.memory-opt-2xlarge.latest_version
+      }
+
+      override {
+        instance_type = "r5.2xlarge"
+      }
+
+      override {
+        instance_type = "r5d.2xlarge"
+      }
+
+      override {
+        instance_type = "i3.2xlarge"
+      }
+
+      override {
+        instance_type = "r5a.2xlarge"
+      }
+
+      override {
+        instance_type = "r5ad.2xlarge"
+      }
+    }
+  }
+
+  vpc_zone_identifier = ["subnet-###############"]
+}
+
+resource "aws_autoscaling_group" "ASGB" {}
+
+resource "aws_autoscaling_group" "ASGC" {}
+```
+
