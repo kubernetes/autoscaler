@@ -429,21 +429,25 @@ func (feeder *clusterStateFeeder) LoadPods() {
 }
 
 func (feeder *clusterStateFeeder) PruneContainers() {
+	klog.Infof("Pruning containers")
 
 	// Find all the containers that are legitimately in pods
-	containersInPods := make(map[string]*model.ContainerState)
+	containersInPods := make(map[string]string)
 	for _, pod := range feeder.clusterState.Pods {
-		for containerID, container := range pod.Containers {
-			containersInPods[containerID] = container
+		for containerID, _ := range pod.Containers {
+			containersInPods[containerID] = pod.ID.PodName
+			klog.Infof("--> found container %s", containerID)
 		}
 	}
 
 	// Go through the VPAs
 	for _, vpa := range feeder.clusterState.Vpas {
+		klog.Infof("--> inspecting vpa %s", vpa.ID.VpaName)
 		// Look at the aggregates
 		for container := range vpa.AggregateContainerStates() {
+			klog.Infof("--> Checking aggregate container %s", container.ContainerName)
 			// If the aggregate isn't in the pod according to the state, remove it
-			if _, ok := containersInPods[container.ContainerName()]; !ok {
+			if podName, ok := containersInPods[container.ContainerName()]; !ok {
 				klog.Infof("Deleting container %s, not present in any pods", container.ContainerName())
 				vpa.DeleteAggregation(container)
 				// If this container is also in the initlal state, say, from a checkpoint, remove it from there too
@@ -451,6 +455,8 @@ func (feeder *clusterStateFeeder) PruneContainers() {
 					klog.Infof("Also removing container %s, from initial aggregate state", container.ContainerName())
 					delete(vpa.ContainersInitialAggregateState, container.ContainerName())
 				}
+			} else {
+				klog.Infof("--> Container %s is in pod %s", container.ContainerName(), podName)
 			}
 
 		}
