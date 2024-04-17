@@ -58,21 +58,20 @@ type ScaleSet struct {
 	minSize int
 	maxSize int
 
-	enableForceDelete bool
+	enableForceDelete         bool
 	enableDynamicInstanceList bool
-
 
 	// curSize tracks (and caches) the number of VMs in this ScaleSet.
 	// It is periodically updated from vmss.Sku.Capacity, with VMSS itself coming
 	// either from azure.Cache (which periodically does VMSS.List)
 	// or from direct VMSS.Get (used for Spot).
-	curSize   int64
+	curSize int64
 	// lastSizeRefresh is the time curSize was last refreshed from vmss.Sku.Capacity.
 	// Together with sizeRefreshPeriod, it is used to determine if it is time to refresh curSize.
-	lastSizeRefresh          time.Time
+	lastSizeRefresh time.Time
 	// sizeRefreshPeriod is how often curSize is refreshed from vmss.Sku.Capacity.
 	// (Set from azureCache.refreshInterval = VmssCacheTTL or [defaultMetadataCache]refreshInterval = 1min)
-	sizeRefreshPeriod        time.Duration
+	sizeRefreshPeriod time.Duration
 	// getVmssSizeRefreshPeriod is how often curSize should be refreshed in case VMSS.Get call is used (only spot instances).
 	// (Set from GetVmssSizeRefreshPeriod, if specified = get-vmss-size-refresh-period = 30s,
 	//   or override from autoscalerProfile.GetVmssSizeRefreshPeriod)
@@ -81,7 +80,7 @@ type ScaleSet struct {
 	instancesRefreshPeriod time.Duration
 	instancesRefreshJitter int
 
-	sizeMutex sync.Mutex
+	sizeMutex           sync.Mutex
 	instanceMutex       sync.Mutex
 	instanceCache       []cloudprovider.Instance
 	lastInstanceRefresh time.Time
