@@ -30,15 +30,10 @@ type ProvisioningRequestProcessor interface {
 	CleanUp()
 }
 
-type provisioningRequestClient interface {
-	ProvisioningRequests() ([]*provreqwrapper.ProvisioningRequest, error)
-	ProvisioningRequest(namespace, name string) (*provreqwrapper.ProvisioningRequest, error)
-}
-
 // CombinedProvReqProcessor is responsible for processing ProvisioningRequest for each ProvisioningClass
 // every CA loop and updating conditions for expired ProvisioningRequests.
 type CombinedProvReqProcessor struct {
-	client     provisioningRequestClient
+	client     *provreqclient.ProvisioningRequestClient
 	processors []ProvisioningRequestProcessor
 }
 
