@@ -302,9 +302,11 @@ func (feeder *clusterStateFeeder) GarbageCollectCheckpoints() {
 					klog.ErrorS(err, "Orphaned VPA checkpoint cleanup - error deleting", "checkpoint", klog.KRef(namespace, checkpoint.Name))
 				}
 			}
-			// Also clean up a checkpoint if the VPA is still there, but the container is gone
+			// Also clean up a checkpoint if the VPA is still there, but the container is gone. AggregateStateByContainerName
+			// merges in the initial aggregates so we can use it to check "both lists" (initial, aggregates) at once
 			// TODO(jkyros): could we also just wait until it got "old" enough, e.g. the checkpoint hasn't
-			// been updated for an hour, blow it a away?
+			// been updated for an hour, blow it a away? Because once we remove it from the aggregate lists, it will stop
+			// being maintained.
 			_, aggregateExists := vpa.AggregateStateByContainerName()[checkpoint.Spec.ContainerName]
 			if !aggregateExists {
 				err = feeder.vpaCheckpointClient.VerticalPodAutoscalerCheckpoints(namespace).Delete(context.TODO(), checkpoint.Name, metav1.DeleteOptions{})
