@@ -293,7 +293,7 @@ func (feeder *clusterStateFeeder) GarbageCollectCheckpoints() {
 		}
 		for _, checkpoint := range checkpointList.Items {
 			vpaID := model.VpaID{Namespace: checkpoint.Namespace, VpaName: checkpoint.Spec.VPAObjectName}
-			_, exists := feeder.clusterState.Vpas[vpaID]
+			vpa, exists := feeder.clusterState.Vpas[vpaID]
 			if !exists {
 				err = feeder.vpaCheckpointClient.VerticalPodAutoscalerCheckpoints(namespace).Delete(context.TODO(), checkpoint.Name, metav1.DeleteOptions{})
 				if err == nil {
@@ -302,6 +302,19 @@ func (feeder *clusterStateFeeder) GarbageCollectCheckpoints() {
 					klog.ErrorS(err, "Orphaned VPA checkpoint cleanup - error deleting", "checkpoint", klog.KRef(namespace, checkpoint.Name))
 				}
 			}
+			// Also clean up a checkpoint if the VPA is still there, but the container is gone
+			// TODO(jkyros): could we also just wait until it got "old" enough, e.g. the checkpoint hasn't
+			// been updated for an hour, blow it a away?
+			_, aggregateExists := vpa.AggregateStateByContainerName()[checkpoint.Spec.ContainerName]
+			if !aggregateExists {
+				err = feeder.vpaCheckpointClient.VerticalPodAutoscalerCheckpoints(namespace).Delete(context.TODO(), checkpoint.Name, metav1.DeleteOptions{})
+				if err == nil {
+					klog.V(3).Infof("Orphaned VPA checkpoint cleanup - deleting %v/%v.", namespace, checkpoint.Name)
+				} else {
+					klog.Errorf("Cannot delete VPA checkpoint %v/%v. Reason: %+v", namespace, checkpoint.Name, err)
+				}
+			}
+
 		}
 	}
 }
