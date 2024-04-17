@@ -130,6 +130,7 @@ func getCappedRecommendationForContainer(
 				cappingAnnotations = append(cappingAnnotations, annotations...)
 			}
 		}
+		klog.V(3).Infof("processed capped recommendations for %s: %v", container.Name, cappingAnnotations)
 	}
 
 	process(cappedRecommendations.Target, true)
