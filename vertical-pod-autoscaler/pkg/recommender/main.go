@@ -107,7 +107,7 @@ var (
 
 const (
 	// aggregateContainerStateGCInterval defines how often expired AggregateContainerStates are garbage collected.
-	aggregateContainerStateGCInterval               = 1 * time.Hour
+	aggregateContainerStateGCInterval               = 5 * time.Minute
 	scaleCacheEntryLifetime           time.Duration = time.Hour
 	scaleCacheEntryFreshnessTime      time.Duration = 10 * time.Minute
 	scaleCacheEntryJitterFactor       float64       = 1.

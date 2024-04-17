@@ -455,48 +455,48 @@ func (feeder *clusterStateFeeder) PruneContainers2() {
 	}
 }
 
+// PruneContainers removes any containers from the aggregates and initial aggregates that are no longer
+// present in the feeder's clusterState. Without this, we would be averaging our resource calculations
+// over containers that no longer exist, and continuing to update checkpoints that should be left to expire.
 func (feeder *clusterStateFeeder) PruneContainers() {
-	klog.Infof("Pruning containers")
 
-	// Find all the containers that are legitimately in pods
+	// Find all the containers that are still legitimately in pods
 	containersInPods := make(map[string]string)
 	for _, pod := range feeder.clusterState.Pods {
 		for containerID, _ := range pod.Containers {
 			containersInPods[containerID] = pod.ID.PodName
-			klog.Infof("--> found container %s", containerID)
 		}
 	}
 
-	// Go through the VPAs
+	var aggregatesPruned int
+	var initialAggregatesPruned int
 	for _, vpa := range feeder.clusterState.Vpas {
-		klog.Infof("--> inspecting vpa %s", vpa.ID.VpaName)
 		// Look at the aggregates
-
-		// TODO(jkyros): The bad aggregate IS NOT in the raw aggregate container list
 		for container := range vpa.AggregateContainerStates() {
-			klog.Infof("--> Checking aggregate container %s", container.ContainerName())
-			// If the aggregate isn't in the pod according to the state, remove it
-			if podName, ok := containersInPods[container.ContainerName()]; !ok {
-				klog.Infof("Deleting Aggregate container %s, not present in any pods", container.ContainerName())
+			// If the container being aggregated isn't in a pod anymore according to the state, remove it
+			if _, ok := containersInPods[container.ContainerName()]; !ok {
+				klog.V(4).Infof("Deleting Aggregate container %s, not present in any pods", container.ContainerName())
 				vpa.DeleteAggregation(container)
-
-			} else {
-				klog.Infof("--> Aggregate Container %s is in pod %s", container.ContainerName(), podName)
+				aggregatesPruned = aggregatesPruned + 1
 			}
+
 		}
+		// Also remove it from the initial aggregates. This is done separately from the normal aggregates because it
+		// could be in this list, but not that list and vice versa
 		for container := range vpa.ContainersInitialAggregateState {
-			klog.Infof("--> Checking Initial Aggregate container %s", container)
-
-			// If the aggregate isn't in the pod according to the state, remove it
-			if podName, ok := containersInPods[container]; !ok {
-				klog.Infof("Deleting Initial Aggregate container %s, not present in any pods", container)
+			if _, ok := containersInPods[container]; !ok {
+				klog.V(4).Infof("Deleting Initial Aggregate container %s, not present in any pods", container)
 				delete(vpa.ContainersInitialAggregateState, container)
+				initialAggregatesPruned = initialAggregatesPruned + 1
 
-			} else {
-				klog.Infof("--> Initial Aggregate Container %s is in pod %s", container, podName)
 			}
 		}
 	}
+	// Only log if we did something
+	if initialAggregatesPruned > 0 || aggregatesPruned > 0 {
+		klog.Infof("Pruned %d aggregate and %d initial aggregate containers", aggregatesPruned, initialAggregatesPruned)
+	}
+
 }
 
 func (feeder *clusterStateFeeder) LoadRealTimeMetrics() {
