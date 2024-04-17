@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package checkcapacity
+package orchestrator
 
 import (
 	"context"
@@ -31,11 +31,12 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
+	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/checkcapacity"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/pods"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqclient"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/client-go/kubernetes/fake"
 	"k8s.io/kubernetes/pkg/scheduler/framework"
@@ -68,8 +69,9 @@ func TestScaleUp(t *testing.T) {
 		err              bool
 	}{
 		{
-			name:     "no ProvisioningRequests",
-			provReqs: []*provreqwrapper.ProvisioningRequest{},
+			name:          "no ProvisioningRequests",
+			provReqs:      []*provreqwrapper.ProvisioningRequest{},
+			scaleUpResult: status.ScaleUpNotTried,
 		},
 		{
 			name:             "one ProvisioningRequest",
@@ -87,7 +89,7 @@ func TestScaleUp(t *testing.T) {
 			name:             "pods from different ProvisioningRequest class",
 			provReqs:         []*provreqwrapper.ProvisioningRequest{newCpuProvReq, bookedCapacityProvReq, differentProvReqClass},
 			provReqToScaleUp: differentProvReqClass,
-			err:              true,
+			scaleUpResult:    status.ScaleUpNotTried,
 		},
 		{
 			name:             "some capacity is booked, succesfull ScaleUp",
@@ -107,12 +109,12 @@ func TestScaleUp(t *testing.T) {
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, autoscalingContext.ClusterSnapshot, allNodes, nil)
 			prPods, err := pods.PodsForProvisioningRequest(tc.provReqToScaleUp)
 			assert.NoError(t, err)
+			client := provreqclient.NewFakeProvisioningRequestClient(context.Background(), t, tc.provReqs...)
 			orchestrator := &provReqOrchestrator{
-				initialized: true,
-				context:     &autoscalingContext,
-				client:      provreqclient.NewFakeProvisioningRequestClient(context.Background(), t, tc.provReqs...),
-				injector:    scheduling.NewHintingSimulator(autoscalingContext.PredicateChecker),
+				client:              client,
+				provisioningClasses: []provisioningClass{checkcapacity.New(client)},
 			}
+			orchestrator.Initialize(&autoscalingContext, nil, nil, nil, taints.TaintConfig{})
 			st, err := orchestrator.ScaleUp(prPods, []*apiv1.Node{}, []*v1.DaemonSet{}, map[string]*framework.NodeInfo{})
 			if !tc.err {
 				assert.NoError(t, err)
