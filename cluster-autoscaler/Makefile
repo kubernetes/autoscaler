@@ -1,13 +1,13 @@
 ALL_ARCH = amd64 arm64 s390x
 all: $(addprefix build-arch-,$(ALL_ARCH))
 
-TAG?=dev
+TAG?=v1.25.3_NR
 FLAGS=
 LDFLAGS?=-s
 ENVVAR=CGO_ENABLED=0
 GOOS?=linux
 GOARCH?=$(shell go env GOARCH)
-REGISTRY?=staging-k8s.gcr.io
+REGISTRY?=cf-registry.nr-ops.net/container-fabric
 DOCKER_NETWORK?=default
 ifdef BUILD_TAGS
   TAGS_FLAG=--tags ${BUILD_TAGS}

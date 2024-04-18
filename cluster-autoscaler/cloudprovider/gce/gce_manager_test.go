@@ -18,6 +18,8 @@ package gce
 
 import (
 	"fmt"
+	"net/http"
+	"reflect"
 	"regexp"
 	"strings"
 	"testing"
@@ -1249,6 +1251,167 @@ func TestFetchAutoMigsRegional(t *testing.T) {
 	mock.AssertExpectationsForObjects(t, server)
 }
 
+func TestFetchAutoMigsWithMatchingLabelsInInstanceTemplates(t *testing.T) {
+	server := NewHttpServerMock()
+	defer server.Close()
+
+	server.On("handle", "/projects/project1/zones/"+zoneB+"/instanceGroups").Return(buildListInstanceGroupsResponse(zoneB, gceMigA, gceMigB)).Once()
+	server.On("handle", "/projects/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigA).Return(buildInstanceGroupManagerResponse(zoneB, gceMigA, 3)).Once()
+	server.On("handle", "/projects/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigB).Return(buildInstanceGroupManagerResponse(zoneB, gceMigB, 3)).Once()
+
+	// Regenerate instance cache
+	server.On("handle", "/projects/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigA+"/listManagedInstances").Return(buildFourRunningInstancesManagedInstancesResponse(zoneB, gceMigA)).Once()
+
+	regional := false
+	g := newTestGceManager(t, server.URL, regional)
+
+	min, max := 0, 100
+	g.migAutoDiscoverySpecs = []migAutoDiscoveryConfig{
+		{Re: regexp.MustCompile(".*"), MinSize: min, MaxSize: max, Labels: map[string]string{"cluster-autoscaler/enabled": "true"}},
+	}
+	g.cache.instanceTemplatesCache = map[GceRef]*gce.InstanceTemplate{
+		GceRef{Project: projectId, Zone: zoneB, Name: gceMigA}: {
+			Name:        "gce-mig-a",
+			Description: "instance template with auto-scaling enabled",
+			Properties: &gce.InstanceProperties{
+				Labels: map[string]string{
+					"cluster-autoscaler/enabled": "true",
+					"cluster-name":               "cluster-1",
+					"min":                        "2",
+					"max":                        "10",
+				},
+			},
+		},
+		GceRef{Project: projectId, Zone: zoneB, Name: gceMigB}: {
+			Name:        "gce-mig-b",
+			Description: "instance template with auto-scaling disabled",
+			Properties: &gce.InstanceProperties{
+				Labels: map[string]string{
+					"cluster-autoscaler/enabled": "false",
+					"cluster-name":               "cluster-1",
+				},
+			},
+		},
+	}
+
+	assert.NoError(t, g.fetchAutoMigs())
+
+	migs := g.GetMigs()
+	assert.Equal(t, 1, len(migs))
+	validateMigExists(t, migs, zoneB, gceMigA, min, max)
+	mock.AssertExpectationsForObjects(t, server)
+}
+
+func TestFetchAutoMigsByLabelsWithoutInstanceTemplates(t *testing.T) {
+	server := NewHttpServerMock(MockFieldResponse, MockFieldStatusCode)
+	defer server.Close()
+
+	server.On("handle", "/projects/project1/zones/"+zoneB+"/instanceGroups").Return(buildListInstanceGroupsResponse(zoneB, gceMigA), http.StatusOK).Once()
+	server.On("handle", "/projects/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigA).Return(`not found`, http.StatusNotFound).Once()
+
+	regional := false
+	g := newTestGceManager(t, server.URL, regional)
+
+	g.migAutoDiscoverySpecs = []migAutoDiscoveryConfig{
+		{Re: regexp.MustCompile(".*"), MinSize: 0, MaxSize: 100, Labels: map[string]string{"cluster-autoscaler/enabled": "true"}},
+	}
+	assert.NoError(t, g.fetchAutoMigs())
+
+	migs := g.GetMigs()
+	assert.Equal(t, 0, len(migs))
+	mock.AssertExpectationsForObjects(t, server)
+}
+
+func TestFetchAutoMigsByLabelsGetInstanceTemplateError(t *testing.T) {
+	server := NewHttpServerMock(MockFieldResponse, MockFieldStatusCode)
+	defer server.Close()
+
+	server.On("handle", "/projects/project1/zones/"+zoneB+"/instanceGroups").Return(buildListInstanceGroupsResponse(zoneB, gceMigA), http.StatusOK).Once()
+	server.On("handle", "/projects/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigA).Return(`unauthorized`, http.StatusForbidden).Once()
+
+	regional := false
+	g := newTestGceManager(t, server.URL, regional)
+
+	g.migAutoDiscoverySpecs = []migAutoDiscoveryConfig{
+		{Re: regexp.MustCompile(".*"), MinSize: 0, MaxSize: 100, Labels: map[string]string{"cluster-autoscaler/enabled": "true"}},
+	}
+	assert.Error(t, g.fetchAutoMigs())
+
+	migs := g.GetMigs()
+	assert.Equal(t, 0, len(migs))
+	mock.AssertExpectationsForObjects(t, server)
+}
+
+func TestFetchAutoMigsByLabelsInvalidMinLabel(t *testing.T) {
+	server := NewHttpServerMock()
+	defer server.Close()
+
+	server.On("handle", "/projects/project1/zones/"+zoneB+"/instanceGroups").Return(buildListInstanceGroupsResponse(zoneB, gceMigA)).Once()
+	server.On("handle", "/projects/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigA).Return(buildInstanceGroupManagerResponse(zoneB, gceMigA, 3)).Once()
+
+	regional := false
+	g := newTestGceManager(t, server.URL, regional)
+
+	g.migAutoDiscoverySpecs = []migAutoDiscoveryConfig{
+		{Re: regexp.MustCompile(".*"), MinSize: 0, MaxSize: 100, Labels: map[string]string{"cluster-autoscaler/enabled": "true"}},
+	}
+	g.cache.instanceTemplatesCache = map[GceRef]*gce.InstanceTemplate{
+		GceRef{Project: projectId, Zone: zoneB, Name: gceMigA}: {
+			Name:        "gce-mig-a",
+			Description: "instance template with auto-scaling enabled",
+			Properties: &gce.InstanceProperties{
+				Labels: map[string]string{
+					"cluster-autoscaler/enabled": "true",
+					"cluster-name":               "cluster-1",
+					"min":                        "abc",
+					"max":                        "10",
+				},
+			},
+		},
+	}
+
+	assert.Error(t, g.fetchAutoMigs())
+
+	migs := g.GetMigs()
+	assert.Equal(t, 0, len(migs))
+	mock.AssertExpectationsForObjects(t, server)
+}
+
+func TestFetchAutoMigsByLabelsInvalidMaxLabel(t *testing.T) {
+	server := NewHttpServerMock()
+	defer server.Close()
+
+	server.On("handle", "/projects/project1/zones/"+zoneB+"/instanceGroups").Return(buildListInstanceGroupsResponse(zoneB, gceMigA)).Once()
+	server.On("handle", "/projects/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigA).Return(buildInstanceGroupManagerResponse(zoneB, gceMigA, 3)).Once()
+
+	regional := false
+	g := newTestGceManager(t, server.URL, regional)
+
+	g.migAutoDiscoverySpecs = []migAutoDiscoveryConfig{
+		{Re: regexp.MustCompile(".*"), MinSize: 0, MaxSize: 100, Labels: map[string]string{"cluster-autoscaler/enabled": "true"}},
+	}
+	g.cache.instanceTemplatesCache = map[GceRef]*gce.InstanceTemplate{
+		GceRef{Project: projectId, Zone: zoneB, Name: gceMigA}: {
+			Name:        "gce-mig-a",
+			Description: "instance template with auto-scaling enabled",
+			Properties: &gce.InstanceProperties{
+				Labels: map[string]string{
+					"cluster-autoscaler/enabled": "true",
+					"cluster-name":               "cluster-1",
+					"min":                        "2",
+					"max":                        "abc",
+				},
+			},
+		},
+	}
+
+	assert.Error(t, g.fetchAutoMigs())
+
+	migs := g.GetMigs()
+	assert.Equal(t, 0, len(migs))
+	mock.AssertExpectationsForObjects(t, server)
+}
+
 func TestFetchExplicitMigs(t *testing.T) {
 	server := NewHttpServerMock()
 	defer server.Close()
@@ -1454,6 +1617,30 @@ func TestParseMIGAutoDiscoverySpecs(t *testing.T) {
 			specs:   []string{"mig:namePrefix=prefix,min=0,max=0"},
 			wantErr: true,
 		},
+		{
+			name: "DuplicateAutoDiscoveryType",
+			specs: []string{
+				"mig:namePrefix=prefix,min=1,max=10",
+				"label:key=value",
+			},
+			wantErr: true,
+		},
+		{
+			name: "DuplicateAutoDiscoveryType2",
+			specs: []string{
+				"label:key=value",
+				"mig:namePrefix=prefix,min=1,max=10",
+			},
+			wantErr: true,
+		},
+		{
+			name: "MultipleLabelAutoDiscoveryType",
+			specs: []string{
+				"label:key1=value1",
+				"label:key2=value2",
+			},
+			wantErr: true,
+		},
 	}
 
 	for _, tc := range cases {
@@ -1467,6 +1654,151 @@ func TestParseMIGAutoDiscoverySpecs(t *testing.T) {
 			assert.NoError(t, err)
 			assert.True(t, assert.ObjectsAreEqualValues(tc.want, got), "\ngot: %#v\nwant: %#v", got, tc.want)
 		})
+	}
+}
+
+func TestParseMIGAutoDiscoverySpec(t *testing.T) {
+	// Test missing auto-discovery type
+	t.Run("MissingAutoDiscoveryType", func(t *testing.T) {
+		spec := "key1=value1,key2=value2"
+		_, err := parseMIGAutoDiscoverySpec(spec)
+		assert.Error(t, err)
+		assert.EqualError(t, err, "spec \"key1=value1,key2=value2\" should be mig:key=value,key=value", spec)
+	})
+
+	// Test valid label auto-discovery spec
+	t.Run("ValidLabelAutoDiscoverySpec", func(t *testing.T) {
+		spec := "label:key1=value1,key2=value2"
+		result, err := parseMIGAutoDiscoverySpec(spec)
+		assert.NoError(t, err)
+		assert.Equal(t, migAutoDiscoveryConfig{
+			Re:      regexp.MustCompile(".*"),
+			MinSize: 0,
+			MaxSize: 1000,
+			Labels:  map[string]string{"key1": "value1", "key2": "value2"},
+		}, result)
+	})
+
+	// Test valid MIG auto-discovery spec
+	t.Run("ValidMIGAutoDiscoverySpec", func(t *testing.T) {
+		spec := "mig:namePrefix=xyz_abc,min=2,max=10"
+		result, err := parseMIGAutoDiscoverySpec(spec)
+		assert.NoError(t, err)
+		assert.Equal(t, migAutoDiscoveryConfig{
+			Re:      regexp.MustCompile("^xyz_abc.+"),
+			MinSize: 2,
+			MaxSize: 10,
+			Labels:  nil,
+		}, result)
+	})
+
+	// Test unsupported auto-discovery type
+	t.Run("UnsupportedAutoDiscoveryType", func(t *testing.T) {
+		spec := "invalid:key1=value1,key2=value2"
+		_, err := parseMIGAutoDiscoverySpec(spec)
+		assert.Error(t, err)
+		assert.EqualError(t, err, "unsupported auto-discovery type specified. Supported types are 'label' and 'mig'")
+	})
+
+	// Add more test cases as needed
+}
+
+func TestParseAutoDiscoveryTypeLabelSpec(t *testing.T) {
+	// Test case for valid label key-value pairs
+	t.Run("ValidLabels", func(t *testing.T) {
+		spec := "key1=value1,key2=value2"
+		expected := migAutoDiscoveryConfig{
+			Labels: map[string]string{
+				"key1": "value1",
+				"key2": "value2",
+			},
+			MinSize: 0,
+			MaxSize: 1000,
+			Re:      regexp.MustCompile(".*"),
+		}
+		cfg, err := parseAutoDiscoveryTypeLabelSpec(spec)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, cfg)
+	})
+
+	// Test case for invalid label format
+	t.Run("InvalidFormat", func(t *testing.T) {
+		spec := "key1value1,key2=value2"
+		_, err := parseAutoDiscoveryTypeLabelSpec(spec)
+		assert.Error(t, err)
+	})
+
+	// Test case for empty labels
+	t.Run("EmptyLabels", func(t *testing.T) {
+		spec := ""
+		_, err := parseAutoDiscoveryTypeLabelSpec(spec)
+		assert.Error(t, err)
+	})
+}
+
+func TestParseAutoDiscoveryTypeNamePrefixSpec(t *testing.T) {
+	testCases := []struct {
+		spec     string
+		expected migAutoDiscoveryConfig
+		errMsg   string
+	}{
+		{
+			spec: "namePrefix=test-node,min=1,max=10",
+			expected: migAutoDiscoveryConfig{
+				Re:      regexp.MustCompile("^test-node.+"),
+				MinSize: 1,
+				MaxSize: 10,
+			},
+			errMsg: "",
+		},
+		{
+			spec:   "invalidSpec",
+			errMsg: "invalid key=value pair [invalidSpec]",
+		},
+		{
+			spec:   "namePrefix=+*,min=1,max=10",
+			errMsg: "invalid instance group name prefix \"+*\" - \"^+*.+\" must be a valid RE2 regexp",
+		},
+		{
+			spec:   "namePrefix=test-node,min=abc,max=10",
+			errMsg: "invalid minimum nodes: abc",
+		},
+		{
+			spec:   "namePrefix=test-node,min=1,max=abc",
+			errMsg: "invalid maximum nodes: abc",
+		},
+		{
+			spec:   "namePrefix=test-node,min=1,max=10,dummy=abc",
+			errMsg: "unsupported key \"dummy\" is specified for mig-auto-discovery \"namePrefix=test-node,min=1,max=10,dummy=abc\". Supported keys are \"namePrefix, min, max\"",
+		},
+		{
+			spec:   "namePrefix=,min=1,max=10",
+			errMsg: "empty instance group name prefix supplied",
+		},
+		{
+			spec:   "namePrefix=test-node,min=10,max=1",
+			errMsg: "minimum size 10 is greater than maximum size 1",
+		},
+		{
+			spec:   "namePrefix=test-node,min=0,max=0",
+			errMsg: "maximum size 0 must be at least 1",
+		},
+	}
+
+	for _, tc := range testCases {
+		cfg, err := parseAutoDiscoveryTypeNamePrefixSpec(tc.spec)
+		if tc.errMsg != "" {
+			if err == nil || err.Error() != tc.errMsg {
+				t.Errorf("Expected error message: %s, got: %v", tc.errMsg, err)
+			}
+		} else {
+			if err != nil {
+				t.Errorf("Unexpected error: %v", err)
+			}
+			if !reflect.DeepEqual(cfg, tc.expected) {
+				t.Errorf("Unexpected config. Expected: %v, Got: %v", tc.expected, cfg)
+			}
+		}
 	}
 }
 

@@ -37,6 +37,7 @@ import (
 	"k8s.io/client-go/util/workqueue"
 
 	apiv1 "k8s.io/api/core/v1"
+	int_err "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	provider_gce "k8s.io/legacy-cloud-providers/gce"
 
 	"cloud.google.com/go/compute/metadata"
@@ -53,6 +54,7 @@ const (
 	httpTimeout                  = 30 * time.Second
 	scaleToZeroSupported         = true
 	autoDiscovererTypeMIG        = "mig"
+	autoDiscovererTypeLabel      = "label"
 	migAutoDiscovererKeyPrefix   = "namePrefix"
 	migAutoDiscovererKeyMinNodes = "min"
 	migAutoDiscovererKeyMaxNodes = "max"
@@ -442,11 +444,54 @@ func (m *gceManagerImpl) fetchAutoMigs() error {
 			return fmt.Errorf("cannot autodiscover managed instance groups: %v", err)
 		}
 
+	loopLinks: // loopLinks is used to break out of the loop in case of unmatched labels in label-based autodiscovery
 		for _, link := range links {
 			mig, err := m.buildMigFromAutoCfg(link, cfg)
 			if err != nil {
 				return err
 			}
+
+			if len(cfg.Labels) > 0 {
+				klog.V(4).Infof("Evaluate instance template labels %v in mig %s", cfg.Labels, mig.GceRef().Name)
+				instanceTemplate, err := m.migInfoProvider.GetMigInstanceTemplate(mig.GceRef())
+				if err != nil {
+					// Skip migs whose instance templates are not found
+					if autoscalerErr, ok := err.(int_err.AutoscalerError); ok {
+						if autoscalerErr.Type() == int_err.NodeGroupDoesNotExistError {
+							klog.V(4).Infof("Ignoring mig %s whose instance template is not found", mig.GceRef().Name)
+							continue
+						}
+					}
+					return err
+				} else {
+					// Skip migs whose instance templates don't have the corresponding config labels
+					for k, v := range cfg.Labels {
+						if instanceTemplate.Properties.Labels[k] != v {
+							klog.V(4).Infof("Instance template %s missing label %s=%s.\nIgnoring mig %s", instanceTemplate.Name, k, v, mig.GceRef().Name)
+							continue loopLinks
+						}
+					}
+
+					// Update the min size of mig config based on labels in the instance template
+					if val, ok := instanceTemplate.Properties.Labels[migAutoDiscovererKeyMinNodes]; ok {
+						if m, err := strconv.Atoi(val); err != nil {
+							return fmt.Errorf("invalid min nodes %s in instance template labels: %s", val, instanceTemplate.Name)
+						} else {
+							cfg.MinSize = m
+						}
+					}
+
+					// Update the max size of mig config based on labels in the instance template
+					if val, ok := instanceTemplate.Properties.Labels[migAutoDiscovererKeyMaxNodes]; ok {
+						if m, err := strconv.Atoi(val); err != nil {
+							return fmt.Errorf("invalid max nodes %s in instance template labels: %s", val, instanceTemplate.Name)
+						} else {
+							cfg.MaxSize = m
+						}
+					}
+				}
+			}
+
 			exists[mig.GceRef()] = true
 			if m.explicitlyConfigured[mig.GceRef()] {
 				// This MIG was explicitly configured, but would also be
@@ -614,14 +659,30 @@ func (m *gceManagerImpl) GetMigTemplateNode(mig Mig) (*apiv1.Node, error) {
 
 // parseMIGAutoDiscoverySpecs returns any provided NodeGroupAutoDiscoverySpecs
 // parsed into configuration appropriate for MIG autodiscovery.
+// allows either label-based or name-prefix-based entries.
+// returns an error if both label-based and name-prefix-based entries are specified
+// returns an error if more than 1 label-based entry is specified
 func parseMIGAutoDiscoverySpecs(o cloudprovider.NodeGroupDiscoveryOptions) ([]migAutoDiscoveryConfig, error) {
-	cfgs := make([]migAutoDiscoveryConfig, len(o.NodeGroupAutoDiscoverySpecs))
-	var err error
-	for i, spec := range o.NodeGroupAutoDiscoverySpecs {
-		cfgs[i], err = parseMIGAutoDiscoverySpec(spec)
+	var cfgs []migAutoDiscoveryConfig
+	var labelEntryFound bool
+	for _, spec := range o.NodeGroupAutoDiscoverySpecs {
+		c, err := parseMIGAutoDiscoverySpec(spec)
 		if err != nil {
 			return nil, err
+		} else if labelEntryFound {
+			if c.Labels != nil {
+				return nil, fmt.Errorf("more than 1 label-based entry found in NodeGroupAutoDiscoverySpecs")
+			} else {
+				return nil, fmt.Errorf("label-based and name-prefix-based entries are both specified in NodeGroupAutoDiscoverySpecs")
+			}
+		} else if len(c.Labels) > 0 {
+			labelEntryFound = true // mark the first label-based entry as the primary
+
+			if len(cfgs) > 0 {
+				return nil, fmt.Errorf("label-based and name-prefix-based entries are both specified in NodeGroupAutoDiscoverySpecs")
+			}
 		}
+		cfgs = append(cfgs, c)
 	}
 	return cfgs, nil
 }
@@ -634,21 +695,68 @@ type migAutoDiscoveryConfig struct {
 	MinSize int
 	// MaxSize specifies the maximum size for all MIGs that match Re.
 	MaxSize int
+	// Optional map of labels to filter MIGs by.
+	Labels map[string]string
 }
 
+// parseMIGAutoDiscoverySpec parses individual MIG auto-discovery spec.
+//
+// It takes a spec string as input and returns a migAutoDiscoveryConfig and an error.
 func parseMIGAutoDiscoverySpec(spec string) (migAutoDiscoveryConfig, error) {
-	cfg := migAutoDiscoveryConfig{}
-
 	tokens := strings.Split(spec, ":")
 	if len(tokens) != 2 {
-		return cfg, fmt.Errorf("spec \"%s\" should be discoverer:key=value,key=value", spec)
+		return migAutoDiscoveryConfig{}, fmt.Errorf("spec \"%s\" should be mig:key=value,key=value", spec)
 	}
-	discoverer := tokens[0]
-	if discoverer != autoDiscovererTypeMIG {
-		return cfg, fmt.Errorf("unsupported discoverer specified: %s", discoverer)
+	switch tokens[0] {
+	case autoDiscovererTypeLabel:
+		return parseAutoDiscoveryTypeLabelSpec(tokens[1])
+	case autoDiscovererTypeMIG:
+		return parseAutoDiscoveryTypeNamePrefixSpec(tokens[1])
+	default:
+		return migAutoDiscoveryConfig{}, fmt.Errorf("unsupported auto-discovery type specified. Supported types are 'label' and 'mig'")
+	}
+}
+
+// parseAutoDiscoveryTypeLabelSpec parses the label auto discovery specification.
+//
+// It takes a spec string as input and returns a migAutoDiscoveryConfig and an error.
+// Validates and returns an error if the spec is invalid. Examples: empty labels, key-value not separated by '=' etc.
+func parseAutoDiscoveryTypeLabelSpec(spec string) (migAutoDiscoveryConfig, error) {
+	cfg := migAutoDiscoveryConfig{}
+
+	labels := make(map[string]string)
+	for _, arg := range strings.Split(spec, ",") {
+		kv := strings.Split(arg, "=")
+		if len(kv) != 2 {
+			return cfg, fmt.Errorf("invalid label key=value pair %s; use key1=value1,key2=value2", kv)
+		}
+		labels[kv[0]] = kv[1]
 	}
 
-	for _, arg := range strings.Split(tokens[1], ",") {
+	if len(labels) == 0 {
+		return cfg, fmt.Errorf("no labels specified. use key1=value1,key2=value2")
+	}
+	cfg.Labels = labels
+	cfg.Re = regexp.MustCompile(".*") // match all
+
+	// set default min, max size. will be overridden by instance template labels if present
+	if scaleToZeroSupported {
+		cfg.MinSize = 0
+	} else {
+		cfg.MinSize = 1
+	}
+	cfg.MaxSize = 1000
+
+	return cfg, nil
+}
+
+// parseAutoDiscoveryTypeNamePrefixSpec parses the Node-Prefix based auto discovery specification.
+//
+// It takes a spec string as input and returns a migAutoDiscoveryConfig and an error.
+// Validates and returns an error if the spec is invalid. Examples: missing name-prefix identifier, key-value not separated by '=' etc.
+func parseAutoDiscoveryTypeNamePrefixSpec(spec string) (migAutoDiscoveryConfig, error) {
+	cfg := migAutoDiscoveryConfig{}
+	for _, arg := range strings.Split(spec, ",") {
 		kv := strings.Split(arg, "=")
 		if len(kv) != 2 {
 			return cfg, fmt.Errorf("invalid key=value pair %s", kv)
@@ -670,7 +778,7 @@ func parseMIGAutoDiscoverySpec(spec string) (migAutoDiscoveryConfig, error) {
 				return cfg, fmt.Errorf("invalid maximum nodes: %s", v)
 			}
 		default:
-			return cfg, fmt.Errorf("unsupported key \"%s\" is specified for discoverer \"%s\". Supported keys are \"%s\"", k, discoverer, validMIGAutoDiscovererKeys)
+			return cfg, fmt.Errorf("unsupported key \"%s\" is specified for mig-auto-discovery \"%s\". Supported keys are \"%s\"", k, spec, validMIGAutoDiscovererKeys)
 		}
 	}
 	if cfg.Re == nil || cfg.Re.String() == "^.+" {
