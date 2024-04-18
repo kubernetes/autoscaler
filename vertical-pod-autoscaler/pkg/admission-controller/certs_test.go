@@ -32,12 +32,7 @@ import (
 )
 
 func TestKeypairReloader(t *testing.T) {
-	tempDir, err := os.MkdirTemp(os.TempDir(), "vpa-test")
-	if err != nil {
-		t.Error(err)
-	}
-	defer os.RemoveAll(tempDir)
-
+	tempDir := t.TempDir()
 	caCert := &x509.Certificate{
 		SerialNumber: big.NewInt(0),
 		Subject: pkix.Name{
@@ -125,9 +120,6 @@ func TestKeypairReloader(t *testing.T) {
 	reloader := certReloader{
 		tlsCertPath: certPath,
 		tlsKeyPath:  keyPath,
-	}
-	if err != nil {
-		t.Error(err)
 	}
 	stop := make(chan struct{})
 	defer close(stop)
