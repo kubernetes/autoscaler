@@ -1252,6 +1252,7 @@ func FakeNode(instance cloudprovider.Instance, reason string) *apiv1.Node {
 	}
 }
 
+// IsFakeNodeUnhealthy returns true if a fake node is unhealthy; false otherwise.
 func IsFakeNodeUnhealthy(node *apiv1.Node) bool {
 	if reason, ok := node.Annotations[cloudprovider.FakeNodeReasonAnnotation]; ok && reason == cloudprovider.FakeNodeCreateError {
 		return true
