@@ -1,9 +1,8 @@
-cluster-autoscaler
-cluster-autoscaler-amd64
-cluster-autoscaler-arm64
-cluster-autoscaler-s390x
-cluster_autoscaler
-.cover
+/cluster-autoscaler
+/cluster-autoscaler-amd64
+/cluster-autoscaler-arm64
+/cluster-autoscaler-s390x
+/.cover
 
 # Vim-related files
 [._]*.s[a-w][a-z]

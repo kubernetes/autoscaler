@@ -56,7 +56,7 @@ func BuildTestProvisioningRequest(namespace, name, cpu, memory, gpu string, podC
 			},
 		}
 	}
-	return NewV1Beta1ProvisioningRequest(
+	return NewProvisioningRequest(
 		&v1beta1.ProvisioningRequest{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:              name,

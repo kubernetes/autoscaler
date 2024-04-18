@@ -87,19 +87,19 @@ func TestProvisioningRequestPodsInjector(t *testing.T) {
 			name:                     "New ProvisioningRequest, pods are injected and Accepted condition is added",
 			provReqs:                 []*provreqwrapper.ProvisioningRequest{newProvReqA, provisionedAcceptedProvReqB},
 			wantUnscheduledPodCount:  podsA,
-			wantUpdatedConditionName: newProvReqA.Name(),
+			wantUpdatedConditionName: newProvReqA.Name,
 		},
 		{
 			name:                     "New ProvisioningRequest, pods are injected and Accepted condition is updated",
 			provReqs:                 []*provreqwrapper.ProvisioningRequest{newAcceptedProvReqA, provisionedAcceptedProvReqB},
 			wantUnscheduledPodCount:  podsA,
-			wantUpdatedConditionName: newAcceptedProvReqA.Name(),
+			wantUpdatedConditionName: newAcceptedProvReqA.Name,
 		},
 		{
 			name:                     "Provisioned=False, pods are injected",
 			provReqs:                 []*provreqwrapper.ProvisioningRequest{notProvisionedAcceptedProvReqB, failedProvReq},
 			wantUnscheduledPodCount:  podsB,
-			wantUpdatedConditionName: notProvisionedAcceptedProvReqB.Name(),
+			wantUpdatedConditionName: notProvisionedAcceptedProvReqB.Name,
 		},
 		{
 			name:     "Provisioned=True, no pods are injected",
@@ -124,7 +124,7 @@ func TestProvisioningRequestPodsInjector(t *testing.T) {
 			continue
 		}
 		pr, _ := client.ProvisioningRequest("ns", tc.wantUpdatedConditionName)
-		accepted := apimeta.FindStatusCondition(pr.Conditions(), v1beta1.Accepted)
+		accepted := apimeta.FindStatusCondition(pr.Status.Conditions, v1beta1.Accepted)
 		if accepted == nil || accepted.LastTransitionTime != metav1.NewTime(now) {
 			t.Errorf("%s: injector.Process hasn't update accepted condition for ProvisioningRequest %s", tc.name, tc.wantUpdatedConditionName)
 		}
@@ -134,6 +134,6 @@ func TestProvisioningRequestPodsInjector(t *testing.T) {
 
 func testProvisioningRequestWithCondition(name string, podCount int, conditions ...metav1.Condition) *provreqwrapper.ProvisioningRequest {
 	pr := provreqwrapper.BuildTestProvisioningRequest("ns", name, "10", "100", "", int32(podCount), false, time.Now(), "ProvisioningClass")
-	pr.V1Beta1().Status.Conditions = conditions
+	pr.Status.Conditions = conditions
 	return pr
 }

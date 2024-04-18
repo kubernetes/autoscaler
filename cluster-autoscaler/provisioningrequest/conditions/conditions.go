@@ -51,10 +51,10 @@ const (
 
 // ShouldCapacityBeBooked returns whether capacity should be booked.
 func ShouldCapacityBeBooked(pr *provreqwrapper.ProvisioningRequest) bool {
-	if pr.V1Beta1().Spec.ProvisioningClassName != v1beta1.ProvisioningClassCheckCapacity {
+	if pr.Spec.ProvisioningClassName != v1beta1.ProvisioningClassCheckCapacity {
 		return false
 	}
-	conditions := pr.Conditions()
+	conditions := pr.Status.Conditions
 	if apimeta.IsStatusConditionTrue(conditions, v1beta1.Failed) || apimeta.IsStatusConditionTrue(conditions, v1beta1.BookingExpired) {
 		return false
 	} else if apimeta.IsStatusConditionTrue(conditions, v1beta1.Provisioned) {
@@ -69,12 +69,12 @@ func AddOrUpdateCondition(pr *provreqwrapper.ProvisioningRequest, conditionType 
 	newCondition := metav1.Condition{
 		Type:               conditionType,
 		Status:             conditionStatus,
-		ObservedGeneration: pr.V1Beta1().GetObjectMeta().GetGeneration(),
+		ObservedGeneration: pr.GetObjectMeta().GetGeneration(),
 		LastTransitionTime: now,
 		Reason:             reason,
 		Message:            message,
 	}
-	prevConditions := pr.Conditions()
+	prevConditions := pr.Status.Conditions
 	switch conditionType {
 	case v1beta1.Provisioned, v1beta1.BookingExpired, v1beta1.Failed, v1beta1.Accepted:
 		conditionFound := false

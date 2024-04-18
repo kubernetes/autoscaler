@@ -153,6 +153,9 @@ func GetControllingVPAForPod(pod *core.Pod, vpas []*VpaWithSelector, ctrlFetcher
 		klog.Errorf("fail to get pod controller: pod=%s err=%s", pod.Name, err.Error())
 		return nil
 	}
+	if parentController == nil {
+		return nil
+	}
 
 	var controlling *VpaWithSelector
 	var controllingVpa *vpa_types.VerticalPodAutoscaler

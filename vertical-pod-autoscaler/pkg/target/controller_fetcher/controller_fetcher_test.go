@@ -389,6 +389,16 @@ func TestControllerFetcher(t *testing.T) {
 			expectedKey:   nil,
 			expectedError: fmt.Errorf("Unhandled targetRef v1 / Node / node, last error node is not a valid owner"),
 		},
+		{
+			name: "custom resource with no scale subresource",
+			key: &ControllerKeyWithAPIVersion{
+				ApiVersion: "Foo/Foo", ControllerKey: ControllerKey{
+					Name: "bah", Kind: "Foo", Namespace: testNamespace},
+			},
+			objects:       []runtime.Object{},
+			expectedKey:   nil, // Pod owner does not support scale subresource so should return nil"
+			expectedError: nil,
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			f := simpleControllerFetcher()

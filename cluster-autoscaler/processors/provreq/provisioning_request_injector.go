@@ -42,7 +42,7 @@ var SupportedProvisioningClasses = []string{v1beta1.ProvisioningClassCheckCapaci
 
 // ProvisioningRequestPodsInjector creates in-memory pods from ProvisioningRequest and inject them to unscheduled pods list.
 type ProvisioningRequestPodsInjector struct {
-	client provisioningRequestClient
+	client *provreqclient.ProvisioningRequestClient
 	clock  clock.PassiveClock
 }
 
@@ -56,7 +56,7 @@ func (p *ProvisioningRequestPodsInjector) Process(
 		return nil, err
 	}
 	for _, pr := range provReqs {
-		conditions := pr.Conditions()
+		conditions := pr.Status.Conditions
 		if apimeta.IsStatusConditionTrue(conditions, v1beta1.Failed) || apimeta.IsStatusConditionTrue(conditions, v1beta1.Provisioned) {
 			continue
 		}
@@ -76,7 +76,7 @@ func (p *ProvisioningRequestPodsInjector) Process(
 		if inject {
 			provreqpods, err := provreqpods.PodsForProvisioningRequest(pr)
 			if err != nil {
-				klog.Errorf("Failed to get pods for ProvisioningRequest %v", pr.Name())
+				klog.Errorf("Failed to get pods for ProvisioningRequest %v", pr.Name)
 				provreqconditions.AddOrUpdateCondition(pr, v1beta1.Failed, metav1.ConditionTrue, provreqconditions.FailedToCreatePodsReason, err.Error(), metav1.NewTime(p.clock.Now()))
 				continue
 			}

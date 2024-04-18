@@ -87,7 +87,7 @@ func (c *ProvisioningRequestClient) ProvisioningRequest(namespace, name string) 
 	if err != nil {
 		return nil, fmt.Errorf("while fetching pod templates for Get Provisioning Request %s/%s got error: %v", namespace, name, err)
 	}
-	return provreqwrapper.NewV1Beta1ProvisioningRequest(v1Beta1PR, podTemplates), nil
+	return provreqwrapper.NewProvisioningRequest(v1Beta1PR, podTemplates), nil
 }
 
 // ProvisioningRequests gets all ProvisioningRequest CRs.
@@ -102,7 +102,7 @@ func (c *ProvisioningRequestClient) ProvisioningRequests() ([]*provreqwrapper.Pr
 		if errPodTemplates != nil {
 			return nil, fmt.Errorf("while fetching pod templates for List Provisioning Request %s/%s got error: %v", v1Beta1PR.Namespace, v1Beta1PR.Name, errPodTemplates)
 		}
-		prs = append(prs, provreqwrapper.NewV1Beta1ProvisioningRequest(v1Beta1PR, podTemplates))
+		prs = append(prs, provreqwrapper.NewProvisioningRequest(v1Beta1PR, podTemplates))
 	}
 	return prs, nil
 }
@@ -156,4 +156,30 @@ func newPodTemplatesLister(client *kubernetes.Clientset, stopChannel <-chan stru
 	}
 	klog.V(2).Info("Successful initial Pod Template sync")
 	return podTemplLister, nil
+}
+
+// ProvisioningRequestForPods check that all pods belong to one ProvisioningRequest and return it.
+func ProvisioningRequestForPods(client *ProvisioningRequestClient, unschedulablePods []*apiv1.Pod) (*provreqwrapper.ProvisioningRequest, error) {
+	if len(unschedulablePods) == 0 {
+		return nil, fmt.Errorf("empty unschedulablePods list")
+	}
+	if unschedulablePods[0].OwnerReferences == nil || len(unschedulablePods[0].OwnerReferences) == 0 {
+		return nil, fmt.Errorf("pod %s has no OwnerReference", unschedulablePods[0].Name)
+	}
+	provReq, err := client.ProvisioningRequest(unschedulablePods[0].Namespace, unschedulablePods[0].OwnerReferences[0].Name)
+	if err != nil {
+		return nil, fmt.Errorf("failed retrive ProvisioningRequest from unscheduled pods, err: %v", err)
+	}
+	for _, pod := range unschedulablePods {
+		if pod.Namespace != unschedulablePods[0].Namespace {
+			return nil, fmt.Errorf("pods %s and %s are from different namespaces", pod.Name, unschedulablePods[0].Name)
+		}
+		if pod.OwnerReferences == nil || len(pod.OwnerReferences) == 0 {
+			return nil, fmt.Errorf("pod %s has no OwnerReference", pod.Name)
+		}
+		if pod.OwnerReferences[0].Name != unschedulablePods[0].OwnerReferences[0].Name {
+			return nil, fmt.Errorf("pods %s and %s have different OwnerReference", pod.Name, unschedulablePods[0].Name)
+		}
+	}
+	return provReq, nil
 }
