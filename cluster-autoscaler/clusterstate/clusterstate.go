@@ -654,7 +654,7 @@ func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
 			klog.Warningf("Failed to get maxNodeProvisionTime for node %s in node group %s: %v", unregistered.Node.Name, nodeGroup.Id(), err)
 			continue
 		}
-		if unregistered.UnregisteredSince.Add(maxNodeProvisionTime).Before(currentTime) || isNodeUnhealthy(unregistered.Node) {
+		if unregistered.UnregisteredSince.Add(maxNodeProvisionTime).Before(currentTime) || IsFakeNodeUnhealthy(unregistered.Node) {
 			perNgCopy.LongUnregistered = append(perNgCopy.LongUnregistered, unregistered.Node.Name)
 			total.LongUnregistered = append(total.LongUnregistered, unregistered.Node.Name)
 		} else {
@@ -1252,7 +1252,7 @@ func FakeNode(instance cloudprovider.Instance, reason string) *apiv1.Node {
 	}
 }
 
-func isNodeUnhealthy(node *apiv1.Node) bool {
+func IsFakeNodeUnhealthy(node *apiv1.Node) bool {
 	if reason, ok := node.Annotations[cloudprovider.FakeNodeReasonAnnotation]; ok && reason == cloudprovider.FakeNodeCreateError {
 		return true
 	}
