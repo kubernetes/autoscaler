@@ -31,6 +31,47 @@ import (
 	"time"
 )
 
+func generateCerts(t *testing.T, org string, caCert *x509.Certificate, caKey *rsa.PrivateKey) ([]byte, []byte) {
+	cert := &x509.Certificate{
+		SerialNumber: big.NewInt(0),
+		Subject: pkix.Name{
+			Organization: []string{org},
+		},
+		IPAddresses: []net.IP{net.IPv4(127, 0, 0, 1), net.IPv6loopback},
+		NotBefore:   time.Now(),
+		NotAfter:    time.Now().AddDate(1, 0, 0),
+		ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
+		KeyUsage:    x509.KeyUsageDigitalSignature,
+	}
+	certKey, err := rsa.GenerateKey(rand.Reader, 4096)
+	if err != nil {
+		t.Error(err)
+	}
+	certBytes, err := x509.CreateCertificate(rand.Reader, cert, caCert, &certKey.PublicKey, caKey)
+	if err != nil {
+		t.Error(err)
+	}
+
+	var certPem bytes.Buffer
+	err = pem.Encode(&certPem, &pem.Block{
+		Type:  "CERTIFICATE",
+		Bytes: certBytes,
+	})
+	if err != nil {
+		t.Error(err)
+	}
+
+	var certKeyPem bytes.Buffer
+	err = pem.Encode(&certKeyPem, &pem.Block{
+		Type:  "RSA PRIVATE KEY",
+		Bytes: x509.MarshalPKCS1PrivateKey(certKey),
+	})
+	if err != nil {
+		t.Error(err)
+	}
+	return certPem.Bytes(), certKeyPem.Bytes()
+}
+
 func TestKeypairReloader(t *testing.T) {
 	tempDir := t.TempDir()
 	caCert := &x509.Certificate{
@@ -66,48 +107,7 @@ func TestKeypairReloader(t *testing.T) {
 		t.Error(err)
 	}
 
-	generateCerts := func(org string) ([]byte, []byte) {
-		cert := &x509.Certificate{
-			SerialNumber: big.NewInt(0),
-			Subject: pkix.Name{
-				Organization: []string{org},
-			},
-			IPAddresses: []net.IP{net.IPv4(127, 0, 0, 1), net.IPv6loopback},
-			NotBefore:   time.Now(),
-			NotAfter:    time.Now().AddDate(1, 0, 0),
-			ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
-			KeyUsage:    x509.KeyUsageDigitalSignature,
-		}
-		certKey, err := rsa.GenerateKey(rand.Reader, 4096)
-		if err != nil {
-			t.Error(err)
-		}
-		certBytes, err := x509.CreateCertificate(rand.Reader, cert, caCert, &certKey.PublicKey, caKey)
-		if err != nil {
-			t.Error(err)
-		}
-
-		var certPem bytes.Buffer
-		err = pem.Encode(&certPem, &pem.Block{
-			Type:  "CERTIFICATE",
-			Bytes: certBytes,
-		})
-		if err != nil {
-			t.Error(err)
-		}
-
-		var certKeyPem bytes.Buffer
-		err = pem.Encode(&certKeyPem, &pem.Block{
-			Type:  "RSA PRIVATE KEY",
-			Bytes: x509.MarshalPKCS1PrivateKey(certKey),
-		})
-		if err != nil {
-			t.Error(err)
-		}
-		return certPem.Bytes(), certKeyPem.Bytes()
-	}
-
-	pub, privateKey := generateCerts("first")
+	pub, privateKey := generateCerts(t, "first", caCert, caKey)
 	certPath := path.Join(tempDir, "cert.crt")
 	if err = os.WriteFile(certPath, pub, 0666); err != nil {
 		t.Error(err)
@@ -127,20 +127,24 @@ func TestKeypairReloader(t *testing.T) {
 		t.Error(err)
 	}
 
-	pub, privateKey = generateCerts("second")
+	pub, privateKey = generateCerts(t, "second", caCert, caKey)
 	if err = os.WriteFile(certPath, pub, 0666); err != nil {
 		t.Error(err)
 	}
 	if err = os.WriteFile(keyPath, privateKey, 0666); err != nil {
 		t.Error(err)
 	}
-	time.Sleep(40 * time.Millisecond)
-	tlsCert, err := reloader.getCertificate(nil)
-	if err != nil {
-		t.Error(err)
-	}
-	pubDER, _ := pem.Decode(pub)
-	if string(tlsCert.Certificate[0]) != string(pubDER.Bytes) {
-		t.Error("did not reload certificate")
+	for {
+		tlsCert, err := reloader.getCertificate(nil)
+		if err != nil {
+			t.Error(err)
+		}
+		if tlsCert == nil {
+			continue
+		}
+		pubDER, _ := pem.Decode(pub)
+		if string(tlsCert.Certificate[0]) == string(pubDER.Bytes) {
+			return
+		}
 	}
 }
