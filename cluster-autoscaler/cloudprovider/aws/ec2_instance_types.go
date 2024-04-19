@@ -74,7 +74,7 @@ var InstanceTypes = map[string]*InstanceType{
 		GPU:          0,
 		Architecture: "arm64",
 	},
-		"r7iz.12xlarge": {
+	"r7iz.12xlarge": {
 		InstanceType: "r7iz.12xlarge",
 		VCPU:         48,
 		MemoryMb:     393216,
