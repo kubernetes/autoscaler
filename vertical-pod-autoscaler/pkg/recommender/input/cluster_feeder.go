@@ -359,6 +359,23 @@ func (feeder *clusterStateFeeder) cleanupCheckpointsForNamespace(ctx context.Con
 			}
 			klog.V(3).InfoS("Orphaned VPA checkpoint cleanup - deleting", "checkpoint", klog.KRef(namespace, checkpoint.Name))
 		}
+
+		// Also clean up a checkpoint if the VPA is still there, but the container is gone. AggregateStateByContainerName
+		// merges in the initial aggregates so we can use it to check "both lists" (initial, aggregates) at once.
+		// Aggregates will be considered stale as per it's pruning policy by the VPA annotation VpaPruningGracePeriodAnnotation
+		// or the pruning-grace-period-duration flag. If none are set (default), we won't prune to not break existing behavior.
+		vpa, vpaExists := feeder.clusterState.VPAs()[vpaID]
+		if vpaExists {
+			_, aggregateExists := vpa.AggregateStateByContainerName()[checkpoint.Spec.ContainerName]
+			if !aggregateExists {
+				err = feeder.vpaCheckpointClient.VerticalPodAutoscalerCheckpoints(namespace).Delete(context.TODO(), checkpoint.Name, metav1.DeleteOptions{})
+				if err == nil {
+					klog.V(3).InfoS("Orphaned VPA checkpoint cleanup - deleting", "checkpoint", klog.KRef(namespace, checkpoint.Name))
+				} else {
+					klog.ErrorS(err, "Orphaned VPA checkpoint cleanup - error deleting", "checkpoint", klog.KRef(namespace, checkpoint.Name))
+				}
+			}
+		}
 	}
 	return err
 }
