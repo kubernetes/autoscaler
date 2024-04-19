@@ -168,7 +168,26 @@ func (cluster *clusterState) AddOrUpdatePod(podID PodID, newLabels labels.Set, p
 
 		cluster.addPodToItsVpa(pod)
 	}
+	// Tally the number of containers for later when we're averaging the recommendations
+	cluster.setVPAContainersPerPod(pod)
 	pod.Phase = phase
+}
+
+// setVPAContainersPerPod sets the number of containers per pod seen for pods connected to this VPA
+// so that later when we're splitting the minimum recommendations over containers,  we're splitting them over
+// the correct number and not just the number of aggregates that have *ever* been present. (We don't want minimum resources
+// to erroneously shrink, either)
+func (cluster *ClusterState) setVPAContainersPerPod(pod *PodState) {
+	for _, vpa := range cluster.Vpas {
+		if vpa_utils.PodLabelsMatchVPA(pod.ID.Namespace, cluster.labelSetMap[pod.labelSetKey], vpa.ID.Namespace, vpa.PodSelector) {
+			// We want the "high water mark" of the most containers in the pod in the event
+			// that we're rolling out a pod that has an additional container
+			if len(pod.Containers) > vpa.ContainersPerPod {
+				vpa.ContainersPerPod = len(pod.Containers)
+			}
+		}
+	}
+
 }
 
 // addPodToItsVpa increases the count of Pods associated with a VPA object.
@@ -299,6 +318,11 @@ func (cluster *clusterState) AddOrUpdateVpa(apiObject *vpa_types.VerticalPodAuto
 		}
 		vpa.PodCount = len(cluster.GetMatchingPods(vpa))
 	}
+
+	// Default this to the minimum, we will tally the true number when we load the pods later
+	// TODO(jkyros): This is gross, it depends on the order I know it currently loads things in, but
+	// that might not be the case someday
+	vpa.ContainersPerPod = 1
 	vpa.TargetRef = apiObject.Spec.TargetRef
 	vpa.Annotations = annotationsMap
 	vpa.Conditions = conditionsMap
