@@ -216,12 +216,14 @@ func (cluster *ClusterState) AddOrUpdateContainer(containerID ContainerID, reque
 	if !podExists {
 		return NewKeyError(containerID.PodID)
 	}
+	aggregateState := cluster.findOrCreateAggregateContainerState(containerID)
 	if container, containerExists := pod.Containers[containerID.ContainerName]; !containerExists {
-		cluster.findOrCreateAggregateContainerState(containerID)
 		pod.Containers[containerID.ContainerName] = NewContainerState(request, NewContainerStateAggregatorProxy(cluster, containerID))
 	} else {
 		// Container aleady exists. Possibly update the request.
 		container.Request = request
+		// Mark this container as still managed so the aggregates don't get garbage collected
+		aggregateState.IsUnderVPA = true
 	}
 	return nil
 }
