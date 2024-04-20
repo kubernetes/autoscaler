@@ -150,8 +150,14 @@ func (r *recommender) RunOnce() {
 	r.clusterStateFeeder.LoadVPAs(ctx)
 	timer.ObserveStep("LoadVPAs")
 
+	r.clusterStateFeeder.MarkAggregates()
+	timer.ObserveStep("MarkAggregates")
+
 	r.clusterStateFeeder.LoadPods()
 	timer.ObserveStep("LoadPods")
+
+	r.clusterStateFeeder.SweepAggregates()
+	timer.ObserveStep("SweepAggregates")
 
 	r.clusterStateFeeder.LoadRealTimeMetrics(ctx)
 	timer.ObserveStep("LoadMetrics")

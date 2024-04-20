@@ -74,6 +74,12 @@ type ClusterStateFeeder interface {
 
 	// GarbageCollectCheckpoints removes historical checkpoints that don't have a matching VPA.
 	GarbageCollectCheckpoints(ctx context.Context)
+
+	// MarkAggregates marks all aggregates in all VPAs as not under VPAs
+	MarkAggregates()
+
+	// SweepAggregates garbage collects all aggregates in all VPAs aggregate lists that are no longer under VPAs
+	SweepAggregates()
 }
 
 // ClusterStateFeederFactory makes instances of ClusterStateFeeder.
@@ -471,6 +477,59 @@ func (feeder *clusterStateFeeder) LoadVPAs(ctx context.Context) {
 		}
 	}
 	feeder.clusterState.SetObservedVPAs(vpaCRDs)
+}
+
+// MarkAggregates marks all aggregates IsUnderVPA=false, so when we go
+// through LoadPods(), the valid ones will get marked back to true, and
+// we can garbage collect the false ones from the VPAs' aggregate lists.
+func (feeder *clusterStateFeeder) MarkAggregates() {
+	for _, vpa := range feeder.clusterState.VPAs() {
+		for _, container := range vpa.AggregateContainerStates() {
+			container.IsUnderVPA = false
+		}
+		for _, container := range vpa.ContainersInitialAggregateState {
+			container.IsUnderVPA = false
+		}
+	}
+}
+
+// SweepAggregates garbage collects all aggregates/initial aggregates from the VPA where the
+// aggregate's container no longer exists.
+func (feeder *clusterStateFeeder) SweepAggregates() {
+
+	var aggregatesPruned int
+	var initialAggregatesPruned int
+
+	// TODO(jkyros): This only removes the container state from the VPA's aggregate states, there
+	// is still a reference to them in feeder.clusterState.aggregateStateMap, and those get
+	// garbage collected eventually by the rate limited aggregate garbage collector later.
+	// Maybe we should clean those up here too since we know which ones are stale?
+	for _, vpa := range feeder.clusterState.VPAs() {
+
+		for containerKey, container := range vpa.AggregateContainerStates() {
+			if !container.IsUnderVPA {
+				klog.V(4).InfoS("Deleting Aggregate for VPA: container no longer present",
+					"namespace", vpa.ID.Namespace,
+					"vpaName", vpa.ID.VpaName,
+					"containerName", containerKey.ContainerName())
+				vpa.DeleteAggregation(containerKey)
+				aggregatesPruned = aggregatesPruned + 1
+			}
+		}
+		for containerKey, container := range vpa.ContainersInitialAggregateState {
+			if !container.IsUnderVPA {
+				klog.V(4).InfoS("Deleting Initial Aggregate for VPA: container no longer present",
+					"namespace", vpa.ID.Namespace,
+					"vpaName", vpa.ID.VpaName,
+					"containerName", containerKey)
+				delete(vpa.ContainersInitialAggregateState, containerKey)
+				initialAggregatesPruned = initialAggregatesPruned + 1
+			}
+		}
+	}
+	if initialAggregatesPruned > 0 || aggregatesPruned > 0 {
+		klog.InfoS("Pruned aggregate and initial aggregate containers", "aggregatesPruned", aggregatesPruned, "initialAggregatesPruned", initialAggregatesPruned)
+	}
 }
 
 // LoadPods loads pod into the cluster state.

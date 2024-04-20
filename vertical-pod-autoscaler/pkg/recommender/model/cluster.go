@@ -177,8 +177,8 @@ func (cluster *clusterState) AddOrUpdatePod(podID PodID, newLabels labels.Set, p
 // so that later when we're splitting the minimum recommendations over containers,  we're splitting them over
 // the correct number and not just the number of aggregates that have *ever* been present. (We don't want minimum resources
 // to erroneously shrink, either)
-func (cluster *ClusterState) setVPAContainersPerPod(pod *PodState) {
-	for _, vpa := range cluster.Vpas {
+func (cluster *clusterState) setVPAContainersPerPod(pod *PodState) {
+	for _, vpa := range cluster.vpas {
 		if vpa_utils.PodLabelsMatchVPA(pod.ID.Namespace, cluster.labelSetMap[pod.labelSetKey], vpa.ID.Namespace, vpa.PodSelector) {
 			// We want the "high water mark" of the most containers in the pod in the event
 			// that we're rolling out a pod that has an additional container
@@ -240,12 +240,14 @@ func (cluster *clusterState) AddOrUpdateContainer(containerID ContainerID, reque
 	if !podExists {
 		return NewKeyError(containerID.PodID)
 	}
+	aggregateState := cluster.findOrCreateAggregateContainerState(containerID)
 	if container, containerExists := pod.Containers[containerID.ContainerName]; !containerExists {
-		cluster.findOrCreateAggregateContainerState(containerID)
 		pod.Containers[containerID.ContainerName] = NewContainerState(request, NewContainerStateAggregatorProxy(cluster, containerID))
 	} else {
 		// Container aleady exists. Possibly update the request.
 		container.Request = request
+		// Mark this container as still managed so the aggregates don't get garbage collected
+		aggregateState.IsUnderVPA = true
 	}
 	return nil
 }
