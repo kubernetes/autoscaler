@@ -39,7 +39,7 @@ import (
 // The verification is done by calling out to scheduler code.
 type SchedulerBasedPredicateChecker struct {
 	profiles               scheduler_profile.Map
-	defaultSchedulerName   string
+	defaultScheduler       schedulerframework.Framework
 	delegatingSharedLister *DelegatingSchedulerSharedLister
 	nodeLister             v1listers.NodeLister
 	podLister              v1listers.PodLister
@@ -75,9 +75,15 @@ func NewSchedulerBasedPredicateChecker(informerFactory informers.SharedInformerF
 		return nil, fmt.Errorf("couldn't create scheduler framework; %v", err)
 	}
 
+	// use the first profile as the default scheduler
+	defaultScheduler, ok := profiles[schedConfig.Profiles[0].SchedulerName]
+	if !ok {
+		return nil, fmt.Errorf("couldn't find %s scheduler framework as default", schedConfig.Profiles[0].SchedulerName)
+	}
+
 	checker := &SchedulerBasedPredicateChecker{
 		profiles:               profiles,
-		defaultSchedulerName:   schedConfig.Profiles[0].SchedulerName,
+		defaultScheduler:       defaultScheduler,
 		delegatingSharedLister: sharedLister,
 	}
 
@@ -110,14 +116,7 @@ func (p *SchedulerBasedPredicateChecker) FitsAnyNodeMatching(clusterSnapshot clu
 	p.delegatingSharedLister.UpdateDelegate(clusterSnapshot)
 	defer p.delegatingSharedLister.ResetDelegate()
 
-	fwk, err := p.frameworkForPod(pod)
-	if err != nil {
-		// This shouldn't happen, because we only accept for scheduling the pods
-		// which specify a scheduler name that matches one of the profiles.
-		klog.Errorf("Error obtaining framework for pod %s: %v", pod.Name, err)
-		return "", fmt.Errorf("error obtaining framework for pod")
-	}
-
+	fwk := p.frameworkForPod(pod)
 	state := schedulerframework.NewCycleState()
 	preFilterResult, preFilterStatus := fwk.RunPreFilterPlugins(context.TODO(), state, pod)
 	if !preFilterStatus.IsSuccess() {
@@ -162,12 +161,7 @@ func (p *SchedulerBasedPredicateChecker) CheckPredicates(clusterSnapshot cluster
 	p.delegatingSharedLister.UpdateDelegate(clusterSnapshot)
 	defer p.delegatingSharedLister.ResetDelegate()
 
-	fwk, err := p.frameworkForPod(pod)
-	if err != nil {
-		klog.Errorf("Error obtaining framework for pod %s: %v", pod.Name, err)
-		return NewPredicateError(InternalPredicateError, "", "error obtaining framework for pod", nil, emptyString)
-	}
-
+	fwk := p.frameworkForPod(pod)
 	state := schedulerframework.NewCycleState()
 	_, preFilterStatus := fwk.RunPreFilterPlugins(context.TODO(), state, pod)
 	if !preFilterStatus.IsSuccess() {
@@ -204,19 +198,14 @@ func (p *SchedulerBasedPredicateChecker) CheckPredicates(clusterSnapshot cluster
 	return nil
 }
 
-func (p *SchedulerBasedPredicateChecker) frameworkForPod(pod *apiv1.Pod) (schedulerframework.Framework, error) {
-	fwk, ok := p.profiles[p.schedulerNameForPod(pod)]
+func (p *SchedulerBasedPredicateChecker) frameworkForPod(pod *apiv1.Pod) schedulerframework.Framework {
+	fwk, ok := p.profiles[pod.Spec.SchedulerName]
 	if !ok {
-		return nil, fmt.Errorf("profile not found for scheduler name %q", pod.Spec.SchedulerName)
+		klog.Warningf("profile not found for scheduler name %q", pod.Spec.SchedulerName)
+		// the specified profile cannot be found, use the default
+		return p.defaultScheduler
 	}
-	return fwk, nil
-}
-
-func (p *SchedulerBasedPredicateChecker) schedulerNameForPod(pod *apiv1.Pod) string {
-	if len(pod.Spec.SchedulerName) == 0 {
-		return p.defaultSchedulerName
-	}
-	return pod.Spec.SchedulerName
+	return fwk
 }
 
 func (p *SchedulerBasedPredicateChecker) buildDebugInfo(filterName string, nodeInfo *schedulerframework.NodeInfo) func() string {
