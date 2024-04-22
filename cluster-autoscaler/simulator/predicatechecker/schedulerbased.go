@@ -57,7 +57,7 @@ func NewSchedulerBasedPredicateChecker(informerFactory informers.SharedInformerF
 	}
 
 	if len(schedConfig.Profiles) == 0 {
-		return nil, fmt.Errorf("unexpected scheduler config: expected one scheduler profile only (found %d profiles)", len(schedConfig.Profiles))
+		return nil, fmt.Errorf("unexpected scheduler config: expected at least one scheduler profile (found %d profiles)", len(schedConfig.Profiles))
 	}
 	sharedLister := NewDelegatingSchedulerSharedLister()
 
