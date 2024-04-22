@@ -62,7 +62,11 @@ func NewSchedulerBasedPredicateChecker(informerFactory informers.SharedInformerF
 	sharedLister := NewDelegatingSchedulerSharedLister()
 
 	recorderFactory := func(string) events.EventRecorder { return nil }
-	profiles, err := scheduler_profile.NewMap(context.TODO(), schedConfig.Profiles, scheduler_plugins.NewInTreeRegistry(), recorderFactory,
+	profiles, err := scheduler_profile.NewMap(
+		context.TODO(),
+		schedConfig.Profiles,
+		scheduler_plugins.NewInTreeRegistry(),
+		recorderFactory,
 		schedulerframeworkruntime.WithInformerFactory(informerFactory),
 		schedulerframeworkruntime.WithSnapshotSharedLister(sharedLister),
 	)
