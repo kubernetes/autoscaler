@@ -793,14 +793,14 @@ func (a *StaticAutoscaler) removeOldUnregisteredNodes(allUnregisteredNodes []clu
 		}
 		nodesToDelete := toNodes(unregisteredNodesToDelete)
 
-		opts, err := nodeGroup.GetOptions(a.NodeGroupDefaults)
+		zeroOrMaxNodeScaling, err := a.processors.NodeGroupConfigProcessor.GetZeroOrMaxNodeScaling(nodeGroup)
 		if err != nil {
 			klog.Warningf("Failed to get node group options for %s: %s", nodeGroupId, err)
 			continue
 		}
 		// If a scale-up of "ZeroOrMaxNodeScaling" node group failed, the cleanup
 		// should stick to the all-or-nothing principle. Deleting all nodes.
-		if opts != nil && opts.ZeroOrMaxNodeScaling {
+		if zeroOrMaxNodeScaling {
 			instances, err := nodeGroup.Nodes()
 			if err != nil {
 				klog.Warningf("Failed to fill in unregistered nodes from group %s based on ZeroOrMaxNodeScaling option: %s", nodeGroupId, err)
@@ -872,15 +872,14 @@ func (a *StaticAutoscaler) deleteCreatedNodesWithErrors() (bool, error) {
 		if nodeGroup == nil {
 			err = fmt.Errorf("node group %s not found", nodeGroupId)
 		} else {
-			var opts *config.NodeGroupAutoscalingOptions
-			opts, err = nodeGroup.GetOptions(a.NodeGroupDefaults)
+			zeroOrMaxNodeScaling, err := a.processors.NodeGroupConfigProcessor.GetZeroOrMaxNodeScaling(nodeGroup)
 			if err != nil {
 				klog.Warningf("Failed to get node group options for %s: %s", nodeGroupId, err)
 				continue
 			}
 			// If a scale-up of "ZeroOrMaxNodeScaling" node group failed, the cleanup
 			// should stick to the all-or-nothing principle. Deleting all nodes.
-			if opts != nil && opts.ZeroOrMaxNodeScaling {
+			if zeroOrMaxNodeScaling {
 				instances, err := nodeGroup.Nodes()
 				if err != nil {
 					klog.Warningf("Failed to fill in failed nodes from group %s based on ZeroOrMaxNodeScaling option: %s", nodeGroupId, err)
