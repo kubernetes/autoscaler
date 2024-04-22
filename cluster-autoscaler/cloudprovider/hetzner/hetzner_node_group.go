@@ -222,10 +222,14 @@ func (n *hetznerNodeGroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, err
 		return nil, fmt.Errorf("failed to create resource list for node group %s error: %v", n.id, err)
 	}
 
+	nodeName := newNodeName(n)
+
 	node := apiv1.Node{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:   newNodeName(n),
-			Labels: map[string]string{},
+			Name: nodeName,
+			Labels: map[string]string{
+				apiv1.LabelHostname: nodeName,
+			},
 		},
 		Status: apiv1.NodeStatus{
 			Capacity:   resourceList,
