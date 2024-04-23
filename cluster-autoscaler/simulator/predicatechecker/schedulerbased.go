@@ -201,7 +201,7 @@ func (p *SchedulerBasedPredicateChecker) CheckPredicates(clusterSnapshot cluster
 func (p *SchedulerBasedPredicateChecker) frameworkForPod(pod *apiv1.Pod) schedulerframework.Framework {
 	fwk, ok := p.profiles[pod.Spec.SchedulerName]
 	if !ok {
-		klog.Warningf("profile not found for scheduler name %q", pod.Spec.SchedulerName)
+		klog.V(4).InfoS("profile not found", "scheduler name", pod.Spec.SchedulerName)
 		// the specified profile cannot be found, use the default
 		return p.defaultScheduler
 	}
