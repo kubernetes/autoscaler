@@ -91,8 +91,8 @@ target ETA and the actual releases.
 |------------|------------------------------|-------------------|-------|
 | 2024-01-17 | MaciekPytel                  | gjtempleton       | patch |
 | 2024-03-13 | gjtempleton                  | BigDarkClown      | patch |
-| 2024-04-17 | BigDarkClown                 | towca             | 1.30  |
-| 2024-05-22 | towca                        | x13n              | patch |
+| 2024-04-17 | towca                        | BigDarkClown      | 1.30  |
+| 2024-05-22 | BigDarkClown                 | x13n              | patch |
 | 2024-07-24 | x13n                         | MaciekPytel       | patch |
 | 2024-08-21 | MaciekPytel                  | gjtempleton       | 1.31  |
 
