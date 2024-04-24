@@ -43,6 +43,8 @@ func (e LinearEstimator) scale(clusterSize uint64) *corev1.ResourceRequirements 
 	return calculateResources(clusterSize, e.Resources)
 }
 
+// updatedResourceEstimator creates a copy of original estimator
+// with updated resources.
 func (e LinearEstimator) updatedResourceEstimator(resources []Resource) ResourceEstimator {
 	newEstimator := LinearEstimator{
 		Resources: resources,
@@ -75,9 +77,11 @@ func (e ExponentialEstimator) scale(clusterSize uint64) *corev1.ResourceRequirem
 	return calculateResources(n, e.Resources)
 }
 
+// updatedResourceEstimator creates a copy of original estimator
+// with updated resources.
 func (e ExponentialEstimator) updatedResourceEstimator(resources []Resource) ResourceEstimator {
 	newEstimator := ExponentialEstimator{
-		Resources:       resources,
+		Resources:      resources,
 		MinClusterSize: e.MinClusterSize,
 		ScaleFactor:    e.ScaleFactor,
 	}

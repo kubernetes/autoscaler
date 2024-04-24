@@ -18,14 +18,14 @@ package nanny
 
 import (
 	"context"
+	"github.com/golang/glog"
 	"os"
 	"time"
-	"github.com/golang/glog"
 
 	corev1 "k8s.io/api/core/v1"
-	typedcorev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
+	typedcorev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/tools/leaderelection"
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
 	"k8s.io/client-go/tools/record"
@@ -37,8 +37,8 @@ type Config struct {
 	// wait to force acquire leadership. This is measured against time of
 	// last observed ack.
 	LeaseDuration time.Duration
-	// RenewDeadline is the duration that the acting master will retry
-	// refreshing leadership before giving up.
+	// RenewDeadline is the duration that the acting control plane will
+	// retry refreshing leadership before giving up.
 	RenewDeadline time.Duration
 	// RetryPeriod is the duration to wait between tries of actions.
 	RetryPeriod time.Duration
@@ -59,7 +59,7 @@ func LeadOrDie(cfg Config, clientset kubernetes.Interface, doLead func()) {
 	}
 
 	lock, err := resourcelock.New(
-		resourcelock.EndpointsLeasesResourceLock,
+		resourcelock.LeasesResourceLock,
 		cfg.SystemNamespace,
 		"addon-resizer",
 		clientset.CoreV1(),

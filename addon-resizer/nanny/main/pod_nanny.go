@@ -31,8 +31,8 @@ import (
 	"path/filepath"
 
 	"github.com/golang/glog"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/autoscaler/addon-resizer/nanny/apis/nannyconfig"
@@ -59,7 +59,7 @@ var (
 	// Flags to identify the container to nanny.
 	podNamespace  = flag.String("namespace", os.Getenv("MY_POD_NAMESPACE"), "The namespace of the ward. This defaults to the nanny pod's own namespace.")
 	deployment    = flag.String("deployment", "", "The name of the deployment being monitored. This is required.")
-	podName       = flag.String("pod", os.Getenv("MY_POD_NAME"), "The name of the pod to watch. This defaults to the nanny's own pod.")
+	podName       = flag.String("pod", os.Getenv("MY_POD_NAME"), "The name of the pod to watch. This defaults to the nanny's own pod. When running in a different pod, this will be empty and information will be obtained from deployment instead.")
 	containerName = flag.String("container", "pod-nanny", "The name of the container to watch. This defaults to the nanny itself.")
 	// Flags to control runtime behavior.
 	pollPeriod     = flag.Int("poll-period", 10000, "The time, in milliseconds, to poll the dependent container.")
@@ -68,14 +68,14 @@ var (
 	useMetrics     = flag.Bool("use-metrics", false, "Whether to use apiserver metrics to detect cluster size instead of the default method of listing objects from the Kubernetes API.")
 	hcAddress      = flag.String("healthcheck-address", ":8080", "The address to expose an HTTP health-check on.")
 	scalingMode    = flag.String("scaling-mode", nanny.NodeProportional, "The mode of scaling to be used. Possible values: 'node-proportional' or 'container-proportional'")
-	// Flags for addon resizer running on GKE masters.
-	runOnMaster                 = flag.Bool("run-on-master", false, "Whether the addon-resizer is running on GKE master VMs.")
+	// Flags for addon resizer running on the control plane.
+	runOnControlPlane           = flag.Bool("run-on-control-plane", false, "Whether the addon-resizer is running on the control plane.")
 	kubeconfigPath              = flag.String("kubeconfig", "", "absolute path to the kubeconfig file specifying the apiserver instance.")
-	nannyConfigName             = flag.String("nanny-config-name", "", "The name of the ConfigMap of NannyConfiguration.")
-    leaderElectionEnable        = flag.Bool("leader_election_enable", false, "Whether leader election should be used.")
-    leaderElectionLeaseDuration = flag.Duration("leader_election_lease_duration", 15*time.Second, "The duration that non-leader candidates will wait to force acquire leadership.")
-	leaderElectionRenewDeadline = flag.Duration("leader_election_renew_deadline", 10*time.Second, "The duration that the acting master will retry refreshing leadership before giving up.")
-	leaderElectionRetryPeriod   = flag.Duration("leader_election_retry_period", 2*time.Second, "The duration to wait between tries of actions.")
+	nannyConfigMapName          = flag.String("nanny-config-map-name", "", "The name of the ConfigMap of NannyConfiguration. Specify when getting nanny config updates through API calls.")
+	leaderElectionEnable        = flag.Bool("leader-election-enable", false, "Whether leader election should be used.")
+	leaderElectionLeaseDuration = flag.Duration("leader-election-lease-duration", 15*time.Second, "The duration that non-leader candidates will wait after observing a leadership renewal until attempting to acquire leadership of a led but unrenewed leader slot. This is effectively the maximum duration that a leader can be stopped before it is replaced by another candidate.")
+	leaderElectionRenewDeadline = flag.Duration("leader-election-renew-deadline", 10*time.Second, "The duration that the acting master will retry refreshing leadership before giving up.")
+	leaderElectionRetryPeriod   = flag.Duration("leader-election-retry-period", 2*time.Second, "The duration to wait between tries of actions.")
 )
 
 func main() {
@@ -101,21 +101,7 @@ func main() {
 	glog.Infof("storage: %s, extra_storage: %s", *baseStorage, *storagePerResource)
 
 	// Set up work objects.
-	config, err := rest.InClusterConfig()
-	if err != nil {
-		if !*runOnMaster {
-			glog.Fatal(err)
-		}
-		// When running on GKE master, config is setup in a different way.
-		if *kubeconfigPath == "" {
-			config = &rest.Config{Host: "http://localhost:8080"}
-		} else {
-			config, err = clientcmd.BuildConfigFromFlags("", *kubeconfigPath)
-			if err != nil {
-				glog.Exitf("Failed to load k8s client config: %v", err)
-			}
-		}
-	}
+	config := kubeconfig(*kubeconfigPath)
 	config.UserAgent = userAgent()
 	// Use protobufs for communication with apiserver
 	config.ContentType = "application/vnd.kubernetes.protobuf"
@@ -127,7 +113,7 @@ func main() {
 	// Use protobufs to improve performance.
 	config.ContentType = "application/vnd.kubernetes.protobuf"
 
-	k8s := nanny.NewKubernetesClient(*podNamespace, *deployment, *podName, *containerName, clientset, *useMetrics, *runOnMaster)
+	k8s := nanny.NewKubernetesClient(*podNamespace, *deployment, *podName, *containerName, clientset, *useMetrics)
 
 	nannyConfigurationFromFlags := &nannyconfigalpha.NannyConfiguration{
 		BaseCPU:       *baseCPU,
@@ -137,12 +123,12 @@ func main() {
 	}
 
 	var resources []nanny.Resource
-	var nannyConfigUpdator nanny.NannyConfigUpdator
+	var nannyConfigUpdater nanny.NannyConfigUpdater
 
-	if *runOnMaster {
-		nannyConfigUpdator = newNannyConfigUpdator(clientset, nannyConfigurationFromFlags, *podNamespace, *nannyConfigName, *baseStorage)
+	if *nannyConfigMapName != "" {
+		nannyConfigUpdater = newNannyConfigUpdater(clientset, nannyConfigurationFromFlags, *podNamespace, *nannyConfigMapName, *baseStorage)
 	} else {
-        nannycfg, err := loadNannyConfiguration(*configDir, nannyConfigurationFromFlags)
+		nannycfg, err := loadNannyConfiguration(*configDir, nannyConfigurationFromFlags)
 		if err != nil {
 			glog.Fatal(err)
 		}
@@ -175,10 +161,10 @@ func main() {
 
 	// Begin nannying.
 	start := func() {
-		nanny.PollAPIServer(k8s, est, hc, period, *scaleDownDelay, *scaleUpDelay, uint64(*threshold), *scalingMode, *runOnMaster, nannyConfigUpdator)
+		nanny.PollAPIServer(k8s, est, hc, period, *scaleDownDelay, *scaleUpDelay, uint64(*threshold), *scalingMode, *runOnControlPlane, nannyConfigUpdater)
 	}
 
-	if !*runOnMaster || !*leaderElectionEnable {
+	if !*runOnControlPlane || !*leaderElectionEnable {
 		start()
 	} else {
 		glog.Info("Leader Election Enabled.")
@@ -258,56 +244,56 @@ func updateResources(nannycfg *nannyconfig.NannyConfiguration, baseStorage strin
 	// Monitor only the resources specified.
 	if nannycfg.BaseCPU != nannyconfig.NoValue {
 		resources = append(resources, nanny.Resource{
-			Base:         resource.MustParse(nannycfg.BaseCPU),
-			ExtraPerNode: resource.MustParse(nannycfg.CPUPerNode),
-			Name:         "cpu",
+			Base:             resource.MustParse(nannycfg.BaseCPU),
+			ExtraPerResource: resource.MustParse(nannycfg.CPUPerNode),
+			Name:             "cpu",
 		})
 	}
 
 	if nannycfg.BaseMemory != nannyconfig.NoValue {
 		resources = append(resources, nanny.Resource{
-			Base:         resource.MustParse(nannycfg.BaseMemory),
-			ExtraPerNode: resource.MustParse(nannycfg.MemoryPerNode),
-			Name:         "memory",
+			Base:             resource.MustParse(nannycfg.BaseMemory),
+			ExtraPerResource: resource.MustParse(nannycfg.MemoryPerNode),
+			Name:             "memory",
 		})
 	}
 
 	if baseStorage != nannyconfig.NoValue {
 		resources = append(resources, nanny.Resource{
-			Base:         resource.MustParse(baseStorage),
-			ExtraPerNode: resource.MustParse(nannycfg.MemoryPerNode),
-			Name:         "storage",
+			Base:             resource.MustParse(baseStorage),
+			ExtraPerResource: resource.MustParse(nannycfg.MemoryPerNode),
+			Name:             "storage",
 		})
 	}
 
-	glog.V(4).Infof("Resources: %+v", resources)
+	glog.Infof("Resources: %+v", resources)
 	return resources
 }
 
-type nannyConfigUpdator struct {
-	clientset       *kubernetes.Clientset
-	defaultConfig   *nannyconfigalpha.NannyConfiguration
-	namespace       string
-	nannyConfigName string
-	baseStorage     string
+type nannyConfigUpdater struct {
+	clientset          kubernetes.Interface
+	defaultConfig      *nannyconfigalpha.NannyConfiguration
+	namespace          string
+	nannyConfigMapName string
+	baseStorage        string
 }
 
-// newNannyConfigUpdator gives a NannyConfigUpdator 
+// newNannyConfigUpdater gives a NannyConfigUpdater
 // with the given dependencies.
-func newNannyConfigUpdator(clientset *kubernetes.Clientset, defaultConfig *nannyconfigalpha.NannyConfiguration, namespace, nannyConfigName, baseStorage string) nanny.NannyConfigUpdator {
-	result := &nannyConfigUpdator{
-		clientset:       clientset,
-		defaultConfig:   defaultConfig,
-		namespace:       namespace,
-		nannyConfigName: nannyConfigName,
-		baseStorage:     baseStorage,
+func newNannyConfigUpdater(clientset kubernetes.Interface, defaultConfig *nannyconfigalpha.NannyConfiguration, namespace, nannyConfigMapName, baseStorage string) nanny.NannyConfigUpdater {
+	result := &nannyConfigUpdater{
+		clientset:          clientset,
+		defaultConfig:      defaultConfig,
+		namespace:          namespace,
+		nannyConfigMapName: nannyConfigMapName,
+		baseStorage:        baseStorage,
 	}
 	return result
 }
 
 // CurrentResources fetches latest data from NannyConfiguration
 // through API calls and returns required resources.
-func (n *nannyConfigUpdator) CurrentResources() ([]nanny.Resource, error) {
+func (n *nannyConfigUpdater) CurrentResources() ([]nanny.Resource, error) {
 	_, codecs, err := nannyscheme.NewSchemeAndCodecs()
 	if err != nil {
 		return nil, err
@@ -317,19 +303,36 @@ func (n *nannyConfigUpdator) CurrentResources() ([]nanny.Resource, error) {
 	// retrieve config map parameters if present
 	configMapConfig := &nannyconfigalpha.NannyConfiguration{}
 
-	nannycfg, err := n.clientset.CoreV1().ConfigMaps(n.namespace).Get(context.Background(), n.nannyConfigName, metav1.GetOptions{})
+	nannycfg, err := n.clientset.CoreV1().ConfigMaps(n.namespace).Get(context.Background(), n.nannyConfigMapName, metav1.GetOptions{})
 	if err != nil {
-		return nil, err
-	}
-	data := []byte(nannycfg.Data["NannyConfiguration"])
-	configMapConfig, err = decodeNannyConfiguration(data, codecs)
-	if err != nil {
-		configMapConfig = &nannyconfigalpha.NannyConfiguration{}
-		glog.V(0).Infof("Unable to decode Nanny Configuration from config map, using default parameters: %v", err)
+		glog.V(0).Infof("Failed to get config map %s: %v, using default parameters", n.nannyConfigMapName, err)
+	} else {
+		data := []byte(nannycfg.Data["NannyConfiguration"])
+		configMapConfig, err = decodeNannyConfiguration(data, codecs)
+		if err != nil {
+			configMapConfig = &nannyconfigalpha.NannyConfiguration{}
+			glog.V(0).Infof("Unable to decode Nanny Configuration from config map, using default parameters: %v", err)
+		}
 	}
 
-    nannyconfigalpha.SetDefaults_NannyConfiguration(configMapConfig)
+	nannyconfigalpha.SetDefaults_NannyConfiguration(configMapConfig)
 	// overwrite defaults with config map parameters
 	nannyconfigalpha.FillInDefaults_NannyConfiguration(configMapConfig, n.defaultConfig)
 	return updateResources(convertNannyConfiguration(configMapConfig), n.baseStorage), nil
+}
+
+func kubeconfig(configPath string) *rest.Config {
+	var config *rest.Config
+	var err error
+	if configPath == "" {
+		glog.V(1).Info("Using InClusterConfig")
+		config, err = rest.InClusterConfig()
+	} else {
+		glog.V(1).Infof("Using kubeconfig file: %s", configPath)
+		config, err = clientcmd.BuildConfigFromFlags("", configPath)
+	}
+	if err != nil {
+		glog.Fatal(err)
+	}
+	return config
 }
