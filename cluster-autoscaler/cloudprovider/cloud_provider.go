@@ -228,7 +228,7 @@ type NodeGroup interface {
 
 	// GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
 	// NodeGroup. Returning a nil will result in using default options.
-	// Implementation optional.
+	// Implementation optional. Callers MUST handle `cloudprovider.ErrNotImplemented`.
 	GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error)
 }
 
