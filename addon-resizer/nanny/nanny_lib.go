@@ -98,12 +98,17 @@ type KubernetesClient interface {
 // ResourceEstimator estimates ResourceRequirements for a given criteria.
 type ResourceEstimator interface {
 	scale(clusterSize uint64) *corev1.ResourceRequirements
+	updatedResourceEstimator(resources []Resource) ResourceEstimator
+}
+
+type NannyConfigUpdator interface {
+	CurrentResources() ([]Resource, error)
 }
 
 // PollAPIServer periodically counts the size of the cluster, estimates the expected
 // ResourceRequirements, compares them to the actual ResourceRequirements, and
 // updates the deployment with the expected ResourceRequirements if necessary.
-func PollAPIServer(k8s KubernetesClient, est ResourceEstimator, hc *healthcheck.HealthCheck, pollPeriod, scaleDownDelay, scaleUpDelay time.Duration, threshold uint64, scalingMode string) {
+func PollAPIServer(k8s KubernetesClient, est ResourceEstimator, hc *healthcheck.HealthCheck, pollPeriod, scaleDownDelay, scaleUpDelay time.Duration, threshold uint64, scalingMode string, runOnMaster bool, nannyConfigUpdator NannyConfigUpdator) {
 	lastChange := time.Now()
 	lastResult := noChange
 
@@ -111,6 +116,14 @@ func PollAPIServer(k8s KubernetesClient, est ResourceEstimator, hc *healthcheck.
 		if i != 0 {
 			// Sleep for the poll period.
 			time.Sleep(pollPeriod)
+		}
+
+		if runOnMaster{
+			resources, err := nannyConfigUpdator.CurrentResources()
+			if err != nil {
+				log.Fatal(err)
+			}
+			est = est.updatedResourceEstimator(resources)
 		}
 
 		if lastResult = updateResources(k8s, est, time.Now(), lastChange, scaleDownDelay, scaleUpDelay, threshold, lastResult, scalingMode); lastResult == overwrite {

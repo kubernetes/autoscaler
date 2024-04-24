@@ -420,3 +420,7 @@ func newFakeResourceEstimator(limits, reqs corev1.ResourceList) *fakeResourceEst
 func (f *fakeResourceEstimator) scale(clusterSize uint64) *corev1.ResourceRequirements {
 	return f.resources
 }
+
+func (f *fakeResourceEstimator) updatedResourceEstimator(resources []Resource) ResourceEstimator {
+	return f
+}

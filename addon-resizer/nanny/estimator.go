@@ -43,6 +43,13 @@ func (e LinearEstimator) scale(clusterSize uint64) *corev1.ResourceRequirements 
 	return calculateResources(clusterSize, e.Resources)
 }
 
+func (e LinearEstimator) updatedResourceEstimator(resources []Resource) ResourceEstimator {
+	newEstimator := LinearEstimator{
+		Resources: resources,
+	}
+	return newEstimator
+}
+
 // ExponentialEstimator estimates resource requirements in a way that prevents
 // frequent updates but may end up with larger estimates than actually needed.
 type ExponentialEstimator struct {
@@ -66,6 +73,15 @@ func (e ExponentialEstimator) scale(clusterSize uint64) *corev1.ResourceRequirem
 	}
 
 	return calculateResources(n, e.Resources)
+}
+
+func (e ExponentialEstimator) updatedResourceEstimator(resources []Resource) ResourceEstimator {
+	newEstimator := ExponentialEstimator{
+		Resources:       resources,
+		MinClusterSize: e.MinClusterSize,
+		ScaleFactor:    e.ScaleFactor,
+	}
+	return newEstimator
 }
 
 // Generates and returns a resource value string describing the overhead when

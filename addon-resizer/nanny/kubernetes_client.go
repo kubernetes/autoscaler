@@ -48,12 +48,13 @@ const (
 )
 
 type kubernetesClient struct {
-	namespace  string
-	deployment string
-	pod        string
-	container  string
-	clientset  *kubernetes.Clientset
-	useMetrics bool
+	namespace   string
+	deployment  string
+	pod         string
+	container   string
+	clientset   *kubernetes.Clientset
+	useMetrics  bool
+	runOnMaster bool
 }
 
 // CountNodes returns the number of nodes in the cluster:
@@ -184,13 +185,25 @@ func (k *kubernetesClient) countResourcesThroughMetrics(resourceName string) (ui
 }
 
 func (k *kubernetesClient) ContainerResources() (*corev1.ResourceRequirements, error) {
-	pod, err := k.clientset.CoreV1().Pods(k.namespace).Get(context.Background(), k.pod, metav1.GetOptions{})
-	if err != nil {
-		return nil, err
-	}
-	for _, container := range pod.Spec.Containers {
-		if container.Name == k.container {
-			return &container.Resources, nil
+	if k.runOnMaster {
+		dep, err := k.clientset.AppsV1().Deployments(k.namespace).Get(context.Background(), k.deployment, metav1.GetOptions{})
+		if err != nil {
+			return nil, err
+		}
+		for _, container := range dep.Spec.Template.Spec.Containers {
+			if container.Name == k.container {
+				return &container.Resources, nil
+			}
+		}
+	} else {
+		pod, err := k.clientset.CoreV1().Pods(k.namespace).Get(context.Background(), k.pod, metav1.GetOptions{})
+		if err != nil {
+			return nil, err
+		}
+		for _, container := range pod.Spec.Containers {
+			if container.Name == k.container {
+				return &container.Resources, nil
+			}
 		}
 	}
 	return nil, fmt.Errorf("Container %s was not found in deployment %s in namespace %s.", k.container, k.deployment, k.namespace)
@@ -262,14 +275,15 @@ func getPodSelectorExcludingDonePodsOrDie() string {
 }
 
 // NewKubernetesClient gives a KubernetesClient with the given dependencies.
-func NewKubernetesClient(namespace, deployment, pod, container string, clientset *kubernetes.Clientset, useMetrics bool) KubernetesClient {
+func NewKubernetesClient(namespace, deployment, pod, container string, clientset *kubernetes.Clientset, useMetrics, runOnMaster bool) KubernetesClient {
 	result := &kubernetesClient{
-		namespace:  namespace,
-		deployment: deployment,
-		pod:        pod,
-		container:  container,
-		clientset:  clientset,
-		useMetrics: useMetrics,
+		namespace:   namespace,
+		deployment:  deployment,
+		pod:         pod,
+		container:   container,
+		clientset:   clientset,
+		useMetrics:  useMetrics,
+		runOnMaster: runOnMaster,
 	}
 	return result
 }
