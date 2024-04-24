@@ -35,7 +35,8 @@ const (
 	sdkCoolDownTimeout     = 200 * time.Millisecond
 	defaultPodAmountsLimit = 110
 	//ResourceGPU GPU resource type
-	ResourceGPU apiv1.ResourceName = "nvidia.com/gpu"
+	ResourceGPU     apiv1.ResourceName = "nvidia.com/gpu"
+	refreshInterval                    = 1 * time.Minute
 )
 
 type asgInformation struct {
@@ -45,10 +46,11 @@ type asgInformation struct {
 
 // AliCloudManager handles alicloud service communication.
 type AliCloudManager struct {
-	cfg      *cloudConfig
-	aService *autoScalingWrapper
-	iService *instanceWrapper
-	asgs     *autoScalingGroups
+	cfg         *cloudConfig
+	aService    *autoScalingWrapper
+	iService    *instanceWrapper
+	asgs        *autoScalingGroups
+	lastRefresh time.Time
 }
 
 type sgTemplate struct {
@@ -89,6 +91,25 @@ func CreateAliCloudManager(configReader io.Reader) (*AliCloudManager, error) {
 		iService: iw,
 	}
 	return manager, nil
+}
+
+// Refresh updates the AliCloudManager's cache of ASGs if conditions allow
+func (m *AliCloudManager) Refresh() error {
+	if m.lastRefresh.Add(refreshInterval).After(time.Now()) {
+		return nil
+	}
+	return m.forceRefresh()
+}
+
+// forceRefresh regenerates the ASG cache of AliCloudManager
+func (m *AliCloudManager) forceRefresh() error {
+	if err := m.asgs.RegenerateCache(); err != nil {
+		klog.Errorf("Failed to regenerate ASG cache: %v", err)
+		return err
+	}
+	m.lastRefresh = time.Now()
+	klog.V(2).Infof("Refreshed ASG list, next refresh after %v", m.lastRefresh.Add(refreshInterval))
+	return nil
 }
 
 // RegisterAsg registers asg in AliCloud Manager.
@@ -154,6 +175,8 @@ func (m *AliCloudManager) DeleteInstances(instanceIds []string) error {
 		// prevent from triggering api flow control
 		time.Sleep(sdkCoolDownTimeout)
 	}
+	klog.V(2).Infof("DeleteInstances was called: scheduling an ASG list refresh for next main loop evaluation")
+	m.lastRefresh = time.Now().Add(-refreshInterval)
 	return nil
 }
 

@@ -18,35 +18,21 @@ package alicloud
 
 import (
 	"sync"
-	"time"
-
-	"k8s.io/apimachinery/pkg/util/wait"
-	klog "k8s.io/klog/v2"
 )
 
 type autoScalingGroups struct {
-	registeredAsgs           []*asgInformation
-	instanceToAsg            map[string]*Asg
-	cacheMutex               sync.Mutex
-	instancesNotInManagedAsg map[string]struct{}
-	service                  *autoScalingWrapper
+	registeredAsgs []*asgInformation
+	instanceToAsg  map[string]*Asg
+	cacheMutex     sync.Mutex
+	service        *autoScalingWrapper
 }
 
 func newAutoScalingGroups(service *autoScalingWrapper) *autoScalingGroups {
 	registry := &autoScalingGroups{
-		registeredAsgs:           make([]*asgInformation, 0),
-		service:                  service,
-		instanceToAsg:            make(map[string]*Asg),
-		instancesNotInManagedAsg: make(map[string]struct{}),
+		registeredAsgs: make([]*asgInformation, 0),
+		service:        service,
+		instanceToAsg:  make(map[string]*Asg),
 	}
-
-	go wait.Forever(func() {
-		registry.cacheMutex.Lock()
-		defer registry.cacheMutex.Unlock()
-		if err := registry.regenerateCache(); err != nil {
-			klog.Errorf("failed to do regenerating ASG cache,because of %s", err.Error())
-		}
-	}, time.Hour)
 
 	return registry
 }
@@ -68,24 +54,10 @@ func (m *autoScalingGroups) FindForInstance(instanceId string) (*Asg, error) {
 	if config, found := m.instanceToAsg[instanceId]; found {
 		return config, nil
 	}
-	if _, found := m.instancesNotInManagedAsg[instanceId]; found {
-		// The instance is already known to not belong to any configured ASG
-		// Skip regenerateCache so that we won't unnecessarily call DescribeAutoScalingGroups
-		// See https://github.com/kubernetes/contrib/issues/2541
-		return nil, nil
-	}
-	if err := m.regenerateCache(); err != nil {
-		return nil, err
-	}
-	if config, found := m.instanceToAsg[instanceId]; found {
-		return config, nil
-	}
-	// instance does not belong to any configured ASG
-	m.instancesNotInManagedAsg[instanceId] = struct{}{}
 	return nil, nil
 }
 
-func (m *autoScalingGroups) regenerateCache() error {
+func (m *autoScalingGroups) RegenerateCache() error {
 	newCache := make(map[string]*Asg)
 
 	for _, asg := range m.registeredAsgs {
