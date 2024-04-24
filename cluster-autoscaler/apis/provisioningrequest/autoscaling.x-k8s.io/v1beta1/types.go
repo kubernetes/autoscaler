@@ -201,3 +201,10 @@ const (
 	// in an atomic manner.
 	ProvisioningClassAtomicScaleUp string = "atomic-scale-up.autoscaling.x-k8s.io"
 )
+
+const (
+	// ProvisioningRequestPodAnnotationKey is a key used to annotate pods consuming provisioning request.
+	ProvisioningRequestPodAnnotationKey = "cluster-autoscaler.kubernetes.io/consume-provisioning-request"
+	// ProvisioningClassPodAnnotationKey is a key used to add annotation about Provisioning Class
+	ProvisioningClassPodAnnotationKey = "cluster-autoscaler.kubernetes.io/provisioning-class-name"
+)

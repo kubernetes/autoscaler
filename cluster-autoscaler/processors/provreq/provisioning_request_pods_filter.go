@@ -22,15 +22,14 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1beta1"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/pods"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/klogx"
 )
 
 const (
-	// ProvisioningRequestPodAnnotationKey is an annotation on pod that indicate that pod was created by ProvisioningRequest.
-	ProvisioningRequestPodAnnotationKey = "cluster-autoscaler.kubernetes.io/consume-provisioning-request"
-	maxProvReqEvent                     = 50
+	maxProvReqEvent = 50
 )
 
 // EventManager is an interface for handling events for provisioning request.
@@ -102,6 +101,6 @@ func provisioningRequestName(pod *v1.Pod) (string, bool) {
 	if pod == nil || pod.Annotations == nil {
 		return "", false
 	}
-	provReqName, found := pod.Annotations[ProvisioningRequestPodAnnotationKey]
+	provReqName, found := pod.Annotations[v1beta1.ProvisioningRequestPodAnnotationKey]
 	return provReqName, found
 }
