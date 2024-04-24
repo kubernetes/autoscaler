@@ -778,7 +778,7 @@ func (a *StaticAutoscaler) removeOldUnregisteredNodes(allUnregisteredNodes []clu
 		nodesToDelete := toNodes(unregisteredNodesToDelete)
 
 		opts, err := nodeGroup.GetOptions(a.NodeGroupDefaults)
-		if err != nil {
+		if err != nil && err != cloudprovider.ErrNotImplemented {
 			klog.Warningf("Failed to get node group options for %s: %s", nodeGroupId, err)
 			continue
 		}
@@ -858,7 +858,7 @@ func (a *StaticAutoscaler) deleteCreatedNodesWithErrors() (bool, error) {
 		} else {
 			var opts *config.NodeGroupAutoscalingOptions
 			opts, err = nodeGroup.GetOptions(a.NodeGroupDefaults)
-			if err != nil {
+			if err != nil && err != cloudprovider.ErrNotImplemented {
 				klog.Warningf("Failed to get node group options for %s: %s", nodeGroupId, err)
 				continue
 			}
