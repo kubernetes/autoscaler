@@ -1041,7 +1041,7 @@ func buildFakeNodeReason(instance cloudprovider.Instance) string {
 		return cloudprovider.FakeNodeUnregistered
 	}
 
-	if instance.Status.ErrorInfo != nil {
+	if instance.Status.State == cloudprovider.InstanceCreating && instance.Status.ErrorInfo != nil {
 		return cloudprovider.FakeNodeCreateError
 	}
 	return cloudprovider.FakeNodeUnregistered
