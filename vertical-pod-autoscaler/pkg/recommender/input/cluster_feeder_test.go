@@ -17,22 +17,31 @@ limitations under the License.
 package input
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
+
+	core "k8s.io/client-go/testing"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime"
+
+	fakeautoscalingv1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1/fake"
+
+	"k8s.io/client-go/kubernetes/fake"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/history"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/spec"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
+	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	target_mock "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/mock"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 )
@@ -522,4 +531,85 @@ func TestClusterStateFeeder_InitFromHistoryProvider(t *testing.T) {
 		return
 	}
 	assert.Equal(t, memAmount, containerState.GetMaxMemoryPeak())
+}
+
+func TestCanCleanupCheckpoints(t *testing.T) {
+	client := fake.NewSimpleClientset()
+
+	_, err := client.CoreV1().Namespaces().Create(context.TODO(), &v1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: "testNamespace"}}, metav1.CreateOptions{})
+	assert.NoError(t, err)
+
+	vpaBuilder := test.VerticalPodAutoscaler().WithContainer("container").WithNamespace("testNamespace").WithTargetRef(&autoscalingv1.CrossVersionObjectReference{
+		Kind:       kind,
+		Name:       name1,
+		APIVersion: apiVersion,
+	})
+
+	balanced := vpaBuilder.WithRecommender("balanced").WithName("balanced").Get()
+	performance := vpaBuilder.WithRecommender("performance").WithName("performance").Get()
+	savings := vpaBuilder.WithRecommender("savings").WithName("savings").Get()
+	defaultVpa := vpaBuilder.WithRecommender("default").WithName("default").Get()
+
+	vpas := []*vpa_types.VerticalPodAutoscaler{balanced, performance, savings, defaultVpa}
+	vpaLister := &test.VerticalPodAutoscalerListerMock{}
+	vpaLister.On("List").Return(vpas, nil)
+
+	checkpoints := &vpa_types.VerticalPodAutoscalerCheckpointList{
+		Items: []vpa_types.VerticalPodAutoscalerCheckpoint{
+			{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: "testNamespace",
+					Name:      "nonExistentVPA",
+				},
+				Spec: vpa_types.VerticalPodAutoscalerCheckpointSpec{
+					VPAObjectName: "nonExistentVPA",
+				},
+			},
+		},
+	}
+
+	for _, vpa := range vpas {
+		checkpoints.Items = append(checkpoints.Items, vpa_types.VerticalPodAutoscalerCheckpoint{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: vpa.Namespace,
+				Name:      vpa.Name,
+			},
+			Spec: vpa_types.VerticalPodAutoscalerCheckpointSpec{
+				VPAObjectName: vpa.Name,
+			},
+		})
+	}
+
+	checkpointClient := &fakeautoscalingv1.FakeAutoscalingV1{Fake: &core.Fake{}}
+	checkpointClient.Fake.AddReactor("list", "verticalpodautoscalercheckpoints", func(action core.Action) (bool, runtime.Object, error) {
+		return true, checkpoints, nil
+	})
+
+	deletedCheckpoints := []string{}
+	checkpointClient.Fake.AddReactor("delete", "verticalpodautoscalercheckpoints", func(action core.Action) (bool, runtime.Object, error) {
+		deleteAction := action.(core.DeleteAction)
+		deletedCheckpoints = append(deletedCheckpoints, deleteAction.GetName())
+
+		return true, nil, nil
+	})
+
+	feeder := clusterStateFeeder{
+		coreClient:          client.CoreV1(),
+		vpaLister:           vpaLister,
+		vpaCheckpointClient: checkpointClient,
+		clusterState:        &model.ClusterState{},
+		recommenderName:     "default",
+	}
+
+	feeder.GarbageCollectCheckpoints()
+
+	if !assert.Contains(t, deletedCheckpoints, "nonExistentVPA") {
+		return
+	}
+
+	for _, vpa := range vpas {
+		if !assert.NotContains(t, deletedCheckpoints, vpa.Name) {
+			return
+		}
+	}
 }

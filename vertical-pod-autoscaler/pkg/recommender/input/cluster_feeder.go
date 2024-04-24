@@ -42,7 +42,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/spec"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
+	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	metrics_recommender "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/recommender"
 )
 
@@ -270,7 +270,21 @@ func (feeder *clusterStateFeeder) InitFromCheckpoints() {
 
 func (feeder *clusterStateFeeder) GarbageCollectCheckpoints() {
 	klog.V(3).Info("Starting garbage collection of checkpoints")
-	feeder.LoadVPAs()
+
+	allVPAKeys := map[model.VpaID]bool{}
+
+	allVpaResources, err := feeder.vpaLister.List(labels.Everything())
+	if err != nil {
+		klog.Errorf("Cannot list VPAs. Reason: %+v", err)
+		return
+	}
+	for _, vpa := range allVpaResources {
+		vpaID := model.VpaID{
+			Namespace: vpa.Namespace,
+			VpaName:   vpa.Name,
+		}
+		allVPAKeys[vpaID] = true
+	}
 
 	namespaceList, err := feeder.coreClient.Namespaces().List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
@@ -286,7 +300,8 @@ func (feeder *clusterStateFeeder) GarbageCollectCheckpoints() {
 		}
 		for _, checkpoint := range checkpointList.Items {
 			vpaID := model.VpaID{Namespace: checkpoint.Namespace, VpaName: checkpoint.Spec.VPAObjectName}
-			_, exists := feeder.clusterState.Vpas[vpaID]
+			_, exists := allVPAKeys[vpaID]
+
 			if !exists {
 				err = feeder.vpaCheckpointClient.VerticalPodAutoscalerCheckpoints(namespace).Delete(context.TODO(), checkpoint.Name, metav1.DeleteOptions{})
 				if err == nil {
