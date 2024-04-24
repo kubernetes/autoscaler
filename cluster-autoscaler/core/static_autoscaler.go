@@ -848,7 +848,8 @@ func (a *StaticAutoscaler) deleteCreatedNodesWithErrors() (bool, error) {
 		if nodeGroup == nil {
 			err = fmt.Errorf("node group %s not found", nodeGroupId)
 		} else {
-			opts, err := nodeGroup.GetOptions(a.NodeGroupDefaults)
+			var opts *config.NodeGroupAutoscalingOptions
+			opts, err = nodeGroup.GetOptions(a.NodeGroupDefaults)
 			if err != nil {
 				klog.Warningf("Failed to get node group options for %s: %s", nodeGroupId, err)
 				continue
