@@ -80,7 +80,7 @@ const (
 	VultrProviderName = "vultr"
 	// PacketProviderName gets the provider name of packet
 	PacketProviderName = "packet"
-	// EquinixMetalProviderName gets the provider name of packet
+	// EquinixMetalProviderName gets the provider name of equinixmetal
 	EquinixMetalProviderName = "equinixmetal"
 	// TencentcloudProviderName gets the provider name of tencentcloud
 	TencentcloudProviderName = "tencentcloud"
