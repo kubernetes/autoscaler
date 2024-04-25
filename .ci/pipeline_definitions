@@ -36,9 +36,9 @@ autoscaler:
             dockerfile: './cluster-autoscaler/Dockerfile'
     steps:
       test:
-        image: 'golang:1.20.5'
+        image: 'golang:1.22.2'
       build:
-        image: 'golang:1.20.5'
+        image: 'golang:1.22.2'
         output_dir: 'binary'
   jobs:
     head-update:
@@ -131,9 +131,9 @@ vertical-pod-autoscaler:
             dir: 'vertical-pod-autoscaler'
     steps:
       test:
-        image: 'golang:1.20.5'
+        image: 'golang:1.22.2'
       build:
-        image: 'golang:1.20.5'
+        image: 'golang:1.22.2'
         output_dir: 'binary'
   jobs:
     release:
