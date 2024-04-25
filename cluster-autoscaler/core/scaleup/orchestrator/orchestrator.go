@@ -187,11 +187,31 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 	}
 	klog.V(1).Infof("Estimated %d nodes needed in %s", bestOption.NodeCount, bestOption.NodeGroup.Id())
 
+	// Cap new nodes to supported number of nodes in the cluster.
 	newNodes, aErr := o.GetCappedNewNodeCount(bestOption.NodeCount, len(nodes)+len(upcomingNodes))
 	if aErr != nil {
 		return status.UpdateScaleUpError(&status.ScaleUpStatus{PodsTriggeredScaleUp: bestOption.Pods}, aErr)
 	}
 
+	// Apply upper limits for resources in the cluster.
+	nodeInfo, found := nodeInfos[bestOption.NodeGroup.Id()]
+	if !found {
+		// This should never happen, as we already should have retrieved nodeInfo for any considered nodegroup.
+		klog.Errorf("No node info for: %s", bestOption.NodeGroup.Id())
+		return status.UpdateScaleUpError(
+			&status.ScaleUpStatus{PodsTriggeredScaleUp: bestOption.Pods},
+			errors.NewAutoscalerError(
+				errors.CloudProviderError,
+				"No node info for best expansion option!"))
+	}
+	newNodes, aErr = o.resourceManager.ApplyLimits(o.autoscalingContext, newNodes, resourcesLeft, nodeInfo, bestOption.NodeGroup)
+	if aErr != nil {
+		return status.UpdateScaleUpError(
+			&status.ScaleUpStatus{PodsTriggeredScaleUp: bestOption.Pods},
+			aErr)
+	}
+
+	// If necessary, create the node group. This is no longer simulation, an empty node group will be created by cloud provider if supported.
 	createNodeGroupResults := make([]nodegroups.CreateNodeGroupResult, 0)
 	if !bestOption.NodeGroup.Exist() {
 		var scaleUpStatus *status.ScaleUpStatus
@@ -215,25 +235,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 		klog.V(2).Info("No similar node groups found")
 	}
 
-	nodeInfo, found := nodeInfos[bestOption.NodeGroup.Id()]
-	if !found {
-		// This should never happen, as we already should have retrieved nodeInfo for any considered nodegroup.
-		klog.Errorf("No node info for: %s", bestOption.NodeGroup.Id())
-		return status.UpdateScaleUpError(
-			&status.ScaleUpStatus{CreateNodeGroupResults: createNodeGroupResults, PodsTriggeredScaleUp: bestOption.Pods},
-			errors.NewAutoscalerError(
-				errors.CloudProviderError,
-				"No node info for best expansion option!"))
-	}
-
-	// Apply upper limits for CPU and memory.
-	newNodes, aErr = o.resourceManager.ApplyLimits(o.autoscalingContext, newNodes, resourcesLeft, nodeInfo, bestOption.NodeGroup)
-	if aErr != nil {
-		return status.UpdateScaleUpError(
-			&status.ScaleUpStatus{CreateNodeGroupResults: createNodeGroupResults, PodsTriggeredScaleUp: bestOption.Pods},
-			aErr)
-	}
-
+	// Balance between similar node groups.
 	targetNodeGroups := []cloudprovider.NodeGroup{bestOption.NodeGroup}
 	for _, ng := range bestOption.SimilarNodeGroups {
 		targetNodeGroups = append(targetNodeGroups, ng)
@@ -254,6 +256,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 			aErr)
 	}
 
+	// Execute scale up.
 	klog.V(1).Infof("Final scale-up plan: %v", scaleUpInfos)
 	aErr, failedNodeGroups := o.scaleUpExecutor.ExecuteScaleUps(scaleUpInfos, nodeInfos, now)
 	if aErr != nil {
