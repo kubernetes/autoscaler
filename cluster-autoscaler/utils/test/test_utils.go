@@ -195,6 +195,13 @@ func BuildScheduledTestPod(name string, cpu, memory int64, nodeName string) *api
 	return p
 }
 
+// BuildTestPodWithDeletionTimestamp builds a test pod with deletion timestamp set
+func BuildTestPodWithDeletionTimestamp(name string, cpu, memory int64, nodeName string, deletionTimestamp time.Time) *apiv1.Pod {
+	p := BuildScheduledTestPod(name, cpu, memory, nodeName)
+	p.DeletionTimestamp = &metav1.Time{Time: deletionTimestamp}
+	return p
+}
+
 // SetStaticPodSpec sets pod spec to make it a static pod
 func SetStaticPodSpec(pod *apiv1.Pod) *apiv1.Pod {
 	pod.Annotations[kube_types.ConfigSourceAnnotationKey] = kube_types.FileSource
