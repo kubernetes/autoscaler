@@ -77,7 +77,7 @@ func TestCurrentlyDrainedNodesPodListProcessor(t *testing.T) {
 			},
 			pods: []*apiv1.Pod{
 				BuildScheduledTestPod("p1", 100, 1, "n"),
-				BuildTestPodWithDeletionTimestamp("p2", 200, 1, "n", time.Now()),
+				BuildTestPod("p2", 200, 1, WithNodeName("n"), WithDeletionTimestamp(time.Now())),
 			},
 			wantPods: []*apiv1.Pod{
 				BuildTestPod("p1", 100, 1),
