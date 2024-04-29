@@ -20,6 +20,10 @@ spec:
   - port: {{ .Values.service.portName }}
     interval: {{ .Values.serviceMonitor.interval }}
     path: {{ .Values.serviceMonitor.path }}
+    {{- if .Values.serviceMonitor.relabelings }}
+    relabelings:
+{{ tpl (toYaml .Values.serviceMonitor.relabelings | indent 6) . }}
+    {{- end }}
     {{- if .Values.serviceMonitor.metricRelabelings }}
     metricRelabelings:
 {{ tpl (toYaml .Values.serviceMonitor.metricRelabelings | indent 6) . }}
