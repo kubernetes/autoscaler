@@ -78,10 +78,17 @@ func (p *ProvisioningRequestPodsInjector) Process(
 			if err != nil {
 				klog.Errorf("Failed to get pods for ProvisioningRequest %v", pr.Name)
 				provreqconditions.AddOrUpdateCondition(pr, v1beta1.Failed, metav1.ConditionTrue, provreqconditions.FailedToCreatePodsReason, err.Error(), metav1.NewTime(p.clock.Now()))
+				if _, err := p.client.UpdateProvisioningRequest(pr.ProvisioningRequest); err != nil {
+					klog.Errorf("failed add Failed condition to ProvReq %s/%s, err: %v", pr.Namespace, pr.Name, err)
+				}
+				continue
+			}
+			provreqconditions.AddOrUpdateCondition(pr, v1beta1.Accepted, metav1.ConditionTrue, provreqconditions.AcceptedReason, provreqconditions.AcceptedMsg, metav1.NewTime(p.clock.Now()))
+			if _, err := p.client.UpdateProvisioningRequest(pr.ProvisioningRequest); err != nil {
+				klog.Errorf("failed add Accepted condition to ProvReq %s/%s, err: %v", pr.Namespace, pr.Name, err)
 				continue
 			}
 			unschedulablePods := append(unschedulablePods, provreqpods...)
-			provreqconditions.AddOrUpdateCondition(pr, v1beta1.Accepted, metav1.ConditionTrue, provreqconditions.AcceptedReason, provreqconditions.AcceptedMsg, metav1.NewTime(p.clock.Now()))
 			return unschedulablePods, nil
 		}
 	}
