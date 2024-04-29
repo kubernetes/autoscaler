@@ -17,11 +17,13 @@ limitations under the License.
 package provreqclient
 
 import (
+	"context"
 	"fmt"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1beta1"
@@ -121,6 +123,21 @@ func (c *ProvisioningRequestClient) FetchPodTemplates(pr *v1beta1.ProvisioningRe
 		podTemplates = append(podTemplates, podTemplate)
 	}
 	return podTemplates, nil
+}
+
+// UpdateProvisioningRequest updates the given ProvisioningRequest CR by propagating the changes using the ProvisioningRequestInterface and returns the updated instance or the original one in case of an error.
+func (c *ProvisioningRequestClient) UpdateProvisioningRequest(pr *v1beta1.ProvisioningRequest) (*v1beta1.ProvisioningRequest, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), provisioningRequestClientCallTimeout)
+	defer cancel()
+
+	prCopy := pr.DeepCopy()
+	prCopy.Spec = v1beta1.ProvisioningRequestSpec{}
+	updatedPr, err := c.client.AutoscalingV1beta1().ProvisioningRequests(prCopy.Namespace).UpdateStatus(ctx, prCopy, metav1.UpdateOptions{})
+	if err != nil {
+		return pr, err
+	}
+	klog.V(4).Infof("Updated ProvisioningRequest %s/%s,  status: %q,", updatedPr.Namespace, updatedPr.Name, updatedPr.Status)
+	return updatedPr, nil
 }
 
 // newPRClient creates a new Provisioning Request client from the given config.

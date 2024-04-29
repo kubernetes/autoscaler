@@ -132,6 +132,10 @@ func (o *provReqOrchestrator) bookCapacity() error {
 				// If there is an error, mark PR as invalid, because we won't be able to book capacity
 				// for it anyway.
 				conditions.AddOrUpdateCondition(provReq, v1beta1.Failed, metav1.ConditionTrue, conditions.FailedToBookCapacityReason, fmt.Sprintf("Couldn't create pods, err: %v", err), metav1.Now())
+				if _, err := o.client.UpdateProvisioningRequest(provReq.ProvisioningRequest); err != nil {
+					klog.Errorf("failed add Accepted condition to ProvReq %s/%s, err: %v", provReq.Namespace, provReq.Name, err)
+					continue
+				}
 				continue
 			}
 			podsToCreate = append(podsToCreate, pods...)

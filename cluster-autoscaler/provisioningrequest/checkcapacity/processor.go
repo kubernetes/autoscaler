@@ -23,7 +23,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1beta1"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/conditions"
+	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqclient"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
+	"k8s.io/klog/v2"
 )
 
 const (
@@ -47,7 +49,7 @@ func NewCheckCapacityProcessor() *checkCapacityProcessor {
 // -BookingExpired condition for Provisioned ProvisioningRequest if capacity reservation time is expired.
 // -Failed condition for ProvisioningRequest that were not provisioned during defaultExpirationTime.
 // TODO(yaroslava): fetch reservation and expiration time from ProvisioningRequest
-func (p *checkCapacityProcessor) Process(provReqs []*provreqwrapper.ProvisioningRequest) {
+func (p *checkCapacityProcessor) Process(client *provreqclient.ProvisioningRequestClient, provReqs []*provreqwrapper.ProvisioningRequest) {
 	expiredProvReq := []*provreqwrapper.ProvisioningRequest{}
 	failedProvReq := []*provreqwrapper.ProvisioningRequest{}
 	for _, provReq := range provReqs {
@@ -77,6 +79,11 @@ func (p *checkCapacityProcessor) Process(provReqs []*provreqwrapper.Provisioning
 			break
 		}
 		conditions.AddOrUpdateCondition(provReq, v1beta1.BookingExpired, metav1.ConditionTrue, conditions.CapacityReservationTimeExpiredReason, conditions.CapacityReservationTimeExpiredMsg, metav1.NewTime(p.now()))
+		_, updErr := client.UpdateProvisioningRequest(provReq.ProvisioningRequest)
+		if updErr != nil {
+			klog.Errorf("failed to add BookingExpired condition to ProvReq %s/%s, err: %v", provReq.Namespace, provReq.Name, updErr)
+			continue
+		}
 		updated++
 	}
 	for _, provReq := range failedProvReq {
@@ -84,6 +91,11 @@ func (p *checkCapacityProcessor) Process(provReqs []*provreqwrapper.Provisioning
 			break
 		}
 		conditions.AddOrUpdateCondition(provReq, v1beta1.Failed, metav1.ConditionTrue, conditions.ExpiredReason, conditions.ExpiredMsg, metav1.NewTime(p.now()))
+		_, updErr := client.UpdateProvisioningRequest(provReq.ProvisioningRequest)
+		if updErr != nil {
+			klog.Errorf("failed to add Failed condition to ProvReq %s/%s, err: %v", provReq.Namespace, provReq.Name, updErr)
+			continue
+		}
 		updated++
 	}
 }
