@@ -26,7 +26,7 @@ import (
 
 // ProvisioningRequestProcessor process ProvisioningRequests in the cluster.
 type ProvisioningRequestProcessor interface {
-	Process([]*provreqwrapper.ProvisioningRequest)
+	Process(*provreqclient.ProvisioningRequestClient, []*provreqwrapper.ProvisioningRequest)
 	CleanUp()
 }
 
@@ -54,7 +54,7 @@ func (cp *CombinedProvReqProcessor) Refresh() {
 		return
 	}
 	for _, p := range cp.processors {
-		p.Process(provReqs)
+		p.Process(cp.client, provReqs)
 	}
 }
 
