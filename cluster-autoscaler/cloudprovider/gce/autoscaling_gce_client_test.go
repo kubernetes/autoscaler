@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"regexp"
 	"testing"
 	"time"
 
@@ -35,7 +36,12 @@ import (
 )
 
 func newTestAutoscalingGceClient(t *testing.T, projectId, url, userAgent string) *autoscalingGceClientV1 {
+	return newTestAutoscalingGceClientWithTimeout(t, projectId, url, userAgent, time.Duration(0))
+}
+
+func newTestAutoscalingGceClientWithTimeout(t *testing.T, projectId, url, userAgent string, timeout time.Duration) *autoscalingGceClientV1 {
 	client := &http.Client{}
+	client.Timeout = timeout
 	gceClient, err := NewAutoscalingGceClientV1(client, projectId, userAgent)
 	if !assert.NoError(t, err) {
 		t.Fatalf("fatal error: %v", err)
@@ -567,4 +573,208 @@ func TestUserAgent(t *testing.T) {
 
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, server)
+}
+
+// NOTE: pagination operations can't be tested with context timeouts as it's not possible
+// to control per call timeouts as context is global per operation
+func TestAutoscalingClientTimeouts(t *testing.T) {
+	// non zero timeout to indicate that timeout should be respected for http client
+	instantTimeout := 1 * time.Nanosecond
+	tests := map[string]struct {
+		clientFunc              func(*autoscalingGceClientV1) error
+		httpTimeout             time.Duration
+		operationPerCallTimeout *time.Duration
+	}{
+		"CreateInstances_ContextTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				return client.CreateInstances(GceRef{}, "", 0, nil)
+			},
+			operationPerCallTimeout: &instantTimeout,
+		},
+		"DeleteInstances_ContextTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				return client.DeleteInstances(GceRef{}, nil)
+			},
+			operationPerCallTimeout: &instantTimeout,
+		},
+		"ResizeMig_ContextTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				return client.ResizeMig(GceRef{}, 0)
+			},
+			operationPerCallTimeout: &instantTimeout,
+		},
+		"FetchMachineType_ContextTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				_, err := client.FetchMachineType("", "")
+				return err
+			},
+			operationPerCallTimeout: &instantTimeout,
+		},
+		"FetchMigBasename_ContextTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				_, err := client.FetchMigBasename(GceRef{})
+				return err
+			},
+			operationPerCallTimeout: &instantTimeout,
+		},
+		"FetchMigTargetSize_ContextTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				_, err := client.FetchMigTargetSize(GceRef{})
+				return err
+			},
+			operationPerCallTimeout: &instantTimeout,
+		},
+		"FetchMigTemplate_ContextTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				_, err := client.FetchMigTemplate(GceRef{}, "", false)
+				return err
+			},
+			operationPerCallTimeout: &instantTimeout,
+		},
+		"FetchMigTemplateName_ContextTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				_, err := client.FetchMigTemplateName(GceRef{})
+				return err
+			},
+			operationPerCallTimeout: &instantTimeout,
+		},
+		"FetchListManagedInstancesResults_ContextTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				_, err := client.FetchListManagedInstancesResults(GceRef{})
+				return err
+			},
+			operationPerCallTimeout: &instantTimeout,
+		},
+		"FetchZones_ContextTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				_, err := client.FetchZones("")
+				return err
+			},
+			operationPerCallTimeout: &instantTimeout,
+		},
+		"CreateInstances_HttpClientTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				return client.CreateInstances(GceRef{}, "", 0, nil)
+			},
+			httpTimeout: instantTimeout,
+		},
+		"DeleteInstances_HttpClientTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				return client.DeleteInstances(GceRef{}, nil)
+			},
+			httpTimeout: instantTimeout,
+		},
+		"ResizeMig_HttpClientTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				return client.ResizeMig(GceRef{}, 0)
+			},
+			httpTimeout: instantTimeout,
+		},
+		"FetchMachineType_HttpClientTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				_, err := client.FetchMachineType("", "")
+				return err
+			},
+			httpTimeout: instantTimeout,
+		},
+		"FetchMigBasename_HttpClientTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				_, err := client.FetchMigBasename(GceRef{})
+				return err
+			},
+			httpTimeout: instantTimeout,
+		},
+		"FetchMigTargetSize_HttpClientTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				_, err := client.FetchMigTargetSize(GceRef{})
+				return err
+			},
+			httpTimeout: instantTimeout,
+		},
+		"FetchMigTemplate_HttpClientTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				_, err := client.FetchMigTemplate(GceRef{}, "", false)
+				return err
+			},
+			httpTimeout: instantTimeout,
+		},
+		"FetchMigTemplateName_HttpClientTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				_, err := client.FetchMigTemplateName(GceRef{})
+				return err
+			},
+			httpTimeout: instantTimeout,
+		},
+		"FetchListManagedInstancesResults_HttpClientTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				_, err := client.FetchListManagedInstancesResults(GceRef{})
+				return err
+			},
+			httpTimeout: instantTimeout,
+		},
+		"FetchZones_HttpClientTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				_, err := client.FetchZones("")
+				return err
+			},
+			httpTimeout: instantTimeout,
+		},
+		"FetchMachineTypes_HttpClientTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				_, err := client.FetchMachineTypes("")
+				return err
+			},
+			httpTimeout: instantTimeout,
+		},
+		"FetchAllMigs_HttpClientTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				_, err := client.FetchAllMigs("")
+				return err
+			},
+			httpTimeout: instantTimeout,
+		},
+		"FetchMigInstances_HttpClientTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				_, err := client.FetchMigInstances(GceRef{})
+				return err
+			},
+			httpTimeout: instantTimeout,
+		},
+		"FetchAvailableCpuPlatforms_HttpClientTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				_, err := client.FetchAvailableCpuPlatforms()
+				return err
+			},
+			httpTimeout: instantTimeout,
+		},
+		"FetchMigsWithName_HttpClientTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				_, err := client.FetchMigsWithName("", &regexp.Regexp{})
+				return err
+			},
+			httpTimeout: instantTimeout,
+		},
+		"FetchReservationsInProject_HttpClientTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				_, err := client.FetchReservationsInProject("")
+				return err
+			},
+			httpTimeout: instantTimeout,
+		},
+	}
+
+	server := test_util.NewHttpServerMock()
+	defer server.Close()
+	server.On("handle", mock.Anything).Return(`{"status": "unreachable"}`).After(50 * time.Millisecond)
+	for testName, test := range tests {
+		t.Run(testName, func(t *testing.T) {
+			client := newTestAutoscalingGceClientWithTimeout(t, "project", server.URL, "", test.httpTimeout)
+			if test.operationPerCallTimeout != nil {
+				client.operationPerCallTimeout = *test.operationPerCallTimeout
+			}
+			err := test.clientFunc(client)
+			// NOTE: unable to test with ErrorIs as http errors are not wrapping an err, but overwriting it
+			assert.ErrorContains(t, err, context.DeadlineExceeded.Error())
+		})
+	}
 }
