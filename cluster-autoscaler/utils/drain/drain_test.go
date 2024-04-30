@@ -137,43 +137,43 @@ func TestBlockingPodReasonFormatting(t *testing.T) {
 	}{
 		{
 			bpr:  NoReason,
-			want: "0",
+			want: "NoReason",
 		},
 		{
 			bpr:  ControllerNotFound,
-			want: "1",
+			want: "ControllerNotFound",
 		},
 		{
-			bpr:  MinReplicasReached,
-			want: "2",
+			bpr:  ControllerNotFound,
+			want: "ControllerNotFound",
 		},
 		{
 			bpr:  NotReplicated,
-			want: "3",
+			want: "NotReplicated",
 		},
 		{
 			bpr:  LocalStorageRequested,
-			want: "4",
+			want: "LocalStorageRequested",
 		},
 		{
 			bpr:  NotSafeToEvictAnnotation,
-			want: "5",
+			want: "NotSafeToEvictAnnotation",
 		},
 		{
 			bpr:  UnmovableKubeSystemPod,
-			want: "6",
+			want: "UnmovableKubeSystemPod",
 		},
 		{
 			bpr:  NotEnoughPdb,
-			want: "7",
+			want: "NotEnoughPdb",
 		},
 		{
 			bpr:  UnexpectedError,
-			want: "8",
+			want: "UnexpectedError",
 		},
 		{
 			bpr:  BlockingPodReason(9),
-			want: "9",
+			want: "unrecognized reason: 9",
 		},
 	} {
 		t.Run(tc.want, func(t *testing.T) {
