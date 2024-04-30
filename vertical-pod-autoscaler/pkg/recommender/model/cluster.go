@@ -385,7 +385,7 @@ func (cluster *ClusterState) garbageCollectAggregateCollectionStates(now time.Ti
 }
 
 // RateLimitedGarbageCollectAggregateCollectionStates removes obsolete AggregateCollectionStates from the ClusterState.
-// It performs clean up only if more than `gcInterval` passed since the last time it performed a clean up.
+// It performs clean up only if more than `gcInterval` passed since the last time it performed a cleanup.
 // AggregateCollectionState is obsolete in following situations:
 // 1) It has no samples and there are no more contributive pods - a pod is contributive in any of following situations:
 //
@@ -491,7 +491,7 @@ type aggregateStateKey struct {
 	labelSetMap *labelSetMap
 }
 
-// Labels returns the namespace for the aggregateStateKey.
+// Namespace returns the namespace for the aggregateStateKey.
 func (k aggregateStateKey) Namespace() string {
 	return k.namespace
 }
