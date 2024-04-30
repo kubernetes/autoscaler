@@ -71,6 +71,12 @@ spec:
             {{- if .Values.cloudConfigPath }}
             - --cloud-config={{ .Values.cloudConfigPath }}
             {{- end }}
+            {{- if eq .Values.cloudConfigMethod "Secret" }}
+            - --cloud-config={{ .Values.cloudConfigPath | default "/mnt/cloudconfig" }}/cloudconfig.yaml
+            {{- end }}
+            {{- if eq .Values.clusterAPIMode "kubeconfig-incluster"}}
+            - --kubeconfig={{ .Values.clusterAPIWorkloadKubeconfigPath }}
+            {{- end }}
           {{- end }}
           {{- if eq .Values.cloudProvider "aws" }}
             {{- if .Values.autoDiscovery.clusterName }}
@@ -258,9 +264,9 @@ spec:
           {{- end }}
           {{- if or (eq .Values.cloudProvider "magnum") .Values.extraVolumeSecrets .Values.extraVolumeMounts .Values.clusterAPIKubeconfigSecret }}
           volumeMounts:
-          {{- if eq .Values.cloudProvider "magnum" }}
+          {{- if or (eq .Values.cloudProvider "magnum") (eq .Values.cloudProvider "rancher") }}
             - name: cloudconfig
-              mountPath: {{ .Values.cloudConfigPath }}
+              mountPath: {{ .Values.cloudConfigPath | default "/mnt/cloudconfig" }}
               readOnly: true
           {{- end }}
           {{- if and (eq .Values.cloudProvider "magnum") (.Values.magnumCABundlePath) }}
@@ -302,6 +308,20 @@ spec:
       {{- end }}
       {{- if or (eq .Values.cloudProvider "magnum") .Values.extraVolumeSecrets .Values.extraVolumes .Values.clusterAPIKubeconfigSecret }}
       volumes:
+      {{- if eq .Values.cloudProvider "rancher" }}
+        - name: cloudconfig
+        {{- if eq .Values.cloudConfigMethod "Path" }}
+          hostPath:
+            path: {{ .Values.cloudConfigPath }}
+        {{- end }}
+        {{- if eq .Values.cloudConfigMethod "Secret" }}
+          secret:
+            secretName: {{ template "cluster-autoscaler.fullname" . }}-cloudconfig
+            items:
+            - key: cloudconfig.yaml
+              path: cloudconfig.yaml
+        {{- end }}
+      {{- end }}
       {{- if eq .Values.cloudProvider "magnum" }}
         - name: cloudconfig
           hostPath:
