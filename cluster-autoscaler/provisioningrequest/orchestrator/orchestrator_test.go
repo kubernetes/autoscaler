@@ -115,7 +115,7 @@ func TestScaleUp(t *testing.T) {
 				provisioningClasses: []provisioningClass{checkcapacity.New(client)},
 			}
 			orchestrator.Initialize(&autoscalingContext, nil, nil, nil, taints.TaintConfig{})
-			st, err := orchestrator.ScaleUp(prPods, []*apiv1.Node{}, []*v1.DaemonSet{}, map[string]*framework.NodeInfo{})
+			st, err := orchestrator.ScaleUp(prPods, []*apiv1.Node{}, []*v1.DaemonSet{}, map[string]*framework.NodeInfo{}, false)
 			if !tc.err {
 				assert.NoError(t, err)
 				assert.Equal(t, tc.scaleUpResult, st.Result)
