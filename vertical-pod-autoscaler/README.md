@@ -23,6 +23,7 @@
   - [Starting multiple recommenders](#starting-multiple-recommenders)
   - [Using CPU management with static policy](#using-cpu-management-with-static-policy)
   - [Controlling eviction behavior based on scaling direction and resource](#controlling-eviction-behavior-based-on-scaling-direction-and-resource)
+  - [Limiting which namespaces are used](#limiting-which-namespaces-are-used)
 - [Known limitations](#known-limitations)
 - [Related links](#related-links)
 
