@@ -315,8 +315,8 @@ func selectsRecommender(selectors []*vpa_types.VerticalPodAutoscalerRecommenderS
 	return false
 }
 
-func selectsNamespace(namespace string, names *[]string) bool {
-	for _, n := range *names {
+func selectsNamespace(namespace string, names []string) bool {
+	for _, n := range names {
 		if namespace == n {
 			return true
 		}
@@ -345,7 +345,7 @@ func filterVPAs(feeder *clusterStateFeeder, allVpaCRDs []*vpa_types.VerticalPodA
 			}
 		}
 
-		if selectsNamespace(vpaCRD.ObjectMeta.Namespace, &feeder.ignoredNamespaces) {
+		if selectsNamespace(vpaCRD.ObjectMeta.Namespace, feeder.ignoredNamespaces) {
 			klog.V(6).Infof("Ignoring vpaCRD %s in namespace %s as namespace is ignored", vpaCRD.Name, vpaCRD.Namespace)
 			continue
 		}

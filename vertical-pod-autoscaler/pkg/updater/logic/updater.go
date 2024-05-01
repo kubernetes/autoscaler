@@ -113,8 +113,8 @@ func NewUpdater(
 	}, nil
 }
 
-func selectsNamespace(namespace string, names *[]string) bool {
-	for _, n := range *names {
+func selectsNamespace(namespace string, names []string) bool {
+	for _, n := range names {
 		if namespace == n {
 			return true
 		}
@@ -149,7 +149,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 	vpas := make([]*vpa_api_util.VpaWithSelector, 0)
 
 	for _, vpa := range vpaList {
-		if selectsNamespace(vpa.Namespace, &u.ignoredNamespaces) {
+		if selectsNamespace(vpa.Namespace, u.ignoredNamespaces) {
 			klog.V(3).Infof("skipping VPA object %s in namespace %s as namespace is ignored", vpa.Name, vpa.Namespace)
 			continue
 		}
