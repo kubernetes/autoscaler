@@ -63,25 +63,30 @@ var (
 	ciphers       = flag.String("tls-ciphers", "", "A comma-separated or colon-separated list of ciphers to accept.  Only works when min-tls-version is set to tls1_2.")
 	minTlsVersion = flag.String("min-tls-version", "tls1_2", "The minimum TLS version to accept.  Must be set to either tls1_2 (default) or tls1_3.")
 
-	port                     = flag.Int("port", 8000, "The port to listen on.")
-	address                  = flag.String("address", ":8944", "The address to expose Prometheus metrics.")
-	kubeconfig               = flag.String("kubeconfig", "", "Path to a kubeconfig. Only required if out-of-cluster.")
-	kubeApiQps               = flag.Float64("kube-api-qps", 5.0, `QPS limit when making requests to Kubernetes apiserver`)
-	kubeApiBurst             = flag.Float64("kube-api-burst", 10.0, `QPS burst limit when making requests to Kubernetes apiserver`)
-	namespace                = os.Getenv("NAMESPACE")
-	serviceName              = flag.String("webhook-service", "vpa-webhook", "Kubernetes service under which webhook is registered. Used when registerByURL is set to false.")
-	webhookAddress           = flag.String("webhook-address", "", "Address under which webhook is registered. Used when registerByURL is set to true.")
-	webhookPort              = flag.String("webhook-port", "", "Server Port for Webhook")
-	webhookTimeout           = flag.Int("webhook-timeout-seconds", 30, "Timeout in seconds that the API server should wait for this webhook to respond before failing.")
-	registerWebhook          = flag.Bool("register-webhook", true, "If set to true, admission webhook object will be created on start up to register with the API server.")
-	registerByURL            = flag.Bool("register-by-url", false, "If set to true, admission webhook will be registered by URL (webhookAddress:webhookPort) instead of by service name")
-	vpaObjectNamespace       = flag.String("vpa-object-namespace", apiv1.NamespaceAll, "Namespace to search for VPA objects. Empty means all namespaces will be used.")
-	webhookIgnoredNamespaces = flag.String("webhook-ignore-namespaces", "", "Comma separated list of namespaces the admission webhook object will ignore.")
+	port                       = flag.Int("port", 8000, "The port to listen on.")
+	address                    = flag.String("address", ":8944", "The address to expose Prometheus metrics.")
+	kubeconfig                 = flag.String("kubeconfig", "", "Path to a kubeconfig. Only required if out-of-cluster.")
+	kubeApiQps                 = flag.Float64("kube-api-qps", 5.0, `QPS limit when making requests to Kubernetes apiserver`)
+	kubeApiBurst               = flag.Float64("kube-api-burst", 10.0, `QPS burst limit when making requests to Kubernetes apiserver`)
+	namespace                  = os.Getenv("NAMESPACE")
+	serviceName                = flag.String("webhook-service", "vpa-webhook", "Kubernetes service under which webhook is registered. Used when registerByURL is set to false.")
+	webhookAddress             = flag.String("webhook-address", "", "Address under which webhook is registered. Used when registerByURL is set to true.")
+	webhookPort                = flag.String("webhook-port", "", "Server Port for Webhook")
+	webhookTimeout             = flag.Int("webhook-timeout-seconds", 30, "Timeout in seconds that the API server should wait for this webhook to respond before failing.")
+	registerWebhook            = flag.Bool("register-webhook", true, "If set to true, admission webhook object will be created on start up to register with the API server.")
+	registerByURL              = flag.Bool("register-by-url", false, "If set to true, admission webhook will be registered by URL (webhookAddress:webhookPort) instead of by service name")
+	vpaObjectNamespace         = flag.String("vpa-object-namespace", apiv1.NamespaceAll, "Namespace to search for VPA objects. Empty means all namespaces will be used.")
+	ignoredVpaObjectNamespaces = flag.String("ignored-vpa-object-namespaces", "", "Comma separated list of namespaces to ignore.")
 )
 
 func main() {
 	klog.InitFlags(nil)
 	kube_flag.InitFlags()
+
+	if len(*vpaObjectNamespace) > 0 && len(*ignoredVpaObjectNamespaces) > 0 {
+		klog.Fatalf("--vpa-object-namespace and --ignored-vpa-object-namespaces are mutually exclusive and can't be set together.")
+	}
+
 	klog.V(1).Infof("Vertical Pod Autoscaler %s Admission Controller", common.VerticalPodAutoscalerVersion)
 
 	healthCheck := metrics.NewHealthCheck(time.Minute, false)
@@ -138,7 +143,7 @@ func main() {
 		TLSConfig: configTLS(certs.serverCert, certs.serverKey, *minTlsVersion, *ciphers),
 	}
 	url := fmt.Sprintf("%v:%v", *webhookAddress, *webhookPort)
-	ignoredNamespaces := strings.Split(*webhookIgnoredNamespaces, ",")
+	ignoredNamespaces := strings.Split(*ignoredVpaObjectNamespaces, ",")
 	go func() {
 		if *registerWebhook {
 			selfRegistration(kubeClient, certs.caCert, namespace, *serviceName, url, *registerByURL, int32(*webhookTimeout), ignoredNamespaces)
