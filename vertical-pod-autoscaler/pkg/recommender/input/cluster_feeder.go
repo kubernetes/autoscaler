@@ -87,6 +87,7 @@ type ClusterStateFeederFactory struct {
 	MemorySaveMode      bool
 	ControllerFetcher   controllerfetcher.ControllerFetcher
 	RecommenderName     string
+	IgnoredNamespaces   []string
 }
 
 // Make creates new ClusterStateFeeder with internal data providers, based on kube client.
@@ -103,6 +104,7 @@ func (m ClusterStateFeederFactory) Make() *clusterStateFeeder {
 		memorySaveMode:      m.MemorySaveMode,
 		controllerFetcher:   m.ControllerFetcher,
 		recommenderName:     m.RecommenderName,
+		ignoredNamespaces:   m.IgnoredNamespaces,
 	}
 }
 
@@ -192,6 +194,7 @@ type clusterStateFeeder struct {
 	memorySaveMode      bool
 	controllerFetcher   controllerfetcher.ControllerFetcher
 	recommenderName     string
+	ignoredNamespaces   []string
 }
 
 func (feeder *clusterStateFeeder) InitFromHistoryProvider(historyProvider history.HistoryProvider) {
@@ -312,6 +315,15 @@ func selectsRecommender(selectors []*vpa_types.VerticalPodAutoscalerRecommenderS
 	return false
 }
 
+func selectsNamespace(namespace string, names *[]string) bool {
+	for _, n := range *names {
+		if namespace == n {
+			return true
+		}
+	}
+	return false
+}
+
 // Filter VPA objects whose specified recommender names are not default
 func filterVPAs(feeder *clusterStateFeeder, allVpaCRDs []*vpa_types.VerticalPodAutoscaler) []*vpa_types.VerticalPodAutoscaler {
 	klog.V(3).Infof("Start selecting the vpaCRDs.")
@@ -332,6 +344,12 @@ func filterVPAs(feeder *clusterStateFeeder, allVpaCRDs []*vpa_types.VerticalPodA
 				continue
 			}
 		}
+
+		if selectsNamespace(vpaCRD.ObjectMeta.Namespace, &feeder.ignoredNamespaces) {
+			klog.V(6).Infof("Ignoring vpaCRD %s in namespace %s as namespace is ignored", vpaCRD.Name, vpaCRD.Namespace)
+			continue
+		}
+
 		vpaCRDs = append(vpaCRDs, vpaCRD)
 	}
 	return vpaCRDs
