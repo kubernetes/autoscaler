@@ -75,7 +75,7 @@ func configTLS(serverCert, serverKey []byte, minTlsVersion, ciphers string) *tls
 
 // register this webhook admission controller with the kube-apiserver
 // by creating MutatingWebhookConfiguration.
-func selfRegistration(clientset *kubernetes.Clientset, caCert []byte, namespace, serviceName, url string, registerByURL bool, timeoutSeconds int32) {
+func selfRegistration(clientset *kubernetes.Clientset, caCert []byte, namespace, serviceName, url string, registerByURL bool, timeoutSeconds int32, ignoredNamespaces []string) {
 	time.Sleep(10 * time.Second)
 	client := clientset.AdmissionregistrationV1().MutatingWebhookConfigurations()
 	_, err := client.Get(context.TODO(), webhookConfigName, metav1.GetOptions{})
@@ -96,6 +96,15 @@ func selfRegistration(clientset *kubernetes.Clientset, caCert []byte, namespace,
 	sideEffects := admissionregistration.SideEffectClassNone
 	failurePolicy := admissionregistration.Ignore
 	RegisterClientConfig.CABundle = caCert
+	namespaceSelector := metav1.LabelSelector{
+		MatchExpressions: []metav1.LabelSelectorRequirement{
+			{
+				Key:      "kubernetes.io/metadata.name",
+				Operator: metav1.LabelSelectorOpNotIn,
+				Values:   ignoredNamespaces,
+			},
+		},
+	}
 	webhookConfig := &admissionregistration.MutatingWebhookConfiguration{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: webhookConfigName,
@@ -122,10 +131,11 @@ func selfRegistration(clientset *kubernetes.Clientset, caCert []byte, namespace,
 						},
 					},
 				},
-				FailurePolicy:  &failurePolicy,
-				ClientConfig:   RegisterClientConfig,
-				SideEffects:    &sideEffects,
-				TimeoutSeconds: &timeoutSeconds,
+				FailurePolicy:     &failurePolicy,
+				ClientConfig:      RegisterClientConfig,
+				SideEffects:       &sideEffects,
+				TimeoutSeconds:    &timeoutSeconds,
+				NamespaceSelector: &namespaceSelector,
 			},
 		},
 	}
