@@ -17,6 +17,8 @@ limitations under the License.
 package checkcapacity
 
 import (
+	"fmt"
+
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -31,7 +33,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
-	"k8s.io/klog/v2"
 
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
@@ -105,7 +106,7 @@ func (o *checkCapacityProvClass) checkcapacity(unschedulablePods []*apiv1.Pod, p
 	}
 	_, updErr := o.client.UpdateProvisioningRequest(provReq.ProvisioningRequest)
 	if updErr != nil {
-		klog.Errorf("failed to update Provisioned condition to ProvReq %s/%s, err: %v", provReq.Namespace, provReq.Name, err)
+		return false, fmt.Errorf("failed to update Provisioned condition to ProvReq %s/%s, err: %v", provReq.Namespace, provReq.Name, updErr)
 	}
 	return capacityAvailable, err
 }
