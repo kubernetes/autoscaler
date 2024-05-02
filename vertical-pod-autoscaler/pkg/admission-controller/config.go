@@ -96,14 +96,18 @@ func selfRegistration(clientset *kubernetes.Clientset, caCert []byte, namespace,
 	sideEffects := admissionregistration.SideEffectClassNone
 	failurePolicy := admissionregistration.Ignore
 	RegisterClientConfig.CABundle = caCert
-	namespaceSelector := metav1.LabelSelector{
-		MatchExpressions: []metav1.LabelSelectorRequirement{
-			{
-				Key:      "kubernetes.io/metadata.name",
-				Operator: metav1.LabelSelectorOpNotIn,
-				Values:   ignoredNamespaces,
+
+	var namespaceSelector metav1.LabelSelector
+	if len(ignoredNamespaces) > 0 {
+		namespaceSelector = metav1.LabelSelector{
+			MatchExpressions: []metav1.LabelSelectorRequirement{
+				{
+					Key:      "kubernetes.io/metadata.name",
+					Operator: metav1.LabelSelectorOpNotIn,
+					Values:   ignoredNamespaces,
+				},
 			},
-		},
+		}
 	}
 	webhookConfig := &admissionregistration.MutatingWebhookConfiguration{
 		ObjectMeta: metav1.ObjectMeta{
