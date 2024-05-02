@@ -17,6 +17,7 @@ limitations under the License.
 package drain
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -124,6 +125,60 @@ func TestIsPodLongTerminating(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			if got := IsPodLongTerminating(&tc.pod, testTime); got != tc.want {
 				t.Errorf("IsPodLongTerminating() = %v, want %v", got, tc.want)
+			}
+		})
+	}
+}
+
+func TestBlockingPodReasonFormatting(t *testing.T) {
+	for _, tc := range []struct {
+		bpr  BlockingPodReason
+		want string
+	}{
+		{
+			bpr:  NoReason,
+			want: "0",
+		},
+		{
+			bpr:  ControllerNotFound,
+			want: "1",
+		},
+		{
+			bpr:  MinReplicasReached,
+			want: "2",
+		},
+		{
+			bpr:  NotReplicated,
+			want: "3",
+		},
+		{
+			bpr:  LocalStorageRequested,
+			want: "4",
+		},
+		{
+			bpr:  NotSafeToEvictAnnotation,
+			want: "5",
+		},
+		{
+			bpr:  UnmovableKubeSystemPod,
+			want: "6",
+		},
+		{
+			bpr:  NotEnoughPdb,
+			want: "7",
+		},
+		{
+			bpr:  UnexpectedError,
+			want: "8",
+		},
+		{
+			bpr:  BlockingPodReason(9),
+			want: "9",
+		},
+	} {
+		t.Run(tc.want, func(t *testing.T) {
+			if got := fmt.Sprintf("%v", tc.bpr); got != tc.want {
+				t.Errorf("got: %s, want %s", got, tc.want)
 			}
 		})
 	}
