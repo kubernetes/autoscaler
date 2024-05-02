@@ -130,6 +130,9 @@ func (c *ProvisioningRequestClient) UpdateProvisioningRequest(pr *v1beta1.Provis
 	ctx, cancel := context.WithTimeout(context.Background(), provisioningRequestClientCallTimeout)
 	defer cancel()
 
+	// UpdateStatus API call on a copy of the PR with cleared Spec field ensures that
+	// the default null template.metadata.creationTimestamp field of PodTemplateSpec
+	// will not generate false error logs as a side effect.
 	prCopy := pr.DeepCopy()
 	prCopy.Spec = v1beta1.ProvisioningRequestSpec{}
 	updatedPr, err := c.client.AutoscalingV1beta1().ProvisioningRequests(prCopy.Namespace).UpdateStatus(ctx, prCopy, metav1.UpdateOptions{})

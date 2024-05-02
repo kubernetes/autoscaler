@@ -38,18 +38,19 @@ const (
 type checkCapacityProcessor struct {
 	now        func() time.Time
 	maxUpdated int
+	client     *provreqclient.ProvisioningRequestClient
 }
 
 // NewCheckCapacityProcessor return ProvisioningRequestProcessor for Check-capacity ProvisioningClass.
-func NewCheckCapacityProcessor() *checkCapacityProcessor {
-	return &checkCapacityProcessor{now: time.Now, maxUpdated: defaultMaxUpdated}
+func NewCheckCapacityProcessor(client *provreqclient.ProvisioningRequestClient) *checkCapacityProcessor {
+	return &checkCapacityProcessor{now: time.Now, maxUpdated: defaultMaxUpdated, client: client}
 }
 
 // Process iterates over ProvisioningRequests and apply:
 // -BookingExpired condition for Provisioned ProvisioningRequest if capacity reservation time is expired.
 // -Failed condition for ProvisioningRequest that were not provisioned during defaultExpirationTime.
 // TODO(yaroslava): fetch reservation and expiration time from ProvisioningRequest
-func (p *checkCapacityProcessor) Process(client *provreqclient.ProvisioningRequestClient, provReqs []*provreqwrapper.ProvisioningRequest) {
+func (p *checkCapacityProcessor) Process(provReqs []*provreqwrapper.ProvisioningRequest) {
 	expiredProvReq := []*provreqwrapper.ProvisioningRequest{}
 	failedProvReq := []*provreqwrapper.ProvisioningRequest{}
 	for _, provReq := range provReqs {
@@ -73,30 +74,21 @@ func (p *checkCapacityProcessor) Process(client *provreqclient.ProvisioningReque
 			}
 		}
 	}
-	updated := 0
 	for _, provReq := range expiredProvReq {
-		if updated >= p.maxUpdated {
-			break
-		}
 		conditions.AddOrUpdateCondition(provReq, v1beta1.BookingExpired, metav1.ConditionTrue, conditions.CapacityReservationTimeExpiredReason, conditions.CapacityReservationTimeExpiredMsg, metav1.NewTime(p.now()))
-		_, updErr := client.UpdateProvisioningRequest(provReq.ProvisioningRequest)
+		_, updErr := p.client.UpdateProvisioningRequest(provReq.ProvisioningRequest)
 		if updErr != nil {
 			klog.Errorf("failed to add BookingExpired condition to ProvReq %s/%s, err: %v", provReq.Namespace, provReq.Name, updErr)
 			continue
 		}
-		updated++
 	}
 	for _, provReq := range failedProvReq {
-		if updated >= p.maxUpdated {
-			break
-		}
 		conditions.AddOrUpdateCondition(provReq, v1beta1.Failed, metav1.ConditionTrue, conditions.ExpiredReason, conditions.ExpiredMsg, metav1.NewTime(p.now()))
-		_, updErr := client.UpdateProvisioningRequest(provReq.ProvisioningRequest)
+		_, updErr := p.client.UpdateProvisioningRequest(provReq.ProvisioningRequest)
 		if updErr != nil {
 			klog.Errorf("failed to add Failed condition to ProvReq %s/%s, err: %v", provReq.Namespace, provReq.Name, updErr)
 			continue
 		}
-		updated++
 	}
 }
 
