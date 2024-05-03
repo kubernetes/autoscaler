@@ -31,6 +31,8 @@ var (
 	MostPodsExpanderName = "most-pods"
 	// LeastWasteExpanderName selects a node group that leaves the least fraction of CPU and Memory
 	LeastWasteExpanderName = "least-waste"
+	// LeastNodesExpanderName selects a node group that uses the least number of nodes
+	LeastNodesExpanderName = "least-nodes"
 	// PriceBasedExpanderName selects a node group that is the most cost-effective and consistent with
 	// the preferred node size for the cluster
 	PriceBasedExpanderName = "price"
