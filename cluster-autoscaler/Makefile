@@ -37,8 +37,6 @@ IMAGE=$(REGISTRY)/cluster-autoscaler$(PROVIDER)
 export DOCKER_CLI_EXPERIMENTAL := enabled
 
 build:
-	@echo "⚠️  WARNING: The vendor directory will be removed soon. \
-	Please make sure your dependencies are managed via Go modules."
 	@$(MAKE) build-arch-$(GOARCH)
 
 build-arch-%: clean-arch-%
