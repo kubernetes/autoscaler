@@ -81,6 +81,11 @@ func (n *nodePool) IncreaseSize(delta int) error {
 	return n.manager.SetNodeGroupSize(n, targetSize)
 }
 
+// ForceDeleteNodes force deletes nodes regardless of constraints 
+func (asg *nodePool) ForceDeleteNodes(nodes []*apiv1.Node) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // DeleteNodes deletes nodes from this node group (and also decreasing the size
 // of the node group with that). Error is returned either on failure or if the
 // given node doesn't belong to this node group. This function should wait

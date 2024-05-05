@@ -64,6 +64,11 @@ func (ip *InstancePoolNodeGroup) IncreaseSize(delta int) error {
 	return ip.manager.SetInstancePoolSize(*ip, size+delta)
 }
 
+// ForceDeleteNodes force deletes nodes regardless of constraints 
+func (ip *InstancePoolNodeGroup) ForceDeleteNodes(nodes []*apiv1.Node) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // DeleteNodes deletes nodes from this instance-pool. Error is returned either on
 // failure or if the given node doesn't belong to this instance-pool. This function
 // should wait until instance-pool size is updated. Implementation required.

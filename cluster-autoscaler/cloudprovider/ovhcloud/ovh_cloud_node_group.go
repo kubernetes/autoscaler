@@ -110,7 +110,10 @@ func (ng *NodeGroup) IncreaseSize(delta int) error {
 
 	return nil
 }
-
+// ForceDeleteNodes force deletes nodes regardless of constraints 
+func (ng *NodeGroup) ForceDeleteNodes(nodes []*apiv1.Node) error {
+	return cloudprovider.ErrNotImplemented
+}
 // DeleteNodes deletes the nodes from the group.
 func (ng *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	// DeleteNodes is called in goroutine so it can run in parallel

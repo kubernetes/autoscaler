@@ -196,6 +196,11 @@ func (asg *tcAsg) Autoprovisioned() bool {
 	return false
 }
 
+// ForceDeleteNodes force deletes nodes regardless of constraints 
+func (asg *tcAsg) ForceDeleteNodes(nodes []*apiv1.Node) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // DeleteNodes deletes the nodes from the group.
 func (asg *tcAsg) DeleteNodes(nodes []*apiv1.Node) error {
 	size, err := asg.tencentcloudManager.GetAsgSize(asg)

@@ -496,6 +496,33 @@ func (scaleSet *ScaleSet) DeleteNodes(nodes []*apiv1.Node) error {
 	return scaleSet.DeleteInstances(refs, hasUnregisteredNodes)
 }
 
+// ForceDeleteNodes deletes nodes from the group forcefully
+func (scaleSet *ScaleSet) ForceDeleteNodes(nodes []*apiv1.Node) error {
+	klog.V(8).Infof("Delete nodes requested: %q\n", nodes)
+	refs := make([]*azureRef, 0, len(nodes))
+	hasUnregisteredNodes := false
+	for _, node := range nodes {
+		belongs, err := scaleSet.Belongs(node)
+		if err != nil {
+			return err
+		}
+
+		if belongs != true {
+			return fmt.Errorf("%s belongs to a different asg than %s", node.Name, scaleSet.Id())
+		}
+
+		if node.Annotations[cloudprovider.FakeNodeReasonAnnotation] == cloudprovider.FakeNodeUnregistered {
+			hasUnregisteredNodes = true
+		}
+		ref := &azureRef{
+			Name: node.Spec.ProviderID,
+		}
+		refs = append(refs, ref)
+	}
+
+	return scaleSet.DeleteInstances(refs, hasUnregisteredNodes)
+
+}
 // Id returns ScaleSet id.
 func (scaleSet *ScaleSet) Id() string {
 	return scaleSet.Name

@@ -459,6 +459,35 @@ func (as *AgentPool) DeleteNodes(nodes []*apiv1.Node) error {
 	return as.DeleteInstances(refs)
 }
 
+
+func (as *AgentPool) ForceDeleteNodes(nodes []*apiv1.Node) error {
+	klog.V(6).Infof("Delete nodes requested: %v\n", nodes)
+	refs := make([]*azureRef, 0, len(nodes))
+	for _, node := range nodes {
+		belongs, err := as.Belongs(node)
+		if err != nil {
+			return err
+		}
+
+		if belongs != true {
+			return fmt.Errorf("%s belongs to a different asg than %s", node.Name, as.Name)
+		}
+
+		ref := &azureRef{
+			Name: node.Spec.ProviderID,
+		}
+		refs = append(refs, ref)
+	}
+
+	err := as.deleteOutdatedDeployments()
+	if err != nil {
+		klog.Warningf("ForceDeleteNodes: failed to cleanup outdated deployments with err: %v.", err)
+	}
+
+	return as.DeleteInstances(refs)
+
+}
+
 // Debug returns a debug string for the agent pool.
 func (as *AgentPool) Debug() string {
 	return fmt.Sprintf("%s (%d:%d)", as.Name, as.MinSize(), as.MaxSize())

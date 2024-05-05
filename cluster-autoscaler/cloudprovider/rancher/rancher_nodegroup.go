@@ -105,6 +105,11 @@ func (ng *nodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 	return instances, nil
 }
 
+// ForceDeleteNodes force deletes nodes regardless of constraints 
+func (ng *nodeGroup) ForceDeleteNodes(nodes []*corev1.Node) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // DeleteNodes deletes the specified nodes from the node group.
 func (ng *nodeGroup) DeleteNodes(toDelete []*corev1.Node) error {
 	if ng.replicas-len(toDelete) < ng.MinSize() {

@@ -115,6 +115,12 @@ func (asg *Asg) Belongs(node *apiv1.Node) (bool, error) {
 	return true, nil
 }
 
+
+// ForceDeleteNodes force deletes nodes regardless of constraints 
+func (asg *Asg) ForceDeleteNodes(nodes []*apiv1.Node) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // DeleteNodes deletes the nodes from the group.
 func (asg *Asg) DeleteNodes(nodes []*apiv1.Node) error {
 	size, err := asg.manager.GetAsgSize(asg)

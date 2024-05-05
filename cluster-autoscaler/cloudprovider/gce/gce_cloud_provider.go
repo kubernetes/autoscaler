@@ -278,6 +278,12 @@ func (mig *gceMig) Belongs(node *apiv1.Node) (bool, error) {
 	return true, nil
 }
 
+
+// ForceDeleteNodes force deletes nodes regardless of constraints 
+func (mig *gceMig) ForceDeleteNodes(nodes []*apiv1.Node) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // DeleteNodes deletes the nodes from the group.
 func (mig *gceMig) DeleteNodes(nodes []*apiv1.Node) error {
 	size, err := mig.gceManager.GetMigSize(mig)

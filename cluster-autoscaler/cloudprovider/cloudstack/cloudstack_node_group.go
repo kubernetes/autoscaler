@@ -93,6 +93,11 @@ func (asg *asg) Belongs(node *apiv1.Node) (bool, error) {
 	return false, fmt.Errorf("Unable to find node %s in cluster", node.Name)
 }
 
+// ForceDeleteNodes force deletes nodes regardless of constraints 
+func (asg *asg) ForceDeleteNodes(nodes []*apiv1.Node) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // DeleteNodes deletes the nodes from the group.
 func (asg *asg) DeleteNodes(nodes []*apiv1.Node) error {
 	if asg.cluster.WorkerCount-len(nodes) < asg.MinSize() {

@@ -97,6 +97,11 @@ func (ng *equinixMetalNodeGroup) IncreaseSize(delta int) error {
 	return nil
 }
 
+// ForceDeleteNodes force deletes nodes regardless of constraints 
+func (ng *equinixMetalNodeGroup) ForceDeleteNodes(nodes []*apiv1.Node) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // deleteNodes deletes a set of nodes chosen by the autoscaler.
 //
 // The process of deletion depends on the implementation of equinixMetalManager,

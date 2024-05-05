@@ -88,6 +88,11 @@ func (ng *magnumNodeGroup) IncreaseSize(delta int) error {
 	return nil
 }
 
+// ForceDeleteNodes force deletes nodes regardless of constraints 
+func (ng *magnumNodeGroup) ForceDeleteNodes(nodes []*apiv1.Node) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // deleteNodes deletes a set of nodes chosen by the autoscaler.
 func (ng *magnumNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	ng.clusterUpdateLock.Lock()

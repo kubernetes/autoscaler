@@ -221,6 +221,11 @@ func (nodeGroup *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 	return instances, nil
 }
 
+// ForceDeleteNodes force deletes nodes regardless of constraints 
+func (n *NodeGroup) ForceDeleteNodes(nodes []*apiv1.Node) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // DeleteNodes deletes the specified nodes from the node group.
 func (nodeGroup *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	size, err := nodeGroup.kubemarkController.GetNodeGroupTargetSize(nodeGroup.Name)

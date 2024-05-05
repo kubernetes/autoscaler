@@ -318,6 +318,11 @@ func (ng *AwsNodeGroup) Belongs(node *apiv1.Node) (bool, error) {
 	return true, nil
 }
 
+// ForceDeleteNodes force deletes nodes regardless of constraints 
+func (ng *AwsNodeGroup) ForceDeleteNodes(nodes []*apiv1.Node) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // DeleteNodes deletes the nodes from the group.
 func (ng *AwsNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	size := ng.asg.curSize
