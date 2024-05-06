@@ -25,18 +25,89 @@ import (
 )
 
 func TestLeastNodes(t *testing.T) {
-	e := NewFilter()
-
-	eo0 := expander.Option{Debug: "EO0", NodeCount: 2}
-	ret := e.BestOptions([]expander.Option{eo0}, nil)
-	assert.Equal(t, ret, []expander.Option{eo0})
-
-	eo1 := expander.Option{Debug: "EO1", NodeCount: 1}
-	ret = e.BestOptions([]expander.Option{eo0, eo1}, nil)
-	assert.Equal(t, ret, []expander.Option{eo1})
-
-	eo1b := expander.Option{Debug: "EO1b", NodeCount: 1}
-	ret = e.BestOptions([]expander.Option{eo0, eo1, eo1b}, nil)
-	assert.NotEqual(t, ret, []expander.Option{eo1})
-	assert.ObjectsAreEqual(ret, []expander.Option{eo1, eo1b})
+	for _, tc := range []struct {
+		name                     string
+		expansionOptions         []expander.Option
+		expectedExpansionOptions []expander.Option
+	}{
+		{
+			name:                     "no options",
+			expansionOptions:         nil,
+			expectedExpansionOptions: nil,
+		},
+		{
+			name: "no valid options",
+			expansionOptions: []expander.Option{
+				{Debug: "EO0", NodeCount: 0},
+			},
+			expectedExpansionOptions: nil,
+		},
+		{
+			name: "1 valid option",
+			expansionOptions: []expander.Option{
+				{Debug: "EO0", NodeCount: 2},
+			},
+			expectedExpansionOptions: []expander.Option{
+				{Debug: "EO0", NodeCount: 2},
+			},
+		},
+		{
+			name: "2 valid options, not equal",
+			expansionOptions: []expander.Option{
+				{Debug: "EO0", NodeCount: 2},
+				{Debug: "EO1", NodeCount: 1},
+			},
+			expectedExpansionOptions: []expander.Option{
+				{Debug: "EO1", NodeCount: 1},
+			},
+		},
+		{
+			name: "3 valid options, 2 equal",
+			expansionOptions: []expander.Option{
+				{Debug: "EO0", NodeCount: 6},
+				{Debug: "EO1", NodeCount: 2},
+				{Debug: "EO2", NodeCount: 2},
+			},
+			expectedExpansionOptions: []expander.Option{
+				{Debug: "EO1", NodeCount: 2},
+				{Debug: "EO2", NodeCount: 2},
+			},
+		},
+		{
+			name: "3 valid options, all equal",
+			expansionOptions: []expander.Option{
+				{Debug: "EO0", NodeCount: 8},
+				{Debug: "EO1", NodeCount: 8},
+				{Debug: "EO2", NodeCount: 8},
+			},
+			expectedExpansionOptions: []expander.Option{
+				{Debug: "EO0", NodeCount: 8},
+				{Debug: "EO1", NodeCount: 8},
+				{Debug: "EO2", NodeCount: 8},
+			},
+		},
+		{
+			name: "6 valid options, 1 invalid option, 3 equal",
+			expansionOptions: []expander.Option{
+				{Debug: "EO0", NodeCount: 23},
+				{Debug: "EO1", NodeCount: 0},
+				{Debug: "EO2", NodeCount: 5},
+				{Debug: "EO3", NodeCount: 8},
+				{Debug: "EO4", NodeCount: 5},
+				{Debug: "EO5", NodeCount: 5},
+				{Debug: "EO6", NodeCount: 22},
+			},
+			expectedExpansionOptions: []expander.Option{
+				{Debug: "EO2", NodeCount: 5},
+				{Debug: "EO4", NodeCount: 5},
+				{Debug: "EO5", NodeCount: 5},
+			},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			e := NewFilter()
+			ret := e.BestOptions(tc.expansionOptions, nil)
+			assert.Equal(t, ret, tc.expectedExpansionOptions)
+		})
+	}
 }
