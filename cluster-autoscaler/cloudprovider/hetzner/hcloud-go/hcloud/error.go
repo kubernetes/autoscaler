@@ -1,6 +1,7 @@
 package hcloud
 
 import (
+	"errors"
 	"fmt"
 	"net"
 )
@@ -94,10 +95,24 @@ type Error struct {
 	Code    ErrorCode
 	Message string
 	Details interface{}
+
+	response *Response
 }
 
 func (e Error) Error() string {
+	if resp := e.Response(); resp != nil {
+		correlationID := resp.internalCorrelationID()
+		if correlationID != "" {
+			// For easier debugging, the error string contains the Correlation ID of the response.
+			return fmt.Sprintf("%s (%s, %s)", e.Message, e.Code, correlationID)
+		}
+	}
 	return fmt.Sprintf("%s (%s)", e.Message, e.Code)
+}
+
+// Response returns the [Response] that contained the error if available.
+func (e Error) Response() *Response {
+	return e.response
 }
 
 // ErrorDetailsInvalidInput contains the details of an 'invalid_input' error.
@@ -113,7 +128,8 @@ type ErrorDetailsInvalidInputField struct {
 
 // IsError returns whether err is an API error with the given error code.
 func IsError(err error, code ErrorCode) bool {
-	apiErr, ok := err.(Error)
+	var apiErr Error
+	ok := errors.As(err, &apiErr)
 	return ok && apiErr.Code == code
 }
 
