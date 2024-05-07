@@ -27,9 +27,39 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1beta1"
 )
 
+// TestProvReqOptions is a helper struct to make constructing test ProvisioningRequest object easier.
+type TestProvReqOptions struct {
+	Namespace         string
+	Name              string
+	CPU               string
+	Memory            string
+	GPU               string
+	PodCount          int32
+	AntiAffinity      bool
+	CreationTimestamp time.Time
+	Class             string
+}
+
+func applyDefaults(o TestProvReqOptions) TestProvReqOptions {
+	if o.Namespace == "" {
+		o.Namespace = "default"
+	}
+	if o.CreationTimestamp.IsZero() {
+		o.CreationTimestamp = time.Now()
+	}
+	return o
+}
+
+// BuildValidTestProvisioningRequestFromOptions fills in commonly omitted fields to generate a valid ProvisioningRequest object.
+// Simplifies test code.
+func BuildValidTestProvisioningRequestFromOptions(o TestProvReqOptions) *ProvisioningRequest {
+	o = applyDefaults(o)
+	return BuildTestProvisioningRequest(o.Namespace, o.Name, o.CPU, o.Memory, o.GPU, o.PodCount, o.AntiAffinity, o.CreationTimestamp, o.Class)
+}
+
 // BuildTestProvisioningRequest builds ProvisioningRequest wrapper.
 func BuildTestProvisioningRequest(namespace, name, cpu, memory, gpu string, podCount int32,
-	antiAffinity bool, creationTimestamp time.Time, provisioningRequestClass string) *ProvisioningRequest {
+	antiAffinity bool, creationTimestamp time.Time, class string) *ProvisioningRequest {
 	gpuResource := resource.Quantity{}
 	tolerations := []apiv1.Toleration{}
 	if len(gpu) > 0 {
@@ -64,7 +94,7 @@ func BuildTestProvisioningRequest(namespace, name, cpu, memory, gpu string, podC
 				CreationTimestamp: v1.NewTime(creationTimestamp),
 			},
 			Spec: v1beta1.ProvisioningRequestSpec{
-				ProvisioningClassName: provisioningRequestClass,
+				ProvisioningClassName: class,
 				PodSets: []v1beta1.PodSet{
 					{
 						PodTemplateRef: v1beta1.Reference{Name: fmt.Sprintf("%s-template-name", name)},
