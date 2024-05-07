@@ -19,6 +19,7 @@ type LoadBalancerType struct {
 	MaxTargets              int
 	MaxAssignedCertificates int
 	Pricings                []LoadBalancerTypeLocationPricing
+	Deprecated              *string
 }
 
 // LoadBalancerTypeClient is a client for the Load Balancer types API.
