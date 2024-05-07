@@ -21,6 +21,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/grpcplugin"
+	"k8s.io/autoscaler/cluster-autoscaler/expander/leastnodes"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/mostpods"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/price"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/priority"
@@ -82,6 +83,7 @@ func (f *Factory) RegisterDefaultExpanders(cloudProvider cloudprovider.CloudProv
 	f.RegisterFilter(expander.RandomExpanderName, random.NewFilter)
 	f.RegisterFilter(expander.MostPodsExpanderName, mostpods.NewFilter)
 	f.RegisterFilter(expander.LeastWasteExpanderName, waste.NewFilter)
+	f.RegisterFilter(expander.LeastNodesExpanderName, leastnodes.NewFilter)
 	f.RegisterFilter(expander.PriceBasedExpanderName, func() expander.Filter {
 		if _, err := cloudProvider.Pricing(); err != nil {
 			klog.Fatalf("Couldn't access cloud provider pricing for %s expander: %v", expander.PriceBasedExpanderName, err)
