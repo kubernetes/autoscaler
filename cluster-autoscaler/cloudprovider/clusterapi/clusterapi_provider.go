@@ -59,17 +59,12 @@ func (p *provider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) 
 }
 
 func (p *provider) NodeGroups() []cloudprovider.NodeGroup {
-	var result []cloudprovider.NodeGroup
 	nodegroups, err := p.controller.nodeGroups()
 	if err != nil {
 		klog.Errorf("error getting node groups: %v", err)
 		return nil
 	}
-	for _, ng := range nodegroups {
-		klog.V(4).Infof("discovered node group: %s", ng.Debug())
-		result = append(result, ng)
-	}
-	return result
+	return nodegroups
 }
 
 func (p *provider) NodeGroupForNode(node *corev1.Node) (cloudprovider.NodeGroup, error) {
