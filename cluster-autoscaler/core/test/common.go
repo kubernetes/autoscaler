@@ -122,9 +122,11 @@ type ScaleUpTestConfig struct {
 	Pods                    []PodConfig
 	ExtraPods               []PodConfig
 	OnScaleUp               testcloudprovider.OnScaleUpFunc
+	OnCreateGroup           testcloudprovider.OnNodeGroupCreateFunc
 	ExpansionOptionToChoose *GroupSizeChange
 	Options                 *config.AutoscalingOptions
 	NodeTemplateConfigs     map[string]*NodeTemplateConfig
+	EnableAutoprovisioning  bool
 }
 
 // ScaleUpTestResult represents a node groups scale up result
