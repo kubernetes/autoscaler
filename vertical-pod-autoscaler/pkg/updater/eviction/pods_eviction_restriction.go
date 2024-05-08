@@ -159,21 +159,21 @@ func (e *podsEvictionRestrictionImpl) Evict(podToEvict *apiv1.Pod, eventRecorder
 }
 
 // NewPodsEvictionRestrictionFactory creates PodsEvictionRestrictionFactory
-func NewPodsEvictionRestrictionFactory(client kube_client.Interface, minReplicas int,
+func NewPodsEvictionRestrictionFactory(client kube_client.Interface, namespace string, minReplicas int,
 	evictionToleranceFraction float64) (PodsEvictionRestrictionFactory, error) {
-	rcInformer, err := setUpInformer(client, replicationController)
+	rcInformer, err := setUpInformer(client, namespace, replicationController)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create rcInformer: %v", err)
 	}
-	ssInformer, err := setUpInformer(client, statefulSet)
+	ssInformer, err := setUpInformer(client, namespace, statefulSet)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create ssInformer: %v", err)
 	}
-	rsInformer, err := setUpInformer(client, replicaSet)
+	rsInformer, err := setUpInformer(client, namespace, replicaSet)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create rsInformer: %v", err)
 	}
-	dsInformer, err := setUpInformer(client, daemonSet)
+	dsInformer, err := setUpInformer(client, namespace, daemonSet)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create dsInformer: %v", err)
 	}
@@ -365,20 +365,20 @@ func managingControllerRef(pod *apiv1.Pod) *metav1.OwnerReference {
 	return &managingController
 }
 
-func setUpInformer(kubeClient kube_client.Interface, kind controllerKind) (cache.SharedIndexInformer, error) {
+func setUpInformer(kubeClient kube_client.Interface, namespace string, kind controllerKind) (cache.SharedIndexInformer, error) {
 	var informer cache.SharedIndexInformer
 	switch kind {
 	case replicationController:
-		informer = coreinformer.NewReplicationControllerInformer(kubeClient, apiv1.NamespaceAll,
+		informer = coreinformer.NewReplicationControllerInformer(kubeClient, namespace,
 			resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
 	case replicaSet:
-		informer = appsinformer.NewReplicaSetInformer(kubeClient, apiv1.NamespaceAll,
+		informer = appsinformer.NewReplicaSetInformer(kubeClient, namespace,
 			resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
 	case statefulSet:
-		informer = appsinformer.NewStatefulSetInformer(kubeClient, apiv1.NamespaceAll,
+		informer = appsinformer.NewStatefulSetInformer(kubeClient, namespace,
 			resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
 	case daemonSet:
-		informer = appsinformer.NewDaemonSetInformer(kubeClient, apiv1.NamespaceAll,
+		informer = appsinformer.NewDaemonSetInformer(kubeClient, namespace,
 			resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
 	default:
 		return nil, fmt.Errorf("Unknown controller kind: %v", kind)
