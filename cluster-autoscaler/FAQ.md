@@ -577,7 +577,7 @@ different strategies can be selected for choosing which node group is increased.
 
 It may take some time before the created nodes appear in Kubernetes. It almost entirely
 depends on the cloud provider and the speed of node provisioning, including the
-[TLS bootstrapping process](https://kubernetes.io/docs/reference/command-line-tools-reference/kubelet-tls-bootstrapping/).
+[TLS bootstrapping process](https://kubernetes.io/docs/reference/access-authn-authz/kubelet-tls-bootstrapping/).
 Cluster Autoscaler expects requested nodes to appear within 15 minutes
 (configured by `--max-node-provision-time` flag.) After this time, if they are
 still unregistered, it stops considering them in simulations and may attempt to scale up a
