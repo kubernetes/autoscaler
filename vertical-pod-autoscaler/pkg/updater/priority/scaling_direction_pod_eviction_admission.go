@@ -108,6 +108,10 @@ func (s *scalingDirectionPodEvictionAdmission) LoopInit(_ []*apiv1.Pod, vpaContr
 	s.EvictionRequirements = make(map[*apiv1.Pod][]*vpa_types.EvictionRequirement)
 	for vpa, pods := range vpaControlledPods {
 		for _, pod := range pods {
+			// When UpdatePolicy is not specified, the default policy will be followed, and the EvictionRequirements field will be nil
+			if vpa.Spec.UpdatePolicy == nil {
+				continue
+			}
 			s.EvictionRequirements[pod] = vpa.Spec.UpdatePolicy.EvictionRequirements
 		}
 	}
