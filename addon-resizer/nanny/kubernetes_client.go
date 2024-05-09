@@ -184,11 +184,24 @@ func (k *kubernetesClient) countResourcesThroughMetrics(resourceName string) (ui
 }
 
 func (k *kubernetesClient) ContainerResources() (*corev1.ResourceRequirements, error) {
-	pod, err := k.clientset.CoreV1().Pods(k.namespace).Get(context.Background(), k.pod, metav1.GetOptions{})
-	if err != nil {
-		return nil, err
+	var containers []corev1.Container
+	// When addon resizer runs in a different pod, it cannot get pod name from env,
+	// so the pod name will be empty. In that case, get container information
+	// from the deployment instead.
+	if k.pod == "" {
+		dep, err := k.clientset.AppsV1().Deployments(k.namespace).Get(context.Background(), k.deployment, metav1.GetOptions{})
+		if err != nil {
+			return nil, err
+		}
+		containers = dep.Spec.Template.Spec.Containers
+	} else {
+		pod, err := k.clientset.CoreV1().Pods(k.namespace).Get(context.Background(), k.pod, metav1.GetOptions{})
+		if err != nil {
+			return nil, err
+		}
+		containers = pod.Spec.Containers
 	}
-	for _, container := range pod.Spec.Containers {
+	for _, container := range containers {
 		if container.Name == k.container {
 			return &container.Resources, nil
 		}
