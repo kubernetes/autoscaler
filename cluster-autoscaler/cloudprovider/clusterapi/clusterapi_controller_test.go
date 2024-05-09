@@ -76,7 +76,7 @@ type testSpec struct {
 const customCAPIGroup = "custom.x-k8s.io"
 const fifteenSecondDuration = time.Second * 15
 
-func mustCreateTestController(t *testing.T, testConfigs ...*testConfig) (*machineController, testControllerShutdownFunc) {
+func mustCreateTestController(t testing.TB, testConfigs ...*testConfig) (*machineController, testControllerShutdownFunc) {
 	t.Helper()
 
 	nodeObjects := make([]runtime.Object, 0)
@@ -492,7 +492,7 @@ func makeLinkedNodeAndMachine(i int, namespace, clusterName string, owner metav1
 	return node, machine
 }
 
-func addTestConfigs(t *testing.T, controller *machineController, testConfigs ...*testConfig) error {
+func addTestConfigs(t testing.TB, controller *machineController, testConfigs ...*testConfig) error {
 	t.Helper()
 
 	for _, config := range testConfigs {
