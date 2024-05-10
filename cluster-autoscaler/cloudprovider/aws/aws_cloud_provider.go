@@ -288,22 +288,46 @@ func (ng *AwsNodeGroup) AtomicIncreaseSize(delta int) error {
 // DecreaseTargetSize decreases the target size of the node group. This function
 // doesn't permit to delete any existing node and can be used only to reduce the
 // request for new nodes that have not been yet fulfilled. Delta should be negative.
-// It is assumed that cloud provider will not delete the existing nodes if the size
-// when there is an option to just decrease the target.
+// It is assumed that the cloud provider will not delete the existing nodes if there is an
+// option to just decrease the target.
 func (ng *AwsNodeGroup) DecreaseTargetSize(delta int) error {
+	// Ensure that the delta is negative to prevent an increase in size
 	if delta >= 0 {
-		return fmt.Errorf("size decrease size must be negative")
+		return fmt.Errorf("size decrease must be negative")
 	}
 
+	// Get the current size of the ASG
 	size := ng.asg.curSize
+
+	// Retrieve all nodes of the ASG
 	nodes, err := ng.awsManager.GetAsgNodes(ng.asg.AwsRef)
 	if err != nil {
-		return err
+		return err // Error retrieving nodes
 	}
+
+	// Filter out any nodes that are marked as placeholders and cannot be fulfilled
+	filteredNodes := make([]AwsInstanceRef, 0)
+	for i := range nodes {
+		node := nodes[i]
+		instanceStatus, err := ng.awsManager.GetInstanceStatus(node)
+		if err != nil {
+			// Log if unable to get instance status but continue processing
+			klog.V(4).Infof("Could not get instance status, continuing anyways: %v", err)
+		} else if instanceStatus != nil && *instanceStatus == placeholderUnfulfillableStatus {
+			// Skip over placeholders that are unfulfillable
+			continue
+		}
+		filteredNodes = append(filteredNodes, node)
+	}
+	nodes = filteredNodes
+
+	// Check that the new size will not be less than the number of existing nodes
 	if int(size)+delta < len(nodes) {
 		return fmt.Errorf("attempt to delete existing nodes targetSize:%d delta:%d existingNodes: %d",
 			size, delta, len(nodes))
 	}
+
+	// Set the new size of the ASG
 	return ng.awsManager.SetAsgSize(ng.asg, size+delta)
 }
 
