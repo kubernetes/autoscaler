@@ -17,8 +17,6 @@ limitations under the License.
 package aws
 
 import (
-	"testing"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	apiv1 "k8s.io/api/core/v1"
@@ -27,6 +25,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/service/autoscaling"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"testing"
+	"time"
 )
 
 var testAwsManager = &AwsManager{
@@ -589,12 +589,30 @@ func TestDeleteNodesWithPlaceholder(t *testing.T) {
 		},
 	).Return(&autoscaling.DescribeScalingActivitiesOutput{}, nil)
 
+    a.On("DescribeScalingActivities",
+        &autoscaling.DescribeScalingActivitiesInput{
+            AutoScalingGroupName: aws.String("test-asg"),
+            MaxRecords:           aws.Int64(1),
+        },
+    ).Return(
+        &autoscaling.DescribeScalingActivitiesOutput{
+            Activities: []*autoscaling.Activity{
+                {
+                    StatusCode: aws.String("Successful"),
+                    StartTime:  aws.Time(time.Now().Add(-10 * time.Minute)),
+                },
+                {
+                    StatusCode: aws.String("Failed"),
+                    StartTime:  aws.Time(time.Now().Add(-30 * time.Minute)),
+                },
+            },
+        }, nil)
+
 	provider.Refresh()
 
 	initialSize, err := asgs[0].TargetSize()
 	assert.NoError(t, err)
 	assert.Equal(t, 2, initialSize)
-
 	node := &apiv1.Node{
 		Spec: apiv1.NodeSpec{
 			ProviderID: "aws:///us-east-1a/i-placeholder-test-asg-1",
@@ -602,12 +620,13 @@ func TestDeleteNodesWithPlaceholder(t *testing.T) {
 	}
 	err = asgs[0].DeleteNodes([]*apiv1.Node{node})
 	assert.NoError(t, err)
-	a.AssertNumberOfCalls(t, "SetDesiredCapacity", 1)
-	a.AssertNumberOfCalls(t, "DescribeAutoScalingGroupsPages", 1)
+        a.AssertNumberOfCalls(t, "SetDesiredCapacity", 1)
+        a.AssertNumberOfCalls(t, "DescribeAutoScalingGroupsPages", 1)
 
-	newSize, err := asgs[0].TargetSize()
-	assert.NoError(t, err)
-	assert.Equal(t, 1, newSize)
+        newSize, err := asgs[0].TargetSize()
+        assert.NoError(t, err)
+        assert.Equal(t, 1, newSize)
+
 }
 
 func TestDeleteNodesAfterMultipleRefreshes(t *testing.T) {

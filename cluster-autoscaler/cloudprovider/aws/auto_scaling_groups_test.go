@@ -166,3 +166,54 @@ func TestCreatePlaceholders(t *testing.T) {
 		})
 	}
 }
+
+func TestGetMostRecentScalingActivity(t *testing.T) {
+    a := &autoScalingMock{}
+    asgCache := &asgCache{
+        awsService: &awsWrapper{
+            autoScalingI: a,
+        },
+    }
+
+    asg := &asg{AwsRef: AwsRef{Name: "test-asg"}}
+
+    // Test case: Successful scaling activity
+    a.On("DescribeScalingActivities", &autoscaling.DescribeScalingActivitiesInput{
+        AutoScalingGroupName: aws.String("test-asg"),
+        MaxRecords:           aws.Int64(1),
+    }).Return(&autoscaling.DescribeScalingActivitiesOutput{
+        Activities: []*autoscaling.Activity{{StatusCode: aws.String("Successful")}},
+    }, nil).Once()
+
+    success, err := asgCache.getMostRecentScalingActivity(asg)
+    assert.NoError(t, err)
+    assert.True(t, success)
+
+    // Test case: Failed scaling activity
+    a.On("DescribeScalingActivities", &autoscaling.DescribeScalingActivitiesInput{
+        AutoScalingGroupName: aws.String("test-asg"),
+        MaxRecords:           aws.Int64(1),
+    }).Return(&autoscaling.DescribeScalingActivitiesOutput{
+        Activities: []*autoscaling.Activity{{StatusCode: aws.String("Failed")}},
+    }, nil).Once()
+
+    success, err = asgCache.getMostRecentScalingActivity(asg)
+    assert.NoError(t, err)
+    assert.False(t, success)
+
+    // Test case: No activities found
+    a.On("DescribeScalingActivities", &autoscaling.DescribeScalingActivitiesInput{
+        AutoScalingGroupName: aws.String("test-asg"),
+        MaxRecords:           aws.Int64(1),
+    }).Return(&autoscaling.DescribeScalingActivitiesOutput{
+        Activities: []*autoscaling.Activity{},
+    }, nil).Once()
+
+    success, err = asgCache.getMostRecentScalingActivity(asg)
+    assert.NoError(t, err)
+    assert.False(t, success)
+
+    // Verify that all expectations are met
+    a.AssertExpectations(t)
+}
+
