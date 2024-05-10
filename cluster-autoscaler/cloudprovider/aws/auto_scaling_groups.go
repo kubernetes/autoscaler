@@ -308,37 +308,37 @@ func (m *asgCache) DeleteInstances(instances []*AwsInstanceRef) error {
 		}
 	}
 
-    // Initialize the success flag for recent scaling activity.
-    var recentScalingActivitySuccess = false
-    var err error
+	// Initialize the success flag for recent scaling activity.
+	var recentScalingActivitySuccess = false
+	var err error
 
-    // Check if there are any placeholder instances in the list.
-    if m.HasPlaceholder(instances) {
-        // Log the check for placeholders in the ASG.
-        klog.V(4).Infof("Detected a placeholder instance, checking recent scaling activity for ASG %s", commonAsg.Name)
+	// Check if there are any placeholder instances in the list.
+	if m.HasPlaceholder(instances) {
+		// Log the check for placeholders in the ASG.
+		klog.V(4).Infof("Detected a placeholder instance, checking recent scaling activity for ASG %s", commonAsg.Name)
 
-        // Retrieve the most recent scaling activity to determine its success state.
-        recentScalingActivitySuccess, err = m.getMostRecentScalingActivity(commonAsg)
+		// Retrieve the most recent scaling activity to determine its success state.
+		recentScalingActivitySuccess, err = m.getMostRecentScalingActivity(commonAsg)
 
-        // Handle errors from retrieving scaling activity.
-        if err != nil {
-            // Log the error if the scaling activity check fails and return the error.
-            klog.Errorf("Error retrieving scaling activity for ASG %s: %v", commonAsg.Name, err)
-            return err  // Return error to prevent further processing with uncertain state information.
-        }
-    }
+		// Handle errors from retrieving scaling activity.
+		if err != nil {
+			// Log the error if the scaling activity check fails and return the error.
+			klog.Errorf("Error retrieving scaling activity for ASG %s: %v", commonAsg.Name, err)
+			return err // Return error to prevent further processing with uncertain state information.
+		}
+	}
 
-    for _, instance := range instances {
-        if m.isPlaceholderInstance(instance) {
-            if !recentScalingActivitySuccess {
-                // Log that scaling down due to unsuccessful recent activity
-                klog.V(4).Infof("Recent scaling activity unsuccessful; reducing ASG size for placeholder %s in ASG %s", instance.Name, commonAsg.Name)
-                m.decreaseAsgSizeByOneNoLock(commonAsg)
-                continue  // Continue to the next iteration after handling placeholder
-            }
-            klog.V(4).Infof("Skipping actions for placeholder %s in ASG %s due to successful recent scaling", instance.Name, commonAsg.Name)
-            continue
-        } else {
+	for _, instance := range instances {
+		if m.isPlaceholderInstance(instance) {
+			if !recentScalingActivitySuccess {
+				// Log that scaling down due to unsuccessful recent activity
+				klog.V(4).Infof("Recent scaling activity unsuccessful; reducing ASG size for placeholder %s in ASG %s", instance.Name, commonAsg.Name)
+				m.decreaseAsgSizeByOneNoLock(commonAsg)
+				continue // Continue to the next iteration after handling placeholder
+			}
+			klog.V(4).Infof("Skipping actions for placeholder %s in ASG %s due to successful recent scaling", instance.Name, commonAsg.Name)
+			continue
+		} else {
 			// check if the instance is already terminating - if it is, don't bother terminating again
 			// as doing so causes unnecessary API calls and can cause the curSize cached value to decrement
 			// unnecessarily.
@@ -376,42 +376,42 @@ func (m *asgCache) DeleteInstances(instances []*AwsInstanceRef) error {
 }
 
 func (m *asgCache) getMostRecentScalingActivity(asg *asg) (bool, error) {
-    input := &autoscaling.DescribeScalingActivitiesInput{
-        AutoScalingGroupName: aws.String(asg.Name),
-        MaxRecords:           aws.Int64(1),
-    }
+	input := &autoscaling.DescribeScalingActivitiesInput{
+		AutoScalingGroupName: aws.String(asg.Name),
+		MaxRecords:           aws.Int64(1),
+	}
 
-    var response *autoscaling.DescribeScalingActivitiesOutput
-    var err error
-    attempts := 3
+	var response *autoscaling.DescribeScalingActivitiesOutput
+	var err error
+	attempts := 3
 
-    for i := 0; i < attempts; i++ {
-        response, err = m.awsService.DescribeScalingActivities(input)
-        if err == nil {
-            break
-        }
-        klog.V(2).Infof("Failed to describe scaling activities, attempt %d/%d: %v", i+1, attempts, err)
-        time.Sleep(time.Second * 2)
-    }
+	for i := 0; i < attempts; i++ {
+		response, err = m.awsService.DescribeScalingActivities(input)
+		if err == nil {
+			break
+		}
+		klog.V(2).Infof("Failed to describe scaling activities, attempt %d/%d: %v", i+1, attempts, err)
+		time.Sleep(time.Second * 2)
+	}
 
-    if err != nil {
-        klog.Errorf("All attempts failed for DescribeScalingActivities: %v", err)
-        return false, err
-    }
+	if err != nil {
+		klog.Errorf("All attempts failed for DescribeScalingActivities: %v", err)
+		return false, err
+	}
 
-    if len(response.Activities) == 0 {
-        klog.Info("No scaling activities found for ASG:", asg.Name)
-        return false, nil
-    }
+	if len(response.Activities) == 0 {
+		klog.Info("No scaling activities found for ASG:", asg.Name)
+		return false, nil
+	}
 
-    lastActivity := response.Activities[0]
-    if *lastActivity.StatusCode == "Successful" {
-        klog.Infof("Most recent scaling activity for ASG %s was successful", asg.Name)
-        return true, nil
-    } else {
-        klog.Infof("Most recent scaling activity for ASG %s was not successful: %s", asg.Name, *lastActivity.StatusMessage)
-        return false, fmt.Errorf("most recent scaling activity for ASG %s was not successful: %s", asg.Name, *lastActivity.StatusMessage)
-    }
+	lastActivity := response.Activities[0]
+	if *lastActivity.StatusCode == "Successful" {
+		klog.Infof("Most recent scaling activity for ASG %s was successful", asg.Name)
+		return true, nil
+	} else {
+		klog.Infof("Most recent scaling activity for ASG %s was not successful: %s", asg.Name, *lastActivity.StatusMessage)
+		return false, fmt.Errorf("most recent scaling activity for ASG %s was not successful: %s", asg.Name, *lastActivity.StatusMessage)
+	}
 }
 
 // isPlaceholderInstance checks if the given instance is only a placeholder

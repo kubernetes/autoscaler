@@ -589,24 +589,24 @@ func TestDeleteNodesWithPlaceholder(t *testing.T) {
 		},
 	).Return(&autoscaling.DescribeScalingActivitiesOutput{}, nil)
 
-    a.On("DescribeScalingActivities",
-        &autoscaling.DescribeScalingActivitiesInput{
-            AutoScalingGroupName: aws.String("test-asg"),
-            MaxRecords:           aws.Int64(1),
-        },
-    ).Return(
-        &autoscaling.DescribeScalingActivitiesOutput{
-            Activities: []*autoscaling.Activity{
-                {
-                    StatusCode: aws.String("Successful"),
-                    StartTime:  aws.Time(time.Now().Add(-10 * time.Minute)),
-                },
-                {
-                    StatusCode: aws.String("Failed"),
-                    StartTime:  aws.Time(time.Now().Add(-30 * time.Minute)),
-                },
-            },
-        }, nil)
+	a.On("DescribeScalingActivities",
+		&autoscaling.DescribeScalingActivitiesInput{
+			AutoScalingGroupName: aws.String("test-asg"),
+			MaxRecords:           aws.Int64(1),
+		},
+	).Return(
+		&autoscaling.DescribeScalingActivitiesOutput{
+			Activities: []*autoscaling.Activity{
+				{
+					StatusCode: aws.String("Successful"),
+					StartTime:  aws.Time(time.Now().Add(-10 * time.Minute)),
+				},
+				{
+					StatusCode: aws.String("Failed"),
+					StartTime:  aws.Time(time.Now().Add(-30 * time.Minute)),
+				},
+			},
+		}, nil)
 
 	provider.Refresh()
 
@@ -620,12 +620,12 @@ func TestDeleteNodesWithPlaceholder(t *testing.T) {
 	}
 	err = asgs[0].DeleteNodes([]*apiv1.Node{node})
 	assert.NoError(t, err)
-        a.AssertNumberOfCalls(t, "SetDesiredCapacity", 1)
-        a.AssertNumberOfCalls(t, "DescribeAutoScalingGroupsPages", 1)
+	a.AssertNumberOfCalls(t, "SetDesiredCapacity", 1)
+	a.AssertNumberOfCalls(t, "DescribeAutoScalingGroupsPages", 1)
 
-        newSize, err := asgs[0].TargetSize()
-        assert.NoError(t, err)
-        assert.Equal(t, 1, newSize)
+	newSize, err := asgs[0].TargetSize()
+	assert.NoError(t, err)
+	assert.Equal(t, 1, newSize)
 
 }
 
