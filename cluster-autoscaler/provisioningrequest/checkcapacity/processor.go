@@ -23,7 +23,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1beta1"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/conditions"
+	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqclient"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
+	"k8s.io/klog/v2"
 )
 
 const (
@@ -36,11 +38,12 @@ const (
 type checkCapacityProcessor struct {
 	now        func() time.Time
 	maxUpdated int
+	client     *provreqclient.ProvisioningRequestClient
 }
 
 // NewCheckCapacityProcessor return ProvisioningRequestProcessor for Check-capacity ProvisioningClass.
-func NewCheckCapacityProcessor() *checkCapacityProcessor {
-	return &checkCapacityProcessor{now: time.Now, maxUpdated: defaultMaxUpdated}
+func NewCheckCapacityProcessor(client *provreqclient.ProvisioningRequestClient) *checkCapacityProcessor {
+	return &checkCapacityProcessor{now: time.Now, maxUpdated: defaultMaxUpdated, client: client}
 }
 
 // Process iterates over ProvisioningRequests and apply:
@@ -71,20 +74,21 @@ func (p *checkCapacityProcessor) Process(provReqs []*provreqwrapper.Provisioning
 			}
 		}
 	}
-	updated := 0
 	for _, provReq := range expiredProvReq {
-		if updated >= p.maxUpdated {
-			break
-		}
 		conditions.AddOrUpdateCondition(provReq, v1beta1.BookingExpired, metav1.ConditionTrue, conditions.CapacityReservationTimeExpiredReason, conditions.CapacityReservationTimeExpiredMsg, metav1.NewTime(p.now()))
-		updated++
+		_, updErr := p.client.UpdateProvisioningRequest(provReq.ProvisioningRequest)
+		if updErr != nil {
+			klog.Errorf("failed to add BookingExpired condition to ProvReq %s/%s, err: %v", provReq.Namespace, provReq.Name, updErr)
+			continue
+		}
 	}
 	for _, provReq := range failedProvReq {
-		if updated >= p.maxUpdated {
-			break
-		}
 		conditions.AddOrUpdateCondition(provReq, v1beta1.Failed, metav1.ConditionTrue, conditions.ExpiredReason, conditions.ExpiredMsg, metav1.NewTime(p.now()))
-		updated++
+		_, updErr := p.client.UpdateProvisioningRequest(provReq.ProvisioningRequest)
+		if updErr != nil {
+			klog.Errorf("failed to add Failed condition to ProvReq %s/%s, err: %v", provReq.Namespace, provReq.Name, updErr)
+			continue
+		}
 	}
 }
 

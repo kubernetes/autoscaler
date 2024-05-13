@@ -146,7 +146,7 @@ func TestProcess(t *testing.T) {
 		additionalPr := provreqclient.ProvisioningRequestWrapperForTesting("namespace", "additional")
 		additionalPr.CreationTimestamp = metav1.NewTime(weekAgo)
 		additionalPr.Spec.ProvisioningClassName = v1beta1.ProvisioningClassCheckCapacity
-		processor := checkCapacityProcessor{func() time.Time { return now }, 1}
+		processor := checkCapacityProcessor{func() time.Time { return now }, 1, provreqclient.NewFakeProvisioningRequestClient(nil, t, pr, additionalPr)}
 		processor.Process([]*provreqwrapper.ProvisioningRequest{pr, additionalPr})
 		assert.ElementsMatch(t, test.wantConditions, pr.Status.Conditions)
 		if len(test.conditions) == len(test.wantConditions) {
