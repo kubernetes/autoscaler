@@ -20,6 +20,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability"
 	pod_util "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
+	"k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // Rule is a drainability rule on how to handle mirror pods.
@@ -36,7 +37,7 @@ func (r *Rule) Name() string {
 }
 
 // Drainable decides what to do with mirror pods on node drain.
-func (Rule) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod) drainability.Status {
+func (Rule) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod, _ *framework.NodeInfo) drainability.Status {
 	if pod_util.IsMirrorPod(pod) {
 		return drainability.NewSkipStatus()
 	}

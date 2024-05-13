@@ -143,7 +143,7 @@ func TestDrainable(t *testing.T) {
 				RemainingPdbTracker: tracker,
 			}
 
-			got := New().Drainable(drainCtx, tc.pod)
+			got := New().Drainable(drainCtx, tc.pod, nil)
 			assert.Equal(t, tc.wantReason, got.BlockingReason)
 			assert.Equal(t, tc.wantOutcome, got.Outcome)
 		})
