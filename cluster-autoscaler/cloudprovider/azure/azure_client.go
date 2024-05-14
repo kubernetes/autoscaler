@@ -148,7 +148,7 @@ func (az *azDeploymentsClient) Delete(ctx context.Context, resourceGroupName, de
 	return future.Response(), err
 }
 
-//go:generate sh -c "mockgen k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure AgentPoolsClient >./mock_agentpool_client/agentpool_client.go"
+//go:generate sh -c "mockgen k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure AgentPoolsClient >./agentpool_client.go"
 
 // AgentPoolsClient interface defines the methods needed for scaling vms pool.
 // it is implemented by track2 sdk armcontainerservice.AgentPoolsClient
