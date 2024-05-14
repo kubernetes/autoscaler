@@ -17,54 +17,46 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package slogr enables usage of a slog.Handler with logr.Logger as front-end
-// API and of a logr.LogSink through the slog.Handler and thus slog.Logger
-// APIs.
-//
-// See the README in the top-level [./logr] package for a discussion of
-// interoperability.
-package slogr
+package logr
 
 import (
 	"context"
 	"log/slog"
-
-	"github.com/go-logr/logr"
 )
 
-// NewLogr returns a logr.Logger which writes to the slog.Handler.
+// FromSlogHandler returns a Logger which writes to the slog.Handler.
 //
 // The logr verbosity level is mapped to slog levels such that V(0) becomes
 // slog.LevelInfo and V(4) becomes slog.LevelDebug.
-func NewLogr(handler slog.Handler) logr.Logger {
+func FromSlogHandler(handler slog.Handler) Logger {
 	if handler, ok := handler.(*slogHandler); ok {
 		if handler.sink == nil {
-			return logr.Discard()
+			return Discard()
 		}
-		return logr.New(handler.sink).V(int(handler.levelBias))
+		return New(handler.sink).V(int(handler.levelBias))
 	}
-	return logr.New(&slogSink{handler: handler})
+	return New(&slogSink{handler: handler})
 }
 
-// NewSlogHandler returns a slog.Handler which writes to the same sink as the logr.Logger.
+// ToSlogHandler returns a slog.Handler which writes to the same sink as the Logger.
 //
 // The returned logger writes all records with level >= slog.LevelError as
 // error log entries with LogSink.Error, regardless of the verbosity level of
-// the logr.Logger:
+// the Logger:
 //
-//	logger := <some logr.Logger with 0 as verbosity level>
-//	slog.New(NewSlogHandler(logger.V(10))).Error(...) -> logSink.Error(...)
+//	logger := <some Logger with 0 as verbosity level>
+//	slog.New(ToSlogHandler(logger.V(10))).Error(...) -> logSink.Error(...)
 //
 // The level of all other records gets reduced by the verbosity
-// level of the logr.Logger and the result is negated. If it happens
+// level of the Logger and the result is negated. If it happens
 // to be negative, then it gets replaced by zero because a LogSink
 // is not expected to handled negative levels:
 //
-//	slog.New(NewSlogHandler(logger)).Debug(...) -> logger.GetSink().Info(level=4, ...)
-//	slog.New(NewSlogHandler(logger)).Warning(...) -> logger.GetSink().Info(level=0, ...)
-//	slog.New(NewSlogHandler(logger)).Info(...) -> logger.GetSink().Info(level=0, ...)
-//	slog.New(NewSlogHandler(logger.V(4))).Info(...) -> logger.GetSink().Info(level=4, ...)
-func NewSlogHandler(logger logr.Logger) slog.Handler {
+//	slog.New(ToSlogHandler(logger)).Debug(...) -> logger.GetSink().Info(level=4, ...)
+//	slog.New(ToSlogHandler(logger)).Warning(...) -> logger.GetSink().Info(level=0, ...)
+//	slog.New(ToSlogHandler(logger)).Info(...) -> logger.GetSink().Info(level=0, ...)
+//	slog.New(ToSlogHandler(logger.V(4))).Info(...) -> logger.GetSink().Info(level=4, ...)
+func ToSlogHandler(logger Logger) slog.Handler {
 	if sink, ok := logger.GetSink().(*slogSink); ok && logger.GetV() == 0 {
 		return sink.handler
 	}
@@ -87,7 +79,7 @@ func NewSlogHandler(logger logr.Logger) slog.Handler {
 //   - verbosity levels > slog.LevelInfo can be recorded
 //   - less overhead
 //
-// Both APIs (logr.Logger and slog.Logger/Handler) then are supported equally
+// Both APIs (Logger and slog.Logger/Handler) then are supported equally
 // well. Developers can pick whatever API suits them better and/or mix
 // packages which use either API in the same binary with a common logging
 // implementation.
@@ -97,10 +89,10 @@ func NewSlogHandler(logger logr.Logger) slog.Handler {
 // different prototype of the common Enabled method.
 //
 // An implementation could support both interfaces in two different types, but then
-// additional interfaces would be needed to convert between those types in NewLogr
-// and NewSlogHandler.
+// additional interfaces would be needed to convert between those types in FromSlogHandler
+// and ToSlogHandler.
 type SlogSink interface {
-	logr.LogSink
+	LogSink
 
 	Handle(ctx context.Context, record slog.Record) error
 	WithAttrs(attrs []slog.Attr) SlogSink
