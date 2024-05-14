@@ -168,7 +168,9 @@ func updateResources(k8s KubernetesClient, est ResourceEstimator, now, lastChang
 	// If there's a difference, go ahead and set the new values.
 	overwriteRes, op := shouldOverwriteResources(int64(threshold), resources.Limits, resources.Requests, expResources.Limits, expResources.Requests)
 	if !overwriteRes {
-		klog.V(4).Infof("Resources are within the expected limits. Actual: %+v Expected: %+v", jsonOrValue(*resources), jsonOrValue(*expResources))
+		if klog.V(4).Enabled() {
+			klog.V(4).Infof("Resources are within the expected limits. Actual: %+v Expected: %+v", jsonOrValue(*resources), jsonOrValue(*expResources))
+		}
 		return noChange
 	}
 
