@@ -349,6 +349,9 @@ func TestCreateAzureManagerWithNilConfig(t *testing.T) {
 		TenantID:                     "tenantId",
 		SubscriptionID:               "subscriptionId",
 		ResourceGroup:                "resourceGroup",
+		ClusterName:                  "mycluster",
+		ClusterResourceGroup:         "myrg",
+		ARMBaseURL:                   "nodeprovisioner-svc.nodeprovisioner.svc.cluster.local",
 		VMType:                       "vmss",
 		AADClientID:                  "aadClientId",
 		AADClientSecret:              "aadClientSecret",
@@ -446,6 +449,9 @@ func TestCreateAzureManagerWithNilConfig(t *testing.T) {
 	t.Setenv("BACKOFF_DURATION", "1")
 	t.Setenv("BACKOFF_JITTER", "1")
 	t.Setenv("CLOUD_PROVIDER_RATE_LIMIT", "true")
+	t.Setenv("CLUSTER_NAME", "mycluster")
+	t.Setenv("ARM_CLUSTER_RESOURCE_GROUP", "myrg")
+	t.Setenv("ARM_BASE_URL", "nodeprovisioner-svc.nodeprovisioner.svc.cluster.local")
 
 	t.Run("environment variables correctly set", func(t *testing.T) {
 		manager, err := createAzureManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)
