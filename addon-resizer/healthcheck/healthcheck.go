@@ -22,7 +22,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/golang/glog"
+	"k8s.io/klog/v2"
 )
 
 // HealthCheck contains information about last activity time of the monitored component.
@@ -51,7 +51,7 @@ func (hc *HealthCheck) Serve() {
 	go func() {
 		http.Handle("/health-check", hc)
 		err := http.ListenAndServe(hc.address, nil)
-		glog.Fatalf("Failed to start health check: %v", err)
+		klog.Fatalf("Failed to start health check: %v", err)
 	}()
 }
 
@@ -77,7 +77,7 @@ func (hc *HealthCheck) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(200)
 	_, err := w.Write([]byte("OK"))
 	if err != nil {
-		glog.Fatalf("Failed to write response message: %v", err)
+		klog.Fatalf("Failed to write response message: %v", err)
 	}
 }
 

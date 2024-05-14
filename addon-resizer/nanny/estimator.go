@@ -19,9 +19,9 @@ package nanny
 import (
 	"fmt"
 
-	log "github.com/golang/glog"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/klog/v2"
 )
 
 const (
@@ -101,7 +101,7 @@ func computeResourceOverheadValueString(clusterSize uint64, resource Resource) s
 	var perResourceUnit string
 	_, err := fmt.Sscanf(perResourceOverhead, "%f%s", &perResourceValue, &perResourceUnit)
 	if err != nil && err.Error() != "EOF" {
-		log.Warningf(
+		klog.Warningf(
 			"Failed to parse the per resource overhead string '%s'; error=%s",
 			perResourceOverhead, err)
 		// Default to not specifying any unit to maintain existing

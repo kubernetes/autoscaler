@@ -18,7 +18,6 @@ package nanny
 
 import (
 	"context"
-	"github.com/golang/glog"
 	"os"
 	"time"
 
@@ -29,6 +28,7 @@ import (
 	"k8s.io/client-go/tools/leaderelection"
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
 	"k8s.io/client-go/tools/record"
+	"k8s.io/klog/v2"
 )
 
 // Config is the leader configuration.
@@ -55,7 +55,7 @@ func LeadOrDie(cfg Config, clientset kubernetes.Interface, doLead func()) {
 
 	hostname, err := os.Hostname()
 	if err != nil {
-		glog.Fatalf("Unable to get hostname: %v", err)
+		klog.Fatalf("Unable to get hostname: %v", err)
 	}
 
 	lock, err := resourcelock.New(
@@ -70,7 +70,7 @@ func LeadOrDie(cfg Config, clientset kubernetes.Interface, doLead func()) {
 		},
 	)
 	if err != nil {
-		glog.Fatalf("Unable to create leader election lock: %v", err)
+		klog.Fatalf("Unable to create leader election lock: %v", err)
 	}
 
 	leaderelection.RunOrDie(context.TODO(), leaderelection.LeaderElectionConfig{
@@ -80,11 +80,11 @@ func LeadOrDie(cfg Config, clientset kubernetes.Interface, doLead func()) {
 		RetryPeriod:   cfg.RetryPeriod,
 		Callbacks: leaderelection.LeaderCallbacks{
 			OnStartedLeading: func(_ context.Context) {
-				glog.Info("Started leading.")
+				klog.Info("Started leading.")
 				doLead()
 			},
 			OnStoppedLeading: func() {
-				glog.Fatalf("Lost leadership.")
+				klog.Fatalf("Lost leadership.")
 			},
 		},
 	})
