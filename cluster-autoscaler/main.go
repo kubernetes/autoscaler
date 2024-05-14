@@ -33,6 +33,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/loop"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/checkcapacity"
+	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqclient"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	kubelet_config "k8s.io/kubernetes/pkg/kubelet/apis/config"
 
@@ -504,7 +505,11 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 		scaleUpOrchestrator := provreqorchestrator.NewWrapperOrchestrator(provreqOrchestrator)
 
 		opts.ScaleUpOrchestrator = scaleUpOrchestrator
-		provreqProcesor, err := provreq.NewCombinedProvReqProcessor(restConfig, []provreq.ProvisioningRequestProcessor{checkcapacity.NewCheckCapacityProcessor()})
+		client, err := provreqclient.NewProvisioningRequestClient(restConfig)
+		if err != nil {
+			return nil, err
+		}
+		provreqProcesor := provreq.NewCombinedProvReqProcessor(client, []provreq.ProvisioningRequestProcessor{checkcapacity.NewCheckCapacityProcessor(client)})
 		if err != nil {
 			return nil, err
 		}
