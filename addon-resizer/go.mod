@@ -3,7 +3,6 @@ module k8s.io/autoscaler/addon-resizer
 go 1.21
 
 require (
-	github.com/golang/glog v1.2.1
 	github.com/google/go-cmp v0.6.0
 	github.com/prometheus/client_model v0.6.1
 	github.com/prometheus/common v0.52.3
@@ -12,6 +11,7 @@ require (
 	k8s.io/api v0.29.4
 	k8s.io/apimachinery v0.29.4
 	k8s.io/client-go v0.29.4
+	k8s.io/klog/v2 v2.110.1
 )
 
 require (
@@ -46,7 +46,6 @@ require (
 	google.golang.org/protobuf v1.33.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/klog/v2 v2.110.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20231010175941-2dd684a91f00 // indirect
 	k8s.io/utils v0.0.0-20230726121419-3b25d923346b // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect

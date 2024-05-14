@@ -24,10 +24,10 @@ import (
 	"encoding/json"
 	"time"
 
-	log "github.com/golang/glog"
 	inf "gopkg.in/inf.v0"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/addon-resizer/healthcheck"
+	"k8s.io/klog/v2"
 )
 
 type operation int
@@ -121,7 +121,7 @@ func PollAPIServer(k8s KubernetesClient, est ResourceEstimator, hc *healthcheck.
 		if runOnControlPlane {
 			resources, err := nannyConfigUpdater.CurrentResources()
 			if err != nil {
-				log.Fatal(err)
+				klog.Fatal(err)
 			}
 			est = est.updatedResourceEstimator(resources)
 		}
@@ -150,15 +150,15 @@ func updateResources(k8s KubernetesClient, est ResourceEstimator, now, lastChang
 	}
 
 	if err != nil {
-		log.Error(err)
+		klog.Error(err)
 		return noChange
 	}
-	log.V(4).Infof("The cluster size is %d", num)
+	klog.V(4).Infof("The cluster size is %d", num)
 
 	// Query the apiserver for this pod's information.
 	resources, err := k8s.ContainerResources()
 	if err != nil {
-		log.Errorf("Error while querying apiserver for resources: %v", err)
+		klog.Errorf("Error while querying apiserver for resources: %v", err)
 		return noChange
 	}
 
@@ -168,8 +168,8 @@ func updateResources(k8s KubernetesClient, est ResourceEstimator, now, lastChang
 	// If there's a difference, go ahead and set the new values.
 	overwriteRes, op := shouldOverwriteResources(int64(threshold), resources.Limits, resources.Requests, expResources.Limits, expResources.Requests)
 	if !overwriteRes {
-		if log.V(4) {
-			log.V(4).Infof("Resources are within the expected limits. Actual: %+v Expected: %+v", jsonOrValue(*resources), jsonOrValue(*expResources))
+		if klog.V(4).Enabled() {
+			klog.V(4).Infof("Resources are within the expected limits. Actual: %+v Expected: %+v", jsonOrValue(*resources), jsonOrValue(*expResources))
 		}
 		return noChange
 	}
@@ -177,14 +177,14 @@ func updateResources(k8s KubernetesClient, est ResourceEstimator, now, lastChang
 	if (op == scaleDown && now.Before(lastChange.Add(scaleDownDelay))) ||
 		(op == scaleUp && now.Before(lastChange.Add(scaleUpDelay))) {
 		if prevResult != postpone {
-			log.Infof("Resources are not within the expected limits, Actual: %+v, accepted range: %+v. Skipping resource update because of scale up/down delay", jsonOrValue(*resources), jsonOrValue(*expResources))
+			klog.Infof("Resources are not within the expected limits, Actual: %+v, accepted range: %+v. Skipping resource update because of scale up/down delay", jsonOrValue(*resources), jsonOrValue(*expResources))
 		}
 		return postpone
 	}
 
-	log.Infof("Resources are not within the expected limits, updating the deployment. Actual: %+v Expected: %+v. Resource will be updated.", jsonOrValue(*resources), jsonOrValue(*expResources))
+	klog.Infof("Resources are not within the expected limits, updating the deployment. Actual: %+v Expected: %+v. Resource will be updated.", jsonOrValue(*resources), jsonOrValue(*expResources))
 	if err := k8s.UpdateDeployment(expResources); err != nil {
-		log.Error(err)
+		klog.Error(err)
 		return noChange
 	}
 	return overwrite

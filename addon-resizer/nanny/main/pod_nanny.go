@@ -30,7 +30,6 @@ import (
 
 	"path/filepath"
 
-	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -41,6 +40,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/klog/v2"
 )
 
 var (
@@ -80,25 +80,25 @@ var (
 
 func main() {
 	// First log our starting config, and then set up.
-	glog.Infof("Invoked by %v", os.Args)
-	glog.Infof("Version: %s", nanny.AddonResizerVersion)
+	klog.Infof("Invoked by %v", os.Args)
+	klog.Infof("Version: %s", nanny.AddonResizerVersion)
 	flag.Parse()
 
 	// Perform further validation of flags.
 	if *deployment == "" {
-		glog.Fatal("Must specify a deployment.")
+		klog.Fatal("Must specify a deployment.")
 	}
 
 	if *threshold < 0 || *threshold > 100 {
-		glog.Fatalf("Threshold must be between 0 and 100 inclusive. It is %d.", *threshold)
+		klog.Fatalf("Threshold must be between 0 and 100 inclusive. It is %d.", *threshold)
 	}
 
 	if *minClusterSize < 2 {
-		glog.Fatalf("minClusterSize must be greater than 1. It is set to %d.", *minClusterSize)
+		klog.Fatalf("minClusterSize must be greater than 1. It is set to %d.", *minClusterSize)
 	}
 
-	glog.Infof("Watching namespace: %s, pod: %s, container: %s.", *podNamespace, *podName, *containerName)
-	glog.Infof("storage: %s, extra_storage: %s", *baseStorage, *storagePerResource)
+	klog.Infof("Watching namespace: %s, pod: %s, container: %s.", *podNamespace, *podName, *containerName)
+	klog.Infof("storage: %s, extra_storage: %s", *baseStorage, *storagePerResource)
 
 	// Set up work objects.
 	config := kubeconfig(*kubeconfigPath)
@@ -108,7 +108,7 @@ func main() {
 
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		glog.Fatal(err)
+		klog.Fatal(err)
 	}
 	// Use protobufs to improve performance.
 	config.ContentType = "application/vnd.kubernetes.protobuf"
@@ -130,9 +130,9 @@ func main() {
 	} else {
 		nannycfg, err := loadNannyConfiguration(*configDir, nannyConfigurationFromFlags)
 		if err != nil {
-			glog.Fatal(err)
+			klog.Fatal(err)
 		}
-		glog.Infof("cpu: %s, extra_cpu: %s, memory: %s, extra_memory: %s", nannycfg.BaseCPU, nannycfg.CPUPerNode, nannycfg.BaseMemory, nannycfg.MemoryPerNode)
+		klog.Infof("cpu: %s, extra_cpu: %s, memory: %s, extra_memory: %s", nannycfg.BaseCPU, nannycfg.CPUPerNode, nannycfg.BaseMemory, nannycfg.MemoryPerNode)
 		resources = updateResources(nannycfg, *baseStorage)
 	}
 
@@ -148,11 +148,11 @@ func main() {
 			MinClusterSize: *minClusterSize,
 		}
 	} else {
-		glog.Fatalf("Estimator %s not supported", *estimator)
+		klog.Fatalf("Estimator %s not supported", *estimator)
 	}
 
 	if *scalingMode != nanny.NodeProportional && *scalingMode != nanny.ContainerProportional {
-		glog.Fatalf("scaling mode %s not supported", *scalingMode)
+		klog.Fatalf("scaling mode %s not supported", *scalingMode)
 	}
 
 	period := time.Duration(*pollPeriod) * time.Millisecond
@@ -167,7 +167,7 @@ func main() {
 	if !*runOnControlPlane || !*leaderElectionEnable {
 		start()
 	} else {
-		glog.Info("Leader Election Enabled.")
+		klog.Info("Leader Election Enabled.")
 		nanny.LeadOrDie(
 			nanny.Config{
 				LeaseDuration:   *leaderElectionLeaseDuration,
@@ -202,10 +202,10 @@ func loadNannyConfiguration(configDir string, defaultConfig *nannyconfigalpha.Na
 	configMapConfig := &nannyconfigalpha.NannyConfiguration{}
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
-		glog.V(0).Infof("Failed to read data from config file %q: %v, using default parameters", path, err)
+		klog.V(0).Infof("Failed to read data from config file %q: %v, using default parameters", path, err)
 	} else if configMapConfig, err = decodeNannyConfiguration(data, codecs); err != nil {
 		configMapConfig = &nannyconfigalpha.NannyConfiguration{}
-		glog.V(0).Infof("Unable to decode Nanny Configuration from config map, using default parameters")
+		klog.V(0).Infof("Unable to decode Nanny Configuration from config map, using default parameters")
 	}
 	nannyconfigalpha.SetDefaults_NannyConfiguration(configMapConfig)
 	// overwrite defaults with config map parameters
@@ -266,7 +266,7 @@ func updateResources(nannycfg *nannyconfig.NannyConfiguration, baseStorage strin
 		})
 	}
 
-	glog.Infof("Resources: %+v", resources)
+	klog.Infof("Resources: %+v", resources)
 	return resources
 }
 
@@ -305,13 +305,13 @@ func (n *nannyConfigUpdater) CurrentResources() ([]nanny.Resource, error) {
 
 	nannycfg, err := n.clientset.CoreV1().ConfigMaps(n.namespace).Get(context.Background(), n.nannyConfigMapName, metav1.GetOptions{})
 	if err != nil {
-		glog.V(0).Infof("Failed to get config map %s: %v, using default parameters", n.nannyConfigMapName, err)
+		klog.V(0).Infof("Failed to get config map %s: %v, using default parameters", n.nannyConfigMapName, err)
 	} else {
 		data := []byte(nannycfg.Data["NannyConfiguration"])
 		configMapConfig, err = decodeNannyConfiguration(data, codecs)
 		if err != nil {
 			configMapConfig = &nannyconfigalpha.NannyConfiguration{}
-			glog.V(0).Infof("Unable to decode Nanny Configuration from config map, using default parameters: %v", err)
+			klog.V(0).Infof("Unable to decode Nanny Configuration from config map, using default parameters: %v", err)
 		}
 	}
 
@@ -325,14 +325,14 @@ func kubeconfig(configPath string) *rest.Config {
 	var config *rest.Config
 	var err error
 	if configPath == "" {
-		glog.V(1).Info("Using InClusterConfig")
+		klog.V(1).Info("Using InClusterConfig")
 		config, err = rest.InClusterConfig()
 	} else {
-		glog.V(1).Infof("Using kubeconfig file: %s", configPath)
+		klog.V(1).Infof("Using kubeconfig file: %s", configPath)
 		config, err = clientcmd.BuildConfigFromFlags("", configPath)
 	}
 	if err != nil {
-		glog.Fatal(err)
+		klog.Fatal(err)
 	}
 	return config
 }
