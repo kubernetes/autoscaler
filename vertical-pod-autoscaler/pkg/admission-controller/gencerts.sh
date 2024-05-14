@@ -23,6 +23,7 @@ set -o pipefail
 
 CN_BASE="vpa_webhook"
 TMP_DIR="/tmp/vpa-certs"
+NAMESPACE="kube-system"
 
 echo "Generating certs for the VPA Admission Controller in ${TMP_DIR}."
 mkdir -p ${TMP_DIR}
@@ -35,7 +36,7 @@ distinguished_name = req_distinguished_name
 basicConstraints = CA:FALSE
 keyUsage = nonRepudiation, digitalSignature, keyEncipherment
 extendedKeyUsage = clientAuth, serverAuth
-subjectAltName = DNS:vpa-webhook.kube-system.svc
+subjectAltName = DNS:vpa-webhook.${NAMESPACE}.svc
 EOF
 
 # Create a certificate authority
@@ -51,11 +52,11 @@ set -o errexit
 # Create a server certificate
 openssl genrsa -out ${TMP_DIR}/serverKey.pem 2048
 # Note the CN is the DNS name of the service of the webhook.
-openssl req -new -key ${TMP_DIR}/serverKey.pem -out ${TMP_DIR}/server.csr -subj "/CN=vpa-webhook.kube-system.svc" -config ${TMP_DIR}/server.conf
+openssl req -new -key ${TMP_DIR}/serverKey.pem -out ${TMP_DIR}/server.csr -subj "/CN=vpa-webhook.${NAMESPACE}.svc" -config ${TMP_DIR}/server.conf
 openssl x509 -req -in ${TMP_DIR}/server.csr -CA ${TMP_DIR}/caCert.pem -CAkey ${TMP_DIR}/caKey.pem -CAcreateserial -out ${TMP_DIR}/serverCert.pem -days 100000 -extensions SAN -extensions v3_req -extfile ${TMP_DIR}/server.conf
 
 echo "Uploading certs to the cluster."
-kubectl create secret --namespace=kube-system generic vpa-tls-certs --from-file=${TMP_DIR}/caKey.pem --from-file=${TMP_DIR}/caCert.pem --from-file=${TMP_DIR}/serverKey.pem --from-file=${TMP_DIR}/serverCert.pem
+kubectl create secret --namespace=${NAMESPACE} generic vpa-tls-certs --from-file=${TMP_DIR}/caKey.pem --from-file=${TMP_DIR}/caCert.pem --from-file=${TMP_DIR}/serverKey.pem --from-file=${TMP_DIR}/serverCert.pem
 
 # Clean up after we're done.
 echo "Deleting ${TMP_DIR}."
