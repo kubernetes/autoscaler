@@ -142,10 +142,11 @@ func main() {
 		TLSConfig: configTLS(certs.serverCert, certs.serverKey, *minTlsVersion, *ciphers),
 	}
 	url := fmt.Sprintf("%v:%v", *webhookAddress, *webhookPort)
+	selectedNamespaces := strings.Split(*vpaObjectNamespace, ",")
 	ignoredNamespaces := strings.Split(*ignoredVpaObjectNamespaces, ",")
 	go func() {
 		if *registerWebhook {
-			selfRegistration(kubeClient, certs.caCert, namespace, *serviceName, url, *registerByURL, int32(*webhookTimeout), ignoredNamespaces)
+			selfRegistration(kubeClient, certs.caCert, namespace, *serviceName, url, *registerByURL, int32(*webhookTimeout), selectedNamespaces, ignoredNamespaces)
 		}
 		// Start status updates after the webhook is initialized.
 		statusUpdater.Run(stopCh)
