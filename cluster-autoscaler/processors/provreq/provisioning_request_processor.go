@@ -20,7 +20,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/observers/loopstart"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqclient"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
-	"k8s.io/client-go/rest"
 	"k8s.io/klog/v2"
 )
 
@@ -38,12 +37,8 @@ type CombinedProvReqProcessor struct {
 }
 
 // NewCombinedProvReqProcessor return new CombinedProvReqProcessor.
-func NewCombinedProvReqProcessor(kubeConfig *rest.Config, processors []ProvisioningRequestProcessor) (loopstart.Observer, error) {
-	client, err := provreqclient.NewProvisioningRequestClient(kubeConfig)
-	if err != nil {
-		return nil, err
-	}
-	return &CombinedProvReqProcessor{client: client, processors: processors}, nil
+func NewCombinedProvReqProcessor(client *provreqclient.ProvisioningRequestClient, processors []ProvisioningRequestProcessor) loopstart.Observer {
+	return &CombinedProvReqProcessor{client: client, processors: processors}
 }
 
 // Refresh iterates over ProvisioningRequests and updates its conditions/state.

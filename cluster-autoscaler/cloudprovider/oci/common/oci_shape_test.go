@@ -95,9 +95,10 @@ func TestNodePoolGetShape(t *testing.T) {
 		"basic shape": {
 			shape: "VM.Standard1.2",
 			expected: &Shape{
-				CPU:           4,
-				MemoryInBytes: 16 * 1024 * 1024 * 1024,
-				GPU:           0,
+				CPU:                     4,
+				MemoryInBytes:           16 * 1024 * 1024 * 1024,
+				GPU:                     0,
+				EphemeralStorageInBytes: -1,
 			},
 		},
 		"flex shape": {
@@ -107,9 +108,10 @@ func TestNodePoolGetShape(t *testing.T) {
 				MemoryInGBs: common.Float32(64),
 			},
 			expected: &Shape{
-				CPU:           8,
-				MemoryInBytes: 4 * 16 * 1024 * 1024 * 1024,
-				GPU:           0,
+				CPU:                     8,
+				MemoryInBytes:           4 * 16 * 1024 * 1024 * 1024,
+				GPU:                     0,
+				EphemeralStorageInBytes: -1,
 			},
 		},
 	}
@@ -118,7 +120,7 @@ func TestNodePoolGetShape(t *testing.T) {
 		shapeGetter := CreateShapeGetter(shapeClient)
 
 		t.Run(name, func(t *testing.T) {
-			shape, err := shapeGetter.GetNodePoolShape(&oke.NodePool{NodeShape: &tc.shape, NodeShapeConfig: tc.shapeConfig})
+			shape, err := shapeGetter.GetNodePoolShape(&oke.NodePool{NodeShape: &tc.shape, NodeShapeConfig: tc.shapeConfig}, -1)
 			if err != nil {
 				t.Fatal(err)
 			}

@@ -577,7 +577,7 @@ different strategies can be selected for choosing which node group is increased.
 
 It may take some time before the created nodes appear in Kubernetes. It almost entirely
 depends on the cloud provider and the speed of node provisioning, including the
-[TLS bootstrapping process](https://kubernetes.io/docs/reference/command-line-tools-reference/kubelet-tls-bootstrapping/).
+[TLS bootstrapping process](https://kubernetes.io/docs/reference/access-authn-authz/kubelet-tls-bootstrapping/).
 Cluster Autoscaler expects requested nodes to appear within 15 minutes
 (configured by `--max-node-provision-time` flag.) After this time, if they are
 still unregistered, it stops considering them in simulations and may attempt to scale up a
@@ -736,6 +736,8 @@ smaller nodes at once.
 
 * `least-waste` - selects the node group that will have the least idle CPU (if tied, unused memory)
 after scale-up. This is useful when you have different classes of nodes, for example, high CPU or high memory nodes, and only want to expand those when there are pending pods that need a lot of those resources.
+
+* `least-nodes` - selects the node group that will use the least number of nodes after scale-up. This is useful when you want to minimize the number of nodes in the cluster and instead opt for fewer larger nodes. Useful when chained with the `most-pods` expander before it to ensure that the node group selected can fit the most pods on the fewest nodes.
 
 * `price` - select the node group that will cost the least and, at the same time, whose machines
 would match the cluster size. This expander is described in more details

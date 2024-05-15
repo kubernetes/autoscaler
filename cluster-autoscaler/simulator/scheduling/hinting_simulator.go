@@ -68,10 +68,7 @@ func (s *HintingSimulator) TrySchedulePods(clusterSnapshot clustersnapshot.Clust
 		}
 
 		if nodeName == "" {
-			nodeName, err = s.findNode(similarPods, clusterSnapshot, pod, loggingQuota, isNodeAcceptable)
-			if err != nil {
-				return nil, 0, err
-			}
+			nodeName = s.findNode(similarPods, clusterSnapshot, pod, loggingQuota, isNodeAcceptable)
 		}
 
 		if nodeName != "" {
@@ -107,21 +104,21 @@ func (s *HintingSimulator) findNodeWithHints(clusterSnapshot clustersnapshot.Clu
 	return "", nil
 }
 
-func (s *HintingSimulator) findNode(similarPods *SimilarPodsScheduling, clusterSnapshot clustersnapshot.ClusterSnapshot, pod *apiv1.Pod, loggingQuota *klogx.Quota, isNodeAcceptable func(*schedulerframework.NodeInfo) bool) (string, error) {
+func (s *HintingSimulator) findNode(similarPods *SimilarPodsScheduling, clusterSnapshot clustersnapshot.ClusterSnapshot, pod *apiv1.Pod, loggingQuota *klogx.Quota, isNodeAcceptable func(*schedulerframework.NodeInfo) bool) string {
 	if similarPods.IsSimilarUnschedulable(pod) {
 		klogx.V(4).UpTo(loggingQuota).Infof("failed to find place for %s/%s based on similar pods scheduling", pod.Namespace, pod.Name)
-		return "", nil
+		return ""
 	}
 
 	newNodeName, err := s.predicateChecker.FitsAnyNodeMatching(clusterSnapshot, pod, isNodeAcceptable)
 	if err != nil {
 		klogx.V(4).UpTo(loggingQuota).Infof("failed to find place for %s/%s: %v", pod.Namespace, pod.Name, err)
 		similarPods.SetUnschedulable(pod)
-		return "", nil
+		return ""
 	}
 
 	s.hints.Set(HintKeyFromPod(pod), newNodeName)
-	return newNodeName, nil
+	return newNodeName
 }
 
 // DropOldHints drops old scheduling hints.
