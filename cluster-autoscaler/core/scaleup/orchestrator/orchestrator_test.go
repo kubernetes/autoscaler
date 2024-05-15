@@ -861,6 +861,37 @@ func TestNoCreateNodeGroupMaxCoresLimitHit(t *testing.T) {
 	simpleNoScaleUpTest(t, config, results)
 }
 
+func TestAllOrNothing(t *testing.T) {
+	options := defaultOptions
+
+	extraPods := []PodConfig{}
+	extraPodNames := []string{}
+	for i := 0; i < 11; i++ {
+		podName := fmt.Sprintf("pod-%d", i)
+		extraPods = append(extraPods, PodConfig{Name: podName, Cpu: 1000, Memory: 100})
+		extraPodNames = append(extraPodNames, podName)
+	}
+
+	config := &ScaleUpTestConfig{
+		Nodes: []NodeConfig{
+			{Name: "n1", Cpu: 1000, Memory: 1000, Gpu: 0, Ready: true, Group: "ng"},
+		},
+		Pods:         []PodConfig{},
+		ExtraPods:    extraPods,
+		Options:      &options,
+		AllOrNothing: true,
+	}
+
+	result := &ScaleTestResults{
+		NoScaleUpReason: "all-or-nothing",
+		ScaleUpStatus: ScaleUpStatusInfo{
+			PodsRemainUnschedulable: extraPodNames,
+		},
+	}
+
+	simpleNoScaleUpTest(t, config, result)
+}
+
 func simpleScaleUpTest(t *testing.T, config *ScaleUpTestConfig, expectedResults *ScaleTestResults) {
 	results := runSimpleScaleUpTest(t, config)
 	assert.NotNil(t, results.GroupSizeChanges, "Expected scale up event")
@@ -1032,7 +1063,7 @@ func runSimpleScaleUpTest(t *testing.T, config *ScaleUpTestConfig) *ScaleUpTestR
 	context.ExpanderStrategy = expander
 
 	// scale up
-	scaleUpStatus, scaleUpErr := orchestrator.ScaleUp(extraPods, nodes, []*appsv1.DaemonSet{}, nodeInfos, false)
+	scaleUpStatus, scaleUpErr := orchestrator.ScaleUp(extraPods, nodes, []*appsv1.DaemonSet{}, nodeInfos, config.AllOrNothing)
 	processors.ScaleUpStatusProcessor.Process(&context, scaleUpStatus)
 
 	// aggregate group size changes
