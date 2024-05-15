@@ -80,7 +80,10 @@ func (c *Clientset) Tracker() testing.ObjectTracker {
 	return c.tracker
 }
 
-var _ clientset.Interface = &Clientset{}
+var (
+	_ clientset.Interface = &Clientset{}
+	_ testing.FakeClient  = &Clientset{}
+)
 
 // AutoscalingV1 retrieves the AutoscalingV1Client
 func (c *Clientset) AutoscalingV1() autoscalingv1.AutoscalingV1Interface {
