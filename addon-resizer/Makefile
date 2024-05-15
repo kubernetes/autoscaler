@@ -27,7 +27,7 @@ REGISTRY = gcr.io/k8s-staging-autoscaling
 IMGNAME = addon-resizer
 IMAGE = $(REGISTRY)/$(IMGNAME)
 MULTI_ARCH_IMG = $(IMAGE)-$(ARCH)
-TAG = 1.8.20
+TAG = 1.8.21
 # The output type could either be docker (local), or registry.
 OUTPUT_TYPE ?= docker
 
