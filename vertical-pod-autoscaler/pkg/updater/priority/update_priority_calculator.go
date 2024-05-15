@@ -182,7 +182,14 @@ func parseVpaObservedContainers(pod *apiv1.Pod) (bool, sets.String) {
 func getProcessedRecommendationTargets(r *vpa_types.RecommendedPodResources) string {
 	sb := &strings.Builder{}
 	for _, cr := range r.ContainerRecommendations {
-		sb.WriteString(fmt.Sprintf("%s: [ target: %sK, %vm; uncappedTarget: %sK, %vm ]\n", cr.ContainerName, cr.Target.Memory().AsDec(), cr.Target.Cpu().MilliValue(), cr.UncappedTarget.Memory().AsDec(), cr.UncappedTarget.Cpu().MilliValue()))
+		sb.WriteString(fmt.Sprintf("%s:", cr.ContainerName))
+		if cr.Target != nil {
+			sb.WriteString(fmt.Sprintf("target: %sK, %vm;", cr.Target.Memory().AsDec(), cr.Target.Cpu().MilliValue()))
+		}
+		if cr.UncappedTarget != nil {
+			sb.WriteString(fmt.Sprintf("uncappedTarget: %sK, %vm;", cr.UncappedTarget.Memory().AsDec(), cr.UncappedTarget.Cpu().MilliValue()))
+		}
+		sb.WriteString("\n")
 	}
 	return sb.String()
 }
