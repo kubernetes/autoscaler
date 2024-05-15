@@ -18,7 +18,9 @@ package priority
 
 import (
 	"flag"
+	"fmt"
 	"sort"
+	"strings"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -140,7 +142,7 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, now time.Time) {
 		klog.V(4).Infof("not updating pod %v/%v because resource would not change", pod.Namespace, pod.Name)
 		return
 	}
-	klog.V(2).Infof("pod accepted for update %v/%v with priority %v", pod.Namespace, pod.Name, updatePriority.ResourceDiff, processedRecommendation)
+	klog.V(2).Infof("pod accepted for update %v/%v with priority %v - processed recommendations:\n%v", pod.Namespace, pod.Name, updatePriority.ResourceDiff, getProcessedRecommendationTargets(processedRecommendation))
 	calc.pods = append(calc.pods, prioritizedPod{
 		pod:            pod,
 		priority:       updatePriority,
@@ -175,6 +177,14 @@ func parseVpaObservedContainers(pod *apiv1.Pod) (bool, sets.String) {
 		}
 	}
 	return hasObservedContainers, vpaContainerSet
+}
+
+func getProcessedRecommendationTargets(r *vpa_types.RecommendedPodResources) string {
+	sb := &strings.Builder{}
+	for _, cr := range r.ContainerRecommendations {
+		sb.WriteString(fmt.Sprintf("%s: [ target: %sK, %vm; uncappedTarget: %sK, %vm ]\n", cr.ContainerName, cr.Target.Memory().AsDec(), cr.Target.Cpu().MilliValue(), cr.UncappedTarget.Memory().AsDec(), cr.UncappedTarget.Cpu().MilliValue()))
+	}
+	return sb.String()
 }
 
 type prioritizedPod struct {
