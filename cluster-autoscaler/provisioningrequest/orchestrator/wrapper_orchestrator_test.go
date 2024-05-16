@@ -56,9 +56,9 @@ func TestWrapperScaleUp(t *testing.T) {
 		pod.Annotations[provreq.ProvisioningRequestPodAnnotationKey] = "true"
 	}
 	unschedulablePods := append(regularPods, provReqPods...)
-	_, err := o.ScaleUp(unschedulablePods, nil, nil, nil)
+	_, err := o.ScaleUp(unschedulablePods, nil, nil, nil, false)
 	assert.Equal(t, err.Error(), provisioningRequestErrorMsg)
-	_, err = o.ScaleUp(unschedulablePods, nil, nil, nil)
+	_, err = o.ScaleUp(unschedulablePods, nil, nil, nil, false)
 	assert.Equal(t, err.Error(), regularPodsErrorMsg)
 }
 
@@ -71,6 +71,7 @@ func (f *fakeScaleUp) ScaleUp(
 	nodes []*apiv1.Node,
 	daemonSets []*appsv1.DaemonSet,
 	nodeInfos map[string]*schedulerframework.NodeInfo,
+	allOrNothing bool,
 ) (*status.ScaleUpStatus, errors.AutoscalerError) {
 	return nil, errors.NewAutoscalerError(errors.InternalError, f.errorMsg)
 }

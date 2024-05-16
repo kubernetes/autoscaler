@@ -68,6 +68,7 @@ func (o *WrapperOrchestrator) ScaleUp(
 	nodes []*apiv1.Node,
 	daemonSets []*appsv1.DaemonSet,
 	nodeInfos map[string]*schedulerframework.NodeInfo,
+	allOrNothing bool,
 ) (*status.ScaleUpStatus, errors.AutoscalerError) {
 	defer func() { o.scaleUpRegularPods = !o.scaleUpRegularPods }()
 
@@ -79,9 +80,9 @@ func (o *WrapperOrchestrator) ScaleUp(
 	}
 
 	if o.scaleUpRegularPods {
-		return o.podsOrchestrator.ScaleUp(regularPods, nodes, daemonSets, nodeInfos)
+		return o.podsOrchestrator.ScaleUp(regularPods, nodes, daemonSets, nodeInfos, allOrNothing)
 	}
-	return o.provReqOrchestrator.ScaleUp(provReqPods, nodes, daemonSets, nodeInfos)
+	return o.provReqOrchestrator.ScaleUp(provReqPods, nodes, daemonSets, nodeInfos, allOrNothing)
 }
 
 func splitOut(unschedulablePods []*apiv1.Pod) (provReqPods, regularPods []*apiv1.Pod) {

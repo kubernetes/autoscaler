@@ -127,6 +127,7 @@ type ScaleUpTestConfig struct {
 	Options                 *config.AutoscalingOptions
 	NodeTemplateConfigs     map[string]*NodeTemplateConfig
 	EnableAutoprovisioning  bool
+	AllOrNothing            bool
 }
 
 // ScaleUpTestResult represents a node groups scale up result
