@@ -34,8 +34,8 @@ import (
 type Interface interface {
 	Discovery() discovery.DiscoveryInterface
 	AutoscalingV1() autoscalingv1.AutoscalingV1Interface
-	AutoscalingV1beta2() autoscalingv1beta2.AutoscalingV1beta2Interface
 	AutoscalingV1beta1() autoscalingv1beta1.AutoscalingV1beta1Interface
+	AutoscalingV1beta2() autoscalingv1beta2.AutoscalingV1beta2Interface
 	PocV1alpha1() pocv1alpha1.PocV1alpha1Interface
 }
 
@@ -43,8 +43,8 @@ type Interface interface {
 type Clientset struct {
 	*discovery.DiscoveryClient
 	autoscalingV1      *autoscalingv1.AutoscalingV1Client
-	autoscalingV1beta2 *autoscalingv1beta2.AutoscalingV1beta2Client
 	autoscalingV1beta1 *autoscalingv1beta1.AutoscalingV1beta1Client
+	autoscalingV1beta2 *autoscalingv1beta2.AutoscalingV1beta2Client
 	pocV1alpha1        *pocv1alpha1.PocV1alpha1Client
 }
 
@@ -53,14 +53,14 @@ func (c *Clientset) AutoscalingV1() autoscalingv1.AutoscalingV1Interface {
 	return c.autoscalingV1
 }
 
-// AutoscalingV1beta2 retrieves the AutoscalingV1beta2Client
-func (c *Clientset) AutoscalingV1beta2() autoscalingv1beta2.AutoscalingV1beta2Interface {
-	return c.autoscalingV1beta2
-}
-
 // AutoscalingV1beta1 retrieves the AutoscalingV1beta1Client
 func (c *Clientset) AutoscalingV1beta1() autoscalingv1beta1.AutoscalingV1beta1Interface {
 	return c.autoscalingV1beta1
+}
+
+// AutoscalingV1beta2 retrieves the AutoscalingV1beta2Client
+func (c *Clientset) AutoscalingV1beta2() autoscalingv1beta2.AutoscalingV1beta2Interface {
+	return c.autoscalingV1beta2
 }
 
 // PocV1alpha1 retrieves the PocV1alpha1Client
@@ -116,11 +116,11 @@ func NewForConfigAndClient(c *rest.Config, httpClient *http.Client) (*Clientset,
 	if err != nil {
 		return nil, err
 	}
-	cs.autoscalingV1beta2, err = autoscalingv1beta2.NewForConfigAndClient(&configShallowCopy, httpClient)
+	cs.autoscalingV1beta1, err = autoscalingv1beta1.NewForConfigAndClient(&configShallowCopy, httpClient)
 	if err != nil {
 		return nil, err
 	}
-	cs.autoscalingV1beta1, err = autoscalingv1beta1.NewForConfigAndClient(&configShallowCopy, httpClient)
+	cs.autoscalingV1beta2, err = autoscalingv1beta2.NewForConfigAndClient(&configShallowCopy, httpClient)
 	if err != nil {
 		return nil, err
 	}
@@ -150,8 +150,8 @@ func NewForConfigOrDie(c *rest.Config) *Clientset {
 func New(c rest.Interface) *Clientset {
 	var cs Clientset
 	cs.autoscalingV1 = autoscalingv1.New(c)
-	cs.autoscalingV1beta2 = autoscalingv1beta2.New(c)
 	cs.autoscalingV1beta1 = autoscalingv1beta1.New(c)
+	cs.autoscalingV1beta2 = autoscalingv1beta2.New(c)
 	cs.pocV1alpha1 = pocv1alpha1.New(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClient(c)
