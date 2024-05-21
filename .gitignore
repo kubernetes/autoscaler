@@ -18,6 +18,7 @@ cluster-autoscaler/dev
 
 # VSCode project files
 **/.vscode
+*.code-workspace
 
 # Emacs save files
 *~
@@ -30,3 +31,6 @@ cluster-autoscaler/dev
 *.un~
 Session.vim
 .netrwhist
+
+# Binary files
+bin/

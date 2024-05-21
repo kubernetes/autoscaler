@@ -16,6 +16,7 @@ For the cluster autoscaler parameters, use the `--cloud-provider=externalgrpc` f
 | key | path to file containing the tls key, if using mTLS | no | none |
 | cert | path to file containing the tls certificate, if using mTLS | no | none |
 | cacert | path to file containing the CA certificate, if using mTLS | no | none |
+| grpc_timeout | timeout of invoking a grpc call | no | 5s |
 
 The use of mTLS is recommended, since simple, non-authenticated calls to the external gRPC cloud provider service will result in the creation / deletion of nodes.
 
@@ -56,8 +57,8 @@ To regenerate the gRPC code:
 1. install `protoc` and `protoc-gen-go-grpc`:
 
 ```bash
-go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.26
-go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.1
+go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.31
+go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.3
 ```
 
 2. generate gRPC client and server code:

@@ -13,8 +13,8 @@ const (
 	//
 	// This exception is thrown when a user tries to confirm the account with an
 	// email address or phone number that has already been supplied as an alias
-	// from a different account. This exception indicates that an account with this
-	// email address or phone already exists in a user pool that you've configured
+	// for a different user profile. This exception indicates that an account with
+	// this email address or phone already exists in a user pool that you've configured
 	// to use email address or phone number as a sign-in alias.
 	ErrCodeAliasExistsException = "AliasExistsException"
 
@@ -56,6 +56,13 @@ const (
 	//
 	// This exception is thrown if a code has expired.
 	ErrCodeExpiredCodeException = "ExpiredCodeException"
+
+	// ErrCodeForbiddenException for service response error code
+	// "ForbiddenException".
+	//
+	// This exception is thrown when WAF doesn't allow your request based on a web
+	// ACL that's associated with your user pool.
+	ErrCodeForbiddenException = "ForbiddenException"
 
 	// ErrCodeGroupExistsException for service response error code
 	// "GroupExistsException".
@@ -284,6 +291,7 @@ var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
 	"DuplicateProviderException":               newErrorDuplicateProviderException,
 	"EnableSoftwareTokenMFAException":          newErrorEnableSoftwareTokenMFAException,
 	"ExpiredCodeException":                     newErrorExpiredCodeException,
+	"ForbiddenException":                       newErrorForbiddenException,
 	"GroupExistsException":                     newErrorGroupExistsException,
 	"InternalErrorException":                   newErrorInternalErrorException,
 	"InvalidEmailRoleAccessPolicyException":    newErrorInvalidEmailRoleAccessPolicyException,

@@ -28,13 +28,13 @@ import (
 )
 
 func TestGetNodePrice(t *testing.T) {
-	labelsPool1 := BuildGenericLabels("pool1", "t1.small.x86")
-	plan1 := InstanceTypes["t1.small.x86"]
+	labelsPool1 := BuildGenericLabels("pool1", "m3.small.x86")
+	plan1 := InstanceTypes["m3.small.x86"]
 
-	labelsPool2 := BuildGenericLabels("pool2", "c1.xlarge.x86")
-	plan2 := InstanceTypes["c1.xlarge.x86"]
+	labelsPool2 := BuildGenericLabels("pool2", "c3.medium.x86")
+	plan2 := InstanceTypes["c3.medium.x86"]
 
-	model := &PacketPriceModel{}
+	model := &Price{}
 	now := time.Now()
 
 	node1 := BuildTestNode("node1", plan1.CPU*1000, plan1.MemoryMb*1024*1024)
@@ -47,15 +47,15 @@ func TestGetNodePrice(t *testing.T) {
 	price2, err := model.NodePrice(node2, now, now.Add(time.Hour))
 	assert.NoError(t, err)
 
-	assert.True(t, price1 == 0.07)
-	assert.True(t, price2 == 1.75)
+	assert.True(t, price1 == 1.05)
+	assert.True(t, price2 == 1.35)
 }
 
 func TestGetPodPrice(t *testing.T) {
 	pod1 := BuildTestPod("pod1", 100, 500*units.MiB)
 	pod2 := BuildTestPod("pod2", 2*100, 2*500*units.MiB)
 
-	model := &PacketPriceModel{}
+	model := &Price{}
 	now := time.Now()
 
 	price1, err := model.PodPrice(pod1, now, now.Add(time.Hour))

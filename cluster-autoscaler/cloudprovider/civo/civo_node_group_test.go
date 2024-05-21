@@ -32,6 +32,13 @@ func TestNodeGroup_TargetSize(t *testing.T) {
 		numberOfNodes := 3
 
 		client := &civoClientMock{}
+		client.On("FindInstanceSizes", "").Return(
+			&civocloud.InstanceSize{
+				Name:     "small",
+				CPUCores: 1,
+			}, nil,
+		).Once()
+
 		ng := testNodeGroup(client, &civocloud.KubernetesPool{
 			Count: numberOfNodes,
 		}, 1, 10)
@@ -46,6 +53,13 @@ func TestNodeGroup_IncreaseSize(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		numberOfNodes := 3
 		client := &civoClientMock{}
+		client.On("FindInstanceSizes", "").Return(
+			&civocloud.InstanceSize{
+				Name:     "small",
+				CPUCores: 1,
+			}, nil,
+		).Once()
+
 		ng := testNodeGroup(client, &civocloud.KubernetesPool{
 			Count: numberOfNodes,
 		}, 1, 10)
@@ -75,6 +89,13 @@ func TestNodeGroup_IncreaseSize(t *testing.T) {
 		maxNodes := 3
 
 		client := &civoClientMock{}
+		client.On("FindInstanceSizes", "").Return(
+			&civocloud.InstanceSize{
+				Name:     "small",
+				CPUCores: 1,
+			}, nil,
+		).Once()
+
 		ng := testNodeGroup(client, &civocloud.KubernetesPool{
 			Count: numberOfNodes,
 		}, 1, maxNodes)
@@ -101,6 +122,13 @@ func TestNodeGroup_IncreaseSize(t *testing.T) {
 	t.Run("negative increase", func(t *testing.T) {
 		numberOfNodes := 3
 		client := &civoClientMock{}
+		client.On("FindInstanceSizes", "").Return(
+			&civocloud.InstanceSize{
+				Name:     "small",
+				CPUCores: 1,
+			}, nil,
+		).Once()
+
 		ng := testNodeGroup(client, &civocloud.KubernetesPool{
 			Count: numberOfNodes,
 		}, 1, 10)
@@ -114,6 +142,13 @@ func TestNodeGroup_IncreaseSize(t *testing.T) {
 	t.Run("zero increase", func(t *testing.T) {
 		numberOfNodes := 3
 		client := &civoClientMock{}
+		client.On("FindInstanceSizes", "").Return(
+			&civocloud.InstanceSize{
+				Name:     "small",
+				CPUCores: 1,
+			}, nil,
+		).Once()
+
 		ng := testNodeGroup(client, &civocloud.KubernetesPool{
 			Count: numberOfNodes,
 		}, 1, 10)
@@ -129,6 +164,13 @@ func TestNodeGroup_IncreaseSize(t *testing.T) {
 		maxNodes := 100
 		delta := 10
 		client := &civoClientMock{}
+		client.On("FindInstanceSizes", "").Return(
+			&civocloud.InstanceSize{
+				Name:     "small",
+				CPUCores: 1,
+			}, nil,
+		).Once()
+
 		ng := testNodeGroup(client, &civocloud.KubernetesPool{
 			Count: numberOfNodes,
 		}, 1, maxNodes)
@@ -145,6 +187,13 @@ func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 		numberOfNodes := 5
 
 		client := &civoClientMock{}
+		client.On("FindInstanceSizes", "").Return(
+			&civocloud.InstanceSize{
+				Name:     "small",
+				CPUCores: 1,
+			}, nil,
+		).Once()
+
 		ng := testNodeGroup(client, &civocloud.KubernetesPool{
 			Count: numberOfNodes,
 		}, 1, 10)
@@ -171,6 +220,13 @@ func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 	t.Run("positive decrease", func(t *testing.T) {
 		numberOfNodes := 5
 		client := &civoClientMock{}
+		client.On("FindInstanceSizes", "").Return(
+			&civocloud.InstanceSize{
+				Name:     "small",
+				CPUCores: 1,
+			}, nil,
+		).Once()
+
 		ng := testNodeGroup(client, &civocloud.KubernetesPool{
 			Count: numberOfNodes,
 		}, 1, 10)
@@ -185,6 +241,13 @@ func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 	t.Run("zero decrease", func(t *testing.T) {
 		numberOfNodes := 5
 		client := &civoClientMock{}
+		client.On("FindInstanceSizes", "").Return(
+			&civocloud.InstanceSize{
+				Name:     "small",
+				CPUCores: 1,
+			}, nil,
+		).Once()
+
 		ng := testNodeGroup(client, &civocloud.KubernetesPool{
 			Count: numberOfNodes,
 		}, 1, 10)
@@ -200,6 +263,13 @@ func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 		delta := -2
 		numberOfNodes := 2
 		client := &civoClientMock{}
+		client.On("FindInstanceSizes", "").Return(
+			&civocloud.InstanceSize{
+				Name:     "small",
+				CPUCores: 1,
+			}, nil,
+		).Once()
+
 		ng := testNodeGroup(client, &civocloud.KubernetesPool{
 			Count: numberOfNodes,
 		}, 1, 5)
@@ -214,6 +284,13 @@ func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 func TestNodeGroup_DeleteNodes(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		client := &civoClientMock{}
+		client.On("FindInstanceSizes", "").Return(
+			&civocloud.InstanceSize{
+				Name:     "small",
+				CPUCores: 1,
+			}, nil,
+		).Once()
+
 		ng := testNodeGroup(client, &civocloud.KubernetesPool{
 			Count: 3,
 		}, 1, 10)
@@ -256,6 +333,13 @@ func TestNodeGroup_DeleteNodes(t *testing.T) {
 
 	t.Run("client deleting node fails", func(t *testing.T) {
 		client := &civoClientMock{}
+		client.On("FindInstanceSizes", "").Return(
+			&civocloud.InstanceSize{
+				Name:     "small",
+				CPUCores: 1,
+			}, nil,
+		).Once()
+
 		ng := testNodeGroup(client, &civocloud.KubernetesPool{
 			Count: 3,
 		}, 1, 10)
@@ -294,6 +378,13 @@ func TestNodeGroup_DeleteNodes(t *testing.T) {
 func TestNodeGroup_Nodes(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		client := &civoClientMock{}
+		client.On("FindInstanceSizes", "").Return(
+			&civocloud.InstanceSize{
+				Name:     "small",
+				CPUCores: 1,
+			}, nil,
+		).Once()
+
 		ng := testNodeGroup(client, &civocloud.KubernetesPool{
 			ID:    "1",
 			Count: 5,
@@ -375,9 +466,16 @@ func TestNodeGroup_Nodes(t *testing.T) {
 func TestNodeGroup_Debug(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		client := &civoClientMock{}
+		client.On("FindInstanceSizes", "").Return(
+			&civocloud.InstanceSize{
+				Name:     "small",
+				CPUCores: 1,
+			}, nil,
+		).Once()
+
 		ng := testNodeGroup(client, &civocloud.KubernetesPool{Count: 2}, 1, 200)
 		d := ng.Debug()
-		exp := "cluster ID: 1 (min:1 max:200)"
+		exp := "id: 1 (min:1 max:200)"
 		assert.Equal(t, exp, d, "debug string do not match")
 	})
 }
@@ -385,6 +483,13 @@ func TestNodeGroup_Debug(t *testing.T) {
 func TestNodeGroup_Exist(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		client := &civoClientMock{}
+		client.On("FindInstanceSizes", "").Return(
+			&civocloud.InstanceSize{
+				Name:     "small",
+				CPUCores: 1,
+			}, nil,
+		).Once()
+
 		ng := testNodeGroup(client, &civocloud.KubernetesPool{Count: 3}, 1, 200)
 		exist := ng.Exist()
 		assert.Equal(t, true, exist, "node group should exist")
@@ -392,15 +497,72 @@ func TestNodeGroup_Exist(t *testing.T) {
 
 	t.Run("failure", func(t *testing.T) {
 		client := &civoClientMock{}
+		client.On("FindInstanceSizes", "").Return(
+			&civocloud.InstanceSize{
+				Name:     "small",
+				CPUCores: 1,
+			}, nil,
+		).Once()
+
 		ng := testNodeGroup(client, nil, 1, 200)
 		exist := ng.Exist()
 		assert.Equal(t, false, exist, "node group should not exist")
 	})
 }
 
+func TestNodeGroup_TemplateNodeInfo(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		client := &civoClientMock{}
+		client.On("FindInstanceSizes", "small").Return(
+			&civocloud.InstanceSize{
+				Name:          "small",
+				CPUCores:      1,
+				RAMMegabytes:  1024,
+				DiskGigabytes: 20,
+			}, nil,
+		).Once()
+
+		ng := testNodeGroup(client, &civocloud.KubernetesPool{
+			ID:   "1",
+			Size: "small",
+			Labels: map[string]string{
+				"id": "id",
+			},
+			Taints: []apiv1.Taint{
+				{
+					Key:    "key",
+					Value:  "value",
+					Effect: apiv1.TaintEffectNoSchedule,
+				},
+			},
+			Region: "test",
+		}, 1, 10)
+
+		nodeInfo, err := ng.TemplateNodeInfo()
+		assert.NoError(t, err)
+		assert.Equal(t, len(nodeInfo.Pods), 1, "should have one template pod")
+		assert.Equal(t, nodeInfo.Node().Status.Capacity.Cpu().ToDec().Value(), int64(1000), "should match cpu capacity ")
+		assert.Equal(t, nodeInfo.Node().Status.Capacity.Memory().ToDec().Value(), int64(1073741824), "should match memory capacity")
+		assert.Equal(t, nodeInfo.Node().Status.Capacity.StorageEphemeral().ToDec().Value(), int64(21474836480), "should match epheral storage capacity")
+		assert.Equal(t, nodeInfo.Node().Labels["id"], "id", "should match labels")
+		assert.Equal(t, nodeInfo.Node().Labels["kubernetes.civo.com/civo-node-pool"], "1", "should match labels")
+		assert.Equal(t, nodeInfo.Node().Labels["kubernetes.io/os"], "linux", "should match labels")
+		assert.Equal(t, nodeInfo.Node().Labels["node.kubernetes.io/instance-type"], "small", "should match labels")
+		assert.Equal(t, nodeInfo.Node().Labels["topology.kubernetes.io/region"], "test", "should match labels")
+
+		assert.Equal(t, nodeInfo.Node().Spec.Taints, []apiv1.Taint{
+			{
+				Key:    "key",
+				Value:  "value",
+				Effect: apiv1.TaintEffectNoSchedule,
+			},
+		}, "should match taints")
+	})
+}
+
 func testNodeGroup(client nodeGroupClient, np *civocloud.KubernetesPool, min int, max int) *NodeGroup {
 	Region = "test"
-	return &NodeGroup{
+	ng := NodeGroup{
 		id:        "1",
 		clusterID: "1",
 		client:    client,
@@ -408,4 +570,10 @@ func testNodeGroup(client nodeGroupClient, np *civocloud.KubernetesPool, min int
 		minSize:   min,
 		maxSize:   max,
 	}
+
+	if np != nil {
+		ng.nodeTemplate = getCivoNodeTemplate(*np, client)
+	}
+
+	return &ng
 }

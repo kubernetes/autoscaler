@@ -19,13 +19,6 @@ build: clean
 build-binary: clean
 	$(ENVVAR) GOOS=$(GOOS) go build -o ${COMPONENT}
 
-.PHONY: build-binary-with-vendor
-build-binary-with-vendor: $(addprefix build-binary-with-vendor-,$(ALL_ARCHITECTURES)) clean
-
-.PHONY: build-binary-with-vendor-*
-build-binary-with-vendor-%:
-	$(ENVVAR) GOARCH=$* GOOS=$(GOOS) go build -mod vendor -o ${COMPONENT}-$*
-
 test-unit: clean build
 	$(TEST_ENVVAR) go test --test.short -race ./... $(FLAGS)
 
@@ -42,13 +35,10 @@ ifndef TAG
 	ERR = $(error TAG is undefined)
 	$(ERR)
 endif
-	docker buildx build --pull --load --platform linux/$* -t ${REGISTRY}/${FULL_COMPONENT}-$*:${TAG} --build-arg ARCH=$* .
+	docker buildx build --pull --load --platform linux/$* -t ${REGISTRY}/${FULL_COMPONENT}-$*:${TAG} --build-arg ARCH=$* -f ./Dockerfile ../../
 
 .PHONY: docker-push
-docker-push: $(addprefix sub-push-,$(ALL_ARCHITECTURES)) push-multi-arch;
-
-.PHONY: sub-push-*
-sub-push-%: docker-build-% do-push-% ;
+docker-push: $(addprefix do-push-,$(ALL_ARCHITECTURES)) push-multi-arch;
 
 .PHONY: do-push-*
 do-push-%:
@@ -68,20 +58,13 @@ push-multi-arch:
 	@for arch in $(ALL_ARCHITECTURES); do docker manifest annotate --arch $${arch} $(REGISTRY)/${FULL_COMPONENT}:$(TAG) $(REGISTRY)/${FULL_COMPONENT}-$${arch}:${TAG}; done
 	docker manifest push --purge $(REGISTRY)/${FULL_COMPONENT}:$(TAG)
 
-docker-builder:
-	docker build -t vpa-autoscaling-builder ../../builder
-
-.PHONY: build-in-docker
-build-in-docker: $(addprefix build-in-docker-,$(ALL_ARCHITECTURES))
-
-.PHONY: build-in-docker-*
-build-in-docker-%: clean docker-builder
+.PHONY: show-git-info
+show-git-info:
 	echo '=============== local git status ==============='
 	git status
 	echo '=============== last commit ==============='
 	git log -1
 	echo '=============== bulding from the above ==============='
-	docker run -v `pwd`/../..:/gopath/src/k8s.io/autoscaler/vertical-pod-autoscaler vpa-autoscaling-builder:latest bash -c 'cd /gopath/src/k8s.io/autoscaler/vertical-pod-autoscaler && make build-binary-with-vendor-$* -C pkg/admission-controller'
 
 .PHONY: create-buildx-builder
 create-buildx-builder:
@@ -92,7 +75,7 @@ remove-buildx-builder:
 	docker buildx rm ${BUILDER}
 
 .PHONY: release
-release: build-in-docker create-buildx-builder docker-build remove-buildx-builder docker-push
+release: show-git-info create-buildx-builder docker-build remove-buildx-builder docker-push
 	@echo "Full in-docker release ${FULL_COMPONENT}:${TAG} completed"
 
 clean: $(addprefix clean-,$(ALL_ARCHITECTURES))

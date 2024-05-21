@@ -31,10 +31,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/kubernetes/fake"
-	core "k8s.io/client-go/testing"
-	"k8s.io/kubernetes/pkg/kubelet/types"
-
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	acontext "k8s.io/autoscaler/cluster-autoscaler/context"
@@ -44,10 +40,13 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/daemonset"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	"k8s.io/client-go/kubernetes/fake"
+	core "k8s.io/client-go/testing"
+	kubelet_config "k8s.io/kubernetes/pkg/kubelet/apis/config"
+	"k8s.io/kubernetes/pkg/kubelet/types"
 )
 
 func TestDaemonSetEvictionForEmptyNodes(t *testing.T) {
-	timeNow := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC)
 	testScenarios := []struct {
 		name                  string
 		dsPods                []string
@@ -58,6 +57,8 @@ func TestDaemonSetEvictionForEmptyNodes(t *testing.T) {
 		evictByDefault        bool
 		extraAnnotationValue  map[string]string
 		expectNotEvicted      map[string]struct{}
+		fullDsEviction        bool
+		podPriorities         []int32
 	}{
 		{
 			name:              "Successful attempt to evict DaemonSet pods",
@@ -65,23 +66,6 @@ func TestDaemonSetEvictionForEmptyNodes(t *testing.T) {
 			dsEvictionTimeout: 5000 * time.Millisecond,
 			evictionSuccess:   true,
 			evictByDefault:    true,
-		},
-		{
-			name:              "Failed to create DaemonSet eviction",
-			dsPods:            []string{"d1", "d2"},
-			dsEvictionTimeout: 5000 * time.Millisecond,
-			evictionSuccess:   false,
-			err:               fmt.Errorf("following DaemonSet pod failed to evict on the"),
-			evictByDefault:    true,
-		},
-		{
-			name:                  "Eviction timeout exceed",
-			dsPods:                []string{"d1", "d2", "d3"},
-			evictionTimeoutExceed: true,
-			dsEvictionTimeout:     100 * time.Millisecond,
-			evictionSuccess:       true,
-			err:                   fmt.Errorf("failed to create DaemonSet eviction for"),
-			evictByDefault:        true,
 		},
 		{
 			name:                 "Evict single pod due to annotation",
@@ -100,6 +84,57 @@ func TestDaemonSetEvictionForEmptyNodes(t *testing.T) {
 			extraAnnotationValue: map[string]string{"d1": "false"},
 			expectNotEvicted:     map[string]struct{}{"d1": {}},
 		},
+		{
+			name:              "Failed to create DaemonSet eviction",
+			dsPods:            []string{"d1", "d2"},
+			dsEvictionTimeout: 5000 * time.Millisecond,
+			evictionSuccess:   false,
+			err:               fmt.Errorf("Failed to drain node /n1, due to following errors"),
+			evictByDefault:    true,
+			fullDsEviction:    true,
+			podPriorities:     []int32{0, 1000},
+		},
+		{
+			name:                  "Eviction timeout exceed",
+			dsPods:                []string{"d1", "d2", "d3"},
+			evictionTimeoutExceed: true,
+			dsEvictionTimeout:     100 * time.Millisecond,
+			evictionSuccess:       false,
+			err:                   fmt.Errorf("Failed to drain node /n1, due to following errors"),
+			evictByDefault:        true,
+			fullDsEviction:        true,
+			podPriorities:         []int32{0, 1000, 2000},
+		},
+		{
+			name:              "Successful attempt to evict DaemonSet pods",
+			dsPods:            []string{"d1", "d2"},
+			dsEvictionTimeout: 5000 * time.Millisecond,
+			evictionSuccess:   true,
+			evictByDefault:    true,
+			fullDsEviction:    true,
+			podPriorities:     []int32{0, 1000},
+		},
+		{
+			name:                 "Evict single pod due to annotation",
+			dsPods:               []string{"d1", "d2"},
+			dsEvictionTimeout:    5000 * time.Millisecond,
+			evictionSuccess:      true,
+			extraAnnotationValue: map[string]string{"d1": "true"},
+			expectNotEvicted:     map[string]struct{}{"d2": {}},
+			fullDsEviction:       true,
+			podPriorities:        []int32{0, 1000},
+		},
+		{
+			name:                 "Don't evict single pod due to annotation",
+			dsPods:               []string{"d1", "d2"},
+			dsEvictionTimeout:    5000 * time.Millisecond,
+			evictionSuccess:      true,
+			evictByDefault:       true,
+			extraAnnotationValue: map[string]string{"d1": "false"},
+			expectNotEvicted:     map[string]struct{}{"d1": {}},
+			fullDsEviction:       true,
+			podPriorities:        []int32{0, 1000},
+		},
 	}
 
 	for _, scenario := range testScenarios {
@@ -113,6 +148,7 @@ func TestDaemonSetEvictionForEmptyNodes(t *testing.T) {
 				},
 				MaxGracefulTerminationSec:      1,
 				DaemonSetEvictionForEmptyNodes: scenario.evictByDefault,
+				MaxPodEvictionTime:             scenario.dsEvictionTimeout,
 			}
 			deletedPods := make(chan string, len(scenario.dsPods)+2)
 			waitBetweenRetries := 10 * time.Millisecond
@@ -122,9 +158,11 @@ func TestDaemonSetEvictionForEmptyNodes(t *testing.T) {
 			SetNodeReadyState(n1, true, time.Time{})
 			dsPods := make([]*apiv1.Pod, len(scenario.dsPods))
 			for i, dsName := range scenario.dsPods {
-				ds := BuildTestPod(dsName, 100, 0)
+				ds := BuildTestPod(dsName, 100, 0, WithDSController())
 				ds.Spec.NodeName = "n1"
-				ds.OwnerReferences = GenerateOwnerReferences("", "DaemonSet", "", "")
+				if scenario.fullDsEviction {
+					ds.Spec.Priority = &scenario.podPriorities[i]
+				}
 				if v, ok := scenario.extraAnnotationValue[dsName]; ok {
 					ds.Annotations[daemonset.EnableDsEvictionKey] = v
 				}
@@ -152,20 +190,31 @@ func TestDaemonSetEvictionForEmptyNodes(t *testing.T) {
 			provider := testprovider.NewTestCloudProvider(nil, nil)
 			provider.AddNodeGroup("ng1", 1, 10, 1)
 			provider.AddNode("ng1", n1)
-			registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
+			registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, nil)
 
 			context, err := NewScaleTestAutoscalingContext(options, fakeClient, registry, provider, nil, nil)
 			assert.NoError(t, err)
 
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, []*apiv1.Node{n1}, dsPods)
 
+			drainConfig := SingleRuleDrainConfig(context.MaxGracefulTerminationSec)
+			if scenario.fullDsEviction {
+				drainConfig = []kubelet_config.ShutdownGracePeriodByPodPriority{}
+				for _, priority := range scenario.podPriorities {
+					drainConfig = append(drainConfig, kubelet_config.ShutdownGracePeriodByPodPriority{
+						Priority:                   priority,
+						ShutdownGracePeriodSeconds: int64(context.MaxGracefulTerminationSec),
+					})
+				}
+			}
 			evictor := Evictor{
-				DsEvictionEmptyNodeTimeout: scenario.dsEvictionTimeout,
-				DsEvictionRetryTime:        waitBetweenRetries,
+				EvictionRetryTime:                waitBetweenRetries,
+				shutdownGracePeriodByPodPriority: drainConfig,
+				fullDsEviction:                   scenario.fullDsEviction,
 			}
 			nodeInfo, err := context.ClusterSnapshot.NodeInfos().Get(n1.Name)
 			assert.NoError(t, err)
-			err = evictor.EvictDaemonSetPods(&context, nodeInfo, timeNow)
+			_, err = evictor.EvictDaemonSetPods(&context, nodeInfo)
 			if scenario.err != nil {
 				assert.NotNil(t, err)
 				assert.Contains(t, err.Error(), scenario.err.Error())
@@ -183,7 +232,11 @@ func TestDaemonSetEvictionForEmptyNodes(t *testing.T) {
 			for i := 0; i < len(expectEvicted); i++ {
 				deleted[i] = utils.GetStringFromChan(deletedPods)
 			}
-			assert.ElementsMatch(t, deleted, expectEvicted)
+			if scenario.fullDsEviction {
+				assert.Equal(t, expectEvicted, deleted)
+			} else {
+				assert.ElementsMatch(t, deleted, expectEvicted)
+			}
 		})
 	}
 }
@@ -192,10 +245,10 @@ func TestDrainNodeWithPods(t *testing.T) {
 	deletedPods := make(chan string, 10)
 	fakeClient := &fake.Clientset{}
 
-	p1 := BuildTestPod("p1", 100, 0)
-	p2 := BuildTestPod("p2", 300, 0)
-	d1 := BuildTestPod("d1", 150, 0)
 	n1 := BuildTestNode("n1", 1000, 1000)
+	p1 := BuildTestPod("p1", 100, 0, WithNodeName(n1.Name))
+	p2 := BuildTestPod("p2", 300, 0, WithNodeName(n1.Name))
+	d1 := BuildTestPod("d1", 150, 0, WithNodeName(n1.Name), WithDSController())
 
 	SetNodeReadyState(n1, true, time.Time{})
 
@@ -216,14 +269,23 @@ func TestDrainNodeWithPods(t *testing.T) {
 	})
 
 	options := config.AutoscalingOptions{
-		MaxGracefulTerminationSec: 20,
-		MaxPodEvictionTime:        5 * time.Second,
+		MaxGracefulTerminationSec:         20,
+		MaxPodEvictionTime:                5 * time.Second,
+		DaemonSetEvictionForOccupiedNodes: true,
 	}
 	ctx, err := NewScaleTestAutoscalingContext(options, fakeClient, nil, nil, nil, nil)
 	assert.NoError(t, err)
 
-	evictor := Evictor{EvictionRetryTime: 0, PodEvictionHeadroom: DefaultPodEvictionHeadroom}
-	_, err = evictor.DrainNodeWithPods(&ctx, n1, []*apiv1.Pod{p1, p2}, []*apiv1.Pod{d1})
+	legacyFlagDrainConfig := SingleRuleDrainConfig(ctx.MaxGracefulTerminationSec)
+	evictor := Evictor{
+		EvictionRetryTime:                0,
+		PodEvictionHeadroom:              DefaultPodEvictionHeadroom,
+		shutdownGracePeriodByPodPriority: legacyFlagDrainConfig,
+	}
+	clustersnapshot.InitializeClusterSnapshotOrDie(t, ctx.ClusterSnapshot, []*apiv1.Node{n1}, []*apiv1.Pod{p1, p2, d1})
+	nodeInfo, err := ctx.ClusterSnapshot.NodeInfos().Get(n1.Name)
+	assert.NoError(t, err)
+	_, err = evictor.DrainNode(&ctx, nodeInfo)
 	assert.NoError(t, err)
 	deleted := make([]string, 0)
 	deleted = append(deleted, utils.GetStringFromChan(deletedPods))
@@ -240,11 +302,12 @@ func TestDrainNodeWithPodsWithRescheduled(t *testing.T) {
 	deletedPods := make(chan string, 10)
 	fakeClient := &fake.Clientset{}
 
-	p1 := BuildTestPod("p1", 100, 0)
-	p2 := BuildTestPod("p2", 300, 0)
+	n1 := BuildTestNode("n1", 1000, 1000)
+	p1 := BuildTestPod("p1", 100, 0, WithNodeName(n1.Name))
+	p2 := BuildTestPod("p2", 300, 0, WithNodeName(n1.Name))
 	p2Rescheduled := BuildTestPod("p2", 300, 0)
 	p2Rescheduled.Spec.NodeName = "n2"
-	n1 := BuildTestNode("n1", 1000, 1000)
+
 	SetNodeReadyState(n1, true, time.Time{})
 
 	fakeClient.Fake.AddReactor("get", "pods", func(action core.Action) (bool, runtime.Object, error) {
@@ -277,8 +340,16 @@ func TestDrainNodeWithPodsWithRescheduled(t *testing.T) {
 	ctx, err := NewScaleTestAutoscalingContext(options, fakeClient, nil, nil, nil, nil)
 	assert.NoError(t, err)
 
-	evictor := Evictor{EvictionRetryTime: 0, PodEvictionHeadroom: DefaultPodEvictionHeadroom}
-	_, err = evictor.DrainNodeWithPods(&ctx, n1, []*apiv1.Pod{p1, p2}, []*apiv1.Pod{})
+	legacyFlagDrainConfig := SingleRuleDrainConfig(ctx.MaxGracefulTerminationSec)
+	evictor := Evictor{
+		EvictionRetryTime:                0,
+		PodEvictionHeadroom:              DefaultPodEvictionHeadroom,
+		shutdownGracePeriodByPodPriority: legacyFlagDrainConfig,
+	}
+	clustersnapshot.InitializeClusterSnapshotOrDie(t, ctx.ClusterSnapshot, []*apiv1.Node{n1}, []*apiv1.Pod{p1, p2})
+	nodeInfo, err := ctx.ClusterSnapshot.NodeInfos().Get(n1.Name)
+	assert.NoError(t, err)
+	_, err = evictor.DrainNode(&ctx, nodeInfo)
 	assert.NoError(t, err)
 	deleted := make([]string, 0)
 	deleted = append(deleted, utils.GetStringFromChan(deletedPods))
@@ -297,11 +368,12 @@ func TestDrainNodeWithPodsWithRetries(t *testing.T) {
 	ticket := make(chan bool, 1)
 	fakeClient := &fake.Clientset{}
 
-	p1 := BuildTestPod("p1", 100, 0)
-	p2 := BuildTestPod("p2", 300, 0)
-	p3 := BuildTestPod("p3", 300, 0)
-	d1 := BuildTestPod("d1", 150, 0)
 	n1 := BuildTestNode("n1", 1000, 1000)
+	p1 := BuildTestPod("p1", 100, 0, WithNodeName(n1.Name))
+	p2 := BuildTestPod("p2", 300, 0, WithNodeName(n1.Name))
+	p3 := BuildTestPod("p3", 300, 0, WithNodeName(n1.Name))
+	d1 := BuildTestPod("d1", 150, 0, WithDSController(), WithNodeName(n1.Name))
+
 	SetNodeReadyState(n1, true, time.Time{})
 
 	fakeClient.Fake.AddReactor("get", "pods", func(action core.Action) (bool, runtime.Object, error) {
@@ -330,14 +402,23 @@ func TestDrainNodeWithPodsWithRetries(t *testing.T) {
 	})
 
 	options := config.AutoscalingOptions{
-		MaxGracefulTerminationSec: 20,
-		MaxPodEvictionTime:        5 * time.Second,
+		MaxGracefulTerminationSec:         20,
+		MaxPodEvictionTime:                5 * time.Second,
+		DaemonSetEvictionForOccupiedNodes: true,
 	}
 	ctx, err := NewScaleTestAutoscalingContext(options, fakeClient, nil, nil, nil, nil)
 	assert.NoError(t, err)
 
-	evictor := Evictor{EvictionRetryTime: 0, PodEvictionHeadroom: DefaultPodEvictionHeadroom}
-	_, err = evictor.DrainNodeWithPods(&ctx, n1, []*apiv1.Pod{p1, p2, p3}, []*apiv1.Pod{d1})
+	legacyFlagDrainConfig := SingleRuleDrainConfig(ctx.MaxGracefulTerminationSec)
+	evictor := Evictor{
+		EvictionRetryTime:                0,
+		PodEvictionHeadroom:              DefaultPodEvictionHeadroom,
+		shutdownGracePeriodByPodPriority: legacyFlagDrainConfig,
+	}
+	clustersnapshot.InitializeClusterSnapshotOrDie(t, ctx.ClusterSnapshot, []*apiv1.Node{n1}, []*apiv1.Pod{p1, p2, p3, d1})
+	nodeInfo, err := ctx.ClusterSnapshot.NodeInfos().Get(n1.Name)
+	assert.NoError(t, err)
+	_, err = evictor.DrainNode(&ctx, nodeInfo)
 	assert.NoError(t, err)
 	deleted := make([]string, 0)
 	deleted = append(deleted, utils.GetStringFromChan(deletedPods))
@@ -354,11 +435,12 @@ func TestDrainNodeWithPodsWithRetries(t *testing.T) {
 func TestDrainNodeWithPodsDaemonSetEvictionFailure(t *testing.T) {
 	fakeClient := &fake.Clientset{}
 
-	p1 := BuildTestPod("p1", 100, 0)
-	p2 := BuildTestPod("p2", 300, 0)
-	d1 := BuildTestPod("d1", 150, 0)
-	d2 := BuildTestPod("d2", 250, 0)
 	n1 := BuildTestNode("n1", 1000, 1000)
+	p1 := BuildTestPod("p1", 100, 0, WithNodeName(n1.Name))
+	p2 := BuildTestPod("p2", 300, 0, WithNodeName(n1.Name))
+	d1 := BuildTestPod("d1", 150, 0, WithDSController(), WithNodeName(n1.Name))
+	d2 := BuildTestPod("d2", 250, 0, WithDSController(), WithNodeName(n1.Name))
+
 	e1 := fmt.Errorf("eviction_error: d1")
 	e2 := fmt.Errorf("eviction_error: d2")
 
@@ -390,8 +472,16 @@ func TestDrainNodeWithPodsDaemonSetEvictionFailure(t *testing.T) {
 	ctx, err := NewScaleTestAutoscalingContext(options, fakeClient, nil, nil, nil, nil)
 	assert.NoError(t, err)
 
-	evictor := Evictor{EvictionRetryTime: 0, PodEvictionHeadroom: DefaultPodEvictionHeadroom}
-	evictionResults, err := evictor.DrainNodeWithPods(&ctx, n1, []*apiv1.Pod{p1, p2}, []*apiv1.Pod{d1, d2})
+	legacyFlagDrainConfig := SingleRuleDrainConfig(ctx.MaxGracefulTerminationSec)
+	evictor := Evictor{
+		EvictionRetryTime:                0,
+		PodEvictionHeadroom:              DefaultPodEvictionHeadroom,
+		shutdownGracePeriodByPodPriority: legacyFlagDrainConfig,
+	}
+	clustersnapshot.InitializeClusterSnapshotOrDie(t, ctx.ClusterSnapshot, []*apiv1.Node{n1}, []*apiv1.Pod{p1, p2, d1, d2})
+	nodeInfo, err := ctx.ClusterSnapshot.NodeInfos().Get(n1.Name)
+	assert.NoError(t, err)
+	evictionResults, err := evictor.DrainNode(&ctx, nodeInfo)
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(evictionResults))
 	assert.Equal(t, p1, evictionResults["p1"].Pod)
@@ -407,11 +497,11 @@ func TestDrainNodeWithPodsDaemonSetEvictionFailure(t *testing.T) {
 func TestDrainNodeWithPodsEvictionFailure(t *testing.T) {
 	fakeClient := &fake.Clientset{}
 
-	p1 := BuildTestPod("p1", 100, 0)
-	p2 := BuildTestPod("p2", 100, 0)
-	p3 := BuildTestPod("p3", 100, 0)
-	p4 := BuildTestPod("p4", 100, 0)
 	n1 := BuildTestNode("n1", 1000, 1000)
+	p1 := BuildTestPod("p1", 100, 0, WithNodeName(n1.Name))
+	p2 := BuildTestPod("p2", 100, 0, WithNodeName(n1.Name))
+	p3 := BuildTestPod("p3", 100, 0, WithNodeName(n1.Name))
+	p4 := BuildTestPod("p4", 100, 0, WithNodeName(n1.Name))
 	e2 := fmt.Errorf("eviction_error: p2")
 	e4 := fmt.Errorf("eviction_error: p4")
 	SetNodeReadyState(n1, true, time.Time{})
@@ -442,8 +532,17 @@ func TestDrainNodeWithPodsEvictionFailure(t *testing.T) {
 	ctx, err := NewScaleTestAutoscalingContext(options, fakeClient, nil, nil, nil, nil)
 	assert.NoError(t, err)
 	r := evRegister{}
-	evictor := Evictor{EvictionRetryTime: 0, PodEvictionHeadroom: DefaultPodEvictionHeadroom, evictionRegister: &r}
-	evictionResults, err := evictor.DrainNodeWithPods(&ctx, n1, []*apiv1.Pod{p1, p2, p3, p4}, []*apiv1.Pod{})
+	legacyFlagDrainConfig := SingleRuleDrainConfig(ctx.MaxGracefulTerminationSec)
+	evictor := Evictor{
+		EvictionRetryTime:                0,
+		PodEvictionHeadroom:              DefaultPodEvictionHeadroom,
+		evictionRegister:                 &r,
+		shutdownGracePeriodByPodPriority: legacyFlagDrainConfig,
+	}
+	clustersnapshot.InitializeClusterSnapshotOrDie(t, ctx.ClusterSnapshot, []*apiv1.Node{n1}, []*apiv1.Pod{p1, p2, p3, p4})
+	nodeInfo, err := ctx.ClusterSnapshot.NodeInfos().Get(n1.Name)
+	assert.NoError(t, err)
+	evictionResults, err := evictor.DrainNode(&ctx, nodeInfo)
 	assert.Error(t, err)
 	assert.Equal(t, 4, len(evictionResults))
 	assert.Equal(t, *p1, *evictionResults["p1"].Pod)
@@ -468,12 +567,12 @@ func TestDrainNodeWithPodsEvictionFailure(t *testing.T) {
 func TestDrainWithPodsNodeDisappearanceFailure(t *testing.T) {
 	fakeClient := &fake.Clientset{}
 
-	p1 := BuildTestPod("p1", 100, 0)
-	p2 := BuildTestPod("p2", 100, 0)
-	p3 := BuildTestPod("p3", 100, 0)
-	p4 := BuildTestPod("p4", 100, 0)
-	e2 := fmt.Errorf("disappearance_error: p2")
 	n1 := BuildTestNode("n1", 1000, 1000)
+	p1 := BuildTestPod("p1", 100, 0, WithNodeName(n1.Name))
+	p2 := BuildTestPod("p2", 100, 0, WithNodeName(n1.Name))
+	p3 := BuildTestPod("p3", 100, 0, WithNodeName(n1.Name))
+	p4 := BuildTestPod("p4", 100, 0, WithNodeName(n1.Name))
+	e2 := fmt.Errorf("disappearance_error: p2")
 	SetNodeReadyState(n1, true, time.Time{})
 
 	fakeClient.Fake.AddReactor("get", "pods", func(action core.Action) (bool, runtime.Object, error) {
@@ -500,8 +599,16 @@ func TestDrainWithPodsNodeDisappearanceFailure(t *testing.T) {
 	ctx, err := NewScaleTestAutoscalingContext(options, fakeClient, nil, nil, nil, nil)
 	assert.NoError(t, err)
 
-	evictor := Evictor{EvictionRetryTime: 0, PodEvictionHeadroom: 0}
-	evictionResults, err := evictor.DrainNodeWithPods(&ctx, n1, []*apiv1.Pod{p1, p2, p3, p4}, []*apiv1.Pod{})
+	legacyFlagDrainConfig := SingleRuleDrainConfig(ctx.MaxGracefulTerminationSec)
+	evictor := Evictor{
+		EvictionRetryTime:                0,
+		PodEvictionHeadroom:              0,
+		shutdownGracePeriodByPodPriority: legacyFlagDrainConfig,
+	}
+	clustersnapshot.InitializeClusterSnapshotOrDie(t, ctx.ClusterSnapshot, []*apiv1.Node{n1}, []*apiv1.Pod{p1, p2, p3, p4})
+	nodeInfo, err := ctx.ClusterSnapshot.NodeInfos().Get(n1.Name)
+	assert.NoError(t, err)
+	evictionResults, err := evictor.DrainNode(&ctx, nodeInfo)
 	assert.Error(t, err)
 	assert.Equal(t, 4, len(evictionResults))
 	assert.Equal(t, *p1, *evictionResults["p1"].Pod)
@@ -593,7 +700,7 @@ func TestPodsToEvict(t *testing.T) {
 			if err != nil {
 				t.Fatalf("NodeInfos().Get() unexpected error: %v", err)
 			}
-			gotDsPods, gotNonDsPods := podsToEvict(ctx, nodeInfo)
+			gotDsPods, gotNonDsPods := podsToEvict(nodeInfo, ctx.DaemonSetEvictionForOccupiedNodes)
 			if diff := cmp.Diff(tc.wantDsPods, gotDsPods, cmpopts.EquateEmpty()); diff != "" {
 				t.Errorf("podsToEvict dsPods diff (-want +got):\n%s", diff)
 			}

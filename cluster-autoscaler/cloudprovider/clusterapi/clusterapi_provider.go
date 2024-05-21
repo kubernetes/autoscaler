@@ -151,20 +151,24 @@ func newProvider(
 func BuildClusterAPI(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	managementKubeconfig := opts.CloudConfig
 	if managementKubeconfig == "" && !opts.ClusterAPICloudConfigAuthoritative {
-		managementKubeconfig = opts.KubeConfigPath
+		managementKubeconfig = opts.KubeClientOpts.KubeConfigPath
 	}
 
 	managementConfig, err := clientcmd.BuildConfigFromFlags("", managementKubeconfig)
 	if err != nil {
 		klog.Fatalf("cannot build management cluster config: %v", err)
 	}
+	managementConfig.QPS = opts.KubeClientOpts.KubeClientQPS
+	managementConfig.Burst = opts.KubeClientOpts.KubeClientBurst
 
-	workloadKubeconfig := opts.KubeConfigPath
+	workloadKubeconfig := opts.KubeClientOpts.KubeConfigPath
 
 	workloadConfig, err := clientcmd.BuildConfigFromFlags("", workloadKubeconfig)
 	if err != nil {
 		klog.Fatalf("cannot build workload cluster config: %v", err)
 	}
+	workloadConfig.QPS = opts.KubeClientOpts.KubeClientQPS
+	workloadConfig.Burst = opts.KubeClientOpts.KubeClientBurst
 
 	// Grab a dynamic interface that we can create informers from
 	managementClient, err := dynamic.NewForConfig(managementConfig)

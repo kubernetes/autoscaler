@@ -25,10 +25,12 @@ this document:
   * [Is Cluster Autoscaler compatible with CPU-usage-based node autoscalers?](#is-cluster-autoscaler-compatible-with-cpu-usage-based-node-autoscalers)
   * [How does Cluster Autoscaler work with Pod Priority and Preemption?](#how-does-cluster-autoscaler-work-with-pod-priority-and-preemption)
   * [How does Cluster Autoscaler remove nodes?](#how-does-cluster-autoscaler-remove-nodes)
+  * [How does Cluster Autoscaler treat nodes with status/startup/ignore taints?](#how-does-cluster-autoscaler-treat-nodes-with-taints)
 * [How to?](#how-to)
   * [I'm running cluster with nodes in multiple zones for HA purposes. Is that supported by Cluster Autoscaler?](#im-running-cluster-with-nodes-in-multiple-zones-for-ha-purposes-is-that-supported-by-cluster-autoscaler)
   * [How can I monitor Cluster Autoscaler?](#how-can-i-monitor-cluster-autoscaler)
   * [How can I increase the information that the CA is logging?](#how-can-i-increase-the-information-that-the-ca-is-logging)
+  * [How can I change the log format that the CA outputs?](#how-can-i-change-the-log-format-that-the-ca-outputs)
   * [How can I see all the events from Cluster Autoscaler?](#how-can-i-see-all-events-from-cluster-autoscaler)
   * [How can I scale my cluster to just 1 node?](#how-can-i-scale-my-cluster-to-just-1-node)
   * [How can I scale a node group to 0?](#how-can-i-scale-a-node-group-to-0)
@@ -255,7 +257,37 @@ Cluster Autoscaler terminates the underlying instance in a cloud-provider-depend
 
 It does _not_ delete the [Node object](https://kubernetes.io/docs/concepts/architecture/nodes/#api-object) from Kubernetes. Cleaning up Node objects corresponding to terminated instances is the responsibility of the [cloud node controller](https://kubernetes.io/docs/concepts/architecture/cloud-controller/#node-controller), which can run as part of [kube-controller-manager](https://kubernetes.io/docs/reference/command-line-tools-reference/kube-controller-manager/) or [cloud-controller-manager](https://kubernetes.io/docs/concepts/architecture/cloud-controller/).
 
+### How does Cluster Autoscaler treat nodes with status/startup/ignore taints?
 
+### Startup taints
+Startup taints are meant to be used when there is an operation that has to complete before any pods can run on the node, e.g. drivers installation.
+
+Cluster Autoscaler treats nodes tainted with `startup taints` as unready, but taken into account during scale up logic, assuming they will become ready shortly.
+
+**However, if the substantial number of nodes are tainted with `startup taints` (and therefore unready) for an extended period of time the Cluster Autoscaler
+might stop working as it might assume the cluster is broken and should not be scaled (creating new nodes doesn't help as they don't become ready).**
+
+Startup taints are defined as:
+- all taints with the prefix `startup-taint.cluster-autoscaler.kubernetes.io/`,
+- all taints defined using `--startup-taint` flag.
+
+### Status taints
+Status taints are meant to be used when a given node should not be used to run pods for the time being.
+
+Cluster Autoscaler internally treats nodes tainted with `status taints` as ready, but filtered out during scale up logic.
+
+This means that even though the node is ready, no pods should run there as long as the node is tainted and if necessary a scale-up should occur. 
+
+Status taints are defined as:
+- all taints with the prefix `status-taint.cluster-autoscaler.kubernetes.io/`,
+- all taints defined using `--status-taint` flag.
+
+### Ignore taints
+Ignore taints are now deprecated and treated as startup taints.
+
+Ignore taints are defined as:
+- all taints with the prefix `ignore-taint.cluster-autoscaler.kubernetes.io/`,
+- all taints defined using `--ignore-taint` flag.
 ****************
 
 # How to?
@@ -795,6 +827,7 @@ The following startup parameters are supported for cluster autoscaler:
 | `cordon-node-before-terminating` | Should CA cordon nodes before terminating during downscale process | false
 | `record-duplicated-events` | Enable the autoscaler to print duplicated events within a 5 minute window. | false
 | `debugging-snapshot-enabled` | Whether the debugging snapshot of cluster autoscaler feature is enabled. | false
+| `node-delete-delay-after-taint` | How long to wait before deleting a node after tainting it. | 5 seconds
 
 # Troubleshooting:
 
@@ -929,6 +962,20 @@ debugging connection issues between the Cluster Autoscaler and the Kubernetes AP
 or infrastructure endpoints, then setting a value of `--v=9` will show all the individual
 HTTP calls made. Be aware that using verbosity levels higher than `--v=1` will generate
 an increased amount of logs, prepare your deployments and storage accordingly.
+
+### How Can I change the log format that the CA outputs?
+
+There are 2 log format options, `text` and `json`. By default (`text`), the Cluster Autoscaler will output 
+logs in the [klog native format](https://kubernetes.io/docs/concepts/cluster-administration/system-logs/#klog-output).
+```
+I0823 17:15:11.472183   29944 main.go:569] Cluster Autoscaler 1.28.0-beta.0
+```
+
+Alternatively, adding the flag `--logging-format=json` changes the 
+[log output to json](https://kubernetes.io/docs/concepts/cluster-administration/system-logs/#klog-output).
+```
+{"ts":1692825334994.433,"caller":"cluster-autoscaler/main.go:569","msg":"Cluster Autoscaler 1.28.0-beta.0\n","v":1}
+```
 
 ### What events are emitted by CA?
 
@@ -1163,7 +1210,7 @@ Assumption: We assume that the developer executing the below stages wants to syn
 1. Execute: `git fetch --all`
 1. Checkout the `releaseBranch`: `git checkout -b upstream-release-1.x.0 upstream/cluster-autoscaler-release-1.x.0`
 1. Hard Reset to the `releaseCommitId`: `git reset --hard releaseCommitId`
-1. Check out and pull the primary branch for gardener fork which is not `master`/`main` but is instead named `machine-controller-manager-provider`:  
+1. Check out and pull the primary branch for gardener fork which is not `master`/`main` but is instead named `machine-controller-manager-provider`: 
    1. `git checkout machine-controller-manager-provider`
    1. `git pull origin machine-controller-manager-provider`
 
@@ -1257,7 +1304,7 @@ If you are interested in vendoring MCM from the local-system or personal fork fo
 replace (
   ...
   github.com/gardener/machine-controller-manager => <$GOPATH>/src/github.com/gardener/machine-controller-manager 
-
+  
   // OR you could also use the personal github-handle.
   // github.com/gardener/machine-controller-manager => https://github.com/<USERNAME>/machine-controller-manager/tree/<BRANCH_NAME>
 )

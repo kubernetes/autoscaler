@@ -265,7 +265,7 @@ func getPvcObject(claimName string, class string) *v1.PersistentVolumeClaim {
 			Namespace: namespace,
 		},
 		Spec: v1.PersistentVolumeClaimSpec{
-			Resources:        v1.ResourceRequirements{Requests: v1.ResourceList{v1.ResourceName(v1.ResourceStorage): resource.MustParse(cap)}},
+			Resources:        v1.VolumeResourceRequirements{Requests: v1.ResourceList{v1.ResourceName(v1.ResourceStorage): resource.MustParse(cap)}},
 			AccessModes:      append(mode, v1.ReadWriteOnce),
 			StorageClassName: &class,
 		},

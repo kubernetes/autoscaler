@@ -148,6 +148,10 @@ type LightsailAPI interface {
 	CreateDomainEntryWithContext(aws.Context, *lightsail.CreateDomainEntryInput, ...request.Option) (*lightsail.CreateDomainEntryOutput, error)
 	CreateDomainEntryRequest(*lightsail.CreateDomainEntryInput) (*request.Request, *lightsail.CreateDomainEntryOutput)
 
+	CreateGUISessionAccessDetails(*lightsail.CreateGUISessionAccessDetailsInput) (*lightsail.CreateGUISessionAccessDetailsOutput, error)
+	CreateGUISessionAccessDetailsWithContext(aws.Context, *lightsail.CreateGUISessionAccessDetailsInput, ...request.Option) (*lightsail.CreateGUISessionAccessDetailsOutput, error)
+	CreateGUISessionAccessDetailsRequest(*lightsail.CreateGUISessionAccessDetailsInput) (*request.Request, *lightsail.CreateGUISessionAccessDetailsOutput)
+
 	CreateInstanceSnapshot(*lightsail.CreateInstanceSnapshotInput) (*lightsail.CreateInstanceSnapshotOutput, error)
 	CreateInstanceSnapshotWithContext(aws.Context, *lightsail.CreateInstanceSnapshotInput, ...request.Option) (*lightsail.CreateInstanceSnapshotOutput, error)
 	CreateInstanceSnapshotRequest(*lightsail.CreateInstanceSnapshotInput) (*request.Request, *lightsail.CreateInstanceSnapshotOutput)
@@ -375,6 +379,10 @@ type LightsailAPI interface {
 	GetContainerServices(*lightsail.GetContainerServicesInput) (*lightsail.GetContainerServicesOutput, error)
 	GetContainerServicesWithContext(aws.Context, *lightsail.GetContainerServicesInput, ...request.Option) (*lightsail.GetContainerServicesOutput, error)
 	GetContainerServicesRequest(*lightsail.GetContainerServicesInput) (*request.Request, *lightsail.GetContainerServicesOutput)
+
+	GetCostEstimate(*lightsail.GetCostEstimateInput) (*lightsail.GetCostEstimateOutput, error)
+	GetCostEstimateWithContext(aws.Context, *lightsail.GetCostEstimateInput, ...request.Option) (*lightsail.GetCostEstimateOutput, error)
+	GetCostEstimateRequest(*lightsail.GetCostEstimateInput) (*request.Request, *lightsail.GetCostEstimateOutput)
 
 	GetDisk(*lightsail.GetDiskInput) (*lightsail.GetDiskOutput, error)
 	GetDiskWithContext(aws.Context, *lightsail.GetDiskInput, ...request.Option) (*lightsail.GetDiskOutput, error)
@@ -608,6 +616,10 @@ type LightsailAPI interface {
 	SetResourceAccessForBucketWithContext(aws.Context, *lightsail.SetResourceAccessForBucketInput, ...request.Option) (*lightsail.SetResourceAccessForBucketOutput, error)
 	SetResourceAccessForBucketRequest(*lightsail.SetResourceAccessForBucketInput) (*request.Request, *lightsail.SetResourceAccessForBucketOutput)
 
+	StartGUISession(*lightsail.StartGUISessionInput) (*lightsail.StartGUISessionOutput, error)
+	StartGUISessionWithContext(aws.Context, *lightsail.StartGUISessionInput, ...request.Option) (*lightsail.StartGUISessionOutput, error)
+	StartGUISessionRequest(*lightsail.StartGUISessionInput) (*request.Request, *lightsail.StartGUISessionOutput)
+
 	StartInstance(*lightsail.StartInstanceInput) (*lightsail.StartInstanceOutput, error)
 	StartInstanceWithContext(aws.Context, *lightsail.StartInstanceInput, ...request.Option) (*lightsail.StartInstanceOutput, error)
 	StartInstanceRequest(*lightsail.StartInstanceInput) (*request.Request, *lightsail.StartInstanceOutput)
@@ -615,6 +627,10 @@ type LightsailAPI interface {
 	StartRelationalDatabase(*lightsail.StartRelationalDatabaseInput) (*lightsail.StartRelationalDatabaseOutput, error)
 	StartRelationalDatabaseWithContext(aws.Context, *lightsail.StartRelationalDatabaseInput, ...request.Option) (*lightsail.StartRelationalDatabaseOutput, error)
 	StartRelationalDatabaseRequest(*lightsail.StartRelationalDatabaseInput) (*request.Request, *lightsail.StartRelationalDatabaseOutput)
+
+	StopGUISession(*lightsail.StopGUISessionInput) (*lightsail.StopGUISessionOutput, error)
+	StopGUISessionWithContext(aws.Context, *lightsail.StopGUISessionInput, ...request.Option) (*lightsail.StopGUISessionOutput, error)
+	StopGUISessionRequest(*lightsail.StopGUISessionInput) (*request.Request, *lightsail.StopGUISessionOutput)
 
 	StopInstance(*lightsail.StopInstanceInput) (*lightsail.StopInstanceOutput, error)
 	StopInstanceWithContext(aws.Context, *lightsail.StopInstanceInput, ...request.Option) (*lightsail.StopInstanceOutput, error)
@@ -663,6 +679,10 @@ type LightsailAPI interface {
 	UpdateDomainEntry(*lightsail.UpdateDomainEntryInput) (*lightsail.UpdateDomainEntryOutput, error)
 	UpdateDomainEntryWithContext(aws.Context, *lightsail.UpdateDomainEntryInput, ...request.Option) (*lightsail.UpdateDomainEntryOutput, error)
 	UpdateDomainEntryRequest(*lightsail.UpdateDomainEntryInput) (*request.Request, *lightsail.UpdateDomainEntryOutput)
+
+	UpdateInstanceMetadataOptions(*lightsail.UpdateInstanceMetadataOptionsInput) (*lightsail.UpdateInstanceMetadataOptionsOutput, error)
+	UpdateInstanceMetadataOptionsWithContext(aws.Context, *lightsail.UpdateInstanceMetadataOptionsInput, ...request.Option) (*lightsail.UpdateInstanceMetadataOptionsOutput, error)
+	UpdateInstanceMetadataOptionsRequest(*lightsail.UpdateInstanceMetadataOptionsInput) (*request.Request, *lightsail.UpdateInstanceMetadataOptionsOutput)
 
 	UpdateLoadBalancerAttribute(*lightsail.UpdateLoadBalancerAttributeInput) (*lightsail.UpdateLoadBalancerAttributeOutput, error)
 	UpdateLoadBalancerAttributeWithContext(aws.Context, *lightsail.UpdateLoadBalancerAttributeInput, ...request.Option) (*lightsail.UpdateLoadBalancerAttributeOutput, error)

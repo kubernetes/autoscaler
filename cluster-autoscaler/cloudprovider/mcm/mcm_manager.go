@@ -36,7 +36,7 @@ import (
 	"time"
 
 	awsapis "github.com/gardener/machine-controller-manager-provider-aws/pkg/aws/apis"
-	azureapis "github.com/gardener/machine-controller-manager-provider-azure/pkg/azure/apis"
+	azureapis "github.com/gardener/machine-controller-manager-provider-azure/pkg/azure/api"
 	"github.com/gardener/machine-controller-manager/pkg/apis/machine/v1alpha1"
 	machineapi "github.com/gardener/machine-controller-manager/pkg/client/clientset/versioned/typed/machine/v1alpha1"
 	machineinformers "github.com/gardener/machine-controller-manager/pkg/client/informers/externalversions"

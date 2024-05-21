@@ -140,6 +140,10 @@ type EMRAPI interface {
 	GetBlockPublicAccessConfigurationWithContext(aws.Context, *emr.GetBlockPublicAccessConfigurationInput, ...request.Option) (*emr.GetBlockPublicAccessConfigurationOutput, error)
 	GetBlockPublicAccessConfigurationRequest(*emr.GetBlockPublicAccessConfigurationInput) (*request.Request, *emr.GetBlockPublicAccessConfigurationOutput)
 
+	GetClusterSessionCredentials(*emr.GetClusterSessionCredentialsInput) (*emr.GetClusterSessionCredentialsOutput, error)
+	GetClusterSessionCredentialsWithContext(aws.Context, *emr.GetClusterSessionCredentialsInput, ...request.Option) (*emr.GetClusterSessionCredentialsOutput, error)
+	GetClusterSessionCredentialsRequest(*emr.GetClusterSessionCredentialsInput) (*request.Request, *emr.GetClusterSessionCredentialsOutput)
+
 	GetManagedScalingPolicy(*emr.GetManagedScalingPolicyInput) (*emr.GetManagedScalingPolicyOutput, error)
 	GetManagedScalingPolicyWithContext(aws.Context, *emr.GetManagedScalingPolicyInput, ...request.Option) (*emr.GetManagedScalingPolicyOutput, error)
 	GetManagedScalingPolicyRequest(*emr.GetManagedScalingPolicyInput) (*request.Request, *emr.GetManagedScalingPolicyOutput)
@@ -224,6 +228,13 @@ type EMRAPI interface {
 
 	ListStudiosPages(*emr.ListStudiosInput, func(*emr.ListStudiosOutput, bool) bool) error
 	ListStudiosPagesWithContext(aws.Context, *emr.ListStudiosInput, func(*emr.ListStudiosOutput, bool) bool, ...request.Option) error
+
+	ListSupportedInstanceTypes(*emr.ListSupportedInstanceTypesInput) (*emr.ListSupportedInstanceTypesOutput, error)
+	ListSupportedInstanceTypesWithContext(aws.Context, *emr.ListSupportedInstanceTypesInput, ...request.Option) (*emr.ListSupportedInstanceTypesOutput, error)
+	ListSupportedInstanceTypesRequest(*emr.ListSupportedInstanceTypesInput) (*request.Request, *emr.ListSupportedInstanceTypesOutput)
+
+	ListSupportedInstanceTypesPages(*emr.ListSupportedInstanceTypesInput, func(*emr.ListSupportedInstanceTypesOutput, bool) bool) error
+	ListSupportedInstanceTypesPagesWithContext(aws.Context, *emr.ListSupportedInstanceTypesInput, func(*emr.ListSupportedInstanceTypesOutput, bool) bool, ...request.Option) error
 
 	ModifyCluster(*emr.ModifyClusterInput) (*emr.ModifyClusterOutput, error)
 	ModifyClusterWithContext(aws.Context, *emr.ModifyClusterInput, ...request.Option) (*emr.ModifyClusterOutput, error)

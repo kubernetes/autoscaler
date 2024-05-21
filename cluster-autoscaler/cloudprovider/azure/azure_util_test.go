@@ -22,7 +22,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-03-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
 	"github.com/stretchr/testify/assert"
 
 	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
@@ -96,7 +96,7 @@ func TestWindowsVMNameParts(t *testing.T) {
 			t.Fatalf("incorrect poolPrefix. expected=%s actual=%s", d.expectedPoolPrefix, poolPrefix)
 		}
 		if orch != d.expectedOrch {
-			t.Fatalf("incorrect aks string. expected=%s actual=%s", d.expectedOrch, orch)
+			t.Fatalf("incorrect orchestrator string. expected=%s actual=%s", d.expectedOrch, orch)
 		}
 		if poolIndex != d.expectedPoolIndex {
 			t.Fatalf("incorrect poolIndex. expected=%d actual=%d", d.expectedPoolIndex, poolIndex)

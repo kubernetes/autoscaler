@@ -280,6 +280,91 @@ func (c *GroundStation) CreateDataflowEndpointGroupWithContext(ctx aws.Context, 
 	return out, req.Send()
 }
 
+const opCreateEphemeris = "CreateEphemeris"
+
+// CreateEphemerisRequest generates a "aws/request.Request" representing the
+// client's request for the CreateEphemeris operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateEphemeris for more information on using the CreateEphemeris
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreateEphemerisRequest method.
+//	req, resp := client.CreateEphemerisRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/CreateEphemeris
+func (c *GroundStation) CreateEphemerisRequest(input *CreateEphemerisInput) (req *request.Request, output *CreateEphemerisOutput) {
+	op := &request.Operation{
+		Name:       opCreateEphemeris,
+		HTTPMethod: "POST",
+		HTTPPath:   "/ephemeris",
+	}
+
+	if input == nil {
+		input = &CreateEphemerisInput{}
+	}
+
+	output = &CreateEphemerisOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateEphemeris API operation for AWS Ground Station.
+//
+// Creates an Ephemeris with the specified EphemerisData.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Ground Station's
+// API operation CreateEphemeris for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InvalidParameterException
+//     One or more parameters are not valid.
+//
+//   - DependencyException
+//     Dependency encountered an error.
+//
+//   - ResourceNotFoundException
+//     Resource was not found.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/CreateEphemeris
+func (c *GroundStation) CreateEphemeris(input *CreateEphemerisInput) (*CreateEphemerisOutput, error) {
+	req, out := c.CreateEphemerisRequest(input)
+	return out, req.Send()
+}
+
+// CreateEphemerisWithContext is the same as CreateEphemeris with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateEphemeris for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *GroundStation) CreateEphemerisWithContext(ctx aws.Context, input *CreateEphemerisInput, opts ...request.Option) (*CreateEphemerisOutput, error) {
+	req, out := c.CreateEphemerisRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opCreateMissionProfile = "CreateMissionProfile"
 
 // CreateMissionProfileRequest generates a "aws/request.Request" representing the
@@ -538,6 +623,91 @@ func (c *GroundStation) DeleteDataflowEndpointGroupWithContext(ctx aws.Context, 
 	return out, req.Send()
 }
 
+const opDeleteEphemeris = "DeleteEphemeris"
+
+// DeleteEphemerisRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteEphemeris operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteEphemeris for more information on using the DeleteEphemeris
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteEphemerisRequest method.
+//	req, resp := client.DeleteEphemerisRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/DeleteEphemeris
+func (c *GroundStation) DeleteEphemerisRequest(input *DeleteEphemerisInput) (req *request.Request, output *DeleteEphemerisOutput) {
+	op := &request.Operation{
+		Name:       opDeleteEphemeris,
+		HTTPMethod: "DELETE",
+		HTTPPath:   "/ephemeris/{ephemerisId}",
+	}
+
+	if input == nil {
+		input = &DeleteEphemerisInput{}
+	}
+
+	output = &DeleteEphemerisOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DeleteEphemeris API operation for AWS Ground Station.
+//
+// # Deletes an ephemeris
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Ground Station's
+// API operation DeleteEphemeris for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InvalidParameterException
+//     One or more parameters are not valid.
+//
+//   - DependencyException
+//     Dependency encountered an error.
+//
+//   - ResourceNotFoundException
+//     Resource was not found.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/DeleteEphemeris
+func (c *GroundStation) DeleteEphemeris(input *DeleteEphemerisInput) (*DeleteEphemerisOutput, error) {
+	req, out := c.DeleteEphemerisRequest(input)
+	return out, req.Send()
+}
+
+// DeleteEphemerisWithContext is the same as DeleteEphemeris with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteEphemeris for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *GroundStation) DeleteEphemerisWithContext(ctx aws.Context, input *DeleteEphemerisInput, opts ...request.Option) (*DeleteEphemerisOutput, error) {
+	req, out := c.DeleteEphemerisRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opDeleteMissionProfile = "DeleteMissionProfile"
 
 // DeleteMissionProfileRequest generates a "aws/request.Request" representing the
@@ -703,6 +873,178 @@ func (c *GroundStation) DescribeContact(input *DescribeContactInput) (*DescribeC
 // for more information on using Contexts.
 func (c *GroundStation) DescribeContactWithContext(ctx aws.Context, input *DescribeContactInput, opts ...request.Option) (*DescribeContactOutput, error) {
 	req, out := c.DescribeContactRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDescribeEphemeris = "DescribeEphemeris"
+
+// DescribeEphemerisRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeEphemeris operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeEphemeris for more information on using the DescribeEphemeris
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribeEphemerisRequest method.
+//	req, resp := client.DescribeEphemerisRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/DescribeEphemeris
+func (c *GroundStation) DescribeEphemerisRequest(input *DescribeEphemerisInput) (req *request.Request, output *DescribeEphemerisOutput) {
+	op := &request.Operation{
+		Name:       opDescribeEphemeris,
+		HTTPMethod: "GET",
+		HTTPPath:   "/ephemeris/{ephemerisId}",
+	}
+
+	if input == nil {
+		input = &DescribeEphemerisInput{}
+	}
+
+	output = &DescribeEphemerisOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeEphemeris API operation for AWS Ground Station.
+//
+// Describes an existing ephemeris.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Ground Station's
+// API operation DescribeEphemeris for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InvalidParameterException
+//     One or more parameters are not valid.
+//
+//   - DependencyException
+//     Dependency encountered an error.
+//
+//   - ResourceNotFoundException
+//     Resource was not found.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/DescribeEphemeris
+func (c *GroundStation) DescribeEphemeris(input *DescribeEphemerisInput) (*DescribeEphemerisOutput, error) {
+	req, out := c.DescribeEphemerisRequest(input)
+	return out, req.Send()
+}
+
+// DescribeEphemerisWithContext is the same as DescribeEphemeris with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeEphemeris for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *GroundStation) DescribeEphemerisWithContext(ctx aws.Context, input *DescribeEphemerisInput, opts ...request.Option) (*DescribeEphemerisOutput, error) {
+	req, out := c.DescribeEphemerisRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opGetAgentConfiguration = "GetAgentConfiguration"
+
+// GetAgentConfigurationRequest generates a "aws/request.Request" representing the
+// client's request for the GetAgentConfiguration operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetAgentConfiguration for more information on using the GetAgentConfiguration
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetAgentConfigurationRequest method.
+//	req, resp := client.GetAgentConfigurationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/GetAgentConfiguration
+func (c *GroundStation) GetAgentConfigurationRequest(input *GetAgentConfigurationInput) (req *request.Request, output *GetAgentConfigurationOutput) {
+	op := &request.Operation{
+		Name:       opGetAgentConfiguration,
+		HTTPMethod: "GET",
+		HTTPPath:   "/agent/{agentId}/configuration",
+	}
+
+	if input == nil {
+		input = &GetAgentConfigurationInput{}
+	}
+
+	output = &GetAgentConfigurationOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetAgentConfiguration API operation for AWS Ground Station.
+//
+// For use by AWS Ground Station Agent and shouldn't be called directly.
+//
+// Gets the latest configuration information for a registered agent.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Ground Station's
+// API operation GetAgentConfiguration for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InvalidParameterException
+//     One or more parameters are not valid.
+//
+//   - DependencyException
+//     Dependency encountered an error.
+//
+//   - ResourceNotFoundException
+//     Resource was not found.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/GetAgentConfiguration
+func (c *GroundStation) GetAgentConfiguration(input *GetAgentConfigurationInput) (*GetAgentConfigurationOutput, error) {
+	req, out := c.GetAgentConfigurationRequest(input)
+	return out, req.Send()
+}
+
+// GetAgentConfigurationWithContext is the same as GetAgentConfiguration with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetAgentConfiguration for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *GroundStation) GetAgentConfigurationWithContext(ctx aws.Context, input *GetAgentConfigurationInput, opts ...request.Option) (*GetAgentConfigurationOutput, error) {
+	req, out := c.GetAgentConfigurationRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -923,7 +1265,7 @@ func (c *GroundStation) GetMinuteUsageRequest(input *GetMinuteUsageInput) (req *
 
 // GetMinuteUsage API operation for AWS Ground Station.
 //
-// Returns the number of minutes used by account.
+// Returns the number of reserved minutes used by account.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1564,6 +1906,148 @@ func (c *GroundStation) ListDataflowEndpointGroupsPagesWithContext(ctx aws.Conte
 	return p.Err()
 }
 
+const opListEphemerides = "ListEphemerides"
+
+// ListEphemeridesRequest generates a "aws/request.Request" representing the
+// client's request for the ListEphemerides operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListEphemerides for more information on using the ListEphemerides
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListEphemeridesRequest method.
+//	req, resp := client.ListEphemeridesRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/ListEphemerides
+func (c *GroundStation) ListEphemeridesRequest(input *ListEphemeridesInput) (req *request.Request, output *ListEphemeridesOutput) {
+	op := &request.Operation{
+		Name:       opListEphemerides,
+		HTTPMethod: "POST",
+		HTTPPath:   "/ephemerides",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"nextToken"},
+			OutputTokens:    []string{"nextToken"},
+			LimitToken:      "maxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListEphemeridesInput{}
+	}
+
+	output = &ListEphemeridesOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListEphemerides API operation for AWS Ground Station.
+//
+// List existing ephemerides.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Ground Station's
+// API operation ListEphemerides for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InvalidParameterException
+//     One or more parameters are not valid.
+//
+//   - DependencyException
+//     Dependency encountered an error.
+//
+//   - ResourceNotFoundException
+//     Resource was not found.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/ListEphemerides
+func (c *GroundStation) ListEphemerides(input *ListEphemeridesInput) (*ListEphemeridesOutput, error) {
+	req, out := c.ListEphemeridesRequest(input)
+	return out, req.Send()
+}
+
+// ListEphemeridesWithContext is the same as ListEphemerides with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListEphemerides for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *GroundStation) ListEphemeridesWithContext(ctx aws.Context, input *ListEphemeridesInput, opts ...request.Option) (*ListEphemeridesOutput, error) {
+	req, out := c.ListEphemeridesRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListEphemeridesPages iterates over the pages of a ListEphemerides operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListEphemerides method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListEphemerides operation.
+//	pageNum := 0
+//	err := client.ListEphemeridesPages(params,
+//	    func(page *groundstation.ListEphemeridesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *GroundStation) ListEphemeridesPages(input *ListEphemeridesInput, fn func(*ListEphemeridesOutput, bool) bool) error {
+	return c.ListEphemeridesPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListEphemeridesPagesWithContext same as ListEphemeridesPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *GroundStation) ListEphemeridesPagesWithContext(ctx aws.Context, input *ListEphemeridesInput, fn func(*ListEphemeridesOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListEphemeridesInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListEphemeridesRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListEphemeridesOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opListGroundStations = "ListGroundStations"
 
 // ListGroundStationsRequest generates a "aws/request.Request" representing the
@@ -2075,6 +2559,93 @@ func (c *GroundStation) ListTagsForResourceWithContext(ctx aws.Context, input *L
 	return out, req.Send()
 }
 
+const opRegisterAgent = "RegisterAgent"
+
+// RegisterAgentRequest generates a "aws/request.Request" representing the
+// client's request for the RegisterAgent operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See RegisterAgent for more information on using the RegisterAgent
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the RegisterAgentRequest method.
+//	req, resp := client.RegisterAgentRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/RegisterAgent
+func (c *GroundStation) RegisterAgentRequest(input *RegisterAgentInput) (req *request.Request, output *RegisterAgentOutput) {
+	op := &request.Operation{
+		Name:       opRegisterAgent,
+		HTTPMethod: "POST",
+		HTTPPath:   "/agent",
+	}
+
+	if input == nil {
+		input = &RegisterAgentInput{}
+	}
+
+	output = &RegisterAgentOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// RegisterAgent API operation for AWS Ground Station.
+//
+// For use by AWS Ground Station Agent and shouldn't be called directly.
+//
+// Registers a new agent with AWS Ground Station.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Ground Station's
+// API operation RegisterAgent for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InvalidParameterException
+//     One or more parameters are not valid.
+//
+//   - DependencyException
+//     Dependency encountered an error.
+//
+//   - ResourceNotFoundException
+//     Resource was not found.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/RegisterAgent
+func (c *GroundStation) RegisterAgent(input *RegisterAgentInput) (*RegisterAgentOutput, error) {
+	req, out := c.RegisterAgentRequest(input)
+	return out, req.Send()
+}
+
+// RegisterAgentWithContext is the same as RegisterAgent with the addition of
+// the ability to pass a context and additional request options.
+//
+// See RegisterAgent for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *GroundStation) RegisterAgentWithContext(ctx aws.Context, input *RegisterAgentInput, opts ...request.Option) (*RegisterAgentOutput, error) {
+	req, out := c.RegisterAgentRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opReserveContact = "ReserveContact"
 
 // ReserveContactRequest generates a "aws/request.Request" representing the
@@ -2332,6 +2903,93 @@ func (c *GroundStation) UntagResourceWithContext(ctx aws.Context, input *UntagRe
 	return out, req.Send()
 }
 
+const opUpdateAgentStatus = "UpdateAgentStatus"
+
+// UpdateAgentStatusRequest generates a "aws/request.Request" representing the
+// client's request for the UpdateAgentStatus operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UpdateAgentStatus for more information on using the UpdateAgentStatus
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UpdateAgentStatusRequest method.
+//	req, resp := client.UpdateAgentStatusRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/UpdateAgentStatus
+func (c *GroundStation) UpdateAgentStatusRequest(input *UpdateAgentStatusInput) (req *request.Request, output *UpdateAgentStatusOutput) {
+	op := &request.Operation{
+		Name:       opUpdateAgentStatus,
+		HTTPMethod: "PUT",
+		HTTPPath:   "/agent/{agentId}",
+	}
+
+	if input == nil {
+		input = &UpdateAgentStatusInput{}
+	}
+
+	output = &UpdateAgentStatusOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// UpdateAgentStatus API operation for AWS Ground Station.
+//
+// For use by AWS Ground Station Agent and shouldn't be called directly.
+//
+// Update the status of the agent.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Ground Station's
+// API operation UpdateAgentStatus for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InvalidParameterException
+//     One or more parameters are not valid.
+//
+//   - DependencyException
+//     Dependency encountered an error.
+//
+//   - ResourceNotFoundException
+//     Resource was not found.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/UpdateAgentStatus
+func (c *GroundStation) UpdateAgentStatus(input *UpdateAgentStatusInput) (*UpdateAgentStatusOutput, error) {
+	req, out := c.UpdateAgentStatusRequest(input)
+	return out, req.Send()
+}
+
+// UpdateAgentStatusWithContext is the same as UpdateAgentStatus with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UpdateAgentStatus for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *GroundStation) UpdateAgentStatusWithContext(ctx aws.Context, input *UpdateAgentStatusInput, opts ...request.Option) (*UpdateAgentStatusOutput, error) {
+	req, out := c.UpdateAgentStatusRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opUpdateConfig = "UpdateConfig"
 
 // UpdateConfigRequest generates a "aws/request.Request" representing the
@@ -2415,6 +3073,91 @@ func (c *GroundStation) UpdateConfig(input *UpdateConfigInput) (*UpdateConfigOut
 // for more information on using Contexts.
 func (c *GroundStation) UpdateConfigWithContext(ctx aws.Context, input *UpdateConfigInput, opts ...request.Option) (*UpdateConfigOutput, error) {
 	req, out := c.UpdateConfigRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opUpdateEphemeris = "UpdateEphemeris"
+
+// UpdateEphemerisRequest generates a "aws/request.Request" representing the
+// client's request for the UpdateEphemeris operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UpdateEphemeris for more information on using the UpdateEphemeris
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UpdateEphemerisRequest method.
+//	req, resp := client.UpdateEphemerisRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/UpdateEphemeris
+func (c *GroundStation) UpdateEphemerisRequest(input *UpdateEphemerisInput) (req *request.Request, output *UpdateEphemerisOutput) {
+	op := &request.Operation{
+		Name:       opUpdateEphemeris,
+		HTTPMethod: "PUT",
+		HTTPPath:   "/ephemeris/{ephemerisId}",
+	}
+
+	if input == nil {
+		input = &UpdateEphemerisInput{}
+	}
+
+	output = &UpdateEphemerisOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// UpdateEphemeris API operation for AWS Ground Station.
+//
+// # Updates an existing ephemeris
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Ground Station's
+// API operation UpdateEphemeris for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InvalidParameterException
+//     One or more parameters are not valid.
+//
+//   - DependencyException
+//     Dependency encountered an error.
+//
+//   - ResourceNotFoundException
+//     Resource was not found.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/UpdateEphemeris
+func (c *GroundStation) UpdateEphemeris(input *UpdateEphemerisInput) (*UpdateEphemerisOutput, error) {
+	req, out := c.UpdateEphemerisRequest(input)
+	return out, req.Send()
+}
+
+// UpdateEphemerisWithContext is the same as UpdateEphemeris with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UpdateEphemeris for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *GroundStation) UpdateEphemerisWithContext(ctx aws.Context, input *UpdateEphemerisInput, opts ...request.Option) (*UpdateEphemerisOutput, error) {
+	req, out := c.UpdateEphemerisRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -2506,6 +3249,195 @@ func (c *GroundStation) UpdateMissionProfileWithContext(ctx aws.Context, input *
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
+}
+
+// Detailed information about the agent.
+type AgentDetails struct {
+	_ struct{} `type:"structure"`
+
+	// List of CPU cores reserved for the agent.
+	AgentCpuCores []*int64 `locationName:"agentCpuCores" type:"list"`
+
+	// Current agent version.
+	//
+	// AgentVersion is a required field
+	AgentVersion *string `locationName:"agentVersion" min:"1" type:"string" required:"true"`
+
+	// List of versions being used by agent components.
+	//
+	// ComponentVersions is a required field
+	ComponentVersions []*ComponentVersion `locationName:"componentVersions" min:"1" type:"list" required:"true"`
+
+	// ID of EC2 instance agent is running on.
+	//
+	// InstanceId is a required field
+	InstanceId *string `locationName:"instanceId" min:"10" type:"string" required:"true"`
+
+	// Type of EC2 instance agent is running on.
+	//
+	// InstanceType is a required field
+	InstanceType *string `locationName:"instanceType" min:"1" type:"string" required:"true"`
+
+	//
+	// This field should not be used. Use agentCpuCores instead.
+	//
+	// List of CPU cores reserved for processes other than the agent running on
+	// the EC2 instance.
+	ReservedCpuCores []*int64 `locationName:"reservedCpuCores" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AgentDetails) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AgentDetails) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AgentDetails) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AgentDetails"}
+	if s.AgentVersion == nil {
+		invalidParams.Add(request.NewErrParamRequired("AgentVersion"))
+	}
+	if s.AgentVersion != nil && len(*s.AgentVersion) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AgentVersion", 1))
+	}
+	if s.ComponentVersions == nil {
+		invalidParams.Add(request.NewErrParamRequired("ComponentVersions"))
+	}
+	if s.ComponentVersions != nil && len(s.ComponentVersions) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ComponentVersions", 1))
+	}
+	if s.InstanceId == nil {
+		invalidParams.Add(request.NewErrParamRequired("InstanceId"))
+	}
+	if s.InstanceId != nil && len(*s.InstanceId) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("InstanceId", 10))
+	}
+	if s.InstanceType == nil {
+		invalidParams.Add(request.NewErrParamRequired("InstanceType"))
+	}
+	if s.InstanceType != nil && len(*s.InstanceType) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("InstanceType", 1))
+	}
+	if s.ComponentVersions != nil {
+		for i, v := range s.ComponentVersions {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "ComponentVersions", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAgentCpuCores sets the AgentCpuCores field's value.
+func (s *AgentDetails) SetAgentCpuCores(v []*int64) *AgentDetails {
+	s.AgentCpuCores = v
+	return s
+}
+
+// SetAgentVersion sets the AgentVersion field's value.
+func (s *AgentDetails) SetAgentVersion(v string) *AgentDetails {
+	s.AgentVersion = &v
+	return s
+}
+
+// SetComponentVersions sets the ComponentVersions field's value.
+func (s *AgentDetails) SetComponentVersions(v []*ComponentVersion) *AgentDetails {
+	s.ComponentVersions = v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *AgentDetails) SetInstanceId(v string) *AgentDetails {
+	s.InstanceId = &v
+	return s
+}
+
+// SetInstanceType sets the InstanceType field's value.
+func (s *AgentDetails) SetInstanceType(v string) *AgentDetails {
+	s.InstanceType = &v
+	return s
+}
+
+// SetReservedCpuCores sets the ReservedCpuCores field's value.
+func (s *AgentDetails) SetReservedCpuCores(v []*int64) *AgentDetails {
+	s.ReservedCpuCores = v
+	return s
+}
+
+// Aggregate status of Agent components.
+type AggregateStatus struct {
+	_ struct{} `type:"structure"`
+
+	// Sparse map of failure signatures.
+	SignatureMap map[string]*bool `locationName:"signatureMap" type:"map"`
+
+	// Aggregate status.
+	//
+	// Status is a required field
+	Status *string `locationName:"status" type:"string" required:"true" enum:"AgentStatus"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AggregateStatus) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AggregateStatus) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AggregateStatus) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AggregateStatus"}
+	if s.Status == nil {
+		invalidParams.Add(request.NewErrParamRequired("Status"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetSignatureMap sets the SignatureMap field's value.
+func (s *AggregateStatus) SetSignatureMap(v map[string]*bool) *AggregateStatus {
+	s.SignatureMap = v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *AggregateStatus) SetStatus(v string) *AggregateStatus {
+	s.Status = &v
+	return s
 }
 
 // Details about an antenna demod decode Config used in a contact.
@@ -2764,13 +3696,120 @@ func (s *AntennaUplinkConfig) SetTransmitDisabled(v bool) *AntennaUplinkConfig {
 	return s
 }
 
+// Information about AwsGroundStationAgentEndpoint.
+type AwsGroundStationAgentEndpoint struct {
+	_ struct{} `type:"structure"`
+
+	// The status of AgentEndpoint.
+	AgentStatus *string `locationName:"agentStatus" type:"string" enum:"AgentStatus"`
+
+	// The results of the audit.
+	AuditResults *string `locationName:"auditResults" type:"string" enum:"AuditResults"`
+
+	// The egress address of AgentEndpoint.
+	//
+	// EgressAddress is a required field
+	EgressAddress *ConnectionDetails `locationName:"egressAddress" type:"structure" required:"true"`
+
+	// The ingress address of AgentEndpoint.
+	//
+	// IngressAddress is a required field
+	IngressAddress *RangedConnectionDetails `locationName:"ingressAddress" type:"structure" required:"true"`
+
+	// Name string associated with AgentEndpoint. Used as a human-readable identifier
+	// for AgentEndpoint.
+	//
+	// Name is a required field
+	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AwsGroundStationAgentEndpoint) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AwsGroundStationAgentEndpoint) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AwsGroundStationAgentEndpoint) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AwsGroundStationAgentEndpoint"}
+	if s.EgressAddress == nil {
+		invalidParams.Add(request.NewErrParamRequired("EgressAddress"))
+	}
+	if s.IngressAddress == nil {
+		invalidParams.Add(request.NewErrParamRequired("IngressAddress"))
+	}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+	if s.EgressAddress != nil {
+		if err := s.EgressAddress.Validate(); err != nil {
+			invalidParams.AddNested("EgressAddress", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.IngressAddress != nil {
+		if err := s.IngressAddress.Validate(); err != nil {
+			invalidParams.AddNested("IngressAddress", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAgentStatus sets the AgentStatus field's value.
+func (s *AwsGroundStationAgentEndpoint) SetAgentStatus(v string) *AwsGroundStationAgentEndpoint {
+	s.AgentStatus = &v
+	return s
+}
+
+// SetAuditResults sets the AuditResults field's value.
+func (s *AwsGroundStationAgentEndpoint) SetAuditResults(v string) *AwsGroundStationAgentEndpoint {
+	s.AuditResults = &v
+	return s
+}
+
+// SetEgressAddress sets the EgressAddress field's value.
+func (s *AwsGroundStationAgentEndpoint) SetEgressAddress(v *ConnectionDetails) *AwsGroundStationAgentEndpoint {
+	s.EgressAddress = v
+	return s
+}
+
+// SetIngressAddress sets the IngressAddress field's value.
+func (s *AwsGroundStationAgentEndpoint) SetIngressAddress(v *RangedConnectionDetails) *AwsGroundStationAgentEndpoint {
+	s.IngressAddress = v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *AwsGroundStationAgentEndpoint) SetName(v string) *AwsGroundStationAgentEndpoint {
+	s.Name = &v
+	return s
+}
+
 type CancelContactInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
 	// UUID of a contact.
 	//
 	// ContactId is a required field
-	ContactId *string `location:"uri" locationName:"contactId" type:"string" required:"true"`
+	ContactId *string `location:"uri" locationName:"contactId" min:"1" type:"string" required:"true"`
 }
 
 // String returns the string representation.
@@ -2817,7 +3856,7 @@ type CancelContactOutput struct {
 	_ struct{} `type:"structure"`
 
 	// UUID of a contact.
-	ContactId *string `locationName:"contactId" type:"string"`
+	ContactId *string `locationName:"contactId" min:"1" type:"string"`
 }
 
 // String returns the string representation.
@@ -2841,6 +3880,189 @@ func (s CancelContactOutput) GoString() string {
 // SetContactId sets the ContactId field's value.
 func (s *CancelContactOutput) SetContactId(v string) *CancelContactOutput {
 	s.ContactId = &v
+	return s
+}
+
+// Data on the status of agent components.
+type ComponentStatusData struct {
+	_ struct{} `type:"structure"`
+
+	// Bytes received by the component.
+	BytesReceived *int64 `locationName:"bytesReceived" type:"long"`
+
+	// Bytes sent by the component.
+	BytesSent *int64 `locationName:"bytesSent" type:"long"`
+
+	// Capability ARN of the component.
+	//
+	// CapabilityArn is a required field
+	CapabilityArn *string `locationName:"capabilityArn" type:"string" required:"true"`
+
+	// The Component type.
+	//
+	// ComponentType is a required field
+	ComponentType *string `locationName:"componentType" type:"string" required:"true"`
+
+	// Dataflow UUID associated with the component.
+	//
+	// DataflowId is a required field
+	DataflowId *string `locationName:"dataflowId" min:"1" type:"string" required:"true"`
+
+	// Packets dropped by component.
+	PacketsDropped *int64 `locationName:"packetsDropped" type:"long"`
+
+	// Component status.
+	//
+	// Status is a required field
+	Status *string `locationName:"status" type:"string" required:"true" enum:"AgentStatus"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ComponentStatusData) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ComponentStatusData) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ComponentStatusData) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ComponentStatusData"}
+	if s.CapabilityArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("CapabilityArn"))
+	}
+	if s.ComponentType == nil {
+		invalidParams.Add(request.NewErrParamRequired("ComponentType"))
+	}
+	if s.DataflowId == nil {
+		invalidParams.Add(request.NewErrParamRequired("DataflowId"))
+	}
+	if s.DataflowId != nil && len(*s.DataflowId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("DataflowId", 1))
+	}
+	if s.Status == nil {
+		invalidParams.Add(request.NewErrParamRequired("Status"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetBytesReceived sets the BytesReceived field's value.
+func (s *ComponentStatusData) SetBytesReceived(v int64) *ComponentStatusData {
+	s.BytesReceived = &v
+	return s
+}
+
+// SetBytesSent sets the BytesSent field's value.
+func (s *ComponentStatusData) SetBytesSent(v int64) *ComponentStatusData {
+	s.BytesSent = &v
+	return s
+}
+
+// SetCapabilityArn sets the CapabilityArn field's value.
+func (s *ComponentStatusData) SetCapabilityArn(v string) *ComponentStatusData {
+	s.CapabilityArn = &v
+	return s
+}
+
+// SetComponentType sets the ComponentType field's value.
+func (s *ComponentStatusData) SetComponentType(v string) *ComponentStatusData {
+	s.ComponentType = &v
+	return s
+}
+
+// SetDataflowId sets the DataflowId field's value.
+func (s *ComponentStatusData) SetDataflowId(v string) *ComponentStatusData {
+	s.DataflowId = &v
+	return s
+}
+
+// SetPacketsDropped sets the PacketsDropped field's value.
+func (s *ComponentStatusData) SetPacketsDropped(v int64) *ComponentStatusData {
+	s.PacketsDropped = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *ComponentStatusData) SetStatus(v string) *ComponentStatusData {
+	s.Status = &v
+	return s
+}
+
+// Version information for agent components.
+type ComponentVersion struct {
+	_ struct{} `type:"structure"`
+
+	// Component type.
+	//
+	// ComponentType is a required field
+	ComponentType *string `locationName:"componentType" type:"string" required:"true"`
+
+	// List of versions.
+	//
+	// Versions is a required field
+	Versions []*string `locationName:"versions" min:"1" type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ComponentVersion) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ComponentVersion) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ComponentVersion) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ComponentVersion"}
+	if s.ComponentType == nil {
+		invalidParams.Add(request.NewErrParamRequired("ComponentType"))
+	}
+	if s.Versions == nil {
+		invalidParams.Add(request.NewErrParamRequired("Versions"))
+	}
+	if s.Versions != nil && len(s.Versions) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Versions", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetComponentType sets the ComponentType field's value.
+func (s *ComponentVersion) SetComponentType(v string) *ComponentVersion {
+	s.ComponentType = &v
+	return s
+}
+
+// SetVersions sets the Versions field's value.
+func (s *ComponentVersion) SetVersions(v []*string) *ComponentVersion {
+	s.Versions = v
 	return s
 }
 
@@ -3093,17 +4315,78 @@ func (s *ConfigTypeData) SetUplinkEchoConfig(v *UplinkEchoConfig) *ConfigTypeDat
 	return s
 }
 
+// Egress address of AgentEndpoint with an optional mtu.
+type ConnectionDetails struct {
+	_ struct{} `type:"structure"`
+
+	// Maximum transmission unit (MTU) size in bytes of a dataflow endpoint.
+	Mtu *int64 `locationName:"mtu" type:"integer"`
+
+	// A socket address.
+	//
+	// SocketAddress is a required field
+	SocketAddress *SocketAddress `locationName:"socketAddress" type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ConnectionDetails) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ConnectionDetails) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ConnectionDetails) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ConnectionDetails"}
+	if s.SocketAddress == nil {
+		invalidParams.Add(request.NewErrParamRequired("SocketAddress"))
+	}
+	if s.SocketAddress != nil {
+		if err := s.SocketAddress.Validate(); err != nil {
+			invalidParams.AddNested("SocketAddress", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetMtu sets the Mtu field's value.
+func (s *ConnectionDetails) SetMtu(v int64) *ConnectionDetails {
+	s.Mtu = &v
+	return s
+}
+
+// SetSocketAddress sets the SocketAddress field's value.
+func (s *ConnectionDetails) SetSocketAddress(v *SocketAddress) *ConnectionDetails {
+	s.SocketAddress = v
+	return s
+}
+
 // Data describing a contact.
 type ContactData struct {
 	_ struct{} `type:"structure"`
 
 	// UUID of a contact.
-	ContactId *string `locationName:"contactId" type:"string"`
+	ContactId *string `locationName:"contactId" min:"1" type:"string"`
 
 	// Status of a contact.
 	ContactStatus *string `locationName:"contactStatus" type:"string" enum:"ContactStatus"`
 
-	// End time of a contact.
+	// End time of a contact in UTC.
 	EndTime *time.Time `locationName:"endTime" type:"timestamp"`
 
 	// Error message of a contact.
@@ -3132,7 +4415,7 @@ type ContactData struct {
 	// ARN of a satellite.
 	SatelliteArn *string `locationName:"satelliteArn" type:"string"`
 
-	// Start time of a contact.
+	// Start time of a contact in UTC.
 	StartTime *time.Time `locationName:"startTime" type:"timestamp"`
 
 	// Tags assigned to a contact.
@@ -3364,6 +4647,18 @@ func (s *CreateConfigOutput) SetConfigType(v string) *CreateConfigOutput {
 type CreateDataflowEndpointGroupInput struct {
 	_ struct{} `type:"structure"`
 
+	// Amount of time, in seconds, after a contact ends that the Ground Station
+	// Dataflow Endpoint Group will be in a POSTPASS state. A Ground Station Dataflow
+	// Endpoint Group State Change event will be emitted when the Dataflow Endpoint
+	// Group enters and exits the POSTPASS state.
+	ContactPostPassDurationSeconds *int64 `locationName:"contactPostPassDurationSeconds" min:"120" type:"integer"`
+
+	// Amount of time, in seconds, before a contact starts that the Ground Station
+	// Dataflow Endpoint Group will be in a PREPASS state. A Ground Station Dataflow
+	// Endpoint Group State Change event will be emitted when the Dataflow Endpoint
+	// Group enters and exits the PREPASS state.
+	ContactPrePassDurationSeconds *int64 `locationName:"contactPrePassDurationSeconds" min:"120" type:"integer"`
+
 	// Endpoint details of each endpoint in the dataflow endpoint group.
 	//
 	// EndpointDetails is a required field
@@ -3394,6 +4689,12 @@ func (s CreateDataflowEndpointGroupInput) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *CreateDataflowEndpointGroupInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "CreateDataflowEndpointGroupInput"}
+	if s.ContactPostPassDurationSeconds != nil && *s.ContactPostPassDurationSeconds < 120 {
+		invalidParams.Add(request.NewErrParamMinValue("ContactPostPassDurationSeconds", 120))
+	}
+	if s.ContactPrePassDurationSeconds != nil && *s.ContactPrePassDurationSeconds < 120 {
+		invalidParams.Add(request.NewErrParamMinValue("ContactPrePassDurationSeconds", 120))
+	}
 	if s.EndpointDetails == nil {
 		invalidParams.Add(request.NewErrParamRequired("EndpointDetails"))
 	}
@@ -3414,6 +4715,18 @@ func (s *CreateDataflowEndpointGroupInput) Validate() error {
 	return nil
 }
 
+// SetContactPostPassDurationSeconds sets the ContactPostPassDurationSeconds field's value.
+func (s *CreateDataflowEndpointGroupInput) SetContactPostPassDurationSeconds(v int64) *CreateDataflowEndpointGroupInput {
+	s.ContactPostPassDurationSeconds = &v
+	return s
+}
+
+// SetContactPrePassDurationSeconds sets the ContactPrePassDurationSeconds field's value.
+func (s *CreateDataflowEndpointGroupInput) SetContactPrePassDurationSeconds(v int64) *CreateDataflowEndpointGroupInput {
+	s.ContactPrePassDurationSeconds = &v
+	return s
+}
+
 // SetEndpointDetails sets the EndpointDetails field's value.
 func (s *CreateDataflowEndpointGroupInput) SetEndpointDetails(v []*EndpointDetails) *CreateDataflowEndpointGroupInput {
 	s.EndpointDetails = v
@@ -3430,7 +4743,7 @@ type CreateDataflowEndpointGroupOutput struct {
 	_ struct{} `type:"structure"`
 
 	// UUID of a dataflow endpoint group.
-	DataflowEndpointGroupId *string `locationName:"dataflowEndpointGroupId" type:"string"`
+	DataflowEndpointGroupId *string `locationName:"dataflowEndpointGroupId" min:"1" type:"string"`
 }
 
 // String returns the string representation.
@@ -3457,16 +4770,185 @@ func (s *CreateDataflowEndpointGroupOutput) SetDataflowEndpointGroupId(v string)
 	return s
 }
 
+type CreateEphemerisInput struct {
+	_ struct{} `type:"structure"`
+
+	// Whether to set the ephemeris status to ENABLED after validation.
+	//
+	// Setting this to false will set the ephemeris status to DISABLED after validation.
+	Enabled *bool `locationName:"enabled" type:"boolean"`
+
+	// Ephemeris data.
+	Ephemeris *EphemerisData `locationName:"ephemeris" type:"structure"`
+
+	// An overall expiration time for the ephemeris in UTC, after which it will
+	// become EXPIRED.
+	ExpirationTime *time.Time `locationName:"expirationTime" type:"timestamp"`
+
+	// The ARN of a KMS key used to encrypt the ephemeris in Ground Station.
+	KmsKeyArn *string `locationName:"kmsKeyArn" type:"string"`
+
+	// A name string associated with the ephemeris. Used as a human-readable identifier
+	// for the ephemeris.
+	//
+	// Name is a required field
+	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
+
+	// Customer-provided priority score to establish the order in which overlapping
+	// ephemerides should be used.
+	//
+	// The default for customer-provided ephemeris priority is 1, and higher numbers
+	// take precedence.
+	//
+	// Priority must be 1 or greater
+	Priority *int64 `locationName:"priority" min:"1" type:"integer"`
+
+	// AWS Ground Station satellite ID for this ephemeris.
+	//
+	// SatelliteId is a required field
+	SatelliteId *string `locationName:"satelliteId" min:"1" type:"string" required:"true"`
+
+	// Tags assigned to an ephemeris.
+	Tags map[string]*string `locationName:"tags" type:"map"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateEphemerisInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateEphemerisInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateEphemerisInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateEphemerisInput"}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+	if s.Priority != nil && *s.Priority < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("Priority", 1))
+	}
+	if s.SatelliteId == nil {
+		invalidParams.Add(request.NewErrParamRequired("SatelliteId"))
+	}
+	if s.SatelliteId != nil && len(*s.SatelliteId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("SatelliteId", 1))
+	}
+	if s.Ephemeris != nil {
+		if err := s.Ephemeris.Validate(); err != nil {
+			invalidParams.AddNested("Ephemeris", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetEnabled sets the Enabled field's value.
+func (s *CreateEphemerisInput) SetEnabled(v bool) *CreateEphemerisInput {
+	s.Enabled = &v
+	return s
+}
+
+// SetEphemeris sets the Ephemeris field's value.
+func (s *CreateEphemerisInput) SetEphemeris(v *EphemerisData) *CreateEphemerisInput {
+	s.Ephemeris = v
+	return s
+}
+
+// SetExpirationTime sets the ExpirationTime field's value.
+func (s *CreateEphemerisInput) SetExpirationTime(v time.Time) *CreateEphemerisInput {
+	s.ExpirationTime = &v
+	return s
+}
+
+// SetKmsKeyArn sets the KmsKeyArn field's value.
+func (s *CreateEphemerisInput) SetKmsKeyArn(v string) *CreateEphemerisInput {
+	s.KmsKeyArn = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CreateEphemerisInput) SetName(v string) *CreateEphemerisInput {
+	s.Name = &v
+	return s
+}
+
+// SetPriority sets the Priority field's value.
+func (s *CreateEphemerisInput) SetPriority(v int64) *CreateEphemerisInput {
+	s.Priority = &v
+	return s
+}
+
+// SetSatelliteId sets the SatelliteId field's value.
+func (s *CreateEphemerisInput) SetSatelliteId(v string) *CreateEphemerisInput {
+	s.SatelliteId = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CreateEphemerisInput) SetTags(v map[string]*string) *CreateEphemerisInput {
+	s.Tags = v
+	return s
+}
+
+type CreateEphemerisOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The AWS Ground Station ephemeris ID.
+	EphemerisId *string `locationName:"ephemerisId" min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateEphemerisOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateEphemerisOutput) GoString() string {
+	return s.String()
+}
+
+// SetEphemerisId sets the EphemerisId field's value.
+func (s *CreateEphemerisOutput) SetEphemerisId(v string) *CreateEphemerisOutput {
+	s.EphemerisId = &v
+	return s
+}
+
 type CreateMissionProfileInput struct {
 	_ struct{} `type:"structure"`
 
 	// Amount of time after a contact ends that you’d like to receive a CloudWatch
 	// event indicating the pass has finished.
-	ContactPostPassDurationSeconds *int64 `locationName:"contactPostPassDurationSeconds" min:"1" type:"integer"`
+	ContactPostPassDurationSeconds *int64 `locationName:"contactPostPassDurationSeconds" type:"integer"`
 
 	// Amount of time prior to contact start you’d like to receive a CloudWatch
 	// event indicating an upcoming pass.
-	ContactPrePassDurationSeconds *int64 `locationName:"contactPrePassDurationSeconds" min:"1" type:"integer"`
+	ContactPrePassDurationSeconds *int64 `locationName:"contactPrePassDurationSeconds" type:"integer"`
 
 	// A list of lists of ARNs. Each list of ARNs is an edge, with a from Config
 	// and a to Config.
@@ -3485,6 +4967,12 @@ type CreateMissionProfileInput struct {
 	//
 	// Name is a required field
 	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
+
+	// KMS key to use for encrypting streams.
+	StreamsKmsKey *KmsKey `locationName:"streamsKmsKey" type:"structure"`
+
+	// Role to use for encrypting streams with KMS key.
+	StreamsKmsRole *string `locationName:"streamsKmsRole" type:"string"`
 
 	// Tags assigned to a mission profile.
 	Tags map[string]*string `locationName:"tags" type:"map"`
@@ -3516,12 +5004,6 @@ func (s CreateMissionProfileInput) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *CreateMissionProfileInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "CreateMissionProfileInput"}
-	if s.ContactPostPassDurationSeconds != nil && *s.ContactPostPassDurationSeconds < 1 {
-		invalidParams.Add(request.NewErrParamMinValue("ContactPostPassDurationSeconds", 1))
-	}
-	if s.ContactPrePassDurationSeconds != nil && *s.ContactPrePassDurationSeconds < 1 {
-		invalidParams.Add(request.NewErrParamMinValue("ContactPrePassDurationSeconds", 1))
-	}
 	if s.DataflowEdges == nil {
 		invalidParams.Add(request.NewErrParamRequired("DataflowEdges"))
 	}
@@ -3539,6 +5021,11 @@ func (s *CreateMissionProfileInput) Validate() error {
 	}
 	if s.TrackingConfigArn == nil {
 		invalidParams.Add(request.NewErrParamRequired("TrackingConfigArn"))
+	}
+	if s.StreamsKmsKey != nil {
+		if err := s.StreamsKmsKey.Validate(); err != nil {
+			invalidParams.AddNested("StreamsKmsKey", err.(request.ErrInvalidParams))
+		}
 	}
 
 	if invalidParams.Len() > 0 {
@@ -3577,6 +5064,18 @@ func (s *CreateMissionProfileInput) SetName(v string) *CreateMissionProfileInput
 	return s
 }
 
+// SetStreamsKmsKey sets the StreamsKmsKey field's value.
+func (s *CreateMissionProfileInput) SetStreamsKmsKey(v *KmsKey) *CreateMissionProfileInput {
+	s.StreamsKmsKey = v
+	return s
+}
+
+// SetStreamsKmsRole sets the StreamsKmsRole field's value.
+func (s *CreateMissionProfileInput) SetStreamsKmsRole(v string) *CreateMissionProfileInput {
+	s.StreamsKmsRole = &v
+	return s
+}
+
 // SetTags sets the Tags field's value.
 func (s *CreateMissionProfileInput) SetTags(v map[string]*string) *CreateMissionProfileInput {
 	s.Tags = v
@@ -3593,7 +5092,7 @@ type CreateMissionProfileOutput struct {
 	_ struct{} `type:"structure"`
 
 	// UUID of a mission profile.
-	MissionProfileId *string `locationName:"missionProfileId" type:"string"`
+	MissionProfileId *string `locationName:"missionProfileId" min:"1" type:"string"`
 }
 
 // String returns the string representation.
@@ -3625,13 +5124,13 @@ type Data struct {
 	_ struct{} `type:"structure"`
 
 	// UUID of a ground station.
-	GroundStationId *string `locationName:"groundStationId" type:"string"`
+	GroundStationId *string `locationName:"groundStationId" min:"4" type:"string"`
 
 	// Name of a ground station.
-	GroundStationName *string `locationName:"groundStationName" type:"string"`
+	GroundStationName *string `locationName:"groundStationName" min:"4" type:"string"`
 
 	// Ground station Region.
-	Region *string `locationName:"region" type:"string"`
+	Region *string `locationName:"region" min:"1" type:"string"`
 }
 
 // String returns the string representation.
@@ -3864,7 +5363,7 @@ type DataflowEndpointListItem struct {
 	DataflowEndpointGroupArn *string `locationName:"dataflowEndpointGroupArn" type:"string"`
 
 	// UUID of a dataflow endpoint group.
-	DataflowEndpointGroupId *string `locationName:"dataflowEndpointGroupId" type:"string"`
+	DataflowEndpointGroupId *string `locationName:"dataflowEndpointGroupId" min:"1" type:"string"`
 }
 
 // String returns the string representation.
@@ -3953,7 +5452,7 @@ type DeleteConfigInput struct {
 	// UUID of a Config.
 	//
 	// ConfigId is a required field
-	ConfigId *string `location:"uri" locationName:"configId" type:"string" required:"true"`
+	ConfigId *string `location:"uri" locationName:"configId" min:"1" type:"string" required:"true"`
 
 	// Type of a Config.
 	//
@@ -4068,7 +5567,7 @@ type DeleteDataflowEndpointGroupInput struct {
 	// UUID of a dataflow endpoint group.
 	//
 	// DataflowEndpointGroupId is a required field
-	DataflowEndpointGroupId *string `location:"uri" locationName:"dataflowEndpointGroupId" type:"string" required:"true"`
+	DataflowEndpointGroupId *string `location:"uri" locationName:"dataflowEndpointGroupId" min:"1" type:"string" required:"true"`
 }
 
 // String returns the string representation.
@@ -4115,7 +5614,7 @@ type DeleteDataflowEndpointGroupOutput struct {
 	_ struct{} `type:"structure"`
 
 	// UUID of a dataflow endpoint group.
-	DataflowEndpointGroupId *string `locationName:"dataflowEndpointGroupId" type:"string"`
+	DataflowEndpointGroupId *string `locationName:"dataflowEndpointGroupId" min:"1" type:"string"`
 }
 
 // String returns the string representation.
@@ -4142,13 +5641,93 @@ func (s *DeleteDataflowEndpointGroupOutput) SetDataflowEndpointGroupId(v string)
 	return s
 }
 
+type DeleteEphemerisInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The AWS Ground Station ephemeris ID.
+	//
+	// EphemerisId is a required field
+	EphemerisId *string `location:"uri" locationName:"ephemerisId" min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteEphemerisInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteEphemerisInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteEphemerisInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteEphemerisInput"}
+	if s.EphemerisId == nil {
+		invalidParams.Add(request.NewErrParamRequired("EphemerisId"))
+	}
+	if s.EphemerisId != nil && len(*s.EphemerisId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("EphemerisId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetEphemerisId sets the EphemerisId field's value.
+func (s *DeleteEphemerisInput) SetEphemerisId(v string) *DeleteEphemerisInput {
+	s.EphemerisId = &v
+	return s
+}
+
+type DeleteEphemerisOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The AWS Ground Station ephemeris ID.
+	EphemerisId *string `locationName:"ephemerisId" min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteEphemerisOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteEphemerisOutput) GoString() string {
+	return s.String()
+}
+
+// SetEphemerisId sets the EphemerisId field's value.
+func (s *DeleteEphemerisOutput) SetEphemerisId(v string) *DeleteEphemerisOutput {
+	s.EphemerisId = &v
+	return s
+}
+
 type DeleteMissionProfileInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
 	// UUID of a mission profile.
 	//
 	// MissionProfileId is a required field
-	MissionProfileId *string `location:"uri" locationName:"missionProfileId" type:"string" required:"true"`
+	MissionProfileId *string `location:"uri" locationName:"missionProfileId" min:"1" type:"string" required:"true"`
 }
 
 // String returns the string representation.
@@ -4195,7 +5774,7 @@ type DeleteMissionProfileOutput struct {
 	_ struct{} `type:"structure"`
 
 	// UUID of a mission profile.
-	MissionProfileId *string `locationName:"missionProfileId" type:"string"`
+	MissionProfileId *string `locationName:"missionProfileId" min:"1" type:"string"`
 }
 
 // String returns the string representation.
@@ -4344,7 +5923,7 @@ type DescribeContactInput struct {
 	// UUID of a contact.
 	//
 	// ContactId is a required field
-	ContactId *string `location:"uri" locationName:"contactId" type:"string" required:"true"`
+	ContactId *string `location:"uri" locationName:"contactId" min:"1" type:"string" required:"true"`
 }
 
 // String returns the string representation.
@@ -4391,7 +5970,7 @@ type DescribeContactOutput struct {
 	_ struct{} `type:"structure"`
 
 	// UUID of a contact.
-	ContactId *string `locationName:"contactId" type:"string"`
+	ContactId *string `locationName:"contactId" min:"1" type:"string"`
 
 	// Status of a contact.
 	ContactStatus *string `locationName:"contactStatus" type:"string" enum:"ContactStatus"`
@@ -4399,7 +5978,7 @@ type DescribeContactOutput struct {
 	// List describing source and destination details for each dataflow edge.
 	DataflowList []*DataflowDetail `locationName:"dataflowList" type:"list"`
 
-	// End time of a contact.
+	// End time of a contact in UTC.
 	EndTime *time.Time `locationName:"endTime" type:"timestamp"`
 
 	// Error message for a contact.
@@ -4428,7 +6007,7 @@ type DescribeContactOutput struct {
 	// ARN of a satellite.
 	SatelliteArn *string `locationName:"satelliteArn" type:"string"`
 
-	// Start time of a contact.
+	// Start time of a contact in UTC.
 	StartTime *time.Time `locationName:"startTime" type:"timestamp"`
 
 	// Tags assigned to a contact.
@@ -4537,6 +6116,175 @@ func (s *DescribeContactOutput) SetTags(v map[string]*string) *DescribeContactOu
 	return s
 }
 
+type DescribeEphemerisInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The AWS Ground Station ephemeris ID.
+	//
+	// EphemerisId is a required field
+	EphemerisId *string `location:"uri" locationName:"ephemerisId" min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeEphemerisInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeEphemerisInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeEphemerisInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeEphemerisInput"}
+	if s.EphemerisId == nil {
+		invalidParams.Add(request.NewErrParamRequired("EphemerisId"))
+	}
+	if s.EphemerisId != nil && len(*s.EphemerisId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("EphemerisId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetEphemerisId sets the EphemerisId field's value.
+func (s *DescribeEphemerisInput) SetEphemerisId(v string) *DescribeEphemerisInput {
+	s.EphemerisId = &v
+	return s
+}
+
+type DescribeEphemerisOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The time the ephemeris was uploaded in UTC.
+	CreationTime *time.Time `locationName:"creationTime" type:"timestamp"`
+
+	// Whether or not the ephemeris is enabled.
+	Enabled *bool `locationName:"enabled" type:"boolean"`
+
+	// The AWS Ground Station ephemeris ID.
+	EphemerisId *string `locationName:"ephemerisId" min:"1" type:"string"`
+
+	// Reason that an ephemeris failed validation. Only provided for ephemerides
+	// with INVALID status.
+	InvalidReason *string `locationName:"invalidReason" type:"string" enum:"EphemerisInvalidReason"`
+
+	// A name string associated with the ephemeris. Used as a human-readable identifier
+	// for the ephemeris.
+	Name *string `locationName:"name" min:"1" type:"string"`
+
+	// Customer-provided priority score to establish the order in which overlapping
+	// ephemerides should be used.
+	//
+	// The default for customer-provided ephemeris priority is 1, and higher numbers
+	// take precedence.
+	//
+	// Priority must be 1 or greater
+	Priority *int64 `locationName:"priority" type:"integer"`
+
+	// The AWS Ground Station satellite ID associated with ephemeris.
+	SatelliteId *string `locationName:"satelliteId" min:"1" type:"string"`
+
+	// The status of the ephemeris.
+	Status *string `locationName:"status" type:"string" enum:"EphemerisStatus"`
+
+	// Supplied ephemeris data.
+	SuppliedData *EphemerisTypeDescription `locationName:"suppliedData" type:"structure"`
+
+	// Tags assigned to an ephemeris.
+	Tags map[string]*string `locationName:"tags" type:"map"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeEphemerisOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeEphemerisOutput) GoString() string {
+	return s.String()
+}
+
+// SetCreationTime sets the CreationTime field's value.
+func (s *DescribeEphemerisOutput) SetCreationTime(v time.Time) *DescribeEphemerisOutput {
+	s.CreationTime = &v
+	return s
+}
+
+// SetEnabled sets the Enabled field's value.
+func (s *DescribeEphemerisOutput) SetEnabled(v bool) *DescribeEphemerisOutput {
+	s.Enabled = &v
+	return s
+}
+
+// SetEphemerisId sets the EphemerisId field's value.
+func (s *DescribeEphemerisOutput) SetEphemerisId(v string) *DescribeEphemerisOutput {
+	s.EphemerisId = &v
+	return s
+}
+
+// SetInvalidReason sets the InvalidReason field's value.
+func (s *DescribeEphemerisOutput) SetInvalidReason(v string) *DescribeEphemerisOutput {
+	s.InvalidReason = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *DescribeEphemerisOutput) SetName(v string) *DescribeEphemerisOutput {
+	s.Name = &v
+	return s
+}
+
+// SetPriority sets the Priority field's value.
+func (s *DescribeEphemerisOutput) SetPriority(v int64) *DescribeEphemerisOutput {
+	s.Priority = &v
+	return s
+}
+
+// SetSatelliteId sets the SatelliteId field's value.
+func (s *DescribeEphemerisOutput) SetSatelliteId(v string) *DescribeEphemerisOutput {
+	s.SatelliteId = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *DescribeEphemerisOutput) SetStatus(v string) *DescribeEphemerisOutput {
+	s.Status = &v
+	return s
+}
+
+// SetSuppliedData sets the SuppliedData field's value.
+func (s *DescribeEphemerisOutput) SetSuppliedData(v *EphemerisTypeDescription) *DescribeEphemerisOutput {
+	s.SuppliedData = v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *DescribeEphemerisOutput) SetTags(v map[string]*string) *DescribeEphemerisOutput {
+	s.Tags = v
+	return s
+}
+
 // Dataflow details for the destination side.
 type Destination struct {
 	_ struct{} `type:"structure"`
@@ -4546,7 +6294,7 @@ type Destination struct {
 	ConfigDetails *ConfigDetails `locationName:"configDetails" type:"structure"`
 
 	// UUID of a Config.
-	ConfigId *string `locationName:"configId" type:"string"`
+	ConfigId *string `locationName:"configId" min:"1" type:"string"`
 
 	// Type of a Config.
 	ConfigType *string `locationName:"configType" type:"string" enum:"ConfigCapabilityType"`
@@ -4594,6 +6342,90 @@ func (s *Destination) SetConfigType(v string) *Destination {
 // SetDataflowDestinationRegion sets the DataflowDestinationRegion field's value.
 func (s *Destination) SetDataflowDestinationRegion(v string) *Destination {
 	s.DataflowDestinationRegion = &v
+	return s
+}
+
+// Data for agent discovery.
+type DiscoveryData struct {
+	_ struct{} `type:"structure"`
+
+	// List of capabilities to associate with agent.
+	//
+	// CapabilityArns is a required field
+	CapabilityArns []*string `locationName:"capabilityArns" min:"1" type:"list" required:"true"`
+
+	// List of private IP addresses to associate with agent.
+	//
+	// PrivateIpAddresses is a required field
+	PrivateIpAddresses []*string `locationName:"privateIpAddresses" min:"1" type:"list" required:"true"`
+
+	// List of public IP addresses to associate with agent.
+	//
+	// PublicIpAddresses is a required field
+	PublicIpAddresses []*string `locationName:"publicIpAddresses" min:"1" type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DiscoveryData) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DiscoveryData) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DiscoveryData) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DiscoveryData"}
+	if s.CapabilityArns == nil {
+		invalidParams.Add(request.NewErrParamRequired("CapabilityArns"))
+	}
+	if s.CapabilityArns != nil && len(s.CapabilityArns) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("CapabilityArns", 1))
+	}
+	if s.PrivateIpAddresses == nil {
+		invalidParams.Add(request.NewErrParamRequired("PrivateIpAddresses"))
+	}
+	if s.PrivateIpAddresses != nil && len(s.PrivateIpAddresses) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("PrivateIpAddresses", 1))
+	}
+	if s.PublicIpAddresses == nil {
+		invalidParams.Add(request.NewErrParamRequired("PublicIpAddresses"))
+	}
+	if s.PublicIpAddresses != nil && len(s.PublicIpAddresses) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("PublicIpAddresses", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetCapabilityArns sets the CapabilityArns field's value.
+func (s *DiscoveryData) SetCapabilityArns(v []*string) *DiscoveryData {
+	s.CapabilityArns = v
+	return s
+}
+
+// SetPrivateIpAddresses sets the PrivateIpAddresses field's value.
+func (s *DiscoveryData) SetPrivateIpAddresses(v []*string) *DiscoveryData {
+	s.PrivateIpAddresses = v
+	return s
+}
+
+// SetPublicIpAddresses sets the PublicIpAddresses field's value.
+func (s *DiscoveryData) SetPublicIpAddresses(v []*string) *DiscoveryData {
+	s.PublicIpAddresses = v
 	return s
 }
 
@@ -4707,10 +6539,21 @@ func (s *Elevation) SetValue(v float64) *Elevation {
 type EndpointDetails struct {
 	_ struct{} `type:"structure"`
 
+	// An agent endpoint.
+	AwsGroundStationAgentEndpoint *AwsGroundStationAgentEndpoint `locationName:"awsGroundStationAgentEndpoint" type:"structure"`
+
 	// A dataflow endpoint.
 	Endpoint *DataflowEndpoint `locationName:"endpoint" type:"structure"`
 
-	// Endpoint security details.
+	// Health reasons for a dataflow endpoint. This field is ignored when calling
+	// CreateDataflowEndpointGroup.
+	HealthReasons []*string `locationName:"healthReasons" type:"list" enum:"CapabilityHealthReason"`
+
+	// A dataflow endpoint health status. This field is ignored when calling CreateDataflowEndpointGroup.
+	HealthStatus *string `locationName:"healthStatus" type:"string" enum:"CapabilityHealth"`
+
+	// Endpoint security details including a list of subnets, a list of security
+	// groups and a role to connect streams to instances.
 	SecurityDetails *SecurityDetails `locationName:"securityDetails" type:"structure"`
 }
 
@@ -4735,6 +6578,11 @@ func (s EndpointDetails) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *EndpointDetails) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "EndpointDetails"}
+	if s.AwsGroundStationAgentEndpoint != nil {
+		if err := s.AwsGroundStationAgentEndpoint.Validate(); err != nil {
+			invalidParams.AddNested("AwsGroundStationAgentEndpoint", err.(request.ErrInvalidParams))
+		}
+	}
 	if s.Endpoint != nil {
 		if err := s.Endpoint.Validate(); err != nil {
 			invalidParams.AddNested("Endpoint", err.(request.ErrInvalidParams))
@@ -4752,15 +6600,337 @@ func (s *EndpointDetails) Validate() error {
 	return nil
 }
 
+// SetAwsGroundStationAgentEndpoint sets the AwsGroundStationAgentEndpoint field's value.
+func (s *EndpointDetails) SetAwsGroundStationAgentEndpoint(v *AwsGroundStationAgentEndpoint) *EndpointDetails {
+	s.AwsGroundStationAgentEndpoint = v
+	return s
+}
+
 // SetEndpoint sets the Endpoint field's value.
 func (s *EndpointDetails) SetEndpoint(v *DataflowEndpoint) *EndpointDetails {
 	s.Endpoint = v
 	return s
 }
 
+// SetHealthReasons sets the HealthReasons field's value.
+func (s *EndpointDetails) SetHealthReasons(v []*string) *EndpointDetails {
+	s.HealthReasons = v
+	return s
+}
+
+// SetHealthStatus sets the HealthStatus field's value.
+func (s *EndpointDetails) SetHealthStatus(v string) *EndpointDetails {
+	s.HealthStatus = &v
+	return s
+}
+
 // SetSecurityDetails sets the SecurityDetails field's value.
 func (s *EndpointDetails) SetSecurityDetails(v *SecurityDetails) *EndpointDetails {
 	s.SecurityDetails = v
+	return s
+}
+
+// Ephemeris data.
+type EphemerisData struct {
+	_ struct{} `type:"structure"`
+
+	// Ephemeris data in Orbit Ephemeris Message (OEM) format.
+	Oem *OEMEphemeris `locationName:"oem" type:"structure"`
+
+	// Two-line element set (TLE) ephemeris.
+	Tle *TLEEphemeris `locationName:"tle" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EphemerisData) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EphemerisData) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *EphemerisData) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "EphemerisData"}
+	if s.Oem != nil {
+		if err := s.Oem.Validate(); err != nil {
+			invalidParams.AddNested("Oem", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.Tle != nil {
+		if err := s.Tle.Validate(); err != nil {
+			invalidParams.AddNested("Tle", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetOem sets the Oem field's value.
+func (s *EphemerisData) SetOem(v *OEMEphemeris) *EphemerisData {
+	s.Oem = v
+	return s
+}
+
+// SetTle sets the Tle field's value.
+func (s *EphemerisData) SetTle(v *TLEEphemeris) *EphemerisData {
+	s.Tle = v
+	return s
+}
+
+// Description of ephemeris.
+type EphemerisDescription struct {
+	_ struct{} `type:"structure"`
+
+	// Supplied ephemeris data.
+	EphemerisData *string `locationName:"ephemerisData" min:"1" type:"string"`
+
+	// Source S3 object used for the ephemeris.
+	SourceS3Object *S3Object `locationName:"sourceS3Object" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EphemerisDescription) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EphemerisDescription) GoString() string {
+	return s.String()
+}
+
+// SetEphemerisData sets the EphemerisData field's value.
+func (s *EphemerisDescription) SetEphemerisData(v string) *EphemerisDescription {
+	s.EphemerisData = &v
+	return s
+}
+
+// SetSourceS3Object sets the SourceS3Object field's value.
+func (s *EphemerisDescription) SetSourceS3Object(v *S3Object) *EphemerisDescription {
+	s.SourceS3Object = v
+	return s
+}
+
+// Ephemeris item.
+type EphemerisItem struct {
+	_ struct{} `type:"structure"`
+
+	// The time the ephemeris was uploaded in UTC.
+	CreationTime *time.Time `locationName:"creationTime" type:"timestamp"`
+
+	// Whether or not the ephemeris is enabled.
+	Enabled *bool `locationName:"enabled" type:"boolean"`
+
+	// The AWS Ground Station ephemeris ID.
+	EphemerisId *string `locationName:"ephemerisId" min:"1" type:"string"`
+
+	// A name string associated with the ephemeris. Used as a human-readable identifier
+	// for the ephemeris.
+	Name *string `locationName:"name" min:"1" type:"string"`
+
+	// Customer-provided priority score to establish the order in which overlapping
+	// ephemerides should be used.
+	//
+	// The default for customer-provided ephemeris priority is 1, and higher numbers
+	// take precedence.
+	//
+	// Priority must be 1 or greater
+	Priority *int64 `locationName:"priority" type:"integer"`
+
+	// Source S3 object used for the ephemeris.
+	SourceS3Object *S3Object `locationName:"sourceS3Object" type:"structure"`
+
+	// The status of the ephemeris.
+	Status *string `locationName:"status" type:"string" enum:"EphemerisStatus"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EphemerisItem) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EphemerisItem) GoString() string {
+	return s.String()
+}
+
+// SetCreationTime sets the CreationTime field's value.
+func (s *EphemerisItem) SetCreationTime(v time.Time) *EphemerisItem {
+	s.CreationTime = &v
+	return s
+}
+
+// SetEnabled sets the Enabled field's value.
+func (s *EphemerisItem) SetEnabled(v bool) *EphemerisItem {
+	s.Enabled = &v
+	return s
+}
+
+// SetEphemerisId sets the EphemerisId field's value.
+func (s *EphemerisItem) SetEphemerisId(v string) *EphemerisItem {
+	s.EphemerisId = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *EphemerisItem) SetName(v string) *EphemerisItem {
+	s.Name = &v
+	return s
+}
+
+// SetPriority sets the Priority field's value.
+func (s *EphemerisItem) SetPriority(v int64) *EphemerisItem {
+	s.Priority = &v
+	return s
+}
+
+// SetSourceS3Object sets the SourceS3Object field's value.
+func (s *EphemerisItem) SetSourceS3Object(v *S3Object) *EphemerisItem {
+	s.SourceS3Object = v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *EphemerisItem) SetStatus(v string) *EphemerisItem {
+	s.Status = &v
+	return s
+}
+
+// Metadata describing a particular ephemeris.
+type EphemerisMetaData struct {
+	_ struct{} `type:"structure"`
+
+	// UUID of a customer-provided ephemeris.
+	//
+	// This field is not populated for default ephemerides from Space Track.
+	EphemerisId *string `locationName:"ephemerisId" min:"1" type:"string"`
+
+	// The epoch of a default, ephemeris from Space Track in UTC.
+	//
+	// This field is not populated for customer-provided ephemerides.
+	Epoch *time.Time `locationName:"epoch" type:"timestamp"`
+
+	// A name string associated with the ephemeris. Used as a human-readable identifier
+	// for the ephemeris.
+	//
+	// A name is only returned for customer-provider ephemerides that have a name
+	// associated.
+	Name *string `locationName:"name" min:"1" type:"string"`
+
+	// The EphemerisSource that generated a given ephemeris.
+	//
+	// Source is a required field
+	Source *string `locationName:"source" type:"string" required:"true" enum:"EphemerisSource"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EphemerisMetaData) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EphemerisMetaData) GoString() string {
+	return s.String()
+}
+
+// SetEphemerisId sets the EphemerisId field's value.
+func (s *EphemerisMetaData) SetEphemerisId(v string) *EphemerisMetaData {
+	s.EphemerisId = &v
+	return s
+}
+
+// SetEpoch sets the Epoch field's value.
+func (s *EphemerisMetaData) SetEpoch(v time.Time) *EphemerisMetaData {
+	s.Epoch = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *EphemerisMetaData) SetName(v string) *EphemerisMetaData {
+	s.Name = &v
+	return s
+}
+
+// SetSource sets the Source field's value.
+func (s *EphemerisMetaData) SetSource(v string) *EphemerisMetaData {
+	s.Source = &v
+	return s
+}
+
+type EphemerisTypeDescription struct {
+	_ struct{} `type:"structure"`
+
+	// Description of ephemeris.
+	Oem *EphemerisDescription `locationName:"oem" type:"structure"`
+
+	// Description of ephemeris.
+	Tle *EphemerisDescription `locationName:"tle" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EphemerisTypeDescription) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EphemerisTypeDescription) GoString() string {
+	return s.String()
+}
+
+// SetOem sets the Oem field's value.
+func (s *EphemerisTypeDescription) SetOem(v *EphemerisDescription) *EphemerisTypeDescription {
+	s.Oem = v
+	return s
+}
+
+// SetTle sets the Tle field's value.
+func (s *EphemerisTypeDescription) SetTle(v *EphemerisDescription) *EphemerisTypeDescription {
+	s.Tle = v
 	return s
 }
 
@@ -4895,13 +7065,102 @@ func (s *FrequencyBandwidth) SetValue(v float64) *FrequencyBandwidth {
 	return s
 }
 
+type GetAgentConfigurationInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// UUID of agent to get configuration information for.
+	//
+	// AgentId is a required field
+	AgentId *string `location:"uri" locationName:"agentId" min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetAgentConfigurationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetAgentConfigurationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetAgentConfigurationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetAgentConfigurationInput"}
+	if s.AgentId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AgentId"))
+	}
+	if s.AgentId != nil && len(*s.AgentId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AgentId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAgentId sets the AgentId field's value.
+func (s *GetAgentConfigurationInput) SetAgentId(v string) *GetAgentConfigurationInput {
+	s.AgentId = &v
+	return s
+}
+
+type GetAgentConfigurationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// UUID of agent.
+	AgentId *string `locationName:"agentId" min:"1" type:"string"`
+
+	// Tasking document for agent.
+	TaskingDocument *string `locationName:"taskingDocument" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetAgentConfigurationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetAgentConfigurationOutput) GoString() string {
+	return s.String()
+}
+
+// SetAgentId sets the AgentId field's value.
+func (s *GetAgentConfigurationOutput) SetAgentId(v string) *GetAgentConfigurationOutput {
+	s.AgentId = &v
+	return s
+}
+
+// SetTaskingDocument sets the TaskingDocument field's value.
+func (s *GetAgentConfigurationOutput) SetTaskingDocument(v string) *GetAgentConfigurationOutput {
+	s.TaskingDocument = &v
+	return s
+}
+
 type GetConfigInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
 	// UUID of a Config.
 	//
 	// ConfigId is a required field
-	ConfigId *string `location:"uri" locationName:"configId" type:"string" required:"true"`
+	ConfigId *string `location:"uri" locationName:"configId" min:"1" type:"string" required:"true"`
 
 	// Type of a Config.
 	//
@@ -5051,7 +7310,7 @@ type GetDataflowEndpointGroupInput struct {
 	// UUID of a dataflow endpoint group.
 	//
 	// DataflowEndpointGroupId is a required field
-	DataflowEndpointGroupId *string `location:"uri" locationName:"dataflowEndpointGroupId" type:"string" required:"true"`
+	DataflowEndpointGroupId *string `location:"uri" locationName:"dataflowEndpointGroupId" min:"1" type:"string" required:"true"`
 }
 
 // String returns the string representation.
@@ -5097,11 +7356,23 @@ func (s *GetDataflowEndpointGroupInput) SetDataflowEndpointGroupId(v string) *Ge
 type GetDataflowEndpointGroupOutput struct {
 	_ struct{} `type:"structure"`
 
+	// Amount of time, in seconds, after a contact ends that the Ground Station
+	// Dataflow Endpoint Group will be in a POSTPASS state. A Ground Station Dataflow
+	// Endpoint Group State Change event will be emitted when the Dataflow Endpoint
+	// Group enters and exits the POSTPASS state.
+	ContactPostPassDurationSeconds *int64 `locationName:"contactPostPassDurationSeconds" min:"120" type:"integer"`
+
+	// Amount of time, in seconds, before a contact starts that the Ground Station
+	// Dataflow Endpoint Group will be in a PREPASS state. A Ground Station Dataflow
+	// Endpoint Group State Change event will be emitted when the Dataflow Endpoint
+	// Group enters and exits the PREPASS state.
+	ContactPrePassDurationSeconds *int64 `locationName:"contactPrePassDurationSeconds" min:"120" type:"integer"`
+
 	// ARN of a dataflow endpoint group.
 	DataflowEndpointGroupArn *string `locationName:"dataflowEndpointGroupArn" type:"string"`
 
 	// UUID of a dataflow endpoint group.
-	DataflowEndpointGroupId *string `locationName:"dataflowEndpointGroupId" type:"string"`
+	DataflowEndpointGroupId *string `locationName:"dataflowEndpointGroupId" min:"1" type:"string"`
 
 	// Details of a dataflow endpoint.
 	EndpointsDetails []*EndpointDetails `locationName:"endpointsDetails" type:"list"`
@@ -5126,6 +7397,18 @@ func (s GetDataflowEndpointGroupOutput) String() string {
 // value will be replaced with "sensitive".
 func (s GetDataflowEndpointGroupOutput) GoString() string {
 	return s.String()
+}
+
+// SetContactPostPassDurationSeconds sets the ContactPostPassDurationSeconds field's value.
+func (s *GetDataflowEndpointGroupOutput) SetContactPostPassDurationSeconds(v int64) *GetDataflowEndpointGroupOutput {
+	s.ContactPostPassDurationSeconds = &v
+	return s
+}
+
+// SetContactPrePassDurationSeconds sets the ContactPrePassDurationSeconds field's value.
+func (s *GetDataflowEndpointGroupOutput) SetContactPrePassDurationSeconds(v int64) *GetDataflowEndpointGroupOutput {
+	s.ContactPrePassDurationSeconds = &v
+	return s
 }
 
 // SetDataflowEndpointGroupArn sets the DataflowEndpointGroupArn field's value.
@@ -5158,12 +7441,12 @@ type GetMinuteUsageInput struct {
 	// The month being requested, with a value of 1-12.
 	//
 	// Month is a required field
-	Month *int64 `locationName:"month" type:"integer" required:"true"`
+	Month *int64 `locationName:"month" min:"1" type:"integer" required:"true"`
 
 	// The year being requested, in the format of YYYY.
 	//
 	// Year is a required field
-	Year *int64 `locationName:"year" type:"integer" required:"true"`
+	Year *int64 `locationName:"year" min:"2018" type:"integer" required:"true"`
 }
 
 // String returns the string representation.
@@ -5190,8 +7473,14 @@ func (s *GetMinuteUsageInput) Validate() error {
 	if s.Month == nil {
 		invalidParams.Add(request.NewErrParamRequired("Month"))
 	}
+	if s.Month != nil && *s.Month < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("Month", 1))
+	}
 	if s.Year == nil {
 		invalidParams.Add(request.NewErrParamRequired("Year"))
+	}
+	if s.Year != nil && *s.Year < 2018 {
+		invalidParams.Add(request.NewErrParamMinValue("Year", 2018))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -5287,7 +7576,7 @@ type GetMissionProfileInput struct {
 	// UUID of a mission profile.
 	//
 	// MissionProfileId is a required field
-	MissionProfileId *string `location:"uri" locationName:"missionProfileId" type:"string" required:"true"`
+	MissionProfileId *string `location:"uri" locationName:"missionProfileId" min:"1" type:"string" required:"true"`
 }
 
 // String returns the string representation.
@@ -5335,11 +7624,11 @@ type GetMissionProfileOutput struct {
 
 	// Amount of time after a contact ends that you’d like to receive a CloudWatch
 	// event indicating the pass has finished.
-	ContactPostPassDurationSeconds *int64 `locationName:"contactPostPassDurationSeconds" min:"1" type:"integer"`
+	ContactPostPassDurationSeconds *int64 `locationName:"contactPostPassDurationSeconds" type:"integer"`
 
 	// Amount of time prior to contact start you’d like to receive a CloudWatch
 	// event indicating an upcoming pass.
-	ContactPrePassDurationSeconds *int64 `locationName:"contactPrePassDurationSeconds" min:"1" type:"integer"`
+	ContactPrePassDurationSeconds *int64 `locationName:"contactPrePassDurationSeconds" type:"integer"`
 
 	// A list of lists of ARNs. Each list of ARNs is an edge, with a from Config
 	// and a to Config.
@@ -5354,13 +7643,19 @@ type GetMissionProfileOutput struct {
 	MissionProfileArn *string `locationName:"missionProfileArn" type:"string"`
 
 	// UUID of a mission profile.
-	MissionProfileId *string `locationName:"missionProfileId" type:"string"`
+	MissionProfileId *string `locationName:"missionProfileId" min:"1" type:"string"`
 
 	// Name of a mission profile.
-	Name *string `locationName:"name" type:"string"`
+	Name *string `locationName:"name" min:"1" type:"string"`
 
 	// Region of a mission profile.
-	Region *string `locationName:"region" type:"string"`
+	Region *string `locationName:"region" min:"1" type:"string"`
+
+	// KMS key to use for encrypting streams.
+	StreamsKmsKey *KmsKey `locationName:"streamsKmsKey" type:"structure"`
+
+	// Role to use for encrypting streams with KMS key.
+	StreamsKmsRole *string `locationName:"streamsKmsRole" type:"string"`
 
 	// Tags assigned to a mission profile.
 	Tags map[string]*string `locationName:"tags" type:"map"`
@@ -5435,6 +7730,18 @@ func (s *GetMissionProfileOutput) SetRegion(v string) *GetMissionProfileOutput {
 	return s
 }
 
+// SetStreamsKmsKey sets the StreamsKmsKey field's value.
+func (s *GetMissionProfileOutput) SetStreamsKmsKey(v *KmsKey) *GetMissionProfileOutput {
+	s.StreamsKmsKey = v
+	return s
+}
+
+// SetStreamsKmsRole sets the StreamsKmsRole field's value.
+func (s *GetMissionProfileOutput) SetStreamsKmsRole(v string) *GetMissionProfileOutput {
+	s.StreamsKmsRole = &v
+	return s
+}
+
 // SetTags sets the Tags field's value.
 func (s *GetMissionProfileOutput) SetTags(v map[string]*string) *GetMissionProfileOutput {
 	s.Tags = v
@@ -5453,7 +7760,7 @@ type GetSatelliteInput struct {
 	// UUID of a satellite.
 	//
 	// SatelliteId is a required field
-	SatelliteId *string `location:"uri" locationName:"satelliteId" type:"string" required:"true"`
+	SatelliteId *string `location:"uri" locationName:"satelliteId" min:"1" type:"string" required:"true"`
 }
 
 // String returns the string representation.
@@ -5499,11 +7806,14 @@ func (s *GetSatelliteInput) SetSatelliteId(v string) *GetSatelliteInput {
 type GetSatelliteOutput struct {
 	_ struct{} `type:"structure"`
 
+	// The current ephemeris being used to compute the trajectory of the satellite.
+	CurrentEphemeris *EphemerisMetaData `locationName:"currentEphemeris" type:"structure"`
+
 	// A list of ground stations to which the satellite is on-boarded.
 	GroundStations []*string `locationName:"groundStations" type:"list"`
 
 	// NORAD satellite ID number.
-	NoradSatelliteID *int64 `locationName:"noradSatelliteID" min:"1" type:"integer"`
+	NoradSatelliteID *int64 `locationName:"noradSatelliteID" type:"integer"`
 
 	// ARN of a satellite.
 	SatelliteArn *string `locationName:"satelliteArn" type:"string"`
@@ -5530,6 +7840,12 @@ func (s GetSatelliteOutput) GoString() string {
 	return s.String()
 }
 
+// SetCurrentEphemeris sets the CurrentEphemeris field's value.
+func (s *GetSatelliteOutput) SetCurrentEphemeris(v *EphemerisMetaData) *GetSatelliteOutput {
+	s.CurrentEphemeris = v
+	return s
+}
+
 // SetGroundStations sets the GroundStations field's value.
 func (s *GetSatelliteOutput) SetGroundStations(v []*string) *GetSatelliteOutput {
 	s.GroundStations = v
@@ -5551,6 +7867,67 @@ func (s *GetSatelliteOutput) SetSatelliteArn(v string) *GetSatelliteOutput {
 // SetSatelliteId sets the SatelliteId field's value.
 func (s *GetSatelliteOutput) SetSatelliteId(v string) *GetSatelliteOutput {
 	s.SatelliteId = &v
+	return s
+}
+
+// An integer range that has a minimum and maximum value.
+type IntegerRange struct {
+	_ struct{} `type:"structure"`
+
+	// A maximum value.
+	//
+	// Maximum is a required field
+	Maximum *int64 `locationName:"maximum" type:"integer" required:"true"`
+
+	// A minimum value.
+	//
+	// Minimum is a required field
+	Minimum *int64 `locationName:"minimum" type:"integer" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s IntegerRange) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s IntegerRange) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *IntegerRange) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "IntegerRange"}
+	if s.Maximum == nil {
+		invalidParams.Add(request.NewErrParamRequired("Maximum"))
+	}
+	if s.Minimum == nil {
+		invalidParams.Add(request.NewErrParamRequired("Minimum"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetMaximum sets the Maximum field's value.
+func (s *IntegerRange) SetMaximum(v int64) *IntegerRange {
+	s.Maximum = &v
+	return s
+}
+
+// SetMinimum sets the Minimum field's value.
+func (s *IntegerRange) SetMinimum(v int64) *IntegerRange {
+	s.Minimum = &v
 	return s
 }
 
@@ -5620,6 +7997,72 @@ func (s *InvalidParameterException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
+// AWS Key Management Service (KMS) Key.
+type KmsKey struct {
+	_ struct{} `type:"structure"`
+
+	// KMS Alias Arn.
+	KmsAliasArn *string `locationName:"kmsAliasArn" min:"1" type:"string"`
+
+	// KMS Alias Name.
+	KmsAliasName *string `locationName:"kmsAliasName" min:"1" type:"string"`
+
+	// KMS Key Arn.
+	KmsKeyArn *string `locationName:"kmsKeyArn" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s KmsKey) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s KmsKey) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *KmsKey) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "KmsKey"}
+	if s.KmsAliasArn != nil && len(*s.KmsAliasArn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("KmsAliasArn", 1))
+	}
+	if s.KmsAliasName != nil && len(*s.KmsAliasName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("KmsAliasName", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetKmsAliasArn sets the KmsAliasArn field's value.
+func (s *KmsKey) SetKmsAliasArn(v string) *KmsKey {
+	s.KmsAliasArn = &v
+	return s
+}
+
+// SetKmsAliasName sets the KmsAliasName field's value.
+func (s *KmsKey) SetKmsAliasName(v string) *KmsKey {
+	s.KmsAliasName = &v
+	return s
+}
+
+// SetKmsKeyArn sets the KmsKeyArn field's value.
+func (s *KmsKey) SetKmsKeyArn(v string) *KmsKey {
+	s.KmsKeyArn = &v
+	return s
+}
+
 type ListConfigsInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
@@ -5628,7 +8071,7 @@ type ListConfigsInput struct {
 
 	// Next token returned in the request of a previous ListConfigs call. Used to
 	// get the next page of results.
-	NextToken *string `location:"querystring" locationName:"nextToken" type:"string"`
+	NextToken *string `location:"querystring" locationName:"nextToken" min:"3" type:"string"`
 }
 
 // String returns the string representation.
@@ -5647,6 +8090,19 @@ func (s ListConfigsInput) String() string {
 // value will be replaced with "sensitive".
 func (s ListConfigsInput) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListConfigsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListConfigsInput"}
+	if s.NextToken != nil && len(*s.NextToken) < 3 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 3))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 // SetMaxResults sets the MaxResults field's value.
@@ -5669,7 +8125,7 @@ type ListConfigsOutput struct {
 
 	// Next token returned in the response of a previous ListConfigs call. Used
 	// to get the next page of results.
-	NextToken *string `locationName:"nextToken" type:"string"`
+	NextToken *string `locationName:"nextToken" min:"3" type:"string"`
 }
 
 // String returns the string representation.
@@ -5705,13 +8161,13 @@ func (s *ListConfigsOutput) SetNextToken(v string) *ListConfigsOutput {
 type ListContactsInput struct {
 	_ struct{} `type:"structure"`
 
-	// End time of a contact.
+	// End time of a contact in UTC.
 	//
 	// EndTime is a required field
 	EndTime *time.Time `locationName:"endTime" type:"timestamp" required:"true"`
 
 	// Name of a ground station.
-	GroundStation *string `locationName:"groundStation" type:"string"`
+	GroundStation *string `locationName:"groundStation" min:"4" type:"string"`
 
 	// Maximum number of contacts returned.
 	MaxResults *int64 `locationName:"maxResults" type:"integer"`
@@ -5721,12 +8177,12 @@ type ListContactsInput struct {
 
 	// Next token returned in the request of a previous ListContacts call. Used
 	// to get the next page of results.
-	NextToken *string `locationName:"nextToken" type:"string"`
+	NextToken *string `locationName:"nextToken" min:"3" type:"string"`
 
 	// ARN of a satellite.
 	SatelliteArn *string `locationName:"satelliteArn" type:"string"`
 
-	// Start time of a contact.
+	// Start time of a contact in UTC.
 	//
 	// StartTime is a required field
 	StartTime *time.Time `locationName:"startTime" type:"timestamp" required:"true"`
@@ -5760,6 +8216,12 @@ func (s *ListContactsInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "ListContactsInput"}
 	if s.EndTime == nil {
 		invalidParams.Add(request.NewErrParamRequired("EndTime"))
+	}
+	if s.GroundStation != nil && len(*s.GroundStation) < 4 {
+		invalidParams.Add(request.NewErrParamMinLen("GroundStation", 4))
+	}
+	if s.NextToken != nil && len(*s.NextToken) < 3 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 3))
 	}
 	if s.StartTime == nil {
 		invalidParams.Add(request.NewErrParamRequired("StartTime"))
@@ -5830,7 +8292,7 @@ type ListContactsOutput struct {
 
 	// Next token returned in the response of a previous ListContacts call. Used
 	// to get the next page of results.
-	NextToken *string `locationName:"nextToken" type:"string"`
+	NextToken *string `locationName:"nextToken" min:"3" type:"string"`
 }
 
 // String returns the string representation.
@@ -5871,7 +8333,7 @@ type ListDataflowEndpointGroupsInput struct {
 
 	// Next token returned in the request of a previous ListDataflowEndpointGroups
 	// call. Used to get the next page of results.
-	NextToken *string `location:"querystring" locationName:"nextToken" type:"string"`
+	NextToken *string `location:"querystring" locationName:"nextToken" min:"3" type:"string"`
 }
 
 // String returns the string representation.
@@ -5890,6 +8352,19 @@ func (s ListDataflowEndpointGroupsInput) String() string {
 // value will be replaced with "sensitive".
 func (s ListDataflowEndpointGroupsInput) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListDataflowEndpointGroupsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListDataflowEndpointGroupsInput"}
+	if s.NextToken != nil && len(*s.NextToken) < 3 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 3))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 // SetMaxResults sets the MaxResults field's value.
@@ -5912,7 +8387,7 @@ type ListDataflowEndpointGroupsOutput struct {
 
 	// Next token returned in the response of a previous ListDataflowEndpointGroups
 	// call. Used to get the next page of results.
-	NextToken *string `locationName:"nextToken" type:"string"`
+	NextToken *string `locationName:"nextToken" min:"3" type:"string"`
 }
 
 // String returns the string representation.
@@ -5945,6 +8420,156 @@ func (s *ListDataflowEndpointGroupsOutput) SetNextToken(v string) *ListDataflowE
 	return s
 }
 
+type ListEphemeridesInput struct {
+	_ struct{} `type:"structure"`
+
+	// The end time to list in UTC. The operation will return an ephemeris if its
+	// expiration time is within the time range defined by the startTime and endTime.
+	//
+	// EndTime is a required field
+	EndTime *time.Time `locationName:"endTime" type:"timestamp" required:"true"`
+
+	// Maximum number of ephemerides to return.
+	MaxResults *int64 `location:"querystring" locationName:"maxResults" type:"integer"`
+
+	// Pagination token.
+	NextToken *string `location:"querystring" locationName:"nextToken" min:"3" type:"string"`
+
+	// The AWS Ground Station satellite ID to list ephemeris for.
+	//
+	// SatelliteId is a required field
+	SatelliteId *string `locationName:"satelliteId" min:"1" type:"string" required:"true"`
+
+	// The start time to list in UTC. The operation will return an ephemeris if
+	// its expiration time is within the time range defined by the startTime and
+	// endTime.
+	//
+	// StartTime is a required field
+	StartTime *time.Time `locationName:"startTime" type:"timestamp" required:"true"`
+
+	// The list of ephemeris status to return.
+	StatusList []*string `locationName:"statusList" type:"list" enum:"EphemerisStatus"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListEphemeridesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListEphemeridesInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListEphemeridesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListEphemeridesInput"}
+	if s.EndTime == nil {
+		invalidParams.Add(request.NewErrParamRequired("EndTime"))
+	}
+	if s.NextToken != nil && len(*s.NextToken) < 3 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 3))
+	}
+	if s.SatelliteId == nil {
+		invalidParams.Add(request.NewErrParamRequired("SatelliteId"))
+	}
+	if s.SatelliteId != nil && len(*s.SatelliteId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("SatelliteId", 1))
+	}
+	if s.StartTime == nil {
+		invalidParams.Add(request.NewErrParamRequired("StartTime"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetEndTime sets the EndTime field's value.
+func (s *ListEphemeridesInput) SetEndTime(v time.Time) *ListEphemeridesInput {
+	s.EndTime = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListEphemeridesInput) SetMaxResults(v int64) *ListEphemeridesInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListEphemeridesInput) SetNextToken(v string) *ListEphemeridesInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetSatelliteId sets the SatelliteId field's value.
+func (s *ListEphemeridesInput) SetSatelliteId(v string) *ListEphemeridesInput {
+	s.SatelliteId = &v
+	return s
+}
+
+// SetStartTime sets the StartTime field's value.
+func (s *ListEphemeridesInput) SetStartTime(v time.Time) *ListEphemeridesInput {
+	s.StartTime = &v
+	return s
+}
+
+// SetStatusList sets the StatusList field's value.
+func (s *ListEphemeridesInput) SetStatusList(v []*string) *ListEphemeridesInput {
+	s.StatusList = v
+	return s
+}
+
+type ListEphemeridesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// List of ephemerides.
+	Ephemerides []*EphemerisItem `locationName:"ephemerides" min:"1" type:"list"`
+
+	// Pagination token.
+	NextToken *string `locationName:"nextToken" min:"3" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListEphemeridesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListEphemeridesOutput) GoString() string {
+	return s.String()
+}
+
+// SetEphemerides sets the Ephemerides field's value.
+func (s *ListEphemeridesOutput) SetEphemerides(v []*EphemerisItem) *ListEphemeridesOutput {
+	s.Ephemerides = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListEphemeridesOutput) SetNextToken(v string) *ListEphemeridesOutput {
+	s.NextToken = &v
+	return s
+}
+
 type ListGroundStationsInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
@@ -5953,10 +8578,10 @@ type ListGroundStationsInput struct {
 
 	// Next token that can be supplied in the next call to get the next page of
 	// ground stations.
-	NextToken *string `location:"querystring" locationName:"nextToken" type:"string"`
+	NextToken *string `location:"querystring" locationName:"nextToken" min:"3" type:"string"`
 
 	// Satellite ID to retrieve on-boarded ground stations.
-	SatelliteId *string `location:"querystring" locationName:"satelliteId" type:"string"`
+	SatelliteId *string `location:"querystring" locationName:"satelliteId" min:"1" type:"string"`
 }
 
 // String returns the string representation.
@@ -5975,6 +8600,22 @@ func (s ListGroundStationsInput) String() string {
 // value will be replaced with "sensitive".
 func (s ListGroundStationsInput) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListGroundStationsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListGroundStationsInput"}
+	if s.NextToken != nil && len(*s.NextToken) < 3 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 3))
+	}
+	if s.SatelliteId != nil && len(*s.SatelliteId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("SatelliteId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 // SetMaxResults sets the MaxResults field's value.
@@ -6003,7 +8644,7 @@ type ListGroundStationsOutput struct {
 
 	// Next token that can be supplied in the next call to get the next page of
 	// ground stations.
-	NextToken *string `locationName:"nextToken" type:"string"`
+	NextToken *string `locationName:"nextToken" min:"3" type:"string"`
 }
 
 // String returns the string representation.
@@ -6044,7 +8685,7 @@ type ListMissionProfilesInput struct {
 
 	// Next token returned in the request of a previous ListMissionProfiles call.
 	// Used to get the next page of results.
-	NextToken *string `location:"querystring" locationName:"nextToken" type:"string"`
+	NextToken *string `location:"querystring" locationName:"nextToken" min:"3" type:"string"`
 }
 
 // String returns the string representation.
@@ -6063,6 +8704,19 @@ func (s ListMissionProfilesInput) String() string {
 // value will be replaced with "sensitive".
 func (s ListMissionProfilesInput) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListMissionProfilesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListMissionProfilesInput"}
+	if s.NextToken != nil && len(*s.NextToken) < 3 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 3))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 // SetMaxResults sets the MaxResults field's value.
@@ -6085,7 +8739,7 @@ type ListMissionProfilesOutput struct {
 
 	// Next token returned in the response of a previous ListMissionProfiles call.
 	// Used to get the next page of results.
-	NextToken *string `locationName:"nextToken" type:"string"`
+	NextToken *string `locationName:"nextToken" min:"3" type:"string"`
 }
 
 // String returns the string representation.
@@ -6126,7 +8780,7 @@ type ListSatellitesInput struct {
 
 	// Next token that can be supplied in the next call to get the next page of
 	// satellites.
-	NextToken *string `location:"querystring" locationName:"nextToken" type:"string"`
+	NextToken *string `location:"querystring" locationName:"nextToken" min:"3" type:"string"`
 }
 
 // String returns the string representation.
@@ -6147,6 +8801,19 @@ func (s ListSatellitesInput) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListSatellitesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListSatellitesInput"}
+	if s.NextToken != nil && len(*s.NextToken) < 3 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 3))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 // SetMaxResults sets the MaxResults field's value.
 func (s *ListSatellitesInput) SetMaxResults(v int64) *ListSatellitesInput {
 	s.MaxResults = &v
@@ -6164,7 +8831,7 @@ type ListSatellitesOutput struct {
 
 	// Next token that can be supplied in the next call to get the next page of
 	// satellites.
-	NextToken *string `locationName:"nextToken" type:"string"`
+	NextToken *string `locationName:"nextToken" min:"3" type:"string"`
 
 	// List of satellites.
 	Satellites []*SatelliteListItem `locationName:"satellites" type:"list"`
@@ -6206,7 +8873,7 @@ type ListTagsForResourceInput struct {
 	// ARN of a resource.
 	//
 	// ResourceArn is a required field
-	ResourceArn *string `location:"uri" locationName:"resourceArn" type:"string" required:"true"`
+	ResourceArn *string `location:"uri" locationName:"resourceArn" min:"5" type:"string" required:"true"`
 }
 
 // String returns the string representation.
@@ -6233,8 +8900,8 @@ func (s *ListTagsForResourceInput) Validate() error {
 	if s.ResourceArn == nil {
 		invalidParams.Add(request.NewErrParamRequired("ResourceArn"))
 	}
-	if s.ResourceArn != nil && len(*s.ResourceArn) < 1 {
-		invalidParams.Add(request.NewErrParamMinLen("ResourceArn", 1))
+	if s.ResourceArn != nil && len(*s.ResourceArn) < 5 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceArn", 5))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -6288,13 +8955,13 @@ type MissionProfileListItem struct {
 	MissionProfileArn *string `locationName:"missionProfileArn" type:"string"`
 
 	// UUID of a mission profile.
-	MissionProfileId *string `locationName:"missionProfileId" type:"string"`
+	MissionProfileId *string `locationName:"missionProfileId" min:"1" type:"string"`
 
 	// Name of a mission profile.
-	Name *string `locationName:"name" type:"string"`
+	Name *string `locationName:"name" min:"1" type:"string"`
 
 	// Region of a mission profile.
-	Region *string `locationName:"region" type:"string"`
+	Region *string `locationName:"region" min:"1" type:"string"`
 }
 
 // String returns the string representation.
@@ -6339,10 +9006,304 @@ func (s *MissionProfileListItem) SetRegion(v string) *MissionProfileListItem {
 	return s
 }
 
+// Ephemeris data in Orbit Ephemeris Message (OEM) format.
+type OEMEphemeris struct {
+	_ struct{} `type:"structure"`
+
+	// The data for an OEM ephemeris, supplied directly in the request rather than
+	// through an S3 object.
+	OemData *string `locationName:"oemData" min:"1" type:"string"`
+
+	// Identifies the S3 object to be used as the ephemeris.
+	S3Object *S3Object `locationName:"s3Object" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s OEMEphemeris) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s OEMEphemeris) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *OEMEphemeris) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "OEMEphemeris"}
+	if s.OemData != nil && len(*s.OemData) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("OemData", 1))
+	}
+	if s.S3Object != nil {
+		if err := s.S3Object.Validate(); err != nil {
+			invalidParams.AddNested("S3Object", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetOemData sets the OemData field's value.
+func (s *OEMEphemeris) SetOemData(v string) *OEMEphemeris {
+	s.OemData = &v
+	return s
+}
+
+// SetS3Object sets the S3Object field's value.
+func (s *OEMEphemeris) SetS3Object(v *S3Object) *OEMEphemeris {
+	s.S3Object = v
+	return s
+}
+
+// Ingress address of AgentEndpoint with a port range and an optional mtu.
+type RangedConnectionDetails struct {
+	_ struct{} `type:"structure"`
+
+	// Maximum transmission unit (MTU) size in bytes of a dataflow endpoint.
+	Mtu *int64 `locationName:"mtu" min:"1400" type:"integer"`
+
+	// A ranged socket address.
+	//
+	// SocketAddress is a required field
+	SocketAddress *RangedSocketAddress `locationName:"socketAddress" type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RangedConnectionDetails) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RangedConnectionDetails) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *RangedConnectionDetails) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "RangedConnectionDetails"}
+	if s.Mtu != nil && *s.Mtu < 1400 {
+		invalidParams.Add(request.NewErrParamMinValue("Mtu", 1400))
+	}
+	if s.SocketAddress == nil {
+		invalidParams.Add(request.NewErrParamRequired("SocketAddress"))
+	}
+	if s.SocketAddress != nil {
+		if err := s.SocketAddress.Validate(); err != nil {
+			invalidParams.AddNested("SocketAddress", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetMtu sets the Mtu field's value.
+func (s *RangedConnectionDetails) SetMtu(v int64) *RangedConnectionDetails {
+	s.Mtu = &v
+	return s
+}
+
+// SetSocketAddress sets the SocketAddress field's value.
+func (s *RangedConnectionDetails) SetSocketAddress(v *RangedSocketAddress) *RangedConnectionDetails {
+	s.SocketAddress = v
+	return s
+}
+
+// A socket address with a port range.
+type RangedSocketAddress struct {
+	_ struct{} `type:"structure"`
+
+	// IPv4 socket address.
+	//
+	// Name is a required field
+	Name *string `locationName:"name" min:"7" type:"string" required:"true"`
+
+	// Port range of a socket address.
+	//
+	// PortRange is a required field
+	PortRange *IntegerRange `locationName:"portRange" type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RangedSocketAddress) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RangedSocketAddress) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *RangedSocketAddress) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "RangedSocketAddress"}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 7 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 7))
+	}
+	if s.PortRange == nil {
+		invalidParams.Add(request.NewErrParamRequired("PortRange"))
+	}
+	if s.PortRange != nil {
+		if err := s.PortRange.Validate(); err != nil {
+			invalidParams.AddNested("PortRange", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetName sets the Name field's value.
+func (s *RangedSocketAddress) SetName(v string) *RangedSocketAddress {
+	s.Name = &v
+	return s
+}
+
+// SetPortRange sets the PortRange field's value.
+func (s *RangedSocketAddress) SetPortRange(v *IntegerRange) *RangedSocketAddress {
+	s.PortRange = v
+	return s
+}
+
+type RegisterAgentInput struct {
+	_ struct{} `type:"structure"`
+
+	// Detailed information about the agent being registered.
+	//
+	// AgentDetails is a required field
+	AgentDetails *AgentDetails `locationName:"agentDetails" type:"structure" required:"true"`
+
+	// Data for associating an agent with the capabilities it is managing.
+	//
+	// DiscoveryData is a required field
+	DiscoveryData *DiscoveryData `locationName:"discoveryData" type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RegisterAgentInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RegisterAgentInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *RegisterAgentInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "RegisterAgentInput"}
+	if s.AgentDetails == nil {
+		invalidParams.Add(request.NewErrParamRequired("AgentDetails"))
+	}
+	if s.DiscoveryData == nil {
+		invalidParams.Add(request.NewErrParamRequired("DiscoveryData"))
+	}
+	if s.AgentDetails != nil {
+		if err := s.AgentDetails.Validate(); err != nil {
+			invalidParams.AddNested("AgentDetails", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.DiscoveryData != nil {
+		if err := s.DiscoveryData.Validate(); err != nil {
+			invalidParams.AddNested("DiscoveryData", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAgentDetails sets the AgentDetails field's value.
+func (s *RegisterAgentInput) SetAgentDetails(v *AgentDetails) *RegisterAgentInput {
+	s.AgentDetails = v
+	return s
+}
+
+// SetDiscoveryData sets the DiscoveryData field's value.
+func (s *RegisterAgentInput) SetDiscoveryData(v *DiscoveryData) *RegisterAgentInput {
+	s.DiscoveryData = v
+	return s
+}
+
+type RegisterAgentOutput struct {
+	_ struct{} `type:"structure"`
+
+	// UUID of registered agent.
+	AgentId *string `locationName:"agentId" min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RegisterAgentOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RegisterAgentOutput) GoString() string {
+	return s.String()
+}
+
+// SetAgentId sets the AgentId field's value.
+func (s *RegisterAgentOutput) SetAgentId(v string) *RegisterAgentOutput {
+	s.AgentId = &v
+	return s
+}
+
 type ReserveContactInput struct {
 	_ struct{} `type:"structure"`
 
-	// End time of a contact.
+	// End time of a contact in UTC.
 	//
 	// EndTime is a required field
 	EndTime *time.Time `locationName:"endTime" type:"timestamp" required:"true"`
@@ -6350,7 +9311,7 @@ type ReserveContactInput struct {
 	// Name of a ground station.
 	//
 	// GroundStation is a required field
-	GroundStation *string `locationName:"groundStation" type:"string" required:"true"`
+	GroundStation *string `locationName:"groundStation" min:"4" type:"string" required:"true"`
 
 	// ARN of a mission profile.
 	//
@@ -6362,7 +9323,7 @@ type ReserveContactInput struct {
 	// SatelliteArn is a required field
 	SatelliteArn *string `locationName:"satelliteArn" type:"string" required:"true"`
 
-	// Start time of a contact.
+	// Start time of a contact in UTC.
 	//
 	// StartTime is a required field
 	StartTime *time.Time `locationName:"startTime" type:"timestamp" required:"true"`
@@ -6397,6 +9358,9 @@ func (s *ReserveContactInput) Validate() error {
 	}
 	if s.GroundStation == nil {
 		invalidParams.Add(request.NewErrParamRequired("GroundStation"))
+	}
+	if s.GroundStation != nil && len(*s.GroundStation) < 4 {
+		invalidParams.Add(request.NewErrParamMinLen("GroundStation", 4))
 	}
 	if s.MissionProfileArn == nil {
 		invalidParams.Add(request.NewErrParamRequired("MissionProfileArn"))
@@ -6454,7 +9418,7 @@ type ReserveContactOutput struct {
 	_ struct{} `type:"structure"`
 
 	// UUID of a contact.
-	ContactId *string `locationName:"contactId" type:"string"`
+	ContactId *string `locationName:"contactId" min:"1" type:"string"`
 }
 
 // String returns the string representation.
@@ -6611,6 +9575,75 @@ func (s *ResourceNotFoundException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
+// Object stored in S3 containing ephemeris data.
+type S3Object struct {
+	_ struct{} `type:"structure"`
+
+	// An Amazon S3 Bucket name.
+	Bucket *string `locationName:"bucket" min:"3" type:"string"`
+
+	// An Amazon S3 key for the ephemeris.
+	Key *string `locationName:"key" min:"1" type:"string"`
+
+	// For versioned S3 objects, the version to use for the ephemeris.
+	Version *string `locationName:"version" min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s S3Object) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s S3Object) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *S3Object) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "S3Object"}
+	if s.Bucket != nil && len(*s.Bucket) < 3 {
+		invalidParams.Add(request.NewErrParamMinLen("Bucket", 3))
+	}
+	if s.Key != nil && len(*s.Key) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Key", 1))
+	}
+	if s.Version != nil && len(*s.Version) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Version", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetBucket sets the Bucket field's value.
+func (s *S3Object) SetBucket(v string) *S3Object {
+	s.Bucket = &v
+	return s
+}
+
+// SetKey sets the Key field's value.
+func (s *S3Object) SetKey(v string) *S3Object {
+	s.Key = &v
+	return s
+}
+
+// SetVersion sets the Version field's value.
+func (s *S3Object) SetVersion(v string) *S3Object {
+	s.Version = &v
+	return s
+}
+
 // Information about an S3 recording Config.
 type S3RecordingConfig struct {
 	_ struct{} `type:"structure"`
@@ -6691,7 +9724,7 @@ type S3RecordingDetails struct {
 	// ARN of the bucket used.
 	BucketArn *string `locationName:"bucketArn" type:"string"`
 
-	// Template of the S3 key used.
+	// Key template used for the S3 Recording Configuration
 	KeyTemplate *string `locationName:"keyTemplate" type:"string"`
 }
 
@@ -6729,11 +9762,14 @@ func (s *S3RecordingDetails) SetKeyTemplate(v string) *S3RecordingDetails {
 type SatelliteListItem struct {
 	_ struct{} `type:"structure"`
 
+	// The current ephemeris being used to compute the trajectory of the satellite.
+	CurrentEphemeris *EphemerisMetaData `locationName:"currentEphemeris" type:"structure"`
+
 	// A list of ground stations to which the satellite is on-boarded.
 	GroundStations []*string `locationName:"groundStations" type:"list"`
 
 	// NORAD satellite ID number.
-	NoradSatelliteID *int64 `locationName:"noradSatelliteID" min:"1" type:"integer"`
+	NoradSatelliteID *int64 `locationName:"noradSatelliteID" type:"integer"`
 
 	// ARN of a satellite.
 	SatelliteArn *string `locationName:"satelliteArn" type:"string"`
@@ -6758,6 +9794,12 @@ func (s SatelliteListItem) String() string {
 // value will be replaced with "sensitive".
 func (s SatelliteListItem) GoString() string {
 	return s.String()
+}
+
+// SetCurrentEphemeris sets the CurrentEphemeris field's value.
+func (s *SatelliteListItem) SetCurrentEphemeris(v *EphemerisMetaData) *SatelliteListItem {
+	s.CurrentEphemeris = v
+	return s
 }
 
 // SetGroundStations sets the GroundStations field's value.
@@ -6925,8 +9967,7 @@ func (s *SocketAddress) SetPort(v int64) *SocketAddress {
 type Source struct {
 	_ struct{} `type:"structure"`
 
-	// Additional details for a Config, if type is dataflow endpoint or antenna
-	// demod decode.
+	// Additional details for a Config, if type is dataflow-endpoint or antenna-downlink-demod-decode
 	ConfigDetails *ConfigDetails `locationName:"configDetails" type:"structure"`
 
 	// UUID of a Config.
@@ -7071,13 +10112,169 @@ func (s *SpectrumConfig) SetPolarization(v string) *SpectrumConfig {
 	return s
 }
 
+// Two-line element set (TLE) data.
+type TLEData struct {
+	_ struct{} `type:"structure"`
+
+	// First line of two-line element set (TLE) data.
+	//
+	// TleLine1 is a required field
+	TleLine1 *string `locationName:"tleLine1" min:"69" type:"string" required:"true"`
+
+	// Second line of two-line element set (TLE) data.
+	//
+	// TleLine2 is a required field
+	TleLine2 *string `locationName:"tleLine2" min:"69" type:"string" required:"true"`
+
+	// The valid time range for the TLE. Gaps or overlap are not permitted.
+	//
+	// ValidTimeRange is a required field
+	ValidTimeRange *TimeRange `locationName:"validTimeRange" type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TLEData) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TLEData) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *TLEData) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "TLEData"}
+	if s.TleLine1 == nil {
+		invalidParams.Add(request.NewErrParamRequired("TleLine1"))
+	}
+	if s.TleLine1 != nil && len(*s.TleLine1) < 69 {
+		invalidParams.Add(request.NewErrParamMinLen("TleLine1", 69))
+	}
+	if s.TleLine2 == nil {
+		invalidParams.Add(request.NewErrParamRequired("TleLine2"))
+	}
+	if s.TleLine2 != nil && len(*s.TleLine2) < 69 {
+		invalidParams.Add(request.NewErrParamMinLen("TleLine2", 69))
+	}
+	if s.ValidTimeRange == nil {
+		invalidParams.Add(request.NewErrParamRequired("ValidTimeRange"))
+	}
+	if s.ValidTimeRange != nil {
+		if err := s.ValidTimeRange.Validate(); err != nil {
+			invalidParams.AddNested("ValidTimeRange", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetTleLine1 sets the TleLine1 field's value.
+func (s *TLEData) SetTleLine1(v string) *TLEData {
+	s.TleLine1 = &v
+	return s
+}
+
+// SetTleLine2 sets the TleLine2 field's value.
+func (s *TLEData) SetTleLine2(v string) *TLEData {
+	s.TleLine2 = &v
+	return s
+}
+
+// SetValidTimeRange sets the ValidTimeRange field's value.
+func (s *TLEData) SetValidTimeRange(v *TimeRange) *TLEData {
+	s.ValidTimeRange = v
+	return s
+}
+
+// Two-line element set (TLE) ephemeris.
+type TLEEphemeris struct {
+	_ struct{} `type:"structure"`
+
+	// Identifies the S3 object to be used as the ephemeris.
+	S3Object *S3Object `locationName:"s3Object" type:"structure"`
+
+	// The data for a TLE ephemeris, supplied directly in the request rather than
+	// through an S3 object.
+	TleData []*TLEData `locationName:"tleData" min:"1" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TLEEphemeris) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TLEEphemeris) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *TLEEphemeris) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "TLEEphemeris"}
+	if s.TleData != nil && len(s.TleData) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("TleData", 1))
+	}
+	if s.S3Object != nil {
+		if err := s.S3Object.Validate(); err != nil {
+			invalidParams.AddNested("S3Object", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.TleData != nil {
+		for i, v := range s.TleData {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "TleData", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetS3Object sets the S3Object field's value.
+func (s *TLEEphemeris) SetS3Object(v *S3Object) *TLEEphemeris {
+	s.S3Object = v
+	return s
+}
+
+// SetTleData sets the TleData field's value.
+func (s *TLEEphemeris) SetTleData(v []*TLEData) *TLEEphemeris {
+	s.TleData = v
+	return s
+}
+
 type TagResourceInput struct {
 	_ struct{} `type:"structure"`
 
 	// ARN of a resource tag.
 	//
 	// ResourceArn is a required field
-	ResourceArn *string `location:"uri" locationName:"resourceArn" type:"string" required:"true"`
+	ResourceArn *string `location:"uri" locationName:"resourceArn" min:"5" type:"string" required:"true"`
 
 	// Tags assigned to a resource.
 	//
@@ -7109,8 +10306,8 @@ func (s *TagResourceInput) Validate() error {
 	if s.ResourceArn == nil {
 		invalidParams.Add(request.NewErrParamRequired("ResourceArn"))
 	}
-	if s.ResourceArn != nil && len(*s.ResourceArn) < 1 {
-		invalidParams.Add(request.NewErrParamMinLen("ResourceArn", 1))
+	if s.ResourceArn != nil && len(*s.ResourceArn) < 5 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceArn", 5))
 	}
 	if s.Tags == nil {
 		invalidParams.Add(request.NewErrParamRequired("Tags"))
@@ -7154,6 +10351,67 @@ func (s TagResourceOutput) String() string {
 // value will be replaced with "sensitive".
 func (s TagResourceOutput) GoString() string {
 	return s.String()
+}
+
+// A time range with a start and end time.
+type TimeRange struct {
+	_ struct{} `type:"structure"`
+
+	// Time in UTC at which the time range ends.
+	//
+	// EndTime is a required field
+	EndTime *time.Time `locationName:"endTime" type:"timestamp" required:"true"`
+
+	// Time in UTC at which the time range starts.
+	//
+	// StartTime is a required field
+	StartTime *time.Time `locationName:"startTime" type:"timestamp" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TimeRange) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TimeRange) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *TimeRange) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "TimeRange"}
+	if s.EndTime == nil {
+		invalidParams.Add(request.NewErrParamRequired("EndTime"))
+	}
+	if s.StartTime == nil {
+		invalidParams.Add(request.NewErrParamRequired("StartTime"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetEndTime sets the EndTime field's value.
+func (s *TimeRange) SetEndTime(v time.Time) *TimeRange {
+	s.EndTime = &v
+	return s
+}
+
+// SetStartTime sets the StartTime field's value.
+func (s *TimeRange) SetStartTime(v time.Time) *TimeRange {
+	s.StartTime = &v
+	return s
 }
 
 // Object that determines whether tracking should be used during a contact executed
@@ -7210,7 +10468,7 @@ type UntagResourceInput struct {
 	// ARN of a resource.
 	//
 	// ResourceArn is a required field
-	ResourceArn *string `location:"uri" locationName:"resourceArn" type:"string" required:"true"`
+	ResourceArn *string `location:"uri" locationName:"resourceArn" min:"5" type:"string" required:"true"`
 
 	// Keys of a resource tag.
 	//
@@ -7242,8 +10500,8 @@ func (s *UntagResourceInput) Validate() error {
 	if s.ResourceArn == nil {
 		invalidParams.Add(request.NewErrParamRequired("ResourceArn"))
 	}
-	if s.ResourceArn != nil && len(*s.ResourceArn) < 1 {
-		invalidParams.Add(request.NewErrParamMinLen("ResourceArn", 1))
+	if s.ResourceArn != nil && len(*s.ResourceArn) < 5 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceArn", 5))
 	}
 	if s.TagKeys == nil {
 		invalidParams.Add(request.NewErrParamRequired("TagKeys"))
@@ -7289,6 +10547,148 @@ func (s UntagResourceOutput) GoString() string {
 	return s.String()
 }
 
+type UpdateAgentStatusInput struct {
+	_ struct{} `type:"structure"`
+
+	// UUID of agent to update.
+	//
+	// AgentId is a required field
+	AgentId *string `location:"uri" locationName:"agentId" min:"1" type:"string" required:"true"`
+
+	// Aggregate status for agent.
+	//
+	// AggregateStatus is a required field
+	AggregateStatus *AggregateStatus `locationName:"aggregateStatus" type:"structure" required:"true"`
+
+	// List of component statuses for agent.
+	//
+	// ComponentStatuses is a required field
+	ComponentStatuses []*ComponentStatusData `locationName:"componentStatuses" type:"list" required:"true"`
+
+	// GUID of agent task.
+	//
+	// TaskId is a required field
+	TaskId *string `locationName:"taskId" min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateAgentStatusInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateAgentStatusInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdateAgentStatusInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdateAgentStatusInput"}
+	if s.AgentId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AgentId"))
+	}
+	if s.AgentId != nil && len(*s.AgentId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AgentId", 1))
+	}
+	if s.AggregateStatus == nil {
+		invalidParams.Add(request.NewErrParamRequired("AggregateStatus"))
+	}
+	if s.ComponentStatuses == nil {
+		invalidParams.Add(request.NewErrParamRequired("ComponentStatuses"))
+	}
+	if s.TaskId == nil {
+		invalidParams.Add(request.NewErrParamRequired("TaskId"))
+	}
+	if s.TaskId != nil && len(*s.TaskId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("TaskId", 1))
+	}
+	if s.AggregateStatus != nil {
+		if err := s.AggregateStatus.Validate(); err != nil {
+			invalidParams.AddNested("AggregateStatus", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.ComponentStatuses != nil {
+		for i, v := range s.ComponentStatuses {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "ComponentStatuses", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAgentId sets the AgentId field's value.
+func (s *UpdateAgentStatusInput) SetAgentId(v string) *UpdateAgentStatusInput {
+	s.AgentId = &v
+	return s
+}
+
+// SetAggregateStatus sets the AggregateStatus field's value.
+func (s *UpdateAgentStatusInput) SetAggregateStatus(v *AggregateStatus) *UpdateAgentStatusInput {
+	s.AggregateStatus = v
+	return s
+}
+
+// SetComponentStatuses sets the ComponentStatuses field's value.
+func (s *UpdateAgentStatusInput) SetComponentStatuses(v []*ComponentStatusData) *UpdateAgentStatusInput {
+	s.ComponentStatuses = v
+	return s
+}
+
+// SetTaskId sets the TaskId field's value.
+func (s *UpdateAgentStatusInput) SetTaskId(v string) *UpdateAgentStatusInput {
+	s.TaskId = &v
+	return s
+}
+
+type UpdateAgentStatusOutput struct {
+	_ struct{} `type:"structure"`
+
+	// UUID of updated agent.
+	//
+	// AgentId is a required field
+	AgentId *string `locationName:"agentId" min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateAgentStatusOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateAgentStatusOutput) GoString() string {
+	return s.String()
+}
+
+// SetAgentId sets the AgentId field's value.
+func (s *UpdateAgentStatusOutput) SetAgentId(v string) *UpdateAgentStatusOutput {
+	s.AgentId = &v
+	return s
+}
+
 type UpdateConfigInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7300,7 +10700,7 @@ type UpdateConfigInput struct {
 	// UUID of a Config.
 	//
 	// ConfigId is a required field
-	ConfigId *string `location:"uri" locationName:"configId" type:"string" required:"true"`
+	ConfigId *string `location:"uri" locationName:"configId" min:"1" type:"string" required:"true"`
 
 	// Type of a Config.
 	//
@@ -7440,16 +10840,139 @@ func (s *UpdateConfigOutput) SetConfigType(v string) *UpdateConfigOutput {
 	return s
 }
 
+type UpdateEphemerisInput struct {
+	_ struct{} `type:"structure"`
+
+	// Whether the ephemeris is enabled or not. Changing this value will not require
+	// the ephemeris to be re-validated.
+	//
+	// Enabled is a required field
+	Enabled *bool `locationName:"enabled" type:"boolean" required:"true"`
+
+	// The AWS Ground Station ephemeris ID.
+	//
+	// EphemerisId is a required field
+	EphemerisId *string `location:"uri" locationName:"ephemerisId" min:"1" type:"string" required:"true"`
+
+	// A name string associated with the ephemeris. Used as a human-readable identifier
+	// for the ephemeris.
+	Name *string `locationName:"name" min:"1" type:"string"`
+
+	// Customer-provided priority score to establish the order in which overlapping
+	// ephemerides should be used.
+	//
+	// The default for customer-provided ephemeris priority is 1, and higher numbers
+	// take precedence.
+	//
+	// Priority must be 1 or greater
+	Priority *int64 `locationName:"priority" type:"integer"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateEphemerisInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateEphemerisInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdateEphemerisInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdateEphemerisInput"}
+	if s.Enabled == nil {
+		invalidParams.Add(request.NewErrParamRequired("Enabled"))
+	}
+	if s.EphemerisId == nil {
+		invalidParams.Add(request.NewErrParamRequired("EphemerisId"))
+	}
+	if s.EphemerisId != nil && len(*s.EphemerisId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("EphemerisId", 1))
+	}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetEnabled sets the Enabled field's value.
+func (s *UpdateEphemerisInput) SetEnabled(v bool) *UpdateEphemerisInput {
+	s.Enabled = &v
+	return s
+}
+
+// SetEphemerisId sets the EphemerisId field's value.
+func (s *UpdateEphemerisInput) SetEphemerisId(v string) *UpdateEphemerisInput {
+	s.EphemerisId = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *UpdateEphemerisInput) SetName(v string) *UpdateEphemerisInput {
+	s.Name = &v
+	return s
+}
+
+// SetPriority sets the Priority field's value.
+func (s *UpdateEphemerisInput) SetPriority(v int64) *UpdateEphemerisInput {
+	s.Priority = &v
+	return s
+}
+
+type UpdateEphemerisOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The AWS Ground Station ephemeris ID.
+	EphemerisId *string `locationName:"ephemerisId" min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateEphemerisOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateEphemerisOutput) GoString() string {
+	return s.String()
+}
+
+// SetEphemerisId sets the EphemerisId field's value.
+func (s *UpdateEphemerisOutput) SetEphemerisId(v string) *UpdateEphemerisOutput {
+	s.EphemerisId = &v
+	return s
+}
+
 type UpdateMissionProfileInput struct {
 	_ struct{} `type:"structure"`
 
 	// Amount of time after a contact ends that you’d like to receive a CloudWatch
 	// event indicating the pass has finished.
-	ContactPostPassDurationSeconds *int64 `locationName:"contactPostPassDurationSeconds" min:"1" type:"integer"`
+	ContactPostPassDurationSeconds *int64 `locationName:"contactPostPassDurationSeconds" type:"integer"`
 
 	// Amount of time after a contact ends that you’d like to receive a CloudWatch
 	// event indicating the pass has finished.
-	ContactPrePassDurationSeconds *int64 `locationName:"contactPrePassDurationSeconds" min:"1" type:"integer"`
+	ContactPrePassDurationSeconds *int64 `locationName:"contactPrePassDurationSeconds" type:"integer"`
 
 	// A list of lists of ARNs. Each list of ARNs is an edge, with a from Config
 	// and a to Config.
@@ -7463,10 +10986,16 @@ type UpdateMissionProfileInput struct {
 	// UUID of a mission profile.
 	//
 	// MissionProfileId is a required field
-	MissionProfileId *string `location:"uri" locationName:"missionProfileId" type:"string" required:"true"`
+	MissionProfileId *string `location:"uri" locationName:"missionProfileId" min:"1" type:"string" required:"true"`
 
 	// Name of a mission profile.
 	Name *string `locationName:"name" min:"1" type:"string"`
+
+	// KMS key to use for encrypting streams.
+	StreamsKmsKey *KmsKey `locationName:"streamsKmsKey" type:"structure"`
+
+	// Role to use for encrypting streams with KMS key.
+	StreamsKmsRole *string `locationName:"streamsKmsRole" type:"string"`
 
 	// ARN of a tracking Config.
 	TrackingConfigArn *string `locationName:"trackingConfigArn" type:"string"`
@@ -7493,12 +11022,6 @@ func (s UpdateMissionProfileInput) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *UpdateMissionProfileInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "UpdateMissionProfileInput"}
-	if s.ContactPostPassDurationSeconds != nil && *s.ContactPostPassDurationSeconds < 1 {
-		invalidParams.Add(request.NewErrParamMinValue("ContactPostPassDurationSeconds", 1))
-	}
-	if s.ContactPrePassDurationSeconds != nil && *s.ContactPrePassDurationSeconds < 1 {
-		invalidParams.Add(request.NewErrParamMinValue("ContactPrePassDurationSeconds", 1))
-	}
 	if s.MinimumViableContactDurationSeconds != nil && *s.MinimumViableContactDurationSeconds < 1 {
 		invalidParams.Add(request.NewErrParamMinValue("MinimumViableContactDurationSeconds", 1))
 	}
@@ -7510,6 +11033,11 @@ func (s *UpdateMissionProfileInput) Validate() error {
 	}
 	if s.Name != nil && len(*s.Name) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+	if s.StreamsKmsKey != nil {
+		if err := s.StreamsKmsKey.Validate(); err != nil {
+			invalidParams.AddNested("StreamsKmsKey", err.(request.ErrInvalidParams))
+		}
 	}
 
 	if invalidParams.Len() > 0 {
@@ -7554,6 +11082,18 @@ func (s *UpdateMissionProfileInput) SetName(v string) *UpdateMissionProfileInput
 	return s
 }
 
+// SetStreamsKmsKey sets the StreamsKmsKey field's value.
+func (s *UpdateMissionProfileInput) SetStreamsKmsKey(v *KmsKey) *UpdateMissionProfileInput {
+	s.StreamsKmsKey = v
+	return s
+}
+
+// SetStreamsKmsRole sets the StreamsKmsRole field's value.
+func (s *UpdateMissionProfileInput) SetStreamsKmsRole(v string) *UpdateMissionProfileInput {
+	s.StreamsKmsRole = &v
+	return s
+}
+
 // SetTrackingConfigArn sets the TrackingConfigArn field's value.
 func (s *UpdateMissionProfileInput) SetTrackingConfigArn(v string) *UpdateMissionProfileInput {
 	s.TrackingConfigArn = &v
@@ -7564,7 +11104,7 @@ type UpdateMissionProfileOutput struct {
 	_ struct{} `type:"structure"`
 
 	// UUID of a mission profile.
-	MissionProfileId *string `locationName:"missionProfileId" type:"string"`
+	MissionProfileId *string `locationName:"missionProfileId" min:"1" type:"string"`
 }
 
 // String returns the string representation.
@@ -7719,6 +11259,30 @@ func (s *UplinkSpectrumConfig) SetPolarization(v string) *UplinkSpectrumConfig {
 }
 
 const (
+	// AgentStatusSuccess is a AgentStatus enum value
+	AgentStatusSuccess = "SUCCESS"
+
+	// AgentStatusFailed is a AgentStatus enum value
+	AgentStatusFailed = "FAILED"
+
+	// AgentStatusActive is a AgentStatus enum value
+	AgentStatusActive = "ACTIVE"
+
+	// AgentStatusInactive is a AgentStatus enum value
+	AgentStatusInactive = "INACTIVE"
+)
+
+// AgentStatus_Values returns all elements of the AgentStatus enum
+func AgentStatus_Values() []string {
+	return []string{
+		AgentStatusSuccess,
+		AgentStatusFailed,
+		AgentStatusActive,
+		AgentStatusInactive,
+	}
+}
+
+const (
 	// AngleUnitsDegreeAngle is a AngleUnits enum value
 	AngleUnitsDegreeAngle = "DEGREE_ANGLE"
 
@@ -7731,6 +11295,22 @@ func AngleUnits_Values() []string {
 	return []string{
 		AngleUnitsDegreeAngle,
 		AngleUnitsRadian,
+	}
+}
+
+const (
+	// AuditResultsHealthy is a AuditResults enum value
+	AuditResultsHealthy = "HEALTHY"
+
+	// AuditResultsUnhealthy is a AuditResults enum value
+	AuditResultsUnhealthy = "UNHEALTHY"
+)
+
+// AuditResults_Values returns all elements of the AuditResults enum
+func AuditResults_Values() []string {
+	return []string{
+		AuditResultsHealthy,
+		AuditResultsUnhealthy,
 	}
 }
 
@@ -7751,6 +11331,58 @@ func BandwidthUnits_Values() []string {
 		BandwidthUnitsGhz,
 		BandwidthUnitsMhz,
 		BandwidthUnitsKHz,
+	}
+}
+
+const (
+	// CapabilityHealthUnhealthy is a CapabilityHealth enum value
+	CapabilityHealthUnhealthy = "UNHEALTHY"
+
+	// CapabilityHealthHealthy is a CapabilityHealth enum value
+	CapabilityHealthHealthy = "HEALTHY"
+)
+
+// CapabilityHealth_Values returns all elements of the CapabilityHealth enum
+func CapabilityHealth_Values() []string {
+	return []string{
+		CapabilityHealthUnhealthy,
+		CapabilityHealthHealthy,
+	}
+}
+
+const (
+	// CapabilityHealthReasonNoRegisteredAgent is a CapabilityHealthReason enum value
+	CapabilityHealthReasonNoRegisteredAgent = "NO_REGISTERED_AGENT"
+
+	// CapabilityHealthReasonInvalidIpOwnership is a CapabilityHealthReason enum value
+	CapabilityHealthReasonInvalidIpOwnership = "INVALID_IP_OWNERSHIP"
+
+	// CapabilityHealthReasonNotAuthorizedToCreateSlr is a CapabilityHealthReason enum value
+	CapabilityHealthReasonNotAuthorizedToCreateSlr = "NOT_AUTHORIZED_TO_CREATE_SLR"
+
+	// CapabilityHealthReasonUnverifiedIpOwnership is a CapabilityHealthReason enum value
+	CapabilityHealthReasonUnverifiedIpOwnership = "UNVERIFIED_IP_OWNERSHIP"
+
+	// CapabilityHealthReasonInitializingDataplane is a CapabilityHealthReason enum value
+	CapabilityHealthReasonInitializingDataplane = "INITIALIZING_DATAPLANE"
+
+	// CapabilityHealthReasonDataplaneFailure is a CapabilityHealthReason enum value
+	CapabilityHealthReasonDataplaneFailure = "DATAPLANE_FAILURE"
+
+	// CapabilityHealthReasonHealthy is a CapabilityHealthReason enum value
+	CapabilityHealthReasonHealthy = "HEALTHY"
+)
+
+// CapabilityHealthReason_Values returns all elements of the CapabilityHealthReason enum
+func CapabilityHealthReason_Values() []string {
+	return []string{
+		CapabilityHealthReasonNoRegisteredAgent,
+		CapabilityHealthReasonInvalidIpOwnership,
+		CapabilityHealthReasonNotAuthorizedToCreateSlr,
+		CapabilityHealthReasonUnverifiedIpOwnership,
+		CapabilityHealthReasonInitializingDataplane,
+		CapabilityHealthReasonDataplaneFailure,
+		CapabilityHealthReasonHealthy,
 	}
 }
 
@@ -7907,6 +11539,82 @@ func EndpointStatus_Values() []string {
 		EndpointStatusDeleted,
 		EndpointStatusDeleting,
 		EndpointStatusFailed,
+	}
+}
+
+const (
+	// EphemerisInvalidReasonMetadataInvalid is a EphemerisInvalidReason enum value
+	EphemerisInvalidReasonMetadataInvalid = "METADATA_INVALID"
+
+	// EphemerisInvalidReasonTimeRangeInvalid is a EphemerisInvalidReason enum value
+	EphemerisInvalidReasonTimeRangeInvalid = "TIME_RANGE_INVALID"
+
+	// EphemerisInvalidReasonTrajectoryInvalid is a EphemerisInvalidReason enum value
+	EphemerisInvalidReasonTrajectoryInvalid = "TRAJECTORY_INVALID"
+
+	// EphemerisInvalidReasonKmsKeyInvalid is a EphemerisInvalidReason enum value
+	EphemerisInvalidReasonKmsKeyInvalid = "KMS_KEY_INVALID"
+
+	// EphemerisInvalidReasonValidationError is a EphemerisInvalidReason enum value
+	EphemerisInvalidReasonValidationError = "VALIDATION_ERROR"
+)
+
+// EphemerisInvalidReason_Values returns all elements of the EphemerisInvalidReason enum
+func EphemerisInvalidReason_Values() []string {
+	return []string{
+		EphemerisInvalidReasonMetadataInvalid,
+		EphemerisInvalidReasonTimeRangeInvalid,
+		EphemerisInvalidReasonTrajectoryInvalid,
+		EphemerisInvalidReasonKmsKeyInvalid,
+		EphemerisInvalidReasonValidationError,
+	}
+}
+
+const (
+	// EphemerisSourceCustomerProvided is a EphemerisSource enum value
+	EphemerisSourceCustomerProvided = "CUSTOMER_PROVIDED"
+
+	// EphemerisSourceSpaceTrack is a EphemerisSource enum value
+	EphemerisSourceSpaceTrack = "SPACE_TRACK"
+)
+
+// EphemerisSource_Values returns all elements of the EphemerisSource enum
+func EphemerisSource_Values() []string {
+	return []string{
+		EphemerisSourceCustomerProvided,
+		EphemerisSourceSpaceTrack,
+	}
+}
+
+const (
+	// EphemerisStatusValidating is a EphemerisStatus enum value
+	EphemerisStatusValidating = "VALIDATING"
+
+	// EphemerisStatusInvalid is a EphemerisStatus enum value
+	EphemerisStatusInvalid = "INVALID"
+
+	// EphemerisStatusError is a EphemerisStatus enum value
+	EphemerisStatusError = "ERROR"
+
+	// EphemerisStatusEnabled is a EphemerisStatus enum value
+	EphemerisStatusEnabled = "ENABLED"
+
+	// EphemerisStatusDisabled is a EphemerisStatus enum value
+	EphemerisStatusDisabled = "DISABLED"
+
+	// EphemerisStatusExpired is a EphemerisStatus enum value
+	EphemerisStatusExpired = "EXPIRED"
+)
+
+// EphemerisStatus_Values returns all elements of the EphemerisStatus enum
+func EphemerisStatus_Values() []string {
+	return []string{
+		EphemerisStatusValidating,
+		EphemerisStatusInvalid,
+		EphemerisStatusError,
+		EphemerisStatusEnabled,
+		EphemerisStatusDisabled,
+		EphemerisStatusExpired,
 	}
 }
 

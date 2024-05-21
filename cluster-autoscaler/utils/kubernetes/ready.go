@@ -35,10 +35,10 @@ const (
 	// still upcoming due to a missing resource (e.g. GPU).
 	ResourceUnready NodeNotReadyReason = "cluster-autoscaler.kubernetes.io/resource-not-ready"
 
-	// IgnoreTaint is a fake identifier used internally by Cluster Autoscaler
+	// StartupNodes is a fake identifier used internally by Cluster Autoscaler
 	// to indicate nodes that appear Ready in the API, but are treated as
-	// still upcoming due to applied ignore taint.
-	IgnoreTaint NodeNotReadyReason = "cluster-autoscaler.kubernetes.io/ignore-taint"
+	// still upcoming due to applied startup taint.
+	StartupNodes NodeNotReadyReason = "cluster-autoscaler.kubernetes.io/startup-taint"
 )
 
 // IsNodeReadyAndSchedulable returns true if the node is ready and schedulable.

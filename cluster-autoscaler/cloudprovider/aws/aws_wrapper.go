@@ -85,7 +85,7 @@ func (m *awsWrapper) getManagedNodegroupInfo(nodegroupName string, clusterName s
 	}
 
 	if r.Nodegroup.CapacityType != nil && len(*r.Nodegroup.CapacityType) > 0 {
-		labels["capacityType"] = *r.Nodegroup.CapacityType
+		labels["eks.amazonaws.com/capacityType"] = *r.Nodegroup.CapacityType
 	}
 
 	if r.Nodegroup.Version != nil && len(*r.Nodegroup.Version) > 0 {
@@ -326,7 +326,7 @@ func (m *awsWrapper) getInstanceTypeFromInstanceRequirements(imageId string, req
 	}
 
 	start = time.Now()
-	instanceTypes := []string{}
+	var instanceTypes []string
 	err = m.GetInstanceTypesFromInstanceRequirementsPages(requirementsInput, func(page *ec2.GetInstanceTypesFromInstanceRequirementsOutput, isLastPage bool) bool {
 		for _, instanceType := range page.InstanceTypes {
 			instanceTypes = append(instanceTypes, *instanceType.InstanceType)
@@ -335,9 +335,12 @@ func (m *awsWrapper) getInstanceTypeFromInstanceRequirements(imageId string, req
 	})
 	observeAWSRequest("GetInstanceTypesFromInstanceRequirements", err, start)
 	if err != nil {
-		return "", fmt.Errorf("unable to get instance types from requirements")
+		return "", fmt.Errorf("unable to get instance types from requirements: %w", err)
 	}
 
+	if len(instanceTypes) == 0 {
+		return "", fmt.Errorf("no instance types found for requirements")
+	}
 	return instanceTypes[0], nil
 }
 

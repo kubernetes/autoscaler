@@ -27,7 +27,7 @@ A single `EvictionRequirement` specifies `Resources` and a `ChangeRequirement` c
 
 Add validation to prevent users from adding `EvictionRequirements` which can never evaluate to `true`:
 * Reject if more than one `EvictionRequirement` for a single resource is found
-* Reject if `Resource: [CPU, Memory]` is specified on one `EvictionRequirement` together with `Resource: [CPU]` or `Resource: [Memory]` on another `EvictionRequirement`
+* Reject if `Resources: [CPU, Memory]` is specified on one `EvictionRequirement` together with `Resources: [CPU]` or `Resources: [Memory]` on another `EvictionRequirement`
 
 ## Design Details
 ### Test Plan

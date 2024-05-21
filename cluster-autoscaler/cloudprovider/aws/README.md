@@ -429,13 +429,14 @@ To refresh static list, please run `go run ec2_instance_types/gen.go` under
 
 If you want to use a newer version of the AWS SDK than the version currently vendored as a direct dependency by Cluster Autoscaler, then you can use the version vendored under this AWS cloudprovider.
 
-The current version vendored is `v1.44.24`.
+The current version vendored is `v1.48.7`.
 
 If you want to update the vendored AWS SDK to a newer version, please make sure of the following:
 
 1. Place the copy of the new desired version of the AWS SDK under the `aws-sdk-go` directory.
-2. Update the import statements within the newly-copied AWS SDK to reference the new paths (e.g., `github.com/aws/aws-sdk-go/aws/awsutil` -> `k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/awsutil`).
-3. Update the version number above to indicate the new vendored version.
+2. Remove folders : models and examples. Remove _test.go file `find . -name '*_test.go' -exec rm {}+`
+3. Update the import statements within the newly-copied AWS SDK to reference the new paths (e.g., `github.com/aws/aws-sdk-go/aws/awsutil` -> `k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/awsutil`). You can use this command from the aws-sdk-go folder `find . -type f -exec sed -i ‘s#github.com/aws/aws-sdk-go#k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go#’ {} \;`
+4. Update the version number above to indicate the new vendored version.
 
 ## Using cloud config with helm
 
@@ -496,11 +497,8 @@ Please note: it is also possible to mount the cloud config file from host:
   enabled, which means it will actively work to balance the number of instances
   between AZs, and possibly terminate instances. If your applications could be
   impacted from sudden termination, you can either suspend the AZRebalance
-  feature, or use a tool for automatic draining upon ASG scale-in such as the
-  [k8s-node-drainer](https://github.com/aws-samples/amazon-k8s-node-drainer). The
-  [AWS Node Termination
-  Handler](https://github.com/aws/aws-node-termination-handler/issues/95) will
-  also support this use-case in the future.
+  feature, or use a tool for automatic draining upon ASG scale-in such as the [AWS Node Termination
+  Handler](https://github.com/aws/aws-node-termination-handler/).
 - By default, cluster autoscaler will not terminate nodes running pods in the
   kube-system namespace. You can override this default behaviour by passing in
   the `--skip-nodes-with-system-pods=false` flag.
@@ -526,3 +524,4 @@ Please note: it is also possible to mount the cloud config file from host:
   Otherwise, the `/latest/api/token` call will timeout and result in an error. See [AWS docs here](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/configuring-instance-metadata-service.html#configuring-instance-metadata-options) for further information.
 - If you don't use EKS managed nodegroups, don't add the `eks:nodegroup-name` tag to the ASG as this will lead to extra EKS API calls that could slow down scaling when there are 0 nodes in the nodegroup.
 - Set `AWS_MAX_ATTEMPTS` to configure max retries
+- If you are running a private cluster in a VPC without certain VPC interfaces for AWS services, the CA might crash on startup due to failing to dynamically fetch supported EC2-instance types. To avoid this, add the argument `--aws-use-static-instance-list=true` to the CA startup command. For more information on private cluster requirements, see [AWS docs here](https://docs.aws.amazon.com/eks/latest/userguide/private-clusters.html).

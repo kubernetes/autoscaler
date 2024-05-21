@@ -30,6 +30,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
+	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
 	kube_record "k8s.io/client-go/tools/record"
 	klog "k8s.io/klog/v2"
@@ -127,16 +128,15 @@ func NewAutoscalingContext(
 }
 
 // NewAutoscalingKubeClients builds AutoscalingKubeClients out of basic client.
-func NewAutoscalingKubeClients(opts config.AutoscalingOptions, kubeClient, eventsKubeClient kube_client.Interface) *AutoscalingKubeClients {
-	listerRegistryStopChannel := make(chan struct{})
-	listerRegistry := kube_util.NewListerRegistryWithDefaultListers(kubeClient, listerRegistryStopChannel)
-	kubeEventRecorder := kube_util.CreateEventRecorder(eventsKubeClient, opts.RecordDuplicatedEvents)
+func NewAutoscalingKubeClients(opts config.AutoscalingOptions, kubeClient kube_client.Interface, informerFactory informers.SharedInformerFactory) *AutoscalingKubeClients {
+	listerRegistry := kube_util.NewListerRegistryWithDefaultListers(informerFactory)
+	kubeEventRecorder := kube_util.CreateEventRecorder(kubeClient, opts.RecordDuplicatedEvents)
 	logRecorder, err := utils.NewStatusMapRecorder(kubeClient, opts.ConfigNamespace, kubeEventRecorder, opts.WriteStatusConfigMap, opts.StatusConfigMapName)
 	if err != nil {
 		klog.Error("Failed to initialize status configmap, unable to write status events")
 		// Get a dummy, so we can at least safely call the methods
 		// TODO(maciekpytel): recover from this after successful status configmap update?
-		logRecorder, _ = utils.NewStatusMapRecorder(eventsKubeClient, opts.ConfigNamespace, kubeEventRecorder, false, opts.StatusConfigMapName)
+		logRecorder, _ = utils.NewStatusMapRecorder(kubeClient, opts.ConfigNamespace, kubeEventRecorder, false, opts.StatusConfigMapName)
 	}
 
 	return &AutoscalingKubeClients{

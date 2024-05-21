@@ -35,7 +35,6 @@ import (
 const (
 	vmTypeVMSS     = "vmss"
 	vmTypeStandard = "standard"
-	vmTypeAKS      = "aks"
 
 	scaleToZeroSupportedStandard = false
 	scaleToZeroSupportedVMSS     = true
@@ -148,13 +147,16 @@ func (m *AzureManager) buildNodeGroupFromSpec(spec string) (cloudprovider.NodeGr
 		return nil, fmt.Errorf("failed to parse node group spec: %v", err)
 	}
 
+	vmsPoolSet := m.azureCache.getVMsPoolSet()
+	if _, ok := vmsPoolSet[s.Name]; ok {
+		return NewVMsPool(s, m), nil
+	}
+
 	switch m.config.VMType {
 	case vmTypeStandard:
 		return NewAgentPool(s, m)
 	case vmTypeVMSS:
 		return NewScaleSet(s, m, -1)
-	case vmTypeAKS:
-		return NewAKSAgentPool(s, m)
 	default:
 		return nil, fmt.Errorf("vmtype %s not supported", m.config.VMType)
 	}

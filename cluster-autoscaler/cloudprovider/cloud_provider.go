@@ -60,6 +60,8 @@ const (
 	KamateraProviderName = "kamatera"
 	// KubemarkProviderName gets the provider name of kubemark
 	KubemarkProviderName = "kubemark"
+	// KwokProviderName gets the provider name of kwok
+	KwokProviderName = "kwok"
 	// HuaweicloudProviderName gets the provider name of huaweicloud
 	HuaweicloudProviderName = "huaweicloud"
 	// MCMProviderName gets the provider name of machine controller manager
@@ -80,6 +82,8 @@ const (
 	VultrProviderName = "vultr"
 	// PacketProviderName gets the provider name of packet
 	PacketProviderName = "packet"
+	// EquinixMetalProviderName gets the provider name of packet
+	EquinixMetalProviderName = "equinixmetal"
 	// TencentcloudProviderName gets the provider name of tencentcloud
 	TencentcloudProviderName = "tencentcloud"
 	// ExternalGrpcProviderName gets the provider name of the external grpc provider

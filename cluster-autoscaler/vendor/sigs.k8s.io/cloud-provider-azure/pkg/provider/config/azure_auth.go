@@ -78,6 +78,10 @@ type AzureAuthConfig struct {
 	NetworkResourceTenantID string `json:"networkResourceTenantID,omitempty" yaml:"networkResourceTenantID,omitempty"`
 	// The ID of the Azure Subscription that the network resources are deployed in
 	NetworkResourceSubscriptionID string `json:"networkResourceSubscriptionID,omitempty" yaml:"networkResourceSubscriptionID,omitempty"`
+	// The AAD federated token file
+	AADFederatedTokenFile string `json:"aadFederatedTokenFile,omitempty" yaml:"aadFederatedTokenFile,omitempty"`
+	// Use workload identity federation for the virtual machine to access Azure ARM APIs
+	UseFederatedWorkloadIdentityExtension bool `json:"useFederatedWorkloadIdentityExtension,omitempty" yaml:"useFederatedWorkloadIdentityExtension,omitempty"`
 }
 
 // GetServicePrincipalToken creates a new service principal token based on the configuration.
@@ -98,6 +102,28 @@ func GetServicePrincipalToken(config *AzureAuthConfig, env *azure.Environment, r
 
 	if resource == "" {
 		resource = env.ServiceManagementEndpoint
+	}
+
+	if config.UseFederatedWorkloadIdentityExtension {
+		klog.V(2).Infoln("azure: using workload identity extension to retrieve access token")
+		oauthConfig, err := adal.NewOAuthConfigWithAPIVersion(env.ActiveDirectoryEndpoint, config.TenantID, nil)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create the OAuth config: %w", err)
+		}
+
+		jwtCallback := func() (string, error) {
+			jwt, err := os.ReadFile(config.AADFederatedTokenFile)
+			if err != nil {
+				return "", fmt.Errorf("failed to read a file with a federated token: %w", err)
+			}
+			return string(jwt), nil
+		}
+
+		token, err := adal.NewServicePrincipalTokenFromFederatedTokenCallback(*oauthConfig, config.AADClientID, jwtCallback, env.ResourceManagerEndpoint)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create a workload identity token: %w", err)
+		}
+		return token, nil
 	}
 
 	if config.UseManagedIdentityExtension {

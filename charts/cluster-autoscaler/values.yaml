@@ -6,7 +6,7 @@ affinity: {}
 additionalLabels: {}
 
 autoDiscovery:
-  # cloudProviders `aws`, `gce`, `azure`, `magnum` and `clusterapi` `oci-oke` are supported by auto-discovery at this time
+  # cloudProviders `aws`, `gce`, `azure`, `magnum`, `clusterapi` and `oci` are supported by auto-discovery at this time
   # AWS: Set tags as described in https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md#auto-discovery-setup
 
   # autoDiscovery.clusterName -- Enable autodiscovery for `cloudProvider=aws`, for groups matching `autoDiscovery.tags`.
@@ -102,7 +102,7 @@ azureUseManagedIdentityExtension: false
 azureUseWorkloadIdentityExtension: false
 
 # azureVMType -- Azure VM type.
-azureVMType: "AKS"
+azureVMType: "vmss"
 
 # cloudConfigPath -- Configuration file for cloud provider.
 cloudConfigPath: ""
@@ -230,7 +230,7 @@ image:
   # image.repository -- Image repository
   repository: registry.k8s.io/autoscaling/cluster-autoscaler
   # image.tag -- Image tag
-  tag: v1.27.2
+  tag: v1.28.2
   # image.pullPolicy -- Image pull policy
   pullPolicy: IfNotPresent
   ## Optionally specify an array of imagePullSecrets.
@@ -243,6 +243,9 @@ image:
 
 # kubeTargetVersionOverride -- Allow overriding the `.Capabilities.KubeVersion.GitVersion` check. Useful for `helm template` commands.
 kubeTargetVersionOverride: ""
+
+# kwokConfigMapName -- configmap for configuring kwok provider
+kwokConfigMapName: "kwok-provider-config"
 
 # magnumCABundlePath -- Path to the host's CA bundle, from `ca-file` in the cloud-config file.
 magnumCABundlePath: "/etc/kubernetes/ca-bundle.crt"
@@ -321,6 +324,9 @@ resources: {}
   #   cpu: 100m
   #   memory: 300Mi
 
+# revisionHistoryLimit -- The number of revisions to keep.
+revisionHistoryLimit: 10
+
 # securityContext -- [Security context for pod](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/)
 securityContext: {}
   # runAsNonRoot: true
@@ -368,6 +374,7 @@ serviceMonitor:
   ## [RelabelConfig](https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api.md#monitoring.coreos.com/v1.RelabelConfig)
   # serviceMonitor.metricRelabelings -- MetricRelabelConfigs to apply to samples before ingestion.
   metricRelabelings: {}
+
 
 # tolerations -- List of node taints to tolerate (requires Kubernetes >= 1.6).
 tolerations: []

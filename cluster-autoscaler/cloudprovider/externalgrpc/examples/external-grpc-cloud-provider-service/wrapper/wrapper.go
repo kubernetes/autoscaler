@@ -20,6 +20,8 @@ import (
 	"context"
 	"fmt"
 
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/anypb"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -113,6 +115,9 @@ func (w *Wrapper) PricingNodePrice(_ context.Context, req *protos.PricingNodePri
 
 	model, err := w.provider.Pricing()
 	if err != nil {
+		if err == cloudprovider.ErrNotImplemented {
+			return nil, status.Error(codes.Unimplemented, err.Error())
+		}
 		return nil, err
 	}
 	reqNode := req.GetNode()
@@ -136,6 +141,9 @@ func (w *Wrapper) PricingPodPrice(_ context.Context, req *protos.PricingPodPrice
 
 	model, err := w.provider.Pricing()
 	if err != nil {
+		if err == cloudprovider.ErrNotImplemented {
+			return nil, status.Error(codes.Unimplemented, err.Error())
+		}
 		return nil, err
 	}
 	reqPod := req.GetPod()
@@ -326,6 +334,9 @@ func (w *Wrapper) NodeGroupTemplateNodeInfo(_ context.Context, req *protos.NodeG
 	}
 	info, err := ng.TemplateNodeInfo()
 	if err != nil {
+		if err == cloudprovider.ErrNotImplemented {
+			return nil, status.Error(codes.Unimplemented, err.Error())
+		}
 		return nil, err
 	}
 	return &protos.NodeGroupTemplateNodeInfoResponse{
@@ -351,9 +362,13 @@ func (w *Wrapper) NodeGroupGetOptions(_ context.Context, req *protos.NodeGroupAu
 		ScaleDownGpuUtilizationThreshold: pbDefaults.GetScaleDownGpuUtilizationThreshold(),
 		ScaleDownUnneededTime:            pbDefaults.GetScaleDownUnneededTime().Duration,
 		ScaleDownUnreadyTime:             pbDefaults.GetScaleDownUnneededTime().Duration,
+		MaxNodeProvisionTime:             pbDefaults.GetMaxNodeProvisionTime().Duration,
 	}
 	opts, err := ng.GetOptions(defaults)
 	if err != nil {
+		if err == cloudprovider.ErrNotImplemented {
+			return nil, status.Error(codes.Unimplemented, err.Error())
+		}
 		return nil, err
 	}
 	if opts == nil {
@@ -368,6 +383,9 @@ func (w *Wrapper) NodeGroupGetOptions(_ context.Context, req *protos.NodeGroupAu
 			},
 			ScaleDownUnreadyTime: &metav1.Duration{
 				Duration: opts.ScaleDownUnreadyTime,
+			},
+			MaxNodeProvisionTime: &metav1.Duration{
+				Duration: opts.MaxNodeProvisionTime,
 			},
 		},
 	}, nil

@@ -35,6 +35,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/random"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
+	"k8s.io/autoscaler/cluster-autoscaler/observers/nodegroupchange"
 	"k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/actionablecluster"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/binpacking"
@@ -178,7 +179,10 @@ func NewTestProcessors(context *context.AutoscalingContext) *processors.Autoscal
 		NodeGroupListProcessor: &nodegroups.NoOpNodeGroupListProcessor{},
 		BinpackingLimiter:      binpacking.NewDefaultBinpackingLimiter(),
 		NodeGroupSetProcessor:  nodegroupset.NewDefaultNodeGroupSetProcessor([]string{}, config.NodeGroupDifferenceRatios{}),
-		ScaleDownSetProcessor:  nodes.NewPostFilteringScaleDownNodeProcessor(),
+		ScaleDownSetProcessor: nodes.NewCompositeScaleDownSetProcessor([]nodes.ScaleDownSetProcessor{
+			nodes.NewMaxNodesProcessor(),
+			nodes.NewAtomicResizeFilteringProcessor(),
+		}),
 		// TODO(bskiba): change scale up test so that this can be a NoOpProcessor
 		ScaleUpStatusProcessor:      &status.EventingScaleUpStatusProcessor{},
 		ScaleDownStatusProcessor:    &status.NoOpScaleDownStatusProcessor{},
@@ -190,6 +194,7 @@ func NewTestProcessors(context *context.AutoscalingContext) *processors.Autoscal
 		CustomResourcesProcessor:    customresources.NewDefaultCustomResourcesProcessor(),
 		ActionableClusterProcessor:  actionablecluster.NewDefaultActionableClusterProcessor(),
 		ScaleDownCandidatesNotifier: scaledowncandidates.NewObserversList(),
+		ScaleStateNotifier:          nodegroupchange.NewNodeGroupChangeObserversList(),
 	}
 }
 
@@ -354,14 +359,17 @@ func (p *MockBinpackingLimiter) InitBinpacking(context *context.AutoscalingConte
 	p.requiredExpansionOptions = 1
 }
 
+// MarkProcessed is here to satisfy the interface.
+func (p *MockBinpackingLimiter) MarkProcessed(context *context.AutoscalingContext, nodegroupId string) {
+}
+
 // StopBinpacking stops the binpacking early, if we already have requiredExpansionOptions i.e. 1.
 func (p *MockBinpackingLimiter) StopBinpacking(context *context.AutoscalingContext, evaluatedOptions []expander.Option) bool {
 	return len(evaluatedOptions) == p.requiredExpansionOptions
 }
 
-// MarkProcessed is here to satisfy the interface.
-func (p *MockBinpackingLimiter) MarkProcessed(context *context.AutoscalingContext, nodegroupId string) {
-
+// FinalizeBinpacking is here to satisfy the interface.
+func (p *MockBinpackingLimiter) FinalizeBinpacking(context *context.AutoscalingContext, finalOptions []expander.Option) {
 }
 
 // NewBackoff creates a new backoff object

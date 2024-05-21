@@ -3,17 +3,16 @@
 // Package opensearchservice provides the client and types for making API
 // requests to Amazon OpenSearch Service.
 //
-// Use the Amazon OpenSearch configuration API to create, configure, and manage
-// Amazon OpenSearch Service domains.
+// Use the Amazon OpenSearch Service configuration API to create, configure,
+// and manage OpenSearch Service domains.
 //
 // For sample code that uses the configuration API, see the Amazon OpenSearch
 // Service Developer Guide (https://docs.aws.amazon.com/opensearch-service/latest/developerguide/opensearch-configuration-samples.html).
-// The guide also contains sample code for sending signed HTTP requests to the
-// OpenSearch APIs (https://docs.aws.amazon.com/opensearch-service/latest/developerguide/request-signing.html).
-//
-// The endpoint for configuration service requests is region-specific: es.region.amazonaws.com.
+// The guide also contains sample code (https://docs.aws.amazon.com/opensearch-service/latest/developerguide/request-signing.html)
+// for sending signed HTTP requests to the OpenSearch APIs. The endpoint for
+// configuration service requests is Region specific: es.region.amazonaws.com.
 // For example, es.us-east-1.amazonaws.com. For a current list of supported
-// regions and endpoints, see Regions and Endpoints (http://docs.aws.amazon.com/general/latest/gr/rande.html#service-regions).
+// Regions and endpoints, see Amazon Web Services service endpoints (https://docs.aws.amazon.com/general/latest/gr/rande.html#service-regions).
 //
 // See https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01 for more information on this service.
 //

@@ -137,7 +137,7 @@ var legacyJSONValueShapes = map[string]map[string]legacyJSONValues{
 		},
 	},
 	"pricing": {
-		"PriceList": {
+		"PriceListJsonItems": {
 			Type:          "list",
 			ListMemberRef: true,
 		},

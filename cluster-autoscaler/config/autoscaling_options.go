@@ -19,6 +19,7 @@ package config
 import (
 	"time"
 
+	kubelet_config "k8s.io/kubernetes/pkg/kubelet/apis/config"
 	scheduler_config "k8s.io/kubernetes/pkg/scheduler/apis/config"
 )
 
@@ -60,8 +61,8 @@ type GCEOptions struct {
 	ConcurrentRefreshes int
 	// MigInstancesMinRefreshWaitTime is the minimum time which needs to pass before GCE MIG instances from a given MIG can be refreshed.
 	MigInstancesMinRefreshWaitTime time.Duration
-	// ExpanderEphemeralStorageSupport is whether scale-up takes ephemeral storage resources into account.
-	ExpanderEphemeralStorageSupport bool
+	// DomainUrl is the GCE url used to make calls to GCE API.
+	DomainUrl string
 }
 
 const (
@@ -133,7 +134,12 @@ type AutoscalingOptions struct {
 	IgnoreMirrorPodsUtilization bool
 	// MaxGracefulTerminationSec is maximum number of seconds scale down waits for pods to terminate before
 	// removing the node from cloud provider.
+	// DrainPriorityConfig takes higher precedence and MaxGracefulTerminationSec will not be applicable when the DrainPriorityConfig is set.
 	MaxGracefulTerminationSec int
+	// DrainPriorityConfig is a list of ShutdownGracePeriodByPodPriority.
+	// This field is optional and could be nil.
+	// DrainPriorityConfig takes higher precedence and MaxGracefulTerminationSec will not be applicable when the DrainPriorityConfig is set.
+	DrainPriorityConfig []kubelet_config.ShutdownGracePeriodByPodPriority
 	// MaxTotalUnreadyPercentage is the maximum percentage of unready nodes after which CA halts operations
 	MaxTotalUnreadyPercentage float64
 	// OkTotalUnreadyCount is the number of allowed unready nodes, irrespective of max-total-unready-percentage
@@ -160,6 +166,9 @@ type AutoscalingOptions struct {
 	ScaleDownDelayAfterDelete time.Duration
 	// ScaleDownDelayAfterFailure sets the duration before the next scale down attempt if scale down results in an error
 	ScaleDownDelayAfterFailure time.Duration
+	// ScaleDownDelayTypeLocal sets if the --scale-down-delay-after-* flags should be applied locally per nodegroup
+	// or globally across all nodegroups
+	ScaleDownDelayTypeLocal bool
 	// ScaleDownNonEmptyCandidatesCount is the maximum number of non empty nodes
 	// considered at once as candidates for scale down.
 	ScaleDownNonEmptyCandidatesCount int
@@ -211,10 +220,10 @@ type AutoscalingOptions struct {
 	MaxBulkSoftTaintTime time.Duration
 	// MaxPodEvictionTime sets the maximum time CA tries to evict a pod before giving up.
 	MaxPodEvictionTime time.Duration
-	// IgnoredTaints is a list of taints CA considers to reflect transient node
+	// StartupTaints is a list of taints CA considers to reflect transient node
 	// status that should be removed when creating a node template for scheduling.
-	// The ignored taints are expected to appear during node startup.
-	IgnoredTaints []string
+	// startup taints are expected to appear during node startup.
+	StartupTaints []string
 	// StatusTaints is a list of taints CA considers to reflect transient node
 	// status that should be removed when creating a node template for scheduling.
 	// The status taints are expected to appear during node lifetime, after startup.
@@ -229,12 +238,8 @@ type AutoscalingOptions struct {
 	AWSUseStaticInstanceList bool
 	// GCEOptions contain autoscaling options specific to GCE cloud provider.
 	GCEOptions GCEOptions
-	// Path to kube configuration if available
-	KubeConfigPath string
-	// Burst setting for kubernetes client
-	KubeClientBurst int
-	// QPS setting for kubernetes client
-	KubeClientQPS float64
+	// KubeClientOpts specify options for kube client
+	KubeClientOpts KubeClientOptions
 	// ClusterAPICloudConfigAuthoritative tells the Cluster API provider to treat the CloudConfig option as authoritative and
 	// not use KubeConfigPath as a fallback when it is not provided.
 	ClusterAPICloudConfigAuthoritative bool
@@ -282,4 +287,23 @@ type AutoscalingOptions struct {
 	ParallelDrain bool
 	// NodeGroupSetRatio is a collection of ratios used by CA used to make scaling decisions.
 	NodeGroupSetRatios NodeGroupDifferenceRatios
+	// dynamicNodeDeleteDelayAfterTaintEnabled is used to enable/disable dynamic adjustment of NodeDeleteDelayAfterTaint
+	// based on the latency between the CA and the api-server
+	DynamicNodeDeleteDelayAfterTaintEnabled bool
+	// BypassedSchedulers are used to specify which schedulers to bypass their processing
+	BypassedSchedulers map[string]bool
+}
+
+// KubeClientOptions specify options for kube client
+type KubeClientOptions struct {
+	// Master specifies master location.
+	Master string
+	// Path to kube configuration if available
+	KubeConfigPath string
+	// APIContentType specifies type of requests sent to APIServer.
+	APIContentType string
+	// Burst setting for kubernetes client
+	KubeClientBurst int
+	// QPS setting for kubernetes client
+	KubeClientQPS float32
 }

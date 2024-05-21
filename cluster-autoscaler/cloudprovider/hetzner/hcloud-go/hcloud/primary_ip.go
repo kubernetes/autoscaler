@@ -160,6 +160,7 @@ type PrimaryIPChangeProtectionResult struct {
 // PrimaryIPClient is a client for the Primary IP API.
 type PrimaryIPClient struct {
 	client *Client
+	Action *ResourceActionClient
 }
 
 // GetByID retrieves a Primary IP by its ID. If the Primary IP does not exist, nil is returned.
@@ -265,7 +266,7 @@ func (c *PrimaryIPClient) All(ctx context.Context) ([]*PrimaryIP, error) {
 
 // AllWithOpts returns all Primary IPs for the given options.
 func (c *PrimaryIPClient) AllWithOpts(ctx context.Context, opts PrimaryIPListOpts) ([]*PrimaryIP, error) {
-	var allPrimaryIPs []*PrimaryIP
+	allPrimaryIPs := []*PrimaryIP{}
 
 	err := c.client.all(func(page int) (*Response, error) {
 		opts.Page = page

@@ -8,6 +8,20 @@
 // types, and errors. For more information about Amazon Fraud Detector features,
 // see the Amazon Fraud Detector User Guide (https://docs.aws.amazon.com/frauddetector/latest/ug/).
 //
+// We provide the Query API as well as AWS software development kits (SDK) for
+// Amazon Fraud Detector in Java and Python programming languages.
+//
+// The Amazon Fraud Detector Query API provides HTTPS requests that use the
+// HTTP verb GET or POST and a Query parameter Action. AWS SDK provides libraries,
+// sample code, tutorials, and other resources for software developers who prefer
+// to build applications using language-specific APIs instead of submitting
+// a request over HTTP or HTTPS. These libraries provide basic functions that
+// automatically take care of tasks such as cryptographically signing your requests,
+// retrying requests, and handling error responses, so that it is easier for
+// you to get started. For more information about the AWS SDKs, go to Tools
+// to build on AWS (https://aws.amazon.com/developer/tools/) page, scroll down
+// to the SDK section, and choose plus (+) sign to expand the section.
+//
 // See https://docs.aws.amazon.com/goto/WebAPI/frauddetector-2019-11-15 for more information on this service.
 //
 // See frauddetector package documentation for more information.

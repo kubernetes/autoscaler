@@ -19,6 +19,7 @@ package hetzner
 import (
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -45,8 +46,7 @@ type hetznerManager struct {
 	client           *hcloud.Client
 	nodeGroups       map[string]*hetznerNodeGroup
 	apiCallContext   context.Context
-	cloudInit        string
-	image            string
+	clusterConfig    *ClusterConfig
 	sshKey           *hcloud.SSHKey
 	network          *hcloud.Network
 	firewall         *hcloud.Firewall
@@ -55,6 +55,33 @@ type hetznerManager struct {
 	publicIPv6       bool
 	cachedServerType *serverTypeCache
 	cachedServers    *serversCache
+}
+
+// ClusterConfig holds the configuration for all the nodepools
+type ClusterConfig struct {
+	ImagesForArch    ImageList
+	NodeConfigs      map[string]*NodeConfig
+	IsUsingNewFormat bool
+	LegacyConfig     LegacyConfig
+}
+
+// ImageList holds the image id/names for the different architectures
+type ImageList struct {
+	Arm64 string
+	Amd64 string
+}
+
+// NodeConfig holds the configuration for a single nodepool
+type NodeConfig struct {
+	CloudInit string
+	Taints    []apiv1.Taint
+	Labels    map[string]string
+}
+
+// LegacyConfig holds the configuration in the legacy format
+type LegacyConfig struct {
+	CloudInit string
+	ImageName string
 }
 
 func newManager() (*hetznerManager, error) {
@@ -71,19 +98,44 @@ func newManager() (*hetznerManager, error) {
 	)
 
 	ctx := context.Background()
+	var err error
 
+	clusterConfigBase64 := os.Getenv("HCLOUD_CLUSTER_CONFIG")
 	cloudInitBase64 := os.Getenv("HCLOUD_CLOUD_INIT")
-	if cloudInitBase64 == "" {
-		return nil, errors.New("`HCLOUD_CLOUD_INIT` is not specified")
+
+	if clusterConfigBase64 == "" && cloudInitBase64 == "" {
+		return nil, errors.New("`HCLOUD_CLUSTER_CONFIG` or `HCLOUD_CLOUD_INIT` is not specified")
 	}
-	cloudInit, err := base64.StdEncoding.DecodeString(cloudInitBase64)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse cloud init error: %s", err)
+	var clusterConfig *ClusterConfig = &ClusterConfig{}
+
+	if clusterConfigBase64 != "" {
+		clusterConfig.IsUsingNewFormat = true
 	}
 
-	imageName := os.Getenv("HCLOUD_IMAGE")
-	if imageName == "" {
-		imageName = "ubuntu-20.04"
+	if clusterConfig.IsUsingNewFormat {
+		clusterConfigEnv, err := base64.StdEncoding.DecodeString(clusterConfigBase64)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse cluster config error: %s", err)
+		}
+		err = json.Unmarshal(clusterConfigEnv, &clusterConfig)
+		if err != nil {
+			return nil, fmt.Errorf("failed to unmarshal cluster config JSON: %s", err)
+		}
+	}
+
+	if !clusterConfig.IsUsingNewFormat {
+		cloudInit, err := base64.StdEncoding.DecodeString(cloudInitBase64)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse cloud init error: %s", err)
+		}
+
+		imageName := os.Getenv("HCLOUD_IMAGE")
+		if imageName == "" {
+			imageName = "ubuntu-20.04"
+		}
+
+		clusterConfig.LegacyConfig.CloudInit = string(cloudInit)
+		clusterConfig.LegacyConfig.ImageName = imageName
 	}
 
 	publicIPv4 := true
@@ -105,18 +157,18 @@ func newManager() (*hetznerManager, error) {
 	}
 
 	var sshKey *hcloud.SSHKey
-	sshKeyName := os.Getenv("HCLOUD_SSH_KEY")
-	if sshKeyName != "" {
-		sshKey, _, err = client.SSHKey.Get(ctx, sshKeyName)
+	sshKeyIdOrName := os.Getenv("HCLOUD_SSH_KEY")
+	if sshKeyIdOrName != "" {
+		sshKey, _, err = client.SSHKey.Get(ctx, sshKeyIdOrName)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get ssh key error: %s", err)
 		}
 	}
 
 	var network *hcloud.Network
-	networkName := os.Getenv("HCLOUD_NETWORK")
-	if networkName != "" {
-		network, _, err = client.Network.Get(ctx, networkName)
+	networkIdOrName := os.Getenv("HCLOUD_NETWORK")
+	if networkIdOrName != "" {
+		network, _, err = client.Network.Get(ctx, networkIdOrName)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get network error: %s", err)
 		}
@@ -130,9 +182,9 @@ func newManager() (*hetznerManager, error) {
 	}
 
 	var firewall *hcloud.Firewall
-	firewallName := os.Getenv("HCLOUD_FIREWALL")
-	if firewallName != "" {
-		firewall, _, err = client.Firewall.Get(ctx, firewallName)
+	firewallIdOrName := os.Getenv("HCLOUD_FIREWALL")
+	if firewallIdOrName != "" {
+		firewall, _, err = client.Firewall.Get(ctx, firewallIdOrName)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get firewall error: %s", err)
 		}
@@ -141,8 +193,6 @@ func newManager() (*hetznerManager, error) {
 	m := &hetznerManager{
 		client:           client,
 		nodeGroups:       make(map[string]*hetznerNodeGroup),
-		cloudInit:        string(cloudInit),
-		image:            imageName,
 		sshKey:           sshKey,
 		network:          network,
 		firewall:         firewall,
@@ -150,6 +200,7 @@ func newManager() (*hetznerManager, error) {
 		apiCallContext:   ctx,
 		publicIPv4:       publicIPv4,
 		publicIPv6:       publicIPv6,
+		clusterConfig:    clusterConfig,
 		cachedServerType: newServerTypeCache(ctx, client),
 		cachedServers:    newServersCache(ctx, client),
 	}
@@ -205,9 +256,19 @@ func (m *hetznerManager) addNodeToDrainingPool(node *apiv1.Node) (*hetznerNodeGr
 	return m.nodeGroups[drainingNodePoolId], nil
 }
 
+func (m *hetznerManager) validProviderID(providerID string) bool {
+	return strings.HasPrefix(providerID, providerIDPrefix)
+}
+
 func (m *hetznerManager) serverForNode(node *apiv1.Node) (*hcloud.Server, error) {
 	var nodeIdOrName string
 	if node.Spec.ProviderID != "" {
+		if !m.validProviderID(node.Spec.ProviderID) {
+			// This cluster-autoscaler provider only handles Hetzner Cloud servers.
+			// Any other provider ID prefix is invalid, and we return no server. Returning an error here breaks hybrid
+			// clusters with nodes from Hetzner Cloud & Robot (or other providers).
+			return nil, nil
+		}
 		nodeIdOrName = strings.TrimPrefix(node.Spec.ProviderID, providerIDPrefix)
 	} else {
 		nodeIdOrName = node.Name

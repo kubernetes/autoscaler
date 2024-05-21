@@ -17,7 +17,7 @@
  * This file was copied and modified from the github.com/grpc/grpc-go project
  * https://github.com/grpc/grpc-go/blob/v1.29.x/code/code.go
  *
- * Modifications Copyright (c) 2020 SAP SE or an SAP affiliate company. All rights reserved.
+ * Modifications Copyright SAP SE or an SAP affiliate company and Gardener contributors
  *
  */
 
@@ -144,6 +144,11 @@ const (
 	// Unauthenticated indicates the request does not have valid
 	// authentication credentials for the operation.
 	Unauthenticated Code = 16
+
+	// Uninitialized indicates that the VM instance initialization was not performed.
+	// This is meant to be used by providers in implementation of
+	// [github.com/gardener/machine-controller-manager/pkg/util/provider/driver.Driver.GetMachineStatus]
+	Uninitialized Code = 17
 )
 
 var strToCode = map[string]Code{
@@ -164,6 +169,7 @@ var strToCode = map[string]Code{
 	"Unavailable":        Unavailable,
 	"DataLoss":           DataLoss,
 	"Unauthenticated":    Unauthenticated,
+	"Uninitialized":      Uninitialized,
 }
 
 // StringToCode coverts string into the Code.

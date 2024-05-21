@@ -21,38 +21,40 @@ import (
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
-	policyv1 "k8s.io/api/policy/v1"
-	"k8s.io/klog/v2"
-
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/budgets"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
+	"k8s.io/autoscaler/cluster-autoscaler/observers/nodegroupchange"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/utilization"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
+	"k8s.io/klog/v2"
 )
 
 // Actuator is responsible for draining and deleting nodes.
 type Actuator struct {
 	ctx                   *context.AutoscalingContext
-	clusterState          *clusterstate.ClusterStateRegistry
 	nodeDeletionTracker   *deletiontracker.NodeDeletionTracker
 	nodeDeletionScheduler *GroupDeletionScheduler
-	deleteOptions         simulator.NodeDeleteOptions
+	deleteOptions         options.NodeDeleteOptions
+	drainabilityRules     rules.Rules
 	// TODO: Move budget processor to scaledown planner, potentially merge into PostFilteringScaleDownNodeProcessor
 	// This is a larger change to the code structure which impacts some existing actuator unit tests
 	// as well as Cluster Autoscaler implementations that may override ScaleDownSetProcessor
-	budgetProcessor *budgets.ScaleDownBudgetProcessor
-	configGetter    actuatorNodeGroupConfigGetter
+	budgetProcessor           *budgets.ScaleDownBudgetProcessor
+	configGetter              actuatorNodeGroupConfigGetter
+	nodeDeleteDelayAfterTaint time.Duration
 }
 
 // actuatorNodeGroupConfigGetter is an interface to limit the functions that can be used
@@ -63,16 +65,24 @@ type actuatorNodeGroupConfigGetter interface {
 }
 
 // NewActuator returns a new instance of Actuator.
-func NewActuator(ctx *context.AutoscalingContext, csr *clusterstate.ClusterStateRegistry, ndt *deletiontracker.NodeDeletionTracker, deleteOptions simulator.NodeDeleteOptions, configGetter actuatorNodeGroupConfigGetter) *Actuator {
-	ndb := NewNodeDeletionBatcher(ctx, csr, ndt, ctx.NodeDeletionBatcherInterval)
+func NewActuator(ctx *context.AutoscalingContext, scaleStateNotifier nodegroupchange.NodeGroupChangeObserver, ndt *deletiontracker.NodeDeletionTracker, deleteOptions options.NodeDeleteOptions, drainabilityRules rules.Rules, configGetter actuatorNodeGroupConfigGetter) *Actuator {
+	ndb := NewNodeDeletionBatcher(ctx, scaleStateNotifier, ndt, ctx.NodeDeletionBatcherInterval)
+	legacyFlagDrainConfig := SingleRuleDrainConfig(ctx.MaxGracefulTerminationSec)
+	var evictor Evictor
+	if len(ctx.DrainPriorityConfig) > 0 {
+		evictor = NewEvictor(ndt, ctx.DrainPriorityConfig, true)
+	} else {
+		evictor = NewEvictor(ndt, legacyFlagDrainConfig, false)
+	}
 	return &Actuator{
-		ctx:                   ctx,
-		clusterState:          csr,
-		nodeDeletionTracker:   ndt,
-		nodeDeletionScheduler: NewGroupDeletionScheduler(ctx, ndt, ndb, NewDefaultEvictor(deleteOptions, ndt)),
-		budgetProcessor:       budgets.NewScaleDownBudgetProcessor(ctx),
-		deleteOptions:         deleteOptions,
-		configGetter:          configGetter,
+		ctx:                       ctx,
+		nodeDeletionTracker:       ndt,
+		nodeDeletionScheduler:     NewGroupDeletionScheduler(ctx, ndt, ndb, evictor),
+		budgetProcessor:           budgets.NewScaleDownBudgetProcessor(ctx),
+		deleteOptions:             deleteOptions,
+		drainabilityRules:         drainabilityRules,
+		configGetter:              configGetter,
+		nodeDeleteDelayAfterTaint: ctx.NodeDeleteDelayAfterTaint,
 	}
 }
 
@@ -90,7 +100,7 @@ func (a *Actuator) ClearResultsNotNewerThan(t time.Time) {
 func (a *Actuator) StartDeletion(empty, drain []*apiv1.Node) (*status.ScaleDownStatus, errors.AutoscalerError) {
 	a.nodeDeletionScheduler.ReportMetrics()
 	deletionStartTime := time.Now()
-	defer func() { metrics.UpdateDuration(metrics.ScaleDownNodeDeletion, time.Now().Sub(deletionStartTime)) }()
+	defer func() { metrics.UpdateDuration(metrics.ScaleDownNodeDeletion, time.Since(deletionStartTime)) }()
 
 	results, ts := a.nodeDeletionTracker.DeletionResults()
 	scaleDownStatus := &status.ScaleDownStatus{NodeDeleteResults: results, NodeDeleteResultsAsOf: ts}
@@ -158,8 +168,16 @@ func (a *Actuator) deleteAsyncEmpty(NodeGroupViews []*budgets.NodeGroupView) (re
 // applied taints are cleaned up.
 func (a *Actuator) taintNodesSync(NodeGroupViews []*budgets.NodeGroupView) errors.AutoscalerError {
 	var taintedNodes []*apiv1.Node
+	var updateLatencyTracker *UpdateLatencyTracker
+	if a.ctx.AutoscalingOptions.DynamicNodeDeleteDelayAfterTaintEnabled {
+		updateLatencyTracker = NewUpdateLatencyTracker(a.ctx.AutoscalingKubeClients.ListerRegistry.AllNodeLister())
+		go updateLatencyTracker.Start()
+	}
 	for _, bucket := range NodeGroupViews {
 		for _, node := range bucket.Nodes {
+			if a.ctx.AutoscalingOptions.DynamicNodeDeleteDelayAfterTaintEnabled {
+				updateLatencyTracker.StartTimeChan <- nodeTaintStartTime{node.Name, time.Now()}
+			}
 			err := a.taintNode(node)
 			if err != nil {
 				a.ctx.Recorder.Eventf(node, apiv1.EventTypeWarning, "ScaleDownFailed", "failed to mark the node as toBeDeleted/unschedulable: %v", err)
@@ -167,9 +185,22 @@ func (a *Actuator) taintNodesSync(NodeGroupViews []*budgets.NodeGroupView) error
 				for _, taintedNode := range taintedNodes {
 					_, _ = taints.CleanToBeDeleted(taintedNode, a.ctx.ClientSet, a.ctx.CordonNodeBeforeTerminate)
 				}
+				if a.ctx.AutoscalingOptions.DynamicNodeDeleteDelayAfterTaintEnabled {
+					close(updateLatencyTracker.AwaitOrStopChan)
+				}
 				return errors.NewAutoscalerError(errors.ApiCallError, "couldn't taint node %q with ToBeDeleted", node)
 			}
 			taintedNodes = append(taintedNodes, node)
+		}
+	}
+	if a.ctx.AutoscalingOptions.DynamicNodeDeleteDelayAfterTaintEnabled {
+		updateLatencyTracker.AwaitOrStopChan <- true
+		latency, ok := <-updateLatencyTracker.ResultChan
+		if ok {
+			// CA is expected to wait 3 times the round-trip time between CA and the api-server.
+			// Therefore, the nodeDeleteDelayAfterTaint is set 2 times the latency.
+			// A delay of one round trip time is implicitly there when measuring the latency.
+			a.nodeDeleteDelayAfterTaint = 2 * latency
 		}
 	}
 	return nil
@@ -200,16 +231,16 @@ func (a *Actuator) deleteAsyncDrain(NodeGroupViews []*budgets.NodeGroupView) (re
 }
 
 func (a *Actuator) deleteNodesAsync(nodes []*apiv1.Node, nodeGroup cloudprovider.NodeGroup, drain bool, batchSize int) {
-	var pdbs []*policyv1.PodDisruptionBudget
+	var remainingPdbTracker pdb.RemainingPdbTracker
 	var registry kube_util.ListerRegistry
 
 	if len(nodes) == 0 {
 		return
 	}
 
-	if a.ctx.NodeDeleteDelayAfterTaint > time.Duration(0) {
-		klog.V(0).Infof("Scale-down: waiting %v before trying to delete nodes", a.ctx.NodeDeleteDelayAfterTaint)
-		time.Sleep(a.ctx.NodeDeleteDelayAfterTaint)
+	if a.nodeDeleteDelayAfterTaint > time.Duration(0) {
+		klog.V(0).Infof("Scale-down: waiting %v before trying to delete nodes", a.nodeDeleteDelayAfterTaint)
+		time.Sleep(a.nodeDeleteDelayAfterTaint)
 	}
 
 	clusterSnapshot, err := a.createSnapshot(nodes)
@@ -223,7 +254,7 @@ func (a *Actuator) deleteNodesAsync(nodes []*apiv1.Node, nodeGroup cloudprovider
 	}
 
 	if drain {
-		pdbs, err = a.ctx.PodDisruptionBudgetLister().List()
+		pdbs, err := a.ctx.PodDisruptionBudgetLister().List()
 		if err != nil {
 			klog.Errorf("Scale-down: couldn't fetch pod disruption budgets, err: %v", err)
 			nodeDeleteResult := status.NodeDeleteResult{ResultType: status.NodeDeleteErrorInternal, Err: errors.NewAutoscalerError(errors.InternalError, "podDisruptionBudgetLister.List returned error %v", err)}
@@ -232,7 +263,8 @@ func (a *Actuator) deleteNodesAsync(nodes []*apiv1.Node, nodeGroup cloudprovider
 			}
 			return
 		}
-
+		remainingPdbTracker = pdb.NewBasicRemainingPdbTracker()
+		remainingPdbTracker.SetPdbs(pdbs)
 		registry = a.ctx.ListerRegistry
 	}
 
@@ -249,7 +281,7 @@ func (a *Actuator) deleteNodesAsync(nodes []*apiv1.Node, nodeGroup cloudprovider
 			continue
 		}
 
-		podsToRemove, _, _, err := simulator.GetPodsToMove(nodeInfo, a.deleteOptions, registry, pdbs, time.Now())
+		podsToRemove, _, _, err := simulator.GetPodsToMove(nodeInfo, a.deleteOptions, a.drainabilityRules, registry, remainingPdbTracker, time.Now())
 		if err != nil {
 			klog.Errorf("Scale-down: couldn't delete node %q, err: %v", node.Name, err)
 			nodeDeleteResult := status.NodeDeleteResult{ResultType: status.NodeDeleteErrorInternal, Err: errors.NewAutoscalerError(errors.InternalError, "GetPodsToMove for %q returned error: %v", node.Name, err)}
@@ -290,7 +322,7 @@ func (a *Actuator) scaleDownNodeToReport(node *apiv1.Node, drain bool) (*status.
 	}
 	var evictedPods []*apiv1.Pod
 	if drain {
-		_, nonDsPodsToEvict := podsToEvict(a.ctx, nodeInfo)
+		_, nonDsPodsToEvict := podsToEvict(nodeInfo, a.ctx.DaemonSetEvictionForOccupiedNodes)
 		evictedPods = nonDsPodsToEvict
 	}
 	return &status.ScaleDownNode{
@@ -314,12 +346,12 @@ func (a *Actuator) taintNode(node *apiv1.Node) error {
 func (a *Actuator) createSnapshot(nodes []*apiv1.Node) (clustersnapshot.ClusterSnapshot, error) {
 	knownNodes := make(map[string]bool)
 	snapshot := clustersnapshot.NewBasicClusterSnapshot()
-
-	scheduledPods, err := a.ctx.ScheduledPodLister().List()
+	pods, err := a.ctx.AllPodLister().List()
 	if err != nil {
 		return nil, err
 	}
 
+	scheduledPods := kube_util.ScheduledPods(pods)
 	nonExpendableScheduledPods := utils.FilterOutExpendablePods(scheduledPods, a.ctx.ExpendablePodsPriorityCutoff)
 
 	for _, node := range nodes {
@@ -339,13 +371,6 @@ func (a *Actuator) createSnapshot(nodes []*apiv1.Node) (clustersnapshot.ClusterS
 	}
 
 	return snapshot, nil
-}
-
-func min(x, y int) int {
-	if x <= y {
-		return x
-	}
-	return y
 }
 
 func joinPodNames(pods []*apiv1.Pod) string {

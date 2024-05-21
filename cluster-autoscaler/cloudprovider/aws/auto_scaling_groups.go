@@ -25,6 +25,7 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/service/autoscaling"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/service/ec2"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	klog "k8s.io/klog/v2"
 )
@@ -60,6 +61,7 @@ type mixedInstancesPolicy struct {
 	launchTemplate                *launchTemplate
 	instanceTypesOverrides        []string
 	instanceRequirementsOverrides *autoscaling.InstanceRequirements
+	instanceRequirements          *ec2.InstanceRequirements
 }
 
 type asg struct {
@@ -157,6 +159,8 @@ func (m *asgCache) register(asg *asg) *asg {
 		existing.LaunchTemplate = asg.LaunchTemplate
 		existing.MixedInstancesPolicy = asg.MixedInstancesPolicy
 		existing.Tags = asg.Tags
+
+		klog.V(4).Infof("Updated ASG cache for %s. min/max/current is %d/%d/%d", asg.AwsRef.Name, existing.minSize, existing.maxSize, existing.curSize)
 
 		return existing
 	}
@@ -323,10 +327,11 @@ func (m *asgCache) DeleteInstances(instances []*AwsInstanceRef) error {
 			}
 
 			if lifecycle != nil &&
+				*lifecycle == autoscaling.LifecycleStateTerminated ||
 				*lifecycle == autoscaling.LifecycleStateTerminating ||
 				*lifecycle == autoscaling.LifecycleStateTerminatingWait ||
 				*lifecycle == autoscaling.LifecycleStateTerminatingProceed {
-				klog.V(2).Infof("instance %s is already terminating, will skip instead", instance.Name)
+				klog.V(2).Infof("instance %s is already terminating in state %s, will skip instead", instance.Name, *lifecycle)
 				continue
 			}
 
@@ -574,12 +579,39 @@ func (m *asgCache) buildAsgFromAWS(g *autoscaling.Group) (*asg, error) {
 			instanceRequirementsOverrides: getInstanceTypeRequirements(g.MixedInstancesPolicy.LaunchTemplate.Overrides),
 		}
 
+		instanceRequirements, err := m.getInstanceRequirementsFromMixedInstancesPolicy(asg.MixedInstancesPolicy)
+		if err != nil {
+			return nil, fmt.Errorf("unable to retrieve instance requirements from mixed instance policy, err: %v", err)
+		}
+		asg.MixedInstancesPolicy.instanceRequirements = instanceRequirements
+
 		if len(asg.MixedInstancesPolicy.instanceTypesOverrides) != 0 && asg.MixedInstancesPolicy.instanceRequirementsOverrides != nil {
 			return nil, fmt.Errorf("invalid setup of both instance type and instance requirements overrides configured")
 		}
 	}
 
 	return asg, nil
+}
+
+func (m *asgCache) getInstanceRequirementsFromMixedInstancesPolicy(policy *mixedInstancesPolicy) (*ec2.InstanceRequirements, error) {
+	instanceRequirements := &ec2.InstanceRequirements{}
+	if policy.instanceRequirementsOverrides != nil {
+		var err error
+		instanceRequirements, err = m.awsService.getEC2RequirementsFromAutoscaling(policy.instanceRequirementsOverrides)
+		if err != nil {
+			return nil, err
+		}
+	} else if policy.launchTemplate != nil {
+		templateData, err := m.awsService.getLaunchTemplateData(policy.launchTemplate.name, policy.launchTemplate.version)
+		if err != nil {
+			return nil, err
+		}
+
+		if templateData.InstanceRequirements != nil {
+			instanceRequirements = templateData.InstanceRequirements
+		}
+	}
+	return instanceRequirements, nil
 }
 
 func (m *asgCache) buildInstanceRefFromAWS(instance *autoscaling.Instance) AwsInstanceRef {

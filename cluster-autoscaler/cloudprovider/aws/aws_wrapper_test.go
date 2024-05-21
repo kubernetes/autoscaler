@@ -174,7 +174,7 @@ func TestGetManagedNodegroup(t *testing.T) {
 	assert.Equal(t, labelMap[labelKey2], labelValue2)
 	assert.Equal(t, labelMap["diskSize"], strconv.FormatInt(diskSize, 10))
 	assert.Equal(t, labelMap["amiType"], amiType)
-	assert.Equal(t, labelMap["capacityType"], capacityType)
+	assert.Equal(t, labelMap["eks.amazonaws.com/capacityType"], capacityType)
 	assert.Equal(t, labelMap["k8sVersion"], k8sVersion)
 	assert.Equal(t, labelMap["eks.amazonaws.com/nodegroup"], nodegroupName)
 	assert.Equal(t, len(tagMap), 2)
@@ -220,7 +220,7 @@ func TestGetManagedNodegroupWithNilValues(t *testing.T) {
 	assert.Equal(t, len(taintList), 0)
 	assert.Equal(t, len(labelMap), 4)
 	assert.Equal(t, labelMap["amiType"], amiType)
-	assert.Equal(t, labelMap["capacityType"], capacityType)
+	assert.Equal(t, labelMap["eks.amazonaws.com/capacityType"], capacityType)
 	assert.Equal(t, labelMap["k8sVersion"], k8sVersion)
 	assert.Equal(t, labelMap["eks.amazonaws.com/nodegroup"], nodegroupName)
 	assert.Equal(t, len(tagMap), 0)
@@ -264,7 +264,7 @@ func TestGetManagedNodegroupWithEmptyValues(t *testing.T) {
 	assert.Equal(t, len(taintList), 0)
 	assert.Equal(t, len(labelMap), 4)
 	assert.Equal(t, labelMap["amiType"], amiType)
-	assert.Equal(t, labelMap["capacityType"], capacityType)
+	assert.Equal(t, labelMap["eks.amazonaws.com/capacityType"], capacityType)
 	assert.Equal(t, labelMap["k8sVersion"], k8sVersion)
 	assert.Equal(t, labelMap["eks.amazonaws.com/nodegroup"], nodegroupName)
 	assert.Equal(t, len(tagMap), 0)
@@ -694,4 +694,44 @@ func TestBuildLaunchTemplateFromSpec(t *testing.T) {
 		got := buildLaunchTemplateFromSpec(unit.in)
 		assert.Equal(unit.exp, got)
 	}
+}
+
+func TestGetInstanceTypesFromInstanceRequirementsWithEmptyList(t *testing.T) {
+	e := &ec2Mock{}
+	awsWrapper := &awsWrapper{
+		autoScalingI: nil,
+		ec2I:         e,
+		eksI:         nil,
+	}
+	requirements := &ec2.InstanceRequirementsRequest{}
+
+	e.On("DescribeImages", &ec2.DescribeImagesInput{
+		ImageIds: []*string{aws.String("123")},
+	}).Return(&ec2.DescribeImagesOutput{
+		Images: []*ec2.Image{
+			{
+				Architecture:       aws.String("x86_64"),
+				VirtualizationType: aws.String("xen"),
+			},
+		},
+	})
+	e.On("GetInstanceTypesFromInstanceRequirementsPages",
+		&ec2.GetInstanceTypesFromInstanceRequirementsInput{
+			ArchitectureTypes:    []*string{aws.String("x86_64")},
+			InstanceRequirements: requirements,
+			VirtualizationTypes:  []*string{aws.String("xen")},
+		},
+		mock.AnythingOfType("func(*ec2.GetInstanceTypesFromInstanceRequirementsOutput, bool) bool"),
+	).Run(func(args mock.Arguments) {
+		fn := args.Get(1).(func(*ec2.GetInstanceTypesFromInstanceRequirementsOutput, bool) bool)
+		fn(&ec2.GetInstanceTypesFromInstanceRequirementsOutput{
+			InstanceTypes: []*ec2.InstanceTypeInfoFromInstanceRequirements{},
+		}, false)
+	}).Return(nil)
+
+	result, err := awsWrapper.getInstanceTypeFromInstanceRequirements("123", requirements)
+	assert.Error(t, err)
+	exp := fmt.Errorf("no instance types found for requirements")
+	assert.EqualError(t, err, exp.Error())
+	assert.Equal(t, "", result)
 }

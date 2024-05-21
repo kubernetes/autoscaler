@@ -24,8 +24,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-03-01/compute"
-	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -33,6 +32,7 @@ import (
 	cloudvolume "k8s.io/cloud-provider/volume"
 	volumehelpers "k8s.io/cloud-provider/volume/helpers"
 	"k8s.io/klog/v2"
+	"k8s.io/utils/pointer"
 
 	"sigs.k8s.io/cloud-provider-azure/pkg/consts"
 )
@@ -76,6 +76,8 @@ type ManagedDiskOptions struct {
 	LogicalSectorSize int32
 	// SkipGetDiskOperation indicates whether skip GetDisk operation(mainly due to throttling)
 	SkipGetDiskOperation bool
+	// PublicNetworkAccess - Possible values include: 'Enabled', 'Disabled'
+	PublicNetworkAccess compute.PublicNetworkAccess
 	// NetworkAccessPolicy - Possible values include: 'AllowAll', 'AllowPrivate', 'DenyAll'
 	NetworkAccessPolicy compute.NetworkAccessPolicy
 	// DiskAccessID - ARM id of the DiskAccess resource for using private endpoints on disks.
@@ -86,6 +88,8 @@ type ManagedDiskOptions struct {
 	SubscriptionID string
 	// Location - specify a different location
 	Location string
+	// PerformancePlus - Set this flag to true to get a boost on the performance target of the disk deployed
+	PerformancePlus *bool
 }
 
 // CreateManagedDisk: create managed disk
@@ -117,19 +121,19 @@ func (c *ManagedDiskController) CreateManagedDisk(ctx context.Context, options *
 	diskSizeGB := int32(options.SizeGB)
 	diskSku := options.StorageAccountType
 
-	rg := c.common.resourceGroup
+	rg := c.common.cloud.ResourceGroup
 	if options.ResourceGroup != "" {
 		rg = options.ResourceGroup
 	}
-	if options.SubscriptionID != "" && !strings.EqualFold(options.SubscriptionID, c.common.subscriptionID) && options.ResourceGroup == "" {
+	if options.SubscriptionID != "" && !strings.EqualFold(options.SubscriptionID, c.common.cloud.SubscriptionID) && options.ResourceGroup == "" {
 		return "", fmt.Errorf("resourceGroup must be specified when subscriptionID(%s) is not empty", options.SubscriptionID)
 	}
-	subsID := c.common.subscriptionID
+	subsID := c.common.cloud.SubscriptionID
 	if options.SubscriptionID != "" {
 		subsID = options.SubscriptionID
 	}
 
-	creationData, err := getValidCreationData(subsID, rg, options.SourceResourceID, options.SourceType)
+	creationData, err := getValidCreationData(subsID, rg, options)
 	if err != nil {
 		return "", err
 	}
@@ -137,6 +141,10 @@ func (c *ManagedDiskController) CreateManagedDisk(ctx context.Context, options *
 		DiskSizeGB:      &diskSizeGB,
 		CreationData:    &creationData,
 		BurstingEnabled: options.BurstingEnabled,
+	}
+
+	if options.PublicNetworkAccess != "" {
+		diskProperties.PublicNetworkAccess = options.PublicNetworkAccess
 	}
 
 	if options.NetworkAccessPolicy != "" {
@@ -153,11 +161,11 @@ func (c *ManagedDiskController) CreateManagedDisk(ctx context.Context, options *
 		}
 	}
 
-	if diskSku == compute.UltraSSDLRS || diskSku == consts.PremiumV2LRS {
+	if diskSku == compute.UltraSSDLRS || diskSku == compute.PremiumV2LRS {
 		if options.DiskIOPSReadWrite == "" {
 			if diskSku == compute.UltraSSDLRS {
 				diskIOPSReadWrite := int64(consts.DefaultDiskIOPSReadWrite)
-				diskProperties.DiskIOPSReadWrite = to.Int64Ptr(diskIOPSReadWrite)
+				diskProperties.DiskIOPSReadWrite = pointer.Int64(diskIOPSReadWrite)
 			}
 		} else {
 			v, err := strconv.Atoi(options.DiskIOPSReadWrite)
@@ -165,13 +173,13 @@ func (c *ManagedDiskController) CreateManagedDisk(ctx context.Context, options *
 				return "", fmt.Errorf("AzureDisk - failed to parse DiskIOPSReadWrite: %w", err)
 			}
 			diskIOPSReadWrite := int64(v)
-			diskProperties.DiskIOPSReadWrite = to.Int64Ptr(diskIOPSReadWrite)
+			diskProperties.DiskIOPSReadWrite = pointer.Int64(diskIOPSReadWrite)
 		}
 
 		if options.DiskMBpsReadWrite == "" {
 			if diskSku == compute.UltraSSDLRS {
 				diskMBpsReadWrite := int64(consts.DefaultDiskMBpsReadWrite)
-				diskProperties.DiskMBpsReadWrite = to.Int64Ptr(diskMBpsReadWrite)
+				diskProperties.DiskMBpsReadWrite = pointer.Int64(diskMBpsReadWrite)
 			}
 		} else {
 			v, err := strconv.Atoi(options.DiskMBpsReadWrite)
@@ -179,12 +187,12 @@ func (c *ManagedDiskController) CreateManagedDisk(ctx context.Context, options *
 				return "", fmt.Errorf("AzureDisk - failed to parse DiskMBpsReadWrite: %w", err)
 			}
 			diskMBpsReadWrite := int64(v)
-			diskProperties.DiskMBpsReadWrite = to.Int64Ptr(diskMBpsReadWrite)
+			diskProperties.DiskMBpsReadWrite = pointer.Int64(diskMBpsReadWrite)
 		}
 
 		if options.LogicalSectorSize != 0 {
 			klog.V(2).Infof("AzureDisk - requested LogicalSectorSize: %v", options.LogicalSectorSize)
-			diskProperties.CreationData.LogicalSectorSize = to.Int32Ptr(options.LogicalSectorSize)
+			diskProperties.CreationData.LogicalSectorSize = pointer.Int32(options.LogicalSectorSize)
 		}
 	} else {
 		if options.DiskIOPSReadWrite != "" {
@@ -221,7 +229,7 @@ func (c *ManagedDiskController) CreateManagedDisk(ctx context.Context, options *
 		diskProperties.MaxShares = &options.MaxShares
 	}
 
-	location := c.common.location
+	location := c.common.cloud.Location
 	if options.Location != "" {
 		location = options.Location
 	}
@@ -234,10 +242,10 @@ func (c *ManagedDiskController) CreateManagedDisk(ctx context.Context, options *
 		DiskProperties: &diskProperties,
 	}
 
-	if el := c.common.extendedLocation; el != nil {
+	if c.common.cloud.HasExtendedLocation() {
 		model.ExtendedLocation = &compute.ExtendedLocation{
-			Name: to.StringPtr(el.Name),
-			Type: compute.ExtendedLocationTypes(el.Type),
+			Name: pointer.String(c.common.cloud.ExtendedLocationName),
+			Type: compute.ExtendedLocationTypes(c.common.cloud.ExtendedLocationType),
 		}
 	}
 
@@ -254,7 +262,7 @@ func (c *ManagedDiskController) CreateManagedDisk(ctx context.Context, options *
 	if options.SkipGetDiskOperation {
 		klog.Warningf("azureDisk - GetDisk(%s, StorageAccountType:%s) is throttled, unable to confirm provisioningState in poll process", options.DiskName, options.StorageAccountType)
 	} else {
-		err = kwait.ExponentialBackoff(defaultBackOff, func() (bool, error) {
+		err = kwait.ExponentialBackoffWithContext(ctx, defaultBackOff, func(ctx context.Context) (bool, error) {
 			provisionState, id, err := c.GetDisk(ctx, subsID, rg, options.DiskName)
 			if err == nil {
 				if id != "" {
@@ -288,8 +296,8 @@ func (c *ManagedDiskController) DeleteManagedDisk(ctx context.Context, diskURI s
 		return err
 	}
 
-	if _, ok := c.common.diskStateMap.Load(strings.ToLower(diskURI)); ok {
-		return fmt.Errorf("failed to delete disk(%s) since it's in attaching or detaching state", diskURI)
+	if state, ok := c.common.diskStateMap.Load(strings.ToLower(diskURI)); ok {
+		return fmt.Errorf("failed to delete disk(%s) since it's in %s state", diskURI, state.(string))
 	}
 
 	diskName := path.Base(diskURI)
@@ -364,7 +372,7 @@ func (c *ManagedDiskController) ResizeDisk(ctx context.Context, diskURI string, 
 	}
 
 	if !supportOnlineResize && result.DiskProperties.DiskState != compute.Unattached {
-		return oldSize, fmt.Errorf("azureDisk - disk resize is only supported on Unattached disk, current disk state: %s, already attached to %s", result.DiskProperties.DiskState, to.String(result.ManagedBy))
+		return oldSize, fmt.Errorf("azureDisk - disk resize is only supported on Unattached disk, current disk state: %s, already attached to %s", result.DiskProperties.DiskState, pointer.StringDeref(result.ManagedBy, ""))
 	}
 
 	diskParameter := compute.DiskUpdate{

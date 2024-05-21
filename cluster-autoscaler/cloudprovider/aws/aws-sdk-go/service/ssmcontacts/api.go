@@ -396,6 +396,196 @@ func (c *SSMContacts) CreateContactChannelWithContext(ctx aws.Context, input *Cr
 	return out, req.Send()
 }
 
+const opCreateRotation = "CreateRotation"
+
+// CreateRotationRequest generates a "aws/request.Request" representing the
+// client's request for the CreateRotation operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateRotation for more information on using the CreateRotation
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreateRotationRequest method.
+//	req, resp := client.CreateRotationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-contacts-2021-05-03/CreateRotation
+func (c *SSMContacts) CreateRotationRequest(input *CreateRotationInput) (req *request.Request, output *CreateRotationOutput) {
+	op := &request.Operation{
+		Name:       opCreateRotation,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &CreateRotationInput{}
+	}
+
+	output = &CreateRotationOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateRotation API operation for AWS Systems Manager Incident Manager Contacts.
+//
+// Creates a rotation in an on-call schedule.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Systems Manager Incident Manager Contacts's
+// API operation CreateRotation for usage and error information.
+//
+// Returned Error Types:
+//
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this operation.
+//
+//   - InternalServerException
+//     Unexpected error occurred while processing the request.
+//
+//   - ResourceNotFoundException
+//     Request references a resource that doesn't exist.
+//
+//   - ServiceQuotaExceededException
+//     Request would cause a service quota to be exceeded.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-contacts-2021-05-03/CreateRotation
+func (c *SSMContacts) CreateRotation(input *CreateRotationInput) (*CreateRotationOutput, error) {
+	req, out := c.CreateRotationRequest(input)
+	return out, req.Send()
+}
+
+// CreateRotationWithContext is the same as CreateRotation with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateRotation for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSMContacts) CreateRotationWithContext(ctx aws.Context, input *CreateRotationInput, opts ...request.Option) (*CreateRotationOutput, error) {
+	req, out := c.CreateRotationRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opCreateRotationOverride = "CreateRotationOverride"
+
+// CreateRotationOverrideRequest generates a "aws/request.Request" representing the
+// client's request for the CreateRotationOverride operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateRotationOverride for more information on using the CreateRotationOverride
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreateRotationOverrideRequest method.
+//	req, resp := client.CreateRotationOverrideRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-contacts-2021-05-03/CreateRotationOverride
+func (c *SSMContacts) CreateRotationOverrideRequest(input *CreateRotationOverrideInput) (req *request.Request, output *CreateRotationOverrideOutput) {
+	op := &request.Operation{
+		Name:       opCreateRotationOverride,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &CreateRotationOverrideInput{}
+	}
+
+	output = &CreateRotationOverrideOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateRotationOverride API operation for AWS Systems Manager Incident Manager Contacts.
+//
+// Creates an override for a rotation in an on-call schedule.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Systems Manager Incident Manager Contacts's
+// API operation CreateRotationOverride for usage and error information.
+//
+// Returned Error Types:
+//
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this operation.
+//
+//   - InternalServerException
+//     Unexpected error occurred while processing the request.
+//
+//   - ResourceNotFoundException
+//     Request references a resource that doesn't exist.
+//
+//   - ServiceQuotaExceededException
+//     Request would cause a service quota to be exceeded.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-contacts-2021-05-03/CreateRotationOverride
+func (c *SSMContacts) CreateRotationOverride(input *CreateRotationOverrideInput) (*CreateRotationOverrideOutput, error) {
+	req, out := c.CreateRotationOverrideRequest(input)
+	return out, req.Send()
+}
+
+// CreateRotationOverrideWithContext is the same as CreateRotationOverride with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateRotationOverride for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSMContacts) CreateRotationOverrideWithContext(ctx aws.Context, input *CreateRotationOverrideInput, opts ...request.Option) (*CreateRotationOverrideOutput, error) {
+	req, out := c.CreateRotationOverrideRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opDeactivateContactChannel = "DeactivateContactChannel"
 
 // DeactivateContactChannelRequest generates a "aws/request.Request" representing the
@@ -561,6 +751,9 @@ func (c *SSMContacts) DeleteContactRequest(input *DeleteContactInput) (req *requ
 //   - ThrottlingException
 //     The request was denied due to request throttling.
 //
+//   - ConflictException
+//     Updating or deleting a resource causes an inconsistent state.
+//
 //   - ValidationException
 //     The input fails to satisfy the constraints specified by an Amazon Web Services
 //     service.
@@ -678,6 +871,196 @@ func (c *SSMContacts) DeleteContactChannel(input *DeleteContactChannelInput) (*D
 // for more information on using Contexts.
 func (c *SSMContacts) DeleteContactChannelWithContext(ctx aws.Context, input *DeleteContactChannelInput, opts ...request.Option) (*DeleteContactChannelOutput, error) {
 	req, out := c.DeleteContactChannelRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDeleteRotation = "DeleteRotation"
+
+// DeleteRotationRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteRotation operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteRotation for more information on using the DeleteRotation
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteRotationRequest method.
+//	req, resp := client.DeleteRotationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-contacts-2021-05-03/DeleteRotation
+func (c *SSMContacts) DeleteRotationRequest(input *DeleteRotationInput) (req *request.Request, output *DeleteRotationOutput) {
+	op := &request.Operation{
+		Name:       opDeleteRotation,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DeleteRotationInput{}
+	}
+
+	output = &DeleteRotationOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// DeleteRotation API operation for AWS Systems Manager Incident Manager Contacts.
+//
+// Deletes a rotation from the system. If a rotation belongs to more than one
+// on-call schedule, this operation deletes it from all of them.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Systems Manager Incident Manager Contacts's
+// API operation DeleteRotation for usage and error information.
+//
+// Returned Error Types:
+//
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this operation.
+//
+//   - ConflictException
+//     Updating or deleting a resource causes an inconsistent state.
+//
+//   - InternalServerException
+//     Unexpected error occurred while processing the request.
+//
+//   - ResourceNotFoundException
+//     Request references a resource that doesn't exist.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-contacts-2021-05-03/DeleteRotation
+func (c *SSMContacts) DeleteRotation(input *DeleteRotationInput) (*DeleteRotationOutput, error) {
+	req, out := c.DeleteRotationRequest(input)
+	return out, req.Send()
+}
+
+// DeleteRotationWithContext is the same as DeleteRotation with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteRotation for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSMContacts) DeleteRotationWithContext(ctx aws.Context, input *DeleteRotationInput, opts ...request.Option) (*DeleteRotationOutput, error) {
+	req, out := c.DeleteRotationRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDeleteRotationOverride = "DeleteRotationOverride"
+
+// DeleteRotationOverrideRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteRotationOverride operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteRotationOverride for more information on using the DeleteRotationOverride
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteRotationOverrideRequest method.
+//	req, resp := client.DeleteRotationOverrideRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-contacts-2021-05-03/DeleteRotationOverride
+func (c *SSMContacts) DeleteRotationOverrideRequest(input *DeleteRotationOverrideInput) (req *request.Request, output *DeleteRotationOverrideOutput) {
+	op := &request.Operation{
+		Name:       opDeleteRotationOverride,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DeleteRotationOverrideInput{}
+	}
+
+	output = &DeleteRotationOverrideOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// DeleteRotationOverride API operation for AWS Systems Manager Incident Manager Contacts.
+//
+// Deletes an existing override for an on-call rotation.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Systems Manager Incident Manager Contacts's
+// API operation DeleteRotationOverride for usage and error information.
+//
+// Returned Error Types:
+//
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this operation.
+//
+//   - InternalServerException
+//     Unexpected error occurred while processing the request.
+//
+//   - ResourceNotFoundException
+//     Request references a resource that doesn't exist.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-contacts-2021-05-03/DeleteRotationOverride
+func (c *SSMContacts) DeleteRotationOverride(input *DeleteRotationOverrideInput) (*DeleteRotationOverrideOutput, error) {
+	req, out := c.DeleteRotationOverrideRequest(input)
+	return out, req.Send()
+}
+
+// DeleteRotationOverrideWithContext is the same as DeleteRotationOverride with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteRotationOverride for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSMContacts) DeleteRotationOverrideWithContext(ctx aws.Context, input *DeleteRotationOverrideInput, opts ...request.Option) (*DeleteRotationOverrideOutput, error) {
+	req, out := c.DeleteRotationOverrideRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -1153,6 +1536,190 @@ func (c *SSMContacts) GetContactPolicy(input *GetContactPolicyInput) (*GetContac
 // for more information on using Contexts.
 func (c *SSMContacts) GetContactPolicyWithContext(ctx aws.Context, input *GetContactPolicyInput, opts ...request.Option) (*GetContactPolicyOutput, error) {
 	req, out := c.GetContactPolicyRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opGetRotation = "GetRotation"
+
+// GetRotationRequest generates a "aws/request.Request" representing the
+// client's request for the GetRotation operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetRotation for more information on using the GetRotation
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetRotationRequest method.
+//	req, resp := client.GetRotationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-contacts-2021-05-03/GetRotation
+func (c *SSMContacts) GetRotationRequest(input *GetRotationInput) (req *request.Request, output *GetRotationOutput) {
+	op := &request.Operation{
+		Name:       opGetRotation,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &GetRotationInput{}
+	}
+
+	output = &GetRotationOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetRotation API operation for AWS Systems Manager Incident Manager Contacts.
+//
+// Retrieves information about an on-call rotation.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Systems Manager Incident Manager Contacts's
+// API operation GetRotation for usage and error information.
+//
+// Returned Error Types:
+//
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this operation.
+//
+//   - InternalServerException
+//     Unexpected error occurred while processing the request.
+//
+//   - ResourceNotFoundException
+//     Request references a resource that doesn't exist.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-contacts-2021-05-03/GetRotation
+func (c *SSMContacts) GetRotation(input *GetRotationInput) (*GetRotationOutput, error) {
+	req, out := c.GetRotationRequest(input)
+	return out, req.Send()
+}
+
+// GetRotationWithContext is the same as GetRotation with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetRotation for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSMContacts) GetRotationWithContext(ctx aws.Context, input *GetRotationInput, opts ...request.Option) (*GetRotationOutput, error) {
+	req, out := c.GetRotationRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opGetRotationOverride = "GetRotationOverride"
+
+// GetRotationOverrideRequest generates a "aws/request.Request" representing the
+// client's request for the GetRotationOverride operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetRotationOverride for more information on using the GetRotationOverride
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetRotationOverrideRequest method.
+//	req, resp := client.GetRotationOverrideRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-contacts-2021-05-03/GetRotationOverride
+func (c *SSMContacts) GetRotationOverrideRequest(input *GetRotationOverrideInput) (req *request.Request, output *GetRotationOverrideOutput) {
+	op := &request.Operation{
+		Name:       opGetRotationOverride,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &GetRotationOverrideInput{}
+	}
+
+	output = &GetRotationOverrideOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetRotationOverride API operation for AWS Systems Manager Incident Manager Contacts.
+//
+// Retrieves information about an override to an on-call rotation.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Systems Manager Incident Manager Contacts's
+// API operation GetRotationOverride for usage and error information.
+//
+// Returned Error Types:
+//
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this operation.
+//
+//   - InternalServerException
+//     Unexpected error occurred while processing the request.
+//
+//   - ResourceNotFoundException
+//     Request references a resource that doesn't exist.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-contacts-2021-05-03/GetRotationOverride
+func (c *SSMContacts) GetRotationOverride(input *GetRotationOverrideInput) (*GetRotationOverrideOutput, error) {
+	req, out := c.GetRotationOverrideRequest(input)
+	return out, req.Send()
+}
+
+// GetRotationOverrideWithContext is the same as GetRotationOverride with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetRotationOverride for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSMContacts) GetRotationOverrideWithContext(ctx aws.Context, input *GetRotationOverrideInput, opts ...request.Option) (*GetRotationOverrideOutput, error) {
+	req, out := c.GetRotationOverrideRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -1751,6 +2318,159 @@ func (c *SSMContacts) ListPageReceiptsPagesWithContext(ctx aws.Context, input *L
 	return p.Err()
 }
 
+const opListPageResolutions = "ListPageResolutions"
+
+// ListPageResolutionsRequest generates a "aws/request.Request" representing the
+// client's request for the ListPageResolutions operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListPageResolutions for more information on using the ListPageResolutions
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListPageResolutionsRequest method.
+//	req, resp := client.ListPageResolutionsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-contacts-2021-05-03/ListPageResolutions
+func (c *SSMContacts) ListPageResolutionsRequest(input *ListPageResolutionsInput) (req *request.Request, output *ListPageResolutionsOutput) {
+	op := &request.Operation{
+		Name:       opListPageResolutions,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListPageResolutionsInput{}
+	}
+
+	output = &ListPageResolutionsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListPageResolutions API operation for AWS Systems Manager Incident Manager Contacts.
+//
+// Returns the resolution path of an engagement. For example, the escalation
+// plan engaged in an incident might target an on-call schedule that includes
+// several contacts in a rotation, but just one contact on-call when the incident
+// starts. The resolution path indicates the hierarchy of escalation plan >
+// on-call schedule > contact.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Systems Manager Incident Manager Contacts's
+// API operation ListPageResolutions for usage and error information.
+//
+// Returned Error Types:
+//
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this operation.
+//
+//   - InternalServerException
+//     Unexpected error occurred while processing the request.
+//
+//   - ResourceNotFoundException
+//     Request references a resource that doesn't exist.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-contacts-2021-05-03/ListPageResolutions
+func (c *SSMContacts) ListPageResolutions(input *ListPageResolutionsInput) (*ListPageResolutionsOutput, error) {
+	req, out := c.ListPageResolutionsRequest(input)
+	return out, req.Send()
+}
+
+// ListPageResolutionsWithContext is the same as ListPageResolutions with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListPageResolutions for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSMContacts) ListPageResolutionsWithContext(ctx aws.Context, input *ListPageResolutionsInput, opts ...request.Option) (*ListPageResolutionsOutput, error) {
+	req, out := c.ListPageResolutionsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListPageResolutionsPages iterates over the pages of a ListPageResolutions operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListPageResolutions method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListPageResolutions operation.
+//	pageNum := 0
+//	err := client.ListPageResolutionsPages(params,
+//	    func(page *ssmcontacts.ListPageResolutionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *SSMContacts) ListPageResolutionsPages(input *ListPageResolutionsInput, fn func(*ListPageResolutionsOutput, bool) bool) error {
+	return c.ListPageResolutionsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListPageResolutionsPagesWithContext same as ListPageResolutionsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSMContacts) ListPageResolutionsPagesWithContext(ctx aws.Context, input *ListPageResolutionsInput, fn func(*ListPageResolutionsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListPageResolutionsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListPageResolutionsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListPageResolutionsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opListPagesByContact = "ListPagesByContact"
 
 // ListPagesByContactRequest generates a "aws/request.Request" representing the
@@ -2042,6 +2762,605 @@ func (c *SSMContacts) ListPagesByEngagementPagesWithContext(ctx aws.Context, inp
 
 	for p.Next() {
 		if !fn(p.Page().(*ListPagesByEngagementOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opListPreviewRotationShifts = "ListPreviewRotationShifts"
+
+// ListPreviewRotationShiftsRequest generates a "aws/request.Request" representing the
+// client's request for the ListPreviewRotationShifts operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListPreviewRotationShifts for more information on using the ListPreviewRotationShifts
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListPreviewRotationShiftsRequest method.
+//	req, resp := client.ListPreviewRotationShiftsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-contacts-2021-05-03/ListPreviewRotationShifts
+func (c *SSMContacts) ListPreviewRotationShiftsRequest(input *ListPreviewRotationShiftsInput) (req *request.Request, output *ListPreviewRotationShiftsOutput) {
+	op := &request.Operation{
+		Name:       opListPreviewRotationShifts,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListPreviewRotationShiftsInput{}
+	}
+
+	output = &ListPreviewRotationShiftsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListPreviewRotationShifts API operation for AWS Systems Manager Incident Manager Contacts.
+//
+// Returns a list of shifts based on rotation configuration parameters.
+//
+// The Incident Manager primarily uses this operation to populate the Preview
+// calendar. It is not typically run by end users.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Systems Manager Incident Manager Contacts's
+// API operation ListPreviewRotationShifts for usage and error information.
+//
+// Returned Error Types:
+//
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this operation.
+//
+//   - InternalServerException
+//     Unexpected error occurred while processing the request.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-contacts-2021-05-03/ListPreviewRotationShifts
+func (c *SSMContacts) ListPreviewRotationShifts(input *ListPreviewRotationShiftsInput) (*ListPreviewRotationShiftsOutput, error) {
+	req, out := c.ListPreviewRotationShiftsRequest(input)
+	return out, req.Send()
+}
+
+// ListPreviewRotationShiftsWithContext is the same as ListPreviewRotationShifts with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListPreviewRotationShifts for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSMContacts) ListPreviewRotationShiftsWithContext(ctx aws.Context, input *ListPreviewRotationShiftsInput, opts ...request.Option) (*ListPreviewRotationShiftsOutput, error) {
+	req, out := c.ListPreviewRotationShiftsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListPreviewRotationShiftsPages iterates over the pages of a ListPreviewRotationShifts operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListPreviewRotationShifts method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListPreviewRotationShifts operation.
+//	pageNum := 0
+//	err := client.ListPreviewRotationShiftsPages(params,
+//	    func(page *ssmcontacts.ListPreviewRotationShiftsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *SSMContacts) ListPreviewRotationShiftsPages(input *ListPreviewRotationShiftsInput, fn func(*ListPreviewRotationShiftsOutput, bool) bool) error {
+	return c.ListPreviewRotationShiftsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListPreviewRotationShiftsPagesWithContext same as ListPreviewRotationShiftsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSMContacts) ListPreviewRotationShiftsPagesWithContext(ctx aws.Context, input *ListPreviewRotationShiftsInput, fn func(*ListPreviewRotationShiftsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListPreviewRotationShiftsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListPreviewRotationShiftsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListPreviewRotationShiftsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opListRotationOverrides = "ListRotationOverrides"
+
+// ListRotationOverridesRequest generates a "aws/request.Request" representing the
+// client's request for the ListRotationOverrides operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListRotationOverrides for more information on using the ListRotationOverrides
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListRotationOverridesRequest method.
+//	req, resp := client.ListRotationOverridesRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-contacts-2021-05-03/ListRotationOverrides
+func (c *SSMContacts) ListRotationOverridesRequest(input *ListRotationOverridesInput) (req *request.Request, output *ListRotationOverridesOutput) {
+	op := &request.Operation{
+		Name:       opListRotationOverrides,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListRotationOverridesInput{}
+	}
+
+	output = &ListRotationOverridesOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListRotationOverrides API operation for AWS Systems Manager Incident Manager Contacts.
+//
+// Retrieves a list of overrides currently specified for an on-call rotation.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Systems Manager Incident Manager Contacts's
+// API operation ListRotationOverrides for usage and error information.
+//
+// Returned Error Types:
+//
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this operation.
+//
+//   - InternalServerException
+//     Unexpected error occurred while processing the request.
+//
+//   - ResourceNotFoundException
+//     Request references a resource that doesn't exist.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-contacts-2021-05-03/ListRotationOverrides
+func (c *SSMContacts) ListRotationOverrides(input *ListRotationOverridesInput) (*ListRotationOverridesOutput, error) {
+	req, out := c.ListRotationOverridesRequest(input)
+	return out, req.Send()
+}
+
+// ListRotationOverridesWithContext is the same as ListRotationOverrides with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListRotationOverrides for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSMContacts) ListRotationOverridesWithContext(ctx aws.Context, input *ListRotationOverridesInput, opts ...request.Option) (*ListRotationOverridesOutput, error) {
+	req, out := c.ListRotationOverridesRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListRotationOverridesPages iterates over the pages of a ListRotationOverrides operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListRotationOverrides method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListRotationOverrides operation.
+//	pageNum := 0
+//	err := client.ListRotationOverridesPages(params,
+//	    func(page *ssmcontacts.ListRotationOverridesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *SSMContacts) ListRotationOverridesPages(input *ListRotationOverridesInput, fn func(*ListRotationOverridesOutput, bool) bool) error {
+	return c.ListRotationOverridesPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListRotationOverridesPagesWithContext same as ListRotationOverridesPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSMContacts) ListRotationOverridesPagesWithContext(ctx aws.Context, input *ListRotationOverridesInput, fn func(*ListRotationOverridesOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListRotationOverridesInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListRotationOverridesRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListRotationOverridesOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opListRotationShifts = "ListRotationShifts"
+
+// ListRotationShiftsRequest generates a "aws/request.Request" representing the
+// client's request for the ListRotationShifts operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListRotationShifts for more information on using the ListRotationShifts
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListRotationShiftsRequest method.
+//	req, resp := client.ListRotationShiftsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-contacts-2021-05-03/ListRotationShifts
+func (c *SSMContacts) ListRotationShiftsRequest(input *ListRotationShiftsInput) (req *request.Request, output *ListRotationShiftsOutput) {
+	op := &request.Operation{
+		Name:       opListRotationShifts,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListRotationShiftsInput{}
+	}
+
+	output = &ListRotationShiftsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListRotationShifts API operation for AWS Systems Manager Incident Manager Contacts.
+//
+// Returns a list of shifts generated by an existing rotation in the system.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Systems Manager Incident Manager Contacts's
+// API operation ListRotationShifts for usage and error information.
+//
+// Returned Error Types:
+//
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this operation.
+//
+//   - ConflictException
+//     Updating or deleting a resource causes an inconsistent state.
+//
+//   - InternalServerException
+//     Unexpected error occurred while processing the request.
+//
+//   - ResourceNotFoundException
+//     Request references a resource that doesn't exist.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-contacts-2021-05-03/ListRotationShifts
+func (c *SSMContacts) ListRotationShifts(input *ListRotationShiftsInput) (*ListRotationShiftsOutput, error) {
+	req, out := c.ListRotationShiftsRequest(input)
+	return out, req.Send()
+}
+
+// ListRotationShiftsWithContext is the same as ListRotationShifts with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListRotationShifts for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSMContacts) ListRotationShiftsWithContext(ctx aws.Context, input *ListRotationShiftsInput, opts ...request.Option) (*ListRotationShiftsOutput, error) {
+	req, out := c.ListRotationShiftsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListRotationShiftsPages iterates over the pages of a ListRotationShifts operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListRotationShifts method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListRotationShifts operation.
+//	pageNum := 0
+//	err := client.ListRotationShiftsPages(params,
+//	    func(page *ssmcontacts.ListRotationShiftsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *SSMContacts) ListRotationShiftsPages(input *ListRotationShiftsInput, fn func(*ListRotationShiftsOutput, bool) bool) error {
+	return c.ListRotationShiftsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListRotationShiftsPagesWithContext same as ListRotationShiftsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSMContacts) ListRotationShiftsPagesWithContext(ctx aws.Context, input *ListRotationShiftsInput, fn func(*ListRotationShiftsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListRotationShiftsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListRotationShiftsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListRotationShiftsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opListRotations = "ListRotations"
+
+// ListRotationsRequest generates a "aws/request.Request" representing the
+// client's request for the ListRotations operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListRotations for more information on using the ListRotations
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListRotationsRequest method.
+//	req, resp := client.ListRotationsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-contacts-2021-05-03/ListRotations
+func (c *SSMContacts) ListRotationsRequest(input *ListRotationsInput) (req *request.Request, output *ListRotationsOutput) {
+	op := &request.Operation{
+		Name:       opListRotations,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListRotationsInput{}
+	}
+
+	output = &ListRotationsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListRotations API operation for AWS Systems Manager Incident Manager Contacts.
+//
+// Retrieves a list of on-call rotations.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Systems Manager Incident Manager Contacts's
+// API operation ListRotations for usage and error information.
+//
+// Returned Error Types:
+//
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this operation.
+//
+//   - InternalServerException
+//     Unexpected error occurred while processing the request.
+//
+//   - ResourceNotFoundException
+//     Request references a resource that doesn't exist.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-contacts-2021-05-03/ListRotations
+func (c *SSMContacts) ListRotations(input *ListRotationsInput) (*ListRotationsOutput, error) {
+	req, out := c.ListRotationsRequest(input)
+	return out, req.Send()
+}
+
+// ListRotationsWithContext is the same as ListRotations with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListRotations for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSMContacts) ListRotationsWithContext(ctx aws.Context, input *ListRotationsInput, opts ...request.Option) (*ListRotationsOutput, error) {
+	req, out := c.ListRotationsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListRotationsPages iterates over the pages of a ListRotations operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListRotations method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListRotations operation.
+//	pageNum := 0
+//	err := client.ListRotationsPages(params,
+//	    func(page *ssmcontacts.ListRotationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *SSMContacts) ListRotationsPages(input *ListRotationsInput, fn func(*ListRotationsOutput, bool) bool) error {
+	return c.ListRotationsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListRotationsPagesWithContext same as ListRotationsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSMContacts) ListRotationsPagesWithContext(ctx aws.Context, input *ListRotationsInput, fn func(*ListRotationsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListRotationsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListRotationsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListRotationsOutput), !p.HasNextPage()) {
 			break
 		}
 	}
@@ -2920,10 +4239,106 @@ func (c *SSMContacts) UpdateContactChannelWithContext(ctx aws.Context, input *Up
 	return out, req.Send()
 }
 
+const opUpdateRotation = "UpdateRotation"
+
+// UpdateRotationRequest generates a "aws/request.Request" representing the
+// client's request for the UpdateRotation operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UpdateRotation for more information on using the UpdateRotation
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UpdateRotationRequest method.
+//	req, resp := client.UpdateRotationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-contacts-2021-05-03/UpdateRotation
+func (c *SSMContacts) UpdateRotationRequest(input *UpdateRotationInput) (req *request.Request, output *UpdateRotationOutput) {
+	op := &request.Operation{
+		Name:       opUpdateRotation,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &UpdateRotationInput{}
+	}
+
+	output = &UpdateRotationOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// UpdateRotation API operation for AWS Systems Manager Incident Manager Contacts.
+//
+// Updates the information specified for an on-call rotation.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Systems Manager Incident Manager Contacts's
+// API operation UpdateRotation for usage and error information.
+//
+// Returned Error Types:
+//
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this operation.
+//
+//   - ConflictException
+//     Updating or deleting a resource causes an inconsistent state.
+//
+//   - InternalServerException
+//     Unexpected error occurred while processing the request.
+//
+//   - ResourceNotFoundException
+//     Request references a resource that doesn't exist.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-contacts-2021-05-03/UpdateRotation
+func (c *SSMContacts) UpdateRotation(input *UpdateRotationInput) (*UpdateRotationOutput, error) {
+	req, out := c.UpdateRotationRequest(input)
+	return out, req.Send()
+}
+
+// UpdateRotationWithContext is the same as UpdateRotation with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UpdateRotation for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSMContacts) UpdateRotationWithContext(ctx aws.Context, input *UpdateRotationInput, opts ...request.Option) (*UpdateRotationOutput, error) {
+	req, out := c.UpdateRotationRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 type AcceptPageInput struct {
 	_ struct{} `type:"structure"`
 
-	// The accept code is a 6-digit code used to acknowledge the page.
+	// A 6-digit code used to acknowledge the page.
 	//
 	// AcceptCode is a required field
 	AcceptCode *string `min:"6" type:"string" required:"true"`
@@ -3280,6 +4695,10 @@ type ConflictException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
 
+	// List of dependent entities containing information on relation type and resourceArns
+	// linked to the resource in use
+	DependentEntities []*DependentEntity `type:"list"`
+
 	Message_ *string `locationName:"Message" type:"string"`
 
 	// Identifier of the resource in use
@@ -3287,7 +4706,7 @@ type ConflictException struct {
 	// ResourceId is a required field
 	ResourceId *string `type:"string" required:"true"`
 
-	// ype of the resource in use
+	// Type of the resource in use
 	//
 	// ResourceType is a required field
 	ResourceType *string `type:"string" required:"true"`
@@ -3626,6 +5045,47 @@ func (s *ContactTargetInfo) SetIsEssential(v bool) *ContactTargetInfo {
 	return s
 }
 
+// Information about when an on-call shift begins and ends.
+type CoverageTime struct {
+	_ struct{} `type:"structure"`
+
+	// Information about when the on-call rotation shift ends.
+	End *HandOffTime `type:"structure"`
+
+	// Information about when the on-call rotation shift begins.
+	Start *HandOffTime `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CoverageTime) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CoverageTime) GoString() string {
+	return s.String()
+}
+
+// SetEnd sets the End field's value.
+func (s *CoverageTime) SetEnd(v *HandOffTime) *CoverageTime {
+	s.End = v
+	return s
+}
+
+// SetStart sets the Start field's value.
+func (s *CoverageTime) SetStart(v *HandOffTime) *CoverageTime {
+	s.Start = v
+	return s
+}
+
 type CreateContactChannelInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3951,6 +5411,331 @@ func (s *CreateContactOutput) SetContactArn(v string) *CreateContactOutput {
 	return s
 }
 
+type CreateRotationInput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Names (ARNs) of the contacts to add to the rotation.
+	//
+	// The order that you list the contacts in is their shift order in the rotation
+	// schedule. To change the order of the contact's shifts, use the UpdateRotation
+	// operation.
+	//
+	// ContactIds is a required field
+	ContactIds []*string `min:"1" type:"list" required:"true"`
+
+	// A token that ensures that the operation is called only once with the specified
+	// details.
+	IdempotencyToken *string `type:"string"`
+
+	// The name of the rotation.
+	//
+	// Name is a required field
+	Name *string `min:"1" type:"string" required:"true"`
+
+	// Information about the rule that specifies when a shift's team members rotate.
+	//
+	// Recurrence is a required field
+	Recurrence *RecurrenceSettings `type:"structure" required:"true"`
+
+	// The date and time that the rotation goes into effect.
+	StartTime *time.Time `type:"timestamp"`
+
+	// Optional metadata to assign to the rotation. Tags enable you to categorize
+	// a resource in different ways, such as by purpose, owner, or environment.
+	// For more information, see Tagging Incident Manager resources (https://docs.aws.amazon.com/incident-manager/latest/userguide/tagging.html)
+	// in the Incident Manager User Guide.
+	Tags []*Tag `type:"list"`
+
+	// The time zone to base the rotation’s activity on in Internet Assigned Numbers
+	// Authority (IANA) format. For example: "America/Los_Angeles", "UTC", or "Asia/Seoul".
+	// For more information, see the Time Zone Database (https://www.iana.org/time-zones)
+	// on the IANA website.
+	//
+	// Designators for time zones that don’t support Daylight Savings Time rules,
+	// such as Pacific Standard Time (PST) and Pacific Daylight Time (PDT), are
+	// not supported.
+	//
+	// TimeZoneId is a required field
+	TimeZoneId *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateRotationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateRotationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateRotationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateRotationInput"}
+	if s.ContactIds == nil {
+		invalidParams.Add(request.NewErrParamRequired("ContactIds"))
+	}
+	if s.ContactIds != nil && len(s.ContactIds) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ContactIds", 1))
+	}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+	if s.Recurrence == nil {
+		invalidParams.Add(request.NewErrParamRequired("Recurrence"))
+	}
+	if s.TimeZoneId == nil {
+		invalidParams.Add(request.NewErrParamRequired("TimeZoneId"))
+	}
+	if s.TimeZoneId != nil && len(*s.TimeZoneId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("TimeZoneId", 1))
+	}
+	if s.Recurrence != nil {
+		if err := s.Recurrence.Validate(); err != nil {
+			invalidParams.AddNested("Recurrence", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.Tags != nil {
+		for i, v := range s.Tags {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Tags", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetContactIds sets the ContactIds field's value.
+func (s *CreateRotationInput) SetContactIds(v []*string) *CreateRotationInput {
+	s.ContactIds = v
+	return s
+}
+
+// SetIdempotencyToken sets the IdempotencyToken field's value.
+func (s *CreateRotationInput) SetIdempotencyToken(v string) *CreateRotationInput {
+	s.IdempotencyToken = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CreateRotationInput) SetName(v string) *CreateRotationInput {
+	s.Name = &v
+	return s
+}
+
+// SetRecurrence sets the Recurrence field's value.
+func (s *CreateRotationInput) SetRecurrence(v *RecurrenceSettings) *CreateRotationInput {
+	s.Recurrence = v
+	return s
+}
+
+// SetStartTime sets the StartTime field's value.
+func (s *CreateRotationInput) SetStartTime(v time.Time) *CreateRotationInput {
+	s.StartTime = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CreateRotationInput) SetTags(v []*Tag) *CreateRotationInput {
+	s.Tags = v
+	return s
+}
+
+// SetTimeZoneId sets the TimeZoneId field's value.
+func (s *CreateRotationInput) SetTimeZoneId(v string) *CreateRotationInput {
+	s.TimeZoneId = &v
+	return s
+}
+
+type CreateRotationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the created rotation.
+	//
+	// RotationArn is a required field
+	RotationArn *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateRotationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateRotationOutput) GoString() string {
+	return s.String()
+}
+
+// SetRotationArn sets the RotationArn field's value.
+func (s *CreateRotationOutput) SetRotationArn(v string) *CreateRotationOutput {
+	s.RotationArn = &v
+	return s
+}
+
+type CreateRotationOverrideInput struct {
+	_ struct{} `type:"structure"`
+
+	// The date and time when the override ends.
+	//
+	// EndTime is a required field
+	EndTime *time.Time `type:"timestamp" required:"true"`
+
+	// A token that ensures that the operation is called only once with the specified
+	// details.
+	IdempotencyToken *string `type:"string"`
+
+	// The Amazon Resource Names (ARNs) of the contacts to replace those in the
+	// current on-call rotation with.
+	//
+	// If you want to include any current team members in the override shift, you
+	// must include their ARNs in the new contact ID list.
+	//
+	// NewContactIds is a required field
+	NewContactIds []*string `type:"list" required:"true"`
+
+	// The Amazon Resource Name (ARN) of the rotation to create an override for.
+	//
+	// RotationId is a required field
+	RotationId *string `min:"1" type:"string" required:"true"`
+
+	// The date and time when the override goes into effect.
+	//
+	// StartTime is a required field
+	StartTime *time.Time `type:"timestamp" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateRotationOverrideInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateRotationOverrideInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateRotationOverrideInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateRotationOverrideInput"}
+	if s.EndTime == nil {
+		invalidParams.Add(request.NewErrParamRequired("EndTime"))
+	}
+	if s.NewContactIds == nil {
+		invalidParams.Add(request.NewErrParamRequired("NewContactIds"))
+	}
+	if s.RotationId == nil {
+		invalidParams.Add(request.NewErrParamRequired("RotationId"))
+	}
+	if s.RotationId != nil && len(*s.RotationId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RotationId", 1))
+	}
+	if s.StartTime == nil {
+		invalidParams.Add(request.NewErrParamRequired("StartTime"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetEndTime sets the EndTime field's value.
+func (s *CreateRotationOverrideInput) SetEndTime(v time.Time) *CreateRotationOverrideInput {
+	s.EndTime = &v
+	return s
+}
+
+// SetIdempotencyToken sets the IdempotencyToken field's value.
+func (s *CreateRotationOverrideInput) SetIdempotencyToken(v string) *CreateRotationOverrideInput {
+	s.IdempotencyToken = &v
+	return s
+}
+
+// SetNewContactIds sets the NewContactIds field's value.
+func (s *CreateRotationOverrideInput) SetNewContactIds(v []*string) *CreateRotationOverrideInput {
+	s.NewContactIds = v
+	return s
+}
+
+// SetRotationId sets the RotationId field's value.
+func (s *CreateRotationOverrideInput) SetRotationId(v string) *CreateRotationOverrideInput {
+	s.RotationId = &v
+	return s
+}
+
+// SetStartTime sets the StartTime field's value.
+func (s *CreateRotationOverrideInput) SetStartTime(v time.Time) *CreateRotationOverrideInput {
+	s.StartTime = &v
+	return s
+}
+
+type CreateRotationOverrideOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the created rotation override.
+	//
+	// RotationOverrideId is a required field
+	RotationOverrideId *string `min:"36" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateRotationOverrideOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateRotationOverrideOutput) GoString() string {
+	return s.String()
+}
+
+// SetRotationOverrideId sets the RotationOverrideId field's value.
+func (s *CreateRotationOverrideOutput) SetRotationOverrideId(v string) *CreateRotationOverrideOutput {
+	s.RotationOverrideId = &v
+	return s
+}
+
 // The operation failed to due an encryption key error.
 type DataEncryptionException struct {
 	_            struct{}                  `type:"structure"`
@@ -4226,6 +6011,215 @@ func (s DeleteContactOutput) String() string {
 // value will be replaced with "sensitive".
 func (s DeleteContactOutput) GoString() string {
 	return s.String()
+}
+
+type DeleteRotationInput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the on-call rotation to delete.
+	//
+	// RotationId is a required field
+	RotationId *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteRotationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteRotationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteRotationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteRotationInput"}
+	if s.RotationId == nil {
+		invalidParams.Add(request.NewErrParamRequired("RotationId"))
+	}
+	if s.RotationId != nil && len(*s.RotationId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RotationId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetRotationId sets the RotationId field's value.
+func (s *DeleteRotationInput) SetRotationId(v string) *DeleteRotationInput {
+	s.RotationId = &v
+	return s
+}
+
+type DeleteRotationOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteRotationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteRotationOutput) GoString() string {
+	return s.String()
+}
+
+type DeleteRotationOverrideInput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the rotation that was overridden.
+	//
+	// RotationId is a required field
+	RotationId *string `min:"1" type:"string" required:"true"`
+
+	// The Amazon Resource Name (ARN) of the on-call rotation override to delete.
+	//
+	// RotationOverrideId is a required field
+	RotationOverrideId *string `min:"36" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteRotationOverrideInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteRotationOverrideInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteRotationOverrideInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteRotationOverrideInput"}
+	if s.RotationId == nil {
+		invalidParams.Add(request.NewErrParamRequired("RotationId"))
+	}
+	if s.RotationId != nil && len(*s.RotationId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RotationId", 1))
+	}
+	if s.RotationOverrideId == nil {
+		invalidParams.Add(request.NewErrParamRequired("RotationOverrideId"))
+	}
+	if s.RotationOverrideId != nil && len(*s.RotationOverrideId) < 36 {
+		invalidParams.Add(request.NewErrParamMinLen("RotationOverrideId", 36))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetRotationId sets the RotationId field's value.
+func (s *DeleteRotationOverrideInput) SetRotationId(v string) *DeleteRotationOverrideInput {
+	s.RotationId = &v
+	return s
+}
+
+// SetRotationOverrideId sets the RotationOverrideId field's value.
+func (s *DeleteRotationOverrideInput) SetRotationOverrideId(v string) *DeleteRotationOverrideInput {
+	s.RotationOverrideId = &v
+	return s
+}
+
+type DeleteRotationOverrideOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteRotationOverrideOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteRotationOverrideOutput) GoString() string {
+	return s.String()
+}
+
+// Information about a resource that another resource is related to or depends
+// on.
+//
+// For example, if a contact is a member of a rotation, the rotation is a dependent
+// entity of the contact.
+type DependentEntity struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Names (ARNs) of the dependent resources.
+	//
+	// DependentResourceIds is a required field
+	DependentResourceIds []*string `type:"list" required:"true"`
+
+	// The type of relationship between one resource and the other resource that
+	// it is related to or depends on.
+	//
+	// RelationType is a required field
+	RelationType *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DependentEntity) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DependentEntity) GoString() string {
+	return s.String()
+}
+
+// SetDependentResourceIds sets the DependentResourceIds field's value.
+func (s *DependentEntity) SetDependentResourceIds(v []*string) *DependentEntity {
+	s.DependentResourceIds = v
+	return s
+}
+
+// SetRelationType sets the RelationType field's value.
+func (s *DependentEntity) SetRelationType(v string) *DependentEntity {
+	s.RelationType = &v
+	return s
 }
 
 type DescribeEngagementInput struct {
@@ -5033,6 +7027,353 @@ func (s *GetContactPolicyOutput) SetPolicy(v string) *GetContactPolicyOutput {
 	return s
 }
 
+type GetRotationInput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the on-call rotation to retrieve information
+	// about.
+	//
+	// RotationId is a required field
+	RotationId *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetRotationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetRotationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetRotationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetRotationInput"}
+	if s.RotationId == nil {
+		invalidParams.Add(request.NewErrParamRequired("RotationId"))
+	}
+	if s.RotationId != nil && len(*s.RotationId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RotationId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetRotationId sets the RotationId field's value.
+func (s *GetRotationInput) SetRotationId(v string) *GetRotationInput {
+	s.RotationId = &v
+	return s
+}
+
+type GetRotationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Names (ARNs) of the contacts assigned to the on-call
+	// rotation team.
+	//
+	// ContactIds is a required field
+	ContactIds []*string `min:"1" type:"list" required:"true"`
+
+	// The name of the on-call rotation.
+	//
+	// Name is a required field
+	Name *string `min:"1" type:"string" required:"true"`
+
+	// Specifies how long a rotation lasts before restarting at the beginning of
+	// the shift order.
+	//
+	// Recurrence is a required field
+	Recurrence *RecurrenceSettings `type:"structure" required:"true"`
+
+	// The Amazon Resource Name (ARN) of the on-call rotation.
+	//
+	// RotationArn is a required field
+	RotationArn *string `min:"1" type:"string" required:"true"`
+
+	// The specified start time for the on-call rotation.
+	//
+	// StartTime is a required field
+	StartTime *time.Time `type:"timestamp" required:"true"`
+
+	// The time zone that the rotation’s activity is based on, in Internet Assigned
+	// Numbers Authority (IANA) format.
+	//
+	// TimeZoneId is a required field
+	TimeZoneId *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetRotationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetRotationOutput) GoString() string {
+	return s.String()
+}
+
+// SetContactIds sets the ContactIds field's value.
+func (s *GetRotationOutput) SetContactIds(v []*string) *GetRotationOutput {
+	s.ContactIds = v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *GetRotationOutput) SetName(v string) *GetRotationOutput {
+	s.Name = &v
+	return s
+}
+
+// SetRecurrence sets the Recurrence field's value.
+func (s *GetRotationOutput) SetRecurrence(v *RecurrenceSettings) *GetRotationOutput {
+	s.Recurrence = v
+	return s
+}
+
+// SetRotationArn sets the RotationArn field's value.
+func (s *GetRotationOutput) SetRotationArn(v string) *GetRotationOutput {
+	s.RotationArn = &v
+	return s
+}
+
+// SetStartTime sets the StartTime field's value.
+func (s *GetRotationOutput) SetStartTime(v time.Time) *GetRotationOutput {
+	s.StartTime = &v
+	return s
+}
+
+// SetTimeZoneId sets the TimeZoneId field's value.
+func (s *GetRotationOutput) SetTimeZoneId(v string) *GetRotationOutput {
+	s.TimeZoneId = &v
+	return s
+}
+
+type GetRotationOverrideInput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the overridden rotation to retrieve information
+	// about.
+	//
+	// RotationId is a required field
+	RotationId *string `min:"1" type:"string" required:"true"`
+
+	// The Amazon Resource Name (ARN) of the on-call rotation override to retrieve
+	// information about.
+	//
+	// RotationOverrideId is a required field
+	RotationOverrideId *string `min:"36" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetRotationOverrideInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetRotationOverrideInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetRotationOverrideInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetRotationOverrideInput"}
+	if s.RotationId == nil {
+		invalidParams.Add(request.NewErrParamRequired("RotationId"))
+	}
+	if s.RotationId != nil && len(*s.RotationId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RotationId", 1))
+	}
+	if s.RotationOverrideId == nil {
+		invalidParams.Add(request.NewErrParamRequired("RotationOverrideId"))
+	}
+	if s.RotationOverrideId != nil && len(*s.RotationOverrideId) < 36 {
+		invalidParams.Add(request.NewErrParamMinLen("RotationOverrideId", 36))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetRotationId sets the RotationId field's value.
+func (s *GetRotationOverrideInput) SetRotationId(v string) *GetRotationOverrideInput {
+	s.RotationId = &v
+	return s
+}
+
+// SetRotationOverrideId sets the RotationOverrideId field's value.
+func (s *GetRotationOverrideInput) SetRotationOverrideId(v string) *GetRotationOverrideInput {
+	s.RotationOverrideId = &v
+	return s
+}
+
+type GetRotationOverrideOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The date and time when the override was created.
+	CreateTime *time.Time `type:"timestamp"`
+
+	// The date and time when the override ends.
+	EndTime *time.Time `type:"timestamp"`
+
+	// The Amazon Resource Names (ARNs) of the contacts assigned to the override
+	// of the on-call rotation.
+	NewContactIds []*string `type:"list"`
+
+	// The Amazon Resource Name (ARN) of the on-call rotation that was overridden.
+	RotationArn *string `min:"1" type:"string"`
+
+	// The Amazon Resource Name (ARN) of the override to an on-call rotation.
+	RotationOverrideId *string `min:"36" type:"string"`
+
+	// The date and time when the override goes into effect.
+	StartTime *time.Time `type:"timestamp"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetRotationOverrideOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetRotationOverrideOutput) GoString() string {
+	return s.String()
+}
+
+// SetCreateTime sets the CreateTime field's value.
+func (s *GetRotationOverrideOutput) SetCreateTime(v time.Time) *GetRotationOverrideOutput {
+	s.CreateTime = &v
+	return s
+}
+
+// SetEndTime sets the EndTime field's value.
+func (s *GetRotationOverrideOutput) SetEndTime(v time.Time) *GetRotationOverrideOutput {
+	s.EndTime = &v
+	return s
+}
+
+// SetNewContactIds sets the NewContactIds field's value.
+func (s *GetRotationOverrideOutput) SetNewContactIds(v []*string) *GetRotationOverrideOutput {
+	s.NewContactIds = v
+	return s
+}
+
+// SetRotationArn sets the RotationArn field's value.
+func (s *GetRotationOverrideOutput) SetRotationArn(v string) *GetRotationOverrideOutput {
+	s.RotationArn = &v
+	return s
+}
+
+// SetRotationOverrideId sets the RotationOverrideId field's value.
+func (s *GetRotationOverrideOutput) SetRotationOverrideId(v string) *GetRotationOverrideOutput {
+	s.RotationOverrideId = &v
+	return s
+}
+
+// SetStartTime sets the StartTime field's value.
+func (s *GetRotationOverrideOutput) SetStartTime(v time.Time) *GetRotationOverrideOutput {
+	s.StartTime = &v
+	return s
+}
+
+// Details about when an on-call rotation shift begins or ends.
+type HandOffTime struct {
+	_ struct{} `type:"structure"`
+
+	// The hour when an on-call rotation shift begins or ends.
+	//
+	// HourOfDay is a required field
+	HourOfDay *int64 `type:"integer" required:"true"`
+
+	// The minute when an on-call rotation shift begins or ends.
+	//
+	// MinuteOfHour is a required field
+	MinuteOfHour *int64 `type:"integer" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s HandOffTime) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s HandOffTime) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *HandOffTime) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "HandOffTime"}
+	if s.HourOfDay == nil {
+		invalidParams.Add(request.NewErrParamRequired("HourOfDay"))
+	}
+	if s.MinuteOfHour == nil {
+		invalidParams.Add(request.NewErrParamRequired("MinuteOfHour"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetHourOfDay sets the HourOfDay field's value.
+func (s *HandOffTime) SetHourOfDay(v int64) *HandOffTime {
+	s.HourOfDay = &v
+	return s
+}
+
+// SetMinuteOfHour sets the MinuteOfHour field's value.
+func (s *HandOffTime) SetMinuteOfHour(v int64) *HandOffTime {
+	s.MinuteOfHour = &v
+	return s
+}
+
 // Unexpected error occurred while processing the request.
 type InternalServerException struct {
 	_            struct{}                  `type:"structure"`
@@ -5530,6 +7871,107 @@ func (s *ListPageReceiptsOutput) SetReceipts(v []*Receipt) *ListPageReceiptsOutp
 	return s
 }
 
+type ListPageResolutionsInput struct {
+	_ struct{} `type:"structure"`
+
+	// A token to start the list. Use this token to get the next set of results.
+	NextToken *string `type:"string"`
+
+	// The Amazon Resource Name (ARN) of the contact engaged for the incident.
+	//
+	// PageId is a required field
+	PageId *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListPageResolutionsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListPageResolutionsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListPageResolutionsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListPageResolutionsInput"}
+	if s.PageId == nil {
+		invalidParams.Add(request.NewErrParamRequired("PageId"))
+	}
+	if s.PageId != nil && len(*s.PageId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("PageId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListPageResolutionsInput) SetNextToken(v string) *ListPageResolutionsInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetPageId sets the PageId field's value.
+func (s *ListPageResolutionsInput) SetPageId(v string) *ListPageResolutionsInput {
+	s.PageId = &v
+	return s
+}
+
+type ListPageResolutionsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The token for the next set of items to return. Use this token to get the
+	// next set of results.
+	NextToken *string `type:"string"`
+
+	// Information about the resolution for an engagement.
+	//
+	// PageResolutions is a required field
+	PageResolutions []*ResolutionContact `type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListPageResolutionsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListPageResolutionsOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListPageResolutionsOutput) SetNextToken(v string) *ListPageResolutionsOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetPageResolutions sets the PageResolutions field's value.
+func (s *ListPageResolutionsOutput) SetPageResolutions(v []*ResolutionContact) *ListPageResolutionsOutput {
+	s.PageResolutions = v
+	return s
+}
+
 type ListPagesByContactInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5751,6 +8193,579 @@ func (s *ListPagesByEngagementOutput) SetPages(v []*Page) *ListPagesByEngagement
 	return s
 }
 
+type ListPreviewRotationShiftsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The date and time a rotation shift would end.
+	//
+	// EndTime is a required field
+	EndTime *time.Time `type:"timestamp" required:"true"`
+
+	// The maximum number of items to return for this call. The call also returns
+	// a token that can be specified in a subsequent call to get the next set of
+	// results.
+	MaxResults *int64 `type:"integer"`
+
+	// The contacts that would be assigned to a rotation.
+	//
+	// Members is a required field
+	Members []*string `min:"1" type:"list" required:"true"`
+
+	// A token to start the list. This token is used to get the next set of results.
+	NextToken *string `type:"string"`
+
+	// Information about changes that would be made in a rotation override.
+	Overrides []*PreviewOverride `type:"list"`
+
+	// Information about how long a rotation would last before restarting at the
+	// beginning of the shift order.
+	//
+	// Recurrence is a required field
+	Recurrence *RecurrenceSettings `type:"structure" required:"true"`
+
+	// The date and time a rotation would begin. The first shift is calculated from
+	// this date and time.
+	RotationStartTime *time.Time `type:"timestamp"`
+
+	// Used to filter the range of calculated shifts before sending the response
+	// back to the user.
+	StartTime *time.Time `type:"timestamp"`
+
+	// The time zone the rotation’s activity would be based on, in Internet Assigned
+	// Numbers Authority (IANA) format. For example: "America/Los_Angeles", "UTC",
+	// or "Asia/Seoul".
+	//
+	// TimeZoneId is a required field
+	TimeZoneId *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListPreviewRotationShiftsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListPreviewRotationShiftsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListPreviewRotationShiftsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListPreviewRotationShiftsInput"}
+	if s.EndTime == nil {
+		invalidParams.Add(request.NewErrParamRequired("EndTime"))
+	}
+	if s.Members == nil {
+		invalidParams.Add(request.NewErrParamRequired("Members"))
+	}
+	if s.Members != nil && len(s.Members) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Members", 1))
+	}
+	if s.Recurrence == nil {
+		invalidParams.Add(request.NewErrParamRequired("Recurrence"))
+	}
+	if s.TimeZoneId == nil {
+		invalidParams.Add(request.NewErrParamRequired("TimeZoneId"))
+	}
+	if s.TimeZoneId != nil && len(*s.TimeZoneId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("TimeZoneId", 1))
+	}
+	if s.Recurrence != nil {
+		if err := s.Recurrence.Validate(); err != nil {
+			invalidParams.AddNested("Recurrence", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetEndTime sets the EndTime field's value.
+func (s *ListPreviewRotationShiftsInput) SetEndTime(v time.Time) *ListPreviewRotationShiftsInput {
+	s.EndTime = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListPreviewRotationShiftsInput) SetMaxResults(v int64) *ListPreviewRotationShiftsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetMembers sets the Members field's value.
+func (s *ListPreviewRotationShiftsInput) SetMembers(v []*string) *ListPreviewRotationShiftsInput {
+	s.Members = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListPreviewRotationShiftsInput) SetNextToken(v string) *ListPreviewRotationShiftsInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetOverrides sets the Overrides field's value.
+func (s *ListPreviewRotationShiftsInput) SetOverrides(v []*PreviewOverride) *ListPreviewRotationShiftsInput {
+	s.Overrides = v
+	return s
+}
+
+// SetRecurrence sets the Recurrence field's value.
+func (s *ListPreviewRotationShiftsInput) SetRecurrence(v *RecurrenceSettings) *ListPreviewRotationShiftsInput {
+	s.Recurrence = v
+	return s
+}
+
+// SetRotationStartTime sets the RotationStartTime field's value.
+func (s *ListPreviewRotationShiftsInput) SetRotationStartTime(v time.Time) *ListPreviewRotationShiftsInput {
+	s.RotationStartTime = &v
+	return s
+}
+
+// SetStartTime sets the StartTime field's value.
+func (s *ListPreviewRotationShiftsInput) SetStartTime(v time.Time) *ListPreviewRotationShiftsInput {
+	s.StartTime = &v
+	return s
+}
+
+// SetTimeZoneId sets the TimeZoneId field's value.
+func (s *ListPreviewRotationShiftsInput) SetTimeZoneId(v string) *ListPreviewRotationShiftsInput {
+	s.TimeZoneId = &v
+	return s
+}
+
+type ListPreviewRotationShiftsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The token for the next set of items to return. This token is used to get
+	// the next set of results.
+	NextToken *string `type:"string"`
+
+	// Details about a rotation shift, including times, types, and contacts.
+	RotationShifts []*RotationShift `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListPreviewRotationShiftsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListPreviewRotationShiftsOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListPreviewRotationShiftsOutput) SetNextToken(v string) *ListPreviewRotationShiftsOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetRotationShifts sets the RotationShifts field's value.
+func (s *ListPreviewRotationShiftsOutput) SetRotationShifts(v []*RotationShift) *ListPreviewRotationShiftsOutput {
+	s.RotationShifts = v
+	return s
+}
+
+type ListRotationOverridesInput struct {
+	_ struct{} `type:"structure"`
+
+	// The date and time for the end of a time range for listing overrides.
+	//
+	// EndTime is a required field
+	EndTime *time.Time `type:"timestamp" required:"true"`
+
+	// The maximum number of items to return for this call. The call also returns
+	// a token that you can specify in a subsequent call to get the next set of
+	// results.
+	MaxResults *int64 `type:"integer"`
+
+	// A token to start the list. Use this token to get the next set of results.
+	NextToken *string `type:"string"`
+
+	// The Amazon Resource Name (ARN) of the rotation to retrieve information about.
+	//
+	// RotationId is a required field
+	RotationId *string `min:"1" type:"string" required:"true"`
+
+	// The date and time for the beginning of a time range for listing overrides.
+	//
+	// StartTime is a required field
+	StartTime *time.Time `type:"timestamp" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListRotationOverridesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListRotationOverridesInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListRotationOverridesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListRotationOverridesInput"}
+	if s.EndTime == nil {
+		invalidParams.Add(request.NewErrParamRequired("EndTime"))
+	}
+	if s.RotationId == nil {
+		invalidParams.Add(request.NewErrParamRequired("RotationId"))
+	}
+	if s.RotationId != nil && len(*s.RotationId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RotationId", 1))
+	}
+	if s.StartTime == nil {
+		invalidParams.Add(request.NewErrParamRequired("StartTime"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetEndTime sets the EndTime field's value.
+func (s *ListRotationOverridesInput) SetEndTime(v time.Time) *ListRotationOverridesInput {
+	s.EndTime = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListRotationOverridesInput) SetMaxResults(v int64) *ListRotationOverridesInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListRotationOverridesInput) SetNextToken(v string) *ListRotationOverridesInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetRotationId sets the RotationId field's value.
+func (s *ListRotationOverridesInput) SetRotationId(v string) *ListRotationOverridesInput {
+	s.RotationId = &v
+	return s
+}
+
+// SetStartTime sets the StartTime field's value.
+func (s *ListRotationOverridesInput) SetStartTime(v time.Time) *ListRotationOverridesInput {
+	s.StartTime = &v
+	return s
+}
+
+type ListRotationOverridesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The token for the next set of items to return. Use this token to get the
+	// next set of results.
+	NextToken *string `type:"string"`
+
+	// A list of rotation overrides in the specified time range.
+	RotationOverrides []*RotationOverride `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListRotationOverridesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListRotationOverridesOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListRotationOverridesOutput) SetNextToken(v string) *ListRotationOverridesOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetRotationOverrides sets the RotationOverrides field's value.
+func (s *ListRotationOverridesOutput) SetRotationOverrides(v []*RotationOverride) *ListRotationOverridesOutput {
+	s.RotationOverrides = v
+	return s
+}
+
+type ListRotationShiftsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The date and time for the end of the time range to list shifts for.
+	//
+	// EndTime is a required field
+	EndTime *time.Time `type:"timestamp" required:"true"`
+
+	// The maximum number of items to return for this call. The call also returns
+	// a token that you can specify in a subsequent call to get the next set of
+	// results.
+	MaxResults *int64 `type:"integer"`
+
+	// A token to start the list. Use this token to get the next set of results.
+	NextToken *string `type:"string"`
+
+	// The Amazon Resource Name (ARN) of the rotation to retrieve shift information
+	// about.
+	//
+	// RotationId is a required field
+	RotationId *string `min:"1" type:"string" required:"true"`
+
+	// The date and time for the beginning of the time range to list shifts for.
+	StartTime *time.Time `type:"timestamp"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListRotationShiftsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListRotationShiftsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListRotationShiftsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListRotationShiftsInput"}
+	if s.EndTime == nil {
+		invalidParams.Add(request.NewErrParamRequired("EndTime"))
+	}
+	if s.RotationId == nil {
+		invalidParams.Add(request.NewErrParamRequired("RotationId"))
+	}
+	if s.RotationId != nil && len(*s.RotationId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RotationId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetEndTime sets the EndTime field's value.
+func (s *ListRotationShiftsInput) SetEndTime(v time.Time) *ListRotationShiftsInput {
+	s.EndTime = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListRotationShiftsInput) SetMaxResults(v int64) *ListRotationShiftsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListRotationShiftsInput) SetNextToken(v string) *ListRotationShiftsInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetRotationId sets the RotationId field's value.
+func (s *ListRotationShiftsInput) SetRotationId(v string) *ListRotationShiftsInput {
+	s.RotationId = &v
+	return s
+}
+
+// SetStartTime sets the StartTime field's value.
+func (s *ListRotationShiftsInput) SetStartTime(v time.Time) *ListRotationShiftsInput {
+	s.StartTime = &v
+	return s
+}
+
+type ListRotationShiftsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The token for the next set of items to return. Use this token to get the
+	// next set of results.
+	NextToken *string `type:"string"`
+
+	// Information about shifts that meet the filter criteria.
+	RotationShifts []*RotationShift `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListRotationShiftsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListRotationShiftsOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListRotationShiftsOutput) SetNextToken(v string) *ListRotationShiftsOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetRotationShifts sets the RotationShifts field's value.
+func (s *ListRotationShiftsOutput) SetRotationShifts(v []*RotationShift) *ListRotationShiftsOutput {
+	s.RotationShifts = v
+	return s
+}
+
+type ListRotationsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The maximum number of items to return for this call. The call also returns
+	// a token that you can specify in a subsequent call to get the next set of
+	// results.
+	MaxResults *int64 `type:"integer"`
+
+	// A token to start the list. Use this token to get the next set of results.
+	NextToken *string `type:"string"`
+
+	// A filter to include rotations in list results based on their common prefix.
+	// For example, entering prod returns a list of all rotation names that begin
+	// with prod, such as production and prod-1.
+	RotationNamePrefix *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListRotationsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListRotationsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListRotationsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListRotationsInput"}
+	if s.RotationNamePrefix != nil && len(*s.RotationNamePrefix) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RotationNamePrefix", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListRotationsInput) SetMaxResults(v int64) *ListRotationsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListRotationsInput) SetNextToken(v string) *ListRotationsInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetRotationNamePrefix sets the RotationNamePrefix field's value.
+func (s *ListRotationsInput) SetRotationNamePrefix(v string) *ListRotationsInput {
+	s.RotationNamePrefix = &v
+	return s
+}
+
+type ListRotationsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The token for the next set of items to return. Use this token to get the
+	// next set of results.
+	NextToken *string `type:"string"`
+
+	// Information about rotations that meet the filter criteria.
+	//
+	// Rotations is a required field
+	Rotations []*Rotation `type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListRotationsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListRotationsOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListRotationsOutput) SetNextToken(v string) *ListRotationsOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetRotations sets the Rotations field's value.
+func (s *ListRotationsOutput) SetRotations(v []*Rotation) *ListRotationsOutput {
+	s.Rotations = v
+	return s
+}
+
 type ListTagsForResourceInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5828,6 +8843,75 @@ func (s ListTagsForResourceOutput) GoString() string {
 // SetTags sets the Tags field's value.
 func (s *ListTagsForResourceOutput) SetTags(v []*Tag) *ListTagsForResourceOutput {
 	s.Tags = v
+	return s
+}
+
+// Information about on-call rotations that recur monthly.
+type MonthlySetting struct {
+	_ struct{} `type:"structure"`
+
+	// The day of the month when monthly recurring on-call rotations begin.
+	//
+	// DayOfMonth is a required field
+	DayOfMonth *int64 `min:"1" type:"integer" required:"true"`
+
+	// The time of day when a monthly recurring on-call shift rotation begins.
+	//
+	// HandOffTime is a required field
+	HandOffTime *HandOffTime `type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s MonthlySetting) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s MonthlySetting) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *MonthlySetting) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "MonthlySetting"}
+	if s.DayOfMonth == nil {
+		invalidParams.Add(request.NewErrParamRequired("DayOfMonth"))
+	}
+	if s.DayOfMonth != nil && *s.DayOfMonth < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("DayOfMonth", 1))
+	}
+	if s.HandOffTime == nil {
+		invalidParams.Add(request.NewErrParamRequired("HandOffTime"))
+	}
+	if s.HandOffTime != nil {
+		if err := s.HandOffTime.Validate(); err != nil {
+			invalidParams.AddNested("HandOffTime", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDayOfMonth sets the DayOfMonth field's value.
+func (s *MonthlySetting) SetDayOfMonth(v int64) *MonthlySetting {
+	s.DayOfMonth = &v
+	return s
+}
+
+// SetHandOffTime sets the HandOffTime field's value.
+func (s *MonthlySetting) SetHandOffTime(v *HandOffTime) *MonthlySetting {
+	s.HandOffTime = v
 	return s
 }
 
@@ -5934,16 +9018,18 @@ func (s *Page) SetSentTime(v time.Time) *Page {
 	return s
 }
 
-// The stages that an escalation plan or engagement plan engages contacts and
-// contact methods in.
+// Information about the stages and on-call rotation teams associated with an
+// escalation plan or engagement plan.
 type Plan struct {
 	_ struct{} `type:"structure"`
 
+	// The Amazon Resource Names (ARNs) of the on-call rotations associated with
+	// the plan.
+	RotationIds []*string `type:"list"`
+
 	// A list of stages that the escalation plan or engagement plan uses to engage
 	// contacts and contact methods.
-	//
-	// Stages is a required field
-	Stages []*Stage `type:"list" required:"true"`
+	Stages []*Stage `type:"list"`
 }
 
 // String returns the string representation.
@@ -5967,9 +9053,6 @@ func (s Plan) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *Plan) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "Plan"}
-	if s.Stages == nil {
-		invalidParams.Add(request.NewErrParamRequired("Stages"))
-	}
 	if s.Stages != nil {
 		for i, v := range s.Stages {
 			if v == nil {
@@ -5987,9 +9070,65 @@ func (s *Plan) Validate() error {
 	return nil
 }
 
+// SetRotationIds sets the RotationIds field's value.
+func (s *Plan) SetRotationIds(v []*string) *Plan {
+	s.RotationIds = v
+	return s
+}
+
 // SetStages sets the Stages field's value.
 func (s *Plan) SetStages(v []*Stage) *Plan {
 	s.Stages = v
+	return s
+}
+
+// Information about contacts and times that an on-call override replaces.
+type PreviewOverride struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the time a rotation override would end.
+	EndTime *time.Time `type:"timestamp"`
+
+	// Information about contacts to add to an on-call rotation override.
+	NewMembers []*string `type:"list"`
+
+	// Information about the time a rotation override would begin.
+	StartTime *time.Time `type:"timestamp"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PreviewOverride) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PreviewOverride) GoString() string {
+	return s.String()
+}
+
+// SetEndTime sets the EndTime field's value.
+func (s *PreviewOverride) SetEndTime(v time.Time) *PreviewOverride {
+	s.EndTime = &v
+	return s
+}
+
+// SetNewMembers sets the NewMembers field's value.
+func (s *PreviewOverride) SetNewMembers(v []*string) *PreviewOverride {
+	s.NewMembers = v
+	return s
+}
+
+// SetStartTime sets the StartTime field's value.
+func (s *PreviewOverride) SetStartTime(v time.Time) *PreviewOverride {
+	s.StartTime = &v
 	return s
 }
 
@@ -6144,6 +9283,203 @@ func (s *Receipt) SetReceiptType(v string) *Receipt {
 	return s
 }
 
+// Information about when an on-call rotation is in effect and how long the
+// rotation period lasts.
+type RecurrenceSettings struct {
+	_ struct{} `type:"structure"`
+
+	// Information about on-call rotations that recur daily.
+	DailySettings []*HandOffTime `type:"list"`
+
+	// Information about on-call rotations that recur monthly.
+	MonthlySettings []*MonthlySetting `type:"list"`
+
+	// The number of contacts, or shift team members designated to be on call concurrently
+	// during a shift. For example, in an on-call schedule containing ten contacts,
+	// a value of 2 designates that two of them are on call at any given time.
+	//
+	// NumberOfOnCalls is a required field
+	NumberOfOnCalls *int64 `min:"1" type:"integer" required:"true"`
+
+	// The number of days, weeks, or months a single rotation lasts.
+	//
+	// RecurrenceMultiplier is a required field
+	RecurrenceMultiplier *int64 `min:"1" type:"integer" required:"true"`
+
+	// Information about the days of the week included in on-call rotation coverage.
+	ShiftCoverages map[string][]*CoverageTime `type:"map"`
+
+	// Information about on-call rotations that recur weekly.
+	WeeklySettings []*WeeklySetting `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RecurrenceSettings) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RecurrenceSettings) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *RecurrenceSettings) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "RecurrenceSettings"}
+	if s.NumberOfOnCalls == nil {
+		invalidParams.Add(request.NewErrParamRequired("NumberOfOnCalls"))
+	}
+	if s.NumberOfOnCalls != nil && *s.NumberOfOnCalls < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("NumberOfOnCalls", 1))
+	}
+	if s.RecurrenceMultiplier == nil {
+		invalidParams.Add(request.NewErrParamRequired("RecurrenceMultiplier"))
+	}
+	if s.RecurrenceMultiplier != nil && *s.RecurrenceMultiplier < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("RecurrenceMultiplier", 1))
+	}
+	if s.DailySettings != nil {
+		for i, v := range s.DailySettings {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "DailySettings", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.MonthlySettings != nil {
+		for i, v := range s.MonthlySettings {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "MonthlySettings", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.WeeklySettings != nil {
+		for i, v := range s.WeeklySettings {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "WeeklySettings", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDailySettings sets the DailySettings field's value.
+func (s *RecurrenceSettings) SetDailySettings(v []*HandOffTime) *RecurrenceSettings {
+	s.DailySettings = v
+	return s
+}
+
+// SetMonthlySettings sets the MonthlySettings field's value.
+func (s *RecurrenceSettings) SetMonthlySettings(v []*MonthlySetting) *RecurrenceSettings {
+	s.MonthlySettings = v
+	return s
+}
+
+// SetNumberOfOnCalls sets the NumberOfOnCalls field's value.
+func (s *RecurrenceSettings) SetNumberOfOnCalls(v int64) *RecurrenceSettings {
+	s.NumberOfOnCalls = &v
+	return s
+}
+
+// SetRecurrenceMultiplier sets the RecurrenceMultiplier field's value.
+func (s *RecurrenceSettings) SetRecurrenceMultiplier(v int64) *RecurrenceSettings {
+	s.RecurrenceMultiplier = &v
+	return s
+}
+
+// SetShiftCoverages sets the ShiftCoverages field's value.
+func (s *RecurrenceSettings) SetShiftCoverages(v map[string][]*CoverageTime) *RecurrenceSettings {
+	s.ShiftCoverages = v
+	return s
+}
+
+// SetWeeklySettings sets the WeeklySettings field's value.
+func (s *RecurrenceSettings) SetWeeklySettings(v []*WeeklySetting) *RecurrenceSettings {
+	s.WeeklySettings = v
+	return s
+}
+
+// Information about the engagement resolution steps. The resolution starts
+// from the first contact, which can be an escalation plan, then resolves to
+// an on-call rotation, and finally to a personal contact.
+//
+// The ResolutionContact structure describes the information for each node or
+// step in that process. It contains information about different contact types,
+// such as the escalation, rotation, and personal contacts.
+type ResolutionContact struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of a contact in the engagement resolution
+	// process.
+	//
+	// ContactArn is a required field
+	ContactArn *string `min:"1" type:"string" required:"true"`
+
+	// The stage in the escalation plan that resolves to this contact.
+	StageIndex *int64 `type:"integer"`
+
+	// The type of contact for a resolution step.
+	//
+	// Type is a required field
+	Type *string `type:"string" required:"true" enum:"ContactType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResolutionContact) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResolutionContact) GoString() string {
+	return s.String()
+}
+
+// SetContactArn sets the ContactArn field's value.
+func (s *ResolutionContact) SetContactArn(v string) *ResolutionContact {
+	s.ContactArn = &v
+	return s
+}
+
+// SetStageIndex sets the StageIndex field's value.
+func (s *ResolutionContact) SetStageIndex(v int64) *ResolutionContact {
+	s.StageIndex = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *ResolutionContact) SetType(v string) *ResolutionContact {
+	s.Type = &v
+	return s
+}
+
 // Request references a resource that doesn't exist.
 type ResourceNotFoundException struct {
 	_            struct{}                  `type:"structure"`
@@ -6216,6 +9552,243 @@ func (s *ResourceNotFoundException) StatusCode() int {
 // RequestID returns the service's response RequestID for request.
 func (s *ResourceNotFoundException) RequestID() string {
 	return s.RespMetadata.RequestID
+}
+
+// Information about a rotation in an on-call schedule.
+type Rotation struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Names (ARNs) of the contacts assigned to the rotation
+	// team.
+	ContactIds []*string `type:"list"`
+
+	// The name of the rotation.
+	//
+	// Name is a required field
+	Name *string `min:"1" type:"string" required:"true"`
+
+	// Information about when an on-call rotation is in effect and how long the
+	// rotation period lasts.
+	Recurrence *RecurrenceSettings `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the rotation.
+	//
+	// RotationArn is a required field
+	RotationArn *string `min:"1" type:"string" required:"true"`
+
+	// The date and time the rotation becomes active.
+	StartTime *time.Time `type:"timestamp"`
+
+	// The time zone the rotation’s activity is based on, in Internet Assigned
+	// Numbers Authority (IANA) format. For example: "America/Los_Angeles", "UTC",
+	// or "Asia/Seoul".
+	TimeZoneId *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Rotation) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Rotation) GoString() string {
+	return s.String()
+}
+
+// SetContactIds sets the ContactIds field's value.
+func (s *Rotation) SetContactIds(v []*string) *Rotation {
+	s.ContactIds = v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *Rotation) SetName(v string) *Rotation {
+	s.Name = &v
+	return s
+}
+
+// SetRecurrence sets the Recurrence field's value.
+func (s *Rotation) SetRecurrence(v *RecurrenceSettings) *Rotation {
+	s.Recurrence = v
+	return s
+}
+
+// SetRotationArn sets the RotationArn field's value.
+func (s *Rotation) SetRotationArn(v string) *Rotation {
+	s.RotationArn = &v
+	return s
+}
+
+// SetStartTime sets the StartTime field's value.
+func (s *Rotation) SetStartTime(v time.Time) *Rotation {
+	s.StartTime = &v
+	return s
+}
+
+// SetTimeZoneId sets the TimeZoneId field's value.
+func (s *Rotation) SetTimeZoneId(v string) *Rotation {
+	s.TimeZoneId = &v
+	return s
+}
+
+// Information about an override specified for an on-call rotation.
+type RotationOverride struct {
+	_ struct{} `type:"structure"`
+
+	// The time a rotation override was created.
+	//
+	// CreateTime is a required field
+	CreateTime *time.Time `type:"timestamp" required:"true"`
+
+	// The time a rotation override ends.
+	//
+	// EndTime is a required field
+	EndTime *time.Time `type:"timestamp" required:"true"`
+
+	// The Amazon Resource Names (ARNs) of the contacts assigned to the override
+	// of the on-call rotation.
+	//
+	// NewContactIds is a required field
+	NewContactIds []*string `type:"list" required:"true"`
+
+	// The Amazon Resource Name (ARN) of the override to an on-call rotation.
+	//
+	// RotationOverrideId is a required field
+	RotationOverrideId *string `min:"36" type:"string" required:"true"`
+
+	// The time a rotation override begins.
+	//
+	// StartTime is a required field
+	StartTime *time.Time `type:"timestamp" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RotationOverride) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RotationOverride) GoString() string {
+	return s.String()
+}
+
+// SetCreateTime sets the CreateTime field's value.
+func (s *RotationOverride) SetCreateTime(v time.Time) *RotationOverride {
+	s.CreateTime = &v
+	return s
+}
+
+// SetEndTime sets the EndTime field's value.
+func (s *RotationOverride) SetEndTime(v time.Time) *RotationOverride {
+	s.EndTime = &v
+	return s
+}
+
+// SetNewContactIds sets the NewContactIds field's value.
+func (s *RotationOverride) SetNewContactIds(v []*string) *RotationOverride {
+	s.NewContactIds = v
+	return s
+}
+
+// SetRotationOverrideId sets the RotationOverrideId field's value.
+func (s *RotationOverride) SetRotationOverrideId(v string) *RotationOverride {
+	s.RotationOverrideId = &v
+	return s
+}
+
+// SetStartTime sets the StartTime field's value.
+func (s *RotationOverride) SetStartTime(v time.Time) *RotationOverride {
+	s.StartTime = &v
+	return s
+}
+
+// Information about a shift that belongs to an on-call rotation.
+type RotationShift struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Names (ARNs) of the contacts who are part of the shift
+	// rotation.
+	ContactIds []*string `type:"list"`
+
+	// The time a shift rotation ends.
+	//
+	// EndTime is a required field
+	EndTime *time.Time `type:"timestamp" required:"true"`
+
+	// Additional information about an on-call rotation shift.
+	ShiftDetails *ShiftDetails `type:"structure"`
+
+	// The time a shift rotation begins.
+	//
+	// StartTime is a required field
+	StartTime *time.Time `type:"timestamp" required:"true"`
+
+	// The type of shift rotation.
+	Type *string `type:"string" enum:"ShiftType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RotationShift) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RotationShift) GoString() string {
+	return s.String()
+}
+
+// SetContactIds sets the ContactIds field's value.
+func (s *RotationShift) SetContactIds(v []*string) *RotationShift {
+	s.ContactIds = v
+	return s
+}
+
+// SetEndTime sets the EndTime field's value.
+func (s *RotationShift) SetEndTime(v time.Time) *RotationShift {
+	s.EndTime = &v
+	return s
+}
+
+// SetShiftDetails sets the ShiftDetails field's value.
+func (s *RotationShift) SetShiftDetails(v *ShiftDetails) *RotationShift {
+	s.ShiftDetails = v
+	return s
+}
+
+// SetStartTime sets the StartTime field's value.
+func (s *RotationShift) SetStartTime(v time.Time) *RotationShift {
+	s.StartTime = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *RotationShift) SetType(v string) *RotationShift {
+	s.Type = &v
+	return s
 }
 
 type SendActivationCodeInput struct {
@@ -6367,6 +9940,42 @@ func (s *ServiceQuotaExceededException) StatusCode() int {
 // RequestID returns the service's response RequestID for request.
 func (s *ServiceQuotaExceededException) RequestID() string {
 	return s.RespMetadata.RequestID
+}
+
+// Information about overrides to an on-call rotation shift.
+type ShiftDetails struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resources Names (ARNs) of the contacts who were replaced in a
+	// shift when an override was created. If the override is deleted, these contacts
+	// are restored to the shift.
+	//
+	// OverriddenContactIds is a required field
+	OverriddenContactIds []*string `type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ShiftDetails) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ShiftDetails) GoString() string {
+	return s.String()
+}
+
+// SetOverriddenContactIds sets the OverriddenContactIds field's value.
+func (s *ShiftDetails) SetOverriddenContactIds(v []*string) *ShiftDetails {
+	s.OverriddenContactIds = v
+	return s
 }
 
 // A set amount of time that an escalation plan or engagement plan engages the
@@ -7306,6 +10915,141 @@ func (s UpdateContactOutput) GoString() string {
 	return s.String()
 }
 
+type UpdateRotationInput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Names (ARNs) of the contacts to include in the updated
+	// rotation.
+	//
+	// The order in which you list the contacts is their shift order in the rotation
+	// schedule.
+	ContactIds []*string `min:"1" type:"list"`
+
+	// Information about how long the updated rotation lasts before restarting at
+	// the beginning of the shift order.
+	//
+	// Recurrence is a required field
+	Recurrence *RecurrenceSettings `type:"structure" required:"true"`
+
+	// The Amazon Resource Name (ARN) of the rotation to update.
+	//
+	// RotationId is a required field
+	RotationId *string `min:"1" type:"string" required:"true"`
+
+	// The date and time the rotation goes into effect.
+	StartTime *time.Time `type:"timestamp"`
+
+	// The time zone to base the updated rotation’s activity on, in Internet Assigned
+	// Numbers Authority (IANA) format. For example: "America/Los_Angeles", "UTC",
+	// or "Asia/Seoul". For more information, see the Time Zone Database (https://www.iana.org/time-zones)
+	// on the IANA website.
+	//
+	// Designators for time zones that don’t support Daylight Savings Time Rules,
+	// such as Pacific Standard Time (PST) and Pacific Daylight Time (PDT), aren't
+	// supported.
+	TimeZoneId *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateRotationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateRotationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdateRotationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdateRotationInput"}
+	if s.ContactIds != nil && len(s.ContactIds) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ContactIds", 1))
+	}
+	if s.Recurrence == nil {
+		invalidParams.Add(request.NewErrParamRequired("Recurrence"))
+	}
+	if s.RotationId == nil {
+		invalidParams.Add(request.NewErrParamRequired("RotationId"))
+	}
+	if s.RotationId != nil && len(*s.RotationId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RotationId", 1))
+	}
+	if s.TimeZoneId != nil && len(*s.TimeZoneId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("TimeZoneId", 1))
+	}
+	if s.Recurrence != nil {
+		if err := s.Recurrence.Validate(); err != nil {
+			invalidParams.AddNested("Recurrence", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetContactIds sets the ContactIds field's value.
+func (s *UpdateRotationInput) SetContactIds(v []*string) *UpdateRotationInput {
+	s.ContactIds = v
+	return s
+}
+
+// SetRecurrence sets the Recurrence field's value.
+func (s *UpdateRotationInput) SetRecurrence(v *RecurrenceSettings) *UpdateRotationInput {
+	s.Recurrence = v
+	return s
+}
+
+// SetRotationId sets the RotationId field's value.
+func (s *UpdateRotationInput) SetRotationId(v string) *UpdateRotationInput {
+	s.RotationId = &v
+	return s
+}
+
+// SetStartTime sets the StartTime field's value.
+func (s *UpdateRotationInput) SetStartTime(v time.Time) *UpdateRotationInput {
+	s.StartTime = &v
+	return s
+}
+
+// SetTimeZoneId sets the TimeZoneId field's value.
+func (s *UpdateRotationInput) SetTimeZoneId(v string) *UpdateRotationInput {
+	s.TimeZoneId = &v
+	return s
+}
+
+type UpdateRotationOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateRotationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateRotationOutput) GoString() string {
+	return s.String()
+}
+
 // The input fails to satisfy the constraints specified by an Amazon Web Services
 // service.
 type ValidationException struct {
@@ -7422,6 +11166,72 @@ func (s *ValidationExceptionField) SetName(v string) *ValidationExceptionField {
 	return s
 }
 
+// Information about rotations that recur weekly.
+type WeeklySetting struct {
+	_ struct{} `type:"structure"`
+
+	// The day of the week when weekly recurring on-call shift rotations begins.
+	//
+	// DayOfWeek is a required field
+	DayOfWeek *string `type:"string" required:"true" enum:"DayOfWeek"`
+
+	// The time of day when a weekly recurring on-call shift rotation begins.
+	//
+	// HandOffTime is a required field
+	HandOffTime *HandOffTime `type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s WeeklySetting) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s WeeklySetting) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *WeeklySetting) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "WeeklySetting"}
+	if s.DayOfWeek == nil {
+		invalidParams.Add(request.NewErrParamRequired("DayOfWeek"))
+	}
+	if s.HandOffTime == nil {
+		invalidParams.Add(request.NewErrParamRequired("HandOffTime"))
+	}
+	if s.HandOffTime != nil {
+		if err := s.HandOffTime.Validate(); err != nil {
+			invalidParams.AddNested("HandOffTime", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDayOfWeek sets the DayOfWeek field's value.
+func (s *WeeklySetting) SetDayOfWeek(v string) *WeeklySetting {
+	s.DayOfWeek = &v
+	return s
+}
+
+// SetHandOffTime sets the HandOffTime field's value.
+func (s *WeeklySetting) SetHandOffTime(v *HandOffTime) *WeeklySetting {
+	s.HandOffTime = v
+	return s
+}
+
 const (
 	// AcceptCodeValidationIgnore is a AcceptCodeValidation enum value
 	AcceptCodeValidationIgnore = "IGNORE"
@@ -7496,6 +11306,9 @@ const (
 
 	// ContactTypeEscalation is a ContactType enum value
 	ContactTypeEscalation = "ESCALATION"
+
+	// ContactTypeOncallSchedule is a ContactType enum value
+	ContactTypeOncallSchedule = "ONCALL_SCHEDULE"
 )
 
 // ContactType_Values returns all elements of the ContactType enum
@@ -7503,6 +11316,43 @@ func ContactType_Values() []string {
 	return []string{
 		ContactTypePersonal,
 		ContactTypeEscalation,
+		ContactTypeOncallSchedule,
+	}
+}
+
+const (
+	// DayOfWeekMon is a DayOfWeek enum value
+	DayOfWeekMon = "MON"
+
+	// DayOfWeekTue is a DayOfWeek enum value
+	DayOfWeekTue = "TUE"
+
+	// DayOfWeekWed is a DayOfWeek enum value
+	DayOfWeekWed = "WED"
+
+	// DayOfWeekThu is a DayOfWeek enum value
+	DayOfWeekThu = "THU"
+
+	// DayOfWeekFri is a DayOfWeek enum value
+	DayOfWeekFri = "FRI"
+
+	// DayOfWeekSat is a DayOfWeek enum value
+	DayOfWeekSat = "SAT"
+
+	// DayOfWeekSun is a DayOfWeek enum value
+	DayOfWeekSun = "SUN"
+)
+
+// DayOfWeek_Values returns all elements of the DayOfWeek enum
+func DayOfWeek_Values() []string {
+	return []string{
+		DayOfWeekMon,
+		DayOfWeekTue,
+		DayOfWeekWed,
+		DayOfWeekThu,
+		DayOfWeekFri,
+		DayOfWeekSat,
+		DayOfWeekSun,
 	}
 }
 
@@ -7531,6 +11381,22 @@ func ReceiptType_Values() []string {
 		ReceiptTypeRead,
 		ReceiptTypeSent,
 		ReceiptTypeStop,
+	}
+}
+
+const (
+	// ShiftTypeRegular is a ShiftType enum value
+	ShiftTypeRegular = "REGULAR"
+
+	// ShiftTypeOverridden is a ShiftType enum value
+	ShiftTypeOverridden = "OVERRIDDEN"
+)
+
+// ShiftType_Values returns all elements of the ShiftType enum
+func ShiftType_Values() []string {
+	return []string{
+		ShiftTypeRegular,
+		ShiftTypeOverridden,
 	}
 }
 

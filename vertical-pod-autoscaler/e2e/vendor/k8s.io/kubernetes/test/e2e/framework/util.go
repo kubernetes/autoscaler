@@ -36,6 +36,7 @@ import (
 	"github.com/onsi/gomega"
 
 	v1 "k8s.io/api/core/v1"
+	discoveryv1 "k8s.io/api/discovery/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
@@ -146,7 +147,7 @@ var (
 var RunID = uuid.NewUUID()
 
 // CreateTestingNSFn is a func that is responsible for creating namespace used for executing e2e tests.
-type CreateTestingNSFn func(baseName string, c clientset.Interface, labels map[string]string) (*v1.Namespace, error)
+type CreateTestingNSFn func(ctx context.Context, baseName string, c clientset.Interface, labels map[string]string) (*v1.Namespace, error)
 
 // APIAddress returns a address of an instance.
 func APIAddress() string {
@@ -198,9 +199,9 @@ func NodeOSArchIs(supportedNodeOsArchs ...string) bool {
 // DeleteNamespaces deletes all namespaces that match the given delete and skip filters.
 // Filter is by simple strings.Contains; first skip filter, then delete filter.
 // Returns the list of deleted namespaces or an error.
-func DeleteNamespaces(c clientset.Interface, deleteFilter, skipFilter []string) ([]string, error) {
+func DeleteNamespaces(ctx context.Context, c clientset.Interface, deleteFilter, skipFilter []string) ([]string, error) {
 	ginkgo.By("Deleting namespaces")
-	nsList, err := c.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{})
+	nsList, err := c.CoreV1().Namespaces().List(ctx, metav1.ListOptions{})
 	ExpectNoError(err, "Failed to get namespace list")
 	var deleted []string
 	var wg sync.WaitGroup
@@ -228,7 +229,7 @@ OUTER:
 		go func(nsName string) {
 			defer wg.Done()
 			defer ginkgo.GinkgoRecover()
-			gomega.Expect(c.CoreV1().Namespaces().Delete(context.TODO(), nsName, metav1.DeleteOptions{})).To(gomega.Succeed())
+			gomega.Expect(c.CoreV1().Namespaces().Delete(ctx, nsName, metav1.DeleteOptions{})).To(gomega.Succeed())
 			Logf("namespace : %v api call to delete is complete ", nsName)
 		}(item.Name)
 	}
@@ -237,16 +238,16 @@ OUTER:
 }
 
 // WaitForNamespacesDeleted waits for the namespaces to be deleted.
-func WaitForNamespacesDeleted(c clientset.Interface, namespaces []string, timeout time.Duration) error {
+func WaitForNamespacesDeleted(ctx context.Context, c clientset.Interface, namespaces []string, timeout time.Duration) error {
 	ginkgo.By(fmt.Sprintf("Waiting for namespaces %+v to vanish", namespaces))
 	nsMap := map[string]bool{}
 	for _, ns := range namespaces {
 		nsMap[ns] = true
 	}
 	//Now POLL until all namespaces have been eradicated.
-	return wait.Poll(2*time.Second, timeout,
-		func() (bool, error) {
-			nsList, err := c.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{})
+	return wait.PollWithContext(ctx, 2*time.Second, timeout,
+		func(ctx context.Context) (bool, error) {
+			nsList, err := c.CoreV1().Namespaces().List(ctx, metav1.ListOptions{})
 			if err != nil {
 				return false, err
 			}
@@ -259,20 +260,20 @@ func WaitForNamespacesDeleted(c clientset.Interface, namespaces []string, timeou
 		})
 }
 
-func waitForConfigMapInNamespace(c clientset.Interface, ns, name string, timeout time.Duration) error {
+func waitForConfigMapInNamespace(ctx context.Context, c clientset.Interface, ns, name string, timeout time.Duration) error {
 	fieldSelector := fields.OneTermEqualSelector("metadata.name", name).String()
+	ctx, cancel := watchtools.ContextWithOptionalTimeout(ctx, timeout)
+	defer cancel()
 	lw := &cache.ListWatch{
 		ListFunc: func(options metav1.ListOptions) (object runtime.Object, e error) {
 			options.FieldSelector = fieldSelector
-			return c.CoreV1().ConfigMaps(ns).List(context.TODO(), options)
+			return c.CoreV1().ConfigMaps(ns).List(ctx, options)
 		},
 		WatchFunc: func(options metav1.ListOptions) (i watch.Interface, e error) {
 			options.FieldSelector = fieldSelector
-			return c.CoreV1().ConfigMaps(ns).Watch(context.TODO(), options)
+			return c.CoreV1().ConfigMaps(ns).Watch(ctx, options)
 		},
 	}
-	ctx, cancel := watchtools.ContextWithOptionalTimeout(context.Background(), timeout)
-	defer cancel()
 	_, err := watchtools.UntilWithSync(ctx, lw, &v1.ConfigMap{}, nil, func(event watch.Event) (bool, error) {
 		switch event.Type {
 		case watch.Deleted:
@@ -285,20 +286,20 @@ func waitForConfigMapInNamespace(c clientset.Interface, ns, name string, timeout
 	return err
 }
 
-func waitForServiceAccountInNamespace(c clientset.Interface, ns, serviceAccountName string, timeout time.Duration) error {
+func waitForServiceAccountInNamespace(ctx context.Context, c clientset.Interface, ns, serviceAccountName string, timeout time.Duration) error {
 	fieldSelector := fields.OneTermEqualSelector("metadata.name", serviceAccountName).String()
+	ctx, cancel := watchtools.ContextWithOptionalTimeout(ctx, timeout)
+	defer cancel()
 	lw := &cache.ListWatch{
 		ListFunc: func(options metav1.ListOptions) (object runtime.Object, e error) {
 			options.FieldSelector = fieldSelector
-			return c.CoreV1().ServiceAccounts(ns).List(context.TODO(), options)
+			return c.CoreV1().ServiceAccounts(ns).List(ctx, options)
 		},
 		WatchFunc: func(options metav1.ListOptions) (i watch.Interface, e error) {
 			options.FieldSelector = fieldSelector
-			return c.CoreV1().ServiceAccounts(ns).Watch(context.TODO(), options)
+			return c.CoreV1().ServiceAccounts(ns).Watch(ctx, options)
 		},
 	}
-	ctx, cancel := watchtools.ContextWithOptionalTimeout(context.Background(), timeout)
-	defer cancel()
 	_, err := watchtools.UntilWithSync(ctx, lw, &v1.ServiceAccount{}, nil, func(event watch.Event) (bool, error) {
 		switch event.Type {
 		case watch.Deleted:
@@ -317,20 +318,20 @@ func waitForServiceAccountInNamespace(c clientset.Interface, ns, serviceAccountN
 // WaitForDefaultServiceAccountInNamespace waits for the default service account to be provisioned
 // the default service account is what is associated with pods when they do not specify a service account
 // as a result, pods are not able to be provisioned in a namespace until the service account is provisioned
-func WaitForDefaultServiceAccountInNamespace(c clientset.Interface, namespace string) error {
-	return waitForServiceAccountInNamespace(c, namespace, "default", ServiceAccountProvisionTimeout)
+func WaitForDefaultServiceAccountInNamespace(ctx context.Context, c clientset.Interface, namespace string) error {
+	return waitForServiceAccountInNamespace(ctx, c, namespace, defaultServiceAccountName, ServiceAccountProvisionTimeout)
 }
 
 // WaitForKubeRootCAInNamespace waits for the configmap kube-root-ca.crt containing the service account
 // CA trust bundle to be provisioned in the specified namespace so that pods do not have to retry mounting
 // the config map (which creates noise that hides other issues in the Kubelet).
-func WaitForKubeRootCAInNamespace(c clientset.Interface, namespace string) error {
-	return waitForConfigMapInNamespace(c, namespace, "kube-root-ca.crt", ServiceAccountProvisionTimeout)
+func WaitForKubeRootCAInNamespace(ctx context.Context, c clientset.Interface, namespace string) error {
+	return waitForConfigMapInNamespace(ctx, c, namespace, "kube-root-ca.crt", ServiceAccountProvisionTimeout)
 }
 
 // CreateTestingNS should be used by every test, note that we append a common prefix to the provided test name.
 // Please see NewFramework instead of using this directly.
-func CreateTestingNS(baseName string, c clientset.Interface, labels map[string]string) (*v1.Namespace, error) {
+func CreateTestingNS(ctx context.Context, baseName string, c clientset.Interface, labels map[string]string) (*v1.Namespace, error) {
 	if labels == nil {
 		labels = map[string]string{}
 	}
@@ -351,9 +352,9 @@ func CreateTestingNS(baseName string, c clientset.Interface, labels map[string]s
 	}
 	// Be robust about making the namespace creation call.
 	var got *v1.Namespace
-	if err := wait.PollImmediate(Poll, 30*time.Second, func() (bool, error) {
+	if err := wait.PollImmediateWithContext(ctx, Poll, 30*time.Second, func(ctx context.Context) (bool, error) {
 		var err error
-		got, err = c.CoreV1().Namespaces().Create(context.TODO(), namespaceObj, metav1.CreateOptions{})
+		got, err = c.CoreV1().Namespaces().Create(ctx, namespaceObj, metav1.CreateOptions{})
 		if err != nil {
 			if apierrors.IsAlreadyExists(err) {
 				// regenerate on conflict
@@ -370,7 +371,7 @@ func CreateTestingNS(baseName string, c clientset.Interface, labels map[string]s
 	}
 
 	if TestContext.VerifyServiceAccount {
-		if err := WaitForDefaultServiceAccountInNamespace(c, got.Name); err != nil {
+		if err := WaitForDefaultServiceAccountInNamespace(ctx, c, got.Name); err != nil {
 			// Even if we fail to create serviceAccount in the namespace,
 			// we have successfully create a namespace.
 			// So, return the created namespace.
@@ -382,7 +383,7 @@ func CreateTestingNS(baseName string, c clientset.Interface, labels map[string]s
 
 // CheckTestingNSDeletedExcept checks whether all e2e based existing namespaces are in the Terminating state
 // and waits until they are finally deleted. It ignores namespace skip.
-func CheckTestingNSDeletedExcept(c clientset.Interface, skip string) error {
+func CheckTestingNSDeletedExcept(ctx context.Context, c clientset.Interface, skip string) error {
 	// TODO: Since we don't have support for bulk resource deletion in the API,
 	// while deleting a namespace we are deleting all objects from that namespace
 	// one by one (one deletion == one API call). This basically exposes us to
@@ -398,7 +399,7 @@ func CheckTestingNSDeletedExcept(c clientset.Interface, skip string) error {
 
 	Logf("Waiting for terminating namespaces to be deleted...")
 	for start := time.Now(); time.Since(start) < timeout; time.Sleep(15 * time.Second) {
-		namespaces, err := c.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{})
+		namespaces, err := c.CoreV1().Namespaces().List(ctx, metav1.ListOptions{})
 		if err != nil {
 			Logf("Listing namespaces failed: %v", err)
 			continue
@@ -420,20 +421,44 @@ func CheckTestingNSDeletedExcept(c clientset.Interface, skip string) error {
 }
 
 // WaitForServiceEndpointsNum waits until the amount of endpoints that implement service to expectNum.
-func WaitForServiceEndpointsNum(c clientset.Interface, namespace, serviceName string, expectNum int, interval, timeout time.Duration) error {
-	return wait.Poll(interval, timeout, func() (bool, error) {
+// Some components use EndpointSlices other Endpoints, we must verify that both objects meet the requirements.
+func WaitForServiceEndpointsNum(ctx context.Context, c clientset.Interface, namespace, serviceName string, expectNum int, interval, timeout time.Duration) error {
+	return wait.PollWithContext(ctx, interval, timeout, func(ctx context.Context) (bool, error) {
 		Logf("Waiting for amount of service:%s endpoints to be %d", serviceName, expectNum)
-		list, err := c.CoreV1().Endpoints(namespace).List(context.TODO(), metav1.ListOptions{})
+		endpoint, err := c.CoreV1().Endpoints(namespace).Get(ctx, serviceName, metav1.GetOptions{})
 		if err != nil {
-			return false, err
+			Logf("Unexpected error trying to get Endpoints for %s : %v", serviceName, err)
+			return false, nil
 		}
 
-		for _, e := range list.Items {
-			if e.Name == serviceName && countEndpointsNum(&e) == expectNum {
-				return true, nil
-			}
+		if countEndpointsNum(endpoint) != expectNum {
+			Logf("Unexpected number of Endpoints, got %d, expected %d", countEndpointsNum(endpoint), expectNum)
+			return false, nil
 		}
-		return false, nil
+
+		// Endpoints are single family but EndpointSlices can have dual stack addresses,
+		// so we verify the number of addresses that matches the same family on both.
+		addressType := discoveryv1.AddressTypeIPv4
+		if isIPv6Endpoint(endpoint) {
+			addressType = discoveryv1.AddressTypeIPv6
+		}
+
+		esList, err := c.DiscoveryV1().EndpointSlices(namespace).List(ctx, metav1.ListOptions{LabelSelector: fmt.Sprintf("%s=%s", discoveryv1.LabelServiceName, serviceName)})
+		if err != nil {
+			Logf("Unexpected error trying to get EndpointSlices for %s : %v", serviceName, err)
+			return false, nil
+		}
+
+		if len(esList.Items) == 0 {
+			Logf("Waiting for at least 1 EndpointSlice to exist")
+			return false, nil
+		}
+
+		if countEndpointsSlicesNum(esList, addressType) != expectNum {
+			Logf("Unexpected number of Endpoints on Slices, got %d, expected %d", countEndpointsSlicesNum(esList, addressType), expectNum)
+			return false, nil
+		}
+		return true, nil
 	})
 }
 
@@ -443,6 +468,37 @@ func countEndpointsNum(e *v1.Endpoints) int {
 		num += len(sub.Addresses)
 	}
 	return num
+}
+
+// isIPv6Endpoint returns true if the Endpoint uses IPv6 addresses
+func isIPv6Endpoint(e *v1.Endpoints) bool {
+	for _, sub := range e.Subsets {
+		for _, addr := range sub.Addresses {
+			if len(addr.IP) == 0 {
+				continue
+			}
+			// Endpoints are single family, so it is enough to check only one address
+			return netutils.IsIPv6String(addr.IP)
+		}
+	}
+	// default to IPv4 an Endpoint without IP addresses
+	return false
+}
+
+func countEndpointsSlicesNum(epList *discoveryv1.EndpointSliceList, addressType discoveryv1.AddressType) int {
+	// EndpointSlices can contain the same address on multiple Slices
+	addresses := sets.Set[string]{}
+	for _, epSlice := range epList.Items {
+		if epSlice.AddressType != addressType {
+			continue
+		}
+		for _, ep := range epSlice.Endpoints {
+			if len(ep.Addresses) > 0 {
+				addresses.Insert(ep.Addresses[0])
+			}
+		}
+	}
+	return addresses.Len()
 }
 
 // restclientConfig returns a config holds the information needed to build connection to kubernetes clusters.
@@ -547,8 +603,8 @@ func TryKill(cmd *exec.Cmd) {
 
 // EnsureLoadBalancerResourcesDeleted ensures that cloud load balancer resources that were created
 // are actually cleaned up.  Currently only implemented for GCE/GKE.
-func EnsureLoadBalancerResourcesDeleted(ip, portRange string) error {
-	return TestContext.CloudConfig.Provider.EnsureLoadBalancerResourcesDeleted(ip, portRange)
+func EnsureLoadBalancerResourcesDeleted(ctx context.Context, ip, portRange string) error {
+	return TestContext.CloudConfig.Provider.EnsureLoadBalancerResourcesDeleted(ctx, ip, portRange)
 }
 
 // CoreDump SSHs to the master and all nodes and dumps their logs into dir.
@@ -613,11 +669,11 @@ func RunCmdEnv(env []string, command string, args ...string) (string, string, er
 
 // getControlPlaneAddresses returns the externalIP, internalIP and hostname fields of control plane nodes.
 // If any of these is unavailable, empty slices are returned.
-func getControlPlaneAddresses(c clientset.Interface) ([]string, []string, []string) {
+func getControlPlaneAddresses(ctx context.Context, c clientset.Interface) ([]string, []string, []string) {
 	var externalIPs, internalIPs, hostnames []string
 
 	// Populate the internal IPs.
-	eps, err := c.CoreV1().Endpoints(metav1.NamespaceDefault).Get(context.TODO(), "kubernetes", metav1.GetOptions{})
+	eps, err := c.CoreV1().Endpoints(metav1.NamespaceDefault).Get(ctx, "kubernetes", metav1.GetOptions{})
 	if err != nil {
 		Failf("Failed to get kubernetes endpoints: %v", err)
 	}
@@ -647,8 +703,8 @@ func getControlPlaneAddresses(c clientset.Interface) ([]string, []string, []stri
 // It may return internal and external IPs, even if we expect for
 // e.g. internal IPs to be used (issue #56787), so that we can be
 // sure to block the control plane fully during tests.
-func GetControlPlaneAddresses(c clientset.Interface) []string {
-	externalIPs, internalIPs, _ := getControlPlaneAddresses(c)
+func GetControlPlaneAddresses(ctx context.Context, c clientset.Interface) []string {
+	externalIPs, internalIPs, _ := getControlPlaneAddresses(ctx, c)
 
 	ips := sets.NewString()
 	switch TestContext.Provider {
@@ -685,7 +741,7 @@ func PrettyPrintJSON(metrics interface{}) string {
 // WatchEventSequenceVerifier ...
 // manages a watch for a given resource, ensures that events take place in a given order, retries the test on failure
 //
-//	testContext         cancellation signal across API boundaries, e.g: context.TODO()
+//	ctx                 cancellation signal across API boundaries, e.g: context from Ginkgo
 //	dc                  sets up a client to the API
 //	resourceType        specify the type of resource
 //	namespace           select a namespace

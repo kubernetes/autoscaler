@@ -375,7 +375,7 @@ func DeployWebhookAndService(f *framework.Framework, image string, certContext *
 	framework.ExpectNoError(err, "creating service %s in namespace %s", WebhookServiceName, namespace)
 
 	ginkgo.By("Verifying the service has paired with the endpoint")
-	err = framework.WaitForServiceEndpointsNum(client, namespace, WebhookServiceName, 1, 1*time.Second, 30*time.Second)
+	err = framework.WaitForServiceEndpointsNum(context.TODO(), client, namespace, WebhookServiceName, 1, 1*time.Second, 30*time.Second)
 	framework.ExpectNoError(err, "waiting for service %s/%s have %d endpoint", namespace, WebhookServiceName, 1)
 }
 

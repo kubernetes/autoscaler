@@ -1,16 +1,6 @@
-// Copyright (c) 2020 SAP SE or an SAP affiliate company. All rights reserved. This file is licensed under the Apache Software License, v. 2 except as noted otherwise in the LICENSE file
+// SPDX-FileCopyrightText: 2024 SAP SE or an SAP affiliate company and Gardener contributors
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// SPDX-License-Identifier: Apache-2.0
 
 // WARNING!
 // IF YOU MODIFY ANY OF THE TYPES HERE COPY THEM TO ../types.go
@@ -136,10 +126,10 @@ type LastOperation struct {
 	Type MachineOperationType `json:"type,omitempty"`
 }
 
-// MachinePhase is a label for the condition of a machines at the current time.
+// MachinePhase is a label for the condition of a machine at the current time.
 type MachinePhase string
 
-// These are the valid statuses of machines.
+// These are the valid phases of machines.
 const (
 	// MachinePending means that the machine is being created
 	MachinePending MachinePhase = "Pending"
@@ -156,25 +146,25 @@ const (
 	// MachineUnknown indicates that the node is not ready at the movement
 	MachineUnknown MachinePhase = "Unknown"
 
-	// MachineFailed means operation failed leading to machine status failure
+	// MachineFailed means operation timed out
 	MachineFailed MachinePhase = "Failed"
 
-	// MachineCrashLoopBackOff means creation or deletion of the machine is failing. It means that machine object is present but there is no corresponding VM.
+	// MachineCrashLoopBackOff means machine creation is failing. It means that machine object is present but there is no corresponding VM.
 	MachineCrashLoopBackOff MachinePhase = "CrashLoopBackOff"
 )
 
-// MachineState is a current state of the machine.
+// MachineState is a current state of the operation.
 type MachineState string
 
-// These are the valid statuses of machines.
+// These are the valid states of operations performed on the machine.
 const (
-	// MachineStatePending means there are operations pending on this machine state
+	// MachineStateProcessing means operation is not yet complete
 	MachineStateProcessing MachineState = "Processing"
 
-	// MachineStateFailed means operation failed leading to machine status failure
+	// MachineStateFailed means operation failed 
 	MachineStateFailed MachineState = "Failed"
 
-	// MachineStateSuccessful indicates that the node is not ready at the moment
+	// MachineStateSuccessful means operation completed successfully 
 	MachineStateSuccessful MachineState = "Successful"
 )
 
@@ -189,7 +179,7 @@ const (
 	// MachineOperationUpdate indicates that the operation was an update
 	MachineOperationUpdate MachineOperationType = "Update"
 
-	// MachineOperationHealthCheck indicates that the operation was a create
+	// MachineOperationHealthCheck indicates that the operation was a health check of node object
 	MachineOperationHealthCheck MachineOperationType = "HealthCheck"
 
 	// MachineOperationDelete indicates that the operation was a delete

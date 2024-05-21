@@ -17,7 +17,7 @@
  * This file was copied and modified from the github.com/grpc/grpc-go project
  * https://github.com/grpc/grpc-go/blob/v1.29.x/code/code_string.go
  *
- * Modifications Copyright (c) 2020 SAP SE or an SAP affiliate company. All rights reserved.
+ * Modifications Copyright SAP SE or an SAP affiliate company and Gardener contributors
  *
  */
 
@@ -62,6 +62,8 @@ func (c Code) String() string {
 		return "DataLoss"
 	case Unauthenticated:
 		return "Unauthenticated"
+	case Uninitialized:
+		return "Uninitialized"
 	default:
 		return "Code(" + strconv.FormatInt(int64(c), 10) + ")"
 	}

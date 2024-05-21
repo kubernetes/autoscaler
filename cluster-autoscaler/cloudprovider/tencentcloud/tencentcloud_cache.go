@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2021 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import (
 	"k8s.io/klog/v2"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	as "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/tencentcloud/tencentcloud-sdk-go/tencentcloud/as/v20180419"
+	as "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/tencentcloud/tencentcloud-sdk-go/as/v20180419"
 )
 
 // TencentcloudCache is used for caching cluster resources state.
@@ -52,7 +52,7 @@ type TencentcloudCache struct {
 
 	// Cache content.
 	asgs                     map[TcRef]Asg
-	instanceRefToAsgRef      map[TcRef]TcRef
+	instanceRefToAsgRef      map[TcRef]*TcRef
 	instancesFromUnknownAsgs map[TcRef]struct{}
 	asgTargetSizeCache       map[TcRef]int64
 	instanceTypeCache        map[TcRef]string
@@ -68,7 +68,7 @@ func NewTencentcloudCache(service CloudService) *TencentcloudCache {
 	registry := &TencentcloudCache{
 		cloudService:             service,
 		asgs:                     make(map[TcRef]Asg),
-		instanceRefToAsgRef:      make(map[TcRef]TcRef),
+		instanceRefToAsgRef:      make(map[TcRef]*TcRef),
 		instancesFromUnknownAsgs: make(map[TcRef]struct{}),
 		asgTargetSizeCache:       make(map[TcRef]int64),
 		instanceTypeCache:        make(map[TcRef]string),
@@ -131,6 +131,11 @@ func (tc *TencentcloudCache) FindForInstance(instanceRef TcRef) (Asg, error) {
 	asgRef, err := tc.cloudService.GetAsgRefByInstanceRef(instanceRef)
 	if err != nil {
 		return nil, err
+	}
+
+	if asgRef == nil {
+		tc.instancesFromUnknownAsgs[instanceRef] = struct{}{}
+		return nil, nil
 	}
 
 	tc.instanceRefToAsgRef[instanceRef] = asgRef
@@ -232,14 +237,14 @@ func (tc *TencentcloudCache) InvalidateAllAsgTargetSizes() {
 
 func (tc *TencentcloudCache) removeInstancesForAsgs(asgRef TcRef) {
 	for instanceRef, instanceAsgRef := range tc.instanceRefToAsgRef {
-		if asgRef == instanceAsgRef {
+		if asgRef.ID == instanceAsgRef.ID {
 			delete(tc.instanceRefToAsgRef, instanceRef)
 		}
 	}
 }
 
-func (tc *TencentcloudCache) getAsgNoLock(asgRef TcRef) (asg Asg, found bool) {
-	asg, found = tc.asgs[asgRef]
+func (tc *TencentcloudCache) getAsgNoLock(asgRef *TcRef) (asg Asg, found bool) {
+	asg, found = tc.asgs[*asgRef]
 	return
 }
 
@@ -266,7 +271,7 @@ func (tc *TencentcloudCache) regenerateInstanceCacheForAsgNoLock(asgRef TcRef) e
 		if err != nil {
 			return err
 		}
-		tc.instanceRefToAsgRef[instanceRef] = asgRef
+		tc.instanceRefToAsgRef[instanceRef] = &asgRef
 	}
 	return nil
 }
@@ -276,7 +281,7 @@ func (tc *TencentcloudCache) RegenerateInstancesCache() error {
 	tc.cacheMutex.Lock()
 	defer tc.cacheMutex.Unlock()
 
-	tc.instanceRefToAsgRef = make(map[TcRef]TcRef)
+	tc.instanceRefToAsgRef = make(map[TcRef]*TcRef)
 	tc.instancesFromUnknownAsgs = make(map[TcRef]struct{})
 	for _, asgRef := range tc.getAsgRefs() {
 		err := tc.regenerateInstanceCacheForAsgNoLock(asgRef)
@@ -319,7 +324,12 @@ func (tc *TencentcloudCache) RegenerateAutoScalingGroupCache() error {
 		return err
 	}
 
-	klog.V(5).Infof("input %d asgIDs(%v), return %d asg", len(asgIDs), asgIDs, len(tcAsgs))
+	if len(asgIDs) != len(tcAsgs) {
+		klog.Warningf("%d scaling groups are configured, but only %d are valid", len(asgIDs), len(tcAsgs))
+		if len(tcAsgs) == 0 {
+			klog.Exit("no valid autoscaling group")
+		}
+	}
 
 	asgMap := make(map[string]as.AutoScalingGroup)
 	ascMap := make(map[string]as.LaunchConfiguration)

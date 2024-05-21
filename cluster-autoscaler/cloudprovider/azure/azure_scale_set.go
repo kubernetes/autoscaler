@@ -31,7 +31,7 @@ import (
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-03-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
 	"github.com/Azure/go-autorest/autorest/azure"
 )
 
@@ -39,6 +39,15 @@ var (
 	defaultVmssInstancesRefreshPeriod = 5 * time.Minute
 	vmssContextTimeout                = 3 * time.Minute
 	vmssSizeMutex                     sync.Mutex
+)
+
+const (
+	provisioningStateCreating  string = "Creating"
+	provisioningStateDeleting  string = "Deleting"
+	provisioningStateFailed    string = "Failed"
+	provisioningStateMigrating string = "Migrating"
+	provisioningStateSucceeded string = "Succeeded"
+	provisioningStateUpdating  string = "Updating"
 )
 
 // ScaleSet implements NodeGroup interface.
@@ -683,11 +692,11 @@ func instanceStatusFromProvisioningStateAndPowerState(resourceId string, provisi
 
 	status := &cloudprovider.InstanceStatus{}
 	switch *provisioningState {
-	case string(compute.ProvisioningStateDeleting):
+	case provisioningStateDeleting:
 		status.State = cloudprovider.InstanceDeleting
-	case string(compute.ProvisioningStateCreating):
+	case provisioningStateCreating:
 		status.State = cloudprovider.InstanceCreating
-	case string(compute.ProvisioningStateFailed):
+	case provisioningStateFailed:
 		// Provisioning can fail both during instance creation or after the instance is running.
 		// Per https://learn.microsoft.com/en-us/azure/virtual-machines/states-billing#provisioning-states,
 		// ProvisioningState represents the most recent provisioning state, therefore only report

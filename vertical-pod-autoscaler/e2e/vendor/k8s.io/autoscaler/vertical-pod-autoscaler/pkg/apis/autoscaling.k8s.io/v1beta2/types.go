@@ -39,6 +39,7 @@ type VerticalPodAutoscalerList struct {
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +kubebuilder:resource:shortName=vpa
+// +kubebuilder:subresource:status
 // +k8s:prerelease-lifecycle-gen=true
 
 // VerticalPodAutoscaler is the configuration for a vertical pod
@@ -99,7 +100,7 @@ type PodUpdatePolicy struct {
 	UpdateMode *UpdateMode `json:"updateMode,omitempty" protobuf:"bytes,1,opt,name=updateMode"`
 }
 
-// UpdateMode controls when autoscaler applies changes to the pod resoures.
+// UpdateMode controls when autoscaler applies changes to the pod resources.
 // +kubebuilder:validation:Enum=Off;Initial;Recreate;Auto
 type UpdateMode string
 

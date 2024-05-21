@@ -31,6 +31,7 @@ You should also take a look at the notes and "gotchas" for your specific cloud p
 * [HuaweiCloud](./cloudprovider/huaweicloud/README.md)
 * [IonosCloud](./cloudprovider/ionoscloud/README.md)
 * [Kamatera](./cloudprovider/kamatera/README.md)
+* [Kwok](./cloudprovider/kwok/README.md)
 * [Linode](./cloudprovider/linode/README.md)
 * [Magnum](./cloudprovider/magnum/README.md)
 * [OracleCloud](./cloudprovider/oci/README.md)
@@ -46,33 +47,34 @@ We recommend using Cluster Autoscaler with the Kubernetes control plane (previou
 
 Starting from Kubernetes 1.12, versioning scheme was changed to match Kubernetes minor releases exactly.
 
-| Kubernetes Version  | CA Version   |
-|--------|--------|
-| 1.28.X | 1.28.X |
-| 1.27.X | 1.27.X |
-| 1.26.X | 1.26.X |
-| 1.25.X | 1.25.X |
-| 1.24.X | 1.24.X |
-| 1.23.X | 1.23.X |
-| 1.22.X | 1.22.X |
-| 1.21.X | 1.21.X |
-| 1.20.X | 1.20.X |
-| 1.19.X | 1.19.X |
-| 1.18.X | 1.18.X |
-| 1.17.X | 1.17.X |
-| 1.16.X | 1.16.X |
-| 1.15.X | 1.15.X |
-| 1.14.X | 1.14.X |
-| 1.13.X | 1.13.X |
-| 1.12.X | 1.12.X |
-| 1.11.X | 1.3.X  |
-| 1.10.X | 1.2.X  |
-| 1.9.X  | 1.1.X  |
-| 1.8.X  | 1.0.X  |
-| 1.7.X  | 0.6.X  |
-| 1.6.X  | 0.5.X, 0.6.X<sup>*</sup>  |
-| 1.5.X  | 0.4.X  |
-| 1.4.X  | 0.3.X  |
+| Kubernetes Version | CA Version   |
+|--------------------|--------|
+| 1.29.X             | 1.29.X |
+| 1.28.X             | 1.28.X |
+| 1.27.X             | 1.27.X |
+| 1.26.X             | 1.26.X |
+| 1.25.X             | 1.25.X |
+| 1.24.X             | 1.24.X |
+| 1.23.X             | 1.23.X |
+| 1.22.X             | 1.22.X |
+| 1.21.X             | 1.21.X |
+| 1.20.X             | 1.20.X |
+| 1.19.X             | 1.19.X |
+| 1.18.X             | 1.18.X |
+| 1.17.X             | 1.17.X |
+| 1.16.X             | 1.16.X |
+| 1.15.X             | 1.15.X |
+| 1.14.X             | 1.14.X |
+| 1.13.X             | 1.13.X |
+| 1.12.X             | 1.12.X |
+| 1.11.X             | 1.3.X  |
+| 1.10.X             | 1.2.X  |
+| 1.9.X              | 1.1.X  |
+| 1.8.X              | 1.0.X  |
+| 1.7.X              | 0.6.X  |
+| 1.6.X              | 0.5.X, 0.6.X<sup>*</sup>  |
+| 1.5.X              | 0.4.X  |
+| 1.4.X              | 0.3.X  |
 
 <sup>*</sup>Cluster Autoscaler 0.5.X is the official version shipped with k8s 1.6. We've done some basic tests using k8s 1.6 / CA 0.6 and we're not aware of any problems with this setup. However, Cluster Autoscaler internally simulates Kubernetes' scheduler and using different versions of scheduler code can lead to subtle issues.
 
@@ -102,6 +104,7 @@ Starting with Gardener/Autoscaler v1.20, versioning scheme has changed to match 
 
 | Kubernetes Version | CA Version | Gardener CA Version | 
 |--------------------|------------|---------------------|
+| 1.29.X             | 1.29.X     | 1.29.X              |
 | 1.28.X             | 1.28.X     | 1.28.X              |
 | 1.27.X             | 1.27.X     | 1.27.X              |
 | 1.26.X             | 1.26.X     | 1.26.X              |
@@ -121,6 +124,7 @@ Starting with Gardener/Autoscaler v1.20, versioning scheme has changed to match 
 | 1.19.X             | 1.19.X     | 0.12.X              |
 | 1.19.X             | 1.19.X     | 0.11.X              |
 | 1.12.X             | 1.12.X     | 0.10.X              |
+
 # Notable changes
 
 For CA 1.1.2 and later, please check [release

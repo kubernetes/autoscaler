@@ -117,11 +117,11 @@ func runKubernetesServiceTestContainer(c clientset.Interface, ns string) {
 		}
 	}()
 	timeout := 5 * time.Minute
-	if err := e2epod.WaitForPodCondition(c, ns, p.Name, "clusterapi-tester", timeout, testutils.PodRunningReady); err != nil {
+	if err := e2epod.WaitForPodCondition(context.TODO(), c, ns, p.Name, "clusterapi-tester", timeout, testutils.PodRunningReady); err != nil {
 		framework.Logf("Pod %v took longer than %v to enter running/ready: %v", p.Name, timeout, err)
 		return
 	}
-	logs, err := e2epod.GetPodLogs(c, ns, p.Name, p.Spec.Containers[0].Name)
+	logs, err := e2epod.GetPodLogs(context.TODO(), c, ns, p.Name, p.Spec.Containers[0].Name)
 	if err != nil {
 		framework.Logf("Failed to retrieve logs from %v: %v", p.Name, err)
 	} else {
@@ -197,7 +197,7 @@ func setupSuite() {
 	// Delete any namespaces except those created by the system. This ensures no
 	// lingering resources are left over from a previous test run.
 	if framework.TestContext.CleanStart {
-		deleted, err := framework.DeleteNamespaces(c, nil, /* deleteFilter */
+		deleted, err := framework.DeleteNamespaces(context.TODO(), c, nil, /* deleteFilter */
 			[]string{
 				metav1.NamespaceSystem,
 				metav1.NamespaceDefault,
@@ -208,19 +208,21 @@ func setupSuite() {
 			framework.Failf("Error deleting orphaned namespaces: %v", err)
 		}
 		klog.Infof("Waiting for deletion of the following namespaces: %v", deleted)
-		if err := framework.WaitForNamespacesDeleted(c, deleted, namespaceCleanupTimeout); err != nil {
+		if err := framework.WaitForNamespacesDeleted(context.TODO(), c, deleted, namespaceCleanupTimeout); err != nil {
 			framework.Failf("Failed to delete orphaned namespaces %v: %v", deleted, err)
 		}
 	}
 
+	timeoutCtx := framework.NewTimeoutContext()
+
 	// In large clusters we may get to this point but still have a bunch
 	// of nodes without Routes created. Since this would make a node
 	// unschedulable, we need to wait until all of them are schedulable.
-	framework.ExpectNoError(e2enode.WaitForAllNodesSchedulable(c, framework.TestContext.NodeSchedulableTimeout))
+	framework.ExpectNoError(e2enode.WaitForAllNodesSchedulable(context.TODO(), c, timeoutCtx.NodeSchedulable))
 
 	// If NumNodes is not specified then auto-detect how many are scheduleable and not tainted
 	if framework.TestContext.CloudConfig.NumNodes == framework.DefaultNumNodes {
-		nodes, err := e2enode.GetReadySchedulableNodes(c)
+		nodes, err := e2enode.GetReadySchedulableNodes(context.TODO(), c)
 		framework.ExpectNoError(err)
 		framework.TestContext.CloudConfig.NumNodes = len(nodes.Items)
 	}
@@ -229,19 +231,19 @@ func setupSuite() {
 	// cluster infrastructure pods that are being pulled or started can block
 	// test pods from running, and tests that ensure all pods are running and
 	// ready will fail).
-	podStartupTimeout := framework.TestContext.SystemPodsStartupTimeout
+	podStartupTimeout := timeoutCtx.SystemPodsStartup
 	// TODO: In large clusters, we often observe a non-starting pods due to
 	// #41007. To avoid those pods preventing the whole test runs (and just
 	// wasting the whole run), we allow for some not-ready pods (with the
 	// number equal to the number of allowed not-ready nodes).
-	if err := e2epod.WaitForPodsRunningReady(c, metav1.NamespaceSystem, int32(framework.TestContext.MinStartupPods), int32(framework.TestContext.AllowedNotReadyNodes), podStartupTimeout, map[string]string{}); err != nil {
-		e2edebug.DumpAllNamespaceInfo(c, metav1.NamespaceSystem)
-		e2ekubectl.LogFailedContainers(c, metav1.NamespaceSystem, framework.Logf)
+	if err := e2epod.WaitForPodsRunningReady(context.TODO(), c, metav1.NamespaceSystem, int32(framework.TestContext.MinStartupPods), int32(framework.TestContext.AllowedNotReadyNodes), podStartupTimeout); err != nil {
+		e2edebug.DumpAllNamespaceInfo(context.TODO(), c, metav1.NamespaceSystem)
+		e2ekubectl.LogFailedContainers(context.TODO(), c, metav1.NamespaceSystem, framework.Logf)
 		runKubernetesServiceTestContainer(c, metav1.NamespaceDefault)
 		framework.Failf("Error waiting for all pods to be running and ready: %v", err)
 	}
 
-	if err := waitForDaemonSets(c, metav1.NamespaceSystem, int32(framework.TestContext.AllowedNotReadyNodes), framework.TestContext.SystemDaemonsetStartupTimeout); err != nil {
+	if err := waitForDaemonSets(c, metav1.NamespaceSystem, int32(framework.TestContext.AllowedNotReadyNodes), timeoutCtx.SystemDaemonsetStartup); err != nil {
 		framework.Logf("WARNING: Waiting for all daemonsets to be ready failed: %v", err)
 	}
 
@@ -260,7 +262,7 @@ func setupSuite() {
 
 	if framework.TestContext.NodeKiller.Enabled {
 		nodeKiller := e2enode.NewNodeKiller(framework.TestContext.NodeKiller, c, framework.TestContext.Provider)
-		go nodeKiller.Run(framework.TestContext.NodeKiller.NodeKillerStopCh)
+		go nodeKiller.Run(framework.TestContext.NodeKiller.NodeKillerStopCtx)
 	}
 }
 
@@ -306,7 +308,7 @@ func AfterSuiteActions() {
 		}
 	}
 	if framework.TestContext.NodeKiller.Enabled {
-		close(framework.TestContext.NodeKiller.NodeKillerStopCh)
+		framework.TestContext.NodeKiller.NodeKillerStop()
 	}
 }
 
@@ -318,12 +320,12 @@ func gatherTestSuiteMetrics() error {
 	}
 
 	// Grab metrics for apiserver, scheduler, controller-manager, kubelet (for non-kubemark case) and cluster autoscaler (optionally).
-	grabber, err := e2emetrics.NewMetricsGrabber(c, nil, nil, !framework.ProviderIs("kubemark"), true, true, true, framework.TestContext.IncludeClusterAutoscalerMetrics, false)
+	grabber, err := e2emetrics.NewMetricsGrabber(context.TODO(), c, nil, nil, !framework.ProviderIs("kubemark"), true, true, true, framework.TestContext.IncludeClusterAutoscalerMetrics, false)
 	if err != nil {
 		return fmt.Errorf("failed to create MetricsGrabber: %v", err)
 	}
 
-	received, err := grabber.Grab()
+	received, err := grabber.Grab(context.TODO())
 	if err != nil {
 		return fmt.Errorf("failed to grab metrics: %v", err)
 	}

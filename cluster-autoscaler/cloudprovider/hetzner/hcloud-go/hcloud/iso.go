@@ -17,12 +17,9 @@ type ISO struct {
 	Description  string
 	Type         ISOType
 	Architecture *Architecture
-	Deprecated   time.Time
-}
-
-// IsDeprecated returns true if the ISO is deprecated.
-func (iso *ISO) IsDeprecated() bool {
-	return !iso.Deprecated.IsZero()
+	// Deprecated: Use [ISO.Deprecation] instead.
+	Deprecated time.Time
+	DeprecatableResource
 }
 
 // ISOType specifies the type of an ISO image.
@@ -143,7 +140,7 @@ func (c *ISOClient) All(ctx context.Context) ([]*ISO, error) {
 
 // AllWithOpts returns all ISOs for the given options.
 func (c *ISOClient) AllWithOpts(ctx context.Context, opts ISOListOpts) ([]*ISO, error) {
-	allISOs := make([]*ISO, 0)
+	allISOs := []*ISO{}
 
 	err := c.client.all(func(page int) (*Response, error) {
 		opts.Page = page
