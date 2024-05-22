@@ -203,3 +203,16 @@ func ProvisioningRequestForPods(client *ProvisioningRequestClient, unschedulable
 	}
 	return provReq, nil
 }
+
+// DeleteProvisioningRequest deletes the given ProvisioningRequest CR using the ProvisioningRequestInterface and returns an error in case of failure.
+func (c *ProvisioningRequestClient) DeleteProvisioningRequest(pr *v1beta1.ProvisioningRequest) error {
+	ctx, cancel := context.WithTimeout(context.Background(), provisioningRequestClientCallTimeout)
+	defer cancel()
+
+	err := c.client.AutoscalingV1beta1().ProvisioningRequests(pr.Namespace).Delete(ctx, pr.Name, metav1.DeleteOptions{})
+	if err != nil {
+		return fmt.Errorf("error deleting ProvisioningRequest %s/%s: %w", pr.Namespace, pr.Name, err)
+	}
+	klog.V(4).Infof("Deleted ProvisioningRequest %s/%s", pr.Namespace, pr.Name)
+	return nil
+}
