@@ -315,7 +315,7 @@ func (m *AzureManager) getFilteredScaleSets(filter []labelAutoDiscoveryConfig) (
 		}
 		spec := &dynamic.NodeGroupSpec{
 			Name:               *scaleSet.Name,
-			MinSize:            1,
+			MinSize:            0,
 			MaxSize:            -1,
 			SupportScaleToZero: scaleToZeroSupportedVMSS,
 		}
@@ -327,9 +327,6 @@ func (m *AzureManager) getFilteredScaleSets(filter []labelAutoDiscoveryConfig) (
 				klog.Warningf("ignoring vmss %q because of invalid minimum size specified for vmss: %s", *scaleSet.Name, err)
 				continue
 			}
-		} else {
-			klog.Warningf("ignoring vmss %q because of no minimum size specified for vmss", *scaleSet.Name)
-			continue
 		}
 		if spec.MinSize < 0 {
 			klog.Warningf("ignoring vmss %q because of minimum size must be a non-negative number of nodes", *scaleSet.Name)

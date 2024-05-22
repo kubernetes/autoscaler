@@ -687,6 +687,49 @@ func TestGetFilteredAutoscalingGroupsVmss(t *testing.T) {
 	assert.True(t, assert.ObjectsAreEqualValues(expectedAsgs, asgs), "expected %#v, but found: %#v", expectedAsgs, asgs)
 }
 
+func TestGetFilteredAutoscalingGroupsVmssWithoutMinSize(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	vmssName := "test-vmss"
+	vmssTag := "fake-tag"
+	vmssTagValue := "fake-value"
+	minVal := 0
+	max := "5"
+	maxVal := 5
+
+	ngdo := cloudprovider.NodeGroupDiscoveryOptions{
+		NodeGroupAutoDiscoverySpecs: []string{fmt.Sprintf("label:%s=%s", vmssTag, vmssTagValue)},
+	}
+
+	manager := newTestAzureManager(t)
+	expectedScaleSets := []compute.VirtualMachineScaleSet{fakeVMSSWithTags(vmssName, map[string]*string{vmssTag: &vmssTagValue, "max": &max})}
+	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
+	mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
+	manager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
+	err := manager.forceRefresh()
+	assert.NoError(t, err)
+
+	specs, err := ParseLabelAutoDiscoverySpecs(ngdo)
+	assert.NoError(t, err)
+
+	asgs, err := manager.getFilteredNodeGroups(specs)
+	assert.NoError(t, err)
+	expectedAsgs := []cloudprovider.NodeGroup{&ScaleSet{
+		azureRef: azureRef{
+			Name: vmssName,
+		},
+		minSize:                minVal,
+		maxSize:                maxVal,
+		manager:                manager,
+		enableForceDelete:      manager.config.EnableForceDelete,
+		curSize:                3,
+		sizeRefreshPeriod:      manager.azureCache.refreshInterval,
+		instancesRefreshPeriod: defaultVmssInstancesRefreshPeriod,
+	}}
+	assert.True(t, assert.ObjectsAreEqualValues(expectedAsgs, asgs), "expected %#v, but found: %#v", expectedAsgs, asgs)
+}
+
 func TestGetFilteredAutoscalingGroupsWithInvalidVMType(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
