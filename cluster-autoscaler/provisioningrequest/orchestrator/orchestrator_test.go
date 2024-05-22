@@ -83,7 +83,7 @@ func TestScaleUp(t *testing.T) {
 			CPU:      "1",
 			Memory:   "1",
 			PodCount: int32(5),
-			Class:    v1beta1.ProvisioningClassAtomicScaleUp,
+			Class:    v1beta1.ProvisioningClassBestEffortAtomicScaleUp,
 		})
 
 	// Already provisioned provisioning request - capacity should be booked before processing a new request.
