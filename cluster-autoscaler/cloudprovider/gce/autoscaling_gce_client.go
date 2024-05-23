@@ -107,6 +107,7 @@ type AutoscalingGceClient interface {
 	FetchMigsWithName(zone string, filter *regexp.Regexp) ([]string, error)
 	FetchZones(region string) ([]string, error)
 	FetchAvailableCpuPlatforms() (map[string][]string, error)
+	FetchAvailableDiskTypes() (map[string][]string, error)
 	FetchReservations() ([]*gce.Reservation, error)
 	FetchReservationsInProject(projectId string) ([]*gce.Reservation, error)
 	FetchListManagedInstancesResults(migRef GceRef) (string, error)
@@ -583,6 +584,24 @@ func (client *autoscalingGceClientV1) FetchAvailableCpuPlatforms() (map[string][
 		return nil, err
 	}
 	return availableCpuPlatforms, nil
+}
+
+func (client *autoscalingGceClientV1) FetchAvailableDiskTypes() (map[string][]string, error) {
+	availableDiskTypes := make(map[string][]string)
+
+	req := client.gceService.DiskTypes.AggregatedList(client.projectId)
+	if err := req.Pages(context.TODO(), func(page *gce.DiskTypeAggregatedList) error {
+		for _, diskTypesScopedList := range page.Items {
+			for _, diskType := range diskTypesScopedList.DiskTypes {
+				availableDiskTypes[diskType.Zone] = append(availableDiskTypes[diskType.Zone], diskType.Name)
+			}
+		}
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return availableDiskTypes, nil
 }
 
 func (client *autoscalingGceClientV1) FetchMigTemplateName(migRef GceRef) (InstanceTemplateName, error) {

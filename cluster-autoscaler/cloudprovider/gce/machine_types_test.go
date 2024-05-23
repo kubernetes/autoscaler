@@ -118,6 +118,7 @@ func TestNewCustomMachineType(t *testing.T) {
 				assert.NoError(t, err)
 				assert.Equal(t, tc.expectCPU, m.CPU)
 				assert.Equal(t, tc.expectMemory, m.Memory)
+				assert.Equal(t, int64(0), m.MaxDiskSizeGb) // unset
 			}
 		})
 	}
