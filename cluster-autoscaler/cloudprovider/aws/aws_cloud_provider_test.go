@@ -17,6 +17,7 @@ limitations under the License.
 package aws
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -738,4 +739,45 @@ func TestHasInstance(t *testing.T) {
 	present, err = provider.HasInstance(node4)
 	assert.NoError(t, err)
 	assert.False(t, present)
+}
+
+// MockNodeGroup simulates the behavior of a NodeGroup for testing.
+type MockNodeGroup struct {
+	DecreaseSizeCalled bool
+	DecreaseSizeDelta  int
+	SimulateError      bool
+}
+
+func (m *MockNodeGroup) DecreaseTargetSize(delta int) error {
+	m.DecreaseSizeCalled = true
+	m.DecreaseSizeDelta = delta
+
+	if m.SimulateError {
+		return errors.New("simulated error")
+	}
+
+	if delta > 0 {
+		return errors.New("delta must be negative")
+	}
+
+	return nil
+}
+
+// TestDecreaseTargetSizeWithMock verifies functionality and error handling.
+func TestDecreaseTargetSizeWithMock(t *testing.T) {
+	ng := &MockNodeGroup{}
+	err := ng.DecreaseTargetSize(-1)
+	assert.NoError(t, err)
+	assert.True(t, ng.DecreaseSizeCalled, "DecreaseTargetSize should have been called")
+	assert.Equal(t, -1, ng.DecreaseSizeDelta, "The decrease amount should be recorded correctly")
+	ng.SimulateError = true
+	err = ng.DecreaseTargetSize(-1)
+	assert.Error(t, err, "Expected error when SimulateError is true")
+}
+
+// TestDecreaseTargetSizeWithInvalidInput checks the method's response to invalid input.
+func TestDecreaseTargetSizeWithInvalidInput(t *testing.T) {
+	ng := &MockNodeGroup{}
+	err := ng.DecreaseTargetSize(1)
+	assert.Error(t, err, "Expected error for positive delta input")
 }

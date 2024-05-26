@@ -285,25 +285,37 @@ func (ng *AwsNodeGroup) AtomicIncreaseSize(delta int) error {
 	return cloudprovider.ErrNotImplemented
 }
 
-// DecreaseTargetSize decreases the target size of the node group. This function
-// doesn't permit to delete any existing node and can be used only to reduce the
-// request for new nodes that have not been yet fulfilled. Delta should be negative.
-// It is assumed that cloud provider will not delete the existing nodes if the size
-// when there is an option to just decrease the target.
+// DecreaseTargetSize decreases the target size of the node group without deleting existing nodes.
 func (ng *AwsNodeGroup) DecreaseTargetSize(delta int) error {
 	if delta >= 0 {
-		return fmt.Errorf("size decrease size must be negative")
+		return fmt.Errorf("size decrease must be negative")
 	}
 
+	// Retrieve the current size and nodes of the ASG.
 	size := ng.asg.curSize
 	nodes, err := ng.awsManager.GetAsgNodes(ng.asg.AwsRef)
 	if err != nil {
 		return err
 	}
-	if int(size)+delta < len(nodes) {
-		return fmt.Errorf("attempt to delete existing nodes targetSize:%d delta:%d existingNodes: %d",
-			size, delta, len(nodes))
+
+	// Exclude placeholder nodes that cannot be fulfilled.
+	fulfillableNodes := make([]AwsInstanceRef, 0)
+	for _, node := range nodes {
+		if instanceStatus, err := ng.awsManager.GetInstanceStatus(node); err == nil {
+			if instanceStatus != nil && *instanceStatus == placeholderUnfulfillableStatus {
+				continue
+			}
+		}
+		fulfillableNodes = append(fulfillableNodes, node)
 	}
+
+	// Ensure that decreasing the size does not affect existing fulfillable nodes.
+	if size+delta < len(fulfillableNodes) {
+		return fmt.Errorf("attempt to delete existing nodes targetSize:%d delta:%d existingNodes: %d",
+			size, delta, len(fulfillableNodes))
+	}
+
+	// Apply the new size configuration to the ASG.
 	return ng.awsManager.SetAsgSize(ng.asg, size+delta)
 }
 
