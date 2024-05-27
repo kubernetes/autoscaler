@@ -21,6 +21,7 @@ import (
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1beta1"
+	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
 )
 
@@ -89,18 +90,20 @@ func TestBookCapacity(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			pr := provreqwrapper.NewProvisioningRequest(
-				&v1beta1.ProvisioningRequest{
-					Spec: v1beta1.ProvisioningRequestSpec{
-						ProvisioningClassName: v1beta1.ProvisioningClassCheckCapacity,
-					},
-					Status: v1beta1.ProvisioningRequestStatus{
-						Conditions: test.prConditions,
-					},
-				}, nil)
-			got := ShouldCapacityBeBooked(pr)
-			if got != test.want {
-				t.Errorf("Want: %v, got: %v", test.want, got)
+			for class := range provisioningrequest.SupportedProvisioningClasses {
+				pr := provreqwrapper.NewProvisioningRequest(
+					&v1beta1.ProvisioningRequest{
+						Spec: v1beta1.ProvisioningRequestSpec{
+							ProvisioningClassName: class,
+						},
+						Status: v1beta1.ProvisioningRequestStatus{
+							Conditions: test.prConditions,
+						},
+					}, nil)
+				got := ShouldCapacityBeBooked(pr)
+				if got != test.want {
+					t.Errorf("Want: %v, got: %v", test.want, got)
+				}
 			}
 		})
 	}

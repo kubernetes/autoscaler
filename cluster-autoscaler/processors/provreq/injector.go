@@ -37,9 +37,6 @@ const (
 	defaultRetryTime = 10 * time.Minute
 )
 
-// SupportedProvisioningClasses is a list of supported ProvisioningClasses in ClusterAutoscaler.
-var SupportedProvisioningClasses = []string{v1beta1.ProvisioningClassCheckCapacity}
-
 // ProvisioningRequestPodsInjector creates in-memory pods from ProvisioningRequest and inject them to unscheduled pods list.
 type ProvisioningRequestPodsInjector struct {
 	client *provreqclient.ProvisioningRequestClient
