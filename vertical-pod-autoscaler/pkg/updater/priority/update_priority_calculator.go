@@ -142,7 +142,7 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, now time.Time) {
 		klog.V(4).Infof("not updating pod %v/%v because resource would not change", pod.Namespace, pod.Name)
 		return
 	}
-	klog.V(2).Infof("pod accepted for update %v/%v with priority %v - processed recommendations:\n%v", pod.Namespace, pod.Name, updatePriority.ResourceDiff, getProcessedRecommendationTargets(processedRecommendation))
+	klog.V(2).Infof("pod accepted for update %v/%v with priority %v - processed recommendations:\n%v", pod.Namespace, pod.Name, updatePriority.ResourceDiff, calc.GetProcessedRecommendationTargets(processedRecommendation))
 	calc.pods = append(calc.pods, prioritizedPod{
 		pod:            pod,
 		priority:       updatePriority,
@@ -165,6 +165,33 @@ func (calc *UpdatePriorityCalculator) GetSortedPods(admission PodEvictionAdmissi
 	return result
 }
 
+func (calc *UpdatePriorityCalculator) GetProcessedRecommendationTargets(r *vpa_types.RecommendedPodResources) string {
+	sb := &strings.Builder{}
+	for _, cr := range r.ContainerRecommendations {
+		sb.WriteString(fmt.Sprintf("%s: ", cr.ContainerName))
+		if cr.Target != nil {
+			sb.WriteString("target: ")
+			if !cr.Target.Memory().IsZero() {
+				sb.WriteString(fmt.Sprintf("%sK ", cr.Target.Memory().AsDec()))
+			}
+			if !cr.Target.Cpu().IsZero() {
+				sb.WriteString(fmt.Sprintf("%vm; ", cr.Target.Cpu().MilliValue()))
+			}
+		}
+		if cr.UncappedTarget != nil {
+			sb.WriteString("uncappedTarget: ")
+			if !cr.UncappedTarget.Memory().IsZero() {
+				sb.WriteString(fmt.Sprintf("%sK ", cr.UncappedTarget.Memory().AsDec()))
+			}
+			if !cr.UncappedTarget.Cpu().IsZero() {
+				sb.WriteString(fmt.Sprintf("%vm;", cr.UncappedTarget.Cpu().MilliValue()))
+			}
+		}
+		sb.WriteString("\n")
+	}
+	return sb.String()
+}
+
 func parseVpaObservedContainers(pod *apiv1.Pod) (bool, sets.String) {
 	observedContainers, hasObservedContainers := pod.GetAnnotations()[annotations.VpaObservedContainersLabel]
 	vpaContainerSet := sets.NewString()
@@ -177,21 +204,6 @@ func parseVpaObservedContainers(pod *apiv1.Pod) (bool, sets.String) {
 		}
 	}
 	return hasObservedContainers, vpaContainerSet
-}
-
-func getProcessedRecommendationTargets(r *vpa_types.RecommendedPodResources) string {
-	sb := &strings.Builder{}
-	for _, cr := range r.ContainerRecommendations {
-		sb.WriteString(fmt.Sprintf("%s:", cr.ContainerName))
-		if cr.Target != nil {
-			sb.WriteString(fmt.Sprintf("target: %sK, %vm;", cr.Target.Memory().AsDec(), cr.Target.Cpu().MilliValue()))
-		}
-		if cr.UncappedTarget != nil {
-			sb.WriteString(fmt.Sprintf("uncappedTarget: %sK, %vm;", cr.UncappedTarget.Memory().AsDec(), cr.UncappedTarget.Cpu().MilliValue()))
-		}
-		sb.WriteString("\n")
-	}
-	return sb.String()
 }
 
 type prioritizedPod struct {
