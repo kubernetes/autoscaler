@@ -27,6 +27,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
+	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/besteffortatomic"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/checkcapacity"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/conditions"
 	provreq_pods "k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/pods"
@@ -64,7 +65,13 @@ func New(kubeConfig *rest.Config) (*provReqOrchestrator, error) {
 		return nil, err
 	}
 
-	return &provReqOrchestrator{client: client, provisioningClasses: []provisioningClass{checkcapacity.New(client)}}, nil
+	return &provReqOrchestrator{
+		client: client,
+		provisioningClasses: []provisioningClass{
+			checkcapacity.New(client),
+			besteffortatomic.New(client),
+		},
+	}, nil
 }
 
 // Initialize initialize orchestrator.

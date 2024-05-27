@@ -25,33 +25,41 @@ import (
 )
 
 const (
-	//AcceptedReason is added when ProvisioningRequest is accepted by ClusterAutoscaler
+	// AcceptedReason is added when ProvisioningRequest is accepted by ClusterAutoscaler
 	AcceptedReason = "Accepted"
-	//AcceptedMsg is added when ProvisioningRequest is accepted by ClusterAutoscaler
+	// AcceptedMsg is added when ProvisioningRequest is accepted by ClusterAutoscaler
 	AcceptedMsg = "ProvisioningRequest is accepted by ClusterAutoscaler"
-	//CapacityIsNotFoundReason is added when capacity was not found in the cluster.
+	// CapacityIsNotFoundReason is added when capacity was not found in the cluster.
 	CapacityIsNotFoundReason = "CapacityIsNotFound"
-	//CapacityIsFoundReason is added when capacity was found in the cluster.
+	// CapacityIsFoundReason is added when capacity was found in the cluster.
 	CapacityIsFoundReason = "CapacityIsFound"
 	// CapacityIsFoundMsg is added when capacity was found in the cluster.
 	CapacityIsFoundMsg = "Capacity is found in the cluster"
-	//FailedToCreatePodsReason is added when CA failed to create pods for ProvisioningRequest.
+	// CapacityIsProvisionedReason is added when capacity was requested successfully.
+	CapacityIsProvisionedReason = "CapacityIsProvisioned"
+	// CapacityIsProvisionedMsg is added when capacity was requested successfully.
+	CapacityIsProvisionedMsg = "Capacity is found in the cluster"
+	// FailedToCheckCapacityReason is added when CA failed to check pre-existing capacity.
+	FailedToCheckCapacityReason = "FailedToCheckCapacity"
+	// FailedToCheckCapacityMsg is added when CA failed to check pre-existing capacity.
+	FailedToCheckCapacityMsg = "Failed to check pre-existing capacity in the cluster"
+	// FailedToCreatePodsReason is added when CA failed to create pods for ProvisioningRequest.
 	FailedToCreatePodsReason = "FailedToCreatePods"
-	//FailedToBookCapacityReason is added when Cluster Autoscaler failed to book capacity in the cluster.
+	// FailedToBookCapacityReason is added when Cluster Autoscaler failed to book capacity in the cluster.
 	FailedToBookCapacityReason = "FailedToBookCapacity"
-	//CapacityReservationTimeExpiredReason is added whed capacity reservation time is expired.
+	// CapacityReservationTimeExpiredReason is added whed capacity reservation time is expired.
 	CapacityReservationTimeExpiredReason = "CapacityReservationTimeExpired"
-	//CapacityReservationTimeExpiredMsg is added if capacity reservation time is expired.
+	// CapacityReservationTimeExpiredMsg is added if capacity reservation time is expired.
 	CapacityReservationTimeExpiredMsg = "Capacity reservation time is expired"
-	//ExpiredReason is added if ProvisioningRequest is expired.
+	// ExpiredReason is added if ProvisioningRequest is expired.
 	ExpiredReason = "Expired"
-	//ExpiredMsg is added if ProvisioningRequest is expired.
+	// ExpiredMsg is added if ProvisioningRequest is expired.
 	ExpiredMsg = "ProvisioningRequest is expired"
 )
 
 // ShouldCapacityBeBooked returns whether capacity should be booked.
 func ShouldCapacityBeBooked(pr *provreqwrapper.ProvisioningRequest) bool {
-	if pr.Spec.ProvisioningClassName != v1beta1.ProvisioningClassCheckCapacity {
+	if pr.Spec.ProvisioningClassName != v1beta1.ProvisioningClassCheckCapacity && pr.Spec.ProvisioningClassName != v1beta1.ProvisioningClassBestEffortAtomicScaleUp {
 		return false
 	}
 	conditions := pr.Status.Conditions
