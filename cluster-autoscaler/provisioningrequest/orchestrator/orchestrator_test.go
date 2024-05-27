@@ -264,6 +264,8 @@ func TestScaleUp(t *testing.T) {
 			if !tc.err {
 				assert.NoError(t, err)
 				if tc.scaleUpResult != st.Result && len(st.PodsRemainUnschedulable) > 0 {
+					// We expected all pods to be scheduled, but some remain unschedulable.
+					// Let's add the reason groups were rejected to errors. This is useful for debugging.
 					t.Errorf("noScaleUpInfo: %#v", st.PodsRemainUnschedulable[0].RejectedNodeGroups)
 				}
 				assert.Equal(t, tc.scaleUpResult, st.Result)
