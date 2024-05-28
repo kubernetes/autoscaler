@@ -23,7 +23,6 @@ import (
 	"math/rand"
 	"strings"
 	"sync"
-	"time"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -411,6 +410,9 @@ func instanceTypeArch(manager *hetznerManager, instanceType string) (string, err
 }
 
 func createServer(n *hetznerNodeGroup) error {
+	ctx, cancel := context.WithTimeout(n.manager.apiCallContext, n.manager.createTimeout)
+	defer cancel()
+
 	serverType, err := n.manager.cachedServerType.getServerType(n.instanceType)
 	if err != nil {
 		return err
@@ -454,23 +456,20 @@ func createServer(n *hetznerNodeGroup) error {
 		opts.Firewalls = []*hcloud.ServerCreateFirewall{serverCreateFirewall}
 	}
 
-	serverCreateResult, _, err := n.manager.client.Server.Create(n.manager.apiCallContext, opts)
+	serverCreateResult, _, err := n.manager.client.Server.Create(ctx, opts)
 	if err != nil {
 		return fmt.Errorf("could not create server type %s in region %s: %v", n.instanceType, n.region, err)
 	}
 
 	server := serverCreateResult.Server
 
-	actions := []*hcloud.Action{serverCreateResult.Action}
-	actions = append(actions, serverCreateResult.NextActions...)
+	actions := append(serverCreateResult.NextActions, serverCreateResult.Action)
 
 	// Delete the server if any action (most importantly create_server & start_server) fails
-	for _, action := range actions {
-		err = waitForServerAction(n.manager, server.Name, action)
-		if err != nil {
-			_ = n.manager.deleteServer(server)
-			return fmt.Errorf("failed to start server %s error: %v", server.Name, err)
-		}
+	err = n.manager.client.Action.WaitFor(ctx, actions...)
+	if err != nil {
+		_ = n.manager.deleteServer(server)
+		return fmt.Errorf("failed to start server %s error: %v", server.Name, err)
 	}
 
 	return nil
@@ -523,39 +522,6 @@ func findImage(n *hetznerNodeGroup, serverType *hcloud.ServerType) (*hcloud.Imag
 	}
 
 	return images[0], nil
-}
-
-func waitForServerAction(m *hetznerManager, serverName string, action *hcloud.Action) error {
-	// The implementation of the Hetzner Cloud action client's WatchProgress
-	// method may be a little puzzling. The following comment thus explains how
-	// waitForServerAction works.
-	//
-	// WatchProgress returns two channels. The first channel is used to send a
-	// ballpark estimate for the action progress, the second to send any error
-	// that may occur.
-	//
-	// WatchProgress is implemented in such a way, that the first channel can
-	// be ignored. It is not necessary to consume it to avoid a deadlock in
-	// WatchProgress. Any write to this channel is wrapped in a select.
-	// Progress updates are simply not sent if nothing reads from the other
-	// side.
-	//
-	// Once the action completes successfully nil is send through the second
-	// channel. Then both channels are closed.
-	//
-	// The following code therefore only watches the second channel. If it
-	// reads an error from the channel the action is failed. Otherwise the
-	// action is successful.
-	_, errChan := m.client.Action.WatchProgress(m.apiCallContext, action)
-	select {
-	case err := <-errChan:
-		if err != nil {
-			return fmt.Errorf("error while waiting for server action: %s: %v", serverName, err)
-		}
-		return nil
-	case <-time.After(m.createTimeout):
-		return fmt.Errorf("timeout waiting for server %s", serverName)
-	}
 }
 
 func (n *hetznerNodeGroup) resetTargetSize(expectedDelta int) {
