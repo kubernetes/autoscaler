@@ -25,6 +25,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1beta1"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
+	corev1 "k8s.io/kubernetes/pkg/apis/core/v1"
 	"k8s.io/kubernetes/pkg/controller"
 )
 
@@ -53,6 +54,7 @@ func PodsForProvisioningRequest(pr *provreqwrapper.ProvisioningRequest) ([]*v1.P
 				return nil, fmt.Errorf("while creating pod for pr: %s/%s podSet: %d, got error: %w", pr.Namespace, pr.Name, i, err)
 			}
 			populatePodFields(pr, pod, i, j)
+			corev1.SetDefaults_Pod(pod)
 			pods = append(pods, pod)
 		}
 	}
