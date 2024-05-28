@@ -36,7 +36,7 @@ func TestFetchPodTemplates(t *testing.T) {
 	mockProvisioningRequests := []*provreqwrapper.ProvisioningRequest{pr1, pr2}
 
 	ctx := context.Background()
-	c := NewFakeProvisioningRequestClient(ctx, t, mockProvisioningRequests...)
+	c, _ := NewFakeProvisioningRequestClient(ctx, t, mockProvisioningRequests...)
 	got, err := c.FetchPodTemplates(pr1.ProvisioningRequest)
 	if err != nil {
 		t.Errorf("provisioningRequestClient.ProvisioningRequests() error: %v", err)
@@ -55,7 +55,7 @@ func TestProvisioningRequestForPods(t *testing.T) {
 	checkCapacityPods, _ := pods.PodsForProvisioningRequest(checkCapacityProvReq)
 	customProvReqPods, _ := pods.PodsForProvisioningRequest(customProvReq)
 	regularPod := BuildTestPod("p1", 600, 100)
-	client := NewFakeProvisioningRequestClient(context.Background(), t, checkCapacityProvReq, customProvReq)
+	client, _ := NewFakeProvisioningRequestClient(context.Background(), t, checkCapacityProvReq, customProvReq)
 	testCases := []struct {
 		name      string
 		pods      []*apiv1.Pod

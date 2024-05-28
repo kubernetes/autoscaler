@@ -23,6 +23,7 @@ import (
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1beta1"
 	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/clientset/versioned/fake"
@@ -35,7 +36,7 @@ import (
 )
 
 // NewFakeProvisioningRequestClient mock ProvisioningRequestClient for tests.
-func NewFakeProvisioningRequestClient(ctx context.Context, t *testing.T, prs ...*provreqwrapper.ProvisioningRequest) *ProvisioningRequestClient {
+func NewFakeProvisioningRequestClient(ctx context.Context, t *testing.T, prs ...*provreqwrapper.ProvisioningRequest) (*ProvisioningRequestClient, *FakeProvisioningRequestForceClient) {
 	t.Helper()
 	provReqClient := fake.NewSimpleClientset()
 	podTemplClient := fake_kubernetes.NewSimpleClientset()
@@ -61,10 +62,13 @@ func NewFakeProvisioningRequestClient(ctx context.Context, t *testing.T, prs ...
 		t.Fatalf("Failed to create Provisioning Request lister. Error was: %v", err)
 	}
 	return &ProvisioningRequestClient{
-		client:         provReqClient,
-		provReqLister:  provReqLister,
-		podTemplLister: podTemplLister,
-	}
+			client:         provReqClient,
+			provReqLister:  provReqLister,
+			podTemplLister: podTemplLister,
+		}, &FakeProvisioningRequestForceClient{
+			client:         provReqClient,
+			podTemplLister: podTemplLister,
+		}
 }
 
 // newFakePodTemplatesLister creates a fake lister for the Pod Templates in the cluster.
@@ -81,6 +85,79 @@ func newFakePodTemplatesLister(t *testing.T, client kubernetes.Interface, channe
 	}
 	klog.V(2).Info("Successful initial Pod Template sync")
 	return podTemplLister, nil
+}
+
+// FakeProvisioningRequestForceClient that allows to skip cache.
+type FakeProvisioningRequestForceClient struct {
+	client         *fake.Clientset
+	podTemplLister v1.PodTemplateLister
+}
+
+// ProvisioningRequest gets a specific ProvisioningRequest CR, skipping cache.
+func (c *FakeProvisioningRequestForceClient) ProvisioningRequest(namespace, name string) (*provreqwrapper.ProvisioningRequest, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), provisioningRequestClientCallTimeout)
+	defer cancel()
+	v1beta1, err := c.client.AutoscalingV1beta1().ProvisioningRequests(namespace).Get(ctx, name, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+	podTemplates, err := c.FetchPodTemplates(v1beta1)
+	if err != nil {
+		return nil, fmt.Errorf("while fetching pod templates for Get Provisioning Request %s/%s got error: %v", namespace, name, err)
+	}
+	return provreqwrapper.NewProvisioningRequest(v1beta1, podTemplates), nil
+}
+
+// FetchPodTemplates fetches PodTemplates referenced by the Provisioning Request.
+func (c *FakeProvisioningRequestForceClient) FetchPodTemplates(pr *v1beta1.ProvisioningRequest) ([]*apiv1.PodTemplate, error) {
+	podTemplates := make([]*apiv1.PodTemplate, 0, len(pr.Spec.PodSets))
+	for _, podSpec := range pr.Spec.PodSets {
+		podTemplate, err := c.podTemplLister.PodTemplates(pr.Namespace).Get(podSpec.PodTemplateRef.Name)
+		if errors.IsNotFound(err) {
+			klog.Infof("While fetching Pod Template for Provisioning Request %s/%s received not found error", pr.Namespace, pr.Name)
+			continue
+		} else if err != nil {
+			return nil, err
+		}
+		podTemplates = append(podTemplates, podTemplate)
+	}
+	return podTemplates, nil
+}
+
+// ProvisioningRequests is not implemented.
+func (c *FakeProvisioningRequestForceClient) ProvisioningRequests() ([]*provreqwrapper.ProvisioningRequest, error) {
+	return nil, nil
+}
+
+// UpdateProvisioningRequest updates the given ProvisioningRequest CR by propagating the changes using the ProvisioningRequestInterface and returns the updated instance or the original one in case of an error.
+func (c *FakeProvisioningRequestForceClient) UpdateProvisioningRequest(pr *v1beta1.ProvisioningRequest) (*v1beta1.ProvisioningRequest, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), provisioningRequestClientCallTimeout)
+	defer cancel()
+
+	// UpdateStatus API call on a copy of the PR with cleared Spec field ensures that
+	// the default null template.metadata.creationTimestamp field of PodTemplateSpec
+	// will not generate false error logs as a side effect.
+	prCopy := pr.DeepCopy()
+	prCopy.Spec = v1beta1.ProvisioningRequestSpec{}
+	updatedPr, err := c.client.AutoscalingV1beta1().ProvisioningRequests(prCopy.Namespace).UpdateStatus(ctx, prCopy, metav1.UpdateOptions{})
+	if err != nil {
+		return pr, err
+	}
+	klog.V(4).Infof("Updated ProvisioningRequest %s/%s,  status: %q,", updatedPr.Namespace, updatedPr.Name, updatedPr.Status)
+	return updatedPr, nil
+}
+
+// DeleteProvisioningRequest deletes the given ProvisioningRequest CR using the ProvisioningRequestInterface and returns an error in case of failure.
+func (c *FakeProvisioningRequestForceClient) DeleteProvisioningRequest(pr *v1beta1.ProvisioningRequest) error {
+	ctx, cancel := context.WithTimeout(context.Background(), provisioningRequestClientCallTimeout)
+	defer cancel()
+
+	err := c.client.AutoscalingV1beta1().ProvisioningRequests(pr.Namespace).Delete(ctx, pr.Name, metav1.DeleteOptions{})
+	if err != nil {
+		return fmt.Errorf("error deleting ProvisioningRequest %s/%s: %w", pr.Namespace, pr.Name, err)
+	}
+	klog.V(4).Infof("Deleted ProvisioningRequest %s/%s", pr.Namespace, pr.Name)
+	return nil
 }
 
 // ProvisioningRequestWrapperForTesting mock ProvisioningRequest for tests.

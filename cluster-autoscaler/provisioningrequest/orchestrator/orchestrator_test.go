@@ -302,7 +302,7 @@ func setupTest(t *testing.T, nodes []*apiv1.Node, prs []*provreqwrapper.Provisio
 	assert.NoError(t, err)
 
 	clustersnapshot.InitializeClusterSnapshotOrDie(t, autoscalingContext.ClusterSnapshot, nodes, nil)
-	client := provreqclient.NewFakeProvisioningRequestClient(context.Background(), t, prs...)
+	client, _ := provreqclient.NewFakeProvisioningRequestClient(context.Background(), t, prs...)
 	processors := NewTestProcessors(&autoscalingContext)
 	if autoprovisioning {
 		processors.NodeGroupListProcessor = &MockAutoprovisioningNodeGroupListProcessor{T: t}
