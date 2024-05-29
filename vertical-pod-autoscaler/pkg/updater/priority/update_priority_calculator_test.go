@@ -565,7 +565,7 @@ func TestAddPodLogs(t *testing.T) {
 		{
 			name:        "container with target and uncappedTarget",
 			givenRec:    test.Recommendation().WithContainer(containerName).WithTarget("4", "10M").Get(),
-			expectedLog: "container1: target: 10000000K 4000m; uncappedTarget: 10000000K 4000m;\n",
+			expectedLog: "container1: target: 10000k 4000m; uncappedTarget: 10000k 4000m;\n",
 		},
 		{
 			name:        "container with cpu only",
@@ -575,7 +575,7 @@ func TestAddPodLogs(t *testing.T) {
 		{
 			name:        "container with memory only",
 			givenRec:    test.Recommendation().WithContainer(containerName).WithTarget("", "10M").Get(),
-			expectedLog: "container1: target: 10000000K uncappedTarget: 10000000K \n",
+			expectedLog: "container1: target: 10000k uncappedTarget: 10000k \n",
 		},
 	}
 	for _, tc := range testCases {

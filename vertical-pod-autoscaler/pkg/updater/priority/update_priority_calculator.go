@@ -24,6 +24,7 @@ import (
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/util/sets"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
@@ -174,7 +175,7 @@ func (calc *UpdatePriorityCalculator) GetProcessedRecommendationTargets(r *vpa_t
 		if cr.Target != nil {
 			sb.WriteString("target: ")
 			if !cr.Target.Memory().IsZero() {
-				sb.WriteString(fmt.Sprintf("%sK ", cr.Target.Memory().AsDec()))
+				sb.WriteString(fmt.Sprintf("%dk ", cr.Target.Memory().ScaledValue(resource.Kilo)))
 			}
 			if !cr.Target.Cpu().IsZero() {
 				sb.WriteString(fmt.Sprintf("%vm; ", cr.Target.Cpu().MilliValue()))
@@ -183,7 +184,7 @@ func (calc *UpdatePriorityCalculator) GetProcessedRecommendationTargets(r *vpa_t
 		if cr.UncappedTarget != nil {
 			sb.WriteString("uncappedTarget: ")
 			if !cr.UncappedTarget.Memory().IsZero() {
-				sb.WriteString(fmt.Sprintf("%sK ", cr.UncappedTarget.Memory().AsDec()))
+				sb.WriteString(fmt.Sprintf("%dk ", cr.UncappedTarget.Memory().ScaledValue(resource.Kilo)))
 			}
 			if !cr.UncappedTarget.Cpu().IsZero() {
 				sb.WriteString(fmt.Sprintf("%vm;", cr.UncappedTarget.Cpu().MilliValue()))
