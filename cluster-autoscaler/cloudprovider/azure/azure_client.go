@@ -205,9 +205,9 @@ func getAgentpoolClientRetryOptions(cfg *Config) azurecore_policy.RetryOptions {
 func newAgentpoolClient(cfg *Config) (AgentPoolsClient, error) {
 	retryOptions := getAgentpoolClientRetryOptions(cfg)
 
-	if cfg.ARMBaseURL != "" {
-		klog.V(10).Infof("Using ARMBaseURL to create agent pool client")
-		return newAgentpoolClientWithConfig(cfg.SubscriptionID, nil, cfg.ARMBaseURL, "UNKNOWN", retryOptions)
+	if cfg.ARMBaseURLForAPClient != "" {
+		klog.V(10).Infof("Using ARMBaseURLForAPClient to create agent pool client")
+		return newAgentpoolClientWithConfig(cfg.SubscriptionID, nil, cfg.ARMBaseURLForAPClient, "UNKNOWN", retryOptions)
 	}
 
 	return newAgentpoolClientWithPublicEndpoint(cfg, retryOptions)
