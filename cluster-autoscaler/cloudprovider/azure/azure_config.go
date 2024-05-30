@@ -94,9 +94,9 @@ type Config struct {
 	ClusterResourceGroup string `json:"clusterResourceGroup" yaml:"clusterResourceGroup"`
 	VMType               string `json:"vmType" yaml:"vmType"`
 
-	// ARMBaseURL is the URL to use for operations for the VMs pool.
+	// ARMBaseURLForAPClient is the URL to use for operations for the VMs pool.
 	// It can override the default public ARM endpoint for VMs pool scale operations.
-	ARMBaseURL string `json:"armBaseURL" yaml:"armBaseURL"`
+	ARMBaseURLForAPClient string `json:"armBaseURLForAPClient" yaml:"armBaseURLForAPClient"`
 
 	// AuthMethod determines how to authorize requests for the Azure
 	// cloud. Valid options are "principal" (= the traditional
@@ -306,7 +306,7 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 	// always read the following from environment variables since azure.json doesn't have these fields
 	cfg.ClusterName = os.Getenv("CLUSTER_NAME")
 	cfg.ClusterResourceGroup = os.Getenv("ARM_CLUSTER_RESOURCE_GROUP")
-	cfg.ARMBaseURL = os.Getenv("ARM_BASE_URL")
+	cfg.ARMBaseURLForAPClient = os.Getenv("ARM_BASE_URL_FOR_AP_CLIENT")
 
 	cfg.TrimSpace()
 
