@@ -37,9 +37,14 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/utilization"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/expiring"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	"k8s.io/klog/v2"
+)
+
+const (
+	pastLatencyExpireDuration = time.Hour
 )
 
 // Actuator is responsible for draining and deleting nodes.
@@ -55,6 +60,7 @@ type Actuator struct {
 	budgetProcessor           *budgets.ScaleDownBudgetProcessor
 	configGetter              actuatorNodeGroupConfigGetter
 	nodeDeleteDelayAfterTaint time.Duration
+	pastLatencies             *expiring.List
 }
 
 // actuatorNodeGroupConfigGetter is an interface to limit the functions that can be used
@@ -83,6 +89,7 @@ func NewActuator(ctx *context.AutoscalingContext, scaleStateNotifier nodegroupch
 		drainabilityRules:         drainabilityRules,
 		configGetter:              configGetter,
 		nodeDeleteDelayAfterTaint: ctx.NodeDeleteDelayAfterTaint,
+		pastLatencies:             expiring.NewList(),
 	}
 }
 
@@ -197,10 +204,12 @@ func (a *Actuator) taintNodesSync(NodeGroupViews []*budgets.NodeGroupView) error
 		updateLatencyTracker.AwaitOrStopChan <- true
 		latency, ok := <-updateLatencyTracker.ResultChan
 		if ok {
+			a.pastLatencies.RegisterElement(latency)
+			a.pastLatencies.DropNotNewerThan(time.Now().Add(-1 * pastLatencyExpireDuration))
 			// CA is expected to wait 3 times the round-trip time between CA and the api-server.
-			// Therefore, the nodeDeleteDelayAfterTaint is set 2 times the latency.
-			// A delay of one round trip time is implicitly there when measuring the latency.
-			a.nodeDeleteDelayAfterTaint = 2 * latency
+			// At this point, we have already tainted all the nodes.
+			// Therefore, the nodeDeleteDelayAfterTaint is set 2 times the maximum latency observed during the last hour.
+			a.nodeDeleteDelayAfterTaint = 2 * maxLatency(a.pastLatencies.ToSlice())
 		}
 	}
 	return nil

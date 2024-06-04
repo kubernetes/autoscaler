@@ -146,3 +146,14 @@ func NewUpdateLatencyTrackerForTesting(nodeLister kubernetes.NodeLister, now fun
 	updateLatencyTracker.sleepDurationWhenPolling = time.Millisecond
 	return updateLatencyTracker
 }
+
+func maxLatency(latencies []interface{}) time.Duration {
+	var currentMax time.Duration = 0
+	for _, l := range latencies {
+		latency := l.(time.Duration)
+		if latency > currentMax {
+			currentMax = latency
+		}
+	}
+	return currentMax
+}
