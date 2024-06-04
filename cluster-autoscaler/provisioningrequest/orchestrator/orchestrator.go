@@ -27,22 +27,20 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
-	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/besteffortatomic"
-	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/checkcapacity"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/conditions"
 	provreq_pods "k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/pods"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqclient"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
 	ca_errors "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
-	"k8s.io/client-go/rest"
 	"k8s.io/klog/v2"
 
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
-type provisioningClass interface {
+// ProvisioningClass is an interface for ProvisioningRequests.
+type ProvisioningClass interface {
 	Provision([]*apiv1.Pod, []*apiv1.Node, []*appsv1.DaemonSet,
 		map[string]*schedulerframework.NodeInfo) (*status.ScaleUpStatus, ca_errors.AutoscalerError)
 	Initialize(*context.AutoscalingContext, *ca_processors.AutoscalingProcessors, *clusterstate.ClusterStateRegistry,
@@ -55,23 +53,15 @@ type provReqOrchestrator struct {
 	context             *context.AutoscalingContext
 	client              *provreqclient.ProvisioningRequestClient
 	injector            *scheduling.HintingSimulator
-	provisioningClasses []provisioningClass
+	provisioningClasses []ProvisioningClass
 }
 
 // New return new orchestrator.
-func New(kubeConfig *rest.Config) (*provReqOrchestrator, error) {
-	client, err := provreqclient.NewProvisioningRequestClient(kubeConfig)
-	if err != nil {
-		return nil, err
-	}
-
+func New(client *provreqclient.ProvisioningRequestClient, classes []ProvisioningClass) *provReqOrchestrator {
 	return &provReqOrchestrator{
-		client: client,
-		provisioningClasses: []provisioningClass{
-			checkcapacity.New(client),
-			besteffortatomic.New(client),
-		},
-	}, nil
+		client:              client,
+		provisioningClasses: classes,
+	}
 }
 
 // Initialize initialize orchestrator.
