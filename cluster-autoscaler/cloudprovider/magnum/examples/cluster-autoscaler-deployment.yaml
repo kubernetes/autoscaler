@@ -20,7 +20,7 @@ spec:
       serviceAccountName: cluster-autoscaler-account
       containers:
         - name: cluster-autoscaler
-          image: openstackmagnum/cluster-autoscaler:v1.23.0
+          image: openstackmagnum/cluster-autoscaler:v1.28.0
           imagePullPolicy: Always
           command:
             - ./cluster-autoscaler
