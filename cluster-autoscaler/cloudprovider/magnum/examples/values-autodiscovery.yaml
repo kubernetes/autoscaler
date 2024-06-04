@@ -8,7 +8,7 @@ autoDiscovery:
 
 image:
   repository: docker.io/openstackmagnum/cluster-autoscaler
-  tag: v1.23.0
+  tag: v1.28.0
 
 nodeSelector:
   node-role.kubernetes.io/control-plane: ""
