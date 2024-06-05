@@ -26,8 +26,9 @@ import (
 	"time"
 
 	gce "google.golang.org/api/compute/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/client-go/util/workqueue"
-	klog "k8s.io/klog/v2"
+	"k8s.io/klog/v2"
 )
 
 // MigInfoProvider allows obtaining information about MIGs
@@ -359,6 +360,7 @@ func (c *cachingMigInfoProvider) fillMigInfoCache() error {
 				c.cache.SetMigTargetSize(zoneMigRef, zoneMig.TargetSize)
 				c.cache.SetMigBasename(zoneMigRef, zoneMig.BaseInstanceName)
 				c.cache.SetListManagedInstancesResults(zoneMigRef, zoneMig.ListManagedInstancesResults)
+				c.cache.SetMigInstancesState(zoneMigRef, createInstancesState(zoneMig.TargetSize, zoneMig.CurrentActions))
 
 				templateUrl, err := url.Parse(zoneMig.InstanceTemplate)
 				if err == nil {
@@ -443,4 +445,22 @@ func (c *cachingMigInfoProvider) GetListManagedInstancesResults(migRef GceRef) (
 	}
 	c.cache.SetListManagedInstancesResults(migRef, listManagedInstancesResults)
 	return listManagedInstancesResults, nil
+}
+
+func createInstancesState(targetSize int64, actionsSummary *gce.InstanceGroupManagerActionsSummary) map[cloudprovider.InstanceState]int64 {
+	if actionsSummary == nil {
+		return nil
+	}
+	state := map[cloudprovider.InstanceState]int64{
+		cloudprovider.InstanceCreating: 0,
+		cloudprovider.InstanceDeleting: 0,
+		cloudprovider.InstanceRunning:  0,
+	}
+	state[getInstanceState("ABANDONING")] += actionsSummary.Abandoning
+	state[getInstanceState("CREATING")] += actionsSummary.Creating
+	state[getInstanceState("CREATING_WITHOUT_RETRIES")] += actionsSummary.CreatingWithoutRetries
+	state[getInstanceState("DELETING")] += actionsSummary.Deleting
+	state[getInstanceState("RECREATING")] += actionsSummary.Recreating
+	state[cloudprovider.InstanceRunning] = targetSize - state[cloudprovider.InstanceCreating]
+	return state
 }

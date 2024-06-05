@@ -73,6 +73,7 @@ type GceCache struct {
 	machinesCache                    map[MachineTypeKey]MachineType
 	migTargetSizeCache               map[GceRef]int64
 	migBaseNameCache                 map[GceRef]string
+	migInstancesStateCache           map[GceRef]map[cloudprovider.InstanceState]int64
 	listManagedInstancesResultsCache map[GceRef]string
 	instanceTemplateNameCache        map[GceRef]InstanceTemplateName
 	instanceTemplatesCache           map[GceRef]*gce.InstanceTemplate
@@ -91,6 +92,7 @@ func NewGceCache() *GceCache {
 		machinesCache:                    map[MachineTypeKey]MachineType{},
 		migTargetSizeCache:               map[GceRef]int64{},
 		migBaseNameCache:                 map[GceRef]string{},
+		migInstancesStateCache:           map[GceRef]map[cloudprovider.InstanceState]int64{},
 		listManagedInstancesResultsCache: map[GceRef]string{},
 		instanceTemplateNameCache:        map[GceRef]InstanceTemplateName{},
 		instanceTemplatesCache:           map[GceRef]*gce.InstanceTemplate{},
@@ -545,4 +547,26 @@ func (gc *GceCache) InvalidateAllListManagedInstancesResults() {
 	gc.cacheMutex.Lock()
 	defer gc.cacheMutex.Unlock()
 	gc.listManagedInstancesResultsCache = make(map[GceRef]string)
+}
+
+// GetMigInstancesState returns instancesState for the given mig from cache.
+func (gc *GceCache) GetMigInstancesState(migRef GceRef) (instanceState map[cloudprovider.InstanceState]int64, found bool) {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+	instanceState, found = gc.migInstancesStateCache[migRef]
+	return
+}
+
+// SetMigInstancesState sets the InstancesState for a given mig in cache.
+func (gc *GceCache) SetMigInstancesState(migRef GceRef, instanceState map[cloudprovider.InstanceState]int64) {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+	gc.migInstancesStateCache[migRef] = instanceState
+}
+
+// InvalidateMigInstancesState invalidates all migInstancesStateCache entries.
+func (gc *GceCache) InvalidateMigInstancesState() {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+	gc.migInstancesStateCache = make(map[GceRef]map[cloudprovider.InstanceState]int64)
 }

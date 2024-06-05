@@ -1059,6 +1059,55 @@ func TestGetMigInstanceTemplate(t *testing.T) {
 	}
 }
 
+func TestCreateInstancesState(t *testing.T) {
+	testCases := []struct {
+		name          string
+		targetSize    int64
+		actionSummary *gce.InstanceGroupManagerActionsSummary
+		want          map[cloudprovider.InstanceState]int64
+	}{
+		{
+			name:          "actionSummary is nil",
+			targetSize:    10,
+			actionSummary: nil,
+			want:          nil,
+		},
+		{
+			name:          "actionSummary is empty",
+			targetSize:    10,
+			actionSummary: &gce.InstanceGroupManagerActionsSummary{},
+			want: map[cloudprovider.InstanceState]int64{
+				cloudprovider.InstanceCreating: 0,
+				cloudprovider.InstanceDeleting: 0,
+				cloudprovider.InstanceRunning:  10,
+			},
+		},
+		{
+			name:       "actionSummary with data",
+			targetSize: 30,
+			actionSummary: &gce.InstanceGroupManagerActionsSummary{
+				Abandoning:             2,
+				Creating:               3,
+				CreatingWithoutRetries: 5,
+				Deleting:               7,
+				Recreating:             11,
+			},
+			want: map[cloudprovider.InstanceState]int64{
+				cloudprovider.InstanceCreating: 19,
+				cloudprovider.InstanceDeleting: 9,
+				cloudprovider.InstanceRunning:  11,
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			state := createInstancesState(tc.targetSize, tc.actionSummary)
+			assert.Equal(t, tc.want, state)
+		})
+	}
+}
+
 func TestGetMigInstanceKubeEnv(t *testing.T) {
 	templateName := "template-name"
 	kubeEnvValue := "VAR1: VALUE1\nVAR2: VALUE2"
@@ -1397,6 +1446,7 @@ func emptyCache() *GceCache {
 		instancesUpdateTime:              make(map[GceRef]time.Time),
 		migTargetSizeCache:               make(map[GceRef]int64),
 		migBaseNameCache:                 make(map[GceRef]string),
+		migInstancesStateCache:           make(map[GceRef]map[cloudprovider.InstanceState]int64),
 		listManagedInstancesResultsCache: make(map[GceRef]string),
 		instanceTemplateNameCache:        make(map[GceRef]InstanceTemplateName),
 		instanceTemplatesCache:           make(map[GceRef]*gce.InstanceTemplate),
