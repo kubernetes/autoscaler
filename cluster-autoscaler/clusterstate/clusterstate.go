@@ -1044,7 +1044,7 @@ func getNotRegisteredNodes(allNodes []*apiv1.Node, cloudProviderNodeInstances ma
 }
 
 func expectedToRegister(instance cloudprovider.Instance) bool {
-	return instance.Status != nil && instance.Status.State != cloudprovider.InstanceDeleting && instance.Status.ErrorInfo == nil
+	return instance.Status == nil || (instance.Status.State != cloudprovider.InstanceDeleting && instance.Status.ErrorInfo == nil)
 }
 
 // Calculates which of the registered nodes in Kubernetes that do not exist in cloud provider.
