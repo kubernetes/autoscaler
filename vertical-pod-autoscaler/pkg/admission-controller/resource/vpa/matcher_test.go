@@ -17,6 +17,7 @@ limitations under the License.
 package vpa
 
 import (
+	"context"
 	"testing"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -148,7 +149,7 @@ func TestGetMatchingVpa(t *testing.T) {
 			// The hierarchy part is being test in the "TestControllerFetcher" test.
 			matcher := NewMatcher(vpaLister, mockSelectorFetcher, controllerfetcher.FakeControllerFetcher{})
 
-			vpa := matcher.GetMatchingVPA(tc.pod)
+			vpa := matcher.GetMatchingVPA(context.Background(), tc.pod)
 			if tc.expectedFound && assert.NotNil(t, vpa) {
 				assert.Equal(t, tc.expectedVpaName, vpa.Name)
 			} else {

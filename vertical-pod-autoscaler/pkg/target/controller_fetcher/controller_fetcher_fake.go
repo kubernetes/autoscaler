@@ -16,11 +16,13 @@ limitations under the License.
 
 package controllerfetcher
 
+import "context"
+
 // FakeControllerFetcher should be used in test only. It returns exactly the same controllerKey
 type FakeControllerFetcher struct{}
 
 // FindTopMostWellKnownOrScalable returns the same key for that fake implementation
-func (f FakeControllerFetcher) FindTopMostWellKnownOrScalable(controller *ControllerKeyWithAPIVersion) (*ControllerKeyWithAPIVersion, error) {
+func (f FakeControllerFetcher) FindTopMostWellKnownOrScalable(_ context.Context, controller *ControllerKeyWithAPIVersion) (*ControllerKeyWithAPIVersion, error) {
 	return controller, nil
 }
 

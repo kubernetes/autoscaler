@@ -50,7 +50,7 @@ const (
 type VpaTargetSelectorFetcher interface {
 	// Fetch returns a labelSelector used to gather Pods controlled by the given VPA.
 	// If error is nil, the returned labelSelector is not nil.
-	Fetch(vpa *vpa_types.VerticalPodAutoscaler) (labels.Selector, error)
+	Fetch(ctx context.Context, vpa *vpa_types.VerticalPodAutoscaler) (labels.Selector, error)
 }
 
 type wellKnownController string
@@ -116,7 +116,7 @@ type vpaTargetSelectorFetcher struct {
 	informersMap    map[wellKnownController]cache.SharedIndexInformer
 }
 
-func (f *vpaTargetSelectorFetcher) Fetch(vpa *vpa_types.VerticalPodAutoscaler) (labels.Selector, error) {
+func (f *vpaTargetSelectorFetcher) Fetch(ctx context.Context, vpa *vpa_types.VerticalPodAutoscaler) (labels.Selector, error) {
 	if vpa.Spec.TargetRef == nil {
 		return nil, fmt.Errorf("targetRef not defined. If this is a v1beta1 object switch to v1beta2.")
 	}
@@ -137,7 +137,7 @@ func (f *vpaTargetSelectorFetcher) Fetch(vpa *vpa_types.VerticalPodAutoscaler) (
 		Kind:  vpa.Spec.TargetRef.Kind,
 	}
 
-	selector, err := f.getLabelSelectorFromResource(groupKind, vpa.Namespace, vpa.Spec.TargetRef.Name)
+	selector, err := f.getLabelSelectorFromResource(ctx, groupKind, vpa.Namespace, vpa.Spec.TargetRef.Name)
 	if err != nil {
 		return nil, fmt.Errorf("Unhandled targetRef %s / %s / %s, last error %v",
 			vpa.Spec.TargetRef.APIVersion, vpa.Spec.TargetRef.Kind, vpa.Spec.TargetRef.Name, err)
@@ -173,7 +173,7 @@ func getLabelSelector(informer cache.SharedIndexInformer, kind, namespace, name 
 }
 
 func (f *vpaTargetSelectorFetcher) getLabelSelectorFromResource(
-	groupKind schema.GroupKind, namespace, name string,
+	ctx context.Context, groupKind schema.GroupKind, namespace, name string,
 ) (labels.Selector, error) {
 	mappings, err := f.mapper.RESTMappings(groupKind)
 	if err != nil {
@@ -183,7 +183,7 @@ func (f *vpaTargetSelectorFetcher) getLabelSelectorFromResource(
 	var lastError error
 	for _, mapping := range mappings {
 		groupResource := mapping.Resource.GroupResource()
-		scale, err := f.scaleNamespacer.Scales(namespace).Get(context.TODO(), groupResource, name, metav1.GetOptions{})
+		scale, err := f.scaleNamespacer.Scales(namespace).Get(ctx, groupResource, name, metav1.GetOptions{})
 		if err == nil {
 			if scale.Status.Selector == "" {
 				return nil, fmt.Errorf("Resource %s/%s has an empty selector for scale sub-resource", namespace, name)

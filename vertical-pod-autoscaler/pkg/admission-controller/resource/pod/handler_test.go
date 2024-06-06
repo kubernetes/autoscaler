@@ -17,6 +17,7 @@ limitations under the License.
 package pod
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -43,7 +44,7 @@ type fakeVpaMatcher struct {
 	vpa *vpa_types.VerticalPodAutoscaler
 }
 
-func (m *fakeVpaMatcher) GetMatchingVPA(_ *apiv1.Pod) *vpa_types.VerticalPodAutoscaler {
+func (m *fakeVpaMatcher) GetMatchingVPA(_ context.Context, _ *apiv1.Pod) *vpa_types.VerticalPodAutoscaler {
 	return m.vpa
 }
 
@@ -176,7 +177,7 @@ func TestGetPatches(t *testing.T) {
 			fppp := &fakePodPreProcessor{tc.podPreProcessorError}
 			fvm := &fakeVpaMatcher{vpa: tc.vpa}
 			h := NewResourceHandler(fppp, fvm, tc.calculators)
-			patches, err := h.GetPatches(&admissionv1.AdmissionRequest{
+			patches, err := h.GetPatches(context.Background(), &admissionv1.AdmissionRequest{
 				Resource: v1.GroupVersionResource{
 					Version: "v1",
 				},

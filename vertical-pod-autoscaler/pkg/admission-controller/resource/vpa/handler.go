@@ -17,6 +17,7 @@ limitations under the License.
 package vpa
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -71,7 +72,7 @@ func (h *resourceHandler) DisallowIncorrectObjects() bool {
 }
 
 // GetPatches builds patches for VPA in given admission request.
-func (h *resourceHandler) GetPatches(ar *v1.AdmissionRequest) ([]resource.PatchRecord, error) {
+func (h *resourceHandler) GetPatches(_ context.Context, ar *v1.AdmissionRequest) ([]resource.PatchRecord, error) {
 	raw, isCreate := ar.Object.Raw, ar.Operation == v1.Create
 	vpa, err := parseVPA(raw)
 	if err != nil {
