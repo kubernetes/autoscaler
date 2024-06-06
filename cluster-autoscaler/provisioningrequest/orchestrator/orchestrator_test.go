@@ -334,7 +334,7 @@ func setupTest(t *testing.T, nodes []*apiv1.Node, prs []*provreqwrapper.Provisio
 
 	orchestrator := &provReqOrchestrator{
 		client:              client,
-		provisioningClasses: []provisioningClass{checkcapacity.New(client), besteffortatomic.New(client)},
+		provisioningClasses: []ProvisioningClass{checkcapacity.New(client), besteffortatomic.New(client)},
 	}
 	orchestrator.Initialize(&autoscalingContext, processors, clusterState, estimatorBuilder, taints.TaintConfig{})
 	return orchestrator, nodeInfos
