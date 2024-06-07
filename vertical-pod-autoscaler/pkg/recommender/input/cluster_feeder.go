@@ -19,6 +19,7 @@ package input
 import (
 	"context"
 	"fmt"
+	"slices"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -315,15 +316,6 @@ func selectsRecommender(selectors []*vpa_types.VerticalPodAutoscalerRecommenderS
 	return false
 }
 
-func selectsNamespace(namespace string, names []string) bool {
-	for _, n := range names {
-		if namespace == n {
-			return true
-		}
-	}
-	return false
-}
-
 // Filter VPA objects whose specified recommender names are not default
 func filterVPAs(feeder *clusterStateFeeder, allVpaCRDs []*vpa_types.VerticalPodAutoscaler) []*vpa_types.VerticalPodAutoscaler {
 	klog.V(3).Infof("Start selecting the vpaCRDs.")
@@ -345,7 +337,7 @@ func filterVPAs(feeder *clusterStateFeeder, allVpaCRDs []*vpa_types.VerticalPodA
 			}
 		}
 
-		if selectsNamespace(vpaCRD.ObjectMeta.Namespace, feeder.ignoredNamespaces) {
+		if slices.Contains(feeder.ignoredNamespaces, vpaCRD.ObjectMeta.Namespace) {
 			klog.V(6).Infof("Ignoring vpaCRD %s in namespace %s as namespace is ignored", vpaCRD.Name, vpaCRD.Namespace)
 			continue
 		}
