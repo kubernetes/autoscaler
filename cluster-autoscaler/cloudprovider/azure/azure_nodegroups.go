@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Kubernetes Authors.
+Copyright 2024 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,10 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package nodegroupset
+package azure
 
 import (
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
@@ -52,12 +53,12 @@ func nodesFromSameAzureNodePoolLegacy(n1, n2 *schedulerframework.NodeInfo) bool 
 	return n1AzureNodePool != "" && n1AzureNodePool == n2AzureNodePool
 }
 
-// CreateAzureNodeInfoComparator returns a comparator that checks if two nodes should be considered
+// CreateNodeInfoComparator returns a comparator that checks if two nodes should be considered
 // part of the same NodeGroupSet. This is true if they either belong to the same Azure agentpool
 // or match usual conditions checked by IsCloudProviderNodeInfoSimilar, even if they have different agentpool labels.
-func CreateAzureNodeInfoComparator(extraIgnoredLabels []string, ratioOpts config.NodeGroupDifferenceRatios) NodeInfoComparator {
+func CreateNodeInfoComparator(extraIgnoredLabels []string, ratioOpts config.NodeGroupDifferenceRatios) nodegroupset.NodeInfoComparator {
 	azureIgnoredLabels := make(map[string]bool)
-	for k, v := range BasicIgnoredLabels {
+	for k, v := range nodegroupset.BasicIgnoredLabels {
 		azureIgnoredLabels[k] = v
 	}
 	azureIgnoredLabels[AzureNodepoolLegacyLabel] = true
@@ -78,6 +79,6 @@ func CreateAzureNodeInfoComparator(extraIgnoredLabels []string, ratioOpts config
 		if nodesFromSameAzureNodePool(n1, n2) {
 			return true
 		}
-		return IsCloudProviderNodeInfoSimilar(n1, n2, azureIgnoredLabels, ratioOpts)
+		return nodegroupset.IsCloudProviderNodeInfoSimilar(n1, n2, azureIgnoredLabels, ratioOpts)
 	}
 }
