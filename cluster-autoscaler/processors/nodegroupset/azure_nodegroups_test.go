@@ -67,9 +67,26 @@ func TestIsAzureNodeInfoSimilar(t *testing.T) {
 	n1.ObjectMeta.Labels["agentpool"] = "foo"
 	n2.ObjectMeta.Labels["agentpool"] = "bar"
 	checkNodesSimilar(t, n1, n2, comparator, true)
+	// Different creationSource
+	n1.ObjectMeta.Labels["creationSource"] = "aks-aks-nodepool2-vmss"
+	n2.ObjectMeta.Labels["creationSource"] = "aks-aks-nodepool3-vmss"
+	checkNodesSimilar(t, n1, n2, comparator, true)
+	// Different node image version
+	n1.ObjectMeta.Labels["kubernetes.azure.com/node-image-version"] = "AKSUbuntu-1804gen2-2021.01.28"
+	n2.ObjectMeta.Labels["kubernetes.azure.com/node-image-version"] = "AKSUbuntu-1804gen2-2022.01.30"
+	checkNodesSimilar(t, n1, n2, comparator, true)
 	// Custom label
 	n1.ObjectMeta.Labels["example.com/ready"] = "true"
 	n2.ObjectMeta.Labels["example.com/ready"] = "false"
+	checkNodesSimilar(t, n1, n2, comparator, true)
+	// One node with aksConsolidatedAdditionalProperties label
+	n1.ObjectMeta.Labels[aksConsolidatedAdditionalProperties] = "foo"
+	checkNodesSimilar(t, n1, n2, comparator, true)
+	// Same aksConsolidatedAdditionalProperties
+	n2.ObjectMeta.Labels[aksConsolidatedAdditionalProperties] = "foo"
+	checkNodesSimilar(t, n1, n2, comparator, true)
+	// Different aksConsolidatedAdditionalProperties label
+	n2.ObjectMeta.Labels[aksConsolidatedAdditionalProperties] = "bar"
 	checkNodesSimilar(t, n1, n2, comparator, true)
 }
 
