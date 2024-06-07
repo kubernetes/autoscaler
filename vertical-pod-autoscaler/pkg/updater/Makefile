@@ -84,7 +84,7 @@ clean-%:
 	rm -f ${COMPONENT}-$*
 
 format:
-	test -z "$$(find . -path ./vendor -prune -type f -o -name '*.go' -exec gofmt -s -d {} + | tee /dev/stderr)" || \
-	test -z "$$(find . -path ./vendor -prune -type f -o -name '*.go' -exec gofmt -s -w {} + | tee /dev/stderr)"
+	test -z "$$(find . -type f -o -name '*.go' -exec gofmt -s -d {} + | tee /dev/stderr)" || \
+	test -z "$$(find . -type f -o -name '*.go' -exec gofmt -s -w {} + | tee /dev/stderr)"
 
 .PHONY: all build test-unit clean format release

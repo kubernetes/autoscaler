@@ -59,8 +59,7 @@ function update_deps() {
     echo "Updating k8s to ${K8S_TAG}"
     go get "k8s.io/kubernetes@v${K8S_TAG}"
 
-    echo "Running go mod tidy and vendoring deps"
-    # tidy and vendor modules
+    echo "Running go mod tidy"
+    # tidy
     go mod tidy
-    go mod vendor
 )

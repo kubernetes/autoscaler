@@ -22,7 +22,7 @@ WORKDIR /gopath/src/k8s.io/autoscaler/vertical-pod-autoscaler
 
 ARG TARGETOS TARGETARCH
 
-RUN CGO_ENABLED=0 LD_FLAGS=-s GOARCH=$TARGETARCH GOOS=$TARGETOS go build -C pkg/updater -mod vendor -o updater-$TARGETARCH
+RUN CGO_ENABLED=0 LD_FLAGS=-s GOARCH=$TARGETARCH GOOS=$TARGETOS go build -C pkg/updater -o updater-$TARGETARCH
 
 FROM gcr.io/distroless/static:latest
 MAINTAINER Marcin Wielgus "mwielgus@google.com"

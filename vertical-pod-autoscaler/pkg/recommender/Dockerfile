@@ -22,7 +22,7 @@ WORKDIR /gopath/src/k8s.io/autoscaler/vertical-pod-autoscaler
 
 ARG TARGETOS TARGETARCH
 
-RUN CGO_ENABLED=0 LD_FLAGS=-s GOARCH=$TARGETARCH GOOS=$TARGETOS go build -C pkg/recommender -mod vendor -o recommender-$TARGETARCH
+RUN CGO_ENABLED=0 LD_FLAGS=-s GOARCH=$TARGETARCH GOOS=$TARGETOS go build -C pkg/recommender -o recommender-$TARGETARCH
 
 FROM gcr.io/distroless/static:latest
 MAINTAINER Krzysztof Grygiel "kgrygiel@google.com"

@@ -22,7 +22,7 @@ WORKDIR /gopath/src/k8s.io/autoscaler/vertical-pod-autoscaler
 
 ARG TARGETOS TARGETARCH
 
-RUN CGO_ENABLED=0 LD_FLAGS=-s GOARCH=$TARGETARCH GOOS=$TARGETOS go build -C pkg/admission-controller -mod vendor -o admission-controller-$TARGETARCH
+RUN CGO_ENABLED=0 LD_FLAGS=-s GOARCH=$TARGETARCH GOOS=$TARGETOS go build -C pkg/admission-controller -o admission-controller-$TARGETARCH
 
 FROM gcr.io/distroless/static:latest
 MAINTAINER Tomasz Kulczynski "tkulczynski@google.com"
