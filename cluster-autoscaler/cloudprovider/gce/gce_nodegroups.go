@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Kubernetes Authors.
+Copyright 2024 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,22 +14,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package nodegroupset
+package gce
 
 import (
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // CreateGceNodeInfoComparator returns a comparator that checks if two nodes should be considered
 // part of the same NodeGroupSet. This is true if they match usual conditions checked by IsCloudProviderNodeInfoSimilar,
 // even if they have different GCE-specific labels.
-func CreateGceNodeInfoComparator(extraIgnoredLabels []string, ratioOpts config.NodeGroupDifferenceRatios) NodeInfoComparator {
+func CreateGceNodeInfoComparator(extraIgnoredLabels []string, ratioOpts config.NodeGroupDifferenceRatios) nodegroupset.NodeInfoComparator {
 	gceIgnoredLabels := map[string]bool{
 		"topology.gke.io/zone": true,
 	}
 
-	for k, v := range BasicIgnoredLabels {
+	for k, v := range nodegroupset.BasicIgnoredLabels {
 		gceIgnoredLabels[k] = v
 	}
 
@@ -38,6 +39,6 @@ func CreateGceNodeInfoComparator(extraIgnoredLabels []string, ratioOpts config.N
 	}
 
 	return func(n1, n2 *schedulerframework.NodeInfo) bool {
-		return IsCloudProviderNodeInfoSimilar(n1, n2, gceIgnoredLabels, ratioOpts)
+		return nodegroupset.IsCloudProviderNodeInfoSimilar(n1, n2, gceIgnoredLabels, ratioOpts)
 	}
 }
