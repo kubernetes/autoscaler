@@ -308,6 +308,54 @@ func (m *asgCache) DeleteInstances(instances []*AwsInstanceRef) error {
 		}
 	}
 
+	var isRecentScalingActivitySuccess = false
+	var err error
+
+	placeHolderInstancesCount := m.GetPlaceHolderInstancesCount(instances)
+	// Check if there are any placeholder instances in the list.
+	if placeHolderInstancesCount > 0 {
+		// Log the check for placeholders in the ASG.
+		klog.V(4).Infof("Detected %d placeholder instance(s), checking recent scaling activity for ASG %s",
+			placeHolderInstancesCount, commonAsg.Name)
+
+		// Retrieve the most recent scaling activity to determine its success state.
+		isRecentScalingActivitySuccess, err = m.getMostRecentScalingActivity(commonAsg)
+
+		// Handle errors from retrieving scaling activity.
+		if err != nil {
+			// Log the error if the scaling activity check fails and return the error.
+			klog.Errorf("Error retrieving scaling activity for ASG %s: %v", commonAsg.Name, err)
+			return err // Return error to prevent further processing with uncertain state information.
+		}
+
+		if !isRecentScalingActivitySuccess {
+			asgDetail, err := m.getDescribeAutoScalingGroupResults(commonAsg)
+
+			if err != nil {
+				klog.Errorf("Error retrieving ASG details %s: %v", commonAsg.Name, err)
+				return err
+			}
+
+			activeInstancesInAsg := len(asgDetail.Instances)
+			desiredCapacityInAsg := int(*asgDetail.DesiredCapacity)
+			klog.V(4).Infof("asg %s has placeholders instances with desired capacity = %d and active instances = %d ",
+				commonAsg.Name, desiredCapacityInAsg, activeInstancesInAsg)
+
+			// If the difference between the active instances and the desired capacity is greater than 1,
+			// it means that the ASG is under-provisioned and the desired capacity is not being reached.
+			// In this case, we would reduce the size of ASG by the count of unprovisioned instances
+			// which is equal to the total count of active instances in ASG
+
+			err = m.setAsgSizeNoLock(commonAsg, activeInstancesInAsg)
+
+			if err != nil {
+				klog.Errorf("Error reducing ASG %s size to %d: %v", commonAsg.Name, activeInstancesInAsg, err)
+				return err
+			}
+			return nil
+		}
+	}
+
 	for _, instance := range instances {
 		// check if the instance is a placeholder - a requested instance that was never created by the node group
 		// if it is, just decrease the size of the node group, as there's no specific instance we can remove
@@ -350,6 +398,33 @@ func (m *asgCache) DeleteInstances(instances []*AwsInstanceRef) error {
 		}
 	}
 	return nil
+}
+
+func (m *asgCache) getDescribeAutoScalingGroupResults(commonAsg *asg) (*autoscaling.Group, error) {
+	asgs := make([]*autoscaling.Group, 0)
+	commonAsgNames := []string{commonAsg.Name}
+	input := &autoscaling.DescribeAutoScalingGroupsInput{
+		AutoScalingGroupNames: aws.StringSlice(commonAsgNames),
+		MaxRecords:            aws.Int64(100),
+	}
+
+	err := m.awsService.DescribeAutoScalingGroupsPages(input, func(output *autoscaling.DescribeAutoScalingGroupsOutput, _ bool) bool {
+		asgs = append(asgs, output.AutoScalingGroups...)
+		// We return true while we want to be called with the next page of
+		// results, if any.
+		return false
+	})
+
+	if err != nil {
+		klog.Errorf("Failed while performing DescribeAutoScalingGroupsPages: %v", err)
+		return nil, err
+	}
+
+	if len(asgs) == 0 {
+		return nil, fmt.Errorf("no ASGs found for %s", commonAsgNames)
+	}
+
+	return asgs[0], nil
 }
 
 // isPlaceholderInstance checks if the given instance is only a placeholder
@@ -623,4 +698,56 @@ func (m *asgCache) buildInstanceRefFromAWS(instance *autoscaling.Instance) AwsIn
 // Cleanup closes the channel to signal the go routine to stop that is handling the cache
 func (m *asgCache) Cleanup() {
 	close(m.interrupt)
+}
+
+func (m *asgCache) getMostRecentScalingActivity(asg *asg) (bool, error) {
+	input := &autoscaling.DescribeScalingActivitiesInput{
+		AutoScalingGroupName: aws.String(asg.Name),
+		MaxRecords:           aws.Int64(1),
+	}
+
+	var response *autoscaling.DescribeScalingActivitiesOutput
+	var err error
+	attempts := 3
+
+	for i := 0; i < attempts; i++ {
+		response, err = m.awsService.DescribeScalingActivities(input)
+		if err == nil {
+			break
+		}
+		klog.V(2).Infof("Failed to describe scaling activities, attempt %d/%d: %v", i+1, attempts, err)
+		time.Sleep(time.Second * 2)
+	}
+
+	if err != nil {
+		klog.Errorf("All attempts failed for DescribeScalingActivities: %v", err)
+		return false, err
+	}
+
+	if len(response.Activities) == 0 {
+		klog.Info("No scaling activities found for ASG:", asg.Name)
+		return false, nil
+	}
+
+	lastActivity := response.Activities[0]
+	if *lastActivity.StatusCode == "Successful" {
+		klog.Infof("Most recent scaling activity for ASG %s was successful", asg.Name)
+		return true, nil
+	} else {
+		klog.Infof("Most recent scaling activity for ASG %s was not successful: %s", asg.Name, *lastActivity.StatusMessage)
+		return false, nil
+	}
+}
+
+// GetPlaceHolderInstancesCount returns count of placeholder instances in the cache
+func (m *asgCache) GetPlaceHolderInstancesCount(instances []*AwsInstanceRef) int {
+
+	placeholderInstancesCount := 0
+	for _, instance := range instances {
+		if strings.HasPrefix(instance.Name, placeholderInstanceNamePrefix) {
+			placeholderInstancesCount++
+
+		}
+	}
+	return placeholderInstancesCount
 }
