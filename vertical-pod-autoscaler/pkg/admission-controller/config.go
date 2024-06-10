@@ -75,7 +75,7 @@ func configTLS(serverCert, serverKey []byte, minTlsVersion, ciphers string) *tls
 
 // register this webhook admission controller with the kube-apiserver
 // by creating MutatingWebhookConfiguration.
-func selfRegistration(clientset *kubernetes.Clientset, caCert []byte, namespace, serviceName, url string, registerByURL bool, timeoutSeconds int32) {
+func selfRegistration(clientset kubernetes.Interface, caCert []byte, namespace, serviceName, url string, registerByURL bool, timeoutSeconds int32) {
 	time.Sleep(10 * time.Second)
 	client := clientset.AdmissionregistrationV1().MutatingWebhookConfigurations()
 	_, err := client.Get(context.TODO(), webhookConfigName, metav1.GetOptions{})
