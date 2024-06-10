@@ -18,6 +18,7 @@ package aws
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -568,6 +569,22 @@ func TestDeleteNodesWithPlaceholder(t *testing.T) {
 		HonorCooldown:        aws.Bool(false),
 	}).Return(&autoscaling.SetDesiredCapacityOutput{})
 
+	a.On("DescribeScalingActivities",
+		&autoscaling.DescribeScalingActivitiesInput{
+			AutoScalingGroupName: aws.String("test-asg"),
+			MaxRecords:           aws.Int64(1),
+		},
+	).Return(
+		&autoscaling.DescribeScalingActivitiesOutput{
+			Activities: []*autoscaling.Activity{
+				{
+					StatusCode:    aws.String("Successful"),
+					StatusMessage: aws.String("Successful"),
+					StartTime:     aws.Time(time.Now().Add(-30 * time.Minute)),
+				},
+			},
+		}, nil)
+
 	// Look up the current number of instances...
 	var expectedInstancesCount int64 = 2
 	a.On("DescribeAutoScalingGroupsPages",
@@ -738,4 +755,85 @@ func TestHasInstance(t *testing.T) {
 	present, err = provider.HasInstance(node4)
 	assert.NoError(t, err)
 	assert.False(t, present)
+}
+
+// write unit test for DeleteInstances function
+func TestDeleteInstances_scalingActivityFailure(t *testing.T) {
+
+	a := &autoScalingMock{}
+	provider := testProvider(t, newTestAwsManagerWithAsgs(t, a, nil, []string{"1:5:test-asg"}))
+
+	asgs := provider.NodeGroups()
+	a.On("SetDesiredCapacity", &autoscaling.SetDesiredCapacityInput{
+		AutoScalingGroupName: aws.String(asgs[0].Id()),
+		DesiredCapacity:      aws.Int64(1),
+		HonorCooldown:        aws.Bool(false),
+	}).Return(&autoscaling.SetDesiredCapacityOutput{})
+	var expectedInstancesCount int64 = 5
+	a.On("DescribeAutoScalingGroupsPages",
+		&autoscaling.DescribeAutoScalingGroupsInput{
+			AutoScalingGroupNames: aws.StringSlice([]string{"test-asg"}),
+			MaxRecords:            aws.Int64(100),
+		},
+		mock.AnythingOfType("func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool"),
+	).Run(func(args mock.Arguments) {
+		fn := args.Get(1).(func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool)
+		fn(testNamedDescribeAutoScalingGroupsOutput("test-asg", expectedInstancesCount, "i-0c257f8f05fd1c64b", "i-0c257f8f05fd1c64c", "i-0c257f8f05fd1c64d"), false)
+		// we expect the instance count to be 1 after the call to DeleteNodes
+		//expectedInstancesCount =
+	}).Return(nil)
+
+	a.On("DescribeScalingActivities",
+		&autoscaling.DescribeScalingActivitiesInput{
+			AutoScalingGroupName: aws.String("test-asg"),
+			MaxRecords:           aws.Int64(1),
+		},
+	).Return(
+		&autoscaling.DescribeScalingActivitiesOutput{
+			Activities: []*autoscaling.Activity{
+				{
+					StatusCode:    aws.String("Failed"),
+					StatusMessage: aws.String("Launching a new EC2 instance. Status Reason: We currently do not have sufficient p5.48xlarge capacity in zones with support for 'gp2' volumes. Our system will be working on provisioning additional capacity. Launching EC2 instance failed.\t"),
+					StartTime:     aws.Time(time.Now().Add(-30 * time.Minute)),
+				},
+			},
+		}, nil)
+
+	a.On("DescribeScalingActivities",
+		&autoscaling.DescribeScalingActivitiesInput{
+			AutoScalingGroupName: aws.String("test-asg"),
+		},
+	).Return(&autoscaling.DescribeScalingActivitiesOutput{}, nil)
+
+	a.On("SetDesiredCapacity", &autoscaling.SetDesiredCapacityInput{
+		AutoScalingGroupName: aws.String(asgs[0].Id()),
+		DesiredCapacity:      aws.Int64(3),
+		HonorCooldown:        aws.Bool(false),
+	}).Return(&autoscaling.SetDesiredCapacityOutput{})
+
+	provider.Refresh()
+
+	initialSize, err := asgs[0].TargetSize()
+	assert.NoError(t, err)
+	assert.Equal(t, 5, initialSize)
+
+	nodes := []*apiv1.Node{}
+	asgToInstances := provider.awsManager.asgCache.asgToInstances[AwsRef{Name: "test-asg"}]
+	for _, instance := range asgToInstances {
+		nodes = append(nodes, &apiv1.Node{
+			Spec: apiv1.NodeSpec{
+				ProviderID: instance.ProviderID,
+			},
+		})
+	}
+
+	err = asgs[0].DeleteNodes(nodes)
+	assert.NoError(t, err)
+	a.AssertNumberOfCalls(t, "SetDesiredCapacity", 1)
+	a.AssertNumberOfCalls(t, "DescribeAutoScalingGroupsPages", 2)
+
+	newSize, err := asgs[0].TargetSize()
+	assert.NoError(t, err)
+	assert.Equal(t, 3, newSize)
+
 }
