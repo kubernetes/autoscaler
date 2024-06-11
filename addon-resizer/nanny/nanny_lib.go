@@ -27,6 +27,7 @@ import (
 	inf "gopkg.in/inf.v0"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/addon-resizer/healthcheck"
+	"k8s.io/autoscaler/addon-resizer/nanny/metrics"
 	"k8s.io/klog/v2"
 )
 
@@ -151,6 +152,7 @@ func updateResources(k8s KubernetesClient, est ResourceEstimator, now, lastChang
 
 	if err != nil {
 		klog.Error(err)
+		metrics.ObserveOutcome("error_getting_count")
 		return noChange
 	}
 	klog.V(4).Infof("The cluster size is %d", num)
@@ -159,6 +161,7 @@ func updateResources(k8s KubernetesClient, est ResourceEstimator, now, lastChang
 	resources, err := k8s.ContainerResources()
 	if err != nil {
 		klog.Errorf("Error while querying apiserver for resources: %v", err)
+		metrics.ObserveOutcome("error_getting_resources")
 		return noChange
 	}
 
@@ -171,6 +174,7 @@ func updateResources(k8s KubernetesClient, est ResourceEstimator, now, lastChang
 		if klog.V(4).Enabled() {
 			klog.V(4).Infof("Resources are within the expected limits. Actual: %+v Expected: %+v", jsonOrValue(*resources), jsonOrValue(*expResources))
 		}
+		metrics.ObserveOutcome("resources_within_limits")
 		return noChange
 	}
 
@@ -179,14 +183,17 @@ func updateResources(k8s KubernetesClient, est ResourceEstimator, now, lastChang
 		if prevResult != postpone {
 			klog.Infof("Resources are not within the expected limits, Actual: %+v, accepted range: %+v. Skipping resource update because of scale up/down delay", jsonOrValue(*resources), jsonOrValue(*expResources))
 		}
+		metrics.ObserveOutcome("scale_up_down_delay")
 		return postpone
 	}
 
 	klog.Infof("Resources are not within the expected limits, updating the deployment. Actual: %+v Expected: %+v. Resource will be updated.", jsonOrValue(*resources), jsonOrValue(*expResources))
 	if err := k8s.UpdateDeployment(expResources); err != nil {
 		klog.Error(err)
+		metrics.ObserveOutcome("error_updating_deployment")
 		return noChange
 	}
+	metrics.ObserveOutcome("updated_resources")
 	return overwrite
 }
 

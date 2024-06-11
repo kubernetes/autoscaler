@@ -27,6 +27,7 @@ import (
 
 	"k8s.io/autoscaler/addon-resizer/healthcheck"
 	"k8s.io/autoscaler/addon-resizer/nanny"
+	"k8s.io/autoscaler/addon-resizer/nanny/metrics"
 
 	"path/filepath"
 
@@ -76,6 +77,9 @@ var (
 	leaderElectionLeaseDuration = flag.Duration("leader-election-lease-duration", 15*time.Second, "The duration that non-leader candidates will wait after observing a leadership renewal until attempting to acquire leadership of a led but unrenewed leader slot. This is effectively the maximum duration that a leader can be stopped before it is replaced by another candidate.")
 	leaderElectionRenewDeadline = flag.Duration("leader-election-renew-deadline", 10*time.Second, "The duration that the acting master will retry refreshing leadership before giving up.")
 	leaderElectionRetryPeriod   = flag.Duration("leader-election-retry-period", 2*time.Second, "The duration to wait between tries of actions.")
+	// Metrics endpoint flags.
+	address       = flag.String("address", ":8945", "The address to expose Prometheus metrics.")
+	exposeMetrics = flag.Bool("expose-metrics", false, "When true, exposes Prometheus metrics on the port specified by the address flag.")
 )
 
 func main() {
@@ -83,6 +87,12 @@ func main() {
 	klog.Infof("Invoked by %v", os.Args)
 	klog.Infof("Version: %s", nanny.AddonResizerVersion)
 	flag.Parse()
+
+	if *exposeMetrics {
+		// Register a handler on the provided address.
+		metrics.Initialize(*address)
+	}
+	metrics.Register()
 
 	// Perform further validation of flags.
 	if *deployment == "" {
