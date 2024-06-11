@@ -123,7 +123,7 @@ func TestProvisioningRequestPodsInjector(t *testing.T) {
 		if tc.wantUpdatedConditionName == "" {
 			continue
 		}
-		pr, _ := client.ProvisioningRequest("ns", tc.wantUpdatedConditionName)
+		pr, _ := client.ProvisioningRequestNoCache("ns", tc.wantUpdatedConditionName)
 		accepted := apimeta.FindStatusCondition(pr.Status.Conditions, v1beta1.Accepted)
 		if accepted == nil || accepted.LastTransitionTime != metav1.NewTime(now) {
 			t.Errorf("%s: injector.Process hasn't update accepted condition for ProvisioningRequest %s", tc.name, tc.wantUpdatedConditionName)
