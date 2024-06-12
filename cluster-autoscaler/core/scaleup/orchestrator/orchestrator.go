@@ -228,7 +228,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 		}
 	}
 
-	scaleUpInfos, aErr := o.balanceScaleUps(now, bestOption.NodeGroup, newNodes, nodeInfos, schedulablePodGroups)
+	scaleUpInfos, aErr := o.balanceScaleUps(now, bestOption, newNodes, nodeInfos, schedulablePodGroups)
 	if aErr != nil {
 		return status.UpdateScaleUpError(
 			&status.ScaleUpStatus{CreateNodeGroupResults: createNodeGroupResults, PodsTriggeredScaleUp: bestOption.Pods},
@@ -674,13 +674,16 @@ func (o *ScaleUpOrchestrator) GetCappedNewNodeCount(newNodeCount, currentNodeCou
 
 func (o *ScaleUpOrchestrator) balanceScaleUps(
 	now time.Time,
-	nodeGroup cloudprovider.NodeGroup,
+	bestOption *expander.Option,
 	newNodes int,
 	nodeInfos map[string]*framework.NodeInfo,
 	schedulablePodGroups map[string][]estimator.PodEquivalenceGroup,
 ) ([]nodegroupset.ScaleUpInfo, errors.AutoscalerError) {
-	// Recompute similar node groups in case they need to be updated
-	similarNodeGroups := o.ComputeSimilarNodeGroups(nodeGroup, nodeInfos, schedulablePodGroups, now)
+	similarNodeGroups := bestOption.SimilarNodeGroups
+	if !o.autoscalingContext.SkipSimilarNodeGroupRecomputation {
+		// Recompute similar node groups in case they need to be updated
+		similarNodeGroups = o.ComputeSimilarNodeGroups(bestOption.NodeGroup, nodeInfos, schedulablePodGroups, now)
+	}
 	if similarNodeGroups != nil {
 		// if similar node groups are found, log about them
 		similarNodeGroupIds := make([]string, 0)
@@ -693,7 +696,7 @@ func (o *ScaleUpOrchestrator) balanceScaleUps(
 		klog.V(2).Info("No similar node groups found")
 	}
 
-	targetNodeGroups := []cloudprovider.NodeGroup{nodeGroup}
+	targetNodeGroups := []cloudprovider.NodeGroup{bestOption.NodeGroup}
 	for _, ng := range similarNodeGroups {
 		targetNodeGroups = append(targetNodeGroups, ng)
 	}
