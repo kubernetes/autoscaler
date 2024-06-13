@@ -787,6 +787,10 @@ func buildLaunchTemplateFromSpec(ltSpec *autoscaling.LaunchTemplateSpecification
 
 func taintEksTranslator(t *eks.Taint) (apiv1.TaintEffect, error) {
 	// Translation between AWS EKS and Kubernetes taints
+	//
+	// See:
+	//
+	// https://docs.aws.amazon.com/eks/latest/APIReference/API_Taint.html
 	switch effect := *t.Effect; effect {
 	case eks.TaintEffectNoSchedule:
 		return apiv1.TaintEffectNoSchedule, nil
