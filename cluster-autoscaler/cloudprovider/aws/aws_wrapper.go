@@ -120,7 +120,7 @@ func (m *awsWrapper) getManagedNodegroupInfo(nodegroupName string, clusterName s
 			if taint != nil && taint.Effect != nil && taint.Key != nil && taint.Value != nil {
 				formattedEffect, err := taintEksTranslator(taint)
 				if err != nil {
-					return nil, labels, tags, err
+					return nil, nil, nil, err
 				}
 				taints = append(taints, apiv1.Taint{
 					Key:    *taint.Key,
