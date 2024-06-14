@@ -107,7 +107,7 @@ func (m *AliCloudManager) GetAsgSize(asgConfig *Asg) (int64, error) {
 	if err != nil {
 		return -1, fmt.Errorf("failed to describe ASG %s,Because of %s", asgConfig.id, err.Error())
 	}
-	return int64(sg.DesiredCapacity), nil
+	return int64(max(sg.DesiredCapacity, sg.ActiveCapacity + sg.PendingCapacity)), nil
 }
 
 // SetAsgSize sets ASG size.
