@@ -27,7 +27,6 @@ import (
 
 	"k8s.io/autoscaler/addon-resizer/healthcheck"
 	"k8s.io/autoscaler/addon-resizer/nanny"
-	"k8s.io/autoscaler/addon-resizer/nanny/metrics"
 
 	"path/filepath"
 
@@ -88,11 +87,11 @@ func main() {
 	klog.Infof("Version: %s", nanny.AddonResizerVersion)
 	flag.Parse()
 
+	nanny.RegisterMetrics()
 	if *exposeMetrics {
 		// Register a handler on the provided address.
-		metrics.Initialize(*address)
+		nanny.InitializeMetrics(*address)
 	}
-	metrics.Register()
 
 	// Perform further validation of flags.
 	if *deployment == "" {

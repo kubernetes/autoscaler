@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package metrics - metrics for addon-resizer.
-package metrics
+// Package nanny - this file contains metrics for the nanny package.
+package nanny
 
 import (
 	"net/http"
@@ -42,15 +42,15 @@ var (
 )
 
 // Initialize sets up Prometheus to expose metrics.
-func Initialize(address string) {
+func InitializeMetrics(address string) {
 	go func() {
 		http.Handle("/metrics", promhttp.Handler())
 		err := http.ListenAndServe(address, nil)
-		klog.Fatalf("Failed to start metrics: %v", err)
+		klog.Fatalf("Failed to serve metrics: %v", err)
 	}()
 }
 
-func Register() {
+func RegisterMetrics() {
 	prometheus.MustRegister(executionOutcome)
 }
 
