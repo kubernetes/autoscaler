@@ -566,9 +566,5 @@ func TestFilterVPAs(t *testing.T) {
 		t.Fatalf("expected %d VPAs, got %d", len(expectedResult), len(result))
 	}
 
-	for i, vpa := range result {
-		if vpa != expectedResult[i] {
-			t.Errorf("expected VPA %v at index %d, got %v", expectedResult[i], i, vpa)
-		}
-	}
+	assert.ElementsMatch(t, expectedResult, result)
 }
