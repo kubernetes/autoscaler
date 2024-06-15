@@ -24,6 +24,7 @@ import (
 
 	"golang.org/x/time/rate"
 	v1 "k8s.io/api/autoscaling/v1"
+	"k8s.io/client-go/restmapper"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -136,7 +137,7 @@ func testRunOnceBase(
 	containerName := "container1"
 	rc := apiv1.ReplicationController{
 		TypeMeta: metav1.TypeMeta{
-			Kind:       "ReplicationController",
+			Kind:       "Deployment",
 			APIVersion: "apps/v1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
@@ -183,6 +184,8 @@ func testRunOnceBase(
 
 	mockSelectorFetcher := target_mock.NewMockVpaTargetSelectorFetcher(ctrl)
 
+	mapper := restmapper.NewDiscoveryRESTMapper(testDynamicResources())
+
 	updater := &updater{
 		vpaLister:                    vpaLister,
 		podLister:                    podLister,
@@ -195,11 +198,13 @@ func testRunOnceBase(
 		useAdmissionControllerStatus: true,
 		statusValidator:              statusValidator,
 		priorityProcessor:            priority.NewProcessor(),
+		restMapper:                   mapper,
 	}
 
 	if expectFetchCalls {
 		mockSelectorFetcher.EXPECT().Fetch(gomock.Eq(vpaObj)).Return(selector, nil)
 	}
+
 	updater.RunOnce(context.Background())
 	eviction.AssertNumberOfCalls(t, "Evict", expectedEvictionCount)
 }
@@ -259,4 +264,23 @@ func newFakeValidator(isValid bool) status.Validator {
 
 func (f *fakeValidator) IsStatusValid(statusTimeout time.Duration) (bool, error) {
 	return f.isValid, nil
+}
+
+func testDynamicResources() []*restmapper.APIGroupResources {
+	return []*restmapper.APIGroupResources{
+		{
+			Group: metav1.APIGroup{
+				Name: "apps",
+				Versions: []metav1.GroupVersionForDiscovery{
+					{Version: "v1"},
+				},
+				PreferredVersion: metav1.GroupVersionForDiscovery{Version: "v1"},
+			},
+			VersionedResources: map[string][]metav1.APIResource{
+				"v1": {
+					{Name: "deployments", Namespaced: true, Kind: "Deployment"},
+				},
+			},
+		},
+	}
 }

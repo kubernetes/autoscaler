@@ -18,6 +18,7 @@ package vpa
 
 import (
 	core "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/klog/v2"
 
@@ -38,15 +39,18 @@ type matcher struct {
 	vpaLister         vpa_lister.VerticalPodAutoscalerLister
 	selectorFetcher   target.VpaTargetSelectorFetcher
 	controllerFetcher controllerfetcher.ControllerFetcher
+	restMapper        meta.RESTMapper
 }
 
 // NewMatcher returns a new VPA matcher.
 func NewMatcher(vpaLister vpa_lister.VerticalPodAutoscalerLister,
 	selectorFetcher target.VpaTargetSelectorFetcher,
-	controllerFetcher controllerfetcher.ControllerFetcher) Matcher {
+	controllerFetcher controllerfetcher.ControllerFetcher,
+	restMapper meta.RESTMapper) Matcher {
 	return &matcher{vpaLister: vpaLister,
 		selectorFetcher:   selectorFetcher,
-		controllerFetcher: controllerFetcher}
+		controllerFetcher: controllerFetcher,
+		restMapper:        restMapper}
 }
 
 func (m *matcher) GetMatchingVPA(pod *core.Pod) *vpa_types.VerticalPodAutoscaler {
@@ -71,7 +75,7 @@ func (m *matcher) GetMatchingVPA(pod *core.Pod) *vpa_types.VerticalPodAutoscaler
 		})
 	}
 	klog.V(2).Infof("Let's choose from %d configs for pod %s/%s", len(onConfigs), pod.Namespace, pod.Name)
-	result := vpa_api_util.GetControllingVPAForPod(pod, onConfigs, m.controllerFetcher)
+	result := vpa_api_util.GetControllingVPAForPod(pod, onConfigs, m.controllerFetcher, m.restMapper)
 	if result != nil {
 		return result.Vpa
 	}

@@ -24,6 +24,7 @@ import (
 	core "k8s.io/api/core/v1"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/client-go/restmapper"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
@@ -60,6 +61,8 @@ func TestGetMatchingVpa(t *testing.T) {
 		AddContainer(test.Container().WithName("i-am-container").Get())
 	podBuilder := podBuilderWithoutCreator.WithCreator(&sts.ObjectMeta, &sts.TypeMeta)
 	vpaBuilder := test.VerticalPodAutoscaler().WithContainer("i-am-container")
+	mapper := restmapper.NewDiscoveryRESTMapper(testDynamicResources())
+
 	testCases := []struct {
 		name            string
 		pod             *core.Pod
@@ -146,7 +149,7 @@ func TestGetMatchingVpa(t *testing.T) {
 			// In other words, it cannot go through the hierarchy of controllers like "ReplicaSet => Deployment"
 			// For this reason we are using "StatefulSet" as the ownerRef kind in the test, since it is a direct link.
 			// The hierarchy part is being test in the "TestControllerFetcher" test.
-			matcher := NewMatcher(vpaLister, mockSelectorFetcher, controllerfetcher.FakeControllerFetcher{})
+			matcher := NewMatcher(vpaLister, mockSelectorFetcher, controllerfetcher.FakeControllerFetcher{}, mapper)
 
 			vpa := matcher.GetMatchingVPA(tc.pod)
 			if tc.expectedFound && assert.NotNil(t, vpa) {
@@ -155,5 +158,25 @@ func TestGetMatchingVpa(t *testing.T) {
 				assert.Nil(t, vpa)
 			}
 		})
+	}
+
+}
+
+func testDynamicResources() []*restmapper.APIGroupResources {
+	return []*restmapper.APIGroupResources{
+		{
+			Group: meta.APIGroup{
+				Name: "apps",
+				Versions: []meta.GroupVersionForDiscovery{
+					{Version: "v1"},
+				},
+				PreferredVersion: meta.GroupVersionForDiscovery{Version: "v1"},
+			},
+			VersionedResources: map[string][]meta.APIResource{
+				"v1": {
+					{Name: "statefulset", Namespaced: true, Kind: "StatefulSet"},
+				},
+			},
+		},
 	}
 }

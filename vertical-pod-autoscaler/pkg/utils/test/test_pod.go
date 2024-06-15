@@ -117,7 +117,7 @@ func (pb *podBuilderImpl) Get() *apiv1.Pod {
 			{
 				UID:        pb.creatorObjectMeta.UID,
 				Name:       pb.creatorObjectMeta.Name,
-				APIVersion: pb.creatorObjectMeta.ResourceVersion,
+				APIVersion: pb.creatorTypeMeta.APIVersion,
 				Kind:       pb.creatorTypeMeta.Kind,
 				Controller: &isController,
 			},

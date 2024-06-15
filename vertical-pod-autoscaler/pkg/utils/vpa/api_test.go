@@ -28,6 +28,8 @@ import (
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
+	"k8s.io/client-go/restmapper"
+
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_fake "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/fake"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
@@ -174,17 +176,50 @@ func TestGetControllingVPAForPod(t *testing.T) {
 		Name:       "test-sts",
 		APIVersion: "apps/v1",
 	}
+
+	mapper := restmapper.NewDiscoveryRESTMapper(testDynamicResources())
+
 	chosen := GetControllingVPAForPod(pod, []*VpaWithSelector{
 		{vpaB, parseLabelSelector("app = testingApp")},
 		{vpaA, parseLabelSelector("app = testingApp")},
 		{nonMatchingVPA, parseLabelSelector("app = other")},
-	}, &controllerfetcher.FakeControllerFetcher{})
+	}, &controllerfetcher.FakeControllerFetcher{}, mapper)
 	assert.Equal(t, vpaA, chosen.Vpa)
+
+	// Ensure that GetControllingVPAForPod() with lowercase kind defined in the VPA
+	vpaALower := vpaBuilder.WithCreationTimestamp(time.Unix(5, 0)).Get()
+	vpaALower.Spec.TargetRef = &v1.CrossVersionObjectReference{
+		Kind:       "statefulset",
+		Name:       "test-sts",
+		APIVersion: "apps/v1",
+	}
+	chosen = GetControllingVPAForPod(pod, []*VpaWithSelector{
+		{vpaB, parseLabelSelector("app = testingApp")},
+		{vpaALower, parseLabelSelector("app = testingApp")},
+		{nonMatchingVPA, parseLabelSelector("app = other")},
+	}, &controllerfetcher.FakeControllerFetcher{}, mapper)
+
+	assert.Equal(t, vpaALower, chosen.Vpa)
+
+	// Ensure that GetControllingVPAForPod() doesn't match when the target is invalid
+	vpaANon := vpaBuilder.WithCreationTimestamp(time.Unix(5, 0)).Get()
+	vpaANon.Spec.TargetRef = &v1.CrossVersionObjectReference{
+		Kind:       "non-existent",
+		Name:       "test-sts",
+		APIVersion: "apps/v1",
+	}
+	chosen = GetControllingVPAForPod(pod, []*VpaWithSelector{
+		{vpaB, parseLabelSelector("app = testingApp")},
+		{vpaANon, parseLabelSelector("app = testingApp")},
+		{nonMatchingVPA, parseLabelSelector("app = other")},
+	}, &controllerfetcher.FakeControllerFetcher{}, mapper)
+
+	assert.Nil(t, chosen)
 
 	// For some Pods (which are *not* under VPA), controllerFetcher.FindTopMostWellKnownOrScalable will return `nil`, e.g. when the Pod owner is a custom resource, which doesn't implement the /scale subresource
 	// See pkg/target/controller_fetcher/controller_fetcher_test.go:393 for testing this behavior
 	// This test case makes sure that GetControllingVPAForPod will just return `nil` in that case as well
-	chosen = GetControllingVPAForPod(pod, []*VpaWithSelector{{vpaA, parseLabelSelector("app = testingApp")}}, &NilControllerFetcher{})
+	chosen = GetControllingVPAForPod(pod, []*VpaWithSelector{{vpaA, parseLabelSelector("app = testingApp")}}, &NilControllerFetcher{}, mapper)
 	assert.Nil(t, chosen)
 }
 
@@ -300,5 +335,24 @@ func TestGetContainerControlledResources(t *testing.T) {
 			got := GetContainerControlledValues(tc.containerName, tc.policy)
 			assert.Equal(t, got, tc.expected)
 		})
+	}
+}
+
+func testDynamicResources() []*restmapper.APIGroupResources {
+	return []*restmapper.APIGroupResources{
+		{
+			Group: meta.APIGroup{
+				Name: "apps",
+				Versions: []meta.GroupVersionForDiscovery{
+					{Version: "v1"},
+				},
+				PreferredVersion: meta.GroupVersionForDiscovery{Version: "v1"},
+			},
+			VersionedResources: map[string][]meta.APIResource{
+				"v1": {
+					{Name: "statefulset", Namespaced: true, Kind: "StatefulSet"},
+				},
+			},
+		},
 	}
 }

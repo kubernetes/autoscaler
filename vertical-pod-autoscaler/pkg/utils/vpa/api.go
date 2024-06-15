@@ -25,9 +25,11 @@ import (
 
 	core "k8s.io/api/core/v1"
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
+	apimachinery_meta "k8s.io/apimachinery/pkg/api/meta"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/klog/v2"
@@ -127,7 +129,7 @@ func stronger(a, b *vpa_types.VerticalPodAutoscaler) bool {
 }
 
 // GetControllingVPAForPod chooses the earliest created VPA from the input list that matches the given Pod.
-func GetControllingVPAForPod(pod *core.Pod, vpas []*VpaWithSelector, ctrlFetcher controllerfetcher.ControllerFetcher) *VpaWithSelector {
+func GetControllingVPAForPod(pod *core.Pod, vpas []*VpaWithSelector, ctrlFetcher controllerfetcher.ControllerFetcher, mapper apimachinery_meta.RESTMapper) *VpaWithSelector {
 
 	var ownerRefrence *meta.OwnerReference
 	for i := range pod.OwnerReferences {
@@ -157,6 +159,22 @@ func GetControllingVPAForPod(pod *core.Pod, vpas []*VpaWithSelector, ctrlFetcher
 		return nil
 	}
 
+	targetGVT, err := schema.ParseGroupVersion(parentController.ApiVersion)
+	if err != nil {
+		klog.Errorf("fail to get Group/Version of parent: pod=%s err=%s", pod.Name, err.Error())
+		return nil
+	}
+
+	targetGKT := schema.GroupKind{
+		Group: targetGVT.Group,
+		Kind:  parentController.Kind,
+	}
+	mappingParent, err := mapper.RESTMapping(targetGKT)
+	if err != nil {
+		klog.Errorf("fail to get rest mapping for parent: pod=%s err=%s", pod.Name, err.Error())
+		return nil
+	}
+
 	var controlling *VpaWithSelector
 	var controllingVpa *vpa_types.VerticalPodAutoscaler
 	// Choose the strongest VPA from the ones that match this Pod.
@@ -164,9 +182,27 @@ func GetControllingVPAForPod(pod *core.Pod, vpas []*VpaWithSelector, ctrlFetcher
 		if vpaWithSelector.Vpa.Spec.TargetRef == nil {
 			continue
 		}
-		if vpaWithSelector.Vpa.Spec.TargetRef.Kind != parentController.Kind ||
+
+		vpaGV, err := schema.ParseGroupVersion(vpaWithSelector.Vpa.Spec.TargetRef.APIVersion)
+		if err != nil {
+			klog.Errorf("fail to get Group/Version of target Ref: vpa=%s err=%s", vpaWithSelector.Vpa.Name, err.Error())
+			continue
+		}
+
+		vpaGK := schema.GroupKind{
+			Group: vpaGV.Group,
+			Kind:  vpaWithSelector.Vpa.Spec.TargetRef.Kind,
+		}
+		mapping, err := mapper.RESTMapping(vpaGK)
+		if err != nil {
+			klog.Errorf("fail to get rest mapping for target ref: vpa=%v err=%s", vpaWithSelector.Vpa.Name, err.Error())
+			continue
+		}
+
+		if mapping.Resource.Resource != mappingParent.Resource.Resource ||
 			vpaWithSelector.Vpa.Namespace != parentController.Namespace ||
 			vpaWithSelector.Vpa.Spec.TargetRef.Name != parentController.Name {
+
 			continue // This pod is not associated to the right controller
 		}
 		if PodMatchesVPA(pod, vpaWithSelector) && stronger(vpaWithSelector.Vpa, controllingVpa) {

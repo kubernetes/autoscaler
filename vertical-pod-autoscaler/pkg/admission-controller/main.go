@@ -24,8 +24,10 @@ import (
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
+	cacheddiscovery "k8s.io/client-go/discovery/cached/memory"
 	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/restmapper"
 	kube_flag "k8s.io/component-base/cli/flag"
 	"k8s.io/klog/v2"
 
@@ -95,6 +97,10 @@ func main() {
 	factory := informers.NewSharedInformerFactory(kubeClient, defaultResyncPeriod)
 	targetSelectorFetcher := target.NewVpaTargetSelectorFetcher(config, kubeClient, factory)
 	controllerFetcher := controllerfetcher.NewControllerFetcher(config, kubeClient, factory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor)
+
+	discoveryClient := cacheddiscovery.NewMemCacheClient(kubeClient)
+	mapper := restmapper.NewDeferredDiscoveryRESTMapper(discoveryClient)
+
 	podPreprocessor := pod.NewDefaultPreProcessor()
 	vpaPreprocessor := vpa.NewDefaultPreProcessor()
 	var limitRangeCalculator limitrange.LimitRangeCalculator
@@ -104,7 +110,7 @@ func main() {
 		limitRangeCalculator = limitrange.NewNoopLimitsCalculator()
 	}
 	recommendationProvider := recommendation.NewProvider(limitRangeCalculator, vpa_api_util.NewCappingRecommendationProcessor(limitRangeCalculator))
-	vpaMatcher := vpa.NewMatcher(vpaLister, targetSelectorFetcher, controllerFetcher)
+	vpaMatcher := vpa.NewMatcher(vpaLister, targetSelectorFetcher, controllerFetcher, mapper)
 
 	hostname, err := os.Hostname()
 	if err != nil {

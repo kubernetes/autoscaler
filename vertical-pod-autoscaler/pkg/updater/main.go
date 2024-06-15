@@ -23,8 +23,10 @@ import (
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
+	cacheddiscovery "k8s.io/client-go/discovery/cached/memory"
 	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/restmapper"
 	kube_flag "k8s.io/component-base/cli/flag"
 	"k8s.io/klog/v2"
 
@@ -91,6 +93,10 @@ func main() {
 	factory := informers.NewSharedInformerFactory(kubeClient, defaultResyncPeriod)
 	targetSelectorFetcher := target.NewVpaTargetSelectorFetcher(config, kubeClient, factory)
 	controllerFetcher := controllerfetcher.NewControllerFetcher(config, kubeClient, factory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor)
+
+	discoveryClient := cacheddiscovery.NewMemCacheClient(kubeClient)
+	mapper := restmapper.NewDeferredDiscoveryRESTMapper(discoveryClient)
+
 	var limitRangeCalculator limitrange.LimitRangeCalculator
 	limitRangeCalculator, err := limitrange.NewLimitsRangeCalculator(factory)
 	if err != nil {
@@ -115,6 +121,7 @@ func main() {
 		priority.NewScalingDirectionPodEvictionAdmission(),
 		targetSelectorFetcher,
 		controllerFetcher,
+		mapper,
 		priority.NewProcessor(),
 		*vpaObjectNamespace,
 	)

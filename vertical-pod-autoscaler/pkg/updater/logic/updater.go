@@ -24,6 +24,8 @@ import (
 	"golang.org/x/time/rate"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/meta"
+
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
 	kube_client "k8s.io/client-go/kubernetes"
@@ -66,6 +68,7 @@ type updater struct {
 	useAdmissionControllerStatus bool
 	statusValidator              status.Validator
 	controllerFetcher            controllerfetcher.ControllerFetcher
+	restMapper                   meta.RESTMapper
 }
 
 // NewUpdater creates Updater with given configuration
@@ -82,6 +85,7 @@ func NewUpdater(
 	evictionAdmission priority.PodEvictionAdmission,
 	selectorFetcher target.VpaTargetSelectorFetcher,
 	controllerFetcher controllerfetcher.ControllerFetcher,
+	restMapper meta.RESTMapper,
 	priorityProcessor priority.PriorityProcessor,
 	namespace string,
 ) (Updater, error) {
@@ -101,6 +105,7 @@ func NewUpdater(
 		priorityProcessor:            priorityProcessor,
 		selectorFetcher:              selectorFetcher,
 		controllerFetcher:            controllerFetcher,
+		restMapper:                   restMapper,
 		useAdmissionControllerStatus: useAdmissionControllerStatus,
 		statusValidator: status.NewValidator(
 			kubeClient,
@@ -172,7 +177,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 
 	controlledPods := make(map[*vpa_types.VerticalPodAutoscaler][]*apiv1.Pod)
 	for _, pod := range allLivePods {
-		controllingVPA := vpa_api_util.GetControllingVPAForPod(pod, vpas, u.controllerFetcher)
+		controllingVPA := vpa_api_util.GetControllingVPAForPod(pod, vpas, u.controllerFetcher, u.restMapper)
 		if controllingVPA != nil {
 			controlledPods[controllingVPA.Vpa] = append(controlledPods[controllingVPA.Vpa], pod)
 		}
