@@ -20,6 +20,7 @@ import (
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1beta1"
+	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
 	"k8s.io/klog/v2"
 )
@@ -59,7 +60,7 @@ const (
 
 // ShouldCapacityBeBooked returns whether capacity should be booked.
 func ShouldCapacityBeBooked(pr *provreqwrapper.ProvisioningRequest) bool {
-	if pr.Spec.ProvisioningClassName != v1beta1.ProvisioningClassCheckCapacity && pr.Spec.ProvisioningClassName != v1beta1.ProvisioningClassBestEffortAtomicScaleUp {
+	if ok, found := provisioningrequest.SupportedProvisioningClasses[pr.Spec.ProvisioningClassName]; !ok || !found {
 		return false
 	}
 	conditions := pr.Status.Conditions

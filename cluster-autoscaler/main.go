@@ -32,6 +32,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup/orchestrator"
 	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/loop"
+	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/besteffortatomic"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/checkcapacity"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqclient"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
@@ -496,18 +497,18 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 		podListProcessor.AddProcessor(provreq.NewProvisioningRequestPodsFilter(provreq.NewDefautlEventManager()))
 
 		restConfig := kube_util.GetKubeConfig(autoscalingOptions.KubeClientOpts)
-		provreqOrchestrator, err := provreqorchestrator.New(restConfig)
-		if err != nil {
-			return nil, err
-		}
-		scaleUpOrchestrator := provreqorchestrator.NewWrapperOrchestrator(provreqOrchestrator)
-
-		opts.ScaleUpOrchestrator = scaleUpOrchestrator
 		client, err := provreqclient.NewProvisioningRequestClient(restConfig)
 		if err != nil {
 			return nil, err
 		}
-		provreqProcesor := provreq.NewCombinedProvReqProcessor(client, []provreq.ProvisioningRequestProcessor{checkcapacity.NewCheckCapacityProcessor(client)})
+		provreqOrchestrator := provreqorchestrator.New(client, []provreqorchestrator.ProvisioningClass{
+			checkcapacity.New(client),
+			besteffortatomic.New(client),
+		})
+		scaleUpOrchestrator := provreqorchestrator.NewWrapperOrchestrator(provreqOrchestrator)
+
+		opts.ScaleUpOrchestrator = scaleUpOrchestrator
+		provreqProcesor := provreq.NewProvReqProcessor(client)
 		if err != nil {
 			return nil, err
 		}
