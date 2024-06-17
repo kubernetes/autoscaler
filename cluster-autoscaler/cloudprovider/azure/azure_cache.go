@@ -197,6 +197,14 @@ func (m *azureCache) regenerate() error {
 	return nil
 }
 
+// fetchAzureResources retrieves and updates the cached Azure resources.
+//
+// This function performs the following:
+// - Fetches and updates the list of Virtual Machine Scale Sets (VMSS) in the specified resource group.
+// - Fetches and updates the list of Virtual Machines (VMs) and identifies the node pools they belong to.
+// - Maintains a set of VMs pools and VMSS resources which helps the Cluster Autoscaler (CAS) operate on mixed node pools.
+//
+// Returns an error if any of the Azure API calls fail.
 func (m *azureCache) fetchAzureResources() error {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
@@ -290,6 +298,7 @@ func (m *azureCache) Register(nodeGroup cloudprovider.NodeGroup) bool {
 	}
 
 	klog.V(4).Infof("Registering Node Group %q", nodeGroup.Id())
+
 	m.registeredNodeGroups = append(m.registeredNodeGroups, nodeGroup)
 	m.invalidateUnownedInstanceCache()
 	return true
@@ -356,6 +365,25 @@ func (m *azureCache) getAutoscalingOptions(ref azureRef) map[string]string {
 	defer m.mutex.Unlock()
 
 	return m.autoscalingOptions[ref]
+}
+
+// HasInstance returns if a given instance exists in the azure cache
+func (m *azureCache) HasInstance(providerID string) (bool, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+	resourceID, err := convertResourceGroupNameToLower(providerID)
+	if err != nil {
+		// Most likely an invalid resource id, we should return an error
+		// most of these shouldn't make it here do to higher level
+		// validation in the HasInstance azure.cloudprovider function
+		return false, err
+	}
+
+	if m.getInstanceFromCache(resourceID) != nil {
+		return true, nil
+	}
+	// couldn't find instance in the cache, assume it's deleted
+	return false, cloudprovider.ErrNotImplemented
 }
 
 // FindForInstance returns node group of the given Instance
