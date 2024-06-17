@@ -123,23 +123,25 @@ func (a *Actuator) StartDeletion(empty, drain []*apiv1.Node) (status.ScaleDownRe
 
 	if len(emptyToDelete) > 0 {
 		// Taint all empty nodes synchronously
-		if err := a.taintNodesSync(emptyToDelete); err != nil {
+		nodeDeleteDelayAfterTaint, err := a.taintNodesSync(emptyToDelete)
+		if err != nil {
 			return status.ScaleDownError, scaledDownNodes, err
 		}
 
-		emptyScaledDown := a.deleteAsyncEmpty(emptyToDelete)
+		emptyScaledDown := a.deleteAsyncEmpty(emptyToDelete, nodeDeleteDelayAfterTaint)
 		scaledDownNodes = append(scaledDownNodes, emptyScaledDown...)
 	}
 
 	if len(drainToDelete) > 0 {
 		// Taint all nodes that need drain synchronously, but don't start any drain/deletion yet. Otherwise, pods evicted from one to-be-deleted node
 		// could get recreated on another.
-		if err := a.taintNodesSync(drainToDelete); err != nil {
+		nodeDeleteDelayAfterTaint, err := a.taintNodesSync(drainToDelete)
+		if err != nil {
 			return status.ScaleDownError, scaledDownNodes, err
 		}
 
 		// All nodes involved in the scale-down should be tainted now - start draining and deleting nodes asynchronously.
-		drainScaledDown := a.deleteAsyncDrain(drainToDelete)
+		drainScaledDown := a.deleteAsyncDrain(drainToDelete, nodeDeleteDelayAfterTaint)
 		scaledDownNodes = append(scaledDownNodes, drainScaledDown...)
 	}
 
@@ -148,7 +150,7 @@ func (a *Actuator) StartDeletion(empty, drain []*apiv1.Node) (status.ScaleDownRe
 
 // deleteAsyncEmpty immediately starts deletions asynchronously.
 // scaledDownNodes return value contains all nodes for which deletion successfully started.
-func (a *Actuator) deleteAsyncEmpty(NodeGroupViews []*budgets.NodeGroupView) (reportedSDNodes []*status.ScaleDownNode) {
+func (a *Actuator) deleteAsyncEmpty(NodeGroupViews []*budgets.NodeGroupView, nodeDeleteDelayAfterTaint time.Duration) (reportedSDNodes []*status.ScaleDownNode) {
 	for _, bucket := range NodeGroupViews {
 		for _, node := range bucket.Nodes {
 			klog.V(0).Infof("Scale-down: removing empty node %q", node.Name)
@@ -165,7 +167,7 @@ func (a *Actuator) deleteAsyncEmpty(NodeGroupViews []*budgets.NodeGroupView) (re
 	}
 
 	for _, bucket := range NodeGroupViews {
-		go a.deleteNodesAsync(bucket.Nodes, bucket.Group, false, bucket.BatchSize)
+		go a.deleteNodesAsync(bucket.Nodes, bucket.Group, false, bucket.BatchSize, nodeDeleteDelayAfterTaint)
 	}
 
 	return reportedSDNodes
@@ -173,9 +175,10 @@ func (a *Actuator) deleteAsyncEmpty(NodeGroupViews []*budgets.NodeGroupView) (re
 
 // taintNodesSync synchronously taints all provided nodes with NoSchedule. If tainting fails for any of the nodes, already
 // applied taints are cleaned up.
-func (a *Actuator) taintNodesSync(NodeGroupViews []*budgets.NodeGroupView) errors.AutoscalerError {
+func (a *Actuator) taintNodesSync(NodeGroupViews []*budgets.NodeGroupView) (time.Duration, errors.AutoscalerError) {
 	var taintedNodes []*apiv1.Node
 	var updateLatencyTracker *UpdateLatencyTracker
+	nodeDeleteDelayAfterTaint := a.nodeDeleteDelayAfterTaint
 	if a.ctx.AutoscalingOptions.DynamicNodeDeleteDelayAfterTaintEnabled {
 		updateLatencyTracker = NewUpdateLatencyTracker(a.ctx.AutoscalingKubeClients.ListerRegistry.AllNodeLister())
 		go updateLatencyTracker.Start()
@@ -195,7 +198,7 @@ func (a *Actuator) taintNodesSync(NodeGroupViews []*budgets.NodeGroupView) error
 				if a.ctx.AutoscalingOptions.DynamicNodeDeleteDelayAfterTaintEnabled {
 					close(updateLatencyTracker.AwaitOrStopChan)
 				}
-				return errors.NewAutoscalerError(errors.ApiCallError, "couldn't taint node %q with ToBeDeleted", node)
+				return nodeDeleteDelayAfterTaint, errors.NewAutoscalerError(errors.ApiCallError, "couldn't taint node %q with ToBeDeleted", node)
 			}
 			taintedNodes = append(taintedNodes, node)
 		}
@@ -209,15 +212,15 @@ func (a *Actuator) taintNodesSync(NodeGroupViews []*budgets.NodeGroupView) error
 			// CA is expected to wait 3 times the round-trip time between CA and the api-server.
 			// At this point, we have already tainted all the nodes.
 			// Therefore, the nodeDeleteDelayAfterTaint is set 2 times the maximum latency observed during the last hour.
-			a.nodeDeleteDelayAfterTaint = 2 * maxLatency(a.pastLatencies.ToSlice())
+			nodeDeleteDelayAfterTaint = 2 * maxLatency(a.pastLatencies.ToSlice())
 		}
 	}
-	return nil
+	return nodeDeleteDelayAfterTaint, nil
 }
 
 // deleteAsyncDrain asynchronously starts deletions with drain for all provided nodes. scaledDownNodes return value contains all nodes for which
 // deletion successfully started.
-func (a *Actuator) deleteAsyncDrain(NodeGroupViews []*budgets.NodeGroupView) (reportedSDNodes []*status.ScaleDownNode) {
+func (a *Actuator) deleteAsyncDrain(NodeGroupViews []*budgets.NodeGroupView, nodeDeleteDelayAfterTaint time.Duration) (reportedSDNodes []*status.ScaleDownNode) {
 	for _, bucket := range NodeGroupViews {
 		for _, drainNode := range bucket.Nodes {
 			if sdNode, err := a.scaleDownNodeToReport(drainNode, true); err == nil {
@@ -233,13 +236,13 @@ func (a *Actuator) deleteAsyncDrain(NodeGroupViews []*budgets.NodeGroupView) (re
 	}
 
 	for _, bucket := range NodeGroupViews {
-		go a.deleteNodesAsync(bucket.Nodes, bucket.Group, true, bucket.BatchSize)
+		go a.deleteNodesAsync(bucket.Nodes, bucket.Group, true, bucket.BatchSize, nodeDeleteDelayAfterTaint)
 	}
 
 	return reportedSDNodes
 }
 
-func (a *Actuator) deleteNodesAsync(nodes []*apiv1.Node, nodeGroup cloudprovider.NodeGroup, drain bool, batchSize int) {
+func (a *Actuator) deleteNodesAsync(nodes []*apiv1.Node, nodeGroup cloudprovider.NodeGroup, drain bool, batchSize int, nodeDeleteDelayAfterTaint time.Duration) {
 	var remainingPdbTracker pdb.RemainingPdbTracker
 	var registry kube_util.ListerRegistry
 
@@ -247,9 +250,9 @@ func (a *Actuator) deleteNodesAsync(nodes []*apiv1.Node, nodeGroup cloudprovider
 		return
 	}
 
-	if a.nodeDeleteDelayAfterTaint > time.Duration(0) {
-		klog.V(0).Infof("Scale-down: waiting %v before trying to delete nodes", a.nodeDeleteDelayAfterTaint)
-		time.Sleep(a.nodeDeleteDelayAfterTaint)
+	if nodeDeleteDelayAfterTaint > time.Duration(0) {
+		klog.V(0).Infof("Scale-down: waiting %v before trying to delete nodes", nodeDeleteDelayAfterTaint)
+		time.Sleep(nodeDeleteDelayAfterTaint)
 	}
 
 	clusterSnapshot, err := a.createSnapshot(nodes)
