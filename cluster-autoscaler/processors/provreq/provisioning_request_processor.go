@@ -30,7 +30,7 @@ import (
 )
 
 const (
-	defaultReservationTime = 10 * time.Minute
+	defaultReservationTime = 20 * time.Minute
 	defaultExpirationTime  = 7 * 24 * time.Hour // 7 days
 	// defaultMaxUpdated is a limit for ProvisioningRequest to update conditions in one ClusterAutoscaler loop.
 	defaultMaxUpdated = 20
