@@ -27,4 +27,5 @@ message Option {
   int32 nodeCount = 2;
   string debug = 3;
   repeated k8s.io.api.core.v1.Pod pod = 4;
+  repeated string similarNodeGroupIds = 5;
 }
