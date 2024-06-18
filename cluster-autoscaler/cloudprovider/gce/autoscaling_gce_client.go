@@ -71,6 +71,10 @@ const (
 
 	// ErrorCodeOther is an error code used in InstanceErrorInfo if other error occurs.
 	ErrorCodeOther = "OTHER"
+
+	// MaxInstancesLogged is the maximum number of instances for which we will
+	// log detailed information for each Instance.List API call
+	MaxInstancesLogged = 20
 )
 
 var (
@@ -93,6 +97,7 @@ var (
 type GceInstance struct {
 	cloudprovider.Instance
 	NumericId uint64
+	Igm       GceRef
 }
 
 // AutoscalingGceClient is used for communicating with GCE API.
@@ -101,6 +106,7 @@ type AutoscalingGceClient interface {
 	FetchMachineType(zone, machineType string) (*gce.MachineType, error)
 	FetchMachineTypes(zone string) ([]*gce.MachineType, error)
 	FetchAllMigs(zone string) ([]*gce.InstanceGroupManager, error)
+	FetchAllInstances(project, zone string, filter string) ([]GceInstance, error)
 	FetchMigTargetSize(GceRef) (int64, error)
 	FetchMigBasename(GceRef) (string, error)
 	FetchMigInstances(GceRef) ([]GceInstance, error)
@@ -360,6 +366,68 @@ func (client *autoscalingGceClientV1) DeleteInstances(migRef GceRef, instances [
 	return client.WaitForOperation(op.Name, op.OperationType, migRef.Project, migRef.Zone)
 }
 
+func (client *autoscalingGceClientV1) FetchAllInstances(project, zone, filter string) ([]GceInstance, error) {
+	registerRequest("instances", "list")
+	instances := make([]GceInstance, 0)
+	loggingQuota := klogx.NewLoggingQuota(MaxInstancesLogged)
+	err := client.gceService.Instances.List(project, zone).Filter(filter).Pages(context.Background(), func(page *gce.InstanceList) error {
+		for _, gceInstance := range page.Items {
+			instance, err := externalToInternalInstance(gceInstance, loggingQuota)
+			if err != nil {
+				klog.Errorf("Error converting instance to GceInstance: %v", err)
+				continue
+			}
+			instances = append(instances, instance)
+		}
+		return nil
+	})
+	if err != nil {
+		klog.Errorf("Failed listing Instances in zone %s, project %s: %v", zone, project, err)
+		return nil, err
+	}
+	klogx.V(5).Over(loggingQuota).Infof("Unable to parse IGM for %v other instances", -loggingQuota.Left())
+	return instances, nil
+}
+
+func externalToInternalInstance(gceInstance *gce.Instance, loggingQuota *klogx.Quota) (GceInstance, error) {
+	if gceInstance == nil {
+		return GceInstance{}, fmt.Errorf("instance should not be <nil>")
+	}
+	ref, err := ParseInstanceUrlRef(gceInstance.SelfLink)
+	if err != nil {
+		return GceInstance{}, fmt.Errorf("received error while parsing of the instance url: %v", err)
+	}
+	return GceInstance{
+		Instance: cloudprovider.Instance{
+			Id: ref.ToProviderId(),
+			Status: &cloudprovider.InstanceStatus{
+				State: instanceLifeCycleToInstanceState(gceInstance.Status),
+			},
+		},
+		NumericId: gceInstance.Id,
+		Igm:       createIgmRef(gceInstance, loggingQuota),
+	}, nil
+}
+
+func createIgmRef(gceInstance *gce.Instance, loggingQuota *klogx.Quota) GceRef {
+	createdBy := ""
+	for _, item := range gceInstance.Metadata.Items {
+		if item.Key == "created-by" && item.Value != nil {
+			createdBy = *item.Value
+		}
+	}
+	if createdBy == "" {
+		klogx.V(5).UpTo(loggingQuota).Infof("Unable to find 'created-by' field for the instance %v", gceInstance.SelfLink)
+		return GceRef{}
+	}
+	igmRef, err := ParseIgmUrlRef(createdBy)
+	if err != nil {
+		klogx.V(5).UpTo(loggingQuota).Infof("Unable to parse IGM for %v because of %v", gceInstance.SelfLink, err)
+		return GceRef{}
+	}
+	return igmRef
+}
+
 func (client *autoscalingGceClientV1) FetchMigInstances(migRef GceRef) ([]GceInstance, error) {
 	registerRequest("instance_group_managers", "list_managed_instances")
 	b := newInstanceListBuilder(migRef)
@@ -515,6 +583,17 @@ func getInstanceState(currentAction string) cloudprovider.InstanceState {
 	case "CREATING", "RECREATING", "CREATING_WITHOUT_RETRIES":
 		return cloudprovider.InstanceCreating
 	case "ABANDONING", "DELETING":
+		return cloudprovider.InstanceDeleting
+	default:
+		return cloudprovider.InstanceRunning
+	}
+}
+
+func instanceLifeCycleToInstanceState(status string) cloudprovider.InstanceState {
+	switch status {
+	case "PROVISIONING", "STAGING":
+		return cloudprovider.InstanceCreating
+	case "STOPPING", "TERMINATED":
 		return cloudprovider.InstanceDeleting
 	default:
 		return cloudprovider.InstanceRunning
