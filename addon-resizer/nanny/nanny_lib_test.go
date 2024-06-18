@@ -20,6 +20,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus/testutil"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 )
@@ -227,6 +228,7 @@ func TestShouldOverwriteResources(t *testing.T) {
 }
 
 func TestUpdateResources(t *testing.T) {
+	RegisterMetrics()
 	now := time.Now()
 	tenSecondsAgo := now.Add(-10 * time.Second)
 	oneMinuteAgo := now.Add(-time.Minute)
@@ -276,12 +278,31 @@ func TestUpdateResources(t *testing.T) {
 	for i, tc := range testCases {
 		k8s := newFakeKubernetesClient(10, 50, tc.x, tc.x)
 		est := newFakeResourceEstimator(tc.y, tc.x)
+		testutil.CollectAndCount(executionOutcome)
+		counterLabel := ""
+		if tc.want == noChange {
+			counterLabel = "resources_within_limits"
+		} else if tc.want == postpone {
+			counterLabel = "scale_up_down_delay"
+		} else if tc.want == overwrite {
+			counterLabel = "updated_resources"
+		}
+		metric, err := executionOutcome.GetMetricWithLabelValues(counterLabel)
+		if err != nil {
+			t.Fatal(err)
+		}
+		initialCounter := testutil.ToFloat64(metric)
 		got := updateResources(k8s, est, now, tc.lc, tc.sdd, tc.sud, tc.th, noChange, tc.scalingMode)
 		if tc.want != got {
 			t.Errorf("updateResources got %d, want %d for test case %d.", got, tc.want, i)
 		}
 		if tc.want == overwrite && got == overwrite && k8s.newResources != est.resources {
 			t.Errorf("updateResources got %v, want %v for test case %d.", k8s.newResources, est.resources, i)
+		}
+		testutil.CollectAndCount(executionOutcome)
+		finalCounter := testutil.ToFloat64(metric)
+		if finalCounter-initialCounter != 1 {
+			t.Errorf("Expected metric with outcome %v to be incremented by 1, got %v", counterLabel, (finalCounter - initialCounter))
 		}
 	}
 }
@@ -298,25 +319,25 @@ func TestNodeVsContainerProportional(t *testing.T) {
 		wantScaling updateResult
 	}{
 		{
-			nodes: 10,
-			containers: 1,
+			nodes:       10,
+			containers:  1,
 			scalingMode: NodeProportional,
 			wantScaling: overwrite,
 		}, {
-			nodes: 10,
-			containers: 1,
+			nodes:       10,
+			containers:  1,
 			scalingMode: ContainerProportional,
 			wantScaling: noChange,
 		},
 		{
-			nodes: 1,
-			containers: 10,
+			nodes:       1,
+			containers:  10,
 			scalingMode: NodeProportional,
 			wantScaling: noChange,
 		},
 		{
-			nodes: 1,
-			containers: 10,
+			nodes:       1,
+			containers:  10,
 			scalingMode: ContainerProportional,
 			wantScaling: overwrite,
 		},
