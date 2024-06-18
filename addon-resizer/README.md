@@ -29,6 +29,8 @@ Usage of pod_nanny:
       --storage="MISSING": The base storage resource requirement.
       --threshold=0: A number between 0-100. The dependent's resources are rewritten when they deviate from expected by more than threshold.
       --use-metrics=false: Whether to use apiserver metrics to detect cluster size instead of the default method of listing resources from the Kubernetes API.
+      --expose-metrics=true: Whether to expose Prometheus metrics about addon-resizer on the port specified by the address flag.
+      --address=8945: If expose-metrics is true, this is the port where we expose Prometheus metrics.
 ```
 
 Estimators:
@@ -103,6 +105,7 @@ spec:
             - --extra-memory=10Mi
             - --threshold=5
             - --deployment=nanny-v1
+            - --expose-metrics=true
         volumes:
         - name: nanny-config-volume
           configMap:
