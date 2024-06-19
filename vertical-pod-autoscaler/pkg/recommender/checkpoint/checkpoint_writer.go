@@ -64,7 +64,7 @@ func getVpasToCheckpoint(clusterVpas map[model.VpaID]*model.Vpa) []*model.Vpa {
 	vpas := make([]*model.Vpa, 0, len(clusterVpas))
 	for _, vpa := range clusterVpas {
 		if isFetchingHistory(vpa) {
-			klog.V(3).Infof("VPA %s/%s is loading history, skipping checkpoints", vpa.ID.Namespace, vpa.ID.VpaName)
+			klog.V(3).Infof("VPA %s is loading history, skipping checkpoints", klog.KRef(vpa.ID.Namespace, vpa.ID.VpaName))
 			continue
 		}
 		vpas = append(vpas, vpa)

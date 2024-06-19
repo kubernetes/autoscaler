@@ -377,9 +377,9 @@ func (feeder *clusterStateFeeder) LoadVPAs() {
 	// Delete non-existent VPAs from the model.
 	for vpaID := range feeder.clusterState.Vpas {
 		if _, exists := vpaKeys[vpaID]; !exists {
-			klog.V(3).Infof("Deleting VPA %s/%s", vpaID.Namespace, vpaID.VpaName)
+			klog.V(3).Infof("Deleting VPA %s", klog.KRef(vpaID.Namespace, vpaID.VpaName))
 			if err := feeder.clusterState.DeleteVpa(vpaID); err != nil {
-				klog.Errorf("Deleting VPA %s/%s failed: %v", vpaID.Namespace, vpaID.VpaName, err)
+				klog.Errorf("Deleting VPA %s failed: %v", klog.KRef(vpaID.Namespace, vpaID.VpaName), err)
 			}
 		}
 	}
@@ -398,7 +398,7 @@ func (feeder *clusterStateFeeder) LoadPods() {
 	}
 	for key := range feeder.clusterState.Pods {
 		if _, exists := pods[key]; !exists {
-			klog.V(3).Infof("Deleting Pod %s/%s", key.Namespace, key.PodName)
+			klog.V(3).Infof("Deleting Pod %s", klog.KRef(key.Namespace, key.PodName))
 			feeder.clusterState.DeletePod(key)
 		}
 	}

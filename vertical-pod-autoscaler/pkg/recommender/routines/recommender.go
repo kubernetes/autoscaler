@@ -116,7 +116,7 @@ func (r *recommender) UpdateVPAs() {
 				pods := r.clusterState.GetMatchingPods(vpa)
 				klog.Infof("MatchingPods: %+v", pods)
 				if len(pods) != vpa.PodCount {
-					klog.Errorf("ClusterState pod count and matching pods disagree for VPA %s/%s", vpa.ID.Namespace, vpa.ID.VpaName)
+					klog.Errorf("ClusterState pod count and matching pods disagree for VPA %s", klog.KRef(vpa.ID.Namespace, vpa.ID.VpaName))
 				}
 			}
 		}
@@ -126,7 +126,7 @@ func (r *recommender) UpdateVPAs() {
 			r.vpaClient.VerticalPodAutoscalers(vpa.ID.Namespace), vpa.ID.VpaName, vpa.AsStatus(), &observedVpa.Status)
 		if err != nil {
 			klog.Errorf(
-				"Cannot update VPA %s/%s object. Reason: %+v", vpa.ID.Namespace, vpa.ID.VpaName, err)
+				"Cannot update VPA %s object. Reason: %+v", klog.KRef(vpa.ID.Namespace, vpa.ID.VpaName), err)
 		}
 	}
 }
