@@ -21,10 +21,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"regexp"
 	"testing"
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/klogx"
 	test_util "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
 	"github.com/google/go-cmp/cmp"
@@ -35,7 +37,12 @@ import (
 )
 
 func newTestAutoscalingGceClient(t *testing.T, projectId, url, userAgent string) *autoscalingGceClientV1 {
+	return newTestAutoscalingGceClientWithTimeout(t, projectId, url, userAgent, time.Duration(0))
+}
+
+func newTestAutoscalingGceClientWithTimeout(t *testing.T, projectId, url, userAgent string, timeout time.Duration) *autoscalingGceClientV1 {
 	client := &http.Client{}
+	client.Timeout = timeout
 	gceClient, err := NewAutoscalingGceClientV1(client, projectId, userAgent)
 	if !assert.NoError(t, err) {
 		t.Fatalf("fatal error: %v", err)
@@ -567,4 +574,586 @@ func TestUserAgent(t *testing.T) {
 
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, server)
+}
+
+// NOTE: pagination operations can't be tested with context timeouts as it's not possible
+// to control per call timeouts as context is global per operation
+func TestAutoscalingClientTimeouts(t *testing.T) {
+	// non zero timeout to indicate that timeout should be respected for http client
+	instantTimeout := 1 * time.Nanosecond
+	tests := map[string]struct {
+		clientFunc              func(*autoscalingGceClientV1) error
+		httpTimeout             time.Duration
+		operationPerCallTimeout *time.Duration
+	}{
+		"CreateInstances_ContextTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				return client.CreateInstances(GceRef{}, "", 0, nil)
+			},
+			operationPerCallTimeout: &instantTimeout,
+		},
+		"DeleteInstances_ContextTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				return client.DeleteInstances(GceRef{}, nil)
+			},
+			operationPerCallTimeout: &instantTimeout,
+		},
+		"ResizeMig_ContextTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				return client.ResizeMig(GceRef{}, 0)
+			},
+			operationPerCallTimeout: &instantTimeout,
+		},
+		"FetchMachineType_ContextTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				_, err := client.FetchMachineType("", "")
+				return err
+			},
+			operationPerCallTimeout: &instantTimeout,
+		},
+		"FetchMigBasename_ContextTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				_, err := client.FetchMigBasename(GceRef{})
+				return err
+			},
+			operationPerCallTimeout: &instantTimeout,
+		},
+		"FetchMigTargetSize_ContextTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				_, err := client.FetchMigTargetSize(GceRef{})
+				return err
+			},
+			operationPerCallTimeout: &instantTimeout,
+		},
+		"FetchMigTemplate_ContextTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				_, err := client.FetchMigTemplate(GceRef{}, "", false)
+				return err
+			},
+			operationPerCallTimeout: &instantTimeout,
+		},
+		"FetchMigTemplateName_ContextTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				_, err := client.FetchMigTemplateName(GceRef{})
+				return err
+			},
+			operationPerCallTimeout: &instantTimeout,
+		},
+		"FetchListManagedInstancesResults_ContextTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				_, err := client.FetchListManagedInstancesResults(GceRef{})
+				return err
+			},
+			operationPerCallTimeout: &instantTimeout,
+		},
+		"FetchZones_ContextTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				_, err := client.FetchZones("")
+				return err
+			},
+			operationPerCallTimeout: &instantTimeout,
+		},
+		"CreateInstances_HttpClientTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				return client.CreateInstances(GceRef{}, "", 0, nil)
+			},
+			httpTimeout: instantTimeout,
+		},
+		"DeleteInstances_HttpClientTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				return client.DeleteInstances(GceRef{}, nil)
+			},
+			httpTimeout: instantTimeout,
+		},
+		"ResizeMig_HttpClientTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				return client.ResizeMig(GceRef{}, 0)
+			},
+			httpTimeout: instantTimeout,
+		},
+		"FetchMachineType_HttpClientTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				_, err := client.FetchMachineType("", "")
+				return err
+			},
+			httpTimeout: instantTimeout,
+		},
+		"FetchMigBasename_HttpClientTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				_, err := client.FetchMigBasename(GceRef{})
+				return err
+			},
+			httpTimeout: instantTimeout,
+		},
+		"FetchMigTargetSize_HttpClientTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				_, err := client.FetchMigTargetSize(GceRef{})
+				return err
+			},
+			httpTimeout: instantTimeout,
+		},
+		"FetchMigTemplate_HttpClientTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				_, err := client.FetchMigTemplate(GceRef{}, "", false)
+				return err
+			},
+			httpTimeout: instantTimeout,
+		},
+		"FetchMigTemplateName_HttpClientTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				_, err := client.FetchMigTemplateName(GceRef{})
+				return err
+			},
+			httpTimeout: instantTimeout,
+		},
+		"FetchListManagedInstancesResults_HttpClientTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				_, err := client.FetchListManagedInstancesResults(GceRef{})
+				return err
+			},
+			httpTimeout: instantTimeout,
+		},
+		"FetchZones_HttpClientTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				_, err := client.FetchZones("")
+				return err
+			},
+			httpTimeout: instantTimeout,
+		},
+		"FetchMachineTypes_HttpClientTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				_, err := client.FetchMachineTypes("")
+				return err
+			},
+			httpTimeout: instantTimeout,
+		},
+		"FetchAllMigs_HttpClientTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				_, err := client.FetchAllMigs("")
+				return err
+			},
+			httpTimeout: instantTimeout,
+		},
+		"FetchMigInstances_HttpClientTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				_, err := client.FetchMigInstances(GceRef{})
+				return err
+			},
+			httpTimeout: instantTimeout,
+		},
+		"FetchAvailableCpuPlatforms_HttpClientTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				_, err := client.FetchAvailableCpuPlatforms()
+				return err
+			},
+			httpTimeout: instantTimeout,
+		},
+		"FetchMigsWithName_HttpClientTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				_, err := client.FetchMigsWithName("", &regexp.Regexp{})
+				return err
+			},
+			httpTimeout: instantTimeout,
+		},
+		"FetchReservationsInProject_HttpClientTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				_, err := client.FetchReservationsInProject("")
+				return err
+			},
+			httpTimeout: instantTimeout,
+		},
+	}
+
+	server := test_util.NewHttpServerMock()
+	defer server.Close()
+	server.On("handle", mock.Anything).Return(`{"status": "unreachable"}`).After(50 * time.Millisecond)
+	for testName, test := range tests {
+		t.Run(testName, func(t *testing.T) {
+			client := newTestAutoscalingGceClientWithTimeout(t, "project", server.URL, "", test.httpTimeout)
+			if test.operationPerCallTimeout != nil {
+				client.operationPerCallTimeout = *test.operationPerCallTimeout
+			}
+			err := test.clientFunc(client)
+			// NOTE: unable to test with ErrorIs as http errors are not wrapping an err, but overwriting it
+			assert.ErrorContains(t, err, context.DeadlineExceeded.Error())
+		})
+	}
+}
+
+func TestFetchAllInstances(t *testing.T) {
+	igm1 := "projects/893226960234/zones/zones/instanceGroupManagers/test-igm1-grp"
+	igm2 := "projects/893226960234/zones/zones/instanceGroupManagers/test-igm2-grp"
+	malformedIgm := "projects/893226960234/zones/zones/miss-formed/test-igm1-grp"
+	tests := []struct {
+		name            string
+		liResponse      gce_api.InstanceList
+		liPageResponses map[string]gce_api.InstanceList
+		want            []GceInstance
+	}{
+		{
+			name: "empty response",
+			liResponse: gce_api.InstanceList{
+				Items: []*gce_api.Instance{},
+			},
+			want: []GceInstance{},
+		},
+		{
+			name: "response with malformed created-by field",
+			liResponse: gce_api.InstanceList{
+				Items: []*gce_api.Instance{
+					{
+						Id: 10,
+						Metadata: &gce_api.Metadata{
+							Items: []*gce_api.MetadataItems{
+								{Key: "created-by", Value: &malformedIgm},
+							},
+						},
+						SelfLink: "https://www.googleapis.com/compute/v1/projects/myprojid/zones/myzone/instances/test-instance-1",
+						Status:   "RUNNING",
+					},
+					{
+						Id: 11,
+						Metadata: &gce_api.Metadata{
+							Items: []*gce_api.MetadataItems{
+								{Key: "created-by", Value: &igm1},
+							},
+						},
+						SelfLink: "https://www.googleapis.com/compute/v1/projects/myprojid/zones/myzone/instances/test-instance-2",
+						Status:   "PROVISIONING",
+					},
+				},
+			},
+			want: []GceInstance{
+				{
+					Instance: cloudprovider.Instance{
+						Id:     "gce://myprojid/myzone/test-instance-1",
+						Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
+					},
+					NumericId: 10,
+					Igm:       GceRef{},
+				},
+				{
+					Instance: cloudprovider.Instance{
+						Id:     "gce://myprojid/myzone/test-instance-2",
+						Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceCreating},
+					},
+					NumericId: 11,
+					Igm:       GceRef{"893226960234", "zones", "test-igm1-grp"},
+				},
+			},
+		},
+		{
+			name: "response without created-by field",
+			liResponse: gce_api.InstanceList{
+				Items: []*gce_api.Instance{
+					{
+						Id: 10,
+						Metadata: &gce_api.Metadata{
+							Items: []*gce_api.MetadataItems{},
+						},
+						SelfLink: "https://www.googleapis.com/compute/v1/projects/myprojid/zones/myzone/instances/test-instance-1",
+						Status:   "STOPPING",
+					},
+				},
+			},
+			want: []GceInstance{
+				{
+					Instance: cloudprovider.Instance{
+						Id:     "gce://myprojid/myzone/test-instance-1",
+						Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceDeleting},
+					},
+					NumericId: 10,
+					Igm:       GceRef{},
+				},
+			},
+		},
+		{
+			name: "successfully fetch multiple instances",
+			liResponse: gce_api.InstanceList{
+				Items: []*gce_api.Instance{
+					{
+						Id: 10,
+						Metadata: &gce_api.Metadata{
+							Items: []*gce_api.MetadataItems{
+								{Key: "created-by", Value: &igm1},
+							},
+						},
+						SelfLink: "https://www.googleapis.com/compute/v1/projects/myprojid/zones/myzone/instances/test-instance-1",
+						Status:   "RUNNING",
+					},
+					{
+						Id: 11,
+						Metadata: &gce_api.Metadata{
+							Items: []*gce_api.MetadataItems{
+								{Key: "created-by", Value: &igm1},
+							},
+						},
+						SelfLink: "https://www.googleapis.com/compute/v1/projects/myprojid/zones/myzone/instances/test-instance-2",
+						Status:   "RUNNING",
+					},
+				},
+			},
+			want: []GceInstance{
+				{
+					Instance: cloudprovider.Instance{
+						Id:     "gce://myprojid/myzone/test-instance-1",
+						Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
+					},
+					NumericId: 10,
+					Igm:       GceRef{"893226960234", "zones", "test-igm1-grp"},
+				},
+				{
+					Instance: cloudprovider.Instance{
+						Id:     "gce://myprojid/myzone/test-instance-2",
+						Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
+					},
+					NumericId: 11,
+					Igm:       GceRef{"893226960234", "zones", "test-igm1-grp"},
+				},
+			},
+		},
+		{
+			name: "on multiple pages",
+			liResponse: gce_api.InstanceList{
+				Items: []*gce_api.Instance{
+					{
+						Id: 10,
+						Metadata: &gce_api.Metadata{
+							Items: []*gce_api.MetadataItems{
+								{Key: "created-by", Value: &igm1},
+							},
+						},
+						SelfLink: "https://www.googleapis.com/compute/v1/projects/myprojid/zones/myzone/instances/test-instance-1",
+						Status:   "RUNNING",
+					},
+					{
+						Id: 11,
+						Metadata: &gce_api.Metadata{
+							Items: []*gce_api.MetadataItems{
+								{Key: "created-by", Value: &igm2},
+							},
+						},
+						SelfLink: "https://www.googleapis.com/compute/v1/projects/myprojid/zones/myzone/instances/test-instance-2",
+						Status:   "RUNNING",
+					},
+				},
+				NextPageToken: "foo",
+			},
+			liPageResponses: map[string]gce_api.InstanceList{
+				"foo": {
+					Items: []*gce_api.Instance{
+						{
+							Id: 12,
+							Metadata: &gce_api.Metadata{
+								Items: []*gce_api.MetadataItems{
+									{Key: "created-by", Value: &igm1},
+								},
+							},
+							SelfLink: "https://www.googleapis.com/compute/v1/projects/myprojid/zones/myzone/instances/test-instance-3",
+							Status:   "RUNNING",
+						},
+						{
+							Id: 13,
+							Metadata: &gce_api.Metadata{
+								Items: []*gce_api.MetadataItems{
+									{Key: "created-by", Value: &igm1},
+								},
+							},
+							SelfLink: "https://www.googleapis.com/compute/v1/projects/myprojid/zones/myzone/instances/test-instance-4",
+							Status:   "RUNNING",
+						},
+					},
+					NextPageToken: "bar",
+				},
+				"bar": {
+					Items: []*gce_api.Instance{
+						{
+							Id: 14,
+							Metadata: &gce_api.Metadata{
+								Items: []*gce_api.MetadataItems{
+									{Key: "created-by", Value: &igm2},
+								},
+							},
+							SelfLink: "https://www.googleapis.com/compute/v1/projects/myprojid/zones/myzone/instances/test-instance-5",
+							Status:   "RUNNING",
+						},
+						{
+							Id: 15,
+							Metadata: &gce_api.Metadata{
+								Items: []*gce_api.MetadataItems{
+									{Key: "created-by", Value: &igm1},
+								},
+							},
+							SelfLink: "https://www.googleapis.com/compute/v1/projects/myprojid/zones/myzone/instances/test-instance-6",
+							Status:   "RUNNING",
+						},
+					},
+				},
+			},
+			want: []GceInstance{
+				{
+					Instance: cloudprovider.Instance{
+						Id:     "gce://myprojid/myzone/test-instance-1",
+						Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
+					},
+					NumericId: 10,
+					Igm:       GceRef{"893226960234", "zones", "test-igm1-grp"},
+				},
+				{
+					Instance: cloudprovider.Instance{
+						Id:     "gce://myprojid/myzone/test-instance-2",
+						Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
+					},
+					NumericId: 11,
+					Igm:       GceRef{"893226960234", "zones", "test-igm2-grp"},
+				},
+				{
+					Instance: cloudprovider.Instance{
+						Id:     "gce://myprojid/myzone/test-instance-3",
+						Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
+					},
+					NumericId: 12,
+					Igm:       GceRef{"893226960234", "zones", "test-igm1-grp"},
+				},
+				{
+					Instance: cloudprovider.Instance{
+						Id:     "gce://myprojid/myzone/test-instance-4",
+						Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
+					},
+					NumericId: 13,
+					Igm:       GceRef{"893226960234", "zones", "test-igm1-grp"},
+				},
+				{
+					Instance: cloudprovider.Instance{
+						Id:     "gce://myprojid/myzone/test-instance-5",
+						Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
+					},
+					NumericId: 14,
+					Igm:       GceRef{"893226960234", "zones", "test-igm2-grp"},
+				},
+				{
+					Instance: cloudprovider.Instance{
+						Id:     "gce://myprojid/myzone/test-instance-6",
+						Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
+					},
+					NumericId: 15,
+					Igm:       GceRef{"893226960234", "zones", "test-igm1-grp"},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			server := test_util.NewHttpServerMock()
+			defer server.Close()
+			gceInternalService := newTestAutoscalingGceClient(t, "project1", server.URL, "")
+
+			b, err := json.Marshal(tt.liResponse)
+			assert.NoError(t, err)
+			server.On("handle", "/projects/myprojid/zones/myzone/instances").Return(string(b)).Times(1)
+			for token, response := range tt.liPageResponses {
+				b, err := json.Marshal(response)
+				assert.NoError(t, err)
+				server.On("handle", "/projects/myprojid/zones/myzone/instances", token).Return(string(b)).Times(1)
+			}
+
+			got, err := gceInternalService.FetchAllInstances("myprojid", "myzone", "test-cluster")
+			if diff := cmp.Diff(tt.want, got); diff != "" {
+				t.Errorf("autoscalingInternalGceClient.FetchAllInstances() diff (-want +got): %s", diff)
+			}
+			mock.AssertExpectationsForObjects(t, server)
+		})
+	}
+}
+
+func TestExternalToInternalInstance(t *testing.T) {
+	igm1 := "projects/893226960234/zones/zones/instanceGroupManagers/test-igm1-grp"
+	tests := []struct {
+		name     string
+		instance *gce_api.Instance
+		want     GceInstance
+		wantErr  bool
+	}{
+		{
+			name:    "nil instance argument is rejected",
+			wantErr: true,
+		},
+		{
+			name: "no created-by field",
+			instance: &gce_api.Instance{
+				Id:       10,
+				Metadata: &gce_api.Metadata{},
+				SelfLink: "https://www.googleapis.com/compute/v1/projects/myprojid/zones/myzone/instances/test-instance-1",
+				Status:   "RUNNING",
+			},
+			want: GceInstance{
+				Instance: cloudprovider.Instance{
+					Id:     "gce://myprojid/myzone/test-instance-1",
+					Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
+				},
+				NumericId: 10,
+				Igm:       GceRef{},
+			},
+		},
+		{
+			name: "no selfLink field",
+			instance: &gce_api.Instance{
+				Id: 10,
+				Metadata: &gce_api.Metadata{
+					Items: []*gce_api.MetadataItems{
+						{Key: "created-by", Value: &igm1},
+					},
+				},
+				Status: "RUNNING",
+			},
+			wantErr: true,
+		},
+		{
+			name: "wrong selfLink format",
+			instance: &gce_api.Instance{
+				Id: 10,
+				Metadata: &gce_api.Metadata{
+					Items: []*gce_api.MetadataItems{
+						{Key: "created-by", Value: &igm1},
+					},
+				},
+				SelfLink: "https://www.googleapis.com/compute/v1/projects/myprojid/zones/myzone/something/test-instance-1",
+				Status:   "RUNNING",
+			},
+			wantErr: true,
+		},
+		{
+			name: "successful conversion",
+			instance: &gce_api.Instance{
+				Id: 10,
+				Metadata: &gce_api.Metadata{
+					Items: []*gce_api.MetadataItems{
+						{Key: "created-by", Value: &igm1},
+					},
+				},
+				SelfLink: "https://www.googleapis.com/compute/v1/projects/myprojid/zones/myzone/instances/test-instance-1",
+				Status:   "RUNNING",
+			},
+			want: GceInstance{
+				Instance: cloudprovider.Instance{
+					Id:     "gce://myprojid/myzone/test-instance-1",
+					Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
+				},
+				NumericId: 10,
+				Igm:       GceRef{"893226960234", "zones", "test-igm1-grp"},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := externalToInternalInstance(tt.instance, klogx.NewLoggingQuota(MaxInstancesLogged))
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+			assert.Equal(t, tt.want, got)
+		})
+	}
 }

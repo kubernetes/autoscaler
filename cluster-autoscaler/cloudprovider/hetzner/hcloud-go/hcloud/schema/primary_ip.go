@@ -11,7 +11,7 @@ type PrimaryIP struct {
 	Type         string              `json:"type"`
 	Protection   PrimaryIPProtection `json:"protection"`
 	DNSPtr       []PrimaryIPDNSPTR   `json:"dns_ptr"`
-	AssigneeID   int64               `json:"assignee_id"`
+	AssigneeID   *int64              `json:"assignee_id"`
 	AssigneeType string              `json:"assignee_type"`
 	AutoDelete   bool                `json:"auto_delete"`
 	Blocked      bool                `json:"blocked"`

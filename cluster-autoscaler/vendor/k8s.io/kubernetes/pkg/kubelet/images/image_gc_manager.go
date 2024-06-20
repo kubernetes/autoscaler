@@ -232,9 +232,9 @@ func (im *realImageGCManager) GetImageList() ([]container.Image, error) {
 	return im.imageCache.get(), nil
 }
 
-func (im *realImageGCManager) detectImages(ctx context.Context, detectTime time.Time) (sets.String, error) {
+func (im *realImageGCManager) detectImages(ctx context.Context, detectTime time.Time) (sets.Set[string], error) {
 	isRuntimeClassInImageCriAPIEnabled := utilfeature.DefaultFeatureGate.Enabled(features.RuntimeClassInImageCriAPI)
-	imagesInUse := sets.NewString()
+	imagesInUse := sets.New[string]()
 
 	images, err := im.runtime.ListImages(ctx)
 	if err != nil {
@@ -249,11 +249,11 @@ func (im *realImageGCManager) detectImages(ctx context.Context, detectTime time.
 	for _, pod := range pods {
 		for _, container := range pod.Containers {
 			if !isRuntimeClassInImageCriAPIEnabled {
-				klog.V(5).InfoS("Container uses image", "pod", klog.KRef(pod.Namespace, pod.Name), "containerName", container.Name, "containerImage", container.Image, "imageID", container.ImageID)
+				klog.V(5).InfoS("Container uses image", "pod", klog.KRef(pod.Namespace, pod.Name), "containerName", container.Name, "containerImage", container.Image, "imageID", container.ImageID, "imageRef", container.ImageRef)
 				imagesInUse.Insert(container.ImageID)
 			} else {
 				imageKey := getImageTuple(container.ImageID, container.ImageRuntimeHandler)
-				klog.V(5).InfoS("Container uses image", "pod", klog.KRef(pod.Namespace, pod.Name), "containerName", container.Name, "containerImage", container.Image, "imageID", container.ImageID, "imageKey", imageKey)
+				klog.V(5).InfoS("Container uses image", "pod", klog.KRef(pod.Namespace, pod.Name), "containerName", container.Name, "containerImage", container.Image, "imageID", container.ImageID, "imageRef", container.ImageRef, "imageKey", imageKey)
 				imagesInUse.Insert(imageKey)
 			}
 		}
@@ -261,7 +261,7 @@ func (im *realImageGCManager) detectImages(ctx context.Context, detectTime time.
 
 	// Add new images and record those being used.
 	now := time.Now()
-	currentImages := sets.NewString()
+	currentImages := sets.New[string]()
 	im.imageRecordsLock.Lock()
 	defer im.imageRecordsLock.Unlock()
 	for _, image := range images {
@@ -554,7 +554,7 @@ func (ev byLastUsedAndDetected) Less(i, j int) bool {
 	return ev[i].lastUsed.Before(ev[j].lastUsed)
 }
 
-func isImageUsed(imageID string, imagesInUse sets.String) bool {
+func isImageUsed(imageID string, imagesInUse sets.Set[string]) bool {
 	// Check the image ID.
 	if _, ok := imagesInUse[imageID]; ok {
 		return true

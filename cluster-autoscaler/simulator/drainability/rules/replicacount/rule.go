@@ -25,6 +25,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	pod_util "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
+	"k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // Rule is a drainability rule on how to handle replicated pods.
@@ -45,7 +46,7 @@ func (r *Rule) Name() string {
 }
 
 // Drainable decides what to do with replicated pods on node drain.
-func (r *Rule) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod) drainability.Status {
+func (r *Rule) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod, _ *framework.NodeInfo) drainability.Status {
 	if drainCtx.Listers == nil {
 		return drainability.NewUndefinedStatus()
 	}
