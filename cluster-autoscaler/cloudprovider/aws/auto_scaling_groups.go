@@ -339,11 +339,15 @@ func (m *asgCache) DeleteInstances(instances []*AwsInstanceRef) error {
 			klog.Errorf("Error reducing ASG %s size to %d: %v", commonAsg.Name, activeInstancesInAsg, err)
 			return err
 		}
-		return nil
 	}
 
 	for _, instance := range instances {
 
+		if m.isPlaceholderInstance(instance) {
+			// skipping placeholder as placeholder instances don't exist
+			// and we have already reduced ASG size during placeholder check.
+			continue
+		}
 		// check if the instance is already terminating - if it is, don't bother terminating again
 		// as doing so causes unnecessary API calls and can cause the curSize cached value to decrement
 		// unnecessarily.
