@@ -157,7 +157,7 @@ func (e Evictor) waitPodsToDisappear(ctx *acontext.AutoscalingContext, node *api
 
 	for _, pod := range pods {
 		podReturned, err := ctx.ClientSet.CoreV1().Pods(pod.Namespace).Get(context.TODO(), pod.Name, metav1.GetOptions{})
-		if err == nil && (podReturned == nil || podReturned.Spec.NodeName == node.Name) {
+		if err == nil && (podReturned == nil || podReturned.Name == "" || podReturned.Spec.NodeName == node.Name) {
 			evictionResults[pod.Name] = status.PodEvictionResult{Pod: pod, TimedOut: true, Err: nil}
 		} else if err != nil && !kube_errors.IsNotFound(err) {
 			evictionResults[pod.Name] = status.PodEvictionResult{Pod: pod, TimedOut: true, Err: err}
