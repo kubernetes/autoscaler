@@ -172,25 +172,35 @@ type AgentPoolsClient interface {
 }
 
 func getAgentpoolClientCredentials(cfg *Config) (azcore.TokenCredential, error) {
-	var cred azcore.TokenCredential
-	var err error
+	// Use CLI
 	if cfg.AuthMethod == authMethodCLI {
-		cred, err = azidentity.NewAzureCLICredential(&azidentity.AzureCLICredentialOptions{
+		return azidentity.NewAzureCLICredential(&azidentity.AzureCLICredentialOptions{
 			TenantID: cfg.TenantID})
-		if err != nil {
-			klog.Errorf("NewAzureCLICredential failed: %v", err)
-			return nil, err
-		}
-	} else if cfg.AuthMethod == "" || cfg.AuthMethod == authMethodPrincipal {
-		cred, err = azidentity.NewClientSecretCredential(cfg.TenantID, cfg.AADClientID, cfg.AADClientSecret, nil)
-		if err != nil {
-			klog.Errorf("NewClientSecretCredential failed: %v", err)
-			return nil, err
-		}
-	} else {
-		return nil, fmt.Errorf("unsupported authorization method: %s", cfg.AuthMethod)
 	}
-	return cred, nil
+
+	if cfg.AuthMethod == "" || cfg.AuthMethod == authMethodPrincipal {
+		// Use MSI
+		if cfg.UseManagedIdentityExtension {
+			// Use System Assigned MSI
+			if len(cfg.UserAssignedIdentityID) == 0 {
+				klog.V(4).Info("Agentpool client: using System Assigned MSI to retrieve access token")
+				return azidentity.NewManagedIdentityCredential(nil)
+			} else {
+				// Use User Assigned MSI
+				klog.V(4).Info("Agentpool client: using User Assigned MSI to retrieve access token")
+				return azidentity.NewManagedIdentityCredential(&azidentity.ManagedIdentityCredentialOptions{
+					ID: azidentity.ClientID(cfg.UserAssignedIdentityID),
+				})
+			}
+		}
+
+		// Use Service Principal
+		if len(cfg.AADClientID) > 0 && len(cfg.AADClientSecret) > 0 {
+			klog.V(2).Infoln("Agentpool client: using client_id+client_secret to retrieve access token")
+			return azidentity.NewClientSecretCredential(cfg.TenantID, cfg.AADClientID, cfg.AADClientSecret, nil)
+		}
+	}
+	return nil, fmt.Errorf("unsupported authorization method: %s", cfg.AuthMethod)
 }
 
 func getAgentpoolClientRetryOptions(cfg *Config) azurecore_policy.RetryOptions {
