@@ -58,7 +58,7 @@ type NodeGroupAutoscalingOptions struct {
 
 // GCEOptions contain autoscaling options specific to GCE cloud provider.
 type GCEOptions struct {
-	// ConcurrentRefreshes is the maximum number of concurrently refreshed instance groups or instance templates.
+	// ConcurrentRefreshes is the maximum number of concurrently refreshed instance groups or instance templates or zones with mig instances
 	ConcurrentRefreshes int
 	// MigInstancesMinRefreshWaitTime is the minimum time which needs to pass before GCE MIG instances from a given MIG can be refreshed.
 	MigInstancesMinRefreshWaitTime time.Duration
@@ -66,6 +66,9 @@ type GCEOptions struct {
 	DomainUrl string
 	// LocalSSDDiskSizeProvider provides local ssd disk size based on machine type
 	LocalSSDDiskSizeProvider gce_localssdsize.LocalSSDSizeProvider
+	// BulkMigInstancesListingEnabled means that cluster instances should be listed in bulk instead of per mig.
+	// Instances of migs having instances in creating or deleting state are re-fetched using igm.ListInstances. Inconsistencies are handled by re-fetching using igm.ListInstances
+	BulkMigInstancesListingEnabled bool
 }
 
 const (
