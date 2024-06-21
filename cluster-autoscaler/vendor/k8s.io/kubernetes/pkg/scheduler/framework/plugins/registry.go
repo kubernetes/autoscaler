@@ -48,19 +48,18 @@ func NewInTreeRegistry() runtime.Registry {
 	fts := plfeature.Features{
 		EnableDynamicResourceAllocation:              feature.DefaultFeatureGate.Enabled(features.DynamicResourceAllocation),
 		EnableVolumeCapacityPriority:                 feature.DefaultFeatureGate.Enabled(features.VolumeCapacityPriority),
-		EnableMinDomainsInPodTopologySpread:          feature.DefaultFeatureGate.Enabled(features.MinDomainsInPodTopologySpread),
 		EnableNodeInclusionPolicyInPodTopologySpread: feature.DefaultFeatureGate.Enabled(features.NodeInclusionPolicyInPodTopologySpread),
 		EnableMatchLabelKeysInPodTopologySpread:      feature.DefaultFeatureGate.Enabled(features.MatchLabelKeysInPodTopologySpread),
-		EnablePodSchedulingReadiness:                 feature.DefaultFeatureGate.Enabled(features.PodSchedulingReadiness),
 		EnablePodDisruptionConditions:                feature.DefaultFeatureGate.Enabled(features.PodDisruptionConditions),
 		EnableInPlacePodVerticalScaling:              feature.DefaultFeatureGate.Enabled(features.InPlacePodVerticalScaling),
 		EnableSidecarContainers:                      feature.DefaultFeatureGate.Enabled(features.SidecarContainers),
+		EnableSchedulingQueueHint:                    feature.DefaultFeatureGate.Enabled(features.SchedulerQueueingHints),
 	}
 
 	registry := runtime.Registry{
 		dynamicresources.Name:                runtime.FactoryAdapter(fts, dynamicresources.New),
 		imagelocality.Name:                   imagelocality.New,
-		tainttoleration.Name:                 tainttoleration.New,
+		tainttoleration.Name:                 runtime.FactoryAdapter(fts, tainttoleration.New),
 		nodename.Name:                        nodename.New,
 		nodeports.Name:                       nodeports.New,
 		nodeaffinity.Name:                    nodeaffinity.New,

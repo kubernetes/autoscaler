@@ -20,8 +20,9 @@ type Datacenter struct {
 
 // DatacenterServerTypes represents the server types available and supported in a datacenter.
 type DatacenterServerTypes struct {
-	Supported []*ServerType
-	Available []*ServerType
+	Supported             []*ServerType
+	AvailableForMigration []*ServerType
+	Available             []*ServerType
 }
 
 // DatacenterClient is a client for the datacenter API.

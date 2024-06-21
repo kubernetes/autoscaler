@@ -55,6 +55,21 @@ func TestLoopInit(t *testing.T) {
 		Get()
 	vpaToPodMap := map[*v1.VerticalPodAutoscaler][]*corev1.Pod{testVPA: {pod, pod2}}
 
+	t.Run("it should not require UpdateMode and EvictionRequirements.", func(t *testing.T) {
+		sdpea := NewScalingDirectionPodEvictionAdmission()
+		sdpea.LoopInit(nil, vpaToPodMap)
+
+		newTestVPA := test.VerticalPodAutoscaler().
+			WithName("test-vpa").
+			WithContainer(container1Name).
+			Get()
+
+		newVpaToPodMap := map[*v1.VerticalPodAutoscaler][]*corev1.Pod{newTestVPA: {pod, pod2}}
+
+		sdpea.LoopInit(nil, newVpaToPodMap)
+		assert.Len(t, sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements, 0)
+	})
+
 	t.Run("it should store EvictionRequirements from VPA in a map per Pod", func(t *testing.T) {
 		sdpea := NewScalingDirectionPodEvictionAdmission()
 		sdpea.LoopInit(nil, vpaToPodMap)

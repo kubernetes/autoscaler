@@ -61,18 +61,20 @@ func (e *scaleUpExecutor) ExecuteScaleUps(
 	scaleUpInfos []nodegroupset.ScaleUpInfo,
 	nodeInfos map[string]*schedulerframework.NodeInfo,
 	now time.Time,
+	atomic bool,
 ) (errors.AutoscalerError, []cloudprovider.NodeGroup) {
 	options := e.autoscalingContext.AutoscalingOptions
 	if options.ParallelScaleUp {
-		return e.executeScaleUpsParallel(scaleUpInfos, nodeInfos, now)
+		return e.executeScaleUpsParallel(scaleUpInfos, nodeInfos, now, atomic)
 	}
-	return e.executeScaleUpsSync(scaleUpInfos, nodeInfos, now)
+	return e.executeScaleUpsSync(scaleUpInfos, nodeInfos, now, atomic)
 }
 
 func (e *scaleUpExecutor) executeScaleUpsSync(
 	scaleUpInfos []nodegroupset.ScaleUpInfo,
 	nodeInfos map[string]*schedulerframework.NodeInfo,
 	now time.Time,
+	atomic bool,
 ) (errors.AutoscalerError, []cloudprovider.NodeGroup) {
 	availableGPUTypes := e.autoscalingContext.CloudProvider.GetAvailableGPUTypes()
 	for _, scaleUpInfo := range scaleUpInfos {
@@ -81,7 +83,7 @@ func (e *scaleUpExecutor) executeScaleUpsSync(
 			klog.Errorf("ExecuteScaleUp: failed to get node info for node group %s", scaleUpInfo.Group.Id())
 			continue
 		}
-		if aErr := e.executeScaleUp(scaleUpInfo, nodeInfo, availableGPUTypes, now); aErr != nil {
+		if aErr := e.executeScaleUp(scaleUpInfo, nodeInfo, availableGPUTypes, now, atomic); aErr != nil {
 			return aErr, []cloudprovider.NodeGroup{scaleUpInfo.Group}
 		}
 	}
@@ -92,6 +94,7 @@ func (e *scaleUpExecutor) executeScaleUpsParallel(
 	scaleUpInfos []nodegroupset.ScaleUpInfo,
 	nodeInfos map[string]*schedulerframework.NodeInfo,
 	now time.Time,
+	atomic bool,
 ) (errors.AutoscalerError, []cloudprovider.NodeGroup) {
 	if err := checkUniqueNodeGroups(scaleUpInfos); err != nil {
 		return err, extractNodeGroups(scaleUpInfos)
@@ -113,7 +116,7 @@ func (e *scaleUpExecutor) executeScaleUpsParallel(
 				klog.Errorf("ExecuteScaleUp: failed to get node info for node group %s", info.Group.Id())
 				return
 			}
-			if aErr := e.executeScaleUp(info, nodeInfo, availableGPUTypes, now); aErr != nil {
+			if aErr := e.executeScaleUp(info, nodeInfo, availableGPUTypes, now, atomic); aErr != nil {
 				errResults <- errResult{err: aErr, info: &info}
 			}
 		}(scaleUpInfo)
@@ -136,11 +139,23 @@ func (e *scaleUpExecutor) executeScaleUpsParallel(
 	return nil, nil
 }
 
+func (e *scaleUpExecutor) increaseSize(nodeGroup cloudprovider.NodeGroup, increase int, atomic bool) error {
+	if atomic {
+		if err := nodeGroup.AtomicIncreaseSize(increase); err != cloudprovider.ErrNotImplemented {
+			return err
+		}
+		// If error is cloudprovider.ErrNotImplemented, fall back to non-atomic
+		// increase - cloud provider doesn't support it.
+	}
+	return nodeGroup.IncreaseSize(increase)
+}
+
 func (e *scaleUpExecutor) executeScaleUp(
 	info nodegroupset.ScaleUpInfo,
 	nodeInfo *schedulerframework.NodeInfo,
 	availableGPUTypes map[string]struct{},
 	now time.Time,
+	atomic bool,
 ) errors.AutoscalerError {
 	gpuConfig := e.autoscalingContext.CloudProvider.GetNodeGpuConfig(nodeInfo.Node())
 	gpuResourceName, gpuType := gpu.GetGpuInfoForMetrics(gpuConfig, availableGPUTypes, nodeInfo.Node(), nil)
@@ -148,7 +163,7 @@ func (e *scaleUpExecutor) executeScaleUp(
 	e.autoscalingContext.LogRecorder.Eventf(apiv1.EventTypeNormal, "ScaledUpGroup",
 		"Scale-up: setting group %s size to %d instead of %d (max: %d)", info.Group.Id(), info.NewSize, info.CurrentSize, info.MaxSize)
 	increase := info.NewSize - info.CurrentSize
-	if err := info.Group.IncreaseSize(increase); err != nil {
+	if err := e.increaseSize(info.Group, increase, atomic); err != nil {
 		e.autoscalingContext.LogRecorder.Eventf(apiv1.EventTypeWarning, "FailedToScaleUpGroup", "Scale-up failed for group %s: %v", info.Group.Id(), err)
 		aerr := errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("failed to increase node group size: ")
 		e.scaleStateNotifier.RegisterFailedScaleUp(info.Group, string(aerr.Type()), aerr.Error(), gpuResourceName, gpuType, now)

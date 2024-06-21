@@ -22,7 +22,7 @@ type Client struct {
 	timeout  time.Duration
 
 	httpClient              *http.Client
-	instrumentationRegistry *prometheus.Registry
+	instrumentationRegistry prometheus.Registerer
 }
 
 // A ClientOption is used to configure a [Client].
@@ -43,7 +43,7 @@ func WithHTTPClient(httpClient *http.Client) ClientOption {
 }
 
 // WithInstrumentation configures a [Client] to collect metrics about the performed HTTP requests.
-func WithInstrumentation(registry *prometheus.Registry) ClientOption {
+func WithInstrumentation(registry prometheus.Registerer) ClientOption {
 	return func(client *Client) {
 		client.instrumentationRegistry = registry
 	}

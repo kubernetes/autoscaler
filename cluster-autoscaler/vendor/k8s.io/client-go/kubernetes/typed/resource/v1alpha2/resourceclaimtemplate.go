@@ -31,6 +31,9 @@ import (
 	resourcev1alpha2 "k8s.io/client-go/applyconfigurations/resource/v1alpha2"
 	scheme "k8s.io/client-go/kubernetes/scheme"
 	rest "k8s.io/client-go/rest"
+	consistencydetector "k8s.io/client-go/util/consistencydetector"
+	watchlist "k8s.io/client-go/util/watchlist"
+	"k8s.io/klog/v2"
 )
 
 // ResourceClaimTemplatesGetter has a method to return a ResourceClaimTemplateInterface.
@@ -81,7 +84,26 @@ func (c *resourceClaimTemplates) Get(ctx context.Context, name string, options v
 }
 
 // List takes label and field selectors, and returns the list of ResourceClaimTemplates that match those selectors.
-func (c *resourceClaimTemplates) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha2.ResourceClaimTemplateList, err error) {
+func (c *resourceClaimTemplates) List(ctx context.Context, opts v1.ListOptions) (*v1alpha2.ResourceClaimTemplateList, error) {
+	if watchListOptions, hasWatchListOptionsPrepared, watchListOptionsErr := watchlist.PrepareWatchListOptionsFromListOptions(opts); watchListOptionsErr != nil {
+		klog.Warningf("Failed preparing watchlist options for resourceclaimtemplates, falling back to the standard LIST semantics, err = %v", watchListOptionsErr)
+	} else if hasWatchListOptionsPrepared {
+		result, err := c.watchList(ctx, watchListOptions)
+		if err == nil {
+			consistencydetector.CheckWatchListFromCacheDataConsistencyIfRequested(ctx, "watchlist request for resourceclaimtemplates", c.list, opts, result)
+			return result, nil
+		}
+		klog.Warningf("The watchlist request for resourceclaimtemplates ended with an error, falling back to the standard LIST semantics, err = %v", err)
+	}
+	result, err := c.list(ctx, opts)
+	if err == nil {
+		consistencydetector.CheckListFromCacheDataConsistencyIfRequested(ctx, "list request for resourceclaimtemplates", c.list, opts, result)
+	}
+	return result, err
+}
+
+// list takes label and field selectors, and returns the list of ResourceClaimTemplates that match those selectors.
+func (c *resourceClaimTemplates) list(ctx context.Context, opts v1.ListOptions) (result *v1alpha2.ResourceClaimTemplateList, err error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
@@ -93,6 +115,23 @@ func (c *resourceClaimTemplates) List(ctx context.Context, opts v1.ListOptions) 
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
 		Do(ctx).
+		Into(result)
+	return
+}
+
+// watchList establishes a watch stream with the server and returns the list of ResourceClaimTemplates
+func (c *resourceClaimTemplates) watchList(ctx context.Context, opts v1.ListOptions) (result *v1alpha2.ResourceClaimTemplateList, err error) {
+	var timeout time.Duration
+	if opts.TimeoutSeconds != nil {
+		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
+	}
+	result = &v1alpha2.ResourceClaimTemplateList{}
+	err = c.client.Get().
+		Namespace(c.ns).
+		Resource("resourceclaimtemplates").
+		VersionedParams(&opts, scheme.ParameterCodec).
+		Timeout(timeout).
+		WatchList(ctx).
 		Into(result)
 	return
 }

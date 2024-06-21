@@ -274,6 +274,9 @@ const (
 	ContainerStateUnknown State = "unknown"
 )
 
+// ContainerReasonStatusUnknown indicates a container the status of the container cannot be determined.
+const ContainerReasonStatusUnknown string = "ContainerStatusUnknown"
+
 // Container provides the runtime information for a container, such as ID, hash,
 // state of the container.
 type Container struct {
@@ -288,16 +291,13 @@ type Container struct {
 	Image string
 	// The id of the image used by the container.
 	ImageID string
+	// The digested reference of the image used by the container.
+	ImageRef string
 	// Runtime handler used to pull the image if any.
 	ImageRuntimeHandler string
 	// Hash of the container, used for comparison. Optional for containers
 	// not managed by kubelet.
 	Hash uint64
-	// Hash of the container over fields with Resources field zero'd out.
-	// NOTE: This is needed during alpha and beta so that containers using Resources are
-	// not unexpectedly restarted when InPlacePodVerticalScaling feature-gate is toggled.
-	//TODO(vinaykul,InPlacePodVerticalScaling): Remove this in GA+1 and make HashWithoutResources to become Hash.
-	HashWithoutResources uint64
 	// State is the state of the container.
 	State State
 }
@@ -335,6 +335,8 @@ type ContainerResources struct {
 }
 
 // Status represents the status of a container.
+//
+// Status does not contain VolumeMap because CRI API is unaware of volume names.
 type Status struct {
 	// ID of the container.
 	ID ContainerID
@@ -355,12 +357,12 @@ type Status struct {
 	Image string
 	// ID of the image.
 	ImageID string
+	// The digested reference of the image used by the container.
+	ImageRef string
 	// Runtime handler used to pull the image if any.
 	ImageRuntimeHandler string
 	// Hash of the container, used for comparison.
 	Hash uint64
-	// Hash of the container over fields with Resources field zero'd out.
-	HashWithoutResources uint64
 	// Number of times that the container has been restarted.
 	RestartCount int
 	// A string explains why container is in such a status.
@@ -370,6 +372,29 @@ type Status struct {
 	Message string
 	// CPU and memory resources for this container
 	Resources *ContainerResources
+	// User identity information of the first process of this container
+	User *ContainerUser
+}
+
+// ContainerUser represents user identity information
+type ContainerUser struct {
+	// Linux holds user identity information of the first process of the containers in Linux.
+	// Note that this field cannot be set when spec.os.name is windows.
+	Linux *LinuxContainerUser
+
+	// Windows holds user identity information of the first process of the containers in Windows
+	// This is just reserved for future use.
+	// Windows *WindowsContainerUser
+}
+
+// LinuxContainerUser represents user identity information in Linux containers
+type LinuxContainerUser struct {
+	// UID is the primary uid of the first process in the container
+	UID int64
+	// GID is the primary gid of the first process in the container
+	GID int64
+	// SupplementalGroups are the supplemental groups attached to the first process in the container
+	SupplementalGroups []int64
 }
 
 // FindContainerStatusByName returns container status in the pod status with the given name.
@@ -434,6 +459,9 @@ type Mount struct {
 	HostPath string
 	// Whether the mount is read-only.
 	ReadOnly bool
+	// Whether the mount is recursive read-only.
+	// Must not be true if ReadOnly is false.
+	RecursiveReadOnly bool
 	// Whether the mount needs SELinux relabeling
 	SELinuxRelabel bool
 	// Requested propagation mode
@@ -526,6 +554,8 @@ const (
 type RuntimeStatus struct {
 	// Conditions is an array of current observed runtime conditions.
 	Conditions []RuntimeCondition
+	// Handlers is an array of current available handlers
+	Handlers []RuntimeHandler
 }
 
 // GetRuntimeCondition gets a specified runtime condition from the runtime status.
@@ -542,10 +572,32 @@ func (r *RuntimeStatus) GetRuntimeCondition(t RuntimeConditionType) *RuntimeCond
 // String formats the runtime status into human readable string.
 func (r *RuntimeStatus) String() string {
 	var ss []string
+	var sh []string
 	for _, c := range r.Conditions {
 		ss = append(ss, c.String())
 	}
-	return fmt.Sprintf("Runtime Conditions: %s", strings.Join(ss, ", "))
+	for _, h := range r.Handlers {
+		sh = append(sh, h.String())
+	}
+	return fmt.Sprintf("Runtime Conditions: %s; Handlers: %s", strings.Join(ss, ", "), strings.Join(sh, ", "))
+}
+
+// RuntimeHandler contains condition information for the runtime handler.
+type RuntimeHandler struct {
+	// Name is the handler name.
+	Name string
+	// SupportsRecursiveReadOnlyMounts is true if the handler has support for
+	// recursive read-only mounts.
+	SupportsRecursiveReadOnlyMounts bool
+	// SupportsUserNamespaces is true if the handler has support for
+	// user namespaces.
+	SupportsUserNamespaces bool
+}
+
+// String formats the runtime handler into human readable string.
+func (h *RuntimeHandler) String() string {
+	return fmt.Sprintf("Name=%s SupportsRecursiveReadOnlyMounts: %v SupportsUserNamespaces: %v",
+		h.Name, h.SupportsRecursiveReadOnlyMounts, h.SupportsUserNamespaces)
 }
 
 // RuntimeCondition contains condition information for the runtime.

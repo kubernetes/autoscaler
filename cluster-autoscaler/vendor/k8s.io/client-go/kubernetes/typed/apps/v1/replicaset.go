@@ -33,6 +33,9 @@ import (
 	applyconfigurationsautoscalingv1 "k8s.io/client-go/applyconfigurations/autoscaling/v1"
 	scheme "k8s.io/client-go/kubernetes/scheme"
 	rest "k8s.io/client-go/rest"
+	consistencydetector "k8s.io/client-go/util/consistencydetector"
+	watchlist "k8s.io/client-go/util/watchlist"
+	"k8s.io/klog/v2"
 )
 
 // ReplicaSetsGetter has a method to return a ReplicaSetInterface.
@@ -89,7 +92,26 @@ func (c *replicaSets) Get(ctx context.Context, name string, options metav1.GetOp
 }
 
 // List takes label and field selectors, and returns the list of ReplicaSets that match those selectors.
-func (c *replicaSets) List(ctx context.Context, opts metav1.ListOptions) (result *v1.ReplicaSetList, err error) {
+func (c *replicaSets) List(ctx context.Context, opts metav1.ListOptions) (*v1.ReplicaSetList, error) {
+	if watchListOptions, hasWatchListOptionsPrepared, watchListOptionsErr := watchlist.PrepareWatchListOptionsFromListOptions(opts); watchListOptionsErr != nil {
+		klog.Warningf("Failed preparing watchlist options for replicasets, falling back to the standard LIST semantics, err = %v", watchListOptionsErr)
+	} else if hasWatchListOptionsPrepared {
+		result, err := c.watchList(ctx, watchListOptions)
+		if err == nil {
+			consistencydetector.CheckWatchListFromCacheDataConsistencyIfRequested(ctx, "watchlist request for replicasets", c.list, opts, result)
+			return result, nil
+		}
+		klog.Warningf("The watchlist request for replicasets ended with an error, falling back to the standard LIST semantics, err = %v", err)
+	}
+	result, err := c.list(ctx, opts)
+	if err == nil {
+		consistencydetector.CheckListFromCacheDataConsistencyIfRequested(ctx, "list request for replicasets", c.list, opts, result)
+	}
+	return result, err
+}
+
+// list takes label and field selectors, and returns the list of ReplicaSets that match those selectors.
+func (c *replicaSets) list(ctx context.Context, opts metav1.ListOptions) (result *v1.ReplicaSetList, err error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
@@ -101,6 +123,23 @@ func (c *replicaSets) List(ctx context.Context, opts metav1.ListOptions) (result
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
 		Do(ctx).
+		Into(result)
+	return
+}
+
+// watchList establishes a watch stream with the server and returns the list of ReplicaSets
+func (c *replicaSets) watchList(ctx context.Context, opts metav1.ListOptions) (result *v1.ReplicaSetList, err error) {
+	var timeout time.Duration
+	if opts.TimeoutSeconds != nil {
+		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
+	}
+	result = &v1.ReplicaSetList{}
+	err = c.client.Get().
+		Namespace(c.ns).
+		Resource("replicasets").
+		VersionedParams(&opts, scheme.ParameterCodec).
+		Timeout(timeout).
+		WatchList(ctx).
 		Into(result)
 	return
 }

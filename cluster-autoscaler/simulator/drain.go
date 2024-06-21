@@ -52,7 +52,7 @@ func GetPodsToMove(nodeInfo *schedulerframework.NodeInfo, deleteOptions options.
 	}
 	for _, podInfo := range nodeInfo.Pods {
 		pod := podInfo.Pod
-		status := drainabilityRules.Drainable(drainCtx, pod)
+		status := drainabilityRules.Drainable(drainCtx, pod, nodeInfo)
 		switch status.Outcome {
 		case drainability.UndefinedOutcome, drainability.DrainOk:
 			if pod_util.IsDaemonSetPod(pod) {

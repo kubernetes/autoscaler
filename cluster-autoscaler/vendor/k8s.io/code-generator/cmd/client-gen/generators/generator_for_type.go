@@ -19,23 +19,24 @@ package generators
 import (
 	"io"
 	"path"
-	"path/filepath"
 	"strings"
 
-	"k8s.io/gengo/generator"
-	"k8s.io/gengo/namer"
-	"k8s.io/gengo/types"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
+	"k8s.io/gengo/v2/generator"
+	"k8s.io/gengo/v2/namer"
+	"k8s.io/gengo/v2/types"
 
 	"k8s.io/code-generator/cmd/client-gen/generators/util"
 )
 
 // genClientForType produces a file for each top-level type.
 type genClientForType struct {
-	generator.DefaultGen
-	outputPackage             string
+	generator.GoGenerator
+	outputPackage             string // must be a Go import-path
 	inputPackage              string
-	clientsetPackage          string
-	applyConfigurationPackage string
+	clientsetPackage          string // must be a Go import-path
+	applyConfigurationPackage string // must be a Go import-path
 	group                     string
 	version                   string
 	groupGoName               string
@@ -44,6 +45,8 @@ type genClientForType struct {
 }
 
 var _ generator.Generator = &genClientForType{}
+
+var titler = cases.Title(language.Und)
 
 // Filter ignores all but one type because we're making a single file per type.
 func (g *genClientForType) Filter(c *generator.Context, t *types.Type) bool {
@@ -81,7 +84,7 @@ func (g *genClientForType) GenerateType(c *generator.Context, t *types.Type, w i
 	defaultVerbTemplates := buildDefaultVerbTemplates(generateApply)
 	subresourceDefaultVerbTemplates := buildSubresourceDefaultVerbTemplates(generateApply)
 	sw := generator.NewSnippetWriter(w, c, "$", "$")
-	pkg := filepath.Base(t.Name.Package)
+	pkg := path.Base(t.Name.Package)
 	tags, err := util.ParseClientGenTags(append(t.SecondClosestCommentLines, t.CommentLines...))
 	if err != nil {
 		return err
@@ -120,9 +123,9 @@ func (g *genClientForType) GenerateType(c *generator.Context, t *types.Type, w i
 		}
 		var updatedVerbtemplate string
 		if _, exists := subresourceDefaultVerbTemplates[e.VerbType]; e.IsSubresource() && exists {
-			updatedVerbtemplate = e.VerbName + "(" + strings.TrimPrefix(subresourceDefaultVerbTemplates[e.VerbType], strings.Title(e.VerbType)+"(")
+			updatedVerbtemplate = e.VerbName + "(" + strings.TrimPrefix(subresourceDefaultVerbTemplates[e.VerbType], titler.String(e.VerbType)+"(")
 		} else {
-			updatedVerbtemplate = e.VerbName + "(" + strings.TrimPrefix(defaultVerbTemplates[e.VerbType], strings.Title(e.VerbType)+"(")
+			updatedVerbtemplate = e.VerbName + "(" + strings.TrimPrefix(defaultVerbTemplates[e.VerbType], titler.String(e.VerbType)+"(")
 		}
 		extendedMethod := extendedInterfaceMethod{
 			template: updatedVerbtemplate,
@@ -145,30 +148,34 @@ func (g *genClientForType) GenerateType(c *generator.Context, t *types.Type, w i
 		extendedMethods = append(extendedMethods, extendedMethod)
 	}
 	m := map[string]interface{}{
-		"type":                 t,
-		"inputType":            t,
-		"resultType":           t,
-		"package":              pkg,
-		"Package":              namer.IC(pkg),
-		"namespaced":           !tags.NonNamespaced,
-		"Group":                namer.IC(g.group),
-		"subresource":          false,
-		"subresourcePath":      "",
-		"GroupGoName":          g.groupGoName,
-		"Version":              namer.IC(g.version),
-		"CreateOptions":        c.Universe.Type(types.Name{Package: "k8s.io/apimachinery/pkg/apis/meta/v1", Name: "CreateOptions"}),
-		"DeleteOptions":        c.Universe.Type(types.Name{Package: "k8s.io/apimachinery/pkg/apis/meta/v1", Name: "DeleteOptions"}),
-		"GetOptions":           c.Universe.Type(types.Name{Package: "k8s.io/apimachinery/pkg/apis/meta/v1", Name: "GetOptions"}),
-		"ListOptions":          c.Universe.Type(types.Name{Package: "k8s.io/apimachinery/pkg/apis/meta/v1", Name: "ListOptions"}),
-		"PatchOptions":         c.Universe.Type(types.Name{Package: "k8s.io/apimachinery/pkg/apis/meta/v1", Name: "PatchOptions"}),
-		"ApplyOptions":         c.Universe.Type(types.Name{Package: "k8s.io/apimachinery/pkg/apis/meta/v1", Name: "ApplyOptions"}),
-		"UpdateOptions":        c.Universe.Type(types.Name{Package: "k8s.io/apimachinery/pkg/apis/meta/v1", Name: "UpdateOptions"}),
-		"PatchType":            c.Universe.Type(types.Name{Package: "k8s.io/apimachinery/pkg/types", Name: "PatchType"}),
-		"ApplyPatchType":       c.Universe.Type(types.Name{Package: "k8s.io/apimachinery/pkg/types", Name: "ApplyPatchType"}),
-		"watchInterface":       c.Universe.Type(types.Name{Package: "k8s.io/apimachinery/pkg/watch", Name: "Interface"}),
-		"RESTClientInterface":  c.Universe.Type(types.Name{Package: "k8s.io/client-go/rest", Name: "Interface"}),
-		"schemeParameterCodec": c.Universe.Variable(types.Name{Package: filepath.Join(g.clientsetPackage, "scheme"), Name: "ParameterCodec"}),
-		"jsonMarshal":          c.Universe.Type(types.Name{Package: "encoding/json", Name: "Marshal"}),
+		"type":                             t,
+		"inputType":                        t,
+		"resultType":                       t,
+		"package":                          pkg,
+		"Package":                          namer.IC(pkg),
+		"namespaced":                       !tags.NonNamespaced,
+		"Group":                            namer.IC(g.group),
+		"subresource":                      false,
+		"subresourcePath":                  "",
+		"GroupGoName":                      g.groupGoName,
+		"Version":                          namer.IC(g.version),
+		"CreateOptions":                    c.Universe.Type(types.Name{Package: "k8s.io/apimachinery/pkg/apis/meta/v1", Name: "CreateOptions"}),
+		"DeleteOptions":                    c.Universe.Type(types.Name{Package: "k8s.io/apimachinery/pkg/apis/meta/v1", Name: "DeleteOptions"}),
+		"GetOptions":                       c.Universe.Type(types.Name{Package: "k8s.io/apimachinery/pkg/apis/meta/v1", Name: "GetOptions"}),
+		"ListOptions":                      c.Universe.Type(types.Name{Package: "k8s.io/apimachinery/pkg/apis/meta/v1", Name: "ListOptions"}),
+		"PatchOptions":                     c.Universe.Type(types.Name{Package: "k8s.io/apimachinery/pkg/apis/meta/v1", Name: "PatchOptions"}),
+		"ApplyOptions":                     c.Universe.Type(types.Name{Package: "k8s.io/apimachinery/pkg/apis/meta/v1", Name: "ApplyOptions"}),
+		"UpdateOptions":                    c.Universe.Type(types.Name{Package: "k8s.io/apimachinery/pkg/apis/meta/v1", Name: "UpdateOptions"}),
+		"PatchType":                        c.Universe.Type(types.Name{Package: "k8s.io/apimachinery/pkg/types", Name: "PatchType"}),
+		"ApplyPatchType":                   c.Universe.Type(types.Name{Package: "k8s.io/apimachinery/pkg/types", Name: "ApplyPatchType"}),
+		"watchInterface":                   c.Universe.Type(types.Name{Package: "k8s.io/apimachinery/pkg/watch", Name: "Interface"}),
+		"RESTClientInterface":              c.Universe.Type(types.Name{Package: "k8s.io/client-go/rest", Name: "Interface"}),
+		"schemeParameterCodec":             c.Universe.Variable(types.Name{Package: path.Join(g.clientsetPackage, "scheme"), Name: "ParameterCodec"}),
+		"jsonMarshal":                      c.Universe.Type(types.Name{Package: "encoding/json", Name: "Marshal"}),
+		"resourceVersionMatchNotOlderThan": c.Universe.Type(types.Name{Package: "k8s.io/apimachinery/pkg/apis/meta/v1", Name: "ResourceVersionMatchNotOlderThan"}),
+		"CheckListFromCacheDataConsistencyIfRequested":      c.Universe.Function(types.Name{Package: "k8s.io/client-go/util/consistencydetector", Name: "CheckListFromCacheDataConsistencyIfRequested"}),
+		"CheckWatchListFromCacheDataConsistencyIfRequested": c.Universe.Function(types.Name{Package: "k8s.io/client-go/util/consistencydetector", Name: "CheckWatchListFromCacheDataConsistencyIfRequested"}),
+		"PrepareWatchListOptionsFromListOptions":            c.Universe.Function(types.Name{Package: "k8s.io/client-go/util/watchlist", Name: "PrepareWatchListOptionsFromListOptions"}),
 	}
 
 	if generateApply {
@@ -220,6 +227,8 @@ func (g *genClientForType) GenerateType(c *generator.Context, t *types.Type, w i
 	}
 	if tags.HasVerb("list") {
 		sw.Do(listTemplate, m)
+		sw.Do(privateListTemplate, m)
+		sw.Do(watchListTemplate, m)
 	}
 	if tags.HasVerb("watch") {
 		sw.Do(watchTemplate, m)
@@ -295,6 +304,8 @@ func (g *genClientForType) GenerateType(c *generator.Context, t *types.Type, w i
 				sw.Do(adjustTemplate(e.VerbName, e.VerbType, listSubresourceTemplate), m)
 			} else {
 				sw.Do(adjustTemplate(e.VerbName, e.VerbType, listTemplate), m)
+				sw.Do(adjustTemplate(e.VerbName, e.VerbType, privateListTemplate), m)
+				sw.Do(adjustTemplate(e.VerbName, e.VerbType, watchListTemplate), m)
 			}
 		}
 
@@ -345,7 +356,7 @@ func (g *genClientForType) GenerateType(c *generator.Context, t *types.Type, w i
 // TODO: Make the verbs in templates parametrized so the strings.Replace() is
 // not needed.
 func adjustTemplate(name, verbType, template string) string {
-	return strings.Replace(template, " "+strings.Title(verbType), " "+name, -1)
+	return strings.ReplaceAll(template, " "+titler.String(verbType), " "+name)
 }
 
 func generateInterface(defaultVerbTemplates map[string]string, tags util.Tags) string {
@@ -455,7 +466,28 @@ func new$.type|publicPlural$(c *$.GroupGoName$$.Version$Client) *$.type|privateP
 `
 var listTemplate = `
 // List takes label and field selectors, and returns the list of $.resultType|publicPlural$ that match those selectors.
-func (c *$.type|privatePlural$) List(ctx context.Context, opts $.ListOptions|raw$) (result *$.resultType|raw$List, err error) {
+func (c *$.type|privatePlural$) List(ctx context.Context, opts $.ListOptions|raw$) (*$.resultType|raw$List, error) {
+    if watchListOptions, hasWatchListOptionsPrepared, watchListOptionsErr  := $.PrepareWatchListOptionsFromListOptions|raw$(opts); watchListOptionsErr  != nil {
+        klog.Warningf("Failed preparing watchlist options for $.type|resource$, falling back to the standard LIST semantics, err = %v", watchListOptionsErr )
+    } else if hasWatchListOptionsPrepared {
+        result, err := c.watchList(ctx, watchListOptions)
+        if err == nil {
+            $.CheckWatchListFromCacheDataConsistencyIfRequested|raw$(ctx, "watchlist request for $.type|resource$", c.list, opts, result)
+            return result, nil
+        }
+        klog.Warningf("The watchlist request for $.type|resource$ ended with an error, falling back to the standard LIST semantics, err = %v", err)
+    }
+    result, err := c.list(ctx, opts)
+    if err == nil {
+        $.CheckListFromCacheDataConsistencyIfRequested|raw$(ctx, "list request for $.type|resource$", c.list, opts, result)
+    }
+    return result, err
+}
+`
+
+var privateListTemplate = `
+// list takes label and field selectors, and returns the list of $.resultType|publicPlural$ that match those selectors.
+func (c *$.type|privatePlural$) list(ctx context.Context, opts $.ListOptions|raw$) (result *$.resultType|raw$List, err error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil{
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
@@ -652,6 +684,25 @@ func (c *$.type|privatePlural$) Watch(ctx context.Context, opts $.ListOptions|ra
 		VersionedParams(&opts, $.schemeParameterCodec|raw$).
 		Timeout(timeout).
 		Watch(ctx)
+}
+`
+
+var watchListTemplate = `
+// watchList establishes a watch stream with the server and returns the list of $.resultType|publicPlural$
+func (c *$.type|privatePlural$) watchList(ctx context.Context, opts $.ListOptions|raw$) (result *$.resultType|raw$List, err error) {
+	var timeout time.Duration
+	if opts.TimeoutSeconds != nil{
+		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
+	}
+    result = &$.resultType|raw$List{}
+	err = c.client.Get().
+		$if .namespaced$Namespace(c.ns).$end$
+		Resource("$.type|resource$").
+		VersionedParams(&opts, $.schemeParameterCodec|raw$).
+		Timeout(timeout).
+		WatchList(ctx).
+        Into(result)
+    return
 }
 `
 

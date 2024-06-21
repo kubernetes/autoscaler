@@ -18,10 +18,13 @@ package priority
 
 import (
 	"flag"
+	"fmt"
 	"sort"
+	"strings"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/util/sets"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
@@ -140,7 +143,7 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, now time.Time) {
 		klog.V(4).Infof("not updating pod %v/%v because resource would not change", pod.Namespace, pod.Name)
 		return
 	}
-	klog.V(2).Infof("pod accepted for update %v/%v with priority %v", pod.Namespace, pod.Name, updatePriority.ResourceDiff)
+	klog.V(2).Infof("pod accepted for update %v/%v with priority %v - processed recommendations:\n%v", pod.Namespace, pod.Name, updatePriority.ResourceDiff, calc.GetProcessedRecommendationTargets(processedRecommendation))
 	calc.pods = append(calc.pods, prioritizedPod{
 		pod:            pod,
 		priority:       updatePriority,
@@ -161,6 +164,35 @@ func (calc *UpdatePriorityCalculator) GetSortedPods(admission PodEvictionAdmissi
 	}
 
 	return result
+}
+
+// GetProcessedRecommendationTargets takes a RecommendedPodResources object and returns a formatted string
+// with the recommended pod resources. Specifically, it formats the target and uncapped target CPU and memory.
+func (calc *UpdatePriorityCalculator) GetProcessedRecommendationTargets(r *vpa_types.RecommendedPodResources) string {
+	sb := &strings.Builder{}
+	for _, cr := range r.ContainerRecommendations {
+		sb.WriteString(fmt.Sprintf("%s: ", cr.ContainerName))
+		if cr.Target != nil {
+			sb.WriteString("target: ")
+			if !cr.Target.Memory().IsZero() {
+				sb.WriteString(fmt.Sprintf("%dk ", cr.Target.Memory().ScaledValue(resource.Kilo)))
+			}
+			if !cr.Target.Cpu().IsZero() {
+				sb.WriteString(fmt.Sprintf("%vm; ", cr.Target.Cpu().MilliValue()))
+			}
+		}
+		if cr.UncappedTarget != nil {
+			sb.WriteString("uncappedTarget: ")
+			if !cr.UncappedTarget.Memory().IsZero() {
+				sb.WriteString(fmt.Sprintf("%dk ", cr.UncappedTarget.Memory().ScaledValue(resource.Kilo)))
+			}
+			if !cr.UncappedTarget.Cpu().IsZero() {
+				sb.WriteString(fmt.Sprintf("%vm;", cr.UncappedTarget.Cpu().MilliValue()))
+			}
+		}
+		sb.WriteString("\n")
+	}
+	return sb.String()
 }
 
 func parseVpaObservedContainers(pod *apiv1.Pod) (bool, sets.String) {
