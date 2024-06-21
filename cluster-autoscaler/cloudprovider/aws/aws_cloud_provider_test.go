@@ -740,7 +740,7 @@ func TestHasInstance(t *testing.T) {
 	assert.False(t, present)
 }
 
-func TestDeleteNodesWithPlaceholderAndIncorrectCache(t *testing.T) {
+func TestDeleteNodesWithPlaceholderAndStaleCache(t *testing.T) {
 	// This test validates the scenario where ASG cache is not in sync with Autoscaling configuration.
 	// we are taking an example where ASG size is 10, cache as 3 instances "i-0000", "i-0001" and "i-0002
 	// But ASG has 6 instances i-0000 to i-10005. When DeleteInstances is called with 2 instances ("i-0000", "i-0001" )
@@ -834,7 +834,7 @@ func TestDeleteNodesWithPlaceholderAndIncorrectCache(t *testing.T) {
 		instanceToAsg[awsInstanceRef] = commonAsg
 	}
 
-	// modifying provider to have incorrect information than ASG current state
+	// modifying provider to bring disparity between ASG and cache
 	provider.awsManager.asgCache.asgToInstances[AwsRef{Name: "test-asg"}] = awsInstanceRefs
 	provider.awsManager.asgCache.instanceToAsg = instanceToAsg
 
