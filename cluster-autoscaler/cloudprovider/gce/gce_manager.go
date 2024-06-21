@@ -37,7 +37,7 @@ import (
 	"k8s.io/client-go/util/workqueue"
 
 	apiv1 "k8s.io/api/core/v1"
-	provider_gce "k8s.io/legacy-cloud-providers/gce"
+	provider_gce "k8s.io/cloud-provider-gcp/providers/gce"
 
 	"cloud.google.com/go/compute/metadata"
 	"golang.org/x/oauth2"
