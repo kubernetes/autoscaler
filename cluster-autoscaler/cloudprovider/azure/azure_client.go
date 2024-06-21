@@ -185,13 +185,12 @@ func getAgentpoolClientCredentials(cfg *Config) (azcore.TokenCredential, error) 
 			if len(cfg.UserAssignedIdentityID) == 0 {
 				klog.V(4).Info("Agentpool client: using System Assigned MSI to retrieve access token")
 				return azidentity.NewManagedIdentityCredential(nil)
-			} else {
-				// Use User Assigned MSI
-				klog.V(4).Info("Agentpool client: using User Assigned MSI to retrieve access token")
-				return azidentity.NewManagedIdentityCredential(&azidentity.ManagedIdentityCredentialOptions{
-					ID: azidentity.ClientID(cfg.UserAssignedIdentityID),
-				})
 			}
+			// Use User Assigned MSI
+			klog.V(4).Info("Agentpool client: using User Assigned MSI to retrieve access token")
+			return azidentity.NewManagedIdentityCredential(&azidentity.ManagedIdentityCredentialOptions{
+				ID: azidentity.ClientID(cfg.UserAssignedIdentityID),
+			})
 		}
 
 		// Use Service Principal
