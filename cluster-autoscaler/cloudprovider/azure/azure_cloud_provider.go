@@ -124,7 +124,11 @@ func (azure *AzureCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovid
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
 func (azure *AzureCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
-	return azure.azureManager.azureCache.HasInstance(node.Spec.ProviderID), nil
+	ng, err := azure.azureManager.azureCache.FindForInstance(&azureRef{Name: node.Spec.ProviderID}, azure.azureManager.azureCache.vmType)
+	if err != nil {
+		return false, err 
+	}
+	return ng != nil, nil 
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.
