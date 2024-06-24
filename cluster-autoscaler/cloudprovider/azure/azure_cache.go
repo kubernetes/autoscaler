@@ -133,13 +133,6 @@ func (m *azureCache) getVMsPoolSet() map[string]struct{} {
 	return m.vmsPoolSet
 }
 
-func (m *azureCache) HasInstance(providerID string) bool {
-	m.mutex.Lock()
-	defer m.mutex.Unlock()
-	_, ok := m.instanceToNodeGroup[azureRef{Name: providerID}]
-	return ok
-}
-
 func (m *azureCache) getVirtualMachines() map[string][]compute.VirtualMachine {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
@@ -169,9 +162,6 @@ func (m *azureCache) regenerate() error {
 	newInstanceToNodeGroupCache := make(map[azureRef]cloudprovider.NodeGroup)
 	for _, ng := range m.registeredNodeGroups {
 		klog.V(4).Infof("regenerate: finding nodes for node group %s", ng.Id())
-		// NOTE: ng.Nodes() gets its values from a direct list call against vmss
-		// this does not represent nodes that have joined the apiserver just instances
-		// the nodegroup owns.
 		instances, err := ng.Nodes()
 		if err != nil {
 			return err
@@ -217,6 +207,15 @@ func (m *azureCache) regenerate() error {
 	return nil
 }
 
+
+// fetchAzureResources retrieves and updates the cached Azure resources.
+//
+// This function performs the following:
+// - Fetches and updates the list of Virtual Machine Scale Sets (VMSS) in the specified resource group.
+// - Fetches and updates the list of Virtual Machines (VMs) and identifies the node pools they belong to.
+// - Maintains a set of VMs pools and VMSS resources which helps the Cluster Autoscaler (CAS) operate on mixed node pools.
+//
+// Returns an error if any of the Azure API calls fail.
 func (m *azureCache) fetchAzureResources() error {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
