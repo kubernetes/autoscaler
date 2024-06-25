@@ -3,6 +3,7 @@ module k8s.io/autoscaler/vertical-pod-autoscaler
 go 1.21
 
 require (
+	github.com/fsnotify/fsnotify v1.7.0
 	github.com/golang/mock v1.6.0
 	github.com/prometheus/client_golang v1.17.0
 	github.com/prometheus/client_model v0.4.1-0.20230718164431-9a2bf3000d16
