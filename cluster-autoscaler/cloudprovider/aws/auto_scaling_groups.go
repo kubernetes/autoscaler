@@ -312,7 +312,7 @@ func (m *asgCache) DeleteInstances(instances []*AwsInstanceRef) error {
 	// Check if there are any placeholder instances in the list.
 	if placeHolderInstancesCount > 0 {
 		// Log the check for placeholders in the ASG.
-		klog.V(4).Infof("Detected %d placeholder instance(s), checking recent scaling activity for ASG %s",
+		klog.V(4).Infof("Detected %d placeholder instance(s) in ASG %s",
 			placeHolderInstancesCount, commonAsg.Name)
 
 		asgNames := []string{commonAsg.Name}
