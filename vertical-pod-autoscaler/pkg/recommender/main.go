@@ -40,7 +40,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/routines"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
+	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics"
 	metrics_quality "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/quality"
 	metrics_recommender "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/recommender"
@@ -70,8 +70,8 @@ var (
 	ctrNamespaceLabel          = flag.String("container-namespace-label", "namespace", `Label name to look for container namespaces`)
 	ctrPodNameLabel            = flag.String("container-pod-name-label", "pod_name", `Label name to look for container pod names`)
 	ctrNameLabel               = flag.String("container-name-label", "name", `Label name to look for container names`)
-	vpaObjectNamespace         = flag.String("vpa-object-namespace", apiv1.NamespaceAll, "Namespace to search for VPA objects and pod stats. Empty means all namespaces will be used.")
-	ignoredVpaObjectNamespaces = flag.String("ignored-vpa-object-namespaces", "", "Comma separated list of namespaces to ignore.")
+	vpaObjectNamespace         = flag.String("vpa-object-namespace", apiv1.NamespaceAll, "Namespace to search for VPA objects and pod stats. Empty means all namespaces will be used. Must not be used if ignored-vpa-object-namespaces is set.")
+	ignoredVpaObjectNamespaces = flag.String("ignored-vpa-object-namespaces", "", "Comma separated list of namespaces to ignore. Must not be used if vpa-object-namespace is used.")
 	username                   = flag.String("username", "", "The username used in the prometheus server basic auth")
 	password                   = flag.String("password", "", "The password used in the prometheus server basic auth")
 	memorySaver                = flag.Bool("memory-saver", false, `If true, only track pods which have an associated VPA`)
