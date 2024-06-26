@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -142,11 +141,9 @@ func main() {
 		TLSConfig: configTLS(*certsConfiguration, *minTlsVersion, *ciphers, stopCh),
 	}
 	url := fmt.Sprintf("%v:%v", *webhookAddress, *webhookPort)
-	selectedNamespaces := strings.Split(*vpaObjectNamespace, ",")
-	ignoredNamespaces := strings.Split(*ignoredVpaObjectNamespaces, ",")
 	go func() {
 		if *registerWebhook {
-			selfRegistration(kubeClient, readFile(*certsConfiguration.clientCaFile), namespace, *serviceName, url, *registerByURL, int32(*webhookTimeout), selectedNamespaces, ignoredNamespaces)
+			selfRegistration(kubeClient, readFile(*certsConfiguration.clientCaFile), namespace, *serviceName, url, *registerByURL, int32(*webhookTimeout), *vpaObjectNamespace, *ignoredVpaObjectNamespaces)
 		}
 		// Start status updates after the webhook is initialized.
 		statusUpdater.Run(stopCh)

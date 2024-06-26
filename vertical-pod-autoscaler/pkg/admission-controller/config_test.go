@@ -18,6 +18,7 @@ package main
 
 import (
 	"context"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -35,8 +36,8 @@ func TestSelfRegistrationBase(t *testing.T) {
 	url := "http://example.com/"
 	registerByURL := true
 	timeoutSeconds := int32(32)
-	selectedNamespaces := []string{}
-	ignoredNamespaces := []string{}
+	selectedNamespaces := ""
+	ignoredNamespaces := ""
 
 	selfRegistration(testClientSet, caCert, namespace, serviceName, url, registerByURL, timeoutSeconds, selectedNamespaces, ignoredNamespaces)
 
@@ -77,8 +78,8 @@ func TestSelfRegistrationWithURL(t *testing.T) {
 	url := "http://example.com/"
 	registerByURL := true
 	timeoutSeconds := int32(32)
-	selectedNamespaces := []string{}
-	ignoredNamespaces := []string{}
+	selectedNamespaces := ""
+	ignoredNamespaces := ""
 
 	selfRegistration(testClientSet, caCert, namespace, serviceName, url, registerByURL, timeoutSeconds, selectedNamespaces, ignoredNamespaces)
 
@@ -104,8 +105,8 @@ func TestSelfRegistrationWithOutURL(t *testing.T) {
 	url := "http://example.com/"
 	registerByURL := false
 	timeoutSeconds := int32(32)
-	selectedNamespaces := []string{}
-	ignoredNamespaces := []string{}
+	selectedNamespaces := ""
+	ignoredNamespaces := ""
 
 	selfRegistration(testClientSet, caCert, namespace, serviceName, url, registerByURL, timeoutSeconds, selectedNamespaces, ignoredNamespaces)
 
@@ -118,8 +119,8 @@ func TestSelfRegistrationWithOutURL(t *testing.T) {
 	webhook := webhookConfig.Webhooks[0]
 
 	assert.NotNil(t, webhook.ClientConfig.Service, "expected service reference to be nil")
-	assert.Equal(t, webhook.ClientConfig.Service.Name, serviceName, "expected service name to be equal")
-	assert.Equal(t, webhook.ClientConfig.Service.Namespace, namespace, "expected service namespace to be equal")
+	assert.Equal(t, serviceName, webhook.ClientConfig.Service.Name, "expected service name to be equal")
+	assert.Equal(t, namespace, webhook.ClientConfig.Service.Namespace, "expected service namespace to be equal")
 
 	assert.Nil(t, webhook.ClientConfig.URL, "expected URL to be set")
 }
@@ -133,8 +134,8 @@ func TestSelfRegistrationWithIgnoredNamespaces(t *testing.T) {
 	url := "http://example.com/"
 	registerByURL := false
 	timeoutSeconds := int32(32)
-	selectedNamespaces := []string{}
-	ignoredNamespaces := []string{"test"}
+	selectedNamespaces := ""
+	ignoredNamespaces := "test"
 
 	selfRegistration(testClientSet, caCert, namespace, serviceName, url, registerByURL, timeoutSeconds, selectedNamespaces, ignoredNamespaces)
 
@@ -150,8 +151,8 @@ func TestSelfRegistrationWithIgnoredNamespaces(t *testing.T) {
 	assert.Len(t, webhook.NamespaceSelector.MatchExpressions, 1, "expected one match expression")
 
 	matchExpression := webhook.NamespaceSelector.MatchExpressions[0]
-	assert.Equal(t, matchExpression.Operator, metav1.LabelSelectorOpNotIn, "expected namespace operator to be OpNotIn")
-	assert.Equal(t, matchExpression.Values, ignoredNamespaces, "expected namespace selector match expression to be equal")
+	assert.Equal(t, metav1.LabelSelectorOpNotIn, matchExpression.Operator, "expected namespace operator to be OpNotIn")
+	assert.Equal(t, strings.Split(ignoredNamespaces, ","), matchExpression.Values, "expected namespace selector match expression to be equal")
 }
 
 func TestSelfRegistrationWithSelectedNamespaces(t *testing.T) {
@@ -163,8 +164,8 @@ func TestSelfRegistrationWithSelectedNamespaces(t *testing.T) {
 	url := "http://example.com/"
 	registerByURL := false
 	timeoutSeconds := int32(32)
-	selectedNamespaces := []string{"test"}
-	ignoredNamespaces := []string{}
+	selectedNamespaces := "test,namespaces"
+	ignoredNamespaces := ""
 
 	selfRegistration(testClientSet, caCert, namespace, serviceName, url, registerByURL, timeoutSeconds, selectedNamespaces, ignoredNamespaces)
 
@@ -180,6 +181,6 @@ func TestSelfRegistrationWithSelectedNamespaces(t *testing.T) {
 	assert.Len(t, webhook.NamespaceSelector.MatchExpressions, 1, "expected one match expression")
 
 	matchExpression := webhook.NamespaceSelector.MatchExpressions[0]
-	assert.Equal(t, matchExpression.Operator, metav1.LabelSelectorOpIn, "expected namespace operator to be OpIn")
-	assert.Equal(t, matchExpression.Values, selectedNamespaces, "expected namespace selector match expression to be equal")
+	assert.Equal(t, metav1.LabelSelectorOpIn, matchExpression.Operator, "expected namespace operator to be OpIn")
+	assert.Equal(t, strings.Split(selectedNamespaces, ","), matchExpression.Values, "expected namespace selector match expression to be equal")
 }

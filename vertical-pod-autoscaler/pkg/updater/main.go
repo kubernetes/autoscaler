@@ -20,7 +20,6 @@ import (
 	"context"
 	"flag"
 	"os"
-	"strings"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -108,8 +107,6 @@ func main() {
 		admissionControllerStatusNamespace = namespace
 	}
 
-	ignoredNamespaces := strings.Split(*ignoredVpaObjectNamespaces, ",")
-
 	// TODO: use SharedInformerFactory in updater
 	updater, err := updater.NewUpdater(
 		kubeClient,
@@ -126,7 +123,7 @@ func main() {
 		controllerFetcher,
 		priority.NewProcessor(),
 		*vpaObjectNamespace,
-		ignoredNamespaces,
+		*ignoredVpaObjectNamespaces,
 	)
 	if err != nil {
 		klog.Fatalf("Failed to create updater: %v", err)

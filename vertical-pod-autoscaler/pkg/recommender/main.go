@@ -19,7 +19,6 @@ package main
 import (
 	"context"
 	"flag"
-	"strings"
 	"time"
 
 	resourceclient "k8s.io/metrics/pkg/client/clientset/versioned/typed/metrics/v1beta1"
@@ -156,8 +155,6 @@ func main() {
 		source = input_metrics.NewPodMetricsesSource(resourceclient.NewForConfigOrDie(config))
 	}
 
-	ignoredNamespaces := strings.Split(*ignoredVpaObjectNamespaces, ",")
-
 	clusterStateFeeder := input.ClusterStateFeederFactory{
 		PodLister:           podLister,
 		OOMObserver:         oomObserver,
@@ -170,7 +167,7 @@ func main() {
 		MemorySaveMode:      *memorySaver,
 		ControllerFetcher:   controllerFetcher,
 		RecommenderName:     *recommenderName,
-		IgnoredNamespaces:   ignoredNamespaces,
+		IgnoredNamespaces:   *ignoredVpaObjectNamespaces,
 	}.Make()
 	controllerFetcher.Start(context.Background(), scaleCacheLoopPeriod)
 
