@@ -46,7 +46,7 @@ require (
 	k8s.io/api v0.31.0-alpha.2
 	k8s.io/apimachinery v0.31.0-alpha.2
 	k8s.io/apiserver v0.31.0-alpha.2
-	k8s.io/autoscaler/cluster-autoscaler/apis v0.0.0-20240606111128-34690b19c19b
+	k8s.io/autoscaler/cluster-autoscaler/apis v0.0.0-20240627115740-d52e4b9665d7
 	k8s.io/client-go v0.31.0-alpha.2
 	k8s.io/cloud-provider v0.30.0-alpha.3
 	k8s.io/cloud-provider-aws v1.27.0
