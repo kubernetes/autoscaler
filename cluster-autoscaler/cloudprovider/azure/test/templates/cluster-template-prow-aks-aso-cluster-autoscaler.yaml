@@ -131,7 +131,7 @@ metadata:
   namespace: default
 spec:
   clusterName: ${CLUSTER_NAME}
-  replicas: ${WORKER_MACHINE_COUNT:=2}
+  replicas: 1
   template:
     metadata: {}
     spec:
@@ -162,11 +162,6 @@ spec:
       mode: System
       owner:
         name: ${CLUSTER_NAME}
-      tags:
-        cluster-autoscaler-enabled: "true"
-        cluster-autoscaler-name: ${CLUSTER_NAME}
-        max: "5"
-        min: "1"
       type: VirtualMachineScaleSets
       vmSize: ${AZURE_AKS_NODE_MACHINE_TYPE:=Standard_D2s_v3}
 ---
@@ -179,7 +174,7 @@ metadata:
   namespace: default
 spec:
   clusterName: ${CLUSTER_NAME}
-  replicas: ${WORKER_MACHINE_COUNT:=2}
+  replicas: 1
   template:
     metadata: {}
     spec:

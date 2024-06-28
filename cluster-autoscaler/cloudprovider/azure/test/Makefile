@@ -30,7 +30,7 @@ CLUSTER_AUTOSCALER_SERVICEACCOUNT_NAME?=cluster-autoscaler
 install-e2e: $(HELM)
 	$(MAKE) -C $(CAS_ROOT) build-arch-$(GOARCH) make-image-arch-$(GOARCH)
 	docker push $(IMAGE)-$(GOARCH):$(TAG)
-	$(HELM) install cluster-autoscaler $(CAS_CHART) \
+	$(HELM) upgrade --install cluster-autoscaler $(CAS_CHART) \
 		--namespace $(CLUSTER_AUTOSCALER_NAMESPACE) --create-namespace \
 		--set cloudProvider=azure \
 		--set azureTenantID=$(AZURE_TENANT_ID) \
@@ -46,8 +46,15 @@ install-e2e: $(HELM)
 		--set image.repository=$(IMAGE)-$(GOARCH) \
 		--set image.tag=$(TAG) \
 		--set image.pullPolicy=Always \
+		--set extraArgs.scale-down-delay-after-add=10s \
+		--set extraArgs.scale-down-unneeded-time=10s \
+		--set extraArgs.scale-down-candidates-pool-ratio=1.0 \
+		--set extraArgs.unremovable-node-recheck-timeout=10s \
+		--set extraArgs.skip-nodes-with-system-pods=false \
+		--set extraArgs.skip-nodes-with-local-storage=false \
 		--wait
 
 .PHONY: test-e2e
 test-e2e: install-e2e
-	# TODO
+	go run github.com/onsi/ginkgo/v2/ginkgo e2e -v -- \
+		-resource-group="$$(KUBECONFIG= kubectl get managedclusters -o jsonpath='{.items[0].status.nodeResourceGroup}')"
