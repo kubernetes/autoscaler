@@ -695,7 +695,13 @@ func (client *autoscalingGceClientV1) FetchAvailableDiskTypes() (map[string][]st
 	if err := req.Pages(context.TODO(), func(page *gce.DiskTypeAggregatedList) error {
 		for _, diskTypesScopedList := range page.Items {
 			for _, diskType := range diskTypesScopedList.DiskTypes {
-				availableDiskTypes[diskType.Zone] = append(availableDiskTypes[diskType.Zone], diskType.Name)
+				// skip data for regions
+				if diskType.Zone == "" {
+					continue
+				}
+				// convert URL of the zone, into the short name, e.g. us-central1-a
+				zone := path.Base(diskType.Zone)
+				availableDiskTypes[zone] = append(availableDiskTypes[zone], diskType.Name)
 			}
 		}
 		return nil

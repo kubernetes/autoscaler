@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"regexp"
 	"testing"
 	"time"
@@ -563,6 +564,31 @@ func TestFetchMigInstancesInstanceUrlHandling(t *testing.T) {
 	}
 }
 
+func TestFetchAvailableDiskTypes(t *testing.T) {
+	server := test_util.NewHttpServerMock()
+	defer server.Close()
+	g := newTestAutoscalingGceClient(t, "project-id", server.URL, "")
+
+	// ref: https://cloud.google.com/compute/docs/reference/rest/v1/diskTypes/aggregatedList
+	getDiskTypesAggregatedListOKResponse, _ := os.ReadFile("fixtures/diskTypes_aggregatedList.json")
+	server.On("handle", "/projects/project-id/aggregated/diskTypes").Return(string(getDiskTypesAggregatedListOKResponse)).Times(1)
+
+	t.Run("correctly parse a response", func(t *testing.T) {
+		want := map[string][]string{
+			// "us-central1" region should be skipped
+			"us-central1-a": {"local-ssd", "pd-balanced", "pd-ssd", "pd-standard"},
+			"us-central1-b": {"hyperdisk-balanced", "hyperdisk-extreme", "hyperdisk-throughput", "local-ssd", "pd-balanced", "pd-extreme", "pd-ssd", "pd-standard"},
+		}
+
+		got, err := g.FetchAvailableDiskTypes()
+
+		assert.NoError(t, err)
+		if diff := cmp.Diff(want, got, cmpopts.EquateErrors()); diff != "" {
+			t.Errorf("FetchAvailableDiskTypes(): err diff (-want +got):\n%s", diff)
+		}
+	})
+}
+
 func TestUserAgent(t *testing.T) {
 	server := test_util.NewHttpServerMock(test_util.MockFieldUserAgent, test_util.MockFieldResponse)
 	defer server.Close()
@@ -744,6 +770,13 @@ func TestAutoscalingClientTimeouts(t *testing.T) {
 		"FetchAvailableCpuPlatforms_HttpClientTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
 				_, err := client.FetchAvailableCpuPlatforms()
+				return err
+			},
+			httpTimeout: instantTimeout,
+		},
+		"FetchAvailableDiskTypes_HttpClientTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				_, err := client.FetchAvailableDiskTypes()
 				return err
 			},
 			httpTimeout: instantTimeout,
