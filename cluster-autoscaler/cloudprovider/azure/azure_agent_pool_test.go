@@ -35,8 +35,8 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2021-09-01/storage"
 	"github.com/Azure/go-autorest/autorest/date"
 	"github.com/Azure/go-autorest/autorest/to"
-	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 )
 
 var (
@@ -185,7 +185,8 @@ func TestGetVMsFromCache(t *testing.T) {
 	mockVMClient := mockvmclient.NewMockInterface(ctrl)
 	testAS.manager.azClient.virtualMachinesClient = mockVMClient
 	mockVMClient.EXPECT().List(gomock.Any(), testAS.manager.config.ResourceGroup).Return(expectedVMs, nil)
-	ac, err := newAzureCache(testAS.manager.azClient, refreshInterval, testAS.manager.config.ResourceGroup, vmTypeStandard, false, "")
+	testAS.manager.config.VMType = vmTypeStandard
+	ac, err := newAzureCache(testAS.manager.azClient, refreshInterval, *testAS.manager.config)
 	assert.NoError(t, err)
 	testAS.manager.azureCache = ac
 
@@ -203,7 +204,8 @@ func TestGetVMIndexes(t *testing.T) {
 	mockVMClient := mockvmclient.NewMockInterface(ctrl)
 	as.manager.azClient.virtualMachinesClient = mockVMClient
 	mockVMClient.EXPECT().List(gomock.Any(), as.manager.config.ResourceGroup).Return(expectedVMs, nil)
-	ac, err := newAzureCache(as.manager.azClient, refreshInterval, as.manager.config.ResourceGroup, vmTypeStandard, false, "")
+	as.manager.config.VMType = vmTypeStandard
+	ac, err := newAzureCache(as.manager.azClient, refreshInterval, *as.manager.config)
 	assert.NoError(t, err)
 	as.manager.azureCache = ac
 
@@ -242,7 +244,8 @@ func TestGetCurSize(t *testing.T) {
 	mockVMClient := mockvmclient.NewMockInterface(ctrl)
 	as.manager.azClient.virtualMachinesClient = mockVMClient
 	mockVMClient.EXPECT().List(gomock.Any(), as.manager.config.ResourceGroup).Return(expectedVMs, nil)
-	ac, err := newAzureCache(as.manager.azClient, refreshInterval, as.manager.config.ResourceGroup, vmTypeStandard, false, "")
+	as.manager.config.VMType = vmTypeStandard
+	ac, err := newAzureCache(as.manager.azClient, refreshInterval, *as.manager.config)
 	assert.NoError(t, err)
 	as.manager.azureCache = ac
 
@@ -266,7 +269,8 @@ func TestAgentPoolTargetSize(t *testing.T) {
 	as.manager.azClient.virtualMachinesClient = mockVMClient
 	expectedVMs := getExpectedVMs()
 	mockVMClient.EXPECT().List(gomock.Any(), as.manager.config.ResourceGroup).Return(expectedVMs, nil)
-	ac, err := newAzureCache(as.manager.azClient, refreshInterval, as.manager.config.ResourceGroup, vmTypeStandard, false, "")
+	as.manager.config.VMType = vmTypeStandard
+	ac, err := newAzureCache(as.manager.azClient, refreshInterval, *as.manager.config)
 	assert.NoError(t, err)
 	as.manager.azureCache = ac
 
@@ -285,7 +289,8 @@ func TestAgentPoolIncreaseSize(t *testing.T) {
 	as.manager.azClient.virtualMachinesClient = mockVMClient
 	expectedVMs := getExpectedVMs()
 	mockVMClient.EXPECT().List(gomock.Any(), as.manager.config.ResourceGroup).Return(expectedVMs, nil).MaxTimes(2)
-	ac, err := newAzureCache(as.manager.azClient, refreshInterval, as.manager.config.ResourceGroup, vmTypeStandard, false, "")
+	as.manager.config.VMType = vmTypeStandard
+	ac, err := newAzureCache(as.manager.azClient, refreshInterval, *as.manager.config)
 	assert.NoError(t, err)
 	as.manager.azureCache = ac
 
@@ -313,7 +318,8 @@ func TestDecreaseTargetSize(t *testing.T) {
 	as.manager.azClient.virtualMachinesClient = mockVMClient
 	expectedVMs := getExpectedVMs()
 	mockVMClient.EXPECT().List(gomock.Any(), as.manager.config.ResourceGroup).Return(expectedVMs, nil).MaxTimes(3)
-	ac, err := newAzureCache(as.manager.azClient, refreshInterval, as.manager.config.ResourceGroup, vmTypeStandard, false, "")
+	as.manager.config.VMType = vmTypeStandard
+	ac, err := newAzureCache(as.manager.azClient, refreshInterval, *as.manager.config)
 	assert.NoError(t, err)
 	as.manager.azureCache = ac
 
@@ -431,7 +437,9 @@ func TestAgentPoolDeleteNodes(t *testing.T) {
 	mockSAClient := mockstorageaccountclient.NewMockInterface(ctrl)
 	as.manager.azClient.storageAccountsClient = mockSAClient
 	mockVMClient.EXPECT().List(gomock.Any(), as.manager.config.ResourceGroup).Return(expectedVMs, nil)
-	ac, err := newAzureCache(as.manager.azClient, refreshInterval, as.manager.config.ResourceGroup, vmTypeStandard, false, "")
+	as.manager.config.VMType = vmTypeStandard
+	ac, err := newAzureCache(as.manager.azClient, refreshInterval, *as.manager.config)
+	as.manager.config.VMType = vmTypeVMSS
 	assert.NoError(t, err)
 	as.manager.azureCache = ac
 
@@ -497,7 +505,8 @@ func TestAgentPoolNodes(t *testing.T) {
 	mockVMClient := mockvmclient.NewMockInterface(ctrl)
 	as.manager.azClient.virtualMachinesClient = mockVMClient
 	mockVMClient.EXPECT().List(gomock.Any(), as.manager.config.ResourceGroup).Return(expectedVMs, nil)
-	ac, err := newAzureCache(as.manager.azClient, refreshInterval, as.manager.config.ResourceGroup, vmTypeStandard, false, "")
+	as.manager.config.VMType = vmTypeStandard
+	ac, err := newAzureCache(as.manager.azClient, refreshInterval, *as.manager.config)
 	assert.NoError(t, err)
 	as.manager.azureCache = ac
 
