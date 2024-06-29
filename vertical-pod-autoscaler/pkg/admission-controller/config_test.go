@@ -36,10 +36,10 @@ func TestSelfRegistrationBase(t *testing.T) {
 	url := "http://example.com/"
 	registerByURL := true
 	timeoutSeconds := int32(32)
-	selectedNamespaces := ""
+	selectedNamespace := ""
 	ignoredNamespaces := ""
 
-	selfRegistration(testClientSet, caCert, namespace, serviceName, url, registerByURL, timeoutSeconds, selectedNamespaces, ignoredNamespaces)
+	selfRegistration(testClientSet, caCert, namespace, serviceName, url, registerByURL, timeoutSeconds, selectedNamespace, ignoredNamespaces)
 
 	webhookConfigInterface := testClientSet.AdmissionregistrationV1().MutatingWebhookConfigurations()
 	webhookConfig, err := webhookConfigInterface.Get(context.TODO(), webhookConfigName, metav1.GetOptions{})
@@ -78,10 +78,10 @@ func TestSelfRegistrationWithURL(t *testing.T) {
 	url := "http://example.com/"
 	registerByURL := true
 	timeoutSeconds := int32(32)
-	selectedNamespaces := ""
+	selectedNamespace := ""
 	ignoredNamespaces := ""
 
-	selfRegistration(testClientSet, caCert, namespace, serviceName, url, registerByURL, timeoutSeconds, selectedNamespaces, ignoredNamespaces)
+	selfRegistration(testClientSet, caCert, namespace, serviceName, url, registerByURL, timeoutSeconds, selectedNamespace, ignoredNamespaces)
 
 	webhookConfigInterface := testClientSet.AdmissionregistrationV1().MutatingWebhookConfigurations()
 	webhookConfig, err := webhookConfigInterface.Get(context.TODO(), webhookConfigName, metav1.GetOptions{})
@@ -105,10 +105,10 @@ func TestSelfRegistrationWithOutURL(t *testing.T) {
 	url := "http://example.com/"
 	registerByURL := false
 	timeoutSeconds := int32(32)
-	selectedNamespaces := ""
+	selectedNamespace := ""
 	ignoredNamespaces := ""
 
-	selfRegistration(testClientSet, caCert, namespace, serviceName, url, registerByURL, timeoutSeconds, selectedNamespaces, ignoredNamespaces)
+	selfRegistration(testClientSet, caCert, namespace, serviceName, url, registerByURL, timeoutSeconds, selectedNamespace, ignoredNamespaces)
 
 	webhookConfigInterface := testClientSet.AdmissionregistrationV1().MutatingWebhookConfigurations()
 	webhookConfig, err := webhookConfigInterface.Get(context.TODO(), webhookConfigName, metav1.GetOptions{})
@@ -134,10 +134,10 @@ func TestSelfRegistrationWithIgnoredNamespaces(t *testing.T) {
 	url := "http://example.com/"
 	registerByURL := false
 	timeoutSeconds := int32(32)
-	selectedNamespaces := ""
+	selectedNamespace := ""
 	ignoredNamespaces := "test"
 
-	selfRegistration(testClientSet, caCert, namespace, serviceName, url, registerByURL, timeoutSeconds, selectedNamespaces, ignoredNamespaces)
+	selfRegistration(testClientSet, caCert, namespace, serviceName, url, registerByURL, timeoutSeconds, selectedNamespace, ignoredNamespaces)
 
 	webhookConfigInterface := testClientSet.AdmissionregistrationV1().MutatingWebhookConfigurations()
 	webhookConfig, err := webhookConfigInterface.Get(context.TODO(), webhookConfigName, metav1.GetOptions{})
@@ -164,10 +164,10 @@ func TestSelfRegistrationWithSelectedNamespaces(t *testing.T) {
 	url := "http://example.com/"
 	registerByURL := false
 	timeoutSeconds := int32(32)
-	selectedNamespaces := "test,namespaces"
+	selectedNamespace := "test"
 	ignoredNamespaces := ""
 
-	selfRegistration(testClientSet, caCert, namespace, serviceName, url, registerByURL, timeoutSeconds, selectedNamespaces, ignoredNamespaces)
+	selfRegistration(testClientSet, caCert, namespace, serviceName, url, registerByURL, timeoutSeconds, selectedNamespace, ignoredNamespaces)
 
 	webhookConfigInterface := testClientSet.AdmissionregistrationV1().MutatingWebhookConfigurations()
 	webhookConfig, err := webhookConfigInterface.Get(context.TODO(), webhookConfigName, metav1.GetOptions{})
@@ -182,5 +182,5 @@ func TestSelfRegistrationWithSelectedNamespaces(t *testing.T) {
 
 	matchExpression := webhook.NamespaceSelector.MatchExpressions[0]
 	assert.Equal(t, metav1.LabelSelectorOpIn, matchExpression.Operator, "expected namespace operator to be OpIn")
-	assert.Equal(t, strings.Split(selectedNamespaces, ","), matchExpression.Values, "expected namespace selector match expression to be equal")
+	assert.Equal(t, strings.Split(selectedNamespace, ","), matchExpression.Values, "expected namespace selector match expression to be equal")
 }
