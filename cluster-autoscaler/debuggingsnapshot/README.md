@@ -1,5 +1,5 @@
 # Debugging Snapshotter
- It's a tool to visualize the internal state of cluster-autoscaler at a point in time to help debug autoscaling issues.
+It's a tool to visualize the internal state of cluster-autoscaler at a point in time to help debug autoscaling issues.
 
 ---
 ### Requirements
@@ -7,7 +7,7 @@ Require Cluster-autoscaler versions 1.24+
 
 ---
 #### What data snapshotter can capture?
-https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/debuggingsnapshot/debugging_snapshot.go#L60C1-L71C1
+https://github.com/kubernetes/autoscaler/blob/8cf630a3e33ed3656cb4e669461bec197b77f2bb/cluster-autoscaler/debuggingsnapshot/debugging_snapshot.go#L60C1-L71C1
 ```go
 type DebuggingSnapshotImpl struct {
 	NodeList                      []*ClusterNode          `json:"NodeList"`
@@ -19,21 +19,10 @@ type DebuggingSnapshotImpl struct {
 }
 
 ```
-
-#### Development
-1. First step is enable the snapshotter adding the following flag to cluster-autoscaler [manifest](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/bizflycloud/manifest/cluster-autoscaler.yaml) .
-
+## Development
+Add the following flag to your cluster-autoscaler configuration to enable the snapshotter feature.
 ```
 --debugging-snapshot-enabled=true
-```
-2. Save the updated manifest file and apply it to your Kubernetes cluster using:
-
-```bash
-kubectl apply -f <path-to-your-manifest-file>
-```
-3. once you deploy your pod make a snap shot request
-```sh
- curl http://127.0.0.1:8085/snapshotz > FIlE_NAME.json
 ```
 
 #### How to nevigate JSON file?
