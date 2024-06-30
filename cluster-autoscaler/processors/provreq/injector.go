@@ -25,6 +25,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1beta1"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/pods"
+	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest"
 	provreqconditions "k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/conditions"
 	provreqpods "k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/pods"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqclient"
@@ -36,9 +37,6 @@ import (
 const (
 	defaultRetryTime = 10 * time.Minute
 )
-
-// SupportedProvisioningClasses is a list of supported ProvisioningClasses in ClusterAutoscaler.
-var SupportedProvisioningClasses = []string{v1beta1.ProvisioningClassCheckCapacity}
 
 // ProvisioningRequestPodsInjector creates in-memory pods from ProvisioningRequest and inject them to unscheduled pods list.
 type ProvisioningRequestPodsInjector struct {
@@ -56,6 +54,10 @@ func (p *ProvisioningRequestPodsInjector) Process(
 		return nil, err
 	}
 	for _, pr := range provReqs {
+		if ok, found := provisioningrequest.SupportedProvisioningClasses[pr.Spec.ProvisioningClassName]; !ok || !found {
+			klog.Warningf("Provisioning Class %s is not supported", pr.Spec.ProvisioningClassName)
+			continue
+		}
 		conditions := pr.Status.Conditions
 		if apimeta.IsStatusConditionTrue(conditions, v1beta1.Failed) || apimeta.IsStatusConditionTrue(conditions, v1beta1.Provisioned) {
 			continue

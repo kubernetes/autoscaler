@@ -118,10 +118,14 @@ func (m *awsWrapper) getManagedNodegroupInfo(nodegroupName string, clusterName s
 		taintList := r.Nodegroup.Taints
 		for _, taint := range taintList {
 			if taint != nil && taint.Effect != nil && taint.Key != nil && taint.Value != nil {
+				formattedEffect, err := taintEksTranslator(taint)
+				if err != nil {
+					return nil, nil, nil, err
+				}
 				taints = append(taints, apiv1.Taint{
 					Key:    *taint.Key,
 					Value:  *taint.Value,
-					Effect: apiv1.TaintEffect(*taint.Effect),
+					Effect: apiv1.TaintEffect(formattedEffect),
 				})
 			}
 		}
@@ -778,5 +782,23 @@ func buildLaunchTemplateFromSpec(ltSpec *autoscaling.LaunchTemplateSpecification
 	return &launchTemplate{
 		name:    aws.StringValue(ltSpec.LaunchTemplateName),
 		version: version,
+	}
+}
+
+func taintEksTranslator(t *eks.Taint) (apiv1.TaintEffect, error) {
+	// Translation between AWS EKS and Kubernetes taints
+	//
+	// See:
+	//
+	// https://docs.aws.amazon.com/eks/latest/APIReference/API_Taint.html
+	switch effect := *t.Effect; effect {
+	case eks.TaintEffectNoSchedule:
+		return apiv1.TaintEffectNoSchedule, nil
+	case eks.TaintEffectNoExecute:
+		return apiv1.TaintEffectNoExecute, nil
+	case eks.TaintEffectPreferNoSchedule:
+		return apiv1.TaintEffectPreferNoSchedule, nil
+	default:
+		return "", fmt.Errorf("couldn't translate EKS DescribeNodegroup response taint %s into Kubernetes format", effect)
 	}
 }

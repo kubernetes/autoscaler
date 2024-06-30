@@ -27,6 +27,7 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
+          args: ["--v=4", "--stderrthreshold=info"]
           volumeMounts:
             - name: tls-certs
               mountPath: "/etc/tls-certs"

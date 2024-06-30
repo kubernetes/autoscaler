@@ -35,10 +35,11 @@ import (
 )
 
 type unstructuredScalableResource struct {
-	controller   *machineController
-	unstructured *unstructured.Unstructured
-	maxSize      int
-	minSize      int
+	controller         *machineController
+	unstructured       *unstructured.Unstructured
+	maxSize            int
+	minSize            int
+	autoscalingOptions map[string]string
 }
 
 func (r unstructuredScalableResource) ID() string {
@@ -353,16 +354,18 @@ func (r unstructuredScalableResource) readInfrastructureReferenceResource() (*un
 }
 
 func newUnstructuredScalableResource(controller *machineController, u *unstructured.Unstructured) (*unstructuredScalableResource, error) {
-	minSize, maxSize, err := parseScalingBounds(u.GetAnnotations())
+	annotations := u.GetAnnotations()
+	minSize, maxSize, err := parseScalingBounds(annotations)
 	if err != nil {
 		return nil, errors.Wrap(err, "error validating min/max annotations")
 	}
 
 	return &unstructuredScalableResource{
-		controller:   controller,
-		unstructured: u,
-		maxSize:      maxSize,
-		minSize:      minSize,
+		controller:         controller,
+		unstructured:       u,
+		maxSize:            maxSize,
+		minSize:            minSize,
+		autoscalingOptions: autoscalingOptions(annotations),
 	}, nil
 }
 

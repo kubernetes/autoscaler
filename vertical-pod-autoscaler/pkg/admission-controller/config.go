@@ -33,14 +33,10 @@ const (
 	webhookConfigName = "vpa-webhook-config"
 )
 
-func configTLS(serverCert, serverKey []byte, minTlsVersion, ciphers string) *tls.Config {
+func configTLS(cfg certsConfig, minTlsVersion, ciphers string, stop <-chan struct{}) *tls.Config {
 	var tlsVersion uint16
 	var ciphersuites []uint16
 	reverseCipherMap := make(map[string]uint16)
-	sCert, err := tls.X509KeyPair(serverCert, serverKey)
-	if err != nil {
-		klog.Fatal(err)
-	}
 
 	for _, c := range tls.CipherSuites() {
 		reverseCipherMap[c.Name] = c.ID
@@ -66,16 +62,35 @@ func configTLS(serverCert, serverKey []byte, minTlsVersion, ciphers string) *tls
 		klog.Fatal(fmt.Errorf("Unable to determine value for --min-tls-version (%s), must be either tls1_2 or tls1_3", minTlsVersion))
 	}
 
-	return &tls.Config{
+	config := &tls.Config{
 		MinVersion:   tlsVersion,
-		Certificates: []tls.Certificate{sCert},
 		CipherSuites: ciphersuites,
 	}
+	if *cfg.reload {
+		cr := certReloader{
+			tlsCertPath: *cfg.tlsCertFile,
+			tlsKeyPath:  *cfg.tlsPrivateKey,
+		}
+		if err := cr.load(); err != nil {
+			klog.Fatal(err)
+		}
+		if err := cr.start(stop); err != nil {
+			klog.Fatal(err)
+		}
+		config.GetCertificate = cr.getCertificate
+	} else {
+		cert, err := tls.LoadX509KeyPair(*cfg.tlsCertFile, *cfg.tlsPrivateKey)
+		if err != nil {
+			klog.Fatal(err)
+		}
+		config.Certificates = []tls.Certificate{cert}
+	}
+	return config
 }
 
 // register this webhook admission controller with the kube-apiserver
 // by creating MutatingWebhookConfiguration.
-func selfRegistration(clientset *kubernetes.Clientset, caCert []byte, namespace, serviceName, url string, registerByURL bool, timeoutSeconds int32) {
+func selfRegistration(clientset kubernetes.Interface, caCert []byte, namespace, serviceName, url string, registerByURL bool, timeoutSeconds int32) {
 	time.Sleep(10 * time.Second)
 	client := clientset.AdmissionregistrationV1().MutatingWebhookConfigurations()
 	_, err := client.Get(context.TODO(), webhookConfigName, metav1.GetOptions{})
