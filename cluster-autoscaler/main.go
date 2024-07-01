@@ -511,7 +511,7 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 		scaleUpOrchestrator := provreqorchestrator.NewWrapperOrchestrator(provreqOrchestrator)
 
 		opts.ScaleUpOrchestrator = scaleUpOrchestrator
-		provreqProcesor := provreq.NewProvReqProcessor(client)
+		provreqProcesor := provreq.NewProvReqProcessor(client, opts.PredicateChecker)
 		if err != nil {
 			return nil, err
 		}
@@ -521,6 +521,7 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 			return nil, err
 		}
 		podListProcessor.AddProcessor(injector)
+		podListProcessor.AddProcessor(provreqProcesor)
 	}
 	opts.Processors.PodListProcessor = podListProcessor
 	scaleDownCandidatesComparers := []scaledowncandidates.CandidatesComparer{}
