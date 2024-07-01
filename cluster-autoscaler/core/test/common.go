@@ -211,7 +211,12 @@ func NewScaleTestAutoscalingContext(
 	if err != nil {
 		return context.AutoscalingContext{}, err
 	}
-	predicateChecker, err := predicatechecker.NewTestPredicateChecker()
+	var predicateChecker predicatechecker.PredicateChecker
+	if options.SchedulerConfig != nil {
+		predicateChecker, err = predicatechecker.NewTestPredicateCheckerWithCustomConfig(options.SchedulerConfig)
+	} else {
+		predicateChecker, err = predicatechecker.NewTestPredicateChecker()
+	}
 	if err != nil {
 		return context.AutoscalingContext{}, err
 	}
