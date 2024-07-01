@@ -80,9 +80,9 @@ func TestGetScaleDownCandidates(t *testing.T) {
 				ng2 := test.NewTestNodeGroup("ng-2", 0, 0, 0, false, false, "", nil, nil)
 				ng3 := test.NewTestNodeGroup("ng-3", 0, 0, 0, false, false, "", nil, nil)
 				// in cool down
-				p.RegisterScaleDown(ng2, "n2", time.Now().Add(-time.Minute*5), time.Time{})
+				p.RegisterScaleDown(ng2, n2, time.Now().Add(-time.Minute*5), time.Time{})
 				// not in cool down anymore
-				p.RegisterScaleDown(ng3, "n3", time.Now().Add(-time.Minute*11), time.Time{})
+				p.RegisterScaleDown(ng3, n3, time.Now().Add(-time.Minute*11), time.Time{})
 
 				return p
 			},

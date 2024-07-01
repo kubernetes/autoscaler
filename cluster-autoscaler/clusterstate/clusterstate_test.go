@@ -477,7 +477,7 @@ func TestRegisterScaleDown(t *testing.T) {
 		OkTotalUnreadyCount:       1,
 	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}))
 	now := time.Now()
-	clusterstate.RegisterScaleDown(provider.GetNodeGroup("ng1"), "ng1-1", now.Add(time.Minute), now)
+	clusterstate.RegisterScaleDown(provider.GetNodeGroup("ng1"), ng1_1, now.Add(time.Minute), now)
 	assert.Equal(t, 1, len(clusterstate.scaleDownRequests))
 	clusterstate.updateScaleRequests(now.Add(5 * time.Minute))
 	assert.Equal(t, 0, len(clusterstate.scaleDownRequests))

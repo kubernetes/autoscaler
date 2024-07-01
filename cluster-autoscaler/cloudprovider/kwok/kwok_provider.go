@@ -73,7 +73,20 @@ func (kwok *KwokCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
 // Since there is no underlying cloud provider instance, return true
 func (kwok *KwokCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
-	return true, nil
+	for _, nodeGroup := range kwok.nodeGroups {
+		nodeList, err := nodeGroup.lister.List()
+		if err != nil {
+			return false, err
+		}
+
+		for _, no := range nodeList {
+			if no.GetName() == node.GetName() {
+				return true, nil
+			}
+		}
+	}
+
+	return false, nil
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.
