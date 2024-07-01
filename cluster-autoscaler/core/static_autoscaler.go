@@ -448,16 +448,6 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 		return nil
 	}
 
-	danglingNodes, err := a.deleteCreatedNodesWithErrors()
-	if err != nil {
-		klog.Warningf("Failed to remove nodes that were created with errors, skipping iteration: %v", err)
-		return nil
-	}
-	if danglingNodes {
-		klog.V(0).Infof("Some nodes that failed to create were removed, skipping iteration")
-		return nil
-	}
-
 	// Check if there has been a constant difference between the number of nodes in k8s and
 	// the number of nodes on the cloud provider side.
 	// TODO: andrewskim - add protection for ready AWS nodes.
@@ -767,7 +757,11 @@ func (a *StaticAutoscaler) removeOldUnregisteredNodes(allUnregisteredNodes []clu
 		}
 
 		if unregisteredNode.UnregisteredSince.Add(maxNodeProvisionTime).Before(currentTime) {
-			klog.V(0).Infof("Marking unregistered node %v for removal", unregisteredNode.Node.Name)
+			klog.V(0).Infof("Marking unregistered node %v for removal, because node times out", unregisteredNode.Node.Name)
+			nodesToBeDeletedByNodeGroupId[nodeGroup.Id()] = append(nodesToBeDeletedByNodeGroupId[nodeGroup.Id()], unregisteredNode)
+		}
+		if clusterstate.IsFakeNodeUnhealthy(unregisteredNode.Node) {
+			klog.V(0).Infof("Marking unregistered node %v for removal, because node is unhealthy", unregisteredNode.Node.Name)
 			nodesToBeDeletedByNodeGroupId[nodeGroup.Id()] = append(nodesToBeDeletedByNodeGroupId[nodeGroup.Id()], unregisteredNode)
 		}
 	}
@@ -835,71 +829,6 @@ func toNodes(unregisteredNodes []clusterstate.UnregisteredNode) []*apiv1.Node {
 		nodes = append(nodes, n.Node)
 	}
 	return nodes
-}
-
-func (a *StaticAutoscaler) deleteCreatedNodesWithErrors() (bool, error) {
-	// We always schedule deleting of incoming errornous nodes
-	// TODO[lukaszos] Consider adding logic to not retry delete every loop iteration
-	nodes := a.clusterStateRegistry.GetCreatedNodesWithErrors()
-
-	nodeGroups := a.nodeGroupsById()
-	nodesToBeDeletedByNodeGroupId := make(map[string][]*apiv1.Node)
-
-	for _, node := range nodes {
-		nodeGroup, err := a.CloudProvider.NodeGroupForNode(node)
-		if err != nil {
-			id := "<nil>"
-			if node != nil {
-				id = node.Spec.ProviderID
-			}
-			klog.Warningf("Cannot determine nodeGroup for node %v; %v", id, err)
-			continue
-		}
-		if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
-			a.clusterStateRegistry.RefreshCloudProviderNodeInstancesCache()
-			return false, fmt.Errorf("node %s has no known nodegroup", node.GetName())
-		}
-		nodesToBeDeletedByNodeGroupId[nodeGroup.Id()] = append(nodesToBeDeletedByNodeGroupId[nodeGroup.Id()], node)
-	}
-
-	deletedAny := false
-
-	for nodeGroupId, nodesToBeDeleted := range nodesToBeDeletedByNodeGroupId {
-		var err error
-		klog.V(1).Infof("Deleting %v from %v node group because of create errors", len(nodesToBeDeleted), nodeGroupId)
-
-		nodeGroup := nodeGroups[nodeGroupId]
-		if nodeGroup == nil {
-			err = fmt.Errorf("node group %s not found", nodeGroupId)
-		} else {
-			var opts *config.NodeGroupAutoscalingOptions
-			opts, err = nodeGroup.GetOptions(a.NodeGroupDefaults)
-			if err != nil && err != cloudprovider.ErrNotImplemented {
-				klog.Warningf("Failed to get node group options for %s: %s", nodeGroupId, err)
-				continue
-			}
-			// If a scale-up of "ZeroOrMaxNodeScaling" node group failed, the cleanup
-			// should stick to the all-or-nothing principle. Deleting all nodes.
-			if opts != nil && opts.ZeroOrMaxNodeScaling {
-				instances, err := nodeGroup.Nodes()
-				if err != nil {
-					klog.Warningf("Failed to fill in failed nodes from group %s based on ZeroOrMaxNodeScaling option: %s", nodeGroupId, err)
-					continue
-				}
-				nodesToBeDeleted = instancesToFakeNodes(instances)
-			}
-			err = nodeGroup.DeleteNodes(nodesToBeDeleted)
-		}
-
-		if err != nil {
-			klog.Warningf("Error while trying to delete nodes from %v: %v", nodeGroupId, err)
-		}
-
-		deletedAny = deletedAny || err == nil
-		a.clusterStateRegistry.InvalidateNodeInstancesCacheEntry(nodeGroup)
-	}
-
-	return deletedAny, nil
 }
 
 // instancesToNodes returns a list of fake nodes with just names populated,

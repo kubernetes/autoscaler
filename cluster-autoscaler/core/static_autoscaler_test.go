@@ -1578,7 +1578,7 @@ func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 			ScaleDownUnneededTime:         time.Minute,
 			ScaleDownUnreadyTime:          time.Minute,
 			ScaleDownUtilizationThreshold: 0.5,
-			MaxNodeProvisionTime:          10 * time.Second,
+			MaxNodeProvisionTime:          1 * time.Minute,
 		},
 		EstimatorName:                estimator.BinpackingEstimatorName,
 		ScaleDownEnabled:             true,
@@ -1586,24 +1586,6 @@ func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 		MaxCoresTotal:                10,
 		MaxMemoryTotal:               100000,
 		ExpendablePodsPriorityCutoff: 10,
-	}
-	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
-
-	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, processorCallbacks, nil)
-	assert.NoError(t, err)
-
-	clusterStateConfig := clusterstate.ClusterStateRegistryConfig{
-		OkTotalUnreadyCount: 1,
-	}
-
-	nodeGroupConfigProcessor := nodegroupconfig.NewDefaultNodeGroupConfigProcessor(options.NodeGroupDefaults)
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff(), nodeGroupConfigProcessor)
-	autoscaler := &StaticAutoscaler{
-		AutoscalingContext:    &context,
-		clusterStateRegistry:  clusterState,
-		lastScaleUpTime:       time.Now(),
-		lastScaleDownFailTime: time.Now(),
-		processorCallbacks:    processorCallbacks,
 	}
 
 	nodeGroupA := &mockprovider.NodeGroup{}
@@ -1613,6 +1595,7 @@ func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 	nodeGroupA.On("Exist").Return(true)
 	nodeGroupA.On("Autoprovisioned").Return(false)
 	nodeGroupA.On("TargetSize").Return(5, nil)
+	nodeGroupA.On("MinSize").Return(1, nil)
 	nodeGroupA.On("Id").Return("A")
 	nodeGroupA.On("DeleteNodes", mock.Anything).Return(nil)
 	nodeGroupA.On("GetOptions", options.NodeGroupDefaults).Return(&options.NodeGroupDefaults, nil)
@@ -1674,6 +1657,7 @@ func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 	nodeGroupB.On("Exist").Return(true)
 	nodeGroupB.On("Autoprovisioned").Return(false)
 	nodeGroupB.On("TargetSize").Return(5, nil)
+	nodeGroupA.On("MinSize").Return(1, nil)
 	nodeGroupB.On("Id").Return("B")
 	nodeGroupB.On("DeleteNodes", mock.Anything).Return(nil)
 	nodeGroupB.On("GetOptions", options.NodeGroupDefaults).Return(&options.NodeGroupDefaults, nil)
@@ -1704,12 +1688,31 @@ func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 
 	now := time.Now()
 
+	fakeClient := &fake.Clientset{}
+	fakeLogRecorder, _ := clusterstate_utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false, "my-cool-configmap")
+
+	context := &context.AutoscalingContext{
+		AutoscalingOptions: options,
+		CloudProvider:      provider,
+	}
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{
+		MaxTotalUnreadyPercentage: 10,
+		OkTotalUnreadyCount:       1,
+	}, fakeLogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(context.AutoscalingOptions.NodeGroupDefaults))
 	clusterState.RefreshCloudProviderNodeInstancesCache()
 	// propagate nodes info in cluster state
 	clusterState.UpdateNodes([]*apiv1.Node{}, nil, now)
 
+	unregisteredNodes := clusterState.GetUnregisteredNodes()
+	assert.Equal(t, 6, len(unregisteredNodes))
+
+	autoscaler := &StaticAutoscaler{
+		AutoscalingContext:   context,
+		clusterStateRegistry: clusterState,
+	}
+
 	// delete nodes with create errors
-	removedNodes, err := autoscaler.deleteCreatedNodesWithErrors()
+	removedNodes, err := autoscaler.removeOldUnregisteredNodes(unregisteredNodes, context, clusterState, now, fakeLogRecorder)
 	assert.True(t, removedNodes)
 	assert.NoError(t, err)
 
@@ -1735,7 +1738,9 @@ func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 	clusterState.UpdateNodes([]*apiv1.Node{}, nil, now)
 
 	// delete nodes with create errors
-	removedNodes, err = autoscaler.deleteCreatedNodesWithErrors()
+	unregisteredNodes = clusterState.GetUnregisteredNodes()
+	assert.Equal(t, 6, len(unregisteredNodes))
+	removedNodes, err = autoscaler.removeOldUnregisteredNodes(unregisteredNodes, context, clusterState, now, fakeLogRecorder)
 	assert.True(t, removedNodes)
 	assert.NoError(t, err)
 
@@ -1800,7 +1805,9 @@ func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 	clusterState.UpdateNodes([]*apiv1.Node{}, nil, now)
 
 	// delete nodes with create errors
-	removedNodes, err = autoscaler.deleteCreatedNodesWithErrors()
+	unregisteredNodes = clusterState.GetUnregisteredNodes()
+	assert.Equal(t, 2, len(unregisteredNodes))
+	removedNodes, err = autoscaler.removeOldUnregisteredNodes(unregisteredNodes, context, clusterState, now, fakeLogRecorder)
 	assert.False(t, removedNodes)
 	assert.NoError(t, err)
 
@@ -1835,7 +1842,10 @@ func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 			return false
 		}, nil)
 
-	clusterState = clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff(), nodeGroupConfigProcessor)
+	clusterState = clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{
+		MaxTotalUnreadyPercentage: 10,
+		OkTotalUnreadyCount:       1,
+	}, fakeLogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(context.AutoscalingOptions.NodeGroupDefaults))
 	clusterState.RefreshCloudProviderNodeInstancesCache()
 	autoscaler.clusterStateRegistry = clusterState
 
@@ -1843,15 +1853,18 @@ func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 	clusterState.UpdateNodes([]*apiv1.Node{}, nil, time.Now())
 
 	// return early on failed nodes without matching nodegroups
-	removedNodes, err = autoscaler.deleteCreatedNodesWithErrors()
+	unregisteredNodes = clusterState.GetUnregisteredNodes()
+	assert.Equal(t, 1, len(unregisteredNodes))
+	removedNodes, err = autoscaler.removeOldUnregisteredNodes(unregisteredNodes, context, clusterState, now, fakeLogRecorder)
 	assert.False(t, removedNodes)
-	assert.Error(t, err)
+	assert.NoError(t, err)
 	nodeGroupC.AssertNumberOfCalls(t, "DeleteNodes", 0)
 
 	nodeGroupAtomic := &mockprovider.NodeGroup{}
 	nodeGroupAtomic.On("Exist").Return(true)
 	nodeGroupAtomic.On("Autoprovisioned").Return(false)
 	nodeGroupAtomic.On("TargetSize").Return(3, nil)
+	nodeGroupAtomic.On("MinSize").Return(1, nil)
 	nodeGroupAtomic.On("Id").Return("D")
 	nodeGroupAtomic.On("DeleteNodes", mock.Anything).Return(nil)
 	nodeGroupAtomic.On("GetOptions", options.NodeGroupDefaults).Return(
@@ -1890,9 +1903,12 @@ func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 				return nodeGroupAtomic
 			}
 			return nil
-		}, nil).Times(3)
+		}, nil).Times(6)
 
-	clusterState = clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff(), nodeGroupConfigProcessor)
+	clusterState = clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{
+		MaxTotalUnreadyPercentage: 10,
+		OkTotalUnreadyCount:       1,
+	}, fakeLogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(context.AutoscalingOptions.NodeGroupDefaults))
 	clusterState.RefreshCloudProviderNodeInstancesCache()
 	autoscaler.CloudProvider = provider
 	autoscaler.clusterStateRegistry = clusterState
@@ -1900,7 +1916,9 @@ func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 	clusterState.UpdateNodes([]*apiv1.Node{}, nil, now)
 
 	// delete nodes with create errors
-	removedNodes, err = autoscaler.deleteCreatedNodesWithErrors()
+	unregisteredNodes = clusterState.GetUnregisteredNodes()
+	assert.Equal(t, 3, len(unregisteredNodes))
+	removedNodes, err = autoscaler.removeOldUnregisteredNodes(unregisteredNodes, context, clusterState, now, fakeLogRecorder)
 	assert.True(t, removedNodes)
 	assert.NoError(t, err)
 
