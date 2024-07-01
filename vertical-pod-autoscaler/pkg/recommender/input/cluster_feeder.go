@@ -416,7 +416,12 @@ func (feeder *clusterStateFeeder) LoadPods() {
 }
 
 func (feeder *clusterStateFeeder) LoadRealTimeMetrics() {
-	containersMetrics, err := feeder.metricsClient.GetContainersMetrics()
+	// create a list that only contains Pod that has VPA enabled
+	podList := make(map[model.PodID]bool)
+	for podID := range feeder.clusterState.Pods {
+		podList[podID] = true
+	}
+	containersMetrics, err := feeder.metricsClient.GetContainersMetrics(podList, feeder.memorySaveMode)
 	if err != nil {
 		klog.Errorf("Cannot get ContainerMetricsSnapshot from MetricsClient. Reason: %+v", err)
 	}
