@@ -29,6 +29,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1beta1"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
+	"k8s.io/utils/ptr"
 )
 
 const testProvisioningClassName = "TestProvisioningClass"
@@ -61,6 +62,7 @@ func TestPodsForProvisioningRequest(t *testing.T) {
 						Image: containerImage,
 					},
 				},
+				EnableServiceLinks: ptr.To(true),
 			},
 		}
 	}
