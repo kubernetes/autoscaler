@@ -734,6 +734,17 @@ func fixNodeGroupSize(context *context.AutoscalingContext, clusterStateRegistry 
 					incorrectSize.ExpectedSize,
 					incorrectSize.CurrentSize,
 					delta)
+
+				possibleDelta := nodeGroup.MinSize() - incorrectSize.ExpectedSize
+				if possibleDelta >= 0 {
+					klog.Warningf("Skip decrease asg target size, because asg %s current size %d <= min size %d", nodeGroup.Id(), incorrectSize.CurrentSize, nodeGroup.MinSize())
+					continue
+				}
+				if delta < possibleDelta {
+					klog.Warningf("Capping node group %s removal to %d, decrease taregt size %d would exceed min size constaint", nodeGroup.Id(), possibleDelta, delta)
+					delta = possibleDelta
+				}
+
 				if err := nodeGroup.DecreaseTargetSize(delta); err != nil {
 					return fixed, fmt.Errorf("failed to decrease %s: %v", nodeGroup.Id(), err)
 				}
