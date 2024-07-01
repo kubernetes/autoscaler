@@ -54,7 +54,9 @@ install-e2e: $(HELM)
 		--set extraArgs.skip-nodes-with-local-storage=false \
 		--wait
 
+ARTIFACTS?=_artifacts
+
 .PHONY: test-e2e
 test-e2e: install-e2e
-	go run github.com/onsi/ginkgo/v2/ginkgo e2e -v -- \
+	go run github.com/onsi/ginkgo/v2/ginkgo -v --trace --output-dir "$(ARTIFACTS)" --junit-report="junit.e2e_suite.1.xml" e2e -- \
 		-resource-group="$$(KUBECONFIG= kubectl get managedclusters -o jsonpath='{.items[0].status.nodeResourceGroup}')"
