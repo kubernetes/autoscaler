@@ -23,6 +23,7 @@
   - [Starting multiple recommenders](#starting-multiple-recommenders)
   - [Using CPU management with static policy](#using-cpu-management-with-static-policy)
   - [Controlling eviction behavior based on scaling direction and resource](#controlling-eviction-behavior-based-on-scaling-direction-and-resource)
+  - [Limiting which namespaces are used](#limiting-which-namespaces-are-used)
 - [Known limitations](#known-limitations)
 - [Related links](#related-links)
 
@@ -375,6 +376,16 @@ vpa-post-processor.kubernetes.io/{containerName}_integerCPU=true
        changeRequirement: TargetHigherThanRequests
  ```
  Note that this doesn't prevent scaling down entirely, as Pods may get recreated for different reasons, resulting in a new recommendation being applied. See [the original AEP](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler/enhancements/4831-control-eviction-behavior) for more context and usage information.
+
+ ### Limiting which namespaces are used
+
+ By default the VPA will run against all namespaces. You can limit that behaviour by setting the following options:
+
+1. `ignored-vpa-object-namespaces` - A comma separated list of namespaces to ignore
+1. `vpa-object-namespace` - A single namespace to monitor
+
+These options cannot be used together and are mutually exclusive. 
+
 
 # Known limitations
 
