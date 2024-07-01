@@ -75,11 +75,11 @@ func (n *nodePool) IncreaseSize(delta int) error {
 	if err != nil {
 		return err
 	}
-	targetSize := size + delta
-	if targetSize > n.max {
-		return fmt.Errorf("size increase exceeds upper bound of %d", n.max)
+	desired := size + delta
+	if desired > n.max {
+		return fmt.Errorf("size increase exceeds upper bound - current:%d desired:%d max:%d", size, desired, n.max)
 	}
-	return n.manager.SetNodeGroupSize(n, targetSize)
+	return n.manager.SetNodeGroupSize(n, desired)
 }
 
 // AtomicIncreaseSize is not implemented.
@@ -119,8 +119,10 @@ func (n *nodePool) DecreaseTargetSize(delta int) error {
 	if err != nil {
 		return err
 	}
-	if size+delta < n.min {
-		return fmt.Errorf("size decrease exceeds lower bound of %d", n.min)
+
+	desired := size + delta
+	if desired < n.min {
+		return fmt.Errorf("size decrease exceeds lower bound - current:%d desired:%d min:%d", size, desired, n.min)
 	}
 	// IonosCloud does not allow modification of the target size while nodes are being provisioned.
 	return errors.New("currently not supported behavior")
