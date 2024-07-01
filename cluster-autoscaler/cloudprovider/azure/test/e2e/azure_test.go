@@ -53,6 +53,17 @@ var _ = Describe("Azure Provider", func() {
 	})
 
 	It("scales up AKS node pools when pending Pods exist", func() {
+		ensureHelmValues(map[string]interface{}{
+			"extraArgs": map[string]interface{}{
+				"scale-down-delay-after-add":       "10s",
+				"scale-down-unneeded-time":         "10s",
+				"scale-down-candidates-pool-ratio": "1.0",
+				"unremovable-node-recheck-timeout": "10s",
+				"skip-nodes-with-system-pods":      "false",
+				"skip-nodes-with-local-storage":    "false",
+			},
+		})
+
 		nodes := &corev1.NodeList{}
 		Expect(k8s.List(ctx, nodes)).To(Succeed())
 		nodeCountBefore := len(nodes.Items)
