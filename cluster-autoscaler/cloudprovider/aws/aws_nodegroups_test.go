@@ -1,5 +1,5 @@
 /*
-Copyright 2021 The Kubernetes Authors.
+Copyright 2024 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,13 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package nodegroupset
+package aws
 
 import (
 	"testing"
 
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 )
 
@@ -169,14 +170,14 @@ func TestIsAwsNodeInfoSimilar(t *testing.T) {
 			if tc.removeOneLabel {
 				delete(node2.ObjectMeta.Labels, tc.label)
 			}
-			checkNodesSimilar(t, node1, node2, comparator, true)
+			nodegroupset.CheckNodesSimilar(t, node1, node2, comparator, true)
 		})
 	}
 }
 
 func TestFindSimilarNodeGroupsAwsBasic(t *testing.T) {
 	context := &context.AutoscalingContext{}
-	ni1, ni2, ni3 := buildBasicNodeGroups(context)
-	processor := &BalancingNodeGroupSetProcessor{Comparator: CreateAwsNodeInfoComparator([]string{}, config.NodeGroupDifferenceRatios{})}
-	basicSimilarNodeGroupsTest(t, context, processor, ni1, ni2, ni3)
+	ni1, ni2, ni3 := nodegroupset.BuildBasicNodeGroups(context)
+	processor := &nodegroupset.BalancingNodeGroupSetProcessor{Comparator: CreateAwsNodeInfoComparator([]string{}, config.NodeGroupDifferenceRatios{})}
+	nodegroupset.BasicSimilarNodeGroupsTest(t, context, processor, ni1, ni2, ni3)
 }
