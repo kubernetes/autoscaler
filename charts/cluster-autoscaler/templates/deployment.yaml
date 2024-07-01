@@ -172,6 +172,11 @@ spec:
                   name: {{ default (include "cluster-autoscaler.fullname" .) .Values.secretKeyRefNameOverride }}
             - name: AZURE_ENABLE_FORCE_DELETE
               value: "{{ .Values.azureEnableForceDelete }}"
+            - name: AZURE_SCALE_DOWN_POLICY
+              valueFrom:
+                secretKeyRef:
+                  key: ScaleDownPolicy
+                  name: {{ default (include "cluster-autoscaler.fullname" .) .Values.secretKeyRefNameOverride }}
             {{- if .Values.azureUseWorkloadIdentityExtension }}
             - name: ARM_USE_WORKLOAD_IDENTITY_EXTENSION
               value: "true"

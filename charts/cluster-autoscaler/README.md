@@ -400,6 +400,7 @@ vpa:
 | azureClientSecret | string | `""` | Service Principal ClientSecret with contributor permission to Cluster and Node ResourceGroup. Required if `cloudProvider=azure` |
 | azureEnableForceDelete | bool | `false` | Whether to force delete VMs or VMSS instances when scaling down. |
 | azureResourceGroup | string | `""` | Azure resource group that the cluster is located. Required if `cloudProvider=azure` |
+| azureScaleDownPolicy | string | `"Delete"` | Azure ScaleDownPolicy, either "Delete" (default) or "Hibernate" Only relevant if `cloudProvider=azure` |
 | azureSubscriptionID | string | `""` | Azure subscription where the resources are located. Required if `cloudProvider=azure` |
 | azureTenantID | string | `""` | Azure tenant where the resources are located. Required if `cloudProvider=azure` |
 | azureUseManagedIdentityExtension | bool | `false` | Whether to use Azure's managed identity extension for credentials. If using MSI, ensure subscription ID, resource group, and azure AKS cluster name are set. You can only use one authentication method at a time, either azureUseWorkloadIdentityExtension or azureUseManagedIdentityExtension should be set. |

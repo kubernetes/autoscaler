@@ -441,6 +441,38 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 		}
 	}
 
+	if cloudprovider.HasAnyHibernateEnabledNodeGroup(a.AutoscalingContext.CloudProvider.NodeGroups()) {
+		for _, node := range allNodes {
+			if !(taints.HasShutdownTaint(node) || taints.HasUnreachableTaint(node)) || !taints.HasToBeDeletedTaint(node) {
+				continue
+			}
+			nodeGroup, err := a.AutoscalingContext.CloudProvider.NodeGroupForNode(node)
+			if err != nil {
+				klog.V(3).Infof("Failed to get node group for %s: %v", node.Name, err)
+				continue
+			}
+			if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
+				klog.V(3).Infof("No node group for node %s, skipping", node)
+				continue
+			}
+			if cloudprovider.IsNodeGroupHibernateEnabled(nodeGroup) {
+				nr, err := kube_util.GetNodeReadiness(node)
+				if err != nil {
+					klog.Errorf("Unable to determine node %s readiness, err: %v", node.Name, err)
+				}
+				if !nr.Ready {
+					if !(taints.HasShutdownTaint(node) || taints.HasUnreachableTaint(node)) || !taints.HasToBeDeletedTaint(node) {
+						continue
+					}
+					klog.Infof("Node %s is Hibernating, will remove ToBeDeletedByClusterAutoscaler taint", node.Name)
+					if _, err := taints.CleanToBeDeleted(node, a.ClientSet, a.AutoscalingContext.CordonNodeBeforeTerminate); err != nil {
+						klog.Errorf("error while removing taint from node %s: %s", node.Name, err.Error())
+					}
+				}
+			}
+		}
+	}
+
 	if !a.clusterStateRegistry.IsClusterHealthy() {
 		klog.Warning("Cluster is not ready for autoscaling")
 		a.scaleDownPlanner.CleanUpUnneededNodes()

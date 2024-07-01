@@ -146,6 +146,9 @@ type Config struct {
 
 	// EnableVmssFlex defines whether to enable Vmss Flex support or not
 	EnableVmssFlex bool `json:"enableVmssFlex,omitempty" yaml:"enableVmssFlex,omitempty"`
+
+	// ScaleDownPolicy is the VMSS scale down policy, either "Delete" or "Hibernate"
+	ScaleDownPolicy string `json:"scaleDownPolicy" yaml:"scaleDownPolicy"`
 }
 
 // BuildAzureConfig returns a Config object for the Azure clients
@@ -180,6 +183,7 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 		cfg.AADClientCertPath = os.Getenv("ARM_CLIENT_CERT_PATH")
 		cfg.AADClientCertPassword = os.Getenv("ARM_CLIENT_CERT_PASSWORD")
 		cfg.Deployment = os.Getenv("ARM_DEPLOYMENT")
+		cfg.ScaleDownPolicy = os.Getenv("AZURE_SCALE_DOWN_POLICY")
 
 		subscriptionID, err := getSubscriptionIdFromInstanceMetadata()
 		if err != nil {

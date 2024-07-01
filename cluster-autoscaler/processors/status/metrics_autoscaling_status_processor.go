@@ -44,7 +44,7 @@ func (p *MetricsAutoscalingStatusProcessor) Process(context *context.Autoscaling
 		if !nodeGroup.Exist() {
 			continue
 		}
-		metrics.UpdateNodeGroupHealthStatus(nodeGroup.Id(), csr.IsNodeGroupHealthy(nodeGroup.Id()))
+		metrics.UpdateNodeGroupHealthStatus(nodeGroup.Id(), csr.IsNodeGroupHealthy(nodeGroup))
 		backoffStatus := csr.BackoffStatusForNodeGroup(nodeGroup, now)
 		p.updateNodeGroupBackoffStatusMetrics(nodeGroup.Id(), backoffStatus)
 	}
