@@ -57,7 +57,7 @@ var (
 	kubeApiQps             = flag.Float64("kube-api-qps", 5.0, `QPS limit when making requests to Kubernetes apiserver`)
 	kubeApiBurst           = flag.Float64("kube-api-burst", 10.0, `QPS burst limit when making requests to Kubernetes apiserver`)
 
-	storage = flag.String("storage", "", `Specifies storage mode. Supported values: prometheus, checkpoint (default)`)
+	storage = flag.String("storage", "checkpoint", `Specifies storage mode. Supported values: prometheus, none, checkpoint`)
 	// prometheus history provider configs
 	historyLength       = flag.String("history-length", "8d", `How much time back prometheus have to be queried to get historical metrics`)
 	historyResolution   = flag.String("history-resolution", "1h", `Resolution at which Prometheus is queried for historical metrics`)
@@ -124,8 +124,6 @@ func main() {
 	metrics_recommender.Register()
 	metrics_quality.Register()
 
-	useCheckpoints := *storage != "prometheus"
-
 	var postProcessors []routines.RecommendationPostProcessor
 	if *postProcessorCPUasInteger {
 		postProcessors = append(postProcessors, &routines.IntegerCPUPostProcessor{})
@@ -150,6 +148,35 @@ func main() {
 		source = input_metrics.NewPodMetricsesSource(resourceclient.NewForConfigOrDie(config))
 	}
 
+	promQueryTimeout, err := time.ParseDuration(*queryTimeout)
+	if err != nil {
+		klog.Fatalf("Could not parse --prometheus-query-timeout as a time.Duration: %v", err)
+	}
+	promHistoryConfig := history.PrometheusHistoryProviderConfig{
+		Address:                *prometheusAddress,
+		QueryTimeout:           promQueryTimeout,
+		HistoryLength:          *historyLength,
+		HistoryResolution:      *historyResolution,
+		PodLabelPrefix:         *podLabelPrefix,
+		PodLabelsMetricName:    *podLabelsMetricName,
+		PodNamespaceLabel:      *podNamespaceLabel,
+		PodNameLabel:           *podNameLabel,
+		CtrNamespaceLabel:      *ctrNamespaceLabel,
+		CtrPodNameLabel:        *ctrPodNameLabel,
+		CtrNameLabel:           *ctrNameLabel,
+		CadvisorMetricsJobName: *prometheusJobName,
+		Namespace:              *vpaObjectNamespace,
+		PrometheusBasicAuthTransport: history.PrometheusBasicAuthTransport{
+			Username: *username,
+			Password: *password,
+		},
+	}
+
+	historySource, err := input.GetHistorySourceFromArg(*storage)
+	if err != nil {
+		klog.Fatalf("Could not initialize history source: %v", err)
+	}
+
 	clusterStateFeeder := input.ClusterStateFeederFactory{
 		PodLister:           podLister,
 		OOMObserver:         oomObserver,
@@ -162,6 +189,8 @@ func main() {
 		MemorySaveMode:      *memorySaver,
 		ControllerFetcher:   controllerFetcher,
 		RecommenderName:     *recommenderName,
+		HistorySource:       historySource,
+		PromHistoryConfig:   promHistoryConfig,
 	}.Make()
 	controllerFetcher.Start(context.Background(), scaleCacheLoopPeriod)
 
@@ -174,41 +203,12 @@ func main() {
 		PodResourceRecommender:       logic.CreatePodResourceRecommender(),
 		RecommendationPostProcessors: postProcessors,
 		CheckpointsGCInterval:        *checkpointsGCInterval,
-		UseCheckpoints:               useCheckpoints,
+		UseCheckpoints:               historySource == input.Checkpoints,
 	}.Make()
 
-	promQueryTimeout, err := time.ParseDuration(*queryTimeout)
-	if err != nil {
-		klog.Fatalf("Could not parse --prometheus-query-timeout as a time.Duration: %v", err)
-	}
-
-	if useCheckpoints {
-		recommender.GetClusterStateFeeder().InitFromCheckpoints()
-	} else {
-		config := history.PrometheusHistoryProviderConfig{
-			Address:                *prometheusAddress,
-			QueryTimeout:           promQueryTimeout,
-			HistoryLength:          *historyLength,
-			HistoryResolution:      *historyResolution,
-			PodLabelPrefix:         *podLabelPrefix,
-			PodLabelsMetricName:    *podLabelsMetricName,
-			PodNamespaceLabel:      *podNamespaceLabel,
-			PodNameLabel:           *podNameLabel,
-			CtrNamespaceLabel:      *ctrNamespaceLabel,
-			CtrPodNameLabel:        *ctrPodNameLabel,
-			CtrNameLabel:           *ctrNameLabel,
-			CadvisorMetricsJobName: *prometheusJobName,
-			Namespace:              *vpaObjectNamespace,
-			PrometheusBasicAuthTransport: history.PrometheusBasicAuthTransport{
-				Username: *username,
-				Password: *password,
-			},
-		}
-		provider, err := history.NewPrometheusHistoryProvider(config)
-		if err != nil {
-			klog.Fatalf("Could not initialize history provider: %v", err)
-		}
-		recommender.GetClusterStateFeeder().InitFromHistoryProvider(provider)
+	stateFeederInitErr := recommender.GetClusterStateFeeder().Init()
+	if stateFeederInitErr != nil {
+		klog.Fatalf("Could not initialize cluster state feeder: %v", stateFeederInitErr)
 	}
 
 	ticker := time.Tick(*metricsFetcherInterval)
