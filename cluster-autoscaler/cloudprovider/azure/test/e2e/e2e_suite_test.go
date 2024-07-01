@@ -77,14 +77,12 @@ func allVMSSStable(g Gomega) {
 	g.Expect(nodes.Items).To(SatisfyAll(
 		HaveLen(int(expectedNodes)),
 		ContainElements(Satisfy(func(node corev1.Node) bool {
-			ready := false
 			for _, cond := range node.Status.Conditions {
 				if cond.Type == corev1.NodeReady && cond.Status == corev1.ConditionTrue {
-					ready = true
-					break
+					return true
 				}
 			}
-			return ready
+			return false
 		})),
 	))
 }
