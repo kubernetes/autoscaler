@@ -405,7 +405,12 @@ vpa:
 | azureUseManagedIdentityExtension | bool | `false` | Whether to use Azure's managed identity extension for credentials. If using MSI, ensure subscription ID, resource group, and azure AKS cluster name are set. You can only use one authentication method at a time, either azureUseWorkloadIdentityExtension or azureUseManagedIdentityExtension should be set. |
 | azureUseWorkloadIdentityExtension | bool | `false` | Whether to use Azure's workload identity extension for credentials. See the project here: https://github.com/Azure/azure-workload-identity for more details. You can only use one authentication method at a time, either azureUseWorkloadIdentityExtension or azureUseManagedIdentityExtension should be set. |
 | azureVMType | string | `"vmss"` | Azure VM type. |
+| cloudConfigMethod | string | `"Path"` | Choose between `Path` and `Secret` to provide the cloud configuration file. |
 | cloudConfigPath | string | `""` | Configuration file for cloud provider. |
+| cloudConfigSecret.rancherURL | string | `"https://rancher.cattle-system.svc.cluster.local"` | URL of the chosen rancher provider. |
+| cloudConfigSecret.rancherToken | string | `""` | Token to authenticate to rancher. |
+| cloudConfigSecret.clusterName | string | `""`| Name of the managed cluster. |
+| cloudConfigSecret.clusterNamespace | string | `"fleet-default"` | Name of the namespace containing the clusters.provisioning.cattle.io resource corresponding to the managed server. |
 | cloudProvider | string | `"aws"` | The cloud provider where the autoscaler runs. Currently only `gce`, `aws`, `azure`, `magnum` and `clusterapi` are supported. `aws` supported for AWS. `gce` for GCE. `azure` for Azure AKS. `magnum` for OpenStack Magnum, `clusterapi` for Cluster API. |
 | clusterAPICloudConfigPath | string | `"/etc/kubernetes/mgmt-kubeconfig"` | Path to kubeconfig for connecting to Cluster API Management Cluster, only used if `clusterAPIMode=kubeconfig-kubeconfig or incluster-kubeconfig` |
 | clusterAPIConfigMapsNamespace | string | `""` | Namespace on the workload cluster to store Leader election and status configmaps |

@@ -110,8 +110,26 @@ azureVMType: "vmss"
 # azureEnableForceDelete -- Whether to force delete VMs or VMSS instances when scaling down.
 azureEnableForceDelete: false
 
+# cloudConfigMethod -- "Path" or "Secret"
+cloudConfigMethod: "Path"
+
 # cloudConfigPath -- Configuration file for cloud provider.
 cloudConfigPath: ""
+
+# cloudConfigSecret -- Alternatively put cloudConfig in a secret
+cloudConfigSecret:
+
+  # cloudConfigSecret.rancherUrl -- rancher server url; default assume rancher is deployed in manager cluster
+  rancherURL: "https://rancher.cattle-system.svc.cluster.local"
+
+  # cloudConfigSecret.rancherToken -- Token with access to clusters.provisioning.cattle.io resource corresponding to managed cluster
+  rancherToken: ""
+
+  # cloudConfigSecret.clusterName -- value of clusterName in the cloudConfig, correspond to managed cluster name
+  clusterName: ""
+
+  # cloudConfigSecret.clusterNamespace -- value of clusterName in the cloudConfig, default is for a cluster deployed in rancher UI
+  clusterNamespace: "fleet-default"
 
 # cloudProvider -- The cloud provider where the autoscaler runs.
 # Currently only `gce`, `aws`, `azure`, `magnum` and `clusterapi` are supported.
