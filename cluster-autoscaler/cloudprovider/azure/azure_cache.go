@@ -129,6 +129,10 @@ func (m *azureCache) regenerate() error {
 		if err != nil {
 			return err
 		}
+		if instances == nil {
+			klog.V(4).Infof("regenerate: no nodes found for node group %s", ng.Id())
+			return nil
+		}
 		klog.V(4).Infof("regenerate: found nodes for node group %s: %+v", ng.Id(), instances)
 
 		for _, instance := range instances {
