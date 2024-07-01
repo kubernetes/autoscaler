@@ -170,26 +170,33 @@ func (m *azureCache) regenerate() error {
 	return nil
 }
 
+
+// fetchAzureResources retrieves and updates the cached Azure resources.
+//
+// This function performs the following:
+// - Fetches and updates the list of Virtual Machine Scale Sets (VMSS) in the specified resource group.
+// - Fetches and updates the list of Virtual Machines (VMs) and identifies the node pools they belong to.
+// - Maintains a set of VMs pools and VMSS resources which helps the Cluster Autoscaler (CAS) operate on mixed node pools.
+//
+// Returns an error if any of the Azure API calls fail.
 func (m *azureCache) fetchAzureResources() error {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	// fetch all the resources since CAS may be operating on mixed nodepools
-	// including both VMSS and VMs pools
+	// NOTE: this lists virtual machine scale sets, not virtual machine
+	// scale set instances
 	vmssResult, err := m.fetchScaleSets()
-	if err == nil {
-		m.scaleSets = vmssResult
-	} else {
+	if err != nil {
 		return err
 	}
-
+	m.scaleSets = vmssResult
 	vmResult, vmsPoolSet, err := m.fetchVirtualMachines()
-	if err == nil {
-		m.virtualMachines = vmResult
-		m.vmsPoolSet = vmsPoolSet
-	} else {
+	if err != nil {
 		return err
 	}
+	// we fetch both sets of resources since CAS may operate on mixed nodepools
+	m.virtualMachines = vmResult
+	m.vmsPoolSet = vmsPoolSet
 
 	return nil
 }
