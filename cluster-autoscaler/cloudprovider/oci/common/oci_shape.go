@@ -82,6 +82,7 @@ func (osf *shapeGetterImpl) GetNodePoolShape(np *oke.NodePool) (*Shape, error) {
 	shapeName := *np.NodeShape
 	if np.NodeShapeConfig != nil {
 		return &Shape{
+			Name: shapeName,
 			CPU: *np.NodeShapeConfig.Ocpus * 2,
 			// num_bytes * kilo * mega * giga
 			MemoryInBytes: *np.NodeShapeConfig.MemoryInGBs * 1024 * 1024 * 1024,
