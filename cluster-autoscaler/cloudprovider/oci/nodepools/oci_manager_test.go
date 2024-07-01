@@ -154,6 +154,7 @@ func TestGetNodePoolNodes(t *testing.T) {
 		{
 			Id: "node6",
 			Status: &cloudprovider.InstanceStatus{
+				State: cloudprovider.InstanceCreating,
 				ErrorInfo: &cloudprovider.InstanceErrorInfo{
 					ErrorClass:   cloudprovider.OtherErrorClass,
 					ErrorCode:    "unknown",
