@@ -52,6 +52,7 @@ func GetPodsToMove(nodeInfo *schedulerframework.NodeInfo, deleteOptions options.
 	}
 	for _, podInfo := range nodeInfo.Pods {
 		pod := podInfo.Pod
+		drain.RemoveIgnoredVolumes(pod)
 		status := drainabilityRules.Drainable(drainCtx, pod, nodeInfo)
 		switch status.Outcome {
 		case drainability.UndefinedOutcome, drainability.DrainOk:
