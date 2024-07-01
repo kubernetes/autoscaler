@@ -18,6 +18,8 @@ package gce
 
 import (
 	"fmt"
+	"net/url"
+	"path"
 	"regexp"
 )
 
@@ -96,6 +98,21 @@ func GenerateMigUrl(domainUrl string, ref GceRef) string {
 // IsInstanceTemplateRegional determines whether or not an instance template is regional based on the url
 func IsInstanceTemplateRegional(templateUrl string) (bool, error) {
 	return regexp.MatchString("(/projects/.*[A-Za-z0-9]+.*/regions/)", templateUrl)
+}
+
+// InstanceTemplateNameFromUrl retrieves name of the Instance Template from the url.
+func InstanceTemplateNameFromUrl(instanceTemplateLink string) (InstanceTemplateName, error) {
+	templateUrl, err := url.Parse(instanceTemplateLink)
+	if err != nil {
+		return InstanceTemplateName{}, err
+	}
+	regional, err := IsInstanceTemplateRegional(templateUrl.String())
+	if err != nil {
+		return InstanceTemplateName{}, err
+	}
+
+	_, templateName := path.Split(templateUrl.EscapedPath())
+	return InstanceTemplateName{templateName, regional}, nil
 }
 
 func parseGceUrl(prefix, url, expectedResource string) (project string, zone string, name string, err error) {
