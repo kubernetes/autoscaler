@@ -97,3 +97,7 @@ func ConvertResourceGroupNameToLower(resourceID string) (string, error) {
 	resourceGroup := matches[1]
 	return strings.Replace(resourceID, resourceGroup, strings.ToLower(resourceGroup), 1), nil
 }
+
+func (az *Cloud) useSharedLoadBalancerHealthProbeMode() bool {
+	return strings.EqualFold(az.ClusterServiceLoadBalancerHealthProbeMode, consts.ClusterServiceLoadBalancerHealthProbeModeShared)
+}

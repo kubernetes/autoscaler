@@ -525,7 +525,7 @@ func (c *Client) updateVMSSVMs(ctx context.Context, resourceGroupName string, VM
 				continue
 			}
 			if strings.Contains(errMsg, consts.ParentResourceNotFoundMessageCode) {
-				klog.V(2).Info("The parent resource of VMSS VM %s is not found, skip updating it.", resourceID)
+				klog.V(2).Infof("The parent resource of VMSS VM %s is not found, skip updating it.", resourceID)
 				continue
 			}
 			if strings.Contains(errMsg, consts.CannotUpdateVMBeingDeletedMessagePrefix) &&

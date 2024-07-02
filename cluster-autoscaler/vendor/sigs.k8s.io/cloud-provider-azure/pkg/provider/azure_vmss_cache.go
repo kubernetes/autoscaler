@@ -288,9 +288,6 @@ func (ss *ScaleSet) DeleteCacheForNode(nodeName string) error {
 }
 
 func (ss *ScaleSet) updateCache(nodeName, resourceGroupName, vmssName, instanceID string, updatedVM *compute.VirtualMachineScaleSetVM) error {
-	if ss.common.DisableUpdateCache {
-		return nil
-	}
 	// lock the VMSS entry to ensure a consistent view of the VM map when there are concurrent updates.
 	cacheKey := getVMSSVMCacheKey(resourceGroupName, vmssName)
 	ss.lockMap.LockEntry(cacheKey)
@@ -467,6 +464,12 @@ func (ss *ScaleSet) getVMManagementTypeByProviderID(providerID string, crt azcac
 
 }
 
+// getVMManagementTypeByIPConfigurationID determines the VM type by the following steps:
+//  1. If the ipConfigurationID is in the format of vmssIPConfigurationRE, returns vmss uniform.
+//  2. If the name of the VM can be obtained by trimming the `-nic` suffix from the nic name, and the VM name is in the
+//     VMAS cache, returns availability set.
+//  3. If the VM name obtained from step 2 is not in the VMAS cache, try to get the VM name from NIC.VirtualMachine.ID.
+//  4. If the VM name obtained from step 3 is in the VMAS cache, returns availability set. Or, returns vmss flex.
 func (ss *ScaleSet) getVMManagementTypeByIPConfigurationID(ipConfigurationID string, crt azcache.AzureCacheReadType) (VMManagementType, error) {
 	if ss.DisableAvailabilitySetNodes && !ss.EnableVmssFlexNodes {
 		return ManagedByVmssUniform, nil
@@ -484,14 +487,9 @@ func (ss *ScaleSet) getVMManagementTypeByIPConfigurationID(ipConfigurationID str
 		return ManagedByUnknownVMSet, err
 	}
 
-	matches := nicIDRE.FindStringSubmatch(ipConfigurationID)
-	if len(matches) != 3 {
+	nicResourceGroup, nicName, err := getResourceGroupAndNameFromNICID(ipConfigurationID)
+	if err != nil {
 		return ManagedByUnknownVMSet, fmt.Errorf("can not extract nic name from ipConfigurationID (%s)", ipConfigurationID)
-	}
-
-	nicResourceGroup, nicName := matches[1], matches[2]
-	if nicResourceGroup == "" || nicName == "" {
-		return ManagedByUnknownVMSet, fmt.Errorf("invalid ip config ID %s", ipConfigurationID)
 	}
 
 	vmName := strings.Replace(nicName, "-nic", "", 1)
@@ -501,5 +499,35 @@ func (ss *ScaleSet) getVMManagementTypeByIPConfigurationID(ipConfigurationID str
 	if cachedAvSetVMs.Has(vmName) {
 		return ManagedByAvSet, nil
 	}
+
+	// Get the vmName by nic.VirtualMachine.ID if the vmName is not in the format
+	// of `vmName-nic`. This introduces an extra ARM call.
+	vmName, err = ss.GetVMNameByIPConfigurationName(nicResourceGroup, nicName)
+	if err != nil {
+		return ManagedByUnknownVMSet, fmt.Errorf("failed to get vm name by ip config ID %s: %w", ipConfigurationID, err)
+	}
+	if cachedAvSetVMs.Has(vmName) {
+		return ManagedByAvSet, nil
+	}
+
 	return ManagedByVmssFlex, nil
+}
+
+func (az *Cloud) GetVMNameByIPConfigurationName(nicResourceGroup, nicName string) (string, error) {
+	ctx, cancel := getContextWithCancel()
+	defer cancel()
+	nic, rerr := az.InterfacesClient.Get(ctx, nicResourceGroup, nicName, "")
+	if rerr != nil {
+		return "", fmt.Errorf("failed to get interface of name %s: %w", nicName, rerr.Error())
+	}
+	if nic.InterfacePropertiesFormat == nil || nic.InterfacePropertiesFormat.VirtualMachine == nil || nic.InterfacePropertiesFormat.VirtualMachine.ID == nil {
+		return "", fmt.Errorf("failed to get vm ID of nic %s", pointer.StringDeref(nic.Name, ""))
+	}
+	vmID := pointer.StringDeref(nic.InterfacePropertiesFormat.VirtualMachine.ID, "")
+	matches := vmIDRE.FindStringSubmatch(vmID)
+	if len(matches) != 2 {
+		return "", fmt.Errorf("invalid virtual machine ID %s", vmID)
+	}
+	vmName := matches[1]
+	return vmName, nil
 }
