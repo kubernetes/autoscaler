@@ -52,6 +52,7 @@ const (
 	scaleCacheEntryLifetime      time.Duration = time.Hour
 	scaleCacheEntryFreshnessTime time.Duration = 10 * time.Minute
 	scaleCacheEntryJitterFactor  float64       = 1.
+	webHookDelay                               = 10 * time.Second
 )
 
 var (
@@ -145,7 +146,7 @@ func main() {
 	ignoredNamespaces := strings.Split(*ignoredVpaObjectNamespaces, ",")
 	go func() {
 		if *registerWebhook {
-			selfRegistration(kubeClient, readFile(*certsConfiguration.clientCaFile), namespace, *serviceName, url, *registerByURL, int32(*webhookTimeout), *vpaObjectNamespace, ignoredNamespaces)
+			selfRegistration(kubeClient, readFile(*certsConfiguration.clientCaFile), webHookDelay, namespace, *serviceName, url, *registerByURL, int32(*webhookTimeout), *vpaObjectNamespace, ignoredNamespaces)
 		}
 		// Start status updates after the webhook is initialized.
 		statusUpdater.Run(stopCh)
