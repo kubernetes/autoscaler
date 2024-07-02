@@ -50,7 +50,6 @@ const (
 )
 
 var (
-	ctx                  = context.Background()
 	wellKnownControllers = []wellKnownController{daemonSet, deployment, replicaSet, statefulSet, replicationController, job, cronJob}
 	trueVar              = true
 )
@@ -409,7 +408,7 @@ func TestControllerFetcher(t *testing.T) {
 			for _, obj := range tc.objects {
 				addController(t, f, obj)
 			}
-			topMostWellKnownOrScalableController, err := f.FindTopMostWellKnownOrScalable(ctx, tc.key)
+			topMostWellKnownOrScalableController, err := f.FindTopMostWellKnownOrScalable(context.Background(), tc.key)
 			if tc.expectedKey == nil {
 				assert.Nil(t, topMostWellKnownOrScalableController)
 			} else {

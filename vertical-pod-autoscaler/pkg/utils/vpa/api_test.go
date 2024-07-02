@@ -40,8 +40,6 @@ const (
 )
 
 var (
-	ctx = context.Background()
-
 	anytime = time.Unix(0, 0)
 )
 
@@ -177,7 +175,7 @@ func TestGetControllingVPAForPod(t *testing.T) {
 		Name:       "test-sts",
 		APIVersion: "apps/v1",
 	}
-	chosen := GetControllingVPAForPod(ctx, pod, []*VpaWithSelector{
+	chosen := GetControllingVPAForPod(context.Background(), pod, []*VpaWithSelector{
 		{vpaB, parseLabelSelector("app = testingApp")},
 		{vpaA, parseLabelSelector("app = testingApp")},
 		{nonMatchingVPA, parseLabelSelector("app = other")},
