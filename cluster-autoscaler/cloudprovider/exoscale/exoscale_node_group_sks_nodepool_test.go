@@ -44,7 +44,9 @@ func (ts *cloudProviderTestSuite) TestSKSNodepoolNodeGroup_MaxSize() {
 			ID:   &testSKSClusterID,
 			Name: &testSKSClusterName,
 		},
-		m: ts.p.manager,
+		m:       ts.p.manager,
+		minSize: int(testSKSNodepoolSize),
+		maxSize: int(testComputeInstanceQuotaLimit),
 	}
 
 	ts.Require().Equal(int(testComputeInstanceQuotaLimit), nodeGroup.MaxSize())
@@ -60,7 +62,9 @@ func (ts *cloudProviderTestSuite) TestSKSNodepoolNodeGroup_MinSize() {
 			ID:   &testSKSClusterID,
 			Name: &testSKSClusterName,
 		},
-		m: ts.p.manager,
+		m:       ts.p.manager,
+		minSize: int(testSKSNodepoolSize),
+		maxSize: int(testComputeInstanceQuotaLimit),
 	}
 
 	ts.Require().Equal(1, nodeGroup.MinSize())
@@ -128,7 +132,9 @@ func (ts *cloudProviderTestSuite) TestSKSNodepoolNodeGroup_IncreaseSize() {
 			ID:   &testSKSClusterID,
 			Name: &testSKSClusterName,
 		},
-		m: ts.p.manager,
+		m:       ts.p.manager,
+		minSize: int(testSKSNodepoolSize),
+		maxSize: int(testComputeInstanceQuotaLimit),
 	}
 
 	ts.Require().NoError(nodeGroup.IncreaseSize(int(testInstancePoolSize + 1)))
@@ -176,7 +182,9 @@ func (ts *cloudProviderTestSuite) TestSKSNodepoolNodeGroup_DeleteNodes() {
 			ID:   &testSKSClusterID,
 			Name: &testSKSClusterName,
 		},
-		m: ts.p.manager,
+		m:       ts.p.manager,
+		minSize: int(testSKSNodepoolSize),
+		maxSize: int(testComputeInstanceQuotaLimit),
 	}
 
 	ts.Require().NoError(nodeGroup.DeleteNodes([]*apiv1.Node{node}))
@@ -193,7 +201,9 @@ func (ts *cloudProviderTestSuite) TestSKSNodepoolNodeGroup_Id() {
 			ID:   &testSKSClusterID,
 			Name: &testSKSClusterName,
 		},
-		m: ts.p.manager,
+		m:       ts.p.manager,
+		minSize: int(testSKSNodepoolSize),
+		maxSize: int(testComputeInstanceQuotaLimit),
 	}
 
 	ts.Require().Equal(testInstancePoolID, nodeGroup.Id())
@@ -227,7 +237,9 @@ func (ts *cloudProviderTestSuite) TestSKSNodepoolNodeGroup_Nodes() {
 			ID:   &testSKSClusterID,
 			Name: &testSKSClusterName,
 		},
-		m: ts.p.manager,
+		m:       ts.p.manager,
+		minSize: int(testSKSNodepoolSize),
+		maxSize: int(testComputeInstanceQuotaLimit),
 	}
 
 	instances, err := nodeGroup.Nodes()
@@ -247,7 +259,9 @@ func (ts *cloudProviderTestSuite) TestSKSNodepoolNodeGroup_Exist() {
 			ID:   &testSKSClusterID,
 			Name: &testSKSClusterName,
 		},
-		m: ts.p.manager,
+		m:       ts.p.manager,
+		minSize: int(testSKSNodepoolSize),
+		maxSize: int(testComputeInstanceQuotaLimit),
 	}
 
 	ts.Require().True(nodeGroup.Exist())
