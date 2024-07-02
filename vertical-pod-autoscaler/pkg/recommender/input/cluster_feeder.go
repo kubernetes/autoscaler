@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	"slices"
-	"strings"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -89,7 +88,7 @@ type ClusterStateFeederFactory struct {
 	MemorySaveMode      bool
 	ControllerFetcher   controllerfetcher.ControllerFetcher
 	RecommenderName     string
-	IgnoredNamespaces   string
+	IgnoredNamespaces   []string
 }
 
 // Make creates new ClusterStateFeeder with internal data providers, based on kube client.
@@ -106,7 +105,7 @@ func (m ClusterStateFeederFactory) Make() *clusterStateFeeder {
 		memorySaveMode:      m.MemorySaveMode,
 		controllerFetcher:   m.ControllerFetcher,
 		recommenderName:     m.RecommenderName,
-		ignoredNamespaces:   strings.Split(m.IgnoredNamespaces, ","),
+		ignoredNamespaces:   m.IgnoredNamespaces,
 	}
 }
 

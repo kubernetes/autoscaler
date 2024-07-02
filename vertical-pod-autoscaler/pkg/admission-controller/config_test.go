@@ -18,7 +18,6 @@ package main
 
 import (
 	"context"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -37,7 +36,7 @@ func TestSelfRegistrationBase(t *testing.T) {
 	registerByURL := true
 	timeoutSeconds := int32(32)
 	selectedNamespace := ""
-	ignoredNamespaces := ""
+	ignoredNamespaces := []string{}
 
 	selfRegistration(testClientSet, caCert, namespace, serviceName, url, registerByURL, timeoutSeconds, selectedNamespace, ignoredNamespaces)
 
@@ -79,7 +78,7 @@ func TestSelfRegistrationWithURL(t *testing.T) {
 	registerByURL := true
 	timeoutSeconds := int32(32)
 	selectedNamespace := ""
-	ignoredNamespaces := ""
+	ignoredNamespaces := []string{}
 
 	selfRegistration(testClientSet, caCert, namespace, serviceName, url, registerByURL, timeoutSeconds, selectedNamespace, ignoredNamespaces)
 
@@ -106,7 +105,7 @@ func TestSelfRegistrationWithOutURL(t *testing.T) {
 	registerByURL := false
 	timeoutSeconds := int32(32)
 	selectedNamespace := ""
-	ignoredNamespaces := ""
+	ignoredNamespaces := []string{}
 
 	selfRegistration(testClientSet, caCert, namespace, serviceName, url, registerByURL, timeoutSeconds, selectedNamespace, ignoredNamespaces)
 
@@ -119,8 +118,8 @@ func TestSelfRegistrationWithOutURL(t *testing.T) {
 	webhook := webhookConfig.Webhooks[0]
 
 	assert.NotNil(t, webhook.ClientConfig.Service, "expected service reference to be nil")
-	assert.Equal(t, serviceName, webhook.ClientConfig.Service.Name, "expected service name to be equal")
-	assert.Equal(t, namespace, webhook.ClientConfig.Service.Namespace, "expected service namespace to be equal")
+	assert.Equal(t, webhook.ClientConfig.Service.Name, serviceName, "expected service name to be equal")
+	assert.Equal(t, webhook.ClientConfig.Service.Namespace, namespace, "expected service namespace to be equal")
 
 	assert.Nil(t, webhook.ClientConfig.URL, "expected URL to be set")
 }
@@ -135,7 +134,7 @@ func TestSelfRegistrationWithIgnoredNamespaces(t *testing.T) {
 	registerByURL := false
 	timeoutSeconds := int32(32)
 	selectedNamespace := ""
-	ignoredNamespaces := "test"
+	ignoredNamespaces := []string{"test"}
 
 	selfRegistration(testClientSet, caCert, namespace, serviceName, url, registerByURL, timeoutSeconds, selectedNamespace, ignoredNamespaces)
 
@@ -151,8 +150,8 @@ func TestSelfRegistrationWithIgnoredNamespaces(t *testing.T) {
 	assert.Len(t, webhook.NamespaceSelector.MatchExpressions, 1, "expected one match expression")
 
 	matchExpression := webhook.NamespaceSelector.MatchExpressions[0]
-	assert.Equal(t, metav1.LabelSelectorOpNotIn, matchExpression.Operator, "expected namespace operator to be OpNotIn")
-	assert.Equal(t, strings.Split(ignoredNamespaces, ","), matchExpression.Values, "expected namespace selector match expression to be equal")
+	assert.Equal(t, matchExpression.Operator, metav1.LabelSelectorOpNotIn, "expected namespace operator to be OpNotIn")
+	assert.Equal(t, matchExpression.Values, ignoredNamespaces, "expected namespace selector match expression to be equal")
 }
 
 func TestSelfRegistrationWithSelectedNamespaces(t *testing.T) {
@@ -165,7 +164,7 @@ func TestSelfRegistrationWithSelectedNamespaces(t *testing.T) {
 	registerByURL := false
 	timeoutSeconds := int32(32)
 	selectedNamespace := "test"
-	ignoredNamespaces := ""
+	ignoredNamespaces := []string{}
 
 	selfRegistration(testClientSet, caCert, namespace, serviceName, url, registerByURL, timeoutSeconds, selectedNamespace, ignoredNamespaces)
 
@@ -182,5 +181,6 @@ func TestSelfRegistrationWithSelectedNamespaces(t *testing.T) {
 
 	matchExpression := webhook.NamespaceSelector.MatchExpressions[0]
 	assert.Equal(t, metav1.LabelSelectorOpIn, matchExpression.Operator, "expected namespace operator to be OpIn")
-	assert.Equal(t, strings.Split(selectedNamespace, ","), matchExpression.Values, "expected namespace selector match expression to be equal")
+	assert.Equal(t, matchExpression.Operator, metav1.LabelSelectorOpIn, "expected namespace operator to be OpIn")
+	assert.Equal(t, matchExpression.Values, []string{selectedNamespace}, "expected namespace selector match expression to be equal")
 }
