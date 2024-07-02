@@ -240,8 +240,10 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 		}
 	}
 
-	// Recompute similar node groups in case they need to be updated
-	bestOption.SimilarNodeGroups = o.ComputeSimilarNodeGroups(bestOption.NodeGroup, nodeInfos, schedulablePodGroups, now)
+	if len(createNodeGroupResults) > 0 || !o.autoscalingContext.SkipSimilarNodegroupRecomputation {
+		// Recompute similar node groups in case they need to be updated
+		bestOption.SimilarNodeGroups = o.ComputeSimilarNodeGroups(bestOption.NodeGroup, nodeInfos, schedulablePodGroups, now)
+	}
 	if bestOption.SimilarNodeGroups != nil {
 		// if similar node groups are found, log about them
 		similarNodeGroupIds := make([]string, 0)
