@@ -20,7 +20,7 @@ build-binary: clean
 	$(ENVVAR) GOOS=$(GOOS) go build -o ${COMPONENT}
 
 test-unit: clean build
-	$(TEST_ENVVAR) go test -count=1 --test.short -race ./... $(FLAGS)
+	$(TEST_ENVVAR) go test --test.short -race ./... $(FLAGS)
 
 .PHONY: docker-build
 docker-build: $(addprefix docker-build-,$(ALL_ARCHITECTURES))
