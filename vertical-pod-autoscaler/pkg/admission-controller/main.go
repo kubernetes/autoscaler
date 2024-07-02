@@ -83,7 +83,7 @@ func main() {
 	kube_flag.InitFlags()
 	klog.V(1).Infof("Vertical Pod Autoscaler %s Admission Controller", common.VerticalPodAutoscalerVersion)
 
-	healthCheck := metrics.NewHealthCheck(time.Minute, false)
+	healthCheck := metrics.NewHealthCheck(time.Minute)
 	metrics.Initialize(*address, healthCheck)
 	metrics_admission.Register()
 
