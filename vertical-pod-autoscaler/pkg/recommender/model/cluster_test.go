@@ -35,8 +35,6 @@ import (
 )
 
 var (
-	ctx = context.Background()
-
 	testPodID       = PodID{"namespace-1", "pod-1"}
 	testPodID3      = PodID{"namespace-1", "pod-3"}
 	testPodID4      = PodID{"namespace-1", "pod-4"}
@@ -100,6 +98,8 @@ func TestClusterAddSample(t *testing.T) {
 }
 
 func TestClusterGCAggregateContainerStateDeletesOld(t *testing.T) {
+	ctx := context.Background()
+
 	// Create a pod with a single container.
 	cluster := NewClusterState(testGcPeriod)
 	vpa := addTestVpa(cluster)
@@ -123,6 +123,8 @@ func TestClusterGCAggregateContainerStateDeletesOld(t *testing.T) {
 }
 
 func TestClusterGCAggregateContainerStateDeletesOldEmpty(t *testing.T) {
+	ctx := context.Background()
+
 	// Create a pod with a single container.
 	cluster := NewClusterState(testGcPeriod)
 	vpa := addTestVpa(cluster)
@@ -154,6 +156,8 @@ func TestClusterGCAggregateContainerStateDeletesOldEmpty(t *testing.T) {
 }
 
 func TestClusterGCAggregateContainerStateDeletesEmptyInactiveWithoutController(t *testing.T) {
+	ctx := context.Background()
+
 	// Create a pod with a single container.
 	cluster := NewClusterState(testGcPeriod)
 	vpa := addTestVpa(cluster)
@@ -186,6 +190,8 @@ func TestClusterGCAggregateContainerStateDeletesEmptyInactiveWithoutController(t
 }
 
 func TestClusterGCAggregateContainerStateLeavesEmptyInactiveWithController(t *testing.T) {
+	ctx := context.Background()
+
 	// Create a pod with a single container.
 	cluster := NewClusterState(testGcPeriod)
 	vpa := addTestVpa(cluster)
@@ -214,6 +220,8 @@ func TestClusterGCAggregateContainerStateLeavesEmptyInactiveWithController(t *te
 }
 
 func TestClusterGCAggregateContainerStateLeavesValid(t *testing.T) {
+	ctx := context.Background()
+
 	// Create a pod with a single container.
 	cluster := NewClusterState(testGcPeriod)
 	vpa := addTestVpa(cluster)
@@ -236,6 +244,8 @@ func TestClusterGCAggregateContainerStateLeavesValid(t *testing.T) {
 }
 
 func TestAddSampleAfterAggregateContainerStateGCed(t *testing.T) {
+	ctx := context.Background()
+
 	// Create a pod with a single container.
 	cluster := NewClusterState(testGcPeriod)
 	vpa := addTestVpa(cluster)
@@ -275,6 +285,8 @@ func TestAddSampleAfterAggregateContainerStateGCed(t *testing.T) {
 }
 
 func TestClusterGCRateLimiting(t *testing.T) {
+	ctx := context.Background()
+
 	// Create a pod with a single container.
 	cluster := NewClusterState(testGcPeriod)
 	usageSample := makeTestUsageSample()

@@ -40,8 +40,6 @@ const (
 )
 
 var (
-	ctx = context.Background()
-
 	anytime = time.Unix(0, 0)
 )
 
@@ -152,6 +150,8 @@ func (f NilControllerFetcher) FindTopMostWellKnownOrScalable(_ context.Context, 
 var _ controllerfetcher.ControllerFetcher = &NilControllerFetcher{}
 
 func TestGetControllingVPAForPod(t *testing.T) {
+	ctx := context.Background()
+
 	isController := true
 	pod := test.Pod().WithName("test-pod").AddContainer(test.Container().WithName(containerName).WithCPURequest(resource.MustParse("1")).WithMemRequest(resource.MustParse("100M")).Get()).Get()
 	pod.Labels = map[string]string{"app": "testingApp"}
