@@ -144,7 +144,7 @@ func (scaleSet *ScaleSet) getInstancesByState(state cloudprovider.InstanceState)
 
 	err := scaleSet.validateInstanceCacheWithoutLock()
 	if err != nil {
-		klog.Errorf("getInstancesByState: error validating instanceCache for state %s for scaleSet %s, "+
+		klog.Errorf("getInstancesByState: error validating instanceCache for state %d for scaleSet %s, "+
 			"err: %v", state, scaleSet.Name, err)
 		return []cloudprovider.Instance{}, err
 	}
@@ -189,7 +189,7 @@ func (scaleSet *ScaleSet) setInstanceStatusByProviderID(providerID string, statu
 	for k, instance := range scaleSet.instanceCache {
 		if instance.Id == providerID {
 			klog.V(3).Infof("setInstanceStatusByProviderID: setting instance state for %s for scaleSet "+
-				"%s to %s", instance.Id, scaleSet.Name, status.State)
+				"%s to %d", instance.Id, scaleSet.Name, status.State)
 			scaleSet.instanceCache[k].Status = &status
 			break
 		}
