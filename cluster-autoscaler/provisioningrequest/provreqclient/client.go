@@ -192,7 +192,7 @@ func ProvisioningRequestsForPods(client *ProvisioningRequestClient, unschedulabl
 		}
 		provReq, err := client.ProvisioningRequest(pod.Namespace, pod.OwnerReferences[0].Name)
 		if err != nil {
-			klog.Errorf("failed retrive ProvisioningRequest from unscheduled pods, err: %v", err)
+			klog.Errorf("failed to retrieve ProvisioningRequest from unschedulable pod, err: %v", err)
 			continue
 		}
 		if _, found := prMap[provReq.Name]; !found {
