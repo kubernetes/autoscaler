@@ -92,7 +92,7 @@ func main() {
 	kube_flag.InitFlags()
 	klog.V(1).Infof("Vertical Pod Autoscaler %s Updater", common.VerticalPodAutoscalerVersion)
 
-	healthCheck := metrics.NewHealthCheck(*updaterInterval*5, true)
+	healthCheck := metrics.NewHealthCheck(*updaterInterval * 5)
 	metrics.Initialize(*address, healthCheck)
 	metrics_updater.Register()
 
@@ -195,6 +195,10 @@ func run(healthCheck *metrics.HealthCheck) {
 	if err != nil {
 		klog.Fatalf("Failed to create updater: %v", err)
 	}
+
+	// Start updating health check endpoint.
+	healthCheck.StartMonitoring()
+
 	ticker := time.Tick(*updaterInterval)
 	for range ticker {
 		ctx, cancel := context.WithTimeout(context.Background(), *updaterInterval)

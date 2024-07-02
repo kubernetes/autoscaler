@@ -121,7 +121,7 @@ func main() {
 	kube_flag.InitFlags()
 	klog.V(1).Infof("Vertical Pod Autoscaler %s Recommender: %v", common.VerticalPodAutoscalerVersion, *recommenderName)
 
-	healthCheck := metrics.NewHealthCheck(*metricsFetcherInterval*5, true)
+	healthCheck := metrics.NewHealthCheck(*metricsFetcherInterval * 5)
 	metrics.Initialize(*address, healthCheck)
 	metrics_recommender.Register()
 	metrics_quality.Register()
@@ -284,6 +284,9 @@ func run(healthCheck *metrics.HealthCheck) {
 		}
 		recommender.GetClusterStateFeeder().InitFromHistoryProvider(provider)
 	}
+
+	// Start updating health check endpoint.
+	healthCheck.StartMonitoring()
 
 	ticker := time.Tick(*metricsFetcherInterval)
 	for range ticker {
