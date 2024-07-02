@@ -18,8 +18,9 @@ package azure
 
 import (
 	"fmt"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"strings"
+
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 )
 
 const (
@@ -91,7 +92,7 @@ func matchDiscoveryConfig(labels map[string]*string, configs []labelAutoDiscover
 				return false
 			}
 
-			if len(v) > 0 {
+			if v != "" {
 				if value == nil || *value != v {
 					return false
 				}

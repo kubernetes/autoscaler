@@ -440,7 +440,7 @@ func (c *Client) ExportTemplate(ctx context.Context, resourceGroupName string, d
 	defer c.armClient.CloseResponse(ctx, response)
 	if rerr != nil {
 		klog.V(5).Infof("Received error in %s: resourceID: %s, error: %s", "deployment.exportTemplate.request", resourceID, rerr.Error())
-		return
+		return result, rerr
 	}
 
 	err := autorest.Respond(

@@ -18,6 +18,7 @@ package provider
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -176,7 +177,7 @@ func (ims *InstanceMetadataService) getMetadata(key string) (interface{}, error)
 	return instanceMetadata, nil
 }
 
-func (ims *InstanceMetadataService) getInstanceMetadata(key string) (*InstanceMetadata, error) {
+func (ims *InstanceMetadataService) getInstanceMetadata(_ string) (*InstanceMetadata, error) {
 	req, err := http.NewRequest("GET", ims.imdsServer+consts.ImdsInstanceURI, nil)
 	if err != nil {
 		return nil, err
@@ -270,4 +271,21 @@ func (ims *InstanceMetadataService) GetMetadata(crt azcache.AzureCacheReadType) 
 	}
 
 	return nil, fmt.Errorf("failure of getting instance metadata")
+}
+
+// GetPlatformSubFaultDomain returns the PlatformSubFaultDomain from IMDS if set.
+func (az *Cloud) GetPlatformSubFaultDomain() (string, error) {
+	if az.UseInstanceMetadata {
+		metadata, err := az.Metadata.GetMetadata(azcache.CacheReadTypeUnsafe)
+		if err != nil {
+			klog.Errorf("GetPlatformSubFaultDomain: failed to GetMetadata: %s", err.Error())
+			return "", err
+		}
+		if metadata.Compute == nil {
+			_ = az.Metadata.imsCache.Delete(consts.MetadataCacheKey)
+			return "", errors.New("failure of getting compute information from instance metadata")
+		}
+		return metadata.Compute.PlatformSubFaultDomain, nil
+	}
+	return "", nil
 }

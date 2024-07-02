@@ -48,14 +48,13 @@ var (
 type FlexScaleSet struct {
 	*Cloud
 
-	vmssFlexCache azcache.Resource
-
+	vmssFlexCache            azcache.Resource
 	vmssFlexVMNameToVmssID   *sync.Map
 	vmssFlexVMNameToNodeName *sync.Map
 	vmssFlexVMCache          azcache.Resource
 
 	// lockMap in cache refresh
-	lockMap *lockMap
+	lockMap *LockMap
 }
 
 func newFlexScaleSet(ctx context.Context, az *Cloud) (VMSet, error) {
@@ -279,8 +278,8 @@ func (fs *FlexScaleSet) GetPowerStatusByNodeName(name string) (powerState string
 	}
 
 	// vm.InstanceView or vm.InstanceView.Statuses are nil when the VM is under deleting.
-	klog.V(3).Infof("InstanceView for node %q is nil, assuming it's stopped", name)
-	return vmPowerStateStopped, nil
+	klog.V(3).Infof("InstanceView for node %q is nil, assuming it's deleting", name)
+	return vmPowerStateUnknown, nil
 }
 
 // GetPrimaryInterface gets machine primary network interface by node name.
@@ -384,33 +383,16 @@ func (fs *FlexScaleSet) GetNodeNameByIPConfigurationID(ipConfigurationID string)
 }
 
 func (fs *FlexScaleSet) getNodeInformationByIPConfigurationID(ipConfigurationID string) (string, string, string, error) {
-	matches := nicIDRE.FindStringSubmatch(ipConfigurationID)
-	if len(matches) != 3 {
-		klog.V(4).Infof("Can not extract nic name from ipConfigurationID (%s)", ipConfigurationID)
-		return "", "", "", fmt.Errorf("invalid ip config ID %s", ipConfigurationID)
-	}
-
-	nicResourceGroup, nicName := matches[1], matches[2]
-	if nicResourceGroup == "" || nicName == "" {
-		return "", "", "", fmt.Errorf("invalid ip config ID %s", ipConfigurationID)
+	nicResourceGroup, nicName, err := getResourceGroupAndNameFromNICID(ipConfigurationID)
+	if err != nil {
+		return "", "", "", fmt.Errorf("failed to get resource group and name from ip config ID %s: %w", ipConfigurationID, err)
 	}
 
 	// get vmName by nic name
-	ctx, cancel := getContextWithCancel()
-	defer cancel()
-	nic, rerr := fs.InterfacesClient.Get(ctx, nicResourceGroup, nicName, "")
-	if rerr != nil {
-		return "", "", "", fmt.Errorf("getNodeInformationByIPConfigurationID(%s): failed to get interface of name %s: %w", ipConfigurationID, nicName, rerr.Error())
+	vmName, err := fs.GetVMNameByIPConfigurationName(nicResourceGroup, nicName)
+	if err != nil {
+		return "", "", "", fmt.Errorf("failed to get vm name of ip config ID %s", ipConfigurationID)
 	}
-	if nic.InterfacePropertiesFormat == nil || nic.InterfacePropertiesFormat.VirtualMachine == nil || nic.InterfacePropertiesFormat.VirtualMachine.ID == nil {
-		return "", "", "", fmt.Errorf("failed to get vm ID of ip config ID %s", ipConfigurationID)
-	}
-	vmID := pointer.StringDeref(nic.InterfacePropertiesFormat.VirtualMachine.ID, "")
-	matches = vmIDRE.FindStringSubmatch(vmID)
-	if len(matches) != 2 {
-		return "", "", "", fmt.Errorf("invalid virtual machine ID %s", vmID)
-	}
-	vmName := matches[1]
 
 	nodeName, err := fs.getNodeNameByVMName(vmName)
 	if err != nil {
@@ -572,7 +554,7 @@ func (fs *FlexScaleSet) EnsureHostInPool(service *v1.Service, nodeName types.Nod
 
 }
 
-func (fs *FlexScaleSet) ensureVMSSFlexInPool(service *v1.Service, nodes []*v1.Node, backendPoolID string, vmSetNameOfLB string) error {
+func (fs *FlexScaleSet) ensureVMSSFlexInPool(_ *v1.Service, nodes []*v1.Node, backendPoolID string, vmSetNameOfLB string) error {
 	klog.V(2).Infof("ensureVMSSFlexInPool: ensuring VMSS Flex with backendPoolID %s", backendPoolID)
 	vmssFlexIDsMap := make(map[string]bool)
 
@@ -601,12 +583,12 @@ func (fs *FlexScaleSet) ensureVMSSFlexInPool(service *v1.Service, nodes []*v1.No
 			// in this scenario the vmSetName is an empty string and the name of vmss should be obtained from the provider IDs of nodes
 			vmssFlexID, err := fs.getNodeVmssFlexID(node.Name)
 			if err != nil {
-				klog.Error("ensureVMSSFlexInPool: failed to get VMSS Flex ID of node: %s, will skip checking and continue", node.Name)
+				klog.Errorf("ensureVMSSFlexInPool: failed to get VMSS Flex ID of node: %s, will skip checking and continue", node.Name)
 				continue
 			}
 			resourceGroupName, err := fs.GetNodeResourceGroup(node.Name)
 			if err != nil {
-				klog.Error("ensureVMSSFlexInPool: failed to get resource group of node: %s, will skip checking and continue", node.Name)
+				klog.Errorf("ensureVMSSFlexInPool: failed to get resource group of node: %s, will skip checking and continue", node.Name)
 				continue
 			}
 
@@ -618,7 +600,7 @@ func (fs *FlexScaleSet) ensureVMSSFlexInPool(service *v1.Service, nodes []*v1.No
 	} else {
 		vmssFlexID, err := fs.getVmssFlexIDByName(vmSetNameOfLB)
 		if err != nil {
-			klog.Error("ensureVMSSFlexInPool: failed to get VMSS Flex ID of vmSet: %s, ", vmSetNameOfLB)
+			klog.Errorf("ensureVMSSFlexInPool: failed to get VMSS Flex ID of vmSet: %s", vmSetNameOfLB)
 			return err
 		}
 		vmssFlexIDsMap[vmssFlexID] = true

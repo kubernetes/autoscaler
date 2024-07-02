@@ -65,6 +65,11 @@ func IsPLSEnabled(annotations map[string]string) bool {
 	return expectAttributeInSvcAnnotationBeEqualTo(annotations, ServiceAnnotationPLSCreation, TrueAnnotationValue)
 }
 
+// IsTCPResetDisabled return true if ServiceAnnotationDisableTCPReset is true
+func IsTCPResetDisabled(annotations map[string]string) bool {
+	return expectAttributeInSvcAnnotationBeEqualTo(annotations, ServiceAnnotationDisableTCPReset, TrueAnnotationValue)
+}
+
 // Getint32ValueFromK8sSvcAnnotation get health probe configuration for port
 func Getint32ValueFromK8sSvcAnnotation(annotations map[string]string, key string, validators ...Int32BusinessValidator) (*int32, error) {
 	val, err := GetAttributeValueInSvcAnnotation(annotations, key)
@@ -74,7 +79,7 @@ func Getint32ValueFromK8sSvcAnnotation(annotations map[string]string, key string
 	return nil, err
 }
 
-// BuildHealthProbeAnnotationKeyForPort get health probe configuration key for port
+// BuildAnnotationKeyForPort get health probe configuration key for port
 func BuildAnnotationKeyForPort(port int32, key PortParams) string {
 	return fmt.Sprintf(PortAnnotationPrefixPattern, port, string(key))
 }

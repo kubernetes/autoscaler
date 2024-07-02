@@ -29,7 +29,7 @@ const (
 // CloudProviderRateLimitConfig indicates the rate limit config for each clients.
 type CloudProviderRateLimitConfig struct {
 	// The default rate limit config options.
-	azclients.RateLimitConfig
+	azclients.RateLimitConfig `json:",inline" yaml:",inline"`
 
 	// Rate limit config for each clients. Values would override default settings above.
 	RouteRateLimit                  *azclients.RateLimitConfig `json:"routeRateLimit,omitempty" yaml:"routeRateLimit,omitempty"`
