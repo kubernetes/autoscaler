@@ -195,7 +195,7 @@ func ProvisioningRequestsForPods(client *ProvisioningRequestClient, unschedulabl
 			klog.Errorf("failed retrive ProvisioningRequest from unscheduled pods, err: %v", err)
 			continue
 		}
-		if prMap[provReq.Name] == nil {
+		if _, found := prMap[provReq.Name]; !found {
 			prMap[provReq.Name] = provReq
 		}
 	}
