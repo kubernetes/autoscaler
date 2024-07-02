@@ -163,7 +163,7 @@ func (m *AzureManager) buildNodeGroupFromSpec(spec string) (cloudprovider.NodeGr
 
 	vmsPoolSet := m.azureCache.getVMsPoolSet()
 	if _, ok := vmsPoolSet[s.Name]; ok {
-		return NewVMsPool(s, m), nil
+		return NewVMsPool(s, m)
 	}
 
 	switch m.config.VMType {
