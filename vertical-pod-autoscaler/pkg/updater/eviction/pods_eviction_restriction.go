@@ -25,13 +25,14 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	appsinformer "k8s.io/client-go/informers/apps/v1"
 	coreinformer "k8s.io/client-go/informers/core/v1"
 	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/klog/v2"
+
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 )
 
 const (
@@ -57,8 +58,7 @@ type podsEvictionRestrictionImpl struct {
 
 type singleGroupStats struct {
 	configured        int
-	pending           int
-	running           int
+	ready             int
 	evictionTolerance int
 	evicted           int
 }
@@ -99,24 +99,35 @@ type podReplicaCreator struct {
 // CanEvict checks if pod can be safely evicted
 func (e *podsEvictionRestrictionImpl) CanEvict(pod *apiv1.Pod) bool {
 	cr, present := e.podToReplicaCreatorMap[getPodID(pod)]
-	if present {
-		singleGroupStats, present := e.creatorToSingleGroupStatsMap[cr]
-		if pod.Status.Phase == apiv1.PodPending {
-			return true
-		}
-		if present {
-			shouldBeAlive := singleGroupStats.configured - singleGroupStats.evictionTolerance
-			if singleGroupStats.running-singleGroupStats.evicted > shouldBeAlive {
-				return true
-			}
-			// If all pods are running and eviction tolerance is small evict 1 pod.
-			if singleGroupStats.running == singleGroupStats.configured &&
-				singleGroupStats.evictionTolerance == 0 &&
-				singleGroupStats.evicted == 0 {
-				return true
-			}
-		}
+	if !present {
+		return false
 	}
+
+	if pod.Status.Phase == apiv1.PodPending {
+		return true
+	}
+
+	if !isPodReady(pod) {
+		return false
+	}
+
+	singleGroupStats, present := e.creatorToSingleGroupStatsMap[cr]
+	if !present {
+		return false
+	}
+
+	shouldBeAlive := singleGroupStats.configured - singleGroupStats.evictionTolerance
+	if singleGroupStats.ready-singleGroupStats.evicted > shouldBeAlive {
+		return true
+	}
+
+	// If all pods are running and eviction tolerance is small evict 1 pod.
+	if singleGroupStats.ready == singleGroupStats.configured &&
+		singleGroupStats.evictionTolerance == 0 &&
+		singleGroupStats.evicted == 0 {
+		return true
+	}
+
 	return false
 }
 
@@ -247,11 +258,10 @@ func (f *podsEvictionRestrictionFactoryImpl) NewPodsEvictionRestriction(pods []*
 		singleGroup.evictionTolerance = int(float64(configured) * f.evictionToleranceFraction)
 		for _, pod := range replicas {
 			podToReplicaCreatorMap[getPodID(pod)] = creator
-			if pod.Status.Phase == apiv1.PodPending {
-				singleGroup.pending = singleGroup.pending + 1
+			if isPodReady(pod) {
+				singleGroup.ready = singleGroup.ready + 1
 			}
 		}
-		singleGroup.running = len(replicas) - singleGroup.pending
 		creatorToSingleGroupStatsMap[creator] = singleGroup
 	}
 	return &podsEvictionRestrictionImpl{
@@ -345,10 +355,10 @@ func (f *podsEvictionRestrictionFactoryImpl) getReplicaCount(creator podReplicaC
 		if !ok {
 			return 0, fmt.Errorf("Failed to parse DaemonSet")
 		}
-		if ds.Status.NumberReady == 0 {
-			return 0, fmt.Errorf("daemon set %s/%s has no number ready pods", creator.Namespace, creator.Name)
+		if ds.Status.DesiredNumberScheduled == 0 {
+			return 0, fmt.Errorf("daemon set %s/%s has no number scheduled pods", creator.Namespace, creator.Name)
 		}
-		return int(ds.Status.NumberReady), nil
+		return int(ds.Status.DesiredNumberScheduled), nil
 	}
 
 	return 0, nil
@@ -390,4 +400,13 @@ func setUpInformer(kubeClient kube_client.Interface, kind controllerKind) (cache
 		return nil, fmt.Errorf("Failed to sync %v cache.", kind)
 	}
 	return informer, nil
+}
+
+func isPodReady(pod *apiv1.Pod) bool {
+	for _, condition := range pod.Status.Conditions {
+		if condition.Type == apiv1.PodReady && condition.Status == apiv1.ConditionTrue {
+			return true
+		}
+	}
+	return false
 }
