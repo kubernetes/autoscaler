@@ -17,6 +17,7 @@ limitations under the License.
 package input
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -32,7 +33,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/history"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/spec"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
+	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	target_mock "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/mock"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 )
@@ -42,7 +43,7 @@ type fakeControllerFetcher struct {
 	err error
 }
 
-func (f *fakeControllerFetcher) FindTopMostWellKnownOrScalable(_ *controllerfetcher.ControllerKeyWithAPIVersion) (*controllerfetcher.ControllerKeyWithAPIVersion, error) {
+func (f *fakeControllerFetcher) FindTopMostWellKnownOrScalable(_ context.Context, _ *controllerfetcher.ControllerKeyWithAPIVersion) (*controllerfetcher.ControllerKeyWithAPIVersion, error) {
 	return f.key, f.err
 }
 
@@ -315,7 +316,7 @@ func TestLoadPods(t *testing.T) {
 			if tc.expectedVpaFetch {
 				targetSelectorFetcher.EXPECT().Fetch(vpa).Return(tc.selector, tc.fetchSelectorError)
 			}
-			clusterStateFeeder.LoadVPAs()
+			clusterStateFeeder.LoadVPAs(context.Background())
 
 			vpaID := model.VpaID{
 				Namespace: vpa.Namespace,

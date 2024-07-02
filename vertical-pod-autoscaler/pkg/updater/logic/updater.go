@@ -142,7 +142,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 			klog.V(3).Infof("skipping VPA object %s because its mode is not \"Recreate\" or \"Auto\"", klog.KObj(vpa))
 			continue
 		}
-		selector, err := u.selectorFetcher.Fetch(vpa)
+		selector, err := u.selectorFetcher.Fetch(ctx, vpa)
 		if err != nil {
 			klog.V(3).Infof("skipping VPA object %s because we cannot fetch selector", klog.KObj(vpa))
 			continue
@@ -172,7 +172,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 
 	controlledPods := make(map[*vpa_types.VerticalPodAutoscaler][]*apiv1.Pod)
 	for _, pod := range allLivePods {
-		controllingVPA := vpa_api_util.GetControllingVPAForPod(pod, vpas, u.controllerFetcher)
+		controllingVPA := vpa_api_util.GetControllingVPAForPod(ctx, pod, vpas, u.controllerFetcher)
 		if controllingVPA != nil {
 			controlledPods[controllingVPA.Vpa] = append(controlledPods[controllingVPA.Vpa], pod)
 		}
