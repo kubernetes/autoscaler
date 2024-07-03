@@ -134,3 +134,18 @@ func ProvisioningRequestWrapperForTesting(namespace, name string) *provreqwrappe
 func podTemplateNameFromName(name string) string {
 	return fmt.Sprintf("%s-pod-template", name)
 }
+
+// ProvisioningRequestNoCache returns ProvisioningRequest directly from client. For test purposes only.
+func (c *ProvisioningRequestClient) ProvisioningRequestNoCache(namespace, name string) (*provreqwrapper.ProvisioningRequest, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), provisioningRequestClientCallTimeout)
+	defer cancel()
+	v1beta1, err := c.client.AutoscalingV1beta1().ProvisioningRequests(namespace).Get(ctx, name, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+	podTemplates, err := c.FetchPodTemplates(v1beta1)
+	if err != nil {
+		return nil, err
+	}
+	return provreqwrapper.NewProvisioningRequest(v1beta1, podTemplates), nil
+}

@@ -80,7 +80,7 @@ const (
 	VultrProviderName = "vultr"
 	// PacketProviderName gets the provider name of packet
 	PacketProviderName = "packet"
-	// EquinixMetalProviderName gets the provider name of packet
+	// EquinixMetalProviderName gets the provider name of equinixmetal
 	EquinixMetalProviderName = "equinixmetal"
 	// TencentcloudProviderName gets the provider name of tencentcloud
 	TencentcloudProviderName = "tencentcloud"
@@ -243,7 +243,7 @@ type NodeGroup interface {
 
 	// GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
 	// NodeGroup. Returning a nil will result in using default options.
-	// Implementation optional.
+	// Implementation optional. Callers MUST handle `cloudprovider.ErrNotImplemented`.
 	GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error)
 }
 

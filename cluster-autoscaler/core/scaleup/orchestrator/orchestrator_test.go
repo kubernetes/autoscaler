@@ -822,8 +822,79 @@ func TestNoScaleUpMaxCoresLimitHit(t *testing.T) {
 	simpleNoScaleUpTest(t, config, results)
 }
 
+func TestNoCreateNodeGroupMaxCoresLimitHit(t *testing.T) {
+	options := defaultOptions
+	options.MaxCoresTotal = 7
+	options.MaxMemoryTotal = 100000
+	options.NodeAutoprovisioningEnabled = true
+
+	largeNode := BuildTestNode("n", 8000, 8000)
+	SetNodeReadyState(largeNode, true, time.Time{})
+	largeNodeInfo := schedulerframework.NewNodeInfo()
+	largeNodeInfo.SetNode(largeNode)
+
+	config := &ScaleUpTestConfig{
+		EnableAutoprovisioning: true,
+		Nodes: []NodeConfig{
+			{Name: "n1", Cpu: 2000, Memory: 1000, Gpu: 0, Ready: true, Group: "ng-small"},
+		},
+		Pods: []PodConfig{},
+		ExtraPods: []PodConfig{
+			{Name: "large-pod", Cpu: 8000, Memory: 0, Gpu: 0, Node: "", ToleratesGpu: false},
+		},
+		Options: &options,
+		NodeTemplateConfigs: map[string]*NodeTemplateConfig{
+			"n1-standard-8": {
+				NodeGroupName: "autoprovisioned-n1-standard-8",
+				MachineType:   "n1-standard-8",
+				NodeInfo:      largeNodeInfo,
+			},
+		},
+	}
+	results := &ScaleTestResults{
+		NoScaleUpReason: "Insufficient cpu",
+		ScaleUpStatus: ScaleUpStatusInfo{
+			PodsRemainUnschedulable: []string{"large-pod"},
+		},
+	}
+
+	simpleNoScaleUpTest(t, config, results)
+}
+
+func TestAllOrNothing(t *testing.T) {
+	options := defaultOptions
+
+	extraPods := []PodConfig{}
+	extraPodNames := []string{}
+	for i := 0; i < 11; i++ {
+		podName := fmt.Sprintf("pod-%d", i)
+		extraPods = append(extraPods, PodConfig{Name: podName, Cpu: 1000, Memory: 100})
+		extraPodNames = append(extraPodNames, podName)
+	}
+
+	config := &ScaleUpTestConfig{
+		Nodes: []NodeConfig{
+			{Name: "n1", Cpu: 1000, Memory: 1000, Gpu: 0, Ready: true, Group: "ng"},
+		},
+		Pods:         []PodConfig{},
+		ExtraPods:    extraPods,
+		Options:      &options,
+		AllOrNothing: true,
+	}
+
+	result := &ScaleTestResults{
+		NoScaleUpReason: "all-or-nothing",
+		ScaleUpStatus: ScaleUpStatusInfo{
+			PodsRemainUnschedulable: extraPodNames,
+		},
+	}
+
+	simpleNoScaleUpTest(t, config, result)
+}
+
 func simpleScaleUpTest(t *testing.T, config *ScaleUpTestConfig, expectedResults *ScaleTestResults) {
 	results := runSimpleScaleUpTest(t, config)
+	assert.NotNil(t, results.GroupSizeChanges, "Expected scale up event")
 	assert.NotNil(t, results.GroupSizeChanges[0], "Expected scale up event")
 	assert.Equal(t, expectedResults.FinalOption, results.GroupSizeChanges[0])
 	assert.True(t, results.ScaleUpStatus.WasSuccessful())
@@ -920,14 +991,21 @@ func runSimpleScaleUpTest(t *testing.T, config *ScaleUpTestConfig) *ScaleUpTestR
 		}
 		return nil
 	}
+	onCreateGroupFunc := func(nodeGroup string) error {
+		if config.OnCreateGroup != nil {
+			return config.OnCreateGroup(nodeGroup)
+		}
+		return fmt.Errorf("unexpected node group create: OnCreateGroup not defined")
+	}
 	if len(config.NodeTemplateConfigs) > 0 {
 		machineTypes := []string{}
 		machineTemplates := map[string]*schedulerframework.NodeInfo{}
 		for _, ntc := range config.NodeTemplateConfigs {
 			machineTypes = append(machineTypes, ntc.MachineType)
 			machineTemplates[ntc.NodeGroupName] = ntc.NodeInfo
+			machineTemplates[ntc.MachineType] = ntc.NodeInfo
 		}
-		provider = testprovider.NewTestAutoprovisioningCloudProvider(onScaleUpFunc, nil, nil, nil, machineTypes, machineTemplates)
+		provider = testprovider.NewTestAutoprovisioningCloudProvider(onScaleUpFunc, nil, onCreateGroupFunc, nil, machineTypes, machineTemplates)
 	} else {
 		provider = testprovider.NewTestCloudProvider(onScaleUpFunc, nil)
 	}
@@ -975,13 +1053,17 @@ func runSimpleScaleUpTest(t *testing.T, config *ScaleUpTestConfig) *ScaleUpTestR
 	clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
 	processors := NewTestProcessors(&context)
 	processors.ScaleStateNotifier.Register(clusterState)
+	if config.EnableAutoprovisioning {
+		processors.NodeGroupListProcessor = &MockAutoprovisioningNodeGroupListProcessor{T: t}
+		processors.NodeGroupManager = &MockAutoprovisioningNodeGroupManager{T: t, ExtraGroups: 0}
+	}
 	orchestrator := New()
 	orchestrator.Initialize(&context, processors, clusterState, newEstimatorBuilder(), taints.TaintConfig{})
 	expander := NewMockRepotingStrategy(t, config.ExpansionOptionToChoose)
 	context.ExpanderStrategy = expander
 
 	// scale up
-	scaleUpStatus, scaleUpErr := orchestrator.ScaleUp(extraPods, nodes, []*appsv1.DaemonSet{}, nodeInfos)
+	scaleUpStatus, scaleUpErr := orchestrator.ScaleUp(extraPods, nodes, []*appsv1.DaemonSet{}, nodeInfos, config.AllOrNothing)
 	processors.ScaleUpStatusProcessor.Process(&context, scaleUpStatus)
 
 	// aggregate group size changes
@@ -1080,7 +1162,7 @@ func TestScaleUpUnhealthy(t *testing.T) {
 	processors := NewTestProcessors(&context)
 	suOrchestrator := New()
 	suOrchestrator.Initialize(&context, processors, clusterState, newEstimatorBuilder(), taints.TaintConfig{})
-	scaleUpStatus, err := suOrchestrator.ScaleUp([]*apiv1.Pod{p3}, nodes, []*appsv1.DaemonSet{}, nodeInfos)
+	scaleUpStatus, err := suOrchestrator.ScaleUp([]*apiv1.Pod{p3}, nodes, []*appsv1.DaemonSet{}, nodeInfos, false)
 
 	assert.NoError(t, err)
 	// Node group is unhealthy.
@@ -1134,7 +1216,7 @@ func TestBinpackingLimiter(t *testing.T) {
 	expander := NewMockRepotingStrategy(t, nil)
 	context.ExpanderStrategy = expander
 
-	scaleUpStatus, err := suOrchestrator.ScaleUp([]*apiv1.Pod{extraPod}, nodes, []*appsv1.DaemonSet{}, nodeInfos)
+	scaleUpStatus, err := suOrchestrator.ScaleUp([]*apiv1.Pod{extraPod}, nodes, []*appsv1.DaemonSet{}, nodeInfos, false)
 	processors.ScaleUpStatusProcessor.Process(&context, scaleUpStatus)
 	assert.NoError(t, err)
 	assert.True(t, scaleUpStatus.WasSuccessful())
@@ -1180,7 +1262,7 @@ func TestScaleUpNoHelp(t *testing.T) {
 	processors := NewTestProcessors(&context)
 	suOrchestrator := New()
 	suOrchestrator.Initialize(&context, processors, clusterState, newEstimatorBuilder(), taints.TaintConfig{})
-	scaleUpStatus, err := suOrchestrator.ScaleUp([]*apiv1.Pod{p3}, nodes, []*appsv1.DaemonSet{}, nodeInfos)
+	scaleUpStatus, err := suOrchestrator.ScaleUp([]*apiv1.Pod{p3}, nodes, []*appsv1.DaemonSet{}, nodeInfos, false)
 	processors.ScaleUpStatusProcessor.Process(&context, scaleUpStatus)
 
 	assert.NoError(t, err)
@@ -1402,7 +1484,7 @@ func TestScaleUpBalanceGroups(t *testing.T) {
 	processors := NewTestProcessors(&context)
 	suOrchestrator := New()
 	suOrchestrator.Initialize(&context, processors, clusterState, newEstimatorBuilder(), taints.TaintConfig{})
-	scaleUpStatus, typedErr := suOrchestrator.ScaleUp(pods, nodes, []*appsv1.DaemonSet{}, nodeInfos)
+	scaleUpStatus, typedErr := suOrchestrator.ScaleUp(pods, nodes, []*appsv1.DaemonSet{}, nodeInfos, false)
 
 	assert.NoError(t, typedErr)
 	assert.True(t, scaleUpStatus.WasSuccessful())
@@ -1464,7 +1546,7 @@ func TestScaleUpAutoprovisionedNodeGroup(t *testing.T) {
 
 	suOrchestrator := New()
 	suOrchestrator.Initialize(&context, processors, clusterState, newEstimatorBuilder(), taints.TaintConfig{})
-	scaleUpStatus, err := suOrchestrator.ScaleUp([]*apiv1.Pod{p1}, nodes, []*appsv1.DaemonSet{}, nodeInfos)
+	scaleUpStatus, err := suOrchestrator.ScaleUp([]*apiv1.Pod{p1}, nodes, []*appsv1.DaemonSet{}, nodeInfos, false)
 	assert.NoError(t, err)
 	assert.True(t, scaleUpStatus.WasSuccessful())
 	assert.Equal(t, "autoprovisioned-T1", utils.GetStringFromChan(createdGroups))
@@ -1519,7 +1601,7 @@ func TestScaleUpBalanceAutoprovisionedNodeGroups(t *testing.T) {
 
 	suOrchestrator := New()
 	suOrchestrator.Initialize(&context, processors, clusterState, newEstimatorBuilder(), taints.TaintConfig{})
-	scaleUpStatus, err := suOrchestrator.ScaleUp([]*apiv1.Pod{p1, p2, p3}, nodes, []*appsv1.DaemonSet{}, nodeInfos)
+	scaleUpStatus, err := suOrchestrator.ScaleUp([]*apiv1.Pod{p1, p2, p3}, nodes, []*appsv1.DaemonSet{}, nodeInfos, false)
 	assert.NoError(t, err)
 	assert.True(t, scaleUpStatus.WasSuccessful())
 	assert.Equal(t, "autoprovisioned-T1", utils.GetStringFromChan(createdGroups))

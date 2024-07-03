@@ -27,21 +27,20 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
-	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/checkcapacity"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/conditions"
 	provreq_pods "k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/pods"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqclient"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
 	ca_errors "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
-	"k8s.io/client-go/rest"
 	"k8s.io/klog/v2"
 
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
-type provisioningClass interface {
+// ProvisioningClass is an interface for ProvisioningRequests.
+type ProvisioningClass interface {
 	Provision([]*apiv1.Pod, []*apiv1.Node, []*appsv1.DaemonSet,
 		map[string]*schedulerframework.NodeInfo) (*status.ScaleUpStatus, ca_errors.AutoscalerError)
 	Initialize(*context.AutoscalingContext, *ca_processors.AutoscalingProcessors, *clusterstate.ClusterStateRegistry,
@@ -54,17 +53,15 @@ type provReqOrchestrator struct {
 	context             *context.AutoscalingContext
 	client              *provreqclient.ProvisioningRequestClient
 	injector            *scheduling.HintingSimulator
-	provisioningClasses []provisioningClass
+	provisioningClasses []ProvisioningClass
 }
 
 // New return new orchestrator.
-func New(kubeConfig *rest.Config) (*provReqOrchestrator, error) {
-	client, err := provreqclient.NewProvisioningRequestClient(kubeConfig)
-	if err != nil {
-		return nil, err
+func New(client *provreqclient.ProvisioningRequestClient, classes []ProvisioningClass) *provReqOrchestrator {
+	return &provReqOrchestrator{
+		client:              client,
+		provisioningClasses: classes,
 	}
-
-	return &provReqOrchestrator{client: client, provisioningClasses: []provisioningClass{checkcapacity.New(client)}}, nil
 }
 
 // Initialize initialize orchestrator.
@@ -91,6 +88,7 @@ func (o *provReqOrchestrator) ScaleUp(
 	nodes []*apiv1.Node,
 	daemonSets []*appsv1.DaemonSet,
 	nodeInfos map[string]*schedulerframework.NodeInfo,
+	_ bool, // Provision() doesn't use this parameter.
 ) (*status.ScaleUpStatus, ca_errors.AutoscalerError) {
 	if !o.initialized {
 		return &status.ScaleUpStatus{}, ca_errors.ToAutoscalerError(ca_errors.InternalError, fmt.Errorf("provisioningrequest.Orchestrator is not initialized"))
@@ -132,6 +130,9 @@ func (o *provReqOrchestrator) bookCapacity() error {
 				// If there is an error, mark PR as invalid, because we won't be able to book capacity
 				// for it anyway.
 				conditions.AddOrUpdateCondition(provReq, v1beta1.Failed, metav1.ConditionTrue, conditions.FailedToBookCapacityReason, fmt.Sprintf("Couldn't create pods, err: %v", err), metav1.Now())
+				if _, err := o.client.UpdateProvisioningRequest(provReq.ProvisioningRequest); err != nil {
+					klog.Errorf("failed to add Accepted condition to ProvReq %s/%s, err: %v", provReq.Namespace, provReq.Name, err)
+				}
 				continue
 			}
 			podsToCreate = append(podsToCreate, pods...)

@@ -672,13 +672,13 @@ func (c *machineController) findScalableResourceProviderIDs(scalableResource *un
 	return providerIDs, nil
 }
 
-func (c *machineController) nodeGroups() ([]*nodegroup, error) {
+func (c *machineController) nodeGroups() ([]cloudprovider.NodeGroup, error) {
 	scalableResources, err := c.listScalableResources()
 	if err != nil {
 		return nil, err
 	}
 
-	nodegroups := make([]*nodegroup, 0, len(scalableResources))
+	nodegroups := make([]cloudprovider.NodeGroup, 0, len(scalableResources))
 
 	for _, r := range scalableResources {
 		ng, err := newNodeGroupFromScalableResource(c, r)
@@ -688,6 +688,7 @@ func (c *machineController) nodeGroups() ([]*nodegroup, error) {
 
 		if ng != nil {
 			nodegroups = append(nodegroups, ng)
+			klog.V(4).Infof("discovered node group: %s", ng.Debug())
 		}
 	}
 	return nodegroups, nil

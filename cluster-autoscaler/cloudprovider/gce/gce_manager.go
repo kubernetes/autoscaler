@@ -37,7 +37,7 @@ import (
 	"k8s.io/client-go/util/workqueue"
 
 	apiv1 "k8s.io/api/core/v1"
-	provider_gce "k8s.io/legacy-cloud-providers/gce"
+	provider_gce "k8s.io/cloud-provider-gcp/providers/gce"
 
 	"cloud.google.com/go/compute/metadata"
 	"golang.org/x/oauth2"
@@ -50,7 +50,7 @@ import (
 const (
 	refreshInterval              = 1 * time.Minute
 	machinesRefreshInterval      = 1 * time.Hour
-	httpTimeout                  = 30 * time.Second
+	httpTimeout                  = 3 * time.Minute
 	scaleToZeroSupported         = true
 	autoDiscovererTypeMIG        = "mig"
 	migAutoDiscovererKeyPrefix   = "namePrefix"
@@ -176,7 +176,7 @@ func CreateGceManager(configReader io.Reader, discoveryOpts cloudprovider.NodeGr
 	klog.V(1).Infof("GCE projectId=%s location=%s", projectId, location)
 
 	// Create Google Compute Engine service.
-	client := oauth2.NewClient(oauth2.NoContext, tokenSource)
+	client := oauth2.NewClient(context.Background(), tokenSource)
 	client.Timeout = httpTimeout
 	gceService, err := NewAutoscalingGceClientV1(client, projectId, userAgent)
 	if err != nil {

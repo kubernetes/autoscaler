@@ -17,6 +17,8 @@ limitations under the License.
 package checkcapacity
 
 import (
+	"fmt"
+
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -93,12 +95,18 @@ func (o *checkCapacityProvClass) Provision(
 }
 
 // Assuming that all unschedulable pods comes from one ProvisioningRequest.
-func (o *checkCapacityProvClass) checkcapacity(unschedulablePods []*apiv1.Pod, provReq *provreqwrapper.ProvisioningRequest) (bool, error) {
+func (o *checkCapacityProvClass) checkcapacity(unschedulablePods []*apiv1.Pod, provReq *provreqwrapper.ProvisioningRequest) (capacityAvailable bool, err error) {
+	capacityAvailable = true
 	st, _, err := o.injector.TrySchedulePods(o.context.ClusterSnapshot, unschedulablePods, scheduling.ScheduleAnywhere, true)
 	if len(st) < len(unschedulablePods) || err != nil {
 		conditions.AddOrUpdateCondition(provReq, v1beta1.Provisioned, metav1.ConditionFalse, conditions.CapacityIsNotFoundReason, "Capacity is not found, CA will try to find it later.", metav1.Now())
-		return false, err
+		capacityAvailable = false
+	} else {
+		conditions.AddOrUpdateCondition(provReq, v1beta1.Provisioned, metav1.ConditionTrue, conditions.CapacityIsFoundReason, conditions.CapacityIsFoundMsg, metav1.Now())
 	}
-	conditions.AddOrUpdateCondition(provReq, v1beta1.Provisioned, metav1.ConditionTrue, conditions.CapacityIsFoundReason, conditions.CapacityIsFoundMsg, metav1.Now())
-	return true, nil
+	_, updErr := o.client.UpdateProvisioningRequest(provReq.ProvisioningRequest)
+	if updErr != nil {
+		return false, fmt.Errorf("failed to update Provisioned condition to ProvReq %s/%s, err: %v", provReq.Namespace, provReq.Name, updErr)
+	}
+	return capacityAvailable, err
 }

@@ -42,8 +42,8 @@ func TestPodsForProvisioningRequest(t *testing.T) {
 				Namespace:    "test-namespace",
 				UID:          types.UID(fmt.Sprintf("test-namespace/%s", name)),
 				Annotations: map[string]string{
-					ProvisioningRequestPodAnnotationKey: prName,
-					ProvisioningClassPodAnnotationKey:   testProvisioningClassName,
+					v1beta1.ProvisioningRequestPodAnnotationKey: prName,
+					v1beta1.ProvisioningClassPodAnnotationKey:   testProvisioningClassName,
 				},
 				Labels:     map[string]string{},
 				Finalizers: []string{},

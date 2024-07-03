@@ -10,6 +10,7 @@ type LoadBalancerType struct {
 	MaxTargets              int                            `json:"max_targets"`
 	MaxAssignedCertificates int                            `json:"max_assigned_certificates"`
 	Prices                  []PricingLoadBalancerTypePrice `json:"prices"`
+	Deprecated              *string                        `json:"deprecated"`
 }
 
 // LoadBalancerTypeListResponse defines the schema of the response when

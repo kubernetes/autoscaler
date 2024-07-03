@@ -95,6 +95,7 @@ func newManager() (*hetznerManager, error) {
 		hcloud.WithHTTPClient(httpClient),
 		hcloud.WithApplication("cluster-autoscaler", version.ClusterAutoscalerVersion),
 		hcloud.WithPollBackoffFunc(hcloud.ExponentialBackoff(2, 500*time.Millisecond)),
+		hcloud.WithDebugWriter(&debugWriter{}),
 	)
 
 	ctx := context.Background()

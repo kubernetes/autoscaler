@@ -25,4 +25,7 @@ const (
 	// ToBeDeletedByClusterAutoscaler is the taint used to ensure that after a node has been called to be deleted
 	// no more pods will schedule onto it
 	ToBeDeletedByClusterAutoscaler = "ignore-taint.cluster-autoscaler.kubernetes.io/oke-impending-node-termination"
+
+	// EphemeralStorageSize is the freeform tag key that would be used to determine the ephemeral-storage size of the node
+	EphemeralStorageSize = "cluster-autoscaler/node-ephemeral-storage"
 )

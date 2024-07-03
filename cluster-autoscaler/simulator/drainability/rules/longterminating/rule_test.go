@@ -120,7 +120,7 @@ func TestDrainable(t *testing.T) {
 			drainCtx := &drainability.DrainContext{
 				Timestamp: testTime,
 			}
-			got := New().Drainable(drainCtx, tc.pod)
+			got := New().Drainable(drainCtx, tc.pod, nil)
 			if diff := cmp.Diff(tc.want, got); diff != "" {
 				t.Errorf("Rule.Drainable(%v): got status diff (-want +got):\n%s", tc.pod.Name, diff)
 			}

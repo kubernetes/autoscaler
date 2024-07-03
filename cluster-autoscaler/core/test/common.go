@@ -122,9 +122,12 @@ type ScaleUpTestConfig struct {
 	Pods                    []PodConfig
 	ExtraPods               []PodConfig
 	OnScaleUp               testcloudprovider.OnScaleUpFunc
+	OnCreateGroup           testcloudprovider.OnNodeGroupCreateFunc
 	ExpansionOptionToChoose *GroupSizeChange
 	Options                 *config.AutoscalingOptions
 	NodeTemplateConfigs     map[string]*NodeTemplateConfig
+	EnableAutoprovisioning  bool
+	AllOrNothing            bool
 }
 
 // ScaleUpTestResult represents a node groups scale up result
@@ -175,7 +178,7 @@ func NewTestProcessors(context *context.AutoscalingContext) *processors.Autoscal
 	return &processors.AutoscalingProcessors{
 		PodListProcessor:       podlistprocessor.NewDefaultPodListProcessor(context.PredicateChecker),
 		NodeGroupListProcessor: &nodegroups.NoOpNodeGroupListProcessor{},
-		BinpackingLimiter:      binpacking.NewDefaultBinpackingLimiter(),
+		BinpackingLimiter:      binpacking.NewTimeLimiter(context.MaxNodeGroupBinpackingDuration),
 		NodeGroupSetProcessor:  nodegroupset.NewDefaultNodeGroupSetProcessor([]string{}, config.NodeGroupDifferenceRatios{}),
 		ScaleDownSetProcessor: nodes.NewCompositeScaleDownSetProcessor([]nodes.ScaleDownSetProcessor{
 			nodes.NewMaxNodesProcessor(),

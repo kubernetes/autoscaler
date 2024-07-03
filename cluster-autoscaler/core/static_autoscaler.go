@@ -576,7 +576,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 		klog.V(1).Info("Unschedulable pods are very new, waiting one iteration for more")
 	} else {
 		scaleUpStart := preScaleUp()
-		scaleUpStatus, typedErr = a.scaleUpOrchestrator.ScaleUp(unschedulablePodsToHelp, readyNodes, daemonsets, nodeInfosForGroups)
+		scaleUpStatus, typedErr = a.scaleUpOrchestrator.ScaleUp(unschedulablePodsToHelp, readyNodes, daemonsets, nodeInfosForGroups, false)
 		if exit, err := postScaleUp(scaleUpStart); exit {
 			return err
 		}
@@ -794,7 +794,7 @@ func (a *StaticAutoscaler) removeOldUnregisteredNodes(allUnregisteredNodes []clu
 		nodesToDelete := toNodes(unregisteredNodesToDelete)
 
 		opts, err := nodeGroup.GetOptions(a.NodeGroupDefaults)
-		if err != nil {
+		if err != nil && err != cloudprovider.ErrNotImplemented {
 			klog.Warningf("Failed to get node group options for %s: %s", nodeGroupId, err)
 			continue
 		}
@@ -874,7 +874,7 @@ func (a *StaticAutoscaler) deleteCreatedNodesWithErrors() (bool, error) {
 		} else {
 			var opts *config.NodeGroupAutoscalingOptions
 			opts, err = nodeGroup.GetOptions(a.NodeGroupDefaults)
-			if err != nil {
+			if err != nil && err != cloudprovider.ErrNotImplemented {
 				klog.Warningf("Failed to get node group options for %s: %s", nodeGroupId, err)
 				continue
 			}

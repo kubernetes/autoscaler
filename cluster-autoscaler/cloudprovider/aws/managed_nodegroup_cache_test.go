@@ -35,13 +35,13 @@ func TestManagedNodegroupCache(t *testing.T) {
 	clusterName := "clusterName"
 	labelKey := "label key 1"
 	labelValue := "label value 1"
-	taintEffect := "effect 1"
+	taintEffect := apiv1.TaintEffectNoSchedule
 	taintKey := "key 1"
 	taintValue := "value 1"
 	tagKey := "tag key 1"
 	tagValue := "tag value 1"
 	taint := apiv1.Taint{
-		Effect: apiv1.TaintEffect(taintEffect),
+		Effect: taintEffect,
 		Key:    taintKey,
 		Value:  taintValue,
 	}
@@ -154,7 +154,8 @@ func TestGetManagedNodegroupWithTaintsAndLabels(t *testing.T) {
 	labelValue1 := "testValue 1"
 	labelValue2 := "testValue 2"
 
-	taintEffect1 := "effect 1"
+	taintEffect1 := eks.TaintEffectNoSchedule
+	taintEffectTranslated1 := apiv1.TaintEffectNoSchedule
 	taintKey1 := "key 1"
 	taintValue1 := "value 1"
 	taint1 := eks.Taint{
@@ -163,7 +164,8 @@ func TestGetManagedNodegroupWithTaintsAndLabels(t *testing.T) {
 		Value:  &taintValue1,
 	}
 
-	taintEffect2 := "effect 2"
+	taintEffect2 := eks.TaintEffectNoExecute
+	taintEffectTranslated2 := apiv1.TaintEffectNoExecute
 	taintKey2 := "key 2"
 	taintValue2 := "value 2"
 	taint2 := eks.Taint{
@@ -202,10 +204,10 @@ func TestGetManagedNodegroupWithTaintsAndLabels(t *testing.T) {
 	assert.Equal(t, cacheObj.name, nodegroupName)
 	assert.Equal(t, cacheObj.clusterName, clusterName)
 	assert.Equal(t, len(cacheObj.taints), 2)
-	assert.Equal(t, cacheObj.taints[0].Effect, apiv1.TaintEffect(taintEffect1))
+	assert.Equal(t, cacheObj.taints[0].Effect, taintEffectTranslated1)
 	assert.Equal(t, cacheObj.taints[0].Key, taintKey1)
 	assert.Equal(t, cacheObj.taints[0].Value, taintValue1)
-	assert.Equal(t, cacheObj.taints[1].Effect, apiv1.TaintEffect(taintEffect2))
+	assert.Equal(t, cacheObj.taints[1].Effect, taintEffectTranslated2)
 	assert.Equal(t, cacheObj.taints[1].Key, taintKey2)
 	assert.Equal(t, cacheObj.taints[1].Value, taintValue2)
 	assert.Equal(t, len(cacheObj.labels), 7)
@@ -249,11 +251,11 @@ func TestGetManagedNodegroupInfoObjectWithCachedNodegroup(t *testing.T) {
 	clusterName := "clusterName"
 	labelKey := "label key 1"
 	labelValue := "label value 1"
-	taintEffect := "effect 1"
+	taintEffect := apiv1.TaintEffectNoSchedule
 	taintKey := "key 1"
 	taintValue := "value 1"
 	taint := apiv1.Taint{
-		Effect: apiv1.TaintEffect(taintEffect),
+		Effect: taintEffect,
 		Key:    taintKey,
 		Value:  taintValue,
 	}
@@ -345,11 +347,11 @@ func TestGetManagedNodegroupLabelsWithCachedNodegroup(t *testing.T) {
 	clusterName := "clusterName"
 	labelKey := "label key 1"
 	labelValue := "label value 1"
-	taintEffect := "effect 1"
+	taintEffect := apiv1.TaintEffectNoSchedule
 	taintKey := "key 1"
 	taintValue := "value 1"
 	taint := apiv1.Taint{
-		Effect: apiv1.TaintEffect(taintEffect),
+		Effect: taintEffect,
 		Key:    taintKey,
 		Value:  taintValue,
 	}
@@ -568,7 +570,8 @@ func TestGetManagedNodegroupTaintsNoCachedNodegroup(t *testing.T) {
 	k8sVersion := "1.19"
 	diskSize := int64(100)
 
-	taintEffect1 := "effect 1"
+	taintEffect1 := eks.TaintEffectNoExecute
+	taintEffectTranslated1 := apiv1.TaintEffectNoExecute
 	taintKey1 := "key 1"
 	taintValue1 := "value 1"
 	taint1 := eks.Taint{
@@ -577,7 +580,8 @@ func TestGetManagedNodegroupTaintsNoCachedNodegroup(t *testing.T) {
 		Value:  &taintValue1,
 	}
 
-	taintEffect2 := "effect 2"
+	taintEffect2 := eks.TaintEffectPreferNoSchedule
+	taintEffectTranslated2 := apiv1.TaintEffectPreferNoSchedule
 	taintKey2 := "key 2"
 	taintValue2 := "value 2"
 	taint2 := eks.Taint{
@@ -608,10 +612,10 @@ func TestGetManagedNodegroupTaintsNoCachedNodegroup(t *testing.T) {
 	taintsList, err := c.getManagedNodegroupTaints(nodegroupName, clusterName)
 	require.NoError(t, err)
 	assert.Equal(t, len(taintsList), 2)
-	assert.Equal(t, taintsList[0].Effect, apiv1.TaintEffect(taintEffect1))
+	assert.Equal(t, taintsList[0].Effect, taintEffectTranslated1)
 	assert.Equal(t, taintsList[0].Key, taintKey1)
 	assert.Equal(t, taintsList[0].Value, taintValue1)
-	assert.Equal(t, taintsList[1].Effect, apiv1.TaintEffect(taintEffect2))
+	assert.Equal(t, taintsList[1].Effect, taintEffectTranslated2)
 	assert.Equal(t, taintsList[1].Key, taintKey2)
 	assert.Equal(t, taintsList[1].Value, taintValue2)
 	k.AssertCalled(t, "DescribeNodegroup", &eks.DescribeNodegroupInput{
@@ -627,11 +631,11 @@ func TestGetManagedNodegroupTagsWithCachedNodegroup(t *testing.T) {
 	clusterName := "clusterName"
 	labelKey := "label key 1"
 	labelValue := "label value 1"
-	taintEffect := "effect 1"
+	taintEffect := apiv1.TaintEffectNoSchedule
 	taintKey := "key 1"
 	taintValue := "value 1"
 	taint := apiv1.Taint{
-		Effect: apiv1.TaintEffect(taintEffect),
+		Effect: taintEffect,
 		Key:    taintKey,
 		Value:  taintValue,
 	}
@@ -667,7 +671,7 @@ func TestGetManagedNodegroupTagsNoCachedNodegroup(t *testing.T) {
 	k8sVersion := "1.19"
 	diskSize := int64(100)
 
-	taintEffect1 := "effect 1"
+	taintEffect1 := eks.TaintEffectNoSchedule
 	taintKey1 := "key 1"
 	taintValue1 := "value 1"
 	taint1 := eks.Taint{
@@ -676,7 +680,7 @@ func TestGetManagedNodegroupTagsNoCachedNodegroup(t *testing.T) {
 		Value:  &taintValue1,
 	}
 
-	taintEffect2 := "effect 2"
+	taintEffect2 := eks.TaintEffectPreferNoSchedule
 	taintKey2 := "key 2"
 	taintValue2 := "value 2"
 	taint2 := eks.Taint{

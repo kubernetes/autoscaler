@@ -17,6 +17,7 @@ limitations under the License.
 package drain
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -124,6 +125,60 @@ func TestIsPodLongTerminating(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			if got := IsPodLongTerminating(&tc.pod, testTime); got != tc.want {
 				t.Errorf("IsPodLongTerminating() = %v, want %v", got, tc.want)
+			}
+		})
+	}
+}
+
+func TestBlockingPodReasonFormatting(t *testing.T) {
+	for _, tc := range []struct {
+		bpr  BlockingPodReason
+		want string
+	}{
+		{
+			bpr:  NoReason,
+			want: "NoReason",
+		},
+		{
+			bpr:  ControllerNotFound,
+			want: "ControllerNotFound",
+		},
+		{
+			bpr:  ControllerNotFound,
+			want: "ControllerNotFound",
+		},
+		{
+			bpr:  NotReplicated,
+			want: "NotReplicated",
+		},
+		{
+			bpr:  LocalStorageRequested,
+			want: "LocalStorageRequested",
+		},
+		{
+			bpr:  NotSafeToEvictAnnotation,
+			want: "NotSafeToEvictAnnotation",
+		},
+		{
+			bpr:  UnmovableKubeSystemPod,
+			want: "UnmovableKubeSystemPod",
+		},
+		{
+			bpr:  NotEnoughPdb,
+			want: "NotEnoughPdb",
+		},
+		{
+			bpr:  UnexpectedError,
+			want: "UnexpectedError",
+		},
+		{
+			bpr:  BlockingPodReason(9),
+			want: "unrecognized reason: 9",
+		},
+	} {
+		t.Run(tc.want, func(t *testing.T) {
+			if got := fmt.Sprintf("%v", tc.bpr); got != tc.want {
+				t.Errorf("got: %s, want %s", got, tc.want)
 			}
 		})
 	}
