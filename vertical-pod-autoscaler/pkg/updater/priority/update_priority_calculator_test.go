@@ -555,3 +555,39 @@ func TestLessPodPriority(t *testing.T) {
 	}
 
 }
+
+func TestAddPodLogs(t *testing.T) {
+	testCases := []struct {
+		name        string
+		givenRec    *vpa_types.RecommendedPodResources
+		expectedLog string
+	}{
+		{
+			name:        "container with target and uncappedTarget",
+			givenRec:    test.Recommendation().WithContainer(containerName).WithTarget("4", "10M").Get(),
+			expectedLog: "container1: target: 10000k 4000m; uncappedTarget: 10000k 4000m;\n",
+		},
+		{
+			name:        "container with cpu only",
+			givenRec:    test.Recommendation().WithContainer(containerName).WithTarget("8", "").Get(),
+			expectedLog: "container1: target: 8000m; uncappedTarget: 8000m;\n",
+		},
+		{
+			name:        "container with memory only",
+			givenRec:    test.Recommendation().WithContainer(containerName).WithTarget("", "10M").Get(),
+			expectedLog: "container1: target: 10000k uncappedTarget: 10000k \n",
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			vpa := test.VerticalPodAutoscaler().WithContainer(containerName).WithTarget("10", "").Get()
+			priorityProcessor := NewFakeProcessor(map[string]PodPriority{
+				"POD1": {ScaleUp: true, ResourceDiff: 4.0}})
+			calculator := NewUpdatePriorityCalculator(vpa, nil,
+				&test.FakeRecommendationProcessor{}, priorityProcessor)
+
+			actualLog := calculator.GetProcessedRecommendationTargets(tc.givenRec)
+			assert.Equal(t, tc.expectedLog, actualLog)
+		})
+	}
+}

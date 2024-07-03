@@ -17,6 +17,7 @@ limitations under the License.
 package drain
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -67,6 +68,31 @@ const (
 	// UnexpectedError - pod is blocking scale down because of an unexpected error.
 	UnexpectedError
 )
+
+func (e BlockingPodReason) String() string {
+	switch e {
+	case NoReason:
+		return "NoReason"
+	case ControllerNotFound:
+		return "ControllerNotFound"
+	case MinReplicasReached:
+		return "MinReplicasReached"
+	case NotReplicated:
+		return "NotReplicated"
+	case LocalStorageRequested:
+		return "LocalStorageRequested"
+	case NotSafeToEvictAnnotation:
+		return "NotSafeToEvictAnnotation"
+	case UnmovableKubeSystemPod:
+		return "UnmovableKubeSystemPod"
+	case NotEnoughPdb:
+		return "NotEnoughPdb"
+	case UnexpectedError:
+		return "UnexpectedError"
+	default:
+		return fmt.Sprintf("unrecognized reason: %d", int(e))
+	}
+}
 
 // ControllerRef returns the OwnerReference to pod's controller.
 func ControllerRef(pod *apiv1.Pod) *metav1.OwnerReference {

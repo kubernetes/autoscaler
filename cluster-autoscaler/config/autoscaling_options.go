@@ -265,6 +265,9 @@ type AutoscalingOptions struct {
 	// MaxNodeGroupBinpackingDuration is a maximum time that can be spent binpacking a single NodeGroup. If the threshold
 	// is exceeded binpacking will be cut short and a partial scale-up will be performed.
 	MaxNodeGroupBinpackingDuration time.Duration
+	// MaxBinpackingTime is the maximum time spend on binpacking for a single scale-up.
+	// If binpacking is limited by this, scale-up will continue with the already calculated scale-up options.
+	MaxBinpackingTime time.Duration
 	// NodeDeletionBatcherInterval is a time for how long CA ScaleDown gather nodes to delete them in batch.
 	NodeDeletionBatcherInterval time.Duration
 	// SkipNodesWithSystemPods tells if nodes with pods from kube-system should be deleted (except for DaemonSet or mirror pods)

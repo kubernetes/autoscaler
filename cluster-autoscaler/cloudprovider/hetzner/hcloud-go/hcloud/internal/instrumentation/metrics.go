@@ -13,11 +13,11 @@ import (
 
 type Instrumenter struct {
 	subsystemIdentifier     string // will be used as part of the metric name (hcloud_<identifier>_requests_total)
-	instrumentationRegistry *prometheus.Registry
+	instrumentationRegistry prometheus.Registerer
 }
 
 // New creates a new Instrumenter. The subsystemIdentifier will be used as part of the metric names (e.g. hcloud_<identifier>_requests_total).
-func New(subsystemIdentifier string, instrumentationRegistry *prometheus.Registry) *Instrumenter {
+func New(subsystemIdentifier string, instrumentationRegistry prometheus.Registerer) *Instrumenter {
 	return &Instrumenter{subsystemIdentifier: subsystemIdentifier, instrumentationRegistry: instrumentationRegistry}
 }
 
@@ -84,7 +84,7 @@ func (i *Instrumenter) instrumentRoundTripperEndpoint(counter *prometheus.Counte
 // registerOrReuse will try to register the passed Collector, but in case a conflicting collector was already registered,
 // it will instead return that collector. Make sure to always use the collector return by this method.
 // Similar to [Registry.MustRegister] it will panic if any other error occurs.
-func registerOrReuse[C prometheus.Collector](registry *prometheus.Registry, collector C) C {
+func registerOrReuse[C prometheus.Collector](registry prometheus.Registerer, collector C) C {
 	err := registry.Register(collector)
 	if err != nil {
 		// If we get a AlreadyRegisteredError we can return the existing collector
