@@ -179,6 +179,9 @@ func TestTargetSize(t *testing.T) {
 	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
 	mockVMSSClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
 	provider.azureManager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
+	mockVMClient := mockvmclient.NewMockInterface(ctrl)
+	mockVMClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return([]compute.VirtualMachine{}, nil).AnyTimes()
+	provider.azureManager.azClient.virtualMachinesClient = mockVMClient
 
 	err := provider.azureManager.forceRefresh()
 	assert.NoError(t, err)
