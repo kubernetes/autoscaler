@@ -478,48 +478,38 @@ func (machinedeployment *MachineDeployment) Nodes() ([]cloudprovider.Instance, e
 // NodeGroup. Returning a nil will result in using default options.
 // Implementation optional.
 func (machinedeployment *MachineDeployment) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
+	options := defaults
 	mcdAnnotations, err := machinedeployment.mcmManager.GetMachineDeploymentAnnotations(machinedeployment.Name)
 	if err != nil {
 		return nil, err
 	}
 
-	scaleDownUtilThresholdValue := defaults.ScaleDownUtilizationThreshold
 	if _, ok := mcdAnnotations[ScaleDownUtilizationThresholdAnnotation]; ok {
 		if floatVal, err := strconv.ParseFloat(mcdAnnotations[ScaleDownUtilizationThresholdAnnotation], 64); err == nil {
-			scaleDownUtilThresholdValue = floatVal
+			options.ScaleDownUtilizationThreshold = floatVal
 		}
 	}
-	scaleDownGPUUtilThresholdValue := defaults.ScaleDownGpuUtilizationThreshold
 	if _, ok := mcdAnnotations[ScaleDownGpuUtilizationThresholdAnnotation]; ok {
 		if floatVal, err := strconv.ParseFloat(mcdAnnotations[ScaleDownGpuUtilizationThresholdAnnotation], 64); err == nil {
-			scaleDownGPUUtilThresholdValue = floatVal
+			options.ScaleDownGpuUtilizationThreshold = floatVal
 		}
 	}
-	scaleDownUnneededDuration := defaults.ScaleDownUnneededTime
 	if _, ok := mcdAnnotations[ScaleDownUnneededTimeAnnotation]; ok {
 		if durationVal, err := time.ParseDuration(mcdAnnotations[ScaleDownUnneededTimeAnnotation]); err == nil {
-			scaleDownUnneededDuration = durationVal
+			options.ScaleDownUnneededTime = durationVal
 		}
 	}
-	scaleDownUnreadyDuration := defaults.ScaleDownUnreadyTime
 	if _, ok := mcdAnnotations[ScaleDownUnreadyTimeAnnotation]; ok {
 		if durationVal, err := time.ParseDuration(mcdAnnotations[ScaleDownUnreadyTimeAnnotation]); err == nil {
-			scaleDownUnreadyDuration = durationVal
+			options.ScaleDownUnreadyTime = durationVal
 		}
 	}
-	maxNodeProvisionDuration := defaults.MaxNodeProvisionTime
 	if _, ok := mcdAnnotations[MaxNodeProvisionTimeAnnotation]; ok {
 		if durationVal, err := time.ParseDuration(mcdAnnotations[MaxNodeProvisionTimeAnnotation]); err == nil {
-			maxNodeProvisionDuration = durationVal
+			options.MaxNodeProvisionTime = durationVal
 		}
 	}
-	return &config.NodeGroupAutoscalingOptions{
-		ScaleDownUtilizationThreshold:    scaleDownUtilThresholdValue,
-		ScaleDownGpuUtilizationThreshold: scaleDownGPUUtilThresholdValue,
-		ScaleDownUnneededTime:            scaleDownUnneededDuration,
-		ScaleDownUnreadyTime:             scaleDownUnreadyDuration,
-		MaxNodeProvisionTime:             maxNodeProvisionDuration,
-	}, nil
+	return &options, nil
 }
 
 // TemplateNodeInfo returns a node template for this node group.

@@ -590,6 +590,16 @@ func TestNodes(t *testing.T) {
 }
 
 func TestGetOptions(t *testing.T) {
+	ngAutoScalingOpDefaults := config.NodeGroupAutoscalingOptions{
+		ScaleDownUtilizationThreshold:    0.5,
+		ScaleDownGpuUtilizationThreshold: 0.5,
+		ScaleDownUnneededTime:            1 * time.Minute,
+		ScaleDownUnreadyTime:             1 * time.Minute,
+		MaxNodeProvisionTime:             1 * time.Minute,
+		IgnoreDaemonSetsUtilization:      true,
+		ZeroOrMaxNodeScaling:             true,
+	}
+
 	type expect struct {
 		ngOptions *config.NodeGroupAutoscalingOptions
 		err       error
@@ -616,14 +626,8 @@ func TestGetOptions(t *testing.T) {
 				nodeGroups:         []string{nodeGroup1},
 			},
 			expect{
-				ngOptions: &config.NodeGroupAutoscalingOptions{
-					ScaleDownUtilizationThreshold:    0.5,
-					ScaleDownGpuUtilizationThreshold: 0.5,
-					ScaleDownUnneededTime:            1 * time.Minute,
-					ScaleDownUnreadyTime:             1 * time.Minute,
-					MaxNodeProvisionTime:             1 * time.Minute,
-				},
-				err: nil,
+				ngOptions: &ngAutoScalingOpDefaults,
+				err:       nil,
 			},
 		},
 		{
@@ -651,6 +655,8 @@ func TestGetOptions(t *testing.T) {
 					ScaleDownUnneededTime:            5 * time.Minute,
 					ScaleDownUnreadyTime:             5 * time.Minute,
 					MaxNodeProvisionTime:             5 * time.Minute,
+					IgnoreDaemonSetsUtilization:      ngAutoScalingOpDefaults.IgnoreDaemonSetsUtilization,
+					ZeroOrMaxNodeScaling:             ngAutoScalingOpDefaults.ZeroOrMaxNodeScaling,
 				},
 				err: nil,
 			},
@@ -678,6 +684,8 @@ func TestGetOptions(t *testing.T) {
 					ScaleDownUnneededTime:            5 * time.Minute,
 					ScaleDownUnreadyTime:             1 * time.Minute,
 					MaxNodeProvisionTime:             2 * time.Minute,
+					IgnoreDaemonSetsUtilization:      ngAutoScalingOpDefaults.IgnoreDaemonSetsUtilization,
+					ZeroOrMaxNodeScaling:             ngAutoScalingOpDefaults.ZeroOrMaxNodeScaling,
 				},
 				err: nil,
 			},
@@ -698,14 +706,6 @@ func TestGetOptions(t *testing.T) {
 
 			md, err := buildMachineDeploymentFromSpec(entry.setup.nodeGroups[0], m)
 			g.Expect(err).To(BeNil())
-
-			ngAutoScalingOpDefaults := config.NodeGroupAutoscalingOptions{
-				ScaleDownUtilizationThreshold:    0.5,
-				ScaleDownGpuUtilizationThreshold: 0.5,
-				ScaleDownUnneededTime:            1 * time.Minute,
-				ScaleDownUnreadyTime:             1 * time.Minute,
-				MaxNodeProvisionTime:             1 * time.Minute,
-			}
 
 			options, err := md.GetOptions(ngAutoScalingOpDefaults)
 
