@@ -657,7 +657,7 @@ func findMatchingInstance(nodes []*v1.Node, machine *v1alpha1.Machine) cloudprov
 	// Report InstanceStatus only for `ResourceExhausted` errors
 	return cloudprovider.Instance{
 		Id:     placeholderInstanceIDForMachineObj(machine.Name),
-		Status: checkAndGetResourceExhaustedInstanceStatus(machine),
+		Status: generateInstanceStatus(machine),
 	}
 }
 
@@ -665,17 +665,20 @@ func placeholderInstanceIDForMachineObj(name string) string {
 	return fmt.Sprintf("requested://%s", name)
 }
 
-// checkAndGetResourceExhaustedInstanceStatus returns cloudprovider.InstanceStatus for the machine obj
-func checkAndGetResourceExhaustedInstanceStatus(machine *v1alpha1.Machine) *cloudprovider.InstanceStatus {
-	if machine.Status.LastOperation.Type == v1alpha1.MachineOperationCreate && machine.Status.LastOperation.State == v1alpha1.MachineStateFailed && machine.Status.LastOperation.ErrorCode == machinecodes.ResourceExhausted.String() {
-		return &cloudprovider.InstanceStatus{
-			State: cloudprovider.InstanceCreating,
-			ErrorInfo: &cloudprovider.InstanceErrorInfo{
-				ErrorClass:   cloudprovider.OutOfResourcesErrorClass,
-				ErrorCode:    machinecodes.ResourceExhausted.String(),
-				ErrorMessage: machine.Status.LastOperation.Description,
-			},
+// generateInstanceStatus returns cloudprovider.InstanceStatus for the machine obj
+func generateInstanceStatus(machine *v1alpha1.Machine) *cloudprovider.InstanceStatus {
+	if machine.Status.LastOperation.Type == v1alpha1.MachineOperationCreate {
+		if machine.Status.LastOperation.State == v1alpha1.MachineStateFailed && machine.Status.LastOperation.ErrorCode == machinecodes.ResourceExhausted.String() {
+			return &cloudprovider.InstanceStatus{
+				State: cloudprovider.InstanceCreating,
+				ErrorInfo: &cloudprovider.InstanceErrorInfo{
+					ErrorClass:   cloudprovider.OutOfResourcesErrorClass,
+					ErrorCode:    machinecodes.ResourceExhausted.String(),
+					ErrorMessage: machine.Status.LastOperation.Description,
+				},
+			}
 		}
+		return &cloudprovider.InstanceStatus{State: cloudprovider.InstanceCreating}
 	}
 	return nil
 }
