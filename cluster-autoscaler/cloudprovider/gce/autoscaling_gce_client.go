@@ -405,11 +405,11 @@ func externalToInternalInstance(gceInstance *gce.Instance, loggingQuota *klogx.Q
 			},
 		},
 		NumericId: gceInstance.Id,
-		Igm:       createIgmRef(gceInstance, loggingQuota),
+		Igm:       createIgmRef(gceInstance, ref.Project, loggingQuota),
 	}, nil
 }
 
-func createIgmRef(gceInstance *gce.Instance, loggingQuota *klogx.Quota) GceRef {
+func createIgmRef(gceInstance *gce.Instance, project string, loggingQuota *klogx.Quota) GceRef {
 	createdBy := ""
 	for _, item := range gceInstance.Metadata.Items {
 		if item.Key == "created-by" && item.Value != nil {
@@ -425,6 +425,9 @@ func createIgmRef(gceInstance *gce.Instance, loggingQuota *klogx.Quota) GceRef {
 		klogx.V(5).UpTo(loggingQuota).Infof("Unable to parse IGM for %v because of %v", gceInstance.SelfLink, err)
 		return GceRef{}
 	}
+	// project is overwritten to make it compatible with CA mig refs which uses project
+	// name instead of project number. igm url has project number not project name.
+	igmRef.Project = project
 	return igmRef
 }
 
