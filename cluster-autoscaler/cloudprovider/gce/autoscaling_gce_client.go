@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"net/url"
 	"path"
 	"regexp"
 	"strings"
@@ -96,8 +95,9 @@ var (
 // GceInstance extends cloudprovider.Instance with GCE specific numeric id.
 type GceInstance struct {
 	cloudprovider.Instance
-	NumericId uint64
-	Igm       GceRef
+	NumericId            uint64
+	Igm                  GceRef
+	InstanceTemplateName string
 }
 
 // AutoscalingGceClient is used for communicating with GCE API.
@@ -481,6 +481,13 @@ func (i *instanceListBuilder) gceInstanceToInstance(ref GceRef, gceInstance *gce
 		NumericId: gceInstance.Id,
 	}
 
+	if gceInstance.Version != nil {
+		instanceTemplate, err := InstanceTemplateNameFromUrl(gceInstance.Version.InstanceTemplate)
+		if err == nil {
+			instance.InstanceTemplateName = instanceTemplate.Name
+		}
+	}
+
 	if instance.Status.State != cloudprovider.InstanceCreating {
 		return instance
 	}
@@ -725,17 +732,7 @@ func (client *autoscalingGceClientV1) FetchMigTemplateName(migRef GceRef) (Insta
 		}
 		return InstanceTemplateName{}, err
 	}
-	templateUrl, err := url.Parse(igm.InstanceTemplate)
-	if err != nil {
-		return InstanceTemplateName{}, err
-	}
-	regional, err := IsInstanceTemplateRegional(templateUrl.String())
-	if err != nil {
-		return InstanceTemplateName{}, err
-	}
-
-	_, templateName := path.Split(templateUrl.EscapedPath())
-	return InstanceTemplateName{templateName, regional}, nil
+	return InstanceTemplateNameFromUrl(igm.InstanceTemplate)
 }
 
 func (client *autoscalingGceClientV1) FetchMigTemplate(migRef GceRef, templateName string, regional bool) (*gce.InstanceTemplate, error) {
