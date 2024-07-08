@@ -342,12 +342,12 @@ func (m *asgCache) DeleteInstances(instances []*AwsInstanceRef) error {
 	}
 
 	for _, instance := range instances {
+
 		if m.isPlaceholderInstance(instance) {
 			// skipping placeholder as placeholder instances don't exist
 			// and we have already reduced ASG size during placeholder check.
 			continue
 		}
-
 		// check if the instance is already terminating - if it is, don't bother terminating again
 		// as doing so causes unnecessary API calls and can cause the curSize cached value to decrement
 		// unnecessarily.
@@ -355,11 +355,13 @@ func (m *asgCache) DeleteInstances(instances []*AwsInstanceRef) error {
 		if err != nil {
 			return err
 		}
+
 		if lifecycle != nil &&
+			*lifecycle == autoscaling.LifecycleStateTerminated ||
 			*lifecycle == autoscaling.LifecycleStateTerminating ||
 			*lifecycle == autoscaling.LifecycleStateTerminatingWait ||
 			*lifecycle == autoscaling.LifecycleStateTerminatingProceed {
-			klog.V(2).Infof("instance %s is already terminating, will skip instead", instance.Name)
+			klog.V(2).Infof("instance %s is already terminating in state %s, will skip instead", instance.Name, *lifecycle)
 			continue
 		}
 
@@ -377,6 +379,7 @@ func (m *asgCache) DeleteInstances(instances []*AwsInstanceRef) error {
 
 		// Proactively decrement the size so autoscaler makes better decisions
 		commonAsg.curSize--
+
 	}
 	return nil
 }
