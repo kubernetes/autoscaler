@@ -20,10 +20,11 @@ import (
 	"fmt"
 	"testing"
 
-	//nolint SA1019 - deprecated package
-
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
+	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/stretchr/testify/assert"
+
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 )
@@ -128,4 +129,51 @@ func makeTaintSet(taints []apiv1.Taint) map[apiv1.Taint]bool {
 		set[taint] = true
 	}
 	return set
+}
+
+func TestTopologyFromScaleSet(t *testing.T) {
+	testNodeName := "test-node"
+	testSkuName := "test-sku"
+	testVmss := compute.VirtualMachineScaleSet{
+		Response: autorest.Response{},
+		Sku:      &compute.Sku{Name: &testSkuName},
+		Plan:     nil,
+		VirtualMachineScaleSetProperties: &compute.VirtualMachineScaleSetProperties{
+			VirtualMachineProfile: &compute.VirtualMachineScaleSetVMProfile{OsProfile: nil}},
+		Zones:    &[]string{"1", "2", "3"},
+		Location: to.StringPtr("westus"),
+	}
+	expectedZoneValues := []string{"westus-1", "westus-2", "westus-3"}
+	labels := buildGenericLabels(&testVmss, testNodeName)
+	topologyZone, ok := labels[apiv1.LabelTopologyZone]
+	assert.True(t, ok)
+	azureDiskTopology, ok := labels[azureDiskTopologyKey]
+	assert.True(t, ok)
+
+	assert.Contains(t, expectedZoneValues, topologyZone)
+	assert.Contains(t, expectedZoneValues, azureDiskTopology)
+}
+
+func TestEmptyTopologyFromScaleSet(t *testing.T) {
+	testNodeName := "test-node"
+	testSkuName := "test-sku"
+	testVmss := compute.VirtualMachineScaleSet{
+		Response: autorest.Response{},
+		Sku:      &compute.Sku{Name: &testSkuName},
+		Plan:     nil,
+		VirtualMachineScaleSetProperties: &compute.VirtualMachineScaleSetProperties{
+			VirtualMachineProfile: &compute.VirtualMachineScaleSetVMProfile{OsProfile: nil}},
+		Location: to.StringPtr("westus"),
+	}
+	expectedTopologyZone := "0"
+	expectedAzureDiskTopology := ""
+	labels := buildGenericLabels(&testVmss, testNodeName)
+
+	topologyZone, ok := labels[apiv1.LabelTopologyZone]
+	assert.True(t, ok)
+	assert.Equal(t, expectedTopologyZone, topologyZone)
+
+	azureDiskTopology, ok := labels[azureDiskTopologyKey]
+	assert.True(t, ok)
+	assert.Equal(t, expectedAzureDiskTopology, azureDiskTopology)
 }
