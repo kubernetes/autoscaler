@@ -26,7 +26,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kubernetes/pkg/scheduler/framework"
 
-	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
+	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/conditions"
@@ -150,11 +150,14 @@ func TestRefresh(t *testing.T) {
 		pr.Status.Conditions = test.conditions
 		pr.CreationTimestamp = metav1.NewTime(test.creationTime)
 		pr.Spec.ProvisioningClassName = v1.ProvisioningClassCheckCapacity
+
 		additionalPr := provreqclient.ProvisioningRequestWrapperForTesting("namespace", "additional")
 		additionalPr.CreationTimestamp = metav1.NewTime(weekAgo)
 		additionalPr.Spec.ProvisioningClassName = v1.ProvisioningClassCheckCapacity
+
 		processor := provReqProcessor{func() time.Time { return now }, 1, provreqclient.NewFakeProvisioningRequestClient(nil, t, pr, additionalPr), nil}
 		processor.refresh([]*provreqwrapper.ProvisioningRequest{pr, additionalPr})
+
 		assert.ElementsMatch(t, test.wantConditions, pr.Status.Conditions)
 		if len(test.conditions) == len(test.wantConditions) {
 			assert.ElementsMatch(t, []metav1.Condition{
@@ -170,6 +173,59 @@ func TestRefresh(t *testing.T) {
 			assert.ElementsMatch(t, []metav1.Condition{}, additionalPr.Status.Conditions)
 		}
 	}
+}
+
+func TestDeleteOldProvReqs(t *testing.T) {
+	now := time.Now()
+	tenDaysAgo := now.Add(-1 * 10 * 24 * time.Hour)
+	pr := provreqclient.ProvisioningRequestWrapperForTesting("namespace", "name-1")
+	additionalPr := provreqclient.ProvisioningRequestWrapperForTesting("namespace", "additional")
+
+	oldFailedPr := provreqclient.ProvisioningRequestWrapperForTesting("namespace", "failed")
+	oldExpiredPr := provreqclient.ProvisioningRequestWrapperForTesting("namespace", "expired")
+	oldFailedPr.CreationTimestamp = metav1.NewTime(tenDaysAgo)
+	oldExpiredPr.CreationTimestamp = metav1.NewTime(tenDaysAgo)
+	oldFailedPr.Status.Conditions = []metav1.Condition{
+		{
+			Type:               v1.Failed,
+			Status:             metav1.ConditionTrue,
+			LastTransitionTime: metav1.NewTime(tenDaysAgo),
+			Reason:             "Failed",
+			Message:            "Failed",
+		},
+	}
+	oldFailedPr.Spec.ProvisioningClassName = v1.ProvisioningClassCheckCapacity
+	oldExpiredPr.Status.Conditions = []metav1.Condition{
+		{
+			Type:               v1.Provisioned,
+			Status:             metav1.ConditionTrue,
+			LastTransitionTime: metav1.NewTime(tenDaysAgo),
+			Reason:             "Provisioned",
+			Message:            "",
+		},
+		{
+			Type:               v1.BookingExpired,
+			Status:             metav1.ConditionTrue,
+			LastTransitionTime: metav1.NewTime(tenDaysAgo),
+			Reason:             "Capacity is expired",
+			Message:            "",
+		},
+	}
+	oldExpiredPr.Spec.ProvisioningClassName = v1.ProvisioningClassCheckCapacity
+
+	client := provreqclient.NewFakeProvisioningRequestClient(nil, t, pr, additionalPr, oldFailedPr, oldExpiredPr)
+
+	processor := provReqProcessor{func() time.Time { return now }, 1, client, nil}
+	processor.refresh([]*provreqwrapper.ProvisioningRequest{pr, additionalPr, oldFailedPr, oldExpiredPr})
+
+	_, err := client.ProvisioningRequestNoCache(oldFailedPr.Namespace, oldFailedPr.Name)
+	assert.Error(t, err)
+	_, err = client.ProvisioningRequestNoCache(oldExpiredPr.Namespace, oldExpiredPr.Name)
+	assert.Error(t, err)
+	_, err = client.ProvisioningRequestNoCache(pr.Namespace, pr.Name)
+	assert.NoError(t, err)
+	_, err = client.ProvisioningRequestNoCache(additionalPr.Namespace, additionalPr.Name)
+	assert.NoError(t, err)
 }
 
 type fakeInjector struct {
