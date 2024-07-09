@@ -691,13 +691,12 @@ func TestGetFilteredAutoscalingGroupsVmss(t *testing.T) {
 		azureRef: azureRef{
 			Name: vmssName,
 		},
-		minSize:                  minVal,
-		maxSize:                  maxVal,
-		manager:                  manager,
-		curSize:                  3,
-		sizeRefreshPeriod:        manager.azureCache.refreshInterval,
-		getVmssSizeRefreshPeriod: manager.azureCache.refreshInterval,
-		InstanceCache:            InstanceCache{instancesRefreshPeriod: defaultVmssInstancesRefreshPeriod},
+		minSize:                minVal,
+		maxSize:                maxVal,
+		manager:                manager,
+		curSize:                3,
+		sizeRefreshPeriod:      manager.azureCache.refreshInterval,
+		instancesRefreshPeriod: defaultVmssInstancesRefreshPeriod,
 	}}
 	assert.True(t, assert.ObjectsAreEqualValues(expectedAsgs, asgs), "expected %#v, but found: %#v", expectedAsgs, asgs)
 }
