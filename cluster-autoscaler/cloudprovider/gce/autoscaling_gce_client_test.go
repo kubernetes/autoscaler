@@ -925,7 +925,7 @@ func TestFetchAllInstances(t *testing.T) {
 						Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceCreating},
 					},
 					NumericId: 11,
-					Igm:       GceRef{"893226960234", "zones", "test-igm1-grp"},
+					Igm:       GceRef{"myprojid", "zones", "test-igm1-grp"},
 				},
 			},
 		},
@@ -987,7 +987,7 @@ func TestFetchAllInstances(t *testing.T) {
 						Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
 					},
 					NumericId: 10,
-					Igm:       GceRef{"893226960234", "zones", "test-igm1-grp"},
+					Igm:       GceRef{"myprojid", "zones", "test-igm1-grp"},
 				},
 				{
 					Instance: cloudprovider.Instance{
@@ -995,7 +995,7 @@ func TestFetchAllInstances(t *testing.T) {
 						Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
 					},
 					NumericId: 11,
-					Igm:       GceRef{"893226960234", "zones", "test-igm1-grp"},
+					Igm:       GceRef{"myprojid", "zones", "test-igm1-grp"},
 				},
 			},
 		},
@@ -1084,7 +1084,7 @@ func TestFetchAllInstances(t *testing.T) {
 						Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
 					},
 					NumericId: 10,
-					Igm:       GceRef{"893226960234", "zones", "test-igm1-grp"},
+					Igm:       GceRef{"myprojid", "zones", "test-igm1-grp"},
 				},
 				{
 					Instance: cloudprovider.Instance{
@@ -1092,7 +1092,7 @@ func TestFetchAllInstances(t *testing.T) {
 						Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
 					},
 					NumericId: 11,
-					Igm:       GceRef{"893226960234", "zones", "test-igm2-grp"},
+					Igm:       GceRef{"myprojid", "zones", "test-igm2-grp"},
 				},
 				{
 					Instance: cloudprovider.Instance{
@@ -1100,7 +1100,7 @@ func TestFetchAllInstances(t *testing.T) {
 						Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
 					},
 					NumericId: 12,
-					Igm:       GceRef{"893226960234", "zones", "test-igm1-grp"},
+					Igm:       GceRef{"myprojid", "zones", "test-igm1-grp"},
 				},
 				{
 					Instance: cloudprovider.Instance{
@@ -1108,7 +1108,7 @@ func TestFetchAllInstances(t *testing.T) {
 						Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
 					},
 					NumericId: 13,
-					Igm:       GceRef{"893226960234", "zones", "test-igm1-grp"},
+					Igm:       GceRef{"myprojid", "zones", "test-igm1-grp"},
 				},
 				{
 					Instance: cloudprovider.Instance{
@@ -1116,7 +1116,7 @@ func TestFetchAllInstances(t *testing.T) {
 						Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
 					},
 					NumericId: 14,
-					Igm:       GceRef{"893226960234", "zones", "test-igm2-grp"},
+					Igm:       GceRef{"myprojid", "zones", "test-igm2-grp"},
 				},
 				{
 					Instance: cloudprovider.Instance{
@@ -1124,7 +1124,7 @@ func TestFetchAllInstances(t *testing.T) {
 						Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
 					},
 					NumericId: 15,
-					Igm:       GceRef{"893226960234", "zones", "test-igm1-grp"},
+					Igm:       GceRef{"myprojid", "zones", "test-igm1-grp"},
 				},
 			},
 		},
@@ -1228,7 +1228,7 @@ func TestExternalToInternalInstance(t *testing.T) {
 					Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
 				},
 				NumericId: 10,
-				Igm:       GceRef{"893226960234", "zones", "test-igm1-grp"},
+				Igm:       GceRef{"myprojid", "zones", "test-igm1-grp"},
 			},
 		},
 	}
