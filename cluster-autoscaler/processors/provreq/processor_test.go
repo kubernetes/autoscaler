@@ -40,6 +40,7 @@ func TestRefresh(t *testing.T) {
 	now := time.Now()
 	dayAgo := now.Add(-1 * 24 * time.Hour)
 	weekAgo := now.Add(-1 * defaultExpirationTime).Add(-1 * 5 * time.Minute)
+	tenDaysAgo := now.Add(-1 * 10 * 24 * time.Hour)
 
 	testCases := []struct {
 		name           string
@@ -150,12 +151,55 @@ func TestRefresh(t *testing.T) {
 		pr.Status.Conditions = test.conditions
 		pr.CreationTimestamp = metav1.NewTime(test.creationTime)
 		pr.Spec.ProvisioningClassName = v1beta1.ProvisioningClassCheckCapacity
+
 		additionalPr := provreqclient.ProvisioningRequestWrapperForTesting("namespace", "additional")
 		additionalPr.CreationTimestamp = metav1.NewTime(weekAgo)
 		additionalPr.Spec.ProvisioningClassName = v1beta1.ProvisioningClassCheckCapacity
-		processor := provReqProcessor{func() time.Time { return now }, 1, provreqclient.NewFakeProvisioningRequestClient(nil, t, pr, additionalPr), nil}
-		processor.refresh([]*provreqwrapper.ProvisioningRequest{pr, additionalPr})
+
+		oldFailedPr := provreqclient.ProvisioningRequestWrapperForTesting("namespace", "failed")
+		oldExpiredPr := provreqclient.ProvisioningRequestWrapperForTesting("namespace", "expired")
+		oldFailedPr.CreationTimestamp = metav1.NewTime(tenDaysAgo)
+		oldExpiredPr.CreationTimestamp = metav1.NewTime(tenDaysAgo)
+		oldFailedPr.Status.Conditions = []metav1.Condition{
+			{
+				Type:               v1beta1.Failed,
+				Status:             metav1.ConditionTrue,
+				LastTransitionTime: metav1.NewTime(tenDaysAgo),
+				Reason:             "Failed",
+				Message:            "Failed",
+			},
+		}
+		oldFailedPr.Spec.ProvisioningClassName = v1beta1.ProvisioningClassCheckCapacity
+		oldExpiredPr.Status.Conditions = []metav1.Condition{
+			{
+				Type:               v1beta1.Provisioned,
+				Status:             metav1.ConditionTrue,
+				LastTransitionTime: metav1.NewTime(tenDaysAgo),
+				Reason:             "Provisioned",
+				Message:            "",
+			},
+			{
+				Type:               v1beta1.BookingExpired,
+				Status:             metav1.ConditionTrue,
+				LastTransitionTime: metav1.NewTime(tenDaysAgo),
+				Reason:             "Capacity is expired",
+				Message:            "",
+			},
+		}
+		oldExpiredPr.Spec.ProvisioningClassName = v1beta1.ProvisioningClassCheckCapacity
+
+		client := provreqclient.NewFakeProvisioningRequestClient(nil, t, pr, additionalPr, oldFailedPr, oldExpiredPr)
+
+		processor := provReqProcessor{func() time.Time { return now }, 1, client, nil}
+		processor.refresh([]*provreqwrapper.ProvisioningRequest{pr, additionalPr, oldFailedPr, oldExpiredPr})
+
+		_, err := client.ProvisioningRequestNoCache(oldFailedPr.Namespace, oldFailedPr.Name)
+		assert.Error(t, err)
+		_, err = client.ProvisioningRequestNoCache(oldExpiredPr.Namespace, oldExpiredPr.Name)
+		assert.Error(t, err)
+
 		assert.ElementsMatch(t, test.wantConditions, pr.Status.Conditions)
+		// if first pr wasn't processed, processor will process second pr, otherwise it will be ignored because of maxUpdated limit
 		if len(test.conditions) == len(test.wantConditions) {
 			assert.ElementsMatch(t, []metav1.Condition{
 				{
