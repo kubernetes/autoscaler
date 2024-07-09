@@ -48,12 +48,22 @@ var _ = Describe("Azure Provider", func() {
 		Expect(k8s.Delete(ctx, namespace)).To(Succeed())
 		Eventually(func() bool {
 			err := k8s.Get(ctx, client.ObjectKeyFromObject(namespace), &corev1.Namespace{})
-			GinkgoLogr.Info("got err", "error", err)
 			return apierrors.IsNotFound(err)
 		}, "1m", "5s").Should(BeTrue(), "Namespace "+namespace.Name+" still exists")
 	})
 
 	It("scales up AKS node pools when pending Pods exist", func() {
+		ensureHelmValues(map[string]interface{}{
+			"extraArgs": map[string]interface{}{
+				"scale-down-delay-after-add":       "10s",
+				"scale-down-unneeded-time":         "10s",
+				"scale-down-candidates-pool-ratio": "1.0",
+				"unremovable-node-recheck-timeout": "10s",
+				"skip-nodes-with-system-pods":      "false",
+				"skip-nodes-with-local-storage":    "false",
+			},
+		})
+
 		nodes := &corev1.NodeList{}
 		Expect(k8s.List(ctx, nodes)).To(Succeed())
 		nodeCountBefore := len(nodes.Items)
@@ -123,21 +133,20 @@ var _ = Describe("Azure Provider", func() {
 		Expect(k8s.Delete(ctx, deploy)).To(Succeed())
 
 		By("Waiting for the original number of Nodes to be Ready")
-		Eventually(func() (int, error) {
-			readyCount := 0
+		Eventually(func(g Gomega) {
 			nodes := &corev1.NodeList{}
-			if err := k8s.List(ctx, nodes); err != nil {
-				return 0, err
-			}
-			for _, node := range nodes.Items {
-				for _, cond := range node.Status.Conditions {
-					if cond.Type == corev1.NodeReady && cond.Status == corev1.ConditionTrue {
-						readyCount++
-						break
+			g.Expect(k8s.List(ctx, nodes)).To(Succeed())
+			g.Expect(nodes.Items).To(SatisfyAll(
+				HaveLen(nodeCountBefore),
+				ContainElements(Satisfy(func(node corev1.Node) bool {
+					for _, cond := range node.Status.Conditions {
+						if cond.Type == corev1.NodeReady && cond.Status == corev1.ConditionTrue {
+							return true
+						}
 					}
-				}
-			}
-			return readyCount, nil
-		}, "10m", "10s").Should(Equal(nodeCountBefore))
+					return false
+				})),
+			))
+		}, "20m", "10s").Should(Succeed())
 	})
 })

@@ -696,6 +696,53 @@ func TestGetFilteredAutoscalingGroupsVmss(t *testing.T) {
 	assert.True(t, assert.ObjectsAreEqualValues(expectedAsgs, asgs), "expected %#v, but found: %#v", expectedAsgs, asgs)
 }
 
+func TestGetFilteredAutoscalingGroupsVmssWithConfiguredSizes(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	vmssName := "test-vmss"
+	vmssTag := "fake-tag"
+	vmssTagValue := "fake-value"
+	vmssTag2 := "fake-tag2"
+	vmssTagValue2 := "fake-value2"
+	minVal := 2
+	maxVal := 4
+
+	ngdo := cloudprovider.NodeGroupDiscoveryOptions{
+		NodeGroupAutoDiscoverySpecs: []string{
+			fmt.Sprintf("label:%s=%s,min=2,max=5", vmssTag, vmssTagValue),
+			fmt.Sprintf("label:%s=%s,min=1,max=4", vmssTag2, vmssTagValue2),
+		},
+	}
+
+	manager := newTestAzureManager(t)
+	expectedScaleSets := []compute.VirtualMachineScaleSet{fakeVMSSWithTags(vmssName, map[string]*string{vmssTag: &vmssTagValue, vmssTag2: &vmssTagValue2})}
+	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
+	mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
+	manager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
+	err := manager.forceRefresh()
+	assert.NoError(t, err)
+
+	specs, err := ParseLabelAutoDiscoverySpecs(ngdo)
+	assert.NoError(t, err)
+
+	asgs, err := manager.getFilteredNodeGroups(specs)
+	assert.NoError(t, err)
+	expectedAsgs := []cloudprovider.NodeGroup{&ScaleSet{
+		azureRef: azureRef{
+			Name: vmssName,
+		},
+		minSize:                minVal,
+		maxSize:                maxVal,
+		manager:                manager,
+		enableForceDelete:      manager.config.EnableForceDelete,
+		curSize:                3,
+		sizeRefreshPeriod:      manager.azureCache.refreshInterval,
+		instancesRefreshPeriod: defaultVmssInstancesRefreshPeriod,
+	}}
+	assert.True(t, assert.ObjectsAreEqualValues(expectedAsgs, asgs), "expected %#v, but found: %#v", expectedAsgs, asgs)
+}
+
 func TestGetFilteredAutoscalingGroupsWithInvalidVMType(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
