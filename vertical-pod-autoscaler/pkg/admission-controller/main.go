@@ -90,7 +90,7 @@ func main() {
 		klog.Fatalf("--vpa-object-namespace and --ignored-vpa-object-namespaces are mutually exclusive and can't be set together.")
 	}
 
-	healthCheck := metrics.NewHealthCheck(time.Minute, false)
+	healthCheck := metrics.NewHealthCheck(time.Minute)
 	metrics.Initialize(*address, healthCheck)
 	metrics_admission.Register()
 
