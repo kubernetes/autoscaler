@@ -27,6 +27,7 @@ import (
 
 	gce "google.golang.org/api/compute/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/client-go/util/workqueue"
 	"k8s.io/klog/v2"
 )
@@ -196,6 +197,8 @@ func (c *cachingMigInfoProvider) listInstancesInAllZonesWithMigs() ([]GceInstanc
 	var allInstances []GceInstance
 	errors := make([]error, len(zones))
 	zoneInstances := make([][]GceInstance, len(zones))
+	defer metrics.UpdateDurationFromStart(metrics.BulkListAllGceInstances, time.Now())
+
 	workqueue.ParallelizeUntil(context.Background(), c.concurrentGceRefreshes, len(zones), func(piece int) {
 		zoneInstances[piece], errors[piece] = c.gceClient.FetchAllInstances(c.projectId, zones[piece], "")
 	}, workqueue.WithChunkSize(c.concurrentGceRefreshes))
@@ -245,6 +248,12 @@ func (c *cachingMigInfoProvider) isMigCreatingOrDeletingInstances(mig Mig) bool 
 
 // updateMigInstancesCache updates the mig instances for each mig
 func (c *cachingMigInfoProvider) updateMigInstancesCache(migToInstances map[GceRef][]GceInstance) error {
+	defer metrics.UpdateDurationFromStart(metrics.BulkListMigInstances, time.Now())
+	inconsistentInstancesMigsCount := 0
+	defer func() {
+		klog.Warningf("Inconsistent instances migs count: %v", inconsistentInstancesMigsCount)
+		metrics.UpdateInconsistentInstancesMigsCount(inconsistentInstancesMigsCount)
+	}()
 	var errors []error
 	for _, mig := range c.migLister.GetMigs() {
 		migRef := mig.GceRef()
@@ -257,6 +266,7 @@ func (c *cachingMigInfoProvider) updateMigInstancesCache(migToInstances map[GceR
 			if err := c.fillMigInstances(migRef); err != nil {
 				errors = append(errors, err)
 			}
+			inconsistentInstancesMigsCount += 1
 			continue
 		}
 
