@@ -173,7 +173,7 @@ func (c *cachingMigInfoProvider) RegenerateMigInstancesCache() error {
 }
 
 func (c *cachingMigInfoProvider) bulkListMigInstances() error {
-	c.cache.InvalidateMigInstancesState()
+	c.cache.InvalidateMigInstancesStateCount()
 	err := c.fillMigInfoCache()
 	if err != nil {
 		return err
@@ -221,11 +221,11 @@ func groupInstancesToMigs(instances []GceInstance) map[GceRef][]GceInstance {
 
 func (c *cachingMigInfoProvider) isMigInstancesConsistent(mig Mig, migToInstances map[GceRef][]GceInstance) bool {
 	migRef := mig.GceRef()
-	state, found := c.cache.GetMigInstancesState(migRef)
+	instancesStateCount, found := c.cache.GetMigInstancesStateCount(migRef)
 	if !found {
 		return false
 	}
-	instanceCount := state[cloudprovider.InstanceRunning] + state[cloudprovider.InstanceCreating] + state[cloudprovider.InstanceDeleting]
+	instanceCount := instancesStateCount[cloudprovider.InstanceRunning] + instancesStateCount[cloudprovider.InstanceCreating] + instancesStateCount[cloudprovider.InstanceDeleting]
 
 	instances, found := migToInstances[migRef]
 	if !found && instanceCount > 0 {
@@ -236,11 +236,11 @@ func (c *cachingMigInfoProvider) isMigInstancesConsistent(mig Mig, migToInstance
 
 func (c *cachingMigInfoProvider) isMigCreatingOrDeletingInstances(mig Mig) bool {
 	migRef := mig.GceRef()
-	state, found := c.cache.GetMigInstancesState(migRef)
+	instancesStateCount, found := c.cache.GetMigInstancesStateCount(migRef)
 	if !found {
 		return false
 	}
-	return state[cloudprovider.InstanceCreating] > 0 || state[cloudprovider.InstanceDeleting] > 0
+	return instancesStateCount[cloudprovider.InstanceCreating] > 0 || instancesStateCount[cloudprovider.InstanceDeleting] > 0
 }
 
 // updateMigInstancesCache updates the mig instances for each mig
@@ -477,7 +477,7 @@ func (c *cachingMigInfoProvider) fillMigInfoCache() error {
 				c.cache.SetMigTargetSize(zoneMigRef, zoneMig.TargetSize)
 				c.cache.SetMigBasename(zoneMigRef, zoneMig.BaseInstanceName)
 				c.cache.SetListManagedInstancesResults(zoneMigRef, zoneMig.ListManagedInstancesResults)
-				c.cache.SetMigInstancesState(zoneMigRef, createInstancesState(zoneMig.TargetSize, zoneMig.CurrentActions))
+				c.cache.SetMigInstancesStateCount(zoneMigRef, createInstancesStateCount(zoneMig.TargetSize, zoneMig.CurrentActions))
 
 				templateUrl, err := url.Parse(zoneMig.InstanceTemplate)
 				if err == nil {
@@ -564,20 +564,20 @@ func (c *cachingMigInfoProvider) GetListManagedInstancesResults(migRef GceRef) (
 	return listManagedInstancesResults, nil
 }
 
-func createInstancesState(targetSize int64, actionsSummary *gce.InstanceGroupManagerActionsSummary) map[cloudprovider.InstanceState]int64 {
+func createInstancesStateCount(targetSize int64, actionsSummary *gce.InstanceGroupManagerActionsSummary) map[cloudprovider.InstanceState]int64 {
 	if actionsSummary == nil {
 		return nil
 	}
-	state := map[cloudprovider.InstanceState]int64{
+	stateCount := map[cloudprovider.InstanceState]int64{
 		cloudprovider.InstanceCreating: 0,
 		cloudprovider.InstanceDeleting: 0,
 		cloudprovider.InstanceRunning:  0,
 	}
-	state[getInstanceState("ABANDONING")] += actionsSummary.Abandoning
-	state[getInstanceState("CREATING")] += actionsSummary.Creating
-	state[getInstanceState("CREATING_WITHOUT_RETRIES")] += actionsSummary.CreatingWithoutRetries
-	state[getInstanceState("DELETING")] += actionsSummary.Deleting
-	state[getInstanceState("RECREATING")] += actionsSummary.Recreating
-	state[cloudprovider.InstanceRunning] = targetSize - state[cloudprovider.InstanceCreating]
-	return state
+	stateCount[getInstanceState("ABANDONING")] += actionsSummary.Abandoning
+	stateCount[getInstanceState("CREATING")] += actionsSummary.Creating
+	stateCount[getInstanceState("CREATING_WITHOUT_RETRIES")] += actionsSummary.CreatingWithoutRetries
+	stateCount[getInstanceState("DELETING")] += actionsSummary.Deleting
+	stateCount[getInstanceState("RECREATING")] += actionsSummary.Recreating
+	stateCount[cloudprovider.InstanceRunning] = targetSize - stateCount[cloudprovider.InstanceCreating]
+	return stateCount
 }
