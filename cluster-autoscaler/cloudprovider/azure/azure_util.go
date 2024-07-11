@@ -25,6 +25,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 	"regexp"
 	"sort"
 	"strconv"
@@ -234,7 +235,8 @@ func decodePkcs12(pkcs []byte, password string) (*x509.Certificate, *rsa.Private
 }
 
 func getUserAgentExtension() string {
-	return fmt.Sprintf("cluster-autoscaler/v%s", version.ClusterAutoscalerVersion)
+	suffix := os.Getenv("AZURE_CLUSTER_AUTOSCALER_USER_AGENT_SUFFIX")
+	return fmt.Sprintf("cluster-autoscaler%s/v%s", suffix, version.ClusterAutoscalerVersion)
 }
 
 func configureUserAgent(client *autorest.Client) {
