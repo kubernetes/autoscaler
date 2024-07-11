@@ -684,6 +684,11 @@ func (csr *ClusterStateRegistry) updateIncorrectNodeGroupSizes(currentTime time.
 			klog.Warningf("Acceptable range for node group %s not found", nodeGroup.Id())
 			continue
 		}
+		if nodeGroup.IsUpcoming() {
+			// Nodes for upcoming node groups reside in-memory and wait for node group to be fully
+			// created. There is no need to mark their sizes incorrect.
+			continue
+		}
 		readiness, found := csr.perNodeGroupReadiness[nodeGroup.Id()]
 		if !found {
 			// if MinNodes == 0 node group has been scaled to 0 and everything's fine
@@ -981,6 +986,13 @@ func (csr *ClusterStateRegistry) GetUpcomingNodes() (upcomingCounts map[string]i
 	registeredNodeNames = map[string][]string{}
 	for _, nodeGroup := range csr.cloudProvider.NodeGroups() {
 		id := nodeGroup.Id()
+		if nodeGroup.IsUpcoming() {
+			size, err := nodeGroup.TargetSize()
+			if size >= 0 || err != nil {
+				upcomingCounts[id] = size
+			}
+			continue
+		}
 		readiness := csr.perNodeGroupReadiness[id]
 		ar := csr.acceptableRanges[id]
 		// newNodes is the number of nodes that
