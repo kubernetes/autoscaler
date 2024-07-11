@@ -216,7 +216,7 @@ func (tcp *TestCloudProvider) NewNodeGroup(machineType string, labels map[string
 
 // NewNodeGroupWithId creates a new node group with custom ID suffix.
 func (tcp *TestCloudProvider) NewNodeGroupWithId(machineType string, labels map[string]string, systemLabels map[string]string,
-	taints []apiv1.Taint, extraResources map[string]resource.Quantity, id string) (cloudprovider.NodeGroup, error) {
+	taints []apiv1.Taint, extraResources map[string]resource.Quantity, upcoming bool, id string) (cloudprovider.NodeGroup, error) {
 	return &TestNodeGroup{
 		cloudProvider:   tcp,
 		id:              "autoprovisioned-" + machineType + "-" + id,
@@ -224,6 +224,7 @@ func (tcp *TestCloudProvider) NewNodeGroupWithId(machineType string, labels map[
 		maxSize:         1000,
 		targetSize:      0,
 		exist:           false,
+		upcoming:        upcoming,
 		autoprovisioned: true,
 		machineType:     machineType,
 		labels:          labels,
@@ -254,9 +255,31 @@ func (tcp *TestCloudProvider) BuildNodeGroup(id string, min, max, size int, auto
 	}
 }
 
+// BuildUpcomingNodeGroup returns an upcoming test node group.
+func (tcp *TestCloudProvider) BuildUpcomingNodeGroup(id string, min, max, size int, autoprovisioned bool, machineType string, opts *config.NodeGroupAutoscalingOptions) *TestNodeGroup {
+	return &TestNodeGroup{
+		cloudProvider:   tcp,
+		id:              id,
+		minSize:         min,
+		maxSize:         max,
+		targetSize:      size,
+		exist:           false,
+		upcoming:        true,
+		autoprovisioned: autoprovisioned,
+		machineType:     machineType,
+		opts:            opts,
+	}
+}
+
 // AddNodeGroup adds node group to test cloud provider.
 func (tcp *TestCloudProvider) AddNodeGroup(id string, min int, max int, size int) {
 	nodeGroup := tcp.BuildNodeGroup(id, min, max, size, false, "", nil)
+	tcp.InsertNodeGroup(nodeGroup)
+}
+
+// AddUpcomingNodeGroup adds upcoming node group to test cloud provider.
+func (tcp *TestCloudProvider) AddUpcomingNodeGroup(id string, min int, max int, size int) {
+	nodeGroup := tcp.BuildUpcomingNodeGroup(id, min, max, size, false, "", nil)
 	tcp.InsertNodeGroup(nodeGroup)
 }
 
