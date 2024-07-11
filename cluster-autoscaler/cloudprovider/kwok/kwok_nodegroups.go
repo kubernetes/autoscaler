@@ -200,6 +200,11 @@ func (nodeGroup *NodeGroup) Exist() bool {
 	return true
 }
 
+// IsUpcoming checks if the node group is being asynchronously created.
+func (nodeGroup *NodeGroup) IsUpcoming() bool {
+	return false
+}
+
 // Create creates the node group on the cloud provider side.
 // Left unimplemented because Create is not used anywhere
 // in the core autoscaler as of writing this

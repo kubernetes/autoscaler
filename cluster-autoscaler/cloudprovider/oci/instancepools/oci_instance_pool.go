@@ -198,6 +198,11 @@ func (ip *InstancePoolNodeGroup) Exist() bool {
 	return true
 }
 
+// IsUpcoming checks if the node group is being asynchronously created.
+func (ip *InstancePoolNodeGroup) IsUpcoming() bool {
+	return false
+}
+
 // Create creates the instance-pool based node group on the cloud provider side. Implementation optional.
 func (ip *InstancePoolNodeGroup) Create() (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented

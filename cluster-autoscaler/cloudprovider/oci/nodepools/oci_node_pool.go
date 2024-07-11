@@ -289,6 +289,11 @@ func (np *nodePool) Exist() bool {
 	return true
 }
 
+// IsUpcoming checks if the node group is being asynchronously created.
+func (np *nodePool) IsUpcoming() bool {
+	return false
+}
+
 // Create creates the node group on the cloud provider side. Implementation optional.
 func (np *nodePool) Create() (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented

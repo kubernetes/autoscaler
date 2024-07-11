@@ -139,6 +139,11 @@ func (_m *NodeGroup) Exist() bool {
 	return r0
 }
 
+// IsUpcoming checks if the node group is being asynchronously created.
+func (_m *NodeGroup) IsUpcoming() bool {
+	return false
+}
+
 // GetOptions provides a mock function with given fields: defaults
 func (_m *NodeGroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
 	ret := _m.Called(defaults)

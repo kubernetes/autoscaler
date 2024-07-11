@@ -264,6 +264,11 @@ func (ng *NodeGroup) Exist() bool {
 	return ng.Id() != ""
 }
 
+// IsUpcoming checks if the node group is being asynchronously created.
+func (ng *NodeGroup) IsUpcoming() bool {
+	return false
+}
+
 // Create creates the node group on the cloud provider side.
 func (ng *NodeGroup) Create() (cloudprovider.NodeGroup, error) {
 	klog.V(4).Info("Creating a new NodeGroup")

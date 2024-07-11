@@ -104,6 +104,11 @@ func (as *AgentPool) Exist() bool {
 	return true
 }
 
+// IsUpcoming checks if the node group is being asynchronously created.
+func (as *AgentPool) IsUpcoming() bool {
+	return false
+}
+
 // Create creates the node group on the cloud provider side.
 func (as *AgentPool) Create() (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrAlreadyExist

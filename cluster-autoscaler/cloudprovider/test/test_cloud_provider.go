@@ -328,6 +328,7 @@ type TestNodeGroup struct {
 	minSize         int
 	targetSize      int
 	exist           bool
+	upcoming        bool
 	autoprovisioned bool
 	machineType     string
 	labels          map[string]string
@@ -412,6 +413,13 @@ func (tng *TestNodeGroup) Exist() bool {
 	tng.Lock()
 	defer tng.Unlock()
 	return tng.exist
+}
+
+// IsUpcoming checks if the node group is being asynchronously created.
+func (tng *TestNodeGroup) IsUpcoming() bool {
+	tng.Lock()
+	defer tng.Unlock()
+	return tng.upcoming
 }
 
 // Create creates the node group on the cloud provider side.

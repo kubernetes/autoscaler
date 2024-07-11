@@ -239,6 +239,11 @@ func (ng *brightboxNodeGroup) Exist() bool {
 	return err == nil
 }
 
+// IsUpcoming checks if the node group is being asynchronously created.
+func (ng *brightboxNodeGroup) IsUpcoming() bool {
+	return false
+}
+
 // TemplateNodeInfo returns a schedulerframework.NodeInfo structure of an empty
 // (as if just started) node. This will be used in scale-up simulations to
 // predict what would a new node look like if a node group was expanded. The returned

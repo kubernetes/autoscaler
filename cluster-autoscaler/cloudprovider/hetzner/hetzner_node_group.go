@@ -311,6 +311,11 @@ func (n *hetznerNodeGroup) Exist() bool {
 	return exists
 }
 
+// IsUpcoming checks if the node group is being asynchronously created.
+func (n *hetznerNodeGroup) IsUpcoming() bool {
+	return false
+}
+
 // Create creates the node group on the cloud provider side. Implementation
 // optional.
 func (n *hetznerNodeGroup) Create() (cloudprovider.NodeGroup, error) {

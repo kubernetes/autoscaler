@@ -208,6 +208,11 @@ func (asg *AutoScalingGroup) Exist() bool {
 	return true
 }
 
+// IsUpcoming checks if the node group is being asynchronously created.
+func (asg *AutoScalingGroup) IsUpcoming() bool {
+	return false
+}
+
 // Create creates the node group on the cloud provider side. Implementation optional.
 func (asg *AutoScalingGroup) Create() (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented

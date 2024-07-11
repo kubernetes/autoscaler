@@ -151,6 +151,11 @@ func (asg *asg) Exist() bool {
 	return true
 }
 
+// IsUpcoming checks if the node group is being asynchronously created.
+func (asg *asg) IsUpcoming() bool {
+	return false
+}
+
 // Autoprovisioned returns true if the node group is autoprovisioned.
 func (asg *asg) Autoprovisioned() bool {
 	return false

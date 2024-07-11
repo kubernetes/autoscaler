@@ -185,6 +185,11 @@ func (asg *tcAsg) Exist() bool {
 	return true
 }
 
+// IsUpcoming checks if the node group is being asynchronously created.
+func (asg *tcAsg) IsUpcoming() bool {
+	return false
+}
+
 // Create creates the node group on the cloud provider side.
 func (asg *tcAsg) Create() (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrAlreadyExist

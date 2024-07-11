@@ -226,8 +226,16 @@ type NodeGroup interface {
 	TemplateNodeInfo() (*schedulerframework.NodeInfo, error)
 
 	// Exist checks if the node group really exists on the cloud provider side. Allows to tell the
-	// theoretical node group from the real one. Implementation required.
+	// theoretical or upcoming node group from the real one. Implementation required.
 	Exist() bool
+
+	// IsUpcoming checks if the node group is being asynchronously created, is scheduled to be
+	// asynchronously created or is being initiated after asynchronous creation. Upcoming node groups
+	// are reported as non-existing by the Exist method and are listed by the cloud provider.
+	// Upcoming node group may be scaled up or down, if cloud provider supports in-memory accounting.
+	// When cloud provider does not support asynchronous node group creation,
+	// method always return false.
+	IsUpcoming() bool
 
 	// Create creates the node group on the cloud provider side. Implementation optional.
 	Create() (NodeGroup, error)

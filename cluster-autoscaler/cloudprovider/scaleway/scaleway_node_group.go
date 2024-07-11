@@ -284,6 +284,11 @@ func (ng *NodeGroup) Exist() bool {
 
 }
 
+// IsUpcoming checks if the node group is being asynchronously created.
+func (ng *NodeGroup) IsUpcoming() bool {
+	return false
+}
+
 // Pool Autoprovision feature is not supported by Scaleway
 
 // Create creates the node group on the cloud provider side.

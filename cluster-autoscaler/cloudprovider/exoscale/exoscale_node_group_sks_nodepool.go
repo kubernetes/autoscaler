@@ -201,6 +201,11 @@ func (n *sksNodepoolNodeGroup) Exist() bool {
 	return n.sksNodepool != nil
 }
 
+// IsUpcoming checks if the node group is being asynchronously created.
+func (n *sksNodepoolNodeGroup) IsUpcoming() bool {
+	return false
+}
+
 // Create creates the node group on the cloud provider side. Implementation optional.
 func (n *sksNodepoolNodeGroup) Create() (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented

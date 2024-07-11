@@ -112,6 +112,11 @@ func (scaleSet *ScaleSet) Exist() bool {
 	return true
 }
 
+// IsUpcoming checks if the node group is being asynchronously created.
+func (scaleSet *ScaleSet) IsUpcoming() bool {
+	return false
+}
+
 // Create creates the node group on the cloud provider side.
 func (scaleSet *ScaleSet) Create() (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrAlreadyExist

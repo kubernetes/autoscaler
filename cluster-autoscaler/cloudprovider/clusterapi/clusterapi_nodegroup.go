@@ -311,6 +311,11 @@ func (ng *nodegroup) Exist() bool {
 	return true
 }
 
+// IsUpcoming checks if the node group is being asynchronously created.
+func (ng *nodegroup) IsUpcoming() bool {
+	return false
+}
+
 // Create creates the node group on the cloud nodegroup side.
 // Implementation optional.
 func (ng *nodegroup) Create() (cloudprovider.NodeGroup, error) {
