@@ -684,7 +684,7 @@ func TestRegenerateMigInstancesCache(t *testing.T) {
 				migBaseNameCache:                 map[GceRef]string{},
 				listManagedInstancesResultsCache: map[GceRef]string{},
 				instanceTemplateNameCache:        map[GceRef]InstanceTemplateName{},
-				migInstancesStateCache:           map[GceRef]map[cloudprovider.InstanceState]int64{},
+				migInstancesStateCountCache:      map[GceRef]map[cloudprovider.InstanceState]int64{},
 			},
 			fetchMigInstances:                 fetchMigInstancesConst(mig1Instances),
 			fetchMigs:                         fetchMigsConst([]*gce.InstanceGroupManager{mig1Igm}),
@@ -709,7 +709,7 @@ func TestRegenerateMigInstancesCache(t *testing.T) {
 				migBaseNameCache:                 map[GceRef]string{},
 				listManagedInstancesResultsCache: map[GceRef]string{},
 				instanceTemplateNameCache:        map[GceRef]InstanceTemplateName{},
-				migInstancesStateCache:           map[GceRef]map[cloudprovider.InstanceState]int64{},
+				migInstancesStateCountCache:      map[GceRef]map[cloudprovider.InstanceState]int64{},
 			},
 			fetchMigInstances: fetchMigInstancesConst(mig2Instances),
 			fetchMigs:         fetchMigsConst([]*gce.InstanceGroupManager{mig2Igm}),
@@ -735,7 +735,7 @@ func TestRegenerateMigInstancesCache(t *testing.T) {
 				migBaseNameCache:                 map[GceRef]string{},
 				listManagedInstancesResultsCache: map[GceRef]string{},
 				instanceTemplateNameCache:        map[GceRef]InstanceTemplateName{},
-				migInstancesStateCache:           map[GceRef]map[cloudprovider.InstanceState]int64{},
+				migInstancesStateCountCache:      map[GceRef]map[cloudprovider.InstanceState]int64{},
 			},
 			fetchMigs:                         fetchMigsConst([]*gce.InstanceGroupManager{mig2Igm}),
 			fetchAllInstances:                 fetchAllInstancesInZone(map[string][]GceInstance{"myzone2": {instance3, instance6}}),
@@ -1273,8 +1273,8 @@ func TestCreateInstancesState(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			state := createInstancesState(tc.targetSize, tc.actionSummary)
-			assert.Equal(t, tc.want, state)
+			stateCount := createInstancesStateCount(tc.targetSize, tc.actionSummary)
+			assert.Equal(t, tc.want, stateCount)
 		})
 	}
 }
@@ -1742,7 +1742,7 @@ func TestIsMigInstancesConsistent(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			cache := GceCache{
-				migInstancesStateCache: tc.migInstancesStateCache,
+				migInstancesStateCountCache: tc.migInstancesStateCache,
 			}
 			provider := &cachingMigInfoProvider{
 				cache: &cache,
@@ -1805,7 +1805,7 @@ func TestIsMigInCreatingOrDeletingInstanceState(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			cache := GceCache{
-				migInstancesStateCache: tc.migInstancesStateCache,
+				migInstancesStateCountCache: tc.migInstancesStateCache,
 			}
 			provider := &cachingMigInfoProvider{
 				cache: &cache,
@@ -1878,12 +1878,12 @@ func TestUpdateMigInstancesCache(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			cache := GceCache{
-				migs:                   tc.migs,
-				instances:              make(map[GceRef][]GceInstance),
-				instancesUpdateTime:    make(map[GceRef]time.Time),
-				migBaseNameCache:       make(map[GceRef]string),
-				migInstancesStateCache: tc.migInstancesStateCache,
-				instancesToMig:         make(map[GceRef]GceRef),
+				migs:                        tc.migs,
+				instances:                   make(map[GceRef][]GceInstance),
+				instancesUpdateTime:         make(map[GceRef]time.Time),
+				migBaseNameCache:            make(map[GceRef]string),
+				migInstancesStateCountCache: tc.migInstancesStateCache,
+				instancesToMig:              make(map[GceRef]GceRef),
 			}
 			migLister := NewMigLister(&cache)
 			client := &mockAutoscalingGceClient{
@@ -1921,7 +1921,7 @@ func emptyCache() *GceCache {
 		instancesUpdateTime:              make(map[GceRef]time.Time),
 		migTargetSizeCache:               make(map[GceRef]int64),
 		migBaseNameCache:                 make(map[GceRef]string),
-		migInstancesStateCache:           make(map[GceRef]map[cloudprovider.InstanceState]int64),
+		migInstancesStateCountCache:      make(map[GceRef]map[cloudprovider.InstanceState]int64),
 		listManagedInstancesResultsCache: make(map[GceRef]string),
 		instanceTemplateNameCache:        make(map[GceRef]InstanceTemplateName),
 		instanceTemplatesCache:           make(map[GceRef]*gce.InstanceTemplate),
