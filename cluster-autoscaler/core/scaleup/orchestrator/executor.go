@@ -172,6 +172,11 @@ func (e *scaleUpExecutor) executeScaleUp(
 	if increase < 0 {
 		return errors.NewAutoscalerError(errors.InternalError, fmt.Sprintf("increase in number of nodes cannot be negative, got: %v", increase))
 	}
+	if info.Group.IsUpcoming() {
+		// Don't emit scale up event for upcoming node group as it will be generated after
+		// the node group is created, during initial scale up.
+		return nil
+	}
 	e.scaleStateNotifier.RegisterScaleUp(info.Group, increase, time.Now())
 	metrics.RegisterScaleUp(increase, gpuResourceName, gpuType)
 	e.autoscalingContext.LogRecorder.Eventf(apiv1.EventTypeNormal, "ScaledUpGroup",

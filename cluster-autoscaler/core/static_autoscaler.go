@@ -346,6 +346,10 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 	// Call CloudProvider.Refresh before any other calls to cloud provider.
 	refreshStart := time.Now()
 	err = a.AutoscalingContext.CloudProvider.Refresh()
+	if a.AutoscalingOptions.AsyncNodeGroupsEnabled {
+		// Some node groups might have been created asynchronously, without registering in CSR.
+		a.clusterStateRegistry.Recalculate()
+	}
 	metrics.UpdateDurationFromStart(metrics.CloudProviderRefresh, refreshStart)
 	if err != nil {
 		klog.Errorf("Failed to refresh cloud provider config: %v", err)
@@ -356,9 +360,12 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 	// Update node groups min/max and maximum number of nodes being set for all node groups after cloud provider refresh
 	maxNodesCount := 0
 	for _, nodeGroup := range a.AutoscalingContext.CloudProvider.NodeGroups() {
-		metrics.UpdateNodeGroupMin(nodeGroup.Id(), nodeGroup.MinSize())
-		metrics.UpdateNodeGroupMax(nodeGroup.Id(), nodeGroup.MaxSize())
-		maxNodesCount += nodeGroup.MaxSize()
+		// Don't report non-existing or upcoming node groups
+		if nodeGroup.Exist() {
+			metrics.UpdateNodeGroupMin(nodeGroup.Id(), nodeGroup.MinSize())
+			metrics.UpdateNodeGroupMax(nodeGroup.Id(), nodeGroup.MaxSize())
+			maxNodesCount += nodeGroup.MaxSize()
+		}
 	}
 	if a.MaxNodesTotal > 0 {
 		metrics.UpdateMaxNodesCount(integer.IntMin(a.MaxNodesTotal, maxNodesCount))
@@ -477,16 +484,10 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 	// them and not trigger another scale-up.
 	// The fake nodes are intentionally not added to the all nodes list, so that they are not considered as candidates for scale-down (which
 	// doesn't make sense as they're not real).
-	for _, upcomingNode := range getUpcomingNodeInfos(upcomingCounts, nodeInfosForGroups) {
-		var pods []*apiv1.Pod
-		for _, podInfo := range upcomingNode.Pods {
-			pods = append(pods, podInfo.Pod)
-		}
-		err = a.ClusterSnapshot.AddNodeWithPods(upcomingNode.Node(), pods)
-		if err != nil {
-			klog.Errorf("Failed to add upcoming node %s to cluster snapshot: %v", upcomingNode.Node().Name, err)
-			return caerrors.ToAutoscalerError(caerrors.InternalError, err)
-		}
+	err = a.addUpcomingNodesToClusterSnapshot(upcomingCounts, nodeInfosForGroups)
+	if err != nil {
+		klog.Errorf("Failed adding upcoming nodes to cluster snapshot: %v", err)
+		return caerrors.ToAutoscalerError(caerrors.InternalError, err)
 	}
 	// Some upcoming nodes can already be registered in the cluster, but not yet ready - we still inject replacements for them above. The actual registered nodes
 	// have to be filtered out of the all nodes list so that scale-down can't consider them as candidates. Otherwise, with aggressive scale-down settings, we
@@ -689,6 +690,42 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 		}
 	}
 
+	return nil
+}
+
+func (a *StaticAutoscaler) addUpcomingNodesToClusterSnapshot(upcomingCounts map[string]int, nodeInfosForGroups map[string]*schedulerframework.NodeInfo) error {
+	nodeGroups := a.nodeGroupsById()
+	upcomingNodeGroups := make(map[string]int)
+	upcomingNodesFromUpcomingNodeGroups := 0
+	for nodeGroupName, upcomingNodes := range getUpcomingNodeInfos(upcomingCounts, nodeInfosForGroups) {
+		nodeGroup := nodeGroups[nodeGroupName]
+		if nodeGroup == nil {
+			return fmt.Errorf("failed to find node group: %s", nodeGroupName)
+		}
+		for _, upcomingNode := range upcomingNodes {
+			var pods []*apiv1.Pod
+			for _, podInfo := range upcomingNode.Pods {
+				pods = append(pods, podInfo.Pod)
+			}
+			err := a.ClusterSnapshot.AddNodeWithPods(upcomingNode.Node(), pods)
+			if err != nil {
+				klog.Errorf("Failed to add upcoming node %s to cluster snapshot: %v", upcomingNode.Node().Name, err)
+				return err
+			}
+			if nodeGroup.IsUpcoming() {
+				upcomingNodesFromUpcomingNodeGroups++
+				if n, found := upcomingNodeGroups[nodeGroup.Id()]; found {
+					n++
+					upcomingNodeGroups[nodeGroup.Id()] = n
+				} else {
+					upcomingNodeGroups[nodeGroup.Id()] = 1
+				}
+			}
+		}
+	}
+	if len(upcomingNodeGroups) > 0 {
+		klog.Infof("Injecting %d upcoming node groups with %d upcoming nodes: %v", len(upcomingNodeGroups), upcomingNodesFromUpcomingNodeGroups, upcomingNodeGroups)
+	}
 	return nil
 }
 
@@ -998,8 +1035,8 @@ func allPodsAreNew(pods []*apiv1.Pod, currentTime time.Time) bool {
 	return found && oldest.Add(unschedulablePodWithGpuTimeBuffer).After(currentTime)
 }
 
-func getUpcomingNodeInfos(upcomingCounts map[string]int, nodeInfos map[string]*schedulerframework.NodeInfo) []*schedulerframework.NodeInfo {
-	upcomingNodes := make([]*schedulerframework.NodeInfo, 0)
+func getUpcomingNodeInfos(upcomingCounts map[string]int, nodeInfos map[string]*schedulerframework.NodeInfo) map[string][]*schedulerframework.NodeInfo {
+	upcomingNodes := make(map[string][]*schedulerframework.NodeInfo)
 	for nodeGroup, numberOfNodes := range upcomingCounts {
 		nodeTemplate, found := nodeInfos[nodeGroup]
 		if !found {
@@ -1012,12 +1049,14 @@ func getUpcomingNodeInfos(upcomingCounts map[string]int, nodeInfos map[string]*s
 		}
 		nodeTemplate.Node().Annotations[NodeUpcomingAnnotation] = "true"
 
+		var nodes []*schedulerframework.NodeInfo
 		for i := 0; i < numberOfNodes; i++ {
 			// Ensure new nodes have different names because nodeName
 			// will be used as a map key. Also deep copy pods (daemonsets &
 			// any pods added by cloud provider on template).
-			upcomingNodes = append(upcomingNodes, scheduler_utils.DeepCopyTemplateNode(nodeTemplate, fmt.Sprintf("upcoming-%d", i)))
+			nodes = append(nodes, scheduler_utils.DeepCopyTemplateNode(nodeTemplate, fmt.Sprintf("upcoming-%d", i)))
 		}
+		upcomingNodes[nodeGroup] = nodes
 	}
 	return upcomingNodes
 }
