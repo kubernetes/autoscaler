@@ -246,6 +246,15 @@ type MockAutoprovisioningNodeGroupManager struct {
 
 // CreateNodeGroup creates a new node group
 func (p *MockAutoprovisioningNodeGroupManager) CreateNodeGroup(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (nodegroups.CreateNodeGroupResult, errors.AutoscalerError) {
+	return p.createNodeGroup(context, nodeGroup, false)
+}
+
+// CreateNodeGroupAsync simulates async node group creation. Returns upcoming node groups, never calls initializer.
+func (p *MockAutoprovisioningNodeGroupManager) CreateNodeGroupAsync(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup, nodeGroupInitializer nodegroups.AsyncNodeGroupInitializer) (nodegroups.CreateNodeGroupResult, errors.AutoscalerError) {
+	return p.createNodeGroup(context, nodeGroup, false)
+}
+
+func (p *MockAutoprovisioningNodeGroupManager) createNodeGroup(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup, upcoming bool) (nodegroups.CreateNodeGroupResult, errors.AutoscalerError) {
 	newNodeGroup, err := nodeGroup.Create()
 	assert.NoError(p.T, err)
 	metrics.RegisterNodeGroupCreation()
@@ -265,6 +274,7 @@ func (p *MockAutoprovisioningNodeGroupManager) CreateNodeGroup(context *context.
 			map[string]string{},
 			[]apiv1.Taint{},
 			map[string]resource.Quantity{},
+			upcoming,
 			fmt.Sprintf("%d", i+1),
 		)
 		assert.NoError(p.T, err)

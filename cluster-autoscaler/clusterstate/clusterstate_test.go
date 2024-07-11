@@ -1380,3 +1380,27 @@ func TestTruncateIfExceedMaxSize(t *testing.T) {
 		})
 	}
 }
+
+func TestUpcomingNodesFromUpcomingNodeGroups(t *testing.T) {
+	now := time.Now()
+
+	ng := BuildTestNode("ng", 1000, 1000)
+
+	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider.AddUpcomingNodeGroup("ng", 1, 10, 2)
+
+	assert.NotNil(t, provider)
+	fakeClient := &fake.Clientset{}
+	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false, "some-map")
+	clusterstate := NewClusterStateRegistry(provider, ClusterStateRegistryConfig{
+		MaxTotalUnreadyPercentage: 10,
+		OkTotalUnreadyCount:       1,
+	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}))
+	err := clusterstate.UpdateNodes([]*apiv1.Node{ng}, nil, now)
+	assert.NoError(t, err)
+	assert.Equal(t, 0, len(clusterstate.GetClusterReadiness().Unready))
+	assert.Equal(t, 0, len(clusterstate.GetClusterReadiness().NotStarted))
+	upcoming, upcomingRegistered := clusterstate.GetUpcomingNodes()
+	assert.Equal(t, 2, upcoming["ng"])
+	assert.Empty(t, upcomingRegistered["ng"])
+}
