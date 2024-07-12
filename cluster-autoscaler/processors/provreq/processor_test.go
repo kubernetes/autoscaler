@@ -17,19 +17,26 @@ limitations under the License.
 package provreq
 
 import (
+	"context"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/kubernetes/pkg/scheduler/framework"
 
 	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1beta1"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
+	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/conditions"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqclient"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
 )
 
-func TestProcess(t *testing.T) {
+func TestRefresh(t *testing.T) {
 	now := time.Now()
 	dayAgo := now.Add(-1 * 24 * time.Hour)
 	weekAgo := now.Add(-1 * defaultExpirationTime).Add(-1 * 5 * time.Minute)
@@ -146,8 +153,8 @@ func TestProcess(t *testing.T) {
 		additionalPr := provreqclient.ProvisioningRequestWrapperForTesting("namespace", "additional")
 		additionalPr.CreationTimestamp = metav1.NewTime(weekAgo)
 		additionalPr.Spec.ProvisioningClassName = v1beta1.ProvisioningClassCheckCapacity
-		processor := provReqProcessor{func() time.Time { return now }, 1, provreqclient.NewFakeProvisioningRequestClient(nil, t, pr, additionalPr)}
-		processor.Process([]*provreqwrapper.ProvisioningRequest{pr, additionalPr})
+		processor := provReqProcessor{func() time.Time { return now }, 1, provreqclient.NewFakeProvisioningRequestClient(nil, t, pr, additionalPr), nil}
+		processor.refresh([]*provreqwrapper.ProvisioningRequest{pr, additionalPr})
 		assert.ElementsMatch(t, test.wantConditions, pr.Status.Conditions)
 		if len(test.conditions) == len(test.wantConditions) {
 			assert.ElementsMatch(t, []metav1.Condition{
@@ -162,5 +169,80 @@ func TestProcess(t *testing.T) {
 		} else {
 			assert.ElementsMatch(t, []metav1.Condition{}, additionalPr.Status.Conditions)
 		}
+	}
+}
+
+type fakeInjector struct {
+	pods []*apiv1.Pod
+}
+
+func (f *fakeInjector) TrySchedulePods(clusterSnapshot clustersnapshot.ClusterSnapshot, pods []*apiv1.Pod, isNodeAcceptable func(*framework.NodeInfo) bool, breakOnFailure bool) ([]scheduling.Status, int, error) {
+	f.pods = pods
+	return nil, 0, nil
+}
+
+func TestBookCapacity(t *testing.T) {
+	testCases := []struct {
+		name             string
+		conditions       []string
+		provReq          *provreqwrapper.ProvisioningRequest
+		capacityIsBooked bool
+	}{
+		{
+			name:             "ProvReq is new, check-capacity class",
+			provReq:          provreqwrapper.BuildTestProvisioningRequest("ns", "pr", "2", "100m", "", 10, false, time.Now(), v1beta1.ProvisioningClassCheckCapacity),
+			capacityIsBooked: false,
+		},
+		{
+			name:             "ProvReq is Failed, best-effort-atomic class",
+			conditions:       []string{v1beta1.Failed},
+			provReq:          provreqwrapper.BuildTestProvisioningRequest("ns", "pr", "2", "100m", "", 10, false, time.Now(), v1beta1.ProvisioningClassBestEffortAtomicScaleUp),
+			capacityIsBooked: false,
+		},
+		{
+			name:             "ProvReq is Provisioned, unknown class",
+			conditions:       []string{v1beta1.Provisioned},
+			provReq:          provreqwrapper.BuildTestProvisioningRequest("ns", "pr", "2", "100m", "", 10, false, time.Now(), "unknown"),
+			capacityIsBooked: false,
+		},
+		{
+			name:             "ProvReq is Provisioned, capacity should be booked, check-capacity class",
+			conditions:       []string{v1beta1.Provisioned},
+			provReq:          provreqwrapper.BuildTestProvisioningRequest("ns", "pr", "2", "100m", "", 10, false, time.Now(), v1beta1.ProvisioningClassCheckCapacity),
+			capacityIsBooked: true,
+		},
+		{
+			name:             "ProvReq is Provisioned, capacity should be booked, best-effort-atomic class",
+			conditions:       []string{v1beta1.Provisioned},
+			provReq:          provreqwrapper.BuildTestProvisioningRequest("ns", "pr", "2", "100m", "", 10, false, time.Now(), v1beta1.ProvisioningClassBestEffortAtomicScaleUp),
+			capacityIsBooked: true,
+		},
+		{
+			name:             "ProvReq has BookingExpired, capacity should not be booked, best-effort-atomic class",
+			conditions:       []string{v1beta1.Provisioned, v1beta1.BookingExpired},
+			provReq:          provreqwrapper.BuildTestProvisioningRequest("ns", "pr", "2", "100m", "", 10, false, time.Now(), v1beta1.ProvisioningClassBestEffortAtomicScaleUp),
+			capacityIsBooked: false,
+		},
+	}
+	for _, test := range testCases {
+		t.Run(test.name, func(t *testing.T) {
+			test := test
+			injector := &fakeInjector{pods: []*apiv1.Pod{}}
+			for _, condition := range test.conditions {
+				conditions.AddOrUpdateCondition(test.provReq, condition, metav1.ConditionTrue, "", "", metav1.Now())
+			}
+
+			processor := &provReqProcessor{
+				now:        func() time.Time { return time.Now() },
+				client:     provreqclient.NewFakeProvisioningRequestClient(context.Background(), t, test.provReq),
+				maxUpdated: 20,
+				injector:   injector,
+			}
+			ctx, _ := NewScaleTestAutoscalingContext(config.AutoscalingOptions{}, nil, nil, nil, nil, nil)
+			processor.bookCapacity(&ctx)
+			if (test.capacityIsBooked && len(injector.pods) == 0) || (!test.capacityIsBooked && len(injector.pods) > 0) {
+				t.Fail()
+			}
+		})
 	}
 }
