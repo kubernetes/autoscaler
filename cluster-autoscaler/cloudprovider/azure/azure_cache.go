@@ -207,7 +207,6 @@ func (m *azureCache) regenerate() error {
 	return nil
 }
 
-
 // fetchAzureResources retrieves and updates the cached Azure resources.
 //
 // This function performs the following:

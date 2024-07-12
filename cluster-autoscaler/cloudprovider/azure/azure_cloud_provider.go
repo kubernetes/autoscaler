@@ -125,8 +125,8 @@ func (azure *AzureCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovid
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
 func (azure *AzureCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
 	ng, err := azure.NodeGroupForNode(node)
-	if ng != nil {
-		return false, err 
+	if ng == nil {
+		return false, err
 	}
 	return true, nil
 }
