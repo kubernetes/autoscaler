@@ -18,6 +18,7 @@ package clusterapi
 
 import (
 	"fmt"
+	"path"
 	"reflect"
 
 	corev1 "k8s.io/api/core/v1"
@@ -81,8 +82,9 @@ func (p *provider) NodeGroupForNode(node *corev1.Node) (cloudprovider.NodeGroup,
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
 func (p *provider) HasInstance(node *corev1.Node) (bool, error) {
 	machineID := node.Annotations[machineAnnotationKey]
+	ns := node.Annotations[clusterNamespaceAnnotationKey]
 
-	machine, err := p.controller.findMachine(machineID)
+	machine, err := p.controller.findMachine(path.Join(ns, machineID))
 	if machine != nil {
 		return true, nil
 	}

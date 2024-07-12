@@ -90,6 +90,14 @@ var (
 	// by the CAPI_GROUP env variable, it is initialized here.
 	machineAnnotationKey = getMachineAnnotationKey()
 
+	// clusterNameAnnotationKey is the annotation used by cluster-api for annotating nodes
+	// with their cluster name.
+	clusterNameAnnotationKey = getClusterNameAnnotationKey()
+
+	// clusterNamespaceAnnotationKey is the annotation used by cluster-api for annotating nodes
+	// with their cluster namespace.
+	clusterNamespaceAnnotationKey = getClusterNamespaceAnnotationKey()
+
 	// nodeGroupMinSizeAnnotationKey and nodeGroupMaxSizeAnnotationKey are the keys
 	// used in MachineSet and MachineDeployment annotations to specify the limits
 	// for the node group. Because the keys can be affected by the CAPI_GROUP env
@@ -97,6 +105,8 @@ var (
 	nodeGroupMinSizeAnnotationKey = getNodeGroupMinSizeAnnotationKey()
 	nodeGroupMaxSizeAnnotationKey = getNodeGroupMaxSizeAnnotationKey()
 	zeroQuantity                  = resource.MustParse("0")
+
+	nodeGroupAutoscalingOptionsKeyPrefix = getNodeGroupAutoscalingOptionsKeyPrefix()
 
 	systemArchitecture *SystemArchitecture
 	once               sync.Once
@@ -130,6 +140,21 @@ func minSize(annotations map[string]string) (int, error) {
 		return 0, errors.Wrapf(err, "%s", errInvalidMinAnnotation)
 	}
 	return i, nil
+}
+
+func autoscalingOptions(annotations map[string]string) map[string]string {
+	options := map[string]string{}
+	for k, v := range annotations {
+		if !strings.HasPrefix(k, nodeGroupAutoscalingOptionsKeyPrefix) {
+			continue
+		}
+		resourceName := strings.Split(k, nodeGroupAutoscalingOptionsKeyPrefix)
+		if len(resourceName) < 2 || resourceName[1] == "" || v == "" {
+			continue
+		}
+		options[resourceName[1]] = strings.ToLower(v)
+	}
+	return options
 }
 
 // maxSize returns the maximum value encoded in the annotations keyed
@@ -292,6 +317,13 @@ func getNodeGroupMaxSizeAnnotationKey() string {
 	return key
 }
 
+// getNodeGroupAutoscalingOptionsKeyPrefix returns the key that is used for autoscaling options
+// per node group which override autoscaler default options.
+func getNodeGroupAutoscalingOptionsKeyPrefix() string {
+	key := fmt.Sprintf("%s/autoscaling-options-", getCAPIGroup())
+	return key
+}
+
 // getMachineDeleteAnnotationKey returns the key that is used by cluster-api for marking
 // machines to be deleted. This function is needed because the user can change the default
 // group name by using the CAPI_GROUP environment variable.
@@ -305,6 +337,20 @@ func getMachineDeleteAnnotationKey() string {
 // the default group name by using the CAPI_GROUP environment variable.
 func getMachineAnnotationKey() string {
 	key := fmt.Sprintf("%s/machine", getCAPIGroup())
+	return key
+}
+
+// getClusterNameAnnotationKey returns the key that is used by cluster-api for annotating nodes
+// with their cluster name.
+func getClusterNameAnnotationKey() string {
+	key := fmt.Sprintf("%s/cluster-name", getCAPIGroup())
+	return key
+}
+
+// getClusterNamespaceAnnotationKey returns the key that is used by cluster-api for annotating nodes
+// with their cluster namespace.
+func getClusterNamespaceAnnotationKey() string {
+	key := fmt.Sprintf("%s/cluster-namespace", getCAPIGroup())
 	return key
 }
 

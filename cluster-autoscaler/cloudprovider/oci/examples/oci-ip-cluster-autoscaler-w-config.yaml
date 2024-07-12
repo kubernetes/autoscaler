@@ -35,6 +35,9 @@ rules:
     resourceNames: ["cluster-autoscaler"]
     verbs: ["get", "update"]
   - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["watch", "list", "get"]
+  - apiGroups: [""]
     resources: ["nodes"]
     verbs: ["watch", "list", "get", "patch", "update"]
   - apiGroups: [""]
@@ -55,7 +58,7 @@ rules:
     resources: ["statefulsets", "replicasets", "daemonsets"]
     verbs: ["watch", "list", "get"]
   - apiGroups: ["storage.k8s.io"]
-    resources: ["storageclasses", "csinodes"]
+    resources: ["storageclasses", "csinodes", "csistoragecapacities", "csidrivers"]
     verbs: ["watch", "list", "get"]
   - apiGroups: ["batch", "extensions"]
     resources: ["jobs"]
@@ -158,6 +161,8 @@ spec:
           env:
             - name: OCI_USE_INSTANCE_PRINCIPAL
               value: "false"
+            - name: OCI_SDK_APPEND_USER_AGENT
+              value: "oci-oke-cluster-autoscaler"
           volumeMounts:
             - name: oci-config-vol
               mountPath: "/root/.oci"
