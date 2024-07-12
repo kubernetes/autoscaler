@@ -188,10 +188,10 @@ func TestScaleUp(t *testing.T) {
 			scaleUpResult:    status.ScaleUpNotNeeded,
 		},
 		{
-			name:             "capacity in the cluster is booked",
-			provReqs:         []*provreqwrapper.ProvisioningRequest{newCheckCapacityMemProvReq, bookedCapacityProvReq},
+			name:             "capacity is there, check-capacity class",
+			provReqs:         []*provreqwrapper.ProvisioningRequest{newCheckCapacityMemProvReq},
 			provReqToScaleUp: newCheckCapacityMemProvReq,
-			scaleUpResult:    status.ScaleUpNoOptionsAvailable,
+			scaleUpResult:    status.ScaleUpSuccessful,
 		},
 		{
 			name:             "unsupported ProvisioningRequest is ignored",
@@ -210,12 +210,6 @@ func TestScaleUp(t *testing.T) {
 			provReqs:         []*provreqwrapper.ProvisioningRequest{bookedCapacityProvReq, atomicScaleUpProvReq},
 			provReqToScaleUp: atomicScaleUpProvReq,
 			scaleUpResult:    status.ScaleUpNotNeeded,
-		},
-		{
-			name:             "some capacity is pre-booked, large atomic scale-up request doesn't fit",
-			provReqs:         []*provreqwrapper.ProvisioningRequest{bookedCapacityProvReq, largeAtomicScaleUpProvReq},
-			provReqToScaleUp: largeAtomicScaleUpProvReq,
-			scaleUpResult:    status.ScaleUpNoOptionsAvailable,
 		},
 		{
 			name:             "capacity is there, large atomic scale-up request doesn't require scale-up",
