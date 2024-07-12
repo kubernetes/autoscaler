@@ -17,6 +17,7 @@ limitations under the License.
 package status
 
 import (
+	"context"
 	"time"
 
 	clientset "k8s.io/client-go/kubernetes"
@@ -52,7 +53,10 @@ func (su *Updater) Run(stopCh <-chan struct{}) {
 			case <-stopCh:
 				return
 			case <-time.After(su.updateInterval):
-				if err := su.client.UpdateStatus(); err != nil {
+				ctx, cancel := context.WithTimeout(context.Background(), su.updateInterval)
+				defer cancel()
+
+				if err := su.client.UpdateStatus(ctx); err != nil {
 					klog.Errorf("Status update by %s failed: %v", su.client.holderIdentity, err)
 				}
 			}

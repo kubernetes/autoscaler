@@ -60,7 +60,7 @@ type Client struct {
 
 // Validator for the status object.
 type Validator interface {
-	IsStatusValid(statusTimeout time.Duration) (bool, error)
+	IsStatusValid(ctx context.Context, statusTimeout time.Duration) (bool, error)
 }
 
 // NewClient returns a client for the status object.
@@ -87,18 +87,18 @@ func NewValidator(c clientset.Interface, leaseName, leaseNamespace string) Valid
 
 // UpdateStatus renews status object lease.
 // Status object will be created if it doesn't exist.
-func (c *Client) UpdateStatus() error {
-	updateFn := func() error {
-		lease, err := c.client.Get(context.TODO(), c.leaseName, metav1.GetOptions{})
+func (c *Client) UpdateStatus(ctx context.Context) error {
+	updateFn := func(ctx context.Context) error {
+		lease, err := c.client.Get(ctx, c.leaseName, metav1.GetOptions{})
 		if apierrors.IsNotFound(err) {
 			// Create lease if it doesn't exist.
-			return c.create()
+			return c.create(ctx)
 		} else if err != nil {
 			return err
 		}
 		lease.Spec.RenewTime = &metav1.MicroTime{Time: time.Now()}
 		lease.Spec.HolderIdentity = pointer.String(c.holderIdentity)
-		_, err = c.client.Update(context.TODO(), lease, metav1.UpdateOptions{})
+		_, err = c.client.Update(ctx, lease, metav1.UpdateOptions{})
 		if apierrors.IsConflict(err) {
 			// Lease was updated by an another replica of the component.
 			// No error should be returned.
@@ -106,11 +106,11 @@ func (c *Client) UpdateStatus() error {
 		}
 		return err
 	}
-	return retryWithExponentialBackOff(updateFn)
+	return retryWithExponentialBackOff(ctx, updateFn)
 }
 
-func (c *Client) create() error {
-	_, err := c.client.Create(context.TODO(), c.newLease(), metav1.CreateOptions{})
+func (c *Client) create(ctx context.Context) error {
+	_, err := c.client.Create(ctx, c.newLease(), metav1.CreateOptions{})
 	if apierrors.IsAlreadyExists(err) {
 		// Lease was created by an another replica of the component.
 		// No error should be returned.
@@ -134,22 +134,22 @@ func (c *Client) newLease() *apicoordinationv1.Lease {
 
 // IsStatusValid verifies if the current status object
 // was updated before lease timing out.
-func (c *Client) IsStatusValid(statusTimeout time.Duration) (bool, error) {
-	status, err := c.getStatus()
+func (c *Client) IsStatusValid(ctx context.Context, statusTimeout time.Duration) (bool, error) {
+	status, err := c.getStatus(ctx)
 	if err != nil {
 		return false, err
 	}
 	return isStatusValid(status, statusTimeout, time.Now()), nil
 }
 
-func (c *Client) getStatus() (*apicoordinationv1.Lease, error) {
+func (c *Client) getStatus(ctx context.Context) (*apicoordinationv1.Lease, error) {
 	var lease *apicoordinationv1.Lease
-	getFn := func() error {
+	getFn := func(ctx context.Context) error {
 		var err error
-		lease, err = c.client.Get(context.TODO(), c.leaseName, metav1.GetOptions{})
+		lease, err = c.client.Get(ctx, c.leaseName, metav1.GetOptions{})
 		return err
 	}
-	err := retryWithExponentialBackOff(getFn)
+	err := retryWithExponentialBackOff(ctx, getFn)
 	return lease, err
 }
 
@@ -179,16 +179,16 @@ func isRetryableNetError(err error) bool {
 	return false
 }
 
-func retryWithExponentialBackOff(fn func() error) error {
+func retryWithExponentialBackOff(ctx context.Context, fn func(context.Context) error) error {
 	backoff := wait.Backoff{
 		Duration: retryBackoffInitialDuration,
 		Factor:   retryBackoffFactor,
 		Jitter:   retryBackoffJitter,
 		Steps:    retryBackoffSteps,
 	}
-	retryFn := func(fn func() error) func() (bool, error) {
-		return func() (bool, error) {
-			err := fn()
+	retryFn := func(fn func(context.Context) error) func(context.Context) (bool, error) {
+		return func(ctx context.Context) (bool, error) {
+			err := fn(ctx)
 			if err == nil {
 				return true, nil
 			}
@@ -198,5 +198,5 @@ func retryWithExponentialBackOff(fn func() error) error {
 			return false, err
 		}
 	}
-	return wait.ExponentialBackoff(backoff, retryFn(fn))
+	return wait.ExponentialBackoffWithContext(ctx, backoff, retryFn(fn))
 }
