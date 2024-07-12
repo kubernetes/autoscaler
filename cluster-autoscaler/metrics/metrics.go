@@ -115,6 +115,8 @@ const (
 	Reconfigure                FunctionLabel = "reconfigure"
 	Autoscaling                FunctionLabel = "autoscaling"
 	LoopWait                   FunctionLabel = "loopWait"
+	BulkListAllGceInstances    FunctionLabel = "bulkListInstances:listAllInstances"
+	BulkListMigInstances       FunctionLabel = "bulkListInstances:listMigInstances"
 )
 
 var (
@@ -417,6 +419,14 @@ var (
 		},
 		[]string{"type"},
 	)
+
+	inconsistentInstancesMigsCount = k8smetrics.NewGauge(
+		&k8smetrics.GaugeOpts{
+			Namespace: caNamespace,
+			Name:      "inconsistent_instances_migs_count",
+			Help:      "Number of migs where instance count according to InstanceGroupManagers.List() differs from the results of Instances.List(). This can happen when some instances are abandoned or a user edits instance 'created-by' metadata.",
+		},
+	)
 )
 
 // RegisterAll registers all metrics.
@@ -452,6 +462,7 @@ func RegisterAll(emitPerNodeGroupMetrics bool) {
 	legacyregistry.MustRegister(nodeGroupDeletionCount)
 	legacyregistry.MustRegister(pendingNodeDeletions)
 	legacyregistry.MustRegister(nodeTaintsCount)
+	legacyregistry.MustRegister(inconsistentInstancesMigsCount)
 
 	if emitPerNodeGroupMetrics {
 		legacyregistry.MustRegister(nodesGroupMinNodes)
@@ -714,4 +725,11 @@ func ObservePendingNodeDeletions(value int) {
 // ObserveNodeTaintsCount records the node taints count of given type.
 func ObserveNodeTaintsCount(taintType string, count float64) {
 	nodeTaintsCount.WithLabelValues(taintType).Set(count)
+}
+
+// UpdateInconsistentInstancesMigsCount records the observed number of migs where instance count
+// according to InstanceGroupManagers.List() differs from the results of Instances.List().
+// This can happen when some instances are abandoned or a user edits instance 'created-by' metadata.
+func UpdateInconsistentInstancesMigsCount(migCount int) {
+	inconsistentInstancesMigsCount.Set(float64(migCount))
 }
