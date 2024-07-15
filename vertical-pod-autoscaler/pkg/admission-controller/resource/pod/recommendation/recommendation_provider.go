@@ -106,7 +106,7 @@ func GetContainersResources(pod *core.Pod, vpaResourcePolicy *vpa_types.PodResou
 // The returned slice corresponds 1-1 to containers in the Pod.
 func (p *recommendationProvider) GetContainersResourcesForPod(pod *core.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]vpa_api_util.ContainerResources, vpa_api_util.ContainerToAnnotationsMap, error) {
 	if vpa == nil || pod == nil {
-		klog.V(0).Infof("can't calculate recommendations, one of vpa(%+v), pod(%+v) is nil", vpa, pod)
+		klog.V(2).Infof("can't calculate recommendations, one of vpa(%+v), pod(%+v) is nil", vpa, pod)
 		return nil, nil, nil
 	}
 	klog.V(2).Infof("updating requirements for pod %s.", pod.Name)
