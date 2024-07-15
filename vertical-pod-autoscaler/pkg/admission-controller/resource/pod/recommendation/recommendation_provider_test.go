@@ -362,6 +362,7 @@ func TestUpdateResourceRequests(t *testing.T) {
 }
 
 func TestGetContainersResourcesAddAll(t *testing.T) {
+	// Test when addAll = true. The case where addAll = false is implicitly tested above via testing GetContainersResourcesForPod.
 	testCases := []struct {
 		name             string
 		container        apiv1.Container
