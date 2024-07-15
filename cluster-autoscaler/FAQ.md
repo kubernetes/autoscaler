@@ -1183,7 +1183,7 @@ sub-library. It can be used with custom kubernetes fork, by default it uses
 Example execution looks like this:
 
 ```
-./hack/update-vendor.sh 1.20.0-alpha.1 git@github.com:kubernetes/kubernetes.git
+./hack/update-deps.sh 1.20.0-alpha.1 git@github.com:kubernetes/kubernetes.git
 ```
 
 If you need to update vendor to an unreleased commit of Kubernetes, you can use the breakglass script:
