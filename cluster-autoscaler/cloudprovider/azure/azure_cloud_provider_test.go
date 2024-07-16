@@ -24,6 +24,8 @@ import (
 	"github.com/Azure/go-autorest/autorest/to"
 
 	apiv1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmclient/mockvmclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssclient/mockvmssclient"
@@ -129,6 +131,99 @@ func TestNodeGroups(t *testing.T) {
 	)
 	assert.True(t, registered)
 	assert.Equal(t, len(provider.NodeGroups()), 2)
+}
+
+func TestStaticVMSSNodesAreNotCountedTowardBeingDeleted(t *testing.T){}
+func TestHasInstanceNodesOutsideOfUnownedInstancesThatAreNonASG(t *testing.T) {}
+
+  func TestHasInstance(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	provider := newTestProvider(t)
+	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
+	mockVMClient := mockvmclient.NewMockInterface(ctrl)
+	mockVMSSVMClient := mockvmssvmclient.NewMockInterface(ctrl)
+	provider.azureManager.azClient.virtualMachinesClient = mockVMClient
+	provider.azureManager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
+	provider.azureManager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
+
+	// Simulate node groups and instances
+	expectedScaleSets := newTestVMSSList(3, "test-asg", "eastus", compute.Uniform)
+	expectedVMsPoolVMs := newTestVMsPoolVMList(3)
+	expectedVMSSVMs := newTestVMSSVMList(3)
+
+	mockVMSSClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
+	mockVMClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return(expectedVMsPoolVMs, nil).AnyTimes()
+	mockVMSSVMClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup, "test-asg", gomock.Any()).Return(expectedVMSSVMs, nil).AnyTimes()
+
+	// Register node groups
+	assert.Equal(t, len(provider.NodeGroups()), 0)
+	registered := provider.azureManager.RegisterNodeGroup(
+		newTestScaleSet(provider.azureManager, "test-asg"),
+	)
+	provider.azureManager.explicitlyConfigured["test-asg"] = true
+	assert.True(t, registered)
+
+	registered = provider.azureManager.RegisterNodeGroup(
+		newTestVMsPool(provider.azureManager, "test-vms-pool"),
+	)
+	provider.azureManager.explicitlyConfigured["test-vms-pool"] = true
+	assert.True(t, registered)
+	assert.Equal(t, len(provider.NodeGroups()), 2)
+
+	// Refresh cache
+	provider.azureManager.forceRefresh()
+
+	// Test HasInstance for a node from the VMSS pool
+	node := newApiNode(compute.Uniform, 0)
+	inst := &azureRef{Name: node.Spec.ProviderID}
+	hasInstance, err := provider.azureManager.azureCache.HasInstance(inst)
+	assert.True(t, hasInstance)
+	assert.NoError(t, err)
+
+	// Test HasInstance for a node from the VMs pool
+	vmsPoolNode := newVMsNode(0)
+	inst = &azureRef{Name: vmsPoolNode.Spec.ProviderID}
+	hasInstance, err = provider.azureManager.azureCache.HasInstance(inst)
+	assert.True(t, hasInstance)
+	assert.NoError(t, err)
+}
+
+func TestHasInstanceProviderIDErrorValidation(t *testing.T) {
+	provider := newTestProvider(t)
+	// Test case: Node with an empty ProviderID
+	nodeWithoutValidProviderID := &apiv1.Node{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "test-node",
+		},
+		Spec: apiv1.NodeSpec{
+			ProviderID: "",
+		},
+	}
+	_, err := provider.HasInstance(nodeWithoutValidProviderID)
+	assert.Equal(t, "ProviderID for node: test-node is empty, skipped", err.Error())
+
+	// Test cases: Nodes with invalid ProviderID prefixes
+	invalidProviderIDs := []string{
+		"aazure://",
+		"kubemark://",
+		"kwok://",
+		"incorrect!",
+	}
+
+	for _, providerID := range invalidProviderIDs {
+		invalidProviderIDNode := &apiv1.Node{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "test-node",
+			},
+			Spec: apiv1.NodeSpec{
+				ProviderID: providerID,
+			},
+		}
+		_, err := provider.HasInstance(invalidProviderIDNode)
+		assert.Equal(t, "invalid azure ProviderID prefix for node: test-node, skipped", err.Error())
+	}
 }
 
 func TestMixedNodeGroups(t *testing.T) {

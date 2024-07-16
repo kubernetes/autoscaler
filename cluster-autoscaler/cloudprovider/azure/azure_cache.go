@@ -396,6 +396,36 @@ func (m *azureCache) getAutoscalingOptions(ref azureRef) map[string]string {
 	return m.autoscalingOptions[ref]
 }
 
+// HasInstance returns if a given instance exists in the azure cache 
+func (m *azureCache) HasInstance(instance *azureRef) (bool, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+	resourceID, err := convertResourceGroupNameToLower(instance.Name)
+	if err != nil {
+		// Most likely an invalid resource id, we should return false 
+		// most of these shouldn't make it here do to higher level 
+		// validation in the HasInstance azure.cloudprovider function
+		return false, err
+	}
+	inst := azureRef{Name: resourceID}
+	// Check if resource id belongs to an asg
+	// TODO: Validate how unownedInstances gets its state, 
+	// is there a better way for us to check if an instance id belongs to 
+	// an autoscaling group?  
+	if m.unownedInstances[inst] {
+		// We want to fall back onto the to be deleted taint 
+		// if we do not own the instance
+		return false, cloudprovider.ErrNotImplemented
+	}	
+	if nodeGroup := m.getInstanceFromCache(inst.Name); nodeGroup != nil {
+		klog.V(4).Infof("FindForInstance: found node group %q in cache", nodeGroup.Id())
+		return true, nil
+	}
+	// couldn't find instance in the cache, assume its deleted
+	return false, nil
+}
+
+
 // FindForInstance returns node group of the given Instance
 func (m *azureCache) FindForInstance(instance *azureRef, vmType string) (cloudprovider.NodeGroup, error) {
 	vmsPoolSet := m.getVMsPoolSet()

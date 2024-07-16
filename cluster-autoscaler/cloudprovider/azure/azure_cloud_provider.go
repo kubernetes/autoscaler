@@ -17,6 +17,7 @@ limitations under the License.
 package azure
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -124,11 +125,16 @@ func (azure *AzureCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovid
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
 func (azure *AzureCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
-	ng, err := azure.NodeGroupForNode(node)
-	if ng == nil {
-		return false, err
+	if node.Spec.ProviderID == "" {
+		return false, fmt.Errorf("ProviderID for node: %s is empty, skipped", node.Name)
 	}
-	return true, nil
+
+	if !strings.HasPrefix(node.Spec.ProviderID, "azure://") {
+	return false,  fmt.Errorf("invalid azure ProviderID prefix for node: %v, skipped", node.Name)
+	}
+
+	instance := &azureRef{Name: node.Spec.ProviderID}
+	return azure.azureManager.azureCache.HasInstance(instance)
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.
