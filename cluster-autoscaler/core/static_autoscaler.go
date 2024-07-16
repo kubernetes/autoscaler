@@ -743,7 +743,7 @@ func (a *StaticAutoscaler) removeOldUnregisteredNodes(allUnregisteredNodes []clu
 	csr *clusterstate.ClusterStateRegistry, currentTime time.Time, logRecorder *utils.LogEventRecorder) (bool, error) {
 
 	nodeGroups := a.nodeGroupsById()
-	nodesToBeDeletedByNodeGroupId := make(map[string][]clusterstate.UnregisteredNode)
+	nodesToDeleteByNodeGroupId := make(map[string][]clusterstate.UnregisteredNode)
 	for _, unregisteredNode := range allUnregisteredNodes {
 		nodeGroup, err := a.CloudProvider.NodeGroupForNode(unregisteredNode.Node)
 		if err != nil {
@@ -762,12 +762,12 @@ func (a *StaticAutoscaler) removeOldUnregisteredNodes(allUnregisteredNodes []clu
 
 		if unregisteredNode.UnregisteredSince.Add(maxNodeProvisionTime).Before(currentTime) {
 			klog.V(0).Infof("Marking unregistered node %v for removal", unregisteredNode.Node.Name)
-			nodesToBeDeletedByNodeGroupId[nodeGroup.Id()] = append(nodesToBeDeletedByNodeGroupId[nodeGroup.Id()], unregisteredNode)
+			nodesToDeleteByNodeGroupId[nodeGroup.Id()] = append(nodesToDeleteByNodeGroupId[nodeGroup.Id()], unregisteredNode)
 		}
 	}
 
 	removedAny := false
-	for nodeGroupId, unregisteredNodesToDelete := range nodesToBeDeletedByNodeGroupId {
+	for nodeGroupId, unregisteredNodesToDelete := range nodesToDeleteByNodeGroupId {
 		nodeGroup := nodeGroups[nodeGroupId]
 
 		klog.V(0).Infof("Removing %v unregistered nodes for node group %v", len(unregisteredNodesToDelete), nodeGroupId)
@@ -787,20 +787,10 @@ func (a *StaticAutoscaler) removeOldUnregisteredNodes(allUnregisteredNodes []clu
 		}
 		nodesToDelete := toNodes(unregisteredNodesToDelete)
 
-		opts, err := nodeGroup.GetOptions(a.NodeGroupDefaults)
-		if err != nil && err != cloudprovider.ErrNotImplemented {
-			klog.Warningf("Failed to get node group options for %s: %s", nodeGroupId, err)
+		nodesToDelete, err = overrideNodesToDeleteForZeroOrMax(a.NodeGroupDefaults, nodeGroup, nodesToDelete)
+		if err != nil {
+			klog.Warningf("Failed to remove unregistered nodes from node group %s: %v", nodeGroupId, err)
 			continue
-		}
-		// If a scale-up of "ZeroOrMaxNodeScaling" node group failed, the cleanup
-		// should stick to the all-or-nothing principle. Deleting all nodes.
-		if opts != nil && opts.ZeroOrMaxNodeScaling {
-			instances, err := nodeGroup.Nodes()
-			if err != nil {
-				klog.Warningf("Failed to fill in unregistered nodes from group %s based on ZeroOrMaxNodeScaling option: %s", nodeGroupId, err)
-				continue
-			}
-			nodesToDelete = instancesToFakeNodes(instances)
 		}
 
 		err = nodeGroup.DeleteNodes(nodesToDelete)
@@ -835,35 +825,19 @@ func (a *StaticAutoscaler) deleteCreatedNodesWithErrors() bool {
 	// We always schedule deleting of incoming errornous nodes
 	// TODO[lukaszos] Consider adding logic to not retry delete every loop iteration
 	nodeGroups := a.nodeGroupsById()
-	nodesToBeDeletedByNodeGroupId := a.clusterStateRegistry.GetCreatedNodesWithErrors()
+	nodesToDeleteByNodeGroupId := a.clusterStateRegistry.GetCreatedNodesWithErrors()
 
 	deletedAny := false
 
-	for nodeGroupId, nodesToBeDeleted := range nodesToBeDeletedByNodeGroupId {
+	for nodeGroupId, nodesToDelete := range nodesToDeleteByNodeGroupId {
 		var err error
-		klog.V(1).Infof("Deleting %v from %v node group because of create errors", len(nodesToBeDeleted), nodeGroupId)
+		klog.V(1).Infof("Deleting %v from %v node group because of create errors", len(nodesToDelete), nodeGroupId)
 
 		nodeGroup := nodeGroups[nodeGroupId]
 		if nodeGroup == nil {
 			err = fmt.Errorf("node group %s not found", nodeGroupId)
-		} else {
-			var opts *config.NodeGroupAutoscalingOptions
-			opts, err = nodeGroup.GetOptions(a.NodeGroupDefaults)
-			if err != nil && err != cloudprovider.ErrNotImplemented {
-				klog.Warningf("Failed to get node group options for %s: %s", nodeGroupId, err)
-				continue
-			}
-			// If a scale-up of "ZeroOrMaxNodeScaling" node group failed, the cleanup
-			// should stick to the all-or-nothing principle. Deleting all nodes.
-			if opts != nil && opts.ZeroOrMaxNodeScaling {
-				instances, err := nodeGroup.Nodes()
-				if err != nil {
-					klog.Warningf("Failed to fill in failed nodes from group %s based on ZeroOrMaxNodeScaling option: %s", nodeGroupId, err)
-					continue
-				}
-				nodesToBeDeleted = instancesToFakeNodes(instances)
-			}
-			err = nodeGroup.DeleteNodes(nodesToBeDeleted)
+		} else if nodesToDelete, err = overrideNodesToDeleteForZeroOrMax(a.NodeGroupDefaults, nodeGroup, nodesToDelete); err == nil {
+			err = nodeGroup.DeleteNodes(nodesToDelete)
 		}
 
 		if err != nil {
@@ -875,6 +849,27 @@ func (a *StaticAutoscaler) deleteCreatedNodesWithErrors() bool {
 	}
 
 	return deletedAny
+}
+
+// overrideNodesToDeleteForZeroOrMax returns a list of nodes to delete, taking into account that
+// node deletion for a "ZeroOrMaxNodeScaling" node group is atomic and should delete all nodes.
+// For a non-"ZeroOrMaxNodeScaling" node group it returns the unchanged list of nodes to delete.
+func overrideNodesToDeleteForZeroOrMax(defaults config.NodeGroupAutoscalingOptions, nodeGroup cloudprovider.NodeGroup, nodesToDelete []*apiv1.Node) ([]*apiv1.Node, error) {
+	opts, err := nodeGroup.GetOptions(defaults)
+	if err != nil && err != cloudprovider.ErrNotImplemented {
+		return []*apiv1.Node{}, fmt.Errorf("Failed to get node group options for %s: %s", nodeGroup.Id(), err)
+	}
+	// If a scale-up of "ZeroOrMaxNodeScaling" node group failed, the cleanup
+	// should stick to the all-or-nothing principle. Deleting all nodes.
+	if opts != nil && opts.ZeroOrMaxNodeScaling {
+		instances, err := nodeGroup.Nodes()
+		if err != nil {
+			return []*apiv1.Node{}, fmt.Errorf("Failed to fill in nodes to delete from group %s based on ZeroOrMaxNodeScaling option: %s", nodeGroup.Id(), err)
+		}
+		return instancesToFakeNodes(instances), nil
+	}
+	// No override needed.
+	return nodesToDelete, nil
 }
 
 // instancesToNodes returns a list of fake nodes with just names populated,
