@@ -251,7 +251,9 @@ func (c *cachingMigInfoProvider) updateMigInstancesCache(migToInstances map[GceR
 	defer metrics.UpdateDurationFromStart(metrics.BulkListMigInstances, time.Now())
 	inconsistentInstancesMigsCount := 0
 	defer func() {
-		klog.Warningf("Inconsistent instances migs count: %v", inconsistentInstancesMigsCount)
+		if inconsistentInstancesMigsCount > 0 {
+			klog.Warningf("Inconsistent instances migs count: %v", inconsistentInstancesMigsCount)
+		}
 		metrics.UpdateInconsistentInstancesMigsCount(inconsistentInstancesMigsCount)
 	}()
 	var errors []error
