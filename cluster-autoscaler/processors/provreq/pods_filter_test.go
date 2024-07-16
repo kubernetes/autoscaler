@@ -24,17 +24,19 @@ import (
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1beta1"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/pods"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/client-go/tools/record"
 )
 
 func TestProvisioningRequestPodsFilter(t *testing.T) {
 	prPod1 := BuildTestPod("pr-pod-1", 500, 10)
-	prPod1.Annotations[ProvisioningRequestPodAnnotationKey] = "pr-class"
+	prPod1.Annotations[v1beta1.ProvisioningRequestPodAnnotationKey] = "pr-class"
 
 	prPod2 := BuildTestPod("pr-pod-2", 500, 10)
-	prPod2.Annotations[ProvisioningRequestPodAnnotationKey] = "pr-class-2"
+	prPod2.Annotations[pods.DeprecatedProvisioningRequestPodAnnotationKey] = "pr-class-2"
 
 	pod1 := BuildTestPod("pod-1", 500, 10)
 	pod2 := BuildTestPod("pod-2", 500, 10)
@@ -91,7 +93,7 @@ func TestEventManager(t *testing.T) {
 
 	for i := 0; i < 10; i++ {
 		prPod := BuildTestPod(fmt.Sprintf("pr-pod-%d", i), 10, 10)
-		prPod.Annotations[ProvisioningRequestPodAnnotationKey] = "pr-class"
+		prPod.Annotations[v1beta1.ProvisioningRequestPodAnnotationKey] = "pr-class"
 		unscheduledPods = append(unscheduledPods, prPod)
 	}
 	got, err := prFilter.Process(ctx, unscheduledPods)
