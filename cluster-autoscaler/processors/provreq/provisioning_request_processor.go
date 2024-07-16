@@ -17,41 +17,96 @@ limitations under the License.
 package provreq
 
 import (
-	"k8s.io/autoscaler/cluster-autoscaler/observers/loopstart"
+	"time"
+
+	apimeta "k8s.io/apimachinery/pkg/api/meta"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1beta1"
+	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest"
+	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/conditions"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqclient"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
 	"k8s.io/klog/v2"
 )
 
-// ProvisioningRequestProcessor process ProvisioningRequests in the cluster.
-type ProvisioningRequestProcessor interface {
-	Process([]*provreqwrapper.ProvisioningRequest)
-	CleanUp()
-}
+const (
+	defaultReservationTime = 10 * time.Minute
+	defaultExpirationTime  = 7 * 24 * time.Hour // 7 days
+	// defaultMaxUpdated is a limit for ProvisioningRequest to update conditions in one ClusterAutoscaler loop.
+	defaultMaxUpdated = 20
+)
 
-// CombinedProvReqProcessor is responsible for processing ProvisioningRequest for each ProvisioningClass
-// every CA loop and updating conditions for expired ProvisioningRequests.
-type CombinedProvReqProcessor struct {
+type provReqProcessor struct {
+	now        func() time.Time
+	maxUpdated int
 	client     *provreqclient.ProvisioningRequestClient
-	processors []ProvisioningRequestProcessor
 }
 
-// NewCombinedProvReqProcessor return new CombinedProvReqProcessor.
-func NewCombinedProvReqProcessor(client *provreqclient.ProvisioningRequestClient, processors []ProvisioningRequestProcessor) loopstart.Observer {
-	return &CombinedProvReqProcessor{client: client, processors: processors}
+// NewProvReqProcessor return ProvisioningRequestProcessor.
+func NewProvReqProcessor(client *provreqclient.ProvisioningRequestClient) *provReqProcessor {
+	return &provReqProcessor{now: time.Now, maxUpdated: defaultMaxUpdated, client: client}
 }
 
-// Refresh iterates over ProvisioningRequests and updates its conditions/state.
-func (cp *CombinedProvReqProcessor) Refresh() {
-	provReqs, err := cp.client.ProvisioningRequests()
+// Refresh implements loop.Observer interface and will be run at the start
+// of every iteration of the main loop. It tries to fetch current
+// ProvisioningRequests and processes up to p.maxUpdated of them.
+func (p *provReqProcessor) Refresh() {
+	provReqs, err := p.client.ProvisioningRequests()
 	if err != nil {
 		klog.Errorf("Failed to get ProvisioningRequests list, err: %v", err)
 		return
 	}
-	for _, p := range cp.processors {
-		p.Process(provReqs)
+
+	p.Process(provReqs)
+}
+
+// Process iterates over ProvisioningRequests and apply:
+// -BookingExpired condition for Provisioned ProvisioningRequest if capacity reservation time is expired.
+// -Failed condition for ProvisioningRequest that were not provisioned during defaultExpirationTime.
+// TODO(yaroslava): fetch reservation and expiration time from ProvisioningRequest
+func (p *provReqProcessor) Process(provReqs []*provreqwrapper.ProvisioningRequest) {
+	expiredProvReq := []*provreqwrapper.ProvisioningRequest{}
+	failedProvReq := []*provreqwrapper.ProvisioningRequest{}
+	for _, provReq := range provReqs {
+		if len(expiredProvReq) >= p.maxUpdated {
+			break
+		}
+		if ok, found := provisioningrequest.SupportedProvisioningClasses[provReq.Spec.ProvisioningClassName]; !ok || !found {
+			continue
+		}
+		conditions := provReq.Status.Conditions
+		if apimeta.IsStatusConditionTrue(conditions, v1beta1.BookingExpired) || apimeta.IsStatusConditionTrue(conditions, v1beta1.Failed) {
+			continue
+		}
+		provisioned := apimeta.FindStatusCondition(conditions, v1beta1.Provisioned)
+		if provisioned != nil && provisioned.Status == metav1.ConditionTrue {
+			if provisioned.LastTransitionTime.Add(defaultReservationTime).Before(p.now()) {
+				expiredProvReq = append(expiredProvReq, provReq)
+			}
+		} else if len(failedProvReq) < p.maxUpdated-len(expiredProvReq) {
+			created := provReq.CreationTimestamp
+			if created.Add(defaultExpirationTime).Before(p.now()) {
+				failedProvReq = append(failedProvReq, provReq)
+			}
+		}
+	}
+	for _, provReq := range expiredProvReq {
+		conditions.AddOrUpdateCondition(provReq, v1beta1.BookingExpired, metav1.ConditionTrue, conditions.CapacityReservationTimeExpiredReason, conditions.CapacityReservationTimeExpiredMsg, metav1.NewTime(p.now()))
+		_, updErr := p.client.UpdateProvisioningRequest(provReq.ProvisioningRequest)
+		if updErr != nil {
+			klog.Errorf("failed to add BookingExpired condition to ProvReq %s/%s, err: %v", provReq.Namespace, provReq.Name, updErr)
+			continue
+		}
+	}
+	for _, provReq := range failedProvReq {
+		conditions.AddOrUpdateCondition(provReq, v1beta1.Failed, metav1.ConditionTrue, conditions.ExpiredReason, conditions.ExpiredMsg, metav1.NewTime(p.now()))
+		_, updErr := p.client.UpdateProvisioningRequest(provReq.ProvisioningRequest)
+		if updErr != nil {
+			klog.Errorf("failed to add Failed condition to ProvReq %s/%s, err: %v", provReq.Namespace, provReq.Name, updErr)
+			continue
+		}
 	}
 }
 
-// CleanUp cleans up internal state
-func (cp *CombinedProvReqProcessor) CleanUp() {}
+// Cleanup cleans up internal state.
+func (p *provReqProcessor) CleanUp() {}
