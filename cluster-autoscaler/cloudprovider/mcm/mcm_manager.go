@@ -28,6 +28,7 @@ import (
 	"flag"
 	"fmt"
 	v1appslister "k8s.io/client-go/listers/apps/v1"
+	"k8s.io/utils/pointer"
 	"math/rand"
 	"net/http"
 	"os"
@@ -141,6 +142,7 @@ type nodeTemplate struct {
 	InstanceType *instanceType
 	Region       string
 	Zone         string
+	Architecture *string
 	Labels       map[string]string
 	Taints       []apiv1.Taint
 }
@@ -737,6 +739,7 @@ func (m *McmManager) GetMachineDeploymentNodeTemplate(machinedeployment *Machine
 		req, _           = labels.NewRequirement(nodegroupset.LabelWorkerPool, selection.Equals, list)
 		region           string
 		zone             string
+		architecture     *string
 		instance         instanceType
 		machineClass     = md.Spec.Template.Spec.Class
 		nodeTemplateSpec = md.Spec.Template.Spec.NodeTemplateSpec
@@ -788,6 +791,7 @@ func (m *McmManager) GetMachineDeploymentNodeTemplate(machinedeployment *Machine
 			instance.InstanceType = nodeTemplateAttributes.InstanceType
 			region = nodeTemplateAttributes.Region
 			zone = nodeTemplateAttributes.Zone
+			architecture = nodeTemplateAttributes.Architecture
 			break
 		}
 
@@ -813,6 +817,7 @@ func (m *McmManager) GetMachineDeploymentNodeTemplate(machinedeployment *Machine
 			}
 			region = providerSpec.Region
 			zone = getZoneValueFromMCLabels(mc.Labels)
+			architecture = pointer.String(providerSpec.Tags[apiv1.LabelArchStable])
 		case providerAzure:
 			var providerSpec *azureapis.AzureProviderSpec
 			err = json.Unmarshal(mc.ProviderSpec.Raw, &providerSpec)
@@ -835,6 +840,7 @@ func (m *McmManager) GetMachineDeploymentNodeTemplate(machinedeployment *Machine
 			if providerSpec.Properties.Zone != nil {
 				zone = providerSpec.Location + "-" + strconv.Itoa(*providerSpec.Properties.Zone)
 			}
+			architecture = pointer.String(providerSpec.Tags["kubernetes.io_arch"])
 		default:
 			return nil, cloudprovider.ErrNotImplemented
 		}
@@ -858,6 +864,7 @@ func (m *McmManager) GetMachineDeploymentNodeTemplate(machinedeployment *Machine
 		Zone:         zone, // will be implemented in MCM
 		Labels:       labels,
 		Taints:       taints,
+		Architecture: architecture,
 	}
 
 	return nodeTmpl, nil
@@ -973,9 +980,13 @@ func (m *McmManager) buildNodeFromTemplate(name string, template *nodeTemplate) 
 func buildGenericLabels(template *nodeTemplate, nodeName string) map[string]string {
 	result := make(map[string]string)
 	// TODO: extract from MCM
-	result[kubeletapis.LabelArch] = cloudprovider.DefaultArch
-	result[apiv1.LabelArchStable] = cloudprovider.DefaultArch
-
+	if template.Architecture != nil {
+		result[kubeletapis.LabelArch] = *template.Architecture
+		result[apiv1.LabelArchStable] = *template.Architecture
+	} else {
+		result[kubeletapis.LabelArch] = cloudprovider.DefaultArch
+		result[apiv1.LabelArchStable] = cloudprovider.DefaultArch
+	}
 	result[kubeletapis.LabelOS] = cloudprovider.DefaultOS
 	result[apiv1.LabelOSStable] = cloudprovider.DefaultOS
 
