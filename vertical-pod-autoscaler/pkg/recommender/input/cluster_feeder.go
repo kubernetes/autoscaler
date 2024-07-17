@@ -19,6 +19,7 @@ package input
 import (
 	"context"
 	"fmt"
+	"slices"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -87,6 +88,7 @@ type ClusterStateFeederFactory struct {
 	MemorySaveMode      bool
 	ControllerFetcher   controllerfetcher.ControllerFetcher
 	RecommenderName     string
+	IgnoredNamespaces   []string
 }
 
 // Make creates new ClusterStateFeeder with internal data providers, based on kube client.
@@ -103,6 +105,7 @@ func (m ClusterStateFeederFactory) Make() *clusterStateFeeder {
 		memorySaveMode:      m.MemorySaveMode,
 		controllerFetcher:   m.ControllerFetcher,
 		recommenderName:     m.RecommenderName,
+		ignoredNamespaces:   m.IgnoredNamespaces,
 	}
 }
 
@@ -192,6 +195,7 @@ type clusterStateFeeder struct {
 	memorySaveMode      bool
 	controllerFetcher   controllerfetcher.ControllerFetcher
 	recommenderName     string
+	ignoredNamespaces   []string
 }
 
 func (feeder *clusterStateFeeder) InitFromHistoryProvider(historyProvider history.HistoryProvider) {
@@ -332,6 +336,12 @@ func filterVPAs(feeder *clusterStateFeeder, allVpaCRDs []*vpa_types.VerticalPodA
 				continue
 			}
 		}
+
+		if slices.Contains(feeder.ignoredNamespaces, vpaCRD.ObjectMeta.Namespace) {
+			klog.V(6).Infof("Ignoring vpaCRD %s in namespace %s as namespace is ignored", vpaCRD.Name, vpaCRD.Namespace)
+			continue
+		}
+
 		vpaCRDs = append(vpaCRDs, vpaCRD)
 	}
 	return vpaCRDs
