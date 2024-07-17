@@ -178,30 +178,31 @@ func newPodTemplatesLister(client *kubernetes.Clientset, stopChannel <-chan stru
 	return podTemplLister, nil
 }
 
-// ProvisioningRequestForPods check that all pods belong to one ProvisioningRequest and return it.
-func ProvisioningRequestForPods(client *ProvisioningRequestClient, unschedulablePods []*apiv1.Pod) (*provreqwrapper.ProvisioningRequest, error) {
+// ProvisioningRequestsForPods check that all pods belong to one ProvisioningRequest and return it.
+func ProvisioningRequestsForPods(client *ProvisioningRequestClient, unschedulablePods []*apiv1.Pod) []*provreqwrapper.ProvisioningRequest {
+	prMap := make(map[string]*provreqwrapper.ProvisioningRequest)
+	prList := []*provreqwrapper.ProvisioningRequest{}
 	if len(unschedulablePods) == 0 {
-		return nil, fmt.Errorf("empty unschedulablePods list")
-	}
-	if unschedulablePods[0].OwnerReferences == nil || len(unschedulablePods[0].OwnerReferences) == 0 {
-		return nil, fmt.Errorf("pod %s has no OwnerReference", unschedulablePods[0].Name)
-	}
-	provReq, err := client.ProvisioningRequest(unschedulablePods[0].Namespace, unschedulablePods[0].OwnerReferences[0].Name)
-	if err != nil {
-		return nil, fmt.Errorf("failed retrive ProvisioningRequest from unscheduled pods, err: %v", err)
+		return prList
 	}
 	for _, pod := range unschedulablePods {
-		if pod.Namespace != unschedulablePods[0].Namespace {
-			return nil, fmt.Errorf("pods %s and %s are from different namespaces", pod.Name, unschedulablePods[0].Name)
-		}
 		if pod.OwnerReferences == nil || len(pod.OwnerReferences) == 0 {
-			return nil, fmt.Errorf("pod %s has no OwnerReference", pod.Name)
+			klog.Errorf("pod %s has no OwnerReference", pod.Name)
+			continue
 		}
-		if pod.OwnerReferences[0].Name != unschedulablePods[0].OwnerReferences[0].Name {
-			return nil, fmt.Errorf("pods %s and %s have different OwnerReference", pod.Name, unschedulablePods[0].Name)
+		provReq, err := client.ProvisioningRequest(pod.Namespace, pod.OwnerReferences[0].Name)
+		if err != nil {
+			klog.Errorf("failed to retrieve ProvisioningRequest from unschedulable pod, err: %v", err)
+			continue
+		}
+		if _, found := prMap[provReq.Name]; !found {
+			prMap[provReq.Name] = provReq
 		}
 	}
-	return provReq, nil
+	for _, pr := range prMap {
+		prList = append(prList, pr)
+	}
+	return prList
 }
 
 // DeleteProvisioningRequest deletes the given ProvisioningRequest CR using the ProvisioningRequestInterface and returns an error in case of failure.
@@ -215,4 +216,15 @@ func (c *ProvisioningRequestClient) DeleteProvisioningRequest(pr *v1beta1.Provis
 	}
 	klog.V(4).Infof("Deleted ProvisioningRequest %s/%s", pr.Namespace, pr.Name)
 	return nil
+}
+
+// FilterOutProvisioningClass filters out ProvReqs that belongs to certain Provisioning Class
+func FilterOutProvisioningClass(prList []*provreqwrapper.ProvisioningRequest, class string) []*provreqwrapper.ProvisioningRequest {
+	newPrList := []*provreqwrapper.ProvisioningRequest{}
+	for _, pr := range prList {
+		if pr.Spec.ProvisioningClassName == class {
+			newPrList = append(newPrList, pr)
+		}
+	}
+	return newPrList
 }

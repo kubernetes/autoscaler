@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"net/url"
 	"path"
 	"regexp"
 	"strings"
@@ -96,8 +95,9 @@ var (
 // GceInstance extends cloudprovider.Instance with GCE specific numeric id.
 type GceInstance struct {
 	cloudprovider.Instance
-	NumericId uint64
-	Igm       GceRef
+	NumericId            uint64
+	Igm                  GceRef
+	InstanceTemplateName string
 }
 
 // AutoscalingGceClient is used for communicating with GCE API.
@@ -405,11 +405,11 @@ func externalToInternalInstance(gceInstance *gce.Instance, loggingQuota *klogx.Q
 			},
 		},
 		NumericId: gceInstance.Id,
-		Igm:       createIgmRef(gceInstance, loggingQuota),
+		Igm:       createIgmRef(gceInstance, ref.Project, loggingQuota),
 	}, nil
 }
 
-func createIgmRef(gceInstance *gce.Instance, loggingQuota *klogx.Quota) GceRef {
+func createIgmRef(gceInstance *gce.Instance, project string, loggingQuota *klogx.Quota) GceRef {
 	createdBy := ""
 	for _, item := range gceInstance.Metadata.Items {
 		if item.Key == "created-by" && item.Value != nil {
@@ -425,6 +425,9 @@ func createIgmRef(gceInstance *gce.Instance, loggingQuota *klogx.Quota) GceRef {
 		klogx.V(5).UpTo(loggingQuota).Infof("Unable to parse IGM for %v because of %v", gceInstance.SelfLink, err)
 		return GceRef{}
 	}
+	// project is overwritten to make it compatible with CA mig refs which uses project
+	// name instead of project number. igm url has project number not project name.
+	igmRef.Project = project
 	return igmRef
 }
 
@@ -479,6 +482,13 @@ func (i *instanceListBuilder) gceInstanceToInstance(ref GceRef, gceInstance *gce
 			},
 		},
 		NumericId: gceInstance.Id,
+	}
+
+	if gceInstance.Version != nil {
+		instanceTemplate, err := InstanceTemplateNameFromUrl(gceInstance.Version.InstanceTemplate)
+		if err == nil {
+			instance.InstanceTemplateName = instanceTemplate.Name
+		}
 	}
 
 	if instance.Status.State != cloudprovider.InstanceCreating {
@@ -725,17 +735,7 @@ func (client *autoscalingGceClientV1) FetchMigTemplateName(migRef GceRef) (Insta
 		}
 		return InstanceTemplateName{}, err
 	}
-	templateUrl, err := url.Parse(igm.InstanceTemplate)
-	if err != nil {
-		return InstanceTemplateName{}, err
-	}
-	regional, err := IsInstanceTemplateRegional(templateUrl.String())
-	if err != nil {
-		return InstanceTemplateName{}, err
-	}
-
-	_, templateName := path.Split(templateUrl.EscapedPath())
-	return InstanceTemplateName{templateName, regional}, nil
+	return InstanceTemplateNameFromUrl(igm.InstanceTemplate)
 }
 
 func (client *autoscalingGceClientV1) FetchMigTemplate(migRef GceRef, templateName string, regional bool) (*gce.InstanceTemplate, error) {

@@ -195,18 +195,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 		return status.UpdateScaleUpError(&status.ScaleUpStatus{PodsTriggeredScaleUp: bestOption.Pods}, aErr)
 	}
 
-	// Apply upper limits for resources in the cluster.
-	nodeInfo, found := nodeInfos[bestOption.NodeGroup.Id()]
-	if !found {
-		// This should never happen, as we already should have retrieved nodeInfo for any considered nodegroup.
-		klog.Errorf("No node info for: %s", bestOption.NodeGroup.Id())
-		return status.UpdateScaleUpError(
-			&status.ScaleUpStatus{PodsTriggeredScaleUp: bestOption.Pods},
-			errors.NewAutoscalerError(
-				errors.CloudProviderError,
-				"No node info for best expansion option!"))
-	}
-	newNodes, aErr = o.resourceManager.ApplyLimits(o.autoscalingContext, newNodes, resourcesLeft, nodeInfo, bestOption.NodeGroup)
+	newNodes, aErr = o.applyLimits(newNodes, resourcesLeft, bestOption.NodeGroup, nodeInfos)
 	if aErr != nil {
 		return status.UpdateScaleUpError(
 			&status.ScaleUpStatus{PodsTriggeredScaleUp: bestOption.Pods},
@@ -240,35 +229,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 		}
 	}
 
-	// Recompute similar node groups in case they need to be updated
-	bestOption.SimilarNodeGroups = o.ComputeSimilarNodeGroups(bestOption.NodeGroup, nodeInfos, schedulablePodGroups, now)
-	if bestOption.SimilarNodeGroups != nil {
-		// if similar node groups are found, log about them
-		similarNodeGroupIds := make([]string, 0)
-		for _, sng := range bestOption.SimilarNodeGroups {
-			similarNodeGroupIds = append(similarNodeGroupIds, sng.Id())
-		}
-		klog.V(2).Infof("Found %d similar node groups: %v", len(bestOption.SimilarNodeGroups), similarNodeGroupIds)
-	} else if o.autoscalingContext.BalanceSimilarNodeGroups {
-		// if no similar node groups are found and the flag is enabled, log about it
-		klog.V(2).Info("No similar node groups found")
-	}
-
-	// Balance between similar node groups.
-	targetNodeGroups := []cloudprovider.NodeGroup{bestOption.NodeGroup}
-	for _, ng := range bestOption.SimilarNodeGroups {
-		targetNodeGroups = append(targetNodeGroups, ng)
-	}
-
-	if len(targetNodeGroups) > 1 {
-		var names []string
-		for _, ng := range targetNodeGroups {
-			names = append(names, ng.Id())
-		}
-		klog.V(1).Infof("Splitting scale-up between %v similar node groups: {%v}", len(targetNodeGroups), strings.Join(names, ", "))
-	}
-
-	scaleUpInfos, aErr := o.processors.NodeGroupSetProcessor.BalanceScaleUpBetweenGroups(o.autoscalingContext, targetNodeGroups, newNodes)
+	scaleUpInfos, aErr := o.balanceScaleUps(now, bestOption.NodeGroup, newNodes, nodeInfos, schedulablePodGroups)
 	if aErr != nil {
 		return status.UpdateScaleUpError(
 			&status.ScaleUpStatus{CreateNodeGroupResults: createNodeGroupResults, PodsTriggeredScaleUp: bestOption.Pods},
@@ -314,6 +275,16 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 		PodsTriggeredScaleUp:    bestOption.Pods,
 		PodsAwaitEvaluation:     GetPodsAwaitingEvaluation(podEquivalenceGroups, bestOption.NodeGroup.Id()),
 	}, nil
+}
+
+func (o *ScaleUpOrchestrator) applyLimits(newNodes int, resourcesLeft resource.Limits, nodeGroup cloudprovider.NodeGroup, nodeInfos map[string]*schedulerframework.NodeInfo) (int, errors.AutoscalerError) {
+	nodeInfo, found := nodeInfos[nodeGroup.Id()]
+	if !found {
+		// This should never happen, as we already should have retrieved nodeInfo for any considered nodegroup.
+		klog.Errorf("No node info for: %s", nodeGroup.Id())
+		return 0, errors.NewAutoscalerError(errors.CloudProviderError, "No node info for best expansion option!")
+	}
+	return o.resourceManager.ApplyLimits(o.autoscalingContext, newNodes, resourcesLeft, nodeInfo, nodeGroup)
 }
 
 // ScaleUpToNodeGroupMinSize tries to scale up node groups that have less nodes
@@ -697,6 +668,42 @@ func (o *ScaleUpOrchestrator) GetCappedNewNodeCount(newNodeCount, currentNodeCou
 		}
 	}
 	return newNodeCount, nil
+}
+
+func (o *ScaleUpOrchestrator) balanceScaleUps(
+	now time.Time,
+	nodeGroup cloudprovider.NodeGroup,
+	newNodes int,
+	nodeInfos map[string]*schedulerframework.NodeInfo,
+	schedulablePodGroups map[string][]estimator.PodEquivalenceGroup,
+) ([]nodegroupset.ScaleUpInfo, errors.AutoscalerError) {
+	// Recompute similar node groups in case they need to be updated
+	similarNodeGroups := o.ComputeSimilarNodeGroups(nodeGroup, nodeInfos, schedulablePodGroups, now)
+	if similarNodeGroups != nil {
+		// if similar node groups are found, log about them
+		similarNodeGroupIds := make([]string, 0)
+		for _, sng := range similarNodeGroups {
+			similarNodeGroupIds = append(similarNodeGroupIds, sng.Id())
+		}
+		klog.V(2).Infof("Found %d similar node groups: %v", len(similarNodeGroups), similarNodeGroupIds)
+	} else if o.autoscalingContext.BalanceSimilarNodeGroups {
+		// if no similar node groups are found and the flag is enabled, log about it
+		klog.V(2).Info("No similar node groups found")
+	}
+
+	targetNodeGroups := []cloudprovider.NodeGroup{nodeGroup}
+	for _, ng := range similarNodeGroups {
+		targetNodeGroups = append(targetNodeGroups, ng)
+	}
+
+	if len(targetNodeGroups) > 1 {
+		var names []string
+		for _, ng := range targetNodeGroups {
+			names = append(names, ng.Id())
+		}
+		klog.V(1).Infof("Splitting scale-up between %v similar node groups: {%v}", len(targetNodeGroups), strings.Join(names, ", "))
+	}
+	return o.processors.NodeGroupSetProcessor.BalanceScaleUpBetweenGroups(o.autoscalingContext, targetNodeGroups, newNodes)
 }
 
 // ComputeSimilarNodeGroups finds similar node groups which can schedule the same

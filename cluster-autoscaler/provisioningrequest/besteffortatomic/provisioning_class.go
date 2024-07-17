@@ -81,13 +81,13 @@ func (o *bestEffortAtomicProvClass) Provision(
 	if len(unschedulablePods) == 0 {
 		return &status.ScaleUpStatus{Result: status.ScaleUpNotTried}, nil
 	}
-	pr, err := provreqclient.ProvisioningRequestForPods(o.client, unschedulablePods)
-	if err != nil {
-		return status.UpdateScaleUpError(&status.ScaleUpStatus{}, errors.NewAutoscalerError(errors.InternalError, err.Error()))
-	}
-	if pr.Spec.ProvisioningClassName != v1beta1.ProvisioningClassBestEffortAtomicScaleUp {
+	prs := provreqclient.ProvisioningRequestsForPods(o.client, unschedulablePods)
+	prs = provreqclient.FilterOutProvisioningClass(prs, v1beta1.ProvisioningClassBestEffortAtomicScaleUp)
+	if len(prs) == 0 {
 		return &status.ScaleUpStatus{Result: status.ScaleUpNotTried}, nil
 	}
+	// Pick 1 ProvisioningRequest.
+	pr := prs[0]
 
 	o.context.ClusterSnapshot.Fork()
 	defer o.context.ClusterSnapshot.Revert()

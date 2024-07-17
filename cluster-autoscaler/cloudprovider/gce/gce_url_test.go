@@ -337,3 +337,39 @@ func TestIsInstanceTemplateRegional(t *testing.T) {
 		})
 	}
 }
+
+func TestInstanceTemplateNameFromUrl(t *testing.T) {
+	tests := []struct {
+		name                       string
+		templateUrl                string
+		expectInstanceTemplateName InstanceTemplateName
+		wantErr                    error
+	}{
+		{
+			name:                       "Has regional instance url",
+			templateUrl:                "https://www.googleapis.com/compute/v1/projects/test-project/regions/us-central1/instanceTemplates/instance-template",
+			expectInstanceTemplateName: InstanceTemplateName{"instance-template", true},
+		},
+		{
+			name:                       "Has global instance url",
+			templateUrl:                "https://www.googleapis.com/compute/v1/projects/test-project/global/instanceTemplates/instance-template",
+			expectInstanceTemplateName: InstanceTemplateName{"instance-template", false},
+		},
+		{
+			name:                       "Empty url",
+			templateUrl:                "",
+			expectInstanceTemplateName: InstanceTemplateName{"", false},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			itName, err := InstanceTemplateNameFromUrl(tt.templateUrl)
+			assert.Equal(t, tt.wantErr, err)
+			if tt.wantErr != nil {
+				return
+			}
+			assert.Equal(t, tt.expectInstanceTemplateName, itName)
+		})
+	}
+}
