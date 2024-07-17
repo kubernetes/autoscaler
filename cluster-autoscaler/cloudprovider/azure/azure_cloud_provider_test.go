@@ -28,6 +28,8 @@ import (
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmclient/mockvmclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssclient/mockvmssclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssvmclient/mockvmssvmclient"
+	providerazureconsts "sigs.k8s.io/cloud-provider-azure/pkg/consts"
+	providerazure "sigs.k8s.io/cloud-provider-azure/pkg/provider"
 
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/stretchr/testify/assert"
@@ -52,8 +54,10 @@ func newTestAzureManager(t *testing.T) *AzureManager {
 		env:                  azure.PublicCloud,
 		explicitlyConfigured: make(map[string]bool),
 		config: &Config{
-			ResourceGroup:       "rg",
-			VMType:              vmTypeVMSS,
+			Config: providerazure.Config{
+				ResourceGroup: "rg",
+				VMType:        providerazureconsts.VMTypeVMSS,
+			},
 			MaxDeploymentsCount: 2,
 			Deployment:          "deployment",
 			EnableForceDelete:   false,
@@ -63,7 +67,7 @@ func newTestAzureManager(t *testing.T) *AzureManager {
 			virtualMachineScaleSetsClient:   mockVMSSClient,
 			virtualMachineScaleSetVMsClient: mockVMSSVMClient,
 			virtualMachinesClient:           mockVMClient,
-			deploymentsClient: &DeploymentsClientMock{
+			deploymentClient: &DeploymentClientMock{
 				FakeStore: map[string]resources.DeploymentExtended{
 					"deployment": {
 						Name: to.StringPtr("deployment"),
@@ -209,7 +213,7 @@ func TestNodeGroupForNode(t *testing.T) {
 			provider.azureManager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
 		} else {
 
-			provider.azureManager.config.EnableVmssFlex = true
+			provider.azureManager.config.EnableVmssFlexNodes = true
 			mockVMClient.EXPECT().ListVmssFlexVMsWithoutInstanceView(gomock.Any(), "test-asg").Return(expectedVMs, nil).AnyTimes()
 
 		}

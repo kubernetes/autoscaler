@@ -199,7 +199,7 @@ func TestTargetSize(t *testing.T) {
 			mockVMSSVMClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup, "test-asg", gomock.Any()).Return(expectedVMSSVMs, nil).AnyTimes()
 			provider.azureManager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
 		} else {
-			provider.azureManager.config.EnableVmssFlex = true
+			provider.azureManager.config.EnableVmssFlexNodes = true
 			mockVMClient.EXPECT().ListVmssFlexVMsWithoutInstanceView(gomock.Any(), "test-asg").Return(expectedVMs, nil).AnyTimes()
 		}
 
@@ -264,7 +264,7 @@ func TestIncreaseSize(t *testing.T) {
 			mockVMSSVMClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup, "test-asg", gomock.Any()).Return(expectedVMSSVMs, nil).AnyTimes()
 			provider.azureManager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
 		} else {
-			provider.azureManager.config.EnableVmssFlex = true
+			provider.azureManager.config.EnableVmssFlexNodes = true
 			mockVMClient.EXPECT().ListVmssFlexVMsWithoutInstanceView(gomock.Any(), "test-asg").Return(expectedVMs, nil).AnyTimes()
 		}
 		err := provider.azureManager.forceRefresh()
@@ -493,7 +493,7 @@ func TestBelongs(t *testing.T) {
 			mockVMSSVMClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup, "test-asg", gomock.Any()).Return(expectedVMSSVMs, nil).AnyTimes()
 			provider.azureManager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
 		} else {
-			provider.azureManager.config.EnableVmssFlex = true
+			provider.azureManager.config.EnableVmssFlexNodes = true
 			mockVMClient.EXPECT().ListVmssFlexVMsWithoutInstanceView(gomock.Any(), "test-asg").Return(expectedVMs, nil).AnyTimes()
 		}
 
@@ -552,7 +552,7 @@ func TestDeleteNodes(t *testing.T) {
 			mockVMSSVMClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup, "test-asg", gomock.Any()).Return(expectedVMSSVMs, nil).AnyTimes()
 			manager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
 		} else {
-			manager.config.EnableVmssFlex = true
+			manager.config.EnableVmssFlexNodes = true
 			mockVMClient.EXPECT().ListVmssFlexVMsWithoutInstanceView(gomock.Any(), "test-asg").Return(expectedVMs, nil).AnyTimes()
 			manager.azClient.virtualMachinesClient = mockVMClient
 		}
@@ -659,7 +659,7 @@ func TestDeleteNodeUnregistered(t *testing.T) {
 			mockVMSSVMClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup, "test-asg", gomock.Any()).Return(expectedVMSSVMs, nil).AnyTimes()
 			manager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
 		} else {
-			manager.config.EnableVmssFlex = true
+			manager.config.EnableVmssFlexNodes = true
 			mockVMClient.EXPECT().ListVmssFlexVMsWithoutInstanceView(gomock.Any(), "test-asg").Return(expectedVMs, nil).AnyTimes()
 		}
 		err := manager.forceRefresh()
@@ -933,7 +933,7 @@ func TestScaleSetNodes(t *testing.T) {
 			provider.azureManager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
 
 		} else {
-			provider.azureManager.config.EnableVmssFlex = true
+			provider.azureManager.config.EnableVmssFlexNodes = true
 			mockVMClient.EXPECT().ListVmssFlexVMsWithoutInstanceView(gomock.Any(), "test-asg").Return(expectedVMs, nil).AnyTimes()
 		}
 
@@ -977,7 +977,7 @@ func TestScaleSetNodes(t *testing.T) {
 
 }
 
-func TestEnableVmssFlexFlag(t *testing.T) {
+func TestEnableVmssFlexNodesFlag(t *testing.T) {
 
 	// flag set to false
 	ctrl := gomock.NewController(t)
@@ -989,7 +989,7 @@ func TestEnableVmssFlexFlag(t *testing.T) {
 	provider := newTestProvider(t)
 	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
 	mockVMSSClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
-	provider.azureManager.config.EnableVmssFlex = false
+	provider.azureManager.config.EnableVmssFlexNodes = false
 	provider.azureManager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
 	mockVMClient := mockvmclient.NewMockInterface(ctrl)
 
@@ -1004,7 +1004,7 @@ func TestEnableVmssFlexFlag(t *testing.T) {
 	assert.Error(t, err, "vmss - \"test-asg\" with Flexible orchestration detected but 'enbaleVmssFlex' feature flag is turned off")
 
 	// flag set to true
-	provider.azureManager.config.EnableVmssFlex = true
+	provider.azureManager.config.EnableVmssFlexNodes = true
 	err = provider.azureManager.Refresh()
 	assert.NoError(t, err)
 }
