@@ -448,12 +448,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 		return nil
 	}
 
-	danglingNodes, err := a.deleteCreatedNodesWithErrors()
-	if err != nil {
-		klog.Warningf("Failed to remove nodes that were created with errors, skipping iteration: %v", err)
-		return nil
-	}
-	if danglingNodes {
+	if deletedNodes := a.deleteCreatedNodesWithErrors(); deletedNodes {
 		klog.V(0).Infof("Some nodes that failed to create were removed, skipping iteration")
 		return nil
 	}
@@ -836,30 +831,11 @@ func toNodes(unregisteredNodes []clusterstate.UnregisteredNode) []*apiv1.Node {
 	return nodes
 }
 
-func (a *StaticAutoscaler) deleteCreatedNodesWithErrors() (bool, error) {
+func (a *StaticAutoscaler) deleteCreatedNodesWithErrors() bool {
 	// We always schedule deleting of incoming errornous nodes
 	// TODO[lukaszos] Consider adding logic to not retry delete every loop iteration
-	nodes := a.clusterStateRegistry.GetCreatedNodesWithErrors()
-
 	nodeGroups := a.nodeGroupsById()
-	nodesToBeDeletedByNodeGroupId := make(map[string][]*apiv1.Node)
-
-	for _, node := range nodes {
-		nodeGroup, err := a.CloudProvider.NodeGroupForNode(node)
-		if err != nil {
-			id := "<nil>"
-			if node != nil {
-				id = node.Spec.ProviderID
-			}
-			klog.Warningf("Cannot determine nodeGroup for node %v; %v", id, err)
-			continue
-		}
-		if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
-			a.clusterStateRegistry.RefreshCloudProviderNodeInstancesCache()
-			return false, fmt.Errorf("node %s has no known nodegroup", node.GetName())
-		}
-		nodesToBeDeletedByNodeGroupId[nodeGroup.Id()] = append(nodesToBeDeletedByNodeGroupId[nodeGroup.Id()], node)
-	}
+	nodesToBeDeletedByNodeGroupId := a.clusterStateRegistry.GetCreatedNodesWithErrors()
 
 	deletedAny := false
 
@@ -892,13 +868,13 @@ func (a *StaticAutoscaler) deleteCreatedNodesWithErrors() (bool, error) {
 
 		if err != nil {
 			klog.Warningf("Error while trying to delete nodes from %v: %v", nodeGroupId, err)
+		} else {
+			deletedAny = true
+			a.clusterStateRegistry.InvalidateNodeInstancesCacheEntry(nodeGroup)
 		}
-
-		deletedAny = deletedAny || err == nil
-		a.clusterStateRegistry.InvalidateNodeInstancesCacheEntry(nodeGroup)
 	}
 
-	return deletedAny, nil
+	return deletedAny
 }
 
 // instancesToNodes returns a list of fake nodes with just names populated,
