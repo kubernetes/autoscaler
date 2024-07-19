@@ -22,8 +22,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-03-01/compute"
-	"github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2021-10-01/containerservice"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-03-01/compute"                   //nolint SA1019 - deprecated package
+	"github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2021-10-01/containerservice" //nolint SA1019 - deprecated package
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -44,10 +44,10 @@ var (
 	errInternalRaw = fmt.Errorf("Retriable: false, RetryAfter: 0s, HTTPStatusCode: 500, RawError: %w", nil)
 )
 
-func getTestAKSPool(manager *AzureManager, name string) *AKSAgentPool {
+func getTestAKSPool(manager *AzureManager) *AKSAgentPool {
 	return &AKSAgentPool{
 		azureRef: azureRef{
-			Name: name,
+			Name: testAKSPoolName,
 		},
 		manager:           manager,
 		minSize:           1,
@@ -80,7 +80,7 @@ func TestSetNodeCount(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	aksPool := getTestAKSPool(newTestAzureManager(t), testAKSPoolName)
+	aksPool := getTestAKSPool(newTestAzureManager(t))
 	mockAKSClient := mockcontainerserviceclient.NewMockInterface(ctrl)
 	mockAKSClient.EXPECT().Get(
 		gomock.Any(),
@@ -136,7 +136,7 @@ func TestGetNodeCount(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	aksPool := getTestAKSPool(newTestAzureManager(t), testAKSPoolName)
+	aksPool := getTestAKSPool(newTestAzureManager(t))
 	mockAKSClient := mockcontainerserviceclient.NewMockInterface(ctrl)
 	mockAKSClient.EXPECT().Get(
 		gomock.Any(),
@@ -182,7 +182,7 @@ func TestAKSTargetSize(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	aksPool := getTestAKSPool(newTestAzureManager(t), testAKSPoolName)
+	aksPool := getTestAKSPool(newTestAzureManager(t))
 	mockAKSClient := mockcontainerserviceclient.NewMockInterface(ctrl)
 	mockAKSClient.EXPECT().Get(gomock.Any(), aksPool.resourceGroup, aksPool.clusterName).Return(getExpectedManagedCluster(), nil)
 	aksPool.manager.azClient.managedKubernetesServicesClient = mockAKSClient
@@ -221,7 +221,7 @@ func TestAKSSetSize(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		aksPool := getTestAKSPool(newTestAzureManager(t), testAKSPoolName)
+		aksPool := getTestAKSPool(newTestAzureManager(t))
 		mockAKSClient := mockcontainerserviceclient.NewMockInterface(ctrl)
 		mockAKSClient.EXPECT().Get(
 			gomock.Any(),
@@ -245,7 +245,7 @@ func TestAKSIncreaseSize(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	aksPool := getTestAKSPool(newTestAzureManager(t), testAKSPoolName)
+	aksPool := getTestAKSPool(newTestAzureManager(t))
 	aksPool.lastRefresh = time.Now()
 
 	err := aksPool.IncreaseSize(-1)
@@ -264,7 +264,7 @@ func TestAKSIncreaseSize(t *testing.T) {
 }
 
 func TestIsAKSNode(t *testing.T) {
-	aksPool := getTestAKSPool(newTestAzureManager(t), testAKSPoolName)
+	aksPool := getTestAKSPool(newTestAzureManager(t))
 	tags := map[string]*string{aksManagedPoolNameTag: to.StringPtr(testAKSPoolName)}
 	isAKSNode := aksPool.IsAKSNode(tags)
 	assert.True(t, isAKSNode)
@@ -301,7 +301,7 @@ func TestDeleteNodesAKS(t *testing.T) {
 		},
 	}
 
-	aksPool := getTestAKSPool(newTestAzureManager(t), testAKSPoolName)
+	aksPool := getTestAKSPool(newTestAzureManager(t))
 	mockVMClient := mockvmclient.NewMockInterface(ctrl)
 	mockVMClient.EXPECT().List(gomock.Any(), aksPool.nodeResourceGroup).Return(expectedVMs, nil)
 	mockVMClient.EXPECT().Get(
@@ -354,7 +354,7 @@ func TestAKSNodes(t *testing.T) {
 		},
 	}
 
-	aksPool := getTestAKSPool(newTestAzureManager(t), testAKSPoolName)
+	aksPool := getTestAKSPool(newTestAzureManager(t))
 	mockVMClient := mockvmclient.NewMockInterface(ctrl)
 	mockVMClient.EXPECT().List(gomock.Any(), aksPool.nodeResourceGroup).Return(expectedVMs, nil)
 	aksPool.manager.azClient.virtualMachinesClient = mockVMClient
@@ -380,7 +380,7 @@ func TestAKSDecreaseTargetSize(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	aksPool := getTestAKSPool(newTestAzureManager(t), testAKSPoolName)
+	aksPool := getTestAKSPool(newTestAzureManager(t))
 
 	err := aksPool.DecreaseTargetSize(1)
 	expectedErr := fmt.Errorf("size decrease must be negative")

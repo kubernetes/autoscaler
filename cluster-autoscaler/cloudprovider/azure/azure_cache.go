@@ -24,12 +24,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-03-01/compute"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/klog/v2"
+
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-03-01/compute" //nolint SA1019 - deprecated package
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/Azure/skewer"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-
-	"k8s.io/klog/v2"
 )
 
 var (
@@ -39,34 +39,70 @@ var (
 // azureCache is used for caching cluster resources state.
 //
 // It is needed to:
-// - keep track of node groups (AKS, VM and VMSS types) in the cluster,
-// - keep track of instances and which node group they belong to,
-// - limit repetitive Azure API calls.
+//   - keep track of node groups (AKS, VM and VMSS types) in the cluster,
+//   - keep track of instances and which node group they belong to,
+//     (for VMSS it only keeps track of instanceid-to-nodegroup mapping)
+//   - limit repetitive Azure API calls.
+//
+// It backs efficient responds to
+//   - cloudprovider.NodeGroups() (= registeredNodeGroups)
+//   - cloudprovider.NodeGroupForNode (via azureManager.GetNodeGroupForInstance => FindForInstance,
+//     using instanceToNodeGroup and unownedInstances)
+//
+// CloudProvider.Refresh, called before every autoscaler loop (every 10s by defaul),
+// is implemented by AzureManager.Refresh which makes the cache refresh decision,
+// based on AzureManager.lastRefresh and azureCache.refreshInterval.
 type azureCache struct {
-	mutex           sync.Mutex
-	interrupt       chan struct{}
-	azClient        *azClient
+	mutex     sync.Mutex
+	interrupt chan struct{}
+	azClient  *azClient
+
+	// refreshInterval specifies how often azureCache needs to be refreshed.
+	// The value comes from AZURE_VMSS_CACHE_TTL env var (or 1min if not specified),
+	// and is also used by some other caches. Together with AzureManager.lastRefresh,
+	// it is uses to decide whether a refresh is needed.
 	refreshInterval time.Duration
 
 	// Cache content.
-	resourceGroup        string
-	vmType               string
-	scaleSets            map[string]compute.VirtualMachineScaleSet
-	virtualMachines      map[string][]compute.VirtualMachine
+
+	// resourceGroup specifies the name of the resource group that this cache tracks
+	resourceGroup string
+
+	// vmType can be one of vmTypeVMSS (default), vmTypeStandard, vmTypeAKS
+	vmType string
+
+	// scaleSets keeps the set of all known scalesets in the resource group, populated/refreshed via VMSS.List() call.
+	// It is only used/populated if vmType is vmTypeVMSS (default).
+	scaleSets map[string]compute.VirtualMachineScaleSet
+	// virtualMachines keeps the set of all VMs in the resource group.
+	// It is only used/populated if vmType is vmTypeStandard or vmTypeAKS.
+	virtualMachines map[string][]compute.VirtualMachine
+
+	// registeredNodeGroups represents all known NodeGroups.
 	registeredNodeGroups []cloudprovider.NodeGroup
-	instanceToNodeGroup  map[azureRef]cloudprovider.NodeGroup
-	unownedInstances     map[azureRef]bool
-	autoscalingOptions   map[azureRef]map[string]string
-	skus                 map[string]*skewer.Cache
+
+	// instanceToNodeGroup maintains a mapping from instance Ids to nodegroups.
+	// It is populated from the results of calling Nodes() on each nodegroup.
+	// It is used (together with unownedInstances) when looking up the nodegroup
+	// for a given instance id (see FindForInstance).
+	instanceToNodeGroup map[azureRef]cloudprovider.NodeGroup
+
+	// unownedInstance maintains a set of instance ids not belonging to any nodegroup.
+	// It is used (together with instanceToNodeGroup) when looking up the nodegroup for a given instance id.
+	// It is reset by invalidateUnownedInstanceCache().
+	unownedInstances map[azureRef]bool
+
+	autoscalingOptions map[azureRef]map[string]string
+	skus               map[string]*skewer.Cache
 }
 
-func newAzureCache(client *azClient, cacheTTL time.Duration, resourceGroup, vmType string, enableDynamicInstanceList bool, defaultLocation string) (*azureCache, error) {
+func newAzureCache(client *azClient, cacheTTL time.Duration, config *Config) *azureCache {
 	cache := &azureCache{
 		interrupt:            make(chan struct{}),
 		azClient:             client,
 		refreshInterval:      cacheTTL,
-		resourceGroup:        resourceGroup,
-		vmType:               vmType,
+		resourceGroup:        config.ResourceGroup,
+		vmType:               config.VMType,
 		scaleSets:            make(map[string]compute.VirtualMachineScaleSet),
 		virtualMachines:      make(map[string][]compute.VirtualMachine),
 		registeredNodeGroups: make([]cloudprovider.NodeGroup, 0),
@@ -76,15 +112,15 @@ func newAzureCache(client *azClient, cacheTTL time.Duration, resourceGroup, vmTy
 		skus:                 make(map[string]*skewer.Cache),
 	}
 
-	if enableDynamicInstanceList {
-		cache.skus[defaultLocation] = &skewer.Cache{}
+	if config.EnableDynamicInstanceList {
+		cache.skus[config.Location] = &skewer.Cache{}
 	}
 
 	if err := cache.regenerate(); err != nil {
 		klog.Errorf("Error while regenerating Azure cache: %v", err)
 	}
 
-	return cache, nil
+	return cache
 }
 
 func (m *azureCache) getVirtualMachines() map[string][]compute.VirtualMachine {
@@ -239,17 +275,18 @@ func (m *azureCache) Register(nodeGroup cloudprovider.NodeGroup) bool {
 	defer m.mutex.Unlock()
 
 	for i := range m.registeredNodeGroups {
-		if existing := m.registeredNodeGroups[i]; strings.EqualFold(existing.Id(), nodeGroup.Id()) {
-			if existing.MinSize() == nodeGroup.MinSize() && existing.MaxSize() == nodeGroup.MaxSize() {
-				// Node group is already registered and min/max size haven't changed, no action required.
-				return false
-			}
-
-			m.registeredNodeGroups[i] = nodeGroup
-			klog.V(4).Infof("Node group %q updated", nodeGroup.Id())
-			m.invalidateUnownedInstanceCache()
-			return true
+		existing := m.registeredNodeGroups[i]
+		if existing != nil && !strings.EqualFold(existing.Id(), nodeGroup.Id()) {
+			continue
 		}
+		if existing.MinSize() == nodeGroup.MinSize() && existing.MaxSize() == nodeGroup.MaxSize() {
+			// Node group is already registered and min/max size haven't changed, no action required.
+			return false
+		}
+		m.registeredNodeGroups[i] = nodeGroup
+		klog.V(4).Infof("Node group %q updated", nodeGroup.Id())
+		m.invalidateUnownedInstanceCache()
+		return true
 	}
 
 	klog.V(4).Infof("Registering Node Group %q", nodeGroup.Id())
@@ -343,7 +380,7 @@ func (m *azureCache) FindForInstance(instance *azureRef, vmType string) (cloudpr
 	if vmType == vmTypeVMSS {
 		if m.areAllScaleSetsUniform() {
 			// Omit virtual machines not managed by vmss only in case of uniform scale set.
-			if ok := virtualMachineRE.Match([]byte(inst.Name)); ok {
+			if ok := virtualMachineRE.MatchString(inst.Name); ok {
 				klog.V(3).Infof("Instance %q is not managed by vmss, omit it in autoscaler", instance.Name)
 				m.unownedInstances[inst] = true
 				return nil, nil
@@ -353,7 +390,7 @@ func (m *azureCache) FindForInstance(instance *azureRef, vmType string) (cloudpr
 
 	if vmType == vmTypeStandard {
 		// Omit virtual machines with providerID not in Azure resource ID format.
-		if ok := virtualMachineRE.Match([]byte(inst.Name)); !ok {
+		if ok := virtualMachineRE.MatchString(inst.Name); !ok {
 			klog.V(3).Infof("Instance %q is not in Azure resource ID format, omit it in autoscaler", instance.Name)
 			m.unownedInstances[inst] = true
 			return nil, nil

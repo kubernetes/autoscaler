@@ -17,9 +17,10 @@ limitations under the License.
 package azure
 
 import (
+	"strings"
+
 	"github.com/Azure/skewer"
 	"github.com/pkg/errors"
-	"strings"
 )
 
 var (
@@ -86,7 +87,7 @@ func isNvidiaEnabledSKU(vmSize string) bool {
 }
 
 // getGpuFromSku extracts gpu information from vmss sku.
-func getGpuFromSku(sku skewer.SKU) (int64, error) {
+func getGpuFromSku(sku *skewer.SKU) (int64, error) {
 	errCapabilityValueNil := &skewer.ErrCapabilityValueNil{}
 	errCapabilityNotFound := &skewer.ErrCapabilityNotFound{}
 
