@@ -74,10 +74,13 @@ type ScaleSet struct {
 	instanceMutex       sync.Mutex
 	instanceCache       []cloudprovider.Instance
 	lastInstanceRefresh time.Time
+
+	// uses Azure Dedicated Host
+	dedicatedHost bool
 }
 
 // NewScaleSet creates a new NewScaleSet.
-func NewScaleSet(spec *dynamic.NodeGroupSpec, az *AzureManager, curSize int64) (*ScaleSet, error) {
+func NewScaleSet(spec *dynamic.NodeGroupSpec, az *AzureManager, curSize int64, dedicatedHost bool) (*ScaleSet, error) {
 	scaleSet := &ScaleSet{
 		azureRef: azureRef{
 			Name: spec.Name,
@@ -90,6 +93,7 @@ func NewScaleSet(spec *dynamic.NodeGroupSpec, az *AzureManager, curSize int64) (
 		enableDynamicInstanceList: az.config.EnableDynamicInstanceList,
 		instancesRefreshJitter:    az.config.VmssVmsCacheJitter,
 		enableForceDelete:         az.config.EnableForceDelete,
+		dedicatedHost:             dedicatedHost,
 	}
 
 	if az.config.VmssVmsCacheTTL != 0 {
@@ -538,7 +542,7 @@ func (scaleSet *ScaleSet) TemplateNodeInfo() (*schedulerframework.NodeInfo, erro
 		return nil, err
 	}
 
-	node, err := buildNodeFromTemplate(scaleSet.Name, template, scaleSet.manager)
+	node, err := buildNodeFromTemplate(scaleSet.Name, template, scaleSet.manager, scaleSet.enableDynamicInstanceList)
 	if err != nil {
 		return nil, err
 	}

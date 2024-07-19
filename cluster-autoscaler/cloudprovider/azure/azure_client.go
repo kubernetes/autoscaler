@@ -179,7 +179,7 @@ func newServicePrincipalTokenFromCredentials(config *Config, env *azure.Environm
 		if err != nil {
 			return nil, fmt.Errorf("getting the managed service identity endpoint: %v", err)
 		}
-		if len(config.UserAssignedIdentityID) > 0 {
+		if config.UserAssignedIdentityID != "" {
 			klog.V(4).Info("azure: using User Assigned MSI ID to retrieve access token")
 			return adal.NewServicePrincipalTokenFromMSIWithUserAssignedID(msiEndpoint,
 				env.ServiceManagementEndpoint,
@@ -191,7 +191,7 @@ func newServicePrincipalTokenFromCredentials(config *Config, env *azure.Environm
 			env.ServiceManagementEndpoint)
 	}
 
-	if len(config.AADClientSecret) > 0 {
+	if config.AADClientSecret != "" {
 		klog.V(2).Infoln("azure: using client_id+client_secret to retrieve access token")
 		return adal.NewServicePrincipalToken(
 			*oauthConfig,
@@ -200,13 +200,13 @@ func newServicePrincipalTokenFromCredentials(config *Config, env *azure.Environm
 			env.ServiceManagementEndpoint)
 	}
 
-	if len(config.AADClientCertPath) > 0 && len(config.AADClientCertPassword) > 0 {
+	if config.AADClientCertPath != "" {
 		klog.V(2).Infoln("azure: using jwt client_assertion (client_cert+client_private_key) to retrieve access token")
 		certData, err := ioutil.ReadFile(config.AADClientCertPath)
 		if err != nil {
 			return nil, fmt.Errorf("reading the client certificate from file %s: %v", config.AADClientCertPath, err)
 		}
-		certificate, privateKey, err := decodePkcs12(certData, config.AADClientCertPassword)
+		certificate, privateKey, err := adal.DecodePfxCertificateData(certData, config.AADClientCertPassword)
 		if err != nil {
 			return nil, fmt.Errorf("decoding the client certificate: %v", err)
 		}
@@ -276,6 +276,7 @@ func newAzClient(cfg *Config, env *azure.Environment) (*azClient, error) {
 	// https://github.com/Azure/go-autorest/blob/main/autorest/azure/environments.go
 	skuClient := compute.NewResourceSkusClientWithBaseURI(azClientConfig.ResourceManagerEndpoint, cfg.SubscriptionID)
 	skuClient.Authorizer = azClientConfig.Authorizer
+	skuClient.UserAgent = azClientConfig.UserAgent
 	klog.V(5).Infof("Created sku client with authorizer: %v", skuClient)
 
 	return &azClient{
