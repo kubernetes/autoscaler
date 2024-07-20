@@ -29,6 +29,7 @@ import (
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssclient/mockvmssclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssvmclient/mockvmssvmclient"
 
+	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 )
@@ -43,8 +44,12 @@ func newTestAzureManager(t *testing.T) *AzureManager {
 	mockVMSSClient.EXPECT().List(gomock.Any(), "rg").Return(expectedScaleSets, nil).AnyTimes()
 	mockVMSSVMClient := mockvmssvmclient.NewMockInterface(ctrl)
 	mockVMSSVMClient.EXPECT().List(gomock.Any(), "rg", "test-asg", gomock.Any()).Return(expectedVMSSVMs, nil).AnyTimes()
+	mockVMClient := mockvmclient.NewMockInterface(ctrl)
+	expectedVMs := newTestVMList(3)
+	mockVMClient.EXPECT().List(gomock.Any(), "rg").Return(expectedVMs, nil).AnyTimes()
 
 	manager := &AzureManager{
+		env:                  azure.PublicCloud,
 		explicitlyConfigured: make(map[string]bool),
 		config: &Config{
 			ResourceGroup:       "rg",
@@ -57,6 +62,7 @@ func newTestAzureManager(t *testing.T) *AzureManager {
 		azClient: &azClient{
 			virtualMachineScaleSetsClient:   mockVMSSClient,
 			virtualMachineScaleSetVMsClient: mockVMSSVMClient,
+			virtualMachinesClient:           mockVMClient,
 			deploymentsClient: &DeploymentsClientMock{
 				FakeStore: map[string]resources.DeploymentExtended{
 					"deployment": {
@@ -134,6 +140,9 @@ func TestNodeGroupForNode(t *testing.T) {
 		mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
 		mockVMSSClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return(expectedScaleSets, nil)
 		provider.azureManager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
+		mockVMClient := mockvmclient.NewMockInterface(ctrl)
+		provider.azureManager.azClient.virtualMachinesClient = mockVMClient
+		mockVMClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return(expectedVMs, nil).AnyTimes()
 
 		if orchMode == compute.Uniform {
 			mockVMSSVMClient := mockvmssvmclient.NewMockInterface(ctrl)
