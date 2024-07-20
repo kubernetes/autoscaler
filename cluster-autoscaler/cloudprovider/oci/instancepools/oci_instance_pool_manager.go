@@ -6,6 +6,7 @@ package instancepools
 
 import (
 	"fmt"
+	npconsts "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/nodepools/consts"
 	"os"
 	"strconv"
 	"strings"
@@ -88,7 +89,7 @@ func CreateInstancePoolManager(cloudConfigPath string, discoveryOpts cloudprovid
 			return nil, err
 		}
 		// try instance principal is set to true
-	} else if os.Getenv(consts.OciUseInstancePrincipalEnvVar) == "true" {
+	} else if os.Getenv(consts.OciUseInstancePrincipalEnvVar) == "true" || os.Getenv(npconsts.OkeUseInstancePrincipalEnvVar) == "true" {
 		klog.V(4).Info("using instance principals...")
 		configProvider, err = auth.InstancePrincipalConfigurationProvider()
 		if err != nil {

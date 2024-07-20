@@ -23,12 +23,13 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"google.golang.org/protobuf/proto"
 
-	apiv1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1beta1"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
+	"k8s.io/utils/ptr"
 )
 
 const testProvisioningClassName = "TestProvisioningClass"
@@ -42,8 +43,8 @@ func TestPodsForProvisioningRequest(t *testing.T) {
 				Namespace:    "test-namespace",
 				UID:          types.UID(fmt.Sprintf("test-namespace/%s", name)),
 				Annotations: map[string]string{
-					ProvisioningRequestPodAnnotationKey: prName,
-					ProvisioningClassPodAnnotationKey:   testProvisioningClassName,
+					v1beta1.ProvisioningRequestPodAnnotationKey: prName,
+					v1beta1.ProvisioningClassPodAnnotationKey:   testProvisioningClassName,
 				},
 				Labels:     map[string]string{},
 				Finalizers: []string{},
@@ -61,6 +62,7 @@ func TestPodsForProvisioningRequest(t *testing.T) {
 						Image: containerImage,
 					},
 				},
+				EnableServiceLinks: ptr.To(true),
 			},
 		}
 	}
@@ -68,7 +70,7 @@ func TestPodsForProvisioningRequest(t *testing.T) {
 	tests := []struct {
 		desc         string
 		pr           *v1beta1.ProvisioningRequest
-		podTemplates []*apiv1.PodTemplate
+		podTemplates []*v1.PodTemplate
 		want         []*v1.Pod
 		wantErr      bool
 	}{
@@ -89,7 +91,7 @@ func TestPodsForProvisioningRequest(t *testing.T) {
 					ProvisioningClassName: testProvisioningClassName,
 				},
 			},
-			podTemplates: []*apiv1.PodTemplate{
+			podTemplates: []*v1.PodTemplate{
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "template-1",
@@ -128,7 +130,7 @@ func TestPodsForProvisioningRequest(t *testing.T) {
 					ProvisioningClassName: testProvisioningClassName,
 				},
 			},
-			podTemplates: []*apiv1.PodTemplate{
+			podTemplates: []*v1.PodTemplate{
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "template-1",
@@ -250,6 +252,89 @@ func TestPodsForProvisioningRequest(t *testing.T) {
 				testPod("test-pr-name-1-0", "test-pr-name-", "test-container-2", "test-image-2", "test-pr-name"),
 				testPod("test-pr-name-1-1", "test-pr-name-", "test-container-2", "test-image-2", "test-pr-name"),
 				testPod("test-pr-name-1-2", "test-pr-name-", "test-container-2", "test-image-2", "test-pr-name"),
+			},
+		},
+		{
+			desc: "PodTemplate doesn't specify container resources requests, Pods container default resources requests to limits",
+			pr: &v1beta1.ProvisioningRequest{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-pr-name",
+					Namespace: "test-namespace",
+				},
+				Spec: v1beta1.ProvisioningRequestSpec{
+					PodSets: []v1beta1.PodSet{
+						{
+							Count:          1,
+							PodTemplateRef: v1beta1.Reference{Name: "template-1"},
+						},
+					},
+					ProvisioningClassName: testProvisioningClassName,
+				},
+			},
+			podTemplates: []*v1.PodTemplate{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "template-1",
+						Namespace: "test-namespace",
+					},
+					Template: v1.PodTemplateSpec{
+						Spec: v1.PodSpec{
+							Containers: []v1.Container{
+								{
+									Name:  "test-container",
+									Image: "test-image",
+									Resources: v1.ResourceRequirements{
+										Limits: v1.ResourceList{
+											v1.ResourceCPU:    resource.MustParse("8"),
+											v1.ResourceMemory: resource.MustParse("8G"),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			want: []*v1.Pod{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:         "test-pr-name-0-0",
+						GenerateName: "test-pr-name-",
+						Namespace:    "test-namespace",
+						UID:          types.UID(fmt.Sprintf("test-namespace/%s", "test-pr-name-0-0")),
+						Annotations: map[string]string{
+							v1beta1.ProvisioningRequestPodAnnotationKey: "test-pr-name",
+							v1beta1.ProvisioningClassPodAnnotationKey:   testProvisioningClassName,
+						},
+						Labels:     map[string]string{},
+						Finalizers: []string{},
+						OwnerReferences: []metav1.OwnerReference{
+							{
+								Controller: proto.Bool(true),
+								Name:       "test-pr-name",
+							},
+						},
+					},
+					Spec: v1.PodSpec{
+						Containers: []v1.Container{
+							{
+								Name:  "test-container",
+								Image: "test-image",
+								Resources: v1.ResourceRequirements{
+									Limits: v1.ResourceList{
+										v1.ResourceCPU:    resource.MustParse("8"),
+										v1.ResourceMemory: resource.MustParse("8G"),
+									},
+									Requests: v1.ResourceList{
+										v1.ResourceCPU:    resource.MustParse("8"),
+										v1.ResourceMemory: resource.MustParse("8G"),
+									},
+								},
+							},
+						},
+						EnableServiceLinks: ptr.To(true),
+					},
+				},
 			},
 		},
 	}

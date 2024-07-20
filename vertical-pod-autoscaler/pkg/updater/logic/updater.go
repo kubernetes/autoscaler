@@ -19,6 +19,7 @@ package logic
 import (
 	"context"
 	"fmt"
+	"slices"
 	"time"
 
 	"golang.org/x/time/rate"
@@ -66,6 +67,7 @@ type updater struct {
 	useAdmissionControllerStatus bool
 	statusValidator              status.Validator
 	controllerFetcher            controllerfetcher.ControllerFetcher
+	ignoredNamespaces            []string
 }
 
 // NewUpdater creates Updater with given configuration
@@ -84,6 +86,7 @@ func NewUpdater(
 	controllerFetcher controllerfetcher.ControllerFetcher,
 	priorityProcessor priority.PriorityProcessor,
 	namespace string,
+	ignoredNamespaces []string,
 ) (Updater, error) {
 	evictionRateLimiter := getRateLimiter(evictionRateLimit, evictionRateBurst)
 	factory, err := eviction.NewPodsEvictionRestrictionFactory(kubeClient, minReplicasForEvicition, evictionToleranceFraction)
@@ -107,6 +110,7 @@ func NewUpdater(
 			status.AdmissionControllerStatusName,
 			statusNamespace,
 		),
+		ignoredNamespaces: ignoredNamespaces,
 	}, nil
 }
 
@@ -137,14 +141,18 @@ func (u *updater) RunOnce(ctx context.Context) {
 	vpas := make([]*vpa_api_util.VpaWithSelector, 0)
 
 	for _, vpa := range vpaList {
+		if slices.Contains(u.ignoredNamespaces, vpa.Namespace) {
+			klog.V(3).Infof("skipping VPA object %s in namespace %s as namespace is ignored", vpa.Name, vpa.Namespace)
+			continue
+		}
 		if vpa_api_util.GetUpdateMode(vpa) != vpa_types.UpdateModeRecreate &&
 			vpa_api_util.GetUpdateMode(vpa) != vpa_types.UpdateModeAuto {
-			klog.V(3).Infof("skipping VPA object %v because its mode is not \"Recreate\" or \"Auto\"", vpa.Name)
+			klog.V(3).Infof("skipping VPA object %s because its mode is not \"Recreate\" or \"Auto\"", klog.KObj(vpa))
 			continue
 		}
 		selector, err := u.selectorFetcher.Fetch(vpa)
 		if err != nil {
-			klog.V(3).Infof("skipping VPA object %v because we cannot fetch selector", vpa.Name)
+			klog.V(3).Infof("skipping VPA object %s because we cannot fetch selector", klog.KObj(vpa))
 			continue
 		}
 
@@ -214,13 +222,13 @@ func (u *updater) RunOnce(ctx context.Context) {
 			}
 			err := u.evictionRateLimiter.Wait(ctx)
 			if err != nil {
-				klog.Warningf("evicting pod %v failed: %v", pod.Name, err)
+				klog.Warningf("evicting pod %s failed: %v", klog.KObj(pod), err)
 				return
 			}
-			klog.V(2).Infof("evicting pod %v", pod.Name)
+			klog.V(2).Infof("evicting pod %s", klog.KObj(pod))
 			evictErr := evictionLimiter.Evict(pod, u.eventRecorder)
 			if evictErr != nil {
-				klog.Warningf("evicting pod %v failed: %v", pod.Name, evictErr)
+				klog.Warningf("evicting pod %s failed: %v", klog.KObj(pod), evictErr)
 			} else {
 				withEvicted = true
 				metrics_updater.AddEvictedPod(vpaSize)

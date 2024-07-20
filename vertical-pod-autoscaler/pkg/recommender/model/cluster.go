@@ -25,7 +25,7 @@ import (
 	"k8s.io/klog/v2"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
+	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	vpa_utils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
@@ -329,7 +329,7 @@ func (cluster *ClusterState) MakeAggregateStateKey(pod *PodState, containerName 
 func (cluster *ClusterState) aggregateStateKeyForContainerID(containerID ContainerID) AggregateStateKey {
 	pod, podExists := cluster.Pods[containerID.PodID]
 	if !podExists {
-		panic(fmt.Sprintf("Pod not present in the ClusterState: %v", containerID.PodID))
+		panic(fmt.Sprintf("Pod not present in the ClusterState: %s/%s", containerID.PodID.Namespace, containerID.PodID.PodName))
 	}
 	return cluster.MakeAggregateStateKey(pod, containerID.ContainerName)
 }
@@ -433,7 +433,7 @@ func (cluster *ClusterState) RecordRecommendation(vpa *Vpa, now time.Time) error
 	} else {
 		if lastLogged.Add(RecommendationMissingMaxDuration).Before(now) {
 			cluster.EmptyVPAs[vpa.ID] = now
-			return fmt.Errorf("VPA %v/%v is missing recommendation for more than %v", vpa.ID.Namespace, vpa.ID.VpaName, RecommendationMissingMaxDuration)
+			return fmt.Errorf("VPA %s/%s is missing recommendation for more than %v", vpa.ID.Namespace, vpa.ID.VpaName, RecommendationMissingMaxDuration)
 		}
 	}
 	return nil
