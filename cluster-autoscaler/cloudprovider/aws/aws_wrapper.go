@@ -57,6 +57,9 @@ type awsWrapper struct {
 	eksI
 }
 
+var linuxAmiTypeRegexp = regexp.MustCompile("^(AL2|AL2023|BOTTLEROCKET)_")
+var windowsAmiTypeRegexp = regexp.MustCompile("^WINDOWS_")
+
 func (m *awsWrapper) getManagedNodegroupInfo(nodegroupName string, clusterName string) ([]apiv1.Taint, map[string]string, map[string]string, error) {
 	params := &eks.DescribeNodegroupInput{
 		ClusterName:   &clusterName,
@@ -82,6 +85,14 @@ func (m *awsWrapper) getManagedNodegroupInfo(nodegroupName string, clusterName s
 
 	if r.Nodegroup.AmiType != nil && len(*r.Nodegroup.AmiType) > 0 {
 		labels["amiType"] = *r.Nodegroup.AmiType
+
+		if linuxAmiTypeRegexp.MatchString(*r.Nodegroup.AmiType) {
+			labels["kubernetes.io/os"] = "linux"
+		}
+
+		if windowsAmiTypeRegexp.MatchString(*r.Nodegroup.AmiType) {
+			labels["kubernetes.io/os"] = "windows"
+		}
 	}
 
 	if r.Nodegroup.CapacityType != nil && len(*r.Nodegroup.CapacityType) > 0 {
