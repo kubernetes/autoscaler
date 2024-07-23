@@ -244,6 +244,16 @@ func (gc *GceCache) InvalidateAllMigInstances() {
 	gc.instancesUpdateTime = make(map[GceRef]time.Time)
 }
 
+// InvalidateMigInstances clears the mig instances cache for a given Mig
+func (gc *GceCache) InvalidateMigInstances(migRef GceRef) {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+
+	klog.V(5).Infof("Mig instances cache invalidated for %v", migRef.Name)
+	delete(gc.instances, migRef)
+	delete(gc.instancesUpdateTime, migRef)
+}
+
 // InvalidateInstancesToMig clears the instance to mig mapping for a GceRef
 func (gc *GceCache) InvalidateInstancesToMig(migRef GceRef) {
 	gc.cacheMutex.Lock()
