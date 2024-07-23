@@ -327,7 +327,7 @@ func (m *azureCache) Register(nodeGroup cloudprovider.NodeGroup) bool {
 	}
 
 	klog.V(4).Infof("Registering Node Group %q", nodeGroup.Id())
-	
+
 	m.registeredNodeGroups = append(m.registeredNodeGroups, nodeGroup)
 	m.invalidateUnownedInstanceCache()
 	return true
@@ -396,15 +396,15 @@ func (m *azureCache) getAutoscalingOptions(ref azureRef) map[string]string {
 	return m.autoscalingOptions[ref]
 }
 
-// HasInstance returns if a given instance exists in the azure cache 
+// HasInstance returns if a given instance exists in the azure cache
 func (m *azureCache) HasInstance(instance *azureRef) (bool, error) {
 	vmsPoolSet := m.getVMsPoolSet()
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 	resourceID, err := convertResourceGroupNameToLower(instance.Name)
 	if err != nil {
-		// Most likely an invalid resource id, we should return false 
-		// most of these shouldn't make it here do to higher level 
+		// Most likely an invalid resource id, we should return false
+		// most of these shouldn't make it here do to higher level
 		// validation in the HasInstance azure.cloudprovider function
 		return false, err
 	}

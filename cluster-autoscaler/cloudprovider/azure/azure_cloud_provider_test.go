@@ -278,7 +278,6 @@ func TestMixedNodeGroups(t *testing.T) {
 	assert.Equal(t, group.MaxSize(), 10)
 }
 
-
 func TestNodeGroupForNode(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
