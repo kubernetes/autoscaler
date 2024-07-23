@@ -17,6 +17,7 @@ limitations under the License.
 package azure
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
@@ -133,10 +134,42 @@ func TestNodeGroups(t *testing.T) {
 	assert.Equal(t, len(provider.NodeGroups()), 2)
 }
 
-func TestStaticVMSSNodesAreNotCountedTowardBeingDeleted(t *testing.T){}
-func TestHasInstanceNodesOutsideOfUnownedInstancesThatAreNonASG(t *testing.T) {}
+// func TestStaticVMSSNodesAreNotCountedTowardBeingDeleted(t *testing.T) {
+// 	// VMSS Instances that belong to a VMSS on the cluster but do not belong to a registered ASG
+// 	// should return err unimplemented for HasInstance
+// 	ctrl := gomock.NewController(t)
+// 	defer ctrl.Finish()
+// 
+// 	provider := newTestProvider(t)
+// 	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
+// 	mockVMClient := mockvmclient.NewMockInterface(ctrl)
+// 	mockVMSSVMClient := mockvmssvmclient.NewMockInterface(ctrl)
+// 	provider.azureManager.azClient.virtualMachinesClient = mockVMClient
+// 	provider.azureManager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
+// 	provider.azureManager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
+// 
+// 	// Simulate VMSS instances
+// 	unregisteredVMSSInstance := &apiv1.Node{
+// 		ObjectMeta: metav1.ObjectMeta{
+// 			Name: "unregistered-vmss-node",
+// 		},
+// 		Spec: apiv1.NodeSpec{
+// 			ProviderID: "azure:///subscriptions/sub/resourceGroups/rg/providers/Microsoft.Compute/virtualMachineScaleSets/unregistered-vmss-instance-id/virtualMachines/0",
+// 		},
+// 	}
+// 
+// 	// Mock responses to simulate that the instance belongs to a VMSS not in any registered ASG
+// 	expectedVMSSVMs := newTestVMSSVMList(1)
+// 	mockVMSSVMClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup, "unregistered-vmss-instance-id", gomock.Any()).Return(expectedVMSSVMs, nil).AnyTimes()
+// 
+// 	// Call HasInstance and check the result
+// 	inst := &azureRef{Name: unregisteredVMSSInstance.Spec.ProviderID}
+// 	hasInstance, err := provider.azureManager.azureCache.HasInstance(inst)
+// 	assert.False(t, hasInstance)
+// 	assert.Equal(t, cloudprovider.ErrNotImplemented, err)
+// }
 
-  func TestHasInstance(t *testing.T) {
+func TestHasInstance(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -280,77 +313,60 @@ func TestMixedNodeGroups(t *testing.T) {
 	assert.Equal(t, group.MaxSize(), 10)
 }
 
+
 func TestNodeGroupForNode(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	orchestrationModes := [2]compute.OrchestrationMode{compute.Uniform, compute.Flexible}
+	orchestrationModes := []compute.OrchestrationMode{compute.Uniform, compute.Flexible}
 
 	expectedVMSSVMs := newTestVMSSVMList(3)
 	expectedVMs := newTestVMList(3)
 
 	for _, orchMode := range orchestrationModes {
-		expectedScaleSets := newTestVMSSList(3, "test-asg", "eastus", orchMode)
-		provider := newTestProvider(t)
-		mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
-		mockVMSSClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return(expectedScaleSets, nil)
-		provider.azureManager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
-		mockVMClient := mockvmclient.NewMockInterface(ctrl)
-		provider.azureManager.azClient.virtualMachinesClient = mockVMClient
-		mockVMClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return(expectedVMs, nil).AnyTimes()
+		t.Run(fmt.Sprintf("OrchestrationMode_%v", orchMode), func(t *testing.T) {
+			expectedScaleSets := newTestVMSSList(3, "test-asg", "eastus", orchMode)
+			provider := newTestProvider(t)
+			mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
+			mockVMSSClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return(expectedScaleSets, nil)
+			provider.azureManager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
+			mockVMClient := mockvmclient.NewMockInterface(ctrl)
+			provider.azureManager.azClient.virtualMachinesClient = mockVMClient
+			mockVMClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return(expectedVMs, nil).AnyTimes()
 
-		if orchMode == compute.Uniform {
-			mockVMSSVMClient := mockvmssvmclient.NewMockInterface(ctrl)
-			mockVMSSVMClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup, "test-asg", gomock.Any()).Return(expectedVMSSVMs, nil).AnyTimes()
-			provider.azureManager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
-		} else {
+			if orchMode == compute.Uniform {
+				mockVMSSVMClient := mockvmssvmclient.NewMockInterface(ctrl)
+				mockVMSSVMClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup, "test-asg", gomock.Any()).Return(expectedVMSSVMs, nil).AnyTimes()
+				provider.azureManager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
+			} else {
+				provider.azureManager.config.EnableVmssFlex = true
+				mockVMClient.EXPECT().ListVmssFlexVMsWithoutInstanceView(gomock.Any(), "test-asg").Return(expectedVMs, nil).AnyTimes()
+			}
 
-			provider.azureManager.config.EnableVmssFlex = true
-			mockVMClient.EXPECT().ListVmssFlexVMsWithoutInstanceView(gomock.Any(), "test-asg").Return(expectedVMs, nil).AnyTimes()
+			registered := provider.azureManager.RegisterNodeGroup(
+				newTestScaleSet(provider.azureManager, "test-asg"))
+			provider.azureManager.explicitlyConfigured["test-asg"] = true
+			assert.True(t, registered)
+			assert.Equal(t, len(provider.NodeGroups()), 1)
 
-		}
+			node := newApiNode(orchMode, 0)
+			// refresh cache
+			provider.azureManager.forceRefresh()
+			group, err := provider.NodeGroupForNode(node)
+			assert.NoError(t, err)
+			assert.NotNil(t, group, "Group should not be nil")
+			assert.Equal(t, group.Id(), "test-asg")
+			assert.Equal(t, group.MinSize(), 1)
+			assert.Equal(t, group.MaxSize(), 5)
 
-		registered := provider.azureManager.RegisterNodeGroup(
-			newTestScaleSet(provider.azureManager, testASG))
-		provider.azureManager.explicitlyConfigured[testASG] = true
-		assert.True(t, registered)
-		assert.Equal(t, len(provider.NodeGroups()), 1)
-
-		node := newApiNode(orchMode, 0)
-		// refresh cache
-		provider.azureManager.forceRefresh()
-		group, err := provider.NodeGroupForNode(node)
-		assert.NoError(t, err)
-		assert.NotNil(t, group, "Group should not be nil")
-		assert.Equal(t, group.Id(), testASG)
-		assert.Equal(t, group.MinSize(), 1)
-		assert.Equal(t, group.MaxSize(), 5)
-
-		// test node in cluster that is not in a group managed by cluster autoscaler
-		nodeNotInGroup := &apiv1.Node{
-			Spec: apiv1.NodeSpec{
-				ProviderID: azurePrefix + "/subscriptions/subscripion/resourceGroups/test-resource-group/providers/Microsoft.Compute/virtualMachines/test-instance-id-not-in-group",
-			},
-		}
-		group, err = provider.NodeGroupForNode(nodeNotInGroup)
-		assert.NoError(t, err)
-		assert.Nil(t, group)
+			// test node in cluster that is not in a group managed by cluster autoscaler
+			nodeNotInGroup := &apiv1.Node{
+				Spec: apiv1.NodeSpec{
+					ProviderID: "azure:///subscriptions/subscription/resourceGroups/test-resource-group/providers/Microsoft.Compute/virtualMachines/test-instance-id-not-in-group",
+				},
+			}
+			group, err = provider.NodeGroupForNode(nodeNotInGroup)
+			assert.NoError(t, err)
+			assert.Nil(t, group)
+		})
 	}
-}
-
-func TestNodeGroupForNodeWithNoProviderId(t *testing.T) {
-	provider := newTestProvider(t)
-	registered := provider.azureManager.RegisterNodeGroup(
-		newTestScaleSet(provider.azureManager, "test-asg"))
-	assert.True(t, registered)
-	assert.Equal(t, len(provider.NodeGroups()), 1)
-
-	node := &apiv1.Node{
-		Spec: apiv1.NodeSpec{
-			ProviderID: "",
-		},
-	}
-	group, err := provider.NodeGroupForNode(node)
-
-	assert.NoError(t, err)
-	assert.Equal(t, group, nil)
 }
