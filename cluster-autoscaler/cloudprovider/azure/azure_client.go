@@ -172,12 +172,6 @@ type AgentPoolsClient interface {
 }
 
 func getAgentpoolClientCredentials(cfg *Config) (azcore.TokenCredential, error) {
-	// Use CLI
-	if cfg.AuthMethod == authMethodCLI {
-		return azidentity.NewAzureCLICredential(&azidentity.AzureCLICredentialOptions{
-			TenantID: cfg.TenantID})
-	}
-
 	if cfg.AuthMethod == "" || cfg.AuthMethod == authMethodPrincipal {
 		// Use MSI
 		if cfg.UseManagedIdentityExtension {
@@ -199,20 +193,19 @@ func getAgentpoolClientCredentials(cfg *Config) (azcore.TokenCredential, error) 
 			return azidentity.NewClientSecretCredential(cfg.TenantID, cfg.AADClientID, cfg.AADClientSecret, nil)
 		}
 	}
+
+	if cfg.UseWorkloadIdentityExtension {
+		klog.V(4).Info("Agentpool client: using workload identity for access token")
+		return azidentity.NewWorkloadIdentityCredential(&azidentity.WorkloadIdentityCredentialOptions{
+			TokenFilePath: cfg.AADFederatedTokenFile,
+		})
+	}
+
 	return nil, fmt.Errorf("unsupported authorization method: %s", cfg.AuthMethod)
 }
 
-func getAgentpoolClientRetryOptions(cfg *Config) azurecore_policy.RetryOptions {
-	if cfg.AuthMethod == authMethodCLI {
-		return azurecore_policy.RetryOptions{
-			MaxRetries: -1, // no retry when using CLI auth for UT
-		}
-	}
-	return azextensions.DefaultRetryOpts()
-}
-
 func newAgentpoolClient(cfg *Config) (AgentPoolsClient, error) {
-	retryOptions := getAgentpoolClientRetryOptions(cfg)
+	retryOptions := azextensions.DefaultRetryOpts()
 
 	if cfg.ARMBaseURLForAPClient != "" {
 		klog.V(10).Infof("Using ARMBaseURLForAPClient to create agent pool client")
