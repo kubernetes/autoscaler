@@ -175,15 +175,13 @@ func TestHasInstance(t *testing.T) {
 
 	// Test HasInstance for a node from the VMSS pool
 	node := newApiNode(compute.Uniform, 0)
-	inst := &azureRef{Name: node.Spec.ProviderID}
-	hasInstance, err := provider.azureManager.azureCache.HasInstance(inst, "test-asg")
+	hasInstance, err := provider.azureManager.azureCache.HasInstance(node.Spec.ProviderID)
 	assert.True(t, hasInstance)
 	assert.NoError(t, err)
 
 	// Test HasInstance for a node from the VMs pool
 	vmsPoolNode := newVMsNode(0)
-	inst = &azureRef{Name: vmsPoolNode.Spec.ProviderID}
-	hasInstance, err = provider.azureManager.azureCache.HasInstance(inst, "test-vms-pool")
+	hasInstance, err = provider.azureManager.azureCache.HasInstance(vmsPoolNode.Spec.ProviderID)
 	assert.True(t, hasInstance)
 	assert.NoError(t, err)
 }
@@ -218,8 +216,7 @@ func TestStaticVMSSNodesAreNotCountedTowardBeingDeleted(t *testing.T) {
 	mockVMSSVMClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup, "unregistered-vmss-instance-id", gomock.Any()).Return(expectedVMSSVMs, nil).AnyTimes()
 
 	// Call HasInstance and check the result
-	inst := &azureRef{Name: unregisteredVMSSInstance.Spec.ProviderID}
-	hasInstance, err := provider.azureManager.azureCache.HasInstance(inst, "unregistered-nodepool")
+	hasInstance, err := provider.azureManager.azureCache.HasInstance(unregisteredVMSSInstance.Spec.ProviderID)
 	assert.False(t, hasInstance)
 	assert.Equal(t, cloudprovider.ErrNotImplemented, err)
 }
@@ -366,7 +363,7 @@ func TestNodeGroupForNode(t *testing.T) {
 					},
 				},
 				Spec: apiv1.NodeSpec{
-					ProviderID: "azure:///subscriptions/subscription/resourceGroups/test-resource-group/providers/Microsoft.Compute/virtualMachines/test-instance-id-not-in-group",
+					ProviderID: "azure:///subscriptions/subscription/resourceGroups/test-resource-group/providers/Microsoft.Compute/virtualMachineScaleSets/test/virtualMachines/test-instance-id-not-in-group",
 				},
 			}
 			group, err = provider.NodeGroupForNode(nodeNotInGroup)
