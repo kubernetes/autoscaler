@@ -35,6 +35,8 @@ const (
 	// GPULabel is the label added to nodes with GPU resource.
 	GPULabel       = AKSLabelKeyPrefixValue + "accelerator"
 	legacyGPULabel = "accelerator"
+
+	azureAgentpoolKey = "kubernetes.azure.com/agentpool"
 )
 
 var (
@@ -125,6 +127,7 @@ func (azure *AzureCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovid
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
 func (azure *AzureCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+
 	if node.Spec.ProviderID == "" {
 		return false, fmt.Errorf("ProviderID for node: %s is empty, skipped", node.Name)
 	}
@@ -133,7 +136,8 @@ func (azure *AzureCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
 		return false, fmt.Errorf("invalid azure ProviderID prefix for node: %v, skipped", node.Name)
 	}
 	instance := &azureRef{Name: node.Spec.ProviderID}
-	return azure.azureManager.azureCache.HasInstance(instance)
+	aksPoolName := node.Labels[azureAgentpoolKey]
+	return azure.azureManager.azureCache.HasInstance(instance, aksPoolName)
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.
