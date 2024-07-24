@@ -160,7 +160,7 @@ func (m *azureCache) regenerate() error {
 	if err != nil {
 		return err
 	}
-		
+
 	// Regenerate instance to node groups mapping.
 	newInstanceToNodeGroupCache := make(map[azureRef]cloudprovider.NodeGroup)
 	registeredNodeGroupIDs := sets.New[string]()
@@ -178,16 +178,11 @@ func (m *azureCache) regenerate() error {
 			newInstanceToNodeGroupCache[ref] = ng
 		}
 	}
-	
-	managedPoolNames := sets.New[string]()
+
 	// Regenerate VMSS to autoscaling options mapping.
 	newAutoscalingOptions := make(map[azureRef]map[string]string)
 	for _, vmss := range m.scaleSets {
 		// Check if the nodegroup is registered. If it is, lets store the managedPoolName
-		managedPoolName := extractAKSManagedPoolNameFromTags(vmss.Tags)
-		if registeredNodeGroupIDs.Has(managedPoolName)  && managedPoolName != "" {
-			managedPoolNames.Insert(managedPoolName)
-		}
 		ref := azureRef{Name: *vmss.Name}
 		options := extractAutoscalingOptionsFromScaleSetTags(vmss.Tags)
 		if !reflect.DeepEqual(m.getAutoscalingOptions(ref), options) {
@@ -208,7 +203,7 @@ func (m *azureCache) regenerate() error {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	m.registeredAKSPoolNames = managedPoolNames
+	m.registeredAKSPoolNames = registeredNodeGroupIDs
 	m.instanceToNodeGroup = newInstanceToNodeGroupCache
 	m.autoscalingOptions = newAutoscalingOptions
 	m.skus = newSkuCache
@@ -220,9 +215,9 @@ func (m *azureCache) regenerate() error {
 }
 
 func extractAKSManagedPoolNameFromTags(vmssTags map[string]*string) string {
-	for key, val := range vmssTags {  
+	for key, val := range vmssTags {
 		if val == nil {
-			continue 
+			continue
 		}
 		if key == agentpoolNameTag {
 			return *val
@@ -421,11 +416,11 @@ func (m *azureCache) getAutoscalingOptions(ref azureRef) map[string]string {
 }
 
 // HasInstance returns if a given instance exists in the azure cache
-func (m *azureCache) HasInstance(instance *azureRef, poolName string) (bool, error) {
+func (m *azureCache) HasInstance(providerID string) (bool, error) {
 	vmsPoolSet := m.getVMsPoolSet()
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
-	resourceID, err := convertResourceGroupNameToLower(instance.Name)
+	resourceID, err := convertResourceGroupNameToLower(providerID)
 	if err != nil {
 		// Most likely an invalid resource id, we should return false
 		// most of these shouldn't make it here do to higher level
@@ -433,9 +428,10 @@ func (m *azureCache) HasInstance(instance *azureRef, poolName string) (bool, err
 		return false, err
 	}
 
+	nodeGroupNameForNode := getVMSSNameFromProviderID(providerID)
 	inst := azureRef{Name: resourceID}
 	klog.V(4).Infof("HasInstance: Checking instance %s", inst.Name)
-	if m.unownedInstances[inst] || (m.vmType == vmTypeVMSS && len(vmsPoolSet) == 0 && !m.registeredAKSPoolNames.Has(poolName)) {
+	if m.unownedInstances[inst] || (m.vmType == vmTypeVMSS && len(vmsPoolSet) == 0 && !m.registeredAKSPoolNames.Has(nodeGroupNameForNode)) {
 		klog.V(4).Infof("HasInstance: Instance %s is unowned", inst.Name)
 		return false, cloudprovider.ErrNotImplemented
 	}

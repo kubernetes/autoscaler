@@ -636,3 +636,13 @@ func vmPowerStateFromStatuses(statuses []compute.InstanceViewStatus) string {
 	// PowerState is not set if the VM is still creating (or has failed creation)
 	return vmPowerStateUnknown
 }
+
+func getVMSSNameFromProviderID(providerID string) string {
+	parts := strings.Split(providerID, "/")
+	for i, part := range parts {
+		if part == "virtualMachineScaleSets" && i+1 < len(parts) {
+			return parts[i+1]
+		}
+	}
+	return ""
+}
