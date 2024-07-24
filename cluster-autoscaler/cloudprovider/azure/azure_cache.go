@@ -165,7 +165,7 @@ func (m *azureCache) regenerate() error {
 	newInstanceToNodeGroupCache := make(map[azureRef]cloudprovider.NodeGroup)
 	registeredNodeGroupIDs := sets.New[string]()
 	for _, ng := range m.registeredNodeGroups {
-		registeredNodeGroupIDs.Insert(ng.Id())
+		registeredNodeGroupIDs.Insert(strings.ToLower(ng.Id()))
 		klog.V(4).Infof("regenerate: finding nodes for node group %s", ng.Id())
 		instances, err := ng.Nodes()
 		if err != nil {
@@ -300,8 +300,8 @@ func (m *azureCache) fetchVirtualMachines() (map[string][]compute.VirtualMachine
 		}
 
 		// nodes from vms pool will have tag "aks-managed-agentpool-type" set to "VirtualMachines"
-		if agnetpoolType := tags[agentpoolTypeTag]; agnetpoolType != nil {
-			if strings.EqualFold(to.String(agnetpoolType), vmsPoolType) {
+		if agentpoolType := tags[agentpoolTypeTag]; agentpoolType != nil {
+			if strings.EqualFold(to.String(agentpoolType), vmsPoolType) {
 				vmsPoolSet[to.String(vmPoolName)] = struct{}{}
 			}
 		}
