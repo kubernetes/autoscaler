@@ -176,16 +176,52 @@ func TestHasInstance(t *testing.T) {
 	// Test HasInstance for a node from the VMSS pool
 	node := newApiNode(compute.Uniform, 0)
 	inst := &azureRef{Name: node.Spec.ProviderID}
-	hasInstance, err := provider.azureManager.azureCache.HasInstance(inst)
+	hasInstance, err := provider.azureManager.azureCache.HasInstance(inst, "test-asg")
 	assert.True(t, hasInstance)
 	assert.NoError(t, err)
 
 	// Test HasInstance for a node from the VMs pool
 	vmsPoolNode := newVMsNode(0)
 	inst = &azureRef{Name: vmsPoolNode.Spec.ProviderID}
-	hasInstance, err = provider.azureManager.azureCache.HasInstance(inst)
+	hasInstance, err = provider.azureManager.azureCache.HasInstance(inst, "test-vms-pool")
 	assert.True(t, hasInstance)
 	assert.NoError(t, err)
+}
+
+func TestStaticVMSSNodesAreNotCountedTowardBeingDeleted(t *testing.T) {
+	// VMSS Instances that belong to a VMSS on the cluster but do not belong to a registered ASG
+	// should return err unimplemented for HasInstance
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	provider := newTestProvider(t)
+	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
+	mockVMClient := mockvmclient.NewMockInterface(ctrl)
+	mockVMSSVMClient := mockvmssvmclient.NewMockInterface(ctrl)
+	provider.azureManager.azClient.virtualMachinesClient = mockVMClient
+	provider.azureManager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
+	provider.azureManager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
+
+	// 	// Simulate VMSS instances
+	unregisteredVMSSInstance := &apiv1.Node{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "unregistered-vmss-node",
+			Labels: map[string]string{
+				azureAgentpoolKey: "unregistered-nodepool",
+			},
+		},
+		Spec: apiv1.NodeSpec{
+			ProviderID: "azure:///subscriptions/sub/resourceGroups/rg/providers/Microsoft.Compute/virtualMachineScaleSets/unregistered-vmss-instance-id/virtualMachines/0",
+		},
+	}
+	// Mock responses to simulate that the instance belongs to a VMSS not in any registered ASG
+	expectedVMSSVMs := newTestVMSSVMList(1)
+	mockVMSSVMClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup, "unregistered-vmss-instance-id", gomock.Any()).Return(expectedVMSSVMs, nil).AnyTimes()
+
+	// Call HasInstance and check the result
+	inst := &azureRef{Name: unregisteredVMSSInstance.Spec.ProviderID}
+	hasInstance, err := provider.azureManager.azureCache.HasInstance(inst, "unregistered-nodepool")
+	assert.False(t, hasInstance)
+	assert.Equal(t, cloudprovider.ErrNotImplemented, err)
 }
 
 func TestHasInstanceProviderIDErrorValidation(t *testing.T) {
@@ -324,6 +360,11 @@ func TestNodeGroupForNode(t *testing.T) {
 
 			// test node in cluster that is not in a group managed by cluster autoscaler
 			nodeNotInGroup := &apiv1.Node{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						azureAgentpoolKey: "unregistered-friend",
+					},
+				},
 				Spec: apiv1.NodeSpec{
 					ProviderID: "azure:///subscriptions/subscription/resourceGroups/test-resource-group/providers/Microsoft.Compute/virtualMachines/test-instance-id-not-in-group",
 				},
@@ -331,6 +372,11 @@ func TestNodeGroupForNode(t *testing.T) {
 			group, err = provider.NodeGroupForNode(nodeNotInGroup)
 			assert.NoError(t, err)
 			assert.Nil(t, group)
+
+			hasInstance, err := provider.HasInstance(nodeNotInGroup)
+			assert.False(t, hasInstance)
+			assert.Error(t, err)
+			assert.Equal(t, err, cloudprovider.ErrNotImplemented)
 		})
 	}
 }

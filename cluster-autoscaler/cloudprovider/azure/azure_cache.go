@@ -27,6 +27,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/Azure/skewer"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 
 	"k8s.io/klog/v2"
@@ -96,6 +97,7 @@ type azureCache struct {
 
 	autoscalingOptions map[azureRef]map[string]string
 	skus               map[string]*skewer.Cache
+	registeredAKSPoolNames sets.Set[string]
 }
 
 func newAzureCache(client *azClient, cacheTTL time.Duration, config Config) (*azureCache, error) {
@@ -113,6 +115,7 @@ func newAzureCache(client *azClient, cacheTTL time.Duration, config Config) (*az
 		unownedInstances:     make(map[azureRef]bool),
 		autoscalingOptions:   make(map[azureRef]map[string]string),
 		skus:                 make(map[string]*skewer.Cache),
+		registeredAKSPoolNames: make(sets.Set[string]),
 	}
 
 	if config.EnableDynamicInstanceList {
@@ -152,6 +155,10 @@ func (m *azureCache) Cleanup() {
 	close(m.interrupt)
 }
 
+func isRegisteredAKSManagedPoolName(poolName string) {
+	// Looks up if a given poolName is registered
+}
+
 func (m *azureCache) regenerate() error {
 	err := m.fetchAzureResources()
 	if err != nil {
@@ -160,7 +167,9 @@ func (m *azureCache) regenerate() error {
 
 	// Regenerate instance to node groups mapping.
 	newInstanceToNodeGroupCache := make(map[azureRef]cloudprovider.NodeGroup)
+	registeredNodeGroupIDs := sets.New[string]()
 	for _, ng := range m.registeredNodeGroups {
+		registeredNodeGroupIDs.Insert(ng.Id())
 		klog.V(4).Infof("regenerate: finding nodes for node group %s", ng.Id())
 		instances, err := ng.Nodes()
 		if err != nil {
@@ -174,9 +183,15 @@ func (m *azureCache) regenerate() error {
 		}
 	}
 
+	managedPoolNames := sets.New[string]()
 	// Regenerate VMSS to autoscaling options mapping.
 	newAutoscalingOptions := make(map[azureRef]map[string]string)
 	for _, vmss := range m.scaleSets {
+		// Check if the nodegroup is registered. If it is, lets store the managedPoolName
+		managedPoolName := extractAKSManagedPoolNameFromTags(vmss.Tags)
+		if registeredNodeGroupIDs.Has(managedPoolName) && managedPoolName != "" {
+			managedPoolNames.Insert(managedPoolName)
+		}
 		ref := azureRef{Name: *vmss.Name}
 		options := extractAutoscalingOptionsFromScaleSetTags(vmss.Tags)
 		if !reflect.DeepEqual(m.getAutoscalingOptions(ref), options) {
@@ -197,6 +212,7 @@ func (m *azureCache) regenerate() error {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
+	m.registeredAKSPoolNames = managedPoolNames
 	m.instanceToNodeGroup = newInstanceToNodeGroupCache
 	m.autoscalingOptions = newAutoscalingOptions
 	m.skus = newSkuCache
@@ -205,6 +221,18 @@ func (m *azureCache) regenerate() error {
 	m.unownedInstances = make(map[azureRef]bool)
 
 	return nil
+}
+
+func extractAKSManagedPoolNameFromTags(vmssTags map[string]*string) string {
+	for key, val := range vmssTags {
+		if val == nil {
+			continue
+		}
+		if key == agentpoolNameTag {
+			return *val
+		}
+	}
+	return ""
 }
 
 // fetchAzureResources retrieves and updates the cached Azure resources.
@@ -397,7 +425,7 @@ func (m *azureCache) getAutoscalingOptions(ref azureRef) map[string]string {
 }
 
 // HasInstance returns if a given instance exists in the azure cache
-func (m *azureCache) HasInstance(instance *azureRef) (bool, error) {
+func (m *azureCache) HasInstance(instance *azureRef, poolName string) (bool, error) {
 	vmsPoolSet := m.getVMsPoolSet()
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
@@ -408,10 +436,10 @@ func (m *azureCache) HasInstance(instance *azureRef) (bool, error) {
 		// validation in the HasInstance azure.cloudprovider function
 		return false, err
 	}
+
 	inst := azureRef{Name: resourceID}
 	klog.V(4).Infof("HasInstance: Checking instance %s", inst.Name)
-
-	if m.unownedInstances[inst] {
+	if m.unownedInstances[inst] || (m.vmType == vmTypeVMSS && len(vmsPoolSet) == 0 && !m.registeredAKSPoolNames.Has(poolName)) {
 		klog.V(4).Infof("HasInstance: Instance %s is unowned", inst.Name)
 		return false, cloudprovider.ErrNotImplemented
 	}
