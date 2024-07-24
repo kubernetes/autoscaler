@@ -73,6 +73,7 @@ func (m *matcher) GetMatchingVPA(ctx context.Context, pod *core.Pod) *vpa_types.
 			continue
 		}
 		if vpaConfig.Spec.TargetRef == nil {
+			klog.V(5).InfoS("Skipping VPA object because targetRef is not defined. If this is a v1beta1 object switch to v1", "vpa", klog.KObj(vpaConfig))
 			continue
 		}
 		if vpaConfig.Spec.TargetRef.Kind != parentController.Kind ||
