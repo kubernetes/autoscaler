@@ -155,16 +155,12 @@ func (m *azureCache) Cleanup() {
 	close(m.interrupt)
 }
 
-func isRegisteredAKSManagedPoolName(poolName string) {
-	// Looks up if a given poolName is registered
-}
-
 func (m *azureCache) regenerate() error {
 	err := m.fetchAzureResources()
 	if err != nil {
 		return err
 	}
-
+		
 	// Regenerate instance to node groups mapping.
 	newInstanceToNodeGroupCache := make(map[azureRef]cloudprovider.NodeGroup)
 	registeredNodeGroupIDs := sets.New[string]()
@@ -182,14 +178,14 @@ func (m *azureCache) regenerate() error {
 			newInstanceToNodeGroupCache[ref] = ng
 		}
 	}
-
+	
 	managedPoolNames := sets.New[string]()
 	// Regenerate VMSS to autoscaling options mapping.
 	newAutoscalingOptions := make(map[azureRef]map[string]string)
 	for _, vmss := range m.scaleSets {
 		// Check if the nodegroup is registered. If it is, lets store the managedPoolName
 		managedPoolName := extractAKSManagedPoolNameFromTags(vmss.Tags)
-		if registeredNodeGroupIDs.Has(managedPoolName) && managedPoolName != "" {
+		if registeredNodeGroupIDs.Has(managedPoolName)  && managedPoolName != "" {
 			managedPoolNames.Insert(managedPoolName)
 		}
 		ref := azureRef{Name: *vmss.Name}
@@ -224,9 +220,9 @@ func (m *azureCache) regenerate() error {
 }
 
 func extractAKSManagedPoolNameFromTags(vmssTags map[string]*string) string {
-	for key, val := range vmssTags {
+	for key, val := range vmssTags {  
 		if val == nil {
-			continue
+			continue 
 		}
 		if key == agentpoolNameTag {
 			return *val
