@@ -50,9 +50,7 @@ most likely need other command line flags. For more information you can invoke
 
 ## Configuring node group auto discovery
 
-If you do not configure node group auto discovery, cluster autoscaler will attempt
-to match nodes against any scalable resources found in any namespace and belonging
-to any Cluster.
+You must configure node group auto discovery to inform cluster autoscaler which cluster in which to find for scalable node groups.
 
 Limiting cluster autoscaler to only match against resources in the blue namespace
 
@@ -323,13 +321,14 @@ set, the autoscaler will use the behavior described above.
 
 ## Sample manifest
 
-A sample manifest that will create a deployment running the autoscaler is
+A [sample manifest](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/clusterapi/examples/deployment.yaml)
+that will create a deployment running the autoscaler is
 available. It can be deployed by passing it through `envsubst`, providing
 these environment variables to set the namespace to deploy into as well as the image and tag to use:
 
 ```
 export AUTOSCALER_NS=kube-system
-export AUTOSCALER_IMAGE=us.gcr.io/k8s-artifacts-prod/autoscaling/cluster-autoscaler:v1.20.0
+export AUTOSCALER_IMAGE=registry.k8s.io/autoscaling/cluster-autoscaler:v1.29.0
 envsubst < examples/deployment.yaml | kubectl apply -f-
 ```
 
@@ -454,4 +453,3 @@ here as a reference for users who might be deploying on these infrastructures.
 | IBM Cloud | `ibm-cloud.kubernetes.io/worker-id` | Used by the IBM Cloud Cloud Controller Manager to identify the node |
 | IBM Cloud | `vpc-block-csi-driver-labels` | Used by the IBM Cloud CSI driver as a target for persistent volume node affinity |
 | IBM Cloud | `ibm-cloud.kubernetes.io/vpc-instance-id` | Used when a VPC is in use on IBM Cloud |
-

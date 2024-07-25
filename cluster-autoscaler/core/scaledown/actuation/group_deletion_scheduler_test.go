@@ -19,6 +19,7 @@ package actuation
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
@@ -38,62 +39,94 @@ import (
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
+type testIteration struct {
+	toSchedule            []*budgets.NodeGroupView
+	toAbort               []*budgets.NodeGroupView
+	toScheduleAfterAbort  []*budgets.NodeGroupView
+	wantDeleted           int
+	wantNodeDeleteResults map[string]status.NodeDeleteResult
+}
+
 func TestScheduleDeletion(t *testing.T) {
 	testNg := testprovider.NewTestNodeGroup("test", 100, 0, 3, true, false, "n1-standard-2", nil, nil)
 	atomic2 := sizedNodeGroup("atomic-2", 2, true, false)
 	atomic4 := sizedNodeGroup("atomic-4", 4, true, false)
 
 	testCases := []struct {
-		name                  string
-		toSchedule            []*budgets.NodeGroupView
-		toAbort               []*budgets.NodeGroupView
-		toScheduleAfterAbort  []*budgets.NodeGroupView
-		wantDeleted           int
-		wantNodeDeleteResults map[string]status.NodeDeleteResult
+		name       string
+		iterations []testIteration
 	}{
 		{
-			name:       "no nodes",
-			toSchedule: []*budgets.NodeGroupView{},
+			name: "no nodes",
+			iterations: []testIteration{{
+				toSchedule: []*budgets.NodeGroupView{},
+			}},
 		},
 		{
-			name:                 "individual nodes are deleted right away",
-			toSchedule:           generateNodeGroupViewList(testNg, 0, 3),
-			toAbort:              generateNodeGroupViewList(testNg, 3, 6),
-			toScheduleAfterAbort: generateNodeGroupViewList(testNg, 6, 9),
-			wantDeleted:          6,
-			wantNodeDeleteResults: map[string]status.NodeDeleteResult{
-				"test-node-3": {ResultType: status.NodeDeleteErrorFailedToDelete, Err: cmpopts.AnyError},
-				"test-node-4": {ResultType: status.NodeDeleteErrorFailedToDelete, Err: cmpopts.AnyError},
-				"test-node-5": {ResultType: status.NodeDeleteErrorFailedToDelete, Err: cmpopts.AnyError},
-			},
+			name: "individual nodes are deleted right away",
+			iterations: []testIteration{{
+				toSchedule:           generateNodeGroupViewList(testNg, 0, 3),
+				toAbort:              generateNodeGroupViewList(testNg, 3, 6),
+				toScheduleAfterAbort: generateNodeGroupViewList(testNg, 6, 9),
+				wantDeleted:          6,
+				wantNodeDeleteResults: map[string]status.NodeDeleteResult{
+					"test-node-3": {ResultType: status.NodeDeleteErrorFailedToDelete, Err: cmpopts.AnyError},
+					"test-node-4": {ResultType: status.NodeDeleteErrorFailedToDelete, Err: cmpopts.AnyError},
+					"test-node-5": {ResultType: status.NodeDeleteErrorFailedToDelete, Err: cmpopts.AnyError},
+				},
+			}},
 		},
 		{
 			name: "whole atomic node groups deleted",
-			toSchedule: mergeLists(
-				generateNodeGroupViewList(atomic4, 0, 1),
-				generateNodeGroupViewList(atomic2, 0, 1),
-				generateNodeGroupViewList(atomic4, 1, 2),
-				generateNodeGroupViewList(atomic2, 1, 2),
-				generateNodeGroupViewList(atomic4, 2, 4),
-			),
-			wantDeleted: 6,
+			iterations: []testIteration{{
+				toSchedule: mergeLists(
+					generateNodeGroupViewList(atomic4, 0, 1),
+					generateNodeGroupViewList(atomic2, 0, 1),
+					generateNodeGroupViewList(atomic4, 1, 2),
+					generateNodeGroupViewList(atomic2, 1, 2),
+					generateNodeGroupViewList(atomic4, 2, 4),
+				),
+				wantDeleted: 6,
+			}},
 		},
 		{
 			name: "atomic node group aborted in the process",
-			toSchedule: mergeLists(
-				generateNodeGroupViewList(atomic4, 0, 1),
-				generateNodeGroupViewList(atomic2, 0, 1),
-				generateNodeGroupViewList(atomic4, 1, 2),
-				generateNodeGroupViewList(atomic2, 1, 2),
-			),
-			toAbort:              generateNodeGroupViewList(atomic4, 2, 3),
-			toScheduleAfterAbort: generateNodeGroupViewList(atomic4, 3, 4),
-			wantDeleted:          2,
-			wantNodeDeleteResults: map[string]status.NodeDeleteResult{
-				"atomic-4-node-0": {ResultType: status.NodeDeleteErrorFailedToDelete, Err: cmpopts.AnyError},
-				"atomic-4-node-1": {ResultType: status.NodeDeleteErrorFailedToDelete, Err: cmpopts.AnyError},
-				"atomic-4-node-2": {ResultType: status.NodeDeleteErrorFailedToDelete, Err: cmpopts.AnyError},
-				"atomic-4-node-3": {ResultType: status.NodeDeleteErrorFailedToDelete, Err: cmpopts.AnyError},
+			iterations: []testIteration{{
+				toSchedule: mergeLists(
+					generateNodeGroupViewList(atomic4, 0, 1),
+					generateNodeGroupViewList(atomic2, 0, 1),
+					generateNodeGroupViewList(atomic4, 1, 2),
+					generateNodeGroupViewList(atomic2, 1, 2),
+				),
+				toAbort:              generateNodeGroupViewList(atomic4, 2, 3),
+				toScheduleAfterAbort: generateNodeGroupViewList(atomic4, 3, 4),
+				wantDeleted:          2,
+				wantNodeDeleteResults: map[string]status.NodeDeleteResult{
+					"atomic-4-node-0": {ResultType: status.NodeDeleteErrorFailedToDelete, Err: cmpopts.AnyError},
+					"atomic-4-node-1": {ResultType: status.NodeDeleteErrorFailedToDelete, Err: cmpopts.AnyError},
+					"atomic-4-node-2": {ResultType: status.NodeDeleteErrorFailedToDelete, Err: cmpopts.AnyError},
+					"atomic-4-node-3": {ResultType: status.NodeDeleteErrorFailedToDelete, Err: cmpopts.AnyError},
+				},
+			}},
+		},
+		{
+			name: "atomic node group aborted, next time successful",
+			iterations: []testIteration{
+				{
+					toSchedule:           generateNodeGroupViewList(atomic4, 0, 2),
+					toAbort:              generateNodeGroupViewList(atomic4, 2, 3),
+					toScheduleAfterAbort: generateNodeGroupViewList(atomic4, 3, 4),
+					wantNodeDeleteResults: map[string]status.NodeDeleteResult{
+						"atomic-4-node-0": {ResultType: status.NodeDeleteErrorFailedToDelete, Err: cmpopts.AnyError},
+						"atomic-4-node-1": {ResultType: status.NodeDeleteErrorFailedToDelete, Err: cmpopts.AnyError},
+						"atomic-4-node-2": {ResultType: status.NodeDeleteErrorFailedToDelete, Err: cmpopts.AnyError},
+						"atomic-4-node-3": {ResultType: status.NodeDeleteErrorFailedToDelete, Err: cmpopts.AnyError},
+					},
+				},
+				{
+					toSchedule:  generateNodeGroupViewList(atomic4, 0, 4),
+					wantDeleted: 4,
+				},
 			},
 		},
 	}
@@ -103,13 +136,6 @@ func TestScheduleDeletion(t *testing.T) {
 			provider := testprovider.NewTestCloudProvider(nil, func(nodeGroup string, node string) error {
 				return nil
 			})
-			for _, bucket := range append(append(tc.toSchedule, tc.toAbort...), tc.toScheduleAfterAbort...) {
-				bucket.Group.(*testprovider.TestNodeGroup).SetCloudProvider(provider)
-				provider.InsertNodeGroup(bucket.Group)
-				for _, node := range bucket.Nodes {
-					provider.AddNode(bucket.Group.Id(), node)
-				}
-			}
 
 			batcher := &countingBatcher{}
 			tracker := deletiontracker.NewNodeDeletionTracker(0)
@@ -128,25 +154,47 @@ func TestScheduleDeletion(t *testing.T) {
 			}
 			scheduler := NewGroupDeletionScheduler(&ctx, tracker, batcher, Evictor{EvictionRetryTime: 0, PodEvictionHeadroom: DefaultPodEvictionHeadroom})
 
-			if err := scheduleAll(tc.toSchedule, scheduler); err != nil {
-				t.Fatal(err)
-			}
-			for _, bucket := range tc.toAbort {
-				for _, node := range bucket.Nodes {
-					nodeDeleteResult := status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToDelete, Err: cmpopts.AnyError}
-					scheduler.AbortNodeDeletion(node, bucket.Group.Id(), false, "simulated abort", nodeDeleteResult)
+			for i, ti := range tc.iterations {
+				allBuckets := append(append(ti.toSchedule, ti.toAbort...), ti.toScheduleAfterAbort...)
+				for _, bucket := range allBuckets {
+					bucket.Group.(*testprovider.TestNodeGroup).SetCloudProvider(provider)
+					provider.InsertNodeGroup(bucket.Group)
+					for _, node := range bucket.Nodes {
+						provider.AddNode(bucket.Group.Id(), node)
+					}
 				}
-			}
-			if err := scheduleAll(tc.toScheduleAfterAbort, scheduler); err != nil {
-				t.Fatal(err)
-			}
 
-			if batcher.addedNodes != tc.wantDeleted {
-				t.Errorf("Incorrect number of deleted nodes, want %v but got %v", tc.wantDeleted, batcher.addedNodes)
-			}
-			gotDeletionResult, _ := tracker.DeletionResults()
-			if diff := cmp.Diff(tc.wantNodeDeleteResults, gotDeletionResult, cmpopts.EquateEmpty(), cmpopts.EquateErrors()); diff != "" {
-				t.Errorf("NodeDeleteResults diff (-want +got):\n%s", diff)
+				// ResetAndReportMetrics should be called before each scale-down phase
+				scheduler.ResetAndReportMetrics()
+				tracker.ClearResultsNotNewerThan(time.Now())
+
+				if err := scheduleAll(ti.toSchedule, scheduler); err != nil {
+					t.Fatal(err)
+				}
+				for _, bucket := range ti.toAbort {
+					for _, node := range bucket.Nodes {
+						nodeDeleteResult := status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToDelete, Err: cmpopts.AnyError}
+						scheduler.AbortNodeDeletion(node, bucket.Group.Id(), false, "simulated abort", nodeDeleteResult)
+					}
+				}
+				if err := scheduleAll(ti.toScheduleAfterAbort, scheduler); err != nil {
+					t.Fatal(err)
+				}
+
+				if batcher.addedNodes != ti.wantDeleted {
+					t.Errorf("Incorrect number of deleted nodes in iteration %v, want %v but got %v", i, ti.wantDeleted, batcher.addedNodes)
+				}
+				gotDeletionResult, _ := tracker.DeletionResults()
+				if diff := cmp.Diff(ti.wantNodeDeleteResults, gotDeletionResult, cmpopts.EquateEmpty(), cmpopts.EquateErrors()); diff != "" {
+					t.Errorf("NodeDeleteResults diff in iteration %v (-want +got):\n%s", i, diff)
+				}
+
+				for _, bucket := range allBuckets {
+					provider.DeleteNodeGroup(bucket.Group.Id())
+					for _, node := range bucket.Nodes {
+						provider.DeleteNode(node)
+					}
+				}
 			}
 		})
 	}

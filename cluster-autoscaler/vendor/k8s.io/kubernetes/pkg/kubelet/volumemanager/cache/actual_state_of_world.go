@@ -418,6 +418,13 @@ func (asw *actualStateOfWorld) IsVolumeReconstructed(volumeName v1.UniqueVolumeN
 	return foundPod
 }
 
+func (asw *actualStateOfWorld) IsVolumeDeviceReconstructed(volumeName v1.UniqueVolumeName) bool {
+	asw.RLock()
+	defer asw.RUnlock()
+	_, ok := asw.foundDuringReconstruction[volumeName]
+	return ok
+}
+
 func (asw *actualStateOfWorld) CheckAndMarkVolumeAsUncertainViaReconstruction(opts operationexecutor.MarkVolumeOpts) (bool, error) {
 	asw.Lock()
 	defer asw.Unlock()
@@ -710,7 +717,7 @@ func (asw *actualStateOfWorld) AddPodToVolume(markVolumeOpts operationexecutor.M
 		// Update uncertain volumes - the new markVolumeOpts may have updated information.
 		// Especially reconstructed volumes (marked as uncertain during reconstruction) need
 		// an update.
-		updateUncertainVolume = utilfeature.DefaultFeatureGate.Enabled(features.SELinuxMountReadWriteOncePod) && podObj.volumeMountStateForPod == operationexecutor.VolumeMountUncertain
+		updateUncertainVolume = utilfeature.DefaultFeatureGate.Enabled(features.NewVolumeManagerReconstruction) && podObj.volumeMountStateForPod == operationexecutor.VolumeMountUncertain
 	}
 	if !podExists || updateUncertainVolume {
 		// Add new mountedPod or update existing one.
@@ -810,6 +817,7 @@ func (asw *actualStateOfWorld) SetDeviceMountState(
 			volumeObj.seLinuxMountContext = &seLinuxMountContext
 		}
 	}
+
 	asw.attachedVolumes[volumeName] = volumeObj
 	return nil
 }

@@ -26,15 +26,6 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
-	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
-	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
-	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/eviction"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/priority"
-	metrics_updater "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/updater"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/status"
-	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -43,6 +34,17 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/klog/v2"
+
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
+	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
+	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/eviction"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/priority"
+	metrics_updater "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/updater"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/status"
+	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
 // Updater performs updates on pods if recommended by Vertical Pod Autoscaler
@@ -63,6 +65,7 @@ type updater struct {
 	selectorFetcher              target.VpaTargetSelectorFetcher
 	useAdmissionControllerStatus bool
 	statusValidator              status.Validator
+	controllerFetcher            controllerfetcher.ControllerFetcher
 }
 
 // NewUpdater creates Updater with given configuration
@@ -78,6 +81,7 @@ func NewUpdater(
 	recommendationProcessor vpa_api_util.RecommendationProcessor,
 	evictionAdmission priority.PodEvictionAdmission,
 	selectorFetcher target.VpaTargetSelectorFetcher,
+	controllerFetcher controllerfetcher.ControllerFetcher,
 	priorityProcessor priority.PriorityProcessor,
 	namespace string,
 ) (Updater, error) {
@@ -96,6 +100,7 @@ func NewUpdater(
 		evictionAdmission:            evictionAdmission,
 		priorityProcessor:            priorityProcessor,
 		selectorFetcher:              selectorFetcher,
+		controllerFetcher:            controllerFetcher,
 		useAdmissionControllerStatus: useAdmissionControllerStatus,
 		statusValidator: status.NewValidator(
 			kubeClient,
@@ -167,7 +172,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 
 	controlledPods := make(map[*vpa_types.VerticalPodAutoscaler][]*apiv1.Pod)
 	for _, pod := range allLivePods {
-		controllingVPA := vpa_api_util.GetControllingVPAForPod(pod, vpas)
+		controllingVPA := vpa_api_util.GetControllingVPAForPod(pod, vpas, u.controllerFetcher)
 		if controllingVPA != nil {
 			controlledPods[controllingVPA.Vpa] = append(controlledPods[controllingVPA.Vpa], pod)
 		}

@@ -201,7 +201,7 @@ var _ = RecommenderE2eDescribe("VPA CRD object", func() {
 
 		ginkgo.By("Setting up a VPA CRD")
 		containerName := GetHamsterContainerNameByIndex(0)
-		vpaCRD := test.VerticalPodAutoscaler().
+		vpaCRD = test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
 			WithNamespace(f.Namespace.Name).
 			WithTargetRef(hamsterTargetRef).
@@ -315,7 +315,7 @@ var _ = RecommenderE2eDescribe("VPA CRD object", func() {
 			WithNamespace(f.Namespace.Name).
 			WithTargetRef(hamsterTargetRef).
 			WithContainer(containerName).
-			WithMaxAllowed(containerName, "1", "").
+			WithMaxAllowed(containerName, "1m", "").
 			Get()
 
 		InstallVPA(f, vpaCRD)

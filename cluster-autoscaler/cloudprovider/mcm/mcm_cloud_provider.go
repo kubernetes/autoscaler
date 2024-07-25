@@ -530,6 +530,11 @@ func (machinedeployment *MachineDeployment) TemplateNodeInfo() (*schedulerframew
 	return nodeInfo, nil
 }
 
+// AtomicIncreaseSize is not implemented.
+func (machinedeployment *MachineDeployment) AtomicIncreaseSize(delta int) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 func buildMachineDeploymentFromSpec(value string, mcmManager *McmManager) (*MachineDeployment, error) {
 	spec, err := dynamic.SpecFromString(value, true)
 

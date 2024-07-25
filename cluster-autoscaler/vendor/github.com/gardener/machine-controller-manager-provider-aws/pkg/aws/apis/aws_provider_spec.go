@@ -1,15 +1,6 @@
-/*
-Copyright (c) 2019 SAP SE or an SAP affiliate company. All rights reserved.
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-    http://www.apache.org/licenses/LICENSE-2.0
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+// SPDX-FileCopyrightText: 2024 SAP SE or an SAP affiliate company and Gardener contributors
+//
+// SPDX-License-Identifier: Apache-2.0
 
 package api
 
@@ -106,6 +97,9 @@ type AWSProviderSpec struct {
 
 	// InstanceMetadataOptions contains configuration for controlling access to the metadata API.
 	InstanceMetadataOptions *InstanceMetadataOptions `json:"instanceMetadataOptions,omitempty"`
+
+	// CPUOptions contains detailed configuration for the number of cores and threads for the instance.
+	CPUOptions *CPUOptions `json:"cpuOptions,omitempty"`
 }
 
 // AWSBlockDeviceMappingSpec stores info about AWS block device mappings
@@ -229,6 +223,14 @@ type AWSNetworkInterfaceSpec struct {
 	// launching into a default subnet, the default value is true.
 	AssociatePublicIPAddress *bool `json:"associatePublicIPAddress,omitempty"`
 
+	// Ipv6AddressCount represents the number of IPv6 addresses to assign to the network interface. Amazon EC2
+	// chooses the IPv6 addresses from the range of the subnet.
+	Ipv6AddressCount *int64 `json:"ipv6AddressCount,omitempty"`
+
+	// Ipv6PrefixCount represents the number of IPv6 delegated prefixes to be automatically assigned to the
+	// network interface.
+	Ipv6PrefixCount *int64 `json:"ipv6PrefixCount,omitempty"`
+
 	// If set to true, the interface is deleted when the machine is terminated.
 	// You can specify true only if creating a new network interface when launching
 	// an machine.
@@ -270,4 +272,13 @@ type InstanceMetadataOptions struct {
 	HTTPPutResponseHopLimit *int64 `json:"httpPutResponseHopLimit,omitempty"`
 	// HTTPTokens enforces the use of metadata v2 API.
 	HTTPTokens *string `json:"httpTokens,omitempty"`
+}
+
+// CPUOptions contains detailed configuration for the number of cores and threads for the instance.
+type CPUOptions struct {
+	// CoreCount specifies the number of CPU cores per instance.
+	CoreCount *int64 `json:"coreCount"`
+
+	// ThreadsPerCore sets the number of threads per core. Must be either '1' (disable multi-threading) or '2'.
+	ThreadsPerCore *int64 `json:"threadsPerCore"`
 }

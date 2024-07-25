@@ -19,6 +19,8 @@ package main
 import (
 	"context"
 	"crypto/tls"
+	"fmt"
+	"strings"
 	"time"
 
 	admissionregistration "k8s.io/api/admissionregistration/v1"
@@ -31,14 +33,43 @@ const (
 	webhookConfigName = "vpa-webhook-config"
 )
 
-func configTLS(serverCert, serverKey []byte) *tls.Config {
+func configTLS(serverCert, serverKey []byte, minTlsVersion, ciphers string) *tls.Config {
+	var tlsVersion uint16
+	var ciphersuites []uint16
+	reverseCipherMap := make(map[string]uint16)
 	sCert, err := tls.X509KeyPair(serverCert, serverKey)
 	if err != nil {
 		klog.Fatal(err)
 	}
+
+	for _, c := range tls.CipherSuites() {
+		reverseCipherMap[c.Name] = c.ID
+	}
+	for _, c := range strings.Split(strings.ReplaceAll(ciphers, ",", ":"), ":") {
+		cipher, ok := reverseCipherMap[c]
+		if ok {
+			ciphersuites = append(ciphersuites, cipher)
+		}
+	}
+	if len(ciphersuites) == 0 {
+		ciphersuites = nil
+	}
+
+	switch minTlsVersion {
+	case "":
+		fallthrough
+	case "tls1_2":
+		tlsVersion = tls.VersionTLS12
+	case "tls1_3":
+		tlsVersion = tls.VersionTLS13
+	default:
+		klog.Fatal(fmt.Errorf("Unable to determine value for --min-tls-version (%s), must be either tls1_2 or tls1_3", minTlsVersion))
+	}
+
 	return &tls.Config{
-		MinVersion:   tls.VersionTLS12,
+		MinVersion:   tlsVersion,
 		Certificates: []tls.Certificate{sCert},
+		CipherSuites: ciphersuites,
 	}
 }
 

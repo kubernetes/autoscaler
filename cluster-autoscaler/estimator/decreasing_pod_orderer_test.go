@@ -20,35 +20,35 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	apiv1 "k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 func TestPodPriorityProcessor(t *testing.T) {
-	p1 := test.BuildTestPod("p1", 1, 1)
-	p2 := test.BuildTestPod("p2", 2, 1)
-	p3 := test.BuildTestPod("p3", 2, 100)
-	node := makeNode(4, 600, "node1", "zone-sun")
+	pg1 := PodEquivalenceGroup{Pods: []*v1.Pod{test.BuildTestPod("p1", 1, 1)}}
+	pg2 := PodEquivalenceGroup{Pods: []*v1.Pod{test.BuildTestPod("p2", 2, 1)}}
+	pg3 := PodEquivalenceGroup{Pods: []*v1.Pod{test.BuildTestPod("p3", 2, 100)}}
+	node := makeNode(4, 600, 10, "node1", "zone-sun")
 	testCases := map[string]struct {
-		inputPods    []*apiv1.Pod
-		expectedPods []*apiv1.Pod
+		inputPodsEquivalentGroup    []PodEquivalenceGroup
+		expectedPodsEquivalentGroup []PodEquivalenceGroup
 	}{
 		"single pod": {
-			inputPods:    []*apiv1.Pod{p1},
-			expectedPods: []*apiv1.Pod{p1},
+			inputPodsEquivalentGroup:    []PodEquivalenceGroup{pg1},
+			expectedPodsEquivalentGroup: []PodEquivalenceGroup{pg1},
 		},
 		"sorted list of pods": {
-			inputPods:    []*apiv1.Pod{p3, p2, p1},
-			expectedPods: []*apiv1.Pod{p3, p2, p1},
+			inputPodsEquivalentGroup:    []PodEquivalenceGroup{pg3, pg2, pg1},
+			expectedPodsEquivalentGroup: []PodEquivalenceGroup{pg3, pg2, pg1},
 		},
 		"randomised list of pods": {
-			inputPods:    []*apiv1.Pod{p1, p3, p2},
-			expectedPods: []*apiv1.Pod{p3, p2, p1},
+			inputPodsEquivalentGroup:    []PodEquivalenceGroup{pg1, pg3, pg2},
+			expectedPodsEquivalentGroup: []PodEquivalenceGroup{pg3, pg2, pg1},
 		},
 		"empty pod list": {
-			inputPods:    []*apiv1.Pod{},
-			expectedPods: []*apiv1.Pod{},
+			inputPodsEquivalentGroup:    []PodEquivalenceGroup{},
+			expectedPodsEquivalentGroup: []PodEquivalenceGroup{},
 		},
 	}
 
@@ -59,8 +59,8 @@ func TestPodPriorityProcessor(t *testing.T) {
 			processor := NewDecreasingPodOrderer()
 			nodeInfo := schedulerframework.NewNodeInfo()
 			nodeInfo.SetNode(node)
-			actual := processor.Order(tc.inputPods, nodeInfo, nil)
-			assert.Equal(t, tc.expectedPods, actual)
+			actual := processor.Order(tc.inputPodsEquivalentGroup, nodeInfo, nil)
+			assert.Equal(t, tc.expectedPodsEquivalentGroup, actual)
 		})
 	}
 }

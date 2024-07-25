@@ -66,6 +66,7 @@ func VerticalPodAutoscaler() VerticalPodAutoscalerBuilder {
 		minAllowed:              map[string]core.ResourceList{},
 		maxAllowed:              map[string]core.ResourceList{},
 		controlledValues:        map[string]*vpa_types.ContainerControlledValues{},
+		scalingMode:             map[string]*vpa_types.ContainerScalingMode{},
 	}
 }
 
@@ -194,18 +195,20 @@ func (b *verticalPodAutoscalerBuilder) WithGroupVersion(gv meta.GroupVersion) Ve
 }
 
 func (b *verticalPodAutoscalerBuilder) WithEvictionRequirements(evictionRequirements []*vpa_types.EvictionRequirement) VerticalPodAutoscalerBuilder {
+	updateModeAuto := vpa_types.UpdateModeAuto
 	c := *b
 	if c.updatePolicy == nil {
-		c.updatePolicy = &vpa_types.PodUpdatePolicy{}
+		c.updatePolicy = &vpa_types.PodUpdatePolicy{UpdateMode: &updateModeAuto}
 	}
 	c.updatePolicy.EvictionRequirements = evictionRequirements
 	return &c
 }
 
 func (b *verticalPodAutoscalerBuilder) WithMinReplicas(minReplicas *int32) VerticalPodAutoscalerBuilder {
+	updateModeAuto := vpa_types.UpdateModeAuto
 	c := *b
 	if c.updatePolicy == nil {
-		c.updatePolicy = &vpa_types.PodUpdatePolicy{}
+		c.updatePolicy = &vpa_types.PodUpdatePolicy{UpdateMode: &updateModeAuto}
 	}
 	c.updatePolicy.MinReplicas = minReplicas
 	return &c
@@ -239,16 +242,26 @@ func (b *verticalPodAutoscalerBuilder) Get() *vpa_types.VerticalPodAutoscaler {
 	}
 	resourcePolicy := vpa_types.PodResourcePolicy{}
 	recommendation := &vpa_types.RecommendedPodResources{}
+	scalingModeAuto := vpa_types.ContainerScalingModeAuto
 	for _, containerName := range b.containerNames {
-		resourcePolicy.ContainerPolicies = append(resourcePolicy.ContainerPolicies, vpa_types.ContainerResourcePolicy{
+		containerResourcePolicy := vpa_types.ContainerResourcePolicy{
 			ContainerName:    containerName,
 			MinAllowed:       b.minAllowed[containerName],
 			MaxAllowed:       b.maxAllowed[containerName],
 			ControlledValues: b.controlledValues[containerName],
-			Mode:             b.scalingMode[containerName],
-		})
+			Mode:             &scalingModeAuto,
+		}
+		if scalingMode, ok := b.scalingMode[containerName]; ok {
+			containerResourcePolicy.Mode = scalingMode
+		}
+		resourcePolicy.ContainerPolicies = append(resourcePolicy.ContainerPolicies, containerResourcePolicy)
 	}
-	recommendation = b.recommendation.WithContainer(b.containerNames[0]).Get()
+	// VPAs with a single container may still use the old/implicit way of adding recommendations
+	r := b.recommendation.WithContainer(b.containerNames[0]).Get()
+	if r.ContainerRecommendations[0].Target != nil {
+		recommendation = r
+	}
+
 	recommendation.ContainerRecommendations = append(recommendation.ContainerRecommendations, b.appendedRecommendations...)
 
 	return &vpa_types.VerticalPodAutoscaler{

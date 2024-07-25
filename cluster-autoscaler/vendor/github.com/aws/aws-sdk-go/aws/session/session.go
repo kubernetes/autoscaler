@@ -37,7 +37,7 @@ const (
 
 // ErrSharedConfigSourceCollision will be returned if a section contains both
 // source_profile and credential_source
-var ErrSharedConfigSourceCollision = awserr.New(ErrCodeSharedConfig, "only one credential type may be specified per profile: source profile, credential source, credential process, web identity token, or sso", nil)
+var ErrSharedConfigSourceCollision = awserr.New(ErrCodeSharedConfig, "only one credential type may be specified per profile: source profile, credential source, credential process, web identity token", nil)
 
 // ErrSharedConfigECSContainerEnvVarEmpty will be returned if the environment
 // variables are empty and Environment was set as the credential source
@@ -777,6 +777,14 @@ func mergeConfigSrcs(cfg, userCfg *aws.Config,
 
 	if len(ec2IMDSEndpoint) != 0 || endpointMode != endpoints.EC2IMDSEndpointModeStateUnset {
 		cfg.EndpointResolver = wrapEC2IMDSEndpoint(cfg.EndpointResolver, ec2IMDSEndpoint, endpointMode)
+	}
+
+	cfg.EC2MetadataEnableFallback = userCfg.EC2MetadataEnableFallback
+	if cfg.EC2MetadataEnableFallback == nil && envCfg.EC2IMDSv1Disabled != nil {
+		cfg.EC2MetadataEnableFallback = aws.Bool(!*envCfg.EC2IMDSv1Disabled)
+	}
+	if cfg.EC2MetadataEnableFallback == nil && sharedCfg.EC2IMDSv1Disabled != nil {
+		cfg.EC2MetadataEnableFallback = aws.Bool(!*sharedCfg.EC2IMDSv1Disabled)
 	}
 
 	cfg.S3UseARNRegion = userCfg.S3UseARNRegion

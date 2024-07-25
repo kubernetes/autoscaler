@@ -31,7 +31,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
 	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
-	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/random"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
@@ -44,7 +43,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupconfig"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfos"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfosprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodes"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/scaledowncandidates"
@@ -188,7 +186,6 @@ func NewTestProcessors(context *context.AutoscalingContext) *processors.Autoscal
 		ScaleDownStatusProcessor:    &status.NoOpScaleDownStatusProcessor{},
 		AutoscalingStatusProcessor:  &status.NoOpAutoscalingStatusProcessor{},
 		NodeGroupManager:            nodegroups.NewDefaultNodeGroupManager(),
-		NodeInfoProcessor:           nodeinfos.NewDefaultNodeInfoProcessor(),
 		TemplateNodeInfoProvider:    nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false),
 		NodeGroupConfigProcessor:    nodegroupconfig.NewDefaultNodeGroupConfigProcessor(context.NodeGroupDefaults),
 		CustomResourcesProcessor:    customresources.NewDefaultCustomResourcesProcessor(),
@@ -211,14 +208,6 @@ func NewScaleTestAutoscalingContext(
 	if err != nil {
 		return context.AutoscalingContext{}, err
 	}
-	// Ignoring error here is safe - if a test doesn't specify valid estimatorName,
-	// it either doesn't need one, or should fail when it turns out to be nil.
-	estimatorBuilder, _ := estimator.NewEstimatorBuilder(
-		options.EstimatorName,
-		estimator.NewThresholdBasedEstimationLimiter(nil),
-		estimator.NewDecreasingPodOrderer(),
-		/* EstimationAnalyserFunc */ nil,
-	)
 	predicateChecker, err := predicatechecker.NewTestPredicateChecker()
 	if err != nil {
 		return context.AutoscalingContext{}, err
@@ -240,7 +229,6 @@ func NewScaleTestAutoscalingContext(
 		PredicateChecker:     predicateChecker,
 		ClusterSnapshot:      clusterSnapshot,
 		ExpanderStrategy:     random.NewStrategy(),
-		EstimatorBuilder:     estimatorBuilder,
 		ProcessorCallbacks:   processorCallbacks,
 		DebuggingSnapshotter: debuggingSnapshotter,
 		RemainingPdbTracker:  remainingPdbTracker,

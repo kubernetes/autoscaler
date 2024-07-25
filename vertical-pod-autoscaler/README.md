@@ -50,12 +50,13 @@ procedure described below.
 
 # Installation
 
-The current default version is Vertical Pod Autoscaler 0.14.0
+The current default version is Vertical Pod Autoscaler 1.1.0
 
 ### Compatibility
 
 | VPA version     | Kubernetes version |
 |-----------------|--------------------|
+| 1.1             | 1.25+              |
 | 1.0             | 1.25+              |
 | 0.14            | 1.25+              |
 | 0.13            | 1.25+              |
@@ -384,8 +385,12 @@ vpa-post-processor.kubernetes.io/{containerName}_integerCPU=true
   recreated. This can be partly
   addressed by using VPA together with [Cluster Autoscaler](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#basics).
 * VPA does not update resources of pods which are not run under a controller.
-* Vertical Pod Autoscaler **should not be used with the [Horizontal Pod Autoscaler](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#support-for-resource-metrics) (HPA) on CPU or memory** at this moment.
-  However, you can use VPA with [HPA on custom and external metrics](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#scaling-on-custom-metrics).
+* Vertical Pod Autoscaler **should not be used with the [Horizontal Pod
+  Autoscaler](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#support-for-resource-metrics)
+  (HPA) on the same resource metric (CPU or memory)** at this moment. However, you can use [VPA with
+  HPA on separate resource metrics](https://github.com/kubernetes/autoscaler/issues/6247) (e.g. VPA
+  on memory and HPA on CPU) as well as with [HPA on custom and external
+  metrics](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#scaling-on-custom-metrics).
 * The VPA admission controller is an admission webhook. If you add other admission webhooks
   to your cluster, it is important to analyze how they interact and whether they may conflict
   with each other. The order of admission controllers is defined by a flag on API server.

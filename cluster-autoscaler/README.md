@@ -25,7 +25,7 @@ You should also take a look at the notes and "gotchas" for your specific cloud p
 * [ClusterAPI](./cloudprovider/clusterapi/README.md)
 * [DigitalOcean](./cloudprovider/digitalocean/README.md)
 * [Exoscale](./cloudprovider/exoscale/README.md)
-* [Equinix Metal](./cloudprovider/packet/README.md#notes)
+* [Equinix Metal](cloudprovider/equinixmetal/README.md#notes)
 * [External gRPC](./cloudprovider/externalgrpc/README.md)
 * [Hetzner](./cloudprovider/hetzner/README.md)
 * [HuaweiCloud](./cloudprovider/huaweicloud/README.md)
@@ -47,53 +47,54 @@ We recommend using Cluster Autoscaler with the Kubernetes control plane (previou
 
 Starting from Kubernetes 1.12, versioning scheme was changed to match Kubernetes minor releases exactly.
 
-| Kubernetes Version | CA Version   |
-|--------------------|--------|
-| 1.29.X             | 1.29.X |
-| 1.28.X             | 1.28.X |
-| 1.27.X             | 1.27.X |
-| 1.26.X             | 1.26.X |
-| 1.25.X             | 1.25.X |
-| 1.24.X             | 1.24.X |
-| 1.23.X             | 1.23.X |
-| 1.22.X             | 1.22.X |
-| 1.21.X             | 1.21.X |
-| 1.20.X             | 1.20.X |
-| 1.19.X             | 1.19.X |
-| 1.18.X             | 1.18.X |
-| 1.17.X             | 1.17.X |
-| 1.16.X             | 1.16.X |
-| 1.15.X             | 1.15.X |
-| 1.14.X             | 1.14.X |
-| 1.13.X             | 1.13.X |
-| 1.12.X             | 1.12.X |
-| 1.11.X             | 1.3.X  |
-| 1.10.X             | 1.2.X  |
-| 1.9.X              | 1.1.X  |
-| 1.8.X              | 1.0.X  |
-| 1.7.X              | 0.6.X  |
-| 1.6.X              | 0.5.X, 0.6.X<sup>*</sup>  |
-| 1.5.X              | 0.4.X  |
-| 1.4.X              | 0.3.X  |
+| Kubernetes Version | CA Version               | Chart Version |
+|--------------------|--------------------------|---------------|
+| 1.29.X             | 1.29.X                   |9.35.0+|
+| 1.28.X             | 1.28.X                   |9.34.0+|
+| 1.27.X             | 1.27.X                   |9.29.0+|
+| 1.26.X             | 1.26.X                   |9.28.0+|
+| 1.25.X             | 1.25.X                   |               |
+| 1.24.X             | 1.24.X                   |9.25.0+|
+| 1.23.X             | 1.23.X                   |9.14.0+|
+| 1.22.X             | 1.22.X                   |               |
+| 1.21.X             | 1.21.X                   |9.10.0+|
+| 1.20.X             | 1.20.X                   |9.5.0+|
+| 1.19.X             | 1.19.X                   |               |
+| 1.18.X             | 1.18.X                   |9.0.0+|
+| 1.17.X             | 1.17.X                   |               |
+| 1.16.X             | 1.16.X                   |               |
+| 1.15.X             | 1.15.X                   |               |
+| 1.14.X             | 1.14.X                   |               |
+| 1.13.X             | 1.13.X                   |               |
+| 1.12.X             | 1.12.X                   |               |
+| 1.11.X             | 1.3.X                    |               |
+| 1.10.X             | 1.2.X                    |               |
+| 1.9.X              | 1.1.X                    |               |
+| 1.8.X              | 1.0.X                    |               |
+| 1.7.X              | 0.6.X                    |               |
+| 1.6.X              | 0.5.X, 0.6.X<sup>*</sup> |               |
+| 1.5.X              | 0.4.X                    |               |
+| 1.4.X              | 0.3.X                    |               |
 
 <sup>*</sup>Cluster Autoscaler 0.5.X is the official version shipped with k8s 1.6. We've done some basic tests using k8s 1.6 / CA 0.6 and we're not aware of any problems with this setup. However, Cluster Autoscaler internally simulates Kubernetes' scheduler and using different versions of scheduler code can lead to subtle issues.
 
-# Patch releases
+## Schedule
 
-Cluster Autoscaler releases patches for versions corresponding to currently
+Cluster Autoscaler releases new minor versions shortly after OSS Kubernetes release
+and patches for versions corresponding to currently
 supported [Kubernetes versions](https://kubernetes.io/releases/) on a roughly 2
 month cadence. Currently planned schedule is below. Please note that target
 dates listed below are approximate and we expect up to a week difference between
 target ETA and the actual releases.
 
-| Date       | Maintainer Preparing Release | Backup Maintainer |
-|------------|------------------------------|-------------------|
-| 2023-03-15 | MaciekPytel                  | gjtempleton       |
-| 2023-05-17 | gjtempleton                  | BigDarkClown      |
-| 2023-07-19 | BigDarkClown                 | towca             |
-| 2023-09-13 | towca                        | x13n              |
-| 2023-11-15 | x13n                         | MaciekPytel       |
-| 2024-01-17 | MaciekPytel                  | gjtempleton       |
+| Date       | Maintainer Preparing Release | Backup Maintainer | Type  |
+|------------|------------------------------|-------------------|-------|
+| 2024-01-17 | MaciekPytel                  | gjtempleton       | patch |
+| 2024-03-13 | gjtempleton                  | BigDarkClown      | patch |
+| 2024-04-17 | BigDarkClown                 | towca             | 1.30  |
+| 2024-05-22 | towca                        | x13n              | patch |
+| 2024-07-24 | x13n                         | MaciekPytel       | patch |
+| 2024-08-21 | MaciekPytel                  | gjtempleton       | 1.31  |
 
 Additional patch releases may happen outside of the schedule in case of critical
 bugs or vulnerabilities.
@@ -104,6 +105,7 @@ Starting with Gardener/Autoscaler v1.20, versioning scheme has changed to match 
 
 | Kubernetes Version | CA Version | Gardener CA Version | 
 |--------------------|------------|---------------------|
+| 1.30.X             | 1.30.X     | 1.30.X              |
 | 1.29.X             | 1.29.X     | 1.29.X              |
 | 1.28.X             | 1.28.X     | 1.28.X              |
 | 1.27.X             | 1.27.X     | 1.27.X              |
@@ -233,7 +235,7 @@ Supported cloud providers:
 * ClusterAPI https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/clusterapi/README.md
 * DigitalOcean https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/digitalocean/README.md
 * Exoscale https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/exoscale/README.md
-* Equinix Metal https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/packet/README.md
+* Equinix Metal https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/equinixmetal/README.md
 * External gRPC https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/externalgrpc/README.md
 * Hetzner https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/hetzner/README.md
 * HuaweiCloud https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/huaweicloud/README.md

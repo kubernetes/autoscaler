@@ -20,6 +20,11 @@ import (
 	"os"
 	"testing"
 
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
+
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -27,10 +32,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
-	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
 	v1lister "k8s.io/client-go/listers/core/v1"
 	core "k8s.io/client-go/testing"
@@ -153,6 +154,110 @@ func TestNodeGroups(t *testing.T) {
 		assert.NotEmpty(t, ngs)
 		assert.Len(t, ngs, 1)
 		assert.Contains(t, ngs[0].Id(), "kind-worker")
+	})
+}
+
+func TestRefresh(t *testing.T) {
+	fakeClient := &fake.Clientset{}
+	var nodesFrom string
+	fakeClient.Fake.AddReactor("get", "configmaps", func(action core.Action) (bool, runtime.Object, error) {
+		getAction := action.(core.GetAction)
+
+		if getAction == nil {
+			return false, nil, nil
+		}
+
+		if getAction.GetName() == defaultConfigName {
+			if nodesFrom == "configmap" {
+				return true, &apiv1.ConfigMap{
+					Data: map[string]string{
+						configKey: testConfig,
+					},
+				}, nil
+			}
+
+			return true, &apiv1.ConfigMap{
+				Data: map[string]string{
+					configKey: testConfigDynamicTemplates,
+				},
+			}, nil
+
+		}
+
+		if getAction.GetName() == defaultTemplatesConfigName {
+			if nodesFrom == "configmap" {
+				return true, &apiv1.ConfigMap{
+					Data: map[string]string{
+						templatesKey: testTemplates,
+					},
+				}, nil
+			}
+		}
+
+		return true, nil, errors.NewNotFound(apiv1.Resource("configmaps"), "whatever")
+	})
+
+	os.Setenv("POD_NAMESPACE", "kube-system")
+
+	t.Run("refresh nodegroup target size", func(t *testing.T) {
+		nodesFrom = "configmap"
+		ngName := "kind-worker"
+		fakeNodeLister := newTestAllNodeLister(map[string]*apiv1.Node{
+			"node1": {
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "node1",
+					Labels: map[string]string{
+						"kwok-nodegroup": ngName,
+					},
+				},
+			},
+			"node2": {
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "node2",
+					Labels: map[string]string{
+						"kwok-nodegroup": ngName,
+					},
+				},
+			},
+			"node3": {
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "node3",
+					Labels: map[string]string{
+						"kwok-nodegroup": ngName,
+					},
+				},
+			},
+			"node4": {
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "node4",
+				},
+			},
+		})
+
+		ko := &kwokOptions{
+			kubeClient:      fakeClient,
+			autoscalingOpts: &config.AutoscalingOptions{},
+			discoveryOpts:   &cloudprovider.NodeGroupDiscoveryOptions{},
+			resourceLimiter: cloudprovider.NewResourceLimiter(
+				map[string]int64{cloudprovider.ResourceNameCores: 1, cloudprovider.ResourceNameMemory: 10000000},
+				map[string]int64{cloudprovider.ResourceNameCores: 10, cloudprovider.ResourceNameMemory: 100000000}),
+			allNodesLister: fakeNodeLister,
+			ngNodeListerFn: testNodeLister,
+		}
+
+		p, err := BuildKwokProvider(ko)
+		assert.NoError(t, err)
+		assert.NotNil(t, p)
+
+		err = p.Refresh()
+		assert.Nil(t, err)
+		for _, ng := range p.NodeGroups() {
+			if ng.Id() == ngName {
+				targetSize, err := ng.TargetSize()
+				assert.Nil(t, err)
+				assert.Equal(t, 3, targetSize)
+			}
+		}
 	})
 }
 
@@ -637,6 +742,40 @@ func TestNodeGroupForNode(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotNil(t, ng)
 		assert.Contains(t, ng.Id(), "kind-worker")
+	})
+
+	t.Run("empty nodegroup name for node", func(t *testing.T) {
+		nodesFrom = "configmap"
+		fakeNodeLister := newTestAllNodeLister(map[string]*apiv1.Node{})
+
+		ko := &kwokOptions{
+			kubeClient:      fakeClient,
+			autoscalingOpts: &config.AutoscalingOptions{},
+			discoveryOpts:   &cloudprovider.NodeGroupDiscoveryOptions{},
+			resourceLimiter: cloudprovider.NewResourceLimiter(
+				map[string]int64{cloudprovider.ResourceNameCores: 1, cloudprovider.ResourceNameMemory: 10000000},
+				map[string]int64{cloudprovider.ResourceNameCores: 10, cloudprovider.ResourceNameMemory: 100000000}),
+			allNodesLister: fakeNodeLister,
+			ngNodeListerFn: testNodeLister,
+		}
+
+		p, err := BuildKwokProvider(ko)
+		assert.NoError(t, err)
+		assert.NotNil(t, p)
+		assert.Len(t, p.nodeGroups, 1)
+		assert.Contains(t, p.nodeGroups[0].Id(), "kind-worker")
+
+		testNode := &apiv1.Node{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "node-without-labels",
+			},
+			Spec: apiv1.NodeSpec{
+				ProviderID: "kwok:random-instance-id",
+			},
+		}
+		ng, err := p.NodeGroupForNode(testNode)
+		assert.NoError(t, err)
+		assert.Nil(t, ng)
 	})
 
 }

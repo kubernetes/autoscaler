@@ -1043,9 +1043,8 @@ func TestControllerNodeGroupForNodeWithPositiveScalingBounds(t *testing.T) {
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
-		// We don't scale from 0 so nodes must belong to a
-		// nodegroup that has a scale size of at least 1.
-		if ng != nil {
+		// We allow scaling if minSize=maxSize
+		if ng == nil {
 			t.Fatalf("unexpected nodegroup: %v", ng)
 		}
 	}
@@ -1124,19 +1123,19 @@ func TestControllerNodeGroups(t *testing.T) {
 		nodeGroupMaxSizeAnnotationKey: "1",
 	}
 
-	// Test #5: machineset with no scaling bounds results in no nodegroups
+	// Test #5: 5 machineset with minSize=maxSize results in a five nodegroup
 	machineSetConfigs = createMachineSetTestConfigs(namespace, clusterName, RandomString(6), 5, 1, annotations, nil)
 	if err := addTestConfigs(t, controller, machineSetConfigs...); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	assertNodegroupLen(t, controller, 0)
+	assertNodegroupLen(t, controller, 5)
 
-	// Test #6: machinedeployment with no scaling bounds results in no nodegroups
+	// Test #6: add 2 machinedeployment with minSize=maxSize
 	machineDeploymentConfigs = createMachineDeploymentTestConfigs(namespace, clusterName, RandomString(6), 2, 1, annotations, nil)
 	if err := addTestConfigs(t, controller, machineDeploymentConfigs...); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	assertNodegroupLen(t, controller, 0)
+	assertNodegroupLen(t, controller, 7)
 
 	annotations = map[string]string{
 		nodeGroupMinSizeAnnotationKey: "-1",

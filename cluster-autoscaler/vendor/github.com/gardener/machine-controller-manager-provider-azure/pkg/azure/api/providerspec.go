@@ -69,6 +69,8 @@ type AzureProviderSpec struct {
 	ResourceGroup string `json:"resourceGroup,omitempty"`
 	// SubnetInfo contains the configuration for an existing subnet.
 	SubnetInfo AzureSubnetInfo `json:"subnetInfo,omitempty"`
+	// CloudConfiguration contains config that controls which cloud to connect to
+	CloudConfiguration *CloudConfiguration `json:"cloudConfiguration,omitempty"`
 }
 
 // AzureVirtualMachineProperties describes the properties of a Virtual Machine.
@@ -104,8 +106,30 @@ type AzureVirtualMachineProperties struct {
 	// 3. Only `Flexible` variant of VMSS is currently supported. It is strongly recommended that consumers turn-off any
 	// autoscaling capabilities as it interferes with the lifecycle management of MCM and auto-scaling capabilities offered by Cluster-Autoscaler.
 	VirtualMachineScaleSet *AzureSubResource `json:"virtualMachineScaleSet,omitempty"`
+	// DiagnosticsProfile specifies if boot metrics are enabled and where they are stored
+	// For additional information see: [https://learn.microsoft.com/en-us/azure/virtual-machines/boot-diagnostics]
+	DiagnosticsProfile *AzureDiagnosticsProfile `json:"diagnosticsProfile,omitempty"`
 	// Deprecated: Use either AvailabilitySet or VirtualMachineScaleSet instead
 	MachineSet *AzureMachineSetConfig `json:"machineSet,omitempty"`
+	// SecurityProfile specifies the security profile to be used for the virtual machine.
+	SecurityProfile *AzureSecurityProfile `json:"securityProfile,omitempty"`
+}
+
+// AzureSecurityProfile specifies the security profile to be used for the virtual machine.
+type AzureSecurityProfile struct {
+	// SecurityType specifies the SecurityType attribute of the virtual machine.
+	SecurityType *string `json:"securityType,omitempty"`
+	// UefiSettings controls the UEFI parameters for the virtual machine.
+	UefiSettings *AzureUefiSettings `json:"uefiSettings,omitempty"`
+}
+
+// AzureUefiSettings controls the UEFI parameters for the virtual machine.
+type AzureUefiSettings struct {
+	// VTpmEnabled enables vTPM for the virtual machine.
+	// See https://learn.microsoft.com/en-us/azure/virtual-machines/trusted-launch#vtpm
+	VTpmEnabled *bool `json:"vtpmEnabled,omitempty"`
+	// SecureBootEnabled enables the use of Secure Boot for the virtual machine.
+	SecureBootEnabled *bool `json:"secureBootEnabled,omitempty"`
 }
 
 // AzureHardwareProfile specifies the hardware settings for the virtual machine.
@@ -144,6 +168,8 @@ type AzureImageReference struct {
 	// URN Uniform Resource Name of the OS image to be used, it has the format 'publisher:offer:sku:version'
 	// This is a marketplace image. For marketplace images there needs to be a purchase plan and an agreement. The agreement needs to be accepted.
 	URN *string `json:"urn,omitempty"`
+	// SkipMarketplaceAgreement will prevent the extension from checking the license agreement for marketplace images.
+	SkipMarketplaceAgreement bool `json:"skipMarketplaceAgreement,omitempty"`
 	// CommunityGalleryImageID is the id of the OS image to be used, hosted within an Azure Community Image Gallery.
 	CommunityGalleryImageID *string `json:"communityGalleryImageID,omitempty"`
 	// SharedGalleryImageID is the id of the OS image to be used, hosted within an Azure Shared Image Gallery.
@@ -173,7 +199,7 @@ type AzureDataDisk struct {
 	Name string `json:"name,omitempty"`
 	// Lun specifies the logical unit number of the data disk. This value is used to identify data disks within the VM and
 	// therefore must be unique for each data disk attached to a VM.
-	Lun *int32 `json:"lun,omitempty"`
+	Lun int32 `json:"lun"`
 	// Caching specifies the caching requirements. Possible values are: None, ReadOnly, ReadWrite.
 	Caching string `json:"caching,omitempty"`
 	// StorageAccountType is the storage account type for a managed disk.
@@ -188,6 +214,16 @@ type AzureManagedDiskParameters struct {
 	ID string `json:"id,omitempty"`
 	// StorageAccountType is the storage account type for a managed disk.
 	StorageAccountType string `json:"storageAccountType,omitempty"`
+	// SecurityProfile are the parameters of the encryption of the OS disk.
+	SecurityProfile *AzureDiskSecurityProfile `json:"securityProfile,omitempty"`
+}
+
+// AzureDiskSecurityProfile are the parameters of the encryption of the OS disk.
+type AzureDiskSecurityProfile struct {
+	// Specifies the EncryptionType of the managed disk. It is set to DiskWithVMGuestState for encryption of the managed disk
+	// along with VMGuestState blob, and VMGuestStateOnly for encryption of just the
+	// VMGuestState blob. Note: It can be set only Confidential VMs.
+	SecurityEncryptionType *string `json:"securityEncryptionType,omitempty"`
 }
 
 // AzureOSProfile specifies the operating system settings for the virtual machine.
@@ -265,4 +301,27 @@ type AzureSubnetInfo struct {
 	VnetResourceGroup *string `json:"vnetResourceGroup,omitempty"`
 	// SubnetName is the name of the subnet which is unique within a resource group.
 	SubnetName string `json:"subnetName,omitempty"`
+}
+
+// AzureDiagnosticsProfile specifies boot diagnostic options
+type AzureDiagnosticsProfile struct {
+	// Enabled configures boot diagnostics to be stored or not
+	Enabled bool `json:"enabled,omitempty"`
+	// StorageURI is the URI of the storage account to use for storing console output and screenshot.
+	// If not specified azure managed storage will be used.
+	StorageURI *string `json:"storageURI,omitempty"`
+}
+
+// The (currently) supported values for the names of clouds to use in the CloudConfiguration.
+const (
+	CloudNameChina  string = "AzureChina"
+	CloudNameGov    string = "AzureGovernment"
+	CloudNamePublic string = "AzurePublic"
+)
+
+// CloudConfiguration contains detailed config for the cloud to connect to. Currently we only support selection of well-
+// known Azure-instances by name, but this could be extended in future to support private clouds.
+type CloudConfiguration struct {
+	// Name is the name of the cloud to connect to, e.g. "AzurePublic" or "AzureChina".
+	Name string `json:"name"`
 }

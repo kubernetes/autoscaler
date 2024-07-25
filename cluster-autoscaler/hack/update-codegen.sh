@@ -16,24 +16,26 @@
 
 ###
 # This script is to be used when updating the generated clients of 
-# the Provisoning Request CRD.
+# the Provisioning Request CRD.
 ###
 
 set -o errexit
 set -o nounset
 set -o pipefail
 
-SCRIPT_ROOT=$(dirname "${BASH_SOURCE[0]}")/..
-CODEGEN_PKG="./vendor/k8s.io/code-generator"
+SCRIPT_ROOT=$(realpath $(dirname "${BASH_SOURCE[0]}"))/..
+CODEGEN_PKG="../vendor/k8s.io/code-generator"
+pushd "${SCRIPT_ROOT}/apis"
 
 chmod +x "${CODEGEN_PKG}"/generate-groups.sh
 chmod +x "${CODEGEN_PKG}"/generate-internal-groups.sh
  
 bash "${CODEGEN_PKG}"/generate-groups.sh "applyconfiguration,client,deepcopy,informer,lister" \
-  k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/client \
-  k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/apis \
+  k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client \
+  k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest \
   autoscaling.x-k8s.io:v1beta1 \
   --go-header-file "${SCRIPT_ROOT}"/../hack/boilerplate/boilerplate.generatego.txt
 
 chmod -x "${CODEGEN_PKG}"/generate-groups.sh
 chmod -x "${CODEGEN_PKG}"/generate-internal-groups.sh
+popd

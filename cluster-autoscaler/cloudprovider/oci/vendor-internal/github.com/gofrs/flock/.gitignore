@@ -6,7 +6,6 @@
 # Folders
 _obj
 _test
-vendor
 
 # Architecture specific extensions/prefixes
 *.[568vq]
@@ -23,10 +22,3 @@ _testmain.go
 *.exe
 *.test
 *.prof
-*.pprof
-*.out
-*.log
-
-/bin
-cover.out
-cover.html

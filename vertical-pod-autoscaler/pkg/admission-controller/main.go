@@ -24,6 +24,11 @@ import (
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/client-go/informers"
+	kube_client "k8s.io/client-go/kubernetes"
+	kube_flag "k8s.io/component-base/cli/flag"
+	"k8s.io/klog/v2"
+
 	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/logic"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod"
@@ -32,20 +37,20 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/vpa"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
+	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics"
 	metrics_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/admission"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/status"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
-	"k8s.io/client-go/informers"
-	kube_client "k8s.io/client-go/kubernetes"
-	kube_flag "k8s.io/component-base/cli/flag"
-	"k8s.io/klog/v2"
 )
 
 const (
-	defaultResyncPeriod  = 10 * time.Minute
-	statusUpdateInterval = 10 * time.Second
+	defaultResyncPeriod                        = 10 * time.Minute
+	statusUpdateInterval                       = 10 * time.Second
+	scaleCacheEntryLifetime      time.Duration = time.Hour
+	scaleCacheEntryFreshnessTime time.Duration = 10 * time.Minute
+	scaleCacheEntryJitterFactor  float64       = 1.
 )
 
 var (
@@ -54,6 +59,8 @@ var (
 		tlsCertFile:   flag.String("tls-cert-file", "/etc/tls-certs/serverCert.pem", "Path to server certificate PEM file."),
 		tlsPrivateKey: flag.String("tls-private-key", "/etc/tls-certs/serverKey.pem", "Path to server certificate key PEM file."),
 	}
+	ciphers       = flag.String("tls-ciphers", "", "A comma-separated or colon-separated list of ciphers to accept.  Only works when min-tls-version is set to tls1_2.")
+	minTlsVersion = flag.String("min-tls-version", "tls1_2", "The minimum TLS version to accept.  Must be set to either tls1_2 (default) or tls1_3.")
 
 	port               = flag.Int("port", 8000, "The port to listen on.")
 	address            = flag.String("address", ":8944", "The address to expose Prometheus metrics.")
@@ -87,6 +94,7 @@ func main() {
 	kubeClient := kube_client.NewForConfigOrDie(config)
 	factory := informers.NewSharedInformerFactory(kubeClient, defaultResyncPeriod)
 	targetSelectorFetcher := target.NewVpaTargetSelectorFetcher(config, kubeClient, factory)
+	controllerFetcher := controllerfetcher.NewControllerFetcher(config, kubeClient, factory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor)
 	podPreprocessor := pod.NewDefaultPreProcessor()
 	vpaPreprocessor := vpa.NewDefaultPreProcessor()
 	var limitRangeCalculator limitrange.LimitRangeCalculator
@@ -96,7 +104,7 @@ func main() {
 		limitRangeCalculator = limitrange.NewNoopLimitsCalculator()
 	}
 	recommendationProvider := recommendation.NewProvider(limitRangeCalculator, vpa_api_util.NewCappingRecommendationProcessor(limitRangeCalculator))
-	vpaMatcher := vpa.NewMatcher(vpaLister, targetSelectorFetcher)
+	vpaMatcher := vpa.NewMatcher(vpaLister, targetSelectorFetcher, controllerFetcher)
 
 	hostname, err := os.Hostname()
 	if err != nil {
@@ -125,7 +133,7 @@ func main() {
 	})
 	server := &http.Server{
 		Addr:      fmt.Sprintf(":%d", *port),
-		TLSConfig: configTLS(certs.serverCert, certs.serverKey),
+		TLSConfig: configTLS(certs.serverCert, certs.serverKey, *minTlsVersion, *ciphers),
 	}
 	url := fmt.Sprintf("%v:%v", *webhookAddress, *webhookPort)
 	go func() {

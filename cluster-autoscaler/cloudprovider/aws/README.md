@@ -49,8 +49,11 @@ should be updated to restrict the resources/add conditionals:
         "autoscaling:DescribeLaunchConfigurations",
         "autoscaling:DescribeScalingActivities",
         "autoscaling:DescribeTags",
+        "ec2:DescribeImages",
         "ec2:DescribeInstanceTypes",
-        "ec2:DescribeLaunchTemplateVersions"
+        "ec2:DescribeLaunchTemplateVersions",
+        "ec2:GetInstanceTypesFromInstanceRequirements",
+        "eks:DescribeNodegroup"
       ],
       "Resource": ["*"]
     },
@@ -58,10 +61,7 @@ should be updated to restrict the resources/add conditionals:
       "Effect": "Allow",
       "Action": [
         "autoscaling:SetDesiredCapacity",
-        "autoscaling:TerminateInstanceInAutoScalingGroup",
-        "ec2:DescribeImages",
-        "ec2:GetInstanceTypesFromInstanceRequirements",
-        "eks:DescribeNodegroup"
+        "autoscaling:TerminateInstanceInAutoScalingGroup"
       ],
       "Resource": ["*"]
     }
@@ -247,7 +247,7 @@ as string). Currently supported autoscaling options (and example values) are:
 * `k8s.io/cluster-autoscaler/node-template/autoscaling-options/scaledownunreadytime`: `20m0s`
   (overrides `--scale-down-unready-time` value for that specific ASG)
 * `k8s.io/cluster-autoscaler/node-template/autoscaling-options/ignoredaemonsetsutilization`: `true`
-  (overrides `--ignore-daemonsets-utilization` value for that specific ASG) 
+  (overrides `--ignore-daemonsets-utilization` value for that specific ASG)
 
 **NOTE:** It is your responsibility to ensure such labels and/or taints are
 applied via the node's kubelet configuration at startup. Cluster Autoscaler will not set the node taints for you.
@@ -507,12 +507,14 @@ Please note: it is also possible to mount the cloud config file from host:
   `--scale-down-delay-after-delete`, and `--scale-down-delay-after-failure`
   flag. E.g. `--scale-down-delay-after-add=5m` to decrease the scale down delay
   to 5 minutes after a node has been added.
-- If you're running multiple ASGs, the `--expander` flag supports three options:
-  `random`, `most-pods` and `least-waste`. `random` will expand a random ASG on
-  scale up. `most-pods` will scale up the ASG that will schedule the most amount
-  of pods. `least-waste` will expand the ASG that will waste the least amount of
-  CPU/MEM resources. In the event of a tie, cluster autoscaler will fall back to
-  `random`.
+- If you're running multiple ASGs, the `--expander` flag supports five options:
+  `random`, `most-pods`, `least-waste`, `priority`, and `grpc`. `random` will
+  expand a random ASG on scale up. `most-pods` will scale up the ASG that will
+  schedule the most amount of pods. `least-waste` will expand the ASG that will
+  waste the least amount of CPU/MEM resources. In the event of a tie, cluster
+  autoscaler will fall back to`random`.  The `priority` expander lets you define
+  a custom priority ranking in a ConfigMap for selecting ASGs, and the `grpc`
+  expander allows you to write your own expansion logic.
 - If you're managing your own kubelets, they need to be started with the
   `--provider-id` flag. The provider id has the format
   `aws:///<availability-zone>/<instance-id>`, e.g.
