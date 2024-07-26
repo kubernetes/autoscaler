@@ -60,6 +60,8 @@ type operationCallMetrics struct {
 type MetricContext struct {
 	start      time.Time
 	attributes []string
+	// log level in ObserveOperationWithResult
+	LogLevel int32
 }
 
 // NewMetricContext creates a new MetricContext.
@@ -67,6 +69,7 @@ func NewMetricContext(prefix, request, resourceGroup, subscriptionID, source str
 	return &MetricContext{
 		start:      time.Now(),
 		attributes: []string{prefix + "_" + request, strings.ToLower(resourceGroup), subscriptionID, source},
+		LogLevel:   3,
 	}
 }
 
@@ -104,7 +107,7 @@ func (mc *MetricContext) ObserveOperationWithResult(isOperationSucceeded bool, l
 		}
 		mc.CountFailedOperation()
 	}
-	mc.logLatency(3, latency, append(labelAndValues, "result_code", resultCode)...)
+	mc.logLatency(mc.LogLevel, latency, append(labelAndValues, "result_code", resultCode)...)
 }
 
 func (mc *MetricContext) logLatency(logLevel int32, latency float64, additionalKeysAndValues ...interface{}) {

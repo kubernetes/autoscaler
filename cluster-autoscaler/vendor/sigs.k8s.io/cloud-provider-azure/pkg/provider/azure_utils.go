@@ -18,15 +18,17 @@ package provider
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net"
 	"strings"
 	"sync"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v5"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2022-07-01/network"
 
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
 	utilnet "k8s.io/utils/net"
 	"k8s.io/utils/pointer"
@@ -44,21 +46,21 @@ var strToExtendedLocationType = map[string]network.ExtendedLocationTypes{
 	"edgezone": network.EdgeZone,
 }
 
-// lockMap used to lock on entries
-type lockMap struct {
+// LockMap used to lock on entries
+type LockMap struct {
 	sync.Mutex
 	mutexMap map[string]*sync.Mutex
 }
 
 // NewLockMap returns a new lock map
-func newLockMap() *lockMap {
-	return &lockMap{
+func newLockMap() *LockMap {
+	return &LockMap{
 		mutexMap: make(map[string]*sync.Mutex),
 	}
 }
 
 // LockEntry acquires a lock associated with the specific entry
-func (lm *lockMap) LockEntry(entry string) {
+func (lm *LockMap) LockEntry(entry string) {
 	lm.Lock()
 	// check if entry does not exists, then add entry
 	mutex, exists := lm.mutexMap[entry]
@@ -71,7 +73,7 @@ func (lm *lockMap) LockEntry(entry string) {
 }
 
 // UnlockEntry release the lock associated with the specific entry
-func (lm *lockMap) UnlockEntry(entry string) {
+func (lm *LockMap) UnlockEntry(entry string) {
 	lm.Lock()
 	defer lm.Unlock()
 
@@ -196,31 +198,6 @@ func getExtendedLocationTypeFromString(extendedLocationType string) network.Exte
 	return network.EdgeZone
 }
 
-func getServiceAdditionalPublicIPs(service *v1.Service) ([]string, error) {
-	if service == nil {
-		return nil, nil
-	}
-
-	result := []string{}
-	if val, ok := service.Annotations[consts.ServiceAnnotationAdditionalPublicIPs]; ok {
-		pips := strings.Split(strings.TrimSpace(val), ",")
-		for _, pip := range pips {
-			ip := strings.TrimSpace(pip)
-			if ip == "" {
-				continue // skip empty string
-			}
-
-			if net.ParseIP(ip) == nil {
-				return nil, fmt.Errorf("%s is not a valid IP address", ip)
-			}
-
-			result = append(result, ip)
-		}
-	}
-
-	return result, nil
-}
-
 func getNodePrivateIPAddress(node *v1.Node, isIPv6 bool) string {
 	for _, nodeAddress := range node.Status.Addresses {
 		if strings.EqualFold(string(nodeAddress.Type), string(v1.NodeInternalIP)) &&
@@ -322,20 +299,6 @@ func isNodeInVMSSVMCache(nodeName string, vmssVMCache azcache.Resource) bool {
 	return isInCache
 }
 
-func extractVmssVMName(name string) (string, string, error) {
-	split := strings.SplitAfter(name, consts.VMSSNameSeparator)
-	if len(split) < 2 {
-		klog.V(3).Infof("Failed to extract vmssVMName %q", name)
-		return "", "", ErrorNotVmssInstance
-	}
-
-	ssName := strings.Join(split[0:len(split)-1], "")
-	// removing the trailing `vmssNameSeparator` since we used SplitAfter
-	ssName = ssName[:len(ssName)-1]
-	instanceID := split[len(split)-1]
-	return ssName, instanceID, nil
-}
-
 // isServiceDualStack checks if a Service is dual-stack or not.
 func isServiceDualStack(svc *v1.Service) bool {
 	return len(svc.Spec.IPFamilies) == 2
@@ -404,7 +367,7 @@ func setServiceLoadBalancerIP(service *v1.Service, ip string) {
 	}
 	parsedIP := net.ParseIP(ip)
 	if parsedIP == nil {
-		klog.Warning("setServiceLoadBalancerIP: IP %q is not valid for Service", ip, service.Name)
+		klog.Warningf("setServiceLoadBalancerIP: IP %q is not valid for Service %q", ip, service.Name)
 		return
 	}
 
@@ -453,14 +416,14 @@ func getServicePIPPrefixID(service *v1.Service, isIPv6 bool) string {
 // the old PIPs will be recreated.
 func getResourceByIPFamily(resource string, isDualStack, isIPv6 bool) string {
 	if isDualStack && isIPv6 {
-		return fmt.Sprintf("%s-%s", resource, v6Suffix)
+		return fmt.Sprintf("%s-%s", resource, consts.IPVersionIPv6String)
 	}
 	return resource
 }
 
 // isFIPIPv6 checks if the frontend IP configuration is of IPv6.
 // NOTICE: isFIPIPv6 assumes the FIP is owned by the Service and it is the primary Service.
-func (az *Cloud) isFIPIPv6(service *v1.Service, pipRG string, fip *network.FrontendIPConfiguration) (bool, error) {
+func (az *Cloud) isFIPIPv6(service *v1.Service, _ string, fip *network.FrontendIPConfiguration) (bool, error) {
 	isDualStack := isServiceDualStack(service)
 	if !isDualStack {
 		return service.Spec.IPFamilies[0] == v1.IPv6Protocol, nil
@@ -475,24 +438,6 @@ func getResourceIDPrefix(id string) string {
 		return id // Should not happen
 	}
 	return id[:idx]
-}
-
-// fillSubnet fills subnet value into the variable.
-func (az *Cloud) fillSubnet(subnet *network.Subnet, subnetName string) error {
-	if subnet == nil {
-		return fmt.Errorf("subnet is nil, should not happen")
-	}
-	if subnet.ID == nil {
-		curSubnet, existsSubnet, err := az.getSubnet(az.VnetName, subnetName)
-		if err != nil {
-			return err
-		}
-		if !existsSubnet {
-			return fmt.Errorf("failed to get subnet: %s/%s", az.VnetName, subnetName)
-		}
-		*subnet = curSubnet
-	}
-	return nil
 }
 
 func getLBNameFromBackendPoolID(backendPoolID string) (string, error) {
@@ -559,36 +504,6 @@ func IntInSlice(i int, list []int) bool {
 	return false
 }
 
-func safeAddKeyToStringsSet(set sets.Set[string], key string) sets.Set[string] {
-	if set != nil {
-		set.Insert(key)
-	} else {
-		set = sets.New[string](key)
-	}
-
-	return set
-}
-
-func safeRemoveKeyFromStringsSet(set sets.Set[string], key string) (sets.Set[string], bool) {
-	var has bool
-	if set != nil {
-		if set.Has(key) {
-			has = true
-		}
-		set.Delete(key)
-	}
-
-	return set, has
-}
-
-func setToStrings(set sets.Set[string]) []string {
-	var res []string
-	for key := range set {
-		res = append(res, key)
-	}
-	return res
-}
-
 func isLocalService(service *v1.Service) bool {
 	return service.Spec.ExternalTrafficPolicy == v1.ServiceExternalTrafficPolicyLocal
 }
@@ -603,4 +518,56 @@ func getServiceIPFamily(service *v1.Service) string {
 		}
 	}
 	return consts.IPVersionIPv4String
+}
+
+// getResourceGroupAndNameFromNICID parses the ip configuration ID to get the resource group and nic name.
+func getResourceGroupAndNameFromNICID(ipConfigurationID string) (string, string, error) {
+	matches := nicIDRE.FindStringSubmatch(ipConfigurationID)
+	if len(matches) != 3 {
+		klog.V(4).Infof("Can not extract nic name from ipConfigurationID (%s)", ipConfigurationID)
+		return "", "", fmt.Errorf("invalid ip config ID %s", ipConfigurationID)
+	}
+
+	nicResourceGroup, nicName := matches[1], matches[2]
+	if nicResourceGroup == "" || nicName == "" {
+		return "", "", fmt.Errorf("invalid ip config ID %s", ipConfigurationID)
+	}
+	return nicResourceGroup, nicName, nil
+}
+
+func isInternalLoadBalancer(lb *network.LoadBalancer) bool {
+	return strings.HasSuffix(strings.ToLower(*lb.Name), consts.InternalLoadBalancerNameSuffix)
+}
+
+// trimSuffixIgnoreCase trims the suffix from the string, case-insensitive.
+// It returns the original string if the suffix is not found.
+// The returning string is in lower case.
+func trimSuffixIgnoreCase(str, suf string) string {
+	str = strings.ToLower(str)
+	suf = strings.ToLower(suf)
+	if strings.HasSuffix(str, suf) {
+		return strings.TrimSuffix(str, suf)
+	}
+	return str
+}
+
+// ToArmcomputeDisk converts compute.DataDisk to armcompute.DataDisk
+// This is a workaround during track2 migration.
+// TODO: remove this function after compute api is migrated to track2
+func ToArmcomputeDisk(disks []compute.DataDisk) ([]*armcompute.DataDisk, error) {
+	var result []*armcompute.DataDisk
+	for _, disk := range disks {
+		content, err := json.Marshal(disk)
+		if err != nil {
+			return nil, err
+		}
+		var dataDisk armcompute.DataDisk
+		err = json.Unmarshal(content, &dataDisk)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, &dataDisk)
+	}
+
+	return result, nil
 }

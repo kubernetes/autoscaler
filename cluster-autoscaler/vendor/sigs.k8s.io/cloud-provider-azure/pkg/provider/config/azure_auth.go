@@ -17,8 +17,6 @@ limitations under the License.
 package config
 
 import (
-	"crypto/rsa"
-	"crypto/x509"
 	"errors"
 	"fmt"
 	"io"
@@ -30,10 +28,9 @@ import (
 	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/Azure/go-autorest/autorest/azure"
 
-	"golang.org/x/crypto/pkcs12"
-
 	"k8s.io/klog/v2"
 
+	"sigs.k8s.io/cloud-provider-azure/pkg/azclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/consts"
 )
 
@@ -48,40 +45,17 @@ const (
 
 // AzureAuthConfig holds auth related part of cloud config
 type AzureAuthConfig struct {
-	// The cloud environment identifier. Takes values from https://github.com/Azure/go-autorest/blob/ec5f4903f77ed9927ac95b19ab8e44ada64c1356/autorest/azure/environments.go#L13
-	Cloud string `json:"cloud,omitempty" yaml:"cloud,omitempty"`
-	// The AAD Tenant ID for the Subscription that the cluster is deployed in
-	TenantID string `json:"tenantId,omitempty" yaml:"tenantId,omitempty"`
-	// The ClientID for an AAD application with RBAC access to talk to Azure RM APIs
-	AADClientID string `json:"aadClientId,omitempty" yaml:"aadClientId,omitempty"`
-	// The ClientSecret for an AAD application with RBAC access to talk to Azure RM APIs
-	AADClientSecret string `json:"aadClientSecret,omitempty" yaml:"aadClientSecret,omitempty" datapolicy:"token"`
-	// The path of a client certificate for an AAD application with RBAC access to talk to Azure RM APIs
-	AADClientCertPath string `json:"aadClientCertPath,omitempty" yaml:"aadClientCertPath,omitempty"`
-	// The password of the client certificate for an AAD application with RBAC access to talk to Azure RM APIs
-	AADClientCertPassword string `json:"aadClientCertPassword,omitempty" yaml:"aadClientCertPassword,omitempty" datapolicy:"password"`
-	// Use managed service identity for the virtual machine to access Azure ARM APIs
-	UseManagedIdentityExtension bool `json:"useManagedIdentityExtension,omitempty" yaml:"useManagedIdentityExtension,omitempty"`
-	// UserAssignedIdentityID contains the Client ID of the user assigned MSI which is assigned to the underlying VMs. If empty the user assigned identity is not used.
-	// More details of the user assigned identity can be found at: https://docs.microsoft.com/en-us/azure/active-directory/managed-service-identity/overview
-	// For the user assigned identity specified here to be used, the UseManagedIdentityExtension has to be set to true.
-	UserAssignedIdentityID string `json:"userAssignedIdentityID,omitempty" yaml:"userAssignedIdentityID,omitempty"`
+	azclient.ARMClientConfig `json:",inline" yaml:",inline"`
+	azclient.AzureAuthConfig `json:",inline" yaml:",inline"`
+
 	// The ID of the Azure Subscription that the cluster is deployed in
 	SubscriptionID string `json:"subscriptionId,omitempty" yaml:"subscriptionId,omitempty"`
 	// IdentitySystem indicates the identity provider. Relevant only to hybrid clouds (Azure Stack).
 	// Allowed values are 'azure_ad' (default), 'adfs'.
 	IdentitySystem string `json:"identitySystem,omitempty" yaml:"identitySystem,omitempty"`
-	// ResourceManagerEndpoint is the cloud's resource manager endpoint. If set, cloud provider queries this endpoint
-	// in order to generate an autorest.Environment instance instead of using one of the pre-defined Environments.
-	ResourceManagerEndpoint string `json:"resourceManagerEndpoint,omitempty" yaml:"resourceManagerEndpoint,omitempty"`
-	// The AAD Tenant ID for the Subscription that the network resources are deployed in
-	NetworkResourceTenantID string `json:"networkResourceTenantID,omitempty" yaml:"networkResourceTenantID,omitempty"`
+
 	// The ID of the Azure Subscription that the network resources are deployed in
 	NetworkResourceSubscriptionID string `json:"networkResourceSubscriptionID,omitempty" yaml:"networkResourceSubscriptionID,omitempty"`
-	// The AAD federated token file
-	AADFederatedTokenFile string `json:"aadFederatedTokenFile,omitempty" yaml:"aadFederatedTokenFile,omitempty"`
-	// Use workload identity federation for the virtual machine to access Azure ARM APIs
-	UseFederatedWorkloadIdentityExtension bool `json:"useFederatedWorkloadIdentityExtension,omitempty" yaml:"useFederatedWorkloadIdentityExtension,omitempty"`
 }
 
 // GetServicePrincipalToken creates a new service principal token based on the configuration.
@@ -169,13 +143,13 @@ func GetServicePrincipalToken(config *AzureAuthConfig, env *azure.Environment, r
 			resource)
 	}
 
-	if len(config.AADClientCertPath) > 0 && len(config.AADClientCertPassword) > 0 {
+	if len(config.AADClientCertPath) > 0 {
 		klog.V(2).Infoln("azure: using jwt client_assertion (client_cert+client_private_key) to retrieve access token")
 		certData, err := os.ReadFile(config.AADClientCertPath)
 		if err != nil {
 			return nil, fmt.Errorf("reading the client certificate from file %s: %w", config.AADClientCertPath, err)
 		}
-		certificate, privateKey, err := decodePkcs12(certData, config.AADClientCertPassword)
+		certificate, privateKey, err := adal.DecodePfxCertificateData(certData, config.AADClientCertPassword)
 		if err != nil {
 			return nil, fmt.Errorf("decoding the client certificate: %w", err)
 		}
@@ -219,8 +193,22 @@ func GetMultiTenantServicePrincipalToken(config *AzureAuthConfig, env *azure.Env
 			env.ServiceManagementEndpoint)
 	}
 
-	if len(config.AADClientCertPath) > 0 && len(config.AADClientCertPassword) > 0 {
-		return nil, fmt.Errorf("AAD Application client certificate authentication is not supported in getting multi-tenant service principal token")
+	if len(config.AADClientCertPath) > 0 {
+		klog.V(2).Infoln("azure: using jwt client_assertion (client_cert+client_private_key) to retrieve multi-tenant access token")
+		certData, err := os.ReadFile(config.AADClientCertPath)
+		if err != nil {
+			return nil, fmt.Errorf("reading the client certificate from file %s: %w", config.AADClientCertPath, err)
+		}
+		certificate, privateKey, err := adal.DecodePfxCertificateData(certData, config.AADClientCertPassword)
+		if err != nil {
+			return nil, fmt.Errorf("decoding the client certificate: %w", err)
+		}
+		return adal.NewMultiTenantServicePrincipalTokenFromCertificate(
+			multiTenantOAuthConfig,
+			config.AADClientID,
+			certificate,
+			privateKey,
+			env.ServiceManagementEndpoint)
 	}
 
 	return nil, ErrorNoAuth
@@ -252,8 +240,22 @@ func GetNetworkResourceServicePrincipalToken(config *AzureAuthConfig, env *azure
 			env.ServiceManagementEndpoint)
 	}
 
-	if len(config.AADClientCertPath) > 0 && len(config.AADClientCertPassword) > 0 {
-		return nil, fmt.Errorf("AAD Application client certificate authentication is not supported in getting network resources service principal token")
+	if len(config.AADClientCertPath) > 0 {
+		klog.V(2).Infoln("azure: using jwt client_assertion (client_cert+client_private_key) to retrieve access token for network resources tenant")
+		certData, err := os.ReadFile(config.AADClientCertPath)
+		if err != nil {
+			return nil, fmt.Errorf("reading the client certificate from file %s: %w", config.AADClientCertPath, err)
+		}
+		certificate, privateKey, err := adal.DecodePfxCertificateData(certData, config.AADClientCertPassword)
+		if err != nil {
+			return nil, fmt.Errorf("decoding the client certificate: %w", err)
+		}
+		return adal.NewServicePrincipalTokenFromCertificate(
+			*oauthConfig,
+			config.AADClientID,
+			certificate,
+			privateKey,
+			env.ServiceManagementEndpoint)
 	}
 
 	return nil, ErrorNoAuth
@@ -323,21 +325,6 @@ func (config *AzureAuthConfig) UsesNetworkResourceInDifferentTenant() bool {
 // and not equal to one defined in global configs
 func (config *AzureAuthConfig) UsesNetworkResourceInDifferentSubscription() bool {
 	return len(config.NetworkResourceSubscriptionID) > 0 && !strings.EqualFold(config.NetworkResourceSubscriptionID, config.SubscriptionID)
-}
-
-// decodePkcs12 decodes a PKCS#12 client certificate by extracting the public certificate and
-// the private RSA key
-func decodePkcs12(pkcs []byte, password string) (*x509.Certificate, *rsa.PrivateKey, error) {
-	privateKey, certificate, err := pkcs12.Decode(pkcs, password)
-	if err != nil {
-		return nil, nil, fmt.Errorf("decoding the PKCS#12 client certificate: %w", err)
-	}
-	rsaPrivateKey, isRsaKey := privateKey.(*rsa.PrivateKey)
-	if !isRsaKey {
-		return nil, nil, fmt.Errorf("PKCS#12 certificate must contain a RSA private key")
-	}
-
-	return certificate, rsaPrivateKey, nil
 }
 
 // azureStackOverrides ensures that the Environment matches what AKSe currently generates for Azure Stack

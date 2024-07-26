@@ -149,7 +149,7 @@ func GetError(resp *http.Response, err error) *Error {
 		return nil
 	}
 
-	if err == nil && resp != nil && isSuccessHTTPResponse(resp) {
+	if err == nil && resp != nil && IsSuccessHTTPResponse(resp) {
 		// HTTP 2xx suggests a successful response
 		return nil
 	}
@@ -166,8 +166,8 @@ func GetError(resp *http.Response, err error) *Error {
 	}
 }
 
-// isSuccessHTTPResponse determines if the response from an HTTP request suggests success
-func isSuccessHTTPResponse(resp *http.Response) bool {
+// IsSuccessHTTPResponse determines if the response from an HTTP request suggests success
+func IsSuccessHTTPResponse(resp *http.Response) bool {
 	if resp == nil {
 		return false
 	}
@@ -219,7 +219,7 @@ func shouldRetryHTTPRequest(resp *http.Response, err error) bool {
 		}
 
 		// should retry on <200, error>.
-		if isSuccessHTTPResponse(resp) && err != nil {
+		if IsSuccessHTTPResponse(resp) && err != nil {
 			return true
 		}
 
@@ -296,14 +296,14 @@ func GetStatusNotFoundAndForbiddenIgnoredError(resp *http.Response, err error) *
 
 	// Returns nil when it is StatusNotFound error.
 	if rerr.HTTPStatusCode == http.StatusNotFound {
-		klog.V(3).Infof("Ignoring StatusNotFound error: %w", rerr)
+		klog.V(3).Infof("Ignoring StatusNotFound error: %+v", rerr)
 		return nil
 	}
 
 	// Returns nil if the status code is StatusForbidden.
 	// This happens when AuthorizationFailed is reported from Azure API.
 	if rerr.HTTPStatusCode == http.StatusForbidden {
-		klog.V(3).Infof("Ignoring StatusForbidden error: %w", rerr)
+		klog.V(3).Infof("Ignoring StatusForbidden error: %+v", rerr)
 		return nil
 	}
 

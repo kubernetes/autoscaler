@@ -35,11 +35,13 @@ import (
 	cloudprovider "k8s.io/cloud-provider"
 	"k8s.io/klog/v2"
 	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 
 	azcache "sigs.k8s.io/cloud-provider-azure/pkg/cache"
 	"sigs.k8s.io/cloud-provider-azure/pkg/consts"
 	"sigs.k8s.io/cloud-provider-azure/pkg/metrics"
 	"sigs.k8s.io/cloud-provider-azure/pkg/provider/virtualmachine"
+	vmutil "sigs.k8s.io/cloud-provider-azure/pkg/util/vm"
 )
 
 var (
@@ -101,7 +103,7 @@ type ScaleSet struct {
 	nonVmssUniformNodesCache azcache.Resource
 
 	// lockMap in cache refresh
-	lockMap *lockMap
+	lockMap *LockMap
 }
 
 // newScaleSet creates a new ScaleSet.
@@ -144,6 +146,7 @@ func newScaleSet(ctx context.Context, az *Cloud) (VMSet, error) {
 		return nil, err
 	}
 
+	ss.lockMap = newLockMap()
 	return ss, nil
 }
 
@@ -281,20 +284,14 @@ func (ss *ScaleSet) GetPowerStatusByNodeName(name string) (powerState string, er
 
 	if vm.IsVirtualMachineScaleSetVM() {
 		v := vm.AsVirtualMachineScaleSetVM()
-		if v.InstanceView != nil && v.InstanceView.Statuses != nil {
-			statuses := *v.InstanceView.Statuses
-			for _, status := range statuses {
-				state := pointer.StringDeref(status.Code, "")
-				if strings.HasPrefix(state, vmPowerStatePrefix) {
-					return strings.TrimPrefix(state, vmPowerStatePrefix), nil
-				}
-			}
+		if v.InstanceView != nil {
+			return vmutil.GetVMPowerState(ptr.Deref(v.Name, ""), v.InstanceView.Statuses), nil
 		}
 	}
 
 	// vm.InstanceView or vm.InstanceView.Statuses are nil when the VM is under deleting.
-	klog.V(3).Infof("InstanceView for node %q is nil, assuming it's stopped", name)
-	return vmPowerStateStopped, nil
+	klog.V(3).Infof("InstanceView for node %q is nil, assuming it's deleting", name)
+	return consts.VMPowerStateUnknown, nil
 }
 
 // GetProvisioningStateByNodeName returns the provisioningState for the specified node.
@@ -706,16 +703,6 @@ func (ss *ScaleSet) getPrimaryInterfaceID(vm *virtualmachine.VirtualMachine) (st
 	return "", fmt.Errorf("failed to find a primary nic for the vm. vmname=%q", pointer.StringDeref(machine.Name, ""))
 }
 
-// getVmssMachineID returns the full identifier of a vmss virtual machine.
-func (az *Cloud) getVmssMachineID(subscriptionID, resourceGroup, scaleSetName, instanceID string) string {
-	return fmt.Sprintf(
-		consts.VmssMachineIDTemplate,
-		subscriptionID,
-		strings.ToLower(resourceGroup),
-		scaleSetName,
-		instanceID)
-}
-
 // machineName is composed of computerNamePrefix and 36-based instanceID.
 // And instanceID part if in fixed length of 6 characters.
 // Refer https://msftstack.wordpress.com/2017/05/10/figuring-out-azure-vm-scale-set-machine-names/.
@@ -751,36 +738,6 @@ func extractResourceGroupByProviderID(providerID string) (string, error) {
 	}
 
 	return matches[1], nil
-}
-
-// listScaleSets lists all scale sets with orchestrationMode ScaleSetVM.
-func (ss *ScaleSet) listScaleSets(resourceGroup string) ([]string, error) {
-	ctx, cancel := getContextWithCancel()
-	defer cancel()
-
-	allScaleSets, rerr := ss.VirtualMachineScaleSetsClient.List(ctx, resourceGroup)
-	if rerr != nil {
-		klog.Errorf("VirtualMachineScaleSetsClient.List failed: %v", rerr)
-		return nil, rerr.Error()
-	}
-
-	ssNames := make([]string, 0)
-	for _, vmss := range allScaleSets {
-		name := *vmss.Name
-		if vmss.Sku != nil && pointer.Int64Deref(vmss.Sku.Capacity, 0) == 0 {
-			klog.V(3).Infof("Capacity of VMSS %q is 0, skipping", name)
-			continue
-		}
-
-		if vmss.VirtualMachineScaleSetProperties == nil || vmss.VirtualMachineScaleSetProperties.VirtualMachineProfile == nil {
-			klog.V(3).Infof("VMSS %q orchestrationMode is VirtualMachine, skipping", name)
-			continue
-		}
-
-		ssNames = append(ssNames, name)
-	}
-
-	return ssNames, nil
 }
 
 // getNodeIdentityByNodeName use the VMSS cache to find a node's resourcegroup and vmss, returned in a nodeIdentity.
@@ -1067,7 +1024,9 @@ func getPrimaryIPConfigFromVMSSNetworkConfig(config *compute.VirtualMachineScale
 
 // EnsureHostInPool ensures the given VM's Primary NIC's Primary IP Configuration is
 // participating in the specified LoadBalancer Backend Pool, which returns (resourceGroup, vmasName, instanceID, vmssVM, error).
-func (ss *ScaleSet) EnsureHostInPool(service *v1.Service, nodeName types.NodeName, backendPoolID string, vmSetNameOfLB string) (string, string, string, *compute.VirtualMachineScaleSetVM, error) {
+func (ss *ScaleSet) EnsureHostInPool(_ *v1.Service, nodeName types.NodeName, backendPoolID string, vmSetNameOfLB string) (string, string, string, *compute.VirtualMachineScaleSetVM, error) {
+	logger := klog.Background().WithName("EnsureHostInPool").
+		WithValues("nodeName", nodeName, "backendPoolID", backendPoolID, "vmSetNameOfLB", vmSetNameOfLB)
 	vmName := mapNodeNameToVMName(nodeName)
 	vm, err := ss.getVmssVM(vmName, azcache.CacheReadTypeDefault)
 	if err != nil {
@@ -1076,13 +1035,20 @@ func (ss *ScaleSet) EnsureHostInPool(service *v1.Service, nodeName types.NodeNam
 			return "", "", "", nil, nil
 		}
 
-		klog.Errorf("EnsureHostInPool: failed to get VMSS VM %s: %v", vmName, err)
+		logger.Error(err, "failed to get vmss vm", "vmName", vmName)
 		if !errors.Is(err, ErrorNotVmssInstance) {
 			return "", "", "", nil, err
 		}
 	}
+	statuses := vm.GetInstanceViewStatus()
+	vmPowerState := vmutil.GetVMPowerState(vm.Name, statuses)
+	provisioningState := vm.GetProvisioningState()
+	if vmutil.IsNotActiveVMState(provisioningState, vmPowerState) {
+		logger.V(2).Info("skip updating the node because it is not in an active state", "vmName", vmName, "provisioningState", provisioningState, "vmPowerState", vmPowerState)
+		return "", "", "", nil, nil
+	}
 
-	klog.V(2).Infof("ensuring node %q of scaleset %q in LB backendpool %q", nodeName, vm.VMSSName, backendPoolID)
+	logger.V(2).Info("ensuring the vmss node in LB backendpool", "vmss name", vm.VMSSName)
 
 	// Check scale set name:
 	// - For basic SKU load balancer, return nil if the node's scale set is mismatched with vmSetNameOfLB.
@@ -1096,14 +1062,13 @@ func (ss *ScaleSet) EnsureHostInPool(service *v1.Service, nodeName types.NodeNam
 	}
 
 	if vmSetNameOfLB != "" && needCheck && !strings.EqualFold(vmSetNameOfLB, vm.VMSSName) {
-		klog.V(3).Infof("EnsureHostInPool skips node %s because it is not in the ScaleSet %s", vmName, vmSetNameOfLB)
+		logger.V(3).Info("skips the node %s because it is not in the ScaleSet %s", vmName, vmSetNameOfLB)
 		return "", "", "", nil, nil
 	}
 
 	// Find primary network interface configuration.
 	if vm.VirtualMachineScaleSetVMProperties.NetworkProfileConfiguration.NetworkInterfaceConfigurations == nil {
-		klog.V(4).Infof("EnsureHostInPool: cannot obtain the primary network interface configuration, of vm %s, "+
-			"probably because the vm's being deleted", vmName)
+		logger.V(4).Info("cannot obtain the primary network interface configuration, of the vm, probably because the vm's being deleted", "vmName", vmName)
 		return "", "", "", nil, nil
 	}
 
@@ -1153,7 +1118,7 @@ func (ss *ScaleSet) EnsureHostInPool(service *v1.Service, nodeName types.NodeNam
 			return "", "", "", nil, err
 		}
 		if !isSameLB {
-			klog.V(4).Infof("Node %q has already been added to LB %q, omit adding it to a new one", nodeName, oldLBName)
+			logger.V(4).Info("The node has already been added to an LB, omit adding it to a new one", "lbName", oldLBName)
 			return "", "", "", nil, nil
 		}
 	}
@@ -1199,7 +1164,7 @@ func getVmssAndResourceGroupNameByVMID(id string) (string, string, error) {
 	return matches[1], matches[2], nil
 }
 
-func (ss *ScaleSet) ensureVMSSInPool(service *v1.Service, nodes []*v1.Node, backendPoolID string, vmSetNameOfLB string) error {
+func (ss *ScaleSet) ensureVMSSInPool(_ *v1.Service, nodes []*v1.Node, backendPoolID string, vmSetNameOfLB string) error {
 	klog.V(2).Infof("ensureVMSSInPool: ensuring VMSS with backendPoolID %s", backendPoolID)
 	vmssNamesMap := make(map[string]bool)
 
@@ -1260,7 +1225,7 @@ func (ss *ScaleSet) ensureVMSSInPool(service *v1.Service, nodes []*v1.Node, back
 
 		// When vmss is being deleted, CreateOrUpdate API would report "the vmss is being deleted" error.
 		// Since it is being deleted, we shouldn't send more CreateOrUpdate requests for it.
-		if vmss.ProvisioningState != nil && strings.EqualFold(*vmss.ProvisioningState, consts.VirtualMachineScaleSetsDeallocating) {
+		if vmss.ProvisioningState != nil && strings.EqualFold(*vmss.ProvisioningState, consts.ProvisionStateDeleting) {
 			klog.V(3).Infof("ensureVMSSInPool: found vmss %s being deleted, skipping", vmssName)
 			continue
 		}
@@ -1532,6 +1497,7 @@ func (ss *ScaleSet) EnsureHostsInPool(service *v1.Service, nodes []*v1.Node, bac
 // ensureBackendPoolDeletedFromNode ensures the loadBalancer backendAddressPools deleted
 // from the specified node, which returns (resourceGroup, vmasName, instanceID, vmssVM, error).
 func (ss *ScaleSet) ensureBackendPoolDeletedFromNode(nodeName string, backendPoolIDs []string) (string, string, string, *compute.VirtualMachineScaleSetVM, error) {
+	logger := klog.Background().WithName("ensureBackendPoolDeletedFromNode").WithValues("nodeName", nodeName, "backendPoolIDs", backendPoolIDs)
 	vm, err := ss.getVmssVM(nodeName, azcache.CacheReadTypeDefault)
 	if err != nil {
 		if errors.Is(err, cloudprovider.InstanceNotFound) {
@@ -1540,6 +1506,14 @@ func (ss *ScaleSet) ensureBackendPoolDeletedFromNode(nodeName string, backendPoo
 		}
 
 		return "", "", "", nil, err
+	}
+
+	statuses := vm.GetInstanceViewStatus()
+	vmPowerState := vmutil.GetVMPowerState(vm.Name, statuses)
+	provisioningState := vm.GetProvisioningState()
+	if vmutil.IsNotActiveVMState(provisioningState, vmPowerState) {
+		logger.V(2).Info("skip updating the node because it is not in an active state", "provisioningState", provisioningState, "vmPowerState", vmPowerState)
+		return "", "", "", nil, nil
 	}
 
 	// Find primary network interface configuration.
@@ -1718,7 +1692,7 @@ func (ss *ScaleSet) ensureBackendPoolDeletedFromVmssUniform(backendPoolIDs []str
 
 			// When vmss is being deleted, CreateOrUpdate API would report "the vmss is being deleted" error.
 			// Since it is being deleted, we shouldn't send more CreateOrUpdate requests for it.
-			if vmss.ProvisioningState != nil && strings.EqualFold(*vmss.ProvisioningState, consts.VirtualMachineScaleSetsDeallocating) {
+			if vmss.ProvisioningState != nil && strings.EqualFold(*vmss.ProvisioningState, consts.ProvisionStateDeleting) {
 				klog.V(3).Infof("ensureBackendPoolDeletedFromVMSS: found vmss %s being deleted, skipping", pointer.StringDeref(vmss.Name, ""))
 				return true
 			}
@@ -2125,7 +2099,7 @@ func (ss *ScaleSet) EnsureBackendPoolDeletedFromVMSets(vmssNamesMap map[string]b
 
 		// When vmss is being deleted, CreateOrUpdate API would report "the vmss is being deleted" error.
 		// Since it is being deleted, we shouldn't send more CreateOrUpdate requests for it.
-		if vmss.ProvisioningState != nil && strings.EqualFold(*vmss.ProvisioningState, consts.VirtualMachineScaleSetsDeallocating) {
+		if vmss.ProvisioningState != nil && strings.EqualFold(*vmss.ProvisioningState, consts.ProvisionStateDeleting) {
 			klog.V(3).Infof("EnsureBackendPoolDeletedFromVMSets: found vmss %s being deleted, skipping", vmssName)
 			continue
 		}
