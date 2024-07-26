@@ -277,6 +277,7 @@ func (m *gceManagerImpl) DeleteInstances(instances []GceRef) error {
 		}
 	}
 	m.cache.InvalidateMigTargetSize(commonMig.GceRef())
+	m.cache.InvalidateMigInstances(commonMig.GceRef())
 	return m.GceService.DeleteInstances(commonMig.GceRef(), instances)
 }
 
