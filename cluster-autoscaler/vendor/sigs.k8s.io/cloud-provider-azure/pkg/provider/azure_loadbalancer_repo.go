@@ -110,18 +110,18 @@ func (az *Cloud) ListManagedLBs(service *v1.Service, nodes []*v1.Node, clusterNa
 		}
 
 		for agentPoolVMSetName := range agentPoolVMSetNamesMap {
-			managedLBNames.Insert(az.mapVMSetNameToLoadBalancerName(agentPoolVMSetName, clusterName))
+			managedLBNames.Insert(strings.ToLower(az.mapVMSetNameToLoadBalancerName(agentPoolVMSetName, clusterName)))
 		}
 	}
 
 	if az.useMultipleStandardLoadBalancers() {
 		for _, multiSLBConfig := range az.MultipleStandardLoadBalancerConfigurations {
-			managedLBNames.Insert(multiSLBConfig.Name, fmt.Sprintf("%s%s", multiSLBConfig.Name, consts.InternalLoadBalancerNameSuffix))
+			managedLBNames.Insert(strings.ToLower(multiSLBConfig.Name), fmt.Sprintf("%s%s", strings.ToLower(multiSLBConfig.Name), consts.InternalLoadBalancerNameSuffix))
 		}
 	}
 
 	for _, lb := range allLBs {
-		if managedLBNames.Has(strings.ToLower(strings.TrimSuffix(pointer.StringDeref(lb.Name, ""), consts.InternalLoadBalancerNameSuffix))) {
+		if managedLBNames.Has(trimSuffixIgnoreCase(pointer.StringDeref(lb.Name, ""), consts.InternalLoadBalancerNameSuffix)) {
 			managedLBs = append(managedLBs, lb)
 			klog.V(4).Infof("ListManagedLBs: found managed LB %s", pointer.StringDeref(lb.Name, ""))
 		}
@@ -303,7 +303,7 @@ func (az *Cloud) MigrateToIPBasedBackendPoolAndWaitForCompletion(
 			}
 
 			if countIPsOnBackendPool(bp) != nicsCount {
-				klog.V(4).Infof("MigrateToIPBasedBackendPoolAndWaitForCompletion: Expected IPs %s, current IPs %d, will retry in 5s", nicsCount, countIPsOnBackendPool(bp))
+				klog.V(4).Infof("MigrateToIPBasedBackendPoolAndWaitForCompletion: Expected IPs %d, current IPs %d, will retry in 5s", nicsCount, countIPsOnBackendPool(bp))
 				return false, nil
 			}
 			succeeded[bpName] = true
@@ -372,7 +372,7 @@ func isBackendPoolOnSameLB(newBackendPoolID string, existingBackendPools []strin
 	}
 
 	newLBName := matches[1]
-	newLBNameTrimmed := strings.TrimSuffix(newLBName, consts.InternalLoadBalancerNameSuffix)
+	newLBNameTrimmed := trimSuffixIgnoreCase(newLBName, consts.InternalLoadBalancerNameSuffix)
 	for _, backendPool := range existingBackendPools {
 		matches := backendPoolIDRE.FindStringSubmatch(backendPool)
 		if len(matches) != 2 {
@@ -380,10 +380,19 @@ func isBackendPoolOnSameLB(newBackendPoolID string, existingBackendPools []strin
 		}
 
 		lbName := matches[1]
-		if !strings.EqualFold(strings.TrimSuffix(lbName, consts.InternalLoadBalancerNameSuffix), newLBNameTrimmed) {
+		if !strings.EqualFold(trimSuffixIgnoreCase(lbName, consts.InternalLoadBalancerNameSuffix), newLBNameTrimmed) {
 			return false, lbName, nil
 		}
 	}
 
 	return true, "", nil
+}
+
+func (az *Cloud) serviceOwnsRule(service *v1.Service, rule string) bool {
+	if !strings.EqualFold(string(service.Spec.ExternalTrafficPolicy), string(v1.ServiceExternalTrafficPolicyTypeLocal)) &&
+		rule == consts.SharedProbeName {
+		return true
+	}
+	prefix := az.getRulePrefix(service)
+	return strings.HasPrefix(strings.ToUpper(rule), strings.ToUpper(prefix))
 }

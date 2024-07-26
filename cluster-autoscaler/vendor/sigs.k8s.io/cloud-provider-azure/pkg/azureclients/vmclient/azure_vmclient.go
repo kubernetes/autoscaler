@@ -420,7 +420,7 @@ func (c *Client) WaitForUpdateResult(ctx context.Context, future *azure.Future, 
 }
 
 // updateVM updates a VirtualMachine.
-func (c *Client) updateVM(ctx context.Context, resourceGroupName string, VMName string, parameters compute.VirtualMachineUpdate, source string) (*compute.VirtualMachine, *retry.Error) {
+func (c *Client) updateVM(ctx context.Context, resourceGroupName string, VMName string, parameters compute.VirtualMachineUpdate, _ string) (*compute.VirtualMachine, *retry.Error) {
 	resourceID := armclient.GetResourceID(
 		c.subscriptionID,
 		resourceGroupName,
@@ -583,7 +583,7 @@ func (c *Client) CreateOrUpdate(ctx context.Context, resourceGroupName string, V
 }
 
 // createOrUpdateVM creates or updates a VirtualMachine.
-func (c *Client) createOrUpdateVM(ctx context.Context, resourceGroupName string, VMName string, parameters compute.VirtualMachine, source string) *retry.Error {
+func (c *Client) createOrUpdateVM(ctx context.Context, resourceGroupName string, VMName string, parameters compute.VirtualMachine, _ string) *retry.Error {
 	resourceID := armclient.GetResourceID(
 		c.subscriptionID,
 		resourceGroupName,

@@ -33,6 +33,7 @@ import (
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/klog/v2"
+	utilnet "k8s.io/utils/net"
 	"k8s.io/utils/pointer"
 
 	"sigs.k8s.io/cloud-provider-azure/pkg/consts"
@@ -286,7 +287,6 @@ func (az *Cloud) getLocalServiceInfo(serviceName string) (*serviceInfo, bool) {
 
 // setUpEndpointSlicesInformer creates an informer for EndpointSlices of local services.
 // It watches the update events and send backend pool update operations to the batch updater.
-// TODO (niqi): the update of endpointslice may be slower than tue update of endpoint pods. Need to fix this.
 func (az *Cloud) setUpEndpointSlicesInformer(informerFactory informers.SharedInformerFactory) {
 	endpointSlicesInformer := informerFactory.Discovery().V1().EndpointSlices().Informer()
 	_, _ = endpointSlicesInformer.AddEventHandler(
@@ -311,7 +311,7 @@ func (az *Cloud) setUpEndpointSlicesInformer(informerFactory informers.SharedInf
 				key := strings.ToLower(fmt.Sprintf("%s/%s", newES.Namespace, svcName))
 				si, found := az.getLocalServiceInfo(key)
 				if !found {
-					klog.V(4).Infof("EndpointSlice %s/%s belongs to service %s, but the service is not a local service, skip updating load balancer backend pool", key, newES.Namespace, newES.Name)
+					klog.V(4).Infof("EndpointSlice %s/%s belongs to service %s, but the service is not a local service, or has not finished the initial reconciliation loop. Skip updating load balancer backend pool", newES.Namespace, newES.Name, key)
 					return
 				}
 				lbName, ipFamily := si.lbName, si.ipFamily
@@ -328,17 +328,12 @@ func (az *Cloud) setUpEndpointSlicesInformer(informerFactory informers.SharedInf
 					}
 				}
 				for _, previousNodeName := range previousNodeNames {
-					nodeIPsSet := az.nodePrivateIPs[previousNodeName]
+					nodeIPsSet := az.nodePrivateIPs[strings.ToLower(previousNodeName)]
 					previousIPs = append(previousIPs, setToStrings(nodeIPsSet)...)
 				}
 				for _, currentNodeName := range currentNodeNames {
-					nodeIPsSet := az.nodePrivateIPs[currentNodeName]
+					nodeIPsSet := az.nodePrivateIPs[strings.ToLower(currentNodeName)]
 					currentIPs = append(currentIPs, setToStrings(nodeIPsSet)...)
-				}
-				ipsToBeDeleted := compareNodeIPs(previousIPs, currentIPs)
-				if len(ipsToBeDeleted) == 0 && len(previousIPs) == len(currentIPs) {
-					klog.V(4).Infof("No IP change detected for EndpointSlice %s/%s, skip updating load balancer backend pool", newES.Namespace, newES.Name)
-					return
 				}
 
 				if az.backendPoolUpdater != nil {
@@ -353,14 +348,11 @@ func (az *Cloud) setUpEndpointSlicesInformer(informerFactory informers.SharedInf
 					default:
 						bpNames = append(bpNames, bpNameIPv4, bpNameIPv6)
 					}
+					currentIPsInBackendPools := make(map[string][]string)
 					for _, bpName := range bpNames {
-						if len(ipsToBeDeleted) > 0 {
-							az.backendPoolUpdater.addOperation(getRemoveIPsFromBackendPoolOperation(key, lbName, bpName, ipsToBeDeleted))
-						}
-						if len(currentIPs) > 0 {
-							az.backendPoolUpdater.addOperation(getAddIPsToBackendPoolOperation(key, lbName, bpName, currentIPs))
-						}
+						currentIPsInBackendPools[bpName] = previousIPs
 					}
+					az.applyIPChangesAmongLocalServiceBackendPoolsByIPFamily(lbName, key, currentIPsInBackendPools, currentIPs)
 				}
 			},
 			DeleteFunc: func(obj interface{}) {
@@ -408,7 +400,7 @@ func compareNodeIPs(previousIPs, currentIPs []string) []string {
 func getLocalServiceBackendPoolName(serviceName string, ipv6 bool) string {
 	serviceName = strings.ToLower(strings.Replace(serviceName, "/", "-", -1))
 	if ipv6 {
-		return fmt.Sprintf("%s-ipv6", serviceName)
+		return fmt.Sprintf("%s-%s", serviceName, consts.IPVersionIPv6StringLower)
 	}
 	return serviceName
 }
@@ -471,12 +463,16 @@ func newServiceInfo(ipFamily, lbName string) *serviceInfo {
 
 // getLocalServiceEndpointsNodeNames gets the node names that host all endpoints of the local service.
 func (az *Cloud) getLocalServiceEndpointsNodeNames(service *v1.Service) (sets.Set[string], error) {
-	var ep *discovery_v1.EndpointSlice
+	var (
+		ep           *discovery_v1.EndpointSlice
+		foundInCache bool
+	)
 	az.endpointSlicesCache.Range(func(key, value interface{}) bool {
 		endpointSlice := value.(*discovery_v1.EndpointSlice)
 		if strings.EqualFold(getServiceNameOfEndpointSlice(endpointSlice), service.Name) &&
 			strings.EqualFold(endpointSlice.Namespace, service.Namespace) {
 			ep = endpointSlice
+			foundInCache = true
 			return false
 		}
 		return true
@@ -498,6 +494,9 @@ func (az *Cloud) getLocalServiceEndpointsNodeNames(service *v1.Service) (sets.Se
 	}
 	if ep == nil {
 		return nil, fmt.Errorf("failed to find EndpointSlice for service %s/%s", service.Namespace, service.Name)
+	}
+	if !foundInCache {
+		az.endpointSlicesCache.Store(strings.ToLower(fmt.Sprintf("%s/%s", ep.Namespace, ep.Name)), ep)
 	}
 
 	var nodeNames []string
@@ -543,4 +542,85 @@ func (az *Cloud) cleanupLocalServiceBackendPool(
 		}
 	}
 	return lbs, nil
+}
+
+// checkAndApplyLocalServiceBackendPoolUpdates if the IPs in the backend pool are aligned
+// with the corresponding endpointslice, and update the backend pool if necessary.
+func (az *Cloud) checkAndApplyLocalServiceBackendPoolUpdates(lb network.LoadBalancer, service *v1.Service) error {
+	serviceName := getServiceName(service)
+	endpointsNodeNames, err := az.getLocalServiceEndpointsNodeNames(service)
+	if err != nil {
+		return err
+	}
+	var expectedIPs []string
+	for nodeName := range endpointsNodeNames {
+		ips := az.nodePrivateIPs[strings.ToLower(nodeName)]
+		for ip := range ips {
+			expectedIPs = append(expectedIPs, ip)
+		}
+	}
+	currentIPsInBackendPools := make(map[string][]string)
+	for _, bp := range *lb.BackendAddressPools {
+		bpName := pointer.StringDeref(bp.Name, "")
+		if localServiceOwnsBackendPool(serviceName, bpName) {
+			var currentIPs []string
+			for _, address := range *bp.LoadBalancerBackendAddresses {
+				currentIPs = append(currentIPs, *address.IPAddress)
+			}
+			currentIPsInBackendPools[bpName] = currentIPs
+		}
+	}
+	az.applyIPChangesAmongLocalServiceBackendPoolsByIPFamily(*lb.Name, serviceName, currentIPsInBackendPools, expectedIPs)
+
+	return nil
+}
+
+// applyIPChangesAmongLocalServiceBackendPoolsByIPFamily reconciles IPs by IP family
+// amone the backend pools of a local service.
+func (az *Cloud) applyIPChangesAmongLocalServiceBackendPoolsByIPFamily(
+	lbName, serviceName string,
+	currentIPsInBackendPools map[string][]string,
+	expectedIPs []string,
+) {
+	currentIPsInBackendPoolsIPv4 := make(map[string][]string)
+	currentIPsInBackendPoolsIPv6 := make(map[string][]string)
+	for bpName, ips := range currentIPsInBackendPools {
+		if managedResourceHasIPv6Suffix(bpName) {
+			currentIPsInBackendPoolsIPv6[bpName] = ips
+		} else {
+			currentIPsInBackendPoolsIPv4[bpName] = ips
+		}
+	}
+
+	var ipv4, ipv6 []string
+	for _, ip := range expectedIPs {
+		if utilnet.IsIPv6String(ip) {
+			ipv6 = append(ipv6, ip)
+		} else {
+			ipv4 = append(ipv4, ip)
+		}
+	}
+	az.reconcileIPsInLocalServiceBackendPoolsAsync(lbName, serviceName, currentIPsInBackendPoolsIPv6, ipv6)
+	az.reconcileIPsInLocalServiceBackendPoolsAsync(lbName, serviceName, currentIPsInBackendPoolsIPv4, ipv4)
+}
+
+// reconcileIPsInLocalServiceBackendPoolsAsync reconciles IPs in the backend pools of a local service.
+func (az *Cloud) reconcileIPsInLocalServiceBackendPoolsAsync(
+	lbName, serviceName string,
+	currentIPsInBackendPools map[string][]string,
+	expectedIPs []string,
+) {
+	for bpName, currentIPs := range currentIPsInBackendPools {
+		ipsToBeDeleted := compareNodeIPs(currentIPs, expectedIPs)
+		if len(ipsToBeDeleted) == 0 && len(currentIPs) == len(expectedIPs) {
+			klog.V(4).Infof("No IP change detected for service %s, skip updating load balancer backend pool", serviceName)
+			return
+		}
+		if len(ipsToBeDeleted) > 0 {
+			az.backendPoolUpdater.addOperation(getRemoveIPsFromBackendPoolOperation(serviceName, lbName, bpName, ipsToBeDeleted))
+		}
+		if len(expectedIPs) > 0 {
+			az.backendPoolUpdater.addOperation(getAddIPsToBackendPoolOperation(serviceName, lbName, bpName, expectedIPs))
+		}
+	}
 }
