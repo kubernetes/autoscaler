@@ -41,7 +41,7 @@ const providerIDPrefix = "openstack:///"
 
 // NodeGroup implements cloudprovider.NodeGroup interface.
 type NodeGroup struct {
-	sdk.NodePool
+	*sdk.NodePool
 
 	Manager     *OvhCloudManager
 	CurrentSize int
@@ -294,7 +294,7 @@ func (ng *NodeGroup) Create() (cloudprovider.NodeGroup, error) {
 
 	// Forge a node group interface given the API response
 	return &NodeGroup{
-		NodePool:    *np,
+		NodePool:    np,
 		Manager:     ng.Manager,
 		CurrentSize: int(ng.DesiredNodes),
 	}, nil
