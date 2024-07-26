@@ -3,7 +3,7 @@ package skewer
 import (
 	"context"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute" //nolint:staticcheck
 	"github.com/pkg/errors"
 )
 
@@ -18,8 +18,8 @@ func newWrappedResourceClient(client ResourceClient) *wrappedResourceClient {
 }
 
 // List greedily traverses all returned sku pages
-func (w *wrappedResourceClient) List(ctx context.Context, filter string) ([]compute.ResourceSku, error) {
-	return iterate(ctx, filter, w.client.ListComplete)
+func (w *wrappedResourceClient) List(ctx context.Context, filter, includeExtendedLocations string) ([]compute.ResourceSku, error) {
+	return iterate(ctx, filter, includeExtendedLocations, w.client.ListComplete)
 }
 
 // wrappedResourceProviderClient defines a wrapper for the typical Azure client
@@ -33,19 +33,20 @@ func newWrappedResourceProviderClient(client ResourceProviderClient) *wrappedRes
 	return &wrappedResourceProviderClient{client}
 }
 
-func (w *wrappedResourceProviderClient) ListComplete(ctx context.Context, filter string) (compute.ResourceSkusResultIterator, error) {
-	page, err := w.client.List(ctx, filter)
+//nolint:lll
+func (w *wrappedResourceProviderClient) ListComplete(ctx context.Context, filter, includeExtendedLocations string) (compute.ResourceSkusResultIterator, error) {
+	page, err := w.client.List(ctx, filter, includeExtendedLocations)
 	if err != nil {
 		return compute.ResourceSkusResultIterator{}, nil
 	}
 	return compute.NewResourceSkusResultIterator(page), nil
 }
 
-type iterFunc func(context.Context, string) (compute.ResourceSkusResultIterator, error)
+type iterFunc func(context.Context, string, string) (compute.ResourceSkusResultIterator, error)
 
 // iterate invokes fn to get an iterator, then drains it into an array.
-func iterate(ctx context.Context, filter string, fn iterFunc) ([]compute.ResourceSku, error) {
-	iter, err := fn(ctx, filter)
+func iterate(ctx context.Context, filter, includeExtendedLocations string, fn iterFunc) ([]compute.ResourceSku, error) {
+	iter, err := fn(ctx, filter, includeExtendedLocations)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not list resource skus")
 	}

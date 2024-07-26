@@ -23,16 +23,16 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-03-01/compute"
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-08-01/network"
-	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2022-07-01/network"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	cloudprovider "k8s.io/cloud-provider"
 	"k8s.io/klog/v2"
-	utilnet "k8s.io/utils/net"
+	"k8s.io/utils/pointer"
 
 	azcache "sigs.k8s.io/cloud-provider-azure/pkg/cache"
 	"sigs.k8s.io/cloud-provider-azure/pkg/consts"
@@ -48,11 +48,11 @@ var (
 type FlexScaleSet struct {
 	*Cloud
 
-	vmssFlexCache *azcache.TimedCache
+	vmssFlexCache azcache.Resource
 
 	vmssFlexVMNameToVmssID   *sync.Map
 	vmssFlexVMNameToNodeName *sync.Map
-	vmssFlexVMCache          *azcache.TimedCache
+	vmssFlexVMCache          azcache.Resource
 
 	// lockMap in cache refresh
 	lockMap *lockMap
@@ -126,8 +126,7 @@ func (fs *FlexScaleSet) GetAgentPoolVMSetNames(nodes []*v1.Node) (*[]string, err
 // annotation would be ignored when using one SLB per cluster.
 func (fs *FlexScaleSet) GetVMSetNames(service *v1.Service, nodes []*v1.Node) (*[]string, error) {
 	hasMode, isAuto, serviceVMSetName := fs.getServiceLoadBalancerMode(service)
-	useSingleSLB := fs.useStandardLoadBalancer() && !fs.EnableMultipleStandardLoadBalancers
-	if !hasMode || useSingleSLB {
+	if !hasMode || fs.useStandardLoadBalancer() {
 		// no mode specified in service annotation or use single SLB mode
 		// default to PrimaryScaleSetName
 		vmssFlexNames := &[]string{fs.Config.PrimaryScaleSetName}
@@ -162,7 +161,7 @@ func (fs *FlexScaleSet) GetVMSetNames(service *v1.Service, nodes []*v1.Node) (*[
 // providerID example:
 // azure:///subscriptions/sub/resourceGroups/rg/providers/Microsoft.Compute/virtualMachines/flexprofile-mp-0_df53ee36
 // Different from vmas where vm name is always equal to nodeName, we need to further map vmName to actual nodeName in vmssflex.
-// Note: nodeName is always equal to strings.ToLower(*vm.OsProfile.ComputerName)
+// Note: nodeName is always equal pointer.StringDerefs.ToLower(*vm.OsProfile.ComputerName, "")
 func (fs *FlexScaleSet) GetNodeNameByProviderID(providerID string) (types.NodeName, error) {
 	// NodeName is part of providerID for standard instances.
 	matches := providerIDRE.FindStringSubmatch(providerID)
@@ -231,10 +230,10 @@ func (fs *FlexScaleSet) GetZoneByNodeName(name string) (cloudprovider.Zone, erro
 			return cloudprovider.Zone{}, fmt.Errorf("failed to parse zone %q: %w", zones, err)
 		}
 
-		failureDomain = fs.makeZone(to.String(vm.Location), zoneID)
+		failureDomain = fs.makeZone(pointer.StringDeref(vm.Location, ""), zoneID)
 	} else if vm.VirtualMachineProperties.InstanceView != nil && vm.VirtualMachineProperties.InstanceView.PlatformFaultDomain != nil {
 		// Availability zone is not used for the node, falling back to fault domain.
-		failureDomain = strconv.Itoa(int(to.Int32(vm.VirtualMachineProperties.InstanceView.PlatformFaultDomain)))
+		failureDomain = strconv.Itoa(int(pointer.Int32Deref(vm.VirtualMachineProperties.InstanceView.PlatformFaultDomain, 0)))
 	} else {
 		err = fmt.Errorf("failed to get zone info")
 		klog.Errorf("GetZoneByNodeName: got unexpected error %v", err)
@@ -243,7 +242,7 @@ func (fs *FlexScaleSet) GetZoneByNodeName(name string) (cloudprovider.Zone, erro
 
 	zone := cloudprovider.Zone{
 		FailureDomain: strings.ToLower(failureDomain),
-		Region:        strings.ToLower(to.String(vm.Location)),
+		Region:        strings.ToLower(pointer.StringDeref(vm.Location, "")),
 	}
 	return zone, nil
 }
@@ -259,7 +258,7 @@ func (fs *FlexScaleSet) GetProvisioningStateByNodeName(name string) (provisionin
 		return provisioningState, nil
 	}
 
-	return to.String(vm.VirtualMachineProperties.ProvisioningState), nil
+	return pointer.StringDeref(vm.VirtualMachineProperties.ProvisioningState, ""), nil
 }
 
 // GetPowerStatusByNodeName returns the powerState for the specified node.
@@ -272,7 +271,7 @@ func (fs *FlexScaleSet) GetPowerStatusByNodeName(name string) (powerState string
 	if vm.InstanceView != nil && vm.InstanceView.Statuses != nil {
 		statuses := *vm.InstanceView.Statuses
 		for _, status := range statuses {
-			state := to.String(status.Code)
+			state := pointer.StringDeref(status.Code, "")
 			if strings.HasPrefix(state, vmPowerStatePrefix) {
 				return strings.TrimPrefix(state, vmPowerStatePrefix), nil
 			}
@@ -406,7 +405,7 @@ func (fs *FlexScaleSet) getNodeInformationByIPConfigurationID(ipConfigurationID 
 	if nic.InterfacePropertiesFormat == nil || nic.InterfacePropertiesFormat.VirtualMachine == nil || nic.InterfacePropertiesFormat.VirtualMachine.ID == nil {
 		return "", "", "", fmt.Errorf("failed to get vm ID of ip config ID %s", ipConfigurationID)
 	}
-	vmID := to.String(nic.InterfacePropertiesFormat.VirtualMachine.ID)
+	vmID := pointer.StringDeref(nic.InterfacePropertiesFormat.VirtualMachine.ID, "")
 	matches = vmIDRE.FindStringSubmatch(vmID)
 	if len(matches) != 2 {
 		return "", "", "", fmt.Errorf("invalid virtual machine ID %s", vmID)
@@ -447,15 +446,15 @@ func (fs *FlexScaleSet) GetNodeCIDRMasksByProviderID(providerID string) (int, in
 
 	var ipv4Mask, ipv6Mask int
 	if v4, ok := vmssFlex.Tags[consts.VMSetCIDRIPV4TagKey]; ok && v4 != nil {
-		ipv4Mask, err = strconv.Atoi(to.String(v4))
+		ipv4Mask, err = strconv.Atoi(pointer.StringDeref(v4, ""))
 		if err != nil {
-			klog.Errorf("GetNodeCIDRMasksByProviderID: error when paring the value of the ipv4 mask size %s: %v", to.String(v4), err)
+			klog.Errorf("GetNodeCIDRMasksByProviderID: error when paring the value of the ipv4 mask size %s: %v", pointer.StringDeref(v4, ""), err)
 		}
 	}
 	if v6, ok := vmssFlex.Tags[consts.VMSetCIDRIPV6TagKey]; ok && v6 != nil {
-		ipv6Mask, err = strconv.Atoi(to.String(v6))
+		ipv6Mask, err = strconv.Atoi(pointer.StringDeref(v6, ""))
 		if err != nil {
-			klog.Errorf("GetNodeCIDRMasksByProviderID: error when paring the value of the ipv6 mask size%s: %v", to.String(v6), err)
+			klog.Errorf("GetNodeCIDRMasksByProviderID: error when paring the value of the ipv6 mask size%s: %v", pointer.StringDeref(v6, ""), err)
 		}
 	}
 
@@ -482,18 +481,6 @@ func (fs *FlexScaleSet) EnsureHostInPool(service *v1.Service, nodeName types.Nod
 	if !fs.useStandardLoadBalancer() {
 		return "", "", "", nil, fmt.Errorf("EnsureHostInPool: VMSS Flex does not support Basic Load Balancer")
 	}
-	if fs.EnableMultipleStandardLoadBalancers {
-		// need to check the vmSet name when using multiple standard LBs
-		needCheck = true
-
-		// ensure the vm that is supposed to share the primary SLB in the backendpool of the primary SLB
-		if strings.EqualFold(fs.GetPrimaryVMSetName(), vmSetNameOfLB) &&
-			fs.getVMSetNamesSharingPrimarySLB().Has(strings.ToLower(vmssFlexName)) {
-			klog.V(4).Infof("EnsureHostInPool: the vm %s in the vmSet %s is supposed to share the primary SLB",
-				nodeName, vmssFlexName)
-			needCheck = false
-		}
-	}
 	if vmSetNameOfLB != "" && needCheck && !strings.EqualFold(vmSetNameOfLB, vmssFlexName) {
 		klog.V(3).Infof("EnsureHostInPool skips node %s because it is not in the ScaleSet %s", name, vmSetNameOfLB)
 		return "", "", "", nil, errNotInVMSet
@@ -511,7 +498,7 @@ func (fs *FlexScaleSet) EnsureHostInPool(service *v1.Service, nodeName types.Nod
 	}
 
 	var primaryIPConfig *network.InterfaceIPConfiguration
-	ipv6 := utilnet.IsIPv6String(service.Spec.ClusterIP)
+	ipv6 := isBackendPoolIPv6(backendPoolID)
 	if !fs.Cloud.ipv6DualStackEnabled && !ipv6 {
 		primaryIPConfig, err = getPrimaryIPConfig(nic)
 		if err != nil {
@@ -563,7 +550,7 @@ func (fs *FlexScaleSet) EnsureHostInPool(service *v1.Service, nodeName types.Nod
 
 	newBackendPools = append(newBackendPools,
 		network.BackendAddressPool{
-			ID: to.StringPtr(backendPoolID),
+			ID: pointer.String(backendPoolID),
 		})
 
 	primaryIPConfig.LoadBalancerBackendAddressPools = &newBackendPools
@@ -595,7 +582,7 @@ func (fs *FlexScaleSet) ensureVMSSFlexInPool(service *v1.Service, nodes []*v1.No
 
 	// the single standard load balancer supports multiple vmss in its backend while
 	// multiple standard load balancers doesn't
-	if fs.useStandardLoadBalancer() && !fs.EnableMultipleStandardLoadBalancers {
+	if fs.useStandardLoadBalancer() {
 		for _, node := range nodes {
 			if fs.excludeMasterNodesFromStandardLB() && isControlPlaneNode(node) {
 				continue
@@ -657,24 +644,13 @@ func (fs *FlexScaleSet) ensureVMSSFlexInPool(service *v1.Service, nodes []*v1.No
 			continue
 		}
 		vmssNIC := *vmssFlex.VirtualMachineProfile.NetworkProfile.NetworkInterfaceConfigurations
-		primaryNIC, err := getPrimaryNetworkInterfaceConfigurationForScaleSet(vmssNIC, vmssFlexName)
+		primaryNIC, err := getPrimaryNetworkInterfaceConfiguration(vmssNIC, vmssFlexName)
 		if err != nil {
 			return err
 		}
-		var primaryIPConfig *compute.VirtualMachineScaleSetIPConfiguration
-		ipv6 := utilnet.IsIPv6String(service.Spec.ClusterIP)
-		// Find primary network interface configuration.
-		if !fs.Cloud.ipv6DualStackEnabled && !ipv6 {
-			// Find primary IP configuration.
-			primaryIPConfig, err = getPrimaryIPConfigFromVMSSNetworkConfig(primaryNIC)
-			if err != nil {
-				return err
-			}
-		} else {
-			primaryIPConfig, err = getConfigForScaleSetByIPFamily(primaryNIC, "", ipv6)
-			if err != nil {
-				return err
-			}
+		primaryIPConfig, err := getPrimaryIPConfigFromVMSSNetworkConfig(primaryNIC, backendPoolID, vmssFlexName)
+		if err != nil {
+			return err
 		}
 
 		loadBalancerBackendAddressPools := []compute.SubResource{}
@@ -717,7 +693,7 @@ func (fs *FlexScaleSet) ensureVMSSFlexInPool(service *v1.Service, nodes []*v1.No
 		// Compose a new vmss with added backendPoolID.
 		loadBalancerBackendAddressPools = append(loadBalancerBackendAddressPools,
 			compute.SubResource{
-				ID: to.StringPtr(backendPoolID),
+				ID: pointer.String(backendPoolID),
 			})
 		primaryIPConfig.LoadBalancerBackendAddressPools = &loadBalancerBackendAddressPools
 		newVMSS := compute.VirtualMachineScaleSet{
@@ -797,9 +773,9 @@ func (fs *FlexScaleSet) EnsureHostsInPool(service *v1.Service, nodes []*v1.Node,
 	return nil
 }
 
-func (fs *FlexScaleSet) ensureBackendPoolDeletedFromVmssFlex(backendPoolID string, vmSetName string) error {
+func (fs *FlexScaleSet) ensureBackendPoolDeletedFromVmssFlex(backendPoolIDs []string, vmSetName string) error {
 	vmssNamesMap := make(map[string]bool)
-	if fs.useStandardLoadBalancer() && !fs.EnableMultipleStandardLoadBalancers {
+	if fs.useStandardLoadBalancer() {
 		cached, err := fs.vmssFlexCache.Get(consts.VmssFlexKey, azcache.CacheReadTypeDefault)
 		if err != nil {
 			klog.Errorf("ensureBackendPoolDeletedFromVmssFlex: failed to get vmss flex from cache: %v", err)
@@ -808,17 +784,17 @@ func (fs *FlexScaleSet) ensureBackendPoolDeletedFromVmssFlex(backendPoolID strin
 		vmssFlexes := cached.(*sync.Map)
 		vmssFlexes.Range(func(key, value interface{}) bool {
 			vmssFlex := value.(*compute.VirtualMachineScaleSet)
-			vmssNamesMap[to.String(vmssFlex.Name)] = true
+			vmssNamesMap[pointer.StringDeref(vmssFlex.Name, "")] = true
 			return true
 		})
 	} else {
 		vmssNamesMap[vmSetName] = true
 	}
-	return fs.EnsureBackendPoolDeletedFromVMSets(vmssNamesMap, backendPoolID)
+	return fs.EnsureBackendPoolDeletedFromVMSets(vmssNamesMap, backendPoolIDs)
 }
 
 // EnsureBackendPoolDeletedFromVMSets ensures the loadBalancer backendAddressPools deleted from the specified VMSS Flex
-func (fs *FlexScaleSet) EnsureBackendPoolDeletedFromVMSets(vmssNamesMap map[string]bool, backendPoolID string) error {
+func (fs *FlexScaleSet) EnsureBackendPoolDeletedFromVMSets(vmssNamesMap map[string]bool, backendPoolIDs []string) error {
 	vmssUpdaters := make([]func() error, 0, len(vmssNamesMap))
 	errors := make([]error, 0, len(vmssNamesMap))
 	for vmssName := range vmssNamesMap {
@@ -841,40 +817,29 @@ func (fs *FlexScaleSet) EnsureBackendPoolDeletedFromVMSets(vmssNamesMap map[stri
 			continue
 		}
 		vmssNIC := *vmss.VirtualMachineProfile.NetworkProfile.NetworkInterfaceConfigurations
-		primaryNIC, err := getPrimaryNetworkInterfaceConfigurationForScaleSet(vmssNIC, vmssName)
+		primaryNIC, err := getPrimaryNetworkInterfaceConfiguration(vmssNIC, vmssName)
 		if err != nil {
 			klog.Errorf("fs.EnsureBackendPoolDeletedFromVMSets: failed to get the primary network interface config of the VMSS %s: %v", vmssName, err)
 			errors = append(errors, err)
 			continue
 		}
-		primaryIPConfig, err := getPrimaryIPConfigFromVMSSNetworkConfig(primaryNIC)
-		if err != nil {
-			klog.Errorf("fs.EnsureBackendPoolDeletedFromVMSets: failed to the primary IP config from the VMSS %s's network config : %v", vmssName, err)
-			errors = append(errors, err)
-			continue
-		}
-		loadBalancerBackendAddressPools := []compute.SubResource{}
-		if primaryIPConfig.LoadBalancerBackendAddressPools != nil {
-			loadBalancerBackendAddressPools = *primaryIPConfig.LoadBalancerBackendAddressPools
-		}
-
-		var found bool
-		var newBackendPools []compute.SubResource
-		for i := len(loadBalancerBackendAddressPools) - 1; i >= 0; i-- {
-			curPool := loadBalancerBackendAddressPools[i]
-			if strings.EqualFold(backendPoolID, *curPool.ID) {
-				klog.V(10).Infof("fs.EnsureBackendPoolDeletedFromVMSets gets unwanted backend pool %q for VMSS %s", backendPoolID, vmssName)
-				found = true
-				newBackendPools = append(loadBalancerBackendAddressPools[:i], loadBalancerBackendAddressPools[i+1:]...)
+		foundTotal := false
+		for _, backendPoolID := range backendPoolIDs {
+			found, err := deleteBackendPoolFromIPConfig("FlexSet.EnsureBackendPoolDeletedFromVMSets", backendPoolID, vmssName, primaryNIC)
+			if err != nil {
+				errors = append(errors, err)
+				continue
+			}
+			if found {
+				foundTotal = true
 			}
 		}
-		if !found {
+		if !foundTotal {
 			continue
 		}
 
 		vmssUpdaters = append(vmssUpdaters, func() error {
 			// Compose a new vmss with added backendPoolID.
-			primaryIPConfig.LoadBalancerBackendAddressPools = &newBackendPools
 			newVMSS := compute.VirtualMachineScaleSet{
 				Location: vmss.Location,
 				VirtualMachineScaleSetProperties: &compute.VirtualMachineScaleSetProperties{
@@ -891,10 +856,10 @@ func (fs *FlexScaleSet) EnsureBackendPoolDeletedFromVMSets(vmssNamesMap map[stri
 				_ = fs.vmssFlexCache.Delete(consts.VmssFlexKey)
 			}()
 
-			klog.V(2).Infof("fs.EnsureBackendPoolDeletedFromVMSets begins to delete backendPoolID %s from vmss(%s)", backendPoolID, vmssName)
+			klog.V(2).Infof("fs.EnsureBackendPoolDeletedFromVMSets begins to delete backendPoolIDs %q from vmss(%s)", backendPoolIDs, vmssName)
 			rerr := fs.CreateOrUpdateVMSS(fs.ResourceGroup, vmssName, newVMSS)
 			if rerr != nil {
-				klog.Errorf("fs.EnsureBackendPoolDeletedFromVMSets CreateOrUpdateVMSS(%s) for backendPoolID %s, err: %v", vmssName, backendPoolID, rerr)
+				klog.Errorf("fs.EnsureBackendPoolDeletedFromVMSets CreateOrUpdateVMSS(%s) for backendPoolIDs %q, err: %v", vmssName, backendPoolIDs, rerr)
 				return rerr.Error()
 			}
 
@@ -915,7 +880,7 @@ func (fs *FlexScaleSet) EnsureBackendPoolDeletedFromVMSets(vmssNamesMap map[stri
 }
 
 // EnsureBackendPoolDeleted ensures the loadBalancer backendAddressPools deleted from the specified nodes.
-func (fs *FlexScaleSet) EnsureBackendPoolDeleted(service *v1.Service, backendPoolID, vmSetName string, backendAddressPools *[]network.BackendAddressPool, deleteFromVMSet bool) (bool, error) {
+func (fs *FlexScaleSet) EnsureBackendPoolDeleted(service *v1.Service, backendPoolIDs []string, vmSetName string, backendAddressPools *[]network.BackendAddressPool, deleteFromVMSet bool) (bool, error) {
 	// Returns nil if backend address pools already deleted.
 	if backendAddressPools == nil {
 		return false, nil
@@ -929,13 +894,15 @@ func (fs *FlexScaleSet) EnsureBackendPoolDeleted(service *v1.Service, backendPoo
 
 	ipConfigurationIDs := []string{}
 	for _, backendPool := range *backendAddressPools {
-		if strings.EqualFold(to.String(backendPool.ID), backendPoolID) && backendPool.BackendAddressPoolPropertiesFormat != nil && backendPool.BackendIPConfigurations != nil {
-			for _, ipConf := range *backendPool.BackendIPConfigurations {
-				if ipConf.ID == nil {
-					continue
-				}
+		for _, backendPoolID := range backendPoolIDs {
+			if strings.EqualFold(pointer.StringDeref(backendPool.ID, ""), backendPoolID) && backendPool.BackendAddressPoolPropertiesFormat != nil && backendPool.BackendIPConfigurations != nil {
+				for _, ipConf := range *backendPool.BackendIPConfigurations {
+					if ipConf.ID == nil {
+						continue
+					}
 
-				ipConfigurationIDs = append(ipConfigurationIDs, *ipConf.ID)
+					ipConfigurationIDs = append(ipConfigurationIDs, *ipConf.ID)
+				}
 			}
 		}
 	}
@@ -957,7 +924,7 @@ func (fs *FlexScaleSet) EnsureBackendPoolDeleted(service *v1.Service, backendPoo
 		}
 		// only vmsses in the resource group same as it's in azure config are included
 		if strings.EqualFold(resourceGroupName, fs.ResourceGroup) {
-			if fs.useStandardLoadBalancer() && !fs.EnableMultipleStandardLoadBalancers {
+			if fs.useStandardLoadBalancer() {
 				vmssFlexVMNameMap[nodeName] = nicName
 			} else {
 				if strings.EqualFold(vmssFlexName, vmSetName) {
@@ -971,19 +938,17 @@ func (fs *FlexScaleSet) EnsureBackendPoolDeleted(service *v1.Service, backendPoo
 		}
 	}
 
-	// 1. Ensure the backendPoolID is deleted from the VMSS.
-	klog.V(2).Infof("1. Ensure the backendPoolID is deleted from the VMSS.")
+	klog.V(2).Infof("Ensure backendPoolIDs %q deleted from the VMSS.", backendPoolIDs)
 	if deleteFromVMSet {
-		err := fs.ensureBackendPoolDeletedFromVmssFlex(backendPoolID, vmSetName)
+		err := fs.ensureBackendPoolDeletedFromVmssFlex(backendPoolIDs, vmSetName)
 		if err != nil {
 			allErrs = append(allErrs, err)
 		}
 	}
 
-	klog.V(2).Infof("2. Ensure the backendPoolID is deleted from the VMSS VMs.")
-	// 2. Ensure the backendPoolID is deleted from the VMSS VMs.
-	klog.V(2).Infof("go into fs.ensureBackendPoolDeletedFromNode, vmssFlexVMNameMap: %s, size: %s", vmssFlexVMNameMap, len(vmssFlexVMNameMap))
-	nicUpdated, err := fs.ensureBackendPoolDeletedFromNode(vmssFlexVMNameMap, backendPoolID)
+	klog.V(2).Infof("Ensure backendPoolIDs %q deleted from the VMSS VMs.", backendPoolIDs)
+	klog.V(2).Infof("go into fs.ensureBackendPoolDeletedFromNode, vmssFlexVMNameMap: %s, size: %d", vmssFlexVMNameMap, len(vmssFlexVMNameMap))
+	nicUpdated, err := fs.ensureBackendPoolDeletedFromNode(vmssFlexVMNameMap, backendPoolIDs)
 	klog.V(2).Infof("exit from fs.ensureBackendPoolDeletedFromNode")
 	if err != nil {
 		allErrs = append(allErrs, err)
@@ -998,14 +963,14 @@ func (fs *FlexScaleSet) EnsureBackendPoolDeleted(service *v1.Service, backendPoo
 
 }
 
-func (fs *FlexScaleSet) ensureBackendPoolDeletedFromNode(vmssFlexVMNameMap map[string]string, backendPoolID string) (bool, error) {
+func (fs *FlexScaleSet) ensureBackendPoolDeletedFromNode(vmssFlexVMNameMap map[string]string, backendPoolIDs []string) (bool, error) {
 	nicUpdaters := make([]func() error, 0)
 	allErrs := make([]error, 0)
-	i := 0
-	var nicUpdated bool
+	nics := map[string]network.Interface{} // nicName -> nic
 	for nodeName, nicName := range vmssFlexVMNameMap {
-		i++
-		klog.V(2).Infof("i = %s", i)
+		if _, ok := nics[nicName]; ok {
+			continue
+		}
 
 		ctx, cancel := getContextWithCancel()
 		defer cancel()
@@ -1020,48 +985,55 @@ func (fs *FlexScaleSet) ensureBackendPoolDeletedFromNode(vmssFlexVMNameMap map[s
 		}
 
 		if nic.InterfacePropertiesFormat != nil && nic.InterfacePropertiesFormat.IPConfigurations != nil {
-			newIPConfigs := *nic.IPConfigurations
-			for j, ipConf := range newIPConfigs {
-				if !to.Bool(ipConf.Primary) {
-					continue
-				}
-				// found primary ip configuration
-				if ipConf.LoadBalancerBackendAddressPools != nil {
-					newLBAddressPools := *ipConf.LoadBalancerBackendAddressPools
-					for k := len(newLBAddressPools) - 1; k >= 0; k-- {
-						pool := newLBAddressPools[k]
-						if strings.EqualFold(to.String(pool.ID), backendPoolID) {
-							newLBAddressPools = append(newLBAddressPools[:k], newLBAddressPools[k+1:]...)
-							break
-						}
-					}
-					newIPConfigs[j].LoadBalancerBackendAddressPools = &newLBAddressPools
-				}
-			}
-			nic.IPConfigurations = &newIPConfigs
-
-			nicUpdaters = append(nicUpdaters, func() error {
-				ctx, cancel := getContextWithCancel()
-				defer cancel()
-				klog.V(2).Infof("EnsureBackendPoolDeleted begins to CreateOrUpdate for NIC(%s, %s) with backendPoolID %s", fs.resourceGroup, to.String(nic.Name), backendPoolID)
-				rerr := fs.InterfacesClient.CreateOrUpdate(ctx, fs.ResourceGroup, to.String(nic.Name), nic)
-				if rerr != nil {
-					klog.Errorf("EnsureBackendPoolDeleted CreateOrUpdate for NIC(%s, %s) failed with error %v", fs.resourceGroup, to.String(nic.Name), rerr.Error())
-					return rerr.Error()
-				}
-				nicUpdated = true
-				klog.V(2).Infof("EnsureBackendPoolDeleted done")
-				return nil
-			})
+			nicName := pointer.StringDeref(nic.Name, "")
+			nics[nicName] = nic
 		}
 	}
-	klog.V(2).Infof("nicUpdaters size: %s", len(nicUpdaters))
+	var nicUpdated atomic.Bool
+	for _, nic := range nics {
+		nic := nic
+		newIPConfigs := *nic.IPConfigurations
+		for j, ipConf := range newIPConfigs {
+			if !pointer.BoolDeref(ipConf.Primary, false) {
+				continue
+			}
+			// found primary ip configuration
+			if ipConf.LoadBalancerBackendAddressPools != nil {
+				newLBAddressPools := *ipConf.LoadBalancerBackendAddressPools
+				for k := len(newLBAddressPools) - 1; k >= 0; k-- {
+					pool := newLBAddressPools[k]
+					for _, backendPoolID := range backendPoolIDs {
+						if strings.EqualFold(pointer.StringDeref(pool.ID, ""), backendPoolID) {
+							newLBAddressPools = append(newLBAddressPools[:k], newLBAddressPools[k+1:]...)
+						}
+					}
+				}
+				newIPConfigs[j].LoadBalancerBackendAddressPools = &newLBAddressPools
+			}
+		}
+		nic.IPConfigurations = &newIPConfigs
+
+		nicUpdaters = append(nicUpdaters, func() error {
+			ctx, cancel := getContextWithCancel()
+			defer cancel()
+			klog.V(2).Infof("EnsureBackendPoolDeleted begins to CreateOrUpdate for NIC(%s, %s) with backendPoolIDs %q", fs.ResourceGroup, pointer.StringDeref(nic.Name, ""), backendPoolIDs)
+			rerr := fs.InterfacesClient.CreateOrUpdate(ctx, fs.ResourceGroup, pointer.StringDeref(nic.Name, ""), nic)
+			if rerr != nil {
+				klog.Errorf("EnsureBackendPoolDeleted CreateOrUpdate for NIC(%s, %s) failed with error %v", fs.ResourceGroup, pointer.StringDeref(nic.Name, ""), rerr.Error())
+				return rerr.Error()
+			}
+			nicUpdated.Store(true)
+			klog.V(2).Infof("EnsureBackendPoolDeleted done")
+			return nil
+		})
+	}
+	klog.V(2).Infof("nicUpdaters size: %d", len(nicUpdaters))
 	errs := utilerrors.AggregateGoroutines(nicUpdaters...)
 	if errs != nil {
 		allErrs = append(allErrs, utilerrors.Flatten(errs))
 	}
 	if len(allErrs) > 0 {
-		return nicUpdated, utilerrors.Flatten(utilerrors.NewAggregate(allErrs))
+		return nicUpdated.Load(), utilerrors.Flatten(utilerrors.NewAggregate(allErrs))
 	}
-	return nicUpdated, nil
+	return nicUpdated.Load(), nil
 }

@@ -22,13 +22,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2021-08-01/network"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2022-07-01/network"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/azure"
-	"github.com/Azure/go-autorest/autorest/to"
 
 	"k8s.io/client-go/util/flowcontrol"
 	"k8s.io/klog/v2"
+	"k8s.io/utils/pointer"
 
 	azclients "sigs.k8s.io/cloud-provider-azure/pkg/azureclients"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/armclient"
@@ -211,7 +211,7 @@ func (c *Client) listSubnet(ctx context.Context, resourceGroupName string, virtu
 		result = append(result, page.Values()...)
 
 		// Abort the loop when there's no nextLink in the response.
-		if to.String(page.Response().NextLink) == "" {
+		if pointer.StringDeref(page.Response().NextLink, "") == "" {
 			break
 		}
 
@@ -350,12 +350,12 @@ func (c *Client) listResponder(resp *http.Response) (result network.SubnetListRe
 // subnetListResultPreparer prepares a request to retrieve the next set of results.
 // It returns nil if no more results exist.
 func (c *Client) subnetListResultPreparer(ctx context.Context, lblr network.SubnetListResult) (*http.Request, error) {
-	if lblr.NextLink == nil || len(to.String(lblr.NextLink)) < 1 {
+	if lblr.NextLink == nil || len(pointer.StringDeref(lblr.NextLink, "")) < 1 {
 		return nil, nil
 	}
 
 	decorators := []autorest.PrepareDecorator{
-		autorest.WithBaseURL(to.String(lblr.NextLink)),
+		autorest.WithBaseURL(pointer.StringDeref(lblr.NextLink, "")),
 	}
 	return c.armClient.PrepareGetRequest(ctx, decorators...)
 }
