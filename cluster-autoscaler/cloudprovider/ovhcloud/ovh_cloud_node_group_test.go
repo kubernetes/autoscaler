@@ -85,7 +85,7 @@ func newTestNodeGroup(t *testing.T, flavor string) *NodeGroup {
 
 	ng := &NodeGroup{
 		Manager: manager,
-		NodePool: sdk.NodePool{
+		NodePool: &sdk.NodePool{
 			ID:           "id",
 			Name:         fmt.Sprintf("pool-%s", flavor),
 			Flavor:       flavor,

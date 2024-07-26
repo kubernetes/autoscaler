@@ -141,7 +141,7 @@ func TestOVHCloudProvider_NodeGroups(t *testing.T) {
 	})
 
 	t.Run("check empty node groups length after reset", func(t *testing.T) {
-		provider.manager.NodePools = []sdk.NodePool{}
+		provider.manager.NodePoolsPerID = map[string]*sdk.NodePool{}
 		groups := provider.NodeGroups()
 
 		assert.Equal(t, 0, len(groups))
@@ -403,7 +403,7 @@ func TestOVHCloudProvider_Refresh(t *testing.T) {
 	provider := newTestProvider(t)
 
 	t.Run("check refresh reset node groups correctly", func(t *testing.T) {
-		provider.manager.NodePools = []sdk.NodePool{}
+		provider.manager.NodePoolsPerID = map[string]*sdk.NodePool{}
 		groups := provider.NodeGroups()
 
 		assert.Equal(t, 0, len(groups))

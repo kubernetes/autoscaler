@@ -100,7 +100,7 @@ func (provider *OVHCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 	groups := make([]cloudprovider.NodeGroup, 0)
 
 	// Cast API node pools into CA node groups
-	for _, pool := range provider.manager.NodePools {
+	for _, pool := range provider.manager.NodePoolsPerID {
 		// Node pools without autoscaling are equivalent to node pools with autoscaling but no scale possible
 		if !pool.Autoscale {
 			pool.MaxNodes = pool.DesiredNodes
@@ -238,7 +238,7 @@ func (provider *OVHCloudProvider) GetAvailableMachineTypes() ([]string, error) {
 // Implementation optional.
 func (provider *OVHCloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string, taints []apiv1.Taint, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
 	ng := &NodeGroup{
-		NodePool: sdk.NodePool{
+		NodePool: &sdk.NodePool{
 			Name:     fmt.Sprintf("%s-%d", machineType, rand.Int63()),
 			Flavor:   machineType,
 			MinNodes: 0,
@@ -314,7 +314,7 @@ func (provider *OVHCloudProvider) Refresh() error {
 	}
 
 	// Update the node pools cache
-	provider.manager.NodePools = pools
+	provider.manager.setNodePoolsState(pools)
 
 	return nil
 }
