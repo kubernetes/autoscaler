@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"slices"
 	"sync"
 	"time"
 
@@ -62,7 +63,7 @@ type OvhCloudManager struct {
 	ClusterID string
 	ProjectID string
 
-	NodePools                  []sdk.NodePool
+	NodePoolsPerID             map[string]*sdk.NodePool
 	NodeGroupPerProviderID     map[string]*NodeGroup
 	NodeGroupPerProviderIDLock sync.RWMutex
 
@@ -148,7 +149,7 @@ func NewManager(configFile io.Reader) (*OvhCloudManager, error) {
 		ProjectID: cfg.ProjectID,
 		ClusterID: cfg.ClusterID,
 
-		NodePools:                  make([]sdk.NodePool, 0),
+		NodePoolsPerID:             make(map[string]*sdk.NodePool),
 		NodeGroupPerProviderID:     make(map[string]*NodeGroup),
 		NodeGroupPerProviderIDLock: sync.RWMutex{},
 
@@ -230,6 +231,40 @@ func (m *OvhCloudManager) ReAuthenticate() error {
 	}
 
 	return nil
+}
+
+// setNodePoolsState updates nodepool local informations based on given list
+// Updates NodePoolsPerID by modifying data so the reference in NodeGroupPerProviderID can access refreshed data
+//
+// - Updates fields on already referenced nodepool
+// - Adds nodepool if not referenced yet
+// - Deletes from map if nodepool is not in the given list (it doesn't exist anymore)
+func (m *OvhCloudManager) setNodePoolsState(pools []sdk.NodePool) {
+	m.NodeGroupPerProviderIDLock.Lock()
+	defer m.NodeGroupPerProviderIDLock.Unlock()
+
+	poolIDsToKeep := []string{}
+	for _, pool := range pools {
+		poolIDsToKeep = append(poolIDsToKeep, pool.ID)
+	}
+
+	// Update nodepools state
+	for _, pool := range pools {
+		poolRef, ok := m.NodePoolsPerID[pool.ID]
+		if ok {
+			*poolRef = pool // Update existing value
+		} else {
+			poolCopy := pool
+			m.NodePoolsPerID[pool.ID] = &poolCopy
+		}
+	}
+
+	// Remove nodepools that doesn't exist anymore
+	for poolID := range m.NodePoolsPerID {
+		if !slices.Contains(poolIDsToKeep, poolID) {
+			delete(m.NodePoolsPerID, poolID)
+		}
+	}
 }
 
 // readConfig read cloud provider configuration file into a struct
