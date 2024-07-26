@@ -569,7 +569,7 @@ Provisioning Request (abbr. ProvReq) is a new namespaced Custom Resource that ai
 1. **Cluster Autoscaler Version**: Ensure you are using Cluster Autoscaler version 1.30.1 or later.
 
 2. **Feature Flag**: Enable ProvisioningRequest support by setting the following flag in your Cluster Autoscaler configuration:
-`--enable-provisioning-reques=true`.
+`--enable-provisioning-requests=true`.
 
 3. **Content Type**: This feature requires that the [API content type flag](https://github.com/kubernetes/autoscaler/blob/522c6fcc06c8cf663175ba03549773cc66a02837/cluster-autoscaler/main.go#L114) is set to application/json: `--kube-api-content-type application/json`.
 
