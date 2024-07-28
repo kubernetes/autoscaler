@@ -154,6 +154,7 @@ func TestGetNodePoolNodes(t *testing.T) {
 		{
 			Id: "node6",
 			Status: &cloudprovider.InstanceStatus{
+				State: cloudprovider.InstanceCreating,
 				ErrorInfo: &cloudprovider.InstanceErrorInfo{
 					ErrorClass:   cloudprovider.OtherErrorClass,
 					ErrorCode:    "unknown",
@@ -164,6 +165,7 @@ func TestGetNodePoolNodes(t *testing.T) {
 		{
 			Id: "node7",
 			Status: &cloudprovider.InstanceStatus{
+				State: cloudprovider.InstanceCreating,
 				ErrorInfo: &cloudprovider.InstanceErrorInfo{
 					ErrorClass:   cloudprovider.OutOfResourcesErrorClass,
 					ErrorCode:    "LimitExceeded",
@@ -174,6 +176,7 @@ func TestGetNodePoolNodes(t *testing.T) {
 		{
 			Id: "node8",
 			Status: &cloudprovider.InstanceStatus{
+				State: cloudprovider.InstanceCreating,
 				ErrorInfo: &cloudprovider.InstanceErrorInfo{
 					ErrorClass:   cloudprovider.OutOfResourcesErrorClass,
 					ErrorCode:    "InternalServerError",
