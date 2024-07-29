@@ -452,7 +452,7 @@ func (m *azureCache) HasInstance(providerID string) (bool, error) {
 	}
 	// couldn't find instance in the cache, assume its deleted
 	klog.V(4).Infof("HasInstance: Couldn't find instance %s in cache, assuming it's deleted", inst.Name)
-	return false, nil
+	return false, cloudprovider.ErrNotImplemented
 }
 
 // FindForInstance returns node group of the given Instance
