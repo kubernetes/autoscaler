@@ -27,7 +27,6 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/Azure/skewer"
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 
 	"k8s.io/klog/v2"
@@ -97,7 +96,6 @@ type azureCache struct {
 
 	autoscalingOptions map[azureRef]map[string]string
 	skus               map[string]*skewer.Cache
-	registeredAKSPoolNames sets.Set[string]
 }
 
 func newAzureCache(client *azClient, cacheTTL time.Duration, config Config) (*azureCache, error) {
@@ -115,7 +113,6 @@ func newAzureCache(client *azClient, cacheTTL time.Duration, config Config) (*az
 		unownedInstances:     make(map[azureRef]bool),
 		autoscalingOptions:   make(map[azureRef]map[string]string),
 		skus:                 make(map[string]*skewer.Cache),
-		registeredAKSPoolNames: make(sets.Set[string]),
 	}
 
 	if config.EnableDynamicInstanceList {
@@ -163,9 +160,7 @@ func (m *azureCache) regenerate() error {
 
 	// Regenerate instance to node groups mapping.
 	newInstanceToNodeGroupCache := make(map[azureRef]cloudprovider.NodeGroup)
-	registeredNodeGroupIDs := sets.New[string]()
 	for _, ng := range m.registeredNodeGroups {
-		registeredNodeGroupIDs.Insert(strings.ToLower(ng.Id()))
 		klog.V(4).Infof("regenerate: finding nodes for node group %s", ng.Id())
 		instances, err := ng.Nodes()
 		if err != nil {
@@ -203,7 +198,6 @@ func (m *azureCache) regenerate() error {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	m.registeredAKSPoolNames = registeredNodeGroupIDs
 	m.instanceToNodeGroup = newInstanceToNodeGroupCache
 	m.autoscalingOptions = newAutoscalingOptions
 	m.skus = newSkuCache
@@ -405,7 +399,6 @@ func (m *azureCache) getAutoscalingOptions(ref azureRef) map[string]string {
 
 // HasInstance returns if a given instance exists in the azure cache
 func (m *azureCache) HasInstance(providerID string) (bool, error) {
-	vmsPoolSet := m.getVMsPoolSet()
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 	resourceID, err := convertResourceGroupNameToLower(providerID)
@@ -416,21 +409,7 @@ func (m *azureCache) HasInstance(providerID string) (bool, error) {
 		return false, err
 	}
 
-	nodeGroupNameForNode := getVMSSNameFromProviderID(providerID)
 	inst := azureRef{Name: resourceID}
-	klog.V(4).Infof("HasInstance: Checking instance %s", inst.Name)
-	if m.unownedInstances[inst] || (m.vmType == vmTypeVMSS && len(vmsPoolSet) == 0 && !m.registeredAKSPoolNames.Has(nodeGroupNameForNode)) {
-		return false, cloudprovider.ErrNotImplemented
-	}
-
-	if unowned, err := m.isUnownedInstance(inst, ""); unowned || err != nil {
-		return false, cloudprovider.ErrNotImplemented
-	}
-
-	if invalid, err := m.isInvalidVMType(inst, m.vmType, vmsPoolSet); invalid || err != nil {
-		return false, cloudprovider.ErrNotImplemented
-	}
-
 	if nodeGroup := m.getInstanceFromCache(inst.Name); nodeGroup != nil {
 		return true, nil
 	}
