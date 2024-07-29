@@ -447,7 +447,7 @@ func (m *azureCache) HasInstance(providerID string) (bool, error) {
 	}
 
 	if nodeGroup := m.getInstanceFromCache(inst.Name); nodeGroup != nil {
-		klog.V(4).Infof("FindForInstance: found node group %q in cache", nodeGroup.Id())
+		klog.V(4).Infof("HasInstance: found node group %q in cache", nodeGroup.Id())
 		return true, nil
 	}
 	// couldn't find instance in the cache, assume its deleted

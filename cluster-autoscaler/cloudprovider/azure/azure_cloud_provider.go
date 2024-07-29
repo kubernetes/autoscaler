@@ -143,7 +143,7 @@ func (azure *AzureCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
 	}
 
 	if !strings.HasPrefix(node.Spec.ProviderID, "azure://") {
-		return false, fmt.Errorf("invalid azure ProviderID prefix for node: %v, skipped", node.Name)
+		return false, fmt.Errorf("invalid azure ProviderID prefix for node: %s, skipped", node.Name)
 	}
 	return azure.azureManager.azureCache.HasInstance(node.Spec.ProviderID)
 }
