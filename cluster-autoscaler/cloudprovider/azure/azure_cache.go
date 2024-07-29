@@ -432,26 +432,21 @@ func (m *azureCache) HasInstance(providerID string) (bool, error) {
 	inst := azureRef{Name: resourceID}
 	klog.V(4).Infof("HasInstance: Checking instance %s", inst.Name)
 	if m.unownedInstances[inst] || (m.vmType == vmTypeVMSS && len(vmsPoolSet) == 0 && !m.registeredAKSPoolNames.Has(nodeGroupNameForNode)) {
-		klog.V(4).Infof("HasInstance: Instance %s is unowned", inst.Name)
 		return false, cloudprovider.ErrNotImplemented
 	}
 
 	if unowned, err := m.isUnownedInstance(inst, ""); unowned || err != nil {
-		klog.V(4).Infof("HasInstance: Instance %s is unowned or error occurred: %v", inst.Name, err)
 		return false, cloudprovider.ErrNotImplemented
 	}
 
 	if invalid, err := m.isInvalidVMType(inst, m.vmType, vmsPoolSet); invalid || err != nil {
-		klog.V(4).Infof("HasInstance: Instance %s is invalid VM type or error occurred: %v", inst.Name, err)
 		return false, cloudprovider.ErrNotImplemented
 	}
 
 	if nodeGroup := m.getInstanceFromCache(inst.Name); nodeGroup != nil {
-		klog.V(4).Infof("HasInstance: found node group %q in cache", nodeGroup.Id())
 		return true, nil
 	}
 	// couldn't find instance in the cache, assume its deleted
-	klog.V(4).Infof("HasInstance: Couldn't find instance %s in cache, assuming it's deleted", inst.Name)
 	return false, cloudprovider.ErrNotImplemented
 }
 
