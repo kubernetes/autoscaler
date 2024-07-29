@@ -214,18 +214,6 @@ func (m *azureCache) regenerate() error {
 	return nil
 }
 
-func extractAKSManagedPoolNameFromTags(vmssTags map[string]*string) string {
-	for key, val := range vmssTags {
-		if val == nil {
-			continue
-		}
-		if key == agentpoolNameTag {
-			return *val
-		}
-	}
-	return ""
-}
-
 // fetchAzureResources retrieves and updates the cached Azure resources.
 //
 // This function performs the following:
