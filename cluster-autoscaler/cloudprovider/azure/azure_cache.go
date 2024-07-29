@@ -177,7 +177,6 @@ func (m *azureCache) regenerate() error {
 	// Regenerate VMSS to autoscaling options mapping.
 	newAutoscalingOptions := make(map[azureRef]map[string]string)
 	for _, vmss := range m.scaleSets {
-		// Check if the nodegroup is registered. If it is, lets store the managedPoolName
 		ref := azureRef{Name: *vmss.Name}
 		options := extractAutoscalingOptionsFromScaleSetTags(vmss.Tags)
 		if !reflect.DeepEqual(m.getAutoscalingOptions(ref), options) {
