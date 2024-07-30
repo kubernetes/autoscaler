@@ -228,7 +228,6 @@ func (agentPool *VMsPool) scaleUpToCount(count int64) error {
 		return err
 	}
 
-	klog.V(1).Infof("Scaling up vms pool %s to new target count: %d", agentPool.Name, count)
 	poller, err := agentPool.manager.azClient.agentPoolClient.BeginCreateOrUpdate(
 		updateCtx,
 		agentPool.clusterResourceGroup,
@@ -247,10 +246,8 @@ func (agentPool *VMsPool) scaleUpToCount(count int64) error {
 
 	if _, err = poller.PollUntilDone(updateCtx, nil); err == nil {
 		// success path
-		klog.Infof("agentPoolClient.BeginCreateOrUpdate for aks cluster %s agentpool %s succeeded", agentPool.clusterName, agentPool.Name)
 		agentPool.curSize = count
 		agentPool.lastSizeRefresh = time.Now()
-		klog.V(6).Infof("setVMsPoolNodeCount: invalidating cache, new size %d", count)
 		agentPool.manager.invalidateCache()
 		return nil
 	}
@@ -270,7 +267,6 @@ func (agentPool *VMsPool) DeleteNodes(nodes []*apiv1.Node) error {
 
 	// if the target size is smaller than the min size, return an error
 	if int(currentSize) <= agentPool.MinSize() {
-		klog.V(3).Infof("min size %d reached, nodes will not be deleted", agentPool.MinSize())
 		return fmt.Errorf("min size %d reached, nodes will not be deleted", agentPool.MinSize())
 	}
 
@@ -308,7 +304,7 @@ func (agentPool *VMsPool) scaleDownNodes(providerIDs []string) error {
 	for i, providerID := range providerIDs {
 		// extract the machine name from the providerID by splitting the providerID by '/' and get the last element
 		// The providerID look like this:
-		// "azure:///subscriptions/feb5b150-60fe-4441-be73-8c02a524f55a/resourceGroups/mc_wxrg_play-vms_eastus/providers/Microsoft.Compute/virtualMachines/aks-nodes-32301838-vms0"
+		// "azure:///subscriptions/0000000-0000-0000-0000-00000000000/resourceGroups/mc_wxrg_play-vms_eastus/providers/Microsoft.Compute/virtualMachines/aks-nodes-32301838-vms0"
 		providerIDParts := strings.Split(providerID, "/")
 		machineNames[i] = &providerIDParts[len(providerIDParts)-1]
 	}
@@ -334,8 +330,6 @@ func (agentPool *VMsPool) scaleDownNodes(providerIDs []string) error {
 	updateCtx, cancel := getContextWithTimeout(updateRequestContextTimeout)
 	defer cancel()
 	if _, err = poller.PollUntilDone(updateCtx, nil); err == nil {
-		klog.Infof("agentPoolClient.BeginDeleteMachines for aks cluster %s agentpool %s succeeded, machine names: %s",
-			agentPool.clusterName, agentPool.Name, providerIDs)
 		return nil
 	}
 
