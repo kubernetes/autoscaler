@@ -31,6 +31,7 @@ const (
 	failedToBuildConfigErr       = "Failed to build config"
 	failedToParseK8sUrlErr       = "Failed to parse Kubernetes url"
 	failedToBuildClientConfigErr = "Failed to build Kubernetes client configuration"
+	failedToFindInClusterConfigErr = "Failed to find in-cluster config"
 )
 
 // CreateKubeClient creates kube client based on AutoscalingOptions.KubeClientOptions
@@ -63,7 +64,7 @@ func GetKubeConfig(opts config.KubeClientOptions) *rest.Config {
 	}	else {
 		kubeConfig, err = rest.InClusterConfig()
 		if err != nil {
-			klog.Fatalf("%v: %v", failedToBuildConfigErr, err)
+			klog.Fatalf("%v: %v", failedToFindInClusterConfigErr, err)
 		}
 	}
 	kubeConfig.QPS = opts.KubeClientQPS
