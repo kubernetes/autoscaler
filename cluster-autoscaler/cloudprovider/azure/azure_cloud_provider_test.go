@@ -186,7 +186,7 @@ func TestHasInstance(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestStaticVMSSNodesAreNotCountedTowardBeingDeleted(t *testing.T) {
+func TestUnownedInstancesFallbackToDeletionTaint(t *testing.T) {
 	// VMSS Instances that belong to a VMSS on the cluster but do not belong to a registered ASG
 	// should return err unimplemented for HasInstance
 	ctrl := gomock.NewController(t)
