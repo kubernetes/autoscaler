@@ -35,13 +35,22 @@ type HealthCheck struct {
 }
 
 // NewHealthCheck builds new HealthCheck object with given timeout.
-func NewHealthCheck(activityTimeout time.Duration, checkTimeout bool) *HealthCheck {
+func NewHealthCheck(activityTimeout time.Duration) *HealthCheck {
 	return &HealthCheck{
 		activityTimeout: activityTimeout,
-		checkTimeout:    checkTimeout,
+		checkTimeout:    false,
 		lastActivity:    time.Now(),
 		mutex:           &sync.Mutex{},
 	}
+}
+
+// StartMonitoring activates checks for the component inactivity.
+func (hc *HealthCheck) StartMonitoring() {
+	hc.mutex.Lock()
+	defer hc.mutex.Unlock()
+
+	hc.checkTimeout = true
+	hc.lastActivity = time.Now()
 }
 
 // checkLastActivity returns true if the last activity was too long ago, with duration from it.

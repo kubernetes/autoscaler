@@ -150,7 +150,7 @@ func GetControllingVPAForPod(pod *core.Pod, vpas []*VpaWithSelector, ctrlFetcher
 	}
 	parentController, err := ctrlFetcher.FindTopMostWellKnownOrScalable(k)
 	if err != nil {
-		klog.Errorf("fail to get pod controller: pod=%s err=%s", pod.Name, err.Error())
+		klog.Errorf("fail to get pod controller: pod=%s err=%s", klog.KObj(pod), err.Error())
 		return nil
 	}
 	if parentController == nil {
@@ -231,7 +231,7 @@ func CreateOrUpdateVpaCheckpoint(vpaCheckpointClient vpa_api.VerticalPodAutoscal
 		_, err = vpaCheckpointClient.Create(context.TODO(), vpaCheckpoint, meta.CreateOptions{})
 	}
 	if err != nil {
-		return fmt.Errorf("Cannot save checkpoint for vpa %v container %v. Reason: %+v", vpaCheckpoint.ObjectMeta.Name, vpaCheckpoint.Spec.ContainerName, err)
+		return fmt.Errorf("Cannot save checkpoint for vpa %s/%s container %s. Reason: %+v", vpaCheckpoint.Namespace, vpaCheckpoint.Name, vpaCheckpoint.Spec.ContainerName, err)
 	}
 	return nil
 }

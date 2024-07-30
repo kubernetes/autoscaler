@@ -1199,17 +1199,17 @@ func (csr *ClusterStateRegistry) buildInstanceToErrorCodeMappings(instances []cl
 	return
 }
 
-// GetCreatedNodesWithErrors returns list of nodes being created which reported create error.
-func (csr *ClusterStateRegistry) GetCreatedNodesWithErrors() []*apiv1.Node {
+// GetCreatedNodesWithErrors returns a map from node group id to list of nodes which reported a create error.
+func (csr *ClusterStateRegistry) GetCreatedNodesWithErrors() map[string][]*apiv1.Node {
 	csr.Lock()
 	defer csr.Unlock()
 
-	nodesWithCreateErrors := make([]*apiv1.Node, 0, 0)
-	for _, nodeGroupInstances := range csr.cloudProviderNodeInstances {
+	nodesWithCreateErrors := make(map[string][]*apiv1.Node)
+	for nodeGroupId, nodeGroupInstances := range csr.cloudProviderNodeInstances {
 		_, _, instancesByErrorCode := csr.buildInstanceToErrorCodeMappings(nodeGroupInstances)
 		for _, instances := range instancesByErrorCode {
 			for _, instance := range instances {
-				nodesWithCreateErrors = append(nodesWithCreateErrors, FakeNode(instance, cloudprovider.FakeNodeCreateError))
+				nodesWithCreateErrors[nodeGroupId] = append(nodesWithCreateErrors[nodeGroupId], FakeNode(instance, cloudprovider.FakeNodeCreateError))
 			}
 		}
 	}

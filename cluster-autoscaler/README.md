@@ -90,12 +90,12 @@ target ETA and the actual releases.
 
 | Date       | Maintainer Preparing Release | Backup Maintainer | Type  |
 |------------|------------------------------|-------------------|-------|
-| 2024-01-17 | MaciekPytel                  | gjtempleton       | patch |
-| 2024-03-13 | gjtempleton                  | BigDarkClown      | patch |
-| 2024-04-17 | towca                        | BigDarkClown      | 1.30  |
-| 2024-05-22 | BigDarkClown                 | x13n              | patch |
-| 2024-07-24 | x13n                         | MaciekPytel       | patch |
+| 2024-07-18 | x13n                         | MaciekPytel       | patch |
 | 2024-08-21 | MaciekPytel                  | gjtempleton       | 1.31  |
+| 2024-09-18 | gjtempleton                  | towca             | patch |
+| 2024-11-20 | towca                        | BigDarkClown      | patch |
+| 2024-12-18 | BigDarkClown                 | x13n              | 1.32  |
+| 2025-01-22 | x13n                         | MaciekPytel       | patch |
 
 Additional patch releases may happen outside of the schedule in case of critical
 bugs or vulnerabilities.

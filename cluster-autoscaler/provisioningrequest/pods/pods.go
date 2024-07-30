@@ -23,15 +23,17 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1beta1"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
+	corev1 "k8s.io/kubernetes/pkg/apis/core/v1"
 	"k8s.io/kubernetes/pkg/controller"
 )
 
 const (
-	// ProvisioningRequestPodAnnotationKey is a key used to annotate pods consuming provisioning request.
-	ProvisioningRequestPodAnnotationKey = "cluster-autoscaler.kubernetes.io/consume-provisioning-request"
-	// ProvisioningClassPodAnnotationKey is a key used to add annotation about Provisioning Class
-	ProvisioningClassPodAnnotationKey = "cluster-autoscaler.kubernetes.io/provisioning-class-name"
+	// DeprecatedProvisioningRequestPodAnnotationKey is a key used to annotate pods consuming provisioning request.
+	DeprecatedProvisioningRequestPodAnnotationKey = "cluster-autoscaler.kubernetes.io/consume-provisioning-request"
+	// DeprecatedProvisioningClassPodAnnotationKey is a key used to add annotation about Provisioning Class
+	DeprecatedProvisioningClassPodAnnotationKey = "cluster-autoscaler.kubernetes.io/provisioning-class-name"
 )
 
 // PodsForProvisioningRequest returns a list of pods for which Provisioning
@@ -52,6 +54,7 @@ func PodsForProvisioningRequest(pr *provreqwrapper.ProvisioningRequest) ([]*v1.P
 				return nil, fmt.Errorf("while creating pod for pr: %s/%s podSet: %d, got error: %w", pr.Namespace, pr.Name, i, err)
 			}
 			populatePodFields(pr, pod, i, j)
+			corev1.SetDefaults_Pod(pod)
 			pods = append(pods, pod)
 		}
 	}
@@ -77,8 +80,8 @@ func populatePodFields(pr *provreqwrapper.ProvisioningRequest, pod *v1.Pod, i, j
 	if pod.Annotations == nil {
 		pod.Annotations = make(map[string]string)
 	}
-	pod.Annotations[ProvisioningRequestPodAnnotationKey] = pr.Name
-	pod.Annotations[ProvisioningClassPodAnnotationKey] = pr.Spec.ProvisioningClassName
+	pod.Annotations[v1beta1.ProvisioningRequestPodAnnotationKey] = pr.Name
+	pod.Annotations[v1beta1.ProvisioningClassPodAnnotationKey] = pr.Spec.ProvisioningClassName
 	pod.UID = types.UID(fmt.Sprintf("%s/%s", pod.Namespace, pod.Name))
 	pod.CreationTimestamp = pr.CreationTimestamp
 }

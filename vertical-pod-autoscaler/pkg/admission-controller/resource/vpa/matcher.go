@@ -62,7 +62,7 @@ func (m *matcher) GetMatchingVPA(pod *core.Pod) *vpa_types.VerticalPodAutoscaler
 		}
 		selector, err := m.selectorFetcher.Fetch(vpaConfig)
 		if err != nil {
-			klog.V(3).Infof("skipping VPA object %v because we cannot fetch selector: %s", vpaConfig.Name, err)
+			klog.V(3).Infof("skipping VPA object %s because we cannot fetch selector: %s", klog.KObj(vpaConfig), err)
 			continue
 		}
 		onConfigs = append(onConfigs, &vpa_api_util.VpaWithSelector{
@@ -70,7 +70,7 @@ func (m *matcher) GetMatchingVPA(pod *core.Pod) *vpa_types.VerticalPodAutoscaler
 			Selector: selector,
 		})
 	}
-	klog.V(2).Infof("Let's choose from %d configs for pod %s/%s", len(onConfigs), pod.Namespace, pod.Name)
+	klog.V(2).Infof("Let's choose from %d configs for pod %s", len(onConfigs), klog.KObj(pod))
 	result := vpa_api_util.GetControllingVPAForPod(pod, onConfigs, m.controllerFetcher)
 	if result != nil {
 		return result.Vpa

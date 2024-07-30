@@ -37,7 +37,7 @@ import (
 	"k8s.io/client-go/util/workqueue"
 
 	apiv1 "k8s.io/api/core/v1"
-	provider_gce "k8s.io/legacy-cloud-providers/gce"
+	provider_gce "k8s.io/cloud-provider-gcp/providers/gce"
 
 	"cloud.google.com/go/compute/metadata"
 	"golang.org/x/oauth2"
@@ -128,7 +128,7 @@ type gceManagerImpl struct {
 // CreateGceManager constructs GceManager object.
 func CreateGceManager(configReader io.Reader, discoveryOpts cloudprovider.NodeGroupDiscoveryOptions,
 	localSSDDiskSizeProvider localssdsize.LocalSSDSizeProvider,
-	regional bool, concurrentGceRefreshes int, userAgent, domainUrl string, migInstancesMinRefreshWaitTime time.Duration) (GceManager, error) {
+	regional, bulkGceMigInstancesListingEnabled bool, concurrentGceRefreshes int, userAgent, domainUrl string, migInstancesMinRefreshWaitTime time.Duration) (GceManager, error) {
 	// Create Google Compute Engine token.
 	var err error
 	tokenSource := google.ComputeTokenSource("")
@@ -188,7 +188,7 @@ func CreateGceManager(configReader io.Reader, discoveryOpts cloudprovider.NodeGr
 		cache:                    cache,
 		GceService:               gceService,
 		migLister:                migLister,
-		migInfoProvider:          NewCachingMigInfoProvider(cache, migLister, gceService, projectId, concurrentGceRefreshes, migInstancesMinRefreshWaitTime),
+		migInfoProvider:          NewCachingMigInfoProvider(cache, migLister, gceService, projectId, concurrentGceRefreshes, migInstancesMinRefreshWaitTime, bulkGceMigInstancesListingEnabled),
 		location:                 location,
 		regional:                 regional,
 		projectId:                projectId,
@@ -277,6 +277,7 @@ func (m *gceManagerImpl) DeleteInstances(instances []GceRef) error {
 		}
 	}
 	m.cache.InvalidateMigTargetSize(commonMig.GceRef())
+	m.cache.InvalidateMigInstances(commonMig.GceRef())
 	return m.GceService.DeleteInstances(commonMig.GceRef(), instances)
 }
 

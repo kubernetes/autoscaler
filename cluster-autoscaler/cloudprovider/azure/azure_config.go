@@ -56,6 +56,9 @@ const (
 	rateLimitWriteQPSEnvVar             = "RATE_LIMIT_WRITE_QPS"
 	rateLimitWriteBucketsEnvVar         = "RATE_LIMIT_WRITE_BUCKETS"
 
+	// VmssSizeRefreshPeriodDefault in seconds
+	VmssSizeRefreshPeriodDefault = 30
+
 	// auth methods
 	authMethodPrincipal = "principal"
 	authMethodCLI       = "cli"
@@ -127,6 +130,9 @@ type Config struct {
 
 	// Jitter in seconds subtracted from the VMSS cache TTL before the first refresh
 	VmssVmsCacheJitter int `json:"vmssVmsCacheJitter" yaml:"vmssVmsCacheJitter"`
+
+	// GetVmssSizeRefreshPeriod (seconds) defines how frequently to call GET VMSS API to fetch VMSS info per nodegroup instance
+	GetVmssSizeRefreshPeriod int `json:"getVmssSizeRefreshPeriod" yaml:"getVmssSizeRefreshPeriod"`
 
 	// number of latest deployments that will not be deleted
 	MaxDeploymentsCount int64 `json:"maxDeploymentsCount" yaml:"maxDeploymentsCount"`
@@ -254,6 +260,15 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 			}
 		} else {
 			cfg.EnableDynamicInstanceList = dynamicInstanceListDefault
+		}
+
+		if getVmssSizeRefreshPeriod := os.Getenv("AZURE_GET_VMSS_SIZE_REFRESH_PERIOD"); getVmssSizeRefreshPeriod != "" {
+			cfg.GetVmssSizeRefreshPeriod, err = strconv.Atoi(getVmssSizeRefreshPeriod)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse AZURE_GET_VMSS_SIZE_REFRESH_PERIOD %q: %v", getVmssSizeRefreshPeriod, err)
+			}
+		} else {
+			cfg.GetVmssSizeRefreshPeriod = VmssSizeRefreshPeriodDefault
 		}
 
 		if enableVmssFlex := os.Getenv("AZURE_ENABLE_VMSS_FLEX"); enableVmssFlex != "" {

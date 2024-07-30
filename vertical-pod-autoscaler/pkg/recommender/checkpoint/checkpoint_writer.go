@@ -64,7 +64,7 @@ func getVpasToCheckpoint(clusterVpas map[model.VpaID]*model.Vpa) []*model.Vpa {
 	vpas := make([]*model.Vpa, 0, len(clusterVpas))
 	for _, vpa := range clusterVpas {
 		if isFetchingHistory(vpa) {
-			klog.V(3).Infof("VPA %s/%s is loading history, skipping checkpoints", vpa.ID.Namespace, vpa.ID.VpaName)
+			klog.V(3).Infof("VPA %s is loading history, skipping checkpoints", klog.KRef(vpa.ID.Namespace, vpa.ID.VpaName))
 			continue
 		}
 		vpas = append(vpas, vpa)
@@ -94,7 +94,7 @@ func (writer *checkpointWriter) StoreCheckpoints(ctx context.Context, now time.T
 		for container, aggregatedContainerState := range aggregateContainerStateMap {
 			containerCheckpoint, err := aggregatedContainerState.SaveToCheckpoint()
 			if err != nil {
-				klog.Errorf("Cannot serialize checkpoint for vpa %v container %v. Reason: %+v", vpa.ID.VpaName, container, err)
+				klog.Errorf("Cannot serialize checkpoint for vpa %s/%s container %v. Reason: %+v", vpa.ID.Namespace, vpa.ID.VpaName, container, err)
 				continue
 			}
 			checkpointName := fmt.Sprintf("%s-%s", vpa.ID.VpaName, container)

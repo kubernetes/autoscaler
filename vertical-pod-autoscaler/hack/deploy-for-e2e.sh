@@ -68,7 +68,7 @@ gcloud auth configure-docker -q
 
 for i in ${COMPONENTS}; do
   if [ $i == admission-controller ] ; then
-    (cd ${SCRIPT_ROOT}/pkg/${i} && bash ./gencerts.sh || true)
+    (cd ${SCRIPT_ROOT}/pkg/${i} && bash ./gencerts.sh e2e || true)
   fi
   ALL_ARCHITECTURES=amd64 make --directory ${SCRIPT_ROOT}/pkg/${i} release
 done
