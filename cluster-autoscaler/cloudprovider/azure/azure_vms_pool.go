@@ -305,8 +305,11 @@ func (agentPool *VMsPool) scaleDownNodes(providerIDs []string) error {
 		// extract the machine name from the providerID by splitting the providerID by '/' and get the last element
 		// The providerID look like this:
 		// "azure:///subscriptions/0000000-0000-0000-0000-00000000000/resourceGroups/mc_wxrg_play-vms_eastus/providers/Microsoft.Compute/virtualMachines/aks-nodes-32301838-vms0"
-		providerIDParts := strings.Split(providerID, "/")
-		machineNames[i] = &providerIDParts[len(providerIDParts)-1]
+		machineName, err := resourceName(providerID)
+		if err != nil {
+			return err
+		}
+		machineNames[i] = &machineName
 	}
 
 	requestBody := armcontainerservice.AgentPoolDeleteMachinesParameter{
