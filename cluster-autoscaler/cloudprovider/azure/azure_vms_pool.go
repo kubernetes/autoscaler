@@ -22,7 +22,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v4"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v5"
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
 	"github.com/Azure/go-autorest/autorest/to"
 
@@ -204,12 +204,20 @@ func (agentPool *VMsPool) buildRequestBodyForScaleUp(count int64) (armcontainers
 		if len(versionedAP.Properties.VirtualMachinesProfile.Scale.Manual) > 0 {
 			// set the count for first manual scale profile to the new target value
 			virtualMachineProfile := *versionedAP.Properties.VirtualMachinesProfile
-			versionedAP.Properties.VirtualMachinesProfile.Scale.Manual[0].Count = to.Int32Ptr(int32(count))
+			virtualMachineProfile.Scale.Manual[0].Count = to.Int32Ptr(int32(count))
 			requestBody.Properties.VirtualMachinesProfile = &virtualMachineProfile
 			return requestBody, nil
 		}
-		// aks-managed CAS will be using AutoscaleProfile
-		// TODO(wenxuan): support AutoscaleProfile once it become available with the new API release
+
+		// aks-managed CAS will be using Auto scale Profile
+		if len(versionedAP.Properties.VirtualMachinesProfile.Scale.Autoscale) > 0 {
+			// set the MinCount and MaxCount for first AutoscaleProfile to the new target value
+			virtualMachineProfile := *versionedAP.Properties.VirtualMachinesProfile
+			virtualMachineProfile.Scale.Autoscale[0].MinCount = to.Int32Ptr(int32(count))
+			virtualMachineProfile.Scale.Autoscale[0].MaxCount = to.Int32Ptr(int32(count))
+			requestBody.Properties.VirtualMachinesProfile = &virtualMachineProfile
+			return requestBody, nil
+		}
 	}
 	return armcontainerservice.AgentPool{}, fmt.Errorf("failed to build request body for scale up, agentpool doesn't have valid virtualMachinesProfile")
 }
