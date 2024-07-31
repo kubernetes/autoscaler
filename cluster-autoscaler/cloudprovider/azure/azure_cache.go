@@ -408,8 +408,7 @@ func (m *azureCache) HasInstance(providerID string) (bool, error) {
 		return false, err
 	}
 
-	inst := azureRef{Name: resourceID}
-	if nodeGroup := m.getInstanceFromCache(inst.Name); nodeGroup != nil {
+	if m.getInstanceFromCache(resourceID) != nil {
 		return true, nil
 	}
 	// couldn't find instance in the cache, assume its deleted
