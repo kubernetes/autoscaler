@@ -378,7 +378,7 @@ func (agentPool *VMsPool) DecreaseTargetSize(delta int) error {
 	if err != nil {
 		klog.Warningf("DecreaseTargetSize: failed with error: %v", err)
 	}
-	return nil
+	return err
 }
 
 // Id returns the name of the agentPool
