@@ -18,13 +18,13 @@ package provider
 
 import (
 	"context"
-	"fmt"
 
+	"sigs.k8s.io/cloud-provider-azure/pkg/azclient"
+	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/mock_azclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/provider/config"
 
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/tools/record"
 
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/diskclient/mockdiskclient"
@@ -41,10 +41,7 @@ import (
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssclient/mockvmssclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssvmclient/mockvmssvmclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/consts"
-)
-
-var (
-	errPreconditionFailedEtagMismatch = fmt.Errorf("PreconditionFailedEtagMismatch")
+	utilsets "sigs.k8s.io/cloud-provider-azure/pkg/util/sets"
 )
 
 // NewTestScaleSet creates a fake ScaleSet for unit test
@@ -77,8 +74,11 @@ func GetTestCloud(ctrl *gomock.Controller) (az *Cloud) {
 	az = &Cloud{
 		Config: Config{
 			AzureAuthConfig: config.AzureAuthConfig{
-				TenantID:       "tenant",
-				SubscriptionID: "subscription",
+				ARMClientConfig: azclient.ARMClientConfig{
+					TenantID: "TenantID",
+				},
+				AzureAuthConfig: azclient.AzureAuthConfig{},
+				SubscriptionID:  "subscription",
 			},
 			ResourceGroup:                            "rg",
 			VnetResourceGroup:                        "rg",
@@ -96,14 +96,15 @@ func GetTestCloud(ctrl *gomock.Controller) (az *Cloud) {
 			VMType:                                   consts.VMTypeStandard,
 			LoadBalancerBackendPoolConfigurationType: consts.LoadBalancerBackendPoolConfigurationTypeNodeIPConfiguration,
 		},
-		nodeZones:                map[string]sets.Set[string]{},
+		nodeZones:                map[string]*utilsets.IgnoreCaseSet{},
 		nodeInformerSynced:       func() bool { return true },
 		nodeResourceGroups:       map[string]string{},
-		unmanagedNodes:           sets.New[string](),
-		excludeLoadBalancerNodes: sets.New[string](),
-		nodePrivateIPs:           map[string]sets.Set[string]{},
+		unmanagedNodes:           utilsets.NewString(),
+		excludeLoadBalancerNodes: utilsets.NewString(),
+		nodePrivateIPs:           map[string]*utilsets.IgnoreCaseSet{},
 		routeCIDRs:               map[string]string{},
 		eventRecorder:            &record.FakeRecorder{},
+		lockMap:                  newLockMap(),
 	}
 	az.DisksClient = mockdiskclient.NewMockInterface(ctrl)
 	az.SnapshotsClient = mocksnapshotclient.NewMockInterface(ctrl)
@@ -118,6 +119,7 @@ func GetTestCloud(ctrl *gomock.Controller) (az *Cloud) {
 	az.VirtualMachineScaleSetVMsClient = mockvmssvmclient.NewMockInterface(ctrl)
 	az.VirtualMachinesClient = mockvmclient.NewMockInterface(ctrl)
 	az.PrivateLinkServiceClient = mockprivatelinkserviceclient.NewMockInterface(ctrl)
+	az.ComputeClientFactory = mock_azclient.NewMockClientFactory(ctrl)
 	az.VMSet, _ = newAvailabilitySet(az)
 	az.vmCache, _ = az.newVMCache()
 	az.lbCache, _ = az.newLBCache()
@@ -127,8 +129,6 @@ func GetTestCloud(ctrl *gomock.Controller) (az *Cloud) {
 	az.plsCache, _ = az.newPLSCache()
 	az.LoadBalancerBackendPool = NewMockBackendPool(ctrl)
 	az.storageAccountCache, _ = az.newStorageAccountCache()
-
-	_ = initDiskControllers(az)
 
 	az.regionZonesMap = map[string][]string{az.Location: {"1", "2", "3"}}
 

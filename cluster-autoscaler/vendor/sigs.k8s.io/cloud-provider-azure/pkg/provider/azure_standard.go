@@ -38,10 +38,12 @@ import (
 	cloudprovider "k8s.io/cloud-provider"
 	"k8s.io/klog/v2"
 	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 
 	azcache "sigs.k8s.io/cloud-provider-azure/pkg/cache"
 	"sigs.k8s.io/cloud-provider-azure/pkg/consts"
 	"sigs.k8s.io/cloud-provider-azure/pkg/metrics"
+	vmutil "sigs.k8s.io/cloud-provider-azure/pkg/util/vm"
 )
 
 var (
@@ -52,14 +54,6 @@ var (
 	nicIDRE            = regexp.MustCompile(`(?i)/subscriptions/(?:.*)/resourceGroups/(.+)/providers/Microsoft.Network/networkInterfaces/(.+)/ipConfigurations/(?:.*)`)
 	vmIDRE             = regexp.MustCompile(`(?i)/subscriptions/(?:.*)/resourceGroups/(?:.*)/providers/Microsoft.Compute/virtualMachines/(.+)`)
 	vmasIDRE           = regexp.MustCompile(`/subscriptions/(?:.*)/resourceGroups/(?:.*)/providers/Microsoft.Compute/availabilitySets/(.+)`)
-)
-
-const (
-	v6Suffix = "IPv6"
-)
-
-var (
-	v6SuffixLower = strings.ToLower(v6Suffix)
 )
 
 // returns the full identifier of an availabilitySet
@@ -129,7 +123,7 @@ func (az *Cloud) getNetworkResourceSubscriptionID() string {
 }
 
 func (az *Cloud) mapLoadBalancerNameToVMSet(lbName string, clusterName string) (vmSetName string) {
-	vmSetName = strings.TrimSuffix(lbName, consts.InternalLoadBalancerNameSuffix)
+	vmSetName = trimSuffixIgnoreCase(lbName, consts.InternalLoadBalancerNameSuffix)
 	if strings.EqualFold(clusterName, vmSetName) {
 		vmSetName = az.VMSet.GetPrimaryVMSetName()
 	}
@@ -254,10 +248,6 @@ func getIPConfigByIPFamily(nic network.Interface, IPv6 bool) (*network.Interface
 	return nil, fmt.Errorf("failed to determine the ipconfig(IPv6=%v). nicname=%q", IPv6, pointer.StringDeref(nic.Name, ""))
 }
 
-func isInternalLoadBalancer(lb *network.LoadBalancer) bool {
-	return strings.HasSuffix(*lb.Name, consts.InternalLoadBalancerNameSuffix)
-}
-
 // getBackendPoolName the LB BackendPool name for a service.
 // to ensure backward and forward compat:
 // SingleStack -v4 (pre v1.16) => BackendPool name == clusterName
@@ -270,7 +260,7 @@ func isInternalLoadBalancer(lb *network.LoadBalancer) bool {
 // clusters moving from IPv6 to dualstack will require no changes as the IPv4 backend pool will created with <clusterName>
 func getBackendPoolName(clusterName string, isIPv6 bool) string {
 	if isIPv6 {
-		return fmt.Sprintf("%s-%s", clusterName, v6Suffix)
+		return fmt.Sprintf("%s-%s", clusterName, consts.IPVersionIPv6String)
 	}
 
 	return clusterName
@@ -290,7 +280,7 @@ func isBackendPoolIPv6(name string) bool {
 }
 
 func managedResourceHasIPv6Suffix(name string) bool {
-	return strings.HasSuffix(strings.ToLower(name), fmt.Sprintf("-%s", v6SuffixLower))
+	return strings.HasSuffix(strings.ToLower(name), fmt.Sprintf("-%s", consts.IPVersionIPv6StringLower))
 }
 
 func (az *Cloud) getLoadBalancerRuleName(service *v1.Service, protocol v1.Protocol, port int32, isIPv6 bool) string {
@@ -350,13 +340,14 @@ func (az *Cloud) getPublicIPName(clusterName string, service *v1.Service, isIPv6
 			pipName = fmt.Sprintf("%s-%s", pipName, id)
 		}
 	}
-	return getResourceByIPFamily(pipName, isDualStack, isIPv6), nil
-}
 
-// TODO: UT
-func (az *Cloud) serviceOwnsRule(service *v1.Service, rule string) bool {
-	prefix := az.getRulePrefix(service)
-	return strings.HasPrefix(strings.ToUpper(rule), strings.ToUpper(prefix))
+	pipNameSegment := pipName
+	maxLength := consts.PIPPrefixNameMaxLength - consts.IPFamilySuffixLength
+	if len(pipName) > maxLength {
+		pipNameSegment = pipNameSegment[:maxLength]
+		klog.V(6).Infof("original PIP name is lengthy %q, truncate it to %q", pipName, pipNameSegment)
+	}
+	return getResourceByIPFamily(pipNameSegment, isDualStack, isIPv6), nil
 }
 
 func publicIPOwnsFrontendIP(service *v1.Service, fip *network.FrontendIPConfiguration, pip *network.PublicIPAddress) bool {
@@ -512,19 +503,13 @@ func (as *availabilitySet) GetPowerStatusByNodeName(name string) (powerState str
 		return powerState, err
 	}
 
-	if vm.InstanceView != nil && vm.InstanceView.Statuses != nil {
-		statuses := *vm.InstanceView.Statuses
-		for _, status := range statuses {
-			state := pointer.StringDeref(status.Code, "")
-			if strings.HasPrefix(state, vmPowerStatePrefix) {
-				return strings.TrimPrefix(state, vmPowerStatePrefix), nil
-			}
-		}
+	if vm.InstanceView != nil {
+		return vmutil.GetVMPowerState(ptr.Deref(vm.Name, ""), vm.InstanceView.Statuses), nil
 	}
 
 	// vm.InstanceView or vm.InstanceView.Statuses are nil when the VM is under deleting.
-	klog.V(3).Infof("InstanceView for node %q is nil, assuming it's stopped", name)
-	return vmPowerStateStopped, nil
+	klog.V(3).Infof("InstanceView for node %q is nil, assuming it's deleting", name)
+	return consts.VMPowerStateUnknown, nil
 }
 
 // GetProvisioningStateByNodeName returns the provisioningState for the specified node.
@@ -998,7 +983,7 @@ func (as *availabilitySet) EnsureHostsInPool(service *v1.Service, nodes []*v1.No
 
 // EnsureBackendPoolDeleted ensures the loadBalancer backendAddressPools deleted from the specified nodes.
 // backendPoolIDs are the IDs of the backendpools to be deleted.
-func (as *availabilitySet) EnsureBackendPoolDeleted(service *v1.Service, backendPoolIDs []string, vmSetName string, backendAddressPools *[]network.BackendAddressPool, deleteFromVMSet bool) (bool, error) {
+func (as *availabilitySet) EnsureBackendPoolDeleted(service *v1.Service, backendPoolIDs []string, vmSetName string, backendAddressPools *[]network.BackendAddressPool, _ bool) (bool, error) {
 	// Returns nil if backend address pools already deleted.
 	if backendAddressPools == nil {
 		return false, nil
@@ -1290,7 +1275,7 @@ func (as *availabilitySet) GetNodeCIDRMasksByProviderID(providerID string) (int,
 }
 
 // EnsureBackendPoolDeletedFromVMSets ensures the loadBalancer backendAddressPools deleted from the specified VMAS
-func (as *availabilitySet) EnsureBackendPoolDeletedFromVMSets(vmasNamesMap map[string]bool, backendPoolIDs []string) error {
+func (as *availabilitySet) EnsureBackendPoolDeletedFromVMSets(_ map[string]bool, _ []string) error {
 	return nil
 }
 

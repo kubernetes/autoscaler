@@ -105,6 +105,7 @@ func TestInitializeCloudProviderRateLimitConfigWithReadAndWriteRateLimitAlreadyS
 	assert.Equal(t, configWithRateLimits.CloudProviderRateLimitBucketWrite, rateLimitWriteBuckets)
 }
 
+// nolint: goconst
 func TestInitializeCloudProviderRateLimitConfigWithInvalidReadAndWriteRateLimitSettingsFromEnv(t *testing.T) {
 	emptyConfig := &CloudProviderRateLimitConfig{}
 	var rateLimitReadQPS float32 = 3.0

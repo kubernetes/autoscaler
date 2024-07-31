@@ -509,42 +509,15 @@ func (c *Client) updateVMSSVMs(ctx context.Context, resourceGroupName string, VM
 	}
 
 	responses := c.armClient.PutResourcesInBatches(ctx, resources, batchSize)
-	errors := make([]*retry.Error, 0)
-	for resourceID, resp := range responses {
-		if resp == nil {
-			continue
+	errors, retryIDs := c.parseResp(ctx, responses, true)
+	if len(retryIDs) > 0 {
+		retryResources := make(map[string]interface{})
+		for _, id := range retryIDs {
+			retryResources[id] = resources[id]
 		}
-
-		defer c.armClient.CloseResponse(ctx, resp.Response)
-		if resp.Error != nil {
-			klog.V(5).Infof("Received error in %s: resourceID: %s, error: %s", "vmssvm.put.request", resourceID, resp.Error.Error())
-
-			errMsg := resp.Error.Error().Error()
-			if strings.Contains(errMsg, consts.VmssVMNotActiveErrorMessage) {
-				klog.V(2).Infof("VMSS VM %s is not active, skip updating it.", resourceID)
-				continue
-			}
-			if strings.Contains(errMsg, consts.ParentResourceNotFoundMessageCode) {
-				klog.V(2).Info("The parent resource of VMSS VM %s is not found, skip updating it.", resourceID)
-				continue
-			}
-			if strings.Contains(errMsg, consts.CannotUpdateVMBeingDeletedMessagePrefix) &&
-				strings.Contains(errMsg, consts.CannotUpdateVMBeingDeletedMessageSuffix) {
-				klog.V(2).Infof("The VM %s is being deleted, skip updating it.", resourceID)
-				continue
-			}
-
-			errors = append(errors, resp.Error)
-			continue
-		}
-
-		if resp.Response != nil && resp.Response.StatusCode != http.StatusNoContent {
-			_, rerr := c.updateResponder(resp.Response)
-			if rerr != nil {
-				klog.V(5).Infof("Received error in %s: resourceID: %s, error: %s", "vmssvm.put.respond", resourceID, rerr.Error())
-				errors = append(errors, rerr)
-			}
-		}
+		resps := c.armClient.PutResourcesInBatches(ctx, retryResources, batchSize)
+		errs, _ := c.parseResp(ctx, resps, false)
+		errors = append(errors, errs...)
 	}
 
 	// Aggregate errors.
@@ -567,4 +540,65 @@ func (c *Client) updateVMSSVMs(ctx context.Context, resourceGroupName string, VM
 	}
 
 	return nil
+}
+
+func (c *Client) parseResp(
+	ctx context.Context,
+	responses map[string]*armclient.PutResourcesResponse,
+	shouldRetry bool,
+) ([]*retry.Error, []string) {
+	var (
+		errors   []*retry.Error
+		retryIDs []string
+	)
+	for resourceID, resp := range responses {
+		if resp == nil {
+			continue
+		}
+
+		defer c.armClient.CloseResponse(ctx, resp.Response)
+		if resp.Error != nil {
+			klog.V(5).Infof("Received error in %s: resourceID: %s, error: %s", "vmssvm.put.request", resourceID, resp.Error.Error())
+
+			errMsg := resp.Error.Error().Error()
+			if strings.Contains(errMsg, consts.VmssVMNotActiveErrorMessage) {
+				klog.V(2).Infof("VMSS VM %s is not active, skip updating it.", resourceID)
+				continue
+			}
+			if strings.Contains(errMsg, consts.ParentResourceNotFoundMessageCode) {
+				klog.V(2).Infof("The parent resource of VMSS VM %s is not found, skip updating it.", resourceID)
+				continue
+			}
+			if strings.Contains(errMsg, consts.CannotUpdateVMBeingDeletedMessagePrefix) &&
+				strings.Contains(errMsg, consts.CannotUpdateVMBeingDeletedMessageSuffix) {
+				klog.V(2).Infof("The VM %s is being deleted, skip updating it.", resourceID)
+				continue
+			}
+
+			if retry.IsSuccessHTTPResponse(resp.Response) &&
+				strings.Contains(
+					strings.ToLower(errMsg),
+					strings.ToLower(consts.OperationPreemptedErrorMessage),
+				) {
+				if shouldRetry {
+					klog.V(2).Infof("The operation on VM %s is preempted, will retry.", resourceID)
+					retryIDs = append(retryIDs, resourceID)
+					continue
+				}
+				klog.V(2).Infof("The operation on VM %s is preempted, will not retry.", resourceID)
+			}
+
+			errors = append(errors, resp.Error)
+			continue
+		}
+
+		if resp.Response != nil && resp.Response.StatusCode != http.StatusNoContent {
+			_, rerr := c.updateResponder(resp.Response)
+			if rerr != nil {
+				klog.V(5).Infof("Received error in %s: resourceID: %s, error: %s", "vmssvm.put.respond", resourceID, rerr.Error())
+				errors = append(errors, rerr)
+			}
+		}
+	}
+	return errors, retryIDs
 }
