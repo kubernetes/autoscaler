@@ -415,6 +415,7 @@ func (m *azureCache) HasInstance(providerID string) (bool, error) {
 	return false, cloudprovider.ErrNotImplemented
 }
 
+
 // FindForInstance returns node group of the given Instance
 func (m *azureCache) FindForInstance(instance *azureRef, vmType string) (cloudprovider.NodeGroup, error) {
 	vmsPoolSet := m.getVMsPoolSet()
@@ -428,13 +429,32 @@ func (m *azureCache) FindForInstance(instance *azureRef, vmType string) (cloudpr
 		return nil, err
 	}
 	inst := azureRef{Name: resourceID}
-
-	if unowned, err := m.isUnownedInstance(inst, ""); unowned || err != nil {
-		return nil, err
+	if m.unownedInstances[inst] {
+		// We already know we don't own this instance. Return early and avoid
+		// additional calls.
+		klog.V(4).Infof("FindForInstance: Couldn't find NodeGroup of instance %q", inst)
+		return nil, nil
 	}
 
-	if invalid, err := m.isInvalidVMType(inst, vmType, vmsPoolSet); invalid || err != nil {
-		return nil, err
+	// cluster with vmss pool only
+	if vmType == vmTypeVMSS && len(vmsPoolSet) == 0 {
+		if m.areAllScaleSetsUniform() {
+			// Omit virtual machines not managed by vmss only in case of uniform scale set.
+			if ok := virtualMachineRE.Match([]byte(inst.Name)); ok {
+				klog.V(3).Infof("Instance %q is not managed by vmss, omit it in autoscaler", instance.Name)
+				m.unownedInstances[inst] = true
+				return nil, nil
+			}
+		}
+	}
+
+	if vmType == vmTypeStandard {
+		// Omit virtual machines with providerID not in Azure resource ID format.
+		if ok := virtualMachineRE.Match([]byte(inst.Name)); !ok {
+			klog.V(3).Infof("Instance %q is not in Azure resource ID format, omit it in autoscaler", instance.Name)
+			m.unownedInstances[inst] = true
+			return nil, nil
+		}
 	}
 
 	// Look up caches for the instance.
@@ -445,43 +465,6 @@ func (m *azureCache) FindForInstance(instance *azureRef, vmType string) (cloudpr
 	}
 	klog.V(4).Infof("FindForInstance: Couldn't find node group of instance %q", inst)
 	return nil, nil
-}
-
-func (m *azureCache) isUnownedInstance(inst azureRef, reason string) (bool, error) {
-	if m.unownedInstances[inst] {
-		// We already know we don't own this instance. Return early and avoid additional calls.
-		klog.V(4).Infof("FindForInstance: Couldn't find NodeGroup of instance %q", inst)
-		return true, nil
-	}
-
-	if reason != "" {
-		klog.V(3).Infof("Instance %q %s, omit it in autoscaler", inst.Name, reason)
-		m.unownedInstances[inst] = true
-		return true, nil
-	}
-
-	return false, nil
-}
-
-func (m *azureCache) isInvalidVMType(inst azureRef, vmType string, vmsPoolSet map[string]struct{}) (bool, error) {
-	if vmType == vmTypeVMSS && len(vmsPoolSet) == 0 {
-		if m.areAllScaleSetsUniform() {
-			// Omit virtual machines not managed by vmss only in case of uniform scale set.
-			if ok := virtualMachineRE.Match([]byte(inst.Name)); ok {
-				return m.isUnownedInstance(inst, "is not managed by vmss")
-			}
-		}
-	}
-
-	// TODO: unify providerID validation
-	if vmType == vmTypeStandard {
-		// Omit virtual machines with providerID not in Azure resource ID format.
-		if ok := virtualMachineRE.Match([]byte(inst.Name)); !ok {
-			return m.isUnownedInstance(inst, "is not in Azure resource ID format")
-		}
-	}
-
-	return false, nil
 }
 
 // isAllScaleSetsAreUniform determines if all the scale set autoscaler is monitoring are Uniform or not.
