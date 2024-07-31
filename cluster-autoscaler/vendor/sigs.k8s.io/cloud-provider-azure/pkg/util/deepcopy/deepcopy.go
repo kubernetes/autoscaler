@@ -66,12 +66,12 @@ func copyNormal(src interface{}) interface{} {
 
 	to := reflect.New(from.Type()).Elem()
 
-	copy(from, to)
+	copyCustomimpl(from, to)
 
 	return to.Interface()
 }
 
-func copy(from, to reflect.Value) {
+func copyCustomimpl(from, to reflect.Value) {
 	// Check if DeepCopy() is already implemented for the interface
 	if from.CanInterface() {
 		if deepcopy, ok := from.Interface().(deepCopyInterface); ok {
@@ -88,7 +88,7 @@ func copy(from, to reflect.Value) {
 		}
 
 		to.Set(reflect.New(fromValue.Type()))
-		copy(fromValue, to.Elem())
+		copyCustomimpl(fromValue, to.Elem())
 
 	case reflect.Interface:
 		if from.IsNil() {
@@ -97,7 +97,7 @@ func copy(from, to reflect.Value) {
 
 		fromValue := from.Elem()
 		toValue := reflect.New(fromValue.Type()).Elem()
-		copy(fromValue, toValue)
+		copyCustomimpl(fromValue, toValue)
 		to.Set(toValue)
 
 	case reflect.Struct:
@@ -106,7 +106,7 @@ func copy(from, to reflect.Value) {
 				// It is an unexported field.
 				continue
 			}
-			copy(from.Field(i), to.Field(i))
+			copyCustomimpl(from.Field(i), to.Field(i))
 		}
 
 	case reflect.Slice:
@@ -116,7 +116,7 @@ func copy(from, to reflect.Value) {
 
 		to.Set(reflect.MakeSlice(from.Type(), from.Len(), from.Cap()))
 		for i := 0; i < from.Len(); i++ {
-			copy(from.Index(i), to.Index(i))
+			copyCustomimpl(from.Index(i), to.Index(i))
 		}
 
 	case reflect.Map:
@@ -128,7 +128,7 @@ func copy(from, to reflect.Value) {
 		for _, key := range from.MapKeys() {
 			fromValue := from.MapIndex(key)
 			toValue := reflect.New(fromValue.Type()).Elem()
-			copy(fromValue, toValue)
+			copyCustomimpl(fromValue, toValue)
 			copiedKey := Copy(key.Interface())
 			to.SetMapIndex(reflect.ValueOf(copiedKey), toValue)
 		}

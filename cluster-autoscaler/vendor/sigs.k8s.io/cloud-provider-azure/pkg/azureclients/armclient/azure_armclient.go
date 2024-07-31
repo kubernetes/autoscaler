@@ -187,7 +187,7 @@ func NormalizeAzureRegion(name string) string {
 }
 
 // Send sends a http request to ARM service with possible retry to regional ARM endpoint.
-func (c *Client) Send(ctx context.Context, request *http.Request, decorators ...autorest.SendDecorator) (*http.Response, *retry.Error) {
+func (c *Client) Send(_ context.Context, request *http.Request, decorators ...autorest.SendDecorator) (*http.Response, *retry.Error) {
 	response, err := autorest.SendWithSender(
 		c.client,
 		request,
@@ -286,7 +286,7 @@ func (c *Client) WaitForAsyncOperationCompletion(ctx context.Context, future *az
 }
 
 // WaitForAsyncOperationResult waits for an operation result.
-func (c *Client) WaitForAsyncOperationResult(ctx context.Context, future *azure.Future, asyncOperationName string) (*http.Response, error) {
+func (c *Client) WaitForAsyncOperationResult(ctx context.Context, future *azure.Future, _ string) (*http.Response, error) {
 	if err := future.WaitForCompletionRef(ctx, c.client); err != nil {
 		klog.V(5).Infof("Received error in WaitForAsyncOperationCompletion: '%v'", err)
 		return nil, err
@@ -439,7 +439,7 @@ func (c *Client) PutResourcesInBatches(ctx context.Context, resources map[string
 	}
 
 	if batchSize > len(resources) {
-		klog.V(4).Infof("PutResourcesInBatches: batch size %d, but the number of the resources is %d", batchSize, resources)
+		klog.V(4).Infof("PutResourcesInBatches: batch size %d, but the number of the resources is %d", batchSize, len(resources))
 		batchSize = len(resources)
 	}
 	klog.V(4).Infof("PutResourcesInBatches: send sync requests in parallel with the batch size %d", batchSize)
@@ -577,7 +577,7 @@ func (c *Client) PostResource(ctx context.Context, resourceID, action string, pa
 }
 
 // DeleteResource deletes a resource by resource ID
-func (c *Client) DeleteResource(ctx context.Context, resourceID string, decorators ...autorest.PrepareDecorator) *retry.Error {
+func (c *Client) DeleteResource(ctx context.Context, resourceID string, _ ...autorest.PrepareDecorator) *retry.Error {
 	future, clientErr := c.DeleteResourceAsync(ctx, resourceID)
 	if clientErr != nil {
 		klog.V(5).Infof("Received error in %s: resourceID: %s, error: %s", "delete.request", resourceID, clientErr.Error())
@@ -650,7 +650,7 @@ func (c *Client) DeleteResourceAsync(ctx context.Context, resourceID string, dec
 }
 
 // CloseResponse closes a response
-func (c *Client) CloseResponse(ctx context.Context, response *http.Response) {
+func (c *Client) CloseResponse(_ context.Context, response *http.Response) {
 	if response != nil && response.Body != nil {
 		if err := response.Body.Close(); err != nil {
 			klog.Errorf("Error closing the response body: %v", err)

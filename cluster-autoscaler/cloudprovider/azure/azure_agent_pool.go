@@ -163,7 +163,7 @@ func (as *AgentPool) GetVMIndexes() ([]int, map[int]string, error) {
 		}
 
 		indexes = append(indexes, index)
-		resourceID, err := convertResourceGroupNameToLower("azure://" + *instance.ID)
+		resourceID, err := convertResourceGroupNameToLower(azurePrefix + *instance.ID)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -484,7 +484,7 @@ func (as *AgentPool) Nodes() ([]cloudprovider.Instance, error) {
 
 		// To keep consistent with providerID from kubernetes cloud provider, convert
 		// resourceGroupName in the ID to lower case.
-		resourceID, err := convertResourceGroupNameToLower("azure://" + *instance.ID)
+		resourceID, err := convertResourceGroupNameToLower(azurePrefix + *instance.ID)
 		if err != nil {
 			return nil, err
 		}

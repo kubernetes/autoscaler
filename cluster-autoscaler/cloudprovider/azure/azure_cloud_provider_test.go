@@ -30,20 +30,20 @@ import (
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssvmclient/mockvmssvmclient"
 
 	"github.com/Azure/go-autorest/autorest/azure"
-	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 )
 
 func newTestAzureManager(t *testing.T) *AzureManager {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	expectedScaleSets := newTestVMSSList(3, "test-vmss", "eastus", compute.Uniform)
+	expectedScaleSets := newTestVMSSList(3, "test-asg", "eastus", compute.Uniform)
 	expectedVMSSVMs := newTestVMSSVMList(3)
 	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
 	mockVMSSClient.EXPECT().List(gomock.Any(), "rg").Return(expectedScaleSets, nil).AnyTimes()
 	mockVMSSVMClient := mockvmssvmclient.NewMockInterface(ctrl)
-	mockVMSSVMClient.EXPECT().List(gomock.Any(), "rg", "test-vmss", gomock.Any()).Return(expectedVMSSVMs, nil).AnyTimes()
+	mockVMSSVMClient.EXPECT().List(gomock.Any(), "rg", "test-asg", gomock.Any()).Return(expectedVMSSVMs, nil).AnyTimes()
 	mockVMClient := mockvmclient.NewMockInterface(ctrl)
 	expectedVMs := newTestVMList(3)
 	mockVMClient.EXPECT().List(gomock.Any(), "rg").Return(expectedVMs, nil).AnyTimes()
@@ -56,6 +56,7 @@ func newTestAzureManager(t *testing.T) *AzureManager {
 			VMType:              vmTypeVMSS,
 			MaxDeploymentsCount: 2,
 			Deployment:          "deployment",
+			Location:            "eastus",
 		},
 		azClient: &azClient{
 			virtualMachineScaleSetsClient:   mockVMSSClient,
@@ -81,7 +82,7 @@ func newTestAzureManager(t *testing.T) *AzureManager {
 		},
 	}
 
-	cache, error := newAzureCache(manager.azClient, refreshInterval, manager.config.ResourceGroup, vmTypeVMSS, false, "")
+	cache, error := newAzureCache(manager.azClient, refreshInterval, *manager.config)
 	assert.NoError(t, error)
 
 	manager.azureCache = cache
@@ -192,7 +193,6 @@ func TestNodeGroupForNode(t *testing.T) {
 	expectedVMs := newTestVMList(3)
 
 	for _, orchMode := range orchestrationModes {
-
 		expectedScaleSets := newTestVMSSList(3, "test-asg", "eastus", orchMode)
 		provider := newTestProvider(t)
 		mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
@@ -203,7 +203,6 @@ func TestNodeGroupForNode(t *testing.T) {
 		mockVMClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return(expectedVMs, nil).AnyTimes()
 
 		if orchMode == compute.Uniform {
-
 			mockVMSSVMClient := mockvmssvmclient.NewMockInterface(ctrl)
 			mockVMSSVMClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup, "test-asg", gomock.Any()).Return(expectedVMSSVMs, nil).AnyTimes()
 			provider.azureManager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
@@ -211,11 +210,12 @@ func TestNodeGroupForNode(t *testing.T) {
 
 			provider.azureManager.config.EnableVmssFlex = true
 			mockVMClient.EXPECT().ListVmssFlexVMsWithoutInstanceView(gomock.Any(), "test-asg").Return(expectedVMs, nil).AnyTimes()
+			provider.azureManager.azClient.virtualMachinesClient = mockVMClient
 		}
 
 		registered := provider.azureManager.RegisterNodeGroup(
-			newTestScaleSet(provider.azureManager, "test-asg"))
-		provider.azureManager.explicitlyConfigured["test-asg"] = true
+			newTestScaleSet(provider.azureManager, testASG))
+		provider.azureManager.explicitlyConfigured[testASG] = true
 		assert.True(t, registered)
 		assert.Equal(t, len(provider.NodeGroups()), 1)
 
@@ -225,21 +225,20 @@ func TestNodeGroupForNode(t *testing.T) {
 		group, err := provider.NodeGroupForNode(node)
 		assert.NoError(t, err)
 		assert.NotNil(t, group, "Group should not be nil")
-		assert.Equal(t, group.Id(), "test-asg")
+		assert.Equal(t, group.Id(), testASG)
 		assert.Equal(t, group.MinSize(), 1)
 		assert.Equal(t, group.MaxSize(), 5)
 
 		// test node in cluster that is not in a group managed by cluster autoscaler
 		nodeNotInGroup := &apiv1.Node{
 			Spec: apiv1.NodeSpec{
-				ProviderID: "azure:///subscriptions/subscripion/resourceGroups/test-resource-group/providers/Microsoft.Compute/virtualMachines/test-instance-id-not-in-group",
+				ProviderID: azurePrefix + "/subscriptions/subscripion/resourceGroups/test-resource-group/providers/Microsoft.Compute/virtualMachines/test-instance-id-not-in-group",
 			},
 		}
 		group, err = provider.NodeGroupForNode(nodeNotInGroup)
 		assert.NoError(t, err)
 		assert.Nil(t, group)
 	}
-
 }
 
 func TestNodeGroupForNodeWithNoProviderId(t *testing.T) {
