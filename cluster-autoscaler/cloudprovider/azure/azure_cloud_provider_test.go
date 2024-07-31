@@ -203,9 +203,6 @@ func TestUnownedInstancesFallbackToDeletionTaint(t *testing.T) {
 	unregisteredVMSSInstance := &apiv1.Node{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "unregistered-vmss-node",
-			Labels: map[string]string{
-				azureAgentpoolKey: "unregistered-nodepool",
-			},
 		},
 		Spec: apiv1.NodeSpec{
 			ProviderID: "azure:///subscriptions/sub/resourceGroups/rg/providers/Microsoft.Compute/virtualMachineScaleSets/unregistered-vmss-instance-id/virtualMachines/0",
@@ -355,13 +352,12 @@ func TestNodeGroupForNode(t *testing.T) {
 			assert.Equal(t, group.MinSize(), 1)
 			assert.Equal(t, group.MaxSize(), 5)
 
+			hasInstance, err := provider.HasInstance(node)
+			assert.True(t, hasInstance)
+			assert.NoError(t,err)
+
 			// test node in cluster that is not in a group managed by cluster autoscaler
 			nodeNotInGroup := &apiv1.Node{
-				ObjectMeta: metav1.ObjectMeta{
-					Labels: map[string]string{
-						azureAgentpoolKey: "unregistered-friend",
-					},
-				},
 				Spec: apiv1.NodeSpec{
 					ProviderID: "azure:///subscriptions/subscription/resourceGroups/test-resource-group/providers/Microsoft.Compute/virtualMachineScaleSets/test/virtualMachines/test-instance-id-not-in-group",
 				},
@@ -370,7 +366,7 @@ func TestNodeGroupForNode(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Nil(t, group)
 
-			hasInstance, err := provider.HasInstance(nodeNotInGroup)
+			hasInstance, err = provider.HasInstance(nodeNotInGroup)
 			assert.False(t, hasInstance)
 			assert.Error(t, err)
 			assert.Equal(t, err, cloudprovider.ErrNotImplemented)

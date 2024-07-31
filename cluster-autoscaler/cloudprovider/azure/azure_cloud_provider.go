@@ -35,8 +35,6 @@ const (
 	// GPULabel is the label added to nodes with GPU resource.
 	GPULabel       = AKSLabelKeyPrefixValue + "accelerator"
 	legacyGPULabel = "accelerator"
-
-	azureAgentpoolKey = "kubernetes.azure.com/agentpool"
 )
 
 var (

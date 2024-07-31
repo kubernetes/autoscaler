@@ -637,12 +637,3 @@ func vmPowerStateFromStatuses(statuses []compute.InstanceViewStatus) string {
 	return vmPowerStateUnknown
 }
 
-func getVMSSNameFromProviderID(providerID string) string {
-	parts := strings.Split(providerID, "/")
-	for i, part := range parts {
-		if part == "virtualMachineScaleSets" && i+1 < len(parts) {
-			return parts[i+1]
-		}
-	}
-	return ""
-}
