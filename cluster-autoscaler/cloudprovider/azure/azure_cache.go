@@ -39,35 +39,72 @@ var (
 // azureCache is used for caching cluster resources state.
 //
 // It is needed to:
-// - keep track of node groups (VM and VMSS types) in the cluster,
-// - keep track of instances and which node group they belong to,
-// - limit repetitive Azure API calls.
+//   - keep track of node groups (VM and VMSS types) in the cluster,
+//   - keep track of instances and which node group they belong to,
+//     (for VMSS it only keeps track of instanceid-to-nodegroup mapping)
+//   - limit repetitive Azure API calls.
+//
+// It backs efficient responds to
+//   - cloudprovider.NodeGroups() (= registeredNodeGroups)
+//   - cloudprovider.NodeGroupForNode (via azureManager.GetNodeGroupForInstance => FindForInstance,
+//     using instanceToNodeGroup and unownedInstances)
+//
+// CloudProvider.Refresh, called before every autoscaler loop (every 10s by defaul),
+// is implemented by AzureManager.Refresh which makes the cache refresh decision,
+// based on AzureManager.lastRefresh and azureCache.refreshInterval.
 type azureCache struct {
-	mutex           sync.Mutex
-	interrupt       chan struct{}
-	azClient        *azClient
+	mutex     sync.Mutex
+	interrupt chan struct{}
+	azClient  *azClient
+
+	// refreshInterval specifies how often azureCache needs to be refreshed.
+	// The value comes from AZURE_VMSS_CACHE_TTL env var (or 1min if not specified),
+	// and is also used by some other caches. Together with AzureManager.lastRefresh,
+	// it is uses to decide whether a refresh is needed.
 	refreshInterval time.Duration
 
 	// Cache content.
-	resourceGroup        string
-	vmType               string
-	vmsPoolSet           map[string]struct{} // track the nodepools that're vms pool
-	scaleSets            map[string]compute.VirtualMachineScaleSet
-	virtualMachines      map[string][]compute.VirtualMachine
+
+	// resourceGroup specifies the name of the resource group that this cache tracks
+	resourceGroup string
+
+	// vmType can be one of vmTypeVMSS (default), vmTypeStandard
+	vmType string
+
+	vmsPoolSet map[string]struct{} // track the nodepools that're vms pool
+
+	// scaleSets keeps the set of all known scalesets in the resource group, populated/refreshed via VMSS.List() call.
+	// It is only used/populated if vmType is vmTypeVMSS (default).
+	scaleSets map[string]compute.VirtualMachineScaleSet
+	// virtualMachines keeps the set of all VMs in the resource group.
+	// It is only used/populated if vmType is vmTypeStandard.
+	virtualMachines map[string][]compute.VirtualMachine
+
+	// registeredNodeGroups represents all known NodeGroups.
 	registeredNodeGroups []cloudprovider.NodeGroup
-	instanceToNodeGroup  map[azureRef]cloudprovider.NodeGroup
-	unownedInstances     map[azureRef]bool
-	autoscalingOptions   map[azureRef]map[string]string
-	skus                 map[string]*skewer.Cache
+
+	// instanceToNodeGroup maintains a mapping from instance Ids to nodegroups.
+	// It is populated from the results of calling Nodes() on each nodegroup.
+	// It is used (together with unownedInstances) when looking up the nodegroup
+	// for a given instance id (see FindForInstance).
+	instanceToNodeGroup map[azureRef]cloudprovider.NodeGroup
+
+	// unownedInstance maintains a set of instance ids not belonging to any nodegroup.
+	// It is used (together with instanceToNodeGroup) when looking up the nodegroup for a given instance id.
+	// It is reset by invalidateUnownedInstanceCache().
+	unownedInstances map[azureRef]bool
+
+	autoscalingOptions map[azureRef]map[string]string
+	skus               map[string]*skewer.Cache
 }
 
-func newAzureCache(client *azClient, cacheTTL time.Duration, resourceGroup, vmType string, enableDynamicInstanceList bool, defaultLocation string) (*azureCache, error) {
+func newAzureCache(client *azClient, cacheTTL time.Duration, config Config) (*azureCache, error) {
 	cache := &azureCache{
 		interrupt:            make(chan struct{}),
 		azClient:             client,
 		refreshInterval:      cacheTTL,
-		resourceGroup:        resourceGroup,
-		vmType:               vmType,
+		resourceGroup:        config.ResourceGroup,
+		vmType:               config.VMType,
 		vmsPoolSet:           make(map[string]struct{}),
 		scaleSets:            make(map[string]compute.VirtualMachineScaleSet),
 		virtualMachines:      make(map[string][]compute.VirtualMachine),
@@ -78,8 +115,8 @@ func newAzureCache(client *azClient, cacheTTL time.Duration, resourceGroup, vmTy
 		skus:                 make(map[string]*skewer.Cache),
 	}
 
-	if enableDynamicInstanceList {
-		cache.skus[defaultLocation] = &skewer.Cache{}
+	if config.EnableDynamicInstanceList {
+		cache.skus[config.Location] = &skewer.Cache{}
 	}
 
 	if err := cache.regenerate(); err != nil {
@@ -170,26 +207,32 @@ func (m *azureCache) regenerate() error {
 	return nil
 }
 
+// fetchAzureResources retrieves and updates the cached Azure resources.
+//
+// This function performs the following:
+// - Fetches and updates the list of Virtual Machine Scale Sets (VMSS) in the specified resource group.
+// - Fetches and updates the list of Virtual Machines (VMs) and identifies the node pools they belong to.
+// - Maintains a set of VMs pools and VMSS resources which helps the Cluster Autoscaler (CAS) operate on mixed node pools.
+//
+// Returns an error if any of the Azure API calls fail.
 func (m *azureCache) fetchAzureResources() error {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	// fetch all the resources since CAS may be operating on mixed nodepools
-	// including both VMSS and VMs pools
+	// NOTE: this lists virtual machine scale sets, not virtual machine
+	// scale set instances
 	vmssResult, err := m.fetchScaleSets()
-	if err == nil {
-		m.scaleSets = vmssResult
-	} else {
+	if err != nil {
 		return err
 	}
-
+	m.scaleSets = vmssResult
 	vmResult, vmsPoolSet, err := m.fetchVirtualMachines()
-	if err == nil {
-		m.virtualMachines = vmResult
-		m.vmsPoolSet = vmsPoolSet
-	} else {
+	if err != nil {
 		return err
 	}
+	// we fetch both sets of resources since CAS may operate on mixed nodepools
+	m.virtualMachines = vmResult
+	m.vmsPoolSet = vmsPoolSet
 
 	return nil
 }
@@ -238,8 +281,8 @@ func (m *azureCache) fetchVirtualMachines() (map[string][]compute.VirtualMachine
 		}
 
 		// nodes from vms pool will have tag "aks-managed-agentpool-type" set to "VirtualMachines"
-		if agnetpoolType := tags[agentpoolTypeTag]; agnetpoolType != nil {
-			if strings.EqualFold(to.String(agnetpoolType), vmsPoolType) {
+		if agentpoolType := tags[agentpoolTypeTag]; agentpoolType != nil {
+			if strings.EqualFold(to.String(agentpoolType), vmsPoolType) {
 				vmsPoolSet[to.String(vmPoolName)] = struct{}{}
 			}
 		}
@@ -276,7 +319,6 @@ func (m *azureCache) Register(nodeGroup cloudprovider.NodeGroup) bool {
 				// Node group is already registered and min/max size haven't changed, no action required.
 				return false
 			}
-
 			m.registeredNodeGroups[i] = nodeGroup
 			klog.V(4).Infof("Node group %q updated", nodeGroup.Id())
 			m.invalidateUnownedInstanceCache()
@@ -285,6 +327,7 @@ func (m *azureCache) Register(nodeGroup cloudprovider.NodeGroup) bool {
 	}
 
 	klog.V(4).Infof("Registering Node Group %q", nodeGroup.Id())
+
 	m.registeredNodeGroups = append(m.registeredNodeGroups, nodeGroup)
 	m.invalidateUnownedInstanceCache()
 	return true
@@ -351,6 +394,25 @@ func (m *azureCache) getAutoscalingOptions(ref azureRef) map[string]string {
 	defer m.mutex.Unlock()
 
 	return m.autoscalingOptions[ref]
+}
+
+// HasInstance returns if a given instance exists in the azure cache
+func (m *azureCache) HasInstance(providerID string) (bool, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+	resourceID, err := convertResourceGroupNameToLower(providerID)
+	if err != nil {
+		// Most likely an invalid resource id, we should return an error
+		// most of these shouldn't make it here do to higher level
+		// validation in the HasInstance azure.cloudprovider function
+		return false, err
+	}
+
+	if m.getInstanceFromCache(resourceID) != nil {
+		return true, nil
+	}
+	// couldn't find instance in the cache, assume it's deleted
+	return false, cloudprovider.ErrNotImplemented
 }
 
 // FindForInstance returns node group of the given Instance
