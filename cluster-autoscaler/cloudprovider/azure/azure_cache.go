@@ -402,7 +402,7 @@ func (m *azureCache) HasInstance(providerID string) (bool, error) {
 	defer m.mutex.Unlock()
 	resourceID, err := convertResourceGroupNameToLower(providerID)
 	if err != nil {
-		// Most likely an invalid resource id, we should return false
+		// Most likely an invalid resource id, we should return an error
 		// most of these shouldn't make it here do to higher level
 		// validation in the HasInstance azure.cloudprovider function
 		return false, err
