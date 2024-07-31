@@ -32,7 +32,8 @@ import (
 
 const (
 	// GPULabel is the label added to nodes with GPU resource.
-	GPULabel = "accelerator"
+	GPULabel       = AKSLabelKeyPrefixValue + "accelerator"
+	legacyGPULabel = "accelerator"
 )
 
 var (
@@ -73,7 +74,7 @@ func (azure *AzureCloudProvider) Name() string {
 
 // GPULabel returns the label added to nodes with GPU resource.
 func (azure *AzureCloudProvider) GPULabel() string {
-	return GPULabel
+	return legacyGPULabel // Use legacy to avoid breaking, for now
 }
 
 // GetAvailableGPUTypes return all available GPU types cloud provider supports
