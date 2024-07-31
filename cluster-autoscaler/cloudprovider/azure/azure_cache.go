@@ -415,7 +415,6 @@ func (m *azureCache) HasInstance(providerID string) (bool, error) {
 	return false, cloudprovider.ErrNotImplemented
 }
 
-
 // FindForInstance returns node group of the given Instance
 func (m *azureCache) FindForInstance(instance *azureRef, vmType string) (cloudprovider.NodeGroup, error) {
 	vmsPoolSet := m.getVMsPoolSet()

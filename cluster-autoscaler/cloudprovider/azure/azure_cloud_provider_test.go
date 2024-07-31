@@ -354,7 +354,7 @@ func TestNodeGroupForNode(t *testing.T) {
 
 			hasInstance, err := provider.HasInstance(node)
 			assert.True(t, hasInstance)
-			assert.NoError(t,err)
+			assert.NoError(t, err)
 
 			// test node in cluster that is not in a group managed by cluster autoscaler
 			nodeNotInGroup := &apiv1.Node{

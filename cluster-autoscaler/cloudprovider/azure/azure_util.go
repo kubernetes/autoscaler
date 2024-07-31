@@ -636,4 +636,3 @@ func vmPowerStateFromStatuses(statuses []compute.InstanceViewStatus) string {
 	// PowerState is not set if the VM is still creating (or has failed creation)
 	return vmPowerStateUnknown
 }
-
