@@ -22,7 +22,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2021-10-01/containerservice"
+	"github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2021-10-01/containerservice" //nolint SA1019 - deprecated package
 	klog "k8s.io/klog/v2"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -77,17 +77,19 @@ func NewAKSAgentPool(spec *dynamic.NodeGroupSpec, am *AzureManager) (*AKSAgentPo
 	return asg, nil
 }
 
-// GetAKSAgentPool is an internal function which figures out ManagedClusterAgentPoolProfile from the list based on the pool name provided in the --node parameter passed
+// GetAKSAgentPool is an internal function which figures out ManagedClusterAgentPoolProfile from the list based on
+// the pool name provided in the --node parameter passed
 // to the autoscaler main
-func (agentPool *AKSAgentPool) GetAKSAgentPool(agentProfiles *[]containerservice.ManagedClusterAgentPoolProfile) (ret *containerservice.ManagedClusterAgentPoolProfile) {
-	for _, value := range *agentProfiles {
-		profileName := *value.Name
+func (agentPool *AKSAgentPool) GetAKSAgentPool(agentProfiles *[]containerservice.
+	ManagedClusterAgentPoolProfile) (ret *containerservice.ManagedClusterAgentPoolProfile) {
+	profiles := *agentProfiles
+	for i := range profiles {
+		profileName := *profiles[i].Name
 		klog.V(5).Infof("AKS AgentPool profile name: %s", profileName)
 		if strings.EqualFold(profileName, agentPool.azureRef.Name) {
-			return &value
+			return &profiles[i]
 		}
 	}
-
 	return nil
 }
 
@@ -166,14 +168,14 @@ func (agentPool *AKSAgentPool) SetNodeCount(count int) (err error) {
 func (agentPool *AKSAgentPool) GetProviderID(name string) string {
 	//TODO: come with a generic way to make it work with provider id formats
 	// in different version of k8s.
-	return "azure://" + name
+	return azurePrefix + name
 }
 
 // GetName extracts the name of the node (a format which underlying cloud service understands)
 // from the cloud providerID (format which kubernetes understands)
 func (agentPool *AKSAgentPool) GetName(providerID string) (string, error) {
 	// Remove the "azure://" string from it
-	providerID = strings.TrimPrefix(providerID, "azure://")
+	providerID = strings.TrimPrefix(providerID, azurePrefix)
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
 	vms, rerr := agentPool.manager.azClient.virtualMachinesClient.List(ctx, agentPool.nodeResourceGroup)

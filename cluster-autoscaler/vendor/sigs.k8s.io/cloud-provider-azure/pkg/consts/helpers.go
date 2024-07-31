@@ -23,7 +23,6 @@ import (
 	"strings"
 
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/utils/net"
 )
 
 // IsK8sServiceHasHAModeEnabled return if HA Mode is enabled in kubernetes service annotations
@@ -34,10 +33,6 @@ func IsK8sServiceHasHAModeEnabled(service *v1.Service) bool {
 // IsK8sServiceUsingInternalLoadBalancer return if service is using an internal load balancer.
 func IsK8sServiceUsingInternalLoadBalancer(service *v1.Service) bool {
 	return expectAttributeInSvcAnnotationBeEqualTo(service.Annotations, ServiceAnnotationLoadBalancerInternal, TrueAnnotationValue)
-}
-
-func IsK8sServiceInternalIPv6(service *v1.Service) bool {
-	return IsK8sServiceUsingInternalLoadBalancer(service) && net.IsIPv6String(service.Spec.ClusterIP)
 }
 
 // IsK8sServiceDisableLoadBalancerFloatingIP return if floating IP in load balancer is disabled in kubernetes service annotations
@@ -58,6 +53,16 @@ func IsHealthProbeRuleOnK8sServicePortDisabled(annotations map[string]string, po
 // IsHealthProbeRuleOnK8sServicePortDisabled return if port is for health probe only
 func IsLBRuleOnK8sServicePortDisabled(annotations map[string]string, port int32) (bool, error) {
 	return expectAttributeInSvcAnnotationBeEqualTo(annotations, BuildAnnotationKeyForPort(port, PortAnnotationNoLBRule), TrueAnnotationValue), nil
+}
+
+// IsPLSProxyProtocolEnabled return true if ServiceAnnotationPLSProxyProtocol is true
+func IsPLSProxyProtocolEnabled(annotations map[string]string) bool {
+	return expectAttributeInSvcAnnotationBeEqualTo(annotations, ServiceAnnotationPLSProxyProtocol, TrueAnnotationValue)
+}
+
+// IsPLSEnabled return true if ServiceAnnotationPLSCreation is true
+func IsPLSEnabled(annotations map[string]string) bool {
+	return expectAttributeInSvcAnnotationBeEqualTo(annotations, ServiceAnnotationPLSCreation, TrueAnnotationValue)
 }
 
 // Getint32ValueFromK8sSvcAnnotation get health probe configuration for port
@@ -90,10 +95,10 @@ type Int32BusinessValidator func(*int32) error
 // getInt32FromAnnotations parse integer value from annotation and return an reference to int32 object
 func extractInt32FromString(val string, businessValidator ...Int32BusinessValidator) (*int32, error) {
 	val = strings.TrimSpace(val)
-	errKey := fmt.Errorf("%s value must be a whole number", val)
+	errKey := fmt.Sprintf("%s value must be a whole number", val)
 	toInt, err := strconv.ParseInt(val, 10, 32)
 	if err != nil {
-		return nil, fmt.Errorf("error value: %w: %v", err, errKey)
+		return nil, fmt.Errorf("error value: %w: %s", err, errKey)
 	}
 	parsedInt := int32(toInt)
 	for _, validator := range businessValidator {
@@ -131,4 +136,18 @@ func expectAttributeInSvcAnnotationBeEqualTo(annotations map[string]string, key 
 		return strings.EqualFold(*l, value)
 	}
 	return false
+}
+
+// getLoadBalancerConfigurationsNames parse the annotation and return the names of the load balancer configurations.
+func GetLoadBalancerConfigurationsNames(service *v1.Service) []string {
+	var names []string
+	for key, lbConfig := range service.Annotations {
+		if strings.EqualFold(key, ServiceAnnotationLoadBalancerConfigurations) {
+			names = append(names, strings.Split(lbConfig, ",")...)
+		}
+	}
+	for i := range names {
+		names[i] = strings.ToLower(strings.TrimSpace(names[i]))
+	}
+	return names
 }

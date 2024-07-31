@@ -31,7 +31,7 @@ import (
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-03-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
 	"github.com/Azure/go-autorest/autorest/azure"
 )
 
@@ -49,6 +49,8 @@ type ScaleSet struct {
 	minSize int
 	maxSize int
 
+	enableForceDelete bool
+
 	sizeMutex sync.Mutex
 	curSize   int64
 
@@ -63,10 +65,13 @@ type ScaleSet struct {
 	instanceMutex       sync.Mutex
 	instanceCache       []cloudprovider.Instance
 	lastInstanceRefresh time.Time
+
+	// uses Azure Dedicated Host
+	dedicatedHost bool
 }
 
 // NewScaleSet creates a new NewScaleSet.
-func NewScaleSet(spec *dynamic.NodeGroupSpec, az *AzureManager, curSize int64) (*ScaleSet, error) {
+func NewScaleSet(spec *dynamic.NodeGroupSpec, az *AzureManager, curSize int64, dedicatedHost bool) (*ScaleSet, error) {
 	scaleSet := &ScaleSet{
 		azureRef: azureRef{
 			Name: spec.Name,
@@ -78,6 +83,8 @@ func NewScaleSet(spec *dynamic.NodeGroupSpec, az *AzureManager, curSize int64) (
 		sizeRefreshPeriod:         az.azureCache.refreshInterval,
 		enableDynamicInstanceList: az.config.EnableDynamicInstanceList,
 		instancesRefreshJitter:    az.config.VmssVmsCacheJitter,
+		enableForceDelete:         az.config.EnableForceDelete,
+		dedicatedHost:             dedicatedHost,
 	}
 
 	if az.config.VmssVmsCacheTTL != 0 {
@@ -242,6 +249,16 @@ func (scaleSet *ScaleSet) SetScaleSetSize(size int64) error {
 		Sku:      vmssInfo.Sku,
 		Location: vmssInfo.Location,
 	}
+
+	if vmssInfo.ExtendedLocation != nil {
+		op.ExtendedLocation = &compute.ExtendedLocation{
+			Name: vmssInfo.ExtendedLocation.Name,
+			Type: vmssInfo.ExtendedLocation.Type,
+		}
+
+		klog.V(3).Infof("Passing ExtendedLocation information if it is not nil, with Edge Zone name:(%s)", *op.ExtendedLocation.Name)
+	}
+
 	ctx, cancel := getContextWithTimeout(vmssContextTimeout)
 	defer cancel()
 	klog.V(3).Infof("Waiting for virtualMachineScaleSetsClient.CreateOrUpdateAsync(%s)", scaleSet.Name)
@@ -423,8 +440,15 @@ func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef, hasUnregistered
 	resourceGroup := scaleSet.manager.config.ResourceGroup
 
 	scaleSet.instanceMutex.Lock()
-	klog.V(3).Infof("Calling virtualMachineScaleSetsClient.DeleteInstancesAsync(%v)", requiredIds.InstanceIds)
-	future, rerr := scaleSet.manager.azClient.virtualMachineScaleSetsClient.DeleteInstancesAsync(ctx, resourceGroup, commonAsg.Id(), *requiredIds, false)
+	klog.V(3).Infof("Calling virtualMachineScaleSetsClient.DeleteInstancesAsync(%v), force delete set to %v", requiredIds.InstanceIds, scaleSet.enableForceDelete)
+	future, rerr := scaleSet.manager.azClient.virtualMachineScaleSetsClient.DeleteInstancesAsync(ctx, resourceGroup, commonAsg.Id(), *requiredIds, scaleSet.enableForceDelete)
+
+	if scaleSet.enableForceDelete && isOperationNotAllowed(rerr) {
+		klog.Infof("falling back to normal delete for instances %v for %s", requiredIds.InstanceIds, scaleSet.Name)
+		future, rerr = scaleSet.manager.azClient.virtualMachineScaleSetsClient.DeleteInstancesAsync(ctx, resourceGroup,
+			commonAsg.Id(), *requiredIds, false)
+	}
+
 	scaleSet.instanceMutex.Unlock()
 	if rerr != nil {
 		klog.Errorf("virtualMachineScaleSetsClient.DeleteInstancesAsync for instances %v failed: %v", requiredIds.InstanceIds, rerr)
@@ -504,7 +528,7 @@ func (scaleSet *ScaleSet) TemplateNodeInfo() (*schedulerframework.NodeInfo, erro
 		return nil, err
 	}
 
-	node, err := buildNodeFromTemplate(scaleSet.Name, template, scaleSet.manager)
+	node, err := buildNodeFromTemplate(scaleSet.Name, &template, scaleSet.manager, scaleSet.enableDynamicInstanceList)
 	if err != nil {
 		return nil, err
 	}
@@ -683,11 +707,11 @@ func instanceStatusFromProvisioningStateAndPowerState(resourceId string, provisi
 
 	status := &cloudprovider.InstanceStatus{}
 	switch *provisioningState {
-	case string(compute.ProvisioningStateDeleting):
+	case string(compute.GalleryProvisioningStateDeleting):
 		status.State = cloudprovider.InstanceDeleting
-	case string(compute.ProvisioningStateCreating):
+	case string(compute.GalleryProvisioningStateCreating):
 		status.State = cloudprovider.InstanceCreating
-	case string(compute.ProvisioningStateFailed):
+	case string(compute.GalleryProvisioningStateFailed):
 		// Provisioning can fail both during instance creation or after the instance is running.
 		// Per https://learn.microsoft.com/en-us/azure/virtual-machines/states-billing#provisioning-states,
 		// ProvisioningState represents the most recent provisioning state, therefore only report
@@ -731,4 +755,8 @@ func (scaleSet *ScaleSet) getOrchestrationMode() (compute.OrchestrationMode, err
 		return "", err
 	}
 	return vmss.OrchestrationMode, nil
+}
+
+func isOperationNotAllowed(rerr *retry.Error) bool {
+	return rerr != nil && rerr.ServiceErrorCode() == retry.OperationNotAllowed
 }

@@ -31,7 +31,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-03-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
 	azStorage "github.com/Azure/azure-sdk-for-go/storage"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/to"
@@ -44,7 +44,7 @@ import (
 )
 
 const (
-	//Field names
+	// Field names
 	customDataFieldName      = "customData"
 	dependsOnFieldName       = "dependsOn"
 	hardwareProfileFieldName = "hardwareProfile"
@@ -67,16 +67,13 @@ const (
 	nsgID = "nsgID"
 	rtID  = "routeTableID"
 
-	k8sLinuxVMNamingFormat         = "^[0-9a-zA-Z]{3}-(.+)-([0-9a-fA-F]{8})-{0,2}([0-9]+)$"
+	k8sLinuxVMNamingFormat         = "^[0-9a-zA-Z]{3}-(.+)-([0-9a-fA-F]{8})-{0,2}(\\d+)$"
 	k8sLinuxVMAgentPoolNameIndex   = 1
 	k8sLinuxVMAgentClusterIDIndex  = 2
 	k8sLinuxVMAgentIndexArrayIndex = 3
 
-	k8sWindowsOldVMNamingFormat            = "^([a-fA-F0-9]{5})([0-9a-zA-Z]{3})([9])([a-zA-Z0-9]{3,5})$"
-	k8sWindowsVMNamingFormat               = "^([a-fA-F0-9]{4})([0-9a-zA-Z]{3})([0-9]{3,8})$"
-	k8sWindowsVMAgentPoolPrefixIndex       = 1
-	k8sWindowsVMAgentOrchestratorNameIndex = 2
-	k8sWindowsVMAgentPoolInfoIndex         = 3
+	k8sWindowsOldVMNamingFormat = "^([a-fA-F0-9]{5})([0-9a-zA-Z]{3})(9)([a-zA-Z0-9]{3,5})$"
+	k8sWindowsVMNamingFormat    = "^([a-fA-F0-9]{4})([0-9a-zA-Z]{3})(\\d{3,8})$"
 
 	nodeLabelTagName     = "k8s.io_cluster-autoscaler_node-template_label_"
 	nodeTaintTagName     = "k8s.io_cluster-autoscaler_node-template_taint_"
@@ -119,7 +116,7 @@ func (util *AzUtil) DeleteBlob(accountName, vhdContainer, vhdBlob string) error 
 	}
 
 	keys := *storageKeysResult.Keys
-	client, err := azStorage.NewBasicClientOnSovereignCloud(accountName, to.String(keys[0].Value), util.manager.env)
+	client, err := azStorage.NewBasicClientOnSovereignCloud(accountName, to.String(keys[0].Value), *util.manager.env)
 	if err != nil {
 		return err
 	}

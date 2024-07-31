@@ -22,14 +22,16 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-03-01/compute"
-	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"     //nolint SA1019 - deprecated package
+	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources" //nolint SA1019 - deprecated package
 	"github.com/stretchr/testify/mock"
 )
 
 const (
-	fakeVirtualMachineScaleSetVMID = "/subscriptions/test-subscription-id/resourceGroups/test-asg/providers/Microsoft.Compute/virtualMachineScaleSets/agents/virtualMachines/%d"
-	fakeVirtualMachineVMID         = "/subscriptions/test-subscription-id/resourceGroups/test-asg/providers/Microsoft.Compute/virtualMachines/%d"
+	fakeVirtualMachineScaleSetVMID = "/subscriptions/test-subscription-id/resourceGroups/test-asg/providers/" +
+		"Microsoft.Compute/virtualMachineScaleSets/agents/virtualMachines/%d"
+	fakeVirtualMachineVMID = "/subscriptions/test-subscription-id/resourceGroups/test-asg/providers/" +
+		"Microsoft.Compute/virtualMachines/%d"
 )
 
 // DeploymentsClientMock mocks for DeploymentsClient.
@@ -41,7 +43,8 @@ type DeploymentsClientMock struct {
 }
 
 // Get gets the DeploymentExtended by deploymentName.
-func (m *DeploymentsClientMock) Get(ctx context.Context, resourceGroupName string, deploymentName string) (result resources.DeploymentExtended, err error) {
+func (m *DeploymentsClientMock) Get(ctx context.Context, resourceGroupName,
+	deploymentName string) (result resources.DeploymentExtended, err error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -54,7 +57,8 @@ func (m *DeploymentsClientMock) Get(ctx context.Context, resourceGroupName strin
 }
 
 // ExportTemplate exports the deployment's template.
-func (m *DeploymentsClientMock) ExportTemplate(ctx context.Context, resourceGroupName string, deploymentName string) (result resources.DeploymentExportResult, err error) {
+func (m *DeploymentsClientMock) ExportTemplate(ctx context.Context, resourceGroupName,
+	deploymentName string) (result resources.DeploymentExportResult, err error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -69,7 +73,8 @@ func (m *DeploymentsClientMock) ExportTemplate(ctx context.Context, resourceGrou
 }
 
 // CreateOrUpdate creates or updates the Deployment.
-func (m *DeploymentsClientMock) CreateOrUpdate(ctx context.Context, resourceGroupName string, deploymentName string, parameters resources.Deployment) (resp *http.Response, err error) {
+func (m *DeploymentsClientMock) CreateOrUpdate(ctx context.Context, resourceGroupName, deploymentName string,
+	parameters resources.Deployment) (resp *http.Response, err error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -87,7 +92,8 @@ func (m *DeploymentsClientMock) CreateOrUpdate(ctx context.Context, resourceGrou
 }
 
 // List gets all the deployments for a resource group.
-func (m *DeploymentsClientMock) List(ctx context.Context, resourceGroupName, filter string, top *int32) (result []resources.DeploymentExtended, err error) {
+func (m *DeploymentsClientMock) List(ctx context.Context, resourceGroupName, filter string,
+	top *int32) (result []resources.DeploymentExtended, err error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -125,5 +131,4 @@ func fakeVMSSWithTags(vmssName string, tags map[string]*string) compute.VirtualM
 		},
 		Tags: tags,
 	}
-
 }
