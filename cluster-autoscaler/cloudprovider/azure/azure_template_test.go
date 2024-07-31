@@ -18,11 +18,14 @@ package azure
 
 import (
 	"fmt"
+	"testing"
+
+	//nolint SA1019 - deprecated package
+
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"testing"
 )
 
 func TestExtractLabelsFromScaleSet(t *testing.T) {
