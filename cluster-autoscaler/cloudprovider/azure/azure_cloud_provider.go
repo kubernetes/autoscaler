@@ -17,6 +17,7 @@ limitations under the License.
 package azure
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -122,9 +123,27 @@ func (azure *AzureCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovid
 	return azure.azureManager.GetNodeGroupForInstance(ref)
 }
 
-// HasInstance returns whether a given node has a corresponding instance in this cloud provider
-func (azure *AzureCloudProvider) HasInstance(*apiv1.Node) (bool, error) {
-	return true, cloudprovider.ErrNotImplemented
+// HasInstance returns whether a given node has a corresponding instance in this cloud provider.
+//
+// Used to prevent undercount of existing VMs (taint-based overcount of deleted VMs),
+// and so should not return false, nil (no instance) if uncertain; return error instead.
+// (Think "has instance for sure, else error".) Returning an error causes fallback to taint-based
+// determination; use ErrNotImplemented for silent fallback, any other error will be logged.
+//
+// Expected behavior (should work for VMSS Uniform/Flex, and VMs):
+// -  exists            : return true, nil
+// - !exists            : return *,    ErrNotImplemented (could use custom error for autoscaled nodes)
+// - unimplemented case : return *,    ErrNotImplemented
+// - any other error    : return *,    error
+func (azure *AzureCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+	if node.Spec.ProviderID == "" {
+		return false, fmt.Errorf("ProviderID for node: %s is empty, skipped", node.Name)
+	}
+
+	if !strings.HasPrefix(node.Spec.ProviderID, "azure://") {
+		return false, fmt.Errorf("invalid azure ProviderID prefix for node: %s, skipped", node.Name)
+	}
+	return azure.azureManager.azureCache.HasInstance(node.Spec.ProviderID)
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.
