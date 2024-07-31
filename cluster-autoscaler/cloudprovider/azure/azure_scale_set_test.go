@@ -64,10 +64,6 @@ func newTestVMSSList(cap int64, name, loc string, orchmode compute.Orchestration
 	return []compute.VirtualMachineScaleSet{
 		{
 			Name: to.StringPtr(name),
-			Tags: map[string]*string{
-				"aks-managed-poolName": to.StringPtr(name),
-			},
-
 			Sku: &compute.Sku{
 				Capacity: to.Int64Ptr(cap),
 				Name:     to.StringPtr("Standard_D4_v2"),
