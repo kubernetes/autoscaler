@@ -128,7 +128,7 @@ func matchDiscoveryConfig(labels map[string]*string, configs []labelAutoDiscover
 				return nil
 			}
 
-			if len(v) > 0 {
+			if v != "" {
 				if value == nil || *value != v {
 					return nil
 				}
