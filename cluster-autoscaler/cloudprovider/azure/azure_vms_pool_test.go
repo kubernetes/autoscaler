@@ -27,8 +27,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v5"
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
 	"github.com/Azure/go-autorest/autorest/to"
-	"github.com/golang/mock/gomock"
-	ubergomock "go.uber.org/mock/gomock"
+	"go.uber.org/mock/gomock"
 
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
@@ -108,7 +107,7 @@ func getTestAgentPool(agentpoolName string, isSystemPool bool) armcontainerservi
 }
 
 func TestNewVMsPool(t *testing.T) {
-	ctrl := ubergomock.NewController(t)
+	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockAgentpoolclient := NewMockAgentPoolsClient(ctrl)
 	manager := newTestAzureManager(t)
@@ -155,7 +154,7 @@ func TestGetVMsFromCacheForVMsPool(t *testing.T) {
 	ap.manager.azClient.virtualMachinesClient = mockVMClient
 	mockVMClient.EXPECT().List(gomock.Any(), ap.resourceGroup).Return(expectedVMs, nil)
 
-	ac, err := newAzureCache(ap.manager.azClient, refreshInterval, ap.manager.config.ResourceGroup, "", false, "")
+	ac, err := newAzureCache(ap.manager.azClient, refreshInterval, *ap.manager.config)
 	assert.NoError(t, err)
 	ap.manager.azureCache = ac
 
@@ -193,7 +192,7 @@ func TestNodes(t *testing.T) {
 	ap.manager.azClient.virtualMachinesClient = mockVMClient
 	mockVMClient.EXPECT().List(gomock.Any(), ap.resourceGroup).Return(expectedVMs, nil)
 
-	ac, err := newAzureCache(ap.manager.azClient, refreshInterval, ap.manager.config.ResourceGroup, "", false, "")
+	ac, err := newAzureCache(ap.manager.azClient, refreshInterval, *ap.manager.config)
 	assert.NoError(t, err)
 	ap.manager.azureCache = ac
 
@@ -227,7 +226,7 @@ func TestGetCurSizeForVMsPool(t *testing.T) {
 	ap.manager.azClient.virtualMachinesClient = mockVMClient
 	mockVMClient.EXPECT().List(gomock.Any(), ap.resourceGroup).Return(expectedVMs, nil)
 
-	ac, err := newAzureCache(ap.manager.azClient, refreshInterval, ap.manager.config.ResourceGroup, "", false, "")
+	ac, err := newAzureCache(ap.manager.azClient, refreshInterval, *ap.manager.config)
 	assert.NoError(t, err)
 	ap.manager.azureCache = ac
 	ap.curSize = -1 // not initialized
@@ -258,7 +257,7 @@ func TestGetVMsPoolSize(t *testing.T) {
 }
 
 func TestVMsPoolIncreaseSize(t *testing.T) {
-	ctrl := ubergomock.NewController(t)
+	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockAgentpoolclient := NewMockAgentPoolsClient(ctrl)
 	manager := newTestAzureManager(t)
@@ -314,7 +313,7 @@ func TestVMsPoolIncreaseSize(t *testing.T) {
 }
 
 func TestDeleteVMsPoolNodes(t *testing.T) {
-	ctrl := ubergomock.NewController(t)
+	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockAgentpoolclient := NewMockAgentPoolsClient(ctrl)
 	manager := newTestAzureManager(t)
