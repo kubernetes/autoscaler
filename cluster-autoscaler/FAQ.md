@@ -275,6 +275,7 @@ __However, if the substantial number of nodes are tainted with `startup taints` 
 might stop working as it might assume the cluster is broken and should not be scaled (creating new nodes doesn't help as they don't become ready).__
 
 Startup taints are defined as:
+
 * all taints with the prefix `startup-taint.cluster-autoscaler.kubernetes.io/`,
 * all taints defined using `--startup-taint` flag.
 
@@ -287,6 +288,7 @@ Cluster Autoscaler internally treats nodes tainted with `status taints` as ready
 This means that even though the node is ready, no pods should run there as long as the node is tainted and if necessary a scale-up should occur.
 
 Status taints are defined as:
+
 * all taints with the prefix `status-taint.cluster-autoscaler.kubernetes.io/`,
 * all taints defined using `--status-taint` flag.
 
@@ -295,6 +297,7 @@ Status taints are defined as:
 Ignore taints are now deprecated and treated as startup taints.
 
 Ignore taints are defined as:
+
 * all taints with the prefix `ignore-taint.cluster-autoscaler.kubernetes.io/`,
 * all taints defined using `--ignore-taint` flag.
 
@@ -553,6 +556,7 @@ This annotation has no effect on pods that are not a part of any DaemonSet.
 Kubernetes scheduler will fail to schedule a Pod to a Node if the Node's max volume count is exceeded. In such case to enable Cluster Autoscaler to scale up in a Kubernetes cluster with [CSI migration](https://github.com/kubernetes/enhancements/blob/master/keps/sig-storage/625-csi-migration/README.md) enabled, the appropriate CSI related feature gates have to be specified for the Cluster Autoscaler (if the corresponding feature gates are not enabled by default).
 
 For example:
+
 ```
 --feature-gates=CSIMigration=true,CSIMigration{Provdider}=true,InTreePlugin{Provider}Unregister=true
 ```
@@ -566,14 +570,15 @@ Provisioning Request (abbr. ProvReq) is a new namespaced Custom Resource that ai
 
 #### Enabling ProvisioningRequest Support
 
-1. **Cluster Autoscaler Version**: Ensure you are using Cluster Autoscaler version 1.30.1 or later.
+1. __Cluster Autoscaler Version__: Ensure you are using Cluster Autoscaler version 1.30.1 or later.
 
-2. **Feature Flag**: Enable ProvisioningRequest support by setting the following flag in your Cluster Autoscaler configuration:
+2. __Feature Flag__: Enable ProvisioningRequest support by setting the following flag in your Cluster Autoscaler configuration:
 `--enable-provisioning-requests=true`.
 
-3. **Content Type**: This feature requires that the [API content type flag](https://github.com/kubernetes/autoscaler/blob/522c6fcc06c8cf663175ba03549773cc66a02837/cluster-autoscaler/main.go#L114) is set to application/json: `--kube-api-content-type application/json`.
+3. __Content Type__: This feature requires that the [API content type flag](https://github.com/kubernetes/autoscaler/blob/522c6fcc06c8cf663175ba03549773cc66a02837/cluster-autoscaler/main.go#L114) is set to application/json: `--kube-api-content-type application/json`.
 
-4. **RBAC permissions**: Ensure your cluster-autoscaler pod has the necessary permissions to interact with ProvisioningRequests and PodTemplates:
+4. __RBAC permissions__: Ensure your cluster-autoscaler pod has the necessary permissions to interact with ProvisioningRequests and PodTemplates:
+
 ```
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -608,17 +613,37 @@ subjects:
 
 Currently, ClusterAutoscaler supports following ProvisioningClasses:
 
-* `check-capacity.autoscaling.x-k8s.io`. 
+* `check-capacity.autoscaling.x-k8s.io`.
 When using this class, Cluster Autoscaler performs following actions:
 
-  * **Capacity Check**: Determines if sufficient capacity exists in the cluster to fulfill the ProvisioningRequest.
+  * __Capacity Check__: Determines if sufficient capacity exists in the cluster to fulfill the ProvisioningRequest.
 
-  * **Reservation from other ProvReqs** (if capacity is available): Reserves this capacity for the ProvisioningRequest for 10 minutes, preventing other ProvReqs from using it.
+  * __Reservation from other ProvReqs__ (if capacity is available): Reserves this capacity for the ProvisioningRequest for 10 minutes,
+  preventing other ProvReqs from using it.
 
-  * **Condition Updates**:
+  * __Condition Updates__:
   Adds a Accepted=True condition when ProvReq is accepted by ClusterAutoscaler and ClusterAutoscaler will check capacity for this ProvReq.
   Adds a Provisioned=True condition to the ProvReq if capacity is available.
   Adds a BookingExpired=True condition when the 10-minute reservation period expires.
+
+* `best-effort-atomic-scale-up.autoscaling.x-k8s.io` (supported from Cluster Autoscaler version 1.30.2 or later).
+When using this class, Cluster Autoscaler performs following actions:
+
+  * __Capacity Check__: Check which pods could be scheduled on existing capacity.
+
+  * __ScaleUp Request__: Evaluates if scaling up a node group could fulfill all remaining
+  requirements of the ProvisioningRequest. The scale-up request will use the  AtomicIncreaseSize method
+  if a given cloud provider supports it. Note that the ScaleUp result depends on the cloud provider's
+  implementation of the AtomicIncreaseSize method. If the method is not implemented, the scale-up
+  request will try to increase the node group atomically but doesn't guarantee atomicity.
+
+  * __Reservation from other ProvReqs (if scale up request succeeded)__: Reserves this capacity for the ProvisioningRequest for 10 minutes, 
+  preventing other ProvReqs from using it.
+
+  * __Condition Updates__:
+    * Adds a Accepted=True condition when ProvReq is accepted by ClusterAutoscaler.
+    * Adds a Provisioned=True condition to the ProvReq if the node group scale up request is successful.
+    * Adds a BookingExpired=True condition when the 10-minute reservation period expires.
 
 ****************
 
