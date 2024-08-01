@@ -20,6 +20,7 @@ import (
 	"context"
 	"flag"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/spf13/pflag"
@@ -72,8 +73,9 @@ var (
 	useAdmissionControllerStatus = flag.Bool("use-admission-controller-status", true,
 		"If true, updater will only evict pods when admission controller status is valid.")
 
-	namespace          = os.Getenv("NAMESPACE")
-	vpaObjectNamespace = flag.String("vpa-object-namespace", apiv1.NamespaceAll, "Namespace to search for VPA objects. Empty means all namespaces will be used.")
+	namespace                  = os.Getenv("NAMESPACE")
+	vpaObjectNamespace         = flag.String("vpa-object-namespace", apiv1.NamespaceAll, "Namespace to search for VPA objects. Empty means all namespaces will be used. Must not be used if ignored-vpa-object-namespaces is set.")
+	ignoredVpaObjectNamespaces = flag.String("ignored-vpa-object-namespaces", "", "Comma separated list of namespaces to ignore. Must not be used if vpa-object-namespace is used.")
 )
 
 const (
@@ -91,6 +93,10 @@ func main() {
 
 	kube_flag.InitFlags()
 	klog.V(1).Infof("Vertical Pod Autoscaler %s Updater", common.VerticalPodAutoscalerVersion)
+
+	if len(*vpaObjectNamespace) > 0 && len(*ignoredVpaObjectNamespaces) > 0 {
+		klog.Fatalf("--vpa-object-namespace and --ignored-vpa-object-namespaces are mutually exclusive and can't be set together.")
+	}
 
 	healthCheck := metrics.NewHealthCheck(*updaterInterval * 5)
 	metrics.Initialize(*address, healthCheck)
@@ -175,6 +181,9 @@ func run(healthCheck *metrics.HealthCheck) {
 	if namespace != "" {
 		admissionControllerStatusNamespace = namespace
 	}
+
+	ignoredNamespaces := strings.Split(*ignoredVpaObjectNamespaces, ",")
+
 	// TODO: use SharedInformerFactory in updater
 	updater, err := updater.NewUpdater(
 		kubeClient,
@@ -191,6 +200,7 @@ func run(healthCheck *metrics.HealthCheck) {
 		controllerFetcher,
 		priority.NewProcessor(),
 		*vpaObjectNamespace,
+		ignoredNamespaces,
 	)
 	if err != nil {
 		klog.Fatalf("Failed to create updater: %v", err)

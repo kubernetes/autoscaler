@@ -390,6 +390,7 @@ func (m *ociManagerImpl) GetNodePoolNodes(np NodePool) ([]cloudprovider.Instance
 			instances = append(instances, cloudprovider.Instance{
 				Id: *node.Id,
 				Status: &cloudprovider.InstanceStatus{
+					State: cloudprovider.InstanceCreating,
 					ErrorInfo: &cloudprovider.InstanceErrorInfo{
 						ErrorClass:   errorClass,
 						ErrorCode:    *node.NodeError.Code,

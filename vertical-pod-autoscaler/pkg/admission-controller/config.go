@@ -90,8 +90,8 @@ func configTLS(cfg certsConfig, minTlsVersion, ciphers string, stop <-chan struc
 
 // register this webhook admission controller with the kube-apiserver
 // by creating MutatingWebhookConfiguration.
-func selfRegistration(clientset kubernetes.Interface, caCert []byte, namespace, serviceName, url string, registerByURL bool, timeoutSeconds int32) {
-	time.Sleep(10 * time.Second)
+func selfRegistration(clientset kubernetes.Interface, caCert []byte, webHookDelay time.Duration, namespace, serviceName, url string, registerByURL bool, timeoutSeconds int32, selectedNamespace string, ignoredNamespaces []string) {
+	time.Sleep(webHookDelay)
 	client := clientset.AdmissionregistrationV1().MutatingWebhookConfigurations()
 	_, err := client.Get(context.TODO(), webhookConfigName, metav1.GetOptions{})
 	if err == nil {
@@ -111,6 +111,29 @@ func selfRegistration(clientset kubernetes.Interface, caCert []byte, namespace, 
 	sideEffects := admissionregistration.SideEffectClassNone
 	failurePolicy := admissionregistration.Ignore
 	RegisterClientConfig.CABundle = caCert
+
+	var namespaceSelector metav1.LabelSelector
+	if len(ignoredNamespaces) > 0 {
+		namespaceSelector = metav1.LabelSelector{
+			MatchExpressions: []metav1.LabelSelectorRequirement{
+				{
+					Key:      "kubernetes.io/metadata.name",
+					Operator: metav1.LabelSelectorOpNotIn,
+					Values:   ignoredNamespaces,
+				},
+			},
+		}
+	} else if len(selectedNamespace) > 0 {
+		namespaceSelector = metav1.LabelSelector{
+			MatchExpressions: []metav1.LabelSelectorRequirement{
+				{
+					Key:      "kubernetes.io/metadata.name",
+					Operator: metav1.LabelSelectorOpIn,
+					Values:   []string{selectedNamespace},
+				},
+			},
+		}
+	}
 	webhookConfig := &admissionregistration.MutatingWebhookConfiguration{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: webhookConfigName,
@@ -137,10 +160,11 @@ func selfRegistration(clientset kubernetes.Interface, caCert []byte, namespace, 
 						},
 					},
 				},
-				FailurePolicy:  &failurePolicy,
-				ClientConfig:   RegisterClientConfig,
-				SideEffects:    &sideEffects,
-				TimeoutSeconds: &timeoutSeconds,
+				FailurePolicy:     &failurePolicy,
+				ClientConfig:      RegisterClientConfig,
+				SideEffects:       &sideEffects,
+				TimeoutSeconds:    &timeoutSeconds,
+				NamespaceSelector: &namespaceSelector,
 			},
 		},
 	}

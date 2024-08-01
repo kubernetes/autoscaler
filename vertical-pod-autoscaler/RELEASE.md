@@ -156,8 +156,8 @@ sure nothing we care about will break if we do.
     [groups.yaml](https://github.com/kubernetes/k8s.io/blob/master/groups/sig-autoscaling/groups.yaml)
     under k8s-infra-staging-autoscaling.
 * Permissions to add images to
-    `k8s.gcr.io/images/k8s-staging-autoscaling/images.yaml` are governed by
-    [OWNERS file](https://github.com/kubernetes/k8s.io/blob/master/k8s.gcr.io/images/k8s-staging-autoscaling/OWNERS).
+    [`k8s.io/registry.k8s.io/images/k8s-staging-autoscaling/images.yaml`](https://github.com/kubernetes/k8s.io/blob/main/registry.k8s.io/images/k8s-staging-autoscaling/images.yaml) are governed by
+    [OWNERS file](https://github.com/kubernetes/k8s.io/blob/main/registry.k8s.io/images/k8s-staging-autoscaling/OWNERS).
 * Permissions to add tags to
     [kubernetes/autoscaler](https://github.com/kubernetes/autoscaler) and create
     releases in the repo you must be:
