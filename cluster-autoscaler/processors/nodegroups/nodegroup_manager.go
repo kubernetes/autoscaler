@@ -27,13 +27,13 @@ import (
 // NodeGroupManager is responsible for creating/deleting node groups.
 type NodeGroupManager interface {
 	// CreateNodeGroup creates node group and returns all of the results.
-	// Creating a node group may result in multiple node ggroup creations, as the behavior is
+	// Creating a node group may result in multiple node group creations, as the behavior is
 	// cloud provider dependent.
 	CreateNodeGroup(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (CreateNodeGroupResult, errors.AutoscalerError)
 
-	// CreateNodeGroupAsync similar to CreateNodeGroup methos but creates node group asynchronopusly.
+	// CreateNodeGroupAsync similar to CreateNodeGroup method but creates node group asynchronously.
 	// Immediately returns upcoming node group that may be used for scale ups and scale up simulations.
-	CreateNodeGroupAsync(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup, nodeGroupImitializer AsyncNodeGroupInitializer) (CreateNodeGroupResult, errors.AutoscalerError)
+	CreateNodeGroupAsync(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup, nodeGroupInitializer AsyncNodeGroupInitializer) (CreateNodeGroupResult, errors.AutoscalerError)
 
 	RemoveUnneededNodeGroups(context *context.AutoscalingContext) (removedNodeGroups []cloudprovider.NodeGroup, err error)
 

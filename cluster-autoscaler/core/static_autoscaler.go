@@ -153,7 +153,7 @@ func NewStaticAutoscaler(
 		MaxTotalUnreadyPercentage: opts.MaxTotalUnreadyPercentage,
 		OkTotalUnreadyCount:       opts.OkTotalUnreadyCount,
 	}
-	clusterStateRegistry := clusterstate.NewClusterStateRegistry(cloudProvider, clusterStateConfig, autoscalingKubeClients.LogRecorder, backoff, processors.NodeGroupConfigProcessor)
+	clusterStateRegistry := clusterstate.NewClusterStateRegistry(cloudProvider, clusterStateConfig, autoscalingKubeClients.LogRecorder, backoff, processors.NodeGroupConfigProcessor, processors.AsyncNodeGroupStateChecker)
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
 	autoscalingContext := context.NewAutoscalingContext(
 		opts,
@@ -702,6 +702,7 @@ func (a *StaticAutoscaler) addUpcomingNodesToClusterSnapshot(upcomingCounts map[
 		if nodeGroup == nil {
 			return fmt.Errorf("failed to find node group: %s", nodeGroupName)
 		}
+		isUpcomingNodeGroup := a.processors.AsyncNodeGroupStateChecker.IsUpcoming(nodeGroup)
 		for _, upcomingNode := range upcomingNodes {
 			var pods []*apiv1.Pod
 			for _, podInfo := range upcomingNode.Pods {
@@ -709,17 +710,11 @@ func (a *StaticAutoscaler) addUpcomingNodesToClusterSnapshot(upcomingCounts map[
 			}
 			err := a.ClusterSnapshot.AddNodeWithPods(upcomingNode.Node(), pods)
 			if err != nil {
-				klog.Errorf("Failed to add upcoming node %s to cluster snapshot: %v", upcomingNode.Node().Name, err)
-				return err
+				return fmt.Errorf("Failed to add upcoming node %s to cluster snapshot: %w", upcomingNode.Node().Name, err)
 			}
-			if nodeGroup.IsUpcoming() {
+			if isUpcomingNodeGroup {
 				upcomingNodesFromUpcomingNodeGroups++
-				if n, found := upcomingNodeGroups[nodeGroup.Id()]; found {
-					n++
-					upcomingNodeGroups[nodeGroup.Id()] = n
-				} else {
-					upcomingNodeGroups[nodeGroup.Id()] = 1
-				}
+				upcomingNodeGroups[nodeGroup.Id()] += 1
 			}
 		}
 	}

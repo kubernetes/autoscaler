@@ -76,7 +76,7 @@ func (o *ScaleUpOrchestrator) Initialize(
 	o.estimatorBuilder = estimatorBuilder
 	o.taintConfig = taintConfig
 	o.resourceManager = resource.NewManager(processors.CustomResourcesProcessor)
-	o.scaleUpExecutor = newScaleUpExecutor(autoscalingContext, processors.ScaleStateNotifier)
+	o.scaleUpExecutor = newScaleUpExecutor(autoscalingContext, processors.ScaleStateNotifier, o.processors.AsyncNodeGroupStateChecker)
 	o.initialized = true
 }
 
@@ -214,7 +214,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 
 	// If necessary, create the node group. This is no longer simulation, an empty node group will be created by cloud provider if supported.
 	createNodeGroupResults := make([]nodegroups.CreateNodeGroupResult, 0)
-	if !bestOption.NodeGroup.Exist() && !bestOption.NodeGroup.IsUpcoming() {
+	if !bestOption.NodeGroup.Exist() && !o.processors.AsyncNodeGroupStateChecker.IsUpcoming(bestOption.NodeGroup) {
 		if allOrNothing && bestOption.NodeGroup.MaxSize() < newNodes {
 			klog.V(1).Infof("Can only create a new node group with max %d nodes, need %d nodes", bestOption.NodeGroup.MaxSize(), newNodes)
 			// Can't execute a scale-up that will accommodate all pods, so nothing is considered schedulable.
