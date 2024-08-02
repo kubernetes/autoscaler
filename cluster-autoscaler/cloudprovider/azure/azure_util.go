@@ -59,6 +59,10 @@ const (
 	vmResourceType  = "Microsoft.Compute/virtualMachines"
 	vmExtensionType = "Microsoft.Compute/virtualMachines/extensions"
 
+	// CSE Extension checks
+	vmssCSEExtensionName            = "vmssCSE"
+	vmssExtensionProvisioningFailed = "VMExtensionProvisioningFailed"
+
 	// resource ids
 	nsgID = "nsgID"
 	rtID  = "routeTableID"
