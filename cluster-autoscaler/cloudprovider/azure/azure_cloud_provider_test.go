@@ -56,7 +56,7 @@ func newTestAzureManager(t *testing.T) *AzureManager {
 			VMType:              vmTypeVMSS,
 			MaxDeploymentsCount: 2,
 			Deployment:          "deployment",
-			EnableForceDelete:   true,
+			EnableForceDelete:   false,
 			Location:            "eastus",
 		},
 		azClient: &azClient{
