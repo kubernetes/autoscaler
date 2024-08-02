@@ -23,6 +23,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 	"regexp"
 	"sort"
 	"strconv"
@@ -231,7 +232,8 @@ func (util *AzUtil) DeleteVirtualMachine(rg string, name string) error {
 }
 
 func getUserAgentExtension() string {
-	return fmt.Sprintf("cluster-autoscaler/v%s", version.ClusterAutoscalerVersion)
+	suffix := os.Getenv("AZURE_CLUSTER_AUTOSCALER_USER_AGENT_SUFFIX")
+	return fmt.Sprintf("cluster-autoscaler%s/v%s", suffix, version.ClusterAutoscalerVersion)
 }
 
 func configureUserAgent(client *autorest.Client) {
