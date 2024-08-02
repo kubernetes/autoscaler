@@ -202,7 +202,6 @@ func (m *azureCache) regenerate() error {
 // This function performs the following:
 // - Fetches and updates the list of Virtual Machine Scale Sets (VMSS) in the specified resource group.
 // - Fetches and updates the list of Virtual Machines (VMs) and identifies the node pools they belong to.
-// - Maintains a set of VMs pools and VMSS resources which helps the Cluster Autoscaler (CAS) operate on mixed node pools.
 //
 // Returns an error if any of the Azure API calls fail.
 func (m *azureCache) fetchAzureResources() error {
