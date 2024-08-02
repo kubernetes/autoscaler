@@ -1,12 +1,17 @@
 approvers:
 - feiskyer
 - nilo19
-- gandhipr
 - tallaxes
+- bryce-soghigian
+- jackfrancis
 reviewers:
 - feiskyer
 - nilo19
-- gandhipr
 - tallaxes
+- bryce-soghigian 
+- jackfrancis
 emeritus_approvers:
 - marwanad
+
+labels:
+- area/provider/azure
