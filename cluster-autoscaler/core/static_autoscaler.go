@@ -820,6 +820,27 @@ func toNodes(unregisteredNodes []clusterstate.UnregisteredNode) []*apiv1.Node {
 	return nodes
 }
 
+// overrideNodesToDeleteForZeroOrMax returns a list of nodes to delete, taking into account that
+// node deletion for a "ZeroOrMaxNodeScaling" node group is atomic and should delete all nodes.
+// For a non-"ZeroOrMaxNodeScaling" node group it returns the unchanged list of nodes to delete.
+func overrideNodesToDeleteForZeroOrMax(defaults config.NodeGroupAutoscalingOptions, nodeGroup cloudprovider.NodeGroup, nodesToDelete []*apiv1.Node) ([]*apiv1.Node, error) {
+	opts, err := nodeGroup.GetOptions(defaults)
+	if err != nil && err != cloudprovider.ErrNotImplemented {
+		return []*apiv1.Node{}, fmt.Errorf("Failed to get node group options for %s: %s", nodeGroup.Id(), err)
+	}
+	// If a scale-up of "ZeroOrMaxNodeScaling" node group failed, the cleanup
+	// should stick to the all-or-nothing principle. Deleting all nodes.
+	if opts != nil && opts.ZeroOrMaxNodeScaling {
+		instances, err := nodeGroup.Nodes()
+		if err != nil {
+			return []*apiv1.Node{}, fmt.Errorf("Failed to fill in nodes to delete from group %s based on ZeroOrMaxNodeScaling option: %s", nodeGroup.Id(), err)
+		}
+		return instancesToFakeNodes(instances), nil
+	}
+	// No override needed.
+	return nodesToDelete, nil
+}
+
 // instancesToNodes returns a list of fake nodes with just names populated,
 // so that they can be passed as nodes to delete
 func instancesToFakeNodes(instances []cloudprovider.Instance) []*apiv1.Node {
