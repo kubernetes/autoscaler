@@ -23,17 +23,28 @@ import (
 	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/stretchr/testify/assert"
+	azclient "sigs.k8s.io/cloud-provider-azure/pkg/azclient"
+	providerazure "sigs.k8s.io/cloud-provider-azure/pkg/provider"
+	providerazureconfig "sigs.k8s.io/cloud-provider-azure/pkg/provider/config"
 )
 
 func TestGetServicePrincipalTokenFromCertificate(t *testing.T) {
 	config := &Config{
-		TenantID:              "TenantID",
-		AADClientID:           "AADClientID",
-		AADClientCertPath:     "./testdata/test.pfx",
-		AADClientCertPassword: "id",
+		Config: providerazure.Config{
+			AzureAuthConfig: providerazureconfig.AzureAuthConfig{
+				ARMClientConfig: azclient.ARMClientConfig{
+					TenantID: "TenantID",
+				},
+				AzureAuthConfig: azclient.AzureAuthConfig{
+					AADClientID:           "AADClientID",
+					AADClientCertPath:     "./testdata/test.pfx",
+					AADClientCertPassword: "id",
+				},
+			},
+		},
 	}
 	env := &azure.PublicCloud
-	token, err := newServicePrincipalTokenFromCredentials(config, env)
+	token, err := providerazureconfig.GetServicePrincipalToken(&config.AzureAuthConfig, env, "")
 	assert.NoError(t, err)
 
 	oauthConfig, err := adal.NewOAuthConfig(env.ActiveDirectoryEndpoint, config.TenantID)
@@ -45,17 +56,25 @@ func TestGetServicePrincipalTokenFromCertificate(t *testing.T) {
 	spt, err := adal.NewServicePrincipalTokenFromCertificate(
 		*oauthConfig, config.AADClientID, certificate, privateKey, env.ServiceManagementEndpoint)
 	assert.NoError(t, err)
-	assert.Equal(t, token, spt)
+	assert.Equal(t, token.Token(), spt.Token())
 }
 
 func TestGetServicePrincipalTokenFromCertificateWithoutPassword(t *testing.T) {
 	config := &Config{
-		TenantID:          "TenantID",
-		AADClientID:       "AADClientID",
-		AADClientCertPath: "./testdata/testnopassword.pfx",
+		Config: providerazure.Config{
+			AzureAuthConfig: providerazureconfig.AzureAuthConfig{
+				ARMClientConfig: azclient.ARMClientConfig{
+					TenantID: "TenantID",
+				},
+				AzureAuthConfig: azclient.AzureAuthConfig{
+					AADClientID:       "AADClientID",
+					AADClientCertPath: "./testdata/testnopassword.pfx",
+				},
+			},
+		},
 	}
 	env := &azure.PublicCloud
-	token, err := newServicePrincipalTokenFromCredentials(config, env)
+	token, err := providerazureconfig.GetServicePrincipalToken(&config.AzureAuthConfig, env, "")
 	assert.NoError(t, err)
 
 	oauthConfig, err := adal.NewOAuthConfig(env.ActiveDirectoryEndpoint, config.TenantID)
@@ -67,5 +86,5 @@ func TestGetServicePrincipalTokenFromCertificateWithoutPassword(t *testing.T) {
 	spt, err := adal.NewServicePrincipalTokenFromCertificate(
 		*oauthConfig, config.AADClientID, certificate, privateKey, env.ServiceManagementEndpoint)
 	assert.NoError(t, err)
-	assert.Equal(t, token, spt)
+	assert.Equal(t, token.Token(), spt.Token())
 }

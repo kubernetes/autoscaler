@@ -235,6 +235,9 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 	if _, err = assignIntFromEnvIfExists(&cfg.VmssVmsCacheJitter, "AZURE_VMSS_VMS_CACHE_JITTER"); err != nil {
 		return nil, err
 	}
+	if _, err = assignIntFromEnvIfExists(&cfg.GetVmssSizeRefreshPeriod, "AZURE_GET_VMSS_SIZE_REFRESH_PERIOD"); err != nil {
+		return nil, err
+	}
 	if _, err = assignInt64FromEnvIfExists(&cfg.MaxDeploymentsCount, "AZURE_MAX_DEPLOYMENT_COUNT"); err != nil {
 		return nil, err
 	}

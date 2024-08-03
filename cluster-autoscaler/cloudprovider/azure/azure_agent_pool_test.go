@@ -163,13 +163,12 @@ func TestDeleteOutdatedDeployments(t *testing.T) {
 
 		err := testAS.deleteOutdatedDeployments()
 		assert.Equal(t, test.expectedErr, err, test.desc)
-		existedDeployments, err2 := testAS.manager.azClient.deploymentClient.List(context.Background(), "")
+		existedDeployments, _ := testAS.manager.azClient.deploymentClient.List(context.Background(), "")
 		existedDeploymentsNames := make(map[string]bool)
 		for _, deployment := range existedDeployments {
 			existedDeploymentsNames[*deployment.Name] = true
 		}
 		assert.Equal(t, test.expectedDeploymentsNames, existedDeploymentsNames, test.desc)
-		assert.NoError(t, err2.Error())
 	}
 }
 
@@ -209,6 +208,9 @@ func TestGetVMIndexes(t *testing.T) {
 	as.manager.config.VMType = providerazureconsts.VMTypeStandard
 	ac, err := newAzureCache(as.manager.azClient, refreshInterval, *as.manager.config)
 	assert.NoError(t, err)
+	as.manager.azureCache = ac
+
+	sortedIndexes, indexToVM, err := as.GetVMIndexes()
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(sortedIndexes))
 	assert.Equal(t, 2, len(indexToVM))
@@ -250,8 +252,12 @@ func TestGetCurSize(t *testing.T) {
 
 	as.lastRefresh = time.Now()
 	curSize, err := as.getCurSize()
+	assert.NoError(t, err)
 	assert.Equal(t, int64(1), curSize)
 
+	as.lastRefresh = time.Now().Add(-1 * 3 * time.Minute)
+	curSize, err = as.getCurSize()
+	assert.NoError(t, err)
 	assert.Equal(t, int64(2), curSize)
 }
 
@@ -298,13 +304,16 @@ func TestAgentPoolIncreaseSize(t *testing.T) {
 	assert.NoError(t, err)
 	err = as.IncreaseSize(4)
 	expectedErr = fmt.Errorf("size increase too large - desired:6 max:5")
-	assert.Error(t, expectedErr, err)
 
 	err = as.IncreaseSize(2)
 	assert.NoError(t, err)
 }
+
 func TestDecreaseTargetSize(t *testing.T) {
 	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	as := newTestAgentPool(newTestAzureManager(t), "as")
 	as.curSize = 3
 	mockVMClient := mockvmclient.NewMockInterface(ctrl)
 	as.manager.azClient.virtualMachinesClient = mockVMClient
