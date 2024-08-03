@@ -761,7 +761,7 @@ func (a *StaticAutoscaler) removeOldUnregisteredNodes(allUnregisteredNodes []clu
 		}
 		if clusterstate.IsFakeNodeUnhealthy(unregisteredNode.Node) {
 			klog.V(0).Infof("Marking unregistered node %v for removal, because node is unhealthy", unregisteredNode.Node.Name)
-			nodesToDeleteByNodeGroupId[nodeGroup.Id()] = append(nodesToBeDeletedByNodeGroupId[nodeGroup.Id()], unregisteredNode)
+			nodesToDeleteByNodeGroupId[nodeGroup.Id()] = append(nodesToDeleteByNodeGroupId[nodeGroup.Id()], unregisteredNode)
 		}
 	}
 

@@ -1970,9 +1970,12 @@ func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 				return nodeGroupError
 			}
 			return nil
-		}, nil).Times(2)
+		}, nil).Times(5)
 
-	clusterState = clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff(), nodeGroupConfigProcessor)
+	clusterState = clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{
+		MaxTotalUnreadyPercentage: 10,
+		OkTotalUnreadyCount:       1,
+	}, context.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(context.AutoscalingOptions.NodeGroupDefaults))
 	clusterState.RefreshCloudProviderNodeInstancesCache()
 	autoscaler.CloudProvider = provider
 	autoscaler.clusterStateRegistry = clusterState
@@ -1980,7 +1983,7 @@ func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 	clusterState.UpdateNodes([]*apiv1.Node{}, nil, now)
 
 	// delete nodes with create errors
-	removedNodes = autoscaler.deleteCreatedNodesWithErrors()
+	removedNodes, err = autoscaler.removeOldUnregisteredNodes(unregisteredNodes, context, clusterState, now, fakeLogRecorder)
 	assert.False(t, removedNodes)
 
 	nodeGroupError.AssertNumberOfCalls(t, "DeleteNodes", 0)
