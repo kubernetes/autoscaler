@@ -537,7 +537,7 @@ func TestFetchExplicitNodeGroups(t *testing.T) {
 
 	for _, orchMode := range orchestrationModes {
 		manager := newTestAzureManager(t)
-		expectedScaleSets := newTestVMSSList(3, testASG, "eastus", compute.Uniform)
+		expectedScaleSets := newTestVMSSList(3, testASG, compute.Uniform)
 
 		mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
 		mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
@@ -634,12 +634,13 @@ func TestGetFilteredAutoscalingGroupsVmss(t *testing.T) {
 		azureRef: azureRef{
 			Name: vmssName,
 		},
-		minSize:                minVal,
-		maxSize:                maxVal,
-		manager:                manager,
-		curSize:                3,
-		sizeRefreshPeriod:      manager.azureCache.refreshInterval,
-		instancesRefreshPeriod: defaultVmssInstancesRefreshPeriod,
+		minSize:                  minVal,
+		maxSize:                  maxVal,
+		manager:                  manager,
+		curSize:                  3,
+		sizeRefreshPeriod:        manager.azureCache.refreshInterval,
+		getVmssSizeRefreshPeriod: manager.azureCache.refreshInterval,
+		InstanceCache:            InstanceCache{instancesRefreshPeriod: defaultVmssInstancesRefreshPeriod},
 	}}
 	assert.True(t, assert.ObjectsAreEqualValues(expectedAsgs, asgs), "expected %#v, but found: %#v", expectedAsgs, asgs)
 }
