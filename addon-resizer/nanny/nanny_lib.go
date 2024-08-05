@@ -109,6 +109,7 @@ type NannyConfigUpdater interface {
 // ResourceRequirements, compares them to the actual ResourceRequirements, and
 // updates the deployment with the expected ResourceRequirements if necessary.
 func PollAPIServer(k8s KubernetesClient, est ResourceEstimator, hc *healthcheck.HealthCheck, pollPeriod, scaleDownDelay, scaleUpDelay time.Duration, threshold uint64, scalingMode string, runOnControlPlane bool, nannyConfigUpdater NannyConfigUpdater) {
+	hc.StartMonitoring()
 	lastChange := time.Now()
 	lastResult := noChange
 
