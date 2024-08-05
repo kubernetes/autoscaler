@@ -37,7 +37,7 @@ func newTestAzureManager(t *testing.T) *AzureManager {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	expectedScaleSets := newTestVMSSList(3, testASG, "eastus", compute.Uniform)
+	expectedScaleSets := newTestVMSSList(3, testASG, compute.Uniform)
 
 	expectedVMSSVMs := newTestVMSSVMList(3)
 	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
@@ -128,7 +128,7 @@ func TestNodeGroupForNode(t *testing.T) {
 	expectedVMs := newTestVMList(3)
 
 	for _, orchMode := range orchestrationModes {
-		expectedScaleSets := newTestVMSSList(3, testASG, "eastus", orchMode)
+		expectedScaleSets := newTestVMSSList(3, testASG, orchMode)
 		provider := newTestProvider(t)
 		mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
 		mockVMSSClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return(expectedScaleSets, nil)
@@ -154,7 +154,7 @@ func TestNodeGroupForNode(t *testing.T) {
 		assert.True(t, registered)
 		assert.Equal(t, len(provider.NodeGroups()), 1)
 
-		node := newApiNode(orchMode, 0)
+		node := newAPINode(orchMode, 0)
 		// refresh cache
 		err := provider.azureManager.forceRefresh()
 		assert.NoError(t, err)
