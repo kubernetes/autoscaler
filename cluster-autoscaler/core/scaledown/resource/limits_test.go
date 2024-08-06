@@ -21,6 +21,7 @@ import (
 	"testing"
 	"time"
 
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
 	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
@@ -55,7 +56,12 @@ func TestCalculateCoresAndMemoryTotal(t *testing.T) {
 		},
 	}
 
-	coresTotal, memoryTotal := coresMemoryTotal(nodes, time.Now())
+	options := config.AutoscalingOptions{
+		MaxCloudProviderNodeDeletionTime: 5 * time.Minute,
+	}
+	context, err := NewScaleTestAutoscalingContext(options, nil, nil, nil, nil, nil)
+	assert.NoError(t, err)
+	coresTotal, memoryTotal := coresMemoryTotal(&context, nodes, time.Now())
 
 	assert.Equal(t, int64(42), coresTotal)
 	assert.Equal(t, int64(44000*utils.MiB), memoryTotal)

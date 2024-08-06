@@ -164,6 +164,7 @@ func TestFilterOutUnremovable(t *testing.T) {
 					ScaleDownUnreadyTime:             config.DefaultScaleDownUnreadyTime,
 					IgnoreDaemonSetsUtilization:      tc.ignoreDaemonSetsUtilization,
 				},
+				MaxCloudProviderNodeDeletionTime: 5 * time.Minute,
 			}
 			s := nodegroupconfig.NewDefaultNodeGroupConfigProcessor(options.NodeGroupDefaults)
 			c := NewChecker(s)

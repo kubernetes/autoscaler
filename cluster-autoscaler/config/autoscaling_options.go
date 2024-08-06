@@ -295,6 +295,8 @@ type AutoscalingOptions struct {
 	BypassedSchedulers map[string]bool
 	// ProvisioningRequestEnabled tells if CA processes ProvisioningRequest.
 	ProvisioningRequestEnabled bool
+	// MaxCloudProviderNodeDeletionTime is the maximum time needed by cloud provider to delete a node
+	MaxCloudProviderNodeDeletionTime time.Duration
 }
 
 // KubeClientOptions specify options for kube client

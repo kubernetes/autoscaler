@@ -62,7 +62,7 @@ func NoLimits() Limits {
 // LimitsLeft returns the amount of each resource that can be deleted from the
 // cluster without violating any constraints.
 func (lf *LimitsFinder) LimitsLeft(context *context.AutoscalingContext, nodes []*apiv1.Node, resourceLimiter *cloudprovider.ResourceLimiter, timestamp time.Time) Limits {
-	totalCores, totalMem := coresMemoryTotal(nodes, timestamp)
+	totalCores, totalMem := coresMemoryTotal(context, nodes, timestamp)
 
 	var totalResources map[string]int64
 	var totalResourcesErr error
@@ -102,10 +102,10 @@ func computeAboveMin(total int64, min int64) int64 {
 	return 0
 }
 
-func coresMemoryTotal(nodes []*apiv1.Node, timestamp time.Time) (int64, int64) {
+func coresMemoryTotal(ctx *context.AutoscalingContext, nodes []*apiv1.Node, timestamp time.Time) (int64, int64) {
 	var coresTotal, memoryTotal int64
 	for _, node := range nodes {
-		if actuation.IsNodeBeingDeleted(node, timestamp) {
+		if actuation.IsNodeBeingDeleted(ctx, node, timestamp) {
 			// Nodes being deleted do not count towards total cluster resources
 			continue
 		}
@@ -122,7 +122,7 @@ func (lf *LimitsFinder) customResourcesTotal(context *context.AutoscalingContext
 	result := make(map[string]int64)
 	ngCache := make(map[string][]customresources.CustomResourceTarget)
 	for _, node := range nodes {
-		if actuation.IsNodeBeingDeleted(node, timestamp) {
+		if actuation.IsNodeBeingDeleted(context, node, timestamp) {
 			// Nodes being deleted do not count towards total cluster resources
 			continue
 		}

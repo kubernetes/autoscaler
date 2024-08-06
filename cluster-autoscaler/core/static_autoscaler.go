@@ -332,7 +332,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 	}
 
 	// Update cluster resource usage metrics
-	coresTotal, memoryTotal := calculateCoresMemoryTotal(allNodes, currentTime)
+	coresTotal, memoryTotal := calculateCoresMemoryTotal(a.AutoscalingContext, allNodes, currentTime)
 	metrics.UpdateClusterCPUCurrentCores(coresTotal)
 	metrics.UpdateClusterMemoryCurrentBytes(memoryTotal)
 
@@ -1022,12 +1022,12 @@ func getUpcomingNodeInfos(upcomingCounts map[string]int, nodeInfos map[string]*s
 	return upcomingNodes
 }
 
-func calculateCoresMemoryTotal(nodes []*apiv1.Node, timestamp time.Time) (int64, int64) {
+func calculateCoresMemoryTotal(context *context.AutoscalingContext, nodes []*apiv1.Node, timestamp time.Time) (int64, int64) {
 	// this function is essentially similar to the calculateScaleDownCoresMemoryTotal
 	// we want to check all nodes, aside from those deleting, to sum the cluster resource usage.
 	var coresTotal, memoryTotal int64
 	for _, node := range nodes {
-		if actuation.IsNodeBeingDeleted(node, timestamp) {
+		if actuation.IsNodeBeingDeleted(context, node, timestamp) {
 			// Nodes being deleted do not count towards total cluster resources
 			continue
 		}
