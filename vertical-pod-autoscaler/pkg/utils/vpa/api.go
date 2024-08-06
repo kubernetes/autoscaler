@@ -143,7 +143,7 @@ func GetControllingVPAForPod(ctx context.Context, pod *core.Pod, vpas []*VpaWith
 	// Choose the strongest VPA from the ones that match this Pod.
 	for _, vpaWithSelector := range vpas {
 		if vpaWithSelector.Vpa.Spec.TargetRef == nil {
-			klog.V(5).InfoS("Skipping VPA object because targetRef is not defined. If this is a v1beta1 object switch to v1", "vpa", klog.KObj(vpaWithSelector.Vpa))
+			klog.V(5).InfoS("Skipping VPA object because targetRef is not defined. If this is a v1beta1 object, switch to v1", "vpa", klog.KObj(vpaWithSelector.Vpa))
 			continue
 		}
 		if vpaWithSelector.Vpa.Spec.TargetRef.Kind != parentController.Kind ||
