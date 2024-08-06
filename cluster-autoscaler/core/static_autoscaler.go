@@ -331,7 +331,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 		schedulerUnprocessed = kube_util.SchedulerUnprocessedPods(pods, a.BypassedSchedulers)
 	}
 
-	// Update cluster resource usage metrics
+	// Update cluster CPU and Memory capacity
 	coresTotal, memoryTotal := calculateCoresMemoryTotal(allNodes, currentTime)
 	metrics.UpdateClusterCPUCurrentCores(coresTotal)
 	metrics.UpdateClusterMemoryCurrentBytes(memoryTotal)
