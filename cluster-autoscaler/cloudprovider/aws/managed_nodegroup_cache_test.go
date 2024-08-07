@@ -724,3 +724,175 @@ func TestGetManagedNodegroupTagsNoCachedNodegroup(t *testing.T) {
 		NodegroupName: &nodegroupName,
 	})
 }
+
+func TestGetManagedNodegroupWindowsOsLabel(t *testing.T) {
+	k := &eksMock{}
+
+	nodegroupName := "testNodegroup"
+	clusterName := "testCluster"
+	amiType := "WINDOWS_testAmiType"
+	capacityType := "testCapacityType"
+	k8sVersion := "1.19"
+
+	// Create test nodegroup
+	testNodegroup := eks.Nodegroup{
+		AmiType:       &amiType,
+		ClusterName:   &clusterName,
+		DiskSize:      nil,
+		Labels:        nil,
+		NodegroupName: &nodegroupName,
+		CapacityType:  &capacityType,
+		Version:       &k8sVersion,
+		Taints:        nil,
+		Tags:          nil,
+	}
+
+	k.On("DescribeNodegroup", &eks.DescribeNodegroupInput{
+		ClusterName:   &clusterName,
+		NodegroupName: &nodegroupName,
+	}).Return(&eks.DescribeNodegroupOutput{Nodegroup: &testNodegroup}, nil)
+
+	c := newManagedNodeGroupCache(&awsWrapper{nil, nil, k})
+
+	cacheObj, err := c.getManagedNodegroup(nodegroupName, clusterName)
+	require.NoError(t, err)
+	assert.Equal(t, cacheObj.name, nodegroupName)
+	assert.Equal(t, cacheObj.clusterName, clusterName)
+	assert.Equal(t, len(cacheObj.taints), 0)
+	assert.Equal(t, len(cacheObj.labels), 5)
+	assert.Equal(t, cacheObj.labels["amiType"], amiType)
+	assert.Equal(t, cacheObj.labels["eks.amazonaws.com/capacityType"], capacityType)
+	assert.Equal(t, cacheObj.labels["k8sVersion"], k8sVersion)
+	assert.Equal(t, cacheObj.labels["eks.amazonaws.com/nodegroup"], nodegroupName)
+	assert.Equal(t, cacheObj.labels["kubernetes.io/os"], "windows")
+	assert.Equal(t, len(cacheObj.tags), 0)
+}
+
+func TestGetManagedNodegroupAmazonLinux2OsLabel(t *testing.T) {
+	k := &eksMock{}
+
+	nodegroupName := "testNodegroup"
+	clusterName := "testCluster"
+	amiType := "AL2_testAmiType"
+	capacityType := "testCapacityType"
+	k8sVersion := "1.19"
+
+	// Create test nodegroup
+	testNodegroup := eks.Nodegroup{
+		AmiType:       &amiType,
+		ClusterName:   &clusterName,
+		DiskSize:      nil,
+		Labels:        nil,
+		NodegroupName: &nodegroupName,
+		CapacityType:  &capacityType,
+		Version:       &k8sVersion,
+		Taints:        nil,
+		Tags:          nil,
+	}
+
+	k.On("DescribeNodegroup", &eks.DescribeNodegroupInput{
+		ClusterName:   &clusterName,
+		NodegroupName: &nodegroupName,
+	}).Return(&eks.DescribeNodegroupOutput{Nodegroup: &testNodegroup}, nil)
+
+	c := newManagedNodeGroupCache(&awsWrapper{nil, nil, k})
+
+	cacheObj, err := c.getManagedNodegroup(nodegroupName, clusterName)
+	require.NoError(t, err)
+	assert.Equal(t, cacheObj.name, nodegroupName)
+	assert.Equal(t, cacheObj.clusterName, clusterName)
+	assert.Equal(t, len(cacheObj.taints), 0)
+	assert.Equal(t, len(cacheObj.labels), 5)
+	assert.Equal(t, cacheObj.labels["amiType"], amiType)
+	assert.Equal(t, cacheObj.labels["eks.amazonaws.com/capacityType"], capacityType)
+	assert.Equal(t, cacheObj.labels["k8sVersion"], k8sVersion)
+	assert.Equal(t, cacheObj.labels["eks.amazonaws.com/nodegroup"], nodegroupName)
+	assert.Equal(t, cacheObj.labels["kubernetes.io/os"], "linux")
+	assert.Equal(t, len(cacheObj.tags), 0)
+}
+
+func TestGetManagedNodegroupAmazonLinux2023OsLabel(t *testing.T) {
+	k := &eksMock{}
+
+	nodegroupName := "testNodegroup"
+	clusterName := "testCluster"
+	amiType := "AL2023_testAmiType"
+	capacityType := "testCapacityType"
+	k8sVersion := "1.19"
+
+	// Create test nodegroup
+	testNodegroup := eks.Nodegroup{
+		AmiType:       &amiType,
+		ClusterName:   &clusterName,
+		DiskSize:      nil,
+		Labels:        nil,
+		NodegroupName: &nodegroupName,
+		CapacityType:  &capacityType,
+		Version:       &k8sVersion,
+		Taints:        nil,
+		Tags:          nil,
+	}
+
+	k.On("DescribeNodegroup", &eks.DescribeNodegroupInput{
+		ClusterName:   &clusterName,
+		NodegroupName: &nodegroupName,
+	}).Return(&eks.DescribeNodegroupOutput{Nodegroup: &testNodegroup}, nil)
+
+	c := newManagedNodeGroupCache(&awsWrapper{nil, nil, k})
+
+	cacheObj, err := c.getManagedNodegroup(nodegroupName, clusterName)
+	require.NoError(t, err)
+	assert.Equal(t, cacheObj.name, nodegroupName)
+	assert.Equal(t, cacheObj.clusterName, clusterName)
+	assert.Equal(t, len(cacheObj.taints), 0)
+	assert.Equal(t, len(cacheObj.labels), 5)
+	assert.Equal(t, cacheObj.labels["amiType"], amiType)
+	assert.Equal(t, cacheObj.labels["eks.amazonaws.com/capacityType"], capacityType)
+	assert.Equal(t, cacheObj.labels["k8sVersion"], k8sVersion)
+	assert.Equal(t, cacheObj.labels["eks.amazonaws.com/nodegroup"], nodegroupName)
+	assert.Equal(t, cacheObj.labels["kubernetes.io/os"], "linux")
+	assert.Equal(t, len(cacheObj.tags), 0)
+}
+
+func TestGetManagedNodegroupBottlerocketOsLabel(t *testing.T) {
+	k := &eksMock{}
+
+	nodegroupName := "testNodegroup"
+	clusterName := "testCluster"
+	amiType := "BOTTLEROCKET_testAmiType"
+	capacityType := "testCapacityType"
+	k8sVersion := "1.19"
+
+	// Create test nodegroup
+	testNodegroup := eks.Nodegroup{
+		AmiType:       &amiType,
+		ClusterName:   &clusterName,
+		DiskSize:      nil,
+		Labels:        nil,
+		NodegroupName: &nodegroupName,
+		CapacityType:  &capacityType,
+		Version:       &k8sVersion,
+		Taints:        nil,
+		Tags:          nil,
+	}
+
+	k.On("DescribeNodegroup", &eks.DescribeNodegroupInput{
+		ClusterName:   &clusterName,
+		NodegroupName: &nodegroupName,
+	}).Return(&eks.DescribeNodegroupOutput{Nodegroup: &testNodegroup}, nil)
+
+	c := newManagedNodeGroupCache(&awsWrapper{nil, nil, k})
+
+	cacheObj, err := c.getManagedNodegroup(nodegroupName, clusterName)
+	require.NoError(t, err)
+	assert.Equal(t, cacheObj.name, nodegroupName)
+	assert.Equal(t, cacheObj.clusterName, clusterName)
+	assert.Equal(t, len(cacheObj.taints), 0)
+	assert.Equal(t, len(cacheObj.labels), 5)
+	assert.Equal(t, cacheObj.labels["amiType"], amiType)
+	assert.Equal(t, cacheObj.labels["eks.amazonaws.com/capacityType"], capacityType)
+	assert.Equal(t, cacheObj.labels["k8sVersion"], k8sVersion)
+	assert.Equal(t, cacheObj.labels["eks.amazonaws.com/nodegroup"], nodegroupName)
+	assert.Equal(t, cacheObj.labels["kubernetes.io/os"], "linux")
+	assert.Equal(t, len(cacheObj.tags), 0)
+}
