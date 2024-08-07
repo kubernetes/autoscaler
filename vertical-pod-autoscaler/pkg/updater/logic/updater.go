@@ -120,7 +120,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 	defer timer.ObserveTotal()
 
 	if u.useAdmissionControllerStatus {
-		isValid, err := u.statusValidator.IsStatusValid(status.AdmissionControllerStatusTimeout)
+		isValid, err := u.statusValidator.IsStatusValid(ctx, status.AdmissionControllerStatusTimeout)
 		if err != nil {
 			klog.Errorf("Error getting Admission Controller status: %v. Skipping eviction loop", err)
 			return

@@ -257,7 +257,7 @@ func newFakeValidator(isValid bool) status.Validator {
 	return &fakeValidator{isValid}
 }
 
-func (f *fakeValidator) IsStatusValid(statusTimeout time.Duration) (bool, error) {
+func (f *fakeValidator) IsStatusValid(ctx context.Context, statusTimeout time.Duration) (bool, error) {
 	return f.isValid, nil
 }
 
