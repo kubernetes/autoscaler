@@ -48,6 +48,7 @@ type hetznerNodeGroup struct {
 	instanceType string
 
 	clusterUpdateMutex *sync.Mutex
+	placementGroup     *hcloud.PlacementGroup
 }
 
 type hetznerNodeGroupSpec struct {

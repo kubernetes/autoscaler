@@ -73,9 +73,10 @@ type ImageList struct {
 
 // NodeConfig holds the configuration for a single nodepool
 type NodeConfig struct {
-	CloudInit string
-	Taints    []apiv1.Taint
-	Labels    map[string]string
+	CloudInit      string
+	PlacementGroup string
+	Taints         []apiv1.Taint
+	Labels         map[string]string
 }
 
 // LegacyConfig holds the configuration in the legacy format
