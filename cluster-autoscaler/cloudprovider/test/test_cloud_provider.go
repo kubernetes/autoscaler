@@ -254,9 +254,30 @@ func (tcp *TestCloudProvider) BuildNodeGroup(id string, min, max, size int, auto
 	}
 }
 
+// BuildUpcomingNodeGroup returns an upcoming test node group.
+func (tcp *TestCloudProvider) BuildUpcomingNodeGroup(id string, min, max, size int, autoprovisioned bool, machineType string, opts *config.NodeGroupAutoscalingOptions, exists bool) *TestNodeGroup {
+	return &TestNodeGroup{
+		cloudProvider:   tcp,
+		id:              id,
+		minSize:         min,
+		maxSize:         max,
+		targetSize:      size,
+		exist:           exists,
+		autoprovisioned: autoprovisioned,
+		machineType:     machineType,
+		opts:            opts,
+	}
+}
+
 // AddNodeGroup adds node group to test cloud provider.
 func (tcp *TestCloudProvider) AddNodeGroup(id string, min int, max int, size int) {
 	nodeGroup := tcp.BuildNodeGroup(id, min, max, size, false, "", nil)
+	tcp.InsertNodeGroup(nodeGroup)
+}
+
+// AddUpcomingNodeGroup adds upcoming node group to test cloud provider.
+func (tcp *TestCloudProvider) AddUpcomingNodeGroup(id string, min int, max int, size int, exists bool) {
+	nodeGroup := tcp.BuildUpcomingNodeGroup(id, min, max, size, false, "", nil, exists)
 	tcp.InsertNodeGroup(nodeGroup)
 }
 

@@ -42,6 +42,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/processors/customresources"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupconfig"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups/asyncnodegroups"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfosprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodes"
@@ -196,6 +197,7 @@ func NewTestProcessors(context *context.AutoscalingContext) *processors.Autoscal
 		ActionableClusterProcessor:  actionablecluster.NewDefaultActionableClusterProcessor(),
 		ScaleDownCandidatesNotifier: scaledowncandidates.NewObserversList(),
 		ScaleStateNotifier:          nodegroupchange.NewNodeGroupChangeObserversList(),
+		AsyncNodeGroupStateChecker:  asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(),
 	}
 }
 
@@ -239,6 +241,25 @@ func NewScaleTestAutoscalingContext(
 	}, nil
 }
 
+// MockAsyncNodeGroupStateCheker is a mock AsyncNodeGroupStateCheker to be used in tests
+type MockAsyncNodeGroupStateCheker struct {
+	T                   *testing.T
+	IsUpcomingNodeGroup map[string]bool
+}
+
+// IsUpcoming simulates checking if node group is upcoming.
+func (p *MockAsyncNodeGroupStateCheker) IsUpcoming(nodeGroup cloudprovider.NodeGroup) bool {
+	val, exists := p.IsUpcomingNodeGroup[nodeGroup.Id()]
+	if exists {
+		return val
+	}
+	return false
+}
+
+// CleanUp doesn't do anything; it's here to satisfy the interface
+func (p *MockAsyncNodeGroupStateCheker) CleanUp() {
+}
+
 // MockAutoprovisioningNodeGroupManager is a mock node group manager to be used in tests
 type MockAutoprovisioningNodeGroupManager struct {
 	T           *testing.T
@@ -247,6 +268,15 @@ type MockAutoprovisioningNodeGroupManager struct {
 
 // CreateNodeGroup creates a new node group
 func (p *MockAutoprovisioningNodeGroupManager) CreateNodeGroup(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (nodegroups.CreateNodeGroupResult, errors.AutoscalerError) {
+	return p.createNodeGroup(context, nodeGroup, false)
+}
+
+// CreateNodeGroupAsync simulates async node group creation. Returns upcoming node groups, never calls initializer.
+func (p *MockAutoprovisioningNodeGroupManager) CreateNodeGroupAsync(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup, nodeGroupInitializer nodegroups.AsyncNodeGroupInitializer) (nodegroups.CreateNodeGroupResult, errors.AutoscalerError) {
+	return p.createNodeGroup(context, nodeGroup, false)
+}
+
+func (p *MockAutoprovisioningNodeGroupManager) createNodeGroup(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup, upcoming bool) (nodegroups.CreateNodeGroupResult, errors.AutoscalerError) {
 	newNodeGroup, err := nodeGroup.Create()
 	assert.NoError(p.T, err)
 	metrics.RegisterNodeGroupCreation()
