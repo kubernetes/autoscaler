@@ -89,7 +89,7 @@ func NewUpdater(
 	ignoredNamespaces []string,
 ) (Updater, error) {
 	evictionRateLimiter := getRateLimiter(evictionRateLimit, evictionRateBurst)
-	factory, err := eviction.NewPodsEvictionRestrictionFactory(kubeClient, minReplicasForEvicition, evictionToleranceFraction)
+	factory, err := eviction.NewPodsEvictionRestrictionFactory(kubeClient, namespace, minReplicasForEvicition, evictionToleranceFraction)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create eviction restriction factory: %v", err)
 	}
