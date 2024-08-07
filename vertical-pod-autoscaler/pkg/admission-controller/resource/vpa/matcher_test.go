@@ -56,10 +56,16 @@ func TestGetMatchingVpa(t *testing.T) {
 		Name:       sts.Name,
 		APIVersion: sts.APIVersion,
 	}
+	targetRefWithNoMatches := &v1.CrossVersionObjectReference{
+		Kind:       "ReplicaSet",
+		Name:       "rs",
+		APIVersion: "apps/v1",
+	}
 	podBuilderWithoutCreator := test.Pod().WithName("test-pod").WithLabels(map[string]string{"app": "test"}).
 		AddContainer(test.Container().WithName("i-am-container").Get())
 	podBuilder := podBuilderWithoutCreator.WithCreator(&sts.ObjectMeta, &sts.TypeMeta)
 	vpaBuilder := test.VerticalPodAutoscaler().WithContainer("i-am-container")
+
 	testCases := []struct {
 		name            string
 		pod             *core.Pod
@@ -78,12 +84,25 @@ func TestGetMatchingVpa(t *testing.T) {
 			expectedFound:   true,
 			expectedVpaName: "auto-vpa",
 		}, {
-			name: "matching selector but not match ownerRef (orphan pod)",
+			name: "no matching ownerRef (orphan pod)",
 			pod:  podBuilderWithoutCreator.Get(),
 			vpas: []*vpa_types.VerticalPodAutoscaler{
 				vpaBuilder.WithUpdateMode(vpa_types.UpdateModeAuto).WithName("auto-vpa").WithTargetRef(targetRef).Get(),
 			},
-			labelSelector: "app = test",
+			expectedFound: false,
+		}, {
+			name: "vpa without targetRef",
+			pod:  podBuilder.Get(),
+			vpas: []*vpa_types.VerticalPodAutoscaler{
+				vpaBuilder.WithUpdateMode(vpa_types.UpdateModeAuto).WithName("auto-vpa").Get(),
+			},
+			expectedFound: false,
+		}, {
+			name: "no vpa with matching targetRef",
+			pod:  podBuilder.Get(),
+			vpas: []*vpa_types.VerticalPodAutoscaler{
+				vpaBuilder.WithUpdateMode(vpa_types.UpdateModeAuto).WithName("auto-vpa").WithTargetRef(targetRefWithNoMatches).Get(),
+			},
 			expectedFound: false,
 		}, {
 			name: "not matching selector",
@@ -99,10 +118,9 @@ func TestGetMatchingVpa(t *testing.T) {
 			vpas: []*vpa_types.VerticalPodAutoscaler{
 				vpaBuilder.WithUpdateMode(vpa_types.UpdateModeOff).WithName("off-vpa").WithTargetRef(targetRef).Get(),
 			},
-			labelSelector: "app = test",
 			expectedFound: false,
 		}, {
-			name: "two vpas one in off mode",
+			name: "two vpas, one in off mode",
 			pod:  podBuilder.Get(),
 			vpas: []*vpa_types.VerticalPodAutoscaler{
 				vpaBuilder.WithUpdateMode(vpa_types.UpdateModeOff).WithName("off-vpa").WithTargetRef(targetRef).Get(),
@@ -124,10 +142,10 @@ func TestGetMatchingVpa(t *testing.T) {
 			name:          "no vpa objects",
 			pod:           podBuilder.Get(),
 			vpas:          []*vpa_types.VerticalPodAutoscaler{},
-			labelSelector: "app = test",
 			expectedFound: false,
 		},
 	}
+
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
@@ -141,7 +159,9 @@ func TestGetMatchingVpa(t *testing.T) {
 			vpaLister := &test.VerticalPodAutoscalerListerMock{}
 			vpaLister.On("VerticalPodAutoscalers", "default").Return(vpaNamespaceLister)
 
-			mockSelectorFetcher.EXPECT().Fetch(gomock.Any()).AnyTimes().Return(parseLabelSelector(tc.labelSelector), nil)
+			if tc.labelSelector != "" {
+				mockSelectorFetcher.EXPECT().Fetch(gomock.Any()).AnyTimes().Return(parseLabelSelector(tc.labelSelector), nil)
+			}
 			// This test is using a FakeControllerFetcher which returns the same ownerRef that is passed to it.
 			// In other words, it cannot go through the hierarchy of controllers like "ReplicaSet => Deployment"
 			// For this reason we are using "StatefulSet" as the ownerRef kind in the test, since it is a direct link.

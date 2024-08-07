@@ -50,30 +50,47 @@ func NewMatcher(vpaLister vpa_lister.VerticalPodAutoscalerLister,
 }
 
 func (m *matcher) GetMatchingVPA(pod *core.Pod) *vpa_types.VerticalPodAutoscaler {
+	parentController, err := vpa_api_util.FindParentControllerForPod(pod, m.controllerFetcher)
+	if err != nil {
+		klog.Errorf("fail to get parent controller for pod: pod=%s err=%s", klog.KObj(pod), err.Error())
+		return nil
+	}
+	if parentController == nil {
+		return nil
+	}
+
 	configs, err := m.vpaLister.VerticalPodAutoscalers(pod.Namespace).List(labels.Everything())
 	if err != nil {
 		klog.Errorf("failed to get vpa configs: %v", err)
 		return nil
 	}
-	onConfigs := make([]*vpa_api_util.VpaWithSelector, 0)
+
+	var controllingVpa *vpa_types.VerticalPodAutoscaler
 	for _, vpaConfig := range configs {
 		if vpa_api_util.GetUpdateMode(vpaConfig) == vpa_types.UpdateModeOff {
 			continue
 		}
+		if vpaConfig.Spec.TargetRef == nil {
+			klog.V(5).Infof("skipping VPA object %s because targetRef is not defined. If this is a v1beta1 object, switch to v1", klog.KObj(vpaConfig))
+			continue
+		}
+		if vpaConfig.Spec.TargetRef.Kind != parentController.Kind ||
+			vpaConfig.Namespace != parentController.Namespace ||
+			vpaConfig.Spec.TargetRef.Name != parentController.Name {
+			continue // This pod is not associated to the right controller
+		}
+
 		selector, err := m.selectorFetcher.Fetch(vpaConfig)
 		if err != nil {
 			klog.V(3).Infof("skipping VPA object %s because we cannot fetch selector: %s", klog.KObj(vpaConfig), err)
 			continue
 		}
-		onConfigs = append(onConfigs, &vpa_api_util.VpaWithSelector{
-			Vpa:      vpaConfig,
-			Selector: selector,
-		})
+
+		vpaWithSelector := &vpa_api_util.VpaWithSelector{Vpa: vpaConfig, Selector: selector}
+		if vpa_api_util.PodMatchesVPA(pod, vpaWithSelector) && vpa_api_util.Stronger(vpaConfig, controllingVpa) {
+			controllingVpa = vpaConfig
+		}
 	}
-	klog.V(2).Infof("Let's choose from %d configs for pod %s", len(onConfigs), klog.KObj(pod))
-	result := vpa_api_util.GetControllingVPAForPod(pod, onConfigs, m.controllerFetcher)
-	if result != nil {
-		return result.Vpa
-	}
-	return nil
+
+	return controllingVpa
 }
