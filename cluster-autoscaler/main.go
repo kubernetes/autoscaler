@@ -59,6 +59,9 @@ import (
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfosprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/podinjection"
+	podinjectionbackoff "k8s.io/autoscaler/cluster-autoscaler/processors/podinjection/backoff"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/pods"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/provreq"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/scaledowncandidates"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/scaledowncandidates/emptycandidates"
@@ -265,6 +268,9 @@ var (
 			"Eg. flag usage:  '10000:20,1000:100,0:60'")
 	provisioningRequestsEnabled = flag.Bool("enable-provisioning-requests", false, "Whether the clusterautoscaler will be handling the ProvisioningRequest CRs.")
 	frequentLoopsEnabled        = flag.Bool("frequent-loops-enabled", false, "Whether clusterautoscaler triggers new iterations more frequently when it's needed")
+	proactiveScaleupEnabled     = flag.Bool("enable-proactive-scaleup", false, "Whether to enable/disable proactive scale-ups, defaults to false")
+	podInjectionLimit           = flag.Int("pod-injection-limit", 5000, "Limits total number of pods while injecting fake pods. If unschedulable pods already exceeds the limit, pod injection is disabled but pods are not truncated.")
+	nodeLimit                   = flag.Int("node-limit", 15000, "Limits total number of nodes in cluster to avoid overloading KCP, only used when --enable-proactive-scaleup is set to true. Defaults to 15k nodes")
 )
 
 func isFlagPassed(name string) bool {
@@ -525,6 +531,26 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 		podListProcessor.AddProcessor(injector)
 		podListProcessor.AddProcessor(provreqProcesor)
 	}
+
+	if *proactiveScaleupEnabled {
+		podInjectionBackoffRegistry := podinjectionbackoff.NewFakePodControllerRegistry()
+		if *nodeLimit <= 0 {
+			klog.Warningf("Disabling Node limiting for proactive-scaleups. Expected valid positive value for node-limit, found: %v", *nodeLimit)
+		} else if *maxNodesTotal > 0 {
+			*maxNodesTotal = min(*nodeLimit, *maxNodesTotal)
+		} else {
+			*maxNodesTotal = *nodeLimit
+		}
+		podInjectionPodListProcessor := podinjection.NewPodInjectionPodListProcessor(podInjectionBackoffRegistry)
+		enforceInjectedPodsLimitProcessor := podinjection.NewEnforceInjectedPodsLimitProcessor(*podInjectionLimit)
+
+		podListProcessor = pods.NewCombinedPodListProcessor([]pods.PodListProcessor{podInjectionPodListProcessor, podListProcessor, enforceInjectedPodsLimitProcessor})
+
+		// FakePodsScaleUpStatusProcessor processor needs to be the first processor in ScaleUpStatusProcessor as it filters out fake pods from
+		// Scale Up status so that we don't emit events, visibility logs, ..etc for them.
+		opts.Processors.ScaleUpStatusProcessor = podinjection.NewFakePodsScaleUpStatusProcessor(podInjectionBackoffRegistry)
+	}
+
 	opts.Processors.PodListProcessor = podListProcessor
 	scaleDownCandidatesComparers := []scaledowncandidates.CandidatesComparer{}
 	if autoscalingOptions.ParallelDrain {
