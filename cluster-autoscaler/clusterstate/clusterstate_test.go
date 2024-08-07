@@ -176,6 +176,73 @@ func TestHasNodeGroupStartedScaleUp(t *testing.T) {
 	}
 }
 
+func TestDeletingFailedScaleUpNodes(t *testing.T) {
+	ngName := "ng1"
+	testCases := []struct {
+		name                string
+		acceptableRange     AcceptableRange
+		readiness           Readiness
+		newTarget           int
+		scaleUpRequest      *ScaleUpRequest
+		wantAcceptableRange AcceptableRange
+		wantUpcoming        int
+	}{
+		{
+			name:                "failed scale up by 3 nodes",
+			acceptableRange:     AcceptableRange{MinNodes: 1, CurrentTarget: 4, MaxNodes: 4},
+			readiness:           Readiness{Ready: make([]string, 1)},
+			newTarget:           1,
+			wantAcceptableRange: AcceptableRange{MinNodes: 1, CurrentTarget: 1, MaxNodes: 1},
+			wantUpcoming:        0,
+		}, {
+			name:                "partially failed scale up",
+			acceptableRange:     AcceptableRange{MinNodes: 5, CurrentTarget: 7, MaxNodes: 8},
+			readiness:           Readiness{Ready: make([]string, 5)},
+			newTarget:           6,
+			wantAcceptableRange: AcceptableRange{MinNodes: 5, CurrentTarget: 6, MaxNodes: 6},
+			scaleUpRequest:      &ScaleUpRequest{Increase: 1},
+			wantUpcoming:        1,
+		}, {
+			name:                "scale up ongoing, no change",
+			acceptableRange:     AcceptableRange{MinNodes: 1, CurrentTarget: 4, MaxNodes: 4},
+			readiness:           Readiness{Ready: make([]string, 1)},
+			newTarget:           4,
+			wantAcceptableRange: AcceptableRange{MinNodes: 1, CurrentTarget: 4, MaxNodes: 4},
+			scaleUpRequest:      &ScaleUpRequest{Increase: 3},
+			wantUpcoming:        3,
+		}, {
+			name:                "no scale up, no change",
+			acceptableRange:     AcceptableRange{MinNodes: 4, CurrentTarget: 4, MaxNodes: 4},
+			readiness:           Readiness{Ready: make([]string, 4)},
+			newTarget:           4,
+			wantAcceptableRange: AcceptableRange{MinNodes: 4, CurrentTarget: 4, MaxNodes: 4},
+			wantUpcoming:        0,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			provider := testprovider.NewTestCloudProvider(nil, nil)
+			provider.AddNodeGroup(ngName, 0, 1000, tc.newTarget)
+
+			fakeLogRecorder, _ := utils.NewStatusMapRecorder(&fake.Clientset{}, "kube-system", kube_record.NewFakeRecorder(5), false, "my-cool-configmap")
+			clusterState := NewClusterStateRegistry(provider, ClusterStateRegistryConfig{}, fakeLogRecorder,
+				newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{}))
+			clusterState.acceptableRanges = map[string]AcceptableRange{ngName: tc.acceptableRange}
+			clusterState.perNodeGroupReadiness = map[string]Readiness{ngName: tc.readiness}
+			if tc.scaleUpRequest != nil {
+				clusterState.scaleUpRequests = map[string]*ScaleUpRequest{ngName: tc.scaleUpRequest}
+			}
+
+			clusterState.Recalculate()
+			assert.Equal(t, tc.wantAcceptableRange, clusterState.acceptableRanges[ngName])
+			upcomingCounts, _ := clusterState.GetUpcomingNodes()
+			if upcoming, found := upcomingCounts[ngName]; found {
+				assert.Equal(t, tc.wantUpcoming, upcoming, "Unexpected upcoming nodes count, want: %d got: %d", tc.wantUpcoming, upcomingCounts[ngName])
+			}
+		})
+	}
+}
+
 func TestOKOneUnreadyNode(t *testing.T) {
 	now := time.Now()
 

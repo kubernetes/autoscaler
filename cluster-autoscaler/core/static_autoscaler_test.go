@@ -1709,8 +1709,11 @@ func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 	clusterState.UpdateNodes([]*apiv1.Node{}, nil, now)
 
 	// delete nodes with create errors
-	removedNodes := autoscaler.deleteCreatedNodesWithErrors()
-	assert.True(t, removedNodes)
+	autoscaler.deleteCreatedNodesWithErrors()
+
+	// nodes should be deleted
+	expectedDeleteCalls := 1
+	nodeGroupA.AssertNumberOfCalls(t, "DeleteNodes", expectedDeleteCalls)
 
 	// check delete was called on correct nodes
 	nodeGroupA.AssertCalled(t, "DeleteNodes", mock.MatchedBy(
@@ -1734,10 +1737,12 @@ func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 	clusterState.UpdateNodes([]*apiv1.Node{}, nil, now)
 
 	// delete nodes with create errors
-	removedNodes = autoscaler.deleteCreatedNodesWithErrors()
-	assert.True(t, removedNodes)
+	autoscaler.deleteCreatedNodesWithErrors()
 
 	// nodes should be deleted again
+	expectedDeleteCalls += 1
+	nodeGroupA.AssertNumberOfCalls(t, "DeleteNodes", expectedDeleteCalls)
+
 	nodeGroupA.AssertCalled(t, "DeleteNodes", mock.MatchedBy(
 		func(nodes []*apiv1.Node) bool {
 			if len(nodes) != 4 {
@@ -1798,11 +1803,10 @@ func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 	clusterState.UpdateNodes([]*apiv1.Node{}, nil, now)
 
 	// delete nodes with create errors
-	removedNodes = autoscaler.deleteCreatedNodesWithErrors()
-	assert.False(t, removedNodes)
+	autoscaler.deleteCreatedNodesWithErrors()
 
-	// we expect no more Delete Nodes
-	nodeGroupA.AssertNumberOfCalls(t, "DeleteNodes", 2)
+	// we expect no more Delete Nodes, don't increase expectedDeleteCalls
+	nodeGroupA.AssertNumberOfCalls(t, "DeleteNodes", expectedDeleteCalls)
 
 	// failed node not included by NodeGroupForNode
 	nodeGroupC := &mockprovider.NodeGroup{}
@@ -1840,8 +1844,7 @@ func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 	clusterState.UpdateNodes([]*apiv1.Node{}, nil, time.Now())
 
 	// No nodes are deleted when failed nodes don't have matching node groups
-	removedNodes = autoscaler.deleteCreatedNodesWithErrors()
-	assert.False(t, removedNodes)
+	autoscaler.deleteCreatedNodesWithErrors()
 	nodeGroupC.AssertNumberOfCalls(t, "DeleteNodes", 0)
 
 	nodeGroupAtomic := &mockprovider.NodeGroup{}
@@ -1896,8 +1899,7 @@ func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
 	clusterState.UpdateNodes([]*apiv1.Node{}, nil, now)
 
 	// delete nodes with create errors
-	removedNodes = autoscaler.deleteCreatedNodesWithErrors()
-	assert.True(t, removedNodes)
+	autoscaler.deleteCreatedNodesWithErrors()
 
 	nodeGroupAtomic.AssertCalled(t, "DeleteNodes", mock.MatchedBy(
 		func(nodes []*apiv1.Node) bool {
