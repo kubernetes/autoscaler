@@ -445,6 +445,25 @@ func TestGetPodsToMove(t *testing.T) {
 				},
 			},
 		}
+		ignoredVolumesPod = &apiv1.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "bar",
+				Namespace: "default",
+				Annotations: map[string]string{
+					drain.IgnoredVolumesOnScaleDownKey: "local",
+				},
+				OwnerReferences: GenerateOwnerReferences("rs", "ReplicaSet", "extensions/v1beta1", ""),
+			},
+			Spec: apiv1.PodSpec{
+				NodeName: "node",
+				Volumes: []apiv1.Volume{
+					{
+						Name:         "local",
+						VolumeSource: apiv1.VolumeSource{HostPath: &apiv1.HostPathVolumeSource{Path: "/data"}},
+					},
+				},
+			},
+		}
 		emptyPDB      = &policyv1.PodDisruptionBudget{}
 		kubeSystemPDB = &policyv1.PodDisruptionBudget{
 			ObjectMeta: metav1.ObjectMeta{
@@ -709,7 +728,13 @@ func TestGetPodsToMove(t *testing.T) {
 		{
 			desc:     "pod with EmptyDir and PodSafeToEvict annotation",
 			pods:     []*apiv1.Pod{emptydirSafePod},
+			rules:    []rules.Rule{alwaysDrain{}},
 			wantPods: []*apiv1.Pod{emptydirSafePod},
+		},
+		{
+			desc:     "pod with HostPath and IgnoredVolumesOnScaleDown annotation",
+			pods:     []*apiv1.Pod{ignoredVolumesPod},
+			wantPods: []*apiv1.Pod{ignoredVolumesPod},
 		},
 		{
 			desc:     "empty PDB with RC-managed pod",
