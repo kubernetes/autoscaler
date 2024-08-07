@@ -16,6 +16,9 @@ autoDiscovery:
   # Enable autodiscovery for `cloudProvider=magnum`, for groups matching `autoDiscovery.roles`.
   clusterName:  # cluster.local
 
+  # autoDiscovery.namespace -- Enable autodiscovery via cluster namespace for for `cloudProvider=clusterapi`
+  namespace:  # default
+
   # autoDiscovery.tags -- ASG tags to match, run through `tpl`.
   tags:
     - k8s.io/cluster-autoscaler/enabled
@@ -35,6 +38,14 @@ autoDiscovery:
 # - name: asg1<br />
 #   maxSize: 2<br />
 #   minSize: 1
+# </pre>
+# For Hetzner Cloud, the `instanceType` and `region` keys are also required.
+# <pre>
+# - name: mypool<br />
+#   maxSize: 2<br />
+#   minSize: 1<br />
+#   instanceType: CPX21<br />
+#   region: FSN1
 # </pre>
 autoscalingGroups: []
 # - name: asg1
@@ -75,14 +86,6 @@ azureClientID: ""
 # Required if `cloudProvider=azure`
 azureClientSecret: ""
 
-# azureClusterName -- Azure AKS cluster name.
-# Required if `cloudProvider=azure`
-azureClusterName: ""
-
-# azureNodeResourceGroup -- Azure resource group where the cluster's nodes are located, typically set as `MC_<cluster-resource-group-name>_<cluster-name>_<location>`.
-# Required if `cloudProvider=azure`
-azureNodeResourceGroup: ""
-
 # azureResourceGroup -- Azure resource group that the cluster is located.
 # Required if `cloudProvider=azure`
 azureResourceGroup: ""
@@ -102,7 +105,10 @@ azureUseManagedIdentityExtension: false
 azureUseWorkloadIdentityExtension: false
 
 # azureVMType -- Azure VM type.
-azureVMType: "AKS"
+azureVMType: "vmss"
+
+# azureEnableForceDelete -- Whether to force delete VMs or VMSS instances when scaling down.
+azureEnableForceDelete: false
 
 # cloudConfigPath -- Configuration file for cloud provider.
 cloudConfigPath: ""
@@ -230,7 +236,7 @@ image:
   # image.repository -- Image repository
   repository: registry.k8s.io/autoscaling/cluster-autoscaler
   # image.tag -- Image tag
-  tag: v1.27.2
+  tag: v1.30.0
   # image.pullPolicy -- Image pull policy
   pullPolicy: IfNotPresent
   ## Optionally specify an array of imagePullSecrets.
@@ -243,6 +249,9 @@ image:
 
 # kubeTargetVersionOverride -- Allow overriding the `.Capabilities.KubeVersion.GitVersion` check. Useful for `helm template` commands.
 kubeTargetVersionOverride: ""
+
+# kwokConfigMapName -- configmap for configuring kwok provider
+kwokConfigMapName: "kwok-provider-config"
 
 # magnumCABundlePath -- Path to the host's CA bundle, from `ca-file` in the cloud-config file.
 magnumCABundlePath: "/etc/kubernetes/ca-bundle.crt"

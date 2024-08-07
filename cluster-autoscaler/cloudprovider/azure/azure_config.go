@@ -56,6 +56,9 @@ const (
 	rateLimitWriteQPSEnvVar             = "RATE_LIMIT_WRITE_QPS"
 	rateLimitWriteBucketsEnvVar         = "RATE_LIMIT_WRITE_BUCKETS"
 
+	// VmssSizeRefreshPeriodDefault in seconds
+	VmssSizeRefreshPeriodDefault = 30
+
 	// auth methods
 	authMethodPrincipal = "principal"
 	authMethodCLI       = "cli"
@@ -87,8 +90,16 @@ type Config struct {
 	Location       string `json:"location" yaml:"location"`
 	TenantID       string `json:"tenantId" yaml:"tenantId"`
 	SubscriptionID string `json:"subscriptionId" yaml:"subscriptionId"`
-	ResourceGroup  string `json:"resourceGroup" yaml:"resourceGroup"`
-	VMType         string `json:"vmType" yaml:"vmType"`
+	ClusterName    string `json:"clusterName" yaml:"clusterName"`
+	// ResourceGroup is the MC_ resource group where the nodes are located.
+	ResourceGroup string `json:"resourceGroup" yaml:"resourceGroup"`
+	// ClusterResourceGroup is the resource group where the cluster is located.
+	ClusterResourceGroup string `json:"clusterResourceGroup" yaml:"clusterResourceGroup"`
+	VMType               string `json:"vmType" yaml:"vmType"`
+
+	// ARMBaseURLForAPClient is the URL to use for operations for the VMs pool.
+	// It can override the default public ARM endpoint for VMs pool scale operations.
+	ARMBaseURLForAPClient string `json:"armBaseURLForAPClient" yaml:"armBaseURLForAPClient"`
 
 	// AuthMethod determines how to authorize requests for the Azure
 	// cloud. Valid options are "principal" (= the traditional
@@ -111,11 +122,6 @@ type Config struct {
 	Deployment           string                 `json:"deployment" yaml:"deployment"`
 	DeploymentParameters map[string]interface{} `json:"deploymentParameters" yaml:"deploymentParameters"`
 
-	//Configs only for AKS
-	ClusterName string `json:"clusterName" yaml:"clusterName"`
-	//Config only for AKS
-	NodeResourceGroup string `json:"nodeResourceGroup" yaml:"nodeResourceGroup"`
-
 	// VMSS metadata cache TTL in seconds, only applies for vmss type
 	VmssCacheTTL int64 `json:"vmssCacheTTL" yaml:"vmssCacheTTL"`
 
@@ -135,11 +141,20 @@ type Config struct {
 	CloudProviderBackoffDuration int     `json:"cloudProviderBackoffDuration,omitempty" yaml:"cloudProviderBackoffDuration,omitempty"`
 	CloudProviderBackoffJitter   float64 `json:"cloudProviderBackoffJitter,omitempty" yaml:"cloudProviderBackoffJitter,omitempty"`
 
+	// EnableForceDelete defines whether to enable force deletion on the APIs
+	EnableForceDelete bool `json:"enableForceDelete,omitempty" yaml:"enableForceDelete,omitempty"`
+
 	// EnableDynamicInstanceList defines whether to enable dynamic instance workflow for instance information check
 	EnableDynamicInstanceList bool `json:"enableDynamicInstanceList,omitempty" yaml:"enableDynamicInstanceList,omitempty"`
 
 	// EnableVmssFlex defines whether to enable Vmss Flex support or not
 	EnableVmssFlex bool `json:"enableVmssFlex,omitempty" yaml:"enableVmssFlex,omitempty"`
+
+	// (DEPRECATED, DO NOT USE) EnableDetailedCSEMessage defines whether to emit error messages in the CSE error body info
+	EnableDetailedCSEMessage bool `json:"enableDetailedCSEMessage,omitempty" yaml:"enableDetailedCSEMessage,omitempty"`
+
+	// (DEPRECATED, DO NOT USE) GetVmssSizeRefreshPeriod (seconds) defines how frequently to call GET VMSS API to fetch VMSS info per nodegroup instance
+	GetVmssSizeRefreshPeriod int `json:"getVmssSizeRefreshPeriod,omitempty" yaml:"getVmssSizeRefreshPeriod,omitempty"`
 }
 
 // BuildAzureConfig returns a Config object for the Azure clients
@@ -174,8 +189,6 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 		cfg.AADClientCertPath = os.Getenv("ARM_CLIENT_CERT_PATH")
 		cfg.AADClientCertPassword = os.Getenv("ARM_CLIENT_CERT_PASSWORD")
 		cfg.Deployment = os.Getenv("ARM_DEPLOYMENT")
-		cfg.ClusterName = os.Getenv("AZURE_CLUSTER_NAME")
-		cfg.NodeResourceGroup = os.Getenv("AZURE_NODE_RESOURCE_GROUP")
 
 		subscriptionID, err := getSubscriptionIdFromInstanceMetadata()
 		if err != nil {
@@ -252,6 +265,15 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 			cfg.EnableDynamicInstanceList = dynamicInstanceListDefault
 		}
 
+		if getVmssSizeRefreshPeriod := os.Getenv("AZURE_GET_VMSS_SIZE_REFRESH_PERIOD"); getVmssSizeRefreshPeriod != "" {
+			cfg.GetVmssSizeRefreshPeriod, err = strconv.Atoi(getVmssSizeRefreshPeriod)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse AZURE_GET_VMSS_SIZE_REFRESH_PERIOD %q: %v", getVmssSizeRefreshPeriod, err)
+			}
+		} else {
+			cfg.GetVmssSizeRefreshPeriod = VmssSizeRefreshPeriodDefault
+		}
+
 		if enableVmssFlex := os.Getenv("AZURE_ENABLE_VMSS_FLEX"); enableVmssFlex != "" {
 			cfg.EnableVmssFlex, err = strconv.ParseBool(enableVmssFlex)
 			if err != nil {
@@ -301,12 +323,25 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 			}
 		}
 	}
+
+	// always read the following from environment variables since azure.json doesn't have these fields
+	cfg.ClusterName = os.Getenv("CLUSTER_NAME")
+	cfg.ClusterResourceGroup = os.Getenv("ARM_CLUSTER_RESOURCE_GROUP")
+	cfg.ARMBaseURLForAPClient = os.Getenv("ARM_BASE_URL_FOR_AP_CLIENT")
+
 	cfg.TrimSpace()
 
 	if cloudProviderRateLimit := os.Getenv("CLOUD_PROVIDER_RATE_LIMIT"); cloudProviderRateLimit != "" {
 		cfg.CloudProviderRateLimit, err = strconv.ParseBool(cloudProviderRateLimit)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse CLOUD_PROVIDER_RATE_LIMIT: %q, %v", cloudProviderRateLimit, err)
+		}
+	}
+
+	if enableForceDelete := os.Getenv("AZURE_ENABLE_FORCE_DELETE"); enableForceDelete != "" {
+		cfg.EnableForceDelete, err = strconv.ParseBool(enableForceDelete)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse AZURE_ENABLE_FORCE_DELETE: %q, %v", enableForceDelete, err)
 		}
 	}
 
@@ -467,15 +502,15 @@ func (cfg *Config) TrimSpace() {
 	cfg.Location = strings.TrimSpace(cfg.Location)
 	cfg.TenantID = strings.TrimSpace(cfg.TenantID)
 	cfg.SubscriptionID = strings.TrimSpace(cfg.SubscriptionID)
+	cfg.ClusterName = strings.TrimSpace(cfg.ClusterName)
 	cfg.ResourceGroup = strings.TrimSpace(cfg.ResourceGroup)
+	cfg.ClusterResourceGroup = strings.TrimSpace(cfg.ClusterResourceGroup)
 	cfg.VMType = strings.TrimSpace(cfg.VMType)
 	cfg.AADClientID = strings.TrimSpace(cfg.AADClientID)
 	cfg.AADClientSecret = strings.TrimSpace(cfg.AADClientSecret)
 	cfg.AADClientCertPath = strings.TrimSpace(cfg.AADClientCertPath)
 	cfg.AADClientCertPassword = strings.TrimSpace(cfg.AADClientCertPassword)
 	cfg.Deployment = strings.TrimSpace(cfg.Deployment)
-	cfg.ClusterName = strings.TrimSpace(cfg.ClusterName)
-	cfg.NodeResourceGroup = strings.TrimSpace(cfg.NodeResourceGroup)
 }
 
 func (cfg *Config) validate() error {
@@ -490,13 +525,6 @@ func (cfg *Config) validate() error {
 
 		if len(cfg.DeploymentParameters) == 0 {
 			return fmt.Errorf("deploymentParameters not set")
-		}
-	}
-
-	if cfg.VMType == vmTypeAKS {
-		// Cluster name is a mandatory param to proceed.
-		if cfg.ClusterName == "" {
-			return fmt.Errorf("cluster name not set for type %+v", cfg.VMType)
 		}
 	}
 

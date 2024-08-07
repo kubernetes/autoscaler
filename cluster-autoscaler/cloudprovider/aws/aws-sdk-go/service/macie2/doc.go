@@ -4,13 +4,13 @@
 // requests to Amazon Macie 2.
 //
 // Amazon Macie is a fully managed data security and data privacy service that
-// uses machine learning and pattern matching to discover and protect your sensitive
-// data in AWS. Macie automates the discovery of sensitive data, such as PII
-// and intellectual property, to provide you with insight into the data that
-// your organization stores in AWS. Macie also provides an inventory of your
-// Amazon S3 buckets, which it continually monitors for you. If Macie detects
-// sensitive data or potential data access issues, it generates detailed findings
-// for you to review and act upon as necessary.
+// uses machine learning and pattern matching to help you discover and protect
+// your sensitive data in AWS. Macie automates the discovery of sensitive data,
+// such as PII and intellectual property, to provide you with insight into the
+// data that your organization stores in AWS. Macie also provides an inventory
+// of your Amazon S3 buckets, which it continually monitors for you. If Macie
+// detects sensitive data or potential data access issues, it generates detailed
+// findings for you to review and act upon as necessary.
 //
 // See https://docs.aws.amazon.com/goto/WebAPI/macie2-2020-01-01 for more information on this service.
 //

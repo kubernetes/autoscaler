@@ -19,6 +19,7 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/klog/v2"
+	"strings"
 )
 
 // OciCloudProvider implements the CloudProvider interface for OCI. It contains an
@@ -134,7 +135,7 @@ func BuildOCI(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscover
 	if err != nil {
 		klog.Fatalf("Failed to get pool type: %v", err)
 	}
-	if ocidType == npconsts.OciNodePoolResourceIdent {
+	if strings.HasPrefix(ocidType, npconsts.OciNodePoolResourceIdent) {
 		manager, err := nodepools.CreateNodePoolManager(opts.CloudConfig, do, createKubeClient(opts))
 		if err != nil {
 			klog.Fatalf("Could not create OCI OKE cloud provider: %v", err)
@@ -154,8 +155,8 @@ func BuildOCI(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscover
 }
 
 func getKubeConfig(opts config.AutoscalingOptions) *rest.Config {
-	klog.V(1).Infof("Using kubeconfig file: %s", opts.KubeConfigPath)
-	kubeConfig, err := clientcmd.BuildConfigFromFlags("", opts.KubeConfigPath)
+	klog.V(1).Infof("Using kubeconfig file: %s", opts.KubeClientOpts.KubeConfigPath)
+	kubeConfig, err := clientcmd.BuildConfigFromFlags("", opts.KubeClientOpts.KubeConfigPath)
 	if err != nil {
 		klog.Fatalf("Failed to build kubeConfig: %v", err)
 	}

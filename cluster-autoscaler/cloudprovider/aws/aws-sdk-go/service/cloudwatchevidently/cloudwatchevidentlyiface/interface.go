@@ -80,6 +80,10 @@ type CloudWatchEvidentlyAPI interface {
 	CreateProjectWithContext(aws.Context, *cloudwatchevidently.CreateProjectInput, ...request.Option) (*cloudwatchevidently.CreateProjectOutput, error)
 	CreateProjectRequest(*cloudwatchevidently.CreateProjectInput) (*request.Request, *cloudwatchevidently.CreateProjectOutput)
 
+	CreateSegment(*cloudwatchevidently.CreateSegmentInput) (*cloudwatchevidently.CreateSegmentOutput, error)
+	CreateSegmentWithContext(aws.Context, *cloudwatchevidently.CreateSegmentInput, ...request.Option) (*cloudwatchevidently.CreateSegmentOutput, error)
+	CreateSegmentRequest(*cloudwatchevidently.CreateSegmentInput) (*request.Request, *cloudwatchevidently.CreateSegmentOutput)
+
 	DeleteExperiment(*cloudwatchevidently.DeleteExperimentInput) (*cloudwatchevidently.DeleteExperimentOutput, error)
 	DeleteExperimentWithContext(aws.Context, *cloudwatchevidently.DeleteExperimentInput, ...request.Option) (*cloudwatchevidently.DeleteExperimentOutput, error)
 	DeleteExperimentRequest(*cloudwatchevidently.DeleteExperimentInput) (*request.Request, *cloudwatchevidently.DeleteExperimentOutput)
@@ -95,6 +99,10 @@ type CloudWatchEvidentlyAPI interface {
 	DeleteProject(*cloudwatchevidently.DeleteProjectInput) (*cloudwatchevidently.DeleteProjectOutput, error)
 	DeleteProjectWithContext(aws.Context, *cloudwatchevidently.DeleteProjectInput, ...request.Option) (*cloudwatchevidently.DeleteProjectOutput, error)
 	DeleteProjectRequest(*cloudwatchevidently.DeleteProjectInput) (*request.Request, *cloudwatchevidently.DeleteProjectOutput)
+
+	DeleteSegment(*cloudwatchevidently.DeleteSegmentInput) (*cloudwatchevidently.DeleteSegmentOutput, error)
+	DeleteSegmentWithContext(aws.Context, *cloudwatchevidently.DeleteSegmentInput, ...request.Option) (*cloudwatchevidently.DeleteSegmentOutput, error)
+	DeleteSegmentRequest(*cloudwatchevidently.DeleteSegmentInput) (*request.Request, *cloudwatchevidently.DeleteSegmentOutput)
 
 	EvaluateFeature(*cloudwatchevidently.EvaluateFeatureInput) (*cloudwatchevidently.EvaluateFeatureOutput, error)
 	EvaluateFeatureWithContext(aws.Context, *cloudwatchevidently.EvaluateFeatureInput, ...request.Option) (*cloudwatchevidently.EvaluateFeatureOutput, error)
@@ -119,6 +127,10 @@ type CloudWatchEvidentlyAPI interface {
 	GetProject(*cloudwatchevidently.GetProjectInput) (*cloudwatchevidently.GetProjectOutput, error)
 	GetProjectWithContext(aws.Context, *cloudwatchevidently.GetProjectInput, ...request.Option) (*cloudwatchevidently.GetProjectOutput, error)
 	GetProjectRequest(*cloudwatchevidently.GetProjectInput) (*request.Request, *cloudwatchevidently.GetProjectOutput)
+
+	GetSegment(*cloudwatchevidently.GetSegmentInput) (*cloudwatchevidently.GetSegmentOutput, error)
+	GetSegmentWithContext(aws.Context, *cloudwatchevidently.GetSegmentInput, ...request.Option) (*cloudwatchevidently.GetSegmentOutput, error)
+	GetSegmentRequest(*cloudwatchevidently.GetSegmentInput) (*request.Request, *cloudwatchevidently.GetSegmentOutput)
 
 	ListExperiments(*cloudwatchevidently.ListExperimentsInput) (*cloudwatchevidently.ListExperimentsOutput, error)
 	ListExperimentsWithContext(aws.Context, *cloudwatchevidently.ListExperimentsInput, ...request.Option) (*cloudwatchevidently.ListExperimentsOutput, error)
@@ -148,6 +160,20 @@ type CloudWatchEvidentlyAPI interface {
 	ListProjectsPages(*cloudwatchevidently.ListProjectsInput, func(*cloudwatchevidently.ListProjectsOutput, bool) bool) error
 	ListProjectsPagesWithContext(aws.Context, *cloudwatchevidently.ListProjectsInput, func(*cloudwatchevidently.ListProjectsOutput, bool) bool, ...request.Option) error
 
+	ListSegmentReferences(*cloudwatchevidently.ListSegmentReferencesInput) (*cloudwatchevidently.ListSegmentReferencesOutput, error)
+	ListSegmentReferencesWithContext(aws.Context, *cloudwatchevidently.ListSegmentReferencesInput, ...request.Option) (*cloudwatchevidently.ListSegmentReferencesOutput, error)
+	ListSegmentReferencesRequest(*cloudwatchevidently.ListSegmentReferencesInput) (*request.Request, *cloudwatchevidently.ListSegmentReferencesOutput)
+
+	ListSegmentReferencesPages(*cloudwatchevidently.ListSegmentReferencesInput, func(*cloudwatchevidently.ListSegmentReferencesOutput, bool) bool) error
+	ListSegmentReferencesPagesWithContext(aws.Context, *cloudwatchevidently.ListSegmentReferencesInput, func(*cloudwatchevidently.ListSegmentReferencesOutput, bool) bool, ...request.Option) error
+
+	ListSegments(*cloudwatchevidently.ListSegmentsInput) (*cloudwatchevidently.ListSegmentsOutput, error)
+	ListSegmentsWithContext(aws.Context, *cloudwatchevidently.ListSegmentsInput, ...request.Option) (*cloudwatchevidently.ListSegmentsOutput, error)
+	ListSegmentsRequest(*cloudwatchevidently.ListSegmentsInput) (*request.Request, *cloudwatchevidently.ListSegmentsOutput)
+
+	ListSegmentsPages(*cloudwatchevidently.ListSegmentsInput, func(*cloudwatchevidently.ListSegmentsOutput, bool) bool) error
+	ListSegmentsPagesWithContext(aws.Context, *cloudwatchevidently.ListSegmentsInput, func(*cloudwatchevidently.ListSegmentsOutput, bool) bool, ...request.Option) error
+
 	ListTagsForResource(*cloudwatchevidently.ListTagsForResourceInput) (*cloudwatchevidently.ListTagsForResourceOutput, error)
 	ListTagsForResourceWithContext(aws.Context, *cloudwatchevidently.ListTagsForResourceInput, ...request.Option) (*cloudwatchevidently.ListTagsForResourceOutput, error)
 	ListTagsForResourceRequest(*cloudwatchevidently.ListTagsForResourceInput) (*request.Request, *cloudwatchevidently.ListTagsForResourceOutput)
@@ -175,6 +201,10 @@ type CloudWatchEvidentlyAPI interface {
 	TagResource(*cloudwatchevidently.TagResourceInput) (*cloudwatchevidently.TagResourceOutput, error)
 	TagResourceWithContext(aws.Context, *cloudwatchevidently.TagResourceInput, ...request.Option) (*cloudwatchevidently.TagResourceOutput, error)
 	TagResourceRequest(*cloudwatchevidently.TagResourceInput) (*request.Request, *cloudwatchevidently.TagResourceOutput)
+
+	TestSegmentPattern(*cloudwatchevidently.TestSegmentPatternInput) (*cloudwatchevidently.TestSegmentPatternOutput, error)
+	TestSegmentPatternWithContext(aws.Context, *cloudwatchevidently.TestSegmentPatternInput, ...request.Option) (*cloudwatchevidently.TestSegmentPatternOutput, error)
+	TestSegmentPatternRequest(*cloudwatchevidently.TestSegmentPatternInput) (*request.Request, *cloudwatchevidently.TestSegmentPatternOutput)
 
 	UntagResource(*cloudwatchevidently.UntagResourceInput) (*cloudwatchevidently.UntagResourceOutput, error)
 	UntagResourceWithContext(aws.Context, *cloudwatchevidently.UntagResourceInput, ...request.Option) (*cloudwatchevidently.UntagResourceOutput, error)

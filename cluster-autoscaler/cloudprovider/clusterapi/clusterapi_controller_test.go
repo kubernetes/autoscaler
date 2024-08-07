@@ -76,7 +76,7 @@ type testSpec struct {
 const customCAPIGroup = "custom.x-k8s.io"
 const fifteenSecondDuration = time.Second * 15
 
-func mustCreateTestController(t *testing.T, testConfigs ...*testConfig) (*machineController, testControllerShutdownFunc) {
+func mustCreateTestController(t testing.TB, testConfigs ...*testConfig) (*machineController, testControllerShutdownFunc) {
 	t.Helper()
 
 	nodeObjects := make([]runtime.Object, 0)
@@ -458,7 +458,9 @@ func makeLinkedNodeAndMachine(i int, namespace, clusterName string, owner metav1
 		ObjectMeta: metav1.ObjectMeta{
 			Name: fmt.Sprintf("%s-%s-node-%d", namespace, owner.Name, i),
 			Annotations: map[string]string{
-				machineAnnotationKey: fmt.Sprintf("%s/%s-%s-machine-%d", namespace, namespace, owner.Name, i),
+				clusterNameAnnotationKey:      clusterName,
+				clusterNamespaceAnnotationKey: namespace,
+				machineAnnotationKey:          fmt.Sprintf("%s-%s-machine-%d", namespace, owner.Name, i),
 			},
 		},
 		Spec: corev1.NodeSpec{
@@ -492,7 +494,7 @@ func makeLinkedNodeAndMachine(i int, namespace, clusterName string, owner metav1
 	return node, machine
 }
 
-func addTestConfigs(t *testing.T, controller *machineController, testConfigs ...*testConfig) error {
+func addTestConfigs(t testing.TB, controller *machineController, testConfigs ...*testConfig) error {
 	t.Helper()
 
 	for _, config := range testConfigs {
@@ -1043,9 +1045,8 @@ func TestControllerNodeGroupForNodeWithPositiveScalingBounds(t *testing.T) {
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
-		// We don't scale from 0 so nodes must belong to a
-		// nodegroup that has a scale size of at least 1.
-		if ng != nil {
+		// We allow scaling if minSize=maxSize
+		if ng == nil {
 			t.Fatalf("unexpected nodegroup: %v", ng)
 		}
 	}
@@ -1124,19 +1125,19 @@ func TestControllerNodeGroups(t *testing.T) {
 		nodeGroupMaxSizeAnnotationKey: "1",
 	}
 
-	// Test #5: machineset with no scaling bounds results in no nodegroups
+	// Test #5: 5 machineset with minSize=maxSize results in a five nodegroup
 	machineSetConfigs = createMachineSetTestConfigs(namespace, clusterName, RandomString(6), 5, 1, annotations, nil)
 	if err := addTestConfigs(t, controller, machineSetConfigs...); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	assertNodegroupLen(t, controller, 0)
+	assertNodegroupLen(t, controller, 5)
 
-	// Test #6: machinedeployment with no scaling bounds results in no nodegroups
+	// Test #6: add 2 machinedeployment with minSize=maxSize
 	machineDeploymentConfigs = createMachineDeploymentTestConfigs(namespace, clusterName, RandomString(6), 2, 1, annotations, nil)
 	if err := addTestConfigs(t, controller, machineDeploymentConfigs...); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	assertNodegroupLen(t, controller, 0)
+	assertNodegroupLen(t, controller, 7)
 
 	annotations = map[string]string{
 		nodeGroupMinSizeAnnotationKey: "-1",
@@ -2114,7 +2115,7 @@ func Test_machineController_nodeGroups(t *testing.T) {
 
 			// Sort results as order is not guaranteed.
 			sort.Slice(got, func(i, j int) bool {
-				return got[i].scalableResource.Name() < got[j].scalableResource.Name()
+				return got[i].(*nodegroup).scalableResource.Name() < got[j].(*nodegroup).scalableResource.Name()
 			})
 			sort.Slice(tc.expectedScalableResources, func(i, j int) bool {
 				return tc.expectedScalableResources[i].GetName() < tc.expectedScalableResources[j].GetName()
@@ -2122,7 +2123,7 @@ func Test_machineController_nodeGroups(t *testing.T) {
 
 			if err == nil {
 				for i := range got {
-					if !reflect.DeepEqual(got[i].scalableResource.unstructured, tc.expectedScalableResources[i]) {
+					if !reflect.DeepEqual(got[i].(*nodegroup).scalableResource.unstructured, tc.expectedScalableResources[i]) {
 						t.Errorf("nodeGroups() got = %v, expected to consist of nodegroups for scalable resources: %v", got, tc.expectedScalableResources)
 					}
 				}

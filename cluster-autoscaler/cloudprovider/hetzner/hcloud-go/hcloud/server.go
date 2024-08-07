@@ -38,6 +38,7 @@ type Server struct {
 	Volumes         []*Volume
 	PrimaryDiskSize int
 	PlacementGroup  *PlacementGroup
+	LoadBalancers   []*LoadBalancer
 }
 
 // ServerProtection represents the protection level of a server.
@@ -146,6 +147,7 @@ type ServerRescueType string
 
 // List of rescue types.
 const (
+	// Deprecated: Use ServerRescueTypeLinux64 instead.
 	ServerRescueTypeLinux32 ServerRescueType = "linux32"
 	ServerRescueTypeLinux64 ServerRescueType = "linux64"
 )
@@ -191,6 +193,7 @@ func (s *Server) GetDNSPtrForIP(ip net.IP) (string, error) {
 // ServerClient is a client for the servers API.
 type ServerClient struct {
 	client *Client
+	Action *ResourceActionClient
 }
 
 // GetByID retrieves a server by its ID. If the server does not exist, nil is returned.

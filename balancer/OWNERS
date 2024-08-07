@@ -5,4 +5,4 @@ reviewers:
 - mwielgus
 - kgolab
 labels:
-- balancer
+- area/balancer

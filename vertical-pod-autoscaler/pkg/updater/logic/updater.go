@@ -19,6 +19,7 @@ package logic
 import (
 	"context"
 	"fmt"
+	"slices"
 	"time"
 
 	"golang.org/x/time/rate"
@@ -26,15 +27,6 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
-	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
-	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
-	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/eviction"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/priority"
-	metrics_updater "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/updater"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/status"
-	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -43,6 +35,17 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/klog/v2"
+
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
+	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
+	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/eviction"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/priority"
+	metrics_updater "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/updater"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/status"
+	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
 // Updater performs updates on pods if recommended by Vertical Pod Autoscaler
@@ -63,6 +66,8 @@ type updater struct {
 	selectorFetcher              target.VpaTargetSelectorFetcher
 	useAdmissionControllerStatus bool
 	statusValidator              status.Validator
+	controllerFetcher            controllerfetcher.ControllerFetcher
+	ignoredNamespaces            []string
 }
 
 // NewUpdater creates Updater with given configuration
@@ -78,8 +83,10 @@ func NewUpdater(
 	recommendationProcessor vpa_api_util.RecommendationProcessor,
 	evictionAdmission priority.PodEvictionAdmission,
 	selectorFetcher target.VpaTargetSelectorFetcher,
+	controllerFetcher controllerfetcher.ControllerFetcher,
 	priorityProcessor priority.PriorityProcessor,
 	namespace string,
+	ignoredNamespaces []string,
 ) (Updater, error) {
 	evictionRateLimiter := getRateLimiter(evictionRateLimit, evictionRateBurst)
 	factory, err := eviction.NewPodsEvictionRestrictionFactory(kubeClient, minReplicasForEvicition, evictionToleranceFraction)
@@ -96,12 +103,14 @@ func NewUpdater(
 		evictionAdmission:            evictionAdmission,
 		priorityProcessor:            priorityProcessor,
 		selectorFetcher:              selectorFetcher,
+		controllerFetcher:            controllerFetcher,
 		useAdmissionControllerStatus: useAdmissionControllerStatus,
 		statusValidator: status.NewValidator(
 			kubeClient,
 			status.AdmissionControllerStatusName,
 			statusNamespace,
 		),
+		ignoredNamespaces: ignoredNamespaces,
 	}, nil
 }
 
@@ -132,14 +141,18 @@ func (u *updater) RunOnce(ctx context.Context) {
 	vpas := make([]*vpa_api_util.VpaWithSelector, 0)
 
 	for _, vpa := range vpaList {
+		if slices.Contains(u.ignoredNamespaces, vpa.Namespace) {
+			klog.V(3).Infof("skipping VPA object %s in namespace %s as namespace is ignored", vpa.Name, vpa.Namespace)
+			continue
+		}
 		if vpa_api_util.GetUpdateMode(vpa) != vpa_types.UpdateModeRecreate &&
 			vpa_api_util.GetUpdateMode(vpa) != vpa_types.UpdateModeAuto {
-			klog.V(3).Infof("skipping VPA object %v because its mode is not \"Recreate\" or \"Auto\"", vpa.Name)
+			klog.V(3).Infof("skipping VPA object %s because its mode is not \"Recreate\" or \"Auto\"", klog.KObj(vpa))
 			continue
 		}
 		selector, err := u.selectorFetcher.Fetch(vpa)
 		if err != nil {
-			klog.V(3).Infof("skipping VPA object %v because we cannot fetch selector", vpa.Name)
+			klog.V(3).Infof("skipping VPA object %s because we cannot fetch selector", klog.KObj(vpa))
 			continue
 		}
 
@@ -167,7 +180,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 
 	controlledPods := make(map[*vpa_types.VerticalPodAutoscaler][]*apiv1.Pod)
 	for _, pod := range allLivePods {
-		controllingVPA := vpa_api_util.GetControllingVPAForPod(pod, vpas)
+		controllingVPA := vpa_api_util.GetControllingVPAForPod(pod, vpas, u.controllerFetcher)
 		if controllingVPA != nil {
 			controlledPods[controllingVPA.Vpa] = append(controlledPods[controllingVPA.Vpa], pod)
 		}
@@ -209,13 +222,13 @@ func (u *updater) RunOnce(ctx context.Context) {
 			}
 			err := u.evictionRateLimiter.Wait(ctx)
 			if err != nil {
-				klog.Warningf("evicting pod %v failed: %v", pod.Name, err)
+				klog.Warningf("evicting pod %s failed: %v", klog.KObj(pod), err)
 				return
 			}
-			klog.V(2).Infof("evicting pod %v", pod.Name)
+			klog.V(2).Infof("evicting pod %s", klog.KObj(pod))
 			evictErr := evictionLimiter.Evict(pod, u.eventRecorder)
 			if evictErr != nil {
-				klog.Warningf("evicting pod %v failed: %v", pod.Name, evictErr)
+				klog.Warningf("evicting pod %s failed: %v", klog.KObj(pod), evictErr)
 			} else {
 				withEvicted = true
 				metrics_updater.AddEvictedPod(vpaSize)

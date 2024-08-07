@@ -80,7 +80,7 @@ in-tree cloudprovider follows the following rules:
       handles. There is an expectation that at least some of the owners will
       join Kubernetes organization (by following the
       [process](https://github.com/kubernetes/community/blob/master/community-membership.md))
-      within one release cycly, so that they can approve PRs to their
+      within one release cycle, so that they can approve PRs to their
       cloudprovider.
   * Cloudprovider shouldn't introduce new dependencies (such as clients/SDKs)
     to top-level go.mod vendor, unless those dependencies are already imported
@@ -109,8 +109,8 @@ maintenance request_ (CMR) mechanism.
    (ex. 1.26).
  * CMR will need to be discussed on sig-autoscaling meeting and approved by
    sig leads before being issued. It will also be announced on sig-autoscaling
-   slack channel and highlited in sig-autoscaling meeting notes.
- * A CMR may be issued no later then [enhancements
+   slack channel and highlighted in sig-autoscaling meeting notes.
+ * A CMR may be issued no later than [enhancements
    freeze](https://github.com/kubernetes/sig-release/blob/master/releases/release_phases.md#enhancements-freeze)
    of a given Kubernetes minor version.
  * If a given cloud provider was added more than one release cycle ago and there

@@ -19,6 +19,8 @@ package config
 import (
 	"time"
 
+	gce_localssdsize "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce/localssdsize"
+	kubelet_config "k8s.io/kubernetes/pkg/kubelet/apis/config"
 	scheduler_config "k8s.io/kubernetes/pkg/scheduler/apis/config"
 )
 
@@ -56,12 +58,17 @@ type NodeGroupAutoscalingOptions struct {
 
 // GCEOptions contain autoscaling options specific to GCE cloud provider.
 type GCEOptions struct {
-	// ConcurrentRefreshes is the maximum number of concurrently refreshed instance groups or instance templates.
+	// ConcurrentRefreshes is the maximum number of concurrently refreshed instance groups or instance templates or zones with mig instances
 	ConcurrentRefreshes int
 	// MigInstancesMinRefreshWaitTime is the minimum time which needs to pass before GCE MIG instances from a given MIG can be refreshed.
 	MigInstancesMinRefreshWaitTime time.Duration
 	// DomainUrl is the GCE url used to make calls to GCE API.
 	DomainUrl string
+	// LocalSSDDiskSizeProvider provides local ssd disk size based on machine type
+	LocalSSDDiskSizeProvider gce_localssdsize.LocalSSDSizeProvider
+	// BulkMigInstancesListingEnabled means that cluster instances should be listed in bulk instead of per mig.
+	// Instances of migs having instances in creating or deleting state are re-fetched using igm.ListInstances. Inconsistencies are handled by re-fetching using igm.ListInstances
+	BulkMigInstancesListingEnabled bool
 }
 
 const (
@@ -125,7 +132,12 @@ type AutoscalingOptions struct {
 	IgnoreMirrorPodsUtilization bool
 	// MaxGracefulTerminationSec is maximum number of seconds scale down waits for pods to terminate before
 	// removing the node from cloud provider.
+	// DrainPriorityConfig takes higher precedence and MaxGracefulTerminationSec will not be applicable when the DrainPriorityConfig is set.
 	MaxGracefulTerminationSec int
+	// DrainPriorityConfig is a list of ShutdownGracePeriodByPodPriority.
+	// This field is optional and could be nil.
+	// DrainPriorityConfig takes higher precedence and MaxGracefulTerminationSec will not be applicable when the DrainPriorityConfig is set.
+	DrainPriorityConfig []kubelet_config.ShutdownGracePeriodByPodPriority
 	// MaxTotalUnreadyPercentage is the maximum percentage of unready nodes after which CA halts operations
 	MaxTotalUnreadyPercentage float64
 	// OkTotalUnreadyCount is the number of allowed unready nodes, irrespective of max-total-unready-percentage
@@ -152,6 +164,9 @@ type AutoscalingOptions struct {
 	ScaleDownDelayAfterDelete time.Duration
 	// ScaleDownDelayAfterFailure sets the duration before the next scale down attempt if scale down results in an error
 	ScaleDownDelayAfterFailure time.Duration
+	// ScaleDownDelayTypeLocal sets if the --scale-down-delay-after-* flags should be applied locally per nodegroup
+	// or globally across all nodegroups
+	ScaleDownDelayTypeLocal bool
 	// ScaleDownNonEmptyCandidatesCount is the maximum number of non empty nodes
 	// considered at once as candidates for scale down.
 	ScaleDownNonEmptyCandidatesCount int
@@ -221,8 +236,8 @@ type AutoscalingOptions struct {
 	AWSUseStaticInstanceList bool
 	// GCEOptions contain autoscaling options specific to GCE cloud provider.
 	GCEOptions GCEOptions
-	// Path to kube configuration if available
-	KubeConfigPath string
+	// KubeClientOpts specify options for kube client
+	KubeClientOpts KubeClientOptions
 	// ClusterAPICloudConfigAuthoritative tells the Cluster API provider to treat the CloudConfig option as authoritative and
 	// not use KubeConfigPath as a fallback when it is not provided.
 	ClusterAPICloudConfigAuthoritative bool
@@ -253,6 +268,9 @@ type AutoscalingOptions struct {
 	// MaxNodeGroupBinpackingDuration is a maximum time that can be spent binpacking a single NodeGroup. If the threshold
 	// is exceeded binpacking will be cut short and a partial scale-up will be performed.
 	MaxNodeGroupBinpackingDuration time.Duration
+	// MaxBinpackingTime is the maximum time spend on binpacking for a single scale-up.
+	// If binpacking is limited by this, scale-up will continue with the already calculated scale-up options.
+	MaxBinpackingTime time.Duration
 	// NodeDeletionBatcherInterval is a time for how long CA ScaleDown gather nodes to delete them in batch.
 	NodeDeletionBatcherInterval time.Duration
 	// SkipNodesWithSystemPods tells if nodes with pods from kube-system should be deleted (except for DaemonSet or mirror pods)
@@ -275,4 +293,20 @@ type AutoscalingOptions struct {
 	DynamicNodeDeleteDelayAfterTaintEnabled bool
 	// BypassedSchedulers are used to specify which schedulers to bypass their processing
 	BypassedSchedulers map[string]bool
+	// ProvisioningRequestEnabled tells if CA processes ProvisioningRequest.
+	ProvisioningRequestEnabled bool
+}
+
+// KubeClientOptions specify options for kube client
+type KubeClientOptions struct {
+	// Master specifies master location.
+	Master string
+	// Path to kube configuration if available
+	KubeConfigPath string
+	// APIContentType specifies type of requests sent to APIServer.
+	APIContentType string
+	// Burst setting for kubernetes client
+	KubeClientBurst int
+	// QPS setting for kubernetes client
+	KubeClientQPS float32
 }

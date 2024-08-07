@@ -23,6 +23,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/eligibility"
@@ -261,6 +262,7 @@ func (p *Planner) categorizeNodes(podDestinations map[string]bool, scaleDownCand
 	unremovableTimeout := p.latestUpdate.Add(p.context.AutoscalingOptions.UnremovableNodeRecheckTimeout)
 	unremovableCount := 0
 	var removableList []simulator.NodeToBeRemoved
+	atomicScaleDownNodesCount := 0
 	p.unremovableNodes.Update(p.context.ClusterSnapshot.NodeInfos(), p.latestUpdate)
 	currentlyUnneededNodeNames, utilizationMap, ineligible := p.eligibilityChecker.FilterOutUnremovable(p.context, scaleDownCandidates, p.latestUpdate, p.unremovableNodes)
 	for _, n := range ineligible {
@@ -274,8 +276,8 @@ func (p *Planner) categorizeNodes(podDestinations map[string]bool, scaleDownCand
 			klog.Warningf("%d out of %d nodes skipped in scale down simulation due to timeout.", len(currentlyUnneededNodeNames)-i, len(currentlyUnneededNodeNames))
 			break
 		}
-		if len(removableList) >= p.unneededNodesLimit() {
-			klog.V(4).Infof("%d out of %d nodes skipped in scale down simulation: there are already %d unneeded nodes so no point in looking for more.", len(currentlyUnneededNodeNames)-i, len(currentlyUnneededNodeNames), len(removableList))
+		if len(removableList)-atomicScaleDownNodesCount >= p.unneededNodesLimit() {
+			klog.V(4).Infof("%d out of %d nodes skipped in scale down simulation: there are already %d unneeded nodes so no point in looking for more. Total atomic scale down nodes: %d", len(currentlyUnneededNodeNames)-i, len(currentlyUnneededNodeNames), len(removableList), atomicScaleDownNodesCount)
 			break
 		}
 		removable, unremovable := p.rs.SimulateNodeRemoval(node, podDestinations, p.latestUpdate, p.context.RemainingPdbTracker)
@@ -287,6 +289,10 @@ func (p *Planner) categorizeNodes(podDestinations map[string]bool, scaleDownCand
 			delete(podDestinations, removable.Node.Name)
 			p.context.RemainingPdbTracker.RemovePods(removable.PodsToReschedule)
 			removableList = append(removableList, *removable)
+			if p.atomicScaleDownNode(removable) {
+				atomicScaleDownNodesCount++
+				klog.V(2).Infof("Considering node %s for atomic scale down. Total atomic scale down nodes count: %d", removable.Node.Name, atomicScaleDownNodesCount)
+			}
 		}
 		if unremovable != nil {
 			unremovableCount += 1
@@ -297,6 +303,24 @@ func (p *Planner) categorizeNodes(podDestinations map[string]bool, scaleDownCand
 	if unremovableCount > 0 {
 		klog.V(1).Infof("%v nodes found to be unremovable in simulation, will re-check them at %v", unremovableCount, unremovableTimeout)
 	}
+}
+
+// atomicScaleDownNode checks if the removable node would be considered for atomic scale down.
+func (p *Planner) atomicScaleDownNode(node *simulator.NodeToBeRemoved) bool {
+	nodeGroup, err := p.context.CloudProvider.NodeGroupForNode(node.Node)
+	if err != nil {
+		klog.Errorf("failed to get node info for %v: %s", node.Node.Name, err)
+		return false
+	}
+	autoscalingOptions, err := nodeGroup.GetOptions(p.context.NodeGroupDefaults)
+	if err != nil && err != cloudprovider.ErrNotImplemented {
+		klog.Errorf("Failed to get autoscaling options for node group %s: %v", nodeGroup.Id(), err)
+		return false
+	}
+	if autoscalingOptions != nil && autoscalingOptions.ZeroOrMaxNodeScaling {
+		return true
+	}
+	return false
 }
 
 // unneededNodesLimit returns the number of nodes after which calculating more

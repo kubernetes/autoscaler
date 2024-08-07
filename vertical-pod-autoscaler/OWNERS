@@ -3,6 +3,7 @@ approvers:
 - kgolab
 - jbartosik
 - krzysied
+- voelzmo
 reviewers:
 - kwiesmueller
 - kgolab
@@ -12,4 +13,4 @@ reviewers:
 emeritus_approvers:
 - schylek # 2022-09-30
 labels:
-- vertical-pod-autoscaler
+- area/vertical-pod-autoscaler

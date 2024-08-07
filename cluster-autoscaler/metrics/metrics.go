@@ -44,6 +44,9 @@ type FunctionLabel string
 // NodeGroupType describes node group relation to CA
 type NodeGroupType string
 
+// PodEvictionResult describes result of the pod eviction attempt
+type PodEvictionResult string
+
 const (
 	caNamespace           = "cluster_autoscaler"
 	readyLabel            = "ready"
@@ -87,6 +90,10 @@ const (
 	// This is meant to help find unexpectedly long function execution times for
 	// debugging purposes.
 	LogLongDurationThreshold = 5 * time.Second
+	// PodEvictionSucceed means creation of the pod eviction object succeed
+	PodEvictionSucceed PodEvictionResult = "succeeded"
+	// PodEvictionFailed means creation of the pod eviction object failed
+	PodEvictionFailed PodEvictionResult = "failed"
 )
 
 // Names of Cluster Autoscaler operations
@@ -107,6 +114,9 @@ const (
 	Poll                       FunctionLabel = "poll"
 	Reconfigure                FunctionLabel = "reconfigure"
 	Autoscaling                FunctionLabel = "autoscaling"
+	LoopWait                   FunctionLabel = "loopWait"
+	BulkListAllGceInstances    FunctionLabel = "bulkListInstances:listAllInstances"
+	BulkListMigInstances       FunctionLabel = "bulkListInstances:listMigInstances"
 )
 
 var (
@@ -200,6 +210,30 @@ var (
 		}, []string{"node_group"},
 	)
 
+	nodesGroupTargetSize = k8smetrics.NewGaugeVec(
+		&k8smetrics.GaugeOpts{
+			Namespace: caNamespace,
+			Name:      "node_group_target_count",
+			Help:      "Target number of nodes in the node group by CA.",
+		}, []string{"node_group"},
+	)
+
+	nodesGroupHealthiness = k8smetrics.NewGaugeVec(
+		&k8smetrics.GaugeOpts{
+			Namespace: caNamespace,
+			Name:      "node_group_healthiness",
+			Help:      "Whether or not node group is healthy enough for autoscaling. 1 if it is, 0 otherwise.",
+		}, []string{"node_group"},
+	)
+
+	nodeGroupBackOffStatus = k8smetrics.NewGaugeVec(
+		&k8smetrics.GaugeOpts{
+			Namespace: caNamespace,
+			Name:      "node_group_backoff_status",
+			Help:      "Whether or not node group is backoff for not autoscaling. 1 if it is, 0 otherwise.",
+		}, []string{"node_group", "reason"},
+	)
+
 	/**** Metrics related to autoscaler execution ****/
 	lastActivity = k8smetrics.NewGaugeVec(
 		&k8smetrics.GaugeOpts{
@@ -214,7 +248,7 @@ var (
 			Namespace: caNamespace,
 			Name:      "function_duration_seconds",
 			Help:      "Time taken by various parts of CA main loop.",
-			Buckets:   []float64{0.01, 0.05, 0.1, 0.5, 1.0, 2.5, 5.0, 7.5, 10.0, 12.5, 15.0, 17.5, 20.0, 22.5, 25.0, 27.5, 30.0, 50.0, 75.0, 100.0, 1000.0},
+			Buckets:   k8smetrics.ExponentialBuckets(0.01, 1.5, 30), // 0.01, 0.015, 0.0225, ..., 852.2269299239293, 1278.3403948858938
 		}, []string{"function"},
 	)
 
@@ -292,12 +326,12 @@ var (
 		}, []string{"reason", "gpu_resource_name", "gpu_name"},
 	)
 
-	evictionsCount = k8smetrics.NewCounter(
+	evictionsCount = k8smetrics.NewCounterVec(
 		&k8smetrics.CounterOpts{
 			Namespace: caNamespace,
 			Name:      "evicted_pods_total",
 			Help:      "Number of pods evicted by CA",
-		},
+		}, []string{"eviction_result"},
 	)
 
 	unneededNodesCount = k8smetrics.NewGauge(
@@ -359,20 +393,22 @@ var (
 		},
 	)
 
-	nodeGroupCreationCount = k8smetrics.NewCounter(
+	nodeGroupCreationCount = k8smetrics.NewCounterVec(
 		&k8smetrics.CounterOpts{
 			Namespace: caNamespace,
 			Name:      "created_node_groups_total",
 			Help:      "Number of node groups created by Node Autoprovisioning.",
 		},
+		[]string{"group_type"},
 	)
 
-	nodeGroupDeletionCount = k8smetrics.NewCounter(
+	nodeGroupDeletionCount = k8smetrics.NewCounterVec(
 		&k8smetrics.CounterOpts{
 			Namespace: caNamespace,
 			Name:      "deleted_node_groups_total",
 			Help:      "Number of node groups deleted by Node Autoprovisioning.",
 		},
+		[]string{"group_type"},
 	)
 
 	nodeTaintsCount = k8smetrics.NewGaugeVec(
@@ -382,6 +418,14 @@ var (
 			Help:      "Number of taints per type used in the cluster.",
 		},
 		[]string{"type"},
+	)
+
+	inconsistentInstancesMigsCount = k8smetrics.NewGauge(
+		&k8smetrics.GaugeOpts{
+			Namespace: caNamespace,
+			Name:      "inconsistent_instances_migs_count",
+			Help:      "Number of migs where instance count according to InstanceGroupManagers.List() differs from the results of Instances.List(). This can happen when some instances are abandoned or a user edits instance 'created-by' metadata.",
+		},
 	)
 )
 
@@ -418,10 +462,14 @@ func RegisterAll(emitPerNodeGroupMetrics bool) {
 	legacyregistry.MustRegister(nodeGroupDeletionCount)
 	legacyregistry.MustRegister(pendingNodeDeletions)
 	legacyregistry.MustRegister(nodeTaintsCount)
+	legacyregistry.MustRegister(inconsistentInstancesMigsCount)
 
 	if emitPerNodeGroupMetrics {
 		legacyregistry.MustRegister(nodesGroupMinNodes)
 		legacyregistry.MustRegister(nodesGroupMaxNodes)
+		legacyregistry.MustRegister(nodesGroupTargetSize)
+		legacyregistry.MustRegister(nodesGroupHealthiness)
+		legacyregistry.MustRegister(nodeGroupBackOffStatus)
 	}
 }
 
@@ -520,6 +568,37 @@ func UpdateNodeGroupMax(nodeGroup string, maxNodes int) {
 	nodesGroupMaxNodes.WithLabelValues(nodeGroup).Set(float64(maxNodes))
 }
 
+// UpdateNodeGroupTargetSize records the node group target size
+func UpdateNodeGroupTargetSize(targetSizes map[string]int) {
+	for nodeGroup, targetSize := range targetSizes {
+		nodesGroupTargetSize.WithLabelValues(nodeGroup).Set(float64(targetSize))
+	}
+}
+
+// UpdateNodeGroupHealthStatus records if node group is healthy to autoscaling
+func UpdateNodeGroupHealthStatus(nodeGroup string, healthy bool) {
+	if healthy {
+		nodesGroupHealthiness.WithLabelValues(nodeGroup).Set(1)
+	} else {
+		nodesGroupHealthiness.WithLabelValues(nodeGroup).Set(0)
+	}
+}
+
+// UpdateNodeGroupBackOffStatus records if node group is backoff for not autoscaling
+func UpdateNodeGroupBackOffStatus(nodeGroup string, backoffReasonStatus map[string]bool) {
+	if len(backoffReasonStatus) == 0 {
+		nodeGroupBackOffStatus.WithLabelValues(nodeGroup, "").Set(0)
+	} else {
+		for reason, backoff := range backoffReasonStatus {
+			if backoff {
+				nodeGroupBackOffStatus.WithLabelValues(nodeGroup, reason).Set(1)
+			} else {
+				nodeGroupBackOffStatus.WithLabelValues(nodeGroup, reason).Set(0)
+			}
+		}
+	}
+}
+
 // RegisterError records any errors preventing Cluster Autoscaler from working.
 // No more than one error should be recorded per loop.
 func RegisterError(err errors.AutoscalerError) {
@@ -550,9 +629,9 @@ func RegisterScaleDown(nodesCount int, gpuResourceName, gpuType string, reason N
 	}
 }
 
-// RegisterEvictions records number of evicted pods
-func RegisterEvictions(podsCount int) {
-	evictionsCount.Add(float64(podsCount))
+// RegisterEvictions records number of evicted pods succeed or failed
+func RegisterEvictions(podsCount int, result PodEvictionResult) {
+	evictionsCount.WithLabelValues(string(result)).Add(float64(podsCount))
 }
 
 // UpdateUnneededNodesCount records number of currently unneeded nodes
@@ -578,12 +657,22 @@ func UpdateNapEnabled(enabled bool) {
 
 // RegisterNodeGroupCreation registers node group creation
 func RegisterNodeGroupCreation() {
-	nodeGroupCreationCount.Add(1.0)
+	RegisterNodeGroupCreationWithLabelValues("")
+}
+
+// RegisterNodeGroupCreationWithLabelValues registers node group creation with the provided labels
+func RegisterNodeGroupCreationWithLabelValues(groupType string) {
+	nodeGroupCreationCount.WithLabelValues(groupType).Add(1.0)
 }
 
 // RegisterNodeGroupDeletion registers node group deletion
 func RegisterNodeGroupDeletion() {
-	nodeGroupDeletionCount.Add(1.0)
+	RegisterNodeGroupDeletionWithLabelValues("")
+}
+
+// RegisterNodeGroupDeletionWithLabelValues registers node group deletion with the provided labels
+func RegisterNodeGroupDeletionWithLabelValues(groupType string) {
+	nodeGroupDeletionCount.WithLabelValues(groupType).Add(1.0)
 }
 
 // UpdateScaleDownInCooldown registers if the cluster autoscaler
@@ -636,4 +725,11 @@ func ObservePendingNodeDeletions(value int) {
 // ObserveNodeTaintsCount records the node taints count of given type.
 func ObserveNodeTaintsCount(taintType string, count float64) {
 	nodeTaintsCount.WithLabelValues(taintType).Set(count)
+}
+
+// UpdateInconsistentInstancesMigsCount records the observed number of migs where instance count
+// according to InstanceGroupManagers.List() differs from the results of Instances.List().
+// This can happen when some instances are abandoned or a user edits instance 'created-by' metadata.
+func UpdateInconsistentInstancesMigsCount(migCount int) {
+	inconsistentInstancesMigsCount.Set(float64(migCount))
 }

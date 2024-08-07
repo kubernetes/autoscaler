@@ -505,18 +505,18 @@ func TestBuildNodeFromTemplate(t *testing.T) {
 
 	// Node with instance requirements
 	asg.MixedInstancesPolicy = &mixedInstancesPolicy{
-		instanceRequirementsOverrides: &autoscaling.InstanceRequirements{
-			VCpuCount: &autoscaling.VCpuCountRequest{
+		instanceRequirements: &ec2.InstanceRequirements{
+			VCpuCount: &ec2.VCpuCountRange{
 				Min: aws.Int64(4),
 				Max: aws.Int64(8),
 			},
-			MemoryMiB: &autoscaling.MemoryMiBRequest{
+			MemoryMiB: &ec2.MemoryMiB{
 				Min: aws.Int64(4),
 				Max: aws.Int64(8),
 			},
 			AcceleratorTypes:         []*string{aws.String(autoscaling.AcceleratorTypeGpu)},
 			AcceleratorManufacturers: []*string{aws.String(autoscaling.AcceleratorManufacturerNvidia)},
-			AcceleratorCount: &autoscaling.AcceleratorCountRequest{
+			AcceleratorCount: &ec2.AcceleratorCount{
 				Min: aws.Int64(4),
 				Max: aws.Int64(8),
 			},

@@ -101,3 +101,29 @@ func TestProviderConstructorProperties(t *testing.T) {
 		t.Fatalf("expected 0 GPU types, got %d", got)
 	}
 }
+func BenchmarkNodeGroups(b *testing.B) {
+	resourceLimits := cloudprovider.ResourceLimiter{}
+	annotations := map[string]string{
+		nodeGroupMinSizeAnnotationKey: "1",
+		nodeGroupMaxSizeAnnotationKey: "2",
+	}
+
+	controller, stop := mustCreateTestController(b)
+	defer stop()
+	machineSetConfigs := createMachineSetTestConfigs("namespace", "", RandomString(6), 100, 1, annotations, nil)
+	if err := addTestConfigs(b, controller, machineSetConfigs...); err != nil {
+		b.Fatalf("unexpected error: %v", err)
+	}
+
+	provider := newProvider(cloudprovider.ClusterAPIProviderName, &resourceLimits, controller)
+	if actual := provider.Name(); actual != cloudprovider.ClusterAPIProviderName {
+		b.Errorf("expected %q, got %q", cloudprovider.ClusterAPIProviderName, actual)
+	}
+
+	b.ResetTimer()
+	b.Run("NodeGroups", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			provider.NodeGroups()
+		}
+	})
+}

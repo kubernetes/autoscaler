@@ -163,7 +163,7 @@ func (as *AgentPool) GetVMIndexes() ([]int, map[int]string, error) {
 		}
 
 		indexes = append(indexes, index)
-		resourceID, err := convertResourceGroupNameToLower("azure://" + *instance.ID)
+		resourceID, err := convertResourceGroupNameToLower(azurePrefix + *instance.ID)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -335,6 +335,11 @@ func (as *AgentPool) IncreaseSize(delta int) error {
 	return realError
 }
 
+// AtomicIncreaseSize is not implemented.
+func (as *AgentPool) AtomicIncreaseSize(delta int) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // DecreaseTargetSize decreases the target size of the node group. This function
 // doesn't permit to delete any existing node and can be used only to reduce the
 // request for new nodes that have not been yet fulfilled. Delta should be negative.
@@ -484,7 +489,7 @@ func (as *AgentPool) Nodes() ([]cloudprovider.Instance, error) {
 
 		// To keep consistent with providerID from kubernetes cloud provider, convert
 		// resourceGroupName in the ID to lower case.
-		resourceID, err := convertResourceGroupNameToLower("azure://" + *instance.ID)
+		resourceID, err := convertResourceGroupNameToLower(azurePrefix + *instance.ID)
 		if err != nil {
 			return nil, err
 		}

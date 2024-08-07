@@ -72,25 +72,12 @@ func (a *Action) Error() error {
 
 // ActionClient is a client for the actions API.
 type ActionClient struct {
-	client *Client
+	action *ResourceActionClient
 }
 
 // GetByID retrieves an action by its ID. If the action does not exist, nil is returned.
 func (c *ActionClient) GetByID(ctx context.Context, id int64) (*Action, *Response, error) {
-	req, err := c.client.NewRequest(ctx, "GET", fmt.Sprintf("/actions/%d", id), nil)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	var body schema.ActionGetResponse
-	resp, err := c.client.Do(req, &body)
-	if err != nil {
-		if IsError(err, ErrorCodeNotFound) {
-			return nil, resp, nil
-		}
-		return nil, nil, err
-	}
-	return ActionFromSchema(body.Action), resp, nil
+	return c.action.GetByID(ctx, id)
 }
 
 // ActionListOpts specifies options for listing actions.
@@ -120,8 +107,62 @@ func (l ActionListOpts) values() url.Values {
 // Please note that filters specified in opts are not taken into account
 // when their value corresponds to their zero value or when they are empty.
 func (c *ActionClient) List(ctx context.Context, opts ActionListOpts) ([]*Action, *Response, error) {
-	path := "/actions?" + opts.values().Encode()
-	req, err := c.client.NewRequest(ctx, "GET", path, nil)
+	return c.action.List(ctx, opts)
+}
+
+// All returns all actions.
+func (c *ActionClient) All(ctx context.Context) ([]*Action, error) {
+	return c.action.All(ctx, ActionListOpts{ListOpts: ListOpts{PerPage: 50}})
+}
+
+// AllWithOpts returns all actions for the given options.
+func (c *ActionClient) AllWithOpts(ctx context.Context, opts ActionListOpts) ([]*Action, error) {
+	return c.action.All(ctx, opts)
+}
+
+// ResourceActionClient is a client for the actions API exposed by the resource.
+type ResourceActionClient struct {
+	resource string
+	client   *Client
+}
+
+func (c *ResourceActionClient) getBaseURL() string {
+	if c.resource == "" {
+		return ""
+	}
+
+	return "/" + c.resource
+}
+
+// GetByID retrieves an action by its ID. If the action does not exist, nil is returned.
+func (c *ResourceActionClient) GetByID(ctx context.Context, id int64) (*Action, *Response, error) {
+	req, err := c.client.NewRequest(ctx, "GET", fmt.Sprintf("%s/actions/%d", c.getBaseURL(), id), nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var body schema.ActionGetResponse
+	resp, err := c.client.Do(req, &body)
+	if err != nil {
+		if IsError(err, ErrorCodeNotFound) {
+			return nil, resp, nil
+		}
+		return nil, nil, err
+	}
+	return ActionFromSchema(body.Action), resp, nil
+}
+
+// List returns a list of actions for a specific page.
+//
+// Please note that filters specified in opts are not taken into account
+// when their value corresponds to their zero value or when they are empty.
+func (c *ResourceActionClient) List(ctx context.Context, opts ActionListOpts) ([]*Action, *Response, error) {
+	req, err := c.client.NewRequest(
+		ctx,
+		"GET",
+		fmt.Sprintf("%s/actions?%s", c.getBaseURL(), opts.values().Encode()),
+		nil,
+	)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -138,14 +179,9 @@ func (c *ActionClient) List(ctx context.Context, opts ActionListOpts) ([]*Action
 	return actions, resp, nil
 }
 
-// All returns all actions.
-func (c *ActionClient) All(ctx context.Context) ([]*Action, error) {
-	return c.AllWithOpts(ctx, ActionListOpts{ListOpts: ListOpts{PerPage: 50}})
-}
-
-// AllWithOpts returns all actions for the given options.
-func (c *ActionClient) AllWithOpts(ctx context.Context, opts ActionListOpts) ([]*Action, error) {
-	var allActions []*Action
+// All returns all actions for the given options.
+func (c *ResourceActionClient) All(ctx context.Context, opts ActionListOpts) ([]*Action, error) {
+	allActions := []*Action{}
 
 	err := c.client.all(func(page int) (*Response, error) {
 		opts.Page = page
@@ -161,150 +197,4 @@ func (c *ActionClient) AllWithOpts(ctx context.Context, opts ActionListOpts) ([]
 	}
 
 	return allActions, nil
-}
-
-// WatchOverallProgress watches several actions' progress until they complete
-// with success or error. This watching happens in a goroutine and updates are
-// provided through the two returned channels:
-//
-//   - The first channel receives percentage updates of the progress, based on
-//     the number of completed versus total watched actions. The return value
-//     is an int between 0 and 100.
-//   - The second channel returned receives errors for actions that did not
-//     complete successfully, as well as any errors that happened while
-//     querying the API.
-//
-// By default, the method keeps watching until all actions have finished
-// processing. If you want to be able to cancel the method or configure a
-// timeout, use the [context.Context]. Once the method has stopped watching,
-// both returned channels are closed.
-//
-// WatchOverallProgress uses the [WithPollBackoffFunc] of the [Client] to wait
-// until sending the next request.
-func (c *ActionClient) WatchOverallProgress(ctx context.Context, actions []*Action) (<-chan int, <-chan error) {
-	errCh := make(chan error, len(actions))
-	progressCh := make(chan int)
-
-	go func() {
-		defer close(errCh)
-		defer close(progressCh)
-
-		successIDs := make([]int64, 0, len(actions))
-		watchIDs := make(map[int64]struct{}, len(actions))
-		for _, action := range actions {
-			watchIDs[action.ID] = struct{}{}
-		}
-
-		retries := 0
-
-		for {
-			select {
-			case <-ctx.Done():
-				errCh <- ctx.Err()
-				return
-			case <-time.After(c.client.pollBackoffFunc(retries)):
-				retries++
-			}
-
-			opts := ActionListOpts{}
-			for watchID := range watchIDs {
-				opts.ID = append(opts.ID, watchID)
-			}
-
-			as, err := c.AllWithOpts(ctx, opts)
-			if err != nil {
-				errCh <- err
-				return
-			}
-
-			for _, a := range as {
-				switch a.Status {
-				case ActionStatusRunning:
-					continue
-				case ActionStatusSuccess:
-					delete(watchIDs, a.ID)
-					successIDs = append(successIDs, a.ID)
-					sendProgress(progressCh, int(float64(len(actions)-len(successIDs))/float64(len(actions))*100))
-				case ActionStatusError:
-					delete(watchIDs, a.ID)
-					errCh <- fmt.Errorf("action %d failed: %w", a.ID, a.Error())
-				}
-			}
-
-			if len(watchIDs) == 0 {
-				return
-			}
-		}
-	}()
-
-	return progressCh, errCh
-}
-
-// WatchProgress watches one action's progress until it completes with success
-// or error. This watching happens in a goroutine and updates are provided
-// through the two returned channels:
-//
-//   - The first channel receives percentage updates of the progress, based on
-//     the progress percentage indicated by the API. The return value is an int
-//     between 0 and 100.
-//   - The second channel receives any errors that happened while querying the
-//     API, as well as the error of the action if it did not complete
-//     successfully, or nil if it did.
-//
-// By default, the method keeps watching until the action has finished
-// processing. If you want to be able to cancel the method or configure a
-// timeout, use the [context.Context]. Once the method has stopped watching,
-// both returned channels are closed.
-//
-// WatchProgress uses the [WithPollBackoffFunc] of the [Client] to wait until
-// sending the next request.
-func (c *ActionClient) WatchProgress(ctx context.Context, action *Action) (<-chan int, <-chan error) {
-	errCh := make(chan error, 1)
-	progressCh := make(chan int)
-
-	go func() {
-		defer close(errCh)
-		defer close(progressCh)
-
-		retries := 0
-
-		for {
-			select {
-			case <-ctx.Done():
-				errCh <- ctx.Err()
-				return
-			case <-time.After(c.client.pollBackoffFunc(retries)):
-				retries++
-			}
-
-			a, _, err := c.GetByID(ctx, action.ID)
-			if err != nil {
-				errCh <- err
-				return
-			}
-
-			switch a.Status {
-			case ActionStatusRunning:
-				sendProgress(progressCh, a.Progress)
-			case ActionStatusSuccess:
-				sendProgress(progressCh, 100)
-				errCh <- nil
-				return
-			case ActionStatusError:
-				errCh <- a.Error()
-				return
-			}
-		}
-	}()
-
-	return progressCh, errCh
-}
-
-func sendProgress(progressCh chan int, p int) {
-	select {
-	case progressCh <- p:
-		break
-	default:
-		break
-	}
 }

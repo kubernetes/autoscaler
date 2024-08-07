@@ -70,9 +70,11 @@ To create a valid configuration, follow instructions for your cloud provider:
 
 - [AWS](#aws---using-auto-discovery-of-tagged-instance-groups)
 - [GCE](#gce)
-- [Azure AKS](#azure-aks)
+- [Azure](#azure)
 - [OpenStack Magnum](#openstack-magnum)
 - [Cluster API](#cluster-api)
+- [Exoscale](#exoscale)
+- [Hetzner Cloud](#hetzner-cloud)
 
 ### Templating the autoDiscovery.clusterName
 
@@ -187,20 +189,18 @@ In the event you want to explicitly specify MIGs instead of using auto-discovery
 --set autoscalingGroups[n].name=https://content.googleapis.com/compute/v1/projects/$PROJECTID/zones/$ZONENAME/instanceGroupManagers/$FULL-MIG-NAME,autoscalingGroups[n].maxSize=$MAXSIZE,autoscalingGroups[n].minSize=$MINSIZE
 ```
 
-### Azure AKS
+### Azure
 
 The following parameters are required:
 
 - `cloudProvider=azure`
-- `autoscalingGroups[0].name=your-agent-pool,autoscalingGroups[0].maxSize=10,autoscalingGroups[0].minSize=1`
+- `autoscalingGroups[0].name=your-vmss,autoscalingGroups[0].maxSize=10,autoscalingGroups[0].minSize=1`
 - `azureClientID: "your-service-principal-app-id"`
 - `azureClientSecret: "your-service-principal-client-secret"`
 - `azureSubscriptionID: "your-azure-subscription-id"`
 - `azureTenantID: "your-azure-tenant-id"`
-- `azureClusterName: "your-aks-cluster-name"`
 - `azureResourceGroup: "your-aks-cluster-resource-group-name"`
-- `azureVMType: "AKS"`
-- `azureNodeResourceGroup: "your-aks-cluster-node-resource-group"`
+- `azureVMType: "vmss"`
 
 ### OpenStack Magnum
 
@@ -224,6 +224,7 @@ $ helm install my-release autoscaler/cluster-autoscaler -f myvalues.yaml
 `cloudProvider: clusterapi` must be set, and then one or more of
 
 - `autoDiscovery.clusterName`
+- or `autoDiscovery.namespace`
 - or `autoDiscovery.labels`
 
 See [here](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/clusterapi/README.md#configuring-node-group-auto-discovery) for more details.
@@ -260,6 +261,18 @@ $ helm install my-release autoscaler/cluster-autoscaler \
 ```
 
 Read [cluster-autoscaler/cloudprovider/exoscale/README.md](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/exoscale/README.md) for further information on the setup without helm.
+
+### Hetzner Cloud
+
+The following parameters are required:
+
+- `cloudProvider=hetzner`
+- `extraEnv.HCLOUD_TOKEN=...`
+- `autoscalingGroups=...`
+
+Each autoscaling group requires an additional `instanceType` and `region` key to be set.
+
+Read [cluster-autoscaler/cloudprovider/hetzner/README.md](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/hetzner/README.md) for further information on the setup without helm.
 
 ## Uninstalling the Chart
 

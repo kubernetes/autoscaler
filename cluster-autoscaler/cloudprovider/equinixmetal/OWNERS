@@ -1,0 +1,16 @@
+approvers:
+- cprivitere
+- d-mo
+- deitch
+- detiber
+- displague
+reviewers:
+- cprivitere
+- d-mo
+- deitch
+- detiber
+- displague
+- v-pap
+
+labels:
+- area/provider/equinixmetal

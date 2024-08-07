@@ -18,7 +18,6 @@ package actuation
 
 import (
 	"sync"
-	"time"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
@@ -61,14 +60,15 @@ func NewGroupDeletionScheduler(ctx *context.AutoscalingContext, ndt *deletiontra
 	}
 }
 
-// ReportMetrics should be invoked for GroupDeletionScheduler before each scale-down phase.
-func (ds *GroupDeletionScheduler) ReportMetrics() {
+// ResetAndReportMetrics should be invoked for GroupDeletionScheduler before each scale-down phase.
+func (ds *GroupDeletionScheduler) ResetAndReportMetrics() {
 	ds.Lock()
 	defer ds.Unlock()
 	pendingNodeDeletions := 0
 	for _, nodes := range ds.nodeQueue {
 		pendingNodeDeletions += len(nodes)
 	}
+	ds.failuresForGroup = map[string]bool{}
 	// Since the nodes are deleted asynchronously, it's easier to
 	// monitor the pending ones at the beginning of the next scale-down phase.
 	metrics.ObservePendingNodeDeletions(pendingNodeDeletions)
@@ -104,7 +104,7 @@ func (ds *GroupDeletionScheduler) prepareNodeForDeletion(nodeInfo *framework.Nod
 			return status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToEvictPods, Err: err, PodEvictionResults: evictionResults}
 		}
 	} else {
-		if err := ds.evictor.EvictDaemonSetPods(ds.ctx, nodeInfo, time.Now()); err != nil {
+		if _, err := ds.evictor.EvictDaemonSetPods(ds.ctx, nodeInfo); err != nil {
 			// Evicting DS pods is best-effort, so proceed with the deletion even if there are errors.
 			klog.Warningf("Error while evicting DS pods from an empty node %q: %v", node.Name, err)
 		}

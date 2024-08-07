@@ -20,8 +20,9 @@ type Datacenter struct {
 
 // DatacenterServerTypes represents the server types available and supported in a datacenter.
 type DatacenterServerTypes struct {
-	Supported []*ServerType
-	Available []*ServerType
+	Supported             []*ServerType
+	AvailableForMigration []*ServerType
+	Available             []*ServerType
 }
 
 // DatacenterClient is a client for the datacenter API.
@@ -116,7 +117,7 @@ func (c *DatacenterClient) All(ctx context.Context) ([]*Datacenter, error) {
 
 // AllWithOpts returns all datacenters for the given options.
 func (c *DatacenterClient) AllWithOpts(ctx context.Context, opts DatacenterListOpts) ([]*Datacenter, error) {
-	var allDatacenters []*Datacenter
+	allDatacenters := []*Datacenter{}
 
 	err := c.client.all(func(page int) (*Response, error) {
 		opts.Page = page

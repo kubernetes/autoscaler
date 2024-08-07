@@ -34,7 +34,7 @@ func FilterOutExpendableAndSplit(unschedulableCandidates []*apiv1.Pod, nodes []*
 	}
 
 	for _, pod := range unschedulableCandidates {
-		if pod.Spec.Priority != nil && int(*pod.Spec.Priority) < expendablePodsPriorityCutoff {
+		if IsExpendablePod(pod, expendablePodsPriorityCutoff) {
 			klog.V(4).Infof("Pod %s has priority below %d (%d) and will scheduled when enough resources is free. Ignoring in scale up.", pod.Name, expendablePodsPriorityCutoff, *pod.Spec.Priority)
 		} else if nominatedNodeName := pod.Status.NominatedNodeName; nominatedNodeName != "" {
 			if nodeNames[nominatedNodeName] {
@@ -64,5 +64,7 @@ func FilterOutExpendablePods(pods []*apiv1.Pod, expendablePodsPriorityCutoff int
 
 // IsExpendablePod tests if pod is expendable for give priority cutoff
 func IsExpendablePod(pod *apiv1.Pod, expendablePodsPriorityCutoff int) bool {
-	return pod.Spec.Priority != nil && int(*pod.Spec.Priority) < expendablePodsPriorityCutoff
+	preemptLowerPriority := pod.Spec.PreemptionPolicy == nil || *pod.Spec.PreemptionPolicy == apiv1.PreemptLowerPriority
+	lowPriority := pod.Spec.Priority != nil && int(*pod.Spec.Priority) < expendablePodsPriorityCutoff
+	return preemptLowerPriority && lowPriority
 }

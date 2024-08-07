@@ -23,6 +23,7 @@ import (
 	"time"
 
 	"golang.org/x/time/rate"
+	v1 "k8s.io/api/autoscaling/v1"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -30,7 +31,9 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	target_mock "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/mock"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/eviction"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/priority"
@@ -132,6 +135,10 @@ func testRunOnceBase(
 	selector := parseLabelSelector("app = testingApp")
 	containerName := "container1"
 	rc := apiv1.ReplicationController{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "ReplicationController",
+			APIVersion: "apps/v1",
+		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "rc",
 			Namespace: "default",
@@ -159,13 +166,18 @@ func testRunOnceBase(
 
 	podLister := &test.PodListerMock{}
 	podLister.On("List").Return(pods, nil)
-
+	targetRef := &v1.CrossVersionObjectReference{
+		Kind:       rc.Kind,
+		Name:       rc.Name,
+		APIVersion: rc.APIVersion,
+	}
 	vpaObj := test.VerticalPodAutoscaler().
 		WithContainer(containerName).
 		WithTarget("2", "200M").
 		WithMinAllowed(containerName, "1", "100M").
 		WithMaxAllowed(containerName, "3", "1G").
-		Get()
+		WithTargetRef(targetRef).Get()
+
 	vpaObj.Spec.UpdatePolicy = &vpa_types.PodUpdatePolicy{UpdateMode: &updateMode}
 	vpaLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{vpaObj}, nil).Once()
 
@@ -179,6 +191,7 @@ func testRunOnceBase(
 		evictionAdmission:            priority.NewDefaultPodEvictionAdmission(),
 		recommendationProcessor:      &test.FakeRecommendationProcessor{},
 		selectorFetcher:              mockSelectorFetcher,
+		controllerFetcher:            controllerfetcher.FakeControllerFetcher{},
 		useAdmissionControllerStatus: true,
 		statusValidator:              statusValidator,
 		priorityProcessor:            priority.NewProcessor(),
@@ -246,4 +259,101 @@ func newFakeValidator(isValid bool) status.Validator {
 
 func (f *fakeValidator) IsStatusValid(statusTimeout time.Duration) (bool, error) {
 	return f.isValid, nil
+}
+
+func TestRunOnceIgnoreNamespaceMatchingPods(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	replicas := int32(5)
+	livePods := 5
+	labels := map[string]string{"app": "testingApp"}
+	selector := parseLabelSelector("app = testingApp")
+
+	containerName := "container1"
+	rc := apiv1.ReplicationController{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "ReplicationController",
+			APIVersion: "apps/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "rc",
+			Namespace: "default",
+		},
+		Spec: apiv1.ReplicationControllerSpec{
+			Replicas: &replicas,
+		},
+	}
+	pods := make([]*apiv1.Pod, livePods)
+	eviction := &test.PodsEvictionRestrictionMock{}
+
+	for i := range pods {
+		pods[i] = test.Pod().WithName("test_"+strconv.Itoa(i)).
+			AddContainer(test.Container().WithName(containerName).WithCPURequest(resource.MustParse("1")).WithMemRequest(resource.MustParse("100M")).Get()).
+			WithCreator(&rc.ObjectMeta, &rc.TypeMeta).
+			Get()
+
+		pods[i].Labels = labels
+		eviction.On("CanEvict", pods[i]).Return(true)
+		eviction.On("Evict", pods[i], nil).Return(nil)
+	}
+
+	factory := &fakeEvictFactory{eviction}
+	vpaLister := &test.VerticalPodAutoscalerListerMock{}
+
+	podLister := &test.PodListerMock{}
+	podLister.On("List").Return(pods, nil)
+	targetRef := &v1.CrossVersionObjectReference{
+		Kind:       rc.Kind,
+		Name:       rc.Name,
+		APIVersion: rc.APIVersion,
+	}
+	vpaObj := test.VerticalPodAutoscaler().
+		WithNamespace("default").
+		WithContainer(containerName).
+		WithTarget("2", "200M").
+		WithMinAllowed(containerName, "1", "100M").
+		WithMaxAllowed(containerName, "3", "1G").
+		WithTargetRef(targetRef).Get()
+
+	vpaLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{vpaObj}, nil).Once()
+
+	mockSelectorFetcher := target_mock.NewMockVpaTargetSelectorFetcher(ctrl)
+	mockSelectorFetcher.EXPECT().Fetch(gomock.Eq(vpaObj)).Return(selector, nil)
+
+	updater := &updater{
+		vpaLister:                    vpaLister,
+		podLister:                    podLister,
+		evictionFactory:              factory,
+		evictionRateLimiter:          rate.NewLimiter(rate.Inf, 0),
+		evictionAdmission:            priority.NewDefaultPodEvictionAdmission(),
+		recommendationProcessor:      &test.FakeRecommendationProcessor{},
+		selectorFetcher:              mockSelectorFetcher,
+		controllerFetcher:            controllerfetcher.FakeControllerFetcher{},
+		useAdmissionControllerStatus: true,
+		priorityProcessor:            priority.NewProcessor(),
+		ignoredNamespaces:            []string{"not-default"},
+		statusValidator:              newFakeValidator(true),
+	}
+
+	updater.RunOnce(context.Background())
+	eviction.AssertNumberOfCalls(t, "Evict", 5)
+}
+
+func TestRunOnceIgnoreNamespaceMatching(t *testing.T) {
+	eviction := &test.PodsEvictionRestrictionMock{}
+	vpaLister := &test.VerticalPodAutoscalerListerMock{}
+	vpaObj := test.VerticalPodAutoscaler().
+		WithNamespace("default").
+		WithContainer("container").Get()
+
+	vpaLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{vpaObj}, nil).Once()
+
+	updater := &updater{
+		vpaLister:         vpaLister,
+		ignoredNamespaces: []string{"default"},
+	}
+
+	updater.RunOnce(context.Background())
+	eviction.AssertNumberOfCalls(t, "Evict", 0)
 }

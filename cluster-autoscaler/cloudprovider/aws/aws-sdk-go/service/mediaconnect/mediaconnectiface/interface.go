@@ -26,7 +26,7 @@ import (
 //	// myFunc uses an SDK service client to make a request to
 //	// AWS MediaConnect.
 //	func myFunc(svc mediaconnectiface.MediaConnectAPI) bool {
-//	    // Make svc.AddFlowMediaStreams request
+//	    // Make svc.AddBridgeOutputs request
 //	}
 //
 //	func main() {
@@ -42,7 +42,7 @@ import (
 //	type mockMediaConnectClient struct {
 //	    mediaconnectiface.MediaConnectAPI
 //	}
-//	func (m *mockMediaConnectClient) AddFlowMediaStreams(input *mediaconnect.AddFlowMediaStreamsInput) (*mediaconnect.AddFlowMediaStreamsOutput, error) {
+//	func (m *mockMediaConnectClient) AddBridgeOutputs(input *mediaconnect.AddBridgeOutputsInput) (*mediaconnect.AddBridgeOutputsOutput, error) {
 //	    // mock response/functionality
 //	}
 //
@@ -60,6 +60,14 @@ import (
 // and waiters. Its suggested to use the pattern above for testing, or using
 // tooling to generate mocks to satisfy the interfaces.
 type MediaConnectAPI interface {
+	AddBridgeOutputs(*mediaconnect.AddBridgeOutputsInput) (*mediaconnect.AddBridgeOutputsOutput, error)
+	AddBridgeOutputsWithContext(aws.Context, *mediaconnect.AddBridgeOutputsInput, ...request.Option) (*mediaconnect.AddBridgeOutputsOutput, error)
+	AddBridgeOutputsRequest(*mediaconnect.AddBridgeOutputsInput) (*request.Request, *mediaconnect.AddBridgeOutputsOutput)
+
+	AddBridgeSources(*mediaconnect.AddBridgeSourcesInput) (*mediaconnect.AddBridgeSourcesOutput, error)
+	AddBridgeSourcesWithContext(aws.Context, *mediaconnect.AddBridgeSourcesInput, ...request.Option) (*mediaconnect.AddBridgeSourcesOutput, error)
+	AddBridgeSourcesRequest(*mediaconnect.AddBridgeSourcesInput) (*request.Request, *mediaconnect.AddBridgeSourcesOutput)
+
 	AddFlowMediaStreams(*mediaconnect.AddFlowMediaStreamsInput) (*mediaconnect.AddFlowMediaStreamsOutput, error)
 	AddFlowMediaStreamsWithContext(aws.Context, *mediaconnect.AddFlowMediaStreamsInput, ...request.Option) (*mediaconnect.AddFlowMediaStreamsOutput, error)
 	AddFlowMediaStreamsRequest(*mediaconnect.AddFlowMediaStreamsInput) (*request.Request, *mediaconnect.AddFlowMediaStreamsOutput)
@@ -76,17 +84,49 @@ type MediaConnectAPI interface {
 	AddFlowVpcInterfacesWithContext(aws.Context, *mediaconnect.AddFlowVpcInterfacesInput, ...request.Option) (*mediaconnect.AddFlowVpcInterfacesOutput, error)
 	AddFlowVpcInterfacesRequest(*mediaconnect.AddFlowVpcInterfacesInput) (*request.Request, *mediaconnect.AddFlowVpcInterfacesOutput)
 
+	CreateBridge(*mediaconnect.CreateBridgeInput) (*mediaconnect.CreateBridgeOutput, error)
+	CreateBridgeWithContext(aws.Context, *mediaconnect.CreateBridgeInput, ...request.Option) (*mediaconnect.CreateBridgeOutput, error)
+	CreateBridgeRequest(*mediaconnect.CreateBridgeInput) (*request.Request, *mediaconnect.CreateBridgeOutput)
+
 	CreateFlow(*mediaconnect.CreateFlowInput) (*mediaconnect.CreateFlowOutput, error)
 	CreateFlowWithContext(aws.Context, *mediaconnect.CreateFlowInput, ...request.Option) (*mediaconnect.CreateFlowOutput, error)
 	CreateFlowRequest(*mediaconnect.CreateFlowInput) (*request.Request, *mediaconnect.CreateFlowOutput)
+
+	CreateGateway(*mediaconnect.CreateGatewayInput) (*mediaconnect.CreateGatewayOutput, error)
+	CreateGatewayWithContext(aws.Context, *mediaconnect.CreateGatewayInput, ...request.Option) (*mediaconnect.CreateGatewayOutput, error)
+	CreateGatewayRequest(*mediaconnect.CreateGatewayInput) (*request.Request, *mediaconnect.CreateGatewayOutput)
+
+	DeleteBridge(*mediaconnect.DeleteBridgeInput) (*mediaconnect.DeleteBridgeOutput, error)
+	DeleteBridgeWithContext(aws.Context, *mediaconnect.DeleteBridgeInput, ...request.Option) (*mediaconnect.DeleteBridgeOutput, error)
+	DeleteBridgeRequest(*mediaconnect.DeleteBridgeInput) (*request.Request, *mediaconnect.DeleteBridgeOutput)
 
 	DeleteFlow(*mediaconnect.DeleteFlowInput) (*mediaconnect.DeleteFlowOutput, error)
 	DeleteFlowWithContext(aws.Context, *mediaconnect.DeleteFlowInput, ...request.Option) (*mediaconnect.DeleteFlowOutput, error)
 	DeleteFlowRequest(*mediaconnect.DeleteFlowInput) (*request.Request, *mediaconnect.DeleteFlowOutput)
 
+	DeleteGateway(*mediaconnect.DeleteGatewayInput) (*mediaconnect.DeleteGatewayOutput, error)
+	DeleteGatewayWithContext(aws.Context, *mediaconnect.DeleteGatewayInput, ...request.Option) (*mediaconnect.DeleteGatewayOutput, error)
+	DeleteGatewayRequest(*mediaconnect.DeleteGatewayInput) (*request.Request, *mediaconnect.DeleteGatewayOutput)
+
+	DeregisterGatewayInstance(*mediaconnect.DeregisterGatewayInstanceInput) (*mediaconnect.DeregisterGatewayInstanceOutput, error)
+	DeregisterGatewayInstanceWithContext(aws.Context, *mediaconnect.DeregisterGatewayInstanceInput, ...request.Option) (*mediaconnect.DeregisterGatewayInstanceOutput, error)
+	DeregisterGatewayInstanceRequest(*mediaconnect.DeregisterGatewayInstanceInput) (*request.Request, *mediaconnect.DeregisterGatewayInstanceOutput)
+
+	DescribeBridge(*mediaconnect.DescribeBridgeInput) (*mediaconnect.DescribeBridgeOutput, error)
+	DescribeBridgeWithContext(aws.Context, *mediaconnect.DescribeBridgeInput, ...request.Option) (*mediaconnect.DescribeBridgeOutput, error)
+	DescribeBridgeRequest(*mediaconnect.DescribeBridgeInput) (*request.Request, *mediaconnect.DescribeBridgeOutput)
+
 	DescribeFlow(*mediaconnect.DescribeFlowInput) (*mediaconnect.DescribeFlowOutput, error)
 	DescribeFlowWithContext(aws.Context, *mediaconnect.DescribeFlowInput, ...request.Option) (*mediaconnect.DescribeFlowOutput, error)
 	DescribeFlowRequest(*mediaconnect.DescribeFlowInput) (*request.Request, *mediaconnect.DescribeFlowOutput)
+
+	DescribeGateway(*mediaconnect.DescribeGatewayInput) (*mediaconnect.DescribeGatewayOutput, error)
+	DescribeGatewayWithContext(aws.Context, *mediaconnect.DescribeGatewayInput, ...request.Option) (*mediaconnect.DescribeGatewayOutput, error)
+	DescribeGatewayRequest(*mediaconnect.DescribeGatewayInput) (*request.Request, *mediaconnect.DescribeGatewayOutput)
+
+	DescribeGatewayInstance(*mediaconnect.DescribeGatewayInstanceInput) (*mediaconnect.DescribeGatewayInstanceOutput, error)
+	DescribeGatewayInstanceWithContext(aws.Context, *mediaconnect.DescribeGatewayInstanceInput, ...request.Option) (*mediaconnect.DescribeGatewayInstanceOutput, error)
+	DescribeGatewayInstanceRequest(*mediaconnect.DescribeGatewayInstanceInput) (*request.Request, *mediaconnect.DescribeGatewayInstanceOutput)
 
 	DescribeOffering(*mediaconnect.DescribeOfferingInput) (*mediaconnect.DescribeOfferingOutput, error)
 	DescribeOfferingWithContext(aws.Context, *mediaconnect.DescribeOfferingInput, ...request.Option) (*mediaconnect.DescribeOfferingOutput, error)
@@ -99,6 +139,13 @@ type MediaConnectAPI interface {
 	GrantFlowEntitlements(*mediaconnect.GrantFlowEntitlementsInput) (*mediaconnect.GrantFlowEntitlementsOutput, error)
 	GrantFlowEntitlementsWithContext(aws.Context, *mediaconnect.GrantFlowEntitlementsInput, ...request.Option) (*mediaconnect.GrantFlowEntitlementsOutput, error)
 	GrantFlowEntitlementsRequest(*mediaconnect.GrantFlowEntitlementsInput) (*request.Request, *mediaconnect.GrantFlowEntitlementsOutput)
+
+	ListBridges(*mediaconnect.ListBridgesInput) (*mediaconnect.ListBridgesOutput, error)
+	ListBridgesWithContext(aws.Context, *mediaconnect.ListBridgesInput, ...request.Option) (*mediaconnect.ListBridgesOutput, error)
+	ListBridgesRequest(*mediaconnect.ListBridgesInput) (*request.Request, *mediaconnect.ListBridgesOutput)
+
+	ListBridgesPages(*mediaconnect.ListBridgesInput, func(*mediaconnect.ListBridgesOutput, bool) bool) error
+	ListBridgesPagesWithContext(aws.Context, *mediaconnect.ListBridgesInput, func(*mediaconnect.ListBridgesOutput, bool) bool, ...request.Option) error
 
 	ListEntitlements(*mediaconnect.ListEntitlementsInput) (*mediaconnect.ListEntitlementsOutput, error)
 	ListEntitlementsWithContext(aws.Context, *mediaconnect.ListEntitlementsInput, ...request.Option) (*mediaconnect.ListEntitlementsOutput, error)
@@ -113,6 +160,20 @@ type MediaConnectAPI interface {
 
 	ListFlowsPages(*mediaconnect.ListFlowsInput, func(*mediaconnect.ListFlowsOutput, bool) bool) error
 	ListFlowsPagesWithContext(aws.Context, *mediaconnect.ListFlowsInput, func(*mediaconnect.ListFlowsOutput, bool) bool, ...request.Option) error
+
+	ListGatewayInstances(*mediaconnect.ListGatewayInstancesInput) (*mediaconnect.ListGatewayInstancesOutput, error)
+	ListGatewayInstancesWithContext(aws.Context, *mediaconnect.ListGatewayInstancesInput, ...request.Option) (*mediaconnect.ListGatewayInstancesOutput, error)
+	ListGatewayInstancesRequest(*mediaconnect.ListGatewayInstancesInput) (*request.Request, *mediaconnect.ListGatewayInstancesOutput)
+
+	ListGatewayInstancesPages(*mediaconnect.ListGatewayInstancesInput, func(*mediaconnect.ListGatewayInstancesOutput, bool) bool) error
+	ListGatewayInstancesPagesWithContext(aws.Context, *mediaconnect.ListGatewayInstancesInput, func(*mediaconnect.ListGatewayInstancesOutput, bool) bool, ...request.Option) error
+
+	ListGateways(*mediaconnect.ListGatewaysInput) (*mediaconnect.ListGatewaysOutput, error)
+	ListGatewaysWithContext(aws.Context, *mediaconnect.ListGatewaysInput, ...request.Option) (*mediaconnect.ListGatewaysOutput, error)
+	ListGatewaysRequest(*mediaconnect.ListGatewaysInput) (*request.Request, *mediaconnect.ListGatewaysOutput)
+
+	ListGatewaysPages(*mediaconnect.ListGatewaysInput, func(*mediaconnect.ListGatewaysOutput, bool) bool) error
+	ListGatewaysPagesWithContext(aws.Context, *mediaconnect.ListGatewaysInput, func(*mediaconnect.ListGatewaysOutput, bool) bool, ...request.Option) error
 
 	ListOfferings(*mediaconnect.ListOfferingsInput) (*mediaconnect.ListOfferingsOutput, error)
 	ListOfferingsWithContext(aws.Context, *mediaconnect.ListOfferingsInput, ...request.Option) (*mediaconnect.ListOfferingsOutput, error)
@@ -135,6 +196,14 @@ type MediaConnectAPI interface {
 	PurchaseOffering(*mediaconnect.PurchaseOfferingInput) (*mediaconnect.PurchaseOfferingOutput, error)
 	PurchaseOfferingWithContext(aws.Context, *mediaconnect.PurchaseOfferingInput, ...request.Option) (*mediaconnect.PurchaseOfferingOutput, error)
 	PurchaseOfferingRequest(*mediaconnect.PurchaseOfferingInput) (*request.Request, *mediaconnect.PurchaseOfferingOutput)
+
+	RemoveBridgeOutput(*mediaconnect.RemoveBridgeOutputInput) (*mediaconnect.RemoveBridgeOutputOutput, error)
+	RemoveBridgeOutputWithContext(aws.Context, *mediaconnect.RemoveBridgeOutputInput, ...request.Option) (*mediaconnect.RemoveBridgeOutputOutput, error)
+	RemoveBridgeOutputRequest(*mediaconnect.RemoveBridgeOutputInput) (*request.Request, *mediaconnect.RemoveBridgeOutputOutput)
+
+	RemoveBridgeSource(*mediaconnect.RemoveBridgeSourceInput) (*mediaconnect.RemoveBridgeSourceOutput, error)
+	RemoveBridgeSourceWithContext(aws.Context, *mediaconnect.RemoveBridgeSourceInput, ...request.Option) (*mediaconnect.RemoveBridgeSourceOutput, error)
+	RemoveBridgeSourceRequest(*mediaconnect.RemoveBridgeSourceInput) (*request.Request, *mediaconnect.RemoveBridgeSourceOutput)
 
 	RemoveFlowMediaStream(*mediaconnect.RemoveFlowMediaStreamInput) (*mediaconnect.RemoveFlowMediaStreamOutput, error)
 	RemoveFlowMediaStreamWithContext(aws.Context, *mediaconnect.RemoveFlowMediaStreamInput, ...request.Option) (*mediaconnect.RemoveFlowMediaStreamOutput, error)
@@ -172,6 +241,22 @@ type MediaConnectAPI interface {
 	UntagResourceWithContext(aws.Context, *mediaconnect.UntagResourceInput, ...request.Option) (*mediaconnect.UntagResourceOutput, error)
 	UntagResourceRequest(*mediaconnect.UntagResourceInput) (*request.Request, *mediaconnect.UntagResourceOutput)
 
+	UpdateBridge(*mediaconnect.UpdateBridgeInput) (*mediaconnect.UpdateBridgeOutput, error)
+	UpdateBridgeWithContext(aws.Context, *mediaconnect.UpdateBridgeInput, ...request.Option) (*mediaconnect.UpdateBridgeOutput, error)
+	UpdateBridgeRequest(*mediaconnect.UpdateBridgeInput) (*request.Request, *mediaconnect.UpdateBridgeOutput)
+
+	UpdateBridgeOutput(*mediaconnect.UpdateBridgeOutputInput) (*mediaconnect.UpdateBridgeOutputOutput, error)
+	UpdateBridgeOutputWithContext(aws.Context, *mediaconnect.UpdateBridgeOutputInput, ...request.Option) (*mediaconnect.UpdateBridgeOutputOutput, error)
+	UpdateBridgeOutputRequest(*mediaconnect.UpdateBridgeOutputInput) (*request.Request, *mediaconnect.UpdateBridgeOutputOutput)
+
+	UpdateBridgeSource(*mediaconnect.UpdateBridgeSourceInput) (*mediaconnect.UpdateBridgeSourceOutput, error)
+	UpdateBridgeSourceWithContext(aws.Context, *mediaconnect.UpdateBridgeSourceInput, ...request.Option) (*mediaconnect.UpdateBridgeSourceOutput, error)
+	UpdateBridgeSourceRequest(*mediaconnect.UpdateBridgeSourceInput) (*request.Request, *mediaconnect.UpdateBridgeSourceOutput)
+
+	UpdateBridgeState(*mediaconnect.UpdateBridgeStateInput) (*mediaconnect.UpdateBridgeStateOutput, error)
+	UpdateBridgeStateWithContext(aws.Context, *mediaconnect.UpdateBridgeStateInput, ...request.Option) (*mediaconnect.UpdateBridgeStateOutput, error)
+	UpdateBridgeStateRequest(*mediaconnect.UpdateBridgeStateInput) (*request.Request, *mediaconnect.UpdateBridgeStateOutput)
+
 	UpdateFlow(*mediaconnect.UpdateFlowInput) (*mediaconnect.UpdateFlowOutput, error)
 	UpdateFlowWithContext(aws.Context, *mediaconnect.UpdateFlowInput, ...request.Option) (*mediaconnect.UpdateFlowOutput, error)
 	UpdateFlowRequest(*mediaconnect.UpdateFlowInput) (*request.Request, *mediaconnect.UpdateFlowOutput)
@@ -191,6 +276,10 @@ type MediaConnectAPI interface {
 	UpdateFlowSource(*mediaconnect.UpdateFlowSourceInput) (*mediaconnect.UpdateFlowSourceOutput, error)
 	UpdateFlowSourceWithContext(aws.Context, *mediaconnect.UpdateFlowSourceInput, ...request.Option) (*mediaconnect.UpdateFlowSourceOutput, error)
 	UpdateFlowSourceRequest(*mediaconnect.UpdateFlowSourceInput) (*request.Request, *mediaconnect.UpdateFlowSourceOutput)
+
+	UpdateGatewayInstance(*mediaconnect.UpdateGatewayInstanceInput) (*mediaconnect.UpdateGatewayInstanceOutput, error)
+	UpdateGatewayInstanceWithContext(aws.Context, *mediaconnect.UpdateGatewayInstanceInput, ...request.Option) (*mediaconnect.UpdateGatewayInstanceOutput, error)
+	UpdateGatewayInstanceRequest(*mediaconnect.UpdateGatewayInstanceInput) (*request.Request, *mediaconnect.UpdateGatewayInstanceOutput)
 
 	WaitUntilFlowActive(*mediaconnect.DescribeFlowInput) error
 	WaitUntilFlowActiveWithContext(aws.Context, *mediaconnect.DescribeFlowInput, ...request.WaiterOption) error

@@ -23,12 +23,18 @@ import (
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
+// Status contains information about back off status.
+type Status struct {
+	IsBackedOff bool
+	ErrorInfo   cloudprovider.InstanceErrorInfo
+}
+
 // Backoff allows time-based backing off of node groups considered in scale up algorithm
 type Backoff interface {
 	// Backoff execution for the given node group. Returns time till execution is backed off.
-	Backoff(nodeGroup cloudprovider.NodeGroup, nodeInfo *schedulerframework.NodeInfo, errorClass cloudprovider.InstanceErrorClass, errorCode string, currentTime time.Time) time.Time
-	// IsBackedOff returns true if execution is backed off for the given node group.
-	IsBackedOff(nodeGroup cloudprovider.NodeGroup, nodeInfo *schedulerframework.NodeInfo, currentTime time.Time) bool
+	Backoff(nodeGroup cloudprovider.NodeGroup, nodeInfo *schedulerframework.NodeInfo, errorInfo cloudprovider.InstanceErrorInfo, currentTime time.Time) time.Time
+	// BackoffStatus returns whether the execution is backed off for the given node group and error info when the node group is backed off.
+	BackoffStatus(nodeGroup cloudprovider.NodeGroup, nodeInfo *schedulerframework.NodeInfo, currentTime time.Time) Status
 	// RemoveBackoff removes backoff data for the given node group.
 	RemoveBackoff(nodeGroup cloudprovider.NodeGroup, nodeInfo *schedulerframework.NodeInfo)
 	// RemoveStaleBackoffData removes stale backoff data.

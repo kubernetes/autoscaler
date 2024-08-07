@@ -1,4 +1,4 @@
-{{- if or ( or .Values.autoDiscovery.clusterName .Values.autoDiscovery.labels ) .Values.autoscalingGroups }}
+{{- if or ( or .Values.autoDiscovery.clusterName .Values.autoDiscovery.namespace .Values.autoDiscovery.labels ) .Values.autoscalingGroups }}
 {{/* one of the above is required */}}
 apiVersion: {{ template "deployment.apiVersion" . }}
 kind: Deployment
@@ -60,7 +60,11 @@ spec:
           {{- end }}
           {{- if .Values.autoscalingGroups }}
             {{- range .Values.autoscalingGroups }}
+            {{- if eq $.Values.cloudProvider "hetzner" }}
+            - --nodes={{ .minSize }}:{{ .maxSize }}:{{ .instanceType }}:{{ .region }}:{{ .name }}
+            {{- else }}
             - --nodes={{ .minSize }}:{{ .maxSize }}:{{ .name }}
+            {{- end }}
             {{- end }}
           {{- end }}
           {{- if eq .Values.cloudProvider "rancher" }}
@@ -95,7 +99,7 @@ spec:
             - --cluster-name={{ tpl (.Values.magnumClusterName) . }}
             {{- end }}
           {{- else if eq .Values.cloudProvider "clusterapi" }}
-            {{- if or .Values.autoDiscovery.clusterName .Values.autoDiscovery.labels }}
+            {{- if or .Values.autoDiscovery.clusterName .Values.autoDiscovery.labels .Values.autoDiscovery.namepace }}
             - --node-group-auto-discovery=clusterapi:{{ template "cluster-autoscaler.capiAutodiscoveryConfig" . }}
             {{- end }}
             {{- if eq .Values.clusterAPIMode "incluster-kubeconfig"}}
@@ -125,6 +129,14 @@ spec:
             {{- end }}
           {{- end }}
           env:
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: SERVICE_ACCOUNT
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.serviceAccountName
           {{- if and (eq .Values.cloudProvider "aws") (ne .Values.awsRegion "") }}
             - name: AWS_REGION
               value: "{{ .Values.awsRegion }}"
@@ -158,11 +170,8 @@ spec:
                 secretKeyRef:
                   key: VMType
                   name: {{ default (include "cluster-autoscaler.fullname" .) .Values.secretKeyRefNameOverride }}
-            - name: AZURE_CLUSTER_NAME
-              valueFrom:
-                secretKeyRef:
-                  key: ClusterName
-                  name: {{ default (include "cluster-autoscaler.fullname" .) .Values.secretKeyRefNameOverride }}
+            - name: AZURE_ENABLE_FORCE_DELETE
+              value: "{{ .Values.azureEnableForceDelete }}"
             {{- if .Values.azureUseWorkloadIdentityExtension }}
             - name: ARM_USE_WORKLOAD_IDENTITY_EXTENSION
               value: "true"
@@ -185,11 +194,6 @@ spec:
                 secretKeyRef:
                   key: ClientSecret
                   name: {{ default (include "cluster-autoscaler.fullname" .) .Values.secretKeyRefNameOverride }}
-            - name: AZURE_NODE_RESOURCE_GROUP
-              valueFrom:
-                secretKeyRef:
-                  key: NodeResourceGroup
-                  name: {{ default (include "cluster-autoscaler.fullname" .) .Values.secretKeyRefNameOverride }}
             {{- end }}
           {{- else if eq .Values.cloudProvider "exoscale" }}
             - name: EXOSCALE_API_KEY
@@ -207,6 +211,9 @@ spec:
                 secretKeyRef:
                   key: api-zone
                   name: {{ default (include "cluster-autoscaler.fullname" .) .Values.secretKeyRefNameOverride }}
+          {{- else if eq .Values.cloudProvider "kwok" }}
+            - name: KWOK_PROVIDER_CONFIGMAP
+              value: "{{.Values.kwokConfigMapName | default "kwok-provider-config"}}"
           {{- end }}
           {{- range $key, $value := .Values.extraEnv }}
             - name: {{ $key }}

@@ -6,11 +6,31 @@ updates:
     interval: daily
   open-pull-requests-limit: 0 # setting this to 0 means only allowing security updates, see https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file#open-pull-requests-limit
   labels:
-    - "vertical-pod-autoscaler"
+    - "area/vertical-pod-autoscaler"
 - package-ecosystem: docker
-  directory: "/vertical-pod-autoscaler/builder"
+  directory: "/vertical-pod-autoscaler/pkg/recommender"
   schedule:
     interval: daily
-  open-pull-requests-limit: 10
+  open-pull-requests-limit: 3
   labels:
-    - "vertical-pod-autoscaler"
+    - "area/vertical-pod-autoscaler"
+- package-ecosystem: docker
+  directory: "/vertical-pod-autoscaler/pkg/updater"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 3
+  labels:
+    - "area/vertical-pod-autoscaler"
+- package-ecosystem: docker
+  directory: "/vertical-pod-autoscaler/pkg/admission-controller"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 3
+  labels:
+    - "area/vertical-pod-autoscaler"
+- package-ecosystem: gomod
+  directory: "/addon-resizer"
+  schedule:
+    interval: daily
+  target-branch: "addon-resizer-release-1.8"
+  open-pull-requests-limit: 3

@@ -35,8 +35,8 @@ var Codecs = serializer.NewCodecFactory(Scheme)
 var ParameterCodec = runtime.NewParameterCodec(Scheme)
 var localSchemeBuilder = runtime.SchemeBuilder{
 	autoscalingv1.AddToScheme,
-	autoscalingv1beta2.AddToScheme,
 	autoscalingv1beta1.AddToScheme,
+	autoscalingv1beta2.AddToScheme,
 	pocv1alpha1.AddToScheme,
 }
 

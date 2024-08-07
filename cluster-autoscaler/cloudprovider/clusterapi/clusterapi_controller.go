@@ -19,6 +19,7 @@ package clusterapi
 import (
 	"fmt"
 	"os"
+	"path"
 	"strings"
 	"sync"
 
@@ -144,6 +145,7 @@ func indexNodeByProviderID(obj interface{}) ([]string, error) {
 	return []string{}, nil
 }
 
+// findMachine looks up a machine by the ID which is stored in the index as <namespace>/<name>.
 func (c *machineController) findMachine(id string) (*unstructured.Unstructured, error) {
 	return c.findResourceByKey(c.machineInformer.Informer().GetStore(), id)
 }
@@ -333,7 +335,8 @@ func (c *machineController) findMachineByProviderID(providerID normalizedProvide
 	}
 
 	machineID := node.Annotations[machineAnnotationKey]
-	return c.findMachine(machineID)
+	ns := node.Annotations[clusterNamespaceAnnotationKey]
+	return c.findMachine(path.Join(ns, machineID))
 }
 
 func isPendingMachineProviderID(providerID normalizedProviderID) bool {
@@ -474,7 +477,9 @@ func newMachineController(
 			Resource: resourceNameMachinePool,
 		}
 		machinePoolInformer = managementInformerFactory.ForResource(gvrMachinePool)
-		machinePoolInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{})
+		if _, err := machinePoolInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{}); err != nil {
+			return nil, fmt.Errorf("failed to add event handler for resource %q: %w", resourceNameMachinePool, err)
+		}
 
 		if err := machinePoolInformer.Informer().GetIndexer().AddIndexers(cache.Indexers{
 			machinePoolProviderIDIndex: indexMachinePoolByProviderID,
@@ -670,13 +675,13 @@ func (c *machineController) findScalableResourceProviderIDs(scalableResource *un
 	return providerIDs, nil
 }
 
-func (c *machineController) nodeGroups() ([]*nodegroup, error) {
+func (c *machineController) nodeGroups() ([]cloudprovider.NodeGroup, error) {
 	scalableResources, err := c.listScalableResources()
 	if err != nil {
 		return nil, err
 	}
 
-	nodegroups := make([]*nodegroup, 0, len(scalableResources))
+	nodegroups := make([]cloudprovider.NodeGroup, 0, len(scalableResources))
 
 	for _, r := range scalableResources {
 		ng, err := newNodeGroupFromScalableResource(c, r)
@@ -686,6 +691,7 @@ func (c *machineController) nodeGroups() ([]*nodegroup, error) {
 
 		if ng != nil {
 			nodegroups = append(nodegroups, ng)
+			klog.V(4).Infof("discovered node group: %s", ng.Debug())
 		}
 	}
 	return nodegroups, nil

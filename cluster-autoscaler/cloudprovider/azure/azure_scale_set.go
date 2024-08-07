@@ -58,24 +58,39 @@ type ScaleSet struct {
 	minSize int
 	maxSize int
 
-	sizeMutex sync.Mutex
-	curSize   int64
-
+	enableForceDelete         bool
 	enableDynamicInstanceList bool
 
-	lastSizeRefresh   time.Time
+	// curSize tracks (and caches) the number of VMs in this ScaleSet.
+	// It is periodically updated from vmss.Sku.Capacity, with VMSS itself coming
+	// either from azure.Cache (which periodically does VMSS.List)
+	// or from direct VMSS.Get (used for Spot).
+	curSize int64
+	// lastSizeRefresh is the time curSize was last refreshed from vmss.Sku.Capacity.
+	// Together with sizeRefreshPeriod, it is used to determine if it is time to refresh curSize.
+	lastSizeRefresh time.Time
+	// sizeRefreshPeriod is how often curSize is refreshed from vmss.Sku.Capacity.
+	// (Set from azureCache.refreshInterval = VmssCacheTTL or [defaultMetadataCache]refreshInterval = 1min)
 	sizeRefreshPeriod time.Duration
+	// getVmssSizeRefreshPeriod is how often curSize should be refreshed in case VMSS.Get call is used (only spot instances).
+	// (Set from GetVmssSizeRefreshPeriod, if specified = get-vmss-size-refresh-period = 30s,
+	//   or override from autoscalerProfile.GetVmssSizeRefreshPeriod)
+	getVmssSizeRefreshPeriod time.Duration
 
 	instancesRefreshPeriod time.Duration
 	instancesRefreshJitter int
 
+	sizeMutex           sync.Mutex
 	instanceMutex       sync.Mutex
 	instanceCache       []cloudprovider.Instance
 	lastInstanceRefresh time.Time
+
+	// uses Azure Dedicated Host
+	dedicatedHost bool
 }
 
 // NewScaleSet creates a new NewScaleSet.
-func NewScaleSet(spec *dynamic.NodeGroupSpec, az *AzureManager, curSize int64) (*ScaleSet, error) {
+func NewScaleSet(spec *dynamic.NodeGroupSpec, az *AzureManager, curSize int64, dedicatedHost bool) (*ScaleSet, error) {
 	scaleSet := &ScaleSet{
 		azureRef: azureRef{
 			Name: spec.Name,
@@ -87,12 +102,20 @@ func NewScaleSet(spec *dynamic.NodeGroupSpec, az *AzureManager, curSize int64) (
 		sizeRefreshPeriod:         az.azureCache.refreshInterval,
 		enableDynamicInstanceList: az.config.EnableDynamicInstanceList,
 		instancesRefreshJitter:    az.config.VmssVmsCacheJitter,
+		enableForceDelete:         az.config.EnableForceDelete,
+		dedicatedHost:             dedicatedHost,
 	}
 
 	if az.config.VmssVmsCacheTTL != 0 {
 		scaleSet.instancesRefreshPeriod = time.Duration(az.config.VmssVmsCacheTTL) * time.Second
 	} else {
 		scaleSet.instancesRefreshPeriod = defaultVmssInstancesRefreshPeriod
+	}
+
+	if az.config.GetVmssSizeRefreshPeriod != 0 {
+		scaleSet.getVmssSizeRefreshPeriod = time.Duration(az.config.GetVmssSizeRefreshPeriod) * time.Second
+	} else {
+		scaleSet.getVmssSizeRefreshPeriod = time.Duration(VmssSizeRefreshPeriodDefault) * time.Second
 	}
 
 	return scaleSet, nil
@@ -154,15 +177,41 @@ func (scaleSet *ScaleSet) getCurSize() (int64, error) {
 	scaleSet.sizeMutex.Lock()
 	defer scaleSet.sizeMutex.Unlock()
 
-	if scaleSet.lastSizeRefresh.Add(scaleSet.sizeRefreshPeriod).After(time.Now()) {
-		klog.V(3).Infof("VMSS: %s, returning in-memory size: %d", scaleSet.Name, scaleSet.curSize)
-		return scaleSet.curSize, nil
-	}
-
 	set, err := scaleSet.getVMSSFromCache()
 	if err != nil {
 		klog.Errorf("failed to get information for VMSS: %s, error: %v", scaleSet.Name, err)
 		return -1, err
+	}
+
+	effectiveSizeRefreshPeriod := scaleSet.sizeRefreshPeriod
+
+	// If the scale set is Spot, we want to have a more fresh view of the Sku.Capacity field.
+	// This is because evictions can happen at any given point in time,
+	// even before VMs are materialized as nodes. We should be able to
+	// react to those and have the autoscaler readjust the goal again to force restoration.
+	// Taking into account only if orchestrationMode == Uniform because flex mode can have
+	// combination of spot and regular vms
+	if isSpot(&set) {
+		effectiveSizeRefreshPeriod = scaleSet.getVmssSizeRefreshPeriod
+	}
+
+	if scaleSet.lastSizeRefresh.Add(effectiveSizeRefreshPeriod).After(time.Now()) {
+		klog.V(3).Infof("VMSS: %s, returning in-memory size: %d", scaleSet.Name, scaleSet.curSize)
+		return scaleSet.curSize, nil
+	}
+
+	// If the scale set is on Spot, make a GET VMSS call to fetch more updated fresh info
+	if isSpot(&set) {
+		ctx, cancel := getContextWithCancel()
+		defer cancel()
+
+		var rerr *retry.Error
+		set, rerr = scaleSet.manager.azClient.virtualMachineScaleSetsClient.Get(ctx, scaleSet.manager.config.ResourceGroup,
+			scaleSet.Name)
+		if rerr != nil {
+			klog.Errorf("failed to get information for VMSS: %s, error: %v", scaleSet.Name, rerr)
+			return -1, err
+		}
 	}
 
 	vmssSizeMutex.Lock()
@@ -179,6 +228,12 @@ func (scaleSet *ScaleSet) getCurSize() (int64, error) {
 	scaleSet.curSize = curSize
 	scaleSet.lastSizeRefresh = time.Now()
 	return scaleSet.curSize, nil
+}
+
+func isSpot(vmss *compute.VirtualMachineScaleSet) bool {
+	return vmss != nil && vmss.VirtualMachineScaleSetProperties != nil &&
+		vmss.VirtualMachineScaleSetProperties.VirtualMachineProfile != nil &&
+		vmss.VirtualMachineScaleSetProperties.VirtualMachineProfile.Priority == compute.Spot
 }
 
 // GetScaleSetSize gets Scale Set size.
@@ -251,6 +306,16 @@ func (scaleSet *ScaleSet) SetScaleSetSize(size int64) error {
 		Sku:      vmssInfo.Sku,
 		Location: vmssInfo.Location,
 	}
+
+	if vmssInfo.ExtendedLocation != nil {
+		op.ExtendedLocation = &compute.ExtendedLocation{
+			Name: vmssInfo.ExtendedLocation.Name,
+			Type: vmssInfo.ExtendedLocation.Type,
+		}
+
+		klog.V(3).Infof("Passing ExtendedLocation information if it is not nil, with Edge Zone name:(%s)", *op.ExtendedLocation.Name)
+	}
+
 	ctx, cancel := getContextWithTimeout(vmssContextTimeout)
 	defer cancel()
 	klog.V(3).Infof("Waiting for virtualMachineScaleSetsClient.CreateOrUpdateAsync(%s)", scaleSet.Name)
@@ -295,6 +360,11 @@ func (scaleSet *ScaleSet) IncreaseSize(delta int) error {
 	}
 
 	return scaleSet.SetScaleSetSize(size + int64(delta))
+}
+
+// AtomicIncreaseSize is not implemented.
+func (scaleSet *ScaleSet) AtomicIncreaseSize(delta int) error {
+	return cloudprovider.ErrNotImplemented
 }
 
 // GetScaleSetVms returns list of nodes for the given scale set.
@@ -432,8 +502,15 @@ func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef, hasUnregistered
 	resourceGroup := scaleSet.manager.config.ResourceGroup
 
 	scaleSet.instanceMutex.Lock()
-	klog.V(3).Infof("Calling virtualMachineScaleSetsClient.DeleteInstancesAsync(%v)", requiredIds.InstanceIds)
-	future, rerr := scaleSet.manager.azClient.virtualMachineScaleSetsClient.DeleteInstancesAsync(ctx, resourceGroup, commonAsg.Id(), *requiredIds, false)
+	klog.V(3).Infof("Calling virtualMachineScaleSetsClient.DeleteInstancesAsync(%v), force delete set to %v", requiredIds.InstanceIds, scaleSet.enableForceDelete)
+	future, rerr := scaleSet.manager.azClient.virtualMachineScaleSetsClient.DeleteInstancesAsync(ctx, resourceGroup, commonAsg.Id(), *requiredIds, scaleSet.enableForceDelete)
+
+	if scaleSet.enableForceDelete && isOperationNotAllowed(rerr) {
+		klog.Infof("falling back to normal delete for instances %v for %s", requiredIds.InstanceIds, scaleSet.Name)
+		future, rerr = scaleSet.manager.azClient.virtualMachineScaleSetsClient.DeleteInstancesAsync(ctx, resourceGroup,
+			commonAsg.Id(), *requiredIds, false)
+	}
+
 	scaleSet.instanceMutex.Unlock()
 	if rerr != nil {
 		klog.Errorf("virtualMachineScaleSetsClient.DeleteInstancesAsync for instances %v failed: %v", requiredIds.InstanceIds, rerr)
@@ -513,7 +590,7 @@ func (scaleSet *ScaleSet) TemplateNodeInfo() (*schedulerframework.NodeInfo, erro
 		return nil, err
 	}
 
-	node, err := buildNodeFromTemplate(scaleSet.Name, template, scaleSet.manager)
+	node, err := buildNodeFromTemplate(scaleSet.Name, template, scaleSet.manager, scaleSet.enableDynamicInstanceList)
 	if err != nil {
 		return nil, err
 	}
@@ -740,4 +817,8 @@ func (scaleSet *ScaleSet) getOrchestrationMode() (compute.OrchestrationMode, err
 		return "", err
 	}
 	return vmss.OrchestrationMode, nil
+}
+
+func isOperationNotAllowed(rerr *retry.Error) bool {
+	return rerr != nil && rerr.ServiceErrorCode() == retry.OperationNotAllowed
 }

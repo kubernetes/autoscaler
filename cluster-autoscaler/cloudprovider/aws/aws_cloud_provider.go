@@ -48,6 +48,7 @@ var (
 		"nvidia-tesla-t4":   {},
 		"nvidia-tesla-a100": {},
 		"nvidia-a10g":       {},
+		"nvidia-l4":         {},
 	}
 )
 
@@ -143,7 +144,7 @@ func (aws *awsCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
 	//   Nodes that belong to an asg that is not autoscaled will not be found in the asgCache below,
 	//   so do not trigger warning spam by returning an error from being unable to find them.
 	//   Annotation is not automated, but users that see the warning can add the annotation to avoid it.
-	if node.Annotations != nil && node.Annotations["k8s.io/cluster-autoscaler/enabled"] == "false" {
+	if node.Annotations != nil && node.Annotations["k8s.io/cluster-autoscaler-enabled"] == "false" {
 		return false, nil
 	}
 
@@ -278,6 +279,11 @@ func (ng *AwsNodeGroup) IncreaseSize(delta int) error {
 		return fmt.Errorf("size increase too large - desired:%d max:%d", size+delta, ng.asg.maxSize)
 	}
 	return ng.awsManager.SetAsgSize(ng.asg, size+delta)
+}
+
+// AtomicIncreaseSize is not implemented.
+func (ng *AwsNodeGroup) AtomicIncreaseSize(delta int) error {
+	return cloudprovider.ErrNotImplemented
 }
 
 // DecreaseTargetSize decreases the target size of the node group. This function

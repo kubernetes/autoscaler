@@ -18,7 +18,10 @@ package clusterapi
 
 import (
 	"fmt"
+	"k8s.io/klog/v2"
 	"math/rand"
+	"strconv"
+	"time"
 
 	"github.com/pkg/errors"
 
@@ -86,6 +89,11 @@ func (ng *nodegroup) IncreaseSize(delta int) error {
 	}
 
 	return ng.scalableResource.SetSize(size + delta)
+}
+
+// AtomicIncreaseSize is not implemented.
+func (ng *nodegroup) AtomicIncreaseSize(delta int) error {
+	return cloudprovider.ErrNotImplemented
 }
 
 // DeleteNodes deletes nodes from this node group. Error is returned
@@ -329,7 +337,28 @@ func (ng *nodegroup) Autoprovisioned() bool {
 // GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
 // NodeGroup. Returning a nil will result in using default options.
 func (ng *nodegroup) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
-	return nil, cloudprovider.ErrNotImplemented
+	options := ng.scalableResource.autoscalingOptions
+	if options == nil || len(options) == 0 {
+		return &defaults, nil
+	}
+
+	if opt, ok := getFloat64Option(options, ng.Id(), config.DefaultScaleDownUtilizationThresholdKey); ok {
+		defaults.ScaleDownUtilizationThreshold = opt
+	}
+	if opt, ok := getFloat64Option(options, ng.Id(), config.DefaultScaleDownGpuUtilizationThresholdKey); ok {
+		defaults.ScaleDownGpuUtilizationThreshold = opt
+	}
+	if opt, ok := getDurationOption(options, ng.Id(), config.DefaultScaleDownUnneededTimeKey); ok {
+		defaults.ScaleDownUnneededTime = opt
+	}
+	if opt, ok := getDurationOption(options, ng.Id(), config.DefaultScaleDownUnreadyTimeKey); ok {
+		defaults.ScaleDownUnreadyTime = opt
+	}
+	if opt, ok := getDurationOption(options, ng.Id(), config.DefaultMaxNodeProvisionTimeKey); ok {
+		defaults.MaxNodeProvisionTime = opt
+	}
+
+	return &defaults, nil
 }
 
 func newNodeGroupFromScalableResource(controller *machineController, unstructuredScalableResource *unstructured.Unstructured) (*nodegroup, error) {
@@ -355,7 +384,12 @@ func newNodeGroupFromScalableResource(controller *machineController, unstructure
 	}
 
 	// Ensure the node group would have the capacity to scale
-	if scalableResource.MaxSize()-scalableResource.MinSize() < 1 {
+	// allow MinSize = 0
+	// allow MaxSize = MinSize
+	// don't allow MaxSize < MinSize
+	// don't allow MaxSize = MinSize = 0
+	if scalableResource.MaxSize()-scalableResource.MinSize() < 0 || scalableResource.MaxSize() == 0 {
+		klog.V(4).Infof("nodegroup %s has no scaling capacity, skipping", scalableResource.Name())
 		return nil, nil
 	}
 
@@ -403,4 +437,34 @@ func setLabelIfNotEmpty(to, from map[string]string, key string) {
 	if value := from[key]; value != "" {
 		to[key] = value
 	}
+}
+
+func getFloat64Option(options map[string]string, templateName, name string) (float64, bool) {
+	raw, ok := options[name]
+	if !ok {
+		return 0, false
+	}
+
+	option, err := strconv.ParseFloat(raw, 64)
+	if err != nil {
+		klog.Warningf("failed to convert autoscaling_options option %q (value %q) for scalable resource %q to float: %v", name, raw, templateName, err)
+		return 0, false
+	}
+
+	return option, true
+}
+
+func getDurationOption(options map[string]string, templateName, name string) (time.Duration, bool) {
+	raw, ok := options[name]
+	if !ok {
+		return 0, false
+	}
+
+	option, err := time.ParseDuration(raw)
+	if err != nil {
+		klog.Warningf("failed to convert autoscaling_options option %q (value %q) for scalable resource %q to duration: %v", name, raw, templateName, err)
+		return 0, false
+	}
+
+	return option, true
 }

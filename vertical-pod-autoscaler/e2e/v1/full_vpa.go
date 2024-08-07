@@ -238,6 +238,7 @@ var _ = FullVpaE2eDescribe("Pods under VPA with non-recognized recommender expli
 		containerName := GetHamsterContainerNameByIndex(0)
 		vpaCRD := test.VerticalPodAutoscaler().
 			WithName("hamster-vpa").
+			WithRecommender("non-recognized").
 			WithNamespace(f.Namespace.Name).
 			WithTargetRef(targetRef).
 			WithContainer(containerName).

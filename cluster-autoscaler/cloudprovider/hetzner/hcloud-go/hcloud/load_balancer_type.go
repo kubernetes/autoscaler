@@ -19,6 +19,7 @@ type LoadBalancerType struct {
 	MaxTargets              int
 	MaxAssignedCertificates int
 	Pricings                []LoadBalancerTypeLocationPricing
+	Deprecated              *string
 }
 
 // LoadBalancerTypeClient is a client for the Load Balancer types API.
@@ -113,7 +114,7 @@ func (c *LoadBalancerTypeClient) All(ctx context.Context) ([]*LoadBalancerType, 
 
 // AllWithOpts returns all Load Balancer types for the given options.
 func (c *LoadBalancerTypeClient) AllWithOpts(ctx context.Context, opts LoadBalancerTypeListOpts) ([]*LoadBalancerType, error) {
-	var allLoadBalancerTypes []*LoadBalancerType
+	allLoadBalancerTypes := []*LoadBalancerType{}
 
 	err := c.client.all(func(page int) (*Response, error) {
 		opts.Page = page

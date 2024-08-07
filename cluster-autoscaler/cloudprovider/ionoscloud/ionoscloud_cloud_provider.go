@@ -17,13 +17,14 @@ limitations under the License.
 package ionoscloud
 
 import (
+	"errors"
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	caerrors "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/klog/v2"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
@@ -35,11 +36,11 @@ const (
 )
 
 type nodePool struct {
+	manager IonosCloudManager
+
 	id  string
 	min int
 	max int
-
-	manager IonosCloudManager
 }
 
 var _ cloudprovider.NodeGroup = &nodePool{}
@@ -68,7 +69,7 @@ func (n *nodePool) TargetSize() (int, error) {
 // node group size is updated. Implementation required.
 func (n *nodePool) IncreaseSize(delta int) error {
 	if delta <= 0 {
-		return fmt.Errorf("size increase must be positive")
+		return errors.New("size increase must be positive")
 	}
 	size, err := n.manager.GetNodeGroupSize(n)
 	if err != nil {
@@ -81,19 +82,24 @@ func (n *nodePool) IncreaseSize(delta int) error {
 	return n.manager.SetNodeGroupSize(n, targetSize)
 }
 
+// AtomicIncreaseSize is not implemented.
+func (n *nodePool) AtomicIncreaseSize(delta int) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // DeleteNodes deletes nodes from this node group (and also decreasing the size
 // of the node group with that). Error is returned either on failure or if the
 // given node doesn't belong to this node group. This function should wait
 // until node group size is updated. Implementation required.
 func (n *nodePool) DeleteNodes(nodes []*apiv1.Node) error {
 	if acquired := n.manager.TryLockNodeGroup(n); !acquired {
-		return fmt.Errorf("node deletion already in progress")
+		return errors.New("node deletion already in progress")
 	}
 	defer n.manager.UnlockNodeGroup(n)
 
 	for _, node := range nodes {
-		nodeId := convertToNodeId(node.Spec.ProviderID)
-		if err := n.manager.DeleteNode(n, nodeId); err != nil {
+		nodeID := convertToNodeID(node.Spec.ProviderID)
+		if err := n.manager.DeleteNode(n, nodeID); err != nil {
 			return err
 		}
 	}
@@ -107,7 +113,7 @@ func (n *nodePool) DeleteNodes(nodes []*apiv1.Node) error {
 // is an option to just decrease the target size. Implementation required.
 func (n *nodePool) DecreaseTargetSize(delta int) error {
 	if delta >= 0 {
-		return fmt.Errorf("size decrease must be negative")
+		return errors.New("size decrease must be negative")
 	}
 	size, err := n.manager.GetNodeGroupTargetSize(n)
 	if err != nil {
@@ -117,7 +123,7 @@ func (n *nodePool) DecreaseTargetSize(delta int) error {
 		return fmt.Errorf("size decrease exceeds lower bound of %d", n.min)
 	}
 	// IonosCloud does not allow modification of the target size while nodes are being provisioned.
-	return fmt.Errorf("currently not supported behavior")
+	return errors.New("currently not supported behavior")
 }
 
 // Id returns an unique identifier of the node group.
@@ -127,7 +133,7 @@ func (n *nodePool) Id() string {
 
 // Debug returns a string containing all information regarding this node group.
 func (n *nodePool) Debug() string {
-	return fmt.Sprintf("Id=%s, Min=%d, Max=%d", n.id, n.min, n.max)
+	return fmt.Sprintf("ID=%s, Min=%d, Max=%d", n.id, n.min, n.max)
 }
 
 // Nodes returns a list of all nodes that belong to this node group.
@@ -176,7 +182,7 @@ func (n *nodePool) Autoprovisioned() bool {
 // GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
 // NodeGroup. Returning a nil will result in using default options.
 func (n *nodePool) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
-	return nil, cloudprovider.ErrNotImplemented
+	return nil, nil
 }
 
 // IonosCloudCloudProvider implements cloudprovider.CloudProvider.
@@ -240,7 +246,7 @@ func (ic *IonosCloudCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
 
 // Pricing returns pricing model for this cloud provider or error if not
 // available. Implementation optional.
-func (ic *IonosCloudCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
+func (ic *IonosCloudCloudProvider) Pricing() (cloudprovider.PricingModel, caerrors.AutoscalerError) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
@@ -303,7 +309,7 @@ func (ic *IonosCloudCloudProvider) Refresh() error {
 // BuildIonosCloud builds the IonosCloud cloud provider.
 func BuildIonosCloud(
 	opts config.AutoscalingOptions,
-	do cloudprovider.NodeGroupDiscoveryOptions,
+	_ cloudprovider.NodeGroupDiscoveryOptions,
 	rl *cloudprovider.ResourceLimiter,
 ) cloudprovider.CloudProvider {
 	manager, err := CreateIonosCloudManager(opts.NodeGroups, opts.UserAgent)
@@ -312,5 +318,6 @@ func BuildIonosCloud(
 	}
 
 	provider := BuildIonosCloudCloudProvider(manager, rl)
+	RegisterMetrics()
 	return provider
 }

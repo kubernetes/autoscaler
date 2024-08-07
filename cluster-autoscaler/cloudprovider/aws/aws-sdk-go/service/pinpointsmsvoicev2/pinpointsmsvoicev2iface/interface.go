@@ -80,6 +80,26 @@ type PinpointSMSVoiceV2API interface {
 	CreatePoolWithContext(aws.Context, *pinpointsmsvoicev2.CreatePoolInput, ...request.Option) (*pinpointsmsvoicev2.CreatePoolOutput, error)
 	CreatePoolRequest(*pinpointsmsvoicev2.CreatePoolInput) (*request.Request, *pinpointsmsvoicev2.CreatePoolOutput)
 
+	CreateRegistration(*pinpointsmsvoicev2.CreateRegistrationInput) (*pinpointsmsvoicev2.CreateRegistrationOutput, error)
+	CreateRegistrationWithContext(aws.Context, *pinpointsmsvoicev2.CreateRegistrationInput, ...request.Option) (*pinpointsmsvoicev2.CreateRegistrationOutput, error)
+	CreateRegistrationRequest(*pinpointsmsvoicev2.CreateRegistrationInput) (*request.Request, *pinpointsmsvoicev2.CreateRegistrationOutput)
+
+	CreateRegistrationAssociation(*pinpointsmsvoicev2.CreateRegistrationAssociationInput) (*pinpointsmsvoicev2.CreateRegistrationAssociationOutput, error)
+	CreateRegistrationAssociationWithContext(aws.Context, *pinpointsmsvoicev2.CreateRegistrationAssociationInput, ...request.Option) (*pinpointsmsvoicev2.CreateRegistrationAssociationOutput, error)
+	CreateRegistrationAssociationRequest(*pinpointsmsvoicev2.CreateRegistrationAssociationInput) (*request.Request, *pinpointsmsvoicev2.CreateRegistrationAssociationOutput)
+
+	CreateRegistrationAttachment(*pinpointsmsvoicev2.CreateRegistrationAttachmentInput) (*pinpointsmsvoicev2.CreateRegistrationAttachmentOutput, error)
+	CreateRegistrationAttachmentWithContext(aws.Context, *pinpointsmsvoicev2.CreateRegistrationAttachmentInput, ...request.Option) (*pinpointsmsvoicev2.CreateRegistrationAttachmentOutput, error)
+	CreateRegistrationAttachmentRequest(*pinpointsmsvoicev2.CreateRegistrationAttachmentInput) (*request.Request, *pinpointsmsvoicev2.CreateRegistrationAttachmentOutput)
+
+	CreateRegistrationVersion(*pinpointsmsvoicev2.CreateRegistrationVersionInput) (*pinpointsmsvoicev2.CreateRegistrationVersionOutput, error)
+	CreateRegistrationVersionWithContext(aws.Context, *pinpointsmsvoicev2.CreateRegistrationVersionInput, ...request.Option) (*pinpointsmsvoicev2.CreateRegistrationVersionOutput, error)
+	CreateRegistrationVersionRequest(*pinpointsmsvoicev2.CreateRegistrationVersionInput) (*request.Request, *pinpointsmsvoicev2.CreateRegistrationVersionOutput)
+
+	CreateVerifiedDestinationNumber(*pinpointsmsvoicev2.CreateVerifiedDestinationNumberInput) (*pinpointsmsvoicev2.CreateVerifiedDestinationNumberOutput, error)
+	CreateVerifiedDestinationNumberWithContext(aws.Context, *pinpointsmsvoicev2.CreateVerifiedDestinationNumberInput, ...request.Option) (*pinpointsmsvoicev2.CreateVerifiedDestinationNumberOutput, error)
+	CreateVerifiedDestinationNumberRequest(*pinpointsmsvoicev2.CreateVerifiedDestinationNumberInput) (*request.Request, *pinpointsmsvoicev2.CreateVerifiedDestinationNumberOutput)
+
 	DeleteConfigurationSet(*pinpointsmsvoicev2.DeleteConfigurationSetInput) (*pinpointsmsvoicev2.DeleteConfigurationSetOutput, error)
 	DeleteConfigurationSetWithContext(aws.Context, *pinpointsmsvoicev2.DeleteConfigurationSetInput, ...request.Option) (*pinpointsmsvoicev2.DeleteConfigurationSetOutput, error)
 	DeleteConfigurationSetRequest(*pinpointsmsvoicev2.DeleteConfigurationSetInput) (*request.Request, *pinpointsmsvoicev2.DeleteConfigurationSetOutput)
@@ -112,9 +132,25 @@ type PinpointSMSVoiceV2API interface {
 	DeletePoolWithContext(aws.Context, *pinpointsmsvoicev2.DeletePoolInput, ...request.Option) (*pinpointsmsvoicev2.DeletePoolOutput, error)
 	DeletePoolRequest(*pinpointsmsvoicev2.DeletePoolInput) (*request.Request, *pinpointsmsvoicev2.DeletePoolOutput)
 
+	DeleteRegistration(*pinpointsmsvoicev2.DeleteRegistrationInput) (*pinpointsmsvoicev2.DeleteRegistrationOutput, error)
+	DeleteRegistrationWithContext(aws.Context, *pinpointsmsvoicev2.DeleteRegistrationInput, ...request.Option) (*pinpointsmsvoicev2.DeleteRegistrationOutput, error)
+	DeleteRegistrationRequest(*pinpointsmsvoicev2.DeleteRegistrationInput) (*request.Request, *pinpointsmsvoicev2.DeleteRegistrationOutput)
+
+	DeleteRegistrationAttachment(*pinpointsmsvoicev2.DeleteRegistrationAttachmentInput) (*pinpointsmsvoicev2.DeleteRegistrationAttachmentOutput, error)
+	DeleteRegistrationAttachmentWithContext(aws.Context, *pinpointsmsvoicev2.DeleteRegistrationAttachmentInput, ...request.Option) (*pinpointsmsvoicev2.DeleteRegistrationAttachmentOutput, error)
+	DeleteRegistrationAttachmentRequest(*pinpointsmsvoicev2.DeleteRegistrationAttachmentInput) (*request.Request, *pinpointsmsvoicev2.DeleteRegistrationAttachmentOutput)
+
+	DeleteRegistrationFieldValue(*pinpointsmsvoicev2.DeleteRegistrationFieldValueInput) (*pinpointsmsvoicev2.DeleteRegistrationFieldValueOutput, error)
+	DeleteRegistrationFieldValueWithContext(aws.Context, *pinpointsmsvoicev2.DeleteRegistrationFieldValueInput, ...request.Option) (*pinpointsmsvoicev2.DeleteRegistrationFieldValueOutput, error)
+	DeleteRegistrationFieldValueRequest(*pinpointsmsvoicev2.DeleteRegistrationFieldValueInput) (*request.Request, *pinpointsmsvoicev2.DeleteRegistrationFieldValueOutput)
+
 	DeleteTextMessageSpendLimitOverride(*pinpointsmsvoicev2.DeleteTextMessageSpendLimitOverrideInput) (*pinpointsmsvoicev2.DeleteTextMessageSpendLimitOverrideOutput, error)
 	DeleteTextMessageSpendLimitOverrideWithContext(aws.Context, *pinpointsmsvoicev2.DeleteTextMessageSpendLimitOverrideInput, ...request.Option) (*pinpointsmsvoicev2.DeleteTextMessageSpendLimitOverrideOutput, error)
 	DeleteTextMessageSpendLimitOverrideRequest(*pinpointsmsvoicev2.DeleteTextMessageSpendLimitOverrideInput) (*request.Request, *pinpointsmsvoicev2.DeleteTextMessageSpendLimitOverrideOutput)
+
+	DeleteVerifiedDestinationNumber(*pinpointsmsvoicev2.DeleteVerifiedDestinationNumberInput) (*pinpointsmsvoicev2.DeleteVerifiedDestinationNumberOutput, error)
+	DeleteVerifiedDestinationNumberWithContext(aws.Context, *pinpointsmsvoicev2.DeleteVerifiedDestinationNumberInput, ...request.Option) (*pinpointsmsvoicev2.DeleteVerifiedDestinationNumberOutput, error)
+	DeleteVerifiedDestinationNumberRequest(*pinpointsmsvoicev2.DeleteVerifiedDestinationNumberInput) (*request.Request, *pinpointsmsvoicev2.DeleteVerifiedDestinationNumberOutput)
 
 	DeleteVoiceMessageSpendLimitOverride(*pinpointsmsvoicev2.DeleteVoiceMessageSpendLimitOverrideInput) (*pinpointsmsvoicev2.DeleteVoiceMessageSpendLimitOverrideOutput, error)
 	DeleteVoiceMessageSpendLimitOverrideWithContext(aws.Context, *pinpointsmsvoicev2.DeleteVoiceMessageSpendLimitOverrideInput, ...request.Option) (*pinpointsmsvoicev2.DeleteVoiceMessageSpendLimitOverrideOutput, error)
@@ -176,6 +212,55 @@ type PinpointSMSVoiceV2API interface {
 	DescribePoolsPages(*pinpointsmsvoicev2.DescribePoolsInput, func(*pinpointsmsvoicev2.DescribePoolsOutput, bool) bool) error
 	DescribePoolsPagesWithContext(aws.Context, *pinpointsmsvoicev2.DescribePoolsInput, func(*pinpointsmsvoicev2.DescribePoolsOutput, bool) bool, ...request.Option) error
 
+	DescribeRegistrationAttachments(*pinpointsmsvoicev2.DescribeRegistrationAttachmentsInput) (*pinpointsmsvoicev2.DescribeRegistrationAttachmentsOutput, error)
+	DescribeRegistrationAttachmentsWithContext(aws.Context, *pinpointsmsvoicev2.DescribeRegistrationAttachmentsInput, ...request.Option) (*pinpointsmsvoicev2.DescribeRegistrationAttachmentsOutput, error)
+	DescribeRegistrationAttachmentsRequest(*pinpointsmsvoicev2.DescribeRegistrationAttachmentsInput) (*request.Request, *pinpointsmsvoicev2.DescribeRegistrationAttachmentsOutput)
+
+	DescribeRegistrationAttachmentsPages(*pinpointsmsvoicev2.DescribeRegistrationAttachmentsInput, func(*pinpointsmsvoicev2.DescribeRegistrationAttachmentsOutput, bool) bool) error
+	DescribeRegistrationAttachmentsPagesWithContext(aws.Context, *pinpointsmsvoicev2.DescribeRegistrationAttachmentsInput, func(*pinpointsmsvoicev2.DescribeRegistrationAttachmentsOutput, bool) bool, ...request.Option) error
+
+	DescribeRegistrationFieldDefinitions(*pinpointsmsvoicev2.DescribeRegistrationFieldDefinitionsInput) (*pinpointsmsvoicev2.DescribeRegistrationFieldDefinitionsOutput, error)
+	DescribeRegistrationFieldDefinitionsWithContext(aws.Context, *pinpointsmsvoicev2.DescribeRegistrationFieldDefinitionsInput, ...request.Option) (*pinpointsmsvoicev2.DescribeRegistrationFieldDefinitionsOutput, error)
+	DescribeRegistrationFieldDefinitionsRequest(*pinpointsmsvoicev2.DescribeRegistrationFieldDefinitionsInput) (*request.Request, *pinpointsmsvoicev2.DescribeRegistrationFieldDefinitionsOutput)
+
+	DescribeRegistrationFieldDefinitionsPages(*pinpointsmsvoicev2.DescribeRegistrationFieldDefinitionsInput, func(*pinpointsmsvoicev2.DescribeRegistrationFieldDefinitionsOutput, bool) bool) error
+	DescribeRegistrationFieldDefinitionsPagesWithContext(aws.Context, *pinpointsmsvoicev2.DescribeRegistrationFieldDefinitionsInput, func(*pinpointsmsvoicev2.DescribeRegistrationFieldDefinitionsOutput, bool) bool, ...request.Option) error
+
+	DescribeRegistrationFieldValues(*pinpointsmsvoicev2.DescribeRegistrationFieldValuesInput) (*pinpointsmsvoicev2.DescribeRegistrationFieldValuesOutput, error)
+	DescribeRegistrationFieldValuesWithContext(aws.Context, *pinpointsmsvoicev2.DescribeRegistrationFieldValuesInput, ...request.Option) (*pinpointsmsvoicev2.DescribeRegistrationFieldValuesOutput, error)
+	DescribeRegistrationFieldValuesRequest(*pinpointsmsvoicev2.DescribeRegistrationFieldValuesInput) (*request.Request, *pinpointsmsvoicev2.DescribeRegistrationFieldValuesOutput)
+
+	DescribeRegistrationFieldValuesPages(*pinpointsmsvoicev2.DescribeRegistrationFieldValuesInput, func(*pinpointsmsvoicev2.DescribeRegistrationFieldValuesOutput, bool) bool) error
+	DescribeRegistrationFieldValuesPagesWithContext(aws.Context, *pinpointsmsvoicev2.DescribeRegistrationFieldValuesInput, func(*pinpointsmsvoicev2.DescribeRegistrationFieldValuesOutput, bool) bool, ...request.Option) error
+
+	DescribeRegistrationSectionDefinitions(*pinpointsmsvoicev2.DescribeRegistrationSectionDefinitionsInput) (*pinpointsmsvoicev2.DescribeRegistrationSectionDefinitionsOutput, error)
+	DescribeRegistrationSectionDefinitionsWithContext(aws.Context, *pinpointsmsvoicev2.DescribeRegistrationSectionDefinitionsInput, ...request.Option) (*pinpointsmsvoicev2.DescribeRegistrationSectionDefinitionsOutput, error)
+	DescribeRegistrationSectionDefinitionsRequest(*pinpointsmsvoicev2.DescribeRegistrationSectionDefinitionsInput) (*request.Request, *pinpointsmsvoicev2.DescribeRegistrationSectionDefinitionsOutput)
+
+	DescribeRegistrationSectionDefinitionsPages(*pinpointsmsvoicev2.DescribeRegistrationSectionDefinitionsInput, func(*pinpointsmsvoicev2.DescribeRegistrationSectionDefinitionsOutput, bool) bool) error
+	DescribeRegistrationSectionDefinitionsPagesWithContext(aws.Context, *pinpointsmsvoicev2.DescribeRegistrationSectionDefinitionsInput, func(*pinpointsmsvoicev2.DescribeRegistrationSectionDefinitionsOutput, bool) bool, ...request.Option) error
+
+	DescribeRegistrationTypeDefinitions(*pinpointsmsvoicev2.DescribeRegistrationTypeDefinitionsInput) (*pinpointsmsvoicev2.DescribeRegistrationTypeDefinitionsOutput, error)
+	DescribeRegistrationTypeDefinitionsWithContext(aws.Context, *pinpointsmsvoicev2.DescribeRegistrationTypeDefinitionsInput, ...request.Option) (*pinpointsmsvoicev2.DescribeRegistrationTypeDefinitionsOutput, error)
+	DescribeRegistrationTypeDefinitionsRequest(*pinpointsmsvoicev2.DescribeRegistrationTypeDefinitionsInput) (*request.Request, *pinpointsmsvoicev2.DescribeRegistrationTypeDefinitionsOutput)
+
+	DescribeRegistrationTypeDefinitionsPages(*pinpointsmsvoicev2.DescribeRegistrationTypeDefinitionsInput, func(*pinpointsmsvoicev2.DescribeRegistrationTypeDefinitionsOutput, bool) bool) error
+	DescribeRegistrationTypeDefinitionsPagesWithContext(aws.Context, *pinpointsmsvoicev2.DescribeRegistrationTypeDefinitionsInput, func(*pinpointsmsvoicev2.DescribeRegistrationTypeDefinitionsOutput, bool) bool, ...request.Option) error
+
+	DescribeRegistrationVersions(*pinpointsmsvoicev2.DescribeRegistrationVersionsInput) (*pinpointsmsvoicev2.DescribeRegistrationVersionsOutput, error)
+	DescribeRegistrationVersionsWithContext(aws.Context, *pinpointsmsvoicev2.DescribeRegistrationVersionsInput, ...request.Option) (*pinpointsmsvoicev2.DescribeRegistrationVersionsOutput, error)
+	DescribeRegistrationVersionsRequest(*pinpointsmsvoicev2.DescribeRegistrationVersionsInput) (*request.Request, *pinpointsmsvoicev2.DescribeRegistrationVersionsOutput)
+
+	DescribeRegistrationVersionsPages(*pinpointsmsvoicev2.DescribeRegistrationVersionsInput, func(*pinpointsmsvoicev2.DescribeRegistrationVersionsOutput, bool) bool) error
+	DescribeRegistrationVersionsPagesWithContext(aws.Context, *pinpointsmsvoicev2.DescribeRegistrationVersionsInput, func(*pinpointsmsvoicev2.DescribeRegistrationVersionsOutput, bool) bool, ...request.Option) error
+
+	DescribeRegistrations(*pinpointsmsvoicev2.DescribeRegistrationsInput) (*pinpointsmsvoicev2.DescribeRegistrationsOutput, error)
+	DescribeRegistrationsWithContext(aws.Context, *pinpointsmsvoicev2.DescribeRegistrationsInput, ...request.Option) (*pinpointsmsvoicev2.DescribeRegistrationsOutput, error)
+	DescribeRegistrationsRequest(*pinpointsmsvoicev2.DescribeRegistrationsInput) (*request.Request, *pinpointsmsvoicev2.DescribeRegistrationsOutput)
+
+	DescribeRegistrationsPages(*pinpointsmsvoicev2.DescribeRegistrationsInput, func(*pinpointsmsvoicev2.DescribeRegistrationsOutput, bool) bool) error
+	DescribeRegistrationsPagesWithContext(aws.Context, *pinpointsmsvoicev2.DescribeRegistrationsInput, func(*pinpointsmsvoicev2.DescribeRegistrationsOutput, bool) bool, ...request.Option) error
+
 	DescribeSenderIds(*pinpointsmsvoicev2.DescribeSenderIdsInput) (*pinpointsmsvoicev2.DescribeSenderIdsOutput, error)
 	DescribeSenderIdsWithContext(aws.Context, *pinpointsmsvoicev2.DescribeSenderIdsInput, ...request.Option) (*pinpointsmsvoicev2.DescribeSenderIdsOutput, error)
 	DescribeSenderIdsRequest(*pinpointsmsvoicev2.DescribeSenderIdsInput) (*request.Request, *pinpointsmsvoicev2.DescribeSenderIdsOutput)
@@ -190,9 +275,20 @@ type PinpointSMSVoiceV2API interface {
 	DescribeSpendLimitsPages(*pinpointsmsvoicev2.DescribeSpendLimitsInput, func(*pinpointsmsvoicev2.DescribeSpendLimitsOutput, bool) bool) error
 	DescribeSpendLimitsPagesWithContext(aws.Context, *pinpointsmsvoicev2.DescribeSpendLimitsInput, func(*pinpointsmsvoicev2.DescribeSpendLimitsOutput, bool) bool, ...request.Option) error
 
+	DescribeVerifiedDestinationNumbers(*pinpointsmsvoicev2.DescribeVerifiedDestinationNumbersInput) (*pinpointsmsvoicev2.DescribeVerifiedDestinationNumbersOutput, error)
+	DescribeVerifiedDestinationNumbersWithContext(aws.Context, *pinpointsmsvoicev2.DescribeVerifiedDestinationNumbersInput, ...request.Option) (*pinpointsmsvoicev2.DescribeVerifiedDestinationNumbersOutput, error)
+	DescribeVerifiedDestinationNumbersRequest(*pinpointsmsvoicev2.DescribeVerifiedDestinationNumbersInput) (*request.Request, *pinpointsmsvoicev2.DescribeVerifiedDestinationNumbersOutput)
+
+	DescribeVerifiedDestinationNumbersPages(*pinpointsmsvoicev2.DescribeVerifiedDestinationNumbersInput, func(*pinpointsmsvoicev2.DescribeVerifiedDestinationNumbersOutput, bool) bool) error
+	DescribeVerifiedDestinationNumbersPagesWithContext(aws.Context, *pinpointsmsvoicev2.DescribeVerifiedDestinationNumbersInput, func(*pinpointsmsvoicev2.DescribeVerifiedDestinationNumbersOutput, bool) bool, ...request.Option) error
+
 	DisassociateOriginationIdentity(*pinpointsmsvoicev2.DisassociateOriginationIdentityInput) (*pinpointsmsvoicev2.DisassociateOriginationIdentityOutput, error)
 	DisassociateOriginationIdentityWithContext(aws.Context, *pinpointsmsvoicev2.DisassociateOriginationIdentityInput, ...request.Option) (*pinpointsmsvoicev2.DisassociateOriginationIdentityOutput, error)
 	DisassociateOriginationIdentityRequest(*pinpointsmsvoicev2.DisassociateOriginationIdentityInput) (*request.Request, *pinpointsmsvoicev2.DisassociateOriginationIdentityOutput)
+
+	DiscardRegistrationVersion(*pinpointsmsvoicev2.DiscardRegistrationVersionInput) (*pinpointsmsvoicev2.DiscardRegistrationVersionOutput, error)
+	DiscardRegistrationVersionWithContext(aws.Context, *pinpointsmsvoicev2.DiscardRegistrationVersionInput, ...request.Option) (*pinpointsmsvoicev2.DiscardRegistrationVersionOutput, error)
+	DiscardRegistrationVersionRequest(*pinpointsmsvoicev2.DiscardRegistrationVersionInput) (*request.Request, *pinpointsmsvoicev2.DiscardRegistrationVersionOutput)
 
 	ListPoolOriginationIdentities(*pinpointsmsvoicev2.ListPoolOriginationIdentitiesInput) (*pinpointsmsvoicev2.ListPoolOriginationIdentitiesOutput, error)
 	ListPoolOriginationIdentitiesWithContext(aws.Context, *pinpointsmsvoicev2.ListPoolOriginationIdentitiesInput, ...request.Option) (*pinpointsmsvoicev2.ListPoolOriginationIdentitiesOutput, error)
@@ -200,6 +296,13 @@ type PinpointSMSVoiceV2API interface {
 
 	ListPoolOriginationIdentitiesPages(*pinpointsmsvoicev2.ListPoolOriginationIdentitiesInput, func(*pinpointsmsvoicev2.ListPoolOriginationIdentitiesOutput, bool) bool) error
 	ListPoolOriginationIdentitiesPagesWithContext(aws.Context, *pinpointsmsvoicev2.ListPoolOriginationIdentitiesInput, func(*pinpointsmsvoicev2.ListPoolOriginationIdentitiesOutput, bool) bool, ...request.Option) error
+
+	ListRegistrationAssociations(*pinpointsmsvoicev2.ListRegistrationAssociationsInput) (*pinpointsmsvoicev2.ListRegistrationAssociationsOutput, error)
+	ListRegistrationAssociationsWithContext(aws.Context, *pinpointsmsvoicev2.ListRegistrationAssociationsInput, ...request.Option) (*pinpointsmsvoicev2.ListRegistrationAssociationsOutput, error)
+	ListRegistrationAssociationsRequest(*pinpointsmsvoicev2.ListRegistrationAssociationsInput) (*request.Request, *pinpointsmsvoicev2.ListRegistrationAssociationsOutput)
+
+	ListRegistrationAssociationsPages(*pinpointsmsvoicev2.ListRegistrationAssociationsInput, func(*pinpointsmsvoicev2.ListRegistrationAssociationsOutput, bool) bool) error
+	ListRegistrationAssociationsPagesWithContext(aws.Context, *pinpointsmsvoicev2.ListRegistrationAssociationsInput, func(*pinpointsmsvoicev2.ListRegistrationAssociationsOutput, bool) bool, ...request.Option) error
 
 	ListTagsForResource(*pinpointsmsvoicev2.ListTagsForResourceInput) (*pinpointsmsvoicev2.ListTagsForResourceOutput, error)
 	ListTagsForResourceWithContext(aws.Context, *pinpointsmsvoicev2.ListTagsForResourceInput, ...request.Option) (*pinpointsmsvoicev2.ListTagsForResourceOutput, error)
@@ -213,13 +316,29 @@ type PinpointSMSVoiceV2API interface {
 	PutOptedOutNumberWithContext(aws.Context, *pinpointsmsvoicev2.PutOptedOutNumberInput, ...request.Option) (*pinpointsmsvoicev2.PutOptedOutNumberOutput, error)
 	PutOptedOutNumberRequest(*pinpointsmsvoicev2.PutOptedOutNumberInput) (*request.Request, *pinpointsmsvoicev2.PutOptedOutNumberOutput)
 
+	PutRegistrationFieldValue(*pinpointsmsvoicev2.PutRegistrationFieldValueInput) (*pinpointsmsvoicev2.PutRegistrationFieldValueOutput, error)
+	PutRegistrationFieldValueWithContext(aws.Context, *pinpointsmsvoicev2.PutRegistrationFieldValueInput, ...request.Option) (*pinpointsmsvoicev2.PutRegistrationFieldValueOutput, error)
+	PutRegistrationFieldValueRequest(*pinpointsmsvoicev2.PutRegistrationFieldValueInput) (*request.Request, *pinpointsmsvoicev2.PutRegistrationFieldValueOutput)
+
 	ReleasePhoneNumber(*pinpointsmsvoicev2.ReleasePhoneNumberInput) (*pinpointsmsvoicev2.ReleasePhoneNumberOutput, error)
 	ReleasePhoneNumberWithContext(aws.Context, *pinpointsmsvoicev2.ReleasePhoneNumberInput, ...request.Option) (*pinpointsmsvoicev2.ReleasePhoneNumberOutput, error)
 	ReleasePhoneNumberRequest(*pinpointsmsvoicev2.ReleasePhoneNumberInput) (*request.Request, *pinpointsmsvoicev2.ReleasePhoneNumberOutput)
 
+	ReleaseSenderId(*pinpointsmsvoicev2.ReleaseSenderIdInput) (*pinpointsmsvoicev2.ReleaseSenderIdOutput, error)
+	ReleaseSenderIdWithContext(aws.Context, *pinpointsmsvoicev2.ReleaseSenderIdInput, ...request.Option) (*pinpointsmsvoicev2.ReleaseSenderIdOutput, error)
+	ReleaseSenderIdRequest(*pinpointsmsvoicev2.ReleaseSenderIdInput) (*request.Request, *pinpointsmsvoicev2.ReleaseSenderIdOutput)
+
 	RequestPhoneNumber(*pinpointsmsvoicev2.RequestPhoneNumberInput) (*pinpointsmsvoicev2.RequestPhoneNumberOutput, error)
 	RequestPhoneNumberWithContext(aws.Context, *pinpointsmsvoicev2.RequestPhoneNumberInput, ...request.Option) (*pinpointsmsvoicev2.RequestPhoneNumberOutput, error)
 	RequestPhoneNumberRequest(*pinpointsmsvoicev2.RequestPhoneNumberInput) (*request.Request, *pinpointsmsvoicev2.RequestPhoneNumberOutput)
+
+	RequestSenderId(*pinpointsmsvoicev2.RequestSenderIdInput) (*pinpointsmsvoicev2.RequestSenderIdOutput, error)
+	RequestSenderIdWithContext(aws.Context, *pinpointsmsvoicev2.RequestSenderIdInput, ...request.Option) (*pinpointsmsvoicev2.RequestSenderIdOutput, error)
+	RequestSenderIdRequest(*pinpointsmsvoicev2.RequestSenderIdInput) (*request.Request, *pinpointsmsvoicev2.RequestSenderIdOutput)
+
+	SendDestinationNumberVerificationCode(*pinpointsmsvoicev2.SendDestinationNumberVerificationCodeInput) (*pinpointsmsvoicev2.SendDestinationNumberVerificationCodeOutput, error)
+	SendDestinationNumberVerificationCodeWithContext(aws.Context, *pinpointsmsvoicev2.SendDestinationNumberVerificationCodeInput, ...request.Option) (*pinpointsmsvoicev2.SendDestinationNumberVerificationCodeOutput, error)
+	SendDestinationNumberVerificationCodeRequest(*pinpointsmsvoicev2.SendDestinationNumberVerificationCodeInput) (*request.Request, *pinpointsmsvoicev2.SendDestinationNumberVerificationCodeOutput)
 
 	SendTextMessage(*pinpointsmsvoicev2.SendTextMessageInput) (*pinpointsmsvoicev2.SendTextMessageOutput, error)
 	SendTextMessageWithContext(aws.Context, *pinpointsmsvoicev2.SendTextMessageInput, ...request.Option) (*pinpointsmsvoicev2.SendTextMessageOutput, error)
@@ -245,6 +364,10 @@ type PinpointSMSVoiceV2API interface {
 	SetVoiceMessageSpendLimitOverrideWithContext(aws.Context, *pinpointsmsvoicev2.SetVoiceMessageSpendLimitOverrideInput, ...request.Option) (*pinpointsmsvoicev2.SetVoiceMessageSpendLimitOverrideOutput, error)
 	SetVoiceMessageSpendLimitOverrideRequest(*pinpointsmsvoicev2.SetVoiceMessageSpendLimitOverrideInput) (*request.Request, *pinpointsmsvoicev2.SetVoiceMessageSpendLimitOverrideOutput)
 
+	SubmitRegistrationVersion(*pinpointsmsvoicev2.SubmitRegistrationVersionInput) (*pinpointsmsvoicev2.SubmitRegistrationVersionOutput, error)
+	SubmitRegistrationVersionWithContext(aws.Context, *pinpointsmsvoicev2.SubmitRegistrationVersionInput, ...request.Option) (*pinpointsmsvoicev2.SubmitRegistrationVersionOutput, error)
+	SubmitRegistrationVersionRequest(*pinpointsmsvoicev2.SubmitRegistrationVersionInput) (*request.Request, *pinpointsmsvoicev2.SubmitRegistrationVersionOutput)
+
 	TagResource(*pinpointsmsvoicev2.TagResourceInput) (*pinpointsmsvoicev2.TagResourceOutput, error)
 	TagResourceWithContext(aws.Context, *pinpointsmsvoicev2.TagResourceInput, ...request.Option) (*pinpointsmsvoicev2.TagResourceOutput, error)
 	TagResourceRequest(*pinpointsmsvoicev2.TagResourceInput) (*request.Request, *pinpointsmsvoicev2.TagResourceOutput)
@@ -264,6 +387,14 @@ type PinpointSMSVoiceV2API interface {
 	UpdatePool(*pinpointsmsvoicev2.UpdatePoolInput) (*pinpointsmsvoicev2.UpdatePoolOutput, error)
 	UpdatePoolWithContext(aws.Context, *pinpointsmsvoicev2.UpdatePoolInput, ...request.Option) (*pinpointsmsvoicev2.UpdatePoolOutput, error)
 	UpdatePoolRequest(*pinpointsmsvoicev2.UpdatePoolInput) (*request.Request, *pinpointsmsvoicev2.UpdatePoolOutput)
+
+	UpdateSenderId(*pinpointsmsvoicev2.UpdateSenderIdInput) (*pinpointsmsvoicev2.UpdateSenderIdOutput, error)
+	UpdateSenderIdWithContext(aws.Context, *pinpointsmsvoicev2.UpdateSenderIdInput, ...request.Option) (*pinpointsmsvoicev2.UpdateSenderIdOutput, error)
+	UpdateSenderIdRequest(*pinpointsmsvoicev2.UpdateSenderIdInput) (*request.Request, *pinpointsmsvoicev2.UpdateSenderIdOutput)
+
+	VerifyDestinationNumber(*pinpointsmsvoicev2.VerifyDestinationNumberInput) (*pinpointsmsvoicev2.VerifyDestinationNumberOutput, error)
+	VerifyDestinationNumberWithContext(aws.Context, *pinpointsmsvoicev2.VerifyDestinationNumberInput, ...request.Option) (*pinpointsmsvoicev2.VerifyDestinationNumberOutput, error)
+	VerifyDestinationNumberRequest(*pinpointsmsvoicev2.VerifyDestinationNumberInput) (*request.Request, *pinpointsmsvoicev2.VerifyDestinationNumberOutput)
 }
 
 var _ PinpointSMSVoiceV2API = (*pinpointsmsvoicev2.PinpointSMSVoiceV2)(nil)

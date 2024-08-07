@@ -18,13 +18,12 @@ package hetzner
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"maps"
 	"math/rand"
 	"strings"
 	"sync"
-	"time"
-
-	"maps"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -92,12 +91,14 @@ func (n *hetznerNodeGroup) IncreaseSize(delta int) error {
 		return fmt.Errorf("delta must be positive, have: %d", delta)
 	}
 
-	targetSize := n.targetSize + delta
-	if targetSize > n.MaxSize() {
-		return fmt.Errorf("size increase is too large. current: %d desired: %d max: %d", n.targetSize, targetSize, n.MaxSize())
+	desiredTargetSize := n.targetSize + delta
+	if desiredTargetSize > n.MaxSize() {
+		return fmt.Errorf("size increase is too large. current: %d desired: %d max: %d", n.targetSize, desiredTargetSize, n.MaxSize())
 	}
 
-	klog.V(4).Infof("Scaling Instance Pool %s to %d", n.id, targetSize)
+	actualDelta := delta
+
+	klog.V(4).Infof("Scaling Instance Pool %s to %d", n.id, desiredTargetSize)
 
 	n.clusterUpdateMutex.Lock()
 	defer n.clusterUpdateMutex.Unlock()
@@ -110,28 +111,51 @@ func (n *hetznerNodeGroup) IncreaseSize(delta int) error {
 		return fmt.Errorf("server type %s not available in region %s", n.instanceType, n.region)
 	}
 
+	defer func() {
+		// create new servers cache
+		if _, err := n.manager.cachedServers.servers(); err != nil {
+			klog.Errorf("failed to update servers cache: %v", err)
+		}
+
+		// Update target size
+		n.resetTargetSize(actualDelta)
+	}()
+
+	// There is no "Server Group" in Hetzner Cloud, we need to create every
+	// server manually. This operation might fail for some of the servers
+	// because of quotas, rate limiting or server type availability. We need to
+	// collect the errors and inform cluster-autoscaler about this, so it can
+	// try other node groups if configured.
 	waitGroup := sync.WaitGroup{}
+	errsCh := make(chan error, delta)
 	for i := 0; i < delta; i++ {
 		waitGroup.Add(1)
 		go func() {
 			defer waitGroup.Done()
 			err := createServer(n)
 			if err != nil {
-				targetSize--
-				klog.Errorf("failed to create error: %v", err)
+				actualDelta--
+				errsCh <- err
 			}
 		}()
 	}
 	waitGroup.Wait()
+	close(errsCh)
 
-	n.targetSize = targetSize
-
-	// create new servers cache
-	if _, err := n.manager.cachedServers.servers(); err != nil {
-		klog.Errorf("failed to get servers: %v", err)
+	errs := make([]error, 0, delta)
+	for err = range errsCh {
+		errs = append(errs, err)
+	}
+	if len(errs) > 0 {
+		return fmt.Errorf("failed to create all servers: %w", errors.Join(errs...))
 	}
 
 	return nil
+}
+
+// AtomicIncreaseSize is not implemented.
+func (n *hetznerNodeGroup) AtomicIncreaseSize(delta int) error {
+	return cloudprovider.ErrNotImplemented
 }
 
 // DeleteNodes deletes nodes from this node group (and also increasing the size
@@ -142,13 +166,26 @@ func (n *hetznerNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	n.clusterUpdateMutex.Lock()
 	defer n.clusterUpdateMutex.Unlock()
 
-	targetSize := n.targetSize - len(nodes)
+	delta := len(nodes)
+
+	targetSize := n.targetSize - delta
 	if targetSize < n.MinSize() {
 		return fmt.Errorf("size decrease is too large. current: %d desired: %d min: %d", n.targetSize, targetSize, n.MinSize())
 	}
 
-	waitGroup := sync.WaitGroup{}
+	actualDelta := delta
 
+	defer func() {
+		// create new servers cache
+		if _, err := n.manager.cachedServers.servers(); err != nil {
+			klog.Errorf("failed to update servers cache: %v", err)
+		}
+
+		n.resetTargetSize(-actualDelta)
+	}()
+
+	waitGroup := sync.WaitGroup{}
+	errsCh := make(chan error, len(nodes))
 	for _, node := range nodes {
 		waitGroup.Add(1)
 		go func(node *apiv1.Node) {
@@ -156,20 +193,23 @@ func (n *hetznerNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 
 			err := n.manager.deleteByNode(node)
 			if err != nil {
-				klog.Errorf("failed to delete server ID %s error: %v", node.Name, err)
+				actualDelta--
+				errsCh <- fmt.Errorf("failed to delete server for node %q: %w", node.Name, err)
 			}
 
 			waitGroup.Done()
 		}(node)
 	}
 	waitGroup.Wait()
+	close(errsCh)
 
-	// create new servers cache
-	if _, err := n.manager.cachedServers.servers(); err != nil {
-		klog.Errorf("failed to get servers: %v", err)
+	errs := make([]error, 0, len(nodes))
+	for err := range errsCh {
+		errs = append(errs, err)
 	}
-
-	n.resetTargetSize(-len(nodes))
+	if len(errs) > 0 {
+		return fmt.Errorf("failed to delete all nodes: %w", errors.Join(errs...))
+	}
 
 	return nil
 }
@@ -224,10 +264,14 @@ func (n *hetznerNodeGroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, err
 		return nil, fmt.Errorf("failed to create resource list for node group %s error: %v", n.id, err)
 	}
 
+	nodeName := newNodeName(n)
+
 	node := apiv1.Node{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:   newNodeName(n),
-			Labels: map[string]string{},
+			Name: nodeName,
+			Labels: map[string]string{
+				apiv1.LabelHostname: nodeName,
+			},
 		},
 		Status: apiv1.NodeStatus{
 			Capacity:   resourceList,
@@ -364,10 +408,10 @@ func getMachineTypeResourceList(m *hetznerManager, instanceType string) (apiv1.R
 
 	return apiv1.ResourceList{
 		// TODO somehow determine the actual pods that will be running
-		apiv1.ResourcePods:    *resource.NewQuantity(defaultPodAmountsLimit, resource.DecimalSI),
-		apiv1.ResourceCPU:     *resource.NewQuantity(int64(typeInfo.Cores), resource.DecimalSI),
-		apiv1.ResourceMemory:  *resource.NewQuantity(int64(typeInfo.Memory*1024*1024*1024), resource.DecimalSI),
-		apiv1.ResourceStorage: *resource.NewQuantity(int64(typeInfo.Disk*1024*1024*1024), resource.DecimalSI),
+		apiv1.ResourcePods:             *resource.NewQuantity(defaultPodAmountsLimit, resource.DecimalSI),
+		apiv1.ResourceCPU:              *resource.NewQuantity(int64(typeInfo.Cores), resource.DecimalSI),
+		apiv1.ResourceMemory:           *resource.NewQuantity(int64(typeInfo.Memory*1024*1024*1024), resource.DecimalSI),
+		apiv1.ResourceEphemeralStorage: *resource.NewQuantity(int64(typeInfo.Disk*1024*1024*1024), resource.DecimalSI),
 	}, nil
 }
 
@@ -403,6 +447,9 @@ func instanceTypeArch(manager *hetznerManager, instanceType string) (string, err
 }
 
 func createServer(n *hetznerNodeGroup) error {
+	ctx, cancel := context.WithTimeout(n.manager.apiCallContext, n.manager.createTimeout)
+	defer cancel()
+
 	serverType, err := n.manager.cachedServerType.getServerType(n.instanceType)
 	if err != nil {
 		return err
@@ -446,14 +493,17 @@ func createServer(n *hetznerNodeGroup) error {
 		opts.Firewalls = []*hcloud.ServerCreateFirewall{serverCreateFirewall}
 	}
 
-	serverCreateResult, _, err := n.manager.client.Server.Create(n.manager.apiCallContext, opts)
+	serverCreateResult, _, err := n.manager.client.Server.Create(ctx, opts)
 	if err != nil {
 		return fmt.Errorf("could not create server type %s in region %s: %v", n.instanceType, n.region, err)
 	}
 
-	action := serverCreateResult.Action
 	server := serverCreateResult.Server
-	err = waitForServerAction(n.manager, server.Name, action)
+
+	actions := append(serverCreateResult.NextActions, serverCreateResult.Action)
+
+	// Delete the server if any action (most importantly create_server & start_server) fails
+	err = n.manager.client.Action.WaitFor(ctx, actions...)
 	if err != nil {
 		_ = n.manager.deleteServer(server)
 		return fmt.Errorf("failed to start server %s error: %v", server.Name, err)
@@ -511,44 +561,11 @@ func findImage(n *hetznerNodeGroup, serverType *hcloud.ServerType) (*hcloud.Imag
 	return images[0], nil
 }
 
-func waitForServerAction(m *hetznerManager, serverName string, action *hcloud.Action) error {
-	// The implementation of the Hetzner Cloud action client's WatchProgress
-	// method may be a little puzzling. The following comment thus explains how
-	// waitForServerAction works.
-	//
-	// WatchProgress returns two channels. The first channel is used to send a
-	// ballpark estimate for the action progress, the second to send any error
-	// that may occur.
-	//
-	// WatchProgress is implemented in such a way, that the first channel can
-	// be ignored. It is not necessary to consume it to avoid a deadlock in
-	// WatchProgress. Any write to this channel is wrapped in a select.
-	// Progress updates are simply not sent if nothing reads from the other
-	// side.
-	//
-	// Once the action completes successfully nil is send through the second
-	// channel. Then both channels are closed.
-	//
-	// The following code therefore only watches the second channel. If it
-	// reads an error from the channel the action is failed. Otherwise the
-	// action is successful.
-	_, errChan := m.client.Action.WatchProgress(m.apiCallContext, action)
-	select {
-	case err := <-errChan:
-		if err != nil {
-			return fmt.Errorf("error while waiting for server action: %s: %v", serverName, err)
-		}
-		return nil
-	case <-time.After(m.createTimeout):
-		return fmt.Errorf("timeout waiting for server %s", serverName)
-	}
-}
-
 func (n *hetznerNodeGroup) resetTargetSize(expectedDelta int) {
 	servers, err := n.manager.allServers(n.id)
 	if err != nil {
-		klog.Errorf("failed to set node pool %s size, using delta %d error: %v", n.id, expectedDelta, err)
-		n.targetSize = n.targetSize - expectedDelta
+		klog.Warningf("failed to set node pool %s size, using delta %d error: %v", n.id, expectedDelta, err)
+		n.targetSize = n.targetSize + expectedDelta
 	} else {
 		klog.Infof("Set node group %s size from %d to %d, expected delta %d", n.id, n.targetSize, len(servers), expectedDelta)
 		n.targetSize = len(servers)

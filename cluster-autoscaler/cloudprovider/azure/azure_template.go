@@ -30,52 +30,20 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
-	cloudvolume "k8s.io/cloud-provider/volume"
 	"k8s.io/klog/v2"
 )
 
 const (
 	azureDiskTopologyKey string = "topology.disk.csi.azure.com/zone"
+	// AKSLabelPrefixValue represents the constant prefix for AKSLabelKeyPrefixValue
+	AKSLabelPrefixValue = "kubernetes.azure.com"
+	// AKSLabelKeyPrefixValue represents prefix for AKS Labels
+	AKSLabelKeyPrefixValue = AKSLabelPrefixValue + "/"
 )
 
-func buildInstanceOS(template compute.VirtualMachineScaleSet) string {
-	instanceOS := cloudprovider.DefaultOS
-	if template.VirtualMachineProfile != nil && template.VirtualMachineProfile.OsProfile != nil && template.VirtualMachineProfile.OsProfile.WindowsConfiguration != nil {
-		instanceOS = "windows"
-	}
-
-	return instanceOS
-}
-
-func buildGenericLabels(template compute.VirtualMachineScaleSet, nodeName string) map[string]string {
-	result := make(map[string]string)
-
-	result[apiv1.LabelArchStable] = cloudprovider.DefaultArch
-	result[apiv1.LabelOSStable] = buildInstanceOS(template)
-
-	result[apiv1.LabelInstanceTypeStable] = *template.Sku.Name
-	result[apiv1.LabelTopologyRegion] = strings.ToLower(*template.Location)
-
-	if template.Zones != nil && len(*template.Zones) > 0 {
-		failureDomains := make([]string, len(*template.Zones))
-		for k, v := range *template.Zones {
-			failureDomains[k] = strings.ToLower(*template.Location) + "-" + v
-		}
-
-		result[apiv1.LabelTopologyZone] = strings.Join(failureDomains[:], cloudvolume.LabelMultiZoneDelimiter)
-		result[azureDiskTopologyKey] = strings.Join(failureDomains[:], cloudvolume.LabelMultiZoneDelimiter)
-	} else {
-		result[apiv1.LabelTopologyZone] = "0"
-		result[azureDiskTopologyKey] = ""
-	}
-
-	result[apiv1.LabelHostname] = nodeName
-	return result
-}
-
-func buildNodeFromTemplate(scaleSetName string, template compute.VirtualMachineScaleSet, manager *AzureManager) (*apiv1.Node, error) {
+func buildNodeFromTemplate(nodeGroupName string, template compute.VirtualMachineScaleSet, manager *AzureManager, enableDynamicInstanceList bool) (*apiv1.Node, error) {
 	node := apiv1.Node{}
-	nodeName := fmt.Sprintf("%s-asg-%d", scaleSetName, rand.Int63())
+	nodeName := fmt.Sprintf("%s-asg-%d", nodeGroupName, rand.Int63())
 
 	node.ObjectMeta = metav1.ObjectMeta{
 		Name:     nodeName,
@@ -91,7 +59,7 @@ func buildNodeFromTemplate(scaleSetName string, template compute.VirtualMachineS
 
 	// Fetching SKU information from SKU API if enableDynamicInstanceList is true.
 	var dynamicErr error
-	if manager.config.EnableDynamicInstanceList {
+	if enableDynamicInstanceList {
 		var vmssTypeDynamic InstanceType
 		klog.V(1).Infof("Fetching instance information for SKU: %s from SKU API", *template.Sku.Name)
 		vmssTypeDynamic, dynamicErr = GetVMSSTypeDynamically(template, manager.azureCache)
@@ -103,7 +71,7 @@ func buildNodeFromTemplate(scaleSetName string, template compute.VirtualMachineS
 			klog.Errorf("Dynamically fetching of instance information from SKU api failed with error: %v", dynamicErr)
 		}
 	}
-	if !manager.config.EnableDynamicInstanceList || dynamicErr != nil {
+	if !enableDynamicInstanceList || dynamicErr != nil {
 		klog.V(1).Infof("Falling back to static SKU list for SKU: %s", *template.Sku.Name)
 		// fall-back on static list of vmss if dynamic workflow fails.
 		vmssTypeStatic, staticErr := GetVMSSTypeStatically(template)
@@ -128,11 +96,6 @@ func buildNodeFromTemplate(scaleSetName string, template compute.VirtualMachineS
 
 	node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(memoryMb*1024*1024, resource.DecimalSI)
 
-	resourcesFromTags := extractAllocatableResourcesFromScaleSet(template.Tags)
-	for resourceName, val := range resourcesFromTags {
-		node.Status.Capacity[apiv1.ResourceName(resourceName)] = *val
-	}
-
 	// TODO: set real allocatable.
 	node.Status.Allocatable = node.Status.Capacity
 
@@ -153,11 +116,56 @@ func buildNodeFromTemplate(scaleSetName string, template compute.VirtualMachineS
 	// Labels from the Scale Set's Tags
 	node.Labels = cloudprovider.JoinStringMaps(node.Labels, extractLabelsFromScaleSet(template.Tags))
 
+	resourcesFromTags := extractAllocatableResourcesFromScaleSet(template.Tags)
+	for resourceName, val := range resourcesFromTags {
+		node.Status.Capacity[apiv1.ResourceName(resourceName)] = *val
+	}
+
 	// Taints from the Scale Set's Tags
 	node.Spec.Taints = extractTaintsFromScaleSet(template.Tags)
 
 	node.Status.Conditions = cloudprovider.BuildReadyConditions()
 	return &node, nil
+}
+
+func buildInstanceOS(template compute.VirtualMachineScaleSet) string {
+	instanceOS := cloudprovider.DefaultOS
+	if template.VirtualMachineProfile != nil && template.VirtualMachineProfile.OsProfile != nil && template.VirtualMachineProfile.OsProfile.WindowsConfiguration != nil {
+		instanceOS = "windows"
+	}
+
+	return instanceOS
+}
+
+func buildGenericLabels(template compute.VirtualMachineScaleSet, nodeName string) map[string]string {
+	result := make(map[string]string)
+
+	result[apiv1.LabelArchStable] = cloudprovider.DefaultArch
+	result[apiv1.LabelOSStable] = buildInstanceOS(template)
+
+	result[apiv1.LabelInstanceTypeStable] = *template.Sku.Name
+	result[apiv1.LabelTopologyRegion] = strings.ToLower(*template.Location)
+
+	if template.Zones != nil && len(*template.Zones) > 0 {
+		failureDomains := make([]string, len(*template.Zones))
+		for k, v := range *template.Zones {
+			failureDomains[k] = strings.ToLower(*template.Location) + "-" + v
+		}
+		//Picks random zones for Multi-zone nodepool when scaling from zero.
+		//This random zone will not be the same as the zone of the VMSS that is being created, the purpose of creating
+		//the node template with random zone is to initiate scaling from zero on the multi-zone nodepool.
+		//Note that the if the customer is to have some pod affinity picking exact zone, this logic won't work.
+		//For now, discourage the customers from using podAffinity to pick the availability zones.
+		randomZone := failureDomains[rand.Intn(len(failureDomains))]
+		result[apiv1.LabelTopologyZone] = randomZone
+		result[azureDiskTopologyKey] = randomZone
+	} else {
+		result[apiv1.LabelTopologyZone] = "0"
+		result[azureDiskTopologyKey] = ""
+	}
+
+	result[apiv1.LabelHostname] = nodeName
+	return result
 }
 
 func extractLabelsFromScaleSet(tags map[string]*string) map[string]string {

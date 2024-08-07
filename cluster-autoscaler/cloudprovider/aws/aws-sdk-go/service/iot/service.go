@@ -51,7 +51,7 @@ const (
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *IoT {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {
-		c.SigningName = "execute-api"
+		c.SigningName = "iot"
 	}
 	return newClient(*c.Config, c.Handlers, c.PartitionID, c.Endpoint, c.SigningRegion, c.SigningName, c.ResolvedRegion)
 }

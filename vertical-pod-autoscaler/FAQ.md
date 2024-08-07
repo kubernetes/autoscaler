@@ -169,6 +169,12 @@ Name | Type | Description | Default
 `recommendation-margin-fraction` | Float64 | Fraction of usage added as the safety margin to the recommended request | 0.15
 `pod-recommendation-min-cpu-millicores` | Float64 | Minimum CPU recommendation for a pod | 25
 `pod-recommendation-min-memory-mb` | Float64 | Minimum memory recommendation for a pod | 250
+`target-cpu-percentile` | Float64 | CPU usage percentile that will be used as a base for CPU target recommendation | 0.9
+`recommendation-lower-bound-cpu-percentile` | Float64 | CPU usage percentile that will be used for the lower bound on CPU recommendation | 0.5
+`recommendation-upper-bound-cpu-percentile` | Float64 | CPU usage percentile that will be used for the upper bound on CPU recommendation | 0.95
+`target-memory-percentile` | Float64 | Memory usage percentile that will be used as a base for memory target recommendation | 0.9
+`recommendation-lower-bound-memory-percentile` | Float64 | Memory usage percentile that will be used for the lower bound on memory recommendation | 0.5
+`recommendation-upper-bound-memory-percentile` | Float64 | Memory usage percentile that will be used for the upper bound on memory recommendation | 0.95
 `checkpoints-timeout` | Duration | Timeout for writing checkpoints since the start of the recommender's main loop | time.Minute
 `min-checkpoints` | Int | Minimum number of checkpoints to write per recommender's main loop | 10
 `memory-saver` | Bool | If true, only track pods which have an associated VPA | false
@@ -197,6 +203,13 @@ Name | Type | Description | Default
 `memory-histogram-decay-half-life` | Duration | The amount of time it takes a historical memory usage sample to lose half of its weight. In other words, a fresh usage sample is twice as 'important' as one with age equal to the half life period. | model.DefaultMemoryHistogramDecayHalfLife
 `cpu-histogram-decay-half-life` | Duration | The amount of time it takes a historical CPU usage sample to lose half of its weight. | model.DefaultCPUHistogramDecayHalfLife
 `cpu-integer-post-processor-enabled` | Bool | Enable the CPU integer recommendation post processor | false
+`leader-elect` | Bool | Start a leader election client and gain leadership before executing the main loop. Enable this when running replicated components for high availability. | false
+`leader-elect-lease-duration` | Duration | The duration that non-leader candidates will wait after observing a leadership renewal until attempting to acquire leadership of a led but unrenewed leader slot. This is effectively the maximum duration that a leader can be stopped before it is replaced by another candidate. This is only applicable if leader election is enabled. | 15s
+`leader-elect-renew-deadline` | Duration | The interval between attempts by the acting master to renew a leadership slot before it stops leading. This must be less than the lease duration. This is only applicable if leader election is enabled. | 10s
+`leader-elect-resource-lock` | String | The type of resource object that is used for locking during leader election. Supported options are 'leases', 'endpointsleases' and 'configmapsleases'. | "leases"
+`leader-elect-resource-name` | String | The name of resource object that is used for locking during leader election. | "vpa-recommender"
+`leader-elect-resource-namespace` | String | The namespace of resource object that is used for locking during leader election. | "kube-system"
+`leader-elect-retry-period` | Duration | The duration the clients should wait between attempting acquisition and renewal of a leadership. This is only applicable if leader election is enabled. | 2s
 
 ### What are the parameters to VPA updater?
 
@@ -218,3 +231,10 @@ Name | Type | Description | Default
 `kube-api-burst` | Float64 | QPS burst limit when making requests to Kubernetes apiserver | 10.0
 `use-admission-controller-status` | Bool | If true, updater will only evict pods when admission controller status is valid. | true
 `vpa-object-namespace` | String | Namespace to search for VPA objects. Empty means all namespaces will be used. | apiv1.NamespaceAll
+`leader-elect` | Bool | Start a leader election client and gain leadership before executing the main loop. Enable this when running replicated components for high availability. | false
+`leader-elect-lease-duration` | Duration | The duration that non-leader candidates will wait after observing a leadership renewal until attempting to acquire leadership of a led but unrenewed leader slot. This is effectively the maximum duration that a leader can be stopped before it is replaced by another candidate. This is only applicable if leader election is enabled. | 15s
+`leader-elect-renew-deadline` | Duration | The interval between attempts by the acting master to renew a leadership slot before it stops leading. This must be less than the lease duration. This is only applicable if leader election is enabled. | 10s
+`leader-elect-resource-lock` | String | The type of resource object that is used for locking during leader election. Supported options are 'leases', 'endpointsleases' and 'configmapsleases'. | "leases"
+`leader-elect-resource-name` | String | The name of resource object that is used for locking during leader election. | "vpa-updater"
+`leader-elect-resource-namespace` | String | The namespace of resource object that is used for locking during leader election. | "kube-system"
+`leader-elect-retry-period` | Duration | The duration the clients should wait between attempting acquisition and renewal of a leadership. This is only applicable if leader election is enabled. | 2s

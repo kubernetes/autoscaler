@@ -98,8 +98,7 @@ func (p *waiterDefinitions) setup() error {
 		e.OperationName = p.ExportableName(e.OperationName)
 		e.Operation = p.API.Operations[e.OperationName]
 		if e.Operation == nil {
-			return fmt.Errorf("unknown operation %s for waiter %s",
-				e.OperationName, n)
+			continue
 		}
 		p.API.Waiters = append(p.API.Waiters, e)
 	}

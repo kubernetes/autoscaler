@@ -37,13 +37,13 @@ If you are using `nodeSelector`, you need to tag the VMSS  with a node-template 
 
 To add the label of `foo=bar` to a node from a VMSS pool, you would add the following tag to the VMSS `k8s.io_cluster-autoscaler_node-template_label_foo: bar`.
 
-You can also use forward slashes in the labels by setting them as an underscore in the tag name. For example to add the label of `k8s.io/foo=bar` to a node from a VMSS pool, you would add the following tag to the VMSS `k8s.io_cluster-autoscaler_node-template_label_k8s.io_foo: bar`. To encode a tag name containing an underscore, use "~2" (eg. "cpu~2arch" gives "cpu_arch").
+You can also use forward slashes in the labels by setting them as an underscore in the tag name. For example to add the label of `k8s.io/foo=bar` to a node from a VMSS pool, you would add the following tag to the VMSS `k8s.io_cluster-autoscaler_node-template_label_k8s.io_foo: bar`. To encode a tag name containing an underscore, use "\~2" (eg. "cpu\~2arch" gives "cpu_arch").
 
 #### Taints
 
 To add the taint of `foo=bar:NoSchedule` to a node from a VMSS pool, you would add the following tag to the VMSS `k8s.io_cluster-autoscaler_node-template_taint_foo: bar:NoSchedule`.
 
-You can also use forward slashes in taints by setting them as an underscore in the tag name. For example to add the taint of `k8s.io/foo=bar:NoSchedule` to a node from a VMSS pool, you would add the following tag to the VMSS `k8s.io_cluster-autoscaler_node-template_taint_k8s.io_foo: bar:NoSchedule`. To encode a taint name containing an underscore, use "~2".
+You can also use forward slashes in taints by setting them as an underscore in the tag name. For example to add the taint of `k8s.io/foo=bar:NoSchedule` to a node from a VMSS pool, you would add the following tag to the VMSS `k8s.io_cluster-autoscaler_node-template_taint_k8s.io_foo: bar:NoSchedule`. To encode a taint name containing an underscore, use "\~2".
 
 #### Resources
 
@@ -81,8 +81,7 @@ k8s.io_cluster-autoscaler_node-template_autoscaling-options_scaledownunreadytime
 Cluster autoscaler supports four Kubernetes cluster options on Azure:
 
 - [**vmss**](#vmss-deployment): Autoscale VMSS instances by setting the Azure cloud provider's `vmType` parameter to `vmss` or to an empty string. This supports clusters deployed with [aks-engine][].
-- [**standard**](#standard-deployment): Autoscale VMAS instances by setting the Azure cloud provider's `vmType` parameter to `standard`. This supports clusters deployed with [aks-engine][].
-- [**aks**](#aks-deployment): Supports an Azure Kubernetes Service ([AKS][]) cluster.
+- [**standard**](#standard-deployment): Autoscale VMAS (Virtual Machine Availability Set) VMs by setting the Azure cloud provider's `vmType` parameter to `standard`. This supports clusters deployed with [aks-engine][].
 
 > **_NOTE_**: only the `vmss` option supports scaling down to zero nodes.
 
@@ -250,73 +249,20 @@ To run a cluster autoscaler pod with Azure managed service identity (MSI), use [
 
 > **_WARNING_**: Cluster autoscaler depends on user-provided deployment parameters to provision new nodes. After upgrading your Kubernetes cluster, cluster autoscaler must also be redeployed with new parameters to prevent provisioning nodes with an old version.
 
-### AKS deployment
+## AKS Autoscaler
 
-#### AKS + VMSS
-
-Autoscaling VM scale sets with AKS is supported for Kubernetes v1.12.4 and later. The option to enable cluster autoscaler is available in the [Azure Portal][] or with the [Azure CLI][]:
+Node Pool Autoscaling is a first class feature of your AKS cluster. The option to enable cluster autoscaler is available in the [Azure Portal][] or with the [Azure CLI][]:
 
 ```sh
 az aks create \
   --resource-group myResourceGroup \
   --name myAKSCluster \
-  --kubernetes-version 1.13.5 \
+  --kubernetes-version 1.25.11 \
   --node-count 1 \
-  --enable-vmss \
   --enable-cluster-autoscaler \
   --min-count 1 \
   --max-count 3
 ```
-
-#### AKS + Availability Set
-
-The CLI based deployment only support VMSS and manual deployment is needed if availability set is used.
-
-Prerequisites:
-
-- Get Azure credentials from the [**Permissions**](#permissions) step above.
-- Get the cluster name with the `az aks list` command.
-- Get the name of a node pool from the value of the label **agentpool**
-
-```sh
-kubectl get nodes --show-labels
-```
-
-Make a copy of [cluster-autoscaler-aks.yaml](examples/cluster-autoscaler-aks.yaml). Fill in the placeholder values for
-the `cluster-autoscaler-azure` secret data by base64-encoding each of your Azure credential fields.
-
-- ClientID: `<base64-encoded-client-id>`
-- ClientSecret: `<base64-encoded-client-secret>`
-- ResourceGroup: `<base64-encoded-resource-group>` (Note: ResourceGroup is case-sensitive)
-- SubscriptionID: `<base64-encoded-subscription-id>`
-- TenantID: `<base64-encoded-tenant-id>`
-- ClusterName: `<base64-encoded-clustername>`
-- NodeResourceGroup: `<base64-encoded-node-resource-group>` (Note: node resource group is not resource group and can be obtained in the corresponding label of the nodepool)
-
-> **_NOTE_**: Use a command such as `echo $CLIENT_ID | base64` to encode each of the fields above.
-
-In the `cluster-autoscaler` spec, find the `image:` field and replace `{{ ca_version }}` with a specific cluster autoscaler release.
-
-Below that, in the `command:` section, update the `--nodes=` arguments to reference your node limits and node pool name. For example, if node pool "k8s-nodepool-1" should scale from 1 to 10 nodes:
-
-```yaml
-        - --nodes=1:10:k8s-nodepool-1
-```
-
-or to autoscale multiple VM scale sets:
-
-```yaml
-        - --nodes=1:10:k8s-nodepool-1
-        - --nodes=1:10:k8s-nodepool-2
-```
-
-Then deploy cluster-autoscaler by running
-
-```sh
-kubectl create -f cluster-autoscaler-aks.yaml
-```
-
-To deploy in AKS with `Helm 3`, please refer to [helm installation tutorial][].
 
 Please see the [AKS autoscaler documentation][] for details.
 
@@ -339,7 +285,6 @@ The new version of [Azure client][] supports rate limit and back-off retries whe
 
 > **_NOTE_**: * These rate limit configs can be set per-client. Customizing `QPS` and `Bucket` through environment variables per client is not supported.
 
-[AKS]: https://docs.microsoft.com/azure/aks/
 [AKS autoscaler documentation]: https://docs.microsoft.com/azure/aks/autoscaler
 [aks-engine]: https://github.com/Azure/aks-engine
 [Azure CLI]: https://docs.microsoft.com/cli/azure/install-azure-cli

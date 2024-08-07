@@ -19,6 +19,8 @@ package main
 import (
 	"context"
 	"crypto/tls"
+	"fmt"
+	"strings"
 	"time"
 
 	admissionregistration "k8s.io/api/admissionregistration/v1"
@@ -31,21 +33,65 @@ const (
 	webhookConfigName = "vpa-webhook-config"
 )
 
-func configTLS(serverCert, serverKey []byte) *tls.Config {
-	sCert, err := tls.X509KeyPair(serverCert, serverKey)
-	if err != nil {
-		klog.Fatal(err)
+func configTLS(cfg certsConfig, minTlsVersion, ciphers string, stop <-chan struct{}) *tls.Config {
+	var tlsVersion uint16
+	var ciphersuites []uint16
+	reverseCipherMap := make(map[string]uint16)
+
+	for _, c := range tls.CipherSuites() {
+		reverseCipherMap[c.Name] = c.ID
 	}
-	return &tls.Config{
-		MinVersion:   tls.VersionTLS12,
-		Certificates: []tls.Certificate{sCert},
+	for _, c := range strings.Split(strings.ReplaceAll(ciphers, ",", ":"), ":") {
+		cipher, ok := reverseCipherMap[c]
+		if ok {
+			ciphersuites = append(ciphersuites, cipher)
+		}
 	}
+	if len(ciphersuites) == 0 {
+		ciphersuites = nil
+	}
+
+	switch minTlsVersion {
+	case "":
+		fallthrough
+	case "tls1_2":
+		tlsVersion = tls.VersionTLS12
+	case "tls1_3":
+		tlsVersion = tls.VersionTLS13
+	default:
+		klog.Fatal(fmt.Errorf("Unable to determine value for --min-tls-version (%s), must be either tls1_2 or tls1_3", minTlsVersion))
+	}
+
+	config := &tls.Config{
+		MinVersion:   tlsVersion,
+		CipherSuites: ciphersuites,
+	}
+	if *cfg.reload {
+		cr := certReloader{
+			tlsCertPath: *cfg.tlsCertFile,
+			tlsKeyPath:  *cfg.tlsPrivateKey,
+		}
+		if err := cr.load(); err != nil {
+			klog.Fatal(err)
+		}
+		if err := cr.start(stop); err != nil {
+			klog.Fatal(err)
+		}
+		config.GetCertificate = cr.getCertificate
+	} else {
+		cert, err := tls.LoadX509KeyPair(*cfg.tlsCertFile, *cfg.tlsPrivateKey)
+		if err != nil {
+			klog.Fatal(err)
+		}
+		config.Certificates = []tls.Certificate{cert}
+	}
+	return config
 }
 
 // register this webhook admission controller with the kube-apiserver
 // by creating MutatingWebhookConfiguration.
-func selfRegistration(clientset *kubernetes.Clientset, caCert []byte, namespace, serviceName, url string, registerByURL bool, timeoutSeconds int32) {
-	time.Sleep(10 * time.Second)
+func selfRegistration(clientset kubernetes.Interface, caCert []byte, webHookDelay time.Duration, namespace, serviceName, url string, registerByURL bool, timeoutSeconds int32, selectedNamespace string, ignoredNamespaces []string) {
+	time.Sleep(webHookDelay)
 	client := clientset.AdmissionregistrationV1().MutatingWebhookConfigurations()
 	_, err := client.Get(context.TODO(), webhookConfigName, metav1.GetOptions{})
 	if err == nil {
@@ -65,6 +111,29 @@ func selfRegistration(clientset *kubernetes.Clientset, caCert []byte, namespace,
 	sideEffects := admissionregistration.SideEffectClassNone
 	failurePolicy := admissionregistration.Ignore
 	RegisterClientConfig.CABundle = caCert
+
+	var namespaceSelector metav1.LabelSelector
+	if len(ignoredNamespaces) > 0 {
+		namespaceSelector = metav1.LabelSelector{
+			MatchExpressions: []metav1.LabelSelectorRequirement{
+				{
+					Key:      "kubernetes.io/metadata.name",
+					Operator: metav1.LabelSelectorOpNotIn,
+					Values:   ignoredNamespaces,
+				},
+			},
+		}
+	} else if len(selectedNamespace) > 0 {
+		namespaceSelector = metav1.LabelSelector{
+			MatchExpressions: []metav1.LabelSelectorRequirement{
+				{
+					Key:      "kubernetes.io/metadata.name",
+					Operator: metav1.LabelSelectorOpIn,
+					Values:   []string{selectedNamespace},
+				},
+			},
+		}
+	}
 	webhookConfig := &admissionregistration.MutatingWebhookConfiguration{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: webhookConfigName,
@@ -91,10 +160,11 @@ func selfRegistration(clientset *kubernetes.Clientset, caCert []byte, namespace,
 						},
 					},
 				},
-				FailurePolicy:  &failurePolicy,
-				ClientConfig:   RegisterClientConfig,
-				SideEffects:    &sideEffects,
-				TimeoutSeconds: &timeoutSeconds,
+				FailurePolicy:     &failurePolicy,
+				ClientConfig:      RegisterClientConfig,
+				SideEffects:       &sideEffects,
+				TimeoutSeconds:    &timeoutSeconds,
+				NamespaceSelector: &namespaceSelector,
 			},
 		},
 	}

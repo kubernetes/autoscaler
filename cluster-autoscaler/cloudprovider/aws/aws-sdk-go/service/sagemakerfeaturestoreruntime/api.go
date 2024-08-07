@@ -71,7 +71,7 @@ func (c *SageMakerFeatureStoreRuntime) BatchGetRecordRequest(input *BatchGetReco
 //
 //   - InternalFailure
 //     An internal failure occurred. Try your request again. If the problem persists,
-//     contact AWS customer support.
+//     contact Amazon Web Services customer support.
 //
 //   - ServiceUnavailable
 //     The service is currently unavailable.
@@ -145,9 +145,24 @@ func (c *SageMakerFeatureStoreRuntime) DeleteRecordRequest(input *DeleteRecordIn
 
 // DeleteRecord API operation for Amazon SageMaker Feature Store Runtime.
 //
-// Deletes a Record from a FeatureGroup. A new record will show up in the OfflineStore
-// when the DeleteRecord API is called. This record will have a value of True
-// in the is_deleted column.
+// Deletes a Record from a FeatureGroup in the OnlineStore. Feature Store supports
+// both SoftDelete and HardDelete. For SoftDelete (default), feature columns
+// are set to null and the record is no longer retrievable by GetRecord or BatchGetRecord.
+// For HardDelete, the complete Record is removed from the OnlineStore. In both
+// cases, Feature Store appends the deleted record marker to the OfflineStore
+// with feature values set to null, is_deleted value set to True, and EventTime
+// set to the delete input EventTime.
+//
+// Note that the EventTime specified in DeleteRecord should be set later than
+// the EventTime of the existing record in the OnlineStore for that RecordIdentifer.
+// If it is not, the deletion does not occur:
+//
+//   - For SoftDelete, the existing (undeleted) record remains in the OnlineStore,
+//     though the delete record marker is still written to the OfflineStore.
+//
+//   - HardDelete returns EventTime: 400 ValidationException to indicate that
+//     the delete operation failed. No delete record marker is written to the
+//     OfflineStore.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -163,7 +178,7 @@ func (c *SageMakerFeatureStoreRuntime) DeleteRecordRequest(input *DeleteRecordIn
 //
 //   - InternalFailure
 //     An internal failure occurred. Try your request again. If the problem persists,
-//     contact AWS customer support.
+//     contact Amazon Web Services customer support.
 //
 //   - ServiceUnavailable
 //     The service is currently unavailable.
@@ -257,7 +272,7 @@ func (c *SageMakerFeatureStoreRuntime) GetRecordRequest(input *GetRecordInput) (
 //
 //   - InternalFailure
 //     An internal failure occurred. Try your request again. If the problem persists,
-//     contact AWS customer support.
+//     contact Amazon Web Services customer support.
 //
 //   - ServiceUnavailable
 //     The service is currently unavailable.
@@ -331,11 +346,22 @@ func (c *SageMakerFeatureStoreRuntime) PutRecordRequest(input *PutRecordInput) (
 
 // PutRecord API operation for Amazon SageMaker Feature Store Runtime.
 //
-// Used for data ingestion into the FeatureStore. The PutRecord API writes to
-// both the OnlineStore and OfflineStore. If the record is the latest record
-// for the recordIdentifier, the record is written to both the OnlineStore and
-// OfflineStore. If the record is a historic record, it is written only to the
-// OfflineStore.
+// The PutRecord API is used to ingest a list of Records into your feature group.
+//
+// If a new record’s EventTime is greater, the new record is written to both
+// the OnlineStore and OfflineStore. Otherwise, the record is a historic record
+// and it is written only to the OfflineStore.
+//
+// You can specify the ingestion to be applied to the OnlineStore, OfflineStore,
+// or both by using the TargetStores request parameter.
+//
+// You can set the ingested record to expire at a given time to live (TTL) duration
+// after the record’s event time, ExpiresAt = EventTime + TtlDuration, by
+// specifying the TtlDuration parameter. A record level TtlDuration is set when
+// specifying the TtlDuration parameter using the PutRecord API call. If the
+// input TtlDuration is null or unspecified, TtlDuration is set to the default
+// feature group level TtlDuration. A record level TtlDuration supersedes the
+// group level TtlDuration.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -351,7 +377,7 @@ func (c *SageMakerFeatureStoreRuntime) PutRecordRequest(input *PutRecordInput) (
 //
 //   - InternalFailure
 //     An internal failure occurred. Try your request again. If the problem persists,
-//     contact AWS customer support.
+//     contact Amazon Web Services customer support.
 //
 //   - ServiceUnavailable
 //     The service is currently unavailable.
@@ -449,13 +475,13 @@ func (s *AccessForbidden) RequestID() string {
 type BatchGetRecordError struct {
 	_ struct{} `type:"structure"`
 
-	// The error code of an error that has occured when attempting to retrieve a
-	// batch of Records. For more information on errors, see Errors (https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_feature_store_GetRecord.html#API_feature_store_GetRecord_Errors).
+	// The error code of an error that has occurred when attempting to retrieve
+	// a batch of Records. For more information on errors, see Errors (https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_feature_store_GetRecord.html#API_feature_store_GetRecord_Errors).
 	//
 	// ErrorCode is a required field
 	ErrorCode *string `type:"string" required:"true"`
 
-	// The error message of an error that has occured when attempting to retrieve
+	// The error message of an error that has occurred when attempting to retrieve
 	// a record in the batch.
 	//
 	// ErrorMessage is a required field
@@ -520,7 +546,8 @@ func (s *BatchGetRecordError) SetRecordIdentifierValueAsString(v string) *BatchG
 type BatchGetRecordIdentifier struct {
 	_ struct{} `type:"structure"`
 
-	// A FeatureGroupName containing Records you are retrieving in a batch.
+	// The name or Amazon Resource Name (ARN) of the FeatureGroup containing the
+	// records you are retrieving in a batch.
 	//
 	// FeatureGroupName is a required field
 	FeatureGroupName *string `min:"1" type:"string" required:"true"`
@@ -599,8 +626,14 @@ func (s *BatchGetRecordIdentifier) SetRecordIdentifiersValueAsString(v []*string
 type BatchGetRecordInput struct {
 	_ struct{} `type:"structure"`
 
-	// A list of FeatureGroup names, with their corresponding RecordIdentifier value,
-	// and Feature name that have been requested to be retrieved in batch.
+	// Parameter to request ExpiresAt in response. If Enabled, BatchGetRecord will
+	// return the value of ExpiresAt, if it is not null. If Disabled and null, BatchGetRecord
+	// will return null.
+	ExpirationTimeResponse *string `type:"string" enum:"ExpirationTimeResponse"`
+
+	// A list containing the name or Amazon Resource Name (ARN) of the FeatureGroup,
+	// the list of names of Features to be retrieved, and the corresponding RecordIdentifier
+	// values as strings.
 	//
 	// Identifiers is a required field
 	Identifiers []*BatchGetRecordIdentifier `min:"1" type:"list" required:"true"`
@@ -650,6 +683,12 @@ func (s *BatchGetRecordInput) Validate() error {
 	return nil
 }
 
+// SetExpirationTimeResponse sets the ExpirationTimeResponse field's value.
+func (s *BatchGetRecordInput) SetExpirationTimeResponse(v string) *BatchGetRecordInput {
+	s.ExpirationTimeResponse = &v
+	return s
+}
+
 // SetIdentifiers sets the Identifiers field's value.
 func (s *BatchGetRecordInput) SetIdentifiers(v []*BatchGetRecordIdentifier) *BatchGetRecordInput {
 	s.Identifiers = v
@@ -659,7 +698,7 @@ func (s *BatchGetRecordInput) SetIdentifiers(v []*BatchGetRecordIdentifier) *Bat
 type BatchGetRecordOutput struct {
 	_ struct{} `type:"structure"`
 
-	// A list of errors that have occured when retrieving a batch of Records.
+	// A list of errors that have occurred when retrieving a batch of Records.
 	//
 	// Errors is a required field
 	Errors []*BatchGetRecordError `type:"list" required:"true"`
@@ -712,9 +751,12 @@ func (s *BatchGetRecordOutput) SetUnprocessedIdentifiers(v []*BatchGetRecordIden
 	return s
 }
 
-// The output of Records that have been retrieved in a batch.
+// The output of records that have been retrieved in a batch.
 type BatchGetRecordResultDetail struct {
 	_ struct{} `type:"structure"`
+
+	// The ExpiresAt ISO string of the requested record.
+	ExpiresAt *string `type:"string"`
 
 	// The FeatureGroupName containing Records you retrieved in a batch.
 	//
@@ -726,7 +768,7 @@ type BatchGetRecordResultDetail struct {
 	// Record is a required field
 	Record []*FeatureValue `min:"1" type:"list" required:"true"`
 
-	// The value of the record identifer in string format.
+	// The value of the record identifier in string format.
 	//
 	// RecordIdentifierValueAsString is a required field
 	RecordIdentifierValueAsString *string `type:"string" required:"true"`
@@ -750,6 +792,12 @@ func (s BatchGetRecordResultDetail) GoString() string {
 	return s.String()
 }
 
+// SetExpiresAt sets the ExpiresAt field's value.
+func (s *BatchGetRecordResultDetail) SetExpiresAt(v string) *BatchGetRecordResultDetail {
+	s.ExpiresAt = &v
+	return s
+}
+
 // SetFeatureGroupName sets the FeatureGroupName field's value.
 func (s *BatchGetRecordResultDetail) SetFeatureGroupName(v string) *BatchGetRecordResultDetail {
 	s.FeatureGroupName = &v
@@ -771,13 +819,18 @@ func (s *BatchGetRecordResultDetail) SetRecordIdentifierValueAsString(v string) 
 type DeleteRecordInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
+	// The name of the deletion mode for deleting the record. By default, the deletion
+	// mode is set to SoftDelete.
+	DeletionMode *string `location:"querystring" locationName:"DeletionMode" type:"string" enum:"DeletionMode"`
+
 	// Timestamp indicating when the deletion event occurred. EventTime can be used
 	// to query data at a certain point in time.
 	//
 	// EventTime is a required field
 	EventTime *string `location:"querystring" locationName:"EventTime" type:"string" required:"true"`
 
-	// The name of the feature group to delete the record from.
+	// The name or Amazon Resource Name (ARN) of the feature group to delete the
+	// record from.
 	//
 	// FeatureGroupName is a required field
 	FeatureGroupName *string `location:"uri" locationName:"FeatureGroupName" min:"1" type:"string" required:"true"`
@@ -787,6 +840,11 @@ type DeleteRecordInput struct {
 	//
 	// RecordIdentifierValueAsString is a required field
 	RecordIdentifierValueAsString *string `location:"querystring" locationName:"RecordIdentifierValueAsString" type:"string" required:"true"`
+
+	// A list of stores from which you're deleting the record. By default, Feature
+	// Store deletes the record from all of the stores that you're using for the
+	// FeatureGroup.
+	TargetStores []*string `location:"querystring" locationName:"TargetStores" min:"1" type:"list" enum:"TargetStore"`
 }
 
 // String returns the string representation.
@@ -822,11 +880,20 @@ func (s *DeleteRecordInput) Validate() error {
 	if s.RecordIdentifierValueAsString == nil {
 		invalidParams.Add(request.NewErrParamRequired("RecordIdentifierValueAsString"))
 	}
+	if s.TargetStores != nil && len(s.TargetStores) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("TargetStores", 1))
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetDeletionMode sets the DeletionMode field's value.
+func (s *DeleteRecordInput) SetDeletionMode(v string) *DeleteRecordInput {
+	s.DeletionMode = &v
+	return s
 }
 
 // SetEventTime sets the EventTime field's value.
@@ -844,6 +911,12 @@ func (s *DeleteRecordInput) SetFeatureGroupName(v string) *DeleteRecordInput {
 // SetRecordIdentifierValueAsString sets the RecordIdentifierValueAsString field's value.
 func (s *DeleteRecordInput) SetRecordIdentifierValueAsString(v string) *DeleteRecordInput {
 	s.RecordIdentifierValueAsString = &v
+	return s
+}
+
+// SetTargetStores sets the TargetStores field's value.
+func (s *DeleteRecordInput) SetTargetStores(v []*string) *DeleteRecordInput {
+	s.TargetStores = v
 	return s
 }
 
@@ -878,12 +951,16 @@ type FeatureValue struct {
 	// FeatureName is a required field
 	FeatureName *string `min:"1" type:"string" required:"true"`
 
-	// The value associated with a feature, in string format. Note that features
-	// types can be String, Integral, or Fractional. This value represents all three
-	// types as a string.
-	//
-	// ValueAsString is a required field
-	ValueAsString *string `type:"string" required:"true"`
+	// The value in string format associated with a feature. Used when your CollectionType
+	// is None. Note that features types can be String, Integral, or Fractional.
+	// This value represents all three types as a string.
+	ValueAsString *string `type:"string"`
+
+	// The list of values in string format associated with a feature. Used when
+	// your CollectionType is a List, Set, or Vector. Note that features types can
+	// be String, Integral, or Fractional. These values represents all three types
+	// as a string.
+	ValueAsStringList []*string `type:"list"`
 }
 
 // String returns the string representation.
@@ -913,9 +990,6 @@ func (s *FeatureValue) Validate() error {
 	if s.FeatureName != nil && len(*s.FeatureName) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("FeatureName", 1))
 	}
-	if s.ValueAsString == nil {
-		invalidParams.Add(request.NewErrParamRequired("ValueAsString"))
-	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -935,10 +1009,22 @@ func (s *FeatureValue) SetValueAsString(v string) *FeatureValue {
 	return s
 }
 
+// SetValueAsStringList sets the ValueAsStringList field's value.
+func (s *FeatureValue) SetValueAsStringList(v []*string) *FeatureValue {
+	s.ValueAsStringList = v
+	return s
+}
+
 type GetRecordInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
-	// The name of the feature group in which you want to put the records.
+	// Parameter to request ExpiresAt in response. If Enabled, GetRecord will return
+	// the value of ExpiresAt, if it is not null. If Disabled and null, GetRecord
+	// will return null.
+	ExpirationTimeResponse *string `location:"querystring" locationName:"ExpirationTimeResponse" type:"string" enum:"ExpirationTimeResponse"`
+
+	// The name or Amazon Resource Name (ARN) of the feature group from which you
+	// want to retrieve a record.
 	//
 	// FeatureGroupName is a required field
 	FeatureGroupName *string `location:"uri" locationName:"FeatureGroupName" min:"1" type:"string" required:"true"`
@@ -994,6 +1080,12 @@ func (s *GetRecordInput) Validate() error {
 	return nil
 }
 
+// SetExpirationTimeResponse sets the ExpirationTimeResponse field's value.
+func (s *GetRecordInput) SetExpirationTimeResponse(v string) *GetRecordInput {
+	s.ExpirationTimeResponse = &v
+	return s
+}
+
 // SetFeatureGroupName sets the FeatureGroupName field's value.
 func (s *GetRecordInput) SetFeatureGroupName(v string) *GetRecordInput {
 	s.FeatureGroupName = &v
@@ -1014,6 +1106,9 @@ func (s *GetRecordInput) SetRecordIdentifierValueAsString(v string) *GetRecordIn
 
 type GetRecordOutput struct {
 	_ struct{} `type:"structure"`
+
+	// The ExpiresAt ISO string of the requested record.
+	ExpiresAt *string `type:"string"`
 
 	// The record you requested. A list of FeatureValues.
 	Record []*FeatureValue `min:"1" type:"list"`
@@ -1037,6 +1132,12 @@ func (s GetRecordOutput) GoString() string {
 	return s.String()
 }
 
+// SetExpiresAt sets the ExpiresAt field's value.
+func (s *GetRecordOutput) SetExpiresAt(v string) *GetRecordOutput {
+	s.ExpiresAt = &v
+	return s
+}
+
 // SetRecord sets the Record field's value.
 func (s *GetRecordOutput) SetRecord(v []*FeatureValue) *GetRecordOutput {
 	s.Record = v
@@ -1044,7 +1145,7 @@ func (s *GetRecordOutput) SetRecord(v []*FeatureValue) *GetRecordOutput {
 }
 
 // An internal failure occurred. Try your request again. If the problem persists,
-// contact AWS customer support.
+// contact Amazon Web Services customer support.
 type InternalFailure struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -1111,7 +1212,8 @@ func (s *InternalFailure) RequestID() string {
 type PutRecordInput struct {
 	_ struct{} `type:"structure"`
 
-	// The name of the feature group that you want to insert the record into.
+	// The name or Amazon Resource Name (ARN) of the feature group that you want
+	// to insert the record into.
 	//
 	// FeatureGroupName is a required field
 	FeatureGroupName *string `location:"uri" locationName:"FeatureGroupName" min:"1" type:"string" required:"true"`
@@ -1127,6 +1229,16 @@ type PutRecordInput struct {
 	//
 	// Record is a required field
 	Record []*FeatureValue `min:"1" type:"list" required:"true"`
+
+	// A list of stores to which you're adding the record. By default, Feature Store
+	// adds the record to all of the stores that you're using for the FeatureGroup.
+	TargetStores []*string `min:"1" type:"list" enum:"TargetStore"`
+
+	// Time to live duration, where the record is hard deleted after the expiration
+	// time is reached; ExpiresAt = EventTime + TtlDuration. For information on
+	// HardDelete, see the DeleteRecord (https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_feature_store_DeleteRecord.html)
+	// API in the Amazon SageMaker API Reference guide.
+	TtlDuration *TtlDuration `type:"structure"`
 }
 
 // String returns the string representation.
@@ -1162,6 +1274,9 @@ func (s *PutRecordInput) Validate() error {
 	if s.Record != nil && len(s.Record) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("Record", 1))
 	}
+	if s.TargetStores != nil && len(s.TargetStores) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("TargetStores", 1))
+	}
 	if s.Record != nil {
 		for i, v := range s.Record {
 			if v == nil {
@@ -1170,6 +1285,11 @@ func (s *PutRecordInput) Validate() error {
 			if err := v.Validate(); err != nil {
 				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Record", i), err.(request.ErrInvalidParams))
 			}
+		}
+	}
+	if s.TtlDuration != nil {
+		if err := s.TtlDuration.Validate(); err != nil {
+			invalidParams.AddNested("TtlDuration", err.(request.ErrInvalidParams))
 		}
 	}
 
@@ -1188,6 +1308,18 @@ func (s *PutRecordInput) SetFeatureGroupName(v string) *PutRecordInput {
 // SetRecord sets the Record field's value.
 func (s *PutRecordInput) SetRecord(v []*FeatureValue) *PutRecordInput {
 	s.Record = v
+	return s
+}
+
+// SetTargetStores sets the TargetStores field's value.
+func (s *PutRecordInput) SetTargetStores(v []*string) *PutRecordInput {
+	s.TargetStores = v
+	return s
+}
+
+// SetTtlDuration sets the TtlDuration field's value.
+func (s *PutRecordInput) SetTtlDuration(v *TtlDuration) *PutRecordInput {
+	s.TtlDuration = v
 	return s
 }
 
@@ -1341,6 +1473,73 @@ func (s *ServiceUnavailable) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
+// Time to live duration, where the record is hard deleted after the expiration
+// time is reached; ExpiresAt = EventTime + TtlDuration. For information on
+// HardDelete, see the DeleteRecord (https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_feature_store_DeleteRecord.html)
+// API in the Amazon SageMaker API Reference guide.
+type TtlDuration struct {
+	_ struct{} `type:"structure"`
+
+	// TtlDuration time unit.
+	//
+	// Unit is a required field
+	Unit *string `type:"string" required:"true" enum:"TtlDurationUnit"`
+
+	// TtlDuration time value.
+	//
+	// Value is a required field
+	Value *int64 `min:"1" type:"integer" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TtlDuration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TtlDuration) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *TtlDuration) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "TtlDuration"}
+	if s.Unit == nil {
+		invalidParams.Add(request.NewErrParamRequired("Unit"))
+	}
+	if s.Value == nil {
+		invalidParams.Add(request.NewErrParamRequired("Value"))
+	}
+	if s.Value != nil && *s.Value < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("Value", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetUnit sets the Unit field's value.
+func (s *TtlDuration) SetUnit(v string) *TtlDuration {
+	s.Unit = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *TtlDuration) SetValue(v int64) *TtlDuration {
+	s.Value = &v
+	return s
+}
+
 // There was an error validating your request.
 type ValidationError struct {
 	_            struct{}                  `type:"structure"`
@@ -1403,4 +1602,80 @@ func (s *ValidationError) StatusCode() int {
 // RequestID returns the service's response RequestID for request.
 func (s *ValidationError) RequestID() string {
 	return s.RespMetadata.RequestID
+}
+
+const (
+	// DeletionModeSoftDelete is a DeletionMode enum value
+	DeletionModeSoftDelete = "SoftDelete"
+
+	// DeletionModeHardDelete is a DeletionMode enum value
+	DeletionModeHardDelete = "HardDelete"
+)
+
+// DeletionMode_Values returns all elements of the DeletionMode enum
+func DeletionMode_Values() []string {
+	return []string{
+		DeletionModeSoftDelete,
+		DeletionModeHardDelete,
+	}
+}
+
+const (
+	// ExpirationTimeResponseEnabled is a ExpirationTimeResponse enum value
+	ExpirationTimeResponseEnabled = "Enabled"
+
+	// ExpirationTimeResponseDisabled is a ExpirationTimeResponse enum value
+	ExpirationTimeResponseDisabled = "Disabled"
+)
+
+// ExpirationTimeResponse_Values returns all elements of the ExpirationTimeResponse enum
+func ExpirationTimeResponse_Values() []string {
+	return []string{
+		ExpirationTimeResponseEnabled,
+		ExpirationTimeResponseDisabled,
+	}
+}
+
+const (
+	// TargetStoreOnlineStore is a TargetStore enum value
+	TargetStoreOnlineStore = "OnlineStore"
+
+	// TargetStoreOfflineStore is a TargetStore enum value
+	TargetStoreOfflineStore = "OfflineStore"
+)
+
+// TargetStore_Values returns all elements of the TargetStore enum
+func TargetStore_Values() []string {
+	return []string{
+		TargetStoreOnlineStore,
+		TargetStoreOfflineStore,
+	}
+}
+
+const (
+	// TtlDurationUnitSeconds is a TtlDurationUnit enum value
+	TtlDurationUnitSeconds = "Seconds"
+
+	// TtlDurationUnitMinutes is a TtlDurationUnit enum value
+	TtlDurationUnitMinutes = "Minutes"
+
+	// TtlDurationUnitHours is a TtlDurationUnit enum value
+	TtlDurationUnitHours = "Hours"
+
+	// TtlDurationUnitDays is a TtlDurationUnit enum value
+	TtlDurationUnitDays = "Days"
+
+	// TtlDurationUnitWeeks is a TtlDurationUnit enum value
+	TtlDurationUnitWeeks = "Weeks"
+)
+
+// TtlDurationUnit_Values returns all elements of the TtlDurationUnit enum
+func TtlDurationUnit_Values() []string {
+	return []string{
+		TtlDurationUnitSeconds,
+		TtlDurationUnitMinutes,
+		TtlDurationUnitHours,
+		TtlDurationUnitDays,
+		TtlDurationUnitWeeks,
+	}
 }

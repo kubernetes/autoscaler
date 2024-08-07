@@ -95,6 +95,7 @@ func newManager() (*hetznerManager, error) {
 		hcloud.WithHTTPClient(httpClient),
 		hcloud.WithApplication("cluster-autoscaler", version.ClusterAutoscalerVersion),
 		hcloud.WithPollBackoffFunc(hcloud.ExponentialBackoff(2, 500*time.Millisecond)),
+		hcloud.WithDebugWriter(&debugWriter{}),
 	)
 
 	ctx := context.Background()
@@ -157,18 +158,18 @@ func newManager() (*hetznerManager, error) {
 	}
 
 	var sshKey *hcloud.SSHKey
-	sshKeyName := os.Getenv("HCLOUD_SSH_KEY")
-	if sshKeyName != "" {
-		sshKey, _, err = client.SSHKey.Get(ctx, sshKeyName)
+	sshKeyIdOrName := os.Getenv("HCLOUD_SSH_KEY")
+	if sshKeyIdOrName != "" {
+		sshKey, _, err = client.SSHKey.Get(ctx, sshKeyIdOrName)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get ssh key error: %s", err)
 		}
 	}
 
 	var network *hcloud.Network
-	networkName := os.Getenv("HCLOUD_NETWORK")
-	if networkName != "" {
-		network, _, err = client.Network.Get(ctx, networkName)
+	networkIdOrName := os.Getenv("HCLOUD_NETWORK")
+	if networkIdOrName != "" {
+		network, _, err = client.Network.Get(ctx, networkIdOrName)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get network error: %s", err)
 		}
@@ -182,9 +183,9 @@ func newManager() (*hetznerManager, error) {
 	}
 
 	var firewall *hcloud.Firewall
-	firewallName := os.Getenv("HCLOUD_FIREWALL")
-	if firewallName != "" {
-		firewall, _, err = client.Firewall.Get(ctx, firewallName)
+	firewallIdOrName := os.Getenv("HCLOUD_FIREWALL")
+	if firewallIdOrName != "" {
+		firewall, _, err = client.Firewall.Get(ctx, firewallIdOrName)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get firewall error: %s", err)
 		}
@@ -256,9 +257,19 @@ func (m *hetznerManager) addNodeToDrainingPool(node *apiv1.Node) (*hetznerNodeGr
 	return m.nodeGroups[drainingNodePoolId], nil
 }
 
+func (m *hetznerManager) validProviderID(providerID string) bool {
+	return strings.HasPrefix(providerID, providerIDPrefix)
+}
+
 func (m *hetznerManager) serverForNode(node *apiv1.Node) (*hcloud.Server, error) {
 	var nodeIdOrName string
 	if node.Spec.ProviderID != "" {
+		if !m.validProviderID(node.Spec.ProviderID) {
+			// This cluster-autoscaler provider only handles Hetzner Cloud servers.
+			// Any other provider ID prefix is invalid, and we return no server. Returning an error here breaks hybrid
+			// clusters with nodes from Hetzner Cloud & Robot (or other providers).
+			return nil, nil
+		}
 		nodeIdOrName = strings.TrimPrefix(node.Spec.ProviderID, providerIDPrefix)
 	} else {
 		nodeIdOrName = node.Name

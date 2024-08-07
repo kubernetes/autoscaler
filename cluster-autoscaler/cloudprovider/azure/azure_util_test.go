@@ -96,7 +96,7 @@ func TestWindowsVMNameParts(t *testing.T) {
 			t.Fatalf("incorrect poolPrefix. expected=%s actual=%s", d.expectedPoolPrefix, poolPrefix)
 		}
 		if orch != d.expectedOrch {
-			t.Fatalf("incorrect aks string. expected=%s actual=%s", d.expectedOrch, orch)
+			t.Fatalf("incorrect orchestrator string. expected=%s actual=%s", d.expectedOrch, orch)
 		}
 		if poolIndex != d.expectedPoolIndex {
 			t.Fatalf("incorrect poolIndex. expected=%d actual=%d", d.expectedPoolIndex, poolIndex)
@@ -215,13 +215,15 @@ func TestConvertResourceGroupNameToLower(t *testing.T) {
 		},
 		{
 			desc:        "providerID not in Azure format should report error",
-			resourceID:  "azure://invalid-id",
+			resourceID:  azurePrefix + "invalid-id",
 			expectError: true,
 		},
 		{
-			desc:       "resource group name in VM providerID should be converted",
-			resourceID: "azure:///subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myResourceGroupName/providers/Microsoft.Compute/virtualMachines/k8s-agent-AAAAAAAA-0",
-			expected:   "azure:///subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myresourcegroupname/providers/Microsoft.Compute/virtualMachines/k8s-agent-AAAAAAAA-0",
+			desc: "resource group name in VM providerID should be converted",
+			resourceID: azurePrefix + "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myResourceGroupName" +
+				"/providers/Microsoft.Compute/virtualMachines/k8s-agent-AAAAAAAA-0",
+			expected: azurePrefix + "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myresourcegroupname" +
+				"/providers/Microsoft.Compute/virtualMachines/k8s-agent-AAAAAAAA-0",
 		},
 		{
 			desc:       "resource group name in VM resourceID should be converted",
@@ -229,9 +231,11 @@ func TestConvertResourceGroupNameToLower(t *testing.T) {
 			expected:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myresourcegroupname/providers/Microsoft.Compute/virtualMachines/k8s-agent-AAAAAAAA-0",
 		},
 		{
-			desc:       "resource group name in VMSS providerID should be converted",
-			resourceID: "azure:///subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myResourceGroupName/providers/Microsoft.Compute/virtualMachineScaleSets/myScaleSetName/virtualMachines/156",
-			expected:   "azure:///subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myresourcegroupname/providers/Microsoft.Compute/virtualMachineScaleSets/myScaleSetName/virtualMachines/156",
+			desc: "resource group name in VMSS providerID should be converted",
+			resourceID: azurePrefix + "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myResourceGroupName" +
+				"/providers/Microsoft.Compute/virtualMachineScaleSets/myScaleSetName/virtualMachines/156",
+			expected: azurePrefix + "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myresourcegroupname" +
+				"/providers/Microsoft.Compute/virtualMachineScaleSets/myScaleSetName/virtualMachines/156",
 		},
 		{
 			desc:       "resource group name in VMSS resourceID should be converted",
