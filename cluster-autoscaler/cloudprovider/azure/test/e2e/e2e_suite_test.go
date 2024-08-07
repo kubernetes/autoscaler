@@ -26,7 +26,9 @@ import (
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v5"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v4"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"helm.sh/helm/v3/pkg/action"
@@ -42,10 +44,11 @@ const (
 )
 
 var (
-	ctx     = context.Background()
-	vmss    *armcompute.VirtualMachineScaleSetsClient
-	k8s     client.Client
-	helmEnv = cli.New()
+	ctx             = context.Background()
+	vmss            *armcompute.VirtualMachineScaleSetsClient
+	agentPoolClient *armcontainerservice.AgentPoolsClient
+	k8s             client.Client
+	helmEnv         = cli.New()
 
 	resourceGroup         string
 	clusterName           string
@@ -72,9 +75,12 @@ func TestE2E(t *testing.T) {
 }
 
 var _ = BeforeSuite(func() {
+	sub := os.Getenv("AZURE_SUBSCRIPTION_ID")
 	azCred, err := azidentity.NewDefaultAzureCredential(nil)
 	Expect(err).NotTo(HaveOccurred())
-	vmss, err = armcompute.NewVirtualMachineScaleSetsClient(os.Getenv("AZURE_SUBSCRIPTION_ID"), azCred, nil)
+	vmss, err = armcompute.NewVirtualMachineScaleSetsClient(sub, azCred, nil)
+	Expect(err).NotTo(HaveOccurred())
+	agentPoolClient, err = armcontainerservice.NewAgentPoolsClient(sub, azCred, nil)
 	Expect(err).NotTo(HaveOccurred())
 
 	restConfig, err := helmEnv.RESTClientGetter().ToRESTConfig()
