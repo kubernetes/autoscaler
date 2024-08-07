@@ -96,6 +96,26 @@ func NewVpasLister(vpaClient *vpa_clientset.Clientset, stopChannel <-chan struct
 	return vpaLister
 }
 
+// NewVpaCheckpointLister returns VerticalPodAutoscalerCheckpointLister configured to fetch all VPACheckpoint objects from namespace,
+// set namespace to k8sapiv1.NamespaceAll to select all namespaces.
+// The method blocks until vpaCheckpointLister is initially populated.
+func NewVpaCheckpointLister(vpaClient *vpa_clientset.Clientset, stopChannel <-chan struct{}, namespace string) vpa_lister.VerticalPodAutoscalerCheckpointLister {
+	vpaListWatch := cache.NewListWatchFromClient(vpaClient.AutoscalingV1().RESTClient(), "verticalpodautoscalercheckpoints", namespace, fields.Everything())
+	indexer, controller := cache.NewIndexerInformer(vpaListWatch,
+		&vpa_types.VerticalPodAutoscalerCheckpoint{},
+		1*time.Hour,
+		&cache.ResourceEventHandlerFuncs{},
+		cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
+	vpaCheckpointLister := vpa_lister.NewVerticalPodAutoscalerCheckpointLister(indexer)
+	go controller.Run(stopChannel)
+	if !cache.WaitForCacheSync(make(chan struct{}), controller.HasSynced) {
+		klog.Fatalf("Failed to sync VPA checkpoint cache during initialization")
+	} else {
+		klog.Info("Initial VPA checkpoint synced successfully")
+	}
+	return vpaCheckpointLister
+}
+
 // PodMatchesVPA returns true iff the vpaWithSelector matches the Pod.
 func PodMatchesVPA(pod *core.Pod, vpaWithSelector *VpaWithSelector) bool {
 	return PodLabelsMatchVPA(pod.Namespace, labels.Set(pod.GetLabels()), vpaWithSelector.Vpa.Namespace, vpaWithSelector.Selector)
