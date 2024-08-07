@@ -448,11 +448,6 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 		return nil
 	}
 
-	if deletedNodes := a.deleteCreatedNodesWithErrors(); deletedNodes {
-		klog.V(0).Infof("Some nodes that failed to create were removed, skipping iteration")
-		return nil
-	}
-
 	// Check if there has been a constant difference between the number of nodes in k8s and
 	// the number of nodes on the cloud provider side.
 	// TODO: andrewskim - add protection for ready AWS nodes.
@@ -764,6 +759,10 @@ func (a *StaticAutoscaler) removeOldUnregisteredNodes(allUnregisteredNodes []clu
 			klog.V(0).Infof("Marking unregistered node %v for removal", unregisteredNode.Node.Name)
 			nodesToDeleteByNodeGroupId[nodeGroup.Id()] = append(nodesToDeleteByNodeGroupId[nodeGroup.Id()], unregisteredNode)
 		}
+		if clusterstate.IsFakeNodeUnhealthy(unregisteredNode.Node) {
+			klog.V(0).Infof("Marking unregistered node %v for removal, because node is unhealthy", unregisteredNode.Node.Name)
+			nodesToDeleteByNodeGroupId[nodeGroup.Id()] = append(nodesToDeleteByNodeGroupId[nodeGroup.Id()], unregisteredNode)
+		}
 	}
 
 	removedAny := false
@@ -819,36 +818,6 @@ func toNodes(unregisteredNodes []clusterstate.UnregisteredNode) []*apiv1.Node {
 		nodes = append(nodes, n.Node)
 	}
 	return nodes
-}
-
-func (a *StaticAutoscaler) deleteCreatedNodesWithErrors() bool {
-	// We always schedule deleting of incoming errornous nodes
-	// TODO[lukaszos] Consider adding logic to not retry delete every loop iteration
-	nodeGroups := a.nodeGroupsById()
-	nodesToDeleteByNodeGroupId := a.clusterStateRegistry.GetCreatedNodesWithErrors()
-
-	deletedAny := false
-
-	for nodeGroupId, nodesToDelete := range nodesToDeleteByNodeGroupId {
-		var err error
-		klog.V(1).Infof("Deleting %v from %v node group because of create errors", len(nodesToDelete), nodeGroupId)
-
-		nodeGroup := nodeGroups[nodeGroupId]
-		if nodeGroup == nil {
-			err = fmt.Errorf("node group %s not found", nodeGroupId)
-		} else if nodesToDelete, err = overrideNodesToDeleteForZeroOrMax(a.NodeGroupDefaults, nodeGroup, nodesToDelete); err == nil {
-			err = nodeGroup.DeleteNodes(nodesToDelete)
-		}
-
-		if err != nil {
-			klog.Warningf("Error while trying to delete nodes from %v: %v", nodeGroupId, err)
-		} else {
-			deletedAny = true
-			a.clusterStateRegistry.InvalidateNodeInstancesCacheEntry(nodeGroup)
-		}
-	}
-
-	return deletedAny
 }
 
 // overrideNodesToDeleteForZeroOrMax returns a list of nodes to delete, taking into account that

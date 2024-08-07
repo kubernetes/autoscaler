@@ -654,7 +654,7 @@ func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
 			klog.Warningf("Failed to get maxNodeProvisionTime for node %s in node group %s: %v", unregistered.Node.Name, nodeGroup.Id(), err)
 			continue
 		}
-		if unregistered.UnregisteredSince.Add(maxNodeProvisionTime).Before(currentTime) {
+		if unregistered.UnregisteredSince.Add(maxNodeProvisionTime).Before(currentTime) || IsFakeNodeUnhealthy(unregistered.Node) {
 			perNgCopy.LongUnregistered = append(perNgCopy.LongUnregistered, unregistered.Node.Name)
 			total.LongUnregistered = append(total.LongUnregistered, unregistered.Node.Name)
 		} else {
@@ -1023,7 +1023,7 @@ func getNotRegisteredNodes(allNodes []*apiv1.Node, cloudProviderNodeInstances ma
 		for _, instance := range instances {
 			if !registered.Has(instance.Id) && expectedToRegister(instance) {
 				notRegistered = append(notRegistered, UnregisteredNode{
-					Node:              FakeNode(instance, cloudprovider.FakeNodeUnregistered),
+					Node:              FakeNode(instance, buildFakeNodeReason(instance)),
 					UnregisteredSince: time,
 				})
 			}
@@ -1033,7 +1033,18 @@ func getNotRegisteredNodes(allNodes []*apiv1.Node, cloudProviderNodeInstances ma
 }
 
 func expectedToRegister(instance cloudprovider.Instance) bool {
-	return instance.Status == nil || (instance.Status.State != cloudprovider.InstanceDeleting && instance.Status.ErrorInfo == nil)
+	return instance.Status == nil || instance.Status.State != cloudprovider.InstanceDeleting
+}
+
+func buildFakeNodeReason(instance cloudprovider.Instance) string {
+	if instance.Status == nil {
+		return cloudprovider.FakeNodeUnregistered
+	}
+
+	if instance.Status.State == cloudprovider.InstanceCreating && instance.Status.ErrorInfo != nil {
+		return cloudprovider.FakeNodeCreateError
+	}
+	return cloudprovider.FakeNodeUnregistered
 }
 
 // Calculates which of the registered nodes in Kubernetes that do not exist in cloud provider.
@@ -1239,6 +1250,14 @@ func FakeNode(instance cloudprovider.Instance, reason string) *apiv1.Node {
 			ProviderID: instance.Id,
 		},
 	}
+}
+
+// IsFakeNodeUnhealthy returns true if a fake node is unhealthy; false otherwise.
+func IsFakeNodeUnhealthy(node *apiv1.Node) bool {
+	if reason, ok := node.Annotations[cloudprovider.FakeNodeReasonAnnotation]; ok && reason == cloudprovider.FakeNodeCreateError {
+		return true
+	}
+	return false
 }
 
 // PeriodicCleanup performs clean-ups that should be done periodically, e.g.
