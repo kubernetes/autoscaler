@@ -2,16 +2,17 @@ package e2e_test
 
 import (
 	"context"
+	"fmt"
 	"time"
 
-	corev1 "k8s.io/api/core/v1"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v4"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/samber/lo"
+	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var _ = Describe("AgentPool Properties", func() {
@@ -54,8 +55,11 @@ var _ = Describe("AgentPool Properties", func() {
 					ScaleDownMode: lo.ToPtr(armcontainerservice.ScaleDownModeDelete),
 				},
 			}
-
+			
 			ap, err := CreateAgentpool(ctx, agentPoolClient, resourceGroup, clusterName, agentPoolName, agentPool)
+			if err != nil {
+				fmt.Fprintf(GinkgoWriter, "Error creating agent pool: %v\n", err)
+			}
 			Expect(err).To(BeNil())
 			// Sanity Checks
 			Expect(ap.Properties.MinCount).To(Equal(5))
