@@ -51,12 +51,13 @@ procedure described below.
 
 # Installation
 
-The current default version is Vertical Pod Autoscaler 1.1.2
+The current default version is Vertical Pod Autoscaler 1.2.0
 
 ### Compatibility
 
 | VPA version     | Kubernetes version |
 |-----------------|--------------------|
+| 1.2.0           | 1.27+              |
 | 1.1.2           | 1.25+              |
 | 1.1.1           | 1.25+              |
 | 1.0             | 1.25+              |
@@ -384,7 +385,7 @@ vpa-post-processor.kubernetes.io/{containerName}_integerCPU=true
 1. `ignored-vpa-object-namespaces` - A comma separated list of namespaces to ignore
 1. `vpa-object-namespace` - A single namespace to monitor
 
-These options cannot be used together and are mutually exclusive. 
+These options cannot be used together and are mutually exclusive.
 
 
 # Known limitations
