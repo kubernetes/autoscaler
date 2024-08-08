@@ -38,7 +38,7 @@ var _ = Describe("AgentPool Properties", func() {
 				"scale-down-unneeded-time":         "10s",
 				"scale-down-candidates-pool-ratio": "1.0",
 				"unremovable-node-recheck-timeout": "10s",
-				"enforce-min-nodegroup-size": "true",
+				"enforce-node-group-min-size": "true",
 				"skip-nodes-with-system-pods":      "false",
 				"skip-nodes-with-local-storage":    "false",
 			},
@@ -55,7 +55,7 @@ var _ = Describe("AgentPool Properties", func() {
 				},
 			}
 
-			ap, err := CreateAgentpool(context.TODO(), agentPoolClient, resourceGroup, clusterName, agentPoolName, agentPool)
+			ap, err := CreateAgentpool(ctx, agentPoolClient, resourceGroup, clusterName, agentPoolName, agentPool)
 			Expect(err).To(BeNil())
 			// Sanity Checks
 			Expect(ap.Properties.MinCount).To(Equal(5))
