@@ -56,7 +56,7 @@ var _ = Describe("AgentPool Properties", func() {
 				},
 			}
 			
-			ap, err := CreateAgentpool(ctx, agentPoolClient, resourceGroup, clusterName, agentPoolName, agentPool)
+			ap, err := CreateAgentpool(ctx, agentPoolClient, customerResourceGroup, clusterName, agentPoolName, agentPool)
 			if err != nil {
 				fmt.Fprintf(GinkgoWriter, "Error creating agent pool: %v\n", err)
 			}

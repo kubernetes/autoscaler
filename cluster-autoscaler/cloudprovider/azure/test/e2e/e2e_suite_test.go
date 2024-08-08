@@ -50,7 +50,11 @@ var (
 	k8s             client.Client
 	helmEnv         = cli.New()
 
-	resourceGroup         string
+	// nodeResourceGroup is where the managed resources for a managed cluster are stored 
+	// the underlying VMSS, potential Network interfaces + availability sets etc 
+	nodeResourceGroup     string
+	// customer resource group is where the managed cluster object is stored
+	customerResourceGroup string
 	clusterName           string
 	clientID              string
 	casNamespace          string
@@ -60,8 +64,9 @@ var (
 )
 
 func init() {
-	flag.StringVar(&resourceGroup, "resource-group", "", "resource group containing cluster-autoscaler-managed resources")
+	flag.StringVar(&nodeResourceGroup, "resource-group", "", "resource group containing cluster-autoscaler-managed resources")
 	flag.StringVar(&clusterName, "cluster-name", "", "Cluster API Cluster name for the cluster to be managed by cluster-autoscaler")
+	customerResourceGroup = clusterName
 	flag.StringVar(&clientID, "client-id", "", "Azure client ID to be used by cluster-autoscaler")
 	flag.StringVar(&casNamespace, "cas-namespace", "", "Namespace in which to install cluster-autoscaler")
 	flag.StringVar(&casServiceAccountName, "cas-serviceaccount-name", "", "Name of the ServiceAccount to be used by cluster-autoscaler")
@@ -93,7 +98,7 @@ var _ = BeforeSuite(func() {
 		"azureTenantID":                     os.Getenv("AZURE_TENANT_ID"),
 		"azureSubscriptionID":               os.Getenv("AZURE_SUBSCRIPTION_ID"),
 		"azureUseWorkloadIdentityExtension": true,
-		"azureResourceGroup":                resourceGroup,
+		"azureResourceGroup":                nodeResourceGroup,
 		"podLabels": map[string]interface{}{
 			"azure.workload.identity/use": "true",
 		},
@@ -121,7 +126,7 @@ var _ = BeforeSuite(func() {
 })
 
 func allVMSSStable(g Gomega) {
-	pager := vmss.NewListPager(resourceGroup, nil)
+	pager := vmss.NewListPager(nodeResourceGroup, nil)
 	expectedNodes := 0
 	for pager.More() {
 		page, err := pager.NextPage(ctx)
