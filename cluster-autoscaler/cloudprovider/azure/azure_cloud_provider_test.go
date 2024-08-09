@@ -40,7 +40,7 @@ func newTestAzureManager(t *testing.T) *AzureManager {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	expectedScaleSets := newTestVMSSList(3, testASG, "eastus", compute.Uniform)
+	expectedScaleSets := newTestVMSSList(3, testASG, compute.Uniform)
 
 	expectedVMSSVMs := newTestVMSSVMList(3)
 	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
@@ -135,7 +135,7 @@ func TestHasInstance(t *testing.T) {
 	provider.azureManager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
 
 	// Simulate node groups and instances
-	expectedScaleSets := newTestVMSSList(3, "test-asg", "eastus", compute.Uniform)
+	expectedScaleSets := newTestVMSSList(3, "test-asg", compute.Uniform)
 	expectedVMSSVMs := newTestVMSSVMList(3)
 
 	mockVMSSClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
@@ -155,7 +155,7 @@ func TestHasInstance(t *testing.T) {
 	provider.azureManager.forceRefresh()
 
 	// Test HasInstance for a node from the VMSS pool
-	node := newApiNode(compute.Uniform, 0)
+	node := newAPINode(compute.Uniform, 0)
 	hasInstance, err := provider.azureManager.azureCache.HasInstance(node.Spec.ProviderID)
 	assert.True(t, hasInstance)
 	assert.NoError(t, err)
@@ -240,7 +240,7 @@ func TestNodeGroupForNode(t *testing.T) {
 
 	for _, orchMode := range orchestrationModes {
 		t.Run(fmt.Sprintf("OrchestrationMode_%v", orchMode), func(t *testing.T) {
-			expectedScaleSets := newTestVMSSList(3, testASG, "eastus", orchMode)
+			expectedScaleSets := newTestVMSSList(3, testASG, orchMode)
 			provider := newTestProvider(t)
 			mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
 			mockVMSSClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return(expectedScaleSets, nil)
@@ -266,7 +266,7 @@ func TestNodeGroupForNode(t *testing.T) {
 			assert.True(t, registered)
 			assert.Equal(t, len(provider.NodeGroups()), 1)
 
-			node := newApiNode(orchMode, 0)
+			node := newAPINode(orchMode, 0)
 			// refresh cache
 			err := provider.azureManager.forceRefresh()
 			assert.NoError(t, err)
