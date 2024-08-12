@@ -29,6 +29,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v5"
+
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"helm.sh/helm/v3/pkg/action"
@@ -44,12 +45,16 @@ const (
 )
 
 var (
-	ctx     = context.Background()
-	vmss    *armcompute.VirtualMachineScaleSetsClient
+	ctx = context.Background()
+
+	vmss          *armcompute.VirtualMachineScaleSetsClient
+	vmssVMsClient *armcompute.VirtualMachineScaleSetVMsClient
+
 	k8s     client.Client
 	helmEnv = cli.New()
 
-	resourceGroup         string
+	nodeResourceGroup     string
+	clusterResourceGroup  string
 	clusterName           string
 	clientID              string
 	casNamespace          string
@@ -59,7 +64,8 @@ var (
 )
 
 func init() {
-	flag.StringVar(&resourceGroup, "resource-group", "", "resource group containing cluster-autoscaler-managed resources")
+	flag.StringVar(&nodeResourceGroup, "node-resource-group", "", "resource group containing cluster-autoscaler-managed resources")
+	flag.StringVar(&clusterResourceGroup, "cluster-resource-group", "", "cluster resource group contains the managed cluster we end up creating")
 	flag.StringVar(&clusterName, "cluster-name", "", "Cluster API Cluster name for the cluster to be managed by cluster-autoscaler")
 	flag.StringVar(&clientID, "client-id", "", "Azure client ID to be used by cluster-autoscaler")
 	flag.StringVar(&casNamespace, "cas-namespace", "", "Namespace in which to install cluster-autoscaler")
@@ -76,7 +82,12 @@ func TestE2E(t *testing.T) {
 var _ = BeforeSuite(func() {
 	azCred, err := azidentity.NewDefaultAzureCredential(nil)
 	Expect(err).NotTo(HaveOccurred())
-	vmss, err = armcompute.NewVirtualMachineScaleSetsClient(os.Getenv("AZURE_SUBSCRIPTION_ID"), azCred, nil)
+	sub := os.Getenv("AZURE_SUBSCRIPTION_ID")
+
+	vmss, err = armcompute.NewVirtualMachineScaleSetsClient(sub, azCred, nil)
+	Expect(err).NotTo(HaveOccurred())
+
+	vmssVMsClient, err = armcompute.NewVirtualMachineScaleSetVMsClient(sub, azCred, nil)
 	Expect(err).NotTo(HaveOccurred())
 
 	restConfig, err := helmEnv.RESTClientGetter().ToRESTConfig()
@@ -89,7 +100,7 @@ var _ = BeforeSuite(func() {
 		"azureTenantID":                     os.Getenv("AZURE_TENANT_ID"),
 		"azureSubscriptionID":               os.Getenv("AZURE_SUBSCRIPTION_ID"),
 		"azureUseWorkloadIdentityExtension": true,
-		"azureResourceGroup":                resourceGroup,
+		"azureResourceGroup":                nodeResourceGroup,
 		"podLabels": map[string]interface{}{
 			"azure.workload.identity/use": "true",
 		},
@@ -106,7 +117,8 @@ var _ = BeforeSuite(func() {
 			"clusterName": clusterName,
 		},
 		"nodeSelector": map[string]interface{}{
-			"kubernetes.io/os": "linux",
+			"kubernetes.io/os":          "linux",
+			"kubernetes.azure.com/mode": "system",
 		},
 		"image": map[string]interface{}{
 			"repository": casImageRepository,
@@ -117,7 +129,7 @@ var _ = BeforeSuite(func() {
 })
 
 func allVMSSStable(g Gomega) {
-	pager := vmss.NewListPager(resourceGroup, nil)
+	pager := vmss.NewListPager(nodeResourceGroup, nil)
 	expectedNodes := 0
 	for pager.More() {
 		page, err := pager.NextPage(ctx)
