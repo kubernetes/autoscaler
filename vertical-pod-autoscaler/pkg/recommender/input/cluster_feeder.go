@@ -338,7 +338,7 @@ func filterVPAs(feeder *clusterStateFeeder, allVpaCRDs []*vpa_types.VerticalPodA
 		}
 
 		if slices.Contains(feeder.ignoredNamespaces, vpaCRD.ObjectMeta.Namespace) {
-			klog.V(6).Infof("Ignoring vpaCRD %s in namespace %s as namespace is ignored", vpaCRD.Name, vpaCRD.Namespace)
+			klog.V(6).Infof("Ignoring vpaCRD %s in namespace %s as namespace is ignored", klog.KObj(vpaCRD), vpaCRD.Namespace)
 			continue
 		}
 
