@@ -28,9 +28,9 @@ import (
 )
 
 const (
-	failedToBuildConfigErr       = "Failed to build config"
-	failedToParseK8sUrlErr       = "Failed to parse Kubernetes url"
-	failedToBuildClientConfigErr = "Failed to build Kubernetes client configuration"
+	failedToBuildConfigErr         = "Failed to build config"
+	failedToParseK8sUrlErr         = "Failed to parse Kubernetes url"
+	failedToBuildClientConfigErr   = "Failed to build Kubernetes client configuration"
 	failedToFindInClusterConfigErr = "Failed to find in-cluster config"
 )
 
@@ -61,7 +61,7 @@ func GetKubeConfig(opts config.KubeClientOptions) *rest.Config {
 		if err != nil {
 			klog.Fatalf("%v: %v", failedToBuildClientConfigErr, err)
 		}
-	}	else {
+	} else {
 		kubeConfig, err = rest.InClusterConfig()
 		if err != nil {
 			klog.Fatalf("%v: %v", failedToFindInClusterConfigErr, err)
