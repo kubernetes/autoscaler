@@ -227,17 +227,17 @@ const (
 // InjectHandlers is NOT safe to call concurrently. Calling InjectHandlers
 // multiple times may lead to unexpected behavior, (e.g. duplicate metrics).
 //
-//		// Start must be called in order to inject the correct handlers
-//		r, err := csm.Start("clientID", "127.0.0.1:8094")
-//		if err != nil {
-//			panic(fmt.Errorf("expected no error, but received %v", err))
-//		}
+//	// Start must be called in order to inject the correct handlers
+//	r, err := csm.Start("clientID", "127.0.0.1:8094")
+//	if err != nil {
+//		panic(fmt.Errorf("expected no error, but received %v", err))
+//	}
 //
-//		sess := session.NewSession()
-//		r.InjectHandlers(&sess.Handlers)
+//	sess := session.NewSession()
+//	r.InjectHandlers(&sess.Handlers)
 //
-//		// create a new service client with our client side metric session
-//		svc := s3.New(sess)
+//	// create a new service client with our client side metric session
+//	svc := s3.New(sess)
 func (rep *Reporter) InjectHandlers(handlers *request.Handlers) {
 	if rep == nil {
 		return
