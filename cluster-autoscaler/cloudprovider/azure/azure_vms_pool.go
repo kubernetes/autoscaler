@@ -423,16 +423,16 @@ func (agentPool *VMsPool) getCurSize() (int64, error) {
 }
 
 func (agentPool *VMsPool) getVMsFromCache() ([]compute.VirtualMachine, error) {
-	// vmsPoolSet is a set of vms agent pool names
-	vmsPoolSet := agentPool.manager.azureCache.getVMsPoolSet()
-	if _, ok := vmsPoolSet[agentPool.Name]; !ok {
+	// vmsPoolMap is a map of agent pool name to the agent pool
+	vmsPoolMap := agentPool.manager.azureCache.getVMsPoolMap()
+	if _, ok := vmsPoolMap[agentPool.Name]; !ok {
 		return []compute.VirtualMachine{}, fmt.Errorf("vms pool %s not found in the cache", agentPool.Name)
 	}
 
-	// vmsPoolMap is a map of agent pool name to the list of virtual machines
-	vmsPoolMap := agentPool.manager.azureCache.getVirtualMachines()
+	// vmsMap is a map of agent pool name to the list of virtual machines
+	vmsMap := agentPool.manager.azureCache.getVirtualMachines()
 	// it may return empty list if the agentpool has minCount set to 0
-	return vmsPoolMap[agentPool.Name], nil
+	return vmsMap[agentPool.Name], nil
 }
 
 // Nodes returns the list of nodes in the vms agentPool.

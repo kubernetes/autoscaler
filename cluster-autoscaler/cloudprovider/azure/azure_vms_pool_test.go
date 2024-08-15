@@ -361,7 +361,9 @@ func TestDeleteVMsPoolNodes(t *testing.T) {
 	ap := newTestVMsPool(manager, agentpoolName)
 
 	manager.azureCache = &azureCache{
-		vmsPoolSet: map[string]struct{}{agentpoolName: {}},
+		vmsPoolMap: map[string]armcontainerservice.AgentPool{
+			agentpoolName: getTestAgentPool(agentpoolName, false),
+		},
 		instanceToNodeGroup: map[azureRef]cloudprovider.NodeGroup{
 			{Name: providerID}: ap,
 		},
