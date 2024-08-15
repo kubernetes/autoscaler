@@ -233,13 +233,13 @@ func (feeder *clusterStateFeeder) setVpaCheckpoint(checkpoint *vpa_types.Vertica
 	vpaID := model.VpaID{Namespace: checkpoint.Namespace, VpaName: checkpoint.Spec.VPAObjectName}
 	vpa, exists := feeder.clusterState.Vpas[vpaID]
 	if !exists {
-		return fmt.Errorf("cannot load checkpoint to missing VPA object %s/%s", vpa.ID.Namespace, vpa.ID.VpaName)
+		return fmt.Errorf("cannot load checkpoint to missing VPA object %s/%s", vpaID.Namespace, vpaID.VpaName)
 	}
 
 	cs := model.NewAggregateContainerState()
 	err := cs.LoadFromCheckpoint(&checkpoint.Status)
 	if err != nil {
-		return fmt.Errorf("cannot load checkpoint for VPA %s/%s. Reason: %v", vpa.ID.Namespace, vpa.ID.VpaName, err)
+		return fmt.Errorf("cannot load checkpoint for VPA %s/%s. Reason: %v", vpaID.Namespace, vpaID.VpaName, err)
 	}
 	vpa.ContainersInitialAggregateState[checkpoint.Spec.ContainerName] = cs
 	return nil
@@ -338,7 +338,7 @@ func filterVPAs(feeder *clusterStateFeeder, allVpaCRDs []*vpa_types.VerticalPodA
 		}
 
 		if slices.Contains(feeder.ignoredNamespaces, vpaCRD.ObjectMeta.Namespace) {
-			klog.V(6).Infof("Ignoring vpaCRD %s in namespace %s as namespace is ignored", vpaCRD.Name, vpaCRD.Namespace)
+			klog.V(6).Infof("Ignoring vpaCRD %s in namespace %s as namespace is ignored", klog.KObj(vpaCRD), vpaCRD.Namespace)
 			continue
 		}
 
