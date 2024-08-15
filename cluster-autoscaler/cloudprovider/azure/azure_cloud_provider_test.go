@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v5"
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources"
 	"github.com/Azure/go-autorest/autorest/to"
@@ -142,9 +143,14 @@ func TestHasInstance(t *testing.T) {
 	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
 	mockVMClient := mockvmclient.NewMockInterface(ctrl)
 	mockVMSSVMClient := mockvmssvmclient.NewMockInterface(ctrl)
+	mockAgentpoolclient := NewMockAgentPoolsClient(ctrl)
 	provider.azureManager.azClient.virtualMachinesClient = mockVMClient
 	provider.azureManager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
 	provider.azureManager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
+	provider.azureManager.azClient.agentPoolClient = mockAgentpoolclient
+	provider.azureManager.azureCache.clusterName = "test-cluster"
+	provider.azureManager.azureCache.clusterResourceGroup = "test-rg"
+	provider.azureManager.azureCache.enableVMsAgentPool = true // enable VMs agent pool to support mixed node group types
 
 	// Simulate node groups and instances
 	expectedScaleSets := newTestVMSSList(3, "test-asg", "eastus", compute.Uniform)
@@ -154,6 +160,25 @@ func TestHasInstance(t *testing.T) {
 	mockVMSSClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
 	mockVMClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return(expectedVMsPoolVMs, nil).AnyTimes()
 	mockVMSSVMClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup, "test-asg", gomock.Any()).Return(expectedVMSSVMs, nil).AnyTimes()
+	vmssType := armcontainerservice.AgentPoolTypeVirtualMachines
+	vmssPool := armcontainerservice.AgentPool{
+		Name: to.StringPtr("test-asg"),
+		Properties: &armcontainerservice.ManagedClusterAgentPoolProfileProperties{
+			Type: &vmssType,
+		},
+	}
+
+	vmsType := armcontainerservice.AgentPoolTypeVirtualMachines
+	vmsPool := armcontainerservice.AgentPool{
+		Name: to.StringPtr("test-vms-pool"),
+		Properties: &armcontainerservice.ManagedClusterAgentPoolProfileProperties{
+			Type: &vmsType,
+		},
+	}
+
+	fakeAPListPager := getFakeAgentpoolListPager(&vmssPool, &vmsPool)
+	mockAgentpoolclient.EXPECT().NewListPager(provider.azureManager.azureCache.clusterResourceGroup, provider.azureManager.azureCache.clusterName, nil).
+		Return(fakeAPListPager).AnyTimes()
 
 	// Register node groups
 	assert.Equal(t, len(provider.NodeGroups()), 0)
@@ -257,12 +282,17 @@ func TestHasInstanceProviderIDErrorValidation(t *testing.T) {
 func TestMixedNodeGroups(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	provider := newTestProvider(t)
+	provider.azureManager.azureCache.clusterName = "test-cluster"
+	provider.azureManager.azureCache.clusterResourceGroup = "test-rg"
+	provider.azureManager.azureCache.enableVMsAgentPool = true // enable VMs agent pool to support mixed node group types
 	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
 	mockVMClient := mockvmclient.NewMockInterface(ctrl)
 	mockVMSSVMClient := mockvmssvmclient.NewMockInterface(ctrl)
+	mockAgentpoolclient := NewMockAgentPoolsClient(ctrl)
 	provider.azureManager.azClient.virtualMachinesClient = mockVMClient
 	provider.azureManager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
 	provider.azureManager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
+	provider.azureManager.azClient.agentPoolClient = mockAgentpoolclient
 
 	expectedScaleSets := newTestVMSSList(3, "test-asg", "eastus", compute.Uniform)
 	expectedVMsPoolVMs := newTestVMsPoolVMList(3)
@@ -271,6 +301,26 @@ func TestMixedNodeGroups(t *testing.T) {
 	mockVMSSClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
 	mockVMClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup).Return(expectedVMsPoolVMs, nil).AnyTimes()
 	mockVMSSVMClient.EXPECT().List(gomock.Any(), provider.azureManager.config.ResourceGroup, "test-asg", gomock.Any()).Return(expectedVMSSVMs, nil).AnyTimes()
+
+	vmssType := armcontainerservice.AgentPoolTypeVirtualMachines
+	vmssPool := armcontainerservice.AgentPool{
+		Name: to.StringPtr("test-asg"),
+		Properties: &armcontainerservice.ManagedClusterAgentPoolProfileProperties{
+			Type: &vmssType,
+		},
+	}
+
+	vmsType := armcontainerservice.AgentPoolTypeVirtualMachines
+	vmsPool := armcontainerservice.AgentPool{
+		Name: to.StringPtr("test-vms-pool"),
+		Properties: &armcontainerservice.ManagedClusterAgentPoolProfileProperties{
+			Type: &vmsType,
+		},
+	}
+
+	fakeAPListPager := getFakeAgentpoolListPager(&vmssPool, &vmsPool)
+	mockAgentpoolclient.EXPECT().NewListPager(provider.azureManager.azureCache.clusterResourceGroup, provider.azureManager.azureCache.clusterName, nil).
+		Return(fakeAPListPager).AnyTimes()
 
 	assert.Equal(t, len(provider.NodeGroups()), 0)
 	registered := provider.azureManager.RegisterNodeGroup(

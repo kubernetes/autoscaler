@@ -169,6 +169,10 @@ type AgentPoolsClient interface {
 		machines armcontainerservice.AgentPoolDeleteMachinesParameter,
 		options *armcontainerservice.AgentPoolsClientBeginDeleteMachinesOptions) (
 		*runtime.Poller[armcontainerservice.AgentPoolsClientDeleteMachinesResponse], error)
+	NewListPager(
+		resourceGroupName, resourceName string,
+		options *armcontainerservice.AgentPoolsClientListOptions,
+	) *runtime.Pager[armcontainerservice.AgentPoolsClientListResponse]
 }
 
 func getAgentpoolClientCredentials(cfg *Config) (azcore.TokenCredential, error) {
@@ -406,9 +410,11 @@ func newAzClient(cfg *Config, env *azure.Environment) (*azClient, error) {
 
 	agentPoolClient, err := newAgentpoolClient(cfg)
 	if err != nil {
-		// we don't want to fail the whole process so we don't break any existing functionality
-		// since this may not be fatal - it is only used by vms pool which is still under development.
-		klog.Warningf("newAgentpoolClient failed with error: %s", err)
+		klog.Errorf("newAgentpoolClient failed with error: %s", err)
+		if cfg.EnableVMsAgentPool {
+			// only return error if VMs agent pool is supported, otherwise ignore the error
+			return nil, err
+		}
 	}
 
 	return &azClient{

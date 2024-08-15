@@ -66,6 +66,7 @@ const (
 	// toggle
 	dynamicInstanceListDefault = false
 	enableVmssFlexDefault      = false
+	enableVMsAgentPoolsDefault = false
 )
 
 // CloudProviderRateLimitConfig indicates the rate limit config for each clients.
@@ -155,6 +156,9 @@ type Config struct {
 
 	// (DEPRECATED, DO NOT USE) GetVmssSizeRefreshPeriod (seconds) defines how frequently to call GET VMSS API to fetch VMSS info per nodegroup instance
 	GetVmssSizeRefreshPeriod int `json:"getVmssSizeRefreshPeriod,omitempty" yaml:"getVmssSizeRefreshPeriod,omitempty"`
+
+	// EnableVMsAgentPool defines whether to support VMs agentpool type in addition to VMSS type
+	EnableVMsAgentPool bool `json:"enableVMsAgentPool,omitempty" yaml:"enableVMsAgentPool,omitempty"`
 }
 
 // BuildAzureConfig returns a Config object for the Azure clients
@@ -281,6 +285,17 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 			}
 		} else {
 			cfg.EnableVmssFlex = enableVmssFlexDefault
+		}
+
+		// if enableVMsAgentPools is true, CAS can handle both vmss and vms pool at the same time
+		if enableVMsAgentPools := os.Getenv("AZURE_ENABLE_VMS_AGENT_POOLS"); enableVMsAgentPools != "" {
+			cfg.EnableVMsAgentPool, err = strconv.ParseBool(enableVMsAgentPools)
+			klog.Infof("cfg.EnableVMsAgentPool: %v", cfg.EnableVMsAgentPool)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse AZURE_ENABLE_VMS_AGENT_POOLS %q: %v", enableVMsAgentPools, err)
+			}
+		} else {
+			cfg.EnableVMsAgentPool = enableVMsAgentPoolsDefault
 		}
 
 		if cfg.CloudProviderBackoff {

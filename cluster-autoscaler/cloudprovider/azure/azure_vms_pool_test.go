@@ -88,9 +88,11 @@ func getTestAgentPool(agentpoolName string, isSystemPool bool) armcontainerservi
 	if isSystemPool {
 		mode = armcontainerservice.AgentPoolModeSystem
 	}
+	apType := armcontainerservice.AgentPoolTypeVirtualMachines
 	return armcontainerservice.AgentPool{
 		Name: &agentpoolName,
 		Properties: &armcontainerservice.ManagedClusterAgentPoolProfileProperties{
+			Type: &apType,
 			Mode: &mode,
 			VirtualMachinesProfile: &armcontainerservice.VirtualMachinesProfile{
 				Scale: &armcontainerservice.ScaleProfile{
@@ -152,10 +154,19 @@ func TestGetVMsFromCacheForVMsPool(t *testing.T) {
 
 	mockVMClient := mockvmclient.NewMockInterface(ctrl)
 	ap.manager.azClient.virtualMachinesClient = mockVMClient
+	ap.manager.config.EnableVMsAgentPool = true
+	mockAgentpoolclient := NewMockAgentPoolsClient(ctrl)
+	ap.manager.azClient.agentPoolClient = mockAgentpoolclient
 	mockVMClient.EXPECT().List(gomock.Any(), ap.resourceGroup).Return(expectedVMs, nil)
+
+	agentpool := getTestAgentPool(agentpoolName, false)
+	fakeAPListPager := getFakeAgentpoolListPager(&agentpool)
+	mockAgentpoolclient.EXPECT().NewListPager(gomock.Any(), gomock.Any(), nil).
+		Return(fakeAPListPager)
 
 	ac, err := newAzureCache(ap.manager.azClient, refreshInterval, *ap.manager.config)
 	assert.NoError(t, err)
+	ac.enableVMsAgentPool = true
 	ap.manager.azureCache = ac
 
 	vms, err := ap.getVMsFromCache()
@@ -192,6 +203,14 @@ func TestNodes(t *testing.T) {
 	ap.manager.azClient.virtualMachinesClient = mockVMClient
 	mockVMClient.EXPECT().List(gomock.Any(), ap.resourceGroup).Return(expectedVMs, nil)
 
+	ap.manager.config.EnableVMsAgentPool = true
+	mockAgentpoolclient := NewMockAgentPoolsClient(ctrl)
+	ap.manager.azClient.agentPoolClient = mockAgentpoolclient
+	agentpool := getTestAgentPool(agentpoolName, false)
+	fakeAPListPager := getFakeAgentpoolListPager(&agentpool)
+	mockAgentpoolclient.EXPECT().NewListPager(gomock.Any(), gomock.Any(), nil).
+		Return(fakeAPListPager)
+
 	ac, err := newAzureCache(ap.manager.azClient, refreshInterval, *ap.manager.config)
 	assert.NoError(t, err)
 	ap.manager.azureCache = ac
@@ -225,6 +244,14 @@ func TestGetCurSizeForVMsPool(t *testing.T) {
 	mockVMClient := mockvmclient.NewMockInterface(ctrl)
 	ap.manager.azClient.virtualMachinesClient = mockVMClient
 	mockVMClient.EXPECT().List(gomock.Any(), ap.resourceGroup).Return(expectedVMs, nil)
+
+	ap.manager.config.EnableVMsAgentPool = true
+	mockAgentpoolclient := NewMockAgentPoolsClient(ctrl)
+	ap.manager.azClient.agentPoolClient = mockAgentpoolclient
+	agentpool := getTestAgentPool(agentpoolName, false)
+	fakeAPListPager := getFakeAgentpoolListPager(&agentpool)
+	mockAgentpoolclient.EXPECT().NewListPager(gomock.Any(), gomock.Any(), nil).
+		Return(fakeAPListPager)
 
 	ac, err := newAzureCache(ap.manager.azClient, refreshInterval, *ap.manager.config)
 	assert.NoError(t, err)
@@ -384,4 +411,22 @@ func (f *fakehandler[T]) Poll(ctx context.Context) (*http.Response, error) {
 
 func (f *fakehandler[T]) Result(ctx context.Context, out *T) error {
 	return nil
+}
+
+func getFakeAgentpoolListPager(agentpool ...*armcontainerservice.AgentPool) *runtime.Pager[armcontainerservice.AgentPoolsClientListResponse] {
+	fakeFetcher := func(ctx context.Context, response *armcontainerservice.AgentPoolsClientListResponse) (armcontainerservice.AgentPoolsClientListResponse, error) {
+		return armcontainerservice.AgentPoolsClientListResponse{
+			AgentPoolListResult: armcontainerservice.AgentPoolListResult{
+				Value: agentpool,
+			},
+		}, nil
+	}
+
+	return runtime.NewPager(runtime.PagingHandler[armcontainerservice.AgentPoolsClientListResponse]{
+		More: func(response armcontainerservice.AgentPoolsClientListResponse) bool {
+			return false
+		},
+		Fetcher: fakeFetcher,
+	})
+
 }

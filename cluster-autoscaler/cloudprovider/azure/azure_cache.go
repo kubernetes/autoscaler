@@ -18,12 +18,14 @@ package azure
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"regexp"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v5"
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/Azure/skewer"
@@ -66,7 +68,12 @@ type azureCache struct {
 	// Cache content.
 
 	// resourceGroup specifies the name of the resource group that this cache tracks
-	resourceGroup string
+	resourceGroup        string
+	clusterResourceGroup string
+	clusterName          string
+
+	// enableVMsAgentPool specifies whether VMs agent pool type is supported.
+	enableVMsAgentPool bool
 
 	// vmType can be one of vmTypeVMSS (default), vmTypeStandard
 	vmType string
@@ -104,6 +111,9 @@ func newAzureCache(client *azClient, cacheTTL time.Duration, config Config) (*az
 		azClient:             client,
 		refreshInterval:      cacheTTL,
 		resourceGroup:        config.ResourceGroup,
+		clusterResourceGroup: config.ClusterResourceGroup,
+		clusterName:          config.ClusterName,
+		enableVMsAgentPool:   config.EnableVMsAgentPool,
 		vmType:               config.VMType,
 		vmsPoolSet:           make(map[string]struct{}),
 		scaleSets:            make(map[string]compute.VirtualMachineScaleSet),
@@ -226,13 +236,20 @@ func (m *azureCache) fetchAzureResources() error {
 		return err
 	}
 	m.scaleSets = vmssResult
-	vmResult, vmsPoolSet, err := m.fetchVirtualMachines()
+	// we fetch both sets of resources since CAS may operate on mixed nodepools
+	vmResult, err := m.fetchVirtualMachines()
 	if err != nil {
 		return err
 	}
-	// we fetch both sets of resources since CAS may operate on mixed nodepools
 	m.virtualMachines = vmResult
-	m.vmsPoolSet = vmsPoolSet
+	if m.enableVMsAgentPool {
+		klog.Infof("fetchVMsPools...")
+		vmsPoolSet, err := m.fetchVMsPools()
+		if err != nil {
+			return err
+		}
+		m.vmsPoolSet = vmsPoolSet
+	}
 
 	return nil
 }
@@ -245,19 +262,17 @@ const (
 )
 
 // fetchVirtualMachines returns the updated list of virtual machines in the config resource group using the Azure API.
-func (m *azureCache) fetchVirtualMachines() (map[string][]compute.VirtualMachine, map[string]struct{}, error) {
+func (m *azureCache) fetchVirtualMachines() (map[string][]compute.VirtualMachine, error) {
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
 
 	result, err := m.azClient.virtualMachinesClient.List(ctx, m.resourceGroup)
 	if err != nil {
 		klog.Errorf("VirtualMachinesClient.List in resource group %q failed: %v", m.resourceGroup, err)
-		return nil, nil, err.Error()
+		return nil, err.Error()
 	}
 
 	instances := make(map[string][]compute.VirtualMachine)
-	// track the nodepools that're vms pools
-	vmsPoolSet := make(map[string]struct{})
 	for _, instance := range result {
 		if instance.Tags == nil {
 			continue
@@ -274,20 +289,8 @@ func (m *azureCache) fetchVirtualMachines() (map[string][]compute.VirtualMachine
 		}
 
 		instances[to.String(vmPoolName)] = append(instances[to.String(vmPoolName)], instance)
-
-		// if the nodepool is already in the map, skip it
-		if _, ok := vmsPoolSet[to.String(vmPoolName)]; ok {
-			continue
-		}
-
-		// nodes from vms pool will have tag "aks-managed-agentpool-type" set to "VirtualMachines"
-		if agentpoolType := tags[agentpoolTypeTag]; agentpoolType != nil {
-			if strings.EqualFold(to.String(agentpoolType), vmsPoolType) {
-				vmsPoolSet[to.String(vmPoolName)] = struct{}{}
-			}
-		}
 	}
-	return instances, vmsPoolSet, nil
+	return instances, nil
 }
 
 // fetchScaleSets returns the updated list of scale sets in the config resource group using the Azure API.
@@ -306,6 +309,39 @@ func (m *azureCache) fetchScaleSets() (map[string]compute.VirtualMachineScaleSet
 		sets[*vmss.Name] = vmss
 	}
 	return sets, nil
+}
+
+// fetchVMsPools returns the a set of VMs pools in the cluster
+func (m *azureCache) fetchVMsPools() (map[string]struct{}, error) {
+	ctx, cancel := getContextWithTimeout(vmsListRequestContextTimeout)
+	defer cancel()
+
+	if m.azClient.agentPoolClient == nil {
+		return nil, fmt.Errorf("agentPoolClient is nil")
+	}
+
+	vmsPoolSet := make(map[string]struct{})
+
+	pager := m.azClient.agentPoolClient.NewListPager(m.clusterResourceGroup, m.clusterName, nil)
+	var aps []*armcontainerservice.AgentPool
+	for pager.More() {
+		resp, err := pager.NextPage(ctx)
+		if err != nil {
+			klog.Errorf("agentPoolClient.pager.NextPage in cluster %s resource group %s failed: %v",
+				m.clusterName, m.clusterResourceGroup, err)
+			return nil, err
+		}
+		aps = append(aps, resp.Value...)
+	}
+
+	for _, ap := range aps {
+		if ap.Name != nil && ap.Properties != nil && ap.Properties.Type != nil &&
+			*ap.Properties.Type == armcontainerservice.AgentPoolTypeVirtualMachines {
+			vmsPoolSet[*ap.Name] = struct{}{}
+		}
+	}
+
+	return vmsPoolSet, nil
 }
 
 // Register registers a node group if it hasn't been registered.

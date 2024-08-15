@@ -74,8 +74,10 @@ func NewVMsPool(spec *dynamic.NodeGroupSpec, am *AzureManager) (*VMsPool, error)
 }
 
 const (
-	getRequestContextTimeout    = 1 * time.Minute
-	updateRequestContextTimeout = 5 * time.Minute
+	vmsGetRequestContextTimeout    = 1 * time.Minute
+	vmsListRequestContextTimeout   = 3 * time.Minute
+	vmsPutRequestContextTimeout    = 5 * time.Minute
+	vmsDeleteRequestContextTimeout = 10 * time.Minute
 )
 
 // MinSize returns the minimum size the cluster is allowed to scaled down
@@ -125,7 +127,7 @@ func (agentPool *VMsPool) TargetSize() (int, error) {
 }
 
 func (agentPool *VMsPool) getAgentpool() (armcontainerservice.AgentPool, error) {
-	ctx, cancel := getContextWithTimeout(getRequestContextTimeout)
+	ctx, cancel := getContextWithTimeout(vmsGetRequestContextTimeout)
 	defer cancel()
 	resp, err := agentPool.manager.azClient.agentPoolClient.Get(
 		ctx,
@@ -249,7 +251,7 @@ func (agentPool *VMsPool) scaleUpToCount(count int64) error {
 		return err
 	}
 
-	updateCtx, cancel := getContextWithTimeout(updateRequestContextTimeout)
+	updateCtx, cancel := getContextWithTimeout(vmsPutRequestContextTimeout)
 	defer cancel()
 
 	if _, err = poller.PollUntilDone(updateCtx, nil); err == nil {
@@ -305,7 +307,7 @@ func (agentPool *VMsPool) scaleDownNodes(providerIDs []string) error {
 
 	klog.V(3).Infof("Deleting nodes from agent pool %s: %v", agentPool.Name, providerIDs)
 
-	deleteCtx, deleteCancel := getContextWithCancel()
+	deleteCtx, deleteCancel := getContextWithTimeout(vmsDeleteRequestContextTimeout)
 	defer deleteCancel()
 
 	machineNames := make([]*string, len(providerIDs))
@@ -338,7 +340,7 @@ func (agentPool *VMsPool) scaleDownNodes(providerIDs []string) error {
 
 	defer agentPool.manager.invalidateCache()
 
-	updateCtx, cancel := getContextWithTimeout(updateRequestContextTimeout)
+	updateCtx, cancel := getContextWithTimeout(vmsPutRequestContextTimeout)
 	defer cancel()
 	if _, err = poller.PollUntilDone(updateCtx, nil); err == nil {
 		return nil
@@ -421,12 +423,15 @@ func (agentPool *VMsPool) getCurSize() (int64, error) {
 }
 
 func (agentPool *VMsPool) getVMsFromCache() ([]compute.VirtualMachine, error) {
-	// vmsPoolMap is a map of agent pool name to the list of virtual machines
-	vmsPoolMap := agentPool.manager.azureCache.getVirtualMachines()
-	if _, ok := vmsPoolMap[agentPool.Name]; !ok {
+	// vmsPoolSet is a set of vms agent pool names
+	vmsPoolSet := agentPool.manager.azureCache.getVMsPoolSet()
+	if _, ok := vmsPoolSet[agentPool.Name]; !ok {
 		return []compute.VirtualMachine{}, fmt.Errorf("vms pool %s not found in the cache", agentPool.Name)
 	}
 
+	// vmsPoolMap is a map of agent pool name to the list of virtual machines
+	vmsPoolMap := agentPool.manager.azureCache.getVirtualMachines()
+	// it may return empty list if the agentpool has minCount set to 0
 	return vmsPoolMap[agentPool.Name], nil
 }
 
