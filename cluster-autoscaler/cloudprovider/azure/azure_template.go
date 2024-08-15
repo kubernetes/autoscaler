@@ -41,7 +41,31 @@ const (
 	AKSLabelKeyPrefixValue = AKSLabelPrefixValue + "/"
 )
 
-func buildNodeFromTemplate(nodeGroupName string, template compute.VirtualMachineScaleSet, manager *AzureManager, enableDynamicInstanceList bool) (*apiv1.Node, error) {
+type NodeTemplate struct {
+	Sku        *compute.Sku
+	Tags       map[string]*string
+	Location   *string
+	Zones      *[]string
+	InstanceOS string
+}
+
+func buildNodeTemplateFromVMSS(vmss compute.VirtualMachineScaleSet) NodeTemplate {
+	instanceOS := cloudprovider.DefaultOS
+	if vmss.VirtualMachineProfile != nil &&
+		vmss.VirtualMachineProfile.OsProfile != nil &&
+		vmss.VirtualMachineProfile.OsProfile.WindowsConfiguration != nil {
+		instanceOS = "windows"
+	}
+	return NodeTemplate{
+		Sku:        vmss.Sku,
+		Tags:       vmss.Tags,
+		Location:   vmss.Location,
+		Zones:      vmss.Zones,
+		InstanceOS: instanceOS,
+	}
+}
+
+func buildNodeFromTemplate(nodeGroupName string, template NodeTemplate, manager *AzureManager, enableDynamicInstanceList bool) (*apiv1.Node, error) {
 	node := apiv1.Node{}
 	nodeName := fmt.Sprintf("%s-asg-%d", nodeGroupName, rand.Int63())
 
@@ -128,20 +152,11 @@ func buildNodeFromTemplate(nodeGroupName string, template compute.VirtualMachine
 	return &node, nil
 }
 
-func buildInstanceOS(template compute.VirtualMachineScaleSet) string {
-	instanceOS := cloudprovider.DefaultOS
-	if template.VirtualMachineProfile != nil && template.VirtualMachineProfile.OsProfile != nil && template.VirtualMachineProfile.OsProfile.WindowsConfiguration != nil {
-		instanceOS = "windows"
-	}
-
-	return instanceOS
-}
-
-func buildGenericLabels(template compute.VirtualMachineScaleSet, nodeName string) map[string]string {
+func buildGenericLabels(template NodeTemplate, nodeName string) map[string]string {
 	result := make(map[string]string)
 
 	result[apiv1.LabelArchStable] = cloudprovider.DefaultArch
-	result[apiv1.LabelOSStable] = buildInstanceOS(template)
+	result[apiv1.LabelOSStable] = template.InstanceOS
 
 	result[apiv1.LabelInstanceTypeStable] = *template.Sku.Name
 	result[apiv1.LabelTopologyRegion] = strings.ToLower(*template.Location)

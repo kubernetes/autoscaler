@@ -243,7 +243,6 @@ func (m *azureCache) fetchAzureResources() error {
 	}
 	m.virtualMachines = vmResult
 	if m.enableVMsAgentPool {
-		klog.Infof("fetchVMsPools...")
 		vmsPoolSet, err := m.fetchVMsPools()
 		if err != nil {
 			return err
