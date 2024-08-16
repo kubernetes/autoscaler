@@ -57,6 +57,7 @@ The current default version is Vertical Pod Autoscaler 1.2.0
 
 | VPA version     | Kubernetes version |
 |-----------------|--------------------|
+| 1.2.1           | 1.27+              |
 | 1.2.0           | 1.27+              |
 | 1.1.2           | 1.25+              |
 | 1.1.1           | 1.25+              |
