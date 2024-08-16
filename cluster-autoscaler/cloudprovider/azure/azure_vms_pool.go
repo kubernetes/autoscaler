@@ -158,7 +158,6 @@ func (agentPool *VMsPool) getVMsPoolSize() (int64, error) {
 		klog.Errorf("vms pool %s size is -1, it is still being initialized", agentPool.Name)
 		return size, fmt.Errorf("getVMsPoolSize: size is -1 for vms pool %s", agentPool.Name)
 	}
-	// TODO(wenxuan): exlude the nodes in deallocated/deallocating states if agentpool is using deallocate scale down policy
 	return size, nil
 }
 

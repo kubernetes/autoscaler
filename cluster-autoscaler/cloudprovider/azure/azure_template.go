@@ -42,6 +42,7 @@ const (
 	AKSLabelKeyPrefixValue = AKSLabelPrefixValue + "/"
 )
 
+// NodeTemplate represents a template for a Azure nodepool
 type NodeTemplate struct {
 	SkuName    string
 	InstanceOS string
