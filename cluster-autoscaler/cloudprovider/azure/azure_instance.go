@@ -31,18 +31,18 @@ var GetVMSSTypeStatically = func(template NodeTemplate) (*InstanceType, error) {
 	var instanceType *InstanceType
 
 	for k := range InstanceTypes {
-		if strings.EqualFold(k, *template.Sku.Name) {
+		if strings.EqualFold(k, template.SkuName) {
 			instanceType = InstanceTypes[k]
 			break
 		}
 	}
 
 	promoRe := regexp.MustCompile(`(?i)_promo`)
-	if promoRe.MatchString(*template.Sku.Name) {
+	if promoRe.MatchString(template.SkuName) {
 		if instanceType == nil {
 			// We didn't find an exact match but this is a promo type, check for matching standard
-			klog.V(4).Infof("No exact match found for %s, checking standard types", *template.Sku.Name)
-			skuName := promoRe.ReplaceAllString(*template.Sku.Name, "")
+			klog.V(4).Infof("No exact match found for %s, checking standard types", template.SkuName)
+			skuName := promoRe.ReplaceAllString(template.SkuName, "")
 			for k := range InstanceTypes {
 				if strings.EqualFold(k, skuName) {
 					instanceType = InstanceTypes[k]
@@ -52,7 +52,7 @@ var GetVMSSTypeStatically = func(template NodeTemplate) (*InstanceType, error) {
 		}
 	}
 	if instanceType == nil {
-		return instanceType, fmt.Errorf("instance type %q not supported", *template.Sku.Name)
+		return instanceType, fmt.Errorf("instance type %q not supported", template.SkuName)
 	}
 	return instanceType, nil
 }
@@ -63,35 +63,35 @@ var GetVMSSTypeDynamically = func(template NodeTemplate, azCache *azureCache) (I
 	ctx := context.Background()
 	var instanceType InstanceType
 
-	sku, err := azCache.GetSKU(ctx, *template.Sku.Name, *template.Location)
+	sku, err := azCache.GetSKU(ctx, template.SkuName, template.Location)
 	if err != nil {
 		// We didn't find an exact match but this is a promo type, check for matching standard
 		promoRe := regexp.MustCompile(`(?i)_promo`)
-		skuName := promoRe.ReplaceAllString(*template.Sku.Name, "")
-		if skuName != *template.Sku.Name {
-			klog.V(1).Infof("No exact match found for %q, checking standard type %q. Error %v", *template.Sku.Name, skuName, err)
-			sku, err = azCache.GetSKU(ctx, skuName, *template.Location)
+		skuName := promoRe.ReplaceAllString(template.SkuName, "")
+		if skuName != template.SkuName {
+			klog.V(1).Infof("No exact match found for %q, checking standard type %q. Error %v", template.SkuName, skuName, err)
+			sku, err = azCache.GetSKU(ctx, skuName, template.Location)
 		}
 		if err != nil {
-			return instanceType, fmt.Errorf("instance type %q not supported. Error %v", *template.Sku.Name, err)
+			return instanceType, fmt.Errorf("instance type %q not supported. Error %v", template.SkuName, err)
 		}
 	}
 
 	instanceType.VCPU, err = sku.VCPU()
 	if err != nil {
-		klog.V(1).Infof("Failed to parse vcpu from sku %q %v", *template.Sku.Name, err)
+		klog.V(1).Infof("Failed to parse vcpu from sku %q %v", template.SkuName, err)
 		return instanceType, err
 	}
 	gpu, err := getGpuFromSku(sku)
 	if err != nil {
-		klog.V(1).Infof("Failed to parse gpu from sku %q %v", *template.Sku.Name, err)
+		klog.V(1).Infof("Failed to parse gpu from sku %q %v", template.SkuName, err)
 		return instanceType, err
 	}
 	instanceType.GPU = gpu
 
 	memoryGb, err := sku.Memory()
 	if err != nil {
-		klog.V(1).Infof("Failed to parse memoryMb from sku %q %v", *template.Sku.Name, err)
+		klog.V(1).Infof("Failed to parse memoryMb from sku %q %v", template.SkuName, err)
 		return instanceType, err
 	}
 	instanceType.MemoryMb = int64(memoryGb) * 1024

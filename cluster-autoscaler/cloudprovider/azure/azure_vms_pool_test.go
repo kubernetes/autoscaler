@@ -49,6 +49,7 @@ func newTestVMsPool(manager *AzureManager, name string) *VMsPool {
 		clusterName:          manager.config.ClusterName,
 		resourceGroup:        manager.config.ResourceGroup,
 		clusterResourceGroup: manager.config.ClusterResourceGroup,
+		sizeRefreshPeriod:    30 * time.Second,
 	}
 }
 
@@ -102,6 +103,12 @@ func getTestAgentPool(agentpoolName string, isSystemPool bool) armcontainerservi
 							Sizes: []*string{to.StringPtr("Standard_D2_v2")},
 						},
 					},
+				},
+			},
+			VirtualMachineNodesStatus: []*armcontainerservice.VirtualMachineNodes{
+				{
+					Count: to.Int32Ptr(3),
+					Size:  to.StringPtr("Standard_D2_v2"),
 				},
 			},
 		},
@@ -278,25 +285,54 @@ func TestGetVMsPoolSize(t *testing.T) {
 	ap.curSize = -1 // not initialized
 	ap.lastSizeRefresh = time.Now().Add(-1 * time.Second)
 
-	_, err := ap.getVMsPoolSize()
+	curSize, err := ap.getVMsPoolSize()
+	assert.Equal(t, int64(-1), curSize)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "getVMsPoolSize: size is -1 for vms pool")
+	assert.Contains(t, err.Error(), "VMs agent pool pool1 not found in cache")
 }
 
 func TestVMsPoolIncreaseSize(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	mockAgentpoolclient := NewMockAgentPoolsClient(ctrl)
 	manager := newTestAzureManager(t)
-	manager.azClient.agentPoolClient = mockAgentpoolclient
 	agentpoolName := "pool1"
 
 	ap := newTestVMsPool(manager, agentpoolName)
 	ap.curSize = 3
 	ap.lastSizeRefresh = time.Now().Add(-1 * time.Second)
+	expectedVMs := []compute.VirtualMachine{
+		{
+			Name: to.StringPtr("aks-pool1-13222729-vms0"),
+			Tags: map[string]*string{"aks-managed-poolName": &agentpoolName},
+		},
+		{
+			Name: to.StringPtr("aks-pool1-13222729-vms1"),
+			Tags: map[string]*string{"aks-managed-poolName": &agentpoolName},
+		},
+		{
+			Name: to.StringPtr("aks-pool1-13222729-vms2"),
+			Tags: map[string]*string{"aks-managed-poolName": &agentpoolName},
+		},
+	}
+
+	mockVMClient := mockvmclient.NewMockInterface(ctrl)
+	ap.manager.azClient.virtualMachinesClient = mockVMClient
+	mockVMClient.EXPECT().List(gomock.Any(), ap.resourceGroup).Return(expectedVMs, nil)
+
+	ap.manager.config.EnableVMsAgentPool = true
+	mockAgentpoolclient := NewMockAgentPoolsClient(ctrl)
+	ap.manager.azClient.agentPoolClient = mockAgentpoolclient
+	agentpool := getTestAgentPool(agentpoolName, false)
+	fakeAPListPager := getFakeAgentpoolListPager(&agentpool)
+	mockAgentpoolclient.EXPECT().NewListPager(gomock.Any(), gomock.Any(), nil).
+		Return(fakeAPListPager)
+
+	ac, err := newAzureCache(ap.manager.azClient, refreshInterval, *ap.manager.config)
+	assert.NoError(t, err)
+	ap.manager.azureCache = ac
 
 	// failure case 1
-	err := ap.IncreaseSize(-1)
+	err = ap.IncreaseSize(-1)
 	expectedErr := fmt.Errorf("size increase must be positive, current delta: -1")
 	assert.Equal(t, expectedErr, err)
 
@@ -318,16 +354,6 @@ func TestVMsPoolIncreaseSize(t *testing.T) {
 		})
 
 	assert.NoError(t, err)
-
-	agentpool := getTestAgentPool(agentpoolName, true)
-	getResp := armcontainerservice.AgentPoolsClientGetResponse{
-		AgentPool: agentpool,
-	}
-
-	mockAgentpoolclient.EXPECT().Get(gomock.Any(),
-		manager.config.ClusterResourceGroup,
-		manager.config.ClusterName,
-		agentpoolName, nil).Return(getResp, nil)
 
 	mockAgentpoolclient.EXPECT().BeginCreateOrUpdate(
 		gomock.Any(), manager.config.ClusterResourceGroup,

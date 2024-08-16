@@ -41,13 +41,15 @@ type VMsPool struct {
 	resourceGroup        string // MC_ resource group for nodes
 	clusterResourceGroup string // resource group for the cluster itself
 	clusterName          string
+	location             string
 
 	minSize int
 	maxSize int
 
-	curSize         int64
-	sizeMutex       sync.Mutex
-	lastSizeRefresh time.Time
+	curSize           int64
+	sizeMutex         sync.Mutex
+	lastSizeRefresh   time.Time
+	sizeRefreshPeriod time.Duration
 }
 
 // NewVMsPool creates a new VMsPool
@@ -64,6 +66,8 @@ func NewVMsPool(spec *dynamic.NodeGroupSpec, am *AzureManager) (*VMsPool, error)
 		resourceGroup:        am.config.ResourceGroup,
 		clusterResourceGroup: am.config.ClusterResourceGroup,
 		clusterName:          am.config.ClusterName,
+		location:             am.config.Location,
+		sizeRefreshPeriod:    am.azureCache.refreshInterval,
 
 		curSize: -1,
 		minSize: spec.MinSize,
@@ -78,6 +82,8 @@ const (
 	vmsListRequestContextTimeout   = 3 * time.Minute
 	vmsPutRequestContextTimeout    = 5 * time.Minute
 	vmsDeleteRequestContextTimeout = 10 * time.Minute
+
+	spotPoolCacheTTL = 15 * time.Second
 )
 
 // MinSize returns the minimum size the cluster is allowed to scaled down
@@ -126,7 +132,7 @@ func (agentPool *VMsPool) TargetSize() (int, error) {
 	return int(size), err
 }
 
-func (agentPool *VMsPool) getAgentpool() (armcontainerservice.AgentPool, error) {
+func (agentPool *VMsPool) getAgentpoolFromAzure() (armcontainerservice.AgentPool, error) {
 	ctx, cancel := getContextWithTimeout(vmsGetRequestContextTimeout)
 	defer cancel()
 	resp, err := agentPool.manager.azClient.agentPoolClient.Get(
@@ -179,7 +185,7 @@ func (agentPool *VMsPool) IncreaseSize(delta int) error {
 }
 
 func (agentPool *VMsPool) buildRequestBodyForScaleUp(count int64) (armcontainerservice.AgentPool, error) {
-	versionedAP, err := agentPool.getAgentpool()
+	versionedAP, err := agentPool.getAgentpoolFromCache()
 	if err != nil {
 		klog.Errorf("Failed to get vms pool %s, error: %s", agentPool.Name, err)
 		return armcontainerservice.AgentPool{}, err
@@ -393,27 +399,64 @@ func (agentPool *VMsPool) Debug() string {
 	return fmt.Sprintf("%s (%d:%d)", agentPool.Id(), agentPool.MinSize(), agentPool.MaxSize())
 }
 
+func isSpotVMsPool(ap armcontainerservice.AgentPool) bool {
+	if ap.Properties != nil && ap.Properties.ScaleSetPriority != nil {
+		return strings.EqualFold(string(*ap.Properties.ScaleSetPriority), "Spot")
+	}
+	return false
+}
+
+func getNodeCountFromAgentPool(ap armcontainerservice.AgentPool) int32 {
+	size := int32(0)
+	if ap.Properties != nil {
+		// the VirtualMachineNodesStatus returned by AKS-RP is constructed from the vm list
+		// returned from CRP. It excludes the nodes in deallocated/deallocating states, thus
+		// can be used as the source of truth for VMs agent pools
+		for _, status := range ap.Properties.VirtualMachineNodesStatus {
+			if status.Count != nil {
+				size += *status.Count
+			}
+		}
+	}
+	return size
+}
+
 // getCurSize returns the current vm count in the vms agent pool
-// It use azure cache as the source of truth.
+// It uses azure cache as the source of truth for non-spot pools, and resorts to AKS-RP for spot pools
 func (agentPool *VMsPool) getCurSize() (int64, error) {
 	agentPool.sizeMutex.Lock()
 	defer agentPool.sizeMutex.Unlock()
 
-	if agentPool.lastSizeRefresh.Add(15 * time.Second).After(time.Now()) {
+	vmsPool, err := agentPool.getAgentpoolFromCache()
+	if err != nil {
+		klog.Errorf("Failed to get vms pool %s from cache with error: %v", agentPool.Name, err)
+		return -1, err
+	}
+
+	// spot pool has a shorter cache TTL
+	cacheTTL := agentPool.sizeRefreshPeriod
+	if isSpotVMsPool(vmsPool) {
+		cacheTTL = spotPoolCacheTTL
+	}
+
+	if agentPool.lastSizeRefresh.Add(cacheTTL).After(time.Now()) {
 		klog.V(3).Infof("VMs Agentpool: %s, returning in-memory size: %d", agentPool.Name, agentPool.curSize)
 		return agentPool.curSize, nil
 	}
 
-	vms, err := agentPool.getVMsFromCache()
-	if err != nil {
-		klog.Errorf("Failed to get vms pool %s from cache with error: %v", agentPool.Name, err)
-		return 0, err
+	if isSpotVMsPool(vmsPool) {
+		vmsPool, err = agentPool.getAgentpoolFromAzure()
+		if err != nil {
+			klog.Errorf("Failed to get vms pool %s from azure with error: %v", agentPool.Name, err)
+			return -1, err
+		}
 	}
 
-	realSize := int64(len(vms))
+	realSize := int64(getNodeCountFromAgentPool(vmsPool))
+
 	if agentPool.curSize != realSize {
 		// invalidate the instance cache if the size has changed.
-		klog.V(5).Infof("VMs Agentpool getCurSize: %s curSize(%d) != real size (%d), invalidating azure cache", agentPool.Name, agentPool.curSize, realSize)
+		klog.V(5).Infof("VMs Agentpool %s getCurSize: curSize(%d) != real size (%d), invalidating azure cache", agentPool.Name, agentPool.curSize, realSize)
 		agentPool.manager.invalidateCache()
 	}
 
@@ -423,15 +466,21 @@ func (agentPool *VMsPool) getCurSize() (int64, error) {
 }
 
 func (agentPool *VMsPool) getVMsFromCache() ([]compute.VirtualMachine, error) {
-	// vmsPoolMap is a map of agent pool name to the agent pool
-	vmsPoolMap := agentPool.manager.azureCache.getVMsPoolMap()
-	if _, ok := vmsPoolMap[agentPool.Name]; !ok {
-		return []compute.VirtualMachine{}, fmt.Errorf("vms pool %s not found in the cache", agentPool.Name)
+	curSize, err := agentPool.getCurSize()
+	if err != nil {
+		klog.Errorf("Failed to get current size for VMs pool %q: %v", agentPool.Name, err)
+		return nil, err
 	}
 
-	// vmsMap is a map of agent pool name to the list of virtual machines
+	// vmsMap is a map of agent pool name to the list of virtual machines belongs to the agent pool
+	// this method may return an empty list if the agentpool has no nodes inside, i.e. minCount is set to 0
 	vmsMap := agentPool.manager.azureCache.getVirtualMachines()
-	// it may return empty list if the agentpool has minCount set to 0
+	if int64(len(vmsMap[agentPool.Name])) != curSize {
+		klog.V(5).Infof("VMs Agentpool %s vm list size (%d) != curSize (%d), invalidating azure cache",
+			agentPool.Name, len(vmsMap[agentPool.Name]), curSize)
+		agentPool.manager.invalidateCache()
+	}
+
 	return vmsMap[agentPool.Name], nil
 }
 
@@ -459,8 +508,29 @@ func (agentPool *VMsPool) Nodes() ([]cloudprovider.Instance, error) {
 
 // TemplateNodeInfo is not implemented.
 func (agentPool *VMsPool) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
-	// TODO(wenxuan): implement this method when vms pool can fully support GPU nodepool
-	return nil, cloudprovider.ErrNotImplemented
+	vmsPool, err := agentPool.getAgentpoolFromCache()
+	if err != nil {
+		return nil, err
+	}
+
+	template := buildNodeTemplateFromVMsPool(vmsPool, agentPool.location)
+	node, err := buildNodeFromTemplate(agentPool.Name, template, agentPool.manager, false)
+
+	if err != nil {
+		return nil, err
+	}
+
+	nodeInfo := schedulerframework.NewNodeInfo(cloudprovider.BuildKubeProxy(agentPool.Name))
+	nodeInfo.SetNode(node)
+	return nodeInfo, nil
+}
+
+func (agentPool *VMsPool) getAgentpoolFromCache() (armcontainerservice.AgentPool, error) {
+	vmsPoolMap := agentPool.manager.azureCache.getVMsPoolMap()
+	if _, exists := vmsPoolMap[agentPool.Name]; !exists {
+		return armcontainerservice.AgentPool{}, fmt.Errorf("VMs agent pool %s not found in cache", agentPool.Name)
+	}
+	return vmsPoolMap[agentPool.Name], nil
 }
 
 // AtomicIncreaseSize is not implemented.
