@@ -748,7 +748,9 @@ func (a *StaticAutoscaler) removeOldUnregisteredNodes(allUnregisteredNodes []clu
 			continue
 		}
 		if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
-			klog.Warningf("No node group for node %s, skipping", unregisteredNode.Node.Name)
+			if klog.V(10).Enabled() {
+				klog.Warningf("No node group for node %s, skipping", unregisteredNode.Node.Name)
+			}
 			continue
 		}
 
