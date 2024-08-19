@@ -360,3 +360,174 @@ func TestUpdateResourceRequests(t *testing.T) {
 
 	}
 }
+
+func TestGetContainersResources(t *testing.T) {
+	testCases := []struct {
+		name             string
+		container        apiv1.Container
+		vpa              *vpa_types.VerticalPodAutoscaler
+		expectedCPU      *resource.Quantity
+		expectedMem      *resource.Quantity
+		expectedCPULimit *resource.Quantity
+		expectedMemLimit *resource.Quantity
+		addAll           bool
+	}{
+		{
+			name:             "CPU and Memory recommendation, request and limits set",
+			container:        test.Container().WithName("container").WithCPURequest(resource.MustParse("1")).WithMemRequest(resource.MustParse("1M")).WithCPULimit(resource.MustParse("10")).WithMemLimit(resource.MustParse("10M")).Get(),
+			vpa:              test.VerticalPodAutoscaler().WithContainer("container").WithTarget("2", "2M").Get(),
+			expectedCPU:      mustParseResourcePointer("2"),
+			expectedMem:      mustParseResourcePointer("2M"),
+			expectedCPULimit: mustParseResourcePointer("20"),
+			expectedMemLimit: mustParseResourcePointer("20M"),
+			addAll:           true,
+		},
+		{
+			name:        "CPU and Memory recommendation, only request set",
+			container:   test.Container().WithName("container").WithCPURequest(resource.MustParse("1")).WithMemRequest(resource.MustParse("1M")).Get(),
+			vpa:         test.VerticalPodAutoscaler().WithContainer("container").WithTarget("2", "2M").Get(),
+			expectedCPU: mustParseResourcePointer("2"),
+			expectedMem: mustParseResourcePointer("2M"),
+			addAll:      true,
+		},
+		{
+			name:             "CPU only recommendation, request and limits set",
+			container:        test.Container().WithName("container").WithCPURequest(resource.MustParse("1")).WithMemRequest(resource.MustParse("1M")).WithCPULimit(resource.MustParse("10")).WithMemLimit(resource.MustParse("10M")).Get(),
+			vpa:              test.VerticalPodAutoscaler().WithContainer("container").WithTargetResource(apiv1.ResourceCPU, "2").Get(),
+			expectedCPU:      mustParseResourcePointer("2"),
+			expectedMem:      mustParseResourcePointer("1M"),
+			expectedCPULimit: mustParseResourcePointer("20"),
+			expectedMemLimit: mustParseResourcePointer("10M"),
+			addAll:           true,
+		},
+		{
+			name:        "CPU only recommendation, only request set",
+			container:   test.Container().WithName("container").WithCPURequest(resource.MustParse("1")).WithMemRequest(resource.MustParse("1M")).Get(),
+			vpa:         test.VerticalPodAutoscaler().WithContainer("container").WithTargetResource(apiv1.ResourceCPU, "2").Get(),
+			expectedCPU: mustParseResourcePointer("2"),
+			expectedMem: mustParseResourcePointer("1M"),
+			addAll:      true,
+		},
+		{
+			name:        "CPU only recommendation, only CPU request set",
+			container:   test.Container().WithName("container").WithCPURequest(resource.MustParse("1")).Get(),
+			vpa:         test.VerticalPodAutoscaler().WithContainer("container").WithTargetResource(apiv1.ResourceCPU, "2").Get(),
+			expectedCPU: mustParseResourcePointer("2"),
+			addAll:      true,
+		},
+		{
+			name:             "CPU only recommendation, only CPU request and limit set",
+			container:        test.Container().WithName("container").WithCPURequest(resource.MustParse("1")).WithCPULimit(resource.MustParse("10")).Get(),
+			vpa:              test.VerticalPodAutoscaler().WithContainer("container").WithTargetResource(apiv1.ResourceCPU, "2").Get(),
+			expectedCPU:      mustParseResourcePointer("2"),
+			expectedCPULimit: mustParseResourcePointer("20"),
+			addAll:           true,
+		},
+		{
+			name:             "Memory only recommendation, request and limits set",
+			container:        test.Container().WithName("container").WithCPURequest(resource.MustParse("1")).WithMemRequest(resource.MustParse("1M")).WithCPULimit(resource.MustParse("10")).WithMemLimit(resource.MustParse("10M")).Get(),
+			vpa:              test.VerticalPodAutoscaler().WithContainer("container").WithTargetResource(apiv1.ResourceMemory, "2M").Get(),
+			expectedCPU:      mustParseResourcePointer("1"),
+			expectedMem:      mustParseResourcePointer("2M"),
+			expectedCPULimit: mustParseResourcePointer("10"),
+			expectedMemLimit: mustParseResourcePointer("20M"),
+			addAll:           true,
+		},
+		{
+			name:        "Memory only recommendation, only request set",
+			container:   test.Container().WithName("container").WithCPURequest(resource.MustParse("1")).WithMemRequest(resource.MustParse("1M")).Get(),
+			vpa:         test.VerticalPodAutoscaler().WithContainer("container").WithTargetResource(apiv1.ResourceMemory, "2M").Get(),
+			expectedCPU: mustParseResourcePointer("1"),
+			expectedMem: mustParseResourcePointer("2M"),
+			addAll:      true,
+		},
+		{
+			name:        "Memory only recommendation, only memory request set",
+			container:   test.Container().WithName("container").WithMemRequest(resource.MustParse("1M")).Get(),
+			vpa:         test.VerticalPodAutoscaler().WithContainer("container").WithTargetResource(apiv1.ResourceMemory, "2M").Get(),
+			expectedMem: mustParseResourcePointer("2M"),
+			addAll:      true,
+		},
+		{
+			name:             "Memory only recommendation, only memory request and limit set",
+			container:        test.Container().WithName("container").WithMemRequest(resource.MustParse("1M")).WithMemLimit(resource.MustParse("10M")).Get(),
+			vpa:              test.VerticalPodAutoscaler().WithContainer("container").WithTargetResource(apiv1.ResourceMemory, "2M").Get(),
+			expectedMem:      mustParseResourcePointer("2M"),
+			expectedMemLimit: mustParseResourcePointer("20M"),
+			addAll:           true,
+		},
+		{
+			name:             "CPU and Memory recommendation, request and limits set, addAll false",
+			container:        test.Container().WithName("container").WithCPURequest(resource.MustParse("1")).WithMemRequest(resource.MustParse("1M")).WithCPULimit(resource.MustParse("10")).WithMemLimit(resource.MustParse("10M")).Get(),
+			vpa:              test.VerticalPodAutoscaler().WithContainer("container").WithTarget("2", "2M").Get(),
+			expectedCPU:      mustParseResourcePointer("2"),
+			expectedMem:      mustParseResourcePointer("2M"),
+			expectedCPULimit: mustParseResourcePointer("20"),
+			expectedMemLimit: mustParseResourcePointer("20M"),
+			addAll:           false,
+		},
+		{
+			name:        "CPU and Memory recommendation, only request set, addAll false",
+			container:   test.Container().WithName("container").WithCPURequest(resource.MustParse("1")).WithMemRequest(resource.MustParse("1M")).Get(),
+			vpa:         test.VerticalPodAutoscaler().WithContainer("container").WithTarget("2", "2M").Get(),
+			expectedCPU: mustParseResourcePointer("2"),
+			expectedMem: mustParseResourcePointer("2M"),
+			addAll:      false,
+		},
+		{
+			name:             "CPU only recommendation, request and limits set, addAll false",
+			container:        test.Container().WithName("container").WithCPURequest(resource.MustParse("1")).WithMemRequest(resource.MustParse("1M")).WithCPULimit(resource.MustParse("10")).WithMemLimit(resource.MustParse("10M")).Get(),
+			vpa:              test.VerticalPodAutoscaler().WithContainer("container").WithTargetResource(apiv1.ResourceCPU, "2").Get(),
+			expectedCPU:      mustParseResourcePointer("2"),
+			expectedCPULimit: mustParseResourcePointer("20"),
+			addAll:           false,
+		},
+		{
+			name:             "Memory only recommendation, request and limits set, addAll false",
+			container:        test.Container().WithName("container").WithCPURequest(resource.MustParse("1")).WithMemRequest(resource.MustParse("1M")).WithCPULimit(resource.MustParse("10")).WithMemLimit(resource.MustParse("10M")).Get(),
+			vpa:              test.VerticalPodAutoscaler().WithContainer("container").WithTargetResource(apiv1.ResourceMemory, "2M").Get(),
+			expectedMem:      mustParseResourcePointer("2M"),
+			expectedMemLimit: mustParseResourcePointer("20M"),
+			addAll:           false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			pod := test.Pod().WithName("pod").AddContainer(tc.container).Get()
+			resources := GetContainersResources(pod, tc.vpa.Spec.ResourcePolicy, *tc.vpa.Status.Recommendation, nil, tc.addAll, vpa_api_util.ContainerToAnnotationsMap{})
+
+			cpu, cpuPresent := resources[0].Requests[apiv1.ResourceCPU]
+			if tc.expectedCPU == nil {
+				assert.False(t, cpuPresent, "expected no cpu, got %s", cpu.String())
+			} else {
+				assert.True(t, cpuPresent, "expected cpu, but it's missing")
+				assert.Equal(t, tc.expectedCPU.MilliValue(), cpu.MilliValue(), "cpu limit doesn't match")
+			}
+
+			mem, memPresent := resources[0].Requests[apiv1.ResourceMemory]
+			if tc.expectedMem == nil {
+				assert.False(t, memPresent, "expected no mem, got %s", mem.String())
+			} else {
+				assert.True(t, memPresent, "expected mem, but it's missing")
+				assert.Equal(t, tc.expectedMem.MilliValue(), mem.MilliValue(), "mem doesn't match")
+			}
+
+			cpuLimit, cpuLimitPresent := resources[0].Limits[apiv1.ResourceCPU]
+			if tc.expectedCPULimit == nil {
+				assert.False(t, cpuLimitPresent, "expected no cpu limit, got %s", cpuLimit.String())
+			} else {
+				assert.True(t, cpuLimitPresent, "expected cpu limit, but it's missing")
+				assert.Equal(t, tc.expectedCPULimit.MilliValue(), cpuLimit.MilliValue(), "cpu limit doesn't match")
+			}
+
+			memLimit, memLimitPresent := resources[0].Limits[apiv1.ResourceMemory]
+			if tc.expectedMemLimit == nil {
+				assert.False(t, memLimitPresent, "expected no mem limit, got %s", memLimit.String())
+			} else {
+				assert.True(t, memLimitPresent, "expected mem limit, but it's missing")
+				assert.Equal(t, tc.expectedMemLimit.MilliValue(), memLimit.MilliValue(), "mem limit doesn't match")
+			}
+		})
+	}
+}
