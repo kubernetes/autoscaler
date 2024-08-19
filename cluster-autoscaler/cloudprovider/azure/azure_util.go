@@ -636,3 +636,21 @@ func vmPowerStateFromStatuses(statuses []compute.InstanceViewStatus) string {
 	// PowerState is not set if the VM is still creating (or has failed creation)
 	return vmPowerStateUnknown
 }
+
+// strconv.ParseInt, but for int
+func parseInt32(s string, base int) (int, error) {
+	val, err := strconv.ParseInt(s, base, 32)
+	if err != nil {
+		return 0, err
+	}
+	return int(val), nil
+}
+
+// strconv.ParseFloat, but for float32
+func parseFloat32(s string) (float32, error) {
+	val, err := strconv.ParseFloat(s, 32)
+	if err != nil {
+		return 0, err
+	}
+	return float32(val), nil
+}

@@ -20,6 +20,7 @@ import (
 	"testing"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	providerazureconsts "sigs.k8s.io/cloud-provider-azure/pkg/consts"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -60,12 +61,12 @@ func TestFindForInstance(t *testing.T) {
 	inst := azureRef{Name: "/subscriptions/sub/resourceGroups/rg/providers/foo"}
 	ac.unownedInstances = make(map[azureRef]bool)
 	ac.unownedInstances[inst] = true
-	nodeGroup, err := ac.FindForInstance(&inst, vmTypeVMSS)
+	nodeGroup, err := ac.FindForInstance(&inst, providerazureconsts.VMTypeVMSS)
 	assert.Nil(t, nodeGroup)
 	assert.NoError(t, err)
 
 	ac.unownedInstances[inst] = false
-	nodeGroup, err = ac.FindForInstance(&inst, vmTypeStandard)
+	nodeGroup, err = ac.FindForInstance(&inst, providerazureconsts.VMTypeStandard)
 	assert.Nil(t, nodeGroup)
 	assert.NoError(t, err)
 	assert.True(t, ac.unownedInstances[inst])
