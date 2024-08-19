@@ -106,10 +106,10 @@ func (scaleSet *ScaleSet) updateInstanceCache() error {
 	}
 
 	if orchestrationMode == compute.Flexible {
-		if scaleSet.manager.config.EnableVmssFlex {
+		if scaleSet.manager.config.EnableVmssFlexNodes {
 			return scaleSet.buildScaleSetCacheForFlex()
 		}
-		return fmt.Errorf("vmss - %q with Flexible orchestration detected but 'enableVmssFlex' feature flag is turned off", scaleSet.Name)
+		return fmt.Errorf("vmss - %q with Flexible orchestration detected but 'enableVmssFlexNodes' feature flag is turned off", scaleSet.Name)
 	} else if orchestrationMode == compute.Uniform {
 		return scaleSet.buildScaleSetCacheForUniform()
 	}

@@ -32,14 +32,12 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	kretry "k8s.io/client-go/util/retry"
 	klog "k8s.io/klog/v2"
+	providerazureconsts "sigs.k8s.io/cloud-provider-azure/pkg/consts"
 	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
 )
 
 const (
 	azurePrefix = "azure://"
-
-	vmTypeVMSS     = "vmss"
-	vmTypeStandard = "standard"
 
 	scaleToZeroSupportedStandard = false
 	scaleToZeroSupportedVMSS     = true
@@ -103,8 +101,8 @@ func createAzureManagerInternal(configReader io.Reader, discoveryOpts cloudprovi
 	}
 
 	cacheTTL := refreshInterval
-	if cfg.VmssCacheTTL != 0 {
-		cacheTTL = time.Duration(cfg.VmssCacheTTL) * time.Second
+	if cfg.VmssCacheTTLInSeconds != 0 {
+		cacheTTL = time.Duration(cfg.VmssCacheTTLInSeconds) * time.Second
 	}
 	cache, err := newAzureCache(azClient, cacheTTL, *cfg)
 	if err != nil {
@@ -166,7 +164,7 @@ func (m *AzureManager) fetchExplicitNodeGroups(specs []string) error {
 
 func (m *AzureManager) buildNodeGroupFromSpec(spec string) (cloudprovider.NodeGroup, error) {
 	scaleToZeroSupported := scaleToZeroSupportedStandard
-	if strings.EqualFold(m.config.VMType, vmTypeVMSS) {
+	if strings.EqualFold(m.config.VMType, providerazureconsts.VMTypeVMSS) {
 		scaleToZeroSupported = scaleToZeroSupportedVMSS
 	}
 	s, err := dynamic.SpecFromString(spec, scaleToZeroSupported)
@@ -179,9 +177,9 @@ func (m *AzureManager) buildNodeGroupFromSpec(spec string) (cloudprovider.NodeGr
 	}
 
 	switch m.config.VMType {
-	case vmTypeStandard:
+	case providerazureconsts.VMTypeStandard:
 		return NewAgentPool(s, m)
-	case vmTypeVMSS:
+	case providerazureconsts.VMTypeVMSS:
 		return NewScaleSet(s, m, -1, false)
 	default:
 		return nil, fmt.Errorf("vmtype %s not supported", m.config.VMType)
@@ -310,7 +308,7 @@ func (m *AzureManager) getFilteredNodeGroups(filter []labelAutoDiscoveryConfig) 
 		return nil, nil
 	}
 
-	if m.config.VMType == vmTypeVMSS {
+	if m.config.VMType == providerazureconsts.VMTypeVMSS {
 		return m.getFilteredScaleSets(filter)
 	}
 

@@ -19,12 +19,12 @@ package azure
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"sync"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources"
 	"github.com/stretchr/testify/mock"
+	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
 )
 
 const (
@@ -32,8 +32,8 @@ const (
 	fakeVirtualMachineVMID         = "/subscriptions/test-subscription-id/resourceGroups/test-asg/providers/Microsoft.Compute/virtualMachines/%d"
 )
 
-// DeploymentsClientMock mocks for DeploymentsClient.
-type DeploymentsClientMock struct {
+// DeploymentClientMock mocks for DeploymentsClient.
+type DeploymentClientMock struct {
 	mock.Mock
 
 	mutex     sync.Mutex
@@ -41,26 +41,26 @@ type DeploymentsClientMock struct {
 }
 
 // Get gets the DeploymentExtended by deploymentName.
-func (m *DeploymentsClientMock) Get(ctx context.Context, resourceGroupName string, deploymentName string) (result resources.DeploymentExtended, err error) {
+func (m *DeploymentClientMock) Get(ctx context.Context, resourceGroupName string, deploymentName string) (result resources.DeploymentExtended, err *retry.Error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	deploy, ok := m.FakeStore[deploymentName]
 	if !ok {
-		return result, fmt.Errorf("deployment not found")
+		return result, retry.NewError(false, fmt.Errorf("deployment not found"))
 	}
 
 	return deploy, nil
 }
 
 // ExportTemplate exports the deployment's template.
-func (m *DeploymentsClientMock) ExportTemplate(ctx context.Context, resourceGroupName string, deploymentName string) (result resources.DeploymentExportResult, err error) {
+func (m *DeploymentClientMock) ExportTemplate(ctx context.Context, resourceGroupName string, deploymentName string) (result resources.DeploymentExportResult, err *retry.Error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	deploy, ok := m.FakeStore[deploymentName]
 	if !ok {
-		return result, fmt.Errorf("deployment not found")
+		return result, retry.NewError(false, fmt.Errorf("deployment not found"))
 	}
 
 	return resources.DeploymentExportResult{
@@ -69,7 +69,7 @@ func (m *DeploymentsClientMock) ExportTemplate(ctx context.Context, resourceGrou
 }
 
 // CreateOrUpdate creates or updates the Deployment.
-func (m *DeploymentsClientMock) CreateOrUpdate(ctx context.Context, resourceGroupName string, deploymentName string, parameters resources.Deployment) (resp *http.Response, err error) {
+func (m *DeploymentClientMock) CreateOrUpdate(ctx context.Context, resourceGroupName string, deploymentName string, parameters resources.Deployment, etag string) (err *retry.Error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -83,11 +83,11 @@ func (m *DeploymentsClientMock) CreateOrUpdate(ctx context.Context, resourceGrou
 
 	deploy.Properties.Parameters = parameters.Properties.Parameters
 	deploy.Properties.Template = parameters.Properties.Template
-	return &http.Response{StatusCode: 200}, nil
+	return nil
 }
 
 // List gets all the deployments for a resource group.
-func (m *DeploymentsClientMock) List(ctx context.Context, resourceGroupName, filter string, top *int32) (result []resources.DeploymentExtended, err error) {
+func (m *DeploymentClientMock) List(ctx context.Context, resourceGroupName string) (result []resources.DeploymentExtended, err *retry.Error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -100,12 +100,12 @@ func (m *DeploymentsClientMock) List(ctx context.Context, resourceGroupName, fil
 }
 
 // Delete deletes the given deployment
-func (m *DeploymentsClientMock) Delete(ctx context.Context, resourceGroupName, deploymentName string) (resp *http.Response, err error) {
+func (m *DeploymentClientMock) Delete(ctx context.Context, resourceGroupName, deploymentName string) (err *retry.Error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	if _, ok := m.FakeStore[deploymentName]; !ok {
-		return nil, fmt.Errorf("there is no such a deployment with name %s", deploymentName)
+		return retry.NewError(false, fmt.Errorf("there is no such a deployment with name %s", deploymentName))
 	}
 
 	delete(m.FakeStore, deploymentName)
