@@ -90,7 +90,7 @@ func configTLS(cfg certsConfig, minTlsVersion, ciphers string, stop <-chan struc
 
 // register this webhook admission controller with the kube-apiserver
 // by creating MutatingWebhookConfiguration.
-func selfRegistration(clientset kubernetes.Interface, caCert []byte, webHookDelay time.Duration, namespace, serviceName, url string, registerByURL bool, timeoutSeconds int32, selectedNamespace string, ignoredNamespaces []string) {
+func selfRegistration(clientset kubernetes.Interface, caCert []byte, webHookDelay time.Duration, namespace, serviceName, url string, registerByURL bool, timeoutSeconds int32, selectedNamespace string, ignoredNamespaces []string, webHookFailurePolicy bool) {
 	time.Sleep(webHookDelay)
 	client := clientset.AdmissionregistrationV1().MutatingWebhookConfigurations()
 	_, err := client.Get(context.TODO(), webhookConfigName, metav1.GetOptions{})
@@ -109,7 +109,14 @@ func selfRegistration(clientset kubernetes.Interface, caCert []byte, webHookDela
 		RegisterClientConfig.URL = &url
 	}
 	sideEffects := admissionregistration.SideEffectClassNone
-	failurePolicy := admissionregistration.Ignore
+
+	var failurePolicy admissionregistration.FailurePolicyType
+	if webHookFailurePolicy {
+		failurePolicy = admissionregistration.Fail
+	} else {
+		failurePolicy = admissionregistration.Ignore
+	}
+
 	RegisterClientConfig.CABundle = caCert
 
 	var namespaceSelector metav1.LabelSelector

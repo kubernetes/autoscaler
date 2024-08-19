@@ -40,7 +40,7 @@ func TestSelfRegistrationBase(t *testing.T) {
 	selectedNamespace := ""
 	ignoredNamespaces := []string{}
 
-	selfRegistration(testClientSet, caCert, webHookDelay, namespace, serviceName, url, registerByURL, timeoutSeconds, selectedNamespace, ignoredNamespaces)
+	selfRegistration(testClientSet, caCert, webHookDelay, namespace, serviceName, url, registerByURL, timeoutSeconds, selectedNamespace, ignoredNamespaces, false)
 
 	webhookConfigInterface := testClientSet.AdmissionregistrationV1().MutatingWebhookConfigurations()
 	webhookConfig, err := webhookConfigInterface.Get(context.TODO(), webhookConfigName, metav1.GetOptions{})
@@ -83,7 +83,7 @@ func TestSelfRegistrationWithURL(t *testing.T) {
 	selectedNamespace := ""
 	ignoredNamespaces := []string{}
 
-	selfRegistration(testClientSet, caCert, webHookDelay, namespace, serviceName, url, registerByURL, timeoutSeconds, selectedNamespace, ignoredNamespaces)
+	selfRegistration(testClientSet, caCert, webHookDelay, namespace, serviceName, url, registerByURL, timeoutSeconds, selectedNamespace, ignoredNamespaces, false)
 
 	webhookConfigInterface := testClientSet.AdmissionregistrationV1().MutatingWebhookConfigurations()
 	webhookConfig, err := webhookConfigInterface.Get(context.TODO(), webhookConfigName, metav1.GetOptions{})
@@ -111,7 +111,7 @@ func TestSelfRegistrationWithOutURL(t *testing.T) {
 	selectedNamespace := ""
 	ignoredNamespaces := []string{}
 
-	selfRegistration(testClientSet, caCert, webHookDelay, namespace, serviceName, url, registerByURL, timeoutSeconds, selectedNamespace, ignoredNamespaces)
+	selfRegistration(testClientSet, caCert, webHookDelay, namespace, serviceName, url, registerByURL, timeoutSeconds, selectedNamespace, ignoredNamespaces, false)
 
 	webhookConfigInterface := testClientSet.AdmissionregistrationV1().MutatingWebhookConfigurations()
 	webhookConfig, err := webhookConfigInterface.Get(context.TODO(), webhookConfigName, metav1.GetOptions{})
@@ -141,7 +141,7 @@ func TestSelfRegistrationWithIgnoredNamespaces(t *testing.T) {
 	selectedNamespace := ""
 	ignoredNamespaces := []string{"test"}
 
-	selfRegistration(testClientSet, caCert, webHookDelay, namespace, serviceName, url, registerByURL, timeoutSeconds, selectedNamespace, ignoredNamespaces)
+	selfRegistration(testClientSet, caCert, webHookDelay, namespace, serviceName, url, registerByURL, timeoutSeconds, selectedNamespace, ignoredNamespaces, false)
 
 	webhookConfigInterface := testClientSet.AdmissionregistrationV1().MutatingWebhookConfigurations()
 	webhookConfig, err := webhookConfigInterface.Get(context.TODO(), webhookConfigName, metav1.GetOptions{})
@@ -172,7 +172,7 @@ func TestSelfRegistrationWithSelectedNamespaces(t *testing.T) {
 	selectedNamespace := "test"
 	ignoredNamespaces := []string{}
 
-	selfRegistration(testClientSet, caCert, webHookDelay, namespace, serviceName, url, registerByURL, timeoutSeconds, selectedNamespace, ignoredNamespaces)
+	selfRegistration(testClientSet, caCert, webHookDelay, namespace, serviceName, url, registerByURL, timeoutSeconds, selectedNamespace, ignoredNamespaces, false)
 
 	webhookConfigInterface := testClientSet.AdmissionregistrationV1().MutatingWebhookConfigurations()
 	webhookConfig, err := webhookConfigInterface.Get(context.TODO(), webhookConfigName, metav1.GetOptions{})
@@ -189,4 +189,58 @@ func TestSelfRegistrationWithSelectedNamespaces(t *testing.T) {
 	assert.Equal(t, metav1.LabelSelectorOpIn, matchExpression.Operator, "expected namespace operator to be OpIn")
 	assert.Equal(t, matchExpression.Operator, metav1.LabelSelectorOpIn, "expected namespace operator to be OpIn")
 	assert.Equal(t, matchExpression.Values, []string{selectedNamespace}, "expected namespace selector match expression to be equal")
+}
+
+func TestSelfRegistrationWithFailurePolicy(t *testing.T) {
+
+	testClientSet := fake.NewSimpleClientset()
+	caCert := []byte("fake")
+	webHookDelay := 0 * time.Second
+	namespace := "default"
+	serviceName := "vpa-service"
+	url := "http://example.com/"
+	registerByURL := false
+	timeoutSeconds := int32(32)
+	selectedNamespace := "test"
+	ignoredNamespaces := []string{}
+
+	selfRegistration(testClientSet, caCert, webHookDelay, namespace, serviceName, url, registerByURL, timeoutSeconds, selectedNamespace, ignoredNamespaces, true)
+
+	webhookConfigInterface := testClientSet.AdmissionregistrationV1().MutatingWebhookConfigurations()
+	webhookConfig, err := webhookConfigInterface.Get(context.TODO(), webhookConfigName, metav1.GetOptions{})
+
+	assert.NoError(t, err, "expected no error fetching webhook configuration")
+
+	assert.Len(t, webhookConfig.Webhooks, 1, "expected one webhook configuration")
+	webhook := webhookConfig.Webhooks[0]
+
+	assert.NotNil(t, *webhook.FailurePolicy, "expected failurePolicy not to be nil")
+	assert.Equal(t, *webhook.FailurePolicy, admissionregistration.Fail, "expected failurePolicy to be Fail")
+}
+
+func TestSelfRegistrationWithOutFailurePolicy(t *testing.T) {
+
+	testClientSet := fake.NewSimpleClientset()
+	caCert := []byte("fake")
+	webHookDelay := 0 * time.Second
+	namespace := "default"
+	serviceName := "vpa-service"
+	url := "http://example.com/"
+	registerByURL := false
+	timeoutSeconds := int32(32)
+	selectedNamespace := "test"
+	ignoredNamespaces := []string{}
+
+	selfRegistration(testClientSet, caCert, webHookDelay, namespace, serviceName, url, registerByURL, timeoutSeconds, selectedNamespace, ignoredNamespaces, false)
+
+	webhookConfigInterface := testClientSet.AdmissionregistrationV1().MutatingWebhookConfigurations()
+	webhookConfig, err := webhookConfigInterface.Get(context.TODO(), webhookConfigName, metav1.GetOptions{})
+
+	assert.NoError(t, err, "expected no error fetching webhook configuration")
+
+	assert.Len(t, webhookConfig.Webhooks, 1, "expected one webhook configuration")
+	webhook := webhookConfig.Webhooks[0]
+
+	assert.NotNil(t, *webhook.FailurePolicy, "expected namespace selector not to be nil")
+	assert.Equal(t, *webhook.FailurePolicy, admissionregistration.Ignore, "expected failurePolicy to be Ignore")
 }
