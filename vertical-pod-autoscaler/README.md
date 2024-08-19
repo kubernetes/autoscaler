@@ -25,7 +25,6 @@
   - [Controlling eviction behavior based on scaling direction and resource](#controlling-eviction-behavior-based-on-scaling-direction-and-resource)
   - [Limiting which namespaces are used](#limiting-which-namespaces-are-used)
   - [Setting the webhook failurePolicy](#setting-the-webhook-failurepolicy)
-
 - [Known limitations](#known-limitations)
 - [Related links](#related-links)
 
