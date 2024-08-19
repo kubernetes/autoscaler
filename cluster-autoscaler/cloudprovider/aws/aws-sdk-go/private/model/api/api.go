@@ -95,11 +95,11 @@ type Metadata struct {
 	EndpointsID         string
 	ServiceID           string
 
-	NoResolveEndpoint  bool
+	NoResolveEndpoint bool
 	AWSQueryCompatible *awsQueryCompatible
 }
 
-type awsQueryCompatible struct{}
+type awsQueryCompatible struct {}
 
 // ProtocolSettings define how the SDK should handle requests in the context
 // of of a protocol.

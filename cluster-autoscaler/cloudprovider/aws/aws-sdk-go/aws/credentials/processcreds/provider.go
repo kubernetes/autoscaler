@@ -15,52 +15,52 @@ location, with the `credential_process` key and the command you want to be
 called. You also need to set the AWS_SDK_LOAD_CONFIG environment variable
 (e.g., `export AWS_SDK_LOAD_CONFIG=1`) to use the shared config file.
 
-	[default]
-	credential_process = /command/to/call
+    [default]
+    credential_process = /command/to/call
 
 Creating a new session will use the credential process to retrieve credentials.
 NOTE: If there are credentials in the profile you are using, the credential
 process will not be used.
 
-	// Initialize a session to load credentials.
-	sess, _ := session.NewSession(&aws.Config{
-	    Region: aws.String("us-east-1")},
-	)
+    // Initialize a session to load credentials.
+    sess, _ := session.NewSession(&aws.Config{
+        Region: aws.String("us-east-1")},
+    )
 
-	// Create S3 service client to use the credentials.
-	svc := s3.New(sess)
+    // Create S3 service client to use the credentials.
+    svc := s3.New(sess)
 
 Another way to use the `credential_process` method is by using
 `credentials.NewCredentials()` and providing a command to be executed to
 retrieve credentials:
 
-	// Create credentials using the ProcessProvider.
-	creds := processcreds.NewCredentials("/path/to/command")
+    // Create credentials using the ProcessProvider.
+    creds := processcreds.NewCredentials("/path/to/command")
 
-	// Create service client value configured for credentials.
-	svc := s3.New(sess, &aws.Config{Credentials: creds})
+    // Create service client value configured for credentials.
+    svc := s3.New(sess, &aws.Config{Credentials: creds})
 
 You can set a non-default timeout for the `credential_process` with another
 constructor, `credentials.NewCredentialsTimeout()`, providing the timeout. To
 set a one minute timeout:
 
-	// Create credentials using the ProcessProvider.
-	creds := processcreds.NewCredentialsTimeout(
-	    "/path/to/command",
-	    time.Duration(500) * time.Millisecond)
+    // Create credentials using the ProcessProvider.
+    creds := processcreds.NewCredentialsTimeout(
+        "/path/to/command",
+        time.Duration(500) * time.Millisecond)
 
 If you need more control, you can set any configurable options in the
 credentials using one or more option functions. For example, you can set a two
 minute timeout, a credential duration of 60 minutes, and a maximum stdout
 buffer size of 2k.
 
-	creds := processcreds.NewCredentials(
-	    "/path/to/command",
-	    func(opt *ProcessProvider) {
-	        opt.Timeout = time.Duration(2) * time.Minute
-	        opt.Duration = time.Duration(60) * time.Minute
-	        opt.MaxBufSize = 2048
-	    })
+    creds := processcreds.NewCredentials(
+        "/path/to/command",
+        func(opt *ProcessProvider) {
+            opt.Timeout = time.Duration(2) * time.Minute
+            opt.Duration = time.Duration(60) * time.Minute
+            opt.MaxBufSize = 2048
+        })
 
 You can also use your own `exec.Cmd`:
 
