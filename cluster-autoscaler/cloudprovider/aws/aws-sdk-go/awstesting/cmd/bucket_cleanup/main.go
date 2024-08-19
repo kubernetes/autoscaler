@@ -18,8 +18,7 @@ import (
 // to confirm bucket should be deleted. Positive confirmation is required.
 //
 // Usage:
-//
-//	go run deleteBuckets.go <bucketPrefix>
+//    go run deleteBuckets.go <bucketPrefix>
 func main() {
 	sess := session.Must(session.NewSession())
 
