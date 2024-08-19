@@ -112,8 +112,8 @@ func NewScaleSet(spec *dynamic.NodeGroupSpec, az *AzureManager, curSize int64, d
 		dedicatedHost:             dedicatedHost,
 	}
 
-	if az.config.VmssVmsCacheTTL != 0 {
-		scaleSet.instancesRefreshPeriod = time.Duration(az.config.VmssVmsCacheTTL) * time.Second
+	if az.config.VmssVirtualMachinesCacheTTLInSeconds != 0 {
+		scaleSet.instancesRefreshPeriod = time.Duration(az.config.VmssVirtualMachinesCacheTTLInSeconds) * time.Second
 	} else {
 		scaleSet.instancesRefreshPeriod = defaultVmssInstancesRefreshPeriod
 	}
