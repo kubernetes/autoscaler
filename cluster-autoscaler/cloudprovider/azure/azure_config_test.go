@@ -17,72 +17,74 @@ limitations under the License.
 package azure
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	azclients "sigs.k8s.io/cloud-provider-azure/pkg/azureclients"
+	providerazureconsts "sigs.k8s.io/cloud-provider-azure/pkg/consts"
+	providerazureconfig "sigs.k8s.io/cloud-provider-azure/pkg/provider/config"
 )
 
-func TestInitializeCloudProviderRateLimitConfigWithNoConfigReturnsNoError(t *testing.T) {
-	err := initializeCloudProviderRateLimitConfig(nil)
-	assert.Nil(t, err, "err should be nil")
+func TestCloudProviderAzureConsts(t *testing.T) {
+	// Just detect user-facing breaking changes from cloud-provider-azure.
+	// Shouldn't really change a lot, but just in case.
+	assert.Equal(t, "vmss", providerazureconsts.VMTypeVMSS)
+	assert.Equal(t, "standard", providerazureconsts.VMTypeStandard)
 }
 
 func TestInitializeCloudProviderRateLimitConfigWithNoRateLimitSettingsReturnsDefaults(t *testing.T) {
-	emptyConfig := &CloudProviderRateLimitConfig{}
-	err := initializeCloudProviderRateLimitConfig(emptyConfig)
+	emptyConfig := &providerazureconfig.CloudProviderRateLimitConfig{}
+	providerazureconfig.InitializeCloudProviderRateLimitConfig(emptyConfig)
 
-	assert.NoError(t, err)
-	assert.Equal(t, emptyConfig.CloudProviderRateLimitQPS, rateLimitQPSDefault)
-	assert.Equal(t, emptyConfig.CloudProviderRateLimitBucket, rateLimitBucketDefault)
-	assert.Equal(t, emptyConfig.CloudProviderRateLimitQPSWrite, rateLimitQPSDefault)
-	assert.Equal(t, emptyConfig.CloudProviderRateLimitBucketWrite, rateLimitBucketDefault)
+	assert.InDelta(t, emptyConfig.CloudProviderRateLimitQPS, providerazureconsts.RateLimitQPSDefault, 0.0001)
+	assert.InDelta(t, emptyConfig.CloudProviderRateLimitBucket, providerazureconsts.RateLimitBucketDefault, 0.0001)
+	assert.InDelta(t, emptyConfig.CloudProviderRateLimitQPSWrite, providerazureconsts.RateLimitQPSDefault, 0.0001)
+	assert.InDelta(t, emptyConfig.CloudProviderRateLimitBucketWrite, providerazureconsts.RateLimitBucketDefault, 0.0001)
 }
 
-func TestInitializeCloudProviderRateLimitConfigWithReadRateLimitSettingsFromEnv(t *testing.T) {
-	emptyConfig := &CloudProviderRateLimitConfig{}
+func TestInitializeCloudProviderRateLimitConfigWithReadRateLimitSettings(t *testing.T) {
 	var rateLimitReadQPS float32 = 3.0
 	rateLimitReadBuckets := 10
-	t.Setenv(rateLimitReadQPSEnvVar, fmt.Sprintf("%.1f", rateLimitReadQPS))
-	t.Setenv(rateLimitReadBucketsEnvVar, fmt.Sprintf("%d", rateLimitReadBuckets))
 
-	err := initializeCloudProviderRateLimitConfig(emptyConfig)
-	assert.NoError(t, err)
-	assert.Equal(t, emptyConfig.CloudProviderRateLimitQPS, rateLimitReadQPS)
-	assert.Equal(t, emptyConfig.CloudProviderRateLimitBucket, rateLimitReadBuckets)
-	assert.Equal(t, emptyConfig.CloudProviderRateLimitQPSWrite, rateLimitReadQPS)
-	assert.Equal(t, emptyConfig.CloudProviderRateLimitBucketWrite, rateLimitReadBuckets)
+	cfg := &providerazureconfig.CloudProviderRateLimitConfig{
+		RateLimitConfig: azclients.RateLimitConfig{
+			CloudProviderRateLimitQPS:    rateLimitReadQPS,
+			CloudProviderRateLimitBucket: rateLimitReadBuckets,
+		},
+	}
+	//t.Setenv("RATE_LIMIT_READ_QPS", fmt.Sprintf("%.1f", rateLimitReadQPS)
+	//t.Setenv("RATE_LIMIT_READ_BUCKETS", fmt.Sprintf("%d", rateLimitReadBuckets)
+
+	providerazureconfig.InitializeCloudProviderRateLimitConfig(cfg)
+	assert.InDelta(t, cfg.CloudProviderRateLimitQPS, rateLimitReadQPS, 0.0001)
+	assert.InDelta(t, cfg.CloudProviderRateLimitBucket, rateLimitReadBuckets, 0.0001)
+	assert.InDelta(t, cfg.CloudProviderRateLimitQPSWrite, rateLimitReadQPS, 0.0001)
+	assert.InDelta(t, cfg.CloudProviderRateLimitBucketWrite, rateLimitReadBuckets, 0.0001)
+	assert.InDelta(t, cfg.InterfaceRateLimit.CloudProviderRateLimitQPS, rateLimitReadQPS, 0.0001)
+	assert.InDelta(t, cfg.InterfaceRateLimit.CloudProviderRateLimitBucket, rateLimitReadBuckets, 0.0001)
+	assert.InDelta(t, cfg.InterfaceRateLimit.CloudProviderRateLimitQPSWrite, rateLimitReadQPS, 0.0001)
+	assert.InDelta(t, cfg.InterfaceRateLimit.CloudProviderRateLimitBucketWrite, rateLimitReadBuckets, 0.0001)
+	assert.InDelta(t, cfg.VirtualMachineRateLimit.CloudProviderRateLimitQPS, rateLimitReadQPS, 0.0001)
+	assert.InDelta(t, cfg.VirtualMachineRateLimit.CloudProviderRateLimitBucket, rateLimitReadBuckets, 0.0001)
+	assert.InDelta(t, cfg.VirtualMachineRateLimit.CloudProviderRateLimitQPSWrite, rateLimitReadQPS, 0.0001)
+	assert.InDelta(t, cfg.VirtualMachineRateLimit.CloudProviderRateLimitBucketWrite, rateLimitReadBuckets, 0.0001)
+	assert.InDelta(t, cfg.StorageAccountRateLimit.CloudProviderRateLimitQPS, rateLimitReadQPS, 0.0001)
+	assert.InDelta(t, cfg.StorageAccountRateLimit.CloudProviderRateLimitBucket, rateLimitReadBuckets, 0.0001)
+	assert.InDelta(t, cfg.StorageAccountRateLimit.CloudProviderRateLimitQPSWrite, rateLimitReadQPS, 0.0001)
+	assert.InDelta(t, cfg.StorageAccountRateLimit.CloudProviderRateLimitBucketWrite, rateLimitReadBuckets, 0.0001)
+	assert.InDelta(t, cfg.VirtualMachineScaleSetRateLimit.CloudProviderRateLimitQPS, rateLimitReadQPS, 0.0001)
+	assert.InDelta(t, cfg.VirtualMachineScaleSetRateLimit.CloudProviderRateLimitBucket, rateLimitReadBuckets, 0.0001)
+	assert.InDelta(t, cfg.VirtualMachineScaleSetRateLimit.CloudProviderRateLimitQPSWrite, rateLimitReadQPS, 0.0001)
+	assert.InDelta(t, cfg.VirtualMachineScaleSetRateLimit.CloudProviderRateLimitBucketWrite, rateLimitReadBuckets, 0.0001)
 }
 
-func TestInitializeCloudProviderRateLimitConfigWithReadAndWriteRateLimitSettingsFromEnv(t *testing.T) {
-	emptyConfig := &CloudProviderRateLimitConfig{}
+func TestInitializeCloudProviderRateLimitConfigWithReadAndWriteRateLimitSettings(t *testing.T) {
 	var rateLimitReadQPS float32 = 3.0
 	rateLimitReadBuckets := 10
 	var rateLimitWriteQPS float32 = 6.0
 	rateLimitWriteBuckets := 20
 
-	t.Setenv(rateLimitReadQPSEnvVar, fmt.Sprintf("%.1f", rateLimitReadQPS))
-	t.Setenv(rateLimitReadBucketsEnvVar, fmt.Sprintf("%d", rateLimitReadBuckets))
-	t.Setenv(rateLimitWriteQPSEnvVar, fmt.Sprintf("%.1f", rateLimitWriteQPS))
-	t.Setenv(rateLimitWriteBucketsEnvVar, fmt.Sprintf("%d", rateLimitWriteBuckets))
-
-	err := initializeCloudProviderRateLimitConfig(emptyConfig)
-
-	assert.NoError(t, err)
-	assert.Equal(t, emptyConfig.CloudProviderRateLimitQPS, rateLimitReadQPS)
-	assert.Equal(t, emptyConfig.CloudProviderRateLimitBucket, rateLimitReadBuckets)
-	assert.Equal(t, emptyConfig.CloudProviderRateLimitQPSWrite, rateLimitWriteQPS)
-	assert.Equal(t, emptyConfig.CloudProviderRateLimitBucketWrite, rateLimitWriteBuckets)
-}
-
-func TestInitializeCloudProviderRateLimitConfigWithReadAndWriteRateLimitAlreadySetInConfig(t *testing.T) {
-	var rateLimitReadQPS float32 = 3.0
-	rateLimitReadBuckets := 10
-	var rateLimitWriteQPS float32 = 6.0
-	rateLimitWriteBuckets := 20
-
-	configWithRateLimits := &CloudProviderRateLimitConfig{
+	cfg := &providerazureconfig.CloudProviderRateLimitConfig{
 		RateLimitConfig: azclients.RateLimitConfig{
 			CloudProviderRateLimitBucket:      rateLimitReadBuckets,
 			CloudProviderRateLimitBucketWrite: rateLimitWriteBuckets,
@@ -91,130 +93,31 @@ func TestInitializeCloudProviderRateLimitConfigWithReadAndWriteRateLimitAlreadyS
 		},
 	}
 
-	t.Setenv(rateLimitReadQPSEnvVar, "99")
-	t.Setenv(rateLimitReadBucketsEnvVar, "99")
-	t.Setenv(rateLimitWriteQPSEnvVar, "99")
-	t.Setenv(rateLimitWriteBucketsEnvVar, "99")
+	//t.Setenv("RATE_LIMIT_READ_QPS", fmt.Sprintf("%.1f", rateLimitReadQPS)
+	//t.Setenv("RATE_LIMIT_READ_BUCKETS", fmt.Sprintf("%d", rateLimitReadBuckets)
+	//t.Setenv("RATE_LIMIT_WRITE_QPS", fmt.Sprintf("%.1f", rateLimitWriteQPS)
+	//t.Setenv("RATE_LIMIT_WRITE_BUCKETS", fmt.Sprintf("%d", rateLimitWriteBuckets)
 
-	err := initializeCloudProviderRateLimitConfig(configWithRateLimits)
+	providerazureconfig.InitializeCloudProviderRateLimitConfig(cfg)
 
-	assert.NoError(t, err)
-	assert.Equal(t, configWithRateLimits.CloudProviderRateLimitQPS, rateLimitReadQPS)
-	assert.Equal(t, configWithRateLimits.CloudProviderRateLimitBucket, rateLimitReadBuckets)
-	assert.Equal(t, configWithRateLimits.CloudProviderRateLimitQPSWrite, rateLimitWriteQPS)
-	assert.Equal(t, configWithRateLimits.CloudProviderRateLimitBucketWrite, rateLimitWriteBuckets)
-}
-
-// nolint: goconst
-func TestInitializeCloudProviderRateLimitConfigWithInvalidReadAndWriteRateLimitSettingsFromEnv(t *testing.T) {
-	emptyConfig := &CloudProviderRateLimitConfig{}
-	var rateLimitReadQPS float32 = 3.0
-	rateLimitReadBuckets := 10
-	var rateLimitWriteQPS float32 = 6.0
-	rateLimitWriteBuckets := 20
-
-	invalidSetting := "invalid"
-	testCases := []struct {
-		desc                                 string
-		isInvalidRateLimitReadQPSEnvVar      bool
-		isInvalidRateLimitReadBucketsEnvVar  bool
-		isInvalidRateLimitWriteQPSEnvVar     bool
-		isInvalidRateLimitWriteBucketsEnvVar bool
-		expectedErr                          bool
-		expectedErrMsg                       error
-	}{
-		{
-			desc:                            "an error shall be returned if invalid rateLimitReadQPSEnvVar",
-			isInvalidRateLimitReadQPSEnvVar: true,
-			expectedErr:                     true,
-			expectedErrMsg:                  fmt.Errorf("failed to parse %s: %q, strconv.ParseFloat: parsing \"invalid\": invalid syntax", rateLimitReadQPSEnvVar, invalidSetting),
-		},
-		{
-			desc:                                "an error shall be returned if invalid rateLimitReadBucketsEnvVar",
-			isInvalidRateLimitReadBucketsEnvVar: true,
-			expectedErr:                         true,
-			expectedErrMsg:                      fmt.Errorf("failed to parse %s: %q, strconv.ParseInt: parsing \"invalid\": invalid syntax", rateLimitReadBucketsEnvVar, invalidSetting),
-		},
-		{
-			desc:                             "an error shall be returned if invalid rateLimitWriteQPSEnvVar",
-			isInvalidRateLimitWriteQPSEnvVar: true,
-			expectedErr:                      true,
-			expectedErrMsg:                   fmt.Errorf("failed to parse %s: %q, strconv.ParseFloat: parsing \"invalid\": invalid syntax", rateLimitWriteQPSEnvVar, invalidSetting),
-		},
-		{
-			desc:                                 "an error shall be returned if invalid rateLimitWriteBucketsEnvVar",
-			isInvalidRateLimitWriteBucketsEnvVar: true,
-			expectedErr:                          true,
-			expectedErrMsg:                       fmt.Errorf("failed to parse %s: %q, strconv.ParseInt: parsing \"invalid\": invalid syntax", rateLimitWriteBucketsEnvVar, invalidSetting),
-		},
-	}
-
-	for i, test := range testCases {
-		if test.isInvalidRateLimitReadQPSEnvVar {
-			t.Setenv(rateLimitReadQPSEnvVar, invalidSetting)
-		} else {
-			t.Setenv(rateLimitReadQPSEnvVar, fmt.Sprintf("%.1f", rateLimitReadQPS))
-		}
-		if test.isInvalidRateLimitReadBucketsEnvVar {
-			t.Setenv(rateLimitReadBucketsEnvVar, invalidSetting)
-		} else {
-			t.Setenv(rateLimitReadBucketsEnvVar, fmt.Sprintf("%d", rateLimitReadBuckets))
-		}
-		if test.isInvalidRateLimitWriteQPSEnvVar {
-			t.Setenv(rateLimitWriteQPSEnvVar, invalidSetting)
-		} else {
-			t.Setenv(rateLimitWriteQPSEnvVar, fmt.Sprintf("%.1f", rateLimitWriteQPS))
-		}
-		if test.isInvalidRateLimitWriteBucketsEnvVar {
-			t.Setenv(rateLimitWriteBucketsEnvVar, invalidSetting)
-		} else {
-			t.Setenv(rateLimitWriteBucketsEnvVar, fmt.Sprintf("%d", rateLimitWriteBuckets))
-		}
-
-		err := initializeCloudProviderRateLimitConfig(emptyConfig)
-
-		assert.Equal(t, test.expectedErr, err != nil, "TestCase[%d]: %s, return error: %v", i, test.desc, err)
-		assert.Equal(t, test.expectedErrMsg, err, "TestCase[%d]: %s, expected: %v, return: %v", i, test.desc, test.expectedErrMsg, err)
-	}
-}
-
-func TestOverrideDefaultRateLimitConfig(t *testing.T) {
-	var rateLimitReadQPS float32 = 3.0
-	rateLimitReadBuckets := 10
-	var rateLimitWriteQPS float32 = 6.0
-	rateLimitWriteBuckets := 20
-
-	defaultConfigWithRateLimits := &CloudProviderRateLimitConfig{
-		RateLimitConfig: azclients.RateLimitConfig{
-			CloudProviderRateLimitBucket:      rateLimitReadBuckets,
-			CloudProviderRateLimitBucketWrite: rateLimitWriteBuckets,
-			CloudProviderRateLimitQPS:         rateLimitReadQPS,
-			CloudProviderRateLimitQPSWrite:    rateLimitWriteQPS,
-		},
-	}
-
-	configWithRateLimits := &CloudProviderRateLimitConfig{
-		RateLimitConfig: azclients.RateLimitConfig{
-			CloudProviderRateLimit:            true,
-			CloudProviderRateLimitBucket:      0,
-			CloudProviderRateLimitBucketWrite: 0,
-			CloudProviderRateLimitQPS:         0,
-			CloudProviderRateLimitQPSWrite:    0,
-		},
-	}
-
-	newconfig := overrideDefaultRateLimitConfig(&defaultConfigWithRateLimits.RateLimitConfig, &configWithRateLimits.RateLimitConfig)
-
-	assert.Equal(t, defaultConfigWithRateLimits.CloudProviderRateLimitQPS, newconfig.CloudProviderRateLimitQPS)
-	assert.Equal(t, defaultConfigWithRateLimits.CloudProviderRateLimitBucket, newconfig.CloudProviderRateLimitBucket)
-	assert.Equal(t, defaultConfigWithRateLimits.CloudProviderRateLimitQPSWrite, newconfig.CloudProviderRateLimitQPSWrite)
-	assert.Equal(t, defaultConfigWithRateLimits.CloudProviderRateLimitBucketWrite, newconfig.CloudProviderRateLimitBucketWrite)
-
-	falseCloudProviderRateLimit := &CloudProviderRateLimitConfig{
-		RateLimitConfig: azclients.RateLimitConfig{
-			CloudProviderRateLimit: false,
-		},
-	}
-	newconfig = overrideDefaultRateLimitConfig(&defaultConfigWithRateLimits.RateLimitConfig, &falseCloudProviderRateLimit.RateLimitConfig)
-	assert.Equal(t, &falseCloudProviderRateLimit.RateLimitConfig, newconfig)
+	assert.InDelta(t, cfg.CloudProviderRateLimitQPS, rateLimitReadQPS, 0.0001)
+	assert.InDelta(t, cfg.CloudProviderRateLimitBucket, rateLimitReadBuckets, 0.0001)
+	assert.InDelta(t, cfg.CloudProviderRateLimitQPSWrite, rateLimitWriteQPS, 0.0001)
+	assert.InDelta(t, cfg.CloudProviderRateLimitBucketWrite, rateLimitWriteBuckets, 0.0001)
+	assert.InDelta(t, cfg.InterfaceRateLimit.CloudProviderRateLimitQPS, rateLimitReadQPS, 0.0001)
+	assert.InDelta(t, cfg.InterfaceRateLimit.CloudProviderRateLimitBucket, rateLimitReadBuckets, 0.0001)
+	assert.InDelta(t, cfg.InterfaceRateLimit.CloudProviderRateLimitQPSWrite, rateLimitWriteQPS, 0.0001)
+	assert.InDelta(t, cfg.InterfaceRateLimit.CloudProviderRateLimitBucketWrite, rateLimitWriteBuckets, 0.0001)
+	assert.InDelta(t, cfg.VirtualMachineRateLimit.CloudProviderRateLimitQPS, rateLimitReadQPS, 0.0001)
+	assert.InDelta(t, cfg.VirtualMachineRateLimit.CloudProviderRateLimitBucket, rateLimitReadBuckets, 0.0001)
+	assert.InDelta(t, cfg.VirtualMachineRateLimit.CloudProviderRateLimitQPSWrite, rateLimitWriteQPS, 0.0001)
+	assert.InDelta(t, cfg.VirtualMachineRateLimit.CloudProviderRateLimitBucketWrite, rateLimitWriteBuckets, 0.0001)
+	assert.InDelta(t, cfg.StorageAccountRateLimit.CloudProviderRateLimitQPS, rateLimitReadQPS, 0.0001)
+	assert.InDelta(t, cfg.StorageAccountRateLimit.CloudProviderRateLimitBucket, rateLimitReadBuckets, 0.0001)
+	assert.InDelta(t, cfg.StorageAccountRateLimit.CloudProviderRateLimitQPSWrite, rateLimitWriteQPS, 0.0001)
+	assert.InDelta(t, cfg.StorageAccountRateLimit.CloudProviderRateLimitBucketWrite, rateLimitWriteBuckets, 0.0001)
+	assert.InDelta(t, cfg.VirtualMachineScaleSetRateLimit.CloudProviderRateLimitQPS, rateLimitReadQPS, 0.0001)
+	assert.InDelta(t, cfg.VirtualMachineScaleSetRateLimit.CloudProviderRateLimitBucket, rateLimitReadBuckets, 0.0001)
+	assert.InDelta(t, cfg.VirtualMachineScaleSetRateLimit.CloudProviderRateLimitQPSWrite, rateLimitWriteQPS, 0.0001)
+	assert.InDelta(t, cfg.VirtualMachineScaleSetRateLimit.CloudProviderRateLimitBucketWrite, rateLimitWriteBuckets, 0.0001)
 }
