@@ -167,6 +167,7 @@ func TestCreateAzureManagerValidConfig(t *testing.T) {
 		VmssVmsCacheTTL:     240,
 		VmssVmsCacheJitter:  120,
 		MaxDeploymentsCount: 8,
+		EnableVMsAgentPool:  false,
 		CloudProviderRateLimitConfig: CloudProviderRateLimitConfig{
 			RateLimitConfig: azclients.RateLimitConfig{
 				CloudProviderRateLimit:            false,
@@ -344,9 +345,14 @@ func TestCreateAzureManagerWithNilConfig(t *testing.T) {
 	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
 	mockVMSSClient.EXPECT().List(gomock.Any(), "resourceGroup").Return([]compute.VirtualMachineScaleSet{}, nil).AnyTimes()
 	mockVMClient.EXPECT().List(gomock.Any(), "resourceGroup").Return([]compute.VirtualMachine{}, nil).AnyTimes()
+	mockAgentpoolclient := NewMockAgentPoolsClient(ctrl)
+	vmspool := getTestVMsAgentPool("vmspool", false)
+	fakeAPListPager := getFakeAgentpoolListPager(&vmspool)
+	mockAgentpoolclient.EXPECT().NewListPager(gomock.Any(), gomock.Any(), nil).Return(fakeAPListPager).AnyTimes()
 	mockAzClient := &azClient{
 		virtualMachinesClient:         mockVMClient,
 		virtualMachineScaleSetsClient: mockVMSSClient,
+		agentPoolClient:               mockAgentpoolclient,
 	}
 
 	expectedConfig := &Config{
@@ -376,6 +382,7 @@ func TestCreateAzureManagerWithNilConfig(t *testing.T) {
 		CloudProviderBackoffExponent: 1,
 		CloudProviderBackoffDuration: 1,
 		CloudProviderBackoffJitter:   1,
+		EnableVMsAgentPool:           true,
 		CloudProviderRateLimitConfig: CloudProviderRateLimitConfig{
 			RateLimitConfig: azclients.RateLimitConfig{
 				CloudProviderRateLimit:            true,
@@ -459,6 +466,7 @@ func TestCreateAzureManagerWithNilConfig(t *testing.T) {
 	t.Setenv("CLUSTER_NAME", "mycluster")
 	t.Setenv("ARM_CLUSTER_RESOURCE_GROUP", "myrg")
 	t.Setenv("ARM_BASE_URL_FOR_AP_CLIENT", "nodeprovisioner-svc.nodeprovisioner.svc.cluster.local")
+	t.Setenv("AZURE_ENABLE_VMS_AGENT_POOLS", "true")
 
 	t.Run("environment variables correctly set", func(t *testing.T) {
 		manager, err := createAzureManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)

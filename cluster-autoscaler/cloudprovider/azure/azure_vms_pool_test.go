@@ -43,13 +43,14 @@ func newTestVMsPool(manager *AzureManager, name string) *VMsPool {
 		azureRef: azureRef{
 			Name: name,
 		},
-		manager:              manager,
-		minSize:              3,
-		maxSize:              10,
-		clusterName:          manager.config.ClusterName,
-		resourceGroup:        manager.config.ResourceGroup,
-		clusterResourceGroup: manager.config.ClusterResourceGroup,
-		sizeRefreshPeriod:    30 * time.Second,
+		manager:                   manager,
+		minSize:                   3,
+		maxSize:                   10,
+		clusterName:               manager.config.ClusterName,
+		resourceGroup:             manager.config.ResourceGroup,
+		clusterResourceGroup:      manager.config.ClusterResourceGroup,
+		enableDynamicInstanceList: true,
+		sizeRefreshPeriod:         30 * time.Second,
 	}
 }
 
@@ -84,23 +85,23 @@ func newVMsNode(vmID int64) *apiv1.Node {
 	return node
 }
 
-func getTestAgentPool(agentpoolName string, isSystemPool bool) armcontainerservice.AgentPool {
+func getTestVMsAgentPool(agentpoolName string, isSystemPool bool) armcontainerservice.AgentPool {
 	mode := armcontainerservice.AgentPoolModeUser
 	if isSystemPool {
 		mode = armcontainerservice.AgentPoolModeSystem
 	}
-	apType := armcontainerservice.AgentPoolTypeVirtualMachines
+	vmsPoolType := armcontainerservice.AgentPoolTypeVirtualMachines
 	return armcontainerservice.AgentPool{
 		Name: &agentpoolName,
 		Properties: &armcontainerservice.ManagedClusterAgentPoolProfileProperties{
-			Type: &apType,
+			Type: &vmsPoolType,
 			Mode: &mode,
 			VirtualMachinesProfile: &armcontainerservice.VirtualMachinesProfile{
 				Scale: &armcontainerservice.ScaleProfile{
 					Manual: []*armcontainerservice.ManualScaleProfile{
 						{
 							Count: to.Int32Ptr(3),
-							Sizes: []*string{to.StringPtr("Standard_D2_v2")},
+							Sizes: []*string{to.StringPtr("Standard_D2_v2"), to.StringPtr("Standard_D4_v2")},
 						},
 					},
 				},
@@ -166,7 +167,7 @@ func TestGetVMsFromCacheForVMsPool(t *testing.T) {
 	ap.manager.azClient.agentPoolClient = mockAgentpoolclient
 	mockVMClient.EXPECT().List(gomock.Any(), ap.resourceGroup).Return(expectedVMs, nil)
 
-	agentpool := getTestAgentPool(agentpoolName, false)
+	agentpool := getTestVMsAgentPool(agentpoolName, false)
 	fakeAPListPager := getFakeAgentpoolListPager(&agentpool)
 	mockAgentpoolclient.EXPECT().NewListPager(gomock.Any(), gomock.Any(), nil).
 		Return(fakeAPListPager)
@@ -213,7 +214,7 @@ func TestNodes(t *testing.T) {
 	ap.manager.config.EnableVMsAgentPool = true
 	mockAgentpoolclient := NewMockAgentPoolsClient(ctrl)
 	ap.manager.azClient.agentPoolClient = mockAgentpoolclient
-	agentpool := getTestAgentPool(agentpoolName, false)
+	agentpool := getTestVMsAgentPool(agentpoolName, false)
 	fakeAPListPager := getFakeAgentpoolListPager(&agentpool)
 	mockAgentpoolclient.EXPECT().NewListPager(gomock.Any(), gomock.Any(), nil).
 		Return(fakeAPListPager)
@@ -255,7 +256,7 @@ func TestGetCurSizeForVMsPool(t *testing.T) {
 	ap.manager.config.EnableVMsAgentPool = true
 	mockAgentpoolclient := NewMockAgentPoolsClient(ctrl)
 	ap.manager.azClient.agentPoolClient = mockAgentpoolclient
-	agentpool := getTestAgentPool(agentpoolName, false)
+	agentpool := getTestVMsAgentPool(agentpoolName, false)
 	fakeAPListPager := getFakeAgentpoolListPager(&agentpool)
 	mockAgentpoolclient.EXPECT().NewListPager(gomock.Any(), gomock.Any(), nil).
 		Return(fakeAPListPager)
@@ -322,7 +323,7 @@ func TestVMsPoolIncreaseSize(t *testing.T) {
 	ap.manager.config.EnableVMsAgentPool = true
 	mockAgentpoolclient := NewMockAgentPoolsClient(ctrl)
 	ap.manager.azClient.agentPoolClient = mockAgentpoolclient
-	agentpool := getTestAgentPool(agentpoolName, false)
+	agentpool := getTestVMsAgentPool(agentpoolName, false)
 	fakeAPListPager := getFakeAgentpoolListPager(&agentpool)
 	mockAgentpoolclient.EXPECT().NewListPager(gomock.Any(), gomock.Any(), nil).
 		Return(fakeAPListPager)
@@ -388,7 +389,7 @@ func TestDeleteVMsPoolNodes(t *testing.T) {
 
 	manager.azureCache = &azureCache{
 		vmsPoolMap: map[string]armcontainerservice.AgentPool{
-			agentpoolName: getTestAgentPool(agentpoolName, false),
+			agentpoolName: getTestVMsAgentPool(agentpoolName, false),
 		},
 		instanceToNodeGroup: map[azureRef]cloudprovider.NodeGroup{
 			{Name: providerID}: ap,

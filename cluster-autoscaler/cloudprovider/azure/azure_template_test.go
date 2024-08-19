@@ -18,8 +18,10 @@ package azure
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v5"
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/to"
@@ -178,4 +180,30 @@ func TestEmptyTopologyFromScaleSet(t *testing.T) {
 	azureDiskTopology, ok := labels[azureDiskTopologyKey]
 	assert.True(t, ok)
 	assert.Equal(t, expectedAzureDiskTopology, azureDiskTopology)
+}
+
+func TestBuildNodeTemplateFromVMsPool(t *testing.T) {
+	vmsPool := getTestVMsAgentPool("vmspool", false)
+	vmsPool.Properties.NodeLabels = map[string]*string{
+		"foo": to.StringPtr("bar"),
+	}
+	taint := "dedicated=myapp:NoSchedule"
+	vmsPool.Properties.NodeTaints = []*string{&taint}
+	vmsPool.Properties.AvailabilityZones = []*string{to.StringPtr("1"), to.StringPtr("3")}
+	osType := armcontainerservice.OSTypeWindows
+	vmsPool.Properties.OSType = &osType
+
+	location := "westus"
+	template := buildNodeTemplateFromVMsPool(vmsPool, location)
+	assert.Equal(t, location, template.Location)
+	assert.Equal(t, "Standard_D2_v2", template.SkuName)
+
+	assert.Equal(t, len(vmsPool.Properties.NodeLabels), len(template.Tags))
+	assert.Contains(t, template.Tags, "foo")
+	assert.Equal(t, *template.Tags["foo"], "bar")
+	assert.Equal(t, len(vmsPool.Properties.NodeTaints), len(template.Taints))
+	assert.Contains(t, template.Taints, taint)
+
+	assert.Equal(t, 2, len(*template.Zones))
+	assert.Equal(t, strings.ToLower(string(osType)), template.InstanceOS)
 }

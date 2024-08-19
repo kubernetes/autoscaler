@@ -19,8 +19,10 @@ package azure
 import (
 	"testing"
 
+	"go.uber.org/mock/gomock"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v5"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -69,4 +71,36 @@ func TestFindForInstance(t *testing.T) {
 	assert.Nil(t, nodeGroup)
 	assert.NoError(t, err)
 	assert.True(t, ac.unownedInstances[inst])
+}
+
+func TestFetchVMsPools(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	provider := newTestProvider(t)
+	ac := provider.azureManager.azureCache
+	mockAgentpoolclient := NewMockAgentPoolsClient(ctrl)
+	ac.azClient.agentPoolClient = mockAgentpoolclient
+
+	vmsPoolName := "vmspool1"
+	vmsPool := getTestVMsAgentPool(vmsPoolName, false)
+	vmssPoolName := "vmsspool1"
+	vmssPoolType := armcontainerservice.AgentPoolTypeVirtualMachineScaleSets
+	vmssPool := armcontainerservice.AgentPool{
+		Name: &vmssPoolName,
+		Properties: &armcontainerservice.ManagedClusterAgentPoolProfileProperties{
+			Type: &vmssPoolType,
+		},
+	}
+	invalidPool := armcontainerservice.AgentPool{}
+	fakeAPListPager := getFakeAgentpoolListPager(&vmsPool, &vmssPool, &invalidPool)
+	mockAgentpoolclient.EXPECT().NewListPager(gomock.Any(), gomock.Any(), nil).
+		Return(fakeAPListPager)
+
+	vmsPoolMap, err := ac.fetchVMsPools()
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(vmsPoolMap))
+
+	_, ok := vmsPoolMap[vmsPoolName]
+	assert.True(t, ok)
 }

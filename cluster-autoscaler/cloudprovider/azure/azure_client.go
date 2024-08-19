@@ -412,7 +412,7 @@ func newAzClient(cfg *Config, env *azure.Environment) (*azClient, error) {
 	if err != nil {
 		klog.Errorf("newAgentpoolClient failed with error: %s", err)
 		if cfg.EnableVMsAgentPool {
-			// only return error if VMs agent pool is supported, otherwise ignore the error
+			// only return error if VMs agent pool is supported
 			return nil, err
 		}
 	}

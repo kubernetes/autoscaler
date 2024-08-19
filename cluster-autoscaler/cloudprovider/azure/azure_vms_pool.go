@@ -50,6 +50,8 @@ type VMsPool struct {
 	sizeMutex         sync.Mutex
 	lastSizeRefresh   time.Time
 	sizeRefreshPeriod time.Duration
+
+	enableDynamicInstanceList bool
 }
 
 // NewVMsPool creates a new VMsPool
@@ -62,12 +64,13 @@ func NewVMsPool(spec *dynamic.NodeGroupSpec, am *AzureManager) (*VMsPool, error)
 			Name: spec.Name,
 		},
 
-		manager:              am,
-		resourceGroup:        am.config.ResourceGroup,
-		clusterResourceGroup: am.config.ClusterResourceGroup,
-		clusterName:          am.config.ClusterName,
-		location:             am.config.Location,
-		sizeRefreshPeriod:    am.azureCache.refreshInterval,
+		manager:                   am,
+		resourceGroup:             am.config.ResourceGroup,
+		clusterResourceGroup:      am.config.ClusterResourceGroup,
+		clusterName:               am.config.ClusterName,
+		location:                  am.config.Location,
+		sizeRefreshPeriod:         am.azureCache.refreshInterval,
+		enableDynamicInstanceList: am.config.EnableDynamicInstanceList,
 
 		curSize: -1,
 		minSize: spec.MinSize,
@@ -513,7 +516,7 @@ func (agentPool *VMsPool) TemplateNodeInfo() (*schedulerframework.NodeInfo, erro
 	}
 
 	template := buildNodeTemplateFromVMsPool(vmsPool, agentPool.location)
-	node, err := buildNodeFromTemplate(agentPool.Name, template, agentPool.manager, false)
+	node, err := buildNodeFromTemplate(agentPool.Name, template, agentPool.manager, agentPool.enableDynamicInstanceList)
 
 	if err != nil {
 		return nil, err

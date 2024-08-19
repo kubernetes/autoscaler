@@ -290,7 +290,6 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 		// if enableVMsAgentPools is true, CAS can handle both vmss and vms pool at the same time
 		if enableVMsAgentPools := os.Getenv("AZURE_ENABLE_VMS_AGENT_POOLS"); enableVMsAgentPools != "" {
 			cfg.EnableVMsAgentPool, err = strconv.ParseBool(enableVMsAgentPools)
-			klog.Infof("cfg.EnableVMsAgentPool: %v", cfg.EnableVMsAgentPool)
 			if err != nil {
 				return nil, fmt.Errorf("failed to parse AZURE_ENABLE_VMS_AGENT_POOLS %q: %v", enableVMsAgentPools, err)
 			}

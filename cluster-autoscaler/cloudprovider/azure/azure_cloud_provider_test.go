@@ -168,14 +168,7 @@ func TestHasInstance(t *testing.T) {
 		},
 	}
 
-	vmsType := armcontainerservice.AgentPoolTypeVirtualMachines
-	vmsPool := armcontainerservice.AgentPool{
-		Name: to.StringPtr("test-vms-pool"),
-		Properties: &armcontainerservice.ManagedClusterAgentPoolProfileProperties{
-			Type: &vmsType,
-		},
-	}
-
+	vmsPool := getTestVMsAgentPool("test-vms-pool", false)
 	fakeAPListPager := getFakeAgentpoolListPager(&vmssPool, &vmsPool)
 	mockAgentpoolclient.EXPECT().NewListPager(provider.azureManager.azureCache.clusterResourceGroup, provider.azureManager.azureCache.clusterName, nil).
 		Return(fakeAPListPager).AnyTimes()
@@ -310,14 +303,7 @@ func TestMixedNodeGroups(t *testing.T) {
 		},
 	}
 
-	vmsType := armcontainerservice.AgentPoolTypeVirtualMachines
-	vmsPool := armcontainerservice.AgentPool{
-		Name: to.StringPtr("test-vms-pool"),
-		Properties: &armcontainerservice.ManagedClusterAgentPoolProfileProperties{
-			Type: &vmsType,
-		},
-	}
-
+	vmsPool := getTestVMsAgentPool("test-vms-pool", false)
 	fakeAPListPager := getFakeAgentpoolListPager(&vmssPool, &vmsPool)
 	mockAgentpoolclient.EXPECT().NewListPager(provider.azureManager.azureCache.clusterResourceGroup, provider.azureManager.azureCache.clusterName, nil).
 		Return(fakeAPListPager).AnyTimes()
