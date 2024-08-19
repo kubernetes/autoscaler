@@ -31,7 +31,7 @@ import (
 
 func TestProvisioningRequestPodsInjector(t *testing.T) {
 	now := time.Now()
-	minAgo := now.Add(-1 * time.Minute)
+	minAgo := now.Add(-1 * time.Minute).Add(-1 * time.Second)
 	hourAgo := now.Add(-1 * time.Hour)
 
 	accepted := metav1.Condition{
@@ -124,7 +124,8 @@ func TestProvisioningRequestPodsInjector(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		client := provreqclient.NewFakeProvisioningRequestClient(context.Background(), t, tc.provReqs...)
-		injector := ProvisioningRequestPodsInjector{client, clock.NewFakePassiveClock(now)}
+		backoffTime := map[string]time.Duration{key(notProvisionedRecentlyProvReqB): 2 * time.Minute}
+		injector := ProvisioningRequestPodsInjector{client, clock.NewFakePassiveClock(now), client, backoffTime}
 		getUnscheduledPods, err := injector.Process(nil, provreqwrapper.BuildTestPods("ns", "pod", tc.existingUnsUnschedulablePodCount))
 		if err != nil {
 			t.Errorf("%s failed: injector.Process return error %v", tc.name, err)

@@ -36,13 +36,17 @@ import (
 )
 
 const (
-	defaultRetryTime = 10 * time.Minute
+	defaultRetryTime = 1 * time.Minute
+	maxBackoffTime   = 10 * time.Minute
+	// TODO: replace with timeout for element rather than max size of cache.
+	maxCacheSize = 1000
 )
 
 // ProvisioningRequestPodsInjector creates in-memory pods from ProvisioningRequest and inject them to unscheduled pods list.
 type ProvisioningRequestPodsInjector struct {
-	client *provreqclient.ProvisioningRequestClient
-	clock  clock.PassiveClock
+	clock           clock.PassiveClock
+	client          *provreqclient.ProvisioningRequestClient
+	backoffDuration map[string]time.Duration
 }
 
 // IsAvailableForProvisioning checks if the provisioning request is the correct state for processing and provisioning has not been attempted recently.
@@ -53,7 +57,15 @@ func (p *ProvisioningRequestPodsInjector) IsAvailableForProvisioning(pr *provreq
 	}
 	provisioned := apimeta.FindStatusCondition(conditions, v1.Provisioned)
 	if provisioned != nil {
-		if provisioned.Status == metav1.ConditionFalse && provisioned.LastTransitionTime.Add(defaultRetryTime).Before(p.clock.Now()) {
+		if provisioned.Status == metav1.ConditionFalse {
+			return true
+		}
+		retryTime, found := p.backoffDuration[key(pr)]
+		if !found {
+			retryTime = defaultRetryTime
+		}
+		if provisioned.LastTransitionTime.Add(retryTime).Before(p.clock.Now()) {
+			p.backoffDuration[key(pr)] = max(2*retryTime, maxBackoffTime)
 			return true
 		}
 		return false
@@ -83,33 +95,39 @@ func (p *ProvisioningRequestPodsInjector) MarkAsFailed(pr *provreqwrapper.Provis
 func (p *ProvisioningRequestPodsInjector) GetPodsFromNextRequest(
 	isSupportedClass func(*provreqwrapper.ProvisioningRequest) bool,
 ) ([]*apiv1.Pod, error) {
+	if len(p.backoffDuration) >= maxCacheSize {
+		p.backoffDuration = make(map[string]time.Duration)
+	}
 	provReqs, err := p.client.ProvisioningRequests()
 	if err != nil {
 		return nil, err
 	}
-
 	for _, pr := range provReqs {
 		if !isSupportedClass(pr) {
+			klog.Warningf("Provisioning Class %s is not supported", pr.Spec.ProvisioningClassName)
+			continue
+		}
+		conditions := pr.Status.Conditions
+		if apimeta.IsStatusConditionTrue(conditions, v1.Failed) || apimeta.IsStatusConditionTrue(conditions, v1.Provisioned) {
+			delete(p.backoffDuration, key(pr))
 			continue
 		}
 
-		//TODO(yaroslava): support exponential backoff
 		// Inject pods if ProvReq wasn't scaled up before or it has Provisioned == False condition more than defaultRetryTime
 		if !p.IsAvailableForProvisioning(pr) {
 			continue
 		}
-
-		podsFromProvReq, err := provreqpods.PodsForProvisioningRequest(pr)
+	
+		provreqpods, err := provreqpods.PodsForProvisioningRequest(pr)
 		if err != nil {
 			klog.Errorf("Failed to get pods for ProvisioningRequest %v", pr.Name)
 			p.MarkAsFailed(pr, provreqconditions.FailedToCreatePodsReason, err.Error())
 			continue
 		}
-
 		if err := p.MarkAsAccepted(pr); err != nil {
 			continue
 		}
-		return podsFromProvReq, nil
+		return provreqpods, nil
 	}
 	return nil, nil
 }
@@ -142,4 +160,8 @@ func NewProvisioningRequestPodsInjector(kubeConfig *rest.Config) (pods.PodListPr
 		return nil, err
 	}
 	return &ProvisioningRequestPodsInjector{client: client, clock: clock.RealClock{}}, nil
+}
+
+func key(pr *provreqwrapper.ProvisioningRequest) string {
+	return string(pr.UID)
 }
