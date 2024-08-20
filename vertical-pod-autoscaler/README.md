@@ -392,7 +392,7 @@ These options cannot be used together and are mutually exclusive.
 
  It is possible to set the failurePolicy of the webhook to `Fail` by passing `--webhook-failure-policy-fail=true` to the VPA admission controller.
  Please use this option with caution as it may be possible to break Pod creation if there is a failure with the VPA.
-Using it in conjunction with `--ignored-vpa-object-namespaces` or `--vpa-object-namespace` to reduce risk.
+Using it in conjunction with `--ignored-vpa-object-namespaces=kube-system` or `--vpa-object-namespace` to reduce risk.
 
 # Known limitations
 
