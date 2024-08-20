@@ -4,7 +4,7 @@ This document, and directory are focused on the ability to deploy and test a wor
 
 ## Steps:
 
-1. Create a codespace using one of the devcontainer setups from the devcontainers branch of https://github.com/azure/autoscaler
+1. Create a codespace using one of the devcontainer setups from the `devcontainers` branch of https://github.com/azure/autoscaler
 
 2. In the codespace switch to whatever branch you want to test
     - Note: for testing an upstream branch use: `git checkout upstream/<branch-name>`
