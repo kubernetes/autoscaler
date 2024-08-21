@@ -23,6 +23,8 @@ import (
 	"k8s.io/apimachinery/pkg/watch"
 	applyconfiguration "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/applyconfiguration"
 	clientset "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/clientset/versioned"
+	autoscalingv1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/clientset/versioned/typed/autoscaling.x-k8s.io/v1"
+	fakeautoscalingv1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/clientset/versioned/typed/autoscaling.x-k8s.io/v1/fake"
 	autoscalingv1beta1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/clientset/versioned/typed/autoscaling.x-k8s.io/v1beta1"
 	fakeautoscalingv1beta1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/clientset/versioned/typed/autoscaling.x-k8s.io/v1beta1/fake"
 	"k8s.io/client-go/discovery"
@@ -115,6 +117,11 @@ var (
 	_ clientset.Interface = &Clientset{}
 	_ testing.FakeClient  = &Clientset{}
 )
+
+// AutoscalingV1 retrieves the AutoscalingV1Client
+func (c *Clientset) AutoscalingV1() autoscalingv1.AutoscalingV1Interface {
+	return &fakeautoscalingv1.FakeAutoscalingV1{Fake: &c.Fake}
+}
 
 // AutoscalingV1beta1 retrieves the AutoscalingV1beta1Client
 func (c *Clientset) AutoscalingV1beta1() autoscalingv1beta1.AutoscalingV1beta1Interface {

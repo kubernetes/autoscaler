@@ -21,7 +21,9 @@ package applyconfiguration
 import (
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
+	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
 	v1beta1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1beta1"
+	autoscalingxk8siov1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/applyconfiguration/autoscaling.x-k8s.io/v1"
 	autoscalingxk8siov1beta1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/applyconfiguration/autoscaling.x-k8s.io/v1beta1"
 	internal "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/applyconfiguration/internal"
 	testing "k8s.io/client-go/testing"
@@ -31,7 +33,19 @@ import (
 // apply configuration type exists for the given GroupVersionKind.
 func ForKind(kind schema.GroupVersionKind) interface{} {
 	switch kind {
-	// Group=autoscaling.x-k8s.io, Version=v1beta1
+	// Group=autoscaling.x-k8s.io, Version=v1
+	case v1.SchemeGroupVersion.WithKind("PodSet"):
+		return &autoscalingxk8siov1.PodSetApplyConfiguration{}
+	case v1.SchemeGroupVersion.WithKind("ProvisioningRequest"):
+		return &autoscalingxk8siov1.ProvisioningRequestApplyConfiguration{}
+	case v1.SchemeGroupVersion.WithKind("ProvisioningRequestSpec"):
+		return &autoscalingxk8siov1.ProvisioningRequestSpecApplyConfiguration{}
+	case v1.SchemeGroupVersion.WithKind("ProvisioningRequestStatus"):
+		return &autoscalingxk8siov1.ProvisioningRequestStatusApplyConfiguration{}
+	case v1.SchemeGroupVersion.WithKind("Reference"):
+		return &autoscalingxk8siov1.ReferenceApplyConfiguration{}
+
+		// Group=autoscaling.x-k8s.io, Version=v1beta1
 	case v1beta1.SchemeGroupVersion.WithKind("PodSet"):
 		return &autoscalingxk8siov1beta1.PodSetApplyConfiguration{}
 	case v1beta1.SchemeGroupVersion.WithKind("ProvisioningRequest"):
