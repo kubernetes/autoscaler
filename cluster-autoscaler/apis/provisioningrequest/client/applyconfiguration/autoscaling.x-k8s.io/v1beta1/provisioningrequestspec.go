@@ -22,7 +22,7 @@ import (
 	autoscalingxk8siov1beta1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1beta1"
 )
 
-// ProvisioningRequestSpecApplyConfiguration represents an declarative configuration of the ProvisioningRequestSpec type for use
+// ProvisioningRequestSpecApplyConfiguration represents a declarative configuration of the ProvisioningRequestSpec type for use
 // with apply.
 type ProvisioningRequestSpecApplyConfiguration struct {
 	PodSets               []PodSetApplyConfiguration                    `json:"podSets,omitempty"`
@@ -30,7 +30,7 @@ type ProvisioningRequestSpecApplyConfiguration struct {
 	Parameters            map[string]autoscalingxk8siov1beta1.Parameter `json:"parameters,omitempty"`
 }
 
-// ProvisioningRequestSpecApplyConfiguration constructs an declarative configuration of the ProvisioningRequestSpec type for use with
+// ProvisioningRequestSpecApplyConfiguration constructs a declarative configuration of the ProvisioningRequestSpec type for use with
 // apply.
 func ProvisioningRequestSpec() *ProvisioningRequestSpecApplyConfiguration {
 	return &ProvisioningRequestSpecApplyConfiguration{}
