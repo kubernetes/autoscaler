@@ -23,8 +23,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1beta1"
+	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
 )
 
 // TestProvReqOptions is a helper struct to make constructing test ProvisioningRequest object easier.
@@ -87,22 +86,22 @@ func BuildTestProvisioningRequest(namespace, name, cpu, memory, gpu string, podC
 		}
 	}
 	return NewProvisioningRequest(
-		&v1beta1.ProvisioningRequest{
+		&v1.ProvisioningRequest{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:              name,
 				Namespace:         namespace,
-				CreationTimestamp: v1.NewTime(creationTimestamp),
+				CreationTimestamp: metav1.NewTime(creationTimestamp),
 			},
-			Spec: v1beta1.ProvisioningRequestSpec{
+			Spec: v1.ProvisioningRequestSpec{
 				ProvisioningClassName: class,
-				PodSets: []v1beta1.PodSet{
+				PodSets: []v1.PodSet{
 					{
-						PodTemplateRef: v1beta1.Reference{Name: fmt.Sprintf("%s-template-name", name)},
+						PodTemplateRef: v1.Reference{Name: fmt.Sprintf("%s-template-name", name)},
 						Count:          podCount,
 					},
 				},
 			},
-			Status: v1beta1.ProvisioningRequestStatus{
+			Status: v1.ProvisioningRequestStatus{
 				Conditions: []metav1.Condition{},
 			},
 		},
@@ -111,7 +110,7 @@ func BuildTestProvisioningRequest(namespace, name, cpu, memory, gpu string, podC
 				ObjectMeta: metav1.ObjectMeta{
 					Name:              fmt.Sprintf("%s-template-name", name),
 					Namespace:         namespace,
-					CreationTimestamp: v1.NewTime(creationTimestamp),
+					CreationTimestamp: metav1.NewTime(creationTimestamp),
 				},
 				Template: apiv1.PodTemplateSpec{
 					ObjectMeta: metav1.ObjectMeta{

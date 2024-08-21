@@ -19,8 +19,8 @@ package conditions
 import (
 	"testing"
 
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1beta1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
 )
@@ -28,33 +28,33 @@ import (
 func TestBookCapacity(t *testing.T) {
 	tests := []struct {
 		name         string
-		prConditions []v1.Condition
+		prConditions []metav1.Condition
 		want         bool
 	}{
 		{
 			name: "BookingExpired",
-			prConditions: []v1.Condition{
+			prConditions: []metav1.Condition{
 				{
-					Type:   v1beta1.Provisioned,
-					Status: v1.ConditionTrue,
+					Type:   v1.Provisioned,
+					Status: metav1.ConditionTrue,
 				},
 				{
-					Type:   v1beta1.BookingExpired,
-					Status: v1.ConditionTrue,
+					Type:   v1.BookingExpired,
+					Status: metav1.ConditionTrue,
 				},
 			},
 			want: false,
 		},
 		{
 			name: "Failed",
-			prConditions: []v1.Condition{
+			prConditions: []metav1.Condition{
 				{
-					Type:   v1beta1.Provisioned,
-					Status: v1.ConditionTrue,
+					Type:   v1.Provisioned,
+					Status: metav1.ConditionTrue,
 				},
 				{
-					Type:   v1beta1.Failed,
-					Status: v1.ConditionTrue,
+					Type:   v1.Failed,
+					Status: metav1.ConditionTrue,
 				},
 			},
 			want: false,
@@ -65,24 +65,24 @@ func TestBookCapacity(t *testing.T) {
 		},
 		{
 			name: "Capacity found and provisioned",
-			prConditions: []v1.Condition{
+			prConditions: []metav1.Condition{
 				{
-					Type:   v1beta1.Provisioned,
-					Status: v1.ConditionTrue,
+					Type:   v1.Provisioned,
+					Status: metav1.ConditionTrue,
 				},
 				{
-					Type:   v1beta1.Provisioned,
-					Status: v1.ConditionTrue,
+					Type:   v1.Provisioned,
+					Status: metav1.ConditionTrue,
 				},
 			},
 			want: true,
 		},
 		{
 			name: "Capacity is not found",
-			prConditions: []v1.Condition{
+			prConditions: []metav1.Condition{
 				{
-					Type:   v1beta1.Provisioned,
-					Status: v1.ConditionFalse,
+					Type:   v1.Provisioned,
+					Status: metav1.ConditionFalse,
 				},
 			},
 			want: false,
@@ -92,11 +92,11 @@ func TestBookCapacity(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			for class := range provisioningrequest.SupportedProvisioningClasses {
 				pr := provreqwrapper.NewProvisioningRequest(
-					&v1beta1.ProvisioningRequest{
-						Spec: v1beta1.ProvisioningRequestSpec{
+					&v1.ProvisioningRequest{
+						Spec: v1.ProvisioningRequestSpec{
 							ProvisioningClassName: class,
 						},
-						Status: v1beta1.ProvisioningRequestStatus{
+						Status: v1.ProvisioningRequestStatus{
 							Conditions: test.prConditions,
 						},
 					}, nil)
@@ -112,138 +112,138 @@ func TestBookCapacity(t *testing.T) {
 func TestSetCondition(t *testing.T) {
 	tests := []struct {
 		name          string
-		oldConditions []v1.Condition
+		oldConditions []metav1.Condition
 		newType       string
-		newStatus     v1.ConditionStatus
-		want          []v1.Condition
+		newStatus     metav1.ConditionStatus
+		want          []metav1.Condition
 	}{
 		{
 			name:      "Accepted added, empty conditions before",
-			newType:   v1beta1.Accepted,
-			newStatus: v1.ConditionTrue,
-			want: []v1.Condition{
+			newType:   v1.Accepted,
+			newStatus: metav1.ConditionTrue,
+			want: []metav1.Condition{
 				{
-					Type:   v1beta1.Accepted,
-					Status: v1.ConditionTrue,
+					Type:   v1.Accepted,
+					Status: metav1.ConditionTrue,
 				},
 			},
 		},
 		{
 			name:      "Provisioned added, empty conditions before",
-			newType:   v1beta1.Provisioned,
-			newStatus: v1.ConditionTrue,
-			want: []v1.Condition{
+			newType:   v1.Provisioned,
+			newStatus: metav1.ConditionTrue,
+			want: []metav1.Condition{
 				{
-					Type:   v1beta1.Provisioned,
-					Status: v1.ConditionTrue,
+					Type:   v1.Provisioned,
+					Status: metav1.ConditionTrue,
 				},
 			},
 		},
 		{
 			name: "Provisioned updated",
-			oldConditions: []v1.Condition{
+			oldConditions: []metav1.Condition{
 				{
-					Type:   v1beta1.Provisioned,
-					Status: v1.ConditionFalse,
+					Type:   v1.Provisioned,
+					Status: metav1.ConditionFalse,
 				},
 			},
-			newType:   v1beta1.Provisioned,
-			newStatus: v1.ConditionTrue,
-			want: []v1.Condition{
+			newType:   v1.Provisioned,
+			newStatus: metav1.ConditionTrue,
+			want: []metav1.Condition{
 				{
-					Type:   v1beta1.Provisioned,
-					Status: v1.ConditionTrue,
+					Type:   v1.Provisioned,
+					Status: metav1.ConditionTrue,
 				},
 			},
 		},
 		{
 			name: "Failed added, non-empty conditions before",
-			oldConditions: []v1.Condition{
+			oldConditions: []metav1.Condition{
 				{
-					Type:   v1beta1.Provisioned,
-					Status: v1.ConditionTrue,
+					Type:   v1.Provisioned,
+					Status: metav1.ConditionTrue,
 				},
 			},
-			newType:   v1beta1.Failed,
-			newStatus: v1.ConditionTrue,
-			want: []v1.Condition{
+			newType:   v1.Failed,
+			newStatus: metav1.ConditionTrue,
+			want: []metav1.Condition{
 				{
-					Type:   v1beta1.Provisioned,
-					Status: v1.ConditionTrue,
+					Type:   v1.Provisioned,
+					Status: metav1.ConditionTrue,
 				},
 				{
-					Type:   v1beta1.Failed,
-					Status: v1.ConditionTrue,
+					Type:   v1.Failed,
+					Status: metav1.ConditionTrue,
 				},
 			},
 		},
 		{
 			name: "Unknown condition status, conditions are updated",
-			oldConditions: []v1.Condition{
+			oldConditions: []metav1.Condition{
 				{
-					Type:   v1beta1.Provisioned,
-					Status: v1.ConditionTrue,
+					Type:   v1.Provisioned,
+					Status: metav1.ConditionTrue,
 				},
 			},
-			newType:   v1beta1.Failed,
-			newStatus: v1.ConditionUnknown,
-			want: []v1.Condition{
+			newType:   v1.Failed,
+			newStatus: metav1.ConditionUnknown,
+			want: []metav1.Condition{
 				{
-					Type:   v1beta1.Provisioned,
-					Status: v1.ConditionTrue,
+					Type:   v1.Provisioned,
+					Status: metav1.ConditionTrue,
 				},
 				{
-					Type:   v1beta1.Failed,
-					Status: v1.ConditionUnknown,
+					Type:   v1.Failed,
+					Status: metav1.ConditionUnknown,
 				},
 			},
 		},
 		{
 			name: "Unknown condition type, conditions are not updated",
-			oldConditions: []v1.Condition{
+			oldConditions: []metav1.Condition{
 				{
-					Type:   v1beta1.Provisioned,
-					Status: v1.ConditionTrue,
+					Type:   v1.Provisioned,
+					Status: metav1.ConditionTrue,
 				},
 			},
 			newType:   "Unknown",
-			newStatus: v1.ConditionTrue,
-			want: []v1.Condition{
+			newStatus: metav1.ConditionTrue,
+			want: []metav1.Condition{
 				{
-					Type:   v1beta1.Provisioned,
-					Status: v1.ConditionTrue,
+					Type:   v1.Provisioned,
+					Status: metav1.ConditionTrue,
 				},
 			},
 		},
 		{
 			name:      "BookingExpired, empty conditions before",
-			newType:   v1beta1.BookingExpired,
-			newStatus: v1.ConditionFalse,
-			want: []v1.Condition{
+			newType:   v1.BookingExpired,
+			newStatus: metav1.ConditionFalse,
+			want: []metav1.Condition{
 				{
-					Type:   v1beta1.BookingExpired,
-					Status: v1.ConditionFalse,
+					Type:   v1.BookingExpired,
+					Status: metav1.ConditionFalse,
 				},
 			},
 		},
 		{
 			name: "Capacity found with unknown condition before",
-			oldConditions: []v1.Condition{
+			oldConditions: []metav1.Condition{
 				{
 					Type:   "unknown",
-					Status: v1.ConditionTrue,
+					Status: metav1.ConditionTrue,
 				},
 			},
-			newType:   v1beta1.Provisioned,
-			newStatus: v1.ConditionTrue,
-			want: []v1.Condition{
+			newType:   v1.Provisioned,
+			newStatus: metav1.ConditionTrue,
+			want: []metav1.Condition{
 				{
 					Type:   "unknown",
-					Status: v1.ConditionTrue,
+					Status: metav1.ConditionTrue,
 				},
 				{
-					Type:   v1beta1.Provisioned,
-					Status: v1.ConditionTrue,
+					Type:   v1.Provisioned,
+					Status: metav1.ConditionTrue,
 				},
 			},
 		},
@@ -251,12 +251,12 @@ func TestSetCondition(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			pr := provreqwrapper.NewProvisioningRequest(
-				&v1beta1.ProvisioningRequest{
-					Status: v1beta1.ProvisioningRequestStatus{
+				&v1.ProvisioningRequest{
+					Status: v1.ProvisioningRequestStatus{
 						Conditions: test.oldConditions,
 					},
 				}, nil)
-			AddOrUpdateCondition(pr, test.newType, test.newStatus, "", "", v1.Now())
+			AddOrUpdateCondition(pr, test.newType, test.newStatus, "", "", metav1.Now())
 			got := pr.Status.Conditions
 			if len(got) > 2 || len(got) != len(test.want) || got[0].Type != test.want[0].Type || got[0].Status != test.want[0].Status {
 				t.Errorf("want %v, got: %v", test.want, got)

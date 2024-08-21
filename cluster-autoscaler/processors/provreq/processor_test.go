@@ -26,7 +26,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kubernetes/pkg/scheduler/framework"
 
-	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1beta1"
+	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/conditions"
@@ -56,7 +56,7 @@ func TestRefresh(t *testing.T) {
 			creationTime: weekAgo,
 			wantConditions: []metav1.Condition{
 				{
-					Type:               v1beta1.Failed,
+					Type:               v1.Failed,
 					Status:             metav1.ConditionTrue,
 					LastTransitionTime: metav1.NewTime(now),
 					Reason:             conditions.ExpiredReason,
@@ -69,7 +69,7 @@ func TestRefresh(t *testing.T) {
 			creationTime: weekAgo,
 			conditions: []metav1.Condition{
 				{
-					Type:               v1beta1.Provisioned,
+					Type:               v1.Provisioned,
 					Status:             metav1.ConditionFalse,
 					LastTransitionTime: metav1.NewTime(dayAgo),
 					Reason:             conditions.ExpiredReason,
@@ -78,14 +78,14 @@ func TestRefresh(t *testing.T) {
 			},
 			wantConditions: []metav1.Condition{
 				{
-					Type:               v1beta1.Provisioned,
+					Type:               v1.Provisioned,
 					Status:             metav1.ConditionFalse,
 					LastTransitionTime: metav1.NewTime(dayAgo),
 					Reason:             conditions.ExpiredReason,
 					Message:            conditions.ExpiredMsg,
 				},
 				{
-					Type:               v1beta1.Failed,
+					Type:               v1.Failed,
 					Status:             metav1.ConditionTrue,
 					LastTransitionTime: metav1.NewTime(now),
 					Reason:             conditions.ExpiredReason,
@@ -98,7 +98,7 @@ func TestRefresh(t *testing.T) {
 			creationTime: dayAgo,
 			conditions: []metav1.Condition{
 				{
-					Type:               v1beta1.Provisioned,
+					Type:               v1.Provisioned,
 					Status:             metav1.ConditionTrue,
 					LastTransitionTime: metav1.NewTime(dayAgo),
 					Reason:             conditions.ExpiredReason,
@@ -107,14 +107,14 @@ func TestRefresh(t *testing.T) {
 			},
 			wantConditions: []metav1.Condition{
 				{
-					Type:               v1beta1.Provisioned,
+					Type:               v1.Provisioned,
 					Status:             metav1.ConditionTrue,
 					LastTransitionTime: metav1.NewTime(dayAgo),
 					Reason:             conditions.ExpiredReason,
 					Message:            conditions.ExpiredMsg,
 				},
 				{
-					Type:               v1beta1.BookingExpired,
+					Type:               v1.BookingExpired,
 					Status:             metav1.ConditionTrue,
 					LastTransitionTime: metav1.NewTime(now),
 					Reason:             conditions.CapacityReservationTimeExpiredReason,
@@ -127,7 +127,7 @@ func TestRefresh(t *testing.T) {
 			creationTime: dayAgo,
 			conditions: []metav1.Condition{
 				{
-					Type:               v1beta1.Failed,
+					Type:               v1.Failed,
 					Status:             metav1.ConditionTrue,
 					LastTransitionTime: metav1.NewTime(dayAgo),
 					Reason:             "Failed",
@@ -136,7 +136,7 @@ func TestRefresh(t *testing.T) {
 			},
 			wantConditions: []metav1.Condition{
 				{
-					Type:               v1beta1.Failed,
+					Type:               v1.Failed,
 					Status:             metav1.ConditionTrue,
 					LastTransitionTime: metav1.NewTime(dayAgo),
 					Reason:             "Failed",
@@ -149,17 +149,17 @@ func TestRefresh(t *testing.T) {
 		pr := provreqclient.ProvisioningRequestWrapperForTesting("namespace", "name-1")
 		pr.Status.Conditions = test.conditions
 		pr.CreationTimestamp = metav1.NewTime(test.creationTime)
-		pr.Spec.ProvisioningClassName = v1beta1.ProvisioningClassCheckCapacity
+		pr.Spec.ProvisioningClassName = v1.ProvisioningClassCheckCapacity
 		additionalPr := provreqclient.ProvisioningRequestWrapperForTesting("namespace", "additional")
 		additionalPr.CreationTimestamp = metav1.NewTime(weekAgo)
-		additionalPr.Spec.ProvisioningClassName = v1beta1.ProvisioningClassCheckCapacity
+		additionalPr.Spec.ProvisioningClassName = v1.ProvisioningClassCheckCapacity
 		processor := provReqProcessor{func() time.Time { return now }, 1, provreqclient.NewFakeProvisioningRequestClient(nil, t, pr, additionalPr), nil}
 		processor.refresh([]*provreqwrapper.ProvisioningRequest{pr, additionalPr})
 		assert.ElementsMatch(t, test.wantConditions, pr.Status.Conditions)
 		if len(test.conditions) == len(test.wantConditions) {
 			assert.ElementsMatch(t, []metav1.Condition{
 				{
-					Type:               v1beta1.Failed,
+					Type:               v1.Failed,
 					Status:             metav1.ConditionTrue,
 					LastTransitionTime: metav1.NewTime(now),
 					Reason:             conditions.ExpiredReason,
@@ -190,37 +190,37 @@ func TestBookCapacity(t *testing.T) {
 	}{
 		{
 			name:             "ProvReq is new, check-capacity class",
-			provReq:          provreqwrapper.BuildTestProvisioningRequest("ns", "pr", "2", "100m", "", 10, false, time.Now(), v1beta1.ProvisioningClassCheckCapacity),
+			provReq:          provreqwrapper.BuildTestProvisioningRequest("ns", "pr", "2", "100m", "", 10, false, time.Now(), v1.ProvisioningClassCheckCapacity),
 			capacityIsBooked: false,
 		},
 		{
 			name:             "ProvReq is Failed, best-effort-atomic class",
-			conditions:       []string{v1beta1.Failed},
-			provReq:          provreqwrapper.BuildTestProvisioningRequest("ns", "pr", "2", "100m", "", 10, false, time.Now(), v1beta1.ProvisioningClassBestEffortAtomicScaleUp),
+			conditions:       []string{v1.Failed},
+			provReq:          provreqwrapper.BuildTestProvisioningRequest("ns", "pr", "2", "100m", "", 10, false, time.Now(), v1.ProvisioningClassBestEffortAtomicScaleUp),
 			capacityIsBooked: false,
 		},
 		{
 			name:             "ProvReq is Provisioned, unknown class",
-			conditions:       []string{v1beta1.Provisioned},
+			conditions:       []string{v1.Provisioned},
 			provReq:          provreqwrapper.BuildTestProvisioningRequest("ns", "pr", "2", "100m", "", 10, false, time.Now(), "unknown"),
 			capacityIsBooked: false,
 		},
 		{
 			name:             "ProvReq is Provisioned, capacity should be booked, check-capacity class",
-			conditions:       []string{v1beta1.Provisioned},
-			provReq:          provreqwrapper.BuildTestProvisioningRequest("ns", "pr", "2", "100m", "", 10, false, time.Now(), v1beta1.ProvisioningClassCheckCapacity),
+			conditions:       []string{v1.Provisioned},
+			provReq:          provreqwrapper.BuildTestProvisioningRequest("ns", "pr", "2", "100m", "", 10, false, time.Now(), v1.ProvisioningClassCheckCapacity),
 			capacityIsBooked: true,
 		},
 		{
 			name:             "ProvReq is Provisioned, capacity should be booked, best-effort-atomic class",
-			conditions:       []string{v1beta1.Provisioned},
-			provReq:          provreqwrapper.BuildTestProvisioningRequest("ns", "pr", "2", "100m", "", 10, false, time.Now(), v1beta1.ProvisioningClassBestEffortAtomicScaleUp),
+			conditions:       []string{v1.Provisioned},
+			provReq:          provreqwrapper.BuildTestProvisioningRequest("ns", "pr", "2", "100m", "", 10, false, time.Now(), v1.ProvisioningClassBestEffortAtomicScaleUp),
 			capacityIsBooked: true,
 		},
 		{
 			name:             "ProvReq has BookingExpired, capacity should not be booked, best-effort-atomic class",
-			conditions:       []string{v1beta1.Provisioned, v1beta1.BookingExpired},
-			provReq:          provreqwrapper.BuildTestProvisioningRequest("ns", "pr", "2", "100m", "", 10, false, time.Now(), v1beta1.ProvisioningClassBestEffortAtomicScaleUp),
+			conditions:       []string{v1.Provisioned, v1.BookingExpired},
+			provReq:          provreqwrapper.BuildTestProvisioningRequest("ns", "pr", "2", "100m", "", 10, false, time.Now(), v1.ProvisioningClassBestEffortAtomicScaleUp),
 			capacityIsBooked: false,
 		},
 	}

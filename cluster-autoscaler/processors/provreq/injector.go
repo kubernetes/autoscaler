@@ -22,7 +22,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1beta1"
+	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/pods"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest"
@@ -59,11 +59,11 @@ func (p *ProvisioningRequestPodsInjector) Process(
 			continue
 		}
 		conditions := pr.Status.Conditions
-		if apimeta.IsStatusConditionTrue(conditions, v1beta1.Failed) || apimeta.IsStatusConditionTrue(conditions, v1beta1.Provisioned) {
+		if apimeta.IsStatusConditionTrue(conditions, v1.Failed) || apimeta.IsStatusConditionTrue(conditions, v1.Provisioned) {
 			continue
 		}
 
-		provisioned := apimeta.FindStatusCondition(conditions, v1beta1.Provisioned)
+		provisioned := apimeta.FindStatusCondition(conditions, v1.Provisioned)
 
 		//TODO(yaroslava): support exponential backoff
 		// Inject pods if ProvReq wasn't scaled up before or it has Provisioned == False condition more than defaultRetryTime
@@ -79,13 +79,13 @@ func (p *ProvisioningRequestPodsInjector) Process(
 			provreqpods, err := provreqpods.PodsForProvisioningRequest(pr)
 			if err != nil {
 				klog.Errorf("Failed to get pods for ProvisioningRequest %v", pr.Name)
-				provreqconditions.AddOrUpdateCondition(pr, v1beta1.Failed, metav1.ConditionTrue, provreqconditions.FailedToCreatePodsReason, err.Error(), metav1.NewTime(p.clock.Now()))
+				provreqconditions.AddOrUpdateCondition(pr, v1.Failed, metav1.ConditionTrue, provreqconditions.FailedToCreatePodsReason, err.Error(), metav1.NewTime(p.clock.Now()))
 				if _, err := p.client.UpdateProvisioningRequest(pr.ProvisioningRequest); err != nil {
 					klog.Errorf("failed add Failed condition to ProvReq %s/%s, err: %v", pr.Namespace, pr.Name, err)
 				}
 				continue
 			}
-			provreqconditions.AddOrUpdateCondition(pr, v1beta1.Accepted, metav1.ConditionTrue, provreqconditions.AcceptedReason, provreqconditions.AcceptedMsg, metav1.NewTime(p.clock.Now()))
+			provreqconditions.AddOrUpdateCondition(pr, v1.Accepted, metav1.ConditionTrue, provreqconditions.AcceptedReason, provreqconditions.AcceptedMsg, metav1.NewTime(p.clock.Now()))
 			if _, err := p.client.UpdateProvisioningRequest(pr.ProvisioningRequest); err != nil {
 				klog.Errorf("failed add Accepted condition to ProvReq %s/%s, err: %v", pr.Namespace, pr.Name, err)
 				continue
