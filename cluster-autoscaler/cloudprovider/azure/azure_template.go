@@ -31,7 +31,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
-	cloudvolume "k8s.io/cloud-provider/volume"
 	"k8s.io/klog/v2"
 )
 
@@ -168,8 +167,14 @@ func buildGenericLabels(template *compute.VirtualMachineScaleSet, nodeName strin
 		for k, v := range *template.Zones {
 			failureDomains[k] = strings.ToLower(*template.Location) + "-" + v
 		}
-		result[apiv1.LabelTopologyZone] = strings.Join(failureDomains[:], cloudvolume.LabelMultiZoneDelimiter)
-		result[azureDiskTopologyKey] = strings.Join(failureDomains[:], cloudvolume.LabelMultiZoneDelimiter)
+		//Picks random zones for Multi-zone nodepool when scaling from zero.
+		//This random zone will not be the same as the zone of the VMSS that is being created, the purpose of creating
+		//the node template with random zone is to initiate scaling from zero on the multi-zone nodepool.
+		//Note that the if the customer is to have some pod affinity picking exact zone, this logic won't work.
+		//For now, discourage the customers from using podAffinity to pick the availability zones.
+		randomZone := failureDomains[rand.Intn(len(failureDomains))]
+		result[apiv1.LabelTopologyZone] = randomZone
+		result[azureDiskTopologyKey] = randomZone
 	} else {
 		result[apiv1.LabelTopologyZone] = "0"
 		result[azureDiskTopologyKey] = ""
