@@ -14,41 +14,48 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package mostpods
+package leastnodes
 
 import (
+	"math"
+
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
-type mostpods struct {
+type leastnodes struct {
 }
 
-// NewFilter returns a scale up filter that picks the node group that can schedule the most pods
+// NewFilter returns a scale up filter that picks the node group that uses the least number of nodes
 func NewFilter() expander.Filter {
-	return &mostpods{}
+	return &leastnodes{}
 }
 
-// BestOptions selects the expansion option that schedules the most pods
-func (m *mostpods) BestOptions(expansionOptions []expander.Option, nodeInfo map[string]*schedulerframework.NodeInfo) []expander.Option {
-	var maxPods int
-	var maxOptions []expander.Option
+// BestOptions selects the expansion option that uses the least number of nodes
+func (m *leastnodes) BestOptions(expansionOptions []expander.Option, nodeInfo map[string]*schedulerframework.NodeInfo) []expander.Option {
+	leastNodes := math.MaxInt
+	var leastOptions []expander.Option
 
 	for _, option := range expansionOptions {
-		if len(option.Pods) == maxPods {
-			maxOptions = append(maxOptions, option)
+		// Don't think this is possible, but just in case
+		if option.NodeCount == 0 {
 			continue
 		}
 
-		if len(option.Pods) > maxPods {
-			maxPods = len(option.Pods)
-			maxOptions = []expander.Option{option}
+		if option.NodeCount == leastNodes {
+			leastOptions = append(leastOptions, option)
+			continue
+		}
+
+		if option.NodeCount < leastNodes {
+			leastNodes = option.NodeCount
+			leastOptions = []expander.Option{option}
 		}
 	}
 
-	if len(maxOptions) == 0 {
+	if len(leastOptions) == 0 {
 		return nil
 	}
 
-	return maxOptions
+	return leastOptions
 }
