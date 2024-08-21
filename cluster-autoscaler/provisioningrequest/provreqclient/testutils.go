@@ -24,13 +24,13 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1beta1"
+	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/clientset/versioned/fake"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
 	fake_kubernetes "k8s.io/client-go/kubernetes/fake"
-	v1 "k8s.io/client-go/listers/core/v1"
+	corev1 "k8s.io/client-go/listers/core/v1"
 	klog "k8s.io/klog/v2"
 )
 
@@ -43,7 +43,7 @@ func NewFakeProvisioningRequestClient(ctx context.Context, t *testing.T, prs ...
 		if pr == nil {
 			continue
 		}
-		if _, err := provReqClient.AutoscalingV1beta1().ProvisioningRequests(pr.Namespace).Create(ctx, pr.ProvisioningRequest, metav1.CreateOptions{}); err != nil {
+		if _, err := provReqClient.AutoscalingV1().ProvisioningRequests(pr.Namespace).Create(ctx, pr.ProvisioningRequest, metav1.CreateOptions{}); err != nil {
 			t.Errorf("While adding a ProvisioningRequest: %s/%s to fake client, got error: %v", pr.Namespace, pr.Name, err)
 		}
 		for _, pd := range pr.PodTemplates {
@@ -68,7 +68,7 @@ func NewFakeProvisioningRequestClient(ctx context.Context, t *testing.T, prs ...
 }
 
 // newFakePodTemplatesLister creates a fake lister for the Pod Templates in the cluster.
-func newFakePodTemplatesLister(t *testing.T, client kubernetes.Interface, channel <-chan struct{}) (v1.PodTemplateLister, error) {
+func newFakePodTemplatesLister(t *testing.T, client kubernetes.Interface, channel <-chan struct{}) (corev1.PodTemplateLister, error) {
 	t.Helper()
 	factory := informers.NewSharedInformerFactory(client, 1*time.Hour)
 	podTemplLister := factory.Core().V1().PodTemplates().Lister()
@@ -106,28 +106,28 @@ func ProvisioningRequestWrapperForTesting(namespace, name string) *provreqwrappe
 			},
 		},
 	}
-	v1Beta1PR := &v1beta1.ProvisioningRequest{
+	v1PR := &v1.ProvisioningRequest{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
 		},
-		Spec: v1beta1.ProvisioningRequestSpec{
+		Spec: v1.ProvisioningRequestSpec{
 			ProvisioningClassName: "test-class",
-			PodSets: []v1beta1.PodSet{
+			PodSets: []v1.PodSet{
 				{
 					Count: 1,
-					PodTemplateRef: v1beta1.Reference{
+					PodTemplateRef: v1.Reference{
 						Name: podTemplates[0].Name,
 					},
 				},
 			},
 		},
-		Status: v1beta1.ProvisioningRequestStatus{
-			ProvisioningClassDetails: map[string]v1beta1.Detail{},
+		Status: v1.ProvisioningRequestStatus{
+			ProvisioningClassDetails: map[string]v1.Detail{},
 		},
 	}
 
-	pr := provreqwrapper.NewProvisioningRequest(v1Beta1PR, podTemplates)
+	pr := provreqwrapper.NewProvisioningRequest(v1PR, podTemplates)
 	return pr
 }
 
@@ -139,13 +139,13 @@ func podTemplateNameFromName(name string) string {
 func (c *ProvisioningRequestClient) ProvisioningRequestNoCache(namespace, name string) (*provreqwrapper.ProvisioningRequest, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), provisioningRequestClientCallTimeout)
 	defer cancel()
-	v1beta1, err := c.client.AutoscalingV1beta1().ProvisioningRequests(namespace).Get(ctx, name, metav1.GetOptions{})
+	v1, err := c.client.AutoscalingV1().ProvisioningRequests(namespace).Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
-	podTemplates, err := c.FetchPodTemplates(v1beta1)
+	podTemplates, err := c.FetchPodTemplates(v1)
 	if err != nil {
 		return nil, err
 	}
-	return provreqwrapper.NewProvisioningRequest(v1beta1, podTemplates), nil
+	return provreqwrapper.NewProvisioningRequest(v1, podTemplates), nil
 }
