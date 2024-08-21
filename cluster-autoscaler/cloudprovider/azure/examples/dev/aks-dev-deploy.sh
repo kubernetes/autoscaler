@@ -1,4 +1,19 @@
 #!/usr/bin/env bash
+
+# Copyright 2024 The Kubernetes Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 set -euo pipefail
 
 # This script deploys an AKS cluster with a user node pool and ACR,
@@ -10,7 +25,7 @@ set -euo pipefail
 
 # assumed logged in (az login) and subscription set (az account set --subscription ...)
 
-# set resource group and ACR name (preferrably unique)
+# set resource group and ACR name (preferably unique)
 RG=${CODESPACE_NAME:-cluster-autoscaler-test}
 ACR_NAME=$(echo "$RG" | tr -d -) # remove hyphens
 az group create --name "${RG}" --location westus3 --output none
@@ -46,7 +61,6 @@ VMSS_NAME=$(az resource list \
   --output tsv)
 TENANT_ID_B64=$(az account show --query tenantId --output tsv | base64)
 RESOURCE_GROUP_MC_B64=$(base64 <<< "$RESOURCE_GROUP_MC")
-
 SUBSCRIPTION_ID_B64=$(az account show --query id --output tsv | base64)
 
 export TENANT_ID_B64 RESOURCE_GROUP_MC_B64 VMSS_NAME CAS_UAI_CLIENTID SUBSCRIPTION_ID_B64

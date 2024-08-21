@@ -68,7 +68,7 @@ resource casUserAssignedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentiti
     name: casFederatedCredenatialName
     properties: {
       issuer: aks.properties.oidcIssuerProfile.issuerURL
-      subject: 'system:serviceaccount:${casNamespace}:cluster-autoscaler' // TOOD: parameterize namespace
+      subject: 'system:serviceaccount:${casNamespace}:cluster-autoscaler' // TODO: parameterize namespace
       audiences: ['api://AzureADTokenExchange']
     }
   }
