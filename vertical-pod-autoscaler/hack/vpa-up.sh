@@ -26,4 +26,4 @@ if [ "${TAG_TO_APPLY}" == "${DEFAULT_TAG}" ]; then
   git switch --detach vertical-pod-autoscaler-${DEFAULT_TAG}
 fi
 
-$SCRIPT_ROOT/hack/vpa-process-yamls.sh create $*
+$SCRIPT_ROOT/hack/vpa-process-yamls.sh apply $*
