@@ -29,6 +29,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupconfig"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups/asyncnodegroups"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -141,6 +142,7 @@ type ClusterStateRegistry struct {
 	cloudProviderNodeInstancesCache    *utils.CloudProviderNodeInstancesCache
 	interrupt                          chan struct{}
 	nodeGroupConfigProcessor           nodegroupconfig.NodeGroupConfigProcessor
+	asyncNodeGroupStateChecker         asyncnodegroups.AsyncNodeGroupStateChecker
 
 	// scaleUpFailures contains information about scale-up failures for each node group. It should be
 	// cleared periodically to avoid unnecessary accumulation.
@@ -155,7 +157,7 @@ type NodeGroupScalingSafety struct {
 }
 
 // NewClusterStateRegistry creates new ClusterStateRegistry.
-func NewClusterStateRegistry(cloudProvider cloudprovider.CloudProvider, config ClusterStateRegistryConfig, logRecorder *utils.LogEventRecorder, backoff backoff.Backoff, nodeGroupConfigProcessor nodegroupconfig.NodeGroupConfigProcessor) *ClusterStateRegistry {
+func NewClusterStateRegistry(cloudProvider cloudprovider.CloudProvider, config ClusterStateRegistryConfig, logRecorder *utils.LogEventRecorder, backoff backoff.Backoff, nodeGroupConfigProcessor nodegroupconfig.NodeGroupConfigProcessor, asyncNodeGroupStateChecker asyncnodegroups.AsyncNodeGroupStateChecker) *ClusterStateRegistry {
 	return &ClusterStateRegistry{
 		scaleUpRequests:                 make(map[string]*ScaleUpRequest),
 		scaleDownRequests:               make([]*ScaleDownRequest, 0),
@@ -175,6 +177,7 @@ func NewClusterStateRegistry(cloudProvider cloudprovider.CloudProvider, config C
 		interrupt:                       make(chan struct{}),
 		scaleUpFailures:                 make(map[string][]ScaleUpFailure),
 		nodeGroupConfigProcessor:        nodeGroupConfigProcessor,
+		asyncNodeGroupStateChecker:      asyncNodeGroupStateChecker,
 	}
 }
 
@@ -684,6 +687,11 @@ func (csr *ClusterStateRegistry) updateIncorrectNodeGroupSizes(currentTime time.
 			klog.Warningf("Acceptable range for node group %s not found", nodeGroup.Id())
 			continue
 		}
+		if csr.asyncNodeGroupStateChecker.IsUpcoming(nodeGroup) {
+			// Nodes for upcoming node groups reside in-memory and wait for node group to be fully
+			// created. There is no need to mark their sizes incorrect.
+			continue
+		}
 		readiness, found := csr.perNodeGroupReadiness[nodeGroup.Id()]
 		if !found {
 			// if MinNodes == 0 node group has been scaled to 0 and everything's fine
@@ -981,6 +989,13 @@ func (csr *ClusterStateRegistry) GetUpcomingNodes() (upcomingCounts map[string]i
 	registeredNodeNames = map[string][]string{}
 	for _, nodeGroup := range csr.cloudProvider.NodeGroups() {
 		id := nodeGroup.Id()
+		if csr.asyncNodeGroupStateChecker.IsUpcoming(nodeGroup) {
+			size, err := nodeGroup.TargetSize()
+			if size >= 0 || err != nil {
+				upcomingCounts[id] = size
+			}
+			continue
+		}
 		readiness := csr.perNodeGroupReadiness[id]
 		ar := csr.acceptableRanges[id]
 		// newNodes is the number of nodes that

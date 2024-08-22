@@ -31,6 +31,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/observers/nodegroupchange"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups/asyncnodegroups"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
@@ -38,18 +39,21 @@ import (
 
 // ScaleUpExecutor scales up node groups.
 type scaleUpExecutor struct {
-	autoscalingContext *context.AutoscalingContext
-	scaleStateNotifier nodegroupchange.NodeGroupChangeObserver
+	autoscalingContext         *context.AutoscalingContext
+	scaleStateNotifier         nodegroupchange.NodeGroupChangeObserver
+	asyncNodeGroupStateChecker asyncnodegroups.AsyncNodeGroupStateChecker
 }
 
 // New returns new instance of scale up executor.
 func newScaleUpExecutor(
 	autoscalingContext *context.AutoscalingContext,
 	scaleStateNotifier nodegroupchange.NodeGroupChangeObserver,
+	asyncNodeGroupStateChecker asyncnodegroups.AsyncNodeGroupStateChecker,
 ) *scaleUpExecutor {
 	return &scaleUpExecutor{
-		autoscalingContext: autoscalingContext,
-		scaleStateNotifier: scaleStateNotifier,
+		autoscalingContext:         autoscalingContext,
+		scaleStateNotifier:         scaleStateNotifier,
+		asyncNodeGroupStateChecker: asyncNodeGroupStateChecker,
 	}
 }
 
@@ -171,6 +175,12 @@ func (e *scaleUpExecutor) executeScaleUp(
 	}
 	if increase < 0 {
 		return errors.NewAutoscalerError(errors.InternalError, fmt.Sprintf("increase in number of nodes cannot be negative, got: %v", increase))
+	}
+	if e.asyncNodeGroupStateChecker.IsUpcoming(info.Group) {
+		// Don't emit scale up event for upcoming node group as it will be generated after
+		// the node group is created, during initial scale up.
+		klog.V(0).Infof("Scale-up: group %s is an upcoming node group, skipping emit scale up event", info.Group.Id())
+		return nil
 	}
 	e.scaleStateNotifier.RegisterScaleUp(info.Group, increase, time.Now())
 	metrics.RegisterScaleUp(increase, gpuResourceName, gpuType)

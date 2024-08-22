@@ -76,7 +76,7 @@ func (o *ScaleUpOrchestrator) Initialize(
 	o.estimatorBuilder = estimatorBuilder
 	o.taintConfig = taintConfig
 	o.resourceManager = resource.NewManager(processors.CustomResourcesProcessor)
-	o.scaleUpExecutor = newScaleUpExecutor(autoscalingContext, processors.ScaleStateNotifier)
+	o.scaleUpExecutor = newScaleUpExecutor(autoscalingContext, processors.ScaleStateNotifier, o.processors.AsyncNodeGroupStateChecker)
 	o.initialized = true
 }
 
@@ -214,7 +214,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 
 	// If necessary, create the node group. This is no longer simulation, an empty node group will be created by cloud provider if supported.
 	createNodeGroupResults := make([]nodegroups.CreateNodeGroupResult, 0)
-	if !bestOption.NodeGroup.Exist() {
+	if !bestOption.NodeGroup.Exist() && !o.processors.AsyncNodeGroupStateChecker.IsUpcoming(bestOption.NodeGroup) {
 		if allOrNothing && bestOption.NodeGroup.MaxSize() < newNodes {
 			klog.V(1).Infof("Can only create a new node group with max %d nodes, need %d nodes", bestOption.NodeGroup.MaxSize(), newNodes)
 			// Can't execute a scale-up that will accommodate all pods, so nothing is considered schedulable.
@@ -223,7 +223,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 			return buildNoOptionsAvailableStatus(markedEquivalenceGroups, skippedNodeGroups, nodeGroups), nil
 		}
 		var scaleUpStatus *status.ScaleUpStatus
-		createNodeGroupResults, scaleUpStatus, aErr = o.CreateNodeGroup(bestOption, nodeInfos, schedulablePodGroups, podEquivalenceGroups, daemonSets)
+		createNodeGroupResults, scaleUpStatus, aErr = o.CreateNodeGroup(bestOption, nodeInfos, schedulablePodGroups, podEquivalenceGroups, daemonSets, allOrNothing)
 		if aErr != nil {
 			return scaleUpStatus, aErr
 		}
@@ -503,11 +503,19 @@ func (o *ScaleUpOrchestrator) CreateNodeGroup(
 	schedulablePodGroups map[string][]estimator.PodEquivalenceGroup,
 	podEquivalenceGroups []*equivalence.PodGroup,
 	daemonSets []*appsv1.DaemonSet,
+	allOrNothing bool,
 ) ([]nodegroups.CreateNodeGroupResult, *status.ScaleUpStatus, errors.AutoscalerError) {
 	createNodeGroupResults := make([]nodegroups.CreateNodeGroupResult, 0)
 
 	oldId := initialOption.NodeGroup.Id()
-	createNodeGroupResult, aErr := o.processors.NodeGroupManager.CreateNodeGroup(o.autoscalingContext, initialOption.NodeGroup)
+	var createNodeGroupResult nodegroups.CreateNodeGroupResult
+	var aErr errors.AutoscalerError
+	if o.autoscalingContext.AsyncNodeGroupsEnabled {
+		initializer := newAsyncNodeGroupInitializer(initialOption.NodeGroup, nodeInfos[oldId], o.scaleUpExecutor, o.taintConfig, daemonSets, o.processors.ScaleUpStatusProcessor, o.autoscalingContext, allOrNothing)
+		createNodeGroupResult, aErr = o.processors.NodeGroupManager.CreateNodeGroupAsync(o.autoscalingContext, initialOption.NodeGroup, initializer)
+	} else {
+		createNodeGroupResult, aErr = o.processors.NodeGroupManager.CreateNodeGroup(o.autoscalingContext, initialOption.NodeGroup)
+	}
 	if aErr != nil {
 		status, err := status.UpdateScaleUpError(
 			&status.ScaleUpStatus{FailedCreationNodeGroups: []cloudprovider.NodeGroup{initialOption.NodeGroup}, PodsTriggeredScaleUp: initialOption.Pods},
