@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inflate
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: inflate
+  template:
+    metadata:
+      labels:
+        app: inflate
+    spec:
+      containers:
+      - image: mcr.microsoft.com/oss/kubernetes/pause:3.6
+        name: inflate
+        resources:
+          requests:
+            cpu: "1"
+            memory: 256M
+      # user nodepool only
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: kubernetes.azure.com/mode
+                  operator: In
+                  values: ["user"]
