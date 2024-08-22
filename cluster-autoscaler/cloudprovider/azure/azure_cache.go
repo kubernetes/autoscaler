@@ -207,26 +207,32 @@ func (m *azureCache) regenerate() error {
 	return nil
 }
 
+// fetchAzureResources retrieves and updates the cached Azure resources.
+//
+// This function performs the following:
+// - Fetches and updates the list of Virtual Machine Scale Sets (VMSS) in the specified resource group.
+// - Fetches and updates the list of Virtual Machines (VMs) and identifies the node pools they belong to.
+// - Maintains a set of VMs pools and VMSS resources which helps the Cluster Autoscaler (CAS) operate on mixed node pools.
+//
+// Returns an error if any of the Azure API calls fail.
 func (m *azureCache) fetchAzureResources() error {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	// fetch all the resources since CAS may be operating on mixed nodepools
-	// including both VMSS and VMs pools
+	// NOTE: this lists virtual machine scale sets, not virtual machine
+	// scale set instances
 	vmssResult, err := m.fetchScaleSets()
-	if err == nil {
-		m.scaleSets = vmssResult
-	} else {
+	if err != nil {
 		return err
 	}
-
+	m.scaleSets = vmssResult
 	vmResult, vmsPoolSet, err := m.fetchVirtualMachines()
-	if err == nil {
-		m.virtualMachines = vmResult
-		m.vmsPoolSet = vmsPoolSet
-	} else {
+	if err != nil {
 		return err
 	}
+	// we fetch both sets of resources since CAS may operate on mixed nodepools
+	m.virtualMachines = vmResult
+	m.vmsPoolSet = vmsPoolSet
 
 	return nil
 }
@@ -263,7 +269,6 @@ func (m *azureCache) fetchVirtualMachines() (map[string][]compute.VirtualMachine
 		if vmPoolName == nil {
 			vmPoolName = tags[legacyAgentpoolNameTag]
 		}
-
 		if vmPoolName == nil {
 			continue
 		}
@@ -276,8 +281,8 @@ func (m *azureCache) fetchVirtualMachines() (map[string][]compute.VirtualMachine
 		}
 
 		// nodes from vms pool will have tag "aks-managed-agentpool-type" set to "VirtualMachines"
-		if agnetpoolType := tags[agentpoolTypeTag]; agnetpoolType != nil {
-			if strings.EqualFold(to.String(agnetpoolType), vmsPoolType) {
+		if agentpoolType := tags[agentpoolTypeTag]; agentpoolType != nil {
+			if strings.EqualFold(to.String(agentpoolType), vmsPoolType) {
 				vmsPoolSet[to.String(vmPoolName)] = struct{}{}
 			}
 		}
@@ -314,7 +319,6 @@ func (m *azureCache) Register(nodeGroup cloudprovider.NodeGroup) bool {
 				// Node group is already registered and min/max size haven't changed, no action required.
 				return false
 			}
-
 			m.registeredNodeGroups[i] = nodeGroup
 			klog.V(4).Infof("Node group %q updated", nodeGroup.Id())
 			m.invalidateUnownedInstanceCache()
@@ -323,6 +327,7 @@ func (m *azureCache) Register(nodeGroup cloudprovider.NodeGroup) bool {
 	}
 
 	klog.V(4).Infof("Registering Node Group %q", nodeGroup.Id())
+
 	m.registeredNodeGroups = append(m.registeredNodeGroups, nodeGroup)
 	m.invalidateUnownedInstanceCache()
 	return true
@@ -389,6 +394,25 @@ func (m *azureCache) getAutoscalingOptions(ref azureRef) map[string]string {
 	defer m.mutex.Unlock()
 
 	return m.autoscalingOptions[ref]
+}
+
+// HasInstance returns if a given instance exists in the azure cache
+func (m *azureCache) HasInstance(providerID string) (bool, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+	resourceID, err := convertResourceGroupNameToLower(providerID)
+	if err != nil {
+		// Most likely an invalid resource id, we should return an error
+		// most of these shouldn't make it here do to higher level
+		// validation in the HasInstance azure.cloudprovider function
+		return false, err
+	}
+
+	if m.getInstanceFromCache(resourceID) != nil {
+		return true, nil
+	}
+	// couldn't find instance in the cache, assume it's deleted
+	return false, cloudprovider.ErrNotImplemented
 }
 
 // FindForInstance returns node group of the given Instance

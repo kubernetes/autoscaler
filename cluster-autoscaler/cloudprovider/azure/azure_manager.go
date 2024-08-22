@@ -130,14 +130,11 @@ func createAzureManagerInternal(configReader io.Reader, discoveryOpts cloudprovi
 		Cap:      10 * time.Minute,
 	}
 
-	if err := manager.forceRefresh(); err != nil {
-		err = kretry.OnError(retryBackoff, retry.IsErrorRetriable, func() (err error) {
-			return manager.forceRefresh()
-		})
-		if err != nil {
-			return nil, err
-		}
-		return manager, nil
+	err = kretry.OnError(retryBackoff, retry.IsErrorRetriable, func() (err error) {
+		return manager.forceRefresh()
+	})
+	if err != nil {
+		return nil, err
 	}
 
 	return manager, nil
@@ -176,7 +173,6 @@ func (m *AzureManager) buildNodeGroupFromSpec(spec string) (cloudprovider.NodeGr
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse node group spec: %v", err)
 	}
-
 	vmsPoolSet := m.azureCache.getVMsPoolSet()
 	if _, ok := vmsPoolSet[s.Name]; ok {
 		return NewVMsPool(s, m), nil

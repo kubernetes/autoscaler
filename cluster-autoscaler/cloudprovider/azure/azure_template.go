@@ -113,7 +113,6 @@ func buildNodeFromTemplate(nodeGroupName string, template compute.VirtualMachine
 
 	// GenericLabels
 	node.Labels = cloudprovider.JoinStringMaps(node.Labels, buildGenericLabels(template, nodeName))
-
 	// Labels from the Scale Set's Tags
 	node.Labels = cloudprovider.JoinStringMaps(node.Labels, extractLabelsFromScaleSet(template.Tags))
 
