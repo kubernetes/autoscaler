@@ -55,6 +55,9 @@ const (
 	rateLimitWriteQPSEnvVar             = "RATE_LIMIT_WRITE_QPS"
 	rateLimitWriteBucketsEnvVar         = "RATE_LIMIT_WRITE_BUCKETS"
 
+	// VmssSizeRefreshPeriodDefault in seconds
+	VmssSizeRefreshPeriodDefault = 30
+
 	// auth methods
 	authMethodPrincipal = "principal"
 	authMethodCLI       = "cli"
@@ -86,8 +89,16 @@ type Config struct {
 	Location       string `json:"location" yaml:"location"`
 	TenantID       string `json:"tenantId" yaml:"tenantId"`
 	SubscriptionID string `json:"subscriptionId" yaml:"subscriptionId"`
-	ResourceGroup  string `json:"resourceGroup" yaml:"resourceGroup"`
-	VMType         string `json:"vmType" yaml:"vmType"`
+	ClusterName    string `json:"clusterName" yaml:"clusterName"`
+	// ResourceGroup is the MC_ resource group where the nodes are located.
+	ResourceGroup string `json:"resourceGroup" yaml:"resourceGroup"`
+	// ClusterResourceGroup is the resource group where the cluster is located.
+	ClusterResourceGroup string `json:"clusterResourceGroup" yaml:"clusterResourceGroup"`
+	VMType               string `json:"vmType" yaml:"vmType"`
+
+	// ARMBaseURLForAPClient is the URL to use for operations for the VMs pool.
+	// It can override the default public ARM endpoint for VMs pool scale operations.
+	ARMBaseURLForAPClient string `json:"armBaseURLForAPClient" yaml:"armBaseURLForAPClient"`
 
 	// AuthMethod determines how to authorize requests for the Azure
 	// cloud. Valid options are "principal" (= the traditional
@@ -146,8 +157,8 @@ type Config struct {
 	// (DEPRECATED, DO NOT USE) EnableDetailedCSEMessage defines whether to emit error messages in the CSE error body info
 	EnableDetailedCSEMessage bool `json:"enableDetailedCSEMessage,omitempty" yaml:"enableDetailedCSEMessage,omitempty"`
 
-	// (DEPRECATED, DO NOT USE) GetVmssSizeRefreshPeriod defines how frequently to call GET VMSS API to fetch VMSS info per nodegroup instance
-	GetVmssSizeRefreshPeriod time.Duration `json:"getVmssSizeRefreshPeriod,omitempty" yaml:"getVmssSizeRefreshPeriod,omitempty"`
+	// (DEPRECATED, DO NOT USE) GetVmssSizeRefreshPeriod (seconds) defines how frequently to call GET VMSS API to fetch VMSS info per nodegroup instance
+	GetVmssSizeRefreshPeriod int `json:"getVmssSizeRefreshPeriod,omitempty" yaml:"getVmssSizeRefreshPeriod,omitempty"`
 }
 
 // BuildAzureConfig returns a Config object for the Azure clients
@@ -266,6 +277,15 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 			cfg.EnableDynamicInstanceList = dynamicInstanceListDefault
 		}
 
+		if getVmssSizeRefreshPeriod := os.Getenv("AZURE_GET_VMSS_SIZE_REFRESH_PERIOD"); getVmssSizeRefreshPeriod != "" {
+			cfg.GetVmssSizeRefreshPeriod, err = strconv.Atoi(getVmssSizeRefreshPeriod)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse AZURE_GET_VMSS_SIZE_REFRESH_PERIOD %q: %v", getVmssSizeRefreshPeriod, err)
+			}
+		} else {
+			cfg.GetVmssSizeRefreshPeriod = VmssSizeRefreshPeriodDefault
+		}
+
 		if enableVmssFlex := os.Getenv("AZURE_ENABLE_VMSS_FLEX"); enableVmssFlex != "" {
 			cfg.EnableVmssFlex, err = strconv.ParseBool(enableVmssFlex)
 			if err != nil {
@@ -315,6 +335,12 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 			}
 		}
 	}
+
+	// always read the following from environment variables since azure.json doesn't have these fields
+	cfg.ClusterName = os.Getenv("CLUSTER_NAME")
+	cfg.ClusterResourceGroup = os.Getenv("ARM_CLUSTER_RESOURCE_GROUP")
+	cfg.ARMBaseURLForAPClient = os.Getenv("ARM_BASE_URL_FOR_AP_CLIENT")
+
 	cfg.TrimSpace()
 
 	if cloudProviderRateLimit := os.Getenv("CLOUD_PROVIDER_RATE_LIMIT"); cloudProviderRateLimit != "" {
@@ -481,7 +507,9 @@ func (cfg *Config) TrimSpace() {
 	cfg.Location = strings.TrimSpace(cfg.Location)
 	cfg.TenantID = strings.TrimSpace(cfg.TenantID)
 	cfg.SubscriptionID = strings.TrimSpace(cfg.SubscriptionID)
+	cfg.ClusterName = strings.TrimSpace(cfg.ClusterName)
 	cfg.ResourceGroup = strings.TrimSpace(cfg.ResourceGroup)
+	cfg.ClusterResourceGroup = strings.TrimSpace(cfg.ClusterResourceGroup)
 	cfg.VMType = strings.TrimSpace(cfg.VMType)
 	cfg.AADClientID = strings.TrimSpace(cfg.AADClientID)
 	cfg.AADClientSecret = strings.TrimSpace(cfg.AADClientSecret)

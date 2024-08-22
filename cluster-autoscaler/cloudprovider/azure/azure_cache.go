@@ -71,6 +71,8 @@ type azureCache struct {
 	// vmType can be one of vmTypeVMSS (default), vmTypeStandard, vmTypeAKS
 	vmType string
 
+	vmsPoolSet map[string]struct{} // track the nodepools that're vms pool
+
 	// scaleSets keeps the set of all known scalesets in the resource group, populated/refreshed via VMSS.List() call.
 	// It is only used/populated if vmType is vmTypeVMSS (default).
 	scaleSets map[string]compute.VirtualMachineScaleSet
@@ -103,6 +105,7 @@ func newAzureCache(client *azClient, cacheTTL time.Duration, config *Config) *az
 		refreshInterval:      cacheTTL,
 		resourceGroup:        config.ResourceGroup,
 		vmType:               config.VMType,
+		vmsPoolSet:           make(map[string]struct{}),
 		scaleSets:            make(map[string]compute.VirtualMachineScaleSet),
 		virtualMachines:      make(map[string][]compute.VirtualMachine),
 		registeredNodeGroups: make([]cloudprovider.NodeGroup, 0),
@@ -121,6 +124,13 @@ func newAzureCache(client *azClient, cacheTTL time.Duration, config *Config) *az
 	}
 
 	return cache
+}
+
+func (m *azureCache) getVMsPoolSet() map[string]struct{} {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	return m.vmsPoolSet
 }
 
 func (m *azureCache) getVirtualMachines() map[string][]compute.VirtualMachine {
@@ -202,60 +212,82 @@ func (m *azureCache) regenerate() error {
 // This function performs the following:
 // - Fetches and updates the list of Virtual Machine Scale Sets (VMSS) in the specified resource group.
 // - Fetches and updates the list of Virtual Machines (VMs) and identifies the node pools they belong to.
+// - Maintains a set of VMs pools and VMSS resources which helps the Cluster Autoscaler (CAS) operate on mixed node pools.
 //
 // Returns an error if any of the Azure API calls fail.
 func (m *azureCache) fetchAzureResources() error {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	switch m.vmType {
-	case vmTypeVMSS:
-		// List all VMSS in the RG.
-		vmssResult, err := m.fetchScaleSets()
-		if err == nil {
-			m.scaleSets = vmssResult
-		} else {
-			return err
-		}
-	case vmTypeStandard, vmTypeAKS:
-		// List all VMs in the RG.
-		vmResult, err := m.fetchVirtualMachines()
-		if err == nil {
-			m.virtualMachines = vmResult
-		} else {
-			return err
-		}
+	// NOTE: this lists virtual machine scale sets, not virtual machine
+	// scale set instances
+	vmssResult, err := m.fetchScaleSets()
+	if err != nil {
+		return err
 	}
+	m.scaleSets = vmssResult
+	vmResult, vmsPoolSet, err := m.fetchVirtualMachines()
+	if err != nil {
+		return err
+	}
+	// we fetch both sets of resources since CAS may operate on mixed nodepools
+	m.virtualMachines = vmResult
+	m.vmsPoolSet = vmsPoolSet
 
 	return nil
 }
 
+const (
+	legacyAgentpoolNameTag = "poolName"
+	agentpoolNameTag       = "aks-managed-poolName"
+	agentpoolTypeTag       = "aks-managed-agentpool-type"
+	vmsPoolType            = "VirtualMachines"
+)
+
 // fetchVirtualMachines returns the updated list of virtual machines in the config resource group using the Azure API.
-func (m *azureCache) fetchVirtualMachines() (map[string][]compute.VirtualMachine, error) {
+func (m *azureCache) fetchVirtualMachines() (map[string][]compute.VirtualMachine, map[string]struct{}, error) {
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
 
 	result, err := m.azClient.virtualMachinesClient.List(ctx, m.resourceGroup)
 	if err != nil {
 		klog.Errorf("VirtualMachinesClient.List in resource group %q failed: %v", m.resourceGroup, err)
-		return nil, err.Error()
+		return nil, nil, err.Error()
 	}
 
 	instances := make(map[string][]compute.VirtualMachine)
+	// track the nodepools that're vms pools
+	vmsPoolSet := make(map[string]struct{})
 	for _, instance := range result {
 		if instance.Tags == nil {
 			continue
 		}
 
 		tags := instance.Tags
-		vmPoolName := tags["poolName"]
+		vmPoolName := tags[agentpoolNameTag]
+		// fall back to legacy tag name if not found
+		if vmPoolName == nil {
+			vmPoolName = tags[legacyAgentpoolNameTag]
+		}
 		if vmPoolName == nil {
 			continue
 		}
 
 		instances[to.String(vmPoolName)] = append(instances[to.String(vmPoolName)], instance)
+
+		// if the nodepool is already in the map, skip it
+		if _, ok := vmsPoolSet[to.String(vmPoolName)]; ok {
+			continue
+		}
+
+		// nodes from vms pool will have tag "aks-managed-agentpool-type" set to "VirtualMachines"
+		if agentpoolType := tags[agentpoolTypeTag]; agentpoolType != nil {
+			if strings.EqualFold(to.String(agentpoolType), vmsPoolType) {
+				vmsPoolSet[to.String(vmPoolName)] = struct{}{}
+			}
+		}
 	}
-	return instances, nil
+	return instances, vmsPoolSet, nil
 }
 
 // fetchScaleSets returns the updated list of scale sets in the config resource group using the Azure API.
@@ -387,6 +419,7 @@ func (m *azureCache) HasInstance(providerID string) (bool, error) {
 
 // FindForInstance returns node group of the given Instance
 func (m *azureCache) FindForInstance(instance *azureRef, vmType string) (cloudprovider.NodeGroup, error) {
+	vmsPoolSet := m.getVMsPoolSet()
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -404,7 +437,8 @@ func (m *azureCache) FindForInstance(instance *azureRef, vmType string) (cloudpr
 		return nil, nil
 	}
 
-	if vmType == vmTypeVMSS {
+	// cluster with vmss pool only
+	if vmType == vmTypeVMSS && len(vmsPoolSet) == 0 {
 		if m.areAllScaleSetsUniform() {
 			// Omit virtual machines not managed by vmss only in case of uniform scale set.
 			if ok := virtualMachineRE.MatchString(inst.Name); ok {
