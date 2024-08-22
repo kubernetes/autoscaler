@@ -75,6 +75,7 @@ var (
 	webhookAddress             = flag.String("webhook-address", "", "Address under which webhook is registered. Used when registerByURL is set to true.")
 	webhookPort                = flag.String("webhook-port", "", "Server Port for Webhook")
 	webhookTimeout             = flag.Int("webhook-timeout-seconds", 30, "Timeout in seconds that the API server should wait for this webhook to respond before failing.")
+	webHookFailurePolicy       = flag.Bool("webhook-failure-policy-fail", false, "If set to true, will configure the admission webhook failurePolicy to \"Fail\". Use with caution.")
 	registerWebhook            = flag.Bool("register-webhook", true, "If set to true, admission webhook object will be created on start up to register with the API server.")
 	registerByURL              = flag.Bool("register-by-url", false, "If set to true, admission webhook will be registered by URL (webhookAddress:webhookPort) instead of by service name")
 	vpaObjectNamespace         = flag.String("vpa-object-namespace", apiv1.NamespaceAll, "Namespace to search for VPA objects. Empty means all namespaces will be used. Must not be used if ignored-vpa-object-namespaces is set.")
@@ -146,7 +147,7 @@ func main() {
 	ignoredNamespaces := strings.Split(*ignoredVpaObjectNamespaces, ",")
 	go func() {
 		if *registerWebhook {
-			selfRegistration(kubeClient, readFile(*certsConfiguration.clientCaFile), webHookDelay, namespace, *serviceName, url, *registerByURL, int32(*webhookTimeout), *vpaObjectNamespace, ignoredNamespaces)
+			selfRegistration(kubeClient, readFile(*certsConfiguration.clientCaFile), webHookDelay, namespace, *serviceName, url, *registerByURL, int32(*webhookTimeout), *vpaObjectNamespace, ignoredNamespaces, *webHookFailurePolicy)
 		}
 		// Start status updates after the webhook is initialized.
 		statusUpdater.Run(stopCh)
