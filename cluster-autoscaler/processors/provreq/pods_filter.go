@@ -21,8 +21,8 @@ import (
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
-	v1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1beta1"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/pods"
 	provreqpods "k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/pods"
@@ -96,11 +96,11 @@ func NewProvisioningRequestPodsFilter(e EventManager) pods.PodListProcessor {
 	return &ProvisioningRequestPodsFilter{e}
 }
 
-func provisioningRequestName(pod *v1.Pod) (string, bool) {
+func provisioningRequestName(pod *corev1.Pod) (string, bool) {
 	if pod == nil || pod.Annotations == nil {
 		return "", false
 	}
-	provReqName, found := pod.Annotations[v1beta1.ProvisioningRequestPodAnnotationKey]
+	provReqName, found := pod.Annotations[v1.ProvisioningRequestPodAnnotationKey]
 	if !found {
 		provReqName, found = pod.Annotations[provreqpods.DeprecatedProvisioningRequestPodAnnotationKey]
 	}

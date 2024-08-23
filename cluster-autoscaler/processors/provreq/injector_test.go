@@ -21,10 +21,10 @@ import (
 	"testing"
 	"time"
 
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1beta1"
+	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqclient"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
 	clock "k8s.io/utils/clock/testing"
@@ -36,46 +36,46 @@ func TestProvisioningRequestPodsInjector(t *testing.T) {
 	hourAgo := now.Add(-1 * time.Hour)
 
 	accepted := metav1.Condition{
-		Type:               v1beta1.Accepted,
+		Type:               v1.Accepted,
 		Status:             metav1.ConditionTrue,
 		LastTransitionTime: metav1.NewTime(minAgo),
 	}
 	failed := metav1.Condition{
-		Type:               v1beta1.Failed,
+		Type:               v1.Failed,
 		Status:             metav1.ConditionTrue,
 		LastTransitionTime: metav1.NewTime(hourAgo),
 	}
 	provisioned := metav1.Condition{
-		Type:               v1beta1.Provisioned,
+		Type:               v1.Provisioned,
 		Status:             metav1.ConditionTrue,
 		LastTransitionTime: metav1.NewTime(hourAgo),
 	}
 	notProvisioned := metav1.Condition{
-		Type:               v1beta1.Provisioned,
+		Type:               v1.Provisioned,
 		Status:             metav1.ConditionFalse,
 		LastTransitionTime: metav1.NewTime(hourAgo),
 	}
 	unknownProvisioned := metav1.Condition{
-		Type:               v1beta1.Provisioned,
+		Type:               v1.Provisioned,
 		Status:             metav1.ConditionUnknown,
 		LastTransitionTime: metav1.NewTime(hourAgo),
 	}
 	notProvisionedRecently := metav1.Condition{
-		Type:               v1beta1.Provisioned,
+		Type:               v1.Provisioned,
 		Status:             metav1.ConditionFalse,
 		LastTransitionTime: metav1.NewTime(minAgo),
 	}
 
 	podsA := 10
-	newProvReqA := testProvisioningRequestWithCondition("new", podsA, v1beta1.ProvisioningClassCheckCapacity)
-	newAcceptedProvReqA := testProvisioningRequestWithCondition("new-accepted", podsA, v1beta1.ProvisioningClassCheckCapacity, accepted)
+	newProvReqA := testProvisioningRequestWithCondition("new", podsA, v1.ProvisioningClassCheckCapacity)
+	newAcceptedProvReqA := testProvisioningRequestWithCondition("new-accepted", podsA, v1.ProvisioningClassCheckCapacity, accepted)
 
 	podsB := 20
-	notProvisionedAcceptedProvReqB := testProvisioningRequestWithCondition("provisioned-false-B", podsB, v1beta1.ProvisioningClassBestEffortAtomicScaleUp, notProvisioned, accepted)
-	provisionedAcceptedProvReqB := testProvisioningRequestWithCondition("provisioned-and-accepted", podsB, v1beta1.ProvisioningClassBestEffortAtomicScaleUp, provisioned, accepted)
-	failedProvReq := testProvisioningRequestWithCondition("failed", podsA, v1beta1.ProvisioningClassBestEffortAtomicScaleUp, failed)
-	notProvisionedRecentlyProvReqB := testProvisioningRequestWithCondition("provisioned-false-recently-B", podsB, v1beta1.ProvisioningClassBestEffortAtomicScaleUp, notProvisionedRecently)
-	unknownProvisionedProvReqB := testProvisioningRequestWithCondition("provisioned-unknown-B", podsB, v1beta1.ProvisioningClassBestEffortAtomicScaleUp, unknownProvisioned)
+	notProvisionedAcceptedProvReqB := testProvisioningRequestWithCondition("provisioned-false-B", podsB, v1.ProvisioningClassBestEffortAtomicScaleUp, notProvisioned, accepted)
+	provisionedAcceptedProvReqB := testProvisioningRequestWithCondition("provisioned-and-accepted", podsB, v1.ProvisioningClassBestEffortAtomicScaleUp, provisioned, accepted)
+	failedProvReq := testProvisioningRequestWithCondition("failed", podsA, v1.ProvisioningClassBestEffortAtomicScaleUp, failed)
+	notProvisionedRecentlyProvReqB := testProvisioningRequestWithCondition("provisioned-false-recently-B", podsB, v1.ProvisioningClassBestEffortAtomicScaleUp, notProvisionedRecently)
+	unknownProvisionedProvReqB := testProvisioningRequestWithCondition("provisioned-unknown-B", podsB, v1.ProvisioningClassBestEffortAtomicScaleUp, unknownProvisioned)
 	unknownClass := testProvisioningRequestWithCondition("new-accepted", podsA, "unknown-class", accepted)
 
 	testCases := []struct {
@@ -118,7 +118,7 @@ func TestProvisioningRequestPodsInjector(t *testing.T) {
 	for _, tc := range testCases {
 		client := provreqclient.NewFakeProvisioningRequestClient(context.Background(), t, tc.provReqs...)
 		injector := ProvisioningRequestPodsInjector{client, clock.NewFakePassiveClock(now)}
-		getUnscheduledPods, err := injector.Process(nil, []*v1.Pod{})
+		getUnscheduledPods, err := injector.Process(nil, []*corev1.Pod{})
 		if err != nil {
 			t.Errorf("%s failed: injector.Process return error %v", tc.name, err)
 		}
@@ -129,7 +129,7 @@ func TestProvisioningRequestPodsInjector(t *testing.T) {
 			continue
 		}
 		pr, _ := client.ProvisioningRequestNoCache("ns", tc.wantUpdatedConditionName)
-		accepted := apimeta.FindStatusCondition(pr.Status.Conditions, v1beta1.Accepted)
+		accepted := apimeta.FindStatusCondition(pr.Status.Conditions, v1.Accepted)
 		if accepted == nil || accepted.LastTransitionTime != metav1.NewTime(now) {
 			t.Errorf("%s: injector.Process hasn't update accepted condition for ProvisioningRequest %s", tc.name, tc.wantUpdatedConditionName)
 		}

@@ -19,9 +19,9 @@ limitations under the License.
 package v1beta1
 
 import (
-	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/labels"
 	v1beta1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1beta1"
+	"k8s.io/client-go/listers"
 	"k8s.io/client-go/tools/cache"
 )
 
@@ -38,25 +38,17 @@ type ProvisioningRequestLister interface {
 
 // provisioningRequestLister implements the ProvisioningRequestLister interface.
 type provisioningRequestLister struct {
-	indexer cache.Indexer
+	listers.ResourceIndexer[*v1beta1.ProvisioningRequest]
 }
 
 // NewProvisioningRequestLister returns a new ProvisioningRequestLister.
 func NewProvisioningRequestLister(indexer cache.Indexer) ProvisioningRequestLister {
-	return &provisioningRequestLister{indexer: indexer}
-}
-
-// List lists all ProvisioningRequests in the indexer.
-func (s *provisioningRequestLister) List(selector labels.Selector) (ret []*v1beta1.ProvisioningRequest, err error) {
-	err = cache.ListAll(s.indexer, selector, func(m interface{}) {
-		ret = append(ret, m.(*v1beta1.ProvisioningRequest))
-	})
-	return ret, err
+	return &provisioningRequestLister{listers.New[*v1beta1.ProvisioningRequest](indexer, v1beta1.Resource("provisioningrequest"))}
 }
 
 // ProvisioningRequests returns an object that can list and get ProvisioningRequests.
 func (s *provisioningRequestLister) ProvisioningRequests(namespace string) ProvisioningRequestNamespaceLister {
-	return provisioningRequestNamespaceLister{indexer: s.indexer, namespace: namespace}
+	return provisioningRequestNamespaceLister{listers.NewNamespaced[*v1beta1.ProvisioningRequest](s.ResourceIndexer, namespace)}
 }
 
 // ProvisioningRequestNamespaceLister helps list and get ProvisioningRequests.
@@ -74,26 +66,5 @@ type ProvisioningRequestNamespaceLister interface {
 // provisioningRequestNamespaceLister implements the ProvisioningRequestNamespaceLister
 // interface.
 type provisioningRequestNamespaceLister struct {
-	indexer   cache.Indexer
-	namespace string
-}
-
-// List lists all ProvisioningRequests in the indexer for a given namespace.
-func (s provisioningRequestNamespaceLister) List(selector labels.Selector) (ret []*v1beta1.ProvisioningRequest, err error) {
-	err = cache.ListAllByNamespace(s.indexer, s.namespace, selector, func(m interface{}) {
-		ret = append(ret, m.(*v1beta1.ProvisioningRequest))
-	})
-	return ret, err
-}
-
-// Get retrieves the ProvisioningRequest from the indexer for a given namespace and name.
-func (s provisioningRequestNamespaceLister) Get(name string) (*v1beta1.ProvisioningRequest, error) {
-	obj, exists, err := s.indexer.GetByKey(s.namespace + "/" + name)
-	if err != nil {
-		return nil, err
-	}
-	if !exists {
-		return nil, errors.NewNotFound(v1beta1.Resource("provisioningrequest"), name)
-	}
-	return obj.(*v1beta1.ProvisioningRequest), nil
+	listers.ResourceIndexer[*v1beta1.ProvisioningRequest]
 }

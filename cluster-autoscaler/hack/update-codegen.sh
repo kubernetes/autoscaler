@@ -23,19 +23,30 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-SCRIPT_ROOT=$(realpath $(dirname "${BASH_SOURCE[0]}"))/..
-CODEGEN_PKG="../vendor/k8s.io/code-generator"
-pushd "${SCRIPT_ROOT}/apis"
+GO_CMD=${1:-go}
+CURRENT_DIR=$(dirname "${BASH_SOURCE[0]}")
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+CODEGEN_PKG=$($GO_CMD list -m -mod=readonly -f "{{.Dir}}" k8s.io/code-generator)
+cd "${CURRENT_DIR}/.."
 
-chmod +x "${CODEGEN_PKG}"/generate-groups.sh
-chmod +x "${CODEGEN_PKG}"/generate-internal-groups.sh
- 
-bash "${CODEGEN_PKG}"/generate-groups.sh "applyconfiguration,client,deepcopy,informer,lister" \
-  k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client \
-  k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest \
-  autoscaling.x-k8s.io:v1beta1 \
-  --go-header-file "${SCRIPT_ROOT}"/../hack/boilerplate/boilerplate.generatego.txt
+# shellcheck source=/dev/null
+source "${CODEGEN_PKG}/kube_codegen.sh"
 
-chmod -x "${CODEGEN_PKG}"/generate-groups.sh
-chmod -x "${CODEGEN_PKG}"/generate-internal-groups.sh
-popd
+kube::codegen::gen_helpers \
+    --boilerplate "${REPO_ROOT}/hack/boilerplate/boilerplate.generatego.txt" \
+    "${REPO_ROOT}/cluster-autoscaler/apis/provisioningrequest"
+
+echo "Ran gen helpers, moving on to generating client code..."
+
+kube::codegen::gen_client \
+    --output-pkg k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client \
+    --output-dir "${REPO_ROOT}/cluster-autoscaler/apis/provisioningrequest/client" \
+    --boilerplate "${REPO_ROOT}/hack/boilerplate/boilerplate.generatego.txt" \
+    --with-watch \
+    --with-applyconfig \
+    "${REPO_ROOT}/cluster-autoscaler/apis/provisioningrequest"
+
+echo "Generated client code, running `go mod tidy`..."
+
+# We need to clean up the go.mod file since code-generator adds temporary library to the go.mod file.
+"${GO_CMD}" mod tidy

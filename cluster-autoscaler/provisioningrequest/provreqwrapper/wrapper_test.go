@@ -24,7 +24,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1beta1"
+	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
 )
 
 func TestProvisioningRequestWrapper(t *testing.T) {
@@ -74,7 +74,7 @@ func TestProvisioningRequestWrapper(t *testing.T) {
 			},
 		},
 	}
-	v1Beta1PR := &v1beta1.ProvisioningRequest{
+	v1PR := &v1.ProvisioningRequest{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "beta-api",
 			Kind:       "beta-kind",
@@ -85,24 +85,24 @@ func TestProvisioningRequestWrapper(t *testing.T) {
 			CreationTimestamp: creationTimestamp,
 			UID:               types.UID("beta-uid"),
 		},
-		Spec: v1beta1.ProvisioningRequestSpec{
+		Spec: v1.ProvisioningRequestSpec{
 			ProvisioningClassName: "queued-provisioning.gke.io",
-			PodSets: []v1beta1.PodSet{
+			PodSets: []v1.PodSet{
 				{
 					Count: 1,
-					PodTemplateRef: v1beta1.Reference{
+					PodTemplateRef: v1.Reference{
 						Name: podTemplates[0].Name,
 					},
 				},
 			},
 		},
-		Status: v1beta1.ProvisioningRequestStatus{
+		Status: v1.ProvisioningRequestStatus{
 			Conditions:               conditions,
-			ProvisioningClassDetails: map[string]v1beta1.Detail{},
+			ProvisioningClassDetails: map[string]v1.Detail{},
 		},
 	}
 
-	wrappedBetaPR := NewProvisioningRequest(v1Beta1PR, podTemplates)
+	wrappedBetaPR := NewProvisioningRequest(v1PR, podTemplates)
 
 	// Check Name, Namespace and Creation accessors
 	assert.Equal(t, "name-beta", wrappedBetaPR.Name)
@@ -131,11 +131,11 @@ func TestProvisioningRequestWrapper(t *testing.T) {
 	assert.Equal(t, podSets, betaPodSets)
 
 	// Check the type accessors.
-	assert.Equal(t, v1Beta1PR, wrappedBetaPR.ProvisioningRequest)
+	assert.Equal(t, v1PR, wrappedBetaPR.ProvisioningRequest)
 	assert.Equal(t, podTemplates, wrappedBetaPR.PodTemplates)
 
 	// Check case where the Provisioning Request is missing Pod Templates.
-	wrappedBetaPRMissingPodTemplates := NewProvisioningRequest(v1Beta1PR, nil)
+	wrappedBetaPRMissingPodTemplates := NewProvisioningRequest(v1PR, nil)
 	podSets, err := wrappedBetaPRMissingPodTemplates.PodSets()
 	assert.Nil(t, podSets)
 	assert.EqualError(t, err, "missing pod templates, 1 pod templates were referenced, 1 templates were missing: name-pod-template-beta")
