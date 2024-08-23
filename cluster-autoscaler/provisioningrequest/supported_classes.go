@@ -17,12 +17,12 @@ limitations under the License.
 package provisioningrequest
 
 import (
-	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1beta1"
+	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
 )
 
 // SupportedProvisioningClasses is a set of ProvisioningRequest classes
 // supported by Cluster Autoscaler.
 var SupportedProvisioningClasses = map[string]bool{
-	v1beta1.ProvisioningClassCheckCapacity:           true,
-	v1beta1.ProvisioningClassBestEffortAtomicScaleUp: true,
+	v1.ProvisioningClassCheckCapacity:           true,
+	v1.ProvisioningClassBestEffortAtomicScaleUp: true,
 }

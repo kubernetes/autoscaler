@@ -18,13 +18,13 @@ limitations under the License.
 
 package v1beta1
 
-// ReferenceApplyConfiguration represents an declarative configuration of the Reference type for use
+// ReferenceApplyConfiguration represents a declarative configuration of the Reference type for use
 // with apply.
 type ReferenceApplyConfiguration struct {
 	Name *string `json:"name,omitempty"`
 }
 
-// ReferenceApplyConfiguration constructs an declarative configuration of the Reference type for use with
+// ReferenceApplyConfiguration constructs a declarative configuration of the Reference type for use with
 // apply.
 func Reference() *ReferenceApplyConfiguration {
 	return &ReferenceApplyConfiguration{}

@@ -24,7 +24,7 @@ import (
 	v1 "k8s.io/client-go/applyconfigurations/meta/v1"
 )
 
-// ProvisioningRequestApplyConfiguration represents an declarative configuration of the ProvisioningRequest type for use
+// ProvisioningRequestApplyConfiguration represents a declarative configuration of the ProvisioningRequest type for use
 // with apply.
 type ProvisioningRequestApplyConfiguration struct {
 	v1.TypeMetaApplyConfiguration    `json:",inline"`
@@ -33,7 +33,7 @@ type ProvisioningRequestApplyConfiguration struct {
 	Status                           *ProvisioningRequestStatusApplyConfiguration `json:"status,omitempty"`
 }
 
-// ProvisioningRequest constructs an declarative configuration of the ProvisioningRequest type for use with
+// ProvisioningRequest constructs a declarative configuration of the ProvisioningRequest type for use with
 // apply.
 func ProvisioningRequest(name, namespace string) *ProvisioningRequestApplyConfiguration {
 	b := &ProvisioningRequestApplyConfiguration{}
@@ -216,4 +216,10 @@ func (b *ProvisioningRequestApplyConfiguration) WithSpec(value *ProvisioningRequ
 func (b *ProvisioningRequestApplyConfiguration) WithStatus(value *ProvisioningRequestStatusApplyConfiguration) *ProvisioningRequestApplyConfiguration {
 	b.Status = value
 	return b
+}
+
+// GetName retrieves the value of the Name field in the declarative configuration.
+func (b *ProvisioningRequestApplyConfiguration) GetName() *string {
+	b.ensureObjectMetaApplyConfigurationExists()
+	return b.Name
 }

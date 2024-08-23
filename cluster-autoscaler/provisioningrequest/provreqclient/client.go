@@ -26,14 +26,14 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1beta1"
+	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/clientset/versioned"
 	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/informers/externalversions"
-	listers "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/listers/autoscaling.x-k8s.io/v1beta1"
+	listers "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/listers/autoscaling.x-k8s.io/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
-	v1 "k8s.io/client-go/listers/core/v1"
+	corev1 "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/rest"
 
 	klog "k8s.io/klog/v2"
@@ -43,11 +43,11 @@ const (
 	provisioningRequestClientCallTimeout = 4 * time.Second
 )
 
-// ProvisioningRequestClient represents client for v1beta1 ProvReq CRD.
+// ProvisioningRequestClient represents client for v1 ProvReq CRD.
 type ProvisioningRequestClient struct {
 	client         versioned.Interface
 	provReqLister  listers.ProvisioningRequestLister
-	podTemplLister v1.PodTemplateLister
+	podTemplLister corev1.PodTemplateLister
 }
 
 // NewProvisioningRequestClient configures and returns a provisioningRequestClient.
@@ -81,36 +81,36 @@ func NewProvisioningRequestClient(kubeConfig *rest.Config) (*ProvisioningRequest
 
 // ProvisioningRequest gets a specific ProvisioningRequest CR.
 func (c *ProvisioningRequestClient) ProvisioningRequest(namespace, name string) (*provreqwrapper.ProvisioningRequest, error) {
-	v1Beta1PR, err := c.provReqLister.ProvisioningRequests(namespace).Get(name)
+	v1PR, err := c.provReqLister.ProvisioningRequests(namespace).Get(name)
 	if err != nil {
 		return nil, err
 	}
-	podTemplates, err := c.FetchPodTemplates(v1Beta1PR)
+	podTemplates, err := c.FetchPodTemplates(v1PR)
 	if err != nil {
 		return nil, fmt.Errorf("while fetching pod templates for Get Provisioning Request %s/%s got error: %v", namespace, name, err)
 	}
-	return provreqwrapper.NewProvisioningRequest(v1Beta1PR, podTemplates), nil
+	return provreqwrapper.NewProvisioningRequest(v1PR, podTemplates), nil
 }
 
 // ProvisioningRequests gets all ProvisioningRequest CRs.
 func (c *ProvisioningRequestClient) ProvisioningRequests() ([]*provreqwrapper.ProvisioningRequest, error) {
-	v1Beta1PRs, err := c.provReqLister.List(labels.Everything())
+	v1PRs, err := c.provReqLister.List(labels.Everything())
 	if err != nil {
 		return nil, fmt.Errorf("error fetching provisioningRequests: %w", err)
 	}
-	prs := make([]*provreqwrapper.ProvisioningRequest, 0, len(v1Beta1PRs))
-	for _, v1Beta1PR := range v1Beta1PRs {
-		podTemplates, errPodTemplates := c.FetchPodTemplates(v1Beta1PR)
+	prs := make([]*provreqwrapper.ProvisioningRequest, 0, len(v1PRs))
+	for _, v1PR := range v1PRs {
+		podTemplates, errPodTemplates := c.FetchPodTemplates(v1PR)
 		if errPodTemplates != nil {
-			return nil, fmt.Errorf("while fetching pod templates for List Provisioning Request %s/%s got error: %v", v1Beta1PR.Namespace, v1Beta1PR.Name, errPodTemplates)
+			return nil, fmt.Errorf("while fetching pod templates for List Provisioning Request %s/%s got error: %v", v1PR.Namespace, v1PR.Name, errPodTemplates)
 		}
-		prs = append(prs, provreqwrapper.NewProvisioningRequest(v1Beta1PR, podTemplates))
+		prs = append(prs, provreqwrapper.NewProvisioningRequest(v1PR, podTemplates))
 	}
 	return prs, nil
 }
 
 // FetchPodTemplates fetches PodTemplates referenced by the Provisioning Request.
-func (c *ProvisioningRequestClient) FetchPodTemplates(pr *v1beta1.ProvisioningRequest) ([]*apiv1.PodTemplate, error) {
+func (c *ProvisioningRequestClient) FetchPodTemplates(pr *v1.ProvisioningRequest) ([]*apiv1.PodTemplate, error) {
 	podTemplates := make([]*apiv1.PodTemplate, 0, len(pr.Spec.PodSets))
 	for _, podSpec := range pr.Spec.PodSets {
 		podTemplate, err := c.podTemplLister.PodTemplates(pr.Namespace).Get(podSpec.PodTemplateRef.Name)
@@ -126,7 +126,7 @@ func (c *ProvisioningRequestClient) FetchPodTemplates(pr *v1beta1.ProvisioningRe
 }
 
 // UpdateProvisioningRequest updates the given ProvisioningRequest CR by propagating the changes using the ProvisioningRequestInterface and returns the updated instance or the original one in case of an error.
-func (c *ProvisioningRequestClient) UpdateProvisioningRequest(pr *v1beta1.ProvisioningRequest) (*v1beta1.ProvisioningRequest, error) {
+func (c *ProvisioningRequestClient) UpdateProvisioningRequest(pr *v1.ProvisioningRequest) (*v1.ProvisioningRequest, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), provisioningRequestClientCallTimeout)
 	defer cancel()
 
@@ -134,8 +134,8 @@ func (c *ProvisioningRequestClient) UpdateProvisioningRequest(pr *v1beta1.Provis
 	// the default null template.metadata.creationTimestamp field of PodTemplateSpec
 	// will not generate false error logs as a side effect.
 	prCopy := pr.DeepCopy()
-	prCopy.Spec = v1beta1.ProvisioningRequestSpec{}
-	updatedPr, err := c.client.AutoscalingV1beta1().ProvisioningRequests(prCopy.Namespace).UpdateStatus(ctx, prCopy, metav1.UpdateOptions{})
+	prCopy.Spec = v1.ProvisioningRequestSpec{}
+	updatedPr, err := c.client.AutoscalingV1().ProvisioningRequests(prCopy.Namespace).UpdateStatus(ctx, prCopy, metav1.UpdateOptions{})
 	if err != nil {
 		return pr, err
 	}
@@ -151,7 +151,7 @@ func newPRClient(kubeConfig *rest.Config) (*versioned.Clientset, error) {
 // newPRsLister creates a lister for the Provisioning Requests in the cluster.
 func newPRsLister(prClient versioned.Interface, stopChannel <-chan struct{}) (listers.ProvisioningRequestLister, error) {
 	factory := externalversions.NewSharedInformerFactory(prClient, 1*time.Hour)
-	provReqLister := factory.Autoscaling().V1beta1().ProvisioningRequests().Lister()
+	provReqLister := factory.Autoscaling().V1().ProvisioningRequests().Lister()
 	factory.Start(stopChannel)
 	informersSynced := factory.WaitForCacheSync(stopChannel)
 	for _, synced := range informersSynced {
@@ -164,7 +164,7 @@ func newPRsLister(prClient versioned.Interface, stopChannel <-chan struct{}) (li
 }
 
 // newPodTemplatesLister creates a lister for the Pod Templates in the cluster.
-func newPodTemplatesLister(client *kubernetes.Clientset, stopChannel <-chan struct{}) (v1.PodTemplateLister, error) {
+func newPodTemplatesLister(client *kubernetes.Clientset, stopChannel <-chan struct{}) (corev1.PodTemplateLister, error) {
 	factory := informers.NewSharedInformerFactory(client, 1*time.Hour)
 	podTemplLister := factory.Core().V1().PodTemplates().Lister()
 	factory.Start(stopChannel)
@@ -206,11 +206,11 @@ func ProvisioningRequestsForPods(client *ProvisioningRequestClient, unschedulabl
 }
 
 // DeleteProvisioningRequest deletes the given ProvisioningRequest CR using the ProvisioningRequestInterface and returns an error in case of failure.
-func (c *ProvisioningRequestClient) DeleteProvisioningRequest(pr *v1beta1.ProvisioningRequest) error {
+func (c *ProvisioningRequestClient) DeleteProvisioningRequest(pr *v1.ProvisioningRequest) error {
 	ctx, cancel := context.WithTimeout(context.Background(), provisioningRequestClientCallTimeout)
 	defer cancel()
 
-	err := c.client.AutoscalingV1beta1().ProvisioningRequests(pr.Namespace).Delete(ctx, pr.Name, metav1.DeleteOptions{})
+	err := c.client.AutoscalingV1().ProvisioningRequests(pr.Namespace).Delete(ctx, pr.Name, metav1.DeleteOptions{})
 	if err != nil {
 		return fmt.Errorf("error deleting ProvisioningRequest %s/%s: %w", pr.Namespace, pr.Name, err)
 	}
