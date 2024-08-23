@@ -19,7 +19,6 @@ metadata:
   name: ${CLUSTER_NAME}
   namespace: default
 spec:
-  version: ${KUBERNETES_VERSION}
   resources:
   - apiVersion: containerservice.azure.com/v1api20231001
     kind: ManagedCluster
@@ -31,6 +30,7 @@ spec:
       dnsPrefix: ${CLUSTER_NAME}
       identity:
         type: SystemAssigned
+      kubernetesVersion: "${KUBERNETES_VERSION}"
       location: ${AZURE_LOCATION}
       networkProfile:
         networkPlugin: azure
@@ -142,7 +142,6 @@ spec:
         apiVersion: infrastructure.cluster.x-k8s.io/v1alpha1
         kind: AzureASOManagedMachinePool
         name: ${CLUSTER_NAME}-pool0
-      version: ${KUBERNETES_VERSION}
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1alpha1
 kind: AzureASOManagedMachinePool
@@ -164,6 +163,7 @@ spec:
         name: ${CLUSTER_NAME}
       type: VirtualMachineScaleSets
       vmSize: ${AZURE_AKS_NODE_MACHINE_TYPE:=Standard_D2s_v3}
+      orchestratorVersion: "${KUBERNETES_VERSION}"
 ---
 apiVersion: cluster.x-k8s.io/v1beta1
 kind: MachinePool
@@ -185,7 +185,6 @@ spec:
         apiVersion: infrastructure.cluster.x-k8s.io/v1alpha1
         kind: AzureASOManagedMachinePool
         name: ${CLUSTER_NAME}-pool1
-      version: ${KUBERNETES_VERSION}
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1alpha1
 kind: AzureASOManagedMachinePool
@@ -212,6 +211,7 @@ spec:
         min: "1"
       type: VirtualMachineScaleSets
       vmSize: ${AZURE_AKS_NODE_MACHINE_TYPE:=Standard_D2s_v3}
+      orchestratorVersion: "${KUBERNETES_VERSION}"
 ---
 apiVersion: cluster.x-k8s.io/v1beta1
 kind: MachinePool
@@ -233,7 +233,6 @@ spec:
         apiVersion: infrastructure.cluster.x-k8s.io/v1alpha1
         kind: AzureASOManagedMachinePool
         name: ${CLUSTER_NAME}-pool2
-      version: ${KUBERNETES_VERSION}
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1alpha1
 kind: AzureASOManagedMachinePool
@@ -261,6 +260,7 @@ spec:
         min: "1"
       type: VirtualMachineScaleSets
       vmSize: ${AZURE_AKS_NODE_MACHINE_TYPE:=Standard_D2s_v3}
+      orchestratorVersion: "${KUBERNETES_VERSION}"
 ---
 apiVersion: v1
 kind: Secret
