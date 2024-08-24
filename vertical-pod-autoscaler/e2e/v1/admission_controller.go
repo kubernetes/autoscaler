@@ -157,7 +157,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 			apiv1.ResourceCPU:    ParseQuantityOrDie("100m"),
 			apiv1.ResourceMemory: ParseQuantityOrDie("100Mi"),
 		}
-		klog.Infof("d: %+v", d)
+		klog.InfoS("d", "d", d)
 		ginkgo.By("Setting up a VPA CRD")
 		containerName := GetHamsterContainerNameByIndex(0)
 		vpaCRD := test.VerticalPodAutoscaler().
@@ -286,7 +286,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 			apiv1.ResourceCPU:    ParseQuantityOrDie("400m"),
 			apiv1.ResourceMemory: ParseQuantityOrDie("600Mi"),
 		}
-		klog.Infof("d: %+v", d)
+		klog.InfoS("d", "d", d)
 		ginkgo.By("Setting up a VPA CRD")
 		containerName := GetHamsterContainerNameByIndex(0)
 		vpaCRD := test.VerticalPodAutoscaler().
