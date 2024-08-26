@@ -29,7 +29,6 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2022-07-01/network"
 
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
 	utilnet "k8s.io/utils/net"
 	"k8s.io/utils/pointer"
@@ -503,36 +502,6 @@ func IntInSlice(i int, list []int) bool {
 		}
 	}
 	return false
-}
-
-func safeAddKeyToStringsSet(set sets.Set[string], key string) sets.Set[string] {
-	if set != nil {
-		set.Insert(key)
-	} else {
-		set = sets.New[string](key)
-	}
-
-	return set
-}
-
-func safeRemoveKeyFromStringsSet(set sets.Set[string], key string) (sets.Set[string], bool) {
-	var has bool
-	if set != nil {
-		if set.Has(key) {
-			has = true
-		}
-		set.Delete(key)
-	}
-
-	return set, has
-}
-
-func setToStrings(set sets.Set[string]) []string {
-	var res []string
-	for key := range set {
-		res = append(res, key)
-	}
-	return res
 }
 
 func isLocalService(service *v1.Service) bool {

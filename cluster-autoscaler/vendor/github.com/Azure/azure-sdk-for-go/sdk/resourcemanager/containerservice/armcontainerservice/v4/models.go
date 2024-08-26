@@ -967,6 +967,9 @@ type ManagedClusterAgentPoolProfile struct {
 	// For more information see upgrading a node pool [https://docs.microsoft.com/azure/aks/use-multiple-node-pools#upgrade-a-node-pool].
 	OrchestratorVersion *string
 
+	// The IP allocation mode for pods in the agent pool. Must be used with podSubnetId. The default is 'DynamicIndividual'.
+	PodIPAllocationMode *PodIPAllocationMode
+
 	// If omitted, pod IPs are statically assigned on the node subnet (see vnetSubnetID for more details). This is of the form:
 	// /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Network/virtualNetworks/{virtualNetworkName}/subnets/{subnetName}
 	PodSubnetID *string
@@ -1165,6 +1168,9 @@ type ManagedClusterAgentPoolProfileProperties struct {
 	// For more information see upgrading a node pool [https://docs.microsoft.com/azure/aks/use-multiple-node-pools#upgrade-a-node-pool].
 	OrchestratorVersion *string
 
+	// The IP allocation mode for pods in the agent pool. Must be used with podSubnetId. The default is 'DynamicIndividual'.
+	PodIPAllocationMode *PodIPAllocationMode
+
 	// If omitted, pod IPs are statically assigned on the node subnet (see vnetSubnetID for more details). This is of the form:
 	// /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Network/virtualNetworks/{virtualNetworkName}/subnets/{subnetName}
 	PodSubnetID *string
@@ -1330,6 +1336,15 @@ type ManagedClusterAzureMonitorProfileMetrics struct {
 type ManagedClusterAzureMonitorProfileWindowsHostLogs struct {
 	// Indicates if Windows Host Log Collection is enabled or not for Azure Monitor Container Insights Logs Addon.
 	Enabled *bool
+}
+
+// ManagedClusterBootstrapProfile - The bootstrap profile.
+type ManagedClusterBootstrapProfile struct {
+	// The source where the artifacts are downloaded from.
+	ArtifactSource *ArtifactSource
+
+	// The resource Id of Azure Container Registry. The registry must have private network access, premium SKU and zone redundancy.
+	ContainerRegistryID *string
 }
 
 // ManagedClusterCostAnalysis - The cost analysis configuration for the cluster
@@ -1637,6 +1652,9 @@ type ManagedClusterProperties struct {
 
 	// Prometheus addon profile for the container service cluster
 	AzureMonitorProfile *ManagedClusterAzureMonitorProfile
+
+	// Profile of the cluster bootstrap configuration.
+	BootstrapProfile *ManagedClusterBootstrapProfile
 
 	// CreationData to be used to specify the source Snapshot ID if the cluster will be created/upgraded using a snapshot.
 	CreationData *CreationData

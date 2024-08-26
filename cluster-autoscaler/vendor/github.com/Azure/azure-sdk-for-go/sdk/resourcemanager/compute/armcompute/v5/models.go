@@ -1037,6 +1037,9 @@ type CreationData struct {
 	// disabled after enabled.
 	PerformancePlus *bool
 
+	// If this field is set on a snapshot and createOption is CopyStart, the snapshot will be copied at a quicker speed.
+	ProvisionedBandwidthCopySpeed *ProvisionedBandwidthCopyOption
+
 	// If createOption is ImportSecure, this is the URI of a blob to be imported into VM guest state.
 	SecurityDataURI *string
 
@@ -2382,13 +2385,17 @@ type GalleryArtifactVersionFullSource struct {
 	// The resource Id of the source Community Gallery Image. Only required when using Community Gallery Image as a source.
 	CommunityGalleryImageID *string
 
-	// The id of the gallery artifact version source. Can specify a disk uri, snapshot uri, user image or storage account resource.
+	// The id of the gallery artifact version source.
 	ID *string
+
+	// The resource Id of the source virtual machine. Only required when capturing a virtual machine to source this Gallery Image
+	// Version.
+	VirtualMachineID *string
 }
 
 // GalleryArtifactVersionSource - The gallery artifact version source.
 type GalleryArtifactVersionSource struct {
-	// The id of the gallery artifact version source. Can specify a disk uri, snapshot uri, user image or storage account resource.
+	// The id of the gallery artifact version source.
 	ID *string
 }
 
@@ -2423,7 +2430,7 @@ type GalleryDiskImage struct {
 
 // GalleryDiskImageSource - The source for the disk image.
 type GalleryDiskImageSource struct {
-	// The id of the gallery artifact version source. Can specify a disk uri, snapshot uri, user image or storage account resource.
+	// The id of the gallery artifact version source.
 	ID *string
 
 	// The Storage Account Id that contains the vhd blob being used as a source for this artifact version.

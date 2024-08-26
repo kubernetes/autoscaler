@@ -117,6 +117,7 @@ func (az *Cloud) getStorageAccounts(ctx context.Context, accountOptions *Account
 				isTaggedWithSkip(acct) &&
 				isHnsPropertyEqual(acct, accountOptions) &&
 				isEnableNfsV3PropertyEqual(acct, accountOptions) &&
+				isEnableHTTPSTrafficOnlyEqual(acct, accountOptions) &&
 				isAllowBlobPublicAccessEqual(acct, accountOptions) &&
 				isRequireInfrastructureEncryptionEqual(acct, accountOptions) &&
 				isAllowSharedKeyAccessEqual(acct, accountOptions) &&
@@ -840,17 +841,16 @@ func isTagsEqual(account storage.Account, accountOptions *AccountOptions) bool {
 		return true
 	}
 
-	for k, v := range account.Tags {
-		var value string
-		// nil and empty value should be regarded as equal
-		if v != nil {
-			value = *v
-		}
-		if accountOptions.Tags[k] != value {
+	if len(account.Tags) < len(accountOptions.Tags) {
+		return false
+	}
+
+	// ensure all tags in accountOptions are in account
+	for k, v := range accountOptions.Tags {
+		if pointer.StringDeref(account.Tags[k], "") != v {
 			return false
 		}
 	}
-
 	return true
 }
 
@@ -860,6 +860,10 @@ func isHnsPropertyEqual(account storage.Account, accountOptions *AccountOptions)
 
 func isEnableNfsV3PropertyEqual(account storage.Account, accountOptions *AccountOptions) bool {
 	return pointer.BoolDeref(accountOptions.EnableNfsV3, false) == pointer.BoolDeref(account.EnableNfsV3, false)
+}
+
+func isEnableHTTPSTrafficOnlyEqual(account storage.Account, accountOptions *AccountOptions) bool {
+	return accountOptions.EnableHTTPSTrafficOnly == pointer.BoolDeref(account.EnableHTTPSTrafficOnly, true)
 }
 
 func isPrivateEndpointAsExpected(account storage.Account, accountOptions *AccountOptions) bool {

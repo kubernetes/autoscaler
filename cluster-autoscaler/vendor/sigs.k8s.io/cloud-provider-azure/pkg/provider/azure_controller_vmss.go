@@ -163,7 +163,7 @@ func (ss *ScaleSet) WaitForUpdateResult(ctx context.Context, future *azure.Futur
 }
 
 // DetachDisk detaches a disk from VM
-func (ss *ScaleSet) DetachDisk(ctx context.Context, nodeName types.NodeName, diskMap map[string]string) error {
+func (ss *ScaleSet) DetachDisk(ctx context.Context, nodeName types.NodeName, diskMap map[string]string, forceDetach bool) error {
 	vmName := mapNodeNameToVMName(nodeName)
 	vm, err := ss.getVmssVM(vmName, azcache.CacheReadTypeDefault)
 	if err != nil {
@@ -193,6 +193,9 @@ func (ss *ScaleSet) DetachDisk(ctx context.Context, nodeName types.NodeName, dis
 				// found the disk
 				klog.V(2).Infof("azureDisk - detach disk: name %s uri %s", diskName, diskURI)
 				disks[i].ToBeDetached = pointer.Bool(true)
+				if forceDetach {
+					disks[i].DetachOption = compute.ForceDetach
+				}
 				bFoundDisk = true
 			}
 		}

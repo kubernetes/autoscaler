@@ -261,13 +261,13 @@ func (client *VirtualMachineScaleSetsClient) createOrUpdateCreateRequest(ctx con
 	reqQP := req.Raw().URL.Query()
 	reqQP.Set("api-version", "2023-09-01")
 	req.Raw().URL.RawQuery = reqQP.Encode()
+	req.Raw().Header["Accept"] = []string{"application/json"}
 	if options != nil && options.IfMatch != nil {
 		req.Raw().Header["If-Match"] = []string{*options.IfMatch}
 	}
 	if options != nil && options.IfNoneMatch != nil {
 		req.Raw().Header["If-None-Match"] = []string{*options.IfNoneMatch}
 	}
-	req.Raw().Header["Accept"] = []string{"application/json"}
 	if err := runtime.MarshalAsJSON(req, parameters); err != nil {
 		return nil, err
 	}
@@ -348,10 +348,10 @@ func (client *VirtualMachineScaleSetsClient) deallocateCreateRequest(ctx context
 		return nil, err
 	}
 	reqQP := req.Raw().URL.Query()
+	reqQP.Set("api-version", "2023-09-01")
 	if options != nil && options.Hibernate != nil {
 		reqQP.Set("hibernate", strconv.FormatBool(*options.Hibernate))
 	}
-	reqQP.Set("api-version", "2023-09-01")
 	req.Raw().URL.RawQuery = reqQP.Encode()
 	req.Raw().Header["Accept"] = []string{"application/json"}
 	if options != nil && options.VMInstanceIDs != nil {
@@ -433,10 +433,10 @@ func (client *VirtualMachineScaleSetsClient) deleteCreateRequest(ctx context.Con
 		return nil, err
 	}
 	reqQP := req.Raw().URL.Query()
+	reqQP.Set("api-version", "2023-09-01")
 	if options != nil && options.ForceDeletion != nil {
 		reqQP.Set("forceDeletion", strconv.FormatBool(*options.ForceDeletion))
 	}
-	reqQP.Set("api-version", "2023-09-01")
 	req.Raw().URL.RawQuery = reqQP.Encode()
 	req.Raw().Header["Accept"] = []string{"application/json"}
 	return req, nil
@@ -513,10 +513,10 @@ func (client *VirtualMachineScaleSetsClient) deleteInstancesCreateRequest(ctx co
 		return nil, err
 	}
 	reqQP := req.Raw().URL.Query()
+	reqQP.Set("api-version", "2023-09-01")
 	if options != nil && options.ForceDeletion != nil {
 		reqQP.Set("forceDeletion", strconv.FormatBool(*options.ForceDeletion))
 	}
-	reqQP.Set("api-version", "2023-09-01")
 	req.Raw().URL.RawQuery = reqQP.Encode()
 	req.Raw().Header["Accept"] = []string{"application/json"}
 	if err := runtime.MarshalAsJSON(req, vmInstanceIDs); err != nil {
@@ -578,12 +578,12 @@ func (client *VirtualMachineScaleSetsClient) forceRecoveryServiceFabricPlatformU
 	}
 	reqQP := req.Raw().URL.Query()
 	reqQP.Set("api-version", "2023-09-01")
+	if options != nil && options.PlacementGroupID != nil {
+		reqQP.Set("placementGroupId", *options.PlacementGroupID)
+	}
 	reqQP.Set("platformUpdateDomain", strconv.FormatInt(int64(platformUpdateDomain), 10))
 	if options != nil && options.Zone != nil {
 		reqQP.Set("zone", *options.Zone)
-	}
-	if options != nil && options.PlacementGroupID != nil {
-		reqQP.Set("placementGroupId", *options.PlacementGroupID)
 	}
 	req.Raw().URL.RawQuery = reqQP.Encode()
 	req.Raw().Header["Accept"] = []string{"application/json"}
@@ -649,10 +649,10 @@ func (client *VirtualMachineScaleSetsClient) getCreateRequest(ctx context.Contex
 		return nil, err
 	}
 	reqQP := req.Raw().URL.Query()
-	reqQP.Set("api-version", "2023-09-01")
 	if options != nil && options.Expand != nil {
 		reqQP.Set("$expand", string(*options.Expand))
 	}
+	reqQP.Set("api-version", "2023-09-01")
 	req.Raw().URL.RawQuery = reqQP.Encode()
 	req.Raw().Header["Accept"] = []string{"application/json"}
 	return req, nil
@@ -1200,10 +1200,10 @@ func (client *VirtualMachineScaleSetsClient) powerOffCreateRequest(ctx context.C
 		return nil, err
 	}
 	reqQP := req.Raw().URL.Query()
+	reqQP.Set("api-version", "2023-09-01")
 	if options != nil && options.SkipShutdown != nil {
 		reqQP.Set("skipShutdown", strconv.FormatBool(*options.SkipShutdown))
 	}
-	reqQP.Set("api-version", "2023-09-01")
 	req.Raw().URL.RawQuery = reqQP.Encode()
 	req.Raw().Header["Accept"] = []string{"application/json"}
 	if options != nil && options.VMInstanceIDs != nil {
@@ -1863,13 +1863,13 @@ func (client *VirtualMachineScaleSetsClient) updateCreateRequest(ctx context.Con
 	reqQP := req.Raw().URL.Query()
 	reqQP.Set("api-version", "2023-09-01")
 	req.Raw().URL.RawQuery = reqQP.Encode()
+	req.Raw().Header["Accept"] = []string{"application/json"}
 	if options != nil && options.IfMatch != nil {
 		req.Raw().Header["If-Match"] = []string{*options.IfMatch}
 	}
 	if options != nil && options.IfNoneMatch != nil {
 		req.Raw().Header["If-None-Match"] = []string{*options.IfNoneMatch}
 	}
-	req.Raw().Header["Accept"] = []string{"application/json"}
 	if err := runtime.MarshalAsJSON(req, parameters); err != nil {
 		return nil, err
 	}

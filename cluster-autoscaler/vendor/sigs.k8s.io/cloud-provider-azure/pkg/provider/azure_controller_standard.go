@@ -153,7 +153,7 @@ func (as *availabilitySet) WaitForUpdateResult(ctx context.Context, future *azur
 }
 
 // DetachDisk detaches a disk from VM
-func (as *availabilitySet) DetachDisk(ctx context.Context, nodeName types.NodeName, diskMap map[string]string) error {
+func (as *availabilitySet) DetachDisk(ctx context.Context, nodeName types.NodeName, diskMap map[string]string, forceDetach bool) error {
 	vm, err := as.getVirtualMachine(nodeName, azcache.CacheReadTypeDefault)
 	if err != nil {
 		// if host doesn't exist, no need to detach
@@ -179,6 +179,9 @@ func (as *availabilitySet) DetachDisk(ctx context.Context, nodeName types.NodeNa
 				// found the disk
 				klog.V(2).Infof("azureDisk - detach disk: name %s uri %s", diskName, diskURI)
 				disks[i].ToBeDetached = pointer.Bool(true)
+				if forceDetach {
+					disks[i].DetachOption = compute.ForceDetach
+				}
 				bFoundDisk = true
 			}
 		}

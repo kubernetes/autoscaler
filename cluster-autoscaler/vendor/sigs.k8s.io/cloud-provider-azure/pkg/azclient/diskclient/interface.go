@@ -18,6 +18,8 @@ limitations under the License.
 package diskclient
 
 import (
+	"context"
+
 	armcompute "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v5"
 
 	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/utils"
@@ -29,4 +31,5 @@ type Interface interface {
 	utils.CreateOrUpdateFunc[armcompute.Disk]
 	utils.DeleteFunc[armcompute.Disk]
 	utils.ListFunc[armcompute.Disk]
+	Patch(ctx context.Context, resourceGroupName string, resourceName string, parameters armcompute.DiskUpdate) (result *armcompute.Disk, err error)
 }

@@ -38,10 +38,12 @@ import (
 	cloudprovider "k8s.io/cloud-provider"
 	"k8s.io/klog/v2"
 	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 
 	azcache "sigs.k8s.io/cloud-provider-azure/pkg/cache"
 	"sigs.k8s.io/cloud-provider-azure/pkg/consts"
 	"sigs.k8s.io/cloud-provider-azure/pkg/metrics"
+	vmutil "sigs.k8s.io/cloud-provider-azure/pkg/util/vm"
 )
 
 var (
@@ -501,19 +503,13 @@ func (as *availabilitySet) GetPowerStatusByNodeName(name string) (powerState str
 		return powerState, err
 	}
 
-	if vm.InstanceView != nil && vm.InstanceView.Statuses != nil {
-		statuses := *vm.InstanceView.Statuses
-		for _, status := range statuses {
-			state := pointer.StringDeref(status.Code, "")
-			if strings.HasPrefix(state, vmPowerStatePrefix) {
-				return strings.TrimPrefix(state, vmPowerStatePrefix), nil
-			}
-		}
+	if vm.InstanceView != nil {
+		return vmutil.GetVMPowerState(ptr.Deref(vm.Name, ""), vm.InstanceView.Statuses), nil
 	}
 
 	// vm.InstanceView or vm.InstanceView.Statuses are nil when the VM is under deleting.
 	klog.V(3).Infof("InstanceView for node %q is nil, assuming it's deleting", name)
-	return vmPowerStateUnknown, nil
+	return consts.VMPowerStateUnknown, nil
 }
 
 // GetProvisioningStateByNodeName returns the provisioningState for the specified node.

@@ -122,7 +122,7 @@ func (fs *FlexScaleSet) AttachDisk(ctx context.Context, nodeName types.NodeName,
 }
 
 // DetachDisk detaches a disk from VM
-func (fs *FlexScaleSet) DetachDisk(ctx context.Context, nodeName types.NodeName, diskMap map[string]string) error {
+func (fs *FlexScaleSet) DetachDisk(ctx context.Context, nodeName types.NodeName, diskMap map[string]string, forceDetach bool) error {
 	vmName := mapNodeNameToVMName(nodeName)
 	vm, err := fs.getVmssFlexVM(vmName, azcache.CacheReadTypeDefault)
 	if err != nil {
@@ -148,6 +148,9 @@ func (fs *FlexScaleSet) DetachDisk(ctx context.Context, nodeName types.NodeName,
 				// found the disk
 				klog.V(2).Infof("azureDisk - detach disk: name %s uri %s", diskName, diskURI)
 				disks[i].ToBeDetached = pointer.Bool(true)
+				if forceDetach {
+					disks[i].DetachOption = compute.ForceDetach
+				}
 				bFoundDisk = true
 			}
 		}

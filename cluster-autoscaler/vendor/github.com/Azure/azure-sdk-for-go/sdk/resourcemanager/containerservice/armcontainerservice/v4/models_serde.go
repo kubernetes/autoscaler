@@ -2333,6 +2333,7 @@ func (m ManagedClusterAgentPoolProfile) MarshalJSON() ([]byte, error) {
 	populate(objectMap, "osSKU", m.OSSKU)
 	populate(objectMap, "osType", m.OSType)
 	populate(objectMap, "orchestratorVersion", m.OrchestratorVersion)
+	populate(objectMap, "podIPAllocationMode", m.PodIPAllocationMode)
 	populate(objectMap, "podSubnetID", m.PodSubnetID)
 	populate(objectMap, "powerState", m.PowerState)
 	populate(objectMap, "provisioningState", m.ProvisioningState)
@@ -2468,6 +2469,9 @@ func (m *ManagedClusterAgentPoolProfile) UnmarshalJSON(data []byte) error {
 		case "orchestratorVersion":
 			err = unpopulate(val, "OrchestratorVersion", &m.OrchestratorVersion)
 			delete(rawMsg, key)
+		case "podIPAllocationMode":
+			err = unpopulate(val, "PodIPAllocationMode", &m.PodIPAllocationMode)
+			delete(rawMsg, key)
 		case "podSubnetID":
 			err = unpopulate(val, "PodSubnetID", &m.PodSubnetID)
 			delete(rawMsg, key)
@@ -2567,6 +2571,7 @@ func (m ManagedClusterAgentPoolProfileProperties) MarshalJSON() ([]byte, error) 
 	populate(objectMap, "osSKU", m.OSSKU)
 	populate(objectMap, "osType", m.OSType)
 	populate(objectMap, "orchestratorVersion", m.OrchestratorVersion)
+	populate(objectMap, "podIPAllocationMode", m.PodIPAllocationMode)
 	populate(objectMap, "podSubnetID", m.PodSubnetID)
 	populate(objectMap, "powerState", m.PowerState)
 	populate(objectMap, "provisioningState", m.ProvisioningState)
@@ -2698,6 +2703,9 @@ func (m *ManagedClusterAgentPoolProfileProperties) UnmarshalJSON(data []byte) er
 			delete(rawMsg, key)
 		case "orchestratorVersion":
 			err = unpopulate(val, "OrchestratorVersion", &m.OrchestratorVersion)
+			delete(rawMsg, key)
+		case "podIPAllocationMode":
+			err = unpopulate(val, "PodIPAllocationMode", &m.PodIPAllocationMode)
 			delete(rawMsg, key)
 		case "podSubnetID":
 			err = unpopulate(val, "PodSubnetID", &m.PodSubnetID)
@@ -3027,6 +3035,37 @@ func (m *ManagedClusterAzureMonitorProfileWindowsHostLogs) UnmarshalJSON(data []
 		switch key {
 		case "enabled":
 			err = unpopulate(val, "Enabled", &m.Enabled)
+			delete(rawMsg, key)
+		}
+		if err != nil {
+			return fmt.Errorf("unmarshalling type %T: %v", m, err)
+		}
+	}
+	return nil
+}
+
+// MarshalJSON implements the json.Marshaller interface for type ManagedClusterBootstrapProfile.
+func (m ManagedClusterBootstrapProfile) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]any)
+	populate(objectMap, "artifactSource", m.ArtifactSource)
+	populate(objectMap, "containerRegistryId", m.ContainerRegistryID)
+	return json.Marshal(objectMap)
+}
+
+// UnmarshalJSON implements the json.Unmarshaller interface for type ManagedClusterBootstrapProfile.
+func (m *ManagedClusterBootstrapProfile) UnmarshalJSON(data []byte) error {
+	var rawMsg map[string]json.RawMessage
+	if err := json.Unmarshal(data, &rawMsg); err != nil {
+		return fmt.Errorf("unmarshalling type %T: %v", m, err)
+	}
+	for key, val := range rawMsg {
+		var err error
+		switch key {
+		case "artifactSource":
+			err = unpopulate(val, "ArtifactSource", &m.ArtifactSource)
+			delete(rawMsg, key)
+		case "containerRegistryId":
+			err = unpopulate(val, "ContainerRegistryID", &m.ContainerRegistryID)
 			delete(rawMsg, key)
 		}
 		if err != nil {
@@ -3852,6 +3891,7 @@ func (m ManagedClusterProperties) MarshalJSON() ([]byte, error) {
 	populate(objectMap, "autoUpgradeProfile", m.AutoUpgradeProfile)
 	populate(objectMap, "azureMonitorProfile", m.AzureMonitorProfile)
 	populate(objectMap, "azurePortalFQDN", m.AzurePortalFQDN)
+	populate(objectMap, "bootstrapProfile", m.BootstrapProfile)
 	populate(objectMap, "creationData", m.CreationData)
 	populate(objectMap, "currentKubernetesVersion", m.CurrentKubernetesVersion)
 	populate(objectMap, "dnsPrefix", m.DNSPrefix)
@@ -3928,6 +3968,9 @@ func (m *ManagedClusterProperties) UnmarshalJSON(data []byte) error {
 			delete(rawMsg, key)
 		case "azurePortalFQDN":
 			err = unpopulate(val, "AzurePortalFQDN", &m.AzurePortalFQDN)
+			delete(rawMsg, key)
+		case "bootstrapProfile":
+			err = unpopulate(val, "BootstrapProfile", &m.BootstrapProfile)
 			delete(rawMsg, key)
 		case "creationData":
 			err = unpopulate(val, "CreationData", &m.CreationData)
