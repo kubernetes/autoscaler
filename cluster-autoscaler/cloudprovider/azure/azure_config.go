@@ -56,6 +56,9 @@ const (
 	rateLimitWriteQPSEnvVar             = "RATE_LIMIT_WRITE_QPS"
 	rateLimitWriteBucketsEnvVar         = "RATE_LIMIT_WRITE_BUCKETS"
 
+	// VmssSizeRefreshPeriodDefault in seconds
+	VmssSizeRefreshPeriodDefault = 30
+
 	// auth methods
 	authMethodPrincipal = "principal"
 	authMethodCLI       = "cli"
@@ -138,20 +141,20 @@ type Config struct {
 	CloudProviderBackoffDuration int     `json:"cloudProviderBackoffDuration,omitempty" yaml:"cloudProviderBackoffDuration,omitempty"`
 	CloudProviderBackoffJitter   float64 `json:"cloudProviderBackoffJitter,omitempty" yaml:"cloudProviderBackoffJitter,omitempty"`
 
+	// EnableForceDelete defines whether to enable force deletion on the APIs
+	EnableForceDelete bool `json:"enableForceDelete,omitempty" yaml:"enableForceDelete,omitempty"`
+
 	// EnableDynamicInstanceList defines whether to enable dynamic instance workflow for instance information check
 	EnableDynamicInstanceList bool `json:"enableDynamicInstanceList,omitempty" yaml:"enableDynamicInstanceList,omitempty"`
 
 	// EnableVmssFlex defines whether to enable Vmss Flex support or not
 	EnableVmssFlex bool `json:"enableVmssFlex,omitempty" yaml:"enableVmssFlex,omitempty"`
 
-	// (DEPRECATED, DO NOT USE) EnableForceDelete defines whether to enable force deletion on the APIs
-	EnableForceDelete bool `json:"enableForceDelete,omitempty" yaml:"enableForceDelete,omitempty"`
-
 	// (DEPRECATED, DO NOT USE) EnableDetailedCSEMessage defines whether to emit error messages in the CSE error body info
 	EnableDetailedCSEMessage bool `json:"enableDetailedCSEMessage,omitempty" yaml:"enableDetailedCSEMessage,omitempty"`
 
-	// (DEPRECATED, DO NOT USE) GetVmssSizeRefreshPeriod defines how frequently to call GET VMSS API to fetch VMSS info per nodegroup instance
-	GetVmssSizeRefreshPeriod time.Duration `json:"getVmssSizeRefreshPeriod,omitempty" yaml:"getVmssSizeRefreshPeriod,omitempty"`
+	// (DEPRECATED, DO NOT USE) GetVmssSizeRefreshPeriod (seconds) defines how frequently to call GET VMSS API to fetch VMSS info per nodegroup instance
+	GetVmssSizeRefreshPeriod int `json:"getVmssSizeRefreshPeriod,omitempty" yaml:"getVmssSizeRefreshPeriod,omitempty"`
 }
 
 // BuildAzureConfig returns a Config object for the Azure clients
@@ -262,6 +265,15 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 			cfg.EnableDynamicInstanceList = dynamicInstanceListDefault
 		}
 
+		if getVmssSizeRefreshPeriod := os.Getenv("AZURE_GET_VMSS_SIZE_REFRESH_PERIOD"); getVmssSizeRefreshPeriod != "" {
+			cfg.GetVmssSizeRefreshPeriod, err = strconv.Atoi(getVmssSizeRefreshPeriod)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse AZURE_GET_VMSS_SIZE_REFRESH_PERIOD %q: %v", getVmssSizeRefreshPeriod, err)
+			}
+		} else {
+			cfg.GetVmssSizeRefreshPeriod = VmssSizeRefreshPeriodDefault
+		}
+
 		if enableVmssFlex := os.Getenv("AZURE_ENABLE_VMSS_FLEX"); enableVmssFlex != "" {
 			cfg.EnableVmssFlex, err = strconv.ParseBool(enableVmssFlex)
 			if err != nil {
@@ -323,6 +335,13 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 		cfg.CloudProviderRateLimit, err = strconv.ParseBool(cloudProviderRateLimit)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse CLOUD_PROVIDER_RATE_LIMIT: %q, %v", cloudProviderRateLimit, err)
+		}
+	}
+
+	if enableForceDelete := os.Getenv("AZURE_ENABLE_FORCE_DELETE"); enableForceDelete != "" {
+		cfg.EnableForceDelete, err = strconv.ParseBool(enableForceDelete)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse AZURE_ENABLE_FORCE_DELETE: %q, %v", enableForceDelete, err)
 		}
 	}
 

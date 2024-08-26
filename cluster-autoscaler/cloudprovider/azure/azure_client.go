@@ -236,7 +236,7 @@ func newAgentpoolClientWithConfig(subscriptionID string, cred azcore.TokenCreden
 		return nil, fmt.Errorf("failed to init cluster agent pools client: %w", err)
 	}
 
-	klog.V(10).Infof("Successfully created agent pool client with ARMBaseURLForAPClient")
+	klog.V(10).Infof("Successfully created agent pool client with ARMBaseURL")
 	return agentPoolsClient, nil
 }
 
