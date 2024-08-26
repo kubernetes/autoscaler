@@ -20,63 +20,63 @@ import (
 	"strings"
 )
 
-// SnapshotsClient contains the methods for the Snapshots group.
-// Don't use this type directly, use NewSnapshotsClient() instead.
-type SnapshotsClient struct {
+// ManagedClusterSnapshotsClient contains the methods for the ManagedClusterSnapshots group.
+// Don't use this type directly, use NewManagedClusterSnapshotsClient() instead.
+type ManagedClusterSnapshotsClient struct {
 	internal       *arm.Client
 	subscriptionID string
 }
 
-// NewSnapshotsClient creates a new instance of SnapshotsClient with the specified values.
+// NewManagedClusterSnapshotsClient creates a new instance of ManagedClusterSnapshotsClient with the specified values.
 //   - subscriptionID - The ID of the target subscription. The value must be an UUID.
 //   - credential - used to authorize requests. Usually a credential from azidentity.
 //   - options - pass nil to accept the default values.
-func NewSnapshotsClient(subscriptionID string, credential azcore.TokenCredential, options *arm.ClientOptions) (*SnapshotsClient, error) {
+func NewManagedClusterSnapshotsClient(subscriptionID string, credential azcore.TokenCredential, options *arm.ClientOptions) (*ManagedClusterSnapshotsClient, error) {
 	cl, err := arm.NewClient(moduleName, moduleVersion, credential, options)
 	if err != nil {
 		return nil, err
 	}
-	client := &SnapshotsClient{
+	client := &ManagedClusterSnapshotsClient{
 		subscriptionID: subscriptionID,
 		internal:       cl,
 	}
 	return client, nil
 }
 
-// CreateOrUpdate - Creates or updates a snapshot.
+// CreateOrUpdate - Creates or updates a managed cluster snapshot.
 // If the operation fails it returns an *azcore.ResponseError type.
 //
 // Generated from API version 2024-01-02-preview
 //   - resourceGroupName - The name of the resource group. The name is case insensitive.
 //   - resourceName - The name of the managed cluster resource.
-//   - parameters - The snapshot to create or update.
-//   - options - SnapshotsClientCreateOrUpdateOptions contains the optional parameters for the SnapshotsClient.CreateOrUpdate
+//   - parameters - The managed cluster snapshot to create or update.
+//   - options - ManagedClusterSnapshotsClientCreateOrUpdateOptions contains the optional parameters for the ManagedClusterSnapshotsClient.CreateOrUpdate
 //     method.
-func (client *SnapshotsClient) CreateOrUpdate(ctx context.Context, resourceGroupName string, resourceName string, parameters Snapshot, options *SnapshotsClientCreateOrUpdateOptions) (SnapshotsClientCreateOrUpdateResponse, error) {
+func (client *ManagedClusterSnapshotsClient) CreateOrUpdate(ctx context.Context, resourceGroupName string, resourceName string, parameters ManagedClusterSnapshot, options *ManagedClusterSnapshotsClientCreateOrUpdateOptions) (ManagedClusterSnapshotsClientCreateOrUpdateResponse, error) {
 	var err error
-	const operationName = "SnapshotsClient.CreateOrUpdate"
+	const operationName = "ManagedClusterSnapshotsClient.CreateOrUpdate"
 	ctx = context.WithValue(ctx, runtime.CtxAPINameKey{}, operationName)
 	ctx, endSpan := runtime.StartSpan(ctx, operationName, client.internal.Tracer(), nil)
 	defer func() { endSpan(err) }()
 	req, err := client.createOrUpdateCreateRequest(ctx, resourceGroupName, resourceName, parameters, options)
 	if err != nil {
-		return SnapshotsClientCreateOrUpdateResponse{}, err
+		return ManagedClusterSnapshotsClientCreateOrUpdateResponse{}, err
 	}
 	httpResp, err := client.internal.Pipeline().Do(req)
 	if err != nil {
-		return SnapshotsClientCreateOrUpdateResponse{}, err
+		return ManagedClusterSnapshotsClientCreateOrUpdateResponse{}, err
 	}
 	if !runtime.HasStatusCode(httpResp, http.StatusOK, http.StatusCreated) {
 		err = runtime.NewResponseError(httpResp)
-		return SnapshotsClientCreateOrUpdateResponse{}, err
+		return ManagedClusterSnapshotsClientCreateOrUpdateResponse{}, err
 	}
 	resp, err := client.createOrUpdateHandleResponse(httpResp)
 	return resp, err
 }
 
 // createOrUpdateCreateRequest creates the CreateOrUpdate request.
-func (client *SnapshotsClient) createOrUpdateCreateRequest(ctx context.Context, resourceGroupName string, resourceName string, parameters Snapshot, options *SnapshotsClientCreateOrUpdateOptions) (*policy.Request, error) {
-	urlPath := "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ContainerService/snapshots/{resourceName}"
+func (client *ManagedClusterSnapshotsClient) createOrUpdateCreateRequest(ctx context.Context, resourceGroupName string, resourceName string, parameters ManagedClusterSnapshot, options *ManagedClusterSnapshotsClientCreateOrUpdateOptions) (*policy.Request, error) {
+	urlPath := "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ContainerService/managedclustersnapshots/{resourceName}"
 	if client.subscriptionID == "" {
 		return nil, errors.New("parameter client.subscriptionID cannot be empty")
 	}
@@ -104,45 +104,46 @@ func (client *SnapshotsClient) createOrUpdateCreateRequest(ctx context.Context, 
 }
 
 // createOrUpdateHandleResponse handles the CreateOrUpdate response.
-func (client *SnapshotsClient) createOrUpdateHandleResponse(resp *http.Response) (SnapshotsClientCreateOrUpdateResponse, error) {
-	result := SnapshotsClientCreateOrUpdateResponse{}
-	if err := runtime.UnmarshalAsJSON(resp, &result.Snapshot); err != nil {
-		return SnapshotsClientCreateOrUpdateResponse{}, err
+func (client *ManagedClusterSnapshotsClient) createOrUpdateHandleResponse(resp *http.Response) (ManagedClusterSnapshotsClientCreateOrUpdateResponse, error) {
+	result := ManagedClusterSnapshotsClientCreateOrUpdateResponse{}
+	if err := runtime.UnmarshalAsJSON(resp, &result.ManagedClusterSnapshot); err != nil {
+		return ManagedClusterSnapshotsClientCreateOrUpdateResponse{}, err
 	}
 	return result, nil
 }
 
-// Delete - Deletes a snapshot.
+// Delete - Deletes a managed cluster snapshot.
 // If the operation fails it returns an *azcore.ResponseError type.
 //
 // Generated from API version 2024-01-02-preview
 //   - resourceGroupName - The name of the resource group. The name is case insensitive.
 //   - resourceName - The name of the managed cluster resource.
-//   - options - SnapshotsClientDeleteOptions contains the optional parameters for the SnapshotsClient.Delete method.
-func (client *SnapshotsClient) Delete(ctx context.Context, resourceGroupName string, resourceName string, options *SnapshotsClientDeleteOptions) (SnapshotsClientDeleteResponse, error) {
+//   - options - ManagedClusterSnapshotsClientDeleteOptions contains the optional parameters for the ManagedClusterSnapshotsClient.Delete
+//     method.
+func (client *ManagedClusterSnapshotsClient) Delete(ctx context.Context, resourceGroupName string, resourceName string, options *ManagedClusterSnapshotsClientDeleteOptions) (ManagedClusterSnapshotsClientDeleteResponse, error) {
 	var err error
-	const operationName = "SnapshotsClient.Delete"
+	const operationName = "ManagedClusterSnapshotsClient.Delete"
 	ctx = context.WithValue(ctx, runtime.CtxAPINameKey{}, operationName)
 	ctx, endSpan := runtime.StartSpan(ctx, operationName, client.internal.Tracer(), nil)
 	defer func() { endSpan(err) }()
 	req, err := client.deleteCreateRequest(ctx, resourceGroupName, resourceName, options)
 	if err != nil {
-		return SnapshotsClientDeleteResponse{}, err
+		return ManagedClusterSnapshotsClientDeleteResponse{}, err
 	}
 	httpResp, err := client.internal.Pipeline().Do(req)
 	if err != nil {
-		return SnapshotsClientDeleteResponse{}, err
+		return ManagedClusterSnapshotsClientDeleteResponse{}, err
 	}
 	if !runtime.HasStatusCode(httpResp, http.StatusOK, http.StatusNoContent) {
 		err = runtime.NewResponseError(httpResp)
-		return SnapshotsClientDeleteResponse{}, err
+		return ManagedClusterSnapshotsClientDeleteResponse{}, err
 	}
-	return SnapshotsClientDeleteResponse{}, nil
+	return ManagedClusterSnapshotsClientDeleteResponse{}, nil
 }
 
 // deleteCreateRequest creates the Delete request.
-func (client *SnapshotsClient) deleteCreateRequest(ctx context.Context, resourceGroupName string, resourceName string, options *SnapshotsClientDeleteOptions) (*policy.Request, error) {
-	urlPath := "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ContainerService/snapshots/{resourceName}"
+func (client *ManagedClusterSnapshotsClient) deleteCreateRequest(ctx context.Context, resourceGroupName string, resourceName string, options *ManagedClusterSnapshotsClientDeleteOptions) (*policy.Request, error) {
+	urlPath := "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ContainerService/managedclustersnapshots/{resourceName}"
 	if client.subscriptionID == "" {
 		return nil, errors.New("parameter client.subscriptionID cannot be empty")
 	}
@@ -166,38 +167,39 @@ func (client *SnapshotsClient) deleteCreateRequest(ctx context.Context, resource
 	return req, nil
 }
 
-// Get - Gets a snapshot.
+// Get - Gets a managed cluster snapshot.
 // If the operation fails it returns an *azcore.ResponseError type.
 //
 // Generated from API version 2024-01-02-preview
 //   - resourceGroupName - The name of the resource group. The name is case insensitive.
 //   - resourceName - The name of the managed cluster resource.
-//   - options - SnapshotsClientGetOptions contains the optional parameters for the SnapshotsClient.Get method.
-func (client *SnapshotsClient) Get(ctx context.Context, resourceGroupName string, resourceName string, options *SnapshotsClientGetOptions) (SnapshotsClientGetResponse, error) {
+//   - options - ManagedClusterSnapshotsClientGetOptions contains the optional parameters for the ManagedClusterSnapshotsClient.Get
+//     method.
+func (client *ManagedClusterSnapshotsClient) Get(ctx context.Context, resourceGroupName string, resourceName string, options *ManagedClusterSnapshotsClientGetOptions) (ManagedClusterSnapshotsClientGetResponse, error) {
 	var err error
-	const operationName = "SnapshotsClient.Get"
+	const operationName = "ManagedClusterSnapshotsClient.Get"
 	ctx = context.WithValue(ctx, runtime.CtxAPINameKey{}, operationName)
 	ctx, endSpan := runtime.StartSpan(ctx, operationName, client.internal.Tracer(), nil)
 	defer func() { endSpan(err) }()
 	req, err := client.getCreateRequest(ctx, resourceGroupName, resourceName, options)
 	if err != nil {
-		return SnapshotsClientGetResponse{}, err
+		return ManagedClusterSnapshotsClientGetResponse{}, err
 	}
 	httpResp, err := client.internal.Pipeline().Do(req)
 	if err != nil {
-		return SnapshotsClientGetResponse{}, err
+		return ManagedClusterSnapshotsClientGetResponse{}, err
 	}
 	if !runtime.HasStatusCode(httpResp, http.StatusOK) {
 		err = runtime.NewResponseError(httpResp)
-		return SnapshotsClientGetResponse{}, err
+		return ManagedClusterSnapshotsClientGetResponse{}, err
 	}
 	resp, err := client.getHandleResponse(httpResp)
 	return resp, err
 }
 
 // getCreateRequest creates the Get request.
-func (client *SnapshotsClient) getCreateRequest(ctx context.Context, resourceGroupName string, resourceName string, options *SnapshotsClientGetOptions) (*policy.Request, error) {
-	urlPath := "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ContainerService/snapshots/{resourceName}"
+func (client *ManagedClusterSnapshotsClient) getCreateRequest(ctx context.Context, resourceGroupName string, resourceName string, options *ManagedClusterSnapshotsClientGetOptions) (*policy.Request, error) {
+	urlPath := "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ContainerService/managedclustersnapshots/{resourceName}"
 	if client.subscriptionID == "" {
 		return nil, errors.New("parameter client.subscriptionID cannot be empty")
 	}
@@ -222,25 +224,26 @@ func (client *SnapshotsClient) getCreateRequest(ctx context.Context, resourceGro
 }
 
 // getHandleResponse handles the Get response.
-func (client *SnapshotsClient) getHandleResponse(resp *http.Response) (SnapshotsClientGetResponse, error) {
-	result := SnapshotsClientGetResponse{}
-	if err := runtime.UnmarshalAsJSON(resp, &result.Snapshot); err != nil {
-		return SnapshotsClientGetResponse{}, err
+func (client *ManagedClusterSnapshotsClient) getHandleResponse(resp *http.Response) (ManagedClusterSnapshotsClientGetResponse, error) {
+	result := ManagedClusterSnapshotsClientGetResponse{}
+	if err := runtime.UnmarshalAsJSON(resp, &result.ManagedClusterSnapshot); err != nil {
+		return ManagedClusterSnapshotsClientGetResponse{}, err
 	}
 	return result, nil
 }
 
-// NewListPager - Gets a list of snapshots in the specified subscription.
+// NewListPager - Gets a list of managed cluster snapshots in the specified subscription.
 //
 // Generated from API version 2024-01-02-preview
-//   - options - SnapshotsClientListOptions contains the optional parameters for the SnapshotsClient.NewListPager method.
-func (client *SnapshotsClient) NewListPager(options *SnapshotsClientListOptions) *runtime.Pager[SnapshotsClientListResponse] {
-	return runtime.NewPager(runtime.PagingHandler[SnapshotsClientListResponse]{
-		More: func(page SnapshotsClientListResponse) bool {
+//   - options - ManagedClusterSnapshotsClientListOptions contains the optional parameters for the ManagedClusterSnapshotsClient.NewListPager
+//     method.
+func (client *ManagedClusterSnapshotsClient) NewListPager(options *ManagedClusterSnapshotsClientListOptions) *runtime.Pager[ManagedClusterSnapshotsClientListResponse] {
+	return runtime.NewPager(runtime.PagingHandler[ManagedClusterSnapshotsClientListResponse]{
+		More: func(page ManagedClusterSnapshotsClientListResponse) bool {
 			return page.NextLink != nil && len(*page.NextLink) > 0
 		},
-		Fetcher: func(ctx context.Context, page *SnapshotsClientListResponse) (SnapshotsClientListResponse, error) {
-			ctx = context.WithValue(ctx, runtime.CtxAPINameKey{}, "SnapshotsClient.NewListPager")
+		Fetcher: func(ctx context.Context, page *ManagedClusterSnapshotsClientListResponse) (ManagedClusterSnapshotsClientListResponse, error) {
+			ctx = context.WithValue(ctx, runtime.CtxAPINameKey{}, "ManagedClusterSnapshotsClient.NewListPager")
 			nextLink := ""
 			if page != nil {
 				nextLink = *page.NextLink
@@ -249,7 +252,7 @@ func (client *SnapshotsClient) NewListPager(options *SnapshotsClientListOptions)
 				return client.listCreateRequest(ctx, options)
 			}, nil)
 			if err != nil {
-				return SnapshotsClientListResponse{}, err
+				return ManagedClusterSnapshotsClientListResponse{}, err
 			}
 			return client.listHandleResponse(resp)
 		},
@@ -258,8 +261,8 @@ func (client *SnapshotsClient) NewListPager(options *SnapshotsClientListOptions)
 }
 
 // listCreateRequest creates the List request.
-func (client *SnapshotsClient) listCreateRequest(ctx context.Context, options *SnapshotsClientListOptions) (*policy.Request, error) {
-	urlPath := "/subscriptions/{subscriptionId}/providers/Microsoft.ContainerService/snapshots"
+func (client *ManagedClusterSnapshotsClient) listCreateRequest(ctx context.Context, options *ManagedClusterSnapshotsClientListOptions) (*policy.Request, error) {
+	urlPath := "/subscriptions/{subscriptionId}/providers/Microsoft.ContainerService/managedclustersnapshots"
 	if client.subscriptionID == "" {
 		return nil, errors.New("parameter client.subscriptionID cannot be empty")
 	}
@@ -276,27 +279,27 @@ func (client *SnapshotsClient) listCreateRequest(ctx context.Context, options *S
 }
 
 // listHandleResponse handles the List response.
-func (client *SnapshotsClient) listHandleResponse(resp *http.Response) (SnapshotsClientListResponse, error) {
-	result := SnapshotsClientListResponse{}
-	if err := runtime.UnmarshalAsJSON(resp, &result.SnapshotListResult); err != nil {
-		return SnapshotsClientListResponse{}, err
+func (client *ManagedClusterSnapshotsClient) listHandleResponse(resp *http.Response) (ManagedClusterSnapshotsClientListResponse, error) {
+	result := ManagedClusterSnapshotsClientListResponse{}
+	if err := runtime.UnmarshalAsJSON(resp, &result.ManagedClusterSnapshotListResult); err != nil {
+		return ManagedClusterSnapshotsClientListResponse{}, err
 	}
 	return result, nil
 }
 
-// NewListByResourceGroupPager - Lists snapshots in the specified subscription and resource group.
+// NewListByResourceGroupPager - Lists managed cluster snapshots in the specified subscription and resource group.
 //
 // Generated from API version 2024-01-02-preview
 //   - resourceGroupName - The name of the resource group. The name is case insensitive.
-//   - options - SnapshotsClientListByResourceGroupOptions contains the optional parameters for the SnapshotsClient.NewListByResourceGroupPager
+//   - options - ManagedClusterSnapshotsClientListByResourceGroupOptions contains the optional parameters for the ManagedClusterSnapshotsClient.NewListByResourceGroupPager
 //     method.
-func (client *SnapshotsClient) NewListByResourceGroupPager(resourceGroupName string, options *SnapshotsClientListByResourceGroupOptions) *runtime.Pager[SnapshotsClientListByResourceGroupResponse] {
-	return runtime.NewPager(runtime.PagingHandler[SnapshotsClientListByResourceGroupResponse]{
-		More: func(page SnapshotsClientListByResourceGroupResponse) bool {
+func (client *ManagedClusterSnapshotsClient) NewListByResourceGroupPager(resourceGroupName string, options *ManagedClusterSnapshotsClientListByResourceGroupOptions) *runtime.Pager[ManagedClusterSnapshotsClientListByResourceGroupResponse] {
+	return runtime.NewPager(runtime.PagingHandler[ManagedClusterSnapshotsClientListByResourceGroupResponse]{
+		More: func(page ManagedClusterSnapshotsClientListByResourceGroupResponse) bool {
 			return page.NextLink != nil && len(*page.NextLink) > 0
 		},
-		Fetcher: func(ctx context.Context, page *SnapshotsClientListByResourceGroupResponse) (SnapshotsClientListByResourceGroupResponse, error) {
-			ctx = context.WithValue(ctx, runtime.CtxAPINameKey{}, "SnapshotsClient.NewListByResourceGroupPager")
+		Fetcher: func(ctx context.Context, page *ManagedClusterSnapshotsClientListByResourceGroupResponse) (ManagedClusterSnapshotsClientListByResourceGroupResponse, error) {
+			ctx = context.WithValue(ctx, runtime.CtxAPINameKey{}, "ManagedClusterSnapshotsClient.NewListByResourceGroupPager")
 			nextLink := ""
 			if page != nil {
 				nextLink = *page.NextLink
@@ -305,7 +308,7 @@ func (client *SnapshotsClient) NewListByResourceGroupPager(resourceGroupName str
 				return client.listByResourceGroupCreateRequest(ctx, resourceGroupName, options)
 			}, nil)
 			if err != nil {
-				return SnapshotsClientListByResourceGroupResponse{}, err
+				return ManagedClusterSnapshotsClientListByResourceGroupResponse{}, err
 			}
 			return client.listByResourceGroupHandleResponse(resp)
 		},
@@ -314,8 +317,8 @@ func (client *SnapshotsClient) NewListByResourceGroupPager(resourceGroupName str
 }
 
 // listByResourceGroupCreateRequest creates the ListByResourceGroup request.
-func (client *SnapshotsClient) listByResourceGroupCreateRequest(ctx context.Context, resourceGroupName string, options *SnapshotsClientListByResourceGroupOptions) (*policy.Request, error) {
-	urlPath := "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ContainerService/snapshots"
+func (client *ManagedClusterSnapshotsClient) listByResourceGroupCreateRequest(ctx context.Context, resourceGroupName string, options *ManagedClusterSnapshotsClientListByResourceGroupOptions) (*policy.Request, error) {
+	urlPath := "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ContainerService/managedclustersnapshots"
 	if client.subscriptionID == "" {
 		return nil, errors.New("parameter client.subscriptionID cannot be empty")
 	}
@@ -336,47 +339,48 @@ func (client *SnapshotsClient) listByResourceGroupCreateRequest(ctx context.Cont
 }
 
 // listByResourceGroupHandleResponse handles the ListByResourceGroup response.
-func (client *SnapshotsClient) listByResourceGroupHandleResponse(resp *http.Response) (SnapshotsClientListByResourceGroupResponse, error) {
-	result := SnapshotsClientListByResourceGroupResponse{}
-	if err := runtime.UnmarshalAsJSON(resp, &result.SnapshotListResult); err != nil {
-		return SnapshotsClientListByResourceGroupResponse{}, err
+func (client *ManagedClusterSnapshotsClient) listByResourceGroupHandleResponse(resp *http.Response) (ManagedClusterSnapshotsClientListByResourceGroupResponse, error) {
+	result := ManagedClusterSnapshotsClientListByResourceGroupResponse{}
+	if err := runtime.UnmarshalAsJSON(resp, &result.ManagedClusterSnapshotListResult); err != nil {
+		return ManagedClusterSnapshotsClientListByResourceGroupResponse{}, err
 	}
 	return result, nil
 }
 
-// UpdateTags - Updates tags on a snapshot.
+// UpdateTags - Updates tags on a managed cluster snapshot.
 // If the operation fails it returns an *azcore.ResponseError type.
 //
 // Generated from API version 2024-01-02-preview
 //   - resourceGroupName - The name of the resource group. The name is case insensitive.
 //   - resourceName - The name of the managed cluster resource.
-//   - parameters - Parameters supplied to the Update snapshot Tags operation.
-//   - options - SnapshotsClientUpdateTagsOptions contains the optional parameters for the SnapshotsClient.UpdateTags method.
-func (client *SnapshotsClient) UpdateTags(ctx context.Context, resourceGroupName string, resourceName string, parameters TagsObject, options *SnapshotsClientUpdateTagsOptions) (SnapshotsClientUpdateTagsResponse, error) {
+//   - parameters - Parameters supplied to the Update managed cluster snapshot Tags operation.
+//   - options - ManagedClusterSnapshotsClientUpdateTagsOptions contains the optional parameters for the ManagedClusterSnapshotsClient.UpdateTags
+//     method.
+func (client *ManagedClusterSnapshotsClient) UpdateTags(ctx context.Context, resourceGroupName string, resourceName string, parameters TagsObject, options *ManagedClusterSnapshotsClientUpdateTagsOptions) (ManagedClusterSnapshotsClientUpdateTagsResponse, error) {
 	var err error
-	const operationName = "SnapshotsClient.UpdateTags"
+	const operationName = "ManagedClusterSnapshotsClient.UpdateTags"
 	ctx = context.WithValue(ctx, runtime.CtxAPINameKey{}, operationName)
 	ctx, endSpan := runtime.StartSpan(ctx, operationName, client.internal.Tracer(), nil)
 	defer func() { endSpan(err) }()
 	req, err := client.updateTagsCreateRequest(ctx, resourceGroupName, resourceName, parameters, options)
 	if err != nil {
-		return SnapshotsClientUpdateTagsResponse{}, err
+		return ManagedClusterSnapshotsClientUpdateTagsResponse{}, err
 	}
 	httpResp, err := client.internal.Pipeline().Do(req)
 	if err != nil {
-		return SnapshotsClientUpdateTagsResponse{}, err
+		return ManagedClusterSnapshotsClientUpdateTagsResponse{}, err
 	}
 	if !runtime.HasStatusCode(httpResp, http.StatusOK) {
 		err = runtime.NewResponseError(httpResp)
-		return SnapshotsClientUpdateTagsResponse{}, err
+		return ManagedClusterSnapshotsClientUpdateTagsResponse{}, err
 	}
 	resp, err := client.updateTagsHandleResponse(httpResp)
 	return resp, err
 }
 
 // updateTagsCreateRequest creates the UpdateTags request.
-func (client *SnapshotsClient) updateTagsCreateRequest(ctx context.Context, resourceGroupName string, resourceName string, parameters TagsObject, options *SnapshotsClientUpdateTagsOptions) (*policy.Request, error) {
-	urlPath := "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ContainerService/snapshots/{resourceName}"
+func (client *ManagedClusterSnapshotsClient) updateTagsCreateRequest(ctx context.Context, resourceGroupName string, resourceName string, parameters TagsObject, options *ManagedClusterSnapshotsClientUpdateTagsOptions) (*policy.Request, error) {
+	urlPath := "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ContainerService/managedclustersnapshots/{resourceName}"
 	if client.subscriptionID == "" {
 		return nil, errors.New("parameter client.subscriptionID cannot be empty")
 	}
@@ -404,10 +408,10 @@ func (client *SnapshotsClient) updateTagsCreateRequest(ctx context.Context, reso
 }
 
 // updateTagsHandleResponse handles the UpdateTags response.
-func (client *SnapshotsClient) updateTagsHandleResponse(resp *http.Response) (SnapshotsClientUpdateTagsResponse, error) {
-	result := SnapshotsClientUpdateTagsResponse{}
-	if err := runtime.UnmarshalAsJSON(resp, &result.Snapshot); err != nil {
-		return SnapshotsClientUpdateTagsResponse{}, err
+func (client *ManagedClusterSnapshotsClient) updateTagsHandleResponse(resp *http.Response) (ManagedClusterSnapshotsClientUpdateTagsResponse, error) {
+	result := ManagedClusterSnapshotsClientUpdateTagsResponse{}
+	if err := runtime.UnmarshalAsJSON(resp, &result.ManagedClusterSnapshot); err != nil {
+		return ManagedClusterSnapshotsClientUpdateTagsResponse{}, err
 	}
 	return result, nil
 }
