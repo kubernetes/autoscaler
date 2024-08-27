@@ -287,7 +287,7 @@ func (n *hetznerNodeGroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, err
 	}
 	node.Labels = cloudprovider.JoinStringMaps(node.Labels, nodeGroupLabels)
 
-	if n.manager.clusterConfig.IsUsingNewFormat && n.id != drainingNodePoolId {
+	if n.manager.clusterConfig.IsUsingNewFormat {
 		for _, taint := range n.manager.clusterConfig.NodeConfigs[n.id].Taints {
 			node.Spec.Taints = append(node.Spec.Taints, apiv1.Taint{
 				Key:    taint.Key,
@@ -391,7 +391,7 @@ func buildNodeGroupLabels(n *hetznerNodeGroup) (map[string]string, error) {
 		nodeGroupLabel:               n.id,
 	}
 
-	if n.manager.clusterConfig.IsUsingNewFormat && n.id != drainingNodePoolId {
+	if n.manager.clusterConfig.IsUsingNewFormat {
 		maps.Copy(labels, n.manager.clusterConfig.NodeConfigs[n.id].Labels)
 	}
 
