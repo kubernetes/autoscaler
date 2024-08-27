@@ -39,7 +39,7 @@ const (
 	AKSLabelPrefixValue = "kubernetes.azure.com"
 	// AKSLabelKeyPrefixValue represents prefix for AKS Labels
 	AKSLabelKeyPrefixValue = AKSLabelPrefixValue + "/"
-	
+
 	azureDiskTopologyKey = "topology.disk.csi.azure.com/zone"
 	// For NP-series SKU, the xilinx device plugin uses that resource name
 	// https://github.com/Xilinx/FPGA_as_a_Service/tree/master/k8s-fpga-device-plugin
@@ -247,7 +247,7 @@ func buildGenericLabels(template compute.VirtualMachineScaleSet, nodeName string
 
 	result[kubeletapis.LabelArch] = cloudprovider.DefaultArch
 	result[apiv1.LabelArchStable] = cloudprovider.DefaultArch
-	
+
 	result[kubeletapis.LabelOS] = buildInstanceOS(template)
 	result[apiv1.LabelOSStable] = buildInstanceOS(template)
 
