@@ -10,7 +10,7 @@ package armcompute
 
 const (
 	moduleName    = "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
-	moduleVersion = "v5.4.0"
+	moduleVersion = "v5.6.0"
 )
 
 type AccessLevel string
@@ -543,6 +543,9 @@ const (
 	// DiskSecurityTypesConfidentialVMDiskEncryptedWithPlatformKey - Indicates Confidential VM disk with both OS disk and VM guest
 	// state encrypted with a platform managed key
 	DiskSecurityTypesConfidentialVMDiskEncryptedWithPlatformKey DiskSecurityTypes = "ConfidentialVM_DiskEncryptedWithPlatformKey"
+	// DiskSecurityTypesConfidentialVMNonPersistedTPM - Indicates Confidential VM disk with a ephemeral vTPM. vTPM state is not
+	// persisted across VM reboots.
+	DiskSecurityTypesConfidentialVMNonPersistedTPM DiskSecurityTypes = "ConfidentialVM_NonPersistedTPM"
 	// DiskSecurityTypesConfidentialVMVmguestStateOnlyEncryptedWithPlatformKey - Indicates Confidential VM disk with only VM guest
 	// state encrypted
 	DiskSecurityTypesConfidentialVMVmguestStateOnlyEncryptedWithPlatformKey DiskSecurityTypes = "ConfidentialVM_VMGuestStateOnlyEncryptedWithPlatformKey"
@@ -556,6 +559,7 @@ func PossibleDiskSecurityTypesValues() []DiskSecurityTypes {
 	return []DiskSecurityTypes{
 		DiskSecurityTypesConfidentialVMDiskEncryptedWithCustomerKey,
 		DiskSecurityTypesConfidentialVMDiskEncryptedWithPlatformKey,
+		DiskSecurityTypesConfidentialVMNonPersistedTPM,
 		DiskSecurityTypesConfidentialVMVmguestStateOnlyEncryptedWithPlatformKey,
 		DiskSecurityTypesTrustedLaunch,
 	}
@@ -1497,6 +1501,23 @@ func PossibleProtocolTypesValues() []ProtocolTypes {
 	return []ProtocolTypes{
 		ProtocolTypesHTTP,
 		ProtocolTypesHTTPS,
+	}
+}
+
+// ProvisionedBandwidthCopyOption - If this field is set on a snapshot and createOption is CopyStart, the snapshot will be
+// copied at a quicker speed.
+type ProvisionedBandwidthCopyOption string
+
+const (
+	ProvisionedBandwidthCopyOptionEnhanced ProvisionedBandwidthCopyOption = "Enhanced"
+	ProvisionedBandwidthCopyOptionNone     ProvisionedBandwidthCopyOption = "None"
+)
+
+// PossibleProvisionedBandwidthCopyOptionValues returns the possible values for the ProvisionedBandwidthCopyOption const type.
+func PossibleProvisionedBandwidthCopyOptionValues() []ProvisionedBandwidthCopyOption {
+	return []ProvisionedBandwidthCopyOption{
+		ProvisionedBandwidthCopyOptionEnhanced,
+		ProvisionedBandwidthCopyOptionNone,
 	}
 }
 

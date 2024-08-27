@@ -25,12 +25,12 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
 
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
 	"k8s.io/utils/pointer"
 
 	azcache "sigs.k8s.io/cloud-provider-azure/pkg/cache"
 	"sigs.k8s.io/cloud-provider-azure/pkg/consts"
+	utilsets "sigs.k8s.io/cloud-provider-azure/pkg/util/sets"
 )
 
 type VMSSVirtualMachineEntry struct {
@@ -48,11 +48,11 @@ type VMSSEntry struct {
 }
 
 type NonVmssUniformNodesEntry struct {
-	VMSSFlexVMNodeNames   sets.Set[string]
-	VMSSFlexVMProviderIDs sets.Set[string]
-	AvSetVMNodeNames      sets.Set[string]
-	AvSetVMProviderIDs    sets.Set[string]
-	ClusterNodeNames      sets.Set[string]
+	VMSSFlexVMNodeNames   *utilsets.IgnoreCaseSet
+	VMSSFlexVMProviderIDs *utilsets.IgnoreCaseSet
+	AvSetVMNodeNames      *utilsets.IgnoreCaseSet
+	AvSetVMProviderIDs    *utilsets.IgnoreCaseSet
+	ClusterNodeNames      *utilsets.IgnoreCaseSet
 }
 
 type VMManagementType string
@@ -324,10 +324,10 @@ func (ss *ScaleSet) updateCache(nodeName, resourceGroupName, vmssName, instanceI
 
 func (ss *ScaleSet) newNonVmssUniformNodesCache() (azcache.Resource, error) {
 	getter := func(key string) (interface{}, error) {
-		vmssFlexVMNodeNames := sets.New[string]()
-		vmssFlexVMProviderIDs := sets.New[string]()
-		avSetVMNodeNames := sets.New[string]()
-		avSetVMProviderIDs := sets.New[string]()
+		vmssFlexVMNodeNames := utilsets.NewString()
+		vmssFlexVMProviderIDs := utilsets.NewString()
+		avSetVMNodeNames := utilsets.NewString()
+		avSetVMProviderIDs := utilsets.NewString()
 		resourceGroups, err := ss.GetResourceGroups()
 		if err != nil {
 			return nil, err
@@ -495,7 +495,17 @@ func (ss *ScaleSet) getVMManagementTypeByIPConfigurationID(ipConfigurationID str
 	vmName := strings.Replace(nicName, "-nic", "", 1)
 
 	cachedAvSetVMs := cached.(NonVmssUniformNodesEntry).AvSetVMNodeNames
+	if cachedAvSetVMs.Has(vmName) {
+		return ManagedByAvSet, nil
+	}
 
+	// If the node is not in the cache, assume the node has joined after the last cache refresh and attempt to refresh the cache
+	cached, err = ss.nonVmssUniformNodesCache.Get(consts.NonVmssUniformNodesKey, azcache.CacheReadTypeForceRefresh)
+	if err != nil {
+		return ManagedByUnknownVMSet, err
+	}
+
+	cachedAvSetVMs = cached.(NonVmssUniformNodesEntry).AvSetVMNodeNames
 	if cachedAvSetVMs.Has(vmName) {
 		return ManagedByAvSet, nil
 	}

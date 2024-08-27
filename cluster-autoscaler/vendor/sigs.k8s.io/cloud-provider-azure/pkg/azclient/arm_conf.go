@@ -62,3 +62,7 @@ func GetAzCoreClientOption(armConfig *ARMClientConfig) (*policy.ClientOptions, e
 	}
 	return &azCoreClientConfig, nil
 }
+
+func IsMultiTenant(armConfig *ARMClientConfig) bool {
+	return armConfig != nil && armConfig.NetworkResourceTenantID != "" && !strings.EqualFold(armConfig.NetworkResourceTenantID, armConfig.GetTenantID())
+}

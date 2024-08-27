@@ -79,7 +79,7 @@ type VMSet interface {
 	// AttachDisk attaches a disk to vm
 	AttachDisk(ctx context.Context, nodeName types.NodeName, diskMap map[string]*AttachDiskOptions) (*azure.Future, error)
 	// DetachDisk detaches a disk from vm
-	DetachDisk(ctx context.Context, nodeName types.NodeName, diskMap map[string]string) error
+	DetachDisk(ctx context.Context, nodeName types.NodeName, diskMap map[string]string, forceDetach bool) error
 	// WaitForUpdateResult waits for the response of the update request
 	WaitForUpdateResult(ctx context.Context, future *azure.Future, nodeName types.NodeName, source string) error
 

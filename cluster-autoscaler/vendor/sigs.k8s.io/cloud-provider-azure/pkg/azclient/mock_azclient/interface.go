@@ -482,6 +482,21 @@ func (mr *MockClientFactoryMockRecorder) GetSnapshotClient() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSnapshotClient", reflect.TypeOf((*MockClientFactory)(nil).GetSnapshotClient))
 }
 
+// GetSnapshotClientForSub mocks base method.
+func (m *MockClientFactory) GetSnapshotClientForSub(arg0 string) (snapshotclient.Interface, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSnapshotClientForSub", arg0)
+	ret0, _ := ret[0].(snapshotclient.Interface)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSnapshotClientForSub indicates an expected call of GetSnapshotClientForSub.
+func (mr *MockClientFactoryMockRecorder) GetSnapshotClientForSub(arg0 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSnapshotClientForSub", reflect.TypeOf((*MockClientFactory)(nil).GetSnapshotClientForSub), arg0)
+}
+
 // GetSubnetClient mocks base method.
 func (m *MockClientFactory) GetSubnetClient() subnetclient.Interface {
 	m.ctrl.T.Helper()

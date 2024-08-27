@@ -79,6 +79,7 @@ type ClientFactory interface {
 	GetSecretClient() secretclient.Interface
 	GetSecurityGroupClient() securitygroupclient.Interface
 	GetSnapshotClient() snapshotclient.Interface
+	GetSnapshotClientForSub(subscriptionID string) (snapshotclient.Interface, error)
 	GetSSHPublicKeyResourceClient() sshpublickeyresourceclient.Interface
 	GetSubnetClient() subnetclient.Interface
 	GetVaultClient() vaultclient.Interface

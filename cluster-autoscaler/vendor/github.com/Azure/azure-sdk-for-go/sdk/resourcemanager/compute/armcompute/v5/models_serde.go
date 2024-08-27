@@ -2404,6 +2404,7 @@ func (c CreationData) MarshalJSON() ([]byte, error) {
 	populate(objectMap, "imageReference", c.ImageReference)
 	populate(objectMap, "logicalSectorSize", c.LogicalSectorSize)
 	populate(objectMap, "performancePlus", c.PerformancePlus)
+	populate(objectMap, "provisionedBandwidthCopySpeed", c.ProvisionedBandwidthCopySpeed)
 	populate(objectMap, "securityDataUri", c.SecurityDataURI)
 	populate(objectMap, "sourceResourceId", c.SourceResourceID)
 	populate(objectMap, "sourceUri", c.SourceURI)
@@ -2439,6 +2440,9 @@ func (c *CreationData) UnmarshalJSON(data []byte) error {
 			delete(rawMsg, key)
 		case "performancePlus":
 			err = unpopulate(val, "PerformancePlus", &c.PerformancePlus)
+			delete(rawMsg, key)
+		case "provisionedBandwidthCopySpeed":
+			err = unpopulate(val, "ProvisionedBandwidthCopySpeed", &c.ProvisionedBandwidthCopySpeed)
 			delete(rawMsg, key)
 		case "securityDataUri":
 			err = unpopulate(val, "SecurityDataURI", &c.SecurityDataURI)
@@ -5488,6 +5492,7 @@ func (g GalleryArtifactVersionFullSource) MarshalJSON() ([]byte, error) {
 	objectMap := make(map[string]any)
 	populate(objectMap, "communityGalleryImageId", g.CommunityGalleryImageID)
 	populate(objectMap, "id", g.ID)
+	populate(objectMap, "virtualMachineId", g.VirtualMachineID)
 	return json.Marshal(objectMap)
 }
 
@@ -5505,6 +5510,9 @@ func (g *GalleryArtifactVersionFullSource) UnmarshalJSON(data []byte) error {
 			delete(rawMsg, key)
 		case "id":
 			err = unpopulate(val, "ID", &g.ID)
+			delete(rawMsg, key)
+		case "virtualMachineId":
+			err = unpopulate(val, "VirtualMachineID", &g.VirtualMachineID)
 			delete(rawMsg, key)
 		}
 		if err != nil {
@@ -19765,7 +19773,7 @@ func populateAny(m map[string]any, k string, v any) {
 }
 
 func unpopulate(data json.RawMessage, fn string, v any) error {
-	if data == nil {
+	if data == nil || string(data) == "null" {
 		return nil
 	}
 	if err := json.Unmarshal(data, v); err != nil {

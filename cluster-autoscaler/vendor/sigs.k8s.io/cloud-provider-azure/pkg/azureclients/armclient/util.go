@@ -121,7 +121,7 @@ func DoHackRegionalRetryForGET(c *Client) autorest.SendDecorator {
 
 			bodyString := string(bodyBytes)
 			trimmed := strings.TrimSpace(bodyString)
-			klog.V(6).Infof("Send.sendRequest got response with ContentLength %d, StatusCode %d and responseBody length %d", response.ContentLength, response.StatusCode, len(trimmed))
+			klog.V(6).Infof("%s %s got response with ContentLength %d, StatusCode %d and responseBody length %d", request.Method, request.URL.Path, response.ContentLength, response.StatusCode, len(trimmed))
 
 			// Hack: retry the regional ARM endpoint in case of ARM traffic split and arm resource group replication is too slow
 			// Empty content and 2xx http status code are returned in this case.

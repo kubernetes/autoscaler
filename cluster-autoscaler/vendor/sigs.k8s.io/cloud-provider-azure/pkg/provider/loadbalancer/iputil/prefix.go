@@ -30,14 +30,14 @@ func IsPrefixesAllowAll(prefixes []netip.Prefix) bool {
 	return false
 }
 
-func ParsePrefixes(vs []string) ([]netip.Prefix, error) {
-	var rv []netip.Prefix
-	for _, v := range vs {
-		prefix, err := netip.ParsePrefix(v)
-		if err != nil {
-			return nil, fmt.Errorf("invalid CIDR `%s`: %w", v, err)
-		}
-		rv = append(rv, prefix)
+func ParsePrefix(v string) (netip.Prefix, error) {
+	prefix, err := netip.ParsePrefix(v)
+	if err != nil {
+		return netip.Prefix{}, fmt.Errorf("invalid CIDR `%s`: %w", v, err)
 	}
-	return rv, nil
+	masked := prefix.Masked()
+	if prefix.Addr().Compare(masked.Addr()) != 0 {
+		return netip.Prefix{}, fmt.Errorf("invalid CIDR `%s`: not a valid network prefix, should be properly masked like %s", v, masked)
+	}
+	return prefix, nil
 }

@@ -313,10 +313,11 @@ func (helper *RuleHelper) RemoveDestinationPrefixesFromRules(prefixes []string) 
 	}
 
 	for _, rule := range helper.rules {
+		if rule.DestinationAddressPrefix != nil && index[*rule.DestinationAddressPrefix] {
+			rule.DestinationAddressPrefix = nil
+			continue
+		}
 		if rule.DestinationAddressPrefixes == nil {
-			if rule.DestinationAddressPrefix != nil && index[*rule.DestinationAddressPrefix] {
-				rule.DestinationAddressPrefix = nil
-			}
 			continue
 		}
 

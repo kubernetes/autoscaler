@@ -26,8 +26,8 @@ import (
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2022-07-01/network"
+
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
 	"k8s.io/utils/pointer"
@@ -35,6 +35,7 @@ import (
 	azcache "sigs.k8s.io/cloud-provider-azure/pkg/cache"
 	"sigs.k8s.io/cloud-provider-azure/pkg/consts"
 	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
+	utilsets "sigs.k8s.io/cloud-provider-azure/pkg/util/sets"
 )
 
 // DeleteLB invokes az.LoadBalancerClient.Delete with exponential backoff retry
@@ -87,7 +88,7 @@ func (az *Cloud) ListManagedLBs(service *v1.Service, nodes []*v1.Node, clusterNa
 		return nil, nil
 	}
 
-	managedLBNames := sets.New[string](strings.ToLower(clusterName))
+	managedLBNames := utilsets.NewString(clusterName)
 	managedLBs := make([]network.LoadBalancer, 0)
 	if strings.EqualFold(az.LoadBalancerSku, consts.LoadBalancerSkuBasic) {
 		// return early if wantLb=false
@@ -110,13 +111,13 @@ func (az *Cloud) ListManagedLBs(service *v1.Service, nodes []*v1.Node, clusterNa
 		}
 
 		for agentPoolVMSetName := range agentPoolVMSetNamesMap {
-			managedLBNames.Insert(strings.ToLower(az.mapVMSetNameToLoadBalancerName(agentPoolVMSetName, clusterName)))
+			managedLBNames.Insert(az.mapVMSetNameToLoadBalancerName(agentPoolVMSetName, clusterName))
 		}
 	}
 
 	if az.useMultipleStandardLoadBalancers() {
 		for _, multiSLBConfig := range az.MultipleStandardLoadBalancerConfigurations {
-			managedLBNames.Insert(strings.ToLower(multiSLBConfig.Name), fmt.Sprintf("%s%s", strings.ToLower(multiSLBConfig.Name), consts.InternalLoadBalancerNameSuffix))
+			managedLBNames.Insert(multiSLBConfig.Name, fmt.Sprintf("%s%s", multiSLBConfig.Name, consts.InternalLoadBalancerNameSuffix))
 		}
 	}
 

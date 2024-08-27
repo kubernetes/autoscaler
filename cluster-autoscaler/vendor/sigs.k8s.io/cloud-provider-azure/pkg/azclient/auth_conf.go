@@ -42,6 +42,14 @@ type AzureAuthConfig struct {
 	AADFederatedTokenFile string `json:"aadFederatedTokenFile,omitempty" yaml:"aadFederatedTokenFile,omitempty"`
 	// Use workload identity federation for the virtual machine to access Azure ARM APIs
 	UseFederatedWorkloadIdentityExtension bool `json:"useFederatedWorkloadIdentityExtension,omitempty" yaml:"useFederatedWorkloadIdentityExtension,omitempty"`
+	// Auxiliary token provider for accessing resources from network tenant
+	// Require MSI to be enabled and have permission to access the KeyVault
+	AuxiliaryTokenProvider *AzureAuthAuxiliaryTokenProvider `json:"auxiliaryTokenProvider,omitempty" yaml:"auxiliaryTokenProvider,omitempty"`
+}
+
+type AzureAuthAuxiliaryTokenProvider struct {
+	KeyVaultURL string `json:"keyVaultURL,omitempty" yaml:"keyVaultURL,omitempty"`
+	SecretName  string `json:"secretName" yaml:"secretName"`
 }
 
 func (config *AzureAuthConfig) GetAADClientID() string {
@@ -65,5 +73,5 @@ func (config *AzureAuthConfig) GetAzureFederatedTokenFile() (string, bool) {
 	if clientCertPath := os.Getenv(utils.AzureFederatedTokenFile); clientCertPath != "" {
 		return clientCertPath, true
 	}
-	return config.AADClientCertPath, config.UseFederatedWorkloadIdentityExtension
+	return config.AADFederatedTokenFile, config.UseFederatedWorkloadIdentityExtension
 }
