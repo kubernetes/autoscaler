@@ -133,7 +133,9 @@ func buildNodeFromTemplate(nodeGroupName string, inputLabels map[string]string, 
 	node.Status.Capacity[apiv1.ResourceCPU] = *resource.NewQuantity(vcpu, resource.DecimalSI)
 	// isNPSeries returns if a SKU is an NP-series SKU
 	// SKU API reports GPUs for NP-series but it's actually FPGAs
-	if !isNPSeries(*template.Sku.Name) {
+	if isNPSeries(*template.Sku.Name) {
+		node.Status.Capacity[xilinxFpgaResourceName] = *resource.NewQuantity(gpuCount, resource.DecimalSI)
+	} else {
 		node.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(gpuCount, resource.DecimalSI)
 	}
 
