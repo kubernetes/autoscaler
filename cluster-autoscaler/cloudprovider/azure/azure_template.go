@@ -84,7 +84,8 @@ const (
 	clusterLabelKey = AKSLabelKeyPrefixValue + "cluster"
 )
 
-func buildNodeFromTemplate(nodeGroupName string, inputLabels map[string]string, inputTaints string, template compute.VirtualMachineScaleSet, manager *AzureManager, enableDynamicInstanceList bool) (*apiv1.Node, error) {
+func buildNodeFromTemplate(nodeGroupName string, inputLabels map[string]string, inputTaints string,
+	template compute.VirtualMachineScaleSet, manager *AzureManager, enableDynamicInstanceList bool) (*apiv1.Node, error) {
 	node := apiv1.Node{}
 	nodeName := fmt.Sprintf("%s-asg-%d", nodeGroupName, rand.Int63())
 
