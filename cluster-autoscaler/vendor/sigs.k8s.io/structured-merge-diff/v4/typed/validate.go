@@ -33,7 +33,6 @@ func (tv TypedValue) walker() *validatingObjectWalker {
 	v.value = tv.value
 	v.schema = tv.schema
 	v.typeRef = tv.typeRef
-	v.allowDuplicates = false
 	if v.allocator == nil {
 		v.allocator = value.NewFreelistAllocator()
 	}
@@ -50,9 +49,6 @@ type validatingObjectWalker struct {
 	value   value.Value
 	schema  *schema.Schema
 	typeRef schema.TypeRef
-	// If set to true, duplicates will be allowed in
-	// associativeLists/sets.
-	allowDuplicates bool
 
 	// Allocate only as many walkers as needed for the depth by storing them here.
 	spareWalkers *[]*validatingObjectWalker
@@ -106,12 +102,6 @@ func validateScalar(t *schema.Scalar, v value.Value, prefix string) (errs Valida
 		if !v.IsBool() {
 			return errorf("%vexpected boolean, got %v", prefix, v)
 		}
-	case schema.Untyped:
-		if !v.IsFloat() && !v.IsInt() && !v.IsString() && !v.IsBool() {
-			return errorf("%vexpected any scalar, got %v", prefix, v)
-		}
-	default:
-		return errorf("%vunexpected scalar type in schema: %v", prefix, *t)
 	}
 	return nil
 }
@@ -133,7 +123,7 @@ func (v *validatingObjectWalker) visitListItems(t *schema.List, list value.List)
 			pe.Index = &i
 		} else {
 			var err error
-			pe, err = listItemToPathElement(v.allocator, v.schema, t, child)
+			pe, err = listItemToPathElement(v.allocator, v.schema, t, i, child)
 			if err != nil {
 				errs = append(errs, errorf("element %v: %v", i, err.Error())...)
 				// If we can't construct the path element, we can't
@@ -141,7 +131,7 @@ func (v *validatingObjectWalker) visitListItems(t *schema.List, list value.List)
 				// this element.
 				return
 			}
-			if observedKeys.Has(pe) && !v.allowDuplicates {
+			if observedKeys.Has(pe) {
 				errs = append(errs, errorf("duplicate entries for key %v", pe.String())...)
 			}
 			observedKeys.Insert(pe)

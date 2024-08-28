@@ -74,9 +74,9 @@ func (w *removingWalker) doList(t *schema.List) (errs ValidationErrors) {
 	iter := l.RangeUsing(w.allocator)
 	defer w.allocator.Free(iter)
 	for iter.Next() {
-		_, item := iter.Item()
+		i, item := iter.Item()
 		// Ignore error because we have already validated this list
-		pe, _ := listItemToPathElement(w.allocator, w.schema, t, item)
+		pe, _ := listItemToPathElement(w.allocator, w.schema, t, i, item)
 		path, _ := fieldpath.MakePath(pe)
 		// save items on the path when we shouldExtract
 		// but ignore them when we are removing (i.e. !w.shouldExtract)

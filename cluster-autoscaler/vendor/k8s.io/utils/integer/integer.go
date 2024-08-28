@@ -16,8 +16,6 @@ limitations under the License.
 
 package integer
 
-import "math"
-
 // IntMax returns the maximum of the params
 func IntMax(a, b int) int {
 	if b > a {
@@ -67,7 +65,9 @@ func Int64Min(a, b int64) int64 {
 }
 
 // RoundToInt32 rounds floats into integer numbers.
-// Deprecated: use math.Round() and a cast directly.
 func RoundToInt32(a float64) int32 {
-	return int32(math.Round(a))
+	if a < 0 {
+		return int32(a - 0.5)
+	}
+	return int32(a + 0.5)
 }

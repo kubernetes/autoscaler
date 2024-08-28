@@ -23,13 +23,8 @@ var (
 	// ErrEmptyPath is returned when an empty path has been specified.
 	ErrEmptyPath = errors.New("empty path")
 
-	// ErrInvalidLabel is returned when an invalid label is specified.
-	ErrInvalidLabel = errors.New("invalid Label")
-
 	// InvalidLabel is returned when an invalid label is specified.
-	//
-	// Deprecated: use [ErrInvalidLabel].
-	InvalidLabel = ErrInvalidLabel
+	InvalidLabel = errors.New("Invalid Label")
 
 	// ErrIncomparable is returned two levels are not comparable
 	ErrIncomparable = errors.New("incomparable levels")
@@ -149,7 +144,7 @@ func CalculateGlbLub(sourceRange, targetRange string) (string, error) {
 // of the program is finished to guarantee another goroutine does not migrate to the current
 // thread before execution is complete.
 func SetExecLabel(label string) error {
-	return writeCon(attrPath("exec"), label)
+	return setExecLabel(label)
 }
 
 // SetTaskLabel sets the SELinux label for the current thread, or an error.
@@ -157,21 +152,21 @@ func SetExecLabel(label string) error {
 // be wrapped in runtime.LockOSThread()/runtime.UnlockOSThread() to guarantee
 // the current thread does not run in a new mislabeled thread.
 func SetTaskLabel(label string) error {
-	return writeCon(attrPath("current"), label)
+	return setTaskLabel(label)
 }
 
 // SetSocketLabel takes a process label and tells the kernel to assign the
 // label to the next socket that gets created. Calls to SetSocketLabel
 // should be wrapped in runtime.LockOSThread()/runtime.UnlockOSThread() until
-// the socket is created to guarantee another goroutine does not migrate
+// the the socket is created to guarantee another goroutine does not migrate
 // to the current thread before execution is complete.
 func SetSocketLabel(label string) error {
-	return writeCon(attrPath("sockcreate"), label)
+	return setSocketLabel(label)
 }
 
 // SocketLabel retrieves the current socket label setting
 func SocketLabel() (string, error) {
-	return readCon(attrPath("sockcreate"))
+	return socketLabel()
 }
 
 // PeerLabel retrieves the label of the client on the other side of a socket
@@ -190,7 +185,7 @@ func SetKeyLabel(label string) error {
 
 // KeyLabel retrieves the current kernel keyring label setting
 func KeyLabel() (string, error) {
-	return readCon("/proc/self/attr/keycreate")
+	return keyLabel()
 }
 
 // Get returns the Context as a string
@@ -213,11 +208,6 @@ func ReserveLabel(label string) {
 	reserveLabel(label)
 }
 
-// MLSEnabled checks if MLS is enabled.
-func MLSEnabled() bool {
-	return isMLSEnabled()
-}
-
 // EnforceMode returns the current SELinux mode Enforcing, Permissive, Disabled
 func EnforceMode() int {
 	return enforceMode()
@@ -230,7 +220,7 @@ func SetEnforceMode(mode int) error {
 }
 
 // DefaultEnforceMode returns the systems default SELinux mode Enforcing,
-// Permissive or Disabled. Note this is just the default at boot time.
+// Permissive or Disabled. Note this is is just the default at boot time.
 // EnforceMode tells you the systems current mode.
 func DefaultEnforceMode() int {
 	return defaultEnforceMode()
@@ -276,7 +266,7 @@ func CopyLevel(src, dest string) (string, error) {
 	return copyLevel(src, dest)
 }
 
-// Chcon changes the fpath file object to the SELinux label.
+// Chcon changes the fpath file object to the SELinux label label.
 // If fpath is a directory and recurse is true, then Chcon walks the
 // directory tree setting the label.
 //
@@ -294,7 +284,7 @@ func DupSecOpt(src string) ([]string, error) {
 // DisableSecOpt returns a security opt that can be used to disable SELinux
 // labeling support for future container processes.
 func DisableSecOpt() []string {
-	return []string{"disable"}
+	return disableSecOpt()
 }
 
 // GetDefaultContextWithLevel gets a single context for the specified SELinux user
