@@ -19,6 +19,7 @@ package azure
 import (
 	"context"
 	"fmt"
+	"os"
 
 	_ "go.uber.org/mock/mockgen/model" // for go:generate
 
@@ -32,6 +33,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v4"
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-03-01/compute"
 	"github.com/Azure/go-autorest/autorest"
+	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 
@@ -173,12 +175,38 @@ type azClient struct {
 	agentPoolClient                 AgentPoolsClient
 }
 
+// Only exist due to cloud-provider-azure not yet supporting workload identity in 1.27
+func newServicePrincipalTokenForWorkloadIdentity(config *Config, env *azure.Environment) (*adal.ServicePrincipalToken, error) {
+	oauthConfig, err := adal.NewOAuthConfig(env.ActiveDirectoryEndpoint, config.TenantID)
+	if err != nil {
+		return nil, fmt.Errorf("creating the OAuth config: %v", err)
+	}
+
+	klog.V(2).Infoln("azure: using workload identity extension to retrieve access token")
+	jwt, err := os.ReadFile(config.AADFederatedTokenFile)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read a file with a federated token: %v", err)
+	}
+	//nolint SA1019 - deprecated package
+	token, err := adal.NewServicePrincipalTokenFromFederatedToken(*oauthConfig, config.AADClientID, string(jwt), env.ResourceManagerEndpoint)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create a workload identity token: %v", err)
+	}
+	return token, nil
+}
+
 func newAuthorizer(config *Config, env *azure.Environment) (autorest.Authorizer, error) {
 	switch config.AuthMethod {
 	case authMethodCLI:
 		return auth.NewAuthorizerFromCLI()
 	case "", authMethodPrincipal:
-		token, err := providerazureconfig.GetServicePrincipalToken(&config.AzureAuthConfig, env, "")
+		var token *adal.ServicePrincipalToken
+		var err error
+		if config.UseFederatedWorkloadIdentityExtension {
+			token, err = newServicePrincipalTokenForWorkloadIdentity(config, env)
+		} else {
+			token, err = providerazureconfig.GetServicePrincipalToken(&config.AzureAuthConfig, env, "")
+		}
 		if err != nil {
 			return nil, fmt.Errorf("retrieve service principal token: %v", err)
 		}
