@@ -19,6 +19,7 @@ package azure
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"time"
@@ -57,8 +58,7 @@ type DeploymentsClient interface {
 	Get(ctx context.Context, resourceGroupName string, deploymentName string) (result resources.DeploymentExtended, err error)
 	List(ctx context.Context, resourceGroupName string, filter string, top *int32) (result []resources.DeploymentExtended, err error)
 	ExportTemplate(ctx context.Context, resourceGroupName string, deploymentName string) (result resources.DeploymentExportResult, err error)
-	CreateOrUpdate(ctx context.Context, resourceGroupName string, deploymentName string,
-		parameters resources.Deployment) (resp *http.Response, err error)
+	CreateOrUpdate(ctx context.Context, resourceGroupName string, deploymentName string, parameters resources.Deployment) (resp *http.Response, err error)
 	Delete(ctx context.Context, resourceGroupName string, deploymentName string) (resp *http.Response, err error)
 }
 
@@ -78,8 +78,7 @@ func newAzDeploymentsClient(subscriptionID, endpoint string, authorizer autorest
 	}
 }
 
-func (az *azDeploymentsClient) Get(ctx context.Context, resourceGroupName,
-	deploymentName string) (result resources.DeploymentExtended, err error) {
+func (az *azDeploymentsClient) Get(ctx context.Context, resourceGroupName string, deploymentName string) (result resources.DeploymentExtended, err error) {
 	klog.V(10).Infof("azDeploymentsClient.Get(%q,%q): start", resourceGroupName, deploymentName)
 	defer func() {
 		klog.V(10).Infof("azDeploymentsClient.Get(%q,%q): end", resourceGroupName, deploymentName)
@@ -88,8 +87,7 @@ func (az *azDeploymentsClient) Get(ctx context.Context, resourceGroupName,
 	return az.client.Get(ctx, resourceGroupName, deploymentName)
 }
 
-func (az *azDeploymentsClient) ExportTemplate(ctx context.Context, resourceGroupName,
-	deploymentName string) (result resources.DeploymentExportResult, err error) {
+func (az *azDeploymentsClient) ExportTemplate(ctx context.Context, resourceGroupName string, deploymentName string) (result resources.DeploymentExportResult, err error) {
 	klog.V(10).Infof("azDeploymentsClient.ExportTemplate(%q,%q): start", resourceGroupName, deploymentName)
 	defer func() {
 		klog.V(10).Infof("azDeploymentsClient.ExportTemplate(%q,%q): end", resourceGroupName, deploymentName)
@@ -98,8 +96,7 @@ func (az *azDeploymentsClient) ExportTemplate(ctx context.Context, resourceGroup
 	return az.client.ExportTemplate(ctx, resourceGroupName, deploymentName)
 }
 
-func (az *azDeploymentsClient) CreateOrUpdate(ctx context.Context, resourceGroupName, deploymentName string,
-	parameters resources.Deployment) (resp *http.Response, err error) {
+func (az *azDeploymentsClient) CreateOrUpdate(ctx context.Context, resourceGroupName string, deploymentName string, parameters resources.Deployment) (resp *http.Response, err error) {
 	klog.V(10).Infof("azDeploymentsClient.CreateOrUpdate(%q,%q): start", resourceGroupName, deploymentName)
 	defer func() {
 		klog.V(10).Infof("azDeploymentsClient.CreateOrUpdate(%q,%q): end", resourceGroupName, deploymentName)
@@ -114,8 +111,7 @@ func (az *azDeploymentsClient) CreateOrUpdate(ctx context.Context, resourceGroup
 	return future.Response(), err
 }
 
-func (az *azDeploymentsClient) List(ctx context.Context, resourceGroupName, filter string,
-	top *int32) (result []resources.DeploymentExtended, err error) {
+func (az *azDeploymentsClient) List(ctx context.Context, resourceGroupName, filter string, top *int32) (result []resources.DeploymentExtended, err error) {
 	klog.V(10).Infof("azDeploymentsClient.List(%q): start", resourceGroupName)
 	defer func() {
 		klog.V(10).Infof("azDeploymentsClient.List(%q): end", resourceGroupName)
@@ -296,7 +292,6 @@ func newServicePrincipalTokenFromCredentials(config *Config, env *azure.Environm
 		if err != nil {
 			return nil, fmt.Errorf("failed to read a file with a federated token: %v", err)
 		}
-		//nolint SA1019 - deprecated package
 		token, err := adal.NewServicePrincipalTokenFromFederatedToken(*oauthConfig, config.AADClientID, string(jwt), env.ResourceManagerEndpoint)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create a workload identity token: %v", err)
@@ -332,7 +327,7 @@ func newServicePrincipalTokenFromCredentials(config *Config, env *azure.Environm
 
 	if config.AADClientCertPath != "" {
 		klog.V(2).Infoln("azure: using jwt client_assertion (client_cert+client_private_key) to retrieve access token")
-		certData, err := os.ReadFile(config.AADClientCertPath)
+		certData, err := ioutil.ReadFile(config.AADClientCertPath)
 		if err != nil {
 			return nil, fmt.Errorf("reading the client certificate from file %s: %v", config.AADClientCertPath, err)
 		}
