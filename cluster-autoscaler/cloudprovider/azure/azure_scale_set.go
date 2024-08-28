@@ -43,6 +43,15 @@ var (
 	vmssSizeMutex                     sync.Mutex
 )
 
+const (
+	provisioningStateCreating  string = "Creating"
+	provisioningStateDeleting  string = "Deleting"
+	provisioningStateFailed    string = "Failed"
+	provisioningStateMigrating string = "Migrating"
+	provisioningStateSucceeded string = "Succeeded"
+	provisioningStateUpdating  string = "Updating"
+)
+
 // ScaleSet implements NodeGroup interface.
 type ScaleSet struct {
 	azureRef
@@ -111,9 +120,9 @@ func NewScaleSet(spec *dynamic.NodeGroupSpec, az *AzureManager, curSize int64, d
 	}
 
 	if az.config.GetVmssSizeRefreshPeriod != 0 {
-		scaleSet.getVmssSizeRefreshPeriod = az.config.GetVmssSizeRefreshPeriod
+		scaleSet.getVmssSizeRefreshPeriod = time.Duration(az.config.GetVmssSizeRefreshPeriod) * time.Second
 	} else {
-		scaleSet.getVmssSizeRefreshPeriod = az.azureCache.refreshInterval
+		scaleSet.getVmssSizeRefreshPeriod = time.Duration(az.azureCache.refreshInterval) * time.Second
 	}
 
 	if az.config.EnableDetailedCSEMessage {

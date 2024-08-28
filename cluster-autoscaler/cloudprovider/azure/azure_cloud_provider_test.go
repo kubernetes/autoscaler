@@ -33,8 +33,8 @@ import (
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssvmclient/mockvmssvmclient"
 
 	"github.com/Azure/go-autorest/autorest/azure"
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"go.uber.org/mock/gomock"
 )
 
 func newTestAzureManager(t *testing.T) *AzureManager {

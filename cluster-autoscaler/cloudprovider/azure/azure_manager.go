@@ -51,7 +51,7 @@ const (
 type AzureManager struct {
 	config   *Config
 	azClient *azClient
-	env      *azure.Environment
+	env      azure.Environment
 
 	// azureCache is used for caching Azure resources.
 	// It keeps track of nodegroups and instances
@@ -98,7 +98,7 @@ func createAzureManagerInternal(configReader io.Reader, discoveryOpts cloudprovi
 	// Create azure manager.
 	manager := &AzureManager{
 		config:               cfg,
-		env:                  &env,
+		env:                  env,
 		azClient:             azClient,
 		explicitlyConfigured: make(map[string]bool),
 	}
@@ -107,7 +107,10 @@ func createAzureManagerInternal(configReader io.Reader, discoveryOpts cloudprovi
 	if cfg.VmssCacheTTL != 0 {
 		cacheTTL = time.Duration(cfg.VmssCacheTTL) * time.Second
 	}
-	cache := newAzureCache(azClient, cacheTTL, cfg)
+	cache, err := newAzureCache(azClient, cacheTTL, *cfg)
+	if err != nil {
+		return nil, err
+	}
 	manager.azureCache = cache
 
 	specs, err := ParseLabelAutoDiscoverySpecs(discoveryOpts)
@@ -128,14 +131,11 @@ func createAzureManagerInternal(configReader io.Reader, discoveryOpts cloudprovi
 		Cap:      10 * time.Minute,
 	}
 
-	if err := manager.forceRefresh(); err != nil {
-		err = kretry.OnError(retryBackoff, retry.IsErrorRetriable, func() (err error) {
-			return manager.forceRefresh()
-		})
-		if err != nil {
-			return nil, err
-		}
-		return manager, nil
+	err = kretry.OnError(retryBackoff, retry.IsErrorRetriable, func() (err error) {
+		return manager.forceRefresh()
+	})
+	if err != nil {
+		return nil, err
 	}
 
 	return manager, nil
@@ -281,10 +281,9 @@ func (m *AzureManager) GetNodeGroupForInstance(instance *azureRef) (cloudprovide
 }
 
 // GetScaleSetOptions parse options extracted from VMSS tags and merges them with provided defaults
-func (m *AzureManager) GetScaleSetOptions(scaleSetName string, defaults config.
-	NodeGroupAutoscalingOptions) *config.NodeGroupAutoscalingOptions {
+func (m *AzureManager) GetScaleSetOptions(scaleSetName string, defaults config.NodeGroupAutoscalingOptions) *config.NodeGroupAutoscalingOptions {
 	options := m.azureCache.getAutoscalingOptions(azureRef{Name: scaleSetName})
-	if len(options) == 0 {
+	if options == nil || len(options) == 0 {
 		return &defaults
 	}
 
@@ -370,8 +369,7 @@ func (m *AzureManager) getFilteredScaleSets(filter []labelAutoDiscoveryConfig) (
 			continue
 		}
 		if spec.MaxSize < spec.MinSize {
-			klog.Warningf("ignoring vmss %q because of maximum size must be greater than minimum "+
-				"size: max=%d < min=%d", *scaleSet.Name, spec.MaxSize, spec.MinSize)
+			klog.Warningf("ignoring vmss %q because of maximum size must be greater than minimum size: max=%d < min=%d", *scaleSet.Name, spec.MaxSize, spec.MinSize)
 			continue
 		}
 

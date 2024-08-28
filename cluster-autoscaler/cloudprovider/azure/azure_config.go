@@ -121,8 +121,6 @@ type Config struct {
 	Deployment           string                 `json:"deployment" yaml:"deployment"`
 	DeploymentParameters map[string]interface{} `json:"deploymentParameters" yaml:"deploymentParameters"`
 
-	// Configs only for AKS
-	ClusterName string `json:"clusterName" yaml:"clusterName"`
 	// Config only for AKS
 	NodeResourceGroup string `json:"nodeResourceGroup" yaml:"nodeResourceGroup"`
 
