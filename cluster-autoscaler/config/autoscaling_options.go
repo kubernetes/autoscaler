@@ -284,8 +284,6 @@ type AutoscalingOptions struct {
 	MinReplicaCount int
 	// NodeDeleteDelayAfterTaint is the duration to wait before deleting a node after tainting it
 	NodeDeleteDelayAfterTaint time.Duration
-	// ParallelDrain is whether CA can drain nodes in parallel.
-	ParallelDrain bool
 	// NodeGroupSetRatio is a collection of ratios used by CA used to make scaling decisions.
 	NodeGroupSetRatios NodeGroupDifferenceRatios
 	// dynamicNodeDeleteDelayAfterTaintEnabled is used to enable/disable dynamic adjustment of NodeDeleteDelayAfterTaint

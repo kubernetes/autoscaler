@@ -22,18 +22,6 @@ import (
 	"reflect"
 	"time"
 
-	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
-	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/planner"
-	scaledownstatus "k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
-	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup"
-	orchestrator "k8s.io/autoscaler/cluster-autoscaler/core/scaleup/orchestrator"
-	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
-	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
-
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
@@ -42,8 +30,13 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/actuation"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
-	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/legacy"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/planner"
+	scaledownstatus "k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup"
+	orchestrator "k8s.io/autoscaler/cluster-autoscaler/core/scaleup/orchestrator"
 	core_utils "k8s.io/autoscaler/cluster-autoscaler/core/utils"
+	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
@@ -57,10 +50,15 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
 	caerrors "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	scheduler_utils "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	"k8s.io/utils/integer"
 
+	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	klog "k8s.io/klog/v2"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 const (
@@ -173,23 +171,12 @@ func NewStaticAutoscaler(
 
 	// TODO: Populate the ScaleDownActuator/Planner fields in AutoscalingContext
 	// during the struct creation rather than here.
-	ndt := deletiontracker.NewNodeDeletionTracker(0 * time.Second)
-	scaleDown := legacy.NewScaleDown(autoscalingContext, processors, ndt, deleteOptions, drainabilityRules)
-	actuator := actuation.NewActuator(autoscalingContext, processors.ScaleStateNotifier, ndt, deleteOptions, drainabilityRules, processors.NodeGroupConfigProcessor)
-	autoscalingContext.ScaleDownActuator = actuator
-
-	var scaleDownPlanner scaledown.Planner
-	var scaleDownActuator scaledown.Actuator
-	if opts.ParallelDrain {
-		scaleDownPlanner = planner.New(autoscalingContext, processors, deleteOptions, drainabilityRules)
-		scaleDownActuator = actuator
-	} else {
-		// TODO: Remove the wrapper once the legacy implementation becomes obsolete.
-		scaleDownWrapper := legacy.NewScaleDownWrapper(scaleDown, actuator)
-		scaleDownPlanner = scaleDownWrapper
-		scaleDownActuator = scaleDownWrapper
-	}
+	scaleDownPlanner := planner.New(autoscalingContext, processors, deleteOptions, drainabilityRules)
 	processorCallbacks.scaleDownPlanner = scaleDownPlanner
+
+	ndt := deletiontracker.NewNodeDeletionTracker(0 * time.Second)
+	scaleDownActuator := actuation.NewActuator(autoscalingContext, processors.ScaleStateNotifier, ndt, deleteOptions, drainabilityRules, processors.NodeGroupConfigProcessor)
+	autoscalingContext.ScaleDownActuator = scaleDownActuator
 
 	if scaleUpOrchestrator == nil {
 		scaleUpOrchestrator = orchestrator.New()
@@ -659,8 +646,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 				a.clusterStateRegistry.Recalculate()
 			}
 
-			if (scaleDownStatus.Result == scaledownstatus.ScaleDownNoNodeDeleted ||
-				scaleDownStatus.Result == scaledownstatus.ScaleDownNoUnneeded) &&
+			if scaleDownStatus.Result == scaledownstatus.ScaleDownNoNodeDeleted &&
 				a.AutoscalingContext.AutoscalingOptions.MaxBulkSoftTaintCount != 0 {
 				taintableNodes := a.scaleDownPlanner.UnneededNodes()
 
