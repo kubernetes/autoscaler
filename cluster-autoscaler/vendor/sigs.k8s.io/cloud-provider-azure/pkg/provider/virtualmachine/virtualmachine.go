@@ -18,7 +18,10 @@ package virtualmachine
 
 import (
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
+
 	"k8s.io/utils/pointer"
+
+	"sigs.k8s.io/cloud-provider-azure/pkg/consts"
 )
 
 type Variant string
@@ -143,6 +146,36 @@ func (vm *VirtualMachine) AsVirtualMachine() *compute.VirtualMachine {
 
 func (vm *VirtualMachine) AsVirtualMachineScaleSetVM() *compute.VirtualMachineScaleSetVM {
 	return vm.vmssVM
+}
+
+func (vm *VirtualMachine) GetInstanceViewStatus() *[]compute.InstanceViewStatus {
+	if vm.IsVirtualMachine() && vm.vm != nil &&
+		vm.vm.VirtualMachineProperties != nil &&
+		vm.vm.VirtualMachineProperties.InstanceView != nil {
+		return vm.vm.VirtualMachineProperties.InstanceView.Statuses
+	}
+	if vm.IsVirtualMachineScaleSetVM() &&
+		vm.vmssVM != nil &&
+		vm.vmssVM.VirtualMachineScaleSetVMProperties != nil &&
+		vm.vmssVM.VirtualMachineScaleSetVMProperties.InstanceView != nil {
+		return vm.vmssVM.VirtualMachineScaleSetVMProperties.InstanceView.Statuses
+	}
+	return nil
+}
+
+func (vm *VirtualMachine) GetProvisioningState() string {
+	if vm.IsVirtualMachine() && vm.vm != nil &&
+		vm.vm.VirtualMachineProperties != nil &&
+		vm.vm.VirtualMachineProperties.ProvisioningState != nil {
+		return *vm.vm.VirtualMachineProperties.ProvisioningState
+	}
+	if vm.IsVirtualMachineScaleSetVM() &&
+		vm.vmssVM != nil &&
+		vm.vmssVM.VirtualMachineScaleSetVMProperties != nil &&
+		vm.vmssVM.VirtualMachineScaleSetVMProperties.ProvisioningState != nil {
+		return *vm.vmssVM.VirtualMachineScaleSetVMProperties.ProvisioningState
+	}
+	return consts.ProvisioningStateUnknown
 }
 
 // StringMap returns a map of strings built from the map of string pointers. The empty string is

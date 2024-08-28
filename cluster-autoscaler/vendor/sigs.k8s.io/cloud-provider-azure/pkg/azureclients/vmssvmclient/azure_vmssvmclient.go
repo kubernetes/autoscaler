@@ -509,7 +509,48 @@ func (c *Client) updateVMSSVMs(ctx context.Context, resourceGroupName string, VM
 	}
 
 	responses := c.armClient.PutResourcesInBatches(ctx, resources, batchSize)
-	errors := make([]*retry.Error, 0)
+	errors, retryIDs := c.parseResp(ctx, responses, true)
+	if len(retryIDs) > 0 {
+		retryResources := make(map[string]interface{})
+		for _, id := range retryIDs {
+			retryResources[id] = resources[id]
+		}
+		resps := c.armClient.PutResourcesInBatches(ctx, retryResources, batchSize)
+		errs, _ := c.parseResp(ctx, resps, false)
+		errors = append(errors, errs...)
+	}
+
+	// Aggregate errors.
+	if len(errors) > 0 {
+		rerr := &retry.Error{}
+		errs := make([]error, 0)
+		for _, err := range errors {
+			if !err.Retriable && strings.Contains(err.Error().Error(), consts.ConcurrentRequestConflictMessage) {
+				err.Retriable = true
+				err.RetryAfter = time.Now().Add(5 * time.Second)
+			}
+
+			if err.IsThrottled() && err.RetryAfter.After(rerr.RetryAfter) {
+				rerr.RetryAfter = err.RetryAfter
+			}
+			errs = append(errs, err.Error())
+		}
+		rerr.RawError = utilerrors.Flatten(utilerrors.NewAggregate(errs))
+		return rerr
+	}
+
+	return nil
+}
+
+func (c *Client) parseResp(
+	ctx context.Context,
+	responses map[string]*armclient.PutResourcesResponse,
+	shouldRetry bool,
+) ([]*retry.Error, []string) {
+	var (
+		errors   []*retry.Error
+		retryIDs []string
+	)
 	for resourceID, resp := range responses {
 		if resp == nil {
 			continue
@@ -534,6 +575,19 @@ func (c *Client) updateVMSSVMs(ctx context.Context, resourceGroupName string, VM
 				continue
 			}
 
+			if retry.IsSuccessHTTPResponse(resp.Response) &&
+				strings.Contains(
+					strings.ToLower(errMsg),
+					strings.ToLower(consts.OperationPreemptedErrorMessage),
+				) {
+				if shouldRetry {
+					klog.V(2).Infof("The operation on VM %s is preempted, will retry.", resourceID)
+					retryIDs = append(retryIDs, resourceID)
+					continue
+				}
+				klog.V(2).Infof("The operation on VM %s is preempted, will not retry.", resourceID)
+			}
+
 			errors = append(errors, resp.Error)
 			continue
 		}
@@ -546,25 +600,5 @@ func (c *Client) updateVMSSVMs(ctx context.Context, resourceGroupName string, VM
 			}
 		}
 	}
-
-	// Aggregate errors.
-	if len(errors) > 0 {
-		rerr := &retry.Error{}
-		errs := make([]error, 0)
-		for _, err := range errors {
-			if !err.Retriable && strings.Contains(err.Error().Error(), consts.ConcurrentRequestConflictMessage) {
-				err.Retriable = true
-				err.RetryAfter = time.Now().Add(5 * time.Second)
-			}
-
-			if err.IsThrottled() && err.RetryAfter.After(rerr.RetryAfter) {
-				rerr.RetryAfter = err.RetryAfter
-			}
-			errs = append(errs, err.Error())
-		}
-		rerr.RawError = utilerrors.Flatten(utilerrors.NewAggregate(errs))
-		return rerr
-	}
-
-	return nil
+	return errors, retryIDs
 }

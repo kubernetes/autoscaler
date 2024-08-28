@@ -18,6 +18,7 @@ package provider
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -32,14 +33,14 @@ import (
 	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
 )
 
-func (az *Cloud) CreateOrUpdatePLS(service *v1.Service, pls network.PrivateLinkService) error {
+func (az *Cloud) CreateOrUpdatePLS(service *v1.Service, resourceGroup string, pls network.PrivateLinkService) error {
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
 
-	rerr := az.PrivateLinkServiceClient.CreateOrUpdate(ctx, az.PrivateLinkServiceResourceGroup, pointer.StringDeref(pls.Name, ""), pls, pointer.StringDeref(pls.Etag, ""))
+	rerr := az.PrivateLinkServiceClient.CreateOrUpdate(ctx, resourceGroup, pointer.StringDeref(pls.Name, ""), pls, pointer.StringDeref(pls.Etag, ""))
 	if rerr == nil {
 		// Invalidate the cache right after updating
-		_ = az.plsCache.Delete(pointer.StringDeref((*pls.LoadBalancerFrontendIPConfigurations)[0].ID, ""))
+		_ = az.plsCache.Delete(getPLSCacheKey(resourceGroup, pointer.StringDeref((*pls.LoadBalancerFrontendIPConfigurations)[0].ID, "")))
 		return nil
 	}
 
@@ -49,26 +50,26 @@ func (az *Cloud) CreateOrUpdatePLS(service *v1.Service, pls network.PrivateLinkS
 	// Invalidate the cache because etag mismatch.
 	if rerr.HTTPStatusCode == http.StatusPreconditionFailed {
 		klog.V(3).Infof("Private link service cache for %s is cleanup because of http.StatusPreconditionFailed", pointer.StringDeref(pls.Name, ""))
-		_ = az.plsCache.Delete(pointer.StringDeref((*pls.LoadBalancerFrontendIPConfigurations)[0].ID, ""))
+		_ = az.plsCache.Delete(getPLSCacheKey(resourceGroup, pointer.StringDeref((*pls.LoadBalancerFrontendIPConfigurations)[0].ID, "")))
 	}
 	// Invalidate the cache because another new operation has canceled the current request.
 	if strings.Contains(strings.ToLower(rerr.Error().Error()), consts.OperationCanceledErrorMessage) {
 		klog.V(3).Infof("Private link service for %s is cleanup because CreateOrUpdatePrivateLinkService is canceled by another operation", pointer.StringDeref(pls.Name, ""))
-		_ = az.plsCache.Delete(pointer.StringDeref((*pls.LoadBalancerFrontendIPConfigurations)[0].ID, ""))
+		_ = az.plsCache.Delete(getPLSCacheKey(resourceGroup, pointer.StringDeref((*pls.LoadBalancerFrontendIPConfigurations)[0].ID, "")))
 	}
 	klog.Errorf("PrivateLinkServiceClient.CreateOrUpdate(%s) failed: %v", pointer.StringDeref(pls.Name, ""), rerr.Error())
 	return rerr.Error()
 }
 
 // DeletePLS invokes az.PrivateLinkServiceClient.Delete with exponential backoff retry
-func (az *Cloud) DeletePLS(service *v1.Service, plsName string, plsLBFrontendID string) *retry.Error {
+func (az *Cloud) DeletePLS(service *v1.Service, resourceGroup, plsName, plsLBFrontendID string) *retry.Error {
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
 
-	rerr := az.PrivateLinkServiceClient.Delete(ctx, az.PrivateLinkServiceResourceGroup, plsName)
+	rerr := az.PrivateLinkServiceClient.Delete(ctx, resourceGroup, plsName)
 	if rerr == nil {
 		// Invalidate the cache right after deleting
-		_ = az.plsCache.Delete(plsLBFrontendID)
+		_ = az.plsCache.Delete(getPLSCacheKey(resourceGroup, plsLBFrontendID))
 		return nil
 	}
 
@@ -78,11 +79,11 @@ func (az *Cloud) DeletePLS(service *v1.Service, plsName string, plsLBFrontendID 
 }
 
 // DeletePEConn invokes az.PrivateLinkServiceClient.DeletePEConnection with exponential backoff retry
-func (az *Cloud) DeletePEConn(service *v1.Service, plsName string, peConnName string) *retry.Error {
+func (az *Cloud) DeletePEConn(service *v1.Service, resourceGroup, plsName, peConnName string) *retry.Error {
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
 
-	rerr := az.PrivateLinkServiceClient.DeletePEConnection(ctx, az.PrivateLinkServiceResourceGroup, plsName, peConnName)
+	rerr := az.PrivateLinkServiceClient.DeletePEConnection(ctx, resourceGroup, plsName, peConnName)
 	if rerr == nil {
 		return nil
 	}
@@ -97,7 +98,8 @@ func (az *Cloud) newPLSCache() (azcache.Resource, error) {
 	getter := func(key string) (interface{}, error) {
 		ctx, cancel := getContextWithCancel()
 		defer cancel()
-		plsList, err := az.PrivateLinkServiceClient.List(ctx, az.PrivateLinkServiceResourceGroup)
+		resourceGroup, frontendID := parsePLSCacheKey(key)
+		plsList, err := az.PrivateLinkServiceClient.List(ctx, resourceGroup)
 		exists, rerr := checkResourceExistsFromError(err)
 		if rerr != nil {
 			return nil, rerr.Error()
@@ -114,7 +116,7 @@ func (az *Cloud) newPLSCache() (azcache.Resource, error) {
 					continue
 				}
 				for _, fipConfig := range *fipConfigs {
-					if strings.EqualFold(*fipConfig.ID, key) {
+					if strings.EqualFold(*fipConfig.ID, frontendID) {
 						return &pls, nil
 					}
 				}
@@ -122,7 +124,7 @@ func (az *Cloud) newPLSCache() (azcache.Resource, error) {
 			}
 		}
 
-		klog.V(2).Infof("No privateLinkService found for frontendIPConfig %q", key)
+		klog.V(2).Infof("No privateLinkService found for frontendIPConfig %q in rg %q", frontendID, resourceGroup)
 		plsNotExistID := consts.PrivateLinkServiceNotExistID
 		return &network.PrivateLinkService{ID: &plsNotExistID}, nil
 	}
@@ -133,10 +135,19 @@ func (az *Cloud) newPLSCache() (azcache.Resource, error) {
 	return azcache.NewTimedCache(time.Duration(az.PlsCacheTTLInSeconds)*time.Second, getter, az.Config.DisableAPICallCache)
 }
 
-func (az *Cloud) getPrivateLinkService(frontendIPConfigID *string, crt azcache.AzureCacheReadType) (pls network.PrivateLinkService, err error) {
-	cachedPLS, err := az.plsCache.GetWithDeepCopy(*frontendIPConfigID, crt)
+func (az *Cloud) getPrivateLinkService(resourceGroup string, frontendIPConfigID *string, crt azcache.AzureCacheReadType) (pls network.PrivateLinkService, err error) {
+	cachedPLS, err := az.plsCache.GetWithDeepCopy(getPLSCacheKey(resourceGroup, *frontendIPConfigID), crt)
 	if err != nil {
 		return pls, err
 	}
 	return *(cachedPLS.(*network.PrivateLinkService)), nil
+}
+
+func getPLSCacheKey(resourceGroup, plsLBFrontendID string) string {
+	return fmt.Sprintf("%s*%s", resourceGroup, plsLBFrontendID)
+}
+
+func parsePLSCacheKey(key string) (string, string) {
+	splits := strings.Split(key, "*")
+	return splits[0], splits[1]
 }

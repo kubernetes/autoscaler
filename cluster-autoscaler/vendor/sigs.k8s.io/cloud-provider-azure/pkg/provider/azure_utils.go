@@ -26,7 +26,6 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2022-07-01/network"
 
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
 	utilnet "k8s.io/utils/net"
 	"k8s.io/utils/pointer"
@@ -453,7 +452,7 @@ func getServicePIPPrefixID(service *v1.Service, isIPv6 bool) string {
 // the old PIPs will be recreated.
 func getResourceByIPFamily(resource string, isDualStack, isIPv6 bool) string {
 	if isDualStack && isIPv6 {
-		return fmt.Sprintf("%s-%s", resource, v6Suffix)
+		return fmt.Sprintf("%s-%s", resource, consts.IPVersionIPv6String)
 	}
 	return resource
 }
@@ -559,36 +558,6 @@ func IntInSlice(i int, list []int) bool {
 	return false
 }
 
-func safeAddKeyToStringsSet(set sets.Set[string], key string) sets.Set[string] {
-	if set != nil {
-		set.Insert(key)
-	} else {
-		set = sets.New[string](key)
-	}
-
-	return set
-}
-
-func safeRemoveKeyFromStringsSet(set sets.Set[string], key string) (sets.Set[string], bool) {
-	var has bool
-	if set != nil {
-		if set.Has(key) {
-			has = true
-		}
-		set.Delete(key)
-	}
-
-	return set, has
-}
-
-func setToStrings(set sets.Set[string]) []string {
-	var res []string
-	for key := range set {
-		res = append(res, key)
-	}
-	return res
-}
-
 func isLocalService(service *v1.Service) bool {
 	return service.Spec.ExternalTrafficPolicy == v1.ServiceExternalTrafficPolicyLocal
 }
@@ -603,4 +572,35 @@ func getServiceIPFamily(service *v1.Service) string {
 		}
 	}
 	return consts.IPVersionIPv4String
+}
+
+// getResourceGroupAndNameFromNICID parses the ip configuration ID to get the resource group and nic name.
+func getResourceGroupAndNameFromNICID(ipConfigurationID string) (string, string, error) {
+	matches := nicIDRE.FindStringSubmatch(ipConfigurationID)
+	if len(matches) != 3 {
+		klog.V(4).Infof("Can not extract nic name from ipConfigurationID (%s)", ipConfigurationID)
+		return "", "", fmt.Errorf("invalid ip config ID %s", ipConfigurationID)
+	}
+
+	nicResourceGroup, nicName := matches[1], matches[2]
+	if nicResourceGroup == "" || nicName == "" {
+		return "", "", fmt.Errorf("invalid ip config ID %s", ipConfigurationID)
+	}
+	return nicResourceGroup, nicName, nil
+}
+
+func isInternalLoadBalancer(lb *network.LoadBalancer) bool {
+	return strings.HasSuffix(strings.ToLower(*lb.Name), consts.InternalLoadBalancerNameSuffix)
+}
+
+// trimSuffixIgnoreCase trims the suffix from the string, case-insensitive.
+// It returns the original string if the suffix is not found.
+// The returning string is in lower case.
+func trimSuffixIgnoreCase(str, suf string) string {
+	str = strings.ToLower(str)
+	suf = strings.ToLower(suf)
+	if strings.HasSuffix(str, suf) {
+		return strings.TrimSuffix(str, suf)
+	}
+	return str
 }
