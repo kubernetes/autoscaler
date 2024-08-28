@@ -113,14 +113,20 @@ const (
 	// StrRawVersion is the raw version string
 	StrRawVersion string = "raw"
 
-	// VirtualMachineScaleSetsDeallocating indicates VMSS instances are in Deallocating state.
-	VirtualMachineScaleSetsDeallocating = "Deallocating"
+	// ProvisionStateDeleting indicates VMSS instances are in Deleting state.
+	ProvisionStateDeleting = "Deleting"
 	// VmssMachineIDTemplate is the vmss manchine ID template
 	VmssMachineIDTemplate = "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Compute/virtualMachineScaleSets/%s/virtualMachines/%s"
 	// VMSetCIDRIPV4TagKey specifies the node ipv4 CIDR mask of the instances on the VMSS or VMAS
 	VMSetCIDRIPV4TagKey = "kubernetesNodeCIDRMaskIPV4"
 	// VMSetCIDRIPV6TagKey specifies the node ipv6 CIDR mask of the instances on the VMSS or VMAS
 	VMSetCIDRIPV6TagKey = "kubernetesNodeCIDRMaskIPV6"
+	// VmssWindows2019ImageGalleryName is the name of Windows 2019 images from the
+	// Microsoft.Compute/galleries/AKSWindows gallery
+	VmssWindows2019ImageGalleryName = "windows-2019-containerd"
+	// Windows2019OSBuildVersion is the official build version of Windows Server 2019
+	// https://learn.microsoft.com/en-us/windows-server/get-started/windows-server-release-info
+	Windows2019OSBuildVersion = "17763"
 
 	// TagsDelimiter is the delimiter of tags
 	TagsDelimiter = ","
@@ -130,6 +136,12 @@ const (
 	VMSetNamesSharingPrimarySLBDelimiter = ","
 	// PremiumV2_LRS type for Azure Disk
 	PremiumV2LRS = compute.DiskStorageAccountTypes("PremiumV2_LRS")
+	// ProvisioningStateDeleting ...
+	ProvisioningStateDeleting = "Deleting"
+	// ProvisioningStateSucceeded ...
+	ProvisioningStateSucceeded = "Succeeded"
+	// ProvisioningStateUnknown is the unknown provisioning state
+	ProvisioningStateUnknown = "Unknown"
 )
 
 // cache
@@ -191,6 +203,12 @@ const (
 	BackoffDurationDefault = 5 // in seconds
 	// BackoffJitterDefault is the default value of the backoff jitter
 	BackoffJitterDefault = 1.0
+)
+
+// IP family variables
+const (
+	IPVersionIPv6 bool = true
+	IPVersionIPv4 bool = false
 )
 
 // LB variables for dual-stack
@@ -271,10 +289,15 @@ const (
 	// ServiceAnnotationIPTagsForPublicIP specifies the iptags used when dynamically creating a public ip
 	ServiceAnnotationIPTagsForPublicIP = "service.beta.kubernetes.io/azure-pip-ip-tags"
 
-	// ServiceAnnotationAllowedServiceTag is the annotation used on the service
+	// ServiceAnnotationAllowedServiceTags is the annotation used on the service
 	// to specify a list of allowed service tags separated by comma
 	// Refer https://docs.microsoft.com/en-us/azure/virtual-network/security-overview#service-tags for all supported service tags.
-	ServiceAnnotationAllowedServiceTag = "service.beta.kubernetes.io/azure-allowed-service-tags"
+	ServiceAnnotationAllowedServiceTags = "service.beta.kubernetes.io/azure-allowed-service-tags"
+
+	// ServiceAnnotationAllowedIPRanges is the annotation used on the service
+	// to specify a list of allowed IP Ranges separated by comma.
+	// It is compatible with both IPv4 and IPV6 CIDR formats.
+	ServiceAnnotationAllowedIPRanges = "service.beta.kubernetes.io/azure-allowed-ip-ranges"
 
 	// ServiceAnnotationDenyAllExceptLoadBalancerSourceRanges  denies all traffic to the load balancer except those
 	// within the service.Spec.LoadBalancerSourceRanges. Ref: https://github.com/kubernetes-sigs/cloud-provider-azure/issues/374.
@@ -319,6 +342,9 @@ const (
 	// automatically on Azure LoadBalancer. Instead, they need to be configured manually (e.g. on Azure cross-region LoadBalancer by another operator).
 	ServiceAnnotationAdditionalPublicIPs = "service.beta.kubernetes.io/azure-additional-public-ips"
 
+	// ServiceAnnotationDisableTCPReset is the annotation used on the service to disable TCP reset on the load balancer.
+	ServiceAnnotationDisableTCPReset = "service.beta.kubernetes.io/azure-load-balancer-disable-tcp-reset"
+
 	// ServiceTagKey is the service key applied for public IP tags.
 	ServiceTagKey       = "k8s-azure-service"
 	LegacyServiceTagKey = "service"
@@ -354,6 +380,8 @@ const (
 	FrontendIPConfigNameMaxLength = 80
 	// LoadBalancerRuleNameMaxLength is the max length of the load balancing rule
 	LoadBalancerRuleNameMaxLength = 80
+	// PIPPrefixNameMaxLength is the max length of the PIP prefix name
+	PIPPrefixNameMaxLength = 80
 	// IPFamilySuffixLength is the length of suffix length of IP family ("-IPv4", "-IPv6")
 	IPFamilySuffixLength = 5
 
@@ -386,6 +414,8 @@ const (
 	CannotUpdateVMBeingDeletedMessageSuffix = "since it is marked for deletion"
 	// OperationPreemptedErrorCode is the error code returned for vm operation preempted errors
 	OperationPreemptedErrorCode = "OperationPreempted"
+	// OperationPreemptedErrorMessage is the error message returned for vm operation preempted errors
+	OperationPreemptedErrorMessage = "Operation execution has been preempted by a more recent operation"
 )
 
 // node ipam controller
@@ -416,6 +446,9 @@ const (
 const (
 	RouteNameFmt       = "%s____%s"
 	RouteNameSeparator = "____"
+
+	// routeUpdateInterval defines the route reconciling interval.
+	RouteUpdateInterval = 30 * time.Second
 )
 
 // cloud provider config secret
@@ -477,6 +510,9 @@ const (
 	// ServiceAnnotationPLSCreation determines whether a PLS needs to be created.
 	ServiceAnnotationPLSCreation = "service.beta.kubernetes.io/azure-pls-create"
 
+	// ServiceAnnotationPLSResourceGroup determines the resource group to create the PLS in.
+	ServiceAnnotationPLSResourceGroup = "service.beta.kubernetes.io/azure-pls-resource-group"
+
 	// ServiceAnnotationPLSName determines name of the PLS resource to create.
 	ServiceAnnotationPLSName = "service.beta.kubernetes.io/azure-pls-name"
 
@@ -520,4 +556,14 @@ const (
 
 const (
 	VMSSTagForBatchOperation = "aks-managed-coordination"
+)
+
+// VM power state
+const (
+	VMPowerStatePrefix       = "PowerState/"
+	VMPowerStateStopped      = "stopped"
+	VMPowerStateStopping     = "stopping"
+	VMPowerStateDeallocated  = "deallocated"
+	VMPowerStateDeallocating = "deallocating"
+	VMPowerStateUnknown      = "unknown"
 )

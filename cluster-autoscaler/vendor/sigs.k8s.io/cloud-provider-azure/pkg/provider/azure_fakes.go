@@ -24,7 +24,6 @@ import (
 
 	"github.com/golang/mock/gomock"
 
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/tools/record"
 
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/diskclient/mockdiskclient"
@@ -41,6 +40,7 @@ import (
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssclient/mockvmssclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssvmclient/mockvmssvmclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/consts"
+	utilsets "sigs.k8s.io/cloud-provider-azure/pkg/util/sets"
 )
 
 var (
@@ -96,12 +96,12 @@ func GetTestCloud(ctrl *gomock.Controller) (az *Cloud) {
 			VMType:                                   consts.VMTypeStandard,
 			LoadBalancerBackendPoolConfigurationType: consts.LoadBalancerBackendPoolConfigurationTypeNodeIPConfiguration,
 		},
-		nodeZones:                map[string]sets.Set[string]{},
+		nodeZones:                map[string]*utilsets.IgnoreCaseSet{},
 		nodeInformerSynced:       func() bool { return true },
 		nodeResourceGroups:       map[string]string{},
-		unmanagedNodes:           sets.New[string](),
-		excludeLoadBalancerNodes: sets.New[string](),
-		nodePrivateIPs:           map[string]sets.Set[string]{},
+		unmanagedNodes:           utilsets.NewString(),
+		excludeLoadBalancerNodes: utilsets.NewString(),
+		nodePrivateIPs:           map[string]*utilsets.IgnoreCaseSet{},
 		routeCIDRs:               map[string]string{},
 		eventRecorder:            &record.FakeRecorder{},
 	}
