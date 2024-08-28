@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 
 	"strconv"
@@ -55,6 +56,9 @@ const (
 	rateLimitWriteQPSEnvVar             = "RATE_LIMIT_WRITE_QPS"
 	rateLimitWriteBucketsEnvVar         = "RATE_LIMIT_WRITE_BUCKETS"
 
+	// VmssSizeRefreshPeriodDefault in seconds
+	VmssSizeRefreshPeriodDefault = 30
+
 	// auth methods
 	authMethodPrincipal = "principal"
 	authMethodCLI       = "cli"
@@ -71,11 +75,11 @@ type CloudProviderRateLimitConfig struct {
 
 	// Rate limit config for each clients. Values would override default settings above.
 	InterfaceRateLimit              *azclients.RateLimitConfig `json:"interfaceRateLimit,omitempty" yaml:"interfaceRateLimit,omitempty"`
-	VirtualMachineRateLimit         *azclients.RateLimitConfig `json:"virtualMachineRateLimit,omitempty" yaml:"virtualMachineRateLimit,omitempty"` //nolint:lll
-	StorageAccountRateLimit         *azclients.RateLimitConfig `json:"storageAccountRateLimit,omitempty" yaml:"storageAccountRateLimit,omitempty"` //nolint:lll
+	VirtualMachineRateLimit         *azclients.RateLimitConfig `json:"virtualMachineRateLimit,omitempty" yaml:"virtualMachineRateLimit,omitempty"`
+	StorageAccountRateLimit         *azclients.RateLimitConfig `json:"storageAccountRateLimit,omitempty" yaml:"storageAccountRateLimit,omitempty"`
 	DiskRateLimit                   *azclients.RateLimitConfig `json:"diskRateLimit,omitempty" yaml:"diskRateLimit,omitempty"`
-	VirtualMachineScaleSetRateLimit *azclients.RateLimitConfig `json:"virtualMachineScaleSetRateLimit,omitempty" yaml:"virtualMachineScaleSetRateLimit,omitempty"` //nolint:lll
-	KubernetesServiceRateLimit      *azclients.RateLimitConfig `json:"kubernetesServiceRateLimit,omitempty" yaml:"kubernetesServiceRateLimit,omitempty"`           //nolint:lll
+	VirtualMachineScaleSetRateLimit *azclients.RateLimitConfig `json:"virtualMachineScaleSetRateLimit,omitempty" yaml:"virtualMachineScaleSetRateLimit,omitempty"`
+	KubernetesServiceRateLimit      *azclients.RateLimitConfig `json:"kubernetesServiceRateLimit,omitempty" yaml:"kubernetesServiceRateLimit,omitempty"`
 }
 
 // Config holds the configuration parsed from the --cloud-config flag
@@ -86,8 +90,16 @@ type Config struct {
 	Location       string `json:"location" yaml:"location"`
 	TenantID       string `json:"tenantId" yaml:"tenantId"`
 	SubscriptionID string `json:"subscriptionId" yaml:"subscriptionId"`
-	ResourceGroup  string `json:"resourceGroup" yaml:"resourceGroup"`
-	VMType         string `json:"vmType" yaml:"vmType"`
+	ClusterName    string `json:"clusterName" yaml:"clusterName"`
+	// ResourceGroup is the MC_ resource group where the nodes are located.
+	ResourceGroup string `json:"resourceGroup" yaml:"resourceGroup"`
+	// ClusterResourceGroup is the resource group where the cluster is located.
+	ClusterResourceGroup string `json:"clusterResourceGroup" yaml:"clusterResourceGroup"`
+	VMType               string `json:"vmType" yaml:"vmType"`
+
+	// ARMBaseURLForAPClient is the URL to use for operations for the VMs pool.
+	// It can override the default public ARM endpoint for VMs pool scale operations.
+	ARMBaseURLForAPClient string `json:"armBaseURLForAPClient" yaml:"armBaseURLForAPClient"`
 
 	// AuthMethod determines how to authorize requests for the Azure
 	// cloud. Valid options are "principal" (= the traditional
@@ -110,8 +122,6 @@ type Config struct {
 	Deployment           string                 `json:"deployment" yaml:"deployment"`
 	DeploymentParameters map[string]interface{} `json:"deploymentParameters" yaml:"deploymentParameters"`
 
-	// Configs only for AKS
-	ClusterName string `json:"clusterName" yaml:"clusterName"`
 	// Config only for AKS
 	NodeResourceGroup string `json:"nodeResourceGroup" yaml:"nodeResourceGroup"`
 
@@ -134,35 +144,31 @@ type Config struct {
 	CloudProviderBackoffDuration int     `json:"cloudProviderBackoffDuration,omitempty" yaml:"cloudProviderBackoffDuration,omitempty"`
 	CloudProviderBackoffJitter   float64 `json:"cloudProviderBackoffJitter,omitempty" yaml:"cloudProviderBackoffJitter,omitempty"`
 
+	// EnableForceDelete defines whether to enable force deletion on the APIs
+	EnableForceDelete bool `json:"enableForceDelete,omitempty" yaml:"enableForceDelete,omitempty"`
+
 	// EnableDynamicInstanceList defines whether to enable dynamic instance workflow for instance information check
 	EnableDynamicInstanceList bool `json:"enableDynamicInstanceList,omitempty" yaml:"enableDynamicInstanceList,omitempty"`
 
 	// EnableVmssFlex defines whether to enable Vmss Flex support or not
 	EnableVmssFlex bool `json:"enableVmssFlex,omitempty" yaml:"enableVmssFlex,omitempty"`
 
-	// (DEPRECATED, DO NOT USE) EnableForceDelete defines whether to enable force deletion on the APIs
-	EnableForceDelete bool `json:"enableForceDelete,omitempty" yaml:"enableForceDelete,omitempty"`
-
 	// (DEPRECATED, DO NOT USE) EnableDetailedCSEMessage defines whether to emit error messages in the CSE error body info
 	EnableDetailedCSEMessage bool `json:"enableDetailedCSEMessage,omitempty" yaml:"enableDetailedCSEMessage,omitempty"`
 
-	// (DEPRECATED, DO NOT USE) GetVmssSizeRefreshPeriod defines how frequently to call GET VMSS API to fetch VMSS info per nodegroup instance
-	GetVmssSizeRefreshPeriod time.Duration `json:"getVmssSizeRefreshPeriod,omitempty" yaml:"getVmssSizeRefreshPeriod,omitempty"`
+	// (DEPRECATED, DO NOT USE) GetVmssSizeRefreshPeriod (seconds) defines how frequently to call GET VMSS API to fetch VMSS info per nodegroup instance
+	GetVmssSizeRefreshPeriod int `json:"getVmssSizeRefreshPeriod,omitempty" yaml:"getVmssSizeRefreshPeriod,omitempty"`
 }
 
 // BuildAzureConfig returns a Config object for the Azure clients
-// Below exception should be [nolint: funlen,gocyclo] but because of issue - https://github.com/golangci/golangci-lint/pull/3002,
-// workaround is to use nolint:all
-//
-//nolint:all
 func BuildAzureConfig(configReader io.Reader) (*Config, error) {
+	var err error
 	cfg := &Config{}
 
-	var err error
 	if configReader != nil {
-		body, readErr := io.ReadAll(configReader)
-		if readErr != nil {
-			return nil, fmt.Errorf("failed to read config: %v", readErr)
+		body, err := ioutil.ReadAll(configReader)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read config: %v", err)
 		}
 		err = json.Unmarshal(body, cfg)
 		if err != nil {
@@ -173,12 +179,12 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 		cfg.Location = os.Getenv("LOCATION")
 		cfg.ResourceGroup = os.Getenv("ARM_RESOURCE_GROUP")
 		cfg.TenantID = os.Getenv("ARM_TENANT_ID")
-		if tenantID := os.Getenv("AZURE_TENANT_ID"); tenantID != "" {
-			cfg.TenantID = tenantID
+		if tenantId := os.Getenv("AZURE_TENANT_ID"); tenantId != "" {
+			cfg.TenantID = tenantId
 		}
 		cfg.AADClientID = os.Getenv("ARM_CLIENT_ID")
-		if clientID := os.Getenv("AZURE_CLIENT_ID"); clientID != "" {
-			cfg.AADClientID = clientID
+		if clientId := os.Getenv("AZURE_CLIENT_ID"); clientId != "" {
+			cfg.AADClientID = clientId
 		}
 		cfg.AADFederatedTokenFile = os.Getenv("AZURE_FEDERATED_TOKEN_FILE")
 		cfg.AADClientSecret = os.Getenv("ARM_CLIENT_SECRET")
@@ -186,26 +192,24 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 		cfg.AADClientCertPath = os.Getenv("ARM_CLIENT_CERT_PATH")
 		cfg.AADClientCertPassword = os.Getenv("ARM_CLIENT_CERT_PASSWORD")
 		cfg.Deployment = os.Getenv("ARM_DEPLOYMENT")
-		cfg.ClusterName = os.Getenv("AZURE_CLUSTER_NAME")
 		cfg.NodeResourceGroup = os.Getenv("AZURE_NODE_RESOURCE_GROUP")
 
-		subscriptionID, err2 := getSubscriptionIDFromInstanceMetadata()
-		if err2 != nil {
-			return nil, err2
+		subscriptionID, err := getSubscriptionIdFromInstanceMetadata()
+		if err != nil {
+			return nil, err
 		}
 		cfg.SubscriptionID = subscriptionID
 
 		useManagedIdentityExtensionFromEnv := os.Getenv("ARM_USE_MANAGED_IDENTITY_EXTENSION")
 		if len(useManagedIdentityExtensionFromEnv) > 0 {
-			cfg.UseManagedIdentityExtension, err2 = strconv.ParseBool(useManagedIdentityExtensionFromEnv)
-			if err2 != nil {
-				return nil, err2
+			cfg.UseManagedIdentityExtension, err = strconv.ParseBool(useManagedIdentityExtensionFromEnv)
+			if err != nil {
+				return nil, err
 			}
 		}
 
 		useWorkloadIdentityExtensionFromEnv := os.Getenv("ARM_USE_WORKLOAD_IDENTITY_EXTENSION")
 		if len(useWorkloadIdentityExtensionFromEnv) > 0 {
-			//var err error
 			cfg.UseWorkloadIdentityExtension, err = strconv.ParseBool(useWorkloadIdentityExtensionFromEnv)
 			if err != nil {
 				return nil, err
@@ -221,7 +225,6 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 			cfg.UserAssignedIdentityID = userAssignedIdentityIDFromEnv
 		}
 
-		var err error
 		if vmssCacheTTL := os.Getenv("AZURE_VMSS_CACHE_TTL"); vmssCacheTTL != "" {
 			cfg.VmssCacheTTL, err = strconv.ParseInt(vmssCacheTTL, 10, 0)
 			if err != nil {
@@ -266,6 +269,15 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 			cfg.EnableDynamicInstanceList = dynamicInstanceListDefault
 		}
 
+		if getVmssSizeRefreshPeriod := os.Getenv("AZURE_GET_VMSS_SIZE_REFRESH_PERIOD"); getVmssSizeRefreshPeriod != "" {
+			cfg.GetVmssSizeRefreshPeriod, err = strconv.Atoi(getVmssSizeRefreshPeriod)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse AZURE_GET_VMSS_SIZE_REFRESH_PERIOD %q: %v", getVmssSizeRefreshPeriod, err)
+			}
+		} else {
+			cfg.GetVmssSizeRefreshPeriod = VmssSizeRefreshPeriodDefault
+		}
+
 		if enableVmssFlex := os.Getenv("AZURE_ENABLE_VMSS_FLEX"); enableVmssFlex != "" {
 			cfg.EnableVmssFlex, err = strconv.ParseBool(enableVmssFlex)
 			if err != nil {
@@ -277,9 +289,9 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 
 		if cfg.CloudProviderBackoff {
 			if backoffRetries := os.Getenv("BACKOFF_RETRIES"); backoffRetries != "" {
-				retries, parseErr := strconv.ParseInt(backoffRetries, 10, 0)
-				if parseErr != nil {
-					return nil, fmt.Errorf("failed to parse BACKOFF_RETRIES %q: %v", retries, parseErr)
+				retries, err := strconv.ParseInt(backoffRetries, 10, 0)
+				if err != nil {
+					return nil, fmt.Errorf("failed to parse BACKOFF_RETRIES %q: %v", retries, err)
 				}
 				cfg.CloudProviderBackoffRetries = int(retries)
 			} else {
@@ -296,9 +308,9 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 			}
 
 			if backoffDuration := os.Getenv("BACKOFF_DURATION"); backoffDuration != "" {
-				duration, parseErr := strconv.ParseInt(backoffDuration, 10, 0)
-				if parseErr != nil {
-					return nil, fmt.Errorf("failed to parse BACKOFF_DURATION %q: %v", backoffDuration, parseErr)
+				duration, err := strconv.ParseInt(backoffDuration, 10, 0)
+				if err != nil {
+					return nil, fmt.Errorf("failed to parse BACKOFF_DURATION %q: %v", backoffDuration, err)
 				}
 				cfg.CloudProviderBackoffDuration = int(duration)
 			} else {
@@ -315,12 +327,25 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 			}
 		}
 	}
+
+	// always read the following from environment variables since azure.json doesn't have these fields
+	cfg.ClusterName = os.Getenv("CLUSTER_NAME")
+	cfg.ClusterResourceGroup = os.Getenv("ARM_CLUSTER_RESOURCE_GROUP")
+	cfg.ARMBaseURLForAPClient = os.Getenv("ARM_BASE_URL_FOR_AP_CLIENT")
+
 	cfg.TrimSpace()
 
 	if cloudProviderRateLimit := os.Getenv("CLOUD_PROVIDER_RATE_LIMIT"); cloudProviderRateLimit != "" {
 		cfg.CloudProviderRateLimit, err = strconv.ParseBool(cloudProviderRateLimit)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse CLOUD_PROVIDER_RATE_LIMIT: %q, %v", cloudProviderRateLimit, err)
+		}
+	}
+
+	if enableForceDelete := os.Getenv("AZURE_ENABLE_FORCE_DELETE"); enableForceDelete != "" {
+		cfg.EnableForceDelete, err = strconv.ParseBool(enableForceDelete)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse AZURE_ENABLE_FORCE_DELETE: %q, %v", enableForceDelete, err)
 		}
 	}
 
@@ -364,7 +389,7 @@ func initializeCloudProviderRateLimitConfig(config *CloudProviderRateLimitConfig
 	// Assign read rate limit defaults if no configuration was passed in.
 	if config.CloudProviderRateLimitQPS == 0 {
 		if rateLimitQPSFromEnv := os.Getenv(rateLimitReadQPSEnvVar); rateLimitQPSFromEnv != "" {
-			rateLimitQPS, err := strconv.ParseFloat(rateLimitQPSFromEnv, 64)
+			rateLimitQPS, err := strconv.ParseFloat(rateLimitQPSFromEnv, 0)
 			if err != nil {
 				return fmt.Errorf("failed to parse %s: %q, %v", rateLimitReadQPSEnvVar, rateLimitQPSFromEnv, err)
 			}
@@ -376,7 +401,7 @@ func initializeCloudProviderRateLimitConfig(config *CloudProviderRateLimitConfig
 
 	if config.CloudProviderRateLimitBucket == 0 {
 		if rateLimitBucketFromEnv := os.Getenv(rateLimitReadBucketsEnvVar); rateLimitBucketFromEnv != "" {
-			rateLimitBucket, err := strconv.ParseInt(rateLimitBucketFromEnv, 10, 64)
+			rateLimitBucket, err := strconv.ParseInt(rateLimitBucketFromEnv, 10, 0)
 			if err != nil {
 				return fmt.Errorf("failed to parse %s: %q, %v", rateLimitReadBucketsEnvVar, rateLimitBucketFromEnv, err)
 			}
@@ -389,7 +414,7 @@ func initializeCloudProviderRateLimitConfig(config *CloudProviderRateLimitConfig
 	// Assign write rate limit defaults if no configuration was passed in.
 	if config.CloudProviderRateLimitQPSWrite == 0 {
 		if rateLimitQPSWriteFromEnv := os.Getenv(rateLimitWriteQPSEnvVar); rateLimitQPSWriteFromEnv != "" {
-			rateLimitQPSWrite, err := strconv.ParseFloat(rateLimitQPSWriteFromEnv, 64)
+			rateLimitQPSWrite, err := strconv.ParseFloat(rateLimitQPSWriteFromEnv, 0)
 			if err != nil {
 				return fmt.Errorf("failed to parse %s: %q, %v", rateLimitWriteQPSEnvVar, rateLimitQPSWriteFromEnv, err)
 			}
@@ -481,14 +506,15 @@ func (cfg *Config) TrimSpace() {
 	cfg.Location = strings.TrimSpace(cfg.Location)
 	cfg.TenantID = strings.TrimSpace(cfg.TenantID)
 	cfg.SubscriptionID = strings.TrimSpace(cfg.SubscriptionID)
+	cfg.ClusterName = strings.TrimSpace(cfg.ClusterName)
 	cfg.ResourceGroup = strings.TrimSpace(cfg.ResourceGroup)
+	cfg.ClusterResourceGroup = strings.TrimSpace(cfg.ClusterResourceGroup)
 	cfg.VMType = strings.TrimSpace(cfg.VMType)
 	cfg.AADClientID = strings.TrimSpace(cfg.AADClientID)
 	cfg.AADClientSecret = strings.TrimSpace(cfg.AADClientSecret)
 	cfg.AADClientCertPath = strings.TrimSpace(cfg.AADClientCertPath)
 	cfg.AADClientCertPassword = strings.TrimSpace(cfg.AADClientCertPassword)
 	cfg.Deployment = strings.TrimSpace(cfg.Deployment)
-	cfg.ClusterName = strings.TrimSpace(cfg.ClusterName)
 	cfg.NodeResourceGroup = strings.TrimSpace(cfg.NodeResourceGroup)
 }
 
@@ -538,14 +564,14 @@ func (cfg *Config) validate() error {
 	}
 
 	if cfg.CloudProviderBackoff && cfg.CloudProviderBackoffRetries == 0 {
-		return fmt.Errorf("cloud provider backoff is enabled but retries are not set")
+		return fmt.Errorf("Cloud provider backoff is enabled but retries are not set")
 	}
 
 	return nil
 }
 
-// getSubscriptionIDFromInstanceMetadata reads the Subscription ID from the instance metadata.
-func getSubscriptionIDFromInstanceMetadata() (string, error) {
+// getSubscriptionId reads the Subscription ID from the instance metadata.
+func getSubscriptionIdFromInstanceMetadata() (string, error) {
 	subscriptionID, present := os.LookupEnv("ARM_SUBSCRIPTION_ID")
 	if !present {
 		metadataService, err := providerazure.NewInstanceMetadataService(imdsServerURL)

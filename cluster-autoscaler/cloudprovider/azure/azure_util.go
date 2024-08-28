@@ -18,8 +18,6 @@ package azure
 
 import (
 	"context"
-	"crypto/rsa"
-	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -37,15 +35,14 @@ import (
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/to"
 
-	"golang.org/x/crypto/pkcs12"
-
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/version"
 	klog "k8s.io/klog/v2"
 	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
 )
 
 const (
-	// Field names
+	//Field names
 	customDataFieldName      = "customData"
 	dependsOnFieldName       = "dependsOn"
 	hardwareProfileFieldName = "hardwareProfile"
@@ -67,23 +64,38 @@ const (
 	// CSE Extension checks
 	vmssCSEExtensionName            = "vmssCSE"
 	vmssExtensionProvisioningFailed = "VMExtensionProvisioningFailed"
+	// vmExtensionProvisioningErrorClass represents a Vm extension provisioning error
+	vmExtensionProvisioningErrorClass cloudprovider.InstanceErrorClass = 103
 
 	// resource ids
 	nsgID = "nsgID"
 	rtID  = "routeTableID"
 
-	k8sLinuxVMNamingFormat         = "^[0-9a-zA-Z]{3}-(.+)-([0-9a-fA-F]{8})-{0,2}(\\d+)$"
+	k8sLinuxVMNamingFormat         = "^[0-9a-zA-Z]{3}-(.+)-([0-9a-fA-F]{8})-{0,2}([0-9]+)$"
 	k8sLinuxVMAgentPoolNameIndex   = 1
 	k8sLinuxVMAgentClusterIDIndex  = 2
 	k8sLinuxVMAgentIndexArrayIndex = 3
 
-	k8sWindowsOldVMNamingFormat = "^([a-fA-F0-9]{5})([0-9a-zA-Z]{3})(9)([a-zA-Z0-9]{3,5})$"
-	k8sWindowsVMNamingFormat    = "^([a-fA-F0-9]{4})([0-9a-zA-Z]{3})(\\d{3,8})$"
+	k8sWindowsOldVMNamingFormat            = "^([a-fA-F0-9]{5})([0-9a-zA-Z]{3})([9])([a-zA-Z0-9]{3,5})$"
+	k8sWindowsVMNamingFormat               = "^([a-fA-F0-9]{4})([0-9a-zA-Z]{3})([0-9]{3,8})$"
+	k8sWindowsVMAgentPoolPrefixIndex       = 1
+	k8sWindowsVMAgentOrchestratorNameIndex = 2
+	k8sWindowsVMAgentPoolInfoIndex         = 3
 
 	nodeLabelTagName     = "k8s.io_cluster-autoscaler_node-template_label_"
 	nodeTaintTagName     = "k8s.io_cluster-autoscaler_node-template_taint_"
 	nodeResourcesTagName = "k8s.io_cluster-autoscaler_node-template_resources_"
 	nodeOptionsTagName   = "k8s.io_cluster-autoscaler_node-template_autoscaling-options_"
+
+	// PowerStates reflect the operational state of a VM
+	// From https://learn.microsoft.com/en-us/java/api/com.microsoft.azure.management.compute.powerstate?view=azure-java-stable
+	vmPowerStateStarting     = "PowerState/starting"
+	vmPowerStateRunning      = "PowerState/running"
+	vmPowerStateStopping     = "PowerState/stopping"
+	vmPowerStateStopped      = "PowerState/stopped"
+	vmPowerStateDeallocating = "PowerState/deallocating"
+	vmPowerStateDeallocated  = "PowerState/deallocated"
+	vmPowerStateUnknown      = "PowerState/unknown"
 )
 
 var (
@@ -111,7 +123,7 @@ func (util *AzUtil) DeleteBlob(accountName, vhdContainer, vhdBlob string) error 
 	}
 
 	keys := *storageKeysResult.Keys
-	client, err := azStorage.NewBasicClientOnSovereignCloud(accountName, to.String(keys[0].Value), *util.manager.env)
+	client, err := azStorage.NewBasicClientOnSovereignCloud(accountName, to.String(keys[0].Value), util.manager.env)
 	if err != nil {
 		return err
 	}
@@ -172,7 +184,7 @@ func (util *AzUtil) DeleteVirtualMachine(rg string, name string) error {
 	}
 	klog.V(2).Infof("VirtualMachine %s/%s removed", rg, name)
 
-	if len(nicName) > 0 {
+	if nicName != "" {
 		klog.Infof("deleting nic: %s/%s", rg, nicName)
 		interfaceCtx, interfaceCancel := getContextWithCancel()
 		defer interfaceCancel()
@@ -216,23 +228,7 @@ func (util *AzUtil) DeleteVirtualMachine(rg string, name string) error {
 			klog.V(2).Infof("disk %s/%s removed", rg, *osDiskName)
 		}
 	}
-
 	return nil
-}
-
-// decodePkcs12 decodes a PKCS#12 client certificate by extracting the public certificate and
-// the private RSA key
-func decodePkcs12(pkcs []byte, password string) (*x509.Certificate, *rsa.PrivateKey, error) {
-	privateKey, certificate, err := pkcs12.Decode(pkcs, password)
-	if err != nil {
-		return nil, nil, fmt.Errorf("decoding the PKCS#12 client certificate: %v", err)
-	}
-	rsaPrivateKey, isRsaKey := privateKey.(*rsa.PrivateKey)
-	if !isRsaKey {
-		return nil, nil, fmt.Errorf("PKCS#12 certificate must contain a RSA private key")
-	}
-
-	return certificate, rsaPrivateKey, nil
 }
 
 func getUserAgentExtension() string {
@@ -610,4 +606,33 @@ func isAzureRequestsThrottled(rerr *retry.Error) bool {
 	}
 
 	return rerr.HTTPStatusCode == http.StatusTooManyRequests
+}
+
+func isRunningVmPowerState(powerState string) bool {
+	return powerState == vmPowerStateRunning || powerState == vmPowerStateStarting
+}
+
+func isKnownVmPowerState(powerState string) bool {
+	knownPowerStates := map[string]bool{
+		vmPowerStateStarting:     true,
+		vmPowerStateRunning:      true,
+		vmPowerStateStopping:     true,
+		vmPowerStateStopped:      true,
+		vmPowerStateDeallocating: true,
+		vmPowerStateDeallocated:  true,
+		vmPowerStateUnknown:      true,
+	}
+	return knownPowerStates[powerState]
+}
+
+func vmPowerStateFromStatuses(statuses []compute.InstanceViewStatus) string {
+	for _, status := range statuses {
+		if status.Code == nil || !isKnownVmPowerState(*status.Code) {
+			continue
+		}
+		return *status.Code
+	}
+
+	// PowerState is not set if the VM is still creating (or has failed creation)
+	return vmPowerStateUnknown
 }

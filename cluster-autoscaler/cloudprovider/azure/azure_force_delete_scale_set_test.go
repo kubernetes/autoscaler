@@ -47,14 +47,15 @@ func TestShouldForceDelete(t *testing.T) {
 		skuName = "Standard_F72s_v2" // belongs to the map isolatedVMSizes
 		assert.Equal(t, shouldForceDelete(skuName, scaleSet), false)
 	})
+
 }
 
 func TestIsOperationNotAllowed(t *testing.T) {
 	t.Run("should return false because it's not OperationNotAllowed error", func(t *testing.T) {
-		err := &retry.Error{
+		error := &retry.Error{
 			HTTPStatusCode: http.StatusBadRequest,
 		}
-		assert.Equal(t, isOperationNotAllowed(err), false)
+		assert.Equal(t, isOperationNotAllowed(error), false)
 	})
 
 	t.Run("should return false because error is nil", func(t *testing.T) {
@@ -66,12 +67,13 @@ func TestIsOperationNotAllowed(t *testing.T) {
 			Code:    retry.OperationNotAllowed,
 			Message: "error-message",
 		}
-		err := &retry.Error{
+		error := &retry.Error{
 			RawError: sre,
 		}
-		assert.Equal(t, isOperationNotAllowed(err), false)
+		assert.Equal(t, isOperationNotAllowed(error), false)
 	})
 
 	// It is difficult to condition the case where return error matched expected error string for forceDelete and the
 	// function should return true.
+
 }

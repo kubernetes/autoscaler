@@ -18,23 +18,22 @@ package azure
 
 import (
 	"fmt"
-	"os"
 	"reflect"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-03-01/compute"     //nolint SA1019 - deprecated package
-	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources" //nolint SA1019 - deprecated package
+	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmclient/mockvmclient"
+
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-03-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources"
 	"github.com/Azure/go-autorest/autorest/date"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	azclients "sigs.k8s.io/cloud-provider-azure/pkg/azureclients"
-	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmclient/mockvmclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssclient/mockvmssclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/vmssvmclient/mockvmssvmclient"
 )
@@ -140,62 +139,7 @@ const validAzureCfgForStandardVMTypeWithoutDeploymentParameters = `{
 const (
 	invalidAzureCfg = `{{}"cloud": "AzurePublicCloud",}`
 	testASG         = "test-asg"
-	testEastUSLoc   = "eastus"
 )
-
-func getCloudProviderRateLimitConfig(cloudProviderRateLimit bool) CloudProviderRateLimitConfig {
-	return CloudProviderRateLimitConfig{
-		RateLimitConfig: azclients.RateLimitConfig{
-			CloudProviderRateLimit:            cloudProviderRateLimit,
-			CloudProviderRateLimitBucket:      5,
-			CloudProviderRateLimitBucketWrite: 5,
-			CloudProviderRateLimitQPS:         1,
-			CloudProviderRateLimitQPSWrite:    1,
-		},
-		InterfaceRateLimit: &azclients.RateLimitConfig{
-			CloudProviderRateLimit:            cloudProviderRateLimit,
-			CloudProviderRateLimitBucket:      5,
-			CloudProviderRateLimitBucketWrite: 5,
-			CloudProviderRateLimitQPS:         1,
-			CloudProviderRateLimitQPSWrite:    1,
-		},
-		VirtualMachineRateLimit: &azclients.RateLimitConfig{
-			CloudProviderRateLimit:            cloudProviderRateLimit,
-			CloudProviderRateLimitBucket:      5,
-			CloudProviderRateLimitBucketWrite: 5,
-			CloudProviderRateLimitQPS:         1,
-			CloudProviderRateLimitQPSWrite:    1,
-		},
-		StorageAccountRateLimit: &azclients.RateLimitConfig{
-			CloudProviderRateLimit:            cloudProviderRateLimit,
-			CloudProviderRateLimitBucket:      5,
-			CloudProviderRateLimitBucketWrite: 5,
-			CloudProviderRateLimitQPS:         1,
-			CloudProviderRateLimitQPSWrite:    1,
-		},
-		DiskRateLimit: &azclients.RateLimitConfig{
-			CloudProviderRateLimit:            cloudProviderRateLimit,
-			CloudProviderRateLimitBucket:      5,
-			CloudProviderRateLimitBucketWrite: 5,
-			CloudProviderRateLimitQPS:         1,
-			CloudProviderRateLimitQPSWrite:    1,
-		},
-		VirtualMachineScaleSetRateLimit: &azclients.RateLimitConfig{
-			CloudProviderRateLimit:            cloudProviderRateLimit,
-			CloudProviderRateLimitBucket:      5,
-			CloudProviderRateLimitBucketWrite: 5,
-			CloudProviderRateLimitQPS:         1,
-			CloudProviderRateLimitQPSWrite:    1,
-		},
-		KubernetesServiceRateLimit: &azclients.RateLimitConfig{
-			CloudProviderRateLimit:            cloudProviderRateLimit,
-			CloudProviderRateLimitBucket:      5,
-			CloudProviderRateLimitBucketWrite: 5,
-			CloudProviderRateLimitQPS:         1,
-			CloudProviderRateLimitQPSWrite:    1,
-		},
-	}
-}
 
 func TestCreateAzureManagerValidConfig(t *testing.T) {
 	ctrl := gomock.NewController(t)
@@ -203,63 +147,161 @@ func TestCreateAzureManagerValidConfig(t *testing.T) {
 	mockVMClient := mockvmclient.NewMockInterface(ctrl)
 	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
 	mockVMSSClient.EXPECT().List(gomock.Any(), "fakeId").Return([]compute.VirtualMachineScaleSet{}, nil).Times(2)
+	mockVMClient.EXPECT().List(gomock.Any(), "fakeId").Return([]compute.VirtualMachine{}, nil).Times(2)
 	mockAzClient := &azClient{
 		virtualMachinesClient:         mockVMClient,
 		virtualMachineScaleSetsClient: mockVMSSClient,
 	}
-
 	manager, err := createAzureManagerInternal(strings.NewReader(validAzureCfg), cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)
 
 	expectedConfig := &Config{
-		Cloud:                        "AzurePublicCloud",
-		Location:                     "southeastasia",
-		TenantID:                     "fakeId",
-		SubscriptionID:               "fakeId",
-		ResourceGroup:                "fakeId",
-		VMType:                       "vmss",
-		AADClientID:                  "fakeId",
-		AADClientSecret:              "fakeId",
-		VmssCacheTTL:                 60,
-		VmssVmsCacheTTL:              240,
-		VmssVmsCacheJitter:           120,
-		MaxDeploymentsCount:          8,
-		CloudProviderRateLimitConfig: getCloudProviderRateLimitConfig(false),
+		Cloud:               "AzurePublicCloud",
+		Location:            "southeastasia",
+		TenantID:            "fakeId",
+		SubscriptionID:      "fakeId",
+		ResourceGroup:       "fakeId",
+		VMType:              "vmss",
+		AADClientID:         "fakeId",
+		AADClientSecret:     "fakeId",
+		VmssCacheTTL:        60,
+		VmssVmsCacheTTL:     240,
+		VmssVmsCacheJitter:  120,
+		MaxDeploymentsCount: 8,
+		CloudProviderRateLimitConfig: CloudProviderRateLimitConfig{
+			RateLimitConfig: azclients.RateLimitConfig{
+				CloudProviderRateLimit:            false,
+				CloudProviderRateLimitBucket:      5,
+				CloudProviderRateLimitBucketWrite: 5,
+				CloudProviderRateLimitQPS:         1,
+				CloudProviderRateLimitQPSWrite:    1,
+			},
+			InterfaceRateLimit: &azclients.RateLimitConfig{
+				CloudProviderRateLimit:            false,
+				CloudProviderRateLimitBucket:      5,
+				CloudProviderRateLimitBucketWrite: 5,
+				CloudProviderRateLimitQPS:         1,
+				CloudProviderRateLimitQPSWrite:    1,
+			},
+			VirtualMachineRateLimit: &azclients.RateLimitConfig{
+				CloudProviderRateLimit:            false,
+				CloudProviderRateLimitBucket:      5,
+				CloudProviderRateLimitBucketWrite: 5,
+				CloudProviderRateLimitQPS:         1,
+				CloudProviderRateLimitQPSWrite:    1,
+			},
+			StorageAccountRateLimit: &azclients.RateLimitConfig{
+				CloudProviderRateLimit:            false,
+				CloudProviderRateLimitBucket:      5,
+				CloudProviderRateLimitBucketWrite: 5,
+				CloudProviderRateLimitQPS:         1,
+				CloudProviderRateLimitQPSWrite:    1,
+			},
+			DiskRateLimit: &azclients.RateLimitConfig{
+				CloudProviderRateLimit:            false,
+				CloudProviderRateLimitBucket:      5,
+				CloudProviderRateLimitBucketWrite: 5,
+				CloudProviderRateLimitQPS:         1,
+				CloudProviderRateLimitQPSWrite:    1,
+			},
+			VirtualMachineScaleSetRateLimit: &azclients.RateLimitConfig{
+				CloudProviderRateLimit:            false,
+				CloudProviderRateLimitBucket:      5,
+				CloudProviderRateLimitBucketWrite: 5,
+				CloudProviderRateLimitQPS:         1,
+				CloudProviderRateLimitQPSWrite:    1,
+			},
+			KubernetesServiceRateLimit: &azclients.RateLimitConfig{
+				CloudProviderRateLimit:            false,
+				CloudProviderRateLimitBucket:      5,
+				CloudProviderRateLimitBucketWrite: 5,
+				CloudProviderRateLimitQPS:         1,
+				CloudProviderRateLimitQPSWrite:    1,
+			},
+		},
 	}
 
 	assert.NoError(t, err)
 	assert.Equal(t, true, reflect.DeepEqual(*expectedConfig, *manager.config), "unexpected azure manager configuration")
 }
 
-// nolint: goconst
 func TestCreateAzureManagerValidConfigForStandardVMType(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockVMClient := mockvmclient.NewMockInterface(ctrl)
 	mockVMClient.EXPECT().List(gomock.Any(), "fakeId").Return([]compute.VirtualMachine{}, nil).Times(2)
 	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
+	mockVMSSClient.EXPECT().List(gomock.Any(), "fakeId").Return([]compute.VirtualMachineScaleSet{}, nil).Times(2)
 	mockAzClient := &azClient{
 		virtualMachinesClient:         mockVMClient,
 		virtualMachineScaleSetsClient: mockVMSSClient,
 	}
-
-	manager, err := createAzureManagerInternal(strings.NewReader(validAzureCfgForStandardVMType),
-		cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)
+	manager, err := createAzureManagerInternal(strings.NewReader(validAzureCfgForStandardVMType), cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)
 
 	expectedConfig := &Config{
-		Cloud:                        "AzurePublicCloud",
-		Location:                     "southeastasia",
-		TenantID:                     "fakeId",
-		SubscriptionID:               "fakeId",
-		ResourceGroup:                "fakeId",
-		VMType:                       "standard",
-		AADClientID:                  "fakeId",
-		AADClientSecret:              "fakeId",
-		VmssCacheTTL:                 60,
-		VmssVmsCacheTTL:              240,
-		VmssVmsCacheJitter:           120,
-		MaxDeploymentsCount:          8,
-		CloudProviderRateLimitConfig: getCloudProviderRateLimitConfig(false),
-		Deployment:                   "cluster-autoscaler-0001",
+		Cloud:               "AzurePublicCloud",
+		Location:            "southeastasia",
+		TenantID:            "fakeId",
+		SubscriptionID:      "fakeId",
+		ResourceGroup:       "fakeId",
+		VMType:              "standard",
+		AADClientID:         "fakeId",
+		AADClientSecret:     "fakeId",
+		VmssCacheTTL:        60,
+		VmssVmsCacheTTL:     240,
+		VmssVmsCacheJitter:  120,
+		MaxDeploymentsCount: 8,
+		CloudProviderRateLimitConfig: CloudProviderRateLimitConfig{
+			RateLimitConfig: azclients.RateLimitConfig{
+				CloudProviderRateLimit:            false,
+				CloudProviderRateLimitBucket:      5,
+				CloudProviderRateLimitBucketWrite: 5,
+				CloudProviderRateLimitQPS:         1,
+				CloudProviderRateLimitQPSWrite:    1,
+			},
+			InterfaceRateLimit: &azclients.RateLimitConfig{
+				CloudProviderRateLimit:            false,
+				CloudProviderRateLimitBucket:      5,
+				CloudProviderRateLimitBucketWrite: 5,
+				CloudProviderRateLimitQPS:         1,
+				CloudProviderRateLimitQPSWrite:    1,
+			},
+			VirtualMachineRateLimit: &azclients.RateLimitConfig{
+				CloudProviderRateLimit:            false,
+				CloudProviderRateLimitBucket:      5,
+				CloudProviderRateLimitBucketWrite: 5,
+				CloudProviderRateLimitQPS:         1,
+				CloudProviderRateLimitQPSWrite:    1,
+			},
+			StorageAccountRateLimit: &azclients.RateLimitConfig{
+				CloudProviderRateLimit:            false,
+				CloudProviderRateLimitBucket:      5,
+				CloudProviderRateLimitBucketWrite: 5,
+				CloudProviderRateLimitQPS:         1,
+				CloudProviderRateLimitQPSWrite:    1,
+			},
+			DiskRateLimit: &azclients.RateLimitConfig{
+				CloudProviderRateLimit:            false,
+				CloudProviderRateLimitBucket:      5,
+				CloudProviderRateLimitBucketWrite: 5,
+				CloudProviderRateLimitQPS:         1,
+				CloudProviderRateLimitQPSWrite:    1,
+			},
+			VirtualMachineScaleSetRateLimit: &azclients.RateLimitConfig{
+				CloudProviderRateLimit:            false,
+				CloudProviderRateLimitBucket:      5,
+				CloudProviderRateLimitBucketWrite: 5,
+				CloudProviderRateLimitQPS:         1,
+				CloudProviderRateLimitQPSWrite:    1,
+			},
+			KubernetesServiceRateLimit: &azclients.RateLimitConfig{
+				CloudProviderRateLimit:            false,
+				CloudProviderRateLimitBucket:      5,
+				CloudProviderRateLimitBucketWrite: 5,
+				CloudProviderRateLimitQPS:         1,
+				CloudProviderRateLimitQPSWrite:    1,
+			},
+		},
+		Deployment: "cluster-autoscaler-0001",
 		DeploymentParameters: map[string]interface{}{
 			"Name": "cluster-autoscaler-0001",
 			"Properties": map[string]interface{}{
@@ -285,13 +327,11 @@ func TestCreateAzureManagerValidConfigForStandardVMType(t *testing.T) {
 	}
 
 	assert.NoError(t, err)
-	assert.Equal(t, *expectedConfig, *manager.config, "unexpected azure manager configuration, "+
-		"expected: %v, actual: %v", *expectedConfig, *manager.config)
+	assert.Equal(t, *expectedConfig, *manager.config, "unexpected azure manager configuration, expected: %v, actual: %v", *expectedConfig, *manager.config)
 }
 
 func TestCreateAzureManagerValidConfigForStandardVMTypeWithoutDeploymentParameters(t *testing.T) {
-	manager, err := createAzureManagerInternal(strings.NewReader(validAzureCfgForStandardVMTypeWithoutDeploymentParameters),
-		cloudprovider.NodeGroupDiscoveryOptions{}, &azClient{})
+	manager, err := createAzureManagerInternal(strings.NewReader(validAzureCfgForStandardVMTypeWithoutDeploymentParameters), cloudprovider.NodeGroupDiscoveryOptions{}, &azClient{})
 	expectedErr := "open /var/lib/azure/azuredeploy.parameters.json: no such file or directory"
 	assert.Nil(t, manager)
 	assert.Equal(t, expectedErr, err.Error(), "return error does not match, expected: %v, actual: %v", expectedErr, err.Error())
@@ -303,7 +343,7 @@ func TestCreateAzureManagerWithNilConfig(t *testing.T) {
 	mockVMClient := mockvmclient.NewMockInterface(ctrl)
 	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
 	mockVMSSClient.EXPECT().List(gomock.Any(), "resourceGroup").Return([]compute.VirtualMachineScaleSet{}, nil).AnyTimes()
-
+	mockVMClient.EXPECT().List(gomock.Any(), "resourceGroup").Return([]compute.VirtualMachine{}, nil).AnyTimes()
 	mockAzClient := &azClient{
 		virtualMachinesClient:         mockVMClient,
 		virtualMachineScaleSetsClient: mockVMSSClient,
@@ -315,204 +355,233 @@ func TestCreateAzureManagerWithNilConfig(t *testing.T) {
 		TenantID:                     "tenantId",
 		SubscriptionID:               "subscriptionId",
 		ResourceGroup:                "resourceGroup",
+		ClusterName:                  "mycluster",
+		ClusterResourceGroup:         "myrg",
+		ARMBaseURLForAPClient:        "nodeprovisioner-svc.nodeprovisioner.svc.cluster.local",
 		VMType:                       "vmss",
 		AADClientID:                  "aadClientId",
 		AADClientSecret:              "aadClientSecret",
 		AADClientCertPath:            "aadClientCertPath",
 		AADClientCertPassword:        "aadClientCertPassword",
 		Deployment:                   "deployment",
-		ClusterName:                  "clusterName",
-		NodeResourceGroup:            "resourcegroup",
 		UseManagedIdentityExtension:  true,
 		UserAssignedIdentityID:       "UserAssignedIdentityID",
 		VmssCacheTTL:                 100,
 		VmssVmsCacheTTL:              110,
 		VmssVmsCacheJitter:           90,
+		GetVmssSizeRefreshPeriod:     30,
 		MaxDeploymentsCount:          8,
 		CloudProviderBackoff:         true,
 		CloudProviderBackoffRetries:  1,
 		CloudProviderBackoffExponent: 1,
 		CloudProviderBackoffDuration: 1,
 		CloudProviderBackoffJitter:   1,
-		CloudProviderRateLimitConfig: getCloudProviderRateLimitConfig(true),
+		CloudProviderRateLimitConfig: CloudProviderRateLimitConfig{
+			RateLimitConfig: azclients.RateLimitConfig{
+				CloudProviderRateLimit:            true,
+				CloudProviderRateLimitBucket:      5,
+				CloudProviderRateLimitBucketWrite: 5,
+				CloudProviderRateLimitQPS:         1,
+				CloudProviderRateLimitQPSWrite:    1,
+			},
+			InterfaceRateLimit: &azclients.RateLimitConfig{
+				CloudProviderRateLimit:            true,
+				CloudProviderRateLimitBucket:      5,
+				CloudProviderRateLimitBucketWrite: 5,
+				CloudProviderRateLimitQPS:         1,
+				CloudProviderRateLimitQPSWrite:    1,
+			},
+			VirtualMachineRateLimit: &azclients.RateLimitConfig{
+				CloudProviderRateLimit:            true,
+				CloudProviderRateLimitBucket:      5,
+				CloudProviderRateLimitBucketWrite: 5,
+				CloudProviderRateLimitQPS:         1,
+				CloudProviderRateLimitQPSWrite:    1,
+			},
+			StorageAccountRateLimit: &azclients.RateLimitConfig{
+				CloudProviderRateLimit:            true,
+				CloudProviderRateLimitBucket:      5,
+				CloudProviderRateLimitBucketWrite: 5,
+				CloudProviderRateLimitQPS:         1,
+				CloudProviderRateLimitQPSWrite:    1,
+			},
+			DiskRateLimit: &azclients.RateLimitConfig{
+				CloudProviderRateLimit:            true,
+				CloudProviderRateLimitBucket:      5,
+				CloudProviderRateLimitBucketWrite: 5,
+				CloudProviderRateLimitQPS:         1,
+				CloudProviderRateLimitQPSWrite:    1,
+			},
+			VirtualMachineScaleSetRateLimit: &azclients.RateLimitConfig{
+				CloudProviderRateLimit:            true,
+				CloudProviderRateLimitBucket:      5,
+				CloudProviderRateLimitBucketWrite: 5,
+				CloudProviderRateLimitQPS:         1,
+				CloudProviderRateLimitQPSWrite:    1,
+			},
+			KubernetesServiceRateLimit: &azclients.RateLimitConfig{
+				CloudProviderRateLimit:            true,
+				CloudProviderRateLimitBucket:      5,
+				CloudProviderRateLimitBucketWrite: 5,
+				CloudProviderRateLimitQPS:         1,
+				CloudProviderRateLimitQPSWrite:    1,
+			},
+		},
 	}
 
-	os.Setenv("ARM_CLOUD", "AzurePublicCloud")
-	os.Setenv("LOCATION", "southeastasia")
-	os.Setenv("ARM_SUBSCRIPTION_ID", "subscriptionId")
-	os.Setenv("ARM_RESOURCE_GROUP", "resourceGroup")
-	os.Setenv("ARM_TENANT_ID", "tenantId")
-	os.Setenv("ARM_CLIENT_ID", "aadClientId")
-	os.Setenv("ARM_CLIENT_SECRET", "aadClientSecret")
-	os.Setenv("ARM_VM_TYPE", "vmss")
-	os.Setenv("ARM_CLIENT_CERT_PATH", "aadClientCertPath")
-	os.Setenv("ARM_CLIENT_CERT_PASSWORD", "aadClientCertPassword")
-	os.Setenv("ARM_DEPLOYMENT", "deployment")
-	os.Setenv("AZURE_CLUSTER_NAME", "clusterName")
-	os.Setenv("AZURE_NODE_RESOURCE_GROUP", "resourcegroup")
-	os.Setenv("ARM_USE_MANAGED_IDENTITY_EXTENSION", "true")
-	os.Setenv("ARM_USER_ASSIGNED_IDENTITY_ID", "UserAssignedIdentityID")
-	os.Setenv("AZURE_VMSS_CACHE_TTL", "100")
-	os.Setenv("AZURE_VMSS_VMS_CACHE_TTL", "110")
-	os.Setenv("AZURE_VMSS_VMS_CACHE_JITTER", "90")
-	os.Setenv("AZURE_MAX_DEPLOYMENT_COUNT", "8")
-	os.Setenv("ENABLE_BACKOFF", "true")
-	os.Setenv("BACKOFF_RETRIES", "1")
-	os.Setenv("BACKOFF_EXPONENT", "1")
-	os.Setenv("BACKOFF_DURATION", "1")
-	os.Setenv("BACKOFF_JITTER", "1")
-	os.Setenv("CLOUD_PROVIDER_RATE_LIMIT", "true")
+	t.Setenv("ARM_CLOUD", "AzurePublicCloud")
+	t.Setenv("LOCATION", "southeastasia")
+	t.Setenv("AZURE_TENANT_ID", "tenantId")
+	t.Setenv("AZURE_CLIENT_ID", "aadClientId")
+	t.Setenv("ARM_SUBSCRIPTION_ID", "subscriptionId")
+	t.Setenv("ARM_RESOURCE_GROUP", "resourceGroup")
+	t.Setenv("AZURE_TENANT_ID", "tenantId")
+	t.Setenv("ARM_TENANT_ID", "tenantId")
+	t.Setenv("AZURE_CLIENT_ID", "aadClientId")
+	t.Setenv("ARM_CLIENT_ID", "aadClientId")
+	t.Setenv("ARM_CLIENT_SECRET", "aadClientSecret")
+	t.Setenv("ARM_VM_TYPE", "vmss")
+	t.Setenv("ARM_CLIENT_CERT_PATH", "aadClientCertPath")
+	t.Setenv("ARM_CLIENT_CERT_PASSWORD", "aadClientCertPassword")
+	t.Setenv("ARM_DEPLOYMENT", "deployment")
+	t.Setenv("ARM_USE_MANAGED_IDENTITY_EXTENSION", "true")
+	t.Setenv("ARM_USER_ASSIGNED_IDENTITY_ID", "UserAssignedIdentityID")
+	t.Setenv("AZURE_VMSS_CACHE_TTL", "100")
+	t.Setenv("AZURE_VMSS_VMS_CACHE_TTL", "110")
+	t.Setenv("AZURE_VMSS_VMS_CACHE_JITTER", "90")
+	t.Setenv("AZURE_MAX_DEPLOYMENT_COUNT", "8")
+	t.Setenv("ENABLE_BACKOFF", "true")
+	t.Setenv("BACKOFF_RETRIES", "1")
+	t.Setenv("BACKOFF_EXPONENT", "1")
+	t.Setenv("BACKOFF_DURATION", "1")
+	t.Setenv("BACKOFF_JITTER", "1")
+	t.Setenv("CLOUD_PROVIDER_RATE_LIMIT", "true")
+	t.Setenv("CLUSTER_NAME", "mycluster")
+	t.Setenv("ARM_CLUSTER_RESOURCE_GROUP", "myrg")
+	t.Setenv("ARM_BASE_URL_FOR_AP_CLIENT", "nodeprovisioner-svc.nodeprovisioner.svc.cluster.local")
 
-	manager, err := createAzureManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)
-	assert.NoError(t, err)
-	assert.Equal(t, true, reflect.DeepEqual(*expectedConfig, *manager.config), "unexpected azure manager configuration")
+	t.Run("environment variables correctly set", func(t *testing.T) {
+		manager, err := createAzureManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)
+		assert.NoError(t, err)
+		manager.config.TenantID = "tenantId"
+		manager.config.AADClientID = "aadClientId"
+		assert.Equal(t, true, reflect.DeepEqual(*expectedConfig, *manager.config), "unexpected azure manager configuration")
+	})
 
-	// invalid bool for ARM_USE_MANAGED_IDENTITY_EXTENSION
-	os.Setenv("ARM_USE_MANAGED_IDENTITY_EXTENSION", "invalidbool")
-	manager, err = createAzureManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)
-	expectedErr0 := "strconv.ParseBool: parsing \"invalidbool\": invalid syntax"
-	assert.Nil(t, manager)
-	assert.Equal(t, expectedErr0, err.Error(), "Return err does not match, expected: %v, actual: %v", expectedErr0, err.Error())
-	// revert back to good ARM_USE_MANAGED_IDENTITY_EXTENSION
-	os.Setenv("ARM_USE_MANAGED_IDENTITY_EXTENSION", "true")
+	t.Run("invalid bool for ARM_USE_MANAGED_IDENTITY_EXTENSION", func(t *testing.T) {
+		t.Setenv("ARM_USE_MANAGED_IDENTITY_EXTENSION", "invalidbool")
+		manager, err := createAzureManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)
+		expectedErr0 := "strconv.ParseBool: parsing \"invalidbool\": invalid syntax"
+		assert.Nil(t, manager)
+		assert.Equal(t, expectedErr0, err.Error(), "Return err does not match, expected: %v, actual: %v", expectedErr0, err.Error())
+	})
 
-	// invalid int for AZURE_VMSS_CACHE_TTL
-	os.Setenv("AZURE_VMSS_CACHE_TTL", "invalidint")
-	manager, err = createAzureManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)
-	expectedErr := fmt.Errorf("failed to parse AZURE_VMSS_CACHE_TTL \"invalidint\": strconv.ParseInt: parsing \"invalidint\": invalid syntax")
-	assert.Nil(t, manager)
-	assert.Equal(t, expectedErr, err, "Return err does not match, expected: %v, actual: %v", expectedErr, err)
-	// revert back to good AZURE_VMSS_CACHE_TTL
-	os.Setenv("AZURE_VMSS_CACHE_TTL", "100")
+	t.Run("invalid int for AZURE_VMSS_CACHE_TTL", func(t *testing.T) {
+		t.Setenv("AZURE_VMSS_CACHE_TTL", "invalidint")
+		manager, err := createAzureManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)
+		expectedErr := fmt.Errorf("failed to parse AZURE_VMSS_CACHE_TTL \"invalidint\": strconv.ParseInt: parsing \"invalidint\": invalid syntax")
+		assert.Nil(t, manager)
+		assert.Equal(t, expectedErr, err, "Return err does not match, expected: %v, actual: %v", expectedErr, err)
+	})
 
-	// invalid int for AZURE_MAX_DEPLOYMENT_COUNT
-	os.Setenv("AZURE_MAX_DEPLOYMENT_COUNT", "invalidint")
-	manager, err = createAzureManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)
-	expectedErr = fmt.Errorf("failed to parse AZURE_MAX_DEPLOYMENT_COUNT \"invalidint\": strconv.ParseInt: " +
-		"parsing \"invalidint\": invalid syntax")
-	assert.Nil(t, manager)
-	assert.Equal(t, expectedErr, err, "Return err does not match, expected: %v, actual: %v", expectedErr, err)
-	// revert back to good AZURE_MAX_DEPLOYMENT_COUNT
-	os.Setenv("AZURE_MAX_DEPLOYMENT_COUNT", "8")
+	t.Run("invalid int for AZURE_GET_VMSS_SIZE_REFRESH_PERIOD", func(t *testing.T) {
+		t.Setenv("AZURE_GET_VMSS_SIZE_REFRESH_PERIOD", "invalidint")
+		manager, err := createAzureManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)
+		expectedErr := fmt.Errorf("failed to parse AZURE_GET_VMSS_SIZE_REFRESH_PERIOD \"invalidint\": strconv.Atoi: parsing \"invalidint\": invalid syntax")
+		assert.Nil(t, manager)
+		assert.Equal(t, expectedErr, err, "Return err does not match, expected: %v, actual: %v", expectedErr, err)
+	})
 
-	// zero AZURE_MAX_DEPLOYMENT_COUNT will use default value
-	os.Setenv("AZURE_MAX_DEPLOYMENT_COUNT", "0")
-	manager, err = createAzureManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)
-	assert.NoError(t, err)
-	assert.Equal(t, int64(defaultMaxDeploymentsCount), manager.config.MaxDeploymentsCount, "MaxDeploymentsCount does not match.")
-	// revert back to good AZURE_MAX_DEPLOYMENT_COUNT
-	os.Setenv("AZURE_MAX_DEPLOYMENT_COUNT", "8")
+	t.Run("invalid int for AZURE_MAX_DEPLOYMENT_COUNT", func(t *testing.T) {
+		t.Setenv("AZURE_MAX_DEPLOYMENT_COUNT", "invalidint")
+		manager, err := createAzureManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)
+		expectedErr := fmt.Errorf("failed to parse AZURE_MAX_DEPLOYMENT_COUNT \"invalidint\": strconv.ParseInt: parsing \"invalidint\": invalid syntax")
+		assert.Nil(t, manager)
+		assert.Equal(t, expectedErr, err, "Return err does not match, expected: %v, actual: %v", expectedErr, err)
+	})
 
-	// invalid bool for ENABLE_BACKOFF
-	os.Setenv("ENABLE_BACKOFF", "invalidbool")
-	manager, err = createAzureManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)
-	expectedErr = fmt.Errorf("failed to parse ENABLE_BACKOFF \"invalidbool\": strconv.ParseBool: parsing \"invalidbool\": invalid syntax")
-	assert.Nil(t, manager)
-	assert.Equal(t, expectedErr, err, "Return err does not match, expected: %v, actual: %v", expectedErr, err)
-	// revert back to good ENABLE_BACKOFF
-	os.Setenv("ENABLE_BACKOFF", "true")
+	t.Run("zero AZURE_MAX_DEPLOYMENT_COUNT will use default value", func(t *testing.T) {
+		t.Setenv("AZURE_MAX_DEPLOYMENT_COUNT", "0")
+		manager, err := createAzureManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)
+		assert.NoError(t, err)
+		assert.Equal(t, int64(defaultMaxDeploymentsCount), (*manager.config).MaxDeploymentsCount, "MaxDeploymentsCount does not match.")
+	})
 
-	// invalid int for BACKOFF_RETRIES
-	os.Setenv("BACKOFF_RETRIES", "invalidint")
-	manager, err = createAzureManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)
-	expectedErr = fmt.Errorf("failed to parse BACKOFF_RETRIES '\\x00': strconv.ParseInt: parsing \"invalidint\": invalid syntax")
-	assert.Nil(t, manager)
-	assert.Equal(t, expectedErr, err, "Return err does not match, expected: %v, actual: %v", expectedErr, err)
-	// revert back to good BACKOFF_RETRIES
-	os.Setenv("BACKOFF_RETRIES", "1")
+	t.Run("invalid bool for ENABLE_BACKOFF", func(t *testing.T) {
+		t.Setenv("ENABLE_BACKOFF", "invalidbool")
+		manager, err := createAzureManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)
+		expectedErr := fmt.Errorf("failed to parse ENABLE_BACKOFF \"invalidbool\": strconv.ParseBool: parsing \"invalidbool\": invalid syntax")
+		assert.Nil(t, manager)
+		assert.Equal(t, expectedErr, err, "Return err does not match, expected: %v, actual: %v", expectedErr, err)
+	})
 
-	// empty BACKOFF_RETRIES will use default value
-	os.Setenv("BACKOFF_RETRIES", "")
-	manager, err = createAzureManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)
-	assert.NoError(t, err)
-	assert.Equal(t, backoffRetriesDefault, manager.config.CloudProviderBackoffRetries, "CloudProviderBackoffRetries does not match.")
-	// revert back to good BACKOFF_RETRIES
-	os.Setenv("BACKOFF_RETRIES", "1")
+	t.Run("invalid int for BACKOFF_RETRIES", func(t *testing.T) {
+		t.Setenv("BACKOFF_RETRIES", "invalidint")
+		manager, err := createAzureManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)
+		expectedErr := fmt.Errorf("failed to parse BACKOFF_RETRIES '\\x00': strconv.ParseInt: parsing \"invalidint\": invalid syntax")
+		assert.Nil(t, manager)
+		assert.Equal(t, expectedErr, err, "Return err does not match, expected: %v, actual: %v", expectedErr, err)
+	})
 
-	// invalid float for BACKOFF_EXPONENT
-	os.Setenv("BACKOFF_EXPONENT", "invalidfloat")
-	manager, err = createAzureManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)
-	expectedErr = fmt.Errorf("failed to parse BACKOFF_EXPONENT \"invalidfloat\": strconv.ParseFloat: parsing \"invalidfloat\": invalid syntax")
-	assert.Nil(t, manager)
-	assert.Equal(t, expectedErr, err, "Return err does not match, expected: %v, actual: %v", expectedErr, err)
-	// revert back to good BACKOFF_EXPONENT
-	os.Setenv("BACKOFF_EXPONENT", "1")
+	t.Run("empty BACKOFF_RETRIES will use default value", func(t *testing.T) {
+		t.Setenv("BACKOFF_RETRIES", "")
+		manager, err := createAzureManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)
+		assert.NoError(t, err)
+		assert.Equal(t, backoffRetriesDefault, (*manager.config).CloudProviderBackoffRetries, "CloudProviderBackoffRetries does not match.")
+	})
 
-	// empty BACKOFF_EXPONENT will use default value
-	os.Setenv("BACKOFF_EXPONENT", "")
-	manager, err = createAzureManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)
-	assert.NoError(t, err)
-	assert.Equal(t, backoffExponentDefault, manager.config.CloudProviderBackoffExponent, "CloudProviderBackoffExponent does not match.")
-	// revert back to good BACKOFF_EXPONENT
-	os.Setenv("BACKOFF_EXPONENT", "1")
+	t.Run("invalid float for BACKOFF_EXPONENT", func(t *testing.T) {
+		t.Setenv("BACKOFF_EXPONENT", "invalidfloat")
+		manager, err := createAzureManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)
+		expectedErr := fmt.Errorf("failed to parse BACKOFF_EXPONENT \"invalidfloat\": strconv.ParseFloat: parsing \"invalidfloat\": invalid syntax")
+		assert.Nil(t, manager)
+		assert.Equal(t, expectedErr, err, "Return err does not match, expected: %v, actual: %v", expectedErr, err)
+	})
 
-	// invalid int for BACKOFF_DURATION
-	os.Setenv("BACKOFF_DURATION", "invalidint")
-	manager, err = createAzureManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)
-	expectedErr = fmt.Errorf("failed to parse BACKOFF_DURATION \"invalidint\": strconv.ParseInt: parsing \"invalidint\": invalid syntax")
-	assert.Nil(t, manager)
-	assert.Equal(t, expectedErr, err, "Return err does not match, expected: %v, actual: %v", expectedErr, err)
-	// revert back to good BACKOFF_DURATION
-	os.Setenv("BACKOFF_DURATION", "1")
+	t.Run("empty BACKOFF_EXPONENT will use default value", func(t *testing.T) {
+		t.Setenv("BACKOFF_EXPONENT", "")
+		manager, err := createAzureManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)
+		assert.NoError(t, err)
+		assert.Equal(t, backoffExponentDefault, (*manager.config).CloudProviderBackoffExponent, "CloudProviderBackoffExponent does not match.")
+	})
 
-	// empty BACKOFF_DURATION will use default value
-	os.Setenv("BACKOFF_DURATION", "")
-	manager, err = createAzureManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)
-	assert.NoError(t, err)
-	assert.Equal(t, backoffDurationDefault, manager.config.CloudProviderBackoffDuration, "CloudProviderBackoffDuration does not match.")
-	// revert back to good BACKOFF_DURATION
-	os.Setenv("BACKOFF_DURATION", "1")
+	t.Run("invalid int for BACKOFF_DURATION", func(t *testing.T) {
+		t.Setenv("BACKOFF_DURATION", "invalidint")
+		manager, err := createAzureManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)
+		expectedErr := fmt.Errorf("failed to parse BACKOFF_DURATION \"invalidint\": strconv.ParseInt: parsing \"invalidint\": invalid syntax")
+		assert.Nil(t, manager)
+		assert.Equal(t, expectedErr, err, "Return err does not match, expected: %v, actual: %v", expectedErr, err)
+	})
 
-	// invalid float for BACKOFF_JITTER
-	os.Setenv("BACKOFF_JITTER", "invalidfloat")
-	manager, err = createAzureManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)
-	expectedErr = fmt.Errorf("failed to parse BACKOFF_JITTER \"invalidfloat\": strconv.ParseFloat: parsing \"invalidfloat\": invalid syntax")
-	assert.Nil(t, manager)
-	assert.Equal(t, expectedErr, err, "Return err does not match, expected: %v, actual: %v", expectedErr, err)
-	// revert back to good BACKOFF_JITTER
-	os.Setenv("BACKOFF_JITTER", "1")
+	t.Run("empty BACKOFF_DURATION will use default value", func(t *testing.T) {
+		t.Setenv("BACKOFF_DURATION", "")
+		manager, err := createAzureManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)
+		assert.NoError(t, err)
+		assert.Equal(t, backoffDurationDefault, (*manager.config).CloudProviderBackoffDuration, "CloudProviderBackoffDuration does not match.")
+	})
 
-	// empty BACKOFF_JITTER will use default value
-	os.Setenv("BACKOFF_JITTER", "")
-	manager, err = createAzureManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)
-	assert.NoError(t, err)
-	assert.Equal(t, backoffJitterDefault, manager.config.CloudProviderBackoffJitter, "CloudProviderBackoffJitter does not match.")
-	// revert back to good BACKOFF_JITTER
-	os.Setenv("BACKOFF_JITTER", "1")
+	t.Run("invalid float for BACKOFF_JITTER", func(t *testing.T) {
+		t.Setenv("BACKOFF_JITTER", "invalidfloat")
+		manager, err := createAzureManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)
+		expectedErr := fmt.Errorf("failed to parse BACKOFF_JITTER \"invalidfloat\": strconv.ParseFloat: parsing \"invalidfloat\": invalid syntax")
+		assert.Nil(t, manager)
+		assert.Equal(t, expectedErr, err, "Return err does not match, expected: %v, actual: %v", expectedErr, err)
+	})
 
-	// invalid bool for CLOUD_PROVIDER_RATE_LIMIT
-	os.Setenv("CLOUD_PROVIDER_RATE_LIMIT", "invalidbool")
-	manager, err = createAzureManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)
-	expectedErr = fmt.Errorf("failed to parse CLOUD_PROVIDER_RATE_LIMIT: \"invalidbool\", " +
-		"strconv.ParseBool: parsing \"invalidbool\": invalid syntax")
-	assert.Nil(t, manager)
-	assert.Equal(t, expectedErr, err, "Return err does not match, expected: %v, actual: %v", expectedErr, err)
-	// revert back to good CLOUD_PROVIDER_RATE_LIMIT
-	os.Setenv("CLOUD_PROVIDER_RATE_LIMIT", "1")
+	t.Run("empty BACKOFF_JITTER will use default value", func(t *testing.T) {
+		t.Setenv("BACKOFF_JITTER", "")
+		manager, err := createAzureManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)
+		assert.NoError(t, err)
+		assert.Equal(t, backoffJitterDefault, (*manager.config).CloudProviderBackoffJitter, "CloudProviderBackoffJitter does not match.")
+	})
 
-	os.Unsetenv("ARM_CLOUD")
-	os.Unsetenv("ARM_SUBSCRIPTION_ID")
-	os.Unsetenv("LOCATION")
-	os.Unsetenv("ARM_RESOURCE_GROUP")
-	os.Unsetenv("ARM_TENANT_ID")
-	os.Unsetenv("ARM_CLIENT_ID")
-	os.Unsetenv("ARM_CLIENT_SECRET")
-	os.Unsetenv("ARM_VM_TYPE")
-	os.Unsetenv("ARM_CLIENT_CERT_PATH")
-	os.Unsetenv("ARM_CLIENT_CERT_PASSWORD")
-	os.Unsetenv("ARM_DEPLOYMENT")
-	os.Unsetenv("AZURE_CLUSTER_NAME")
-	os.Unsetenv("AZURE_NODE_RESOURCE_GROUP")
-	os.Unsetenv("ARM_USE_MANAGED_IDENTITY_EXTENSION")
-	os.Unsetenv("ARM_USER_ASSIGNED_IDENTITY_ID")
-	os.Unsetenv("AZURE_VMSS_CACHE_TTL")
-	os.Unsetenv("AZURE_MAX_DEPLOYMENT_COUNT")
-	os.Unsetenv("ENABLE_BACKOFF")
-	os.Unsetenv("BACKOFF_RETRIES")
-	os.Unsetenv("BACKOFF_EXPONENT")
-	os.Unsetenv("BACKOFF_DURATION")
-	os.Unsetenv("BACKOFF_JITTER")
-	os.Unsetenv("CLOUD_PROVIDER_RATE_LIMIT")
+	t.Run("invalid bool for CLOUD_PROVIDER_RATE_LIMIT", func(t *testing.T) {
+		t.Setenv("CLOUD_PROVIDER_RATE_LIMIT", "invalidbool")
+		manager, err := createAzureManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)
+		expectedErr := fmt.Errorf("failed to parse CLOUD_PROVIDER_RATE_LIMIT: \"invalidbool\", strconv.ParseBool: parsing \"invalidbool\": invalid syntax")
+		assert.Nil(t, manager)
+		assert.Equal(t, expectedErr, err, "Return err does not match, expected: %v, actual: %v", expectedErr, err)
+	})
 }
 
 func TestCreateAzureManagerInvalidConfig(t *testing.T) {
@@ -524,7 +593,7 @@ func TestFetchExplicitNodeGroups(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	min, max, name := 1, 15, testASG
+	min, max, name := 1, 15, "test-asg"
 	ngdo := cloudprovider.NodeGroupDiscoveryOptions{
 		NodeGroupSpecs: []string{
 			fmt.Sprintf("%d:%d:%s", min, max, name),
@@ -537,28 +606,26 @@ func TestFetchExplicitNodeGroups(t *testing.T) {
 
 	for _, orchMode := range orchestrationModes {
 		manager := newTestAzureManager(t)
-		expectedScaleSets := newTestVMSSList(3, testASG, compute.Uniform)
+		expectedScaleSets := newTestVMSSList(3, "test-asg", "eastus", compute.Uniform)
 
 		mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
 		mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
 		manager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
 
-		mockVMSSVMClient := mockvmssvmclient.NewMockInterface(ctrl)
-		manager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
-
-		mockVMClient := mockvmclient.NewMockInterface(ctrl)
-		manager.azClient.virtualMachinesClient = mockVMClient
-
 		if orchMode == compute.Uniform {
-			mockVMSSVMClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup,
-				testASG, gomock.Any()).Return(expectedVMSSVMs, nil).AnyTimes()
+
+			mockVMSSVMClient := mockvmssvmclient.NewMockInterface(ctrl)
+			mockVMSSVMClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup, "test-asg", gomock.Any()).Return(expectedVMSSVMs, nil).AnyTimes()
+			manager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
 		} else {
+
+			mockVMClient := mockvmclient.NewMockInterface(ctrl)
 			manager.config.EnableVmssFlex = true
-			mockVMClient.EXPECT().ListVmssFlexVMsWithoutInstanceView(gomock.Any(), testASG).Return(expectedVMs, nil).AnyTimes()
+			mockVMClient.EXPECT().ListVmssFlexVMsWithoutInstanceView(gomock.Any(), "test-asg").Return(expectedVMs, nil).AnyTimes()
+			manager.azClient.virtualMachinesClient = mockVMClient
 		}
 
-		err := manager.fetchExplicitNodeGroups(ngdo.NodeGroupSpecs)
-		assert.NoError(t, err)
+		manager.fetchExplicitNodeGroups(ngdo.NodeGroupSpecs)
 
 		asgs := manager.azureCache.getRegisteredNodeGroups()
 		assert.Equal(t, 1, len(asgs))
@@ -585,8 +652,7 @@ func TestFetchExplicitNodeGroups(t *testing.T) {
 	testAS.manager.config.VMType = vmTypeStandard
 	err := testAS.manager.fetchExplicitNodeGroups([]string{"1:5:testAS"})
 	expectedErr := fmt.Errorf("failed to parse node group spec: deployment not found")
-	assert.Equal(t, expectedErr, err, "testAS.manager.fetchExplicitNodeGroups return error does not match, "+
-		"expected: %v, actual: %v", expectedErr, err)
+	assert.Equal(t, expectedErr, err, "testAS.manager.fetchExplicitNodeGroups return error does not match, expected: %v, actual: %v", expectedErr, err)
 	err = testAS.manager.fetchExplicitNodeGroups(nil)
 	assert.NoError(t, err)
 
@@ -595,15 +661,14 @@ func TestFetchExplicitNodeGroups(t *testing.T) {
 	manager.config.VMType = "invalidVMType"
 	err = manager.fetchExplicitNodeGroups(ngdo.NodeGroupSpecs)
 	expectedErr = fmt.Errorf("failed to parse node group spec: vmtype invalidVMType not supported")
-	assert.Equal(t, expectedErr, err, "manager.fetchExplicitNodeGroups return error does not match, "+
-		"expected: %v, actual: %v", expectedErr, err)
+	assert.Equal(t, expectedErr, err, "manager.fetchExplicitNodeGroups return error does not match, expected: %v, actual: %v", expectedErr, err)
 }
 
 func TestGetFilteredAutoscalingGroupsVmss(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	vmssName := testASG
+	vmssName := "test-vmss"
 	vmssTag := "fake-tag"
 	vmssTagValue := "fake-value"
 	min := "1"
@@ -616,8 +681,7 @@ func TestGetFilteredAutoscalingGroupsVmss(t *testing.T) {
 	}
 
 	manager := newTestAzureManager(t)
-	expectedScaleSets := []compute.VirtualMachineScaleSet{fakeVMSSWithTags(vmssName, map[string]*string{vmssTag: &vmssTagValue,
-		"min": &min, "max": &max})}
+	expectedScaleSets := []compute.VirtualMachineScaleSet{fakeVMSSWithTags(vmssName, map[string]*string{vmssTag: &vmssTagValue, "min": &min, "max": &max})}
 	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
 	mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
 	manager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
@@ -629,7 +693,6 @@ func TestGetFilteredAutoscalingGroupsVmss(t *testing.T) {
 
 	asgs, err := manager.getFilteredNodeGroups(specs)
 	assert.NoError(t, err)
-
 	expectedAsgs := []cloudprovider.NodeGroup{&ScaleSet{
 		azureRef: azureRef{
 			Name: vmssName,
@@ -637,9 +700,10 @@ func TestGetFilteredAutoscalingGroupsVmss(t *testing.T) {
 		minSize:                  minVal,
 		maxSize:                  maxVal,
 		manager:                  manager,
+		enableForceDelete:        manager.config.EnableForceDelete,
 		curSize:                  3,
 		sizeRefreshPeriod:        manager.azureCache.refreshInterval,
-		getVmssSizeRefreshPeriod: manager.azureCache.refreshInterval,
+		getVmssSizeRefreshPeriod: time.Duration(manager.azureCache.refreshInterval) * time.Second,
 		InstanceCache:            InstanceCache{instancesRefreshPeriod: defaultVmssInstancesRefreshPeriod},
 	}}
 	assert.True(t, assert.ObjectsAreEqualValues(expectedAsgs, asgs), "expected %#v, but found: %#v", expectedAsgs, asgs)
@@ -679,7 +743,7 @@ func TestFetchAutoAsgsVmss(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	vmssName := testASG
+	vmssName := "test-vmss"
 	vmssTag := "fake-tag"
 	vmssTagValue := "fake-value"
 	minString := "1"
@@ -691,8 +755,7 @@ func TestFetchAutoAsgsVmss(t *testing.T) {
 		NodeGroupAutoDiscoverySpecs: []string{fmt.Sprintf("label:%s=%s", vmssTag, vmssTagValue)},
 	}
 
-	expectedScaleSets := []compute.VirtualMachineScaleSet{fakeVMSSWithTags(vmssName, map[string]*string{vmssTag: &vmssTagValue,
-		"min": &minString, "max": &maxString})}
+	expectedScaleSets := []compute.VirtualMachineScaleSet{fakeVMSSWithTags(vmssName, map[string]*string{vmssTag: &vmssTagValue, "min": &minString, "max": &maxString})}
 	expectedVMSSVMs := newTestVMSSVMList(1)
 
 	manager := newTestAzureManager(t)
@@ -702,6 +765,9 @@ func TestFetchAutoAsgsVmss(t *testing.T) {
 	mockVMSSVMClient := mockvmssvmclient.NewMockInterface(ctrl)
 	mockVMSSVMClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup, vmssName, gomock.Any()).Return(expectedVMSSVMs, nil).AnyTimes()
 	manager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
+	mockVMClient := mockvmclient.NewMockInterface(ctrl)
+	manager.azClient.virtualMachinesClient = mockVMClient
+	mockVMClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return([]compute.VirtualMachine{}, nil).AnyTimes()
 	err := manager.forceRefresh()
 	assert.NoError(t, err)
 
@@ -713,9 +779,7 @@ func TestFetchAutoAsgsVmss(t *testing.T) {
 	asgs := manager.azureCache.getRegisteredNodeGroups()
 	assert.Equal(t, 0, len(asgs))
 
-	err = manager.fetchAutoNodeGroups()
-	assert.NoError(t, err)
-
+	manager.fetchAutoNodeGroups()
 	asgs = manager.azureCache.getRegisteredNodeGroups()
 	assert.Equal(t, 1, len(asgs))
 	assert.Equal(t, vmssName, asgs[0].Id())
@@ -724,9 +788,7 @@ func TestFetchAutoAsgsVmss(t *testing.T) {
 
 	// test explicitlyConfigured
 	manager.explicitlyConfigured[vmssName] = true
-	err = manager.fetchAutoNodeGroups()
-	assert.NoError(t, err)
-
+	manager.fetchAutoNodeGroups()
 	asgs = manager.azureCache.getRegisteredNodeGroups()
 	assert.Equal(t, 1, len(asgs))
 }
@@ -768,7 +830,7 @@ func TestGetScaleSetOptions(t *testing.T) {
 	assert.Equal(t, opts.ScaleDownUnreadyTime, time.Hour)
 
 	tags = map[string]string{
-		// config.DefaultScaleDownUtilizationThresholdKey: ... // not specified (-> default)
+		//config.DefaultScaleDownUtilizationThresholdKey: ... // not specified (-> default)
 		config.DefaultScaleDownGpuUtilizationThresholdKey: "not-a-float",
 		config.DefaultScaleDownUnneededTimeKey:            "1m",
 		config.DefaultScaleDownUnreadyTimeKey:             "not-a-duration",

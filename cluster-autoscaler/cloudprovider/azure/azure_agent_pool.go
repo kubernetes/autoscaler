@@ -24,10 +24,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-03-01/compute"     //nolint SA1019 - deprecated package
-	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources" //nolint SA1019 - deprecated package
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-03-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources"
 	azStorage "github.com/Azure/azure-sdk-for-go/storage"
 	"github.com/Azure/go-autorest/autorest/to"
+
 	apiv1 "k8s.io/api/core/v1"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -144,7 +145,7 @@ func (as *AgentPool) getVMsFromCache() ([]compute.VirtualMachine, error) {
 }
 
 // GetVMIndexes gets indexes of all virtual machines belonging to the agent pool.
-func (as *AgentPool) GetVMIndexes() (sortedIndexes []int, indexToVM map[int]string, err error) {
+func (as *AgentPool) GetVMIndexes() ([]int, map[int]string, error) {
 	klog.V(6).Infof("GetVMIndexes: starts for as %v", as)
 
 	instances, err := as.getVMsFromCache()
@@ -154,7 +155,7 @@ func (as *AgentPool) GetVMIndexes() (sortedIndexes []int, indexToVM map[int]stri
 	klog.V(6).Infof("GetVMIndexes: got instances, length = %d", len(instances))
 
 	indexes := make([]int, 0)
-	indexToVM = make(map[int]string)
+	indexToVM := make(map[int]string)
 	for _, instance := range instances {
 		index, err := GetVMNameIndex(instance.StorageProfile.OsDisk.OsType, *instance.Name)
 		if err != nil {
@@ -169,8 +170,8 @@ func (as *AgentPool) GetVMIndexes() (sortedIndexes []int, indexToVM map[int]stri
 		indexToVM[index] = resourceID
 	}
 
-	sortedIndexes = indexes
-	sort.Ints(sortedIndexes)
+	sortedIndexes := sort.IntSlice(indexes)
+	sortedIndexes.Sort()
 	return sortedIndexes, indexToVM, nil
 }
 
@@ -215,8 +216,7 @@ func (as *AgentPool) getAllSucceededAndFailedDeployments() (succeededAndFailedDe
 	defer cancel()
 
 	deploymentsFilter := "provisioningState eq 'Succeeded' or provisioningState eq 'Failed'"
-	succeededAndFailedDeployments, err = as.manager.azClient.deploymentsClient.List(ctx, as.manager.config.ResourceGroup,
-		deploymentsFilter, nil)
+	succeededAndFailedDeployments, err = as.manager.azClient.deploymentsClient.List(ctx, as.manager.config.ResourceGroup, deploymentsFilter, nil)
 	if err != nil {
 		klog.Errorf("getAllSucceededAndFailedDeployments: failed to list succeeded or failed deployments with error: %v", err)
 		return nil, err
@@ -258,12 +258,9 @@ func (as *AgentPool) deleteOutdatedDeployments() (err error) {
 	errList := make([]error, 0)
 	for _, deployment := range toBeDeleted {
 		klog.V(4).Infof("deleteOutdatedDeployments: starts deleting outdated deployment (%s)", *deployment.Name)
-		resp, errResp := as.manager.azClient.deploymentsClient.Delete(ctx, as.manager.config.ResourceGroup, *deployment.Name)
-		if errResp != nil {
-			errList = append(errList, errResp)
-		}
-		if resp != nil && resp.Body != nil {
-			resp.Body.Close()
+		_, err := as.manager.azClient.deploymentsClient.Delete(ctx, as.manager.config.ResourceGroup, *deployment.Name)
+		if err != nil {
+			errList = append(errList, err)
 		}
 	}
 
@@ -320,12 +317,8 @@ func (as *AgentPool) IncreaseSize(delta int) error {
 	}
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
-	klog.V(3).Infof("Waiting for deploymentsClient.CreateOrUpdate(%s, %s, %v)", as.manager.config.ResourceGroup,
-		newDeploymentName, newDeployment)
+	klog.V(3).Infof("Waiting for deploymentsClient.CreateOrUpdate(%s, %s, %v)", as.manager.config.ResourceGroup, newDeploymentName, newDeployment)
 	resp, err := as.manager.azClient.deploymentsClient.CreateOrUpdate(ctx, as.manager.config.ResourceGroup, newDeploymentName, newDeployment)
-	if resp != nil && resp.Body != nil {
-		defer resp.Body.Close()
-	}
 	isSuccess, realError := isSuccessHTTPResponse(resp, err)
 	if isSuccess {
 		klog.V(3).Infof("deploymentsClient.CreateOrUpdate(%s, %s, %v) success", as.manager.config.ResourceGroup, newDeploymentName, newDeployment)
@@ -411,7 +404,7 @@ func (as *AgentPool) DeleteInstances(instances []*azureRef) error {
 	}
 
 	for _, instance := range instances {
-		name, err := resourceName(instance.Name)
+		name, err := resourceName((*instance).Name)
 		if err != nil {
 			klog.Errorf("Get name for instance %q failed: %v", *instance, err)
 			return err
@@ -443,12 +436,12 @@ func (as *AgentPool) DeleteNodes(nodes []*apiv1.Node) error {
 
 	refs := make([]*azureRef, 0, len(nodes))
 	for _, node := range nodes {
-		belongs, err2 := as.Belongs(node)
-		if err2 != nil {
-			return err2
+		belongs, err := as.Belongs(node)
+		if err != nil {
+			return err
 		}
 
-		if !belongs {
+		if belongs != true {
 			return fmt.Errorf("%s belongs to a different asg than %s", node.Name, as.Name)
 		}
 
@@ -485,7 +478,7 @@ func (as *AgentPool) Nodes() ([]cloudprovider.Instance, error) {
 
 	nodes := make([]cloudprovider.Instance, 0, len(instances))
 	for _, instance := range instances {
-		if *instance.ID == "" {
+		if len(*instance.ID) == 0 {
 			continue
 		}
 
@@ -511,7 +504,7 @@ func (as *AgentPool) deleteBlob(accountName, vhdContainer, vhdBlob string) error
 	}
 
 	keys := *storageKeysResult.Keys
-	client, err := azStorage.NewBasicClientOnSovereignCloud(accountName, to.String(keys[0].Value), *as.manager.env)
+	client, err := azStorage.NewBasicClientOnSovereignCloud(accountName, to.String(keys[0].Value), as.manager.env)
 	if err != nil {
 		return err
 	}
@@ -548,12 +541,11 @@ func (as *AgentPool) deleteVirtualMachine(name string) error {
 
 	osDiskName := vm.VirtualMachineProperties.StorageProfile.OsDisk.Name
 	var nicName string
-	var err error
 	nicID := (*vm.VirtualMachineProperties.NetworkProfile.NetworkInterfaces)[0].ID
 	if nicID == nil {
 		klog.Warningf("NIC ID is not set for VM (%s/%s)", as.manager.config.ResourceGroup, name)
 	} else {
-		nicName, err = resourceName(*nicID)
+		nicName, err := resourceName(*nicID)
 		if err != nil {
 			return err
 		}
@@ -618,4 +610,9 @@ func (as *AgentPool) deleteVirtualMachine(name string) error {
 	}
 
 	return nil
+}
+
+// getAzureRef gets AzureRef for the as.
+func (as *AgentPool) getAzureRef() azureRef {
+	return as.azureRef
 }

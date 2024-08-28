@@ -127,29 +127,25 @@ func TestInitializeCloudProviderRateLimitConfigWithInvalidReadAndWriteRateLimitS
 			desc:                            "an error shall be returned if invalid rateLimitReadQPSEnvVar",
 			isInvalidRateLimitReadQPSEnvVar: true,
 			expectedErr:                     true,
-			expectedErrMsg: fmt.Errorf("failed to parse %s: %q, strconv.ParseFloat: parsing \"invalid\": "+
-				"invalid syntax", rateLimitReadQPSEnvVar, invalidSetting),
+			expectedErrMsg:                  fmt.Errorf("failed to parse %s: %q, strconv.ParseFloat: parsing \"invalid\": invalid syntax", rateLimitReadQPSEnvVar, invalidSetting),
 		},
 		{
 			desc:                                "an error shall be returned if invalid rateLimitReadBucketsEnvVar",
 			isInvalidRateLimitReadBucketsEnvVar: true,
 			expectedErr:                         true,
-			expectedErrMsg: fmt.Errorf("failed to parse %s: %q, strconv.ParseInt: parsing \"invalid\": "+
-				"invalid syntax", rateLimitReadBucketsEnvVar, invalidSetting),
+			expectedErrMsg:                      fmt.Errorf("failed to parse %s: %q, strconv.ParseInt: parsing \"invalid\": invalid syntax", rateLimitReadBucketsEnvVar, invalidSetting),
 		},
 		{
 			desc:                             "an error shall be returned if invalid rateLimitWriteQPSEnvVar",
 			isInvalidRateLimitWriteQPSEnvVar: true,
 			expectedErr:                      true,
-			expectedErrMsg: fmt.Errorf("failed to parse %s: %q, strconv.ParseFloat: parsing \"invalid\": "+
-				"invalid syntax", rateLimitWriteQPSEnvVar, invalidSetting),
+			expectedErrMsg:                   fmt.Errorf("failed to parse %s: %q, strconv.ParseFloat: parsing \"invalid\": invalid syntax", rateLimitWriteQPSEnvVar, invalidSetting),
 		},
 		{
 			desc:                                 "an error shall be returned if invalid rateLimitWriteBucketsEnvVar",
 			isInvalidRateLimitWriteBucketsEnvVar: true,
 			expectedErr:                          true,
-			expectedErrMsg: fmt.Errorf("failed to parse %s: %q, strconv.ParseInt: parsing \"invalid\": "+
-				"invalid syntax", rateLimitWriteBucketsEnvVar, invalidSetting),
+			expectedErrMsg:                       fmt.Errorf("failed to parse %s: %q, strconv.ParseInt: parsing \"invalid\": invalid syntax", rateLimitWriteBucketsEnvVar, invalidSetting),
 		},
 	}
 
