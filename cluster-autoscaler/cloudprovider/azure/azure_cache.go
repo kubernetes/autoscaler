@@ -411,7 +411,7 @@ func (m *azureCache) HasInstance(providerID string) (bool, error) {
 	if m.getInstanceFromCache(resourceID) != nil {
 		return true, nil
 	}
-	// couldn't find instance in the cache, assume its deleted
+	// couldn't find instance in the cache, assume it's deleted
 	return false, cloudprovider.ErrNotImplemented
 }
 
