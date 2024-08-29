@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute" //nolint SA1019 - deprecated package
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/stretchr/testify/assert"
@@ -144,7 +144,7 @@ func TestTopologyFromScaleSet(t *testing.T) {
 		Location: to.StringPtr("westus"),
 	}
 	expectedZoneValues := []string{"westus-1", "westus-2", "westus-3"}
-	labels := buildGenericLabels(&testVmss, testNodeName)
+	labels := buildGenericLabels(testVmss, testNodeName)
 	topologyZone, ok := labels[apiv1.LabelTopologyZone]
 	assert.True(t, ok)
 	azureDiskTopology, ok := labels[azureDiskTopologyKey]
@@ -167,7 +167,7 @@ func TestEmptyTopologyFromScaleSet(t *testing.T) {
 	}
 	expectedTopologyZone := "0"
 	expectedAzureDiskTopology := ""
-	labels := buildGenericLabels(&testVmss, testNodeName)
+	labels := buildGenericLabels(testVmss, testNodeName)
 
 	topologyZone, ok := labels[apiv1.LabelTopologyZone]
 	assert.True(t, ok)

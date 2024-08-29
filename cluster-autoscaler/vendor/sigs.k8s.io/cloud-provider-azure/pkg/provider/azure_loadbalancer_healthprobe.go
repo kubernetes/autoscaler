@@ -22,16 +22,37 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2022-07-01/network"
+
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/klog/v2"
 	"k8s.io/utils/pointer"
 
 	"sigs.k8s.io/cloud-provider-azure/pkg/consts"
 )
 
+func (az *Cloud) buildClusterServiceSharedProbe() *network.Probe {
+	return &network.Probe{
+		Name: pointer.String(consts.SharedProbeName),
+		ProbePropertiesFormat: &network.ProbePropertiesFormat{
+			Protocol:          network.ProbeProtocolHTTP,
+			Port:              pointer.Int32(az.ClusterServiceSharedLoadBalancerHealthProbePort),
+			RequestPath:       pointer.String(az.ClusterServiceSharedLoadBalancerHealthProbePath),
+			IntervalInSeconds: pointer.Int32(consts.HealthProbeDefaultProbeInterval),
+			ProbeThreshold:    pointer.Int32(consts.HealthProbeDefaultNumOfProbe),
+		},
+	}
+}
+
 // buildHealthProbeRulesForPort
 // for following sku: basic loadbalancer vs standard load balancer
 // for following protocols: TCP HTTP HTTPS(SLB only)
-func (az *Cloud) buildHealthProbeRulesForPort(serviceManifest *v1.Service, port v1.ServicePort, lbrule string) (*network.Probe, error) {
+// return nil if no new probe is added
+func (az *Cloud) buildHealthProbeRulesForPort(serviceManifest *v1.Service, port v1.ServicePort, lbrule string, healthCheckNodePortProbe *network.Probe, useSharedProbe bool) (*network.Probe, error) {
+	if useSharedProbe {
+		klog.V(4).Infof("skip creating health probe for port %s because the shared probe is used", port.Port)
+		return nil, nil
+	}
+
 	if port.Protocol == v1.ProtocolUDP || port.Protocol == v1.ProtocolSCTP {
 		return nil, nil
 	}
@@ -43,57 +64,7 @@ func (az *Cloud) buildHealthProbeRulesForPort(serviceManifest *v1.Service, port 
 	// order - Specific Override
 	// port_ annotation
 	// global annotation
-
-	// Select Protocol
-	//
-	var protocol *string
-
-	// 1. Look up port-specific override
-	protocol, err = consts.GetHealthProbeConfigOfPortFromK8sSvcAnnotation(serviceManifest.Annotations, port.Port, consts.HealthProbeParamsProtocol)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse annotation %s: %w", consts.BuildHealthProbeAnnotationKeyForPort(port.Port, consts.HealthProbeParamsProtocol), err)
-	}
-
-	// 2. If not specified, look up from AppProtocol
-	// Note - this order is to remain compatible with previous versions
-	if protocol == nil {
-		protocol = port.AppProtocol
-	}
-
-	// 3. If protocol is still nil, check the global annotation
-	if protocol == nil {
-		protocol, err = consts.GetAttributeValueInSvcAnnotation(serviceManifest.Annotations, consts.ServiceAnnotationLoadBalancerHealthProbeProtocol)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse annotation %s: %w", consts.ServiceAnnotationLoadBalancerHealthProbeProtocol, err)
-		}
-	}
-
-	// 4. Finally, if protocol is still nil, default to TCP
-	if protocol == nil {
-		protocol = pointer.String(string(network.ProtocolTCP))
-	}
-
-	*protocol = strings.TrimSpace(*protocol)
-	switch {
-	case strings.EqualFold(*protocol, string(network.ProtocolTCP)):
-		properties.Protocol = network.ProbeProtocolTCP
-	case strings.EqualFold(*protocol, string(network.ProtocolHTTPS)):
-		//HTTPS probe is only supported in standard loadbalancer
-		//For backward compatibility,when unsupported protocol is used, fall back to tcp protocol in basic lb mode instead
-		if !az.useStandardLoadBalancer() {
-			properties.Protocol = network.ProbeProtocolTCP
-		} else {
-			properties.Protocol = network.ProbeProtocolHTTPS
-		}
-	case strings.EqualFold(*protocol, string(network.ProtocolHTTP)):
-		properties.Protocol = network.ProbeProtocolHTTP
-	default:
-		//For backward compatibility,when unsupported protocol is used, fall back to tcp protocol in basic lb mode instead
-		properties.Protocol = network.ProbeProtocolTCP
-	}
-
 	// Lookup or Override Health Probe Port
-	properties.Port = &port.NodePort
 
 	probePort, err := consts.GetHealthProbeConfigOfPortFromK8sSvcAnnotation(serviceManifest.Annotations, port.Port, consts.HealthProbeParamsPort, func(s *string) error {
 		if s == nil {
@@ -148,6 +119,57 @@ func (az *Cloud) buildHealthProbeRulesForPort(serviceManifest *v1.Service, port 
 				properties.Port = pointer.Int32(int32(port))
 			}
 		}
+	} else if healthCheckNodePortProbe != nil {
+		return nil, nil
+	} else {
+		properties.Port = &port.NodePort
+	}
+	// Select Protocol
+	//
+	var protocol *string
+
+	// 1. Look up port-specific override
+	protocol, err = consts.GetHealthProbeConfigOfPortFromK8sSvcAnnotation(serviceManifest.Annotations, port.Port, consts.HealthProbeParamsProtocol)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse annotation %s: %w", consts.BuildHealthProbeAnnotationKeyForPort(port.Port, consts.HealthProbeParamsProtocol), err)
+	}
+
+	// 2. If not specified, look up from AppProtocol
+	// Note - this order is to remain compatible with previous versions
+	if protocol == nil {
+		protocol = port.AppProtocol
+	}
+
+	// 3. If protocol is still nil, check the global annotation
+	if protocol == nil {
+		protocol, err = consts.GetAttributeValueInSvcAnnotation(serviceManifest.Annotations, consts.ServiceAnnotationLoadBalancerHealthProbeProtocol)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse annotation %s: %w", consts.ServiceAnnotationLoadBalancerHealthProbeProtocol, err)
+		}
+	}
+
+	// 4. Finally, if protocol is still nil, default to TCP
+	if protocol == nil {
+		protocol = pointer.String(string(network.ProtocolTCP))
+	}
+
+	*protocol = strings.TrimSpace(*protocol)
+	switch {
+	case strings.EqualFold(*protocol, string(network.ProtocolTCP)):
+		properties.Protocol = network.ProbeProtocolTCP
+	case strings.EqualFold(*protocol, string(network.ProtocolHTTPS)):
+		//HTTPS probe is only supported in standard loadbalancer
+		//For backward compatibility,when unsupported protocol is used, fall back to tcp protocol in basic lb mode instead
+		if !az.useStandardLoadBalancer() {
+			properties.Protocol = network.ProbeProtocolTCP
+		} else {
+			properties.Protocol = network.ProbeProtocolHTTPS
+		}
+	case strings.EqualFold(*protocol, string(network.ProtocolHTTP)):
+		properties.Protocol = network.ProbeProtocolHTTP
+	default:
+		//For backward compatibility,when unsupported protocol is used, fall back to tcp protocol in basic lb mode instead
+		properties.Protocol = network.ProbeProtocolTCP
 	}
 
 	// Select request path
@@ -268,4 +290,43 @@ func findProbe(probes []network.Probe, probe network.Probe) bool {
 		}
 	}
 	return false
+}
+
+// keepSharedProbe ensures the shared probe will not be removed if there are more than 1 service referencing it.
+func (az *Cloud) keepSharedProbe(
+	service *v1.Service,
+	lb network.LoadBalancer,
+	expectedProbes []network.Probe,
+	wantLB bool,
+) ([]network.Probe, error) {
+	var shouldConsiderRemoveSharedProbe bool
+	if !wantLB {
+		shouldConsiderRemoveSharedProbe = true
+	}
+
+	if lb.LoadBalancerPropertiesFormat != nil && lb.Probes != nil {
+		for _, probe := range *lb.Probes {
+			if strings.EqualFold(pointer.StringDeref(probe.Name, ""), consts.SharedProbeName) {
+				if !az.useSharedLoadBalancerHealthProbeMode() {
+					shouldConsiderRemoveSharedProbe = true
+				}
+				if probe.ProbePropertiesFormat != nil && probe.LoadBalancingRules != nil {
+					for _, rule := range *probe.LoadBalancingRules {
+						ruleName, err := getLastSegment(*rule.ID, "/")
+						if err != nil {
+							klog.Errorf("failed to parse load balancing rule name %s attached to health probe %s", *rule.ID, *probe.ID)
+							return []network.Probe{}, err
+						}
+						if !az.serviceOwnsRule(service, ruleName) && shouldConsiderRemoveSharedProbe {
+							klog.V(4).Infof("there are load balancing rule %s of another service referencing the health probe %s, so the health probe should not be removed", *rule.ID, *probe.ID)
+							sharedProbe := az.buildClusterServiceSharedProbe()
+							expectedProbes = append(expectedProbes, *sharedProbe)
+							return expectedProbes, nil
+						}
+					}
+				}
+			}
+		}
+	}
+	return expectedProbes, nil
 }

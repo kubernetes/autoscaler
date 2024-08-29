@@ -474,7 +474,7 @@ func (c *Client) DeleteInstances(ctx context.Context, resourceGroupName string, 
 	return nil
 }
 
-// DeleteInstancesAsync sends the delete request to ARM client and DOEST NOT wait on the future
+// DeleteInstancesAsync sends the delete request to ARM client and DOES NOT wait on the future
 func (c *Client) DeleteInstancesAsync(ctx context.Context, resourceGroupName string, vmScaleSetName string, vmInstanceIDs compute.VirtualMachineScaleSetVMInstanceRequiredIDs, forceDelete bool) (*azure.Future, *retry.Error) {
 	mc := metrics.NewMetricContext("vmss", "delete_instances_async", resourceGroupName, c.subscriptionID, "")
 
@@ -529,7 +529,7 @@ func (c *Client) DeleteInstancesAsync(ctx context.Context, resourceGroupName str
 	return &future, nil
 }
 
-// DeallocateInstancesAsync sends the deallocate request to ARM client and DOEST NOT wait on the future
+// DeallocateInstancesAsync sends the deallocate request to ARM client and DOES NOT wait on the future
 func (c *Client) DeallocateInstancesAsync(ctx context.Context, resourceGroupName string, vmScaleSetName string, vmInstanceIDs compute.VirtualMachineScaleSetVMInstanceRequiredIDs) (*azure.Future, *retry.Error) {
 	mc := metrics.NewMetricContext("vmss", "deallocate_instances_async", resourceGroupName, c.subscriptionID, "")
 
@@ -578,7 +578,7 @@ func (c *Client) DeallocateInstancesAsync(ctx context.Context, resourceGroupName
 	return &future, nil
 }
 
-// StartInstancesAsync sends the start request to ARM client and DOEST NOT wait on the future
+// StartInstancesAsync sends the start request to ARM client and DOES NOT wait on the future
 func (c *Client) StartInstancesAsync(ctx context.Context, resourceGroupName string, vmScaleSetName string, vmInstanceIDs compute.VirtualMachineScaleSetVMInstanceRequiredIDs) (*azure.Future, *retry.Error) {
 	mc := metrics.NewMetricContext("vmss", "start_instances_async", resourceGroupName, c.subscriptionID, "")
 

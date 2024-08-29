@@ -27,6 +27,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2022-07-01/network"
+
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
@@ -37,6 +38,7 @@ import (
 	azcache "sigs.k8s.io/cloud-provider-azure/pkg/cache"
 	"sigs.k8s.io/cloud-provider-azure/pkg/consts"
 	"sigs.k8s.io/cloud-provider-azure/pkg/metrics"
+	vmutil "sigs.k8s.io/cloud-provider-azure/pkg/util/vm"
 )
 
 var (
@@ -268,19 +270,13 @@ func (fs *FlexScaleSet) GetPowerStatusByNodeName(name string) (powerState string
 		return powerState, err
 	}
 
-	if vm.InstanceView != nil && vm.InstanceView.Statuses != nil {
-		statuses := *vm.InstanceView.Statuses
-		for _, status := range statuses {
-			state := pointer.StringDeref(status.Code, "")
-			if strings.HasPrefix(state, vmPowerStatePrefix) {
-				return strings.TrimPrefix(state, vmPowerStatePrefix), nil
-			}
-		}
+	if vm.InstanceView != nil {
+		return vmutil.GetVMPowerState(pointer.StringDeref(vm.Name, ""), vm.InstanceView.Statuses), nil
 	}
 
 	// vm.InstanceView or vm.InstanceView.Statuses are nil when the VM is under deleting.
-	klog.V(3).Infof("InstanceView for node %q is nil, assuming it's stopped", name)
-	return vmPowerStateStopped, nil
+	klog.V(3).Infof("InstanceView for node %q is nil, assuming it's deleting", name)
+	return consts.VMPowerStateUnknown, nil
 }
 
 // GetPrimaryInterface gets machine primary network interface by node name.
@@ -384,37 +380,20 @@ func (fs *FlexScaleSet) GetNodeNameByIPConfigurationID(ipConfigurationID string)
 }
 
 func (fs *FlexScaleSet) getNodeInformationByIPConfigurationID(ipConfigurationID string) (string, string, string, error) {
-	matches := nicIDRE.FindStringSubmatch(ipConfigurationID)
-	if len(matches) != 3 {
-		klog.V(4).Infof("Can not extract nic name from ipConfigurationID (%s)", ipConfigurationID)
-		return "", "", "", fmt.Errorf("invalid ip config ID %s", ipConfigurationID)
-	}
-
-	nicResourceGroup, nicName := matches[1], matches[2]
-	if nicResourceGroup == "" || nicName == "" {
-		return "", "", "", fmt.Errorf("invalid ip config ID %s", ipConfigurationID)
+	nicResourceGroup, nicName, err := getResourceGroupAndNameFromNICID(ipConfigurationID)
+	if err != nil {
+		return "", "", "", fmt.Errorf("failed to get resource group and name from ip config ID %s: %w", ipConfigurationID, err)
 	}
 
 	// get vmName by nic name
-	ctx, cancel := getContextWithCancel()
-	defer cancel()
-	nic, rerr := fs.InterfacesClient.Get(ctx, nicResourceGroup, nicName, "")
-	if rerr != nil {
-		return "", "", "", fmt.Errorf("getNodeInformationByIPConfigurationID(%s): failed to get interface of name %s: %w", ipConfigurationID, nicName, rerr.Error())
+	vmName, err := fs.GetVMNameByIPConfigurationName(nicResourceGroup, nicName)
+	if err != nil {
+		return "", "", "", fmt.Errorf("failed to get vm name of ip config ID %s: %w", ipConfigurationID, err)
 	}
-	if nic.InterfacePropertiesFormat == nil || nic.InterfacePropertiesFormat.VirtualMachine == nil || nic.InterfacePropertiesFormat.VirtualMachine.ID == nil {
-		return "", "", "", fmt.Errorf("failed to get vm ID of ip config ID %s", ipConfigurationID)
-	}
-	vmID := pointer.StringDeref(nic.InterfacePropertiesFormat.VirtualMachine.ID, "")
-	matches = vmIDRE.FindStringSubmatch(vmID)
-	if len(matches) != 2 {
-		return "", "", "", fmt.Errorf("invalid virtual machine ID %s", vmID)
-	}
-	vmName := matches[1]
 
 	nodeName, err := fs.getNodeNameByVMName(vmName)
 	if err != nil {
-		return "", "", "", fmt.Errorf("failed to map VM Name to NodeName: VM Name %s", vmName)
+		return "", "", "", fmt.Errorf("failed to map VM Name to NodeName: VM Name %s: %w", vmName, err)
 	}
 
 	vmssFlexName, err := fs.getNodeVmssFlexName(nodeName)
@@ -634,7 +613,7 @@ func (fs *FlexScaleSet) ensureVMSSFlexInPool(service *v1.Service, nodes []*v1.No
 
 		// When vmss is being deleted, CreateOrUpdate API would report "the vmss is being deleted" error.
 		// Since it is being deleted, we shouldn't send more CreateOrUpdate requests for it.
-		if vmssFlex.ProvisioningState != nil && strings.EqualFold(*vmssFlex.ProvisioningState, consts.VirtualMachineScaleSetsDeallocating) {
+		if vmssFlex.ProvisioningState != nil && strings.EqualFold(*vmssFlex.ProvisioningState, consts.ProvisionStateDeleting) {
 			klog.V(3).Infof("ensureVMSSFlexInPool: found vmss %s being deleted, skipping", vmssFlexID)
 			continue
 		}
@@ -808,7 +787,7 @@ func (fs *FlexScaleSet) EnsureBackendPoolDeletedFromVMSets(vmssNamesMap map[stri
 
 		// When vmss is being deleted, CreateOrUpdate API would report "the vmss is being deleted" error.
 		// Since it is being deleted, we shouldn't send more CreateOrUpdate requests for it.
-		if vmss.ProvisioningState != nil && strings.EqualFold(*vmss.ProvisioningState, consts.VirtualMachineScaleSetsDeallocating) {
+		if vmss.ProvisioningState != nil && strings.EqualFold(*vmss.ProvisioningState, consts.ProvisionStateDeleting) {
 			klog.V(3).Infof("fs.EnsureBackendPoolDeletedFromVMSets: found vmss %s being deleted, skipping", vmssName)
 			continue
 		}

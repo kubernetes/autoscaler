@@ -21,7 +21,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute" //nolint SA1019 - deprecated package
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
 	"github.com/Azure/go-autorest/autorest/to"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -106,10 +106,10 @@ func (scaleSet *ScaleSet) updateInstanceCache() error {
 	}
 
 	if orchestrationMode == compute.Flexible {
-		if scaleSet.manager.config.EnableVmssFlex {
+		if scaleSet.manager.config.EnableVmssFlexNodes {
 			return scaleSet.buildScaleSetCacheForFlex()
 		}
-		return fmt.Errorf("vmss - %q with Flexible orchestration detected but 'enableVmssFlex' feature flag is turned off", scaleSet.Name)
+		return fmt.Errorf("vmss - %q with Flexible orchestration detected but 'enableVmssFlexNodes' feature flag is turned off", scaleSet.Name)
 	} else if orchestrationMode == compute.Uniform {
 		return scaleSet.buildScaleSetCacheForUniform()
 	}
@@ -144,7 +144,7 @@ func (scaleSet *ScaleSet) getInstancesByState(state cloudprovider.InstanceState)
 
 	err := scaleSet.validateInstanceCacheWithoutLock()
 	if err != nil {
-		klog.Errorf("getInstancesByState: error validating instanceCache for state %s for scaleSet %s, "+
+		klog.Errorf("getInstancesByState: error validating instanceCache for state %d for scaleSet %s, "+
 			"err: %v", state, scaleSet.Name, err)
 		return []cloudprovider.Instance{}, err
 	}
@@ -189,7 +189,7 @@ func (scaleSet *ScaleSet) setInstanceStatusByProviderID(providerID string, statu
 	for k, instance := range scaleSet.instanceCache {
 		if instance.Id == providerID {
 			klog.V(3).Infof("setInstanceStatusByProviderID: setting instance state for %s for scaleSet "+
-				"%s to %s", instance.Id, scaleSet.Name, status.State)
+				"%s to %d", instance.Id, scaleSet.Name, status.State)
 			scaleSet.instanceCache[k].Status = &status
 			break
 		}
