@@ -107,7 +107,7 @@ func (az *Cloud) getPublicIPAddress(pipResourceGroup string, pipName string, crt
 	}
 
 	pips := cached.(*sync.Map)
-	pip, ok := pips.Load(pipName)
+	pip, ok := pips.Load(strings.ToLower(pipName))
 	if !ok {
 		// pip not found, refresh cache and retry
 		cached, err = az.pipCache.Get(pipResourceGroup, azcache.CacheReadTypeForceRefresh)
@@ -115,7 +115,7 @@ func (az *Cloud) getPublicIPAddress(pipResourceGroup string, pipName string, crt
 			return network.PublicIPAddress{}, false, err
 		}
 		pips = cached.(*sync.Map)
-		pip, ok = pips.Load(pipName)
+		pip, ok = pips.Load(strings.ToLower(pipName))
 		if !ok {
 			return network.PublicIPAddress{}, false, nil
 		}
@@ -158,9 +158,7 @@ func (az *Cloud) getSubnet(virtualNetworkName string, subnetName string) (networ
 
 	if !exists {
 		klog.V(2).Infof("Subnet %q not found", subnetName)
-		return subnet, false, nil
 	}
-
 	return subnet, exists, nil
 }
 
@@ -195,8 +193,8 @@ func (az *Cloud) getSecurityGroup(crt azcache.AzureCacheReadType) (network.Secur
 	return *(securityGroup.(*network.SecurityGroup)), nil
 }
 
-func (az *Cloud) getPrivateLinkService(frontendIPConfigID *string, crt azcache.AzureCacheReadType) (pls network.PrivateLinkService, err error) {
-	cachedPLS, err := az.plsCache.GetWithDeepCopy(*frontendIPConfigID, crt)
+func (az *Cloud) getPrivateLinkService(resourceGroup string, frontendIPConfigID *string, crt azcache.AzureCacheReadType) (pls network.PrivateLinkService, err error) {
+	cachedPLS, err := az.plsCache.GetWithDeepCopy(getPLSCacheKey(resourceGroup, *frontendIPConfigID), crt)
 	if err != nil {
 		return pls, err
 	}
@@ -332,7 +330,7 @@ func (az *Cloud) newPIPCache() (*azcache.TimedCache, error) {
 		pipMap := &sync.Map{}
 		for _, pip := range pipList {
 			pip := pip
-			pipMap.Store(pointer.StringDeref(pip.Name, ""), &pip)
+			pipMap.Store(strings.ToLower(pointer.StringDeref(pip.Name, "")), &pip)
 		}
 		return pipMap, nil
 	}
@@ -343,12 +341,22 @@ func (az *Cloud) newPIPCache() (*azcache.TimedCache, error) {
 	return azcache.NewTimedcache(time.Duration(az.PublicIPCacheTTLInSeconds)*time.Second, getter)
 }
 
+func getPLSCacheKey(resourceGroup, plsLBFrontendID string) string {
+	return fmt.Sprintf("%s*%s", resourceGroup, plsLBFrontendID)
+}
+
+func parsePLSCacheKey(key string) (string, string) {
+	splits := strings.Split(key, "*")
+	return splits[0], splits[1]
+}
+
 func (az *Cloud) newPLSCache() (*azcache.TimedCache, error) {
 	// for PLS cache, key is LBFrontendIPConfiguration ID
 	getter := func(key string) (interface{}, error) {
 		ctx, cancel := getContextWithCancel()
 		defer cancel()
-		plsList, err := az.PrivateLinkServiceClient.List(ctx, az.PrivateLinkServiceResourceGroup)
+		resourceGroup, frontendID := parsePLSCacheKey(key)
+		plsList, err := az.PrivateLinkServiceClient.List(ctx, resourceGroup)
 		exists, rerr := checkResourceExistsFromError(err)
 		if rerr != nil {
 			return nil, rerr.Error()
@@ -365,7 +373,7 @@ func (az *Cloud) newPLSCache() (*azcache.TimedCache, error) {
 					continue
 				}
 				for _, fipConfig := range *fipConfigs {
-					if strings.EqualFold(*fipConfig.ID, key) {
+					if strings.EqualFold(*fipConfig.ID, frontendID) {
 						return &pls, nil
 					}
 				}
@@ -373,7 +381,7 @@ func (az *Cloud) newPLSCache() (*azcache.TimedCache, error) {
 			}
 		}
 
-		klog.V(2).Infof("No privateLinkService found for frontendIPConfig %q", key)
+		klog.V(2).Infof("No privateLinkService found for frontendIPConfig %q in rg %q", frontendID, resourceGroup)
 		plsNotExistID := consts.PrivateLinkServiceNotExistID
 		return &network.PrivateLinkService{ID: &plsNotExistID}, nil
 	}

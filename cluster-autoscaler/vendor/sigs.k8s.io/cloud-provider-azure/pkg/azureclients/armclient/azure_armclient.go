@@ -545,7 +545,7 @@ func (c *Client) PutResourceAsync(ctx context.Context, resourceID string, parame
 	future, resp, rErr := c.SendAsync(ctx, request)
 	defer c.CloseResponse(ctx, resp)
 	if rErr != nil {
-		klog.V(5).Infof("Received error in %s: resourceID: %s, error: %s", "put.send", resourceID, err)
+		klog.V(5).Infof("Received error in %s: resourceID: %s, error: %s", "put.send", resourceID, rErr.Error())
 		return nil, rErr
 	}
 
@@ -588,7 +588,7 @@ func (c *Client) DeleteResource(ctx context.Context, resourceID string, decorato
 		return nil
 	}
 	if err := future.WaitForCompletionRef(ctx, c.client); err != nil {
-		klog.V(5).Infof("Received error in %s: resourceID: %s, error: %s", "delete.wait", resourceID, clientErr.Error())
+		klog.V(5).Infof("Received error in %s: resourceID: %s, error: %s", "delete.wait", resourceID, err)
 		return retry.NewError(true, err)
 	}
 

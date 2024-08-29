@@ -26,13 +26,13 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2022-07-01/network"
 
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
 	utilnet "k8s.io/utils/net"
 	"k8s.io/utils/pointer"
 
 	azcache "sigs.k8s.io/cloud-provider-azure/pkg/cache"
 	"sigs.k8s.io/cloud-provider-azure/pkg/consts"
+	utilsets "sigs.k8s.io/cloud-provider-azure/pkg/util/sets"
 )
 
 var strToExtendedLocationType = map[string]network.ExtendedLocationTypes{
@@ -183,7 +183,7 @@ func (az *Cloud) reconcileTags(currentTagsOnResource, newTags map[string]*string
 	return currentTagsOnResource, changed
 }
 
-func (az *Cloud) getVMSetNamesSharingPrimarySLB() sets.Set[string] {
+func (az *Cloud) getVMSetNamesSharingPrimarySLB() *utilsets.IgnoreCaseSet {
 	vmSetNames := make([]string, 0)
 	if az.NodePoolsWithoutDedicatedSLB != "" {
 		vmSetNames = strings.Split(az.Config.NodePoolsWithoutDedicatedSLB, consts.VMSetNamesSharingPrimarySLBDelimiter)
@@ -192,7 +192,7 @@ func (az *Cloud) getVMSetNamesSharingPrimarySLB() sets.Set[string] {
 		}
 	}
 
-	return sets.New(vmSetNames...)
+	return utilsets.NewString(vmSetNames...)
 }
 
 func getExtendedLocationTypeFromString(extendedLocationType string) network.ExtendedLocationTypes {
@@ -405,10 +405,20 @@ func getServiceLoadBalancerIPs(service *v1.Service) []string {
 
 // setServiceLoadBalancerIP sets LB IP to a Service
 func setServiceLoadBalancerIP(service *v1.Service, ip string) {
+	if service == nil {
+		klog.Warning("setServiceLoadBalancerIP: Service is nil")
+		return
+	}
+	parsedIP := net.ParseIP(ip)
+	if parsedIP == nil {
+		klog.Warning("setServiceLoadBalancerIP: IP %q is not valid for Service", ip, service.Name)
+		return
+	}
+
+	isIPv6 := parsedIP.To4() == nil
 	if service.Annotations == nil {
 		service.Annotations = map[string]string{}
 	}
-	isIPv6 := net.ParseIP(ip).To4() == nil
 	service.Annotations[consts.ServiceAnnotationLoadBalancerIPDualStack[isIPv6]] = ip
 }
 
@@ -422,6 +432,14 @@ func getServicePIPName(service *v1.Service, isIPv6 bool) string {
 	}
 
 	return service.Annotations[consts.ServiceAnnotationPIPNameDualStack[isIPv6]]
+}
+
+func getServicePIPNames(service *v1.Service) []string {
+	var ips []string
+	for _, ipVersion := range []bool{false, true} {
+		ips = append(ips, getServicePIPName(service, ipVersion))
+	}
+	return ips
 }
 
 func getServicePIPPrefixID(service *v1.Service, isIPv6 bool) string {
@@ -448,43 +466,13 @@ func getResourceByIPFamily(resource string, isDualStack, isIPv6 bool) string {
 }
 
 // isFIPIPv6 checks if the frontend IP configuration is of IPv6.
-func (az *Cloud) isFIPIPv6(fip *network.FrontendIPConfiguration, pipResourceGroup string, isInternal bool) (isIPv6 bool, err error) {
-	pips, err := az.listPIP(pipResourceGroup, azcache.CacheReadTypeDefault)
-	if err != nil {
-		return false, fmt.Errorf("isFIPIPv6: failed to list pip: %w", err)
+// NOTICE: isFIPIPv6 assumes the FIP is owned by the Service and it is the primary Service.
+func (az *Cloud) isFIPIPv6(service *v1.Service, pipRG string, fip *network.FrontendIPConfiguration) (bool, error) {
+	isDualStack := isServiceDualStack(service)
+	if !isDualStack {
+		return service.Spec.IPFamilies[0] == v1.IPv6Protocol, nil
 	}
-	if isInternal {
-		if fip.FrontendIPConfigurationPropertiesFormat != nil {
-			if fip.FrontendIPConfigurationPropertiesFormat.PrivateIPAddressVersion != "" {
-				return fip.FrontendIPConfigurationPropertiesFormat.PrivateIPAddressVersion == network.IPv6, nil
-			}
-			return net.ParseIP(pointer.StringDeref(fip.FrontendIPConfigurationPropertiesFormat.PrivateIPAddress, "")).To4() == nil, nil
-		}
-		klog.Errorf("Checking IP Family of frontend IP configuration %q of internal Service but its"+
-			" FrontendIPConfigurationPropertiesFormat is nil. It's considered to be IPv4",
-			pointer.StringDeref(fip.Name, ""))
-		return
-	}
-	var fipPIPID string
-	if fip.FrontendIPConfigurationPropertiesFormat != nil && fip.FrontendIPConfigurationPropertiesFormat.PublicIPAddress != nil {
-		fipPIPID = pointer.StringDeref(fip.FrontendIPConfigurationPropertiesFormat.PublicIPAddress.ID, "")
-	}
-	for _, pip := range pips {
-		id := pointer.StringDeref(pip.ID, "")
-		if !strings.EqualFold(fipPIPID, id) {
-			continue
-		}
-		if pip.PublicIPAddressPropertiesFormat != nil {
-			// First check PublicIPAddressVersion, then IPAddress
-			if pip.PublicIPAddressPropertiesFormat.PublicIPAddressVersion == network.IPv6 ||
-				net.ParseIP(pointer.StringDeref(pip.PublicIPAddressPropertiesFormat.IPAddress, "")).To4() == nil {
-				isIPv6 = true
-				break
-			}
-		}
-		break
-	}
-	return isIPv6, nil
+	return managedResourceHasIPv6Suffix(pointer.StringDeref(fip.Name, "")), nil
 }
 
 // getResourceIDPrefix returns a substring from the provided one between beginning and the last "/".
@@ -529,4 +517,41 @@ func countIPsOnBackendPool(backendPool network.BackendAddressPool) int {
 	}
 
 	return ipsCount
+}
+
+// fillSubnet fills subnet value into the variable.
+func (az *Cloud) fillSubnet(subnet *network.Subnet, subnetName string) error {
+	if subnet == nil {
+		return fmt.Errorf("subnet is nil, should not happen")
+	}
+	if subnet.ID == nil {
+		curSubnet, existsSubnet, err := az.getSubnet(az.VnetName, subnetName)
+		if err != nil {
+			return err
+		}
+		if !existsSubnet {
+			return fmt.Errorf("failed to get subnet: %s/%s", az.VnetName, subnetName)
+		}
+		*subnet = curSubnet
+	}
+	return nil
+}
+
+// getResourceGroupAndNameFromNICID parses the ip configuration ID to get the resource group and nic name.
+func getResourceGroupAndNameFromNICID(ipConfigurationID string) (string, string, error) {
+	matches := nicIDRE.FindStringSubmatch(ipConfigurationID)
+	if len(matches) != 3 {
+		klog.V(4).Infof("Can not extract nic name from ipConfigurationID (%s)", ipConfigurationID)
+		return "", "", fmt.Errorf("invalid ip config ID %s", ipConfigurationID)
+	}
+
+	nicResourceGroup, nicName := matches[1], matches[2]
+	if nicResourceGroup == "" || nicName == "" {
+		return "", "", fmt.Errorf("invalid ip config ID %s", ipConfigurationID)
+	}
+	return nicResourceGroup, nicName, nil
+}
+
+func isInternalLoadBalancer(lb *network.LoadBalancer) bool {
+	return strings.HasSuffix(strings.ToLower(*lb.Name), consts.InternalLoadBalancerNameSuffix)
 }

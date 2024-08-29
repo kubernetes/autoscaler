@@ -20,7 +20,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-03-01/compute" //nolint SA1019 - deprecated package
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-03-01/compute"
 	"github.com/Azure/go-autorest/autorest/azure"
 
 	"k8s.io/klog/v2"
@@ -34,8 +34,7 @@ import (
 //     "internalErrorCode": "OperationNotAllowedOnResourceThatManagesUpdatesWithMaintenanceControl"
 //   },
 //   "code": "OperationNotAllowed",
-//   "message": "Operation 'ForceDelete' is not allowed on resource 'aks-newnp-11436513-vmss' since it
-//  manages updates using maintenance control."
+//   "message": "Operation 'ForceDelete' is not allowed on resource 'aks-newnp-11436513-vmss' since it manages updates using maintenance control."
 // },
 //
 // A programmatically way to determine if a VM size is isolated or not has not been found. The isolated VM documentation:
@@ -63,20 +62,17 @@ var isolatedVMSizes = map[string]bool{
 	strings.ToLower("Standard_M128ms"):      true,
 }
 
-func (scaleSet *ScaleSet) deleteInstances(ctx context.Context, requiredIds *compute.VirtualMachineScaleSetVMInstanceRequiredIDs,
-	commonAsgID string) (*azure.Future, *retry.Error) {
+func (scaleSet *ScaleSet) deleteInstances(ctx context.Context, requiredIds *compute.VirtualMachineScaleSetVMInstanceRequiredIDs, commonAsgId string) (*azure.Future, *retry.Error) {
 	scaleSet.instanceMutex.Lock()
 	defer scaleSet.instanceMutex.Unlock()
 
 	skuName := scaleSet.getSKU()
 	resourceGroup := scaleSet.manager.config.ResourceGroup
 	forceDelete := shouldForceDelete(skuName, scaleSet)
-	future, rerr := scaleSet.manager.azClient.virtualMachineScaleSetsClient.DeleteInstancesAsync(ctx, resourceGroup,
-		commonAsgID, *requiredIds, forceDelete)
+	future, rerr := scaleSet.manager.azClient.virtualMachineScaleSetsClient.DeleteInstancesAsync(ctx, resourceGroup, commonAsgId, *requiredIds, forceDelete)
 	if forceDelete && isOperationNotAllowed(rerr) {
 		klog.Infof("falling back to normal delete for instances %v for %s", requiredIds.InstanceIds, scaleSet.Name)
-		return scaleSet.manager.azClient.virtualMachineScaleSetsClient.DeleteInstancesAsync(ctx, resourceGroup,
-			commonAsgID, *requiredIds, false)
+		return scaleSet.manager.azClient.virtualMachineScaleSetsClient.DeleteInstancesAsync(ctx, resourceGroup, commonAsgId, *requiredIds, false)
 	}
 	return future, rerr
 }
