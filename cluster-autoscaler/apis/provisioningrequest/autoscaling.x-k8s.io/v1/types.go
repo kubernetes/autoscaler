@@ -36,6 +36,7 @@ import (
 // is available in the cluster or actively add capacity if needed.
 //
 // +kubebuilder:subresource:status
+// +kubebuilder:storageversion
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 type ProvisioningRequest struct {
