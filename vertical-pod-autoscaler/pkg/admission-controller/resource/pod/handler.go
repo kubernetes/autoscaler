@@ -76,10 +76,10 @@ func (h *resourceHandler) GetPatches(ar *admissionv1.AdmissionRequest) ([]resour
 		pod.Name = pod.GenerateName + "%"
 		pod.Namespace = namespace
 	}
-	klog.V(4).Infof("Admitting pod %s", klog.KObj(&pod))
+	klog.V(4).InfoS("Admitting pod", "pod", klog.KObj(&pod))
 	controllingVpa := h.vpaMatcher.GetMatchingVPA(&pod)
 	if controllingVpa == nil {
-		klog.V(4).Infof("No matching VPA found for pod %s", klog.KObj(&pod))
+		klog.V(4).InfoS("No matching VPA found for pod", "pod", klog.KObj(&pod))
 		return []resource_admission.PatchRecord{}, nil
 	}
 	pod, err := h.preProcessor.Process(pod)

@@ -55,10 +55,10 @@ func GetContainersResources(pod *core.Pod, vpaResourcePolicy *vpa_types.PodResou
 		recommendation := vpa_api_util.GetRecommendationForContainer(container.Name, &podRecommendation)
 		if recommendation == nil {
 			if !addAll {
-				klog.V(2).Infof("no matching recommendation found for container %s, skipping", container.Name)
+				klog.V(2).InfoS("No recommendation found for container, skipping", "container", container.Name)
 				continue
 			}
-			klog.V(2).Infof("no matching recommendation found for container %s, using Pod request", container.Name)
+			klog.V(2).InfoS("No matching found for container, using Pod request", "container", container.Name)
 			resources[i].Requests = container.Resources.Requests
 		} else {
 			resources[i].Requests = recommendation.Target
@@ -85,10 +85,10 @@ func GetContainersResources(pod *core.Pod, vpaResourcePolicy *vpa_types.PodResou
 // The returned slice corresponds 1-1 to containers in the Pod.
 func (p *recommendationProvider) GetContainersResourcesForPod(pod *core.Pod, vpa *vpa_types.VerticalPodAutoscaler) ([]vpa_api_util.ContainerResources, vpa_api_util.ContainerToAnnotationsMap, error) {
 	if vpa == nil || pod == nil {
-		klog.V(2).Infof("can't calculate recommendations, one of vpa(%+v), pod(%+v) is nil", vpa, pod)
+		klog.V(2).InfoS("Can't calculate recommendations, one of VPA or Pod is nil", "vpa", vpa, "pod", pod)
 		return nil, nil, nil
 	}
-	klog.V(2).Infof("updating requirements for pod %s.", pod.Name)
+	klog.V(2).InfoS("Updating requirements for pod", "pod", pod.Name)
 
 	var annotations vpa_api_util.ContainerToAnnotationsMap
 	recommendedPodResources := &vpa_types.RecommendedPodResources{}
@@ -97,7 +97,7 @@ func (p *recommendationProvider) GetContainersResourcesForPod(pod *core.Pod, vpa
 		var err error
 		recommendedPodResources, annotations, err = p.recommendationProcessor.Apply(vpa.Status.Recommendation, vpa.Spec.ResourcePolicy, vpa.Status.Conditions, pod)
 		if err != nil {
-			klog.V(2).Infof("cannot process recommendation for pod %s", klog.KObj(pod))
+			klog.V(2).InfoS("Cannot process recommendation for pod", "pod", klog.KObj(pod))
 			return nil, annotations, err
 		}
 	}
@@ -114,7 +114,7 @@ func (p *recommendationProvider) GetContainersResourcesForPod(pod *core.Pod, vpa
 	// Ensure that we are not propagating empty resource key if any.
 	for _, resource := range containerResources {
 		if resource.RemoveEmptyResourceKeyIfAny() {
-			klog.Infof("An empty resource key was found and purged for pod=%s with vpa=%s", klog.KObj(pod), klog.KObj(vpa))
+			klog.InfoS("An empty resource key was found and purged", "pod", klog.KObj(pod), "vpa", klog.KObj(vpa))
 		}
 	}
 
