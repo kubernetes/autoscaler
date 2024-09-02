@@ -346,7 +346,6 @@ func newTestGceManager(t *testing.T, testServerURL string, regional bool) *gceMa
 		migTargetSizeCache:               map[GceRef]int64{},
 		instanceTemplateNameCache:        map[GceRef]InstanceTemplateName{},
 		instanceTemplatesCache:           map[GceRef]*gce.InstanceTemplate{},
-		kubeEnvCache:                     map[GceRef]KubeEnv{},
 		migBaseNameCache:                 map[GceRef]string{},
 		listManagedInstancesResultsCache: map[GceRef]string{},
 	}

@@ -51,7 +51,7 @@ type mockAutoscalingGceClient struct {
 	fetchMigs                        func(string) ([]*gce.InstanceGroupManager, error)
 	fetchMigTargetSize               func(GceRef) (int64, error)
 	fetchMigBasename                 func(GceRef) (string, error)
-	fetchMigInstances                func(GceRef) ([]GceInstance, error)
+	fetchMigInstances                func(GceRef) ([]cloudprovider.Instance, error)
 	fetchMigTemplateName             func(GceRef) (InstanceTemplateName, error)
 	fetchMigTemplate                 func(GceRef, string, bool) (*gce.InstanceTemplate, error)
 	fetchMachineType                 func(string, string) (*gce.MachineType, error)
@@ -1141,7 +1141,7 @@ func (f *fakeTime) Now() time.Time {
 func emptyCache() *GceCache {
 	return &GceCache{
 		migs:                             map[GceRef]Mig{mig.GceRef(): mig},
-		instances:                        make(map[GceRef][]GceInstance),
+		instances:                        make(map[GceRef][]cloudprovider.Instance),
 		instancesUpdateTime:              make(map[GceRef]time.Time),
 		migTargetSizeCache:               make(map[GceRef]int64),
 		migBaseNameCache:                 make(map[GceRef]string),
