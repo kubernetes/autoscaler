@@ -74,7 +74,7 @@ type CreateNodeGroupResult struct {
 // AllCreatedNodeGroups returns all created node groups.
 func (r CreateNodeGroupResult) AllCreatedNodeGroups() []cloudprovider.NodeGroup {
 	var result []cloudprovider.NodeGroup
-	if r.MainCreatedNodeGroup != nil || !reflect.ValueOf(r.MainCreatedNodeGroup).IsNil() {
+	if r.MainCreatedNodeGroup != nil && !reflect.ValueOf(r.MainCreatedNodeGroup).IsNil() {
 		result = append(result, r.MainCreatedNodeGroup)
 	}
 	result = append(result, r.ExtraCreatedNodeGroups...)
