@@ -80,7 +80,7 @@ type AutoscalingGceClient interface {
 	FetchAllMigs(zone string) ([]*gce.InstanceGroupManager, error)
 	FetchMigTargetSize(GceRef) (int64, error)
 	FetchMigBasename(GceRef) (string, error)
-	FetchMigInstances(GceRef) ([]GceInstance, error)
+	FetchMigInstances(GceRef) ([]cloudprovider.Instance, error)
 	FetchMigTemplateName(migRef GceRef) (InstanceTemplateName, error)
 	FetchMigTemplate(migRef GceRef, templateName string, regional bool) (*gce.InstanceTemplate, error)
 	FetchMigsWithName(zone string, filter *regexp.Regexp) ([]string, error)

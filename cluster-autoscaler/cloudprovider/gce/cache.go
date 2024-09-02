@@ -64,7 +64,7 @@ type GceCache struct {
 
 	// Cache content.
 	migs                             map[GceRef]Mig
-	instances                        map[GceRef][]GceInstance
+	instances                        map[GceRef][]cloudprovider.Instance
 	instancesUpdateTime              map[GceRef]time.Time
 	instancesToMig                   map[GceRef]GceRef
 	instancesFromUnknownMig          map[GceRef]bool
@@ -76,14 +76,13 @@ type GceCache struct {
 	listManagedInstancesResultsCache map[GceRef]string
 	instanceTemplateNameCache        map[GceRef]InstanceTemplateName
 	instanceTemplatesCache           map[GceRef]*gce.InstanceTemplate
-	kubeEnvCache                     map[GceRef]KubeEnv
 }
 
 // NewGceCache creates empty GceCache.
 func NewGceCache() *GceCache {
 	return &GceCache{
 		migs:                             map[GceRef]Mig{},
-		instances:                        map[GceRef][]GceInstance{},
+		instances:                        map[GceRef][]cloudprovider.Instance{},
 		instancesUpdateTime:              map[GceRef]time.Time{},
 		instancesToMig:                   map[GceRef]GceRef{},
 		instancesFromUnknownMig:          map[GceRef]bool{},
@@ -94,7 +93,6 @@ func NewGceCache() *GceCache {
 		listManagedInstancesResultsCache: map[GceRef]string{},
 		instanceTemplateNameCache:        map[GceRef]InstanceTemplateName{},
 		instanceTemplatesCache:           map[GceRef]*gce.InstanceTemplate{},
-		kubeEnvCache:                     map[GceRef]KubeEnv{},
 	}
 }
 
