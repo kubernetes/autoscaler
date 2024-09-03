@@ -54,7 +54,7 @@ type ProvisioningRequestClient struct {
 func NewProvisioningRequestClient(kubeConfig *rest.Config) (*ProvisioningRequestClient, error) {
 	prClient, err := newPRClient(kubeConfig)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create Provisioning Request client: %v", err)
+		return nil, fmt.Errorf("failed to create Provisioning Request client: %v", err)
 	}
 
 	provReqLister, err := newPRsLister(prClient, make(chan struct{}))
@@ -64,7 +64,7 @@ func NewProvisioningRequestClient(kubeConfig *rest.Config) (*ProvisioningRequest
 
 	podTemplateClient, err := kubernetes.NewForConfig(kubeConfig)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create Pod Template client: %v", err)
+		return nil, fmt.Errorf("failed to create Pod Template client: %v", err)
 	}
 
 	podTemplLister, err := newPodTemplatesLister(podTemplateClient, make(chan struct{}))
@@ -181,7 +181,7 @@ func ProvisioningRequestsForPods(client *ProvisioningRequestClient, unschedulabl
 		return prList
 	}
 	for _, pod := range unschedulablePods {
-		if pod.OwnerReferences == nil || len(pod.OwnerReferences) == 0 {
+		if len(pod.OwnerReferences) == 0 {
 			klog.Errorf("pod %s has no OwnerReference", pod.Name)
 			continue
 		}
