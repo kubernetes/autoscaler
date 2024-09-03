@@ -75,7 +75,7 @@ func (azure *AzureCloudProvider) Name() string {
 
 // GPULabel returns the label added to nodes with GPU resource.
 func (azure *AzureCloudProvider) GPULabel() string {
-	return legacyGPULabel // Use legacy to avoid breaking, for now
+	return GPULabel
 }
 
 // GetAvailableGPUTypes return all available GPU types cloud provider supports

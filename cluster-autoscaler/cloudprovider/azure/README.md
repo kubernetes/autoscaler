@@ -54,7 +54,7 @@ k8s.io_cluster-autoscaler_node-template_resources_cpu: 3800m
 k8s.io_cluster-autoscaler_node-template_resources_memory: 11Gi
 ```
 
-> **_NOTE_**: GPU autoscaling on VMSS is informed by the presence of BOTH the `accelerator` AND `kubernetes.azure.com/accelerator` Node labels. A VMSS with GPUs whose Nodes do not have BOTH labels may not be scaled correctly. In a future release of cluster-autoscaler, the `accelerator` label will no longer be used and only the `kubernetes.azure.com/accelerator` label will be required.
+> **_NOTE_**: GPU autoscaling on VMSS is informed by the presence of the `kubernetes.azure.com/accelerator` Node label. A VMSS with GPUs whose Nodes do not have the label may not be scaled correctly. The `accelerator` label was used for this purpose in versions 1.31 and older.
 
 #### Autoscaling options
 
