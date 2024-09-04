@@ -110,6 +110,7 @@ func multiStringFlag(name string, usage string) *MultiStringFlag {
 }
 
 var (
+	leaseResourceName       = flag.String("lease-resource-name", "cluster-autoscaler", "The lease resource to use in leader election.")
 	clusterName             = flag.String("cluster-name", "", "Autoscaled cluster name, if available")
 	address                 = flag.String("address", ":8085", "The address to expose prometheus metrics.")
 	kubernetes              = flag.String("kubernetes", "", "Kubernetes master location. Leave blank for default")
@@ -643,10 +644,6 @@ func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapsho
 func main() {
 	klog.InitFlags(nil)
 
-	leaderElection := defaultLeaderElectionConfiguration()
-	leaderElection.LeaderElect = true
-	componentopts.BindLeaderElectionFlags(&leaderElection, pflag.CommandLine)
-
 	featureGate := utilfeature.DefaultMutableFeatureGate
 	loggingConfig := logsapi.NewLoggingConfiguration()
 
@@ -657,6 +654,10 @@ func main() {
 	logsapi.AddFlags(loggingConfig, pflag.CommandLine)
 	featureGate.AddFlag(pflag.CommandLine)
 	kube_flag.InitFlags()
+
+	leaderElection := defaultLeaderElectionConfiguration()
+	leaderElection.LeaderElect = true
+	componentopts.BindLeaderElectionFlags(&leaderElection, pflag.CommandLine)
 
 	logs.InitLogs()
 	if err := logsapi.ValidateAndApply(loggingConfig, featureGate); err != nil {
@@ -744,7 +745,7 @@ func defaultLeaderElectionConfiguration() componentbaseconfig.LeaderElectionConf
 		RenewDeadline: metav1.Duration{Duration: defaultRenewDeadline},
 		RetryPeriod:   metav1.Duration{Duration: defaultRetryPeriod},
 		ResourceLock:  resourcelock.LeasesResourceLock,
-		ResourceName:  "cluster-autoscaler",
+		ResourceName:  *leaseResourceName,
 	}
 }
 
