@@ -185,11 +185,8 @@ A configurable jitter (`AZURE_VMSS_VMS_CACHE_JITTER` environment variable, defau
 | vmssVmsCacheTTL | 300 | AZURE_VMSS_VMS_CACHE_TTL | vmssVmsCacheTTL |
 | vmssVmsCacheJitter | 0 | AZURE_VMSS_VMS_CACHE_JITTER | vmssVmsCacheJitter |
 
-The `AZURE_ENABLE_DYNAMIC_INSTANCE_LIST` environment variable enables workflow that fetched SKU information dynamically using SKU API calls. By default, it uses static list of SKUs.
-
 | Config Name               | Default | Environment Variable               | Cloud Config File         |
 |---------------------------|---------|------------------------------------|---------------------------|
-| enableDynamicInstanceList | false   | AZURE_ENABLE_DYNAMIC_INSTANCE_LIST | enableDynamicInstanceList |
 
 The `AZURE_ENABLE_VMSS_FLEX` environment variable enables VMSS Flex support. By default, support is disabled.
 
