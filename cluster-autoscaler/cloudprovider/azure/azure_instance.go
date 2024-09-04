@@ -18,6 +18,7 @@ package azure
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"regexp"
 	"strings"
@@ -63,6 +64,13 @@ var GetVMSSTypeStatically = func(template compute.VirtualMachineScaleSet) (*Inst
 var GetVMSSTypeDynamically = func(template compute.VirtualMachineScaleSet, azCache *azureCache) (InstanceType, error) {
 	ctx := context.Background()
 	var vmssType InstanceType
+
+	// We will only use static SKU list if dynamic listing fails
+	if !azCache.HasVMSKUs() {
+		msg := "no vm sku info loaded, using only static sku list"
+		klog.Warning(msg)
+		return vmssType, errors.New(msg)
+	}
 
 	sku, err := azCache.GetSKU(ctx, *template.Sku.Name, *template.Location)
 	if err != nil {

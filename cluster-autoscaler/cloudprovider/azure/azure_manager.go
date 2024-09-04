@@ -106,6 +106,8 @@ func createAzureManagerInternal(configReader io.Reader, discoveryOpts cloudprovi
 	if cfg.VmssCacheTTLInSeconds != 0 {
 		cacheTTL = time.Duration(cfg.VmssCacheTTLInSeconds) * time.Second
 	}
+
+	// We always want to generate the cache dynamically
 	cache, err := newAzureCache(azClient, cacheTTL, *cfg)
 	if err != nil {
 		return nil, err
@@ -130,6 +132,7 @@ func createAzureManagerInternal(configReader io.Reader, discoveryOpts cloudprovi
 		Cap:      10 * time.Minute,
 	}
 
+	// skuCache will already be created at this step by newAzureCache()
 	err = kretry.OnError(retryBackoff, retry.IsErrorRetriable, func() (err error) {
 		return manager.forceRefresh()
 	})
