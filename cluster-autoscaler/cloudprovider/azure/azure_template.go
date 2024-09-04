@@ -31,17 +31,61 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/klog/v2"
+	kubeletapis "k8s.io/kubelet/pkg/apis"
 )
 
 const (
-	azureDiskTopologyKey string = "topology.disk.csi.azure.com/zone"
 	// AKSLabelPrefixValue represents the constant prefix for AKSLabelKeyPrefixValue
 	AKSLabelPrefixValue = "kubernetes.azure.com"
 	// AKSLabelKeyPrefixValue represents prefix for AKS Labels
 	AKSLabelKeyPrefixValue = AKSLabelPrefixValue + "/"
+
+	azureDiskTopologyKey = "topology.disk.csi.azure.com/zone"
+	// For NP-series SKU, the xilinx device plugin uses that resource name
+	// https://github.com/Xilinx/FPGA_as_a_Service/tree/master/k8s-fpga-device-plugin
+	xilinxFpgaResourceName = "xilinx.com/fpga-xilinx_u250_gen3x16_xdma_shell_2_1-0"
+
+	// legacyPoolNameTag is the legacy tag that AKS adds to the VMSS with its value
+	// being the agentpool name
+	legacyPoolNameTag = "poolName"
+	// poolNameTag is the new tag that replaces the above one
+	// Newly created pools and clusters will have this one on the VMSS
+	// instead of the legacy one. We'll have to live with both tags for a while.
+	poolNameTag = "aks-managed-poolName"
+
+	// This is the legacy label is added by agentbaker, agentpool={poolName} and we want to predict that
+	// a node added to this agentpool will have this as a node label. The value is fetched
+	// from the VMSS tag with key poolNameTag/legacyPoolNameTag
+	legacyAgentPoolNodeLabelKey = "agentpool"
+	// New label that replaces the above
+	agentPoolNodeLabelKey = AKSLabelKeyPrefixValue + "agentpool"
+
+	// Storage profile node labels
+	legacyStorageProfileNodeLabelKey = "storageprofile"
+	storageProfileNodeLabelKey       = AKSLabelKeyPrefixValue + "storageprofile"
+
+	// Storage tier node labels
+	legacyStorageTierNodeLabelKey = "storagetier"
+	storageTierNodeLabelKey       = AKSLabelKeyPrefixValue + "storagetier"
+
+	// Fips node label
+	fipsNodeLabelKey = AKSLabelKeyPrefixValue + "fips_enabled"
+
+	// OS Sku node Label
+	osSkuLabelKey = AKSLabelKeyPrefixValue + "os-sku"
+
+	// Security node label
+	securityTypeLabelKey = AKSLabelKeyPrefixValue + "security-type"
+
+	customCATrustEnabledLabelKey = AKSLabelKeyPrefixValue + "custom-ca-trust-enabled"
+	kataMshvVMIsolationLabelKey  = AKSLabelKeyPrefixValue + "kata-mshv-vm-isolation"
+
+	// Cluster node label
+	clusterLabelKey = AKSLabelKeyPrefixValue + "cluster"
 )
 
-func buildNodeFromTemplate(nodeGroupName string, template compute.VirtualMachineScaleSet, manager *AzureManager, enableDynamicInstanceList bool) (*apiv1.Node, error) {
+func buildNodeFromTemplate(nodeGroupName string, inputLabels map[string]string, inputTaints string,
+	template compute.VirtualMachineScaleSet, manager *AzureManager, enableDynamicInstanceList bool) (*apiv1.Node, error) {
 	node := apiv1.Node{}
 	nodeName := fmt.Sprintf("%s-asg-%d", nodeGroupName, rand.Int63())
 
@@ -90,7 +134,9 @@ func buildNodeFromTemplate(nodeGroupName string, template compute.VirtualMachine
 	node.Status.Capacity[apiv1.ResourceCPU] = *resource.NewQuantity(vcpu, resource.DecimalSI)
 	// isNPSeries returns if a SKU is an NP-series SKU
 	// SKU API reports GPUs for NP-series but it's actually FPGAs
-	if !isNPSeries(*template.Sku.Name) {
+	if isNPSeries(*template.Sku.Name) {
+		node.Status.Capacity[xilinxFpgaResourceName] = *resource.NewQuantity(gpuCount, resource.DecimalSI)
+	} else {
 		node.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(gpuCount, resource.DecimalSI)
 	}
 
@@ -113,16 +159,78 @@ func buildNodeFromTemplate(nodeGroupName string, template compute.VirtualMachine
 
 	// GenericLabels
 	node.Labels = cloudprovider.JoinStringMaps(node.Labels, buildGenericLabels(template, nodeName))
-	// Labels from the Scale Set's Tags
-	node.Labels = cloudprovider.JoinStringMaps(node.Labels, extractLabelsFromScaleSet(template.Tags))
 
+	// Labels from the Scale Set's Tags
+	labels := make(map[string]string)
+
+	// Prefer the explicit labels in spec coming from RP over the VMSS template
+	if len(inputLabels) > 0 {
+		labels = inputLabels
+	} else {
+		labels = extractLabelsFromScaleSet(template.Tags)
+	}
+
+	// Add the agentpool label, its value should come from the VMSS poolName tag
+	// NOTE: The plan is for agentpool label to be deprecated in favor of the aks-prefixed one
+	// We will have to live with both labels for a while
+	if node.Labels[legacyPoolNameTag] != "" {
+		labels[legacyAgentPoolNodeLabelKey] = node.Labels[legacyPoolNameTag]
+		labels[agentPoolNodeLabelKey] = node.Labels[legacyPoolNameTag]
+	}
+	if node.Labels[poolNameTag] != "" {
+		labels[legacyAgentPoolNodeLabelKey] = node.Labels[poolNameTag]
+		labels[agentPoolNodeLabelKey] = node.Labels[poolNameTag]
+	}
+
+	// Add the storage profile and storage tier labels
+	if template.VirtualMachineProfile != nil && template.VirtualMachineProfile.StorageProfile != nil && template.VirtualMachineProfile.StorageProfile.OsDisk != nil {
+		// ephemeral
+		if template.VirtualMachineProfile.StorageProfile.OsDisk.DiffDiskSettings != nil && template.VirtualMachineProfile.StorageProfile.OsDisk.DiffDiskSettings.Option == compute.Local {
+			labels[legacyStorageProfileNodeLabelKey] = "ephemeral"
+			labels[storageProfileNodeLabelKey] = "ephemeral"
+		} else {
+			labels[legacyStorageProfileNodeLabelKey] = "managed"
+			labels[storageProfileNodeLabelKey] = "managed"
+		}
+		if template.VirtualMachineProfile.StorageProfile.OsDisk.ManagedDisk != nil {
+			labels[legacyStorageTierNodeLabelKey] = string(template.VirtualMachineProfile.StorageProfile.OsDisk.ManagedDisk.StorageAccountType)
+			labels[storageTierNodeLabelKey] = string(template.VirtualMachineProfile.StorageProfile.OsDisk.ManagedDisk.StorageAccountType)
+		}
+		// Add ephemeral-storage value
+		if template.VirtualMachineProfile.StorageProfile.OsDisk.DiskSizeGB != nil {
+			node.Status.Capacity[apiv1.ResourceEphemeralStorage] = *resource.NewQuantity(int64(int(*template.VirtualMachineProfile.StorageProfile.OsDisk.DiskSizeGB)*1024*1024*1024), resource.DecimalSI)
+			klog.V(4).Infof("OS Disk Size from template is: %d", *template.VirtualMachineProfile.StorageProfile.OsDisk.DiskSizeGB)
+			klog.V(4).Infof("Setting ephemeral storage to: %v", node.Status.Capacity[apiv1.ResourceEphemeralStorage])
+		}
+	}
+
+	// If we are on GPU-enabled SKUs, append the accelerator
+	// label so that CA makes better decision when scaling from zero for GPU pools
+	if isNvidiaEnabledSKU(*template.Sku.Name) {
+		labels[GPULabel] = "nvidia"
+		labels[legacyGPULabel] = "nvidia"
+	}
+
+	// Extract allocatables from tags
 	resourcesFromTags := extractAllocatableResourcesFromScaleSet(template.Tags)
 	for resourceName, val := range resourcesFromTags {
 		node.Status.Capacity[apiv1.ResourceName(resourceName)] = *val
 	}
 
+	node.Labels = cloudprovider.JoinStringMaps(node.Labels, labels)
+	klog.V(4).Infof("Setting node %s labels to: %s", nodeName, node.Labels)
+
+	var taints []apiv1.Taint
+	// Prefer the explicit taints in spec over the VMSS template
+	if inputTaints != "" {
+		taints = extractTaintsFromSpecString(inputTaints)
+	} else {
+		taints = extractTaintsFromScaleSet(template.Tags)
+	}
+
 	// Taints from the Scale Set's Tags
-	node.Spec.Taints = extractTaintsFromScaleSet(template.Tags)
+	node.Spec.Taints = taints
+	klog.V(4).Infof("Setting node %s taints to: %s", nodeName, node.Spec.Taints)
 
 	node.Status.Conditions = cloudprovider.BuildReadyConditions()
 	return &node, nil
@@ -140,10 +248,15 @@ func buildInstanceOS(template compute.VirtualMachineScaleSet) string {
 func buildGenericLabels(template compute.VirtualMachineScaleSet, nodeName string) map[string]string {
 	result := make(map[string]string)
 
+	result[kubeletapis.LabelArch] = cloudprovider.DefaultArch
 	result[apiv1.LabelArchStable] = cloudprovider.DefaultArch
+
+	result[kubeletapis.LabelOS] = buildInstanceOS(template)
 	result[apiv1.LabelOSStable] = buildInstanceOS(template)
 
+	result[apiv1.LabelInstanceType] = *template.Sku.Name
 	result[apiv1.LabelInstanceTypeStable] = *template.Sku.Name
+	result[apiv1.LabelZoneRegion] = strings.ToLower(*template.Location)
 	result[apiv1.LabelTopologyRegion] = strings.ToLower(*template.Location)
 
 	if template.Zones != nil && len(*template.Zones) > 0 {
@@ -157,9 +270,11 @@ func buildGenericLabels(template compute.VirtualMachineScaleSet, nodeName string
 		//Note that the if the customer is to have some pod affinity picking exact zone, this logic won't work.
 		//For now, discourage the customers from using podAffinity to pick the availability zones.
 		randomZone := failureDomains[rand.Intn(len(failureDomains))]
+		result[apiv1.LabelZoneFailureDomain] = randomZone
 		result[apiv1.LabelTopologyZone] = randomZone
 		result[azureDiskTopologyKey] = randomZone
 	} else {
+		result[apiv1.LabelZoneFailureDomain] = "0"
 		result[apiv1.LabelTopologyZone] = "0"
 		result[azureDiskTopologyKey] = ""
 	}
@@ -207,6 +322,37 @@ func extractTaintsFromScaleSet(tags map[string]*string) []apiv1.Taint {
 				}
 			}
 		}
+	}
+
+	return taints
+}
+
+// Example of a valid taints string, is the same argument to kubelet's `--register-with-taints`
+// "dedicated=foo:NoSchedule,group=bar:NoExecute,app=fizz:PreferNoSchedule"
+func extractTaintsFromSpecString(taintsString string) []apiv1.Taint {
+	taints := make([]apiv1.Taint, 0)
+	// First split the taints at the separator
+	splits := strings.Split(taintsString, ",")
+	for _, split := range splits {
+		taintSplit := strings.Split(split, "=")
+		if len(taintSplit) != 2 {
+			continue
+		}
+
+		taintKey := taintSplit[0]
+		taintValue := taintSplit[1]
+
+		r, _ := regexp.Compile("(.*):(?:NoSchedule|NoExecute|PreferNoSchedule)")
+		if !r.MatchString(taintValue) {
+			continue
+		}
+
+		values := strings.SplitN(taintValue, ":", 2)
+		taints = append(taints, apiv1.Taint{
+			Key:    taintKey,
+			Value:  values[0],
+			Effect: apiv1.TaintEffect(values[1]),
+		})
 	}
 
 	return taints
