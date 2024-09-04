@@ -60,9 +60,8 @@ type ScaleSet struct {
 	minSize int
 	maxSize int
 
-	enableForceDelete         bool
-	enableDynamicInstanceList bool
-	enableDetailedCSEMessage  bool
+	enableForceDelete        bool
+	enableDetailedCSEMessage bool
 
 	// Current Size (Number of VMs)
 
@@ -106,10 +105,9 @@ func NewScaleSet(spec *dynamic.NodeGroupSpec, az *AzureManager, curSize int64, d
 			instancesRefreshJitter: az.config.VmssVmsCacheJitter,
 		},
 
-		enableForceDelete:         az.config.EnableForceDelete,
-		enableDynamicInstanceList: az.config.EnableDynamicInstanceList,
-		enableDetailedCSEMessage:  az.config.EnableDetailedCSEMessage,
-		dedicatedHost:             dedicatedHost,
+		enableForceDelete:        az.config.EnableForceDelete,
+		enableDetailedCSEMessage: az.config.EnableDetailedCSEMessage,
+		dedicatedHost:            dedicatedHost,
 	}
 
 	if az.config.VmssVirtualMachinesCacheTTLInSeconds != 0 {
@@ -635,7 +633,7 @@ func (scaleSet *ScaleSet) TemplateNodeInfo() (*schedulerframework.NodeInfo, erro
 
 	inputLabels := map[string]string{}
 	inputTaints := ""
-	node, err := buildNodeFromTemplate(scaleSet.Name, inputLabels, inputTaints, template, scaleSet.manager, scaleSet.enableDynamicInstanceList)
+	node, err := buildNodeFromTemplate(scaleSet.Name, inputLabels, inputTaints, template, scaleSet.manager)
 
 	if err != nil {
 		return nil, err
