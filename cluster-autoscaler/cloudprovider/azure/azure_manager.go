@@ -106,13 +106,16 @@ func createAzureManagerInternal(configReader io.Reader, discoveryOpts cloudprovi
 	if cfg.VmssCacheTTLInSeconds != 0 {
 		cacheTTL = time.Duration(cfg.VmssCacheTTLInSeconds) * time.Second
 	}
-
-	// We always want to generate the cache dynamically
 	cache, err := newAzureCache(azClient, cacheTTL, *cfg)
 	if err != nil {
 		return nil, err
 	}
 	manager.azureCache = cache
+
+	if !manager.azureCache.HasVMSKUs() {
+		klog.Warning("No VM SKU info loaded, using only static SKU list")
+		cfg.EnableDynamicInstanceList = false
+	}
 
 	specs, err := ParseLabelAutoDiscoverySpecs(discoveryOpts)
 	if err != nil {

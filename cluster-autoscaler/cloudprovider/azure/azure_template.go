@@ -85,7 +85,7 @@ const (
 )
 
 func buildNodeFromTemplate(nodeGroupName string, inputLabels map[string]string, inputTaints string,
-	template compute.VirtualMachineScaleSet, manager *AzureManager) (*apiv1.Node, error) {
+	template compute.VirtualMachineScaleSet, manager *AzureManager, enableDynamicInstanceList bool) (*apiv1.Node, error) {
 	node := apiv1.Node{}
 	nodeName := fmt.Sprintf("%s-asg-%d", nodeGroupName, rand.Int63())
 
@@ -101,17 +101,23 @@ func buildNodeFromTemplate(nodeGroupName string, inputLabels map[string]string, 
 
 	var vcpu, gpuCount, memoryMb int64
 
-	// Fetching SKU information from SKU API first.
-	klog.V(1).Infof("Fetching instance information for SKU: %s from SKU API", *template.Sku.Name)
-	vmssTypeDynamic, dynamicErr := GetVMSSTypeDynamically(template, manager.azureCache)
-	if dynamicErr == nil {
-		vcpu = vmssTypeDynamic.VCPU
-		gpuCount = vmssTypeDynamic.GPU
-		memoryMb = vmssTypeDynamic.MemoryMb
-	} else {
-		// fall-back on static list of vmss if dynamic workflow fails.
-		klog.Errorf("Dynamically fetching of instance information from SKU api failed with error: %v", dynamicErr)
+	// Fetching SKU information from SKU API if enableDynamicInstanceList is true.
+	var dynamicErr error
+	if enableDynamicInstanceList {
+		var vmssTypeDynamic InstanceType
+		klog.V(1).Infof("Fetching instance information for SKU: %s from SKU API", *template.Sku.Name)
+		vmssTypeDynamic, dynamicErr = GetVMSSTypeDynamically(template, manager.azureCache)
+		if dynamicErr == nil {
+			vcpu = vmssTypeDynamic.VCPU
+			gpuCount = vmssTypeDynamic.GPU
+			memoryMb = vmssTypeDynamic.MemoryMb
+		} else {
+			klog.Errorf("Dynamically fetching of instance information from SKU api failed with error: %v", dynamicErr)
+		}
+	}
+	if !enableDynamicInstanceList || dynamicErr != nil {
 		klog.V(1).Infof("Falling back to static SKU list for SKU: %s", *template.Sku.Name)
+		// fall-back on static list of vmss if dynamic workflow fails.
 		vmssTypeStatic, staticErr := GetVMSSTypeStatically(template)
 		if staticErr == nil {
 			vcpu = vmssTypeStatic.VCPU

@@ -1024,6 +1024,8 @@ func TestTemplateNodeInfo(t *testing.T) {
 	asg.Name = "test-asg"
 
 	t.Run("Checking fallback to static because dynamic list is empty", func(t *testing.T) {
+		asg.enableDynamicInstanceList = true
+
 		nodeInfo, err := asg.TemplateNodeInfo()
 		assert.NoError(t, err)
 		assert.NotNil(t, nodeInfo)
@@ -1036,6 +1038,8 @@ func TestTemplateNodeInfo(t *testing.T) {
 	// override GetVMSSTypeDynamically and GetVMSSTypeStatically functions.
 
 	t.Run("Checking dynamic workflow", func(t *testing.T) {
+		asg.enableDynamicInstanceList = true
+
 		GetVMSSTypeDynamically = func(template compute.VirtualMachineScaleSet, azCache *azureCache) (InstanceType, error) {
 			vmssType := InstanceType{}
 			vmssType.VCPU = 1
@@ -1052,6 +1056,8 @@ func TestTemplateNodeInfo(t *testing.T) {
 	})
 
 	t.Run("Checking static workflow if dynamic fails", func(t *testing.T) {
+		asg.enableDynamicInstanceList = true
+
 		GetVMSSTypeDynamically = func(template compute.VirtualMachineScaleSet, azCache *azureCache) (InstanceType, error) {
 			return InstanceType{}, fmt.Errorf("dynamic error exists")
 		}
@@ -1071,6 +1077,8 @@ func TestTemplateNodeInfo(t *testing.T) {
 	})
 
 	t.Run("Fails to find vmss instance information using static and dynamic workflow, instance not supported", func(t *testing.T) {
+		asg.enableDynamicInstanceList = true
+
 		GetVMSSTypeDynamically = func(template compute.VirtualMachineScaleSet, azCache *azureCache) (InstanceType, error) {
 			return InstanceType{}, fmt.Errorf("dynamic error exists")
 		}
@@ -1085,6 +1093,8 @@ func TestTemplateNodeInfo(t *testing.T) {
 	// Note: static-only workflow tests can be removed once support for dynamic is always on
 
 	t.Run("Checking static-only workflow", func(t *testing.T) {
+		asg.enableDynamicInstanceList = false
+
 		GetVMSSTypeStatically = func(template compute.VirtualMachineScaleSet) (*InstanceType, error) {
 			vmssType := InstanceType{}
 			vmssType.VCPU = 1
@@ -1101,6 +1111,8 @@ func TestTemplateNodeInfo(t *testing.T) {
 	})
 
 	t.Run("Checking static-only workflow with built-in SKU list", func(t *testing.T) {
+		asg.enableDynamicInstanceList = false
+
 		nodeInfo, err := asg.TemplateNodeInfo()
 		assert.NoError(t, err)
 		assert.NotNil(t, nodeInfo)
