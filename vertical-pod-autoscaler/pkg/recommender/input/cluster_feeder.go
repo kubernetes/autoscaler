@@ -63,7 +63,7 @@ type ClusterStateFeeder interface {
 	InitFromCheckpoints()
 
 	// LoadVPAs updates clusterState with current state of VPAs.
-	LoadVPAs()
+	LoadVPAs(ctx context.Context)
 
 	// LoadPods updates clusterState with current specification of Pods and their Containers.
 	LoadPods()
@@ -247,7 +247,7 @@ func (feeder *clusterStateFeeder) setVpaCheckpoint(checkpoint *vpa_types.Vertica
 
 func (feeder *clusterStateFeeder) InitFromCheckpoints() {
 	klog.V(3).Info("Initializing VPA from checkpoints")
-	feeder.LoadVPAs()
+	feeder.LoadVPAs(context.TODO())
 
 	namespaces := make(map[string]bool)
 	for _, v := range feeder.clusterState.Vpas {
@@ -274,7 +274,7 @@ func (feeder *clusterStateFeeder) InitFromCheckpoints() {
 
 func (feeder *clusterStateFeeder) GarbageCollectCheckpoints() {
 	klog.V(3).Info("Starting garbage collection of checkpoints")
-	feeder.LoadVPAs()
+	feeder.LoadVPAs(context.TODO())
 
 	namespaceList, err := feeder.coreClient.Namespaces().List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
@@ -348,7 +348,7 @@ func filterVPAs(feeder *clusterStateFeeder, allVpaCRDs []*vpa_types.VerticalPodA
 }
 
 // LoadVPAs fetches VPA objects and loads them into the cluster state.
-func (feeder *clusterStateFeeder) LoadVPAs() {
+func (feeder *clusterStateFeeder) LoadVPAs(ctx context.Context) {
 	// List VPA API objects.
 	allVpaCRDs, err := feeder.vpaLister.List(labels.Everything())
 	if err != nil {
@@ -368,7 +368,7 @@ func (feeder *clusterStateFeeder) LoadVPAs() {
 			VpaName:   vpaCRD.Name,
 		}
 
-		selector, conditions := feeder.getSelector(vpaCRD)
+		selector, conditions := feeder.getSelector(ctx, vpaCRD)
 		klog.V(4).Infof("Using selector %s for VPA %s", selector.String(), klog.KObj(vpaCRD))
 
 		if feeder.clusterState.AddOrUpdateVpa(vpaCRD, selector) == nil {
@@ -496,7 +496,7 @@ type condition struct {
 	message       string
 }
 
-func (feeder *clusterStateFeeder) validateTargetRef(vpa *vpa_types.VerticalPodAutoscaler) (bool, condition) {
+func (feeder *clusterStateFeeder) validateTargetRef(ctx context.Context, vpa *vpa_types.VerticalPodAutoscaler) (bool, condition) {
 	//
 	if vpa.Spec.TargetRef == nil {
 		return false, condition{}
@@ -509,7 +509,7 @@ func (feeder *clusterStateFeeder) validateTargetRef(vpa *vpa_types.VerticalPodAu
 		},
 		ApiVersion: vpa.Spec.TargetRef.APIVersion,
 	}
-	top, err := feeder.controllerFetcher.FindTopMostWellKnownOrScalable(&k)
+	top, err := feeder.controllerFetcher.FindTopMostWellKnownOrScalable(ctx, &k)
 	if err != nil {
 		return false, condition{conditionType: vpa_types.ConfigUnsupported, delete: false, message: fmt.Sprintf("Error checking if target is a topmost well-known or scalable controller: %s", err)}
 	}
@@ -522,10 +522,10 @@ func (feeder *clusterStateFeeder) validateTargetRef(vpa *vpa_types.VerticalPodAu
 	return true, condition{}
 }
 
-func (feeder *clusterStateFeeder) getSelector(vpa *vpa_types.VerticalPodAutoscaler) (labels.Selector, []condition) {
-	selector, fetchErr := feeder.selectorFetcher.Fetch(vpa)
+func (feeder *clusterStateFeeder) getSelector(ctx context.Context, vpa *vpa_types.VerticalPodAutoscaler) (labels.Selector, []condition) {
+	selector, fetchErr := feeder.selectorFetcher.Fetch(ctx, vpa)
 	if selector != nil {
-		validTargetRef, unsupportedCondition := feeder.validateTargetRef(vpa)
+		validTargetRef, unsupportedCondition := feeder.validateTargetRef(ctx, vpa)
 		if !validTargetRef {
 			return labels.Nothing(), []condition{
 				unsupportedCondition,

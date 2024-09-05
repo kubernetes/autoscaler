@@ -154,7 +154,7 @@ func (r *recommender) RunOnce() {
 
 	klog.V(3).Infof("Recommender Run")
 
-	r.clusterStateFeeder.LoadVPAs()
+	r.clusterStateFeeder.LoadVPAs(ctx)
 	timer.ObserveStep("LoadVPAs")
 
 	r.clusterStateFeeder.LoadPods()
@@ -170,7 +170,7 @@ func (r *recommender) RunOnce() {
 	r.MaintainCheckpoints(ctx, *minCheckpointsPerRun)
 	timer.ObserveStep("MaintainCheckpoints")
 
-	r.clusterState.RateLimitedGarbageCollectAggregateCollectionStates(time.Now(), r.controllerFetcher)
+	r.clusterState.RateLimitedGarbageCollectAggregateCollectionStates(ctx, time.Now(), r.controllerFetcher)
 	timer.ObserveStep("GarbageCollect")
 	klog.V(3).Infof("ClusterState is tracking %d aggregated container states", r.clusterState.StateMapSize())
 }
