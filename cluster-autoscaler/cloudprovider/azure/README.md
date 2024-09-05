@@ -190,7 +190,7 @@ The `AZURE_ENABLE_DYNAMIC_INSTANCE_LIST` environment variable enables workflow t
 
 | Config Name               | Default | Environment Variable               | Cloud Config File         |
 |---------------------------|---------|------------------------------------|---------------------------|
-| enableDynamicInstanceList | false   | AZURE_ENABLE_DYNAMIC_INSTANCE_LIST enableDynamicInstanceList |
+| enableDynamicInstanceList | false   | AZURE_ENABLE_DYNAMIC_INSTANCE_LIST | enableDynamicInstanceList |
 
 The `AZURE_ENABLE_VMSS_FLEX` environment variable enables VMSS Flex support. By default, support is disabled.
 
