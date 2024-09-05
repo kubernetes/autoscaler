@@ -203,7 +203,7 @@ extraEnvConfigMaps: {}
 # extraEnvSecrets -- Additional container environment variables from Secrets.
 extraEnvSecrets: {}
 
-# Extra K8s manifests to deploy
+# extraObjects -- Extra K8s manifests to deploy
 extraObjects: []
 #  - apiVersion: v1
 #    kind: ConfigMap
