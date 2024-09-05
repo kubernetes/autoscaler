@@ -1,3 +1,5 @@
+//go:build e2e
+
 /*
 Copyright 2024 The Kubernetes Authors.
 
