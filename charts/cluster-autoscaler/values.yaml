@@ -203,6 +203,22 @@ extraEnvConfigMaps: {}
 # extraEnvSecrets -- Additional container environment variables from Secrets.
 extraEnvSecrets: {}
 
+# Extra K8s manifests to deploy
+extraObjects: []
+#  - apiVersion: v1
+#    kind: ConfigMap
+#    metadata:
+#      name: my-configmap
+#    data:
+#      key: "value"
+#  - apiVersion: scheduling.k8s.io/v1
+#    kind: PriorityClass
+#    metadata:
+#      name: high-priority
+#    value: 1000000
+#    globalDefault: false
+#    description: "This priority class should be used for XYZ service pods only."
+
 # extraVolumeMounts -- Additional volumes to mount.
 extraVolumeMounts: []
   # - name: ssl-certs
