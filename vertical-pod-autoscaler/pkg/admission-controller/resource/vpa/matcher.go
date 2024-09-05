@@ -73,7 +73,7 @@ func (m *matcher) GetMatchingVPA(ctx context.Context, pod *core.Pod) *vpa_types.
 		})
 	}
 	klog.V(2).InfoS("Let's choose from", "configs", len(onConfigs), "pod", klog.KObj(pod))
-	result := vpa_api_util.GetControllingVPAForPod(pod, onConfigs, m.controllerFetcher)
+	result := vpa_api_util.GetControllingVPAForPod(ctx, pod, onConfigs, m.controllerFetcher)
 	if result != nil {
 		return result.Vpa
 	}
