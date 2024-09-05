@@ -22,7 +22,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
+	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/pods"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest"
@@ -35,15 +35,12 @@ import (
 	"k8s.io/utils/clock"
 )
 
-const (
-	defaultRetryTime = 1 * time.Minute
-	maxBackoffTime   = 10 * time.Minute
-	// TODO: replace with timeout for element rather than max size of cache.
-	maxCacheSize = 1000
-)
-
 // ProvisioningRequestPodsInjector creates in-memory pods from ProvisioningRequest and inject them to unscheduled pods list.
 type ProvisioningRequestPodsInjector struct {
+	initialRetryTime time.Duration
+	maxBackoffTime   time.Duration
+	// TODO: replace with timeout for element rather than max size of cache.
+	maxCacheSize    int
 	clock           clock.PassiveClock
 	client          *provreqclient.ProvisioningRequestClient
 	backoffDuration map[string]time.Duration
@@ -57,15 +54,15 @@ func (p *ProvisioningRequestPodsInjector) IsAvailableForProvisioning(pr *provreq
 	}
 	provisioned := apimeta.FindStatusCondition(conditions, v1.Provisioned)
 	if provisioned != nil {
-		if provisioned.Status == metav1.ConditionFalse {
-			return true
+		if provisioned.Status != metav1.ConditionFalse {
+			return false
 		}
 		retryTime, found := p.backoffDuration[key(pr)]
 		if !found {
-			retryTime = defaultRetryTime
+			retryTime = p.initialRetryTime
 		}
 		if provisioned.LastTransitionTime.Add(retryTime).Before(p.clock.Now()) {
-			p.backoffDuration[key(pr)] = max(2*retryTime, maxBackoffTime)
+			p.backoffDuration[key(pr)] = max(2*retryTime, p.maxBackoffTime)
 			return true
 		}
 		return false
@@ -95,7 +92,7 @@ func (p *ProvisioningRequestPodsInjector) MarkAsFailed(pr *provreqwrapper.Provis
 func (p *ProvisioningRequestPodsInjector) GetPodsFromNextRequest(
 	isSupportedClass func(*provreqwrapper.ProvisioningRequest) bool,
 ) ([]*apiv1.Pod, error) {
-	if len(p.backoffDuration) >= maxCacheSize {
+	if len(p.backoffDuration) >= p.maxCacheSize {
 		p.backoffDuration = make(map[string]time.Duration)
 	}
 	provReqs, err := p.client.ProvisioningRequests()
@@ -117,7 +114,7 @@ func (p *ProvisioningRequestPodsInjector) GetPodsFromNextRequest(
 		if !p.IsAvailableForProvisioning(pr) {
 			continue
 		}
-	
+
 		provreqpods, err := provreqpods.PodsForProvisioningRequest(pr)
 		if err != nil {
 			klog.Errorf("Failed to get pods for ProvisioningRequest %v", pr.Name)
@@ -154,12 +151,12 @@ func (p *ProvisioningRequestPodsInjector) Process(
 func (p *ProvisioningRequestPodsInjector) CleanUp() {}
 
 // NewProvisioningRequestPodsInjector creates a ProvisioningRequest filter processor.
-func NewProvisioningRequestPodsInjector(kubeConfig *rest.Config) (pods.PodListProcessor, error) {
+func NewProvisioningRequestPodsInjector(kubeConfig *rest.Config, initialBackoffTime, maxBackoffTime time.Duration, maxCacheSize int) (pods.PodListProcessor, error) {
 	client, err := provreqclient.NewProvisioningRequestClient(kubeConfig)
 	if err != nil {
 		return nil, err
 	}
-	return &ProvisioningRequestPodsInjector{client: client, clock: clock.RealClock{}}, nil
+	return &ProvisioningRequestPodsInjector{initialRetryTime: initialBackoffTime, maxBackoffTime: maxBackoffTime, maxCacheSize: maxCacheSize, client: client, clock: clock.RealClock{}}, nil
 }
 
 func key(pr *provreqwrapper.ProvisioningRequest) string {

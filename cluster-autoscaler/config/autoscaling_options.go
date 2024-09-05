@@ -295,6 +295,12 @@ type AutoscalingOptions struct {
 	ProvisioningRequestEnabled bool
 	// AsyncNodeGroupsEnabled tells if CA creates/deletes node groups asynchronously.
 	AsyncNodeGroupsEnabled bool
+	// ProvisioningRequestInitialBackoffTime is the initial time for ProvisioningRequest be considered by CA after failed ScaleUp request.
+	ProvisioningRequestInitialBackoffTime time.Duration
+	// ProvisioningRequestMaxBackoffTime is the max time for ProvisioningRequest be considered by CA after failed ScaleUp request.
+	ProvisioningRequestMaxBackoffTime time.Duration
+	// ProvisioningRequestMaxCacheSize is the max size for ProvisioningRequest cache that is stored for retry backoff.
+	ProvisioningRequestMaxCacheSize int
 }
 
 // KubeClientOptions specify options for kube client
