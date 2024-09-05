@@ -78,7 +78,7 @@ func (h *resourceHandler) GetPatches(ctx context.Context, ar *admissionv1.Admiss
 		pod.Namespace = namespace
 	}
 	klog.V(4).InfoS("Admitting pod", "pod", klog.KObj(&pod))
-	controllingVpa := h.vpaMatcher.GetMatchingVPA(&pod)
+	controllingVpa := h.vpaMatcher.GetMatchingVPA(ctx, &pod)
 	if controllingVpa == nil {
 		klog.V(4).InfoS("No matching VPA found for pod", "pod", klog.KObj(&pod))
 		return []resource_admission.PatchRecord{}, nil
