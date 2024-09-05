@@ -114,15 +114,17 @@ func newAzureCache(client *azClient, cacheTTL time.Duration, config Config) (*az
 		instanceToNodeGroup:  make(map[azureRef]cloudprovider.NodeGroup),
 		unownedInstances:     make(map[azureRef]bool),
 		autoscalingOptions:   make(map[azureRef]map[string]string),
-		skus:                 &skewer.Cache{},
+		skus:                 &skewer.Cache{}, // populated iff config.EnableDynamicInstanceList
 	}
 
 	if err := cache.regenerate(); err != nil {
 		klog.Errorf("Error while regenerating Azure cache: %v", err)
 	}
 
-	if err := cache.fetchSKUCache(config.Location); err != nil {
-		klog.Errorf("Error while populating SKU list: %v", err)
+	if config.EnableDynamicInstanceList {
+		if err := cache.fetchSKUCache(config.Location); err != nil {
+			klog.Errorf("Error while populating SKU list: %v", err)
+		}
 	}
 
 	return cache, nil
