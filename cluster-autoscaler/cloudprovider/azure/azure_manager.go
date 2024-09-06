@@ -110,6 +110,11 @@ func createAzureManagerInternal(configReader io.Reader, discoveryOpts cloudprovi
 	}
 	manager.azureCache = cache
 
+	if !manager.azureCache.HasVMSKUs() {
+		klog.Warning("No VM SKU info loaded, using only static SKU list")
+		cfg.EnableDynamicInstanceList = false
+	}
+
 	specs, err := ParseLabelAutoDiscoverySpecs(discoveryOpts)
 	if err != nil {
 		return nil, err
@@ -128,6 +133,7 @@ func createAzureManagerInternal(configReader io.Reader, discoveryOpts cloudprovi
 		Cap:      10 * time.Minute,
 	}
 
+	// skuCache will already be created at this step by newAzureCache()
 	err = kretry.OnError(retryBackoff, retry.IsErrorRetriable, func() (err error) {
 		return manager.forceRefresh()
 	})
