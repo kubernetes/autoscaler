@@ -18,6 +18,7 @@ package azure
 
 import (
 	"context"
+	"errors"
 	"reflect"
 	"regexp"
 	"strings"
@@ -96,7 +97,7 @@ type azureCache struct {
 	unownedInstances map[azureRef]bool
 
 	autoscalingOptions map[azureRef]map[string]string
-	skus               map[string]*skewer.Cache
+	skus               *skewer.Cache
 }
 
 func newAzureCache(client *azClient, cacheTTL time.Duration, config Config) (*azureCache, error) {
@@ -113,15 +114,17 @@ func newAzureCache(client *azClient, cacheTTL time.Duration, config Config) (*az
 		instanceToNodeGroup:  make(map[azureRef]cloudprovider.NodeGroup),
 		unownedInstances:     make(map[azureRef]bool),
 		autoscalingOptions:   make(map[azureRef]map[string]string),
-		skus:                 make(map[string]*skewer.Cache),
-	}
-
-	if config.EnableDynamicInstanceList {
-		cache.skus[config.Location] = &skewer.Cache{}
+		skus:                 &skewer.Cache{}, // populated iff config.EnableDynamicInstanceList
 	}
 
 	if err := cache.regenerate(); err != nil {
 		klog.Errorf("Error while regenerating Azure cache: %v", err)
+	}
+
+	if config.EnableDynamicInstanceList {
+		if err := cache.fetchSKUCache(config.Location); err != nil {
+			klog.Errorf("Error while populating SKU list: %v", err)
+		}
 	}
 
 	return cache, nil
@@ -186,25 +189,27 @@ func (m *azureCache) regenerate() error {
 		newAutoscalingOptions[ref] = options
 	}
 
-	newSkuCache := make(map[string]*skewer.Cache)
-	for location := range m.skus {
-		cache, err := m.fetchSKUs(context.Background(), location)
-		if err != nil {
-			return err
-		}
-		newSkuCache[location] = cache
-	}
-
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	m.instanceToNodeGroup = newInstanceToNodeGroupCache
 	m.autoscalingOptions = newAutoscalingOptions
-	m.skus = newSkuCache
 
 	// Reset unowned instances cache.
 	m.unownedInstances = make(map[azureRef]bool)
 
+	return nil
+}
+
+func (m *azureCache) fetchSKUCache(location string) error {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	cache, err := m.fetchSKUs(context.Background(), location)
+	if err != nil {
+		return err
+	}
+	m.skus = cache
 	return nil
 }
 
@@ -359,27 +364,26 @@ func (m *azureCache) Unregister(nodeGroup cloudprovider.NodeGroup) bool {
 }
 
 func (m *azureCache) fetchSKUs(ctx context.Context, location string) (*skewer.Cache, error) {
+	if location == "" {
+		return nil, errors.New("location not specified")
+	}
+
 	return skewer.NewCache(ctx,
 		skewer.WithLocation(location),
 		skewer.WithResourceClient(m.azClient.skuClient),
 	)
 }
 
+// HasVMSKUS returns true if the cache has any VM SKUs. Can be used to judge success of loading.
+func (m *azureCache) HasVMSKUs() bool {
+	// not nil or empty (using the only exposed semi-efficient way to check)
+	return !(m.skus == nil || m.skus.Equal(&skewer.Cache{}))
+}
+
 func (m *azureCache) GetSKU(ctx context.Context, skuName, location string) (skewer.SKU, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
-
-	cache, ok := m.skus[location]
-	if !ok {
-		var err error
-		cache, err = m.fetchSKUs(ctx, location)
-		if err != nil {
-			klog.V(1).Infof("Failed to instantiate cache, err: %v", err)
-			return skewer.SKU{}, err
-		}
-		m.skus[location] = cache
-	}
-
+	cache := m.skus
 	return cache.Get(ctx, skuName, skewer.VirtualMachines, location)
 }
 
