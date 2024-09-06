@@ -21,7 +21,6 @@ import (
 	"testing"
 	"time"
 
-	corev1 "k8s.io/api/core/v1"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
@@ -79,10 +78,11 @@ func TestProvisioningRequestPodsInjector(t *testing.T) {
 	unknownClass := testProvisioningRequestWithCondition("new-accepted", podsA, "unknown-class", accepted)
 
 	testCases := []struct {
-		name                     string
-		provReqs                 []*provreqwrapper.ProvisioningRequest
-		wantUnscheduledPodCount  int
-		wantUpdatedConditionName string
+		name                             string
+		provReqs                         []*provreqwrapper.ProvisioningRequest
+		existingUnsUnschedulablePodCount int
+		wantUnscheduledPodCount          int
+		wantUpdatedConditionName         string
 	}{
 		{
 			name:                     "New ProvisioningRequest, pods are injected and Accepted condition is added",
@@ -114,11 +114,18 @@ func TestProvisioningRequestPodsInjector(t *testing.T) {
 			name:     "ProvisionedClass is unknown, no pods are injected",
 			provReqs: []*provreqwrapper.ProvisioningRequest{unknownClass, failedProvReq},
 		},
+		{
+			name:                             "Provisioned=False, pods are injected but unschedulable pod list is not overwriten",
+			provReqs:                         []*provreqwrapper.ProvisioningRequest{newProvReqA},
+			existingUnsUnschedulablePodCount: 50,
+			wantUnscheduledPodCount:          podsA + 50,
+			wantUpdatedConditionName:         newProvReqA.Name,
+		},
 	}
 	for _, tc := range testCases {
 		client := provreqclient.NewFakeProvisioningRequestClient(context.Background(), t, tc.provReqs...)
 		injector := ProvisioningRequestPodsInjector{client, clock.NewFakePassiveClock(now)}
-		getUnscheduledPods, err := injector.Process(nil, []*corev1.Pod{})
+		getUnscheduledPods, err := injector.Process(nil, provreqwrapper.BuildTestPods("ns", "pod", tc.existingUnsUnschedulablePodCount))
 		if err != nil {
 			t.Errorf("%s failed: injector.Process return error %v", tc.name, err)
 		}
