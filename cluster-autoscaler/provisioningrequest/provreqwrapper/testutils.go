@@ -145,3 +145,17 @@ func BuildTestProvisioningRequest(namespace, name, cpu, memory, gpu string, podC
 			},
 		})
 }
+
+// BuildTestPods builds a list of pod objects for use as existing unschedulable pods in tests.
+func BuildTestPods(namespace, name string, podCount int) []*apiv1.Pod {
+	pods := make([]*apiv1.Pod, 0, podCount)
+	for i := 0; i < podCount; i++ {
+		pods = append(pods, &apiv1.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      fmt.Sprintf("%s-%d", name, i),
+				Namespace: namespace,
+			},
+		})
+	}
+	return pods
+}
