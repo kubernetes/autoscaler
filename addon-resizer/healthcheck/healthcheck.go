@@ -34,6 +34,8 @@ type HealthCheck struct {
 	// current state
 	mutex        sync.Mutex
 	lastActivity time.Time
+	// set to true when it starts polling API server
+	checkTimeout bool
 }
 
 // NewHealthCheck builds new HealthCheck object with given timeout.
@@ -43,6 +45,7 @@ func NewHealthCheck(address string, activityTimeout time.Duration) *HealthCheck 
 		activityTimeout: activityTimeout,
 		mutex:           sync.Mutex{},
 		lastActivity:    time.Now(),
+		checkTimeout:    false,
 	}
 }
 
@@ -62,7 +65,7 @@ func (hc *HealthCheck) checkLastActivity() (bool, time.Duration) {
 
 	now := time.Now()
 	lastActivity := hc.lastActivity
-	timedOut := now.After(lastActivity.Add(hc.activityTimeout))
+	timedOut := hc.checkTimeout && now.After(lastActivity.Add(hc.activityTimeout))
 
 	return timedOut, now.Sub(lastActivity)
 }
@@ -79,6 +82,14 @@ func (hc *HealthCheck) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		klog.Fatalf("Failed to write response message: %v", err)
 	}
+}
+
+// StartMonitoring updates checkTimeout to true.
+func (hc *HealthCheck) StartMonitoring() {
+	hc.mutex.Lock()
+	defer hc.mutex.Unlock()
+
+	hc.checkTimeout = true
 }
 
 // UpdateLastActivity updates last time of activity to now
