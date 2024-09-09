@@ -160,14 +160,13 @@ var _ = Describe("cloudprovider.HasInstance(v1.Node)", func() {
 		_, err := vmssVMsClient.Get(ctx, nodeResourceGroup, vmssName, instanceID, nil)
 		Expect(err).To(BeNil())
 		By("Getting Cluster Autoscaler status configmap for post scale down attempt comparisons")
-		Expect(err).NotTo(HaveOccurred())
-
+		ExpectStatusConfigmapExists(ctx, k8s, 5 * time.Minute, 5*time.Second)
+	
 		casStatusBeforeScaleDown, err := GetStructuredStatus(ctx, k8s)
 		Expect(err).ShouldNot(HaveOccurred())
 
 		By("scaling down the workload")
 		Expect(k8s.Delete(ctx, deployment)).To(Succeed())
-
 		// The AzureCache keeps the vm in the cache for at most 1 minute after its deletion.
 		// We can set this to one minute for that reason
 		By("verifying the node is marked with ToBeDeletedByClusterAutoscaler taint and the vm exists still")
@@ -210,6 +209,12 @@ func ExpectTaintedSystempool(ctx context.Context, k8sClient client.Client) {
 			Expect(err).To(BeNil())
 		}
 	}
+}
+
+func ExpectStatusConfigmapExists(ctx context.Context, k8sClient client.Client, timeout, interval time.Duration) {
+    Eventually(func() (*corev1.ConfigMap, error) {
+        return GetStatusConfigmap(ctx, k8sClient)
+    }, timeout, interval).ShouldNot(BeNil(), "ConfigMap 'cluster-autoscaler-status' should exist in the 'default' namespace")
 }
 
 func GetStatusConfigmap(ctx context.Context, k8sClient client.Client) (*corev1.ConfigMap, error) {
