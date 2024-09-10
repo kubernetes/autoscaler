@@ -101,7 +101,7 @@ func (p *ProvisioningRequestPodsInjector) GetPodsFromNextRequest(
 	}
 	for _, pr := range provReqs {
 		if !isSupportedClass(pr) {
-			klog.Warningf("Provisioning Class %s is not supported", pr.Spec.ProvisioningClassName)
+			klog.Warningf("Provisioning Class %s is not supported for ProvReq %s/%s", pr.Spec.ProvisioningClassName, pr.Namespace, pr.Name)
 			continue
 		}
 		conditions := pr.Status.Conditions

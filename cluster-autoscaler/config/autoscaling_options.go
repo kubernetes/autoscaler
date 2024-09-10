@@ -300,7 +300,7 @@ type AutoscalingOptions struct {
 	// ProvisioningRequestMaxBackoffTime is the max time for ProvisioningRequest be considered by CA after failed ScaleUp request.
 	ProvisioningRequestMaxBackoffTime time.Duration
 	// ProvisioningRequestMaxCacheSize is the max size for ProvisioningRequest cache that is stored for retry backoff.
-	ProvisioningRequestMaxCacheSize int
+	ProvisioningRequestMaxBackoffCacheSize int
 }
 
 // KubeClientOptions specify options for kube client
