@@ -27,6 +27,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqclient"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
 	clock "k8s.io/utils/clock/testing"
+	"k8s.io/utils/lru"
 )
 
 func TestProvisioningRequestPodsInjector(t *testing.T) {
@@ -128,8 +129,9 @@ func TestProvisioningRequestPodsInjector(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		client := provreqclient.NewFakeProvisioningRequestClient(context.Background(), t, tc.provReqs...)
-		backoffTime := map[string]time.Duration{key(notProvisionedRecentlyProvReqB): 2 * time.Minute}
-		injector := ProvisioningRequestPodsInjector{1 * time.Minute, 10 * time.Minute, 1000, clock.NewFakePassiveClock(now), client, backoffTime}
+		backoffTime := lru.New(100)
+		backoffTime.Add(key(notProvisionedRecentlyProvReqB), 2*time.Minute)
+		injector := ProvisioningRequestPodsInjector{1 * time.Minute, 10 * time.Minute, backoffTime, clock.NewFakePassiveClock(now), client}
 		getUnscheduledPods, err := injector.Process(nil, provreqwrapper.BuildTestPods("ns", "pod", tc.existingUnsUnschedulablePodCount))
 		if err != nil {
 			t.Errorf("%s failed: injector.Process return error %v", tc.name, err)
