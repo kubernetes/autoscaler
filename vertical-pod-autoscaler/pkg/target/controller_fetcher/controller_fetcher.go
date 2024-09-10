@@ -257,14 +257,15 @@ func (f *controllerFetcher) isWellKnownOrScalable(ctx context.Context, key *Cont
 	if f.isWellKnown(key) {
 		return true
 	}
-	if gk, err := key.groupKind(); err != nil && wellKnownController(gk.Kind) == node {
-		return false
-	}
 
 	//if not well known check if it supports scaling
 	groupKind, err := key.groupKind()
 	if err != nil {
 		klog.Errorf("Could not find groupKind for %s/%s: %v", key.Namespace, key.Name, err)
+		return false
+	}
+
+	if wellKnownController(groupKind.Kind) == node {
 		return false
 	}
 
@@ -286,7 +287,7 @@ func (f *controllerFetcher) isWellKnownOrScalable(ctx context.Context, key *Cont
 
 func (f *controllerFetcher) getOwnerForScaleResource(ctx context.Context, groupKind schema.GroupKind, namespace, name string) (*ControllerKeyWithAPIVersion, error) {
 	if wellKnownController(groupKind.Kind) == node {
-		// Some pods specify nods as their owners. This causes performance problems
+		// Some pods specify nodes as their owners. This causes performance problems
 		// in big clusters when VPA tries to get all nodes. We know nodes aren't
 		// valid controllers so we can skip trying to fetch them.
 		return nil, fmt.Errorf("node is not a valid owner")
