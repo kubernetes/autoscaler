@@ -182,7 +182,7 @@ func ExpectTaintedSystempool(ctx context.Context, k8sClient client.Client) {
 func ExpectNodeEventuallyHasTaint(ctx context.Context, node *corev1.Node, key, timeout, interval string) {
 	Eventually(func() bool {
 		Expect(k8s.Get(ctx, client.ObjectKey{Name: node.Name}, node)).To(Succeed())
-		for _, taint := range newNode.Spec.Taints {
+		for _, taint := range node.Spec.Taints {
 			if taint.Key == key {
 				return true
 			}
