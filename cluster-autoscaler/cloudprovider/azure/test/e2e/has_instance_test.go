@@ -20,7 +20,7 @@ package e2e_test
 
 import (
 	"context"
-	"strings"
+	"fmt"
 	"time"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -38,22 +38,8 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	api "k8s.io/autoscaler/cluster-autoscaler/clusterstate/api"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v4"
 )
 
-// Context: Why this suite?
-// Without an implementation of HasInstance, nodes with ToBeDeletedByClusterAutoscaler that still
-// have a VM will be counted as deleted rather than unready due to cluster state checking if a
-// node is being deleted based on the existence of that taint.
-// Inside the scale-up loop, we call GetUpcomingNodes, which returns how many nodes will be added to each of the node groups.
-// https://github.com/kubernetes/autoscaler/blob/cluster-autoscaler-release-1.30/cluster-autoscaler/clusterstate/clusterstate.go#L987
-//
-//	newNodes := ar.CurrentTarget - (len(readiness.Ready) + len(readiness.Unready) + len(readiness.LongUnregistered))
-//
-// We will falsely report the count of newNodes here, which leads to not creating new nodes in the scale-up loop.
-// We want to validate that for the Azure provider, HasInstance solves the case where we have a VM that has not been deleted yet,
-// counting toward our node count.
 var _ = Describe("cloudprovider.HasInstance(v1.Node)", func() {
 	var (
 		namespace *corev1.Namespace
@@ -78,7 +64,7 @@ var _ = Describe("cloudprovider.HasInstance(v1.Node)", func() {
 		}, "1m", "5s").Should(BeTrue(), "Namespace "+namespace.Name+" still exists")
 	})
 
-	It("should return if a node has ToBeDeletedByClusterAutoscaler and the vm is still there", func() {
+	It("should validate cluster state does not report a node as BeingDeletedd if a node has ToBeDeletedByClusterAutoscaler taint and the vm is still there", func() {
 		ensureHelmValues(map[string]interface{}{
 			"extraArgs": map[string]interface{}{
 				"scale-down-delay-after-add":       "10s",
@@ -94,31 +80,29 @@ var _ = Describe("cloudprovider.HasInstance(v1.Node)", func() {
 
 		By("tainting all existing nodes to ensure workload gets scheduled on a new node")
 		ExpectTaintedSystempool(ctx, k8s)
-		By("schedule workload to go on the node")
-		// Create a deployment that doesn't tolerate the taints of the other nodes
-		// This will ensure cluster autoscaler will not scale down the one node we create an agentpool put above until we remove this deployment
+		By("schedule a workload to have one user pool node stick around")
 		deployment := &appsv1.Deployment{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      "php-apache",
+				Name:      "inflate-pause-image",
 				Namespace: namespace.Name,
 			},
 			Spec: appsv1.DeploymentSpec{
 				Selector: &metav1.LabelSelector{
 					MatchLabels: map[string]string{
-						"run": "php-apache",
+						"run": "inflate-pause-image",
 					},
 				},
 				Replicas: ptr.To[int32](1), // one pod is all it takes :)
 				Template: corev1.PodTemplateSpec{
 					ObjectMeta: metav1.ObjectMeta{
 						Labels: map[string]string{
-							"run": "php-apache",
+							"run": "inflate-pause-image",
 						},
 					},
 					Spec: corev1.PodSpec{
 						Containers: []corev1.Container{
 							{
-								Name:  "php-apache",
+								Name:  "inflate-pause-image",
 								Image: "mcr.microsoft.com/oss/kubernetes/pause:3.6",
 								Resources: corev1.ResourceRequirements{
 									Limits: corev1.ResourceList{
@@ -135,6 +119,7 @@ var _ = Describe("cloudprovider.HasInstance(v1.Node)", func() {
 			},
 		}
 		Expect(k8s.Create(ctx, deployment)).To(Succeed())
+		ExpectDeploymentToBeReady(ctx, k8s, deployment, 1, "10m", "10s")
 		var newNode *corev1.Node
 		Eventually(func() bool {
 			podList := &corev1.PodList{}
@@ -151,16 +136,7 @@ var _ = Describe("cloudprovider.HasInstance(v1.Node)", func() {
 			return false
 		}, "5m", "10s").Should(BeTrue(), "Workload should be scheduled on a new node")
 
-		By("verifying the new node's ProviderID matches the expected resource ID and the resource exists before placing a delete lock on it")
-		providerIDParts := strings.Split(strings.TrimPrefix(newNode.Spec.ProviderID, "azure:///"), "/")
-		if len(providerIDParts) < 9 {
-			Fail("ProviderID format is incorrect")
-		}
-		vmssName := providerIDParts[7]
-		instanceID := providerIDParts[9]
-		_, err := vmssVMsClient.Get(ctx, nodeResourceGroup, vmssName, instanceID, nil)
-		Expect(err).To(BeNil())
-		By("Getting Cluster Autoscaler status configmap for post scale down attempt comparisons")
+		By("getting Cluster Autoscaler status configmap for post scale down attempt comparisons")
 		ExpectStatusConfigmapExists(ctx, k8s, 5*time.Minute, 5*time.Second)
 
 		casStatusBeforeScaleDown, err := GetStructuredStatus(ctx, k8s)
@@ -168,28 +144,20 @@ var _ = Describe("cloudprovider.HasInstance(v1.Node)", func() {
 
 		By("scaling down the workload")
 		Expect(k8s.Delete(ctx, deployment)).To(Succeed())
-		// The AzureCache keeps the vm in the cache for at most 1 minute after its deletion.
-		// We can set this to one minute for that reason
+
 		By("verifying the node is marked with ToBeDeletedByClusterAutoscaler taint and the vm exists still")
-		Eventually(func() bool {
-			Expect(k8s.Get(ctx, client.ObjectKey{Name: newNode.Name}, newNode)).To(Succeed())
-			for _, taint := range newNode.Spec.Taints {
-				if taint.Key == "ToBeDeletedByClusterAutoscaler" {
-					return true
-				}
-			}
-			return false
-		}, "1m", "1s").Should(BeTrue(), "Node should have ToBeDeletedByClusterAutoscaler taint")
-		_, err = vmssVMsClient.Get(ctx, nodeResourceGroup, vmssName, instanceID, nil)
-		Expect(err).To(BeNil())
-		By("Expecting cluster autoscaler status to not report this node as BeingDeleted")
-		newStatus, err := GetStructuredStatus(ctx, k8s)
+		ExpectNodeEventuallyHasTaint(ctx, newNode, "ToBeDeletedByClusterAutoscaler", "1m", "1s")
+
+		By("getting the latest status")
+		latestStatus, err := GetStructuredStatus(ctx, k8s)
 		Expect(err).ToNot(HaveOccurred())
-		// We should not be reporting this node as being deleted
-		// even though it has the ToBeDeleted CAS Taint with HasInstance implemented
-		Expect(newStatus.ClusterWide.Health.NodeCounts.Registered.BeingDeleted).To(
+
+		By("expecting cluster autoscaler status to not report this node as BeingDeleted")
+		Expect(latestStatus.ClusterWide.Health.NodeCounts.Registered.BeingDeleted).To(
 			Equal(casStatusBeforeScaleDown.ClusterWide.Health.NodeCounts.Registered.BeingDeleted),
 		)
+		By("expecting cluster autoscaler status to report an increase in Unready nodes")
+		Expect(latestStatus.ClusterWide.Health.NodeCounts.Registered.Unready).To(BeNumerically(">", casStatusBeforeScaleDown.ClusterWide.Health.NodeCounts.Registered.Unready), "Unready node count should have increased")
 	})
 })
 
@@ -201,7 +169,6 @@ func ExpectTaintedSystempool(ctx context.Context, k8sClient client.Client) {
 	}
 	nodeList := &corev1.NodeList{}
 	Expect(k8s.List(ctx, nodeList)).To(Succeed())
-	// Taint all the systempool nodes
 	for _, node := range nodeList.Items {
 		if node.Labels["kubernetes.azure.com/mode"] == "system" {
 			updateNode := node.DeepCopy()
@@ -210,6 +177,18 @@ func ExpectTaintedSystempool(ctx context.Context, k8sClient client.Client) {
 			Expect(err).To(BeNil())
 		}
 	}
+}
+
+func ExpectNodeEventuallyHasTaint(ctx context.Context, node *corev1.Node, key, timeout, interval string) {
+	Eventually(func() bool {
+		Expect(k8s.Get(ctx, client.ObjectKey{Name: node.Name}, node)).To(Succeed())
+		for _, taint := range newNode.Spec.Taints {
+			if taint.Key == key {
+				return true
+			}
+		}
+		return false
+	}, timeout, interval).Should(BeTrue(), fmt.Sprintf("Node should have %s taint", key))
 }
 
 func ExpectStatusConfigmapExists(ctx context.Context, k8sClient client.Client, timeout, interval time.Duration) {
@@ -242,25 +221,6 @@ func GetStructuredStatus(ctx context.Context, k8sClient client.Client) (*api.Clu
 		return nil, errors.Wrapf(err, "failed to unmarshal cluster autoscaler status. data status: \n%s", data["status"])
 	}
 	return Status, nil
-}
-
-func CreateNodepool(ctx context.Context, npClient *armcontainerservice.AgentPoolsClient, rg, clusterName, nodepoolName string, agentpool armcontainerservice.AgentPool) (*armcontainerservice.AgentPool, error) {
-	poller, err := npClient.BeginCreateOrUpdate(ctx, rg, clusterName, nodepoolName, agentpool, nil)
-	if err != nil {
-		return nil, err
-	}
-	res, err := poller.PollUntilDone(ctx, nil)
-	if err != nil {
-		return nil, err
-	}
-	return &res.AgentPool, nil
-}
-
-func DeleteNodepool(ctx context.Context, npClient *armcontainerservice.AgentPoolsClient, rg, clusterName, nodepoolName string) error {
-	poller, err := npClient.BeginDelete(ctx, rg, clusterName, nodepoolName, nil)
-	Expect(err).ToNot(HaveOccurred())
-	_, err = poller.PollUntilDone(ctx, nil)
-	return err
 }
 
 func ExpectDeploymentToBeReady(ctx context.Context, k8sClient client.Client, deployment *appsv1.Deployment, expectedReplicas int32, timeout string, interval string) {

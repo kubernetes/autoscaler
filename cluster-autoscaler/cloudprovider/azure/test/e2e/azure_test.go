@@ -131,7 +131,7 @@ var _ = Describe("Azure Provider", func() {
 
 		Eventually(allVMSSStable, "10m", "30s").Should(Succeed())
 
-		By("Deleting 100 Pods")
+		By("Deleting 30 Pods")
 		Expect(k8s.Delete(ctx, deploy)).To(Succeed())
 
 		By("Waiting for the original number of Nodes to be Ready")
