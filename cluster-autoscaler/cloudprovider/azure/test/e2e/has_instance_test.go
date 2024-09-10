@@ -161,8 +161,8 @@ var _ = Describe("cloudprovider.HasInstance(v1.Node)", func() {
 		_, err := vmssVMsClient.Get(ctx, nodeResourceGroup, vmssName, instanceID, nil)
 		Expect(err).To(BeNil())
 		By("Getting Cluster Autoscaler status configmap for post scale down attempt comparisons")
-		ExpectStatusConfigmapExists(ctx, k8s, 5 * time.Minute, 5*time.Second)
-	
+		ExpectStatusConfigmapExists(ctx, k8s, 5*time.Minute, 5*time.Second)
+
 		casStatusBeforeScaleDown, err := GetStructuredStatus(ctx, k8s)
 		Expect(err).ShouldNot(HaveOccurred())
 
@@ -213,9 +213,9 @@ func ExpectTaintedSystempool(ctx context.Context, k8sClient client.Client) {
 }
 
 func ExpectStatusConfigmapExists(ctx context.Context, k8sClient client.Client, timeout, interval time.Duration) {
-    Eventually(func() (*corev1.ConfigMap, error) {
-        return GetStatusConfigmap(ctx, k8sClient)
-    }, timeout, interval).ShouldNot(BeNil(), "ConfigMap 'cluster-autoscaler-status' should exist in the 'default' namespace")
+	Eventually(func() (*corev1.ConfigMap, error) {
+		return GetStatusConfigmap(ctx, k8sClient)
+	}, timeout, interval).ShouldNot(BeNil(), "ConfigMap 'cluster-autoscaler-status' should exist in the 'default' namespace")
 }
 
 func GetStatusConfigmap(ctx context.Context, k8sClient client.Client) (*corev1.ConfigMap, error) {
