@@ -63,7 +63,7 @@ func (p *ProvisioningRequestPodsInjector) IsAvailableForProvisioning(pr *provreq
 		}
 		if provisioned.LastTransitionTime.Add(retryTime).Before(p.clock.Now()) {
 			p.backoffDuration.Remove(key(pr))
-			p.backoffDuration.Add(key(pr), max(2*retryTime, p.maxBackoffTime))
+			p.backoffDuration.Add(key(pr), min(2*retryTime, p.maxBackoffTime))
 			return true
 		}
 		return false
@@ -99,7 +99,6 @@ func (p *ProvisioningRequestPodsInjector) GetPodsFromNextRequest(
 	}
 	for _, pr := range provReqs {
 		if !isSupportedClass(pr) {
-			klog.Warningf("Provisioning Class %s is not supported for ProvReq %s/%s", pr.Spec.ProvisioningClassName, pr.Namespace, pr.Name)
 			continue
 		}
 		conditions := pr.Status.Conditions
@@ -135,6 +134,9 @@ func (p *ProvisioningRequestPodsInjector) Process(
 	podsFromProvReq, err := p.GetPodsFromNextRequest(
 		func(pr *provreqwrapper.ProvisioningRequest) bool {
 			_, found := provisioningrequest.SupportedProvisioningClasses[pr.Spec.ProvisioningClassName]
+			if !found {
+				klog.Warningf("Provisioning Class %s is not supported for ProvReq %s/%s", pr.Spec.ProvisioningClassName, pr.Namespace, pr.Name)
+			}
 			return found
 		})
 
