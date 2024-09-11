@@ -23,7 +23,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
+	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/conditions"
@@ -33,13 +33,15 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/klogx"
 	"k8s.io/klog/v2"
 	"k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 const (
-	defaultReservationTime = 10 * time.Minute
-	defaultExpirationTime  = 7 * 24 * time.Hour // 7 days
+	defaultReservationTime    = 10 * time.Minute
+	defaultExpirationTime     = 7 * 24 * time.Hour // 7 days
+	defaultTerminalProvReqTTL = 7 * 24 * time.Hour // 7 days
 	// defaultMaxUpdated is a limit for ProvisioningRequest to update conditions in one ClusterAutoscaler loop.
 	defaultMaxUpdated = 20
 )
@@ -118,6 +120,7 @@ func (p *provReqProcessor) refresh(provReqs []*provreqwrapper.ProvisioningReques
 			continue
 		}
 	}
+	p.DeleteOldProvReqs(provReqs)
 }
 
 // CleanUp cleans up internal state
@@ -166,4 +169,22 @@ func (p *provReqProcessor) bookCapacity(ctx *context.AutoscalingContext) error {
 		return err
 	}
 	return nil
+}
+
+// DeleteOldProvReqs delete ProvReq that have terminal state (Provisioned/Failed == True) more than a week.
+func (p *provReqProcessor) DeleteOldProvReqs(provReqs []*provreqwrapper.ProvisioningRequest) {
+	provReqQuota := klogx.NewLoggingQuota(30)
+	for _, provReq := range provReqs {
+		conditions := provReq.Status.Conditions
+		provisioned := apimeta.FindStatusCondition(conditions, v1.Provisioned)
+		failed := apimeta.FindStatusCondition(conditions, v1.Failed)
+		if provisioned != nil && provisioned.LastTransitionTime.Add(defaultTerminalProvReqTTL).Before(p.now()) ||
+			failed != nil && failed.LastTransitionTime.Add(defaultTerminalProvReqTTL).Before(p.now()) {
+			klogx.V(4).UpTo(provReqQuota).Infof("Delete old ProvisioningRequest %s/%s", provReq.Namespace, provReq.Name)
+			err := p.client.DeleteProvisioningRequest(provReq.ProvisioningRequest)
+			if err != nil {
+				klog.Warningf("Couldn't delete old %s/%s Provisioning Request, err: %v", provReq.Namespace, provReq.Name, err)
+			}
+		}
+	}
 }
