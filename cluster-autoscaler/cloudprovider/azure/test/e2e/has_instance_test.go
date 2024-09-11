@@ -64,7 +64,7 @@ var _ = Describe("cloudprovider.HasInstance(v1.Node)", func() {
 		}, "1m", "5s").Should(BeTrue(), "Namespace "+namespace.Name+" still exists")
 	})
 
-	It("should validate cluster state does not report a node as BeingDeletedd if a node has ToBeDeletedByClusterAutoscaler taint and the vm is still there", func() {
+	It("should validate cluster state does not report a node as BeingDeleted if a node has ToBeDeletedByClusterAutoscaler taint and the vm is still there", func() {
 		ensureHelmValues(map[string]interface{}{
 			"extraArgs": map[string]interface{}{
 				"scale-down-delay-after-add":       "10s",
@@ -161,11 +161,9 @@ var _ = Describe("cloudprovider.HasInstance(v1.Node)", func() {
 			Equal(casStatusBeforeScaleDown.ClusterWide.Health.NodeCounts.Registered.BeingDeleted),
 		)
 
-		By("checking if node counts for Ready or Unready nodes have increased by 1")
-		readyIncreased := latestStatus.ClusterWide.Health.NodeCounts.Registered.Ready == casStatusBeforeScaleDown.ClusterWide.Health.NodeCounts.Registered.Ready+1
-		unreadyIncreased := latestStatus.ClusterWide.Health.NodeCounts.Registered.Unready.Total == casStatusBeforeScaleDown.ClusterWide.Health.NodeCounts.Registered.Unready.Total+1
-
-		Expect(readyIncreased || unreadyIncreased).To(BeTrue(), "Either Ready or Unready node counts should have increased by 1")
+		By("checking if node counts for Ready or Unready nodes have decreased by 1")
+		Expect(latestStatus.ClusterWide.Health.NodeCounts.Registered.Ready).To(Equal(casStatusBeforeScaleDown.ClusterWide.Health.NodeCounts.Registered.Ready))
+		Expect(latestStatus.ClusterWide.Health.NodeCounts.Registered.Unready.Total).To(Equal(casStatusBeforeScaleDown.ClusterWide.Health.NodeCounts.Registered.Unready.Total))
 	})
 })
 
