@@ -138,9 +138,10 @@ var _ = Describe("cloudprovider.HasInstance(v1.Node)", func() {
 
 		By("getting Cluster Autoscaler status configmap for post scale down attempt comparisons")
 		ExpectStatusConfigmapExists(ctx, k8s, 5*time.Minute, 5*time.Second)
-
 		casStatusBeforeScaleDown, err := GetStructuredStatus(ctx, k8s)
 		Expect(err).ShouldNot(HaveOccurred())
+
+		By("ensuring we don't have scale down candidates before we delete the deployment")
 
 		By("scaling down the workload")
 		Expect(k8s.Delete(ctx, deployment)).To(Succeed())
@@ -152,12 +153,19 @@ var _ = Describe("cloudprovider.HasInstance(v1.Node)", func() {
 		latestStatus, err := GetStructuredStatus(ctx, k8s)
 		Expect(err).ToNot(HaveOccurred())
 
+		By("expecting 1 scale down candidate to be present for us to be able to trust the configmap state for assertions below")
+		Expect(latestStatus.ClusterWide.ScaleDown.Candidates).To(Equal(1))
+
 		By("expecting cluster autoscaler status to not report this node as BeingDeleted")
 		Expect(latestStatus.ClusterWide.Health.NodeCounts.Registered.BeingDeleted).To(
 			Equal(casStatusBeforeScaleDown.ClusterWide.Health.NodeCounts.Registered.BeingDeleted),
 		)
-		GinkgoWriter.Printf("Status before scale down: %+v\n", casStatusBeforeScaleDown)
-		GinkgoWriter.Printf("Latest status: %+v\n", latestStatus)
+
+		By("checking if node counts for Ready or Unready nodes have increased by 1")
+		readyIncreased := latestStatus.ClusterWide.Health.NodeCounts.Registered.Ready == casStatusBeforeScaleDown.ClusterWide.Health.NodeCounts.Registered.Ready+1
+		unreadyIncreased := latestStatus.ClusterWide.Health.NodeCounts.Registered.Unready.Total == casStatusBeforeScaleDown.ClusterWide.Health.NodeCounts.Registered.Unready.Total+1
+
+		Expect(readyIncreased || unreadyIncreased).To(BeTrue(), "Either Ready or Unready node counts should have increased by 1")
 	})
 })
 
