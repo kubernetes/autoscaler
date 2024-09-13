@@ -172,7 +172,7 @@ func TestDeleteOutdatedDeployments(t *testing.T) {
 	}
 }
 
-func TestGetVMsFromCache(t *testing.T) {
+func TestAgentPoolGetVMsFromCache(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -309,7 +309,7 @@ func TestAgentPoolIncreaseSize(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestDecreaseTargetSize(t *testing.T) {
+func TestAgentPoolDecreaseTargetSize(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
