@@ -199,9 +199,9 @@ func (c *cachingMigInfoProvider) listInstancesInAllZonesWithMigs() ([]GceInstanc
 	zoneInstances := make([][]GceInstance, len(zones))
 	defer metrics.UpdateDurationFromStart(metrics.BulkListAllGceInstances, time.Now())
 
-	workqueue.ParallelizeUntil(context.Background(), c.concurrentGceRefreshes, len(zones), func(piece int) {
+	workqueue.ParallelizeUntil(context.Background(), len(zones), len(zones), func(piece int) {
 		zoneInstances[piece], errors[piece] = c.gceClient.FetchAllInstances(c.projectId, zones[piece], "")
-	}, workqueue.WithChunkSize(c.concurrentGceRefreshes))
+	})
 
 	for _, instances := range zoneInstances {
 		allInstances = append(allInstances, instances...)
