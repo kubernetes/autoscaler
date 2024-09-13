@@ -707,6 +707,38 @@ spec:
         args: ["sleep"]
 ```
 
+### How can I tune Cluster Autoscaler's performance for processing ProvisioningRequests?
+
+Cluster Autoscaler can be run in batch processing mode for CheckCapacity
+ProvisioningRequests. In this mode, Cluster Autoscaler processes multiple
+CheckCapacity ProvisioningRequests in a single iteration. This mode is useful for
+scenarios where a large number of CheckCapacity ProvisioningRequests
+need to be processed.
+
+However, enabling batch processing for CheckCapacity ProvisioningRequests can adversely
+affect the performance of processing other types of ProvisioningRequests and incoming pods
+since iterations where CheckCapacity ProvisioningRequests are processed will take longer
+and scale-ups for other types of ProvisioningRequests and incoming pods will not be processed
+during that time.
+
+#### Enabling Batch Processing
+
+1. **Cluster Autoscaler Version**: Ensure you are using Cluster Autoscaler version 1.32.0 or later.
+
+2. **Feature Flag**: Batch processing is disabled by default, it can be enabled by
+setting the following flag in your Cluster Autoscaler configuration:
+`--check-capacity-batch-processing=true`.
+
+3. **Batch Size**: Set the maximum number of CheckCapacity ProvisioningRequests
+to process in a single iteration by setting the following flag in your Cluster
+Autoscaler configuration:
+`--max-batch-size=<batch-size>`. The default value is 10.
+
+4. **Batch Timebox**: Set the maximum time in seconds that Cluster Autoscaler will
+spend processing CheckCapacity ProvisioningRequests in a single iteration by
+setting the following flag in your Cluster Autoscaler configuration:
+`--batch-timebox=<timebox>`. The default value is 10s.
+
 ****************
 
 # Internals
