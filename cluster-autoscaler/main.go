@@ -264,7 +264,7 @@ var (
 	maxAllocatableDifferenceRatio           = flag.Float64("max-allocatable-difference-ratio", config.DefaultMaxAllocatableDifferenceRatio, "Maximum difference in allocatable resources between two similar node groups to be considered for balancing. Value is a ratio of the smaller node group's allocatable resource.")
 	forceDaemonSets                         = flag.Bool("force-ds", false, "Blocks scale-up of node groups too small for all suitable Daemon Sets pods.")
 	dynamicNodeDeleteDelayAfterTaintEnabled = flag.Bool("dynamic-node-delete-delay-after-taint-enabled", false, "Enables dynamic adjustment of NodeDeleteDelayAfterTaint based of the latency between CA and api-server")
-	bypassedSchedulers                      = pflag.StringSlice("bypassed-scheduler-names", []string{}, fmt.Sprintf("Names of schedulers to bypass. If set to non-empty value, CA will not wait for pods to reach a certain age before triggering a scale-up."))
+	bypassedSchedulers                      = pflag.StringSlice("bypassed-scheduler-names", []string{}, "Names of schedulers to bypass. If set to non-empty value, CA will not wait for pods to reach a certain age before triggering a scale-up.")
 	drainPriorityConfig                     = flag.String("drain-priority-config", "",
 		"List of ',' separated pairs (priority:terminationGracePeriodSeconds) of integers separated by ':' enables priority evictor. Priority evictor groups pods into priority groups based on pod priority and evict pods in the ascending order of group priorities"+
 			"--max-graceful-termination-sec flag should not be set when this flag is set. Not setting this flag will use unordered evictor by default."+
@@ -521,9 +521,6 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 
 		opts.ScaleUpOrchestrator = scaleUpOrchestrator
 		provreqProcesor := provreq.NewProvReqProcessor(client, opts.PredicateChecker)
-		if err != nil {
-			return nil, err
-		}
 		opts.LoopStartNotifier = loopstart.NewObserversList([]loopstart.Observer{provreqProcesor})
 		injector, err := provreq.NewProvisioningRequestPodsInjector(restConfig)
 		if err != nil {
@@ -547,9 +544,8 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 	}
 
 	opts.Processors.PodListProcessor = podListProcessor
-	scaleDownCandidatesComparers := []scaledowncandidates.CandidatesComparer{}
 	sdCandidatesSorting := previouscandidates.NewPreviousCandidates()
-	scaleDownCandidatesComparers = []scaledowncandidates.CandidatesComparer{
+	scaleDownCandidatesComparers := []scaledowncandidates.CandidatesComparer{
 		emptycandidates.NewEmptySortingProcessor(emptycandidates.NewNodeInfoGetter(opts.ClusterSnapshot), deleteOptions, drainabilityRules),
 		sdCandidatesSorting,
 	}
