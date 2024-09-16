@@ -61,10 +61,14 @@ func (c *nodePoolCache) rebuild(staticNodePools map[string]NodePool, maxGetNodep
 			}
 		}
 		if err != nil {
+			// in order to let cluster autoscaler still do its work even with a wrong nodepoolid,
+			// we avoid returning an error but instead log and remove it from nodepool list
 			klog.Errorf("Failed to fetch the nodepool : %v", id)
-			return statusCode, err
+			klog.Errorf("Removing nodepool from the list to avoid further issues : %v", id)
+			delete(staticNodePools, id)
+		} else {
+			c.set(&resp.NodePool)
 		}
-		c.set(&resp.NodePool)
 	}
 	return statusCode, nil
 }
