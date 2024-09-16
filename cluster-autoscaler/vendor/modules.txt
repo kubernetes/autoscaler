@@ -120,8 +120,8 @@ github.com/Azure/go-autorest/logger
 # github.com/Azure/go-autorest/tracing v0.6.0
 ## explicit; go 1.12
 github.com/Azure/go-autorest/tracing
-# github.com/Azure/skewer v0.0.14
-## explicit; go 1.13
+# github.com/Azure/skewer v0.0.19
+## explicit; go 1.18
 github.com/Azure/skewer
 # github.com/AzureAD/microsoft-authentication-library-for-go v1.2.2
 ## explicit; go 1.18
