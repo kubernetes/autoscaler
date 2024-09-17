@@ -46,7 +46,7 @@ func NewPrivateEndpointConnectionsClient(subscriptionID string, credential azcor
 // BeginDelete - Deletes a private endpoint connection.
 // If the operation fails it returns an *azcore.ResponseError type.
 //
-// Generated from API version 2024-01-02-preview
+// Generated from API version 2024-04-02-preview
 //   - resourceGroupName - The name of the resource group. The name is case insensitive.
 //   - resourceName - The name of the managed cluster resource.
 //   - privateEndpointConnectionName - The name of the private endpoint connection.
@@ -72,7 +72,7 @@ func (client *PrivateEndpointConnectionsClient) BeginDelete(ctx context.Context,
 // Delete - Deletes a private endpoint connection.
 // If the operation fails it returns an *azcore.ResponseError type.
 //
-// Generated from API version 2024-01-02-preview
+// Generated from API version 2024-04-02-preview
 func (client *PrivateEndpointConnectionsClient) deleteOperation(ctx context.Context, resourceGroupName string, resourceName string, privateEndpointConnectionName string, options *PrivateEndpointConnectionsClientBeginDeleteOptions) (*http.Response, error) {
 	var err error
 	const operationName = "PrivateEndpointConnectionsClient.BeginDelete"
@@ -118,7 +118,7 @@ func (client *PrivateEndpointConnectionsClient) deleteCreateRequest(ctx context.
 		return nil, err
 	}
 	reqQP := req.Raw().URL.Query()
-	reqQP.Set("api-version", "2024-01-02-preview")
+	reqQP.Set("api-version", "2024-04-02-preview")
 	req.Raw().URL.RawQuery = reqQP.Encode()
 	req.Raw().Header["Accept"] = []string{"application/json"}
 	return req, nil
@@ -127,7 +127,7 @@ func (client *PrivateEndpointConnectionsClient) deleteCreateRequest(ctx context.
 // Get - To learn more about private clusters, see: https://docs.microsoft.com/azure/aks/private-clusters
 // If the operation fails it returns an *azcore.ResponseError type.
 //
-// Generated from API version 2024-01-02-preview
+// Generated from API version 2024-04-02-preview
 //   - resourceGroupName - The name of the resource group. The name is case insensitive.
 //   - resourceName - The name of the managed cluster resource.
 //   - privateEndpointConnectionName - The name of the private endpoint connection.
@@ -179,7 +179,7 @@ func (client *PrivateEndpointConnectionsClient) getCreateRequest(ctx context.Con
 		return nil, err
 	}
 	reqQP := req.Raw().URL.Query()
-	reqQP.Set("api-version", "2024-01-02-preview")
+	reqQP.Set("api-version", "2024-04-02-preview")
 	req.Raw().URL.RawQuery = reqQP.Encode()
 	req.Raw().Header["Accept"] = []string{"application/json"}
 	return req, nil
@@ -197,7 +197,7 @@ func (client *PrivateEndpointConnectionsClient) getHandleResponse(resp *http.Res
 // List - To learn more about private clusters, see: https://docs.microsoft.com/azure/aks/private-clusters
 // If the operation fails it returns an *azcore.ResponseError type.
 //
-// Generated from API version 2024-01-02-preview
+// Generated from API version 2024-04-02-preview
 //   - resourceGroupName - The name of the resource group. The name is case insensitive.
 //   - resourceName - The name of the managed cluster resource.
 //   - options - PrivateEndpointConnectionsClientListOptions contains the optional parameters for the PrivateEndpointConnectionsClient.List
@@ -244,7 +244,7 @@ func (client *PrivateEndpointConnectionsClient) listCreateRequest(ctx context.Co
 		return nil, err
 	}
 	reqQP := req.Raw().URL.Query()
-	reqQP.Set("api-version", "2024-01-02-preview")
+	reqQP.Set("api-version", "2024-04-02-preview")
 	req.Raw().URL.RawQuery = reqQP.Encode()
 	req.Raw().Header["Accept"] = []string{"application/json"}
 	return req, nil
@@ -262,7 +262,7 @@ func (client *PrivateEndpointConnectionsClient) listHandleResponse(resp *http.Re
 // Update - Updates a private endpoint connection.
 // If the operation fails it returns an *azcore.ResponseError type.
 //
-// Generated from API version 2024-01-02-preview
+// Generated from API version 2024-04-02-preview
 //   - resourceGroupName - The name of the resource group. The name is case insensitive.
 //   - resourceName - The name of the managed cluster resource.
 //   - privateEndpointConnectionName - The name of the private endpoint connection.
@@ -315,7 +315,7 @@ func (client *PrivateEndpointConnectionsClient) updateCreateRequest(ctx context.
 		return nil, err
 	}
 	reqQP := req.Raw().URL.Query()
-	reqQP.Set("api-version", "2024-01-02-preview")
+	reqQP.Set("api-version", "2024-04-02-preview")
 	req.Raw().URL.RawQuery = reqQP.Encode()
 	req.Raw().Header["Accept"] = []string{"application/json"}
 	if err := runtime.MarshalAsJSON(req, parameters); err != nil {

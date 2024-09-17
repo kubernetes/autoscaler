@@ -10,7 +10,7 @@ package armcontainerservice
 
 const (
 	moduleName    = "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice"
-	moduleVersion = "v4.9.0-beta.1"
+	moduleVersion = "v5.1.0-beta.2"
 )
 
 // AddonAutoscaling - Whether VPA add-on is enabled and configured to scale AKS-managed add-ons.
@@ -36,6 +36,9 @@ func PossibleAddonAutoscalingValues() []AddonAutoscaling {
 type AgentPoolMode string
 
 const (
+	// AgentPoolModeGateway - Gateway agent pools are dedicated to providing static egress IPs to pods. For more details, see
+	// https://aka.ms/aks/static-egress-gateway.
+	AgentPoolModeGateway AgentPoolMode = "Gateway"
 	// AgentPoolModeSystem - System agent pools are primarily for hosting critical system pods such as CoreDNS and metrics-server.
 	// System agent pools osType must be Linux. System agent pools VM SKU must have at least 2vCPUs and 4GB of memory.
 	AgentPoolModeSystem AgentPoolMode = "System"
@@ -46,6 +49,7 @@ const (
 // PossibleAgentPoolModeValues returns the possible values for the AgentPoolMode const type.
 func PossibleAgentPoolModeValues() []AgentPoolMode {
 	return []AgentPoolMode{
+		AgentPoolModeGateway,
 		AgentPoolModeSystem,
 		AgentPoolModeUser,
 	}
@@ -123,6 +127,26 @@ func PossibleBackendPoolTypeValues() []BackendPoolType {
 	return []BackendPoolType{
 		BackendPoolTypeNodeIP,
 		BackendPoolTypeNodeIPConfiguration,
+	}
+}
+
+// ClusterServiceLoadBalancerHealthProbeMode - The health probing behavior for External Traffic Policy Cluster services.
+type ClusterServiceLoadBalancerHealthProbeMode string
+
+const (
+	// ClusterServiceLoadBalancerHealthProbeModeServiceNodePort - Each External Traffic Policy Cluster service will have its own
+	// health probe targeting service nodePort.
+	ClusterServiceLoadBalancerHealthProbeModeServiceNodePort ClusterServiceLoadBalancerHealthProbeMode = "ServiceNodePort"
+	// ClusterServiceLoadBalancerHealthProbeModeShared - All External Traffic Policy Cluster services in a Standard Load Balancer
+	// will have a dedicated health probe targeting the backend nodes' kube-proxy health check port 10256.
+	ClusterServiceLoadBalancerHealthProbeModeShared ClusterServiceLoadBalancerHealthProbeMode = "Shared"
+)
+
+// PossibleClusterServiceLoadBalancerHealthProbeModeValues returns the possible values for the ClusterServiceLoadBalancerHealthProbeMode const type.
+func PossibleClusterServiceLoadBalancerHealthProbeModeValues() []ClusterServiceLoadBalancerHealthProbeMode {
+	return []ClusterServiceLoadBalancerHealthProbeMode{
+		ClusterServiceLoadBalancerHealthProbeModeServiceNodePort,
+		ClusterServiceLoadBalancerHealthProbeModeShared,
 	}
 }
 
@@ -484,6 +508,10 @@ func PossibleManagedClusterPodIdentityProvisioningStateValues() []ManagedCluster
 type ManagedClusterSKUName string
 
 const (
+	// ManagedClusterSKUNameAutomatic - Automatic clusters are optimized to run most production workloads with configuration that
+	// follows AKS best practices and recommendations for cluster and workload setup, scalability, and security. For more details
+	// about Automatic clusters see aka.ms/aks/automatic.
+	ManagedClusterSKUNameAutomatic ManagedClusterSKUName = "Automatic"
 	// ManagedClusterSKUNameBase - Base option for the AKS control plane.
 	ManagedClusterSKUNameBase ManagedClusterSKUName = "Base"
 )
@@ -491,6 +519,7 @@ const (
 // PossibleManagedClusterSKUNameValues returns the possible values for the ManagedClusterSKUName const type.
 func PossibleManagedClusterSKUNameValues() []ManagedClusterSKUName {
 	return []ManagedClusterSKUName{
+		ManagedClusterSKUNameAutomatic,
 		ManagedClusterSKUNameBase,
 	}
 }
@@ -779,6 +808,30 @@ func PossibleOSTypeValues() []OSType {
 	}
 }
 
+// Operator - operator represents a key's relationship to a set of values. Valid operators are In and NotIn
+type Operator string
+
+const (
+	// OperatorDoesNotExist - The value of the key should not exist.
+	OperatorDoesNotExist Operator = "DoesNotExist"
+	// OperatorExists - The value of the key should exist.
+	OperatorExists Operator = "Exists"
+	// OperatorIn - The value of the key should be in the given list.
+	OperatorIn Operator = "In"
+	// OperatorNotIn - The value of the key should not be in the given list.
+	OperatorNotIn Operator = "NotIn"
+)
+
+// PossibleOperatorValues returns the possible values for the Operator const type.
+func PossibleOperatorValues() []Operator {
+	return []Operator{
+		OperatorDoesNotExist,
+		OperatorExists,
+		OperatorIn,
+		OperatorNotIn,
+	}
+}
+
 // OutboundType - This can only be set at cluster creation time and cannot be changed later. For more information see egress
 // outbound type [https://docs.microsoft.com/azure/aks/egress-outboundtype].
 type OutboundType string
@@ -789,6 +842,9 @@ const (
 	OutboundTypeLoadBalancer OutboundType = "loadBalancer"
 	// OutboundTypeManagedNATGateway - The AKS-managed NAT gateway is used for egress.
 	OutboundTypeManagedNATGateway OutboundType = "managedNATGateway"
+	// OutboundTypeNone - The AKS cluster is not set with any outbound-type. All AKS nodes follows Azure VM default outbound behavior.
+	// Please refer to https://azure.microsoft.com/en-us/updates/default-outbound-access-for-vms-in-azure-will-be-retired-transition-to-a-new-method-of-internet-access/
+	OutboundTypeNone OutboundType = "none"
 	// OutboundTypeUserAssignedNATGateway - The user-assigned NAT gateway associated to the cluster subnet is used for egress.
 	// This is an advanced scenario and requires proper network configuration.
 	OutboundTypeUserAssignedNATGateway OutboundType = "userAssignedNATGateway"
@@ -802,6 +858,7 @@ func PossibleOutboundTypeValues() []OutboundType {
 	return []OutboundType{
 		OutboundTypeLoadBalancer,
 		OutboundTypeManagedNATGateway,
+		OutboundTypeNone,
 		OutboundTypeUserAssignedNATGateway,
 		OutboundTypeUserDefinedRouting,
 	}
@@ -828,6 +885,25 @@ func PossiblePodIPAllocationModeValues() []PodIPAllocationMode {
 	return []PodIPAllocationMode{
 		PodIPAllocationModeDynamicIndividual,
 		PodIPAllocationModeStaticBlock,
+	}
+}
+
+// PodLinkLocalAccess - Defines access to special link local addresses (Azure Instance Metadata Service, aka IMDS) for pods
+// with hostNetwork=false. If not specified, the default is 'IMDS'.
+type PodLinkLocalAccess string
+
+const (
+	// PodLinkLocalAccessIMDS - Pods with hostNetwork=false can access Azure Instance Metadata Service (IMDS) without restriction.
+	PodLinkLocalAccessIMDS PodLinkLocalAccess = "IMDS"
+	// PodLinkLocalAccessNone - Pods with hostNetwork=false cannot access Azure Instance Metadata Service (IMDS).
+	PodLinkLocalAccessNone PodLinkLocalAccess = "None"
+)
+
+// PossiblePodLinkLocalAccessValues returns the possible values for the PodLinkLocalAccess const type.
+func PossiblePodLinkLocalAccessValues() []PodLinkLocalAccess {
+	return []PodLinkLocalAccess{
+		PodLinkLocalAccessIMDS,
+		PodLinkLocalAccessNone,
 	}
 }
 
@@ -1096,6 +1172,32 @@ func PossibleTypeValues() []Type {
 		TypeLast,
 		TypeSecond,
 		TypeThird,
+	}
+}
+
+// UndrainableNodeBehavior - Defines the behavior for undrainable nodes during upgrade. The most common cause of undrainable
+// nodes is Pod Disruption Budgets (PDBs), but other issues, such as pod termination grace period is
+// exceeding the remaining per-node drain timeout or pod is still being in a running state, can also cause undrainable nodes.
+type UndrainableNodeBehavior string
+
+const (
+	// UndrainableNodeBehaviorCordon - AKS will cordon the blocked nodes and replace them with surge nodes during upgrade. The
+	// blocked nodes will be cordoned and replaced by surge nodes. The blocked nodes will have label 'kubernetes.azure.com/upgrade-status:Quarantined'.
+	// A surge node will be retained for each blocked node. A best-effort attempt will be made to delete all other surge nodes.
+	// If there are enough surge nodes to replace blocked nodes, then the upgrade operation and the managed cluster will be in
+	// failed state. Otherwise, the upgrade operation and the managed cluster will be in canceled state.
+	UndrainableNodeBehaviorCordon UndrainableNodeBehavior = "Cordon"
+	// UndrainableNodeBehaviorSchedule - AKS will mark the blocked nodes schedulable, but the blocked nodes are not upgraded.
+	// A best-effort attempt will be made to delete all surge nodes. The upgrade operation and the managed cluster will be in
+	// failed state if there are any blocked nodes.
+	UndrainableNodeBehaviorSchedule UndrainableNodeBehavior = "Schedule"
+)
+
+// PossibleUndrainableNodeBehaviorValues returns the possible values for the UndrainableNodeBehavior const type.
+func PossibleUndrainableNodeBehaviorValues() []UndrainableNodeBehavior {
+	return []UndrainableNodeBehavior{
+		UndrainableNodeBehaviorCordon,
+		UndrainableNodeBehaviorSchedule,
 	}
 }
 

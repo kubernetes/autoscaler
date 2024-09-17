@@ -1,5 +1,174 @@
 # Release History
 
+## 5.1.0-beta.2 (2024-07-25)
+### Breaking Changes
+
+- Struct `NetworkMonitoring` has been removed
+- Field `Monitoring` of struct `NetworkProfile` has been removed
+
+### Features Added
+
+- New value `ManagedClusterSKUNameAutomatic` added to enum type `ManagedClusterSKUName`
+- New value `OutboundTypeNone` added to enum type `OutboundType`
+- New enum type `Operator` with values `OperatorDoesNotExist`, `OperatorExists`, `OperatorIn`, `OperatorNotIn`
+- New enum type `PodLinkLocalAccess` with values `PodLinkLocalAccessIMDS`, `PodLinkLocalAccessNone`
+- New enum type `UndrainableNodeBehavior` with values `UndrainableNodeBehaviorCordon`, `UndrainableNodeBehaviorSchedule`
+- New function `*ClientFactory.NewLoadBalancersClient() *LoadBalancersClient`
+- New function `NewLoadBalancersClient(string, azcore.TokenCredential, *arm.ClientOptions) (*LoadBalancersClient, error)`
+- New function `*LoadBalancersClient.CreateOrUpdate(context.Context, string, string, string, LoadBalancer, *LoadBalancersClientCreateOrUpdateOptions) (LoadBalancersClientCreateOrUpdateResponse, error)`
+- New function `*LoadBalancersClient.BeginDelete(context.Context, string, string, string, *LoadBalancersClientBeginDeleteOptions) (*runtime.Poller[LoadBalancersClientDeleteResponse], error)`
+- New function `*LoadBalancersClient.Get(context.Context, string, string, string, *LoadBalancersClientGetOptions) (LoadBalancersClientGetResponse, error)`
+- New function `*LoadBalancersClient.NewListByManagedClusterPager(string, string, *LoadBalancersClientListByManagedClusterOptions) *runtime.Pager[LoadBalancersClientListByManagedClusterResponse]`
+- New function `*ManagedClustersClient.BeginRebalanceLoadBalancers(context.Context, string, string, RebalanceLoadBalancersRequestBody, *ManagedClustersClientBeginRebalanceLoadBalancersOptions) (*runtime.Poller[ManagedClustersClientRebalanceLoadBalancersResponse], error)`
+- New struct `AdvancedNetworking`
+- New struct `AdvancedNetworkingObservability`
+- New struct `AutoScaleProfile`
+- New struct `Component`
+- New struct `ComponentsByRelease`
+- New struct `LabelSelector`
+- New struct `LabelSelectorRequirement`
+- New struct `LoadBalancer`
+- New struct `LoadBalancerListResult`
+- New struct `LoadBalancerProperties`
+- New struct `RebalanceLoadBalancersRequestBody`
+- New field `ComponentsByReleases` in struct `AgentPoolUpgradeProfileProperties`
+- New field `UndrainableNodeBehavior` in struct `AgentPoolUpgradeSettings`
+- New field `IfMatch`, `IfNoneMatch` in struct `AgentPoolsClientBeginCreateOrUpdateOptions`
+- New field `IfMatch` in struct `AgentPoolsClientBeginDeleteOptions`
+- New field `ETag` in struct `ManagedCluster`
+- New field `ETag` in struct `ManagedClusterAgentPoolProfile`
+- New field `ETag` in struct `ManagedClusterAgentPoolProfileProperties`
+- New field `ComponentsByReleases` in struct `ManagedClusterPoolUpgradeProfile`
+- New field `IfMatch`, `IfNoneMatch` in struct `ManagedClustersClientBeginCreateOrUpdateOptions`
+- New field `IfMatch` in struct `ManagedClustersClientBeginDeleteOptions`
+- New field `IfMatch` in struct `ManagedClustersClientBeginUpdateTagsOptions`
+- New field `AdvancedNetworking`, `PodLinkLocalAccess` in struct `NetworkProfile`
+- New field `Autoscale` in struct `ScaleProfile`
+
+
+## 5.1.0-beta.1 (2024-04-26)
+### Features Added
+
+- New value `AgentPoolModeGateway` added to enum type `AgentPoolMode`
+- New value `AgentPoolTypeVirtualMachines` added to enum type `AgentPoolType`
+- New value `NetworkPolicyNone` added to enum type `NetworkPolicy`
+- New value `NodeOSUpgradeChannelSecurityPatch` added to enum type `NodeOSUpgradeChannel`
+- New value `OSSKUMariner`, `OSSKUWindowsAnnual` added to enum type `OSSKU`
+- New value `PublicNetworkAccessSecuredByPerimeter` added to enum type `PublicNetworkAccess`
+- New value `SnapshotTypeManagedCluster` added to enum type `SnapshotType`
+- New value `WorkloadRuntimeKataMshvVMIsolation` added to enum type `WorkloadRuntime`
+- New enum type `AddonAutoscaling` with values `AddonAutoscalingDisabled`, `AddonAutoscalingEnabled`
+- New enum type `AgentPoolSSHAccess` with values `AgentPoolSSHAccessDisabled`, `AgentPoolSSHAccessLocalUser`
+- New enum type `ArtifactSource` with values `ArtifactSourceCache`, `ArtifactSourceDirect`
+- New enum type `ClusterServiceLoadBalancerHealthProbeMode` with values `ClusterServiceLoadBalancerHealthProbeModeServiceNodePort`, `ClusterServiceLoadBalancerHealthProbeModeShared`
+- New enum type `GuardrailsSupport` with values `GuardrailsSupportPreview`, `GuardrailsSupportStable`
+- New enum type `IpvsScheduler` with values `IpvsSchedulerLeastConnection`, `IpvsSchedulerRoundRobin`
+- New enum type `Level` with values `LevelEnforcement`, `LevelOff`, `LevelWarning`
+- New enum type `Mode` with values `ModeIPTABLES`, `ModeIPVS`
+- New enum type `NodeProvisioningMode` with values `NodeProvisioningModeAuto`, `NodeProvisioningModeManual`
+- New enum type `PodIPAllocationMode` with values `PodIPAllocationModeDynamicIndividual`, `PodIPAllocationModeStaticBlock`
+- New enum type `RestrictionLevel` with values `RestrictionLevelReadOnly`, `RestrictionLevelUnrestricted`
+- New enum type `SafeguardsSupport` with values `SafeguardsSupportPreview`, `SafeguardsSupportStable`
+- New function `*AgentPoolsClient.BeginDeleteMachines(context.Context, string, string, string, AgentPoolDeleteMachinesParameter, *AgentPoolsClientBeginDeleteMachinesOptions) (*runtime.Poller[AgentPoolsClientDeleteMachinesResponse], error)`
+- New function `*ClientFactory.NewMachinesClient() *MachinesClient`
+- New function `*ClientFactory.NewManagedClusterSnapshotsClient() *ManagedClusterSnapshotsClient`
+- New function `*ClientFactory.NewOperationStatusResultClient() *OperationStatusResultClient`
+- New function `NewMachinesClient(string, azcore.TokenCredential, *arm.ClientOptions) (*MachinesClient, error)`
+- New function `*MachinesClient.Get(context.Context, string, string, string, string, *MachinesClientGetOptions) (MachinesClientGetResponse, error)`
+- New function `*MachinesClient.NewListPager(string, string, string, *MachinesClientListOptions) *runtime.Pager[MachinesClientListResponse]`
+- New function `NewManagedClusterSnapshotsClient(string, azcore.TokenCredential, *arm.ClientOptions) (*ManagedClusterSnapshotsClient, error)`
+- New function `*ManagedClusterSnapshotsClient.CreateOrUpdate(context.Context, string, string, ManagedClusterSnapshot, *ManagedClusterSnapshotsClientCreateOrUpdateOptions) (ManagedClusterSnapshotsClientCreateOrUpdateResponse, error)`
+- New function `*ManagedClusterSnapshotsClient.Delete(context.Context, string, string, *ManagedClusterSnapshotsClientDeleteOptions) (ManagedClusterSnapshotsClientDeleteResponse, error)`
+- New function `*ManagedClusterSnapshotsClient.Get(context.Context, string, string, *ManagedClusterSnapshotsClientGetOptions) (ManagedClusterSnapshotsClientGetResponse, error)`
+- New function `*ManagedClusterSnapshotsClient.NewListByResourceGroupPager(string, *ManagedClusterSnapshotsClientListByResourceGroupOptions) *runtime.Pager[ManagedClusterSnapshotsClientListByResourceGroupResponse]`
+- New function `*ManagedClusterSnapshotsClient.NewListPager(*ManagedClusterSnapshotsClientListOptions) *runtime.Pager[ManagedClusterSnapshotsClientListResponse]`
+- New function `*ManagedClusterSnapshotsClient.UpdateTags(context.Context, string, string, TagsObject, *ManagedClusterSnapshotsClientUpdateTagsOptions) (ManagedClusterSnapshotsClientUpdateTagsResponse, error)`
+- New function `*ManagedClustersClient.GetGuardrailsVersions(context.Context, string, string, *ManagedClustersClientGetGuardrailsVersionsOptions) (ManagedClustersClientGetGuardrailsVersionsResponse, error)`
+- New function `*ManagedClustersClient.GetSafeguardsVersions(context.Context, string, string, *ManagedClustersClientGetSafeguardsVersionsOptions) (ManagedClustersClientGetSafeguardsVersionsResponse, error)`
+- New function `*ManagedClustersClient.NewListGuardrailsVersionsPager(string, *ManagedClustersClientListGuardrailsVersionsOptions) *runtime.Pager[ManagedClustersClientListGuardrailsVersionsResponse]`
+- New function `*ManagedClustersClient.NewListSafeguardsVersionsPager(string, *ManagedClustersClientListSafeguardsVersionsOptions) *runtime.Pager[ManagedClustersClientListSafeguardsVersionsResponse]`
+- New function `NewOperationStatusResultClient(string, azcore.TokenCredential, *arm.ClientOptions) (*OperationStatusResultClient, error)`
+- New function `*OperationStatusResultClient.Get(context.Context, string, string, string, *OperationStatusResultClientGetOptions) (OperationStatusResultClientGetResponse, error)`
+- New function `*OperationStatusResultClient.GetByAgentPool(context.Context, string, string, string, string, *OperationStatusResultClientGetByAgentPoolOptions) (OperationStatusResultClientGetByAgentPoolResponse, error)`
+- New function `*OperationStatusResultClient.NewListPager(string, string, *OperationStatusResultClientListOptions) *runtime.Pager[OperationStatusResultClientListResponse]`
+- New struct `AgentPoolArtifactStreamingProfile`
+- New struct `AgentPoolDeleteMachinesParameter`
+- New struct `AgentPoolGPUProfile`
+- New struct `AgentPoolGatewayProfile`
+- New struct `AgentPoolSecurityProfile`
+- New struct `ErrorAdditionalInfo`
+- New struct `ErrorDetail`
+- New struct `GuardrailsAvailableVersion`
+- New struct `GuardrailsAvailableVersionsList`
+- New struct `GuardrailsAvailableVersionsProperties`
+- New struct `Machine`
+- New struct `MachineIPAddress`
+- New struct `MachineListResult`
+- New struct `MachineNetworkProperties`
+- New struct `MachineProperties`
+- New struct `ManagedClusterAIToolchainOperatorProfile`
+- New struct `ManagedClusterAzureMonitorProfileAppMonitoring`
+- New struct `ManagedClusterAzureMonitorProfileAppMonitoringAutoInstrumentation`
+- New struct `ManagedClusterAzureMonitorProfileAppMonitoringOpenTelemetryLogs`
+- New struct `ManagedClusterAzureMonitorProfileAppMonitoringOpenTelemetryMetrics`
+- New struct `ManagedClusterAzureMonitorProfileContainerInsights`
+- New struct `ManagedClusterBootstrapProfile`
+- New struct `ManagedClusterNodeProvisioningProfile`
+- New struct `ManagedClusterNodeResourceGroupProfile`
+- New struct `ManagedClusterPropertiesForSnapshot`
+- New struct `ManagedClusterSecurityProfileImageIntegrity`
+- New struct `ManagedClusterSecurityProfileNodeRestriction`
+- New struct `ManagedClusterSnapshot`
+- New struct `ManagedClusterSnapshotListResult`
+- New struct `ManagedClusterSnapshotProperties`
+- New struct `ManagedClusterStaticEgressGatewayProfile`
+- New struct `ManualScaleProfile`
+- New struct `NetworkMonitoring`
+- New struct `NetworkProfileForSnapshot`
+- New struct `NetworkProfileKubeProxyConfig`
+- New struct `NetworkProfileKubeProxyConfigIpvsConfig`
+- New struct `OperationStatusResult`
+- New struct `OperationStatusResultList`
+- New struct `SafeguardsAvailableVersion`
+- New struct `SafeguardsAvailableVersionsList`
+- New struct `SafeguardsAvailableVersionsProperties`
+- New struct `SafeguardsProfile`
+- New struct `ScaleProfile`
+- New struct `VirtualMachineNodes`
+- New struct `VirtualMachinesProfile`
+- New field `IgnorePodDisruptionBudget` in struct `AgentPoolsClientBeginDeleteOptions`
+- New field `Kind` in struct `ManagedCluster`
+- New field `EnableVnetIntegration`, `SubnetID` in struct `ManagedClusterAPIServerAccessProfile`
+- New field `ArtifactStreamingProfile`, `EnableCustomCATrust`, `GatewayProfile`, `GpuProfile`, `MessageOfTheDay`, `NodeInitializationTaints`, `PodIPAllocationMode`, `SecurityProfile`, `VirtualMachineNodesStatus`, `VirtualMachinesProfile` in struct `ManagedClusterAgentPoolProfile`
+- New field `ArtifactStreamingProfile`, `EnableCustomCATrust`, `GatewayProfile`, `GpuProfile`, `MessageOfTheDay`, `NodeInitializationTaints`, `PodIPAllocationMode`, `SecurityProfile`, `VirtualMachineNodesStatus`, `VirtualMachinesProfile` in struct `ManagedClusterAgentPoolProfileProperties`
+- New field `AppMonitoring`, `ContainerInsights` in struct `ManagedClusterAzureMonitorProfile`
+- New field `EffectiveNoProxy` in struct `ManagedClusterHTTPProxyConfig`
+- New field `ClusterServiceLoadBalancerHealthProbeMode` in struct `ManagedClusterLoadBalancerProfile`
+- New field `AiToolchainOperatorProfile`, `BootstrapProfile`, `CreationData`, `EnableNamespaceResources`, `NodeProvisioningProfile`, `NodeResourceGroupProfile`, `SafeguardsProfile` in struct `ManagedClusterProperties`
+- New field `DaemonsetEvictionForEmptyNodes`, `DaemonsetEvictionForOccupiedNodes`, `IgnoreDaemonsetsUtilization` in struct `ManagedClusterPropertiesAutoScalerProfile`
+- New field `CustomCATrustCertificates`, `ImageIntegrity`, `NodeRestriction` in struct `ManagedClusterSecurityProfile`
+- New field `Version` in struct `ManagedClusterStorageProfileDiskCSIDriver`
+- New field `AddonAutoscaling` in struct `ManagedClusterWorkloadAutoScalerProfileVerticalPodAutoscaler`
+- New field `IgnorePodDisruptionBudget` in struct `ManagedClustersClientBeginDeleteOptions`
+- New field `KubeProxyConfig`, `Monitoring`, `StaticEgressGatewayProfile` in struct `NetworkProfile`
+
+
+## 5.0.0 (2024-04-26)
+### Breaking Changes
+
+- Field `NodeSelector` of struct `IstioEgressGateway` has been removed
+
+### Features Added
+
+- New struct `AgentPoolWindowsProfile`
+- New struct `ManagedClusterCostAnalysis`
+- New struct `ManagedClusterMetricsProfile`
+- New field `IsDefault` in struct `KubernetesVersion`
+- New field `WindowsProfile` in struct `ManagedClusterAgentPoolProfile`
+- New field `WindowsProfile` in struct `ManagedClusterAgentPoolProfileProperties`
+- New field `MetricsProfile` in struct `ManagedClusterProperties`
+
+
 ## 4.9.0-beta.1 (2024-03-22)
 ### Features Added
 

@@ -18,6 +18,12 @@ type AgentPoolsClientBeginAbortLatestOperationOptions struct {
 // AgentPoolsClientBeginCreateOrUpdateOptions contains the optional parameters for the AgentPoolsClient.BeginCreateOrUpdate
 // method.
 type AgentPoolsClientBeginCreateOrUpdateOptions struct {
+	// The request should only proceed if an entity matches this string.
+	IfMatch *string
+
+	// The request should only proceed if no entity matches this string.
+	IfNoneMatch *string
+
 	// Resumes the LRO from the provided token.
 	ResumeToken string
 }
@@ -31,6 +37,9 @@ type AgentPoolsClientBeginDeleteMachinesOptions struct {
 
 // AgentPoolsClientBeginDeleteOptions contains the optional parameters for the AgentPoolsClient.BeginDelete method.
 type AgentPoolsClientBeginDeleteOptions struct {
+	// The request should only proceed if an entity matches this string.
+	IfMatch *string
+
 	// ignore-pod-disruption-budget=true to delete those pods on a node without considering Pod Disruption Budget
 	IgnorePodDisruptionBudget *bool
 
@@ -63,6 +72,28 @@ type AgentPoolsClientGetUpgradeProfileOptions struct {
 
 // AgentPoolsClientListOptions contains the optional parameters for the AgentPoolsClient.NewListPager method.
 type AgentPoolsClientListOptions struct {
+	// placeholder for future optional parameters
+}
+
+// LoadBalancersClientBeginDeleteOptions contains the optional parameters for the LoadBalancersClient.BeginDelete method.
+type LoadBalancersClientBeginDeleteOptions struct {
+	// Resumes the LRO from the provided token.
+	ResumeToken string
+}
+
+// LoadBalancersClientCreateOrUpdateOptions contains the optional parameters for the LoadBalancersClient.CreateOrUpdate method.
+type LoadBalancersClientCreateOrUpdateOptions struct {
+	// placeholder for future optional parameters
+}
+
+// LoadBalancersClientGetOptions contains the optional parameters for the LoadBalancersClient.Get method.
+type LoadBalancersClientGetOptions struct {
+	// placeholder for future optional parameters
+}
+
+// LoadBalancersClientListByManagedClusterOptions contains the optional parameters for the LoadBalancersClient.NewListByManagedClusterPager
+// method.
+type LoadBalancersClientListByManagedClusterOptions struct {
 	// placeholder for future optional parameters
 }
 
@@ -145,15 +176,31 @@ type ManagedClustersClientBeginAbortLatestOperationOptions struct {
 // ManagedClustersClientBeginCreateOrUpdateOptions contains the optional parameters for the ManagedClustersClient.BeginCreateOrUpdate
 // method.
 type ManagedClustersClientBeginCreateOrUpdateOptions struct {
+	// The request should only proceed if an entity matches this string.
+	IfMatch *string
+
+	// The request should only proceed if no entity matches this string.
+	IfNoneMatch *string
+
 	// Resumes the LRO from the provided token.
 	ResumeToken string
 }
 
 // ManagedClustersClientBeginDeleteOptions contains the optional parameters for the ManagedClustersClient.BeginDelete method.
 type ManagedClustersClientBeginDeleteOptions struct {
+	// The request should only proceed if an entity matches this string.
+	IfMatch *string
+
 	// ignore-pod-disruption-budget=true to delete those pods on a node without considering Pod Disruption Budget
 	IgnorePodDisruptionBudget *bool
 
+	// Resumes the LRO from the provided token.
+	ResumeToken string
+}
+
+// ManagedClustersClientBeginRebalanceLoadBalancersOptions contains the optional parameters for the ManagedClustersClient.BeginRebalanceLoadBalancers
+// method.
+type ManagedClustersClientBeginRebalanceLoadBalancersOptions struct {
 	// Resumes the LRO from the provided token.
 	ResumeToken string
 }
@@ -208,6 +255,9 @@ type ManagedClustersClientBeginStopOptions struct {
 // ManagedClustersClientBeginUpdateTagsOptions contains the optional parameters for the ManagedClustersClient.BeginUpdateTags
 // method.
 type ManagedClustersClientBeginUpdateTagsOptions struct {
+	// The request should only proceed if an entity matches this string.
+	IfMatch *string
+
 	// Resumes the LRO from the provided token.
 	ResumeToken string
 }
