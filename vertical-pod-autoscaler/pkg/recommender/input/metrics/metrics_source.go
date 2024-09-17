@@ -114,7 +114,7 @@ func (s *externalMetricsClient) List(ctx context.Context, namespace string, opts
 					return nil, err
 				}
 				if m == nil || len(m.Items) == 0 {
-					klog.V(4).InfoS("External Metrics Query for VPA: No items","vpa", klog.KRef(vpa.ID.Namespace, vpa.ID.VpaName),"resource", resourceName,"metric", metricName)
+					klog.V(4).InfoS("External Metrics Query for VPA: No items", "vpa", klog.KRef(vpa.ID.Namespace, vpa.ID.VpaName), "resource", resourceName, "metric", metricName)
 					continue
 				}
 				klog.V(4).InfoS("External Metrics Query for VPA","vpa", klog.KRef(vpa.ID.Namespace, vpa.ID.VpaName),"resource", resourceName,"metric", metricName,"itemCount", len(m.Items),"firstItem", m.Items[0])
