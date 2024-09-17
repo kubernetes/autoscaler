@@ -37,7 +37,7 @@ func readFile(filePath string) []byte {
 		klog.ErrorS(err, "Error reading certificate file", "file", filePath)
 		return nil
 	}
-	klog.V(3).InfoS("Successfully read bytes fron file", "bytes", len(res), "file", filePath)
+	klog.V(3).InfoS("Successfully read bytes from file", "bytes", len(res), "file", filePath)
 	return res
 }
 
