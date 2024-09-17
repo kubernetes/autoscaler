@@ -59,7 +59,7 @@ func GetContainersResources(pod *core.Pod, vpaResourcePolicy *vpa_types.PodResou
 				klog.V(2).InfoS("No recommendation found for container, skipping", "container", container.Name)
 				continue
 			}
-			klog.V(2).InfoS("No matching found for container, using Pod request", "container", container.Name)
+			klog.V(2).InfoS("No match found for container, using Pod request", "container", container.Name)
 			resources[i].Requests = container.Resources.Requests
 		} else {
 			resources[i].Requests = recommendation.Target
