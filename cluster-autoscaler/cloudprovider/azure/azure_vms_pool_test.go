@@ -147,8 +147,8 @@ func TestNewVMsPool(t *testing.T) {
 func TestGetVMsFromCacheForVMsPool(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	uber_gomockCtrl := uber_gomock.NewController(t)
-	defer uber_gomockCtrl.Finish()
+	unberCtl := uber_gomock.NewController(t)
+	defer unberCtl.Finish()
 	agentpoolName := "pool1"
 
 	ap := newTestVMsPool(newTestAzureManager(t), agentpoolName)
@@ -166,7 +166,7 @@ func TestGetVMsFromCacheForVMsPool(t *testing.T) {
 	mockVMClient := mockvmclient.NewMockInterface(ctrl)
 	ap.manager.azClient.virtualMachinesClient = mockVMClient
 	ap.manager.config.EnableVMsAgentPool = true
-	mockAgentpoolclient := NewMockAgentPoolsClient(uber_gomockCtrl)
+	mockAgentpoolclient := NewMockAgentPoolsClient(unberCtl)
 	ap.manager.azClient.agentPoolClient = mockAgentpoolclient
 	mockVMClient.EXPECT().List(gomock.Any(), ap.resourceGroup).Return(expectedVMs, nil)
 
@@ -188,8 +188,8 @@ func TestGetVMsFromCacheForVMsPool(t *testing.T) {
 func TestNodes(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	uber_gomockCtrl := uber_gomock.NewController(t)
-	defer uber_gomockCtrl.Finish()
+	unberCtl := uber_gomock.NewController(t)
+	defer unberCtl.Finish()
 	agentpoolName := "pool1"
 	vmssPoolName := "test-vmss-pool"
 
@@ -217,7 +217,7 @@ func TestNodes(t *testing.T) {
 	mockVMClient.EXPECT().List(gomock.Any(), ap.resourceGroup).Return(expectedVMs, nil)
 
 	ap.manager.config.EnableVMsAgentPool = true
-	mockAgentpoolclient := NewMockAgentPoolsClient(uber_gomockCtrl)
+	mockAgentpoolclient := NewMockAgentPoolsClient(unberCtl)
 	ap.manager.azClient.agentPoolClient = mockAgentpoolclient
 	agentpool := getTestVMsAgentPool(agentpoolName, false)
 	fakeAPListPager := getFakeAgentpoolListPager(&agentpool)
@@ -236,8 +236,8 @@ func TestNodes(t *testing.T) {
 func TestGetCurSizeForVMsPool(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	uber_gomockCtrl := uber_gomock.NewController(t)
-	defer uber_gomockCtrl.Finish()
+	unberCtl := uber_gomock.NewController(t)
+	defer unberCtl.Finish()
 	agentpoolName := "pool1"
 
 	ap := newTestVMsPool(newTestAzureManager(t), agentpoolName)
@@ -261,7 +261,7 @@ func TestGetCurSizeForVMsPool(t *testing.T) {
 	mockVMClient.EXPECT().List(gomock.Any(), ap.resourceGroup).Return(expectedVMs, nil)
 
 	ap.manager.config.EnableVMsAgentPool = true
-	mockAgentpoolclient := NewMockAgentPoolsClient(uber_gomockCtrl)
+	mockAgentpoolclient := NewMockAgentPoolsClient(unberCtl)
 	ap.manager.azClient.agentPoolClient = mockAgentpoolclient
 	agentpool := getTestVMsAgentPool(agentpoolName, false)
 	fakeAPListPager := getFakeAgentpoolListPager(&agentpool)
@@ -302,8 +302,8 @@ func TestGetVMsPoolSize(t *testing.T) {
 func TestVMsPoolIncreaseSize(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	uber_gomockCtrl := uber_gomock.NewController(t)
-	defer uber_gomockCtrl.Finish()
+	unberCtl := uber_gomock.NewController(t)
+	defer unberCtl.Finish()
 	manager := newTestAzureManager(t)
 	agentpoolName := "pool1"
 
@@ -330,7 +330,7 @@ func TestVMsPoolIncreaseSize(t *testing.T) {
 	mockVMClient.EXPECT().List(gomock.Any(), ap.resourceGroup).Return(expectedVMs, nil)
 
 	ap.manager.config.EnableVMsAgentPool = true
-	mockAgentpoolclient := NewMockAgentPoolsClient(uber_gomockCtrl)
+	mockAgentpoolclient := NewMockAgentPoolsClient(unberCtl)
 	ap.manager.azClient.agentPoolClient = mockAgentpoolclient
 	agentpool := getTestVMsAgentPool(agentpoolName, false)
 	fakeAPListPager := getFakeAgentpoolListPager(&agentpool)

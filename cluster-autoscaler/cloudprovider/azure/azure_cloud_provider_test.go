@@ -148,8 +148,8 @@ func TestHasInstance(t *testing.T) {
 	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
 	mockVMClient := mockvmclient.NewMockInterface(ctrl)
 	mockVMSSVMClient := mockvmssvmclient.NewMockInterface(ctrl)
-	uber_ctrl := uber_gomock.NewController(t)
-	mockAgentpoolclient := NewMockAgentPoolsClient(uber_ctrl)
+	unberCtl := uber_gomock.NewController(t)
+	mockAgentpoolclient := NewMockAgentPoolsClient(unberCtl)
 	provider.azureManager.azClient.virtualMachinesClient = mockVMClient
 	provider.azureManager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
 	provider.azureManager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
