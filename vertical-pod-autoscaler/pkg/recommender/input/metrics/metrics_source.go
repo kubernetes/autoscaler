@@ -117,7 +117,7 @@ func (s *externalMetricsClient) List(ctx context.Context, namespace string, opts
 					klog.V(4).InfoS("External Metrics Query for VPA: No items", "vpa", klog.KRef(vpa.ID.Namespace, vpa.ID.VpaName), "resource", resourceName, "metric", metricName)
 					continue
 				}
-				klog.V(4).InfoS("External Metrics Query for VPA","vpa", klog.KRef(vpa.ID.Namespace, vpa.ID.VpaName),"resource", resourceName,"metric", metricName,"itemCount", len(m.Items),"firstItem", m.Items[0])
+				klog.V(4).InfoS("External Metrics Query for VPA", "vpa", klog.KRef(vpa.ID.Namespace, vpa.ID.VpaName), "resource", resourceName, "metric", metricName, "itemCount", len(m.Items), "firstItem", m.Items[0])
 				podMets.Timestamp = m.Items[0].Timestamp
 				if m.Items[0].WindowSeconds != nil {
 					podMets.Window = v1.Duration{Duration: time.Duration(*m.Items[0].WindowSeconds) * time.Second}
