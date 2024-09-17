@@ -286,8 +286,8 @@ func TestMixedNodeGroups(t *testing.T) {
 	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
 	mockVMClient := mockvmclient.NewMockInterface(ctrl)
 	mockVMSSVMClient := mockvmssvmclient.NewMockInterface(ctrl)
-	unber_ctl := uber_gomock.NewController(t)
-	mockAgentpoolclient := NewMockAgentPoolsClient(unber_ctl)
+	unberCtl := uber_gomock.NewController(t)
+	mockAgentpoolclient := NewMockAgentPoolsClient(unberCtl)
 	provider.azureManager.azClient.virtualMachinesClient = mockVMClient
 	provider.azureManager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
 	provider.azureManager.azClient.virtualMachineScaleSetVMsClient = mockVMSSVMClient
