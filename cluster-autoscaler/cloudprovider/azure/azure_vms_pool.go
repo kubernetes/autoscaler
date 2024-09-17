@@ -34,6 +34,7 @@ import (
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
+// VMsPool consists of standalone VMs, it's not backed by VMSS
 type VMsPool struct {
 	azureRef
 	manager              *AzureManager
