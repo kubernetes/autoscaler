@@ -92,7 +92,7 @@ func ResourcesAsResourceList(resources Resources) apiv1.ResourceList {
 			newKey = apiv1.ResourceMemory
 			quantity = QuantityFromMemoryAmount(resourceAmount)
 		default:
-			klog.Errorf("Cannot translate %v resource name", key)
+			klog.ErrorS(nil, "Cannot translate resource name", "resourceName", key)
 			continue
 		}
 		result[newKey] = quantity
@@ -110,7 +110,7 @@ func ResourceNamesApiToModel(resources []apiv1.ResourceName) *[]ResourceName {
 		case apiv1.ResourceMemory:
 			result = append(result, ResourceMemory)
 		default:
-			klog.Errorf("Cannot translate %v resource name", resource)
+			klog.ErrorS(nil, "Cannot traslate resource name", "resourceName", resource)
 			continue
 		}
 	}

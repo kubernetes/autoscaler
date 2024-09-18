@@ -76,7 +76,7 @@ func (c *cappingRecommendationProcessor) Apply(
 		container := getContainer(containerRecommendation.ContainerName, pod)
 
 		if container == nil {
-			klog.V(2).Infof("no matching Container found for recommendation %s", containerRecommendation.ContainerName)
+			klog.V(2).InfoS("No matching Container found for recommendation", "containerName", containerRecommendation.ContainerName)
 			continue
 		}
 
