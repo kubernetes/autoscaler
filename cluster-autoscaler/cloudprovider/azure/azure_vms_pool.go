@@ -295,7 +295,7 @@ func (agentPool *VMsPool) DeleteNodes(nodes []*apiv1.Node) error {
 	return agentPool.scaleDownNodes(providerIDs)
 }
 
-// scaleDownNodes delete or deallocate the nodes from the agent pool based on the scale down policy.
+// scaleDownNodes delete nodes from the agent pool
 func (agentPool *VMsPool) scaleDownNodes(providerIDs []string) error {
 	agentPool.sizeMutex.Lock()
 	defer agentPool.sizeMutex.Unlock()
@@ -402,12 +402,11 @@ func isSpotVMsPool(ap armcontainerservice.AgentPool) bool {
 func getNodeCountFromAgentPool(ap armcontainerservice.AgentPool) int32 {
 	size := int32(0)
 	if ap.Properties != nil {
-		// the VirtualMachineNodesStatus returned by AKS-RP is constructed from the vm list
-		// returned from CRP. It excludes the nodes in deallocated/deallocating states, thus
-		// can be used as the source of truth for VMs agent pools
+		// the VirtualMachineNodesStatus returned by AKS-RP is constructed from the vm list returned from CRP.
+		// it only contains VMs in the running state.
 		for _, status := range ap.Properties.VirtualMachineNodesStatus {
 			if status.Count != nil {
-				size += *status.Count
+				size += to.Int32(status.Count)
 			}
 		}
 	}
@@ -490,7 +489,7 @@ func (agentPool *VMsPool) Nodes() ([]cloudprovider.Instance, error) {
 
 	nodes := make([]cloudprovider.Instance, 0, len(vms))
 	for _, vm := range vms {
-		if len(*vm.ID) == 0 {
+		if len(to.String(vm.ID)) == 0 {
 			continue
 		}
 		resourceID, err := convertResourceGroupNameToLower("azure://" + *vm.ID)
