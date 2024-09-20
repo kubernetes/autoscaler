@@ -610,7 +610,7 @@ subjects:
   namespace: kube-system
 ```
 
-5. Deploy the [ProvisioningRequest CRD](apis/config/crd/autoscaling.x-k8s.io_provisioningrequests.yaml)
+5. Deploy the [ProvisioningRequest CRD](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/apis/config/crd/autoscaling.x-k8s.io_provisioningrequests.yaml)
 
 #### Supported ProvisioningClasses
 
