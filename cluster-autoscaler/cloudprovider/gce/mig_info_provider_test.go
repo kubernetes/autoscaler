@@ -1140,15 +1140,14 @@ func (f *fakeTime) Now() time.Time {
 
 func emptyCache() *GceCache {
 	return &GceCache{
-		migs:                             map[GceRef]Mig{mig.GceRef(): mig},
-		instances:                        make(map[GceRef][]cloudprovider.Instance),
-		instancesUpdateTime:              make(map[GceRef]time.Time),
-		migTargetSizeCache:               make(map[GceRef]int64),
-		migBaseNameCache:                 make(map[GceRef]string),
-		listManagedInstancesResultsCache: make(map[GceRef]string),
-		instanceTemplateNameCache:        make(map[GceRef]InstanceTemplateName),
-		instanceTemplatesCache:           make(map[GceRef]*gce.InstanceTemplate),
-		instancesFromUnknownMig:          make(map[GceRef]bool),
+		migs:                      map[GceRef]Mig{mig.GceRef(): mig},
+		instances:                 make(map[GceRef][]cloudprovider.Instance),
+		instancesUpdateTime:       make(map[GceRef]time.Time),
+		migTargetSizeCache:        make(map[GceRef]int64),
+		migBaseNameCache:          make(map[GceRef]string),
+		instanceTemplateNameCache: make(map[GceRef]InstanceTemplateName),
+		instanceTemplatesCache:    make(map[GceRef]*gce.InstanceTemplate),
+		instancesFromUnknownMig:   make(map[GceRef]bool),
 	}
 }
 
