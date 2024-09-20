@@ -63,36 +63,34 @@ type GceCache struct {
 	cacheMutex sync.Mutex
 
 	// Cache content.
-	migs                             map[GceRef]Mig
-	instances                        map[GceRef][]cloudprovider.Instance
-	instancesUpdateTime              map[GceRef]time.Time
-	instancesToMig                   map[GceRef]GceRef
-	instancesFromUnknownMig          map[GceRef]bool
-	resourceLimiter                  *cloudprovider.ResourceLimiter
-	autoscalingOptionsCache          map[GceRef]map[string]string
-	machinesCache                    map[MachineTypeKey]MachineType
-	migTargetSizeCache               map[GceRef]int64
-	migBaseNameCache                 map[GceRef]string
-	listManagedInstancesResultsCache map[GceRef]string
-	instanceTemplateNameCache        map[GceRef]InstanceTemplateName
-	instanceTemplatesCache           map[GceRef]*gce.InstanceTemplate
+	migs                      map[GceRef]Mig
+	instances                 map[GceRef][]cloudprovider.Instance
+	instancesUpdateTime       map[GceRef]time.Time
+	instancesToMig            map[GceRef]GceRef
+	instancesFromUnknownMig   map[GceRef]bool
+	resourceLimiter           *cloudprovider.ResourceLimiter
+	autoscalingOptionsCache   map[GceRef]map[string]string
+	machinesCache             map[MachineTypeKey]MachineType
+	migTargetSizeCache        map[GceRef]int64
+	migBaseNameCache          map[GceRef]string
+	instanceTemplateNameCache map[GceRef]InstanceTemplateName
+	instanceTemplatesCache    map[GceRef]*gce.InstanceTemplate
 }
 
 // NewGceCache creates empty GceCache.
 func NewGceCache() *GceCache {
 	return &GceCache{
-		migs:                             map[GceRef]Mig{},
-		instances:                        map[GceRef][]cloudprovider.Instance{},
-		instancesUpdateTime:              map[GceRef]time.Time{},
-		instancesToMig:                   map[GceRef]GceRef{},
-		instancesFromUnknownMig:          map[GceRef]bool{},
-		autoscalingOptionsCache:          map[GceRef]map[string]string{},
-		machinesCache:                    map[MachineTypeKey]MachineType{},
-		migTargetSizeCache:               map[GceRef]int64{},
-		migBaseNameCache:                 map[GceRef]string{},
-		listManagedInstancesResultsCache: map[GceRef]string{},
-		instanceTemplateNameCache:        map[GceRef]InstanceTemplateName{},
-		instanceTemplatesCache:           map[GceRef]*gce.InstanceTemplate{},
+		migs:                      map[GceRef]Mig{},
+		instances:                 map[GceRef][]cloudprovider.Instance{},
+		instancesUpdateTime:       map[GceRef]time.Time{},
+		instancesToMig:            map[GceRef]GceRef{},
+		instancesFromUnknownMig:   map[GceRef]bool{},
+		autoscalingOptionsCache:   map[GceRef]map[string]string{},
+		machinesCache:             map[MachineTypeKey]MachineType{},
+		migTargetSizeCache:        map[GceRef]int64{},
+		migBaseNameCache:          map[GceRef]string{},
+		instanceTemplateNameCache: map[GceRef]InstanceTemplateName{},
+		instanceTemplatesCache:    map[GceRef]*gce.InstanceTemplate{},
 	}
 }
 
