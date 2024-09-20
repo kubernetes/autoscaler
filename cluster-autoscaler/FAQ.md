@@ -565,7 +565,8 @@ For a complete list of the feature gates and their default values per Kubernetes
 
 ### How can I use ProvisioningRequest to run batch workloads
 
-Provisioning Request (abbr. ProvReq) is a new namespaced Custom Resource that aims to allow users to ask CA for capacity for groups of pods. For a detailed explanation of the ProvisioningRequest API, please refer to the
+Provisioning Request (abbr. ProvReq) is a new namespaced Custom Resource that aims to allow users to ask CA for capacity for groups of pods.
+For a detailed explanation of the ProvisioningRequest API, please refer to the
 [original proposal](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/proposals/provisioning-request.md).
 
 #### Enabling ProvisioningRequest Support
@@ -575,7 +576,7 @@ Provisioning Request (abbr. ProvReq) is a new namespaced Custom Resource that ai
 2. __Feature Flag__: Enable ProvisioningRequest support by setting the following flag in your Cluster Autoscaler configuration:
 `--enable-provisioning-requests=true`.
 
-3. __Content Type__: This feature requires that the [API content type flag](https://github.com/kubernetes/autoscaler/blob/522c6fcc06c8cf663175ba03549773cc66a02837/cluster-autoscaler/main.go#L114) is set to application/json: `--kube-api-content-type application/json`.
+3. __Content Type__: Set [API content type flag](https://github.com/kubernetes/autoscaler/blob/522c6fcc06c8cf663175ba03549773cc66a02837/cluster-autoscaler/main.go#L114) to application/json in your Cluster Autoscaler configuration: `--kube-api-content-type application/json`.
 
 4. __RBAC permissions__: Ensure your cluster-autoscaler pod has the necessary permissions to interact with ProvisioningRequests and PodTemplates:
 
@@ -608,6 +609,8 @@ subjects:
   name: cluster-autoscaler
   namespace: kube-system
 ```
+
+5. Deploy the [ProvisioningRequest CRD](apis/config/crd/autoscaling.x-k8s.io_provisioningrequests.yaml)
 
 #### Supported ProvisioningClasses
 
@@ -644,6 +647,65 @@ When using this class, Cluster Autoscaler performs following actions:
     * Adds a Accepted=True condition when ProvReq is accepted by ClusterAutoscaler.
     * Adds a Provisioned=True condition to the ProvReq if the node group scale up request is successful.
     * Adds a BookingExpired=True condition when the 10-minute reservation period expires.
+
+#### Example Usage
+
+Deploy the first 2 resources, observe the request being Approved and Provisioned,
+then deploy the Deployment and observe the Deployment using up the Request.
+
+```yaml
+apiVersion: v1
+kind: PodTemplate
+metadata:
+  name: template
+template:
+  spec:
+    containers:
+    - image: ubuntu
+      name: default
+      resources:
+        requests:
+          cpu: "1"
+          memory: 600Mi
+
+---
+apiVersion: autoscaling.x-k8s.io/v1
+kind: ProvisioningRequest
+metadata:
+  name: provider
+spec:
+  provisioningClassName: "best-effort-atomic-scale-up.autoscaling.x-k8s.io"
+  podSets:
+  - podTemplateRef:
+      name: cluster-autoscaler
+    count: 10
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: consumer
+  annotations:
+    autoscaling.x-k8s.io/consume-provisioning-request: provider
+spec:
+  replicas: 10
+  selector:
+    matchLabels:
+      app: consumer
+  template:
+    metadata:
+      labels:
+        app: consumer
+    spec:
+      containers:
+      - name: default
+        image: ubuntu
+        resources:
+          requests:
+            cpu: "1"
+            memory: 600Mi
+        args: ["sleep"]
+```
 
 ****************
 
