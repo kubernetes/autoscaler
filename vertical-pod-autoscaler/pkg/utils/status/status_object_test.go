@@ -17,6 +17,7 @@ limitations under the License.
 package status
 
 import (
+	"context"
 	"fmt"
 	"syscall"
 	"testing"
@@ -133,7 +134,7 @@ func TestUpdateStatus(t *testing.T) {
 			fc.PrependReactor("create", "leases", tc.updateReactor)
 			fc.PrependReactor("update", "leases", tc.updateReactor)
 			client := NewClient(fc, leaseName, leaseNamespace, 10*time.Second, leaseName)
-			err := client.UpdateStatus()
+			err := client.UpdateStatus(context.Background())
 			assert.True(t, (err != nil) == tc.wantErr, fmt.Sprintf("gotErr: %v, wantErr: %v", (err != nil), tc.wantErr))
 		})
 	}
@@ -206,7 +207,7 @@ func TestGetStatus(t *testing.T) {
 			fc := fake.NewSimpleClientset()
 			fc.PrependReactor("get", "leases", tc.getReactor)
 			client := NewClient(fc, leaseName, leaseNamespace, 10*time.Second, leaseName)
-			_, err := client.getStatus()
+			_, err := client.getStatus(context.Background())
 			assert.True(t, (err != nil) == tc.wantErr)
 		})
 	}

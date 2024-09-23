@@ -21,18 +21,18 @@ import (
 	"testing"
 	"time"
 
-	corev1 "k8s.io/api/core/v1"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
+	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqclient"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
 	clock "k8s.io/utils/clock/testing"
+	"k8s.io/utils/lru"
 )
 
 func TestProvisioningRequestPodsInjector(t *testing.T) {
 	now := time.Now()
-	minAgo := now.Add(-1 * time.Minute)
+	minAgo := now.Add(-1 * time.Minute).Add(-1 * time.Second)
 	hourAgo := now.Add(-1 * time.Hour)
 
 	accepted := metav1.Condition{
@@ -79,10 +79,11 @@ func TestProvisioningRequestPodsInjector(t *testing.T) {
 	unknownClass := testProvisioningRequestWithCondition("new-accepted", podsA, "unknown-class", accepted)
 
 	testCases := []struct {
-		name                     string
-		provReqs                 []*provreqwrapper.ProvisioningRequest
-		wantUnscheduledPodCount  int
-		wantUpdatedConditionName string
+		name                             string
+		provReqs                         []*provreqwrapper.ProvisioningRequest
+		existingUnsUnschedulablePodCount int
+		wantUnscheduledPodCount          int
+		wantUpdatedConditionName         string
 	}{
 		{
 			name:                     "New ProvisioningRequest, pods are injected and Accepted condition is added",
@@ -104,21 +105,34 @@ func TestProvisioningRequestPodsInjector(t *testing.T) {
 		},
 		{
 			name:     "Provisioned=True, no pods are injected",
-			provReqs: []*provreqwrapper.ProvisioningRequest{provisionedAcceptedProvReqB, failedProvReq, notProvisionedRecentlyProvReqB},
+			provReqs: []*provreqwrapper.ProvisioningRequest{provisionedAcceptedProvReqB, failedProvReq},
+		},
+		{
+			name:     "Provisioned=False, ProvReq is backed off, no pods are injected",
+			provReqs: []*provreqwrapper.ProvisioningRequest{notProvisionedRecentlyProvReqB},
 		},
 		{
 			name:     "Provisioned=Unknown, no pods are injected",
-			provReqs: []*provreqwrapper.ProvisioningRequest{unknownProvisionedProvReqB, failedProvReq, notProvisionedRecentlyProvReqB},
+			provReqs: []*provreqwrapper.ProvisioningRequest{unknownProvisionedProvReqB, failedProvReq},
 		},
 		{
 			name:     "ProvisionedClass is unknown, no pods are injected",
 			provReqs: []*provreqwrapper.ProvisioningRequest{unknownClass, failedProvReq},
 		},
+		{
+			name:                             "Provisioned=False, pods are injected but unschedulable pod list is not overwriten",
+			provReqs:                         []*provreqwrapper.ProvisioningRequest{newProvReqA},
+			existingUnsUnschedulablePodCount: 50,
+			wantUnscheduledPodCount:          podsA + 50,
+			wantUpdatedConditionName:         newProvReqA.Name,
+		},
 	}
 	for _, tc := range testCases {
 		client := provreqclient.NewFakeProvisioningRequestClient(context.Background(), t, tc.provReqs...)
-		injector := ProvisioningRequestPodsInjector{client, clock.NewFakePassiveClock(now)}
-		getUnscheduledPods, err := injector.Process(nil, []*corev1.Pod{})
+		backoffTime := lru.New(100)
+		backoffTime.Add(key(notProvisionedRecentlyProvReqB), 2*time.Minute)
+		injector := ProvisioningRequestPodsInjector{1 * time.Minute, 10 * time.Minute, backoffTime, clock.NewFakePassiveClock(now), client}
+		getUnscheduledPods, err := injector.Process(nil, provreqwrapper.BuildTestPods("ns", "pod", tc.existingUnsUnschedulablePodCount))
 		if err != nil {
 			t.Errorf("%s failed: injector.Process return error %v", tc.name, err)
 		}

@@ -90,13 +90,20 @@ func newManager() (*hetznerManager, error) {
 		return nil, errors.New("`HCLOUD_TOKEN` is not specified")
 	}
 
-	client := hcloud.NewClient(
+	opts := []hcloud.ClientOption{
 		hcloud.WithToken(token),
 		hcloud.WithHTTPClient(httpClient),
 		hcloud.WithApplication("cluster-autoscaler", version.ClusterAutoscalerVersion),
 		hcloud.WithPollBackoffFunc(hcloud.ExponentialBackoff(2, 500*time.Millisecond)),
 		hcloud.WithDebugWriter(&debugWriter{}),
-	)
+	}
+
+	endpoint := os.Getenv("HCLOUD_ENDPOINT")
+	if endpoint != "" {
+		opts = append(opts, hcloud.WithEndpoint(endpoint))
+	}
+
+	client := hcloud.NewClient(opts...)
 
 	ctx := context.Background()
 	var err error
@@ -206,16 +213,6 @@ func newManager() (*hetznerManager, error) {
 		cachedServers:    newServersCache(ctx, client),
 	}
 
-	m.nodeGroups[drainingNodePoolId] = &hetznerNodeGroup{
-		manager:      m,
-		instanceType: "cx11",
-		region:       "fsn1",
-		targetSize:   0,
-		maxSize:      0,
-		minSize:      0,
-		id:           drainingNodePoolId,
-	}
-
 	return m, nil
 }
 
@@ -250,11 +247,6 @@ func (m *hetznerManager) deleteByNode(node *apiv1.Node) error {
 func (m *hetznerManager) deleteServer(server *hcloud.Server) error {
 	_, err := m.client.Server.Delete(m.apiCallContext, server)
 	return err
-}
-
-func (m *hetznerManager) addNodeToDrainingPool(node *apiv1.Node) (*hetznerNodeGroup, error) {
-	m.nodeGroups[drainingNodePoolId].targetSize += 1
-	return m.nodeGroups[drainingNodePoolId], nil
 }
 
 func (m *hetznerManager) validProviderID(providerID string) bool {
