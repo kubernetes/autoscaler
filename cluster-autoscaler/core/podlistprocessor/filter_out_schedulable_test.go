@@ -25,6 +25,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
@@ -32,17 +33,18 @@ import (
 func TestFilterOutSchedulable(t *testing.T) {
 	node := buildReadyTestNode("node", 2000, 100)
 	matchesAllNodes := func(*schedulerframework.NodeInfo) bool { return true }
+	matchesNoNodes := func(*schedulerframework.NodeInfo) bool { return false }
 
 	testCases := map[string]struct {
 		nodesWithPods           map[*apiv1.Node][]*apiv1.Pod
 		unschedulableCandidates []*apiv1.Pod
 		expectedScheduledPods   []*apiv1.Pod
 		expectedUnscheduledPods []*apiv1.Pod
-		nodeMatches             func(*schedulerframework.NodeInfo) bool
+		nodeFilter              func(*schedulerframework.NodeInfo) bool
 	}{
 		"single empty node, no pods": {
 			nodesWithPods: map[*apiv1.Node][]*apiv1.Pod{node: {}},
-			nodeMatches:   matchesAllNodes,
+			nodeFilter:    matchesAllNodes,
 		},
 		"single empty node, single schedulable pod": {
 			nodesWithPods: map[*apiv1.Node][]*apiv1.Pod{node: {}},
@@ -52,7 +54,7 @@ func TestFilterOutSchedulable(t *testing.T) {
 			expectedScheduledPods: []*apiv1.Pod{
 				BuildTestPod("pod", 500, 10),
 			},
-			nodeMatches: matchesAllNodes,
+			nodeFilter: matchesAllNodes,
 		},
 		"single empty node, many schedulable pods": {
 			nodesWithPods: map[*apiv1.Node][]*apiv1.Pod{node: {}},
@@ -66,7 +68,7 @@ func TestFilterOutSchedulable(t *testing.T) {
 				BuildTestPod("pod2", 500, 10),
 				BuildTestPod("pod3", 800, 10),
 			},
-			nodeMatches: matchesAllNodes,
+			nodeFilter: matchesAllNodes,
 		},
 		"single empty node, single unschedulable pod": {
 			nodesWithPods: map[*apiv1.Node][]*apiv1.Pod{node: {}},
@@ -76,7 +78,7 @@ func TestFilterOutSchedulable(t *testing.T) {
 			expectedUnscheduledPods: []*apiv1.Pod{
 				BuildTestPod("pod1", 3000, 10),
 			},
-			nodeMatches: matchesAllNodes,
+			nodeFilter: matchesAllNodes,
 		},
 		"single empty node, various pods": {
 			nodesWithPods: map[*apiv1.Node][]*apiv1.Pod{node: {}},
@@ -92,7 +94,7 @@ func TestFilterOutSchedulable(t *testing.T) {
 			expectedUnscheduledPods: []*apiv1.Pod{
 				BuildTestPod("pod3", 1800, 10),
 			},
-			nodeMatches: matchesAllNodes,
+			nodeFilter: matchesAllNodes,
 		},
 		"single empty node, some priority pods": {
 			nodesWithPods: map[*apiv1.Node][]*apiv1.Pod{node: {}},
@@ -108,7 +110,7 @@ func TestFilterOutSchedulable(t *testing.T) {
 			expectedUnscheduledPods: []*apiv1.Pod{
 				buildPriorityTestPod("pod2", 500, 10, 10),
 			},
-			nodeMatches: matchesAllNodes,
+			nodeFilter: matchesAllNodes,
 		},
 		"non-empty node with a single pods scheduled": {
 			nodesWithPods: map[*apiv1.Node][]*apiv1.Pod{
@@ -128,7 +130,7 @@ func TestFilterOutSchedulable(t *testing.T) {
 			expectedUnscheduledPods: []*apiv1.Pod{
 				BuildTestPod("pod4", 300, 10),
 			},
-			nodeMatches: matchesAllNodes,
+			nodeFilter: matchesAllNodes,
 		},
 		"non-empty node with many pods scheduled": {
 			nodesWithPods: map[*apiv1.Node][]*apiv1.Pod{
@@ -149,7 +151,22 @@ func TestFilterOutSchedulable(t *testing.T) {
 				BuildTestPod("pod3", 1000, 10),
 				BuildTestPod("pod5", 300, 10),
 			},
-			nodeMatches: matchesAllNodes,
+			nodeFilter: matchesAllNodes,
+		},
+		"single empty node, various pods, node should not be considered": {
+			nodesWithPods: map[*apiv1.Node][]*apiv1.Pod{node: {}},
+			unschedulableCandidates: []*apiv1.Pod{
+				BuildTestPod("pod1", 200, 10),
+				BuildTestPod("pod2", 500, 10),
+				BuildTestPod("pod3", 1800, 10),
+			},
+			expectedScheduledPods: []*apiv1.Pod{},
+			expectedUnscheduledPods: []*apiv1.Pod{
+				BuildTestPod("pod1", 200, 10),
+				BuildTestPod("pod2", 500, 10),
+				BuildTestPod("pod3", 1800, 10),
+			},
+			nodeFilter: matchesNoNodes,
 		},
 	}
 
@@ -177,7 +194,7 @@ func TestFilterOutSchedulable(t *testing.T) {
 
 			clusterSnapshot.Fork()
 
-			processor := NewFilterOutSchedulablePodListProcessor(predicateChecker)
+			processor := NewFilterOutSchedulablePodListProcessor(predicateChecker, tc.nodeFilter)
 			unschedulablePods, err := processor.filterOutSchedulableByPacking(tc.unschedulableCandidates, clusterSnapshot)
 
 			assert.NoError(t, err)
@@ -278,7 +295,7 @@ func BenchmarkFilterOutSchedulable(b *testing.B) {
 				b.ResetTimer()
 
 				for i := 0; i < b.N; i++ {
-					processor := NewFilterOutSchedulablePodListProcessor(predicateChecker)
+					processor := NewFilterOutSchedulablePodListProcessor(predicateChecker, scheduling.ScheduleAnywhere)
 					if stillPending, err := processor.filterOutSchedulableByPacking(pendingPods, clusterSnapshot); err != nil {
 						assert.NoError(b, err)
 					} else if len(stillPending) < tc.pendingPods {

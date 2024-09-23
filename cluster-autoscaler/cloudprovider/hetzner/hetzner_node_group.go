@@ -18,6 +18,7 @@ package hetzner
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"maps"
 	"math/rand"
@@ -90,12 +91,14 @@ func (n *hetznerNodeGroup) IncreaseSize(delta int) error {
 		return fmt.Errorf("delta must be positive, have: %d", delta)
 	}
 
-	targetSize := n.targetSize + delta
-	if targetSize > n.MaxSize() {
-		return fmt.Errorf("size increase is too large. current: %d desired: %d max: %d", n.targetSize, targetSize, n.MaxSize())
+	desiredTargetSize := n.targetSize + delta
+	if desiredTargetSize > n.MaxSize() {
+		return fmt.Errorf("size increase is too large. current: %d desired: %d max: %d", n.targetSize, desiredTargetSize, n.MaxSize())
 	}
 
-	klog.V(4).Infof("Scaling Instance Pool %s to %d", n.id, targetSize)
+	actualDelta := delta
+
+	klog.V(4).Infof("Scaling Instance Pool %s to %d", n.id, desiredTargetSize)
 
 	n.clusterUpdateMutex.Lock()
 	defer n.clusterUpdateMutex.Unlock()
@@ -108,25 +111,43 @@ func (n *hetznerNodeGroup) IncreaseSize(delta int) error {
 		return fmt.Errorf("server type %s not available in region %s", n.instanceType, n.region)
 	}
 
+	defer func() {
+		// create new servers cache
+		if _, err := n.manager.cachedServers.servers(); err != nil {
+			klog.Errorf("failed to update servers cache: %v", err)
+		}
+
+		// Update target size
+		n.resetTargetSize(actualDelta)
+	}()
+
+	// There is no "Server Group" in Hetzner Cloud, we need to create every
+	// server manually. This operation might fail for some of the servers
+	// because of quotas, rate limiting or server type availability. We need to
+	// collect the errors and inform cluster-autoscaler about this, so it can
+	// try other node groups if configured.
 	waitGroup := sync.WaitGroup{}
+	errsCh := make(chan error, delta)
 	for i := 0; i < delta; i++ {
 		waitGroup.Add(1)
 		go func() {
 			defer waitGroup.Done()
 			err := createServer(n)
 			if err != nil {
-				targetSize--
-				klog.Errorf("failed to create error: %v", err)
+				actualDelta--
+				errsCh <- err
 			}
 		}()
 	}
 	waitGroup.Wait()
+	close(errsCh)
 
-	n.targetSize = targetSize
-
-	// create new servers cache
-	if _, err := n.manager.cachedServers.servers(); err != nil {
-		klog.Errorf("failed to get servers: %v", err)
+	errs := make([]error, 0, delta)
+	for err = range errsCh {
+		errs = append(errs, err)
+	}
+	if len(errs) > 0 {
+		return fmt.Errorf("failed to create all servers: %w", errors.Join(errs...))
 	}
 
 	return nil
@@ -145,13 +166,26 @@ func (n *hetznerNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	n.clusterUpdateMutex.Lock()
 	defer n.clusterUpdateMutex.Unlock()
 
-	targetSize := n.targetSize - len(nodes)
+	delta := len(nodes)
+
+	targetSize := n.targetSize - delta
 	if targetSize < n.MinSize() {
 		return fmt.Errorf("size decrease is too large. current: %d desired: %d min: %d", n.targetSize, targetSize, n.MinSize())
 	}
 
-	waitGroup := sync.WaitGroup{}
+	actualDelta := delta
 
+	defer func() {
+		// create new servers cache
+		if _, err := n.manager.cachedServers.servers(); err != nil {
+			klog.Errorf("failed to update servers cache: %v", err)
+		}
+
+		n.resetTargetSize(-actualDelta)
+	}()
+
+	waitGroup := sync.WaitGroup{}
+	errsCh := make(chan error, len(nodes))
 	for _, node := range nodes {
 		waitGroup.Add(1)
 		go func(node *apiv1.Node) {
@@ -159,20 +193,23 @@ func (n *hetznerNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 
 			err := n.manager.deleteByNode(node)
 			if err != nil {
-				klog.Errorf("failed to delete server ID %s error: %v", node.Name, err)
+				actualDelta--
+				errsCh <- fmt.Errorf("failed to delete server for node %q: %w", node.Name, err)
 			}
 
 			waitGroup.Done()
 		}(node)
 	}
 	waitGroup.Wait()
+	close(errsCh)
 
-	// create new servers cache
-	if _, err := n.manager.cachedServers.servers(); err != nil {
-		klog.Errorf("failed to get servers: %v", err)
+	errs := make([]error, 0, len(nodes))
+	for err := range errsCh {
+		errs = append(errs, err)
 	}
-
-	n.resetTargetSize(-len(nodes))
+	if len(errs) > 0 {
+		return fmt.Errorf("failed to delete all nodes: %w", errors.Join(errs...))
+	}
 
 	return nil
 }
@@ -250,7 +287,7 @@ func (n *hetznerNodeGroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, err
 	}
 	node.Labels = cloudprovider.JoinStringMaps(node.Labels, nodeGroupLabels)
 
-	if n.manager.clusterConfig.IsUsingNewFormat && n.id != drainingNodePoolId {
+	if n.manager.clusterConfig.IsUsingNewFormat {
 		for _, taint := range n.manager.clusterConfig.NodeConfigs[n.id].Taints {
 			node.Spec.Taints = append(node.Spec.Taints, apiv1.Taint{
 				Key:    taint.Key,
@@ -354,7 +391,7 @@ func buildNodeGroupLabels(n *hetznerNodeGroup) (map[string]string, error) {
 		nodeGroupLabel:               n.id,
 	}
 
-	if n.manager.clusterConfig.IsUsingNewFormat && n.id != drainingNodePoolId {
+	if n.manager.clusterConfig.IsUsingNewFormat {
 		maps.Copy(labels, n.manager.clusterConfig.NodeConfigs[n.id].Labels)
 	}
 
@@ -527,8 +564,8 @@ func findImage(n *hetznerNodeGroup, serverType *hcloud.ServerType) (*hcloud.Imag
 func (n *hetznerNodeGroup) resetTargetSize(expectedDelta int) {
 	servers, err := n.manager.allServers(n.id)
 	if err != nil {
-		klog.Errorf("failed to set node pool %s size, using delta %d error: %v", n.id, expectedDelta, err)
-		n.targetSize = n.targetSize - expectedDelta
+		klog.Warningf("failed to set node pool %s size, using delta %d error: %v", n.id, expectedDelta, err)
+		n.targetSize = n.targetSize + expectedDelta
 	} else {
 		klog.Infof("Set node group %s size from %d to %d, expected delta %d", n.id, n.targetSize, len(servers), expectedDelta)
 		n.targetSize = len(servers)

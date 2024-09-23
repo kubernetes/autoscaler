@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"regexp"
 	"testing"
 	"time"
@@ -208,6 +209,12 @@ func TestErrors(t *testing.T) {
 			expectedErrorCode:  "OTHER",
 			expectedErrorClass: cloudprovider.OtherErrorClass,
 		},
+		{
+			errorCodes:         []string{"CONDITION_NOT_MET"},
+			errorMessage:       "Specified reservation 'rsv-name' does not have available resources for the request.",
+			expectedErrorCode:  "INVALID_RESERVATION",
+			expectedErrorClass: cloudprovider.OtherErrorClass,
+		},
 	}
 	for _, tc := range testCases {
 		for _, errorCode := range tc.errorCodes {
@@ -244,6 +251,10 @@ func TestErrors(t *testing.T) {
 func TestFetchMigInstancesInstanceUrlHandling(t *testing.T) {
 	const goodInstanceUrlTempl = "https://content.googleapis.com/compute/v1/projects/myprojid/zones/myzone/instances/myinst_%d"
 	const badInstanceUrl = "https://badurl.com/compute/v1/projects3/myprojid/zones/myzone/instances/myinst"
+
+	const instanceTemplateNameTempl = "my_inst_templ%d"
+	const instanceTemplateUrlTempl = "https://content.googleapis.com/compute/v1/projects/myprojid/global/instanceTemplates/my_inst_templ%d"
+
 	server := test_util.NewHttpServerMock()
 	defer server.Close()
 	g := newTestAutoscalingGceClient(t, "project1", server.URL, "")
@@ -265,6 +276,9 @@ func TestFetchMigInstancesInstanceUrlHandling(t *testing.T) {
 						LastAttempt: &gce_api.ManagedInstanceLastAttempt{
 							Errors: &gce_api.ManagedInstanceLastAttemptErrors{},
 						},
+						Version: &gce_api.ManagedInstanceVersion{
+							InstanceTemplate: fmt.Sprintf(instanceTemplateUrlTempl, 2),
+						},
 					},
 					{
 						Id:            42,
@@ -272,6 +286,9 @@ func TestFetchMigInstancesInstanceUrlHandling(t *testing.T) {
 						CurrentAction: "CREATING",
 						LastAttempt: &gce_api.ManagedInstanceLastAttempt{
 							Errors: &gce_api.ManagedInstanceLastAttemptErrors{},
+						},
+						Version: &gce_api.ManagedInstanceVersion{
+							InstanceTemplate: fmt.Sprintf(instanceTemplateUrlTempl, 42),
 						},
 					},
 				},
@@ -282,14 +299,16 @@ func TestFetchMigInstancesInstanceUrlHandling(t *testing.T) {
 						Id:     "gce://myprojid/myzone/myinst_2",
 						Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceCreating},
 					},
-					NumericId: 2,
+					NumericId:            2,
+					InstanceTemplateName: fmt.Sprintf(instanceTemplateNameTempl, 2),
 				},
 				{
 					Instance: cloudprovider.Instance{
 						Id:     "gce://myprojid/myzone/myinst_42",
 						Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceCreating},
 					},
-					NumericId: 42,
+					NumericId:            42,
+					InstanceTemplateName: fmt.Sprintf(instanceTemplateNameTempl, 42),
 				},
 			},
 		},
@@ -304,6 +323,9 @@ func TestFetchMigInstancesInstanceUrlHandling(t *testing.T) {
 						LastAttempt: &gce_api.ManagedInstanceLastAttempt{
 							Errors: &gce_api.ManagedInstanceLastAttemptErrors{},
 						},
+						Version: &gce_api.ManagedInstanceVersion{
+							InstanceTemplate: fmt.Sprintf(instanceTemplateUrlTempl, 2),
+						},
 					},
 					{
 						Id:            42,
@@ -311,6 +333,9 @@ func TestFetchMigInstancesInstanceUrlHandling(t *testing.T) {
 						CurrentAction: "CREATING",
 						LastAttempt: &gce_api.ManagedInstanceLastAttempt{
 							Errors: &gce_api.ManagedInstanceLastAttemptErrors{},
+						},
+						Version: &gce_api.ManagedInstanceVersion{
+							InstanceTemplate: fmt.Sprintf(instanceTemplateUrlTempl, 42),
 						},
 					},
 				},
@@ -326,6 +351,9 @@ func TestFetchMigInstancesInstanceUrlHandling(t *testing.T) {
 							LastAttempt: &gce_api.ManagedInstanceLastAttempt{
 								Errors: &gce_api.ManagedInstanceLastAttemptErrors{},
 							},
+							Version: &gce_api.ManagedInstanceVersion{
+								InstanceTemplate: fmt.Sprintf(instanceTemplateUrlTempl, 127),
+							},
 						},
 						{
 							Id:            456,
@@ -333,6 +361,9 @@ func TestFetchMigInstancesInstanceUrlHandling(t *testing.T) {
 							CurrentAction: "CREATING",
 							LastAttempt: &gce_api.ManagedInstanceLastAttempt{
 								Errors: &gce_api.ManagedInstanceLastAttemptErrors{},
+							},
+							Version: &gce_api.ManagedInstanceVersion{
+								InstanceTemplate: fmt.Sprintf(instanceTemplateUrlTempl, 17),
 							},
 						},
 					},
@@ -344,28 +375,32 @@ func TestFetchMigInstancesInstanceUrlHandling(t *testing.T) {
 						Id:     "gce://myprojid/myzone/myinst_2",
 						Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceCreating},
 					},
-					NumericId: 2,
+					NumericId:            2,
+					InstanceTemplateName: fmt.Sprintf(instanceTemplateNameTempl, 2),
 				},
 				{
 					Instance: cloudprovider.Instance{
 						Id:     "gce://myprojid/myzone/myinst_42",
 						Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceCreating},
 					},
-					NumericId: 42,
+					NumericId:            42,
+					InstanceTemplateName: fmt.Sprintf(instanceTemplateNameTempl, 42),
 				},
 				{
 					Instance: cloudprovider.Instance{
 						Id:     "gce://myprojid/myzone/myinst_123",
 						Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceCreating},
 					},
-					NumericId: 123,
+					NumericId:            123,
+					InstanceTemplateName: fmt.Sprintf(instanceTemplateNameTempl, 127),
 				},
 				{
 					Instance: cloudprovider.Instance{
 						Id:     "gce://myprojid/myzone/myinst_456",
 						Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceCreating},
 					},
-					NumericId: 456,
+					NumericId:            456,
+					InstanceTemplateName: fmt.Sprintf(instanceTemplateNameTempl, 17),
 				},
 			},
 		},
@@ -380,6 +415,9 @@ func TestFetchMigInstancesInstanceUrlHandling(t *testing.T) {
 						LastAttempt: &gce_api.ManagedInstanceLastAttempt{
 							Errors: &gce_api.ManagedInstanceLastAttemptErrors{},
 						},
+						Version: &gce_api.ManagedInstanceVersion{
+							InstanceTemplate: fmt.Sprintf(instanceTemplateUrlTempl, 17),
+						},
 					},
 					{
 						Id:            42,
@@ -387,6 +425,9 @@ func TestFetchMigInstancesInstanceUrlHandling(t *testing.T) {
 						CurrentAction: "CREATING",
 						LastAttempt: &gce_api.ManagedInstanceLastAttempt{
 							Errors: &gce_api.ManagedInstanceLastAttemptErrors{},
+						},
+						Version: &gce_api.ManagedInstanceVersion{
+							InstanceTemplate: fmt.Sprintf(instanceTemplateUrlTempl, 17),
 						},
 					},
 				},
@@ -402,6 +443,9 @@ func TestFetchMigInstancesInstanceUrlHandling(t *testing.T) {
 							LastAttempt: &gce_api.ManagedInstanceLastAttempt{
 								Errors: &gce_api.ManagedInstanceLastAttemptErrors{},
 							},
+							Version: &gce_api.ManagedInstanceVersion{
+								InstanceTemplate: fmt.Sprintf(instanceTemplateUrlTempl, 17),
+							},
 						},
 						{
 							Id:            456,
@@ -409,6 +453,9 @@ func TestFetchMigInstancesInstanceUrlHandling(t *testing.T) {
 							CurrentAction: "CREATING",
 							LastAttempt: &gce_api.ManagedInstanceLastAttempt{
 								Errors: &gce_api.ManagedInstanceLastAttemptErrors{},
+							},
+							Version: &gce_api.ManagedInstanceVersion{
+								InstanceTemplate: fmt.Sprintf(instanceTemplateUrlTempl, 17),
 							},
 						},
 					},
@@ -423,6 +470,9 @@ func TestFetchMigInstancesInstanceUrlHandling(t *testing.T) {
 							LastAttempt: &gce_api.ManagedInstanceLastAttempt{
 								Errors: &gce_api.ManagedInstanceLastAttemptErrors{},
 							},
+							Version: &gce_api.ManagedInstanceVersion{
+								InstanceTemplate: fmt.Sprintf(instanceTemplateUrlTempl, 17),
+							},
 						},
 						{
 							Id:            666,
@@ -430,6 +480,9 @@ func TestFetchMigInstancesInstanceUrlHandling(t *testing.T) {
 							CurrentAction: "CREATING",
 							LastAttempt: &gce_api.ManagedInstanceLastAttempt{
 								Errors: &gce_api.ManagedInstanceLastAttemptErrors{},
+							},
+							Version: &gce_api.ManagedInstanceVersion{
+								InstanceTemplate: fmt.Sprintf(instanceTemplateUrlTempl, 127),
 							},
 						},
 					},
@@ -441,42 +494,48 @@ func TestFetchMigInstancesInstanceUrlHandling(t *testing.T) {
 						Id:     "gce://myprojid/myzone/myinst_2",
 						Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceCreating},
 					},
-					NumericId: 2,
+					NumericId:            2,
+					InstanceTemplateName: fmt.Sprintf(instanceTemplateNameTempl, 17),
 				},
 				{
 					Instance: cloudprovider.Instance{
 						Id:     "gce://myprojid/myzone/myinst_42",
 						Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceCreating},
 					},
-					NumericId: 42,
+					NumericId:            42,
+					InstanceTemplateName: fmt.Sprintf(instanceTemplateNameTempl, 17),
 				},
 				{
 					Instance: cloudprovider.Instance{
 						Id:     "gce://myprojid/myzone/myinst_123",
 						Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceCreating},
 					},
-					NumericId: 123,
+					NumericId:            123,
+					InstanceTemplateName: fmt.Sprintf(instanceTemplateNameTempl, 17),
 				},
 				{
 					Instance: cloudprovider.Instance{
 						Id:     "gce://myprojid/myzone/myinst_456",
 						Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceCreating},
 					},
-					NumericId: 456,
+					NumericId:            456,
+					InstanceTemplateName: fmt.Sprintf(instanceTemplateNameTempl, 17),
 				},
 				{
 					Instance: cloudprovider.Instance{
 						Id:     "gce://myprojid/myzone/myinst_789",
 						Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceCreating},
 					},
-					NumericId: 789,
+					NumericId:            789,
+					InstanceTemplateName: fmt.Sprintf(instanceTemplateNameTempl, 17),
 				},
 				{
 					Instance: cloudprovider.Instance{
 						Id:     "gce://myprojid/myzone/myinst_666",
 						Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceCreating},
 					},
-					NumericId: 666,
+					NumericId:            666,
+					InstanceTemplateName: fmt.Sprintf(instanceTemplateNameTempl, 127),
 				},
 			},
 		},
@@ -508,7 +567,8 @@ func TestFetchMigInstancesInstanceUrlHandling(t *testing.T) {
 						Id:     "gce://myprojid/myzone/myinst_42",
 						Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceCreating},
 					},
-					NumericId: 42,
+					NumericId:            42,
+					InstanceTemplateName: "",
 				},
 			},
 		},
@@ -539,7 +599,8 @@ func TestFetchMigInstancesInstanceUrlHandling(t *testing.T) {
 						Id:     "gce://myprojid/myzone/myinst_42",
 						Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceCreating},
 					},
-					NumericId: 42,
+					NumericId:            42,
+					InstanceTemplateName: "",
 				},
 			},
 		},
@@ -561,6 +622,31 @@ func TestFetchMigInstancesInstanceUrlHandling(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestFetchAvailableDiskTypes(t *testing.T) {
+	server := test_util.NewHttpServerMock()
+	defer server.Close()
+	g := newTestAutoscalingGceClient(t, "project-id", server.URL, "")
+
+	// ref: https://cloud.google.com/compute/docs/reference/rest/v1/diskTypes/aggregatedList
+	getDiskTypesAggregatedListOKResponse, _ := os.ReadFile("fixtures/diskTypes_aggregatedList.json")
+	server.On("handle", "/projects/project-id/aggregated/diskTypes").Return(string(getDiskTypesAggregatedListOKResponse)).Times(1)
+
+	t.Run("correctly parse a response", func(t *testing.T) {
+		want := map[string][]string{
+			// "us-central1" region should be skipped
+			"us-central1-a": {"local-ssd", "pd-balanced", "pd-ssd", "pd-standard"},
+			"us-central1-b": {"hyperdisk-balanced", "hyperdisk-extreme", "hyperdisk-throughput", "local-ssd", "pd-balanced", "pd-extreme", "pd-ssd", "pd-standard"},
+		}
+
+		got, err := g.FetchAvailableDiskTypes()
+
+		assert.NoError(t, err)
+		if diff := cmp.Diff(want, got, cmpopts.EquateErrors()); diff != "" {
+			t.Errorf("FetchAvailableDiskTypes(): err diff (-want +got):\n%s", diff)
+		}
+	})
 }
 
 func TestUserAgent(t *testing.T) {
@@ -748,6 +834,13 @@ func TestAutoscalingClientTimeouts(t *testing.T) {
 			},
 			httpTimeout: instantTimeout,
 		},
+		"FetchAvailableDiskTypes_HttpClientTimeout": {
+			clientFunc: func(client *autoscalingGceClientV1) error {
+				_, err := client.FetchAvailableDiskTypes()
+				return err
+			},
+			httpTimeout: instantTimeout,
+		},
 		"FetchMigsWithName_HttpClientTimeout": {
 			clientFunc: func(client *autoscalingGceClientV1) error {
 				_, err := client.FetchMigsWithName("", &regexp.Regexp{})
@@ -838,7 +931,7 @@ func TestFetchAllInstances(t *testing.T) {
 						Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceCreating},
 					},
 					NumericId: 11,
-					Igm:       GceRef{"893226960234", "zones", "test-igm1-grp"},
+					Igm:       GceRef{"myprojid", "zones", "test-igm1-grp"},
 				},
 			},
 		},
@@ -900,7 +993,7 @@ func TestFetchAllInstances(t *testing.T) {
 						Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
 					},
 					NumericId: 10,
-					Igm:       GceRef{"893226960234", "zones", "test-igm1-grp"},
+					Igm:       GceRef{"myprojid", "zones", "test-igm1-grp"},
 				},
 				{
 					Instance: cloudprovider.Instance{
@@ -908,7 +1001,7 @@ func TestFetchAllInstances(t *testing.T) {
 						Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
 					},
 					NumericId: 11,
-					Igm:       GceRef{"893226960234", "zones", "test-igm1-grp"},
+					Igm:       GceRef{"myprojid", "zones", "test-igm1-grp"},
 				},
 			},
 		},
@@ -997,7 +1090,7 @@ func TestFetchAllInstances(t *testing.T) {
 						Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
 					},
 					NumericId: 10,
-					Igm:       GceRef{"893226960234", "zones", "test-igm1-grp"},
+					Igm:       GceRef{"myprojid", "zones", "test-igm1-grp"},
 				},
 				{
 					Instance: cloudprovider.Instance{
@@ -1005,7 +1098,7 @@ func TestFetchAllInstances(t *testing.T) {
 						Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
 					},
 					NumericId: 11,
-					Igm:       GceRef{"893226960234", "zones", "test-igm2-grp"},
+					Igm:       GceRef{"myprojid", "zones", "test-igm2-grp"},
 				},
 				{
 					Instance: cloudprovider.Instance{
@@ -1013,7 +1106,7 @@ func TestFetchAllInstances(t *testing.T) {
 						Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
 					},
 					NumericId: 12,
-					Igm:       GceRef{"893226960234", "zones", "test-igm1-grp"},
+					Igm:       GceRef{"myprojid", "zones", "test-igm1-grp"},
 				},
 				{
 					Instance: cloudprovider.Instance{
@@ -1021,7 +1114,7 @@ func TestFetchAllInstances(t *testing.T) {
 						Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
 					},
 					NumericId: 13,
-					Igm:       GceRef{"893226960234", "zones", "test-igm1-grp"},
+					Igm:       GceRef{"myprojid", "zones", "test-igm1-grp"},
 				},
 				{
 					Instance: cloudprovider.Instance{
@@ -1029,7 +1122,7 @@ func TestFetchAllInstances(t *testing.T) {
 						Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
 					},
 					NumericId: 14,
-					Igm:       GceRef{"893226960234", "zones", "test-igm2-grp"},
+					Igm:       GceRef{"myprojid", "zones", "test-igm2-grp"},
 				},
 				{
 					Instance: cloudprovider.Instance{
@@ -1037,7 +1130,7 @@ func TestFetchAllInstances(t *testing.T) {
 						Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
 					},
 					NumericId: 15,
-					Igm:       GceRef{"893226960234", "zones", "test-igm1-grp"},
+					Igm:       GceRef{"myprojid", "zones", "test-igm1-grp"},
 				},
 			},
 		},
@@ -1141,7 +1234,7 @@ func TestExternalToInternalInstance(t *testing.T) {
 					Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceRunning},
 				},
 				NumericId: 10,
-				Igm:       GceRef{"893226960234", "zones", "test-igm1-grp"},
+				Igm:       GceRef{"myprojid", "zones", "test-igm1-grp"},
 			},
 		},
 	}

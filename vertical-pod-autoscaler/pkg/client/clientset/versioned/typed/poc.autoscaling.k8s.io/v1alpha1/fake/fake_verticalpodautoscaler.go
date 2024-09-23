@@ -23,7 +23,6 @@ import (
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
-	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
 	v1alpha1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
@@ -36,9 +35,9 @@ type FakeVerticalPodAutoscalers struct {
 	ns   string
 }
 
-var verticalpodautoscalersResource = schema.GroupVersionResource{Group: "poc.autoscaling.k8s.io", Version: "v1alpha1", Resource: "verticalpodautoscalers"}
+var verticalpodautoscalersResource = v1alpha1.SchemeGroupVersion.WithResource("verticalpodautoscalers")
 
-var verticalpodautoscalersKind = schema.GroupVersionKind{Group: "poc.autoscaling.k8s.io", Version: "v1alpha1", Kind: "VerticalPodAutoscaler"}
+var verticalpodautoscalersKind = v1alpha1.SchemeGroupVersion.WithKind("VerticalPodAutoscaler")
 
 // Get takes name of the verticalPodAutoscaler, and returns the corresponding verticalPodAutoscaler object, and an error if there is any.
 func (c *FakeVerticalPodAutoscalers) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.VerticalPodAutoscaler, err error) {
@@ -117,7 +116,7 @@ func (c *FakeVerticalPodAutoscalers) UpdateStatus(ctx context.Context, verticalP
 // Delete takes name of the verticalPodAutoscaler and deletes it. Returns an error if one occurs.
 func (c *FakeVerticalPodAutoscalers) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	_, err := c.Fake.
-		Invokes(testing.NewDeleteAction(verticalpodautoscalersResource, c.ns, name), &v1alpha1.VerticalPodAutoscaler{})
+		Invokes(testing.NewDeleteActionWithOptions(verticalpodautoscalersResource, c.ns, name, opts), &v1alpha1.VerticalPodAutoscaler{})
 
 	return err
 }

@@ -128,7 +128,7 @@ type gceManagerImpl struct {
 // CreateGceManager constructs GceManager object.
 func CreateGceManager(configReader io.Reader, discoveryOpts cloudprovider.NodeGroupDiscoveryOptions,
 	localSSDDiskSizeProvider localssdsize.LocalSSDSizeProvider,
-	regional bool, concurrentGceRefreshes int, userAgent, domainUrl string, migInstancesMinRefreshWaitTime time.Duration) (GceManager, error) {
+	regional, bulkGceMigInstancesListingEnabled bool, concurrentGceRefreshes int, userAgent, domainUrl string, migInstancesMinRefreshWaitTime time.Duration) (GceManager, error) {
 	// Create Google Compute Engine token.
 	var err error
 	tokenSource := google.ComputeTokenSource("")
@@ -188,7 +188,7 @@ func CreateGceManager(configReader io.Reader, discoveryOpts cloudprovider.NodeGr
 		cache:                    cache,
 		GceService:               gceService,
 		migLister:                migLister,
-		migInfoProvider:          NewCachingMigInfoProvider(cache, migLister, gceService, projectId, concurrentGceRefreshes, migInstancesMinRefreshWaitTime),
+		migInfoProvider:          NewCachingMigInfoProvider(cache, migLister, gceService, projectId, concurrentGceRefreshes, migInstancesMinRefreshWaitTime, bulkGceMigInstancesListingEnabled),
 		location:                 location,
 		regional:                 regional,
 		projectId:                projectId,
@@ -277,6 +277,7 @@ func (m *gceManagerImpl) DeleteInstances(instances []GceRef) error {
 		}
 	}
 	m.cache.InvalidateMigTargetSize(commonMig.GceRef())
+	m.cache.InvalidateMigInstances(commonMig.GceRef())
 	return m.GceService.DeleteInstances(commonMig.GceRef(), instances)
 }
 

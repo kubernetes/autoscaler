@@ -19,6 +19,7 @@ package clusterapi
 import (
 	"fmt"
 	"os"
+	"path"
 	"strings"
 	"sync"
 
@@ -144,6 +145,7 @@ func indexNodeByProviderID(obj interface{}) ([]string, error) {
 	return []string{}, nil
 }
 
+// findMachine looks up a machine by the ID which is stored in the index as <namespace>/<name>.
 func (c *machineController) findMachine(id string) (*unstructured.Unstructured, error) {
 	return c.findResourceByKey(c.machineInformer.Informer().GetStore(), id)
 }
@@ -333,7 +335,8 @@ func (c *machineController) findMachineByProviderID(providerID normalizedProvide
 	}
 
 	machineID := node.Annotations[machineAnnotationKey]
-	return c.findMachine(machineID)
+	ns := node.Annotations[clusterNamespaceAnnotationKey]
+	return c.findMachine(path.Join(ns, machineID))
 }
 
 func isPendingMachineProviderID(providerID normalizedProviderID) bool {

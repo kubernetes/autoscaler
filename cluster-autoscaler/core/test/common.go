@@ -42,6 +42,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/processors/customresources"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupconfig"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups/asyncnodegroups"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfosprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodes"
@@ -49,6 +50,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -176,7 +178,7 @@ func ExtractPodNames(pods []*apiv1.Pod) []string {
 // NewTestProcessors returns a set of simple processors for use in tests.
 func NewTestProcessors(context *context.AutoscalingContext) *processors.AutoscalingProcessors {
 	return &processors.AutoscalingProcessors{
-		PodListProcessor:       podlistprocessor.NewDefaultPodListProcessor(context.PredicateChecker),
+		PodListProcessor:       podlistprocessor.NewDefaultPodListProcessor(context.PredicateChecker, scheduling.ScheduleAnywhere),
 		NodeGroupListProcessor: &nodegroups.NoOpNodeGroupListProcessor{},
 		BinpackingLimiter:      binpacking.NewTimeLimiter(context.MaxNodeGroupBinpackingDuration),
 		NodeGroupSetProcessor:  nodegroupset.NewDefaultNodeGroupSetProcessor([]string{}, config.NodeGroupDifferenceRatios{}),
@@ -195,6 +197,7 @@ func NewTestProcessors(context *context.AutoscalingContext) *processors.Autoscal
 		ActionableClusterProcessor:  actionablecluster.NewDefaultActionableClusterProcessor(),
 		ScaleDownCandidatesNotifier: scaledowncandidates.NewObserversList(),
 		ScaleStateNotifier:          nodegroupchange.NewNodeGroupChangeObserversList(),
+		AsyncNodeGroupStateChecker:  asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(),
 	}
 }
 
@@ -246,6 +249,15 @@ type MockAutoprovisioningNodeGroupManager struct {
 
 // CreateNodeGroup creates a new node group
 func (p *MockAutoprovisioningNodeGroupManager) CreateNodeGroup(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (nodegroups.CreateNodeGroupResult, errors.AutoscalerError) {
+	return p.createNodeGroup(context, nodeGroup)
+}
+
+// CreateNodeGroupAsync simulates async node group creation. Returns upcoming node groups, never calls initializer.
+func (p *MockAutoprovisioningNodeGroupManager) CreateNodeGroupAsync(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup, nodeGroupInitializer nodegroups.AsyncNodeGroupInitializer) (nodegroups.CreateNodeGroupResult, errors.AutoscalerError) {
+	return p.createNodeGroup(context, nodeGroup)
+}
+
+func (p *MockAutoprovisioningNodeGroupManager) createNodeGroup(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (nodegroups.CreateNodeGroupResult, errors.AutoscalerError) {
 	newNodeGroup, err := nodeGroup.Create()
 	assert.NoError(p.T, err)
 	metrics.RegisterNodeGroupCreation()
@@ -259,14 +271,7 @@ func (p *MockAutoprovisioningNodeGroupManager) CreateNodeGroup(context *context.
 		return nodegroups.CreateNodeGroupResult{}, errors.ToAutoscalerError(errors.InternalError, fmt.Errorf("expected test CloudProvider, found %v", reflect.TypeOf(context.CloudProvider)))
 	}
 	for i := 0; i < p.ExtraGroups; i++ {
-		extraNodeGroup, err := testCloudProvider.NewNodeGroupWithId(
-			testGroup.MachineType(),
-			testGroup.Labels(),
-			map[string]string{},
-			[]apiv1.Taint{},
-			map[string]resource.Quantity{},
-			fmt.Sprintf("%d", i+1),
-		)
+		extraNodeGroup := testCloudProvider.BuildNodeGroup(fmt.Sprintf("autoprovisioned-%s-%d", testGroup.MachineType(), i+1), 0, 1000, 0, false, true, testGroup.MachineType(), nil)
 		assert.NoError(p.T, err)
 		extraGroup, err := extraNodeGroup.Create()
 		assert.NoError(p.T, err)

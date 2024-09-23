@@ -275,6 +275,7 @@ __However, if the substantial number of nodes are tainted with `startup taints` 
 might stop working as it might assume the cluster is broken and should not be scaled (creating new nodes doesn't help as they don't become ready).__
 
 Startup taints are defined as:
+
 * all taints with the prefix `startup-taint.cluster-autoscaler.kubernetes.io/`,
 * all taints defined using `--startup-taint` flag.
 
@@ -287,6 +288,7 @@ Cluster Autoscaler internally treats nodes tainted with `status taints` as ready
 This means that even though the node is ready, no pods should run there as long as the node is tainted and if necessary a scale-up should occur.
 
 Status taints are defined as:
+
 * all taints with the prefix `status-taint.cluster-autoscaler.kubernetes.io/`,
 * all taints defined using `--status-taint` flag.
 
@@ -295,6 +297,7 @@ Status taints are defined as:
 Ignore taints are now deprecated and treated as startup taints.
 
 Ignore taints are defined as:
+
 * all taints with the prefix `ignore-taint.cluster-autoscaler.kubernetes.io/`,
 * all taints defined using `--ignore-taint` flag.
 
@@ -553,6 +556,7 @@ This annotation has no effect on pods that are not a part of any DaemonSet.
 Kubernetes scheduler will fail to schedule a Pod to a Node if the Node's max volume count is exceeded. In such case to enable Cluster Autoscaler to scale up in a Kubernetes cluster with [CSI migration](https://github.com/kubernetes/enhancements/blob/master/keps/sig-storage/625-csi-migration/README.md) enabled, the appropriate CSI related feature gates have to be specified for the Cluster Autoscaler (if the corresponding feature gates are not enabled by default).
 
 For example:
+
 ```
 --feature-gates=CSIMigration=true,CSIMigration{Provdider}=true,InTreePlugin{Provider}Unregister=true
 ```
@@ -566,26 +570,80 @@ Provisioning Request (abbr. ProvReq) is a new namespaced Custom Resource that ai
 
 #### Enabling ProvisioningRequest Support
 
-1. **Cluster Autoscaler Version**: Ensure you are using Cluster Autoscaler version 1.30.1 or later.
+1. __Cluster Autoscaler Version__: Ensure you are using Cluster Autoscaler version 1.30.1 or later.
 
-2. **Feature Flag**: Enable ProvisioningRequest support by setting the following flag in your Cluster Autoscaler configuration:
---enable-provisioning-reques=true.
+2. __Feature Flag__: Enable ProvisioningRequest support by setting the following flag in your Cluster Autoscaler configuration:
+`--enable-provisioning-requests=true`.
+
+3. __Content Type__: This feature requires that the [API content type flag](https://github.com/kubernetes/autoscaler/blob/522c6fcc06c8cf663175ba03549773cc66a02837/cluster-autoscaler/main.go#L114) is set to application/json: `--kube-api-content-type application/json`.
+
+4. __RBAC permissions__: Ensure your cluster-autoscaler pod has the necessary permissions to interact with ProvisioningRequests and PodTemplates:
+
+```
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cluster-autoscaler-provisioning
+rules:
+  - apiGroups:
+    - "autoscaling.x-k8s.io"
+    resources:
+    - provisioningrequests
+    - provisioningrequests/status
+    verbs: ["watch", "list", "get", "create", "update", "patch", "delete"]
+  - apiGroups: [""]
+    resources: ["podtemplates"]
+    verbs: ["watch", "list", "get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cluster-autoscaler-provisioning-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-autoscaler-provisioning
+subjects:
+- kind: ServiceAccount
+  name: cluster-autoscaler
+  namespace: kube-system
+```
 
 #### Supported ProvisioningClasses
 
 Currently, ClusterAutoscaler supports following ProvisioningClasses:
 
-* `check-capacity.autoscaling.x-k8s.io`. 
+* `check-capacity.autoscaling.x-k8s.io`.
 When using this class, Cluster Autoscaler performs following actions:
 
-  * **Capacity Check**: Determines if sufficient capacity exists in the cluster to fulfill the ProvisioningRequest.
+  * __Capacity Check__: Determines if sufficient capacity exists in the cluster to fulfill the ProvisioningRequest.
 
-  * **Reservation from other ProvReqs** (if capacity is available): Reserves this capacity for the ProvisioningRequest for 10 minutes, preventing other ProvReqs from using it.
+  * __Reservation from other ProvReqs__ (if capacity is available): Reserves this capacity for the ProvisioningRequest for 10 minutes,
+  preventing other ProvReqs from using it.
 
-  * **Condition Updates**:
+  * __Condition Updates__:
   Adds a Accepted=True condition when ProvReq is accepted by ClusterAutoscaler and ClusterAutoscaler will check capacity for this ProvReq.
   Adds a Provisioned=True condition to the ProvReq if capacity is available.
   Adds a BookingExpired=True condition when the 10-minute reservation period expires.
+
+* `best-effort-atomic-scale-up.autoscaling.x-k8s.io` (supported from Cluster Autoscaler version 1.30.2 or later).
+When using this class, Cluster Autoscaler performs following actions:
+
+  * __Capacity Check__: Check which pods could be scheduled on existing capacity.
+
+  * __ScaleUp Request__: Evaluates if scaling up a node group could fulfill all remaining
+  requirements of the ProvisioningRequest. The scale-up request will use the  AtomicIncreaseSize method
+  if a given cloud provider supports it. Note that the ScaleUp result depends on the cloud provider's
+  implementation of the AtomicIncreaseSize method. If the method is not implemented, the scale-up
+  request will try to increase the node group atomically but doesn't guarantee atomicity.
+
+  * __Reservation from other ProvReqs (if scale up request succeeded)__: Reserves this capacity for the ProvisioningRequest for 10 minutes, 
+  preventing other ProvReqs from using it.
+
+  * __Condition Updates__:
+    * Adds a Accepted=True condition when ProvReq is accepted by ClusterAutoscaler.
+    * Adds a Provisioned=True condition to the ProvReq if the node group scale up request is successful.
+    * Adds a BookingExpired=True condition when the 10-minute reservation period expires.
 
 ****************
 
@@ -836,7 +894,7 @@ The following startup parameters are supported for cluster autoscaler:
 | `ok-total-unready-count` | Number of allowed unready nodes, irrespective of max-total-unready-percentage  | 3
 | `max-node-provision-time` | Maximum time CA waits for node to be provisioned | 15 minutes
 | `nodes` | sets min,max size and other configuration data for a node group in a format accepted by cloud provider. Can be used multiple times. Format: \<min>:\<max>:<other...> | ""
-| `node-group-auto-discovery` | One or more definition(s) of node group auto-discovery.<br>A definition is expressed `<name of discoverer>:[<key>[=<value>]]`<br>The `aws`, `gce`, and `azure` cloud providers are currently supported. AWS matches by ASG tags, e.g. `asg:tag=tagKey,anotherTagKey`<br>GCE matches by IG name prefix, and requires you to specify min and max nodes per IG, e.g. `mig:namePrefix=pfx,min=0,max=10`<br> Azure matches by tags on VMSS, e.g. `label:foo=bar`, and will auto-detect `min` and `max` tags on the VMSS to set scaling limits.<br>Can be used multiple times | ""
+| `node-group-auto-discovery` | One or more definition(s) of node group auto-discovery.<br>A definition is expressed `<name of discoverer>:[<key>[=<value>]]`<br>The `aws`, `gce`, and `azure` cloud providers are currently supported. AWS matches by ASG tags, e.g. `asg:tag=tagKey,anotherTagKey`<br>GCE matches by IG name prefix, and requires you to specify min and max nodes per IG, e.g. `mig:namePrefix=pfx,min=0,max=10`<br> Azure matches by VMSS tags, similar to AWS. And you can optionally specify a default min and max size for VMSSs, e.g. `label:tag=tagKey,anotherTagKey=bar,min=0,max=600`.<br>Can be used multiple times | ""
 | `emit-per-nodegroup-metrics` | If true, emit per node group metrics. | false
 | `estimator` | Type of resource estimator to be used in scale up | binpacking
 | `expander` | Type of node group expander to be used in scale up.  | random
@@ -1073,7 +1131,7 @@ Cluster Autoscaler will not scale the cluster beyond these limits, but some othe
 * New nodes were added directly to the cloud provider, which could cause the cluster exceeded the maximum number of nodes.
 * Cluster Autoscaler was turned on in the middle of the cluster lifecycle, and the initial number of nodes might beyond these limits.
 
-By default, Cluster Autoscaler does not enforce the node group size. If your cluster is below the minimum number of nodes configured for CA, it will be scaled up _only_ in presence of unschedulable pods. On the other hand, if your cluster is above the minimum number of nodes configured for CA, it will be scaled down _only_ if it has unneeded nodes.
+By default, Cluster Autoscaler does not enforce the node group size. If your cluster is below the minimum number of nodes configured for CA, it will be scaled up _only_ in presence of unschedulable pods. On the other hand, if your cluster is above the maximum number of nodes configured for CA, it will be scaled down _only_ if it has unneeded nodes.
 
 Starting with CA 1.26.0, a new flag `--enforce-node-group-min-size` was introduced to enforce the node group minimum size. For node groups with fewer nodes than the configuration, CA will scale them up to the minimum number of nodes. To enable this feature, please set it to `true` in the command.
 
@@ -1183,8 +1241,10 @@ sub-library. It can be used with custom kubernetes fork, by default it uses
 Example execution looks like this:
 
 ```
-./hack/update-vendor.sh 1.20.0-alpha.1 git@github.com:kubernetes/kubernetes.git
+./hack/update-deps.sh v1.30.2 v1.30.2 git@github.com:kubernetes/kubernetes.git
 ```
+
+The first of two versions denotes k8s dependency of Cluster Autoscaler, the second one refers to the apis/ submodule.
 
 If you need to update vendor to an unreleased commit of Kubernetes, you can use the breakglass script:
 

@@ -17,6 +17,7 @@ limitations under the License.
 package input
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -32,7 +33,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/history"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/spec"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
+	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	target_mock "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/mock"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 )
@@ -42,7 +43,7 @@ type fakeControllerFetcher struct {
 	err error
 }
 
-func (f *fakeControllerFetcher) FindTopMostWellKnownOrScalable(_ *controllerfetcher.ControllerKeyWithAPIVersion) (*controllerfetcher.ControllerKeyWithAPIVersion, error) {
+func (f *fakeControllerFetcher) FindTopMostWellKnownOrScalable(_ context.Context, _ *controllerfetcher.ControllerKeyWithAPIVersion) (*controllerfetcher.ControllerKeyWithAPIVersion, error) {
 	return f.key, f.err
 }
 
@@ -315,7 +316,7 @@ func TestLoadPods(t *testing.T) {
 			if tc.expectedVpaFetch {
 				targetSelectorFetcher.EXPECT().Fetch(vpa).Return(tc.selector, tc.fetchSelectorError)
 			}
-			clusterStateFeeder.LoadVPAs()
+			clusterStateFeeder.LoadVPAs(context.Background())
 
 			vpaID := model.VpaID{
 				Namespace: vpa.Namespace,
@@ -558,6 +559,69 @@ func TestFilterVPAs(t *testing.T) {
 
 	// Set expected results
 	expectedResult := []*vpa_types.VerticalPodAutoscaler{vpa2}
+
+	// Run the filterVPAs function
+	result := filterVPAs(feeder, allVpaCRDs)
+
+	if len(result) != len(expectedResult) {
+		t.Fatalf("expected %d VPAs, got %d", len(expectedResult), len(result))
+	}
+
+	assert.ElementsMatch(t, expectedResult, result)
+}
+
+func TestFilterVPAsIgnoreNamespaces(t *testing.T) {
+
+	vpa1 := &vpa_types.VerticalPodAutoscaler{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "namespace1",
+		},
+		Spec: vpa_types.VerticalPodAutoscalerSpec{
+			Recommenders: []*vpa_types.VerticalPodAutoscalerRecommenderSelector{
+				{Name: DefaultRecommenderName},
+			},
+		},
+	}
+	vpa2 := &vpa_types.VerticalPodAutoscaler{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "namespace2",
+		},
+		Spec: vpa_types.VerticalPodAutoscalerSpec{
+			Recommenders: []*vpa_types.VerticalPodAutoscalerRecommenderSelector{
+				{Name: DefaultRecommenderName},
+			},
+		},
+	}
+	vpa3 := &vpa_types.VerticalPodAutoscaler{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "ignore1",
+		},
+		Spec: vpa_types.VerticalPodAutoscalerSpec{
+			Recommenders: []*vpa_types.VerticalPodAutoscalerRecommenderSelector{
+				{Name: DefaultRecommenderName},
+			},
+		},
+	}
+	vpa4 := &vpa_types.VerticalPodAutoscaler{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "ignore2",
+		},
+		Spec: vpa_types.VerticalPodAutoscalerSpec{
+			Recommenders: []*vpa_types.VerticalPodAutoscalerRecommenderSelector{
+				{Name: DefaultRecommenderName},
+			},
+		},
+	}
+
+	allVpaCRDs := []*vpa_types.VerticalPodAutoscaler{vpa1, vpa2, vpa3, vpa4}
+
+	feeder := &clusterStateFeeder{
+		recommenderName:   DefaultRecommenderName,
+		ignoredNamespaces: []string{"ignore1", "ignore2"},
+	}
+
+	// Set expected results
+	expectedResult := []*vpa_types.VerticalPodAutoscaler{vpa1, vpa2}
 
 	// Run the filterVPAs function
 	result := filterVPAs(feeder, allVpaCRDs)

@@ -17,11 +17,12 @@ limitations under the License.
 package pod
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
 	admissionv1 "k8s.io/api/admission/v1"
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	resource_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/patch"
@@ -63,12 +64,12 @@ func (h *resourceHandler) DisallowIncorrectObjects() bool {
 }
 
 // GetPatches builds patches for Pod in given admission request.
-func (h *resourceHandler) GetPatches(ar *admissionv1.AdmissionRequest) ([]resource_admission.PatchRecord, error) {
+func (h *resourceHandler) GetPatches(ctx context.Context, ar *admissionv1.AdmissionRequest) ([]resource_admission.PatchRecord, error) {
 	if ar.Resource.Version != "v1" {
 		return nil, fmt.Errorf("only v1 Pods are supported")
 	}
 	raw, namespace := ar.Object.Raw, ar.Namespace
-	pod := v1.Pod{}
+	pod := corev1.Pod{}
 	if err := json.Unmarshal(raw, &pod); err != nil {
 		return nil, err
 	}
@@ -76,10 +77,10 @@ func (h *resourceHandler) GetPatches(ar *admissionv1.AdmissionRequest) ([]resour
 		pod.Name = pod.GenerateName + "%"
 		pod.Namespace = namespace
 	}
-	klog.V(4).Infof("Admitting pod %v", pod.ObjectMeta)
-	controllingVpa := h.vpaMatcher.GetMatchingVPA(&pod)
+	klog.V(4).Infof("Admitting pod %s", klog.KObj(&pod))
+	controllingVpa := h.vpaMatcher.GetMatchingVPA(ctx, &pod)
 	if controllingVpa == nil {
-		klog.V(4).Infof("No matching VPA found for pod %s/%s", pod.Namespace, pod.Name)
+		klog.V(4).Infof("No matching VPA found for pod %s", klog.KObj(&pod))
 		return []resource_admission.PatchRecord{}, nil
 	}
 	pod, err := h.preProcessor.Process(pod)

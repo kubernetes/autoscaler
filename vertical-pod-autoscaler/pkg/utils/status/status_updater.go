@@ -17,6 +17,7 @@ limitations under the License.
 package status
 
 import (
+	"context"
 	"time"
 
 	clientset "k8s.io/client-go/kubernetes"
@@ -47,15 +48,28 @@ func NewUpdater(c clientset.Interface, statusName, statusNamespace string,
 // Run starts status updates.
 func (su *Updater) Run(stopCh <-chan struct{}) {
 	go func() {
+		ticker := time.NewTicker(su.updateInterval)
+		defer ticker.Stop()
+
 		for {
 			select {
 			case <-stopCh:
 				return
-			case <-time.After(su.updateInterval):
-				if err := su.client.UpdateStatus(); err != nil {
-					klog.Errorf("Status update by %s failed: %v", su.client.holderIdentity, err)
-				}
+			case <-ticker.C:
+				su.updateStatus()
 			}
 		}
 	}()
+}
+
+func (su *Updater) updateStatus() {
+	// The lease renewal has timeout of the given update interval (10s).
+	// If the lease cannot be renewed in the allotted time (for example due to client-side throttling),
+	// the vpa-updater will consider that vpa-admission-controller as unhealthy and won't evict Pods in endless loop.
+	ctx, cancel := context.WithTimeout(context.Background(), su.updateInterval)
+	defer cancel()
+
+	if err := su.client.UpdateStatus(ctx); err != nil {
+		klog.Errorf("Status update by %s failed: %v", su.client.holderIdentity, err)
+	}
 }

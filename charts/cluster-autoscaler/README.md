@@ -422,6 +422,7 @@ vpa:
 | extraEnv | object | `{}` | Additional container environment variables. |
 | extraEnvConfigMaps | object | `{}` | Additional container environment variables from ConfigMaps. |
 | extraEnvSecrets | object | `{}` | Additional container environment variables from Secrets. |
+| extraObjects | list | `[]` | Extra K8s manifests to deploy |
 | extraVolumeMounts | list | `[]` | Additional volumes to mount. |
 | extraVolumeSecrets | object | `{}` | Additional volumes to mount from Secrets. |
 | extraVolumes | list | `[]` | Additional volumes. |
@@ -430,7 +431,7 @@ vpa:
 | image.pullPolicy | string | `"IfNotPresent"` | Image pull policy |
 | image.pullSecrets | list | `[]` | Image pull secrets |
 | image.repository | string | `"registry.k8s.io/autoscaling/cluster-autoscaler"` | Image repository |
-| image.tag | string | `"v1.30.0"` | Image tag |
+| image.tag | string | `"v1.31.0"` | Image tag |
 | kubeTargetVersionOverride | string | `""` | Allow overriding the `.Capabilities.KubeVersion.GitVersion` check. Useful for `helm template` commands. |
 | kwokConfigMapName | string | `"kwok-provider-config"` | configmap for configuring kwok provider |
 | magnumCABundlePath | string | `"/etc/kubernetes/ca-bundle.crt"` | Path to the host's CA bundle, from `ca-file` in the cloud-config file. |

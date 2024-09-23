@@ -58,7 +58,7 @@ type NodeGroupAutoscalingOptions struct {
 
 // GCEOptions contain autoscaling options specific to GCE cloud provider.
 type GCEOptions struct {
-	// ConcurrentRefreshes is the maximum number of concurrently refreshed instance groups or instance templates.
+	// ConcurrentRefreshes is the maximum number of concurrently refreshed instance groups or instance templates or zones with mig instances
 	ConcurrentRefreshes int
 	// MigInstancesMinRefreshWaitTime is the minimum time which needs to pass before GCE MIG instances from a given MIG can be refreshed.
 	MigInstancesMinRefreshWaitTime time.Duration
@@ -66,6 +66,9 @@ type GCEOptions struct {
 	DomainUrl string
 	// LocalSSDDiskSizeProvider provides local ssd disk size based on machine type
 	LocalSSDDiskSizeProvider gce_localssdsize.LocalSSDSizeProvider
+	// BulkMigInstancesListingEnabled means that cluster instances should be listed in bulk instead of per mig.
+	// Instances of migs having instances in creating or deleting state are re-fetched using igm.ListInstances. Inconsistencies are handled by re-fetching using igm.ListInstances
+	BulkMigInstancesListingEnabled bool
 }
 
 const (
@@ -281,8 +284,6 @@ type AutoscalingOptions struct {
 	MinReplicaCount int
 	// NodeDeleteDelayAfterTaint is the duration to wait before deleting a node after tainting it
 	NodeDeleteDelayAfterTaint time.Duration
-	// ParallelDrain is whether CA can drain nodes in parallel.
-	ParallelDrain bool
 	// NodeGroupSetRatio is a collection of ratios used by CA used to make scaling decisions.
 	NodeGroupSetRatios NodeGroupDifferenceRatios
 	// dynamicNodeDeleteDelayAfterTaintEnabled is used to enable/disable dynamic adjustment of NodeDeleteDelayAfterTaint
@@ -292,6 +293,14 @@ type AutoscalingOptions struct {
 	BypassedSchedulers map[string]bool
 	// ProvisioningRequestEnabled tells if CA processes ProvisioningRequest.
 	ProvisioningRequestEnabled bool
+	// AsyncNodeGroupsEnabled tells if CA creates/deletes node groups asynchronously.
+	AsyncNodeGroupsEnabled bool
+	// ProvisioningRequestInitialBackoffTime is the initial time for ProvisioningRequest be considered by CA after failed ScaleUp request.
+	ProvisioningRequestInitialBackoffTime time.Duration
+	// ProvisioningRequestMaxBackoffTime is the max time for ProvisioningRequest be considered by CA after failed ScaleUp request.
+	ProvisioningRequestMaxBackoffTime time.Duration
+	// ProvisioningRequestMaxCacheSize is the max size for ProvisioningRequest cache that is stored for retry backoff.
+	ProvisioningRequestMaxBackoffCacheSize int
 }
 
 // KubeClientOptions specify options for kube client

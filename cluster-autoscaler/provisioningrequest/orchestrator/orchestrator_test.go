@@ -23,10 +23,10 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	v1 "k8s.io/api/apps/v1"
+	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1beta1"
+	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
@@ -75,7 +75,7 @@ func TestScaleUp(t *testing.T) {
 			CPU:      "5m",
 			Memory:   "5",
 			PodCount: int32(100),
-			Class:    v1beta1.ProvisioningClassCheckCapacity,
+			Class:    v1.ProvisioningClassCheckCapacity,
 		})
 
 	newCheckCapacityMemProvReq := provreqwrapper.BuildValidTestProvisioningRequestFromOptions(
@@ -84,7 +84,7 @@ func TestScaleUp(t *testing.T) {
 			CPU:      "1m",
 			Memory:   "100",
 			PodCount: int32(100),
-			Class:    v1beta1.ProvisioningClassCheckCapacity,
+			Class:    v1.ProvisioningClassCheckCapacity,
 		})
 
 	// Active atomic scale up requests.
@@ -94,7 +94,7 @@ func TestScaleUp(t *testing.T) {
 			CPU:      "5m",
 			Memory:   "5",
 			PodCount: int32(5),
-			Class:    v1beta1.ProvisioningClassBestEffortAtomicScaleUp,
+			Class:    v1.ProvisioningClassBestEffortAtomicScaleUp,
 		})
 	largeAtomicScaleUpProvReq := provreqwrapper.BuildValidTestProvisioningRequestFromOptions(
 		provreqwrapper.TestProvReqOptions{
@@ -102,7 +102,7 @@ func TestScaleUp(t *testing.T) {
 			CPU:      "1m",
 			Memory:   "100",
 			PodCount: int32(100),
-			Class:    v1beta1.ProvisioningClassBestEffortAtomicScaleUp,
+			Class:    v1.ProvisioningClassBestEffortAtomicScaleUp,
 		})
 	impossibleAtomicScaleUpReq := provreqwrapper.BuildValidTestProvisioningRequestFromOptions(
 		provreqwrapper.TestProvReqOptions{
@@ -110,7 +110,7 @@ func TestScaleUp(t *testing.T) {
 			CPU:      "1m",
 			Memory:   "1",
 			PodCount: int32(5001),
-			Class:    v1beta1.ProvisioningClassBestEffortAtomicScaleUp,
+			Class:    v1.ProvisioningClassBestEffortAtomicScaleUp,
 		})
 	possibleAtomicScaleUpReq := provreqwrapper.BuildValidTestProvisioningRequestFromOptions(
 		provreqwrapper.TestProvReqOptions{
@@ -118,7 +118,7 @@ func TestScaleUp(t *testing.T) {
 			CPU:      "100m",
 			Memory:   "1",
 			PodCount: int32(120),
-			Class:    v1beta1.ProvisioningClassBestEffortAtomicScaleUp,
+			Class:    v1.ProvisioningClassBestEffortAtomicScaleUp,
 		})
 	autoprovisioningAtomicScaleUpReq := provreqwrapper.BuildValidTestProvisioningRequestFromOptions(
 		provreqwrapper.TestProvReqOptions{
@@ -126,7 +126,7 @@ func TestScaleUp(t *testing.T) {
 			CPU:      "100m",
 			Memory:   "100",
 			PodCount: int32(5),
-			Class:    v1beta1.ProvisioningClassBestEffortAtomicScaleUp,
+			Class:    v1.ProvisioningClassBestEffortAtomicScaleUp,
 		})
 
 	// Already provisioned provisioning request - capacity should be booked before processing a new request.
@@ -137,9 +137,9 @@ func TestScaleUp(t *testing.T) {
 			CPU:      "1m",
 			Memory:   "200",
 			PodCount: int32(100),
-			Class:    v1beta1.ProvisioningClassCheckCapacity,
+			Class:    v1.ProvisioningClassCheckCapacity,
 		})
-	bookedCapacityProvReq.SetConditions([]metav1.Condition{{Type: v1beta1.Provisioned, Status: metav1.ConditionTrue, LastTransitionTime: metav1.Now()}})
+	bookedCapacityProvReq.SetConditions([]metav1.Condition{{Type: v1.Provisioned, Status: metav1.ConditionTrue, LastTransitionTime: metav1.Now()}})
 
 	// Expired provisioning request - should be ignored.
 	expiredProvReq := provreqwrapper.BuildValidTestProvisioningRequestFromOptions(
@@ -148,9 +148,9 @@ func TestScaleUp(t *testing.T) {
 			CPU:      "1m",
 			Memory:   "200",
 			PodCount: int32(100),
-			Class:    v1beta1.ProvisioningClassCheckCapacity,
+			Class:    v1.ProvisioningClassCheckCapacity,
 		})
-	expiredProvReq.SetConditions([]metav1.Condition{{Type: v1beta1.BookingExpired, Status: metav1.ConditionTrue, LastTransitionTime: metav1.Now()}})
+	expiredProvReq.SetConditions([]metav1.Condition{{Type: v1.BookingExpired, Status: metav1.ConditionTrue, LastTransitionTime: metav1.Now()}})
 
 	// Unsupported provisioning request - should be ignored.
 	unsupportedProvReq := provreqwrapper.BuildValidTestProvisioningRequestFromOptions(
@@ -188,10 +188,10 @@ func TestScaleUp(t *testing.T) {
 			scaleUpResult:    status.ScaleUpNotNeeded,
 		},
 		{
-			name:             "capacity in the cluster is booked",
-			provReqs:         []*provreqwrapper.ProvisioningRequest{newCheckCapacityMemProvReq, bookedCapacityProvReq},
+			name:             "capacity is there, check-capacity class",
+			provReqs:         []*provreqwrapper.ProvisioningRequest{newCheckCapacityMemProvReq},
 			provReqToScaleUp: newCheckCapacityMemProvReq,
-			scaleUpResult:    status.ScaleUpNoOptionsAvailable,
+			scaleUpResult:    status.ScaleUpSuccessful,
 		},
 		{
 			name:             "unsupported ProvisioningRequest is ignored",
@@ -210,12 +210,6 @@ func TestScaleUp(t *testing.T) {
 			provReqs:         []*provreqwrapper.ProvisioningRequest{bookedCapacityProvReq, atomicScaleUpProvReq},
 			provReqToScaleUp: atomicScaleUpProvReq,
 			scaleUpResult:    status.ScaleUpNotNeeded,
-		},
-		{
-			name:             "some capacity is pre-booked, large atomic scale-up request doesn't fit",
-			provReqs:         []*provreqwrapper.ProvisioningRequest{bookedCapacityProvReq, largeAtomicScaleUpProvReq},
-			provReqToScaleUp: largeAtomicScaleUpProvReq,
-			scaleUpResult:    status.ScaleUpNoOptionsAvailable,
 		},
 		{
 			name:             "capacity is there, large atomic scale-up request doesn't require scale-up",
@@ -260,7 +254,7 @@ func TestScaleUp(t *testing.T) {
 			}
 			orchestrator, nodeInfos := setupTest(t, allNodes, tc.provReqs, onScaleUpFunc, tc.autoprovisioning)
 
-			st, err := orchestrator.ScaleUp(prPods, []*apiv1.Node{}, []*v1.DaemonSet{}, nodeInfos, false)
+			st, err := orchestrator.ScaleUp(prPods, []*apiv1.Node{}, []*appsv1.DaemonSet{}, nodeInfos, false)
 			if !tc.err {
 				assert.NoError(t, err)
 				if tc.scaleUpResult != st.Result && len(st.PodsRemainUnschedulable) > 0 {
@@ -310,7 +304,7 @@ func setupTest(t *testing.T, nodes []*apiv1.Node, prs []*provreqwrapper.Provisio
 	}
 
 	now := time.Now()
-	nodeInfos, err := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&autoscalingContext, nodes, []*v1.DaemonSet{}, taints.TaintConfig{}, now)
+	nodeInfos, err := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&autoscalingContext, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
 	assert.NoError(t, err)
 
 	options := config.AutoscalingOptions{
@@ -329,7 +323,7 @@ func setupTest(t *testing.T, nodes []*apiv1.Node, prs []*provreqwrapper.Provisio
 		nil,
 	)
 
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, autoscalingContext.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(options.NodeGroupDefaults))
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, autoscalingContext.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(options.NodeGroupDefaults), processors.AsyncNodeGroupStateChecker)
 	clusterState.UpdateNodes(nodes, nodeInfos, now)
 
 	orchestrator := &provReqOrchestrator{
