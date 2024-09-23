@@ -68,6 +68,10 @@ const (
 	// be scaled up because the associated reservation was not ready.
 	ErrorReservationNotReady = "RESERVATION_NOT_READY"
 
+	// ErrorUnsupportedTpuConfiguration is an error code for InstanceErrorInfo if the
+	// node group couldn't be scaled up because of invalid TPU configuration.
+	ErrorUnsupportedTpuConfiguration = "UNSUPPORTED_TPU_CONFIGURATION"
+
 	// ErrorCodeOther is an error code used in InstanceErrorInfo if other error occurs.
 	ErrorCodeOther = "OTHER"
 
@@ -90,6 +94,7 @@ var (
 		regexp.MustCompile("Zone does not currently have sufficient capacity for the requested resources"),
 		regexp.MustCompile("Reservation (.*) does not have sufficient capacity for the requested resources."),
 		regexp.MustCompile("Specified reservation (.*) does not have available resources for the request."),
+		regexp.MustCompile("Specified reservations (.*) do not exist"),
 	}
 )
 
@@ -566,15 +571,20 @@ func GetErrorInfo(errorCode, errorMessage, instanceStatus string, previousErrorI
 			ErrorClass: cloudprovider.OtherErrorClass,
 			ErrorCode:  ErrorCodeVmExternalIpAccessPolicyConstraint,
 		}
-	} else if isReservationNotReady(errorCode, errorMessage) {
+	} else if isReservationNotReady(errorMessage) {
 		return &cloudprovider.InstanceErrorInfo{
 			ErrorClass: cloudprovider.OtherErrorClass,
 			ErrorCode:  ErrorReservationNotReady,
 		}
-	} else if isInvalidReservationError(errorCode, errorMessage) {
+	} else if isInvalidReservationError(errorMessage) {
 		return &cloudprovider.InstanceErrorInfo{
 			ErrorClass: cloudprovider.OtherErrorClass,
 			ErrorCode:  ErrorInvalidReservation,
+		}
+	} else if isTpuConfigurationInvalidError(errorCode, errorMessage) {
+		return &cloudprovider.InstanceErrorInfo{
+			ErrorClass: cloudprovider.OtherErrorClass,
+			ErrorCode:  ErrorUnsupportedTpuConfiguration,
 		}
 	} else if isInstanceStatusNotRunningYet(instanceStatus) {
 		if previousErrorInfo != nil {
@@ -639,15 +649,20 @@ func isVmExternalIpAccessPolicyConstraintError(errorCode, errorMessage string) b
 	return strings.Contains(errorCode, "CONDITION_NOT_MET") && regexProjectPolicyConstraint.MatchString(errorMessage)
 }
 
+func isTpuConfigurationInvalidError(errorCode, errorMessage string) bool {
+	return strings.Contains(errorCode, "CONDITION_NOT_MET") &&
+		strings.Contains(errorMessage, "Unsupported TPU configuration")
+}
+
 func isInstanceStatusNotRunningYet(instanceStatus string) bool {
 	return instanceStatus == "" || instanceStatus == "PROVISIONING" || instanceStatus == "STAGING"
 }
 
-func isReservationNotReady(errorCode, errorMessage string) bool {
+func isReservationNotReady(errorMessage string) bool {
 	return strings.Contains(errorMessage, "it requires reservation to be in READY state")
 }
 
-func isInvalidReservationError(errorCode, errorMessage string) bool {
+func isInvalidReservationError(errorMessage string) bool {
 	for _, re := range regexReservationErrors {
 		if re.MatchString(errorMessage) {
 			return true
