@@ -422,6 +422,7 @@ vpa:
 | extraEnv | object | `{}` | Additional container environment variables. |
 | extraEnvConfigMaps | object | `{}` | Additional container environment variables from ConfigMaps. |
 | extraEnvSecrets | object | `{}` | Additional container environment variables from Secrets. |
+| extraObjects | list | `[]` | Extra K8s manifests to deploy |
 | extraVolumeMounts | list | `[]` | Additional volumes to mount. |
 | extraVolumeSecrets | object | `{}` | Additional volumes to mount from Secrets. |
 | extraVolumes | list | `[]` | Additional volumes. |
