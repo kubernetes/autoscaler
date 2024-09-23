@@ -201,6 +201,12 @@ func TestErrors(t *testing.T) {
 			expectedErrorCode:  "OTHER",
 			expectedErrorClass: cloudprovider.OtherErrorClass,
 		},
+		{
+			errorCodes:         []string{"CONDITION_NOT_MET"},
+			errorMessage:       "Specified reservation 'rsv-name' does not have available resources for the request.",
+			expectedErrorCode:  "INVALID_RESERVATION",
+			expectedErrorClass: cloudprovider.OtherErrorClass,
+		},
 	}
 	for _, tc := range testCases {
 		for _, errorCode := range tc.errorCodes {

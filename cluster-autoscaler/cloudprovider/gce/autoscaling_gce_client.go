@@ -84,6 +84,7 @@ var (
 		regexp.MustCompile("Reservation (.*) is incorrect for the requested resources"),
 		regexp.MustCompile("Zone does not currently have sufficient capacity for the requested resources"),
 		regexp.MustCompile("Reservation (.*) does not have sufficient capacity for the requested resources."),
+		regexp.MustCompile("Specified reservation (.*) does not have available resources for the request."),
 	}
 )
 
