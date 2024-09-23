@@ -215,6 +215,18 @@ func TestErrors(t *testing.T) {
 			expectedErrorCode:  "INVALID_RESERVATION",
 			expectedErrorClass: cloudprovider.OtherErrorClass,
 		},
+		{
+			errorCodes:         []string{"CONDITION_NOT_MET"},
+			errorMessage:       "Unsupported TPU configuration",
+			expectedErrorCode:  ErrorUnsupportedTpuConfiguration,
+			expectedErrorClass: cloudprovider.OtherErrorClass,
+		},
+		{
+			errorCodes:         []string{"SPECIFIC_ALLOCATION"},
+			errorMessage:       "Specified reservations [this-reservation-does-not-exist] do not exist. (when acting as",
+			expectedErrorCode:  ErrorInvalidReservation,
+			expectedErrorClass: cloudprovider.OtherErrorClass,
+		},
 	}
 	for _, tc := range testCases {
 		for _, errorCode := range tc.errorCodes {
