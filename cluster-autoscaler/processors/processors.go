@@ -89,6 +89,8 @@ func DefaultProcessors(options config.AutoscalingOptions) *AutoscalingProcessors
 		}),
 		ScaleUpStatusProcessor: status.NewDefaultScaleUpStatusProcessor(),
 		ScaleDownNodeProcessor: nodes.NewPreFilteringScaleDownNodeProcessor(),
+		// TODO NewMaxNodesProcessor should be called after NewAtomicResizeFilteringProcessor
+		// to have maximum removable nodes returned by ScaleDownSetProcessor
 		ScaleDownSetProcessor: nodes.NewCompositeScaleDownSetProcessor(
 			[]nodes.ScaleDownSetProcessor{
 				nodes.NewMaxNodesProcessor(),

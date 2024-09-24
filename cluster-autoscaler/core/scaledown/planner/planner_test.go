@@ -18,6 +18,7 @@ package planner
 
 import (
 	"fmt"
+	"math"
 	"testing"
 	"time"
 
@@ -35,6 +36,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/unremovable"
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
+	processorstest "k8s.io/autoscaler/cluster-autoscaler/processors/test"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
@@ -498,7 +500,7 @@ func TestUpdateClusterState(t *testing.T) {
 			assert.NoError(t, err)
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, tc.nodes, tc.pods)
 			deleteOptions := options.NodeDeleteOptions{}
-			p := New(&context, NewTestProcessors(&context), deleteOptions, nil)
+			p := New(&context, processorstest.NewTestProcessors(&context), deleteOptions, nil)
 			p.eligibilityChecker = &fakeEligibilityChecker{eligible: asMap(tc.eligible)}
 			if tc.isSimulationTimeout {
 				context.AutoscalingOptions.ScaleDownSimulationTimeout = 1 * time.Second
@@ -694,7 +696,7 @@ func TestUpdateClusterStatUnneededNodesLimit(t *testing.T) {
 			assert.NoError(t, err)
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, nil)
 			deleteOptions := options.NodeDeleteOptions{}
-			p := New(&context, NewTestProcessors(&context), deleteOptions, nil)
+			p := New(&context, processorstest.NewTestProcessors(&context), deleteOptions, nil)
 			p.eligibilityChecker = &fakeEligibilityChecker{eligible: asMap(nodeNames(nodes))}
 			p.minUpdateInterval = tc.updateInterval
 			p.unneededNodes.Update(previouslyUnneeded, time.Now())
@@ -706,16 +708,18 @@ func TestUpdateClusterStatUnneededNodesLimit(t *testing.T) {
 
 func TestNodesToDelete(t *testing.T) {
 	testCases := []struct {
-		name      string
-		nodes     map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved
-		wantEmpty []*apiv1.Node
-		wantDrain []*apiv1.Node
+		name                    string
+		nodes                   map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved
+		wantEmpty               []*apiv1.Node
+		wantDrain               []*apiv1.Node
+		maxNodeCountToBeRemoved int
 	}{
 		{
-			name:      "empty",
-			nodes:     map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{},
-			wantEmpty: []*apiv1.Node{},
-			wantDrain: []*apiv1.Node{},
+			name:                    "empty",
+			nodes:                   map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{},
+			wantEmpty:               []*apiv1.Node{},
+			wantDrain:               []*apiv1.Node{},
+			maxNodeCountToBeRemoved: math.MaxInt,
 		},
 		{
 			name: "single empty",
@@ -727,7 +731,26 @@ func TestNodesToDelete(t *testing.T) {
 			wantEmpty: []*apiv1.Node{
 				buildRemovableNode("test-node", 0).Node,
 			},
-			wantDrain: []*apiv1.Node{},
+			wantDrain:               []*apiv1.Node{},
+			maxNodeCountToBeRemoved: math.MaxInt,
+		},
+		{
+			name: "multiple empty with limit",
+			nodes: map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{
+				sizedNodeGroup("test-ng", 3, false): {
+					buildRemovableNode("node-1", 0),
+					buildRemovableNode("node-2", 0),
+					buildRemovableNode("node-3", 0),
+					buildRemovableNode("node-4", 1),
+				},
+			},
+			wantEmpty: []*apiv1.Node{
+				buildRemovableNode("node-1", 0).Node,
+				buildRemovableNode("node-2", 0).Node,
+				buildRemovableNode("node-3", 0).Node,
+			},
+			wantDrain:               []*apiv1.Node{},
+			maxNodeCountToBeRemoved: 3,
 		},
 		{
 			name: "single drain",
@@ -740,6 +763,7 @@ func TestNodesToDelete(t *testing.T) {
 			wantDrain: []*apiv1.Node{
 				buildRemovableNode("test-node", 1).Node,
 			},
+			maxNodeCountToBeRemoved: math.MaxInt,
 		},
 		{
 			name: "single empty atomic",
@@ -748,8 +772,9 @@ func TestNodesToDelete(t *testing.T) {
 					buildRemovableNode("node-1", 0),
 				},
 			},
-			wantEmpty: []*apiv1.Node{},
-			wantDrain: []*apiv1.Node{},
+			wantEmpty:               []*apiv1.Node{},
+			wantDrain:               []*apiv1.Node{},
+			maxNodeCountToBeRemoved: math.MaxInt,
 		},
 		{
 			name: "all empty atomic",
@@ -765,7 +790,8 @@ func TestNodesToDelete(t *testing.T) {
 				buildRemovableNode("node-2", 0).Node,
 				buildRemovableNode("node-3", 0).Node,
 			},
-			wantDrain: []*apiv1.Node{},
+			wantDrain:               []*apiv1.Node{},
+			maxNodeCountToBeRemoved: math.MaxInt,
 		},
 		{
 			name: "some drain atomic",
@@ -783,6 +809,7 @@ func TestNodesToDelete(t *testing.T) {
 			wantDrain: []*apiv1.Node{
 				buildRemovableNode("node-3", 1).Node,
 			},
+			maxNodeCountToBeRemoved: math.MaxInt,
 		},
 		{
 			name: "different groups",
@@ -836,6 +863,52 @@ func TestNodesToDelete(t *testing.T) {
 				buildRemovableNode("node-14", 0).Node,
 				buildRemovableNode("node-15", 0).Node,
 			},
+			maxNodeCountToBeRemoved: math.MaxInt,
+		},
+		{
+			name: "different groups with max count equal to all empty",
+			nodes: map[cloudprovider.NodeGroup][]simulator.NodeToBeRemoved{
+				sizedNodeGroup("standard-empty-ng", 3, false): {
+					buildRemovableNode("node-1", 0),
+					buildRemovableNode("node-2", 0),
+					buildRemovableNode("node-3", 0),
+				},
+				sizedNodeGroup("standard-drain-ng", 3, false): {
+					buildRemovableNode("node-4", 1),
+					buildRemovableNode("node-5", 2),
+					buildRemovableNode("node-6", 3),
+				},
+				sizedNodeGroup("standard-mixed-ng", 3, false): {
+					buildRemovableNode("node-7", 0),
+					buildRemovableNode("node-8", 1),
+					buildRemovableNode("node-9", 2),
+				},
+				sizedNodeGroup("atomic-empty-ng", 3, true): {
+					buildRemovableNode("node-10", 0),
+					buildRemovableNode("node-11", 0),
+					buildRemovableNode("node-12", 0),
+				},
+				sizedNodeGroup("atomic-mixed-ng", 3, true): {
+					buildRemovableNode("node-13", 0),
+					buildRemovableNode("node-14", 1),
+					buildRemovableNode("node-15", 2),
+				},
+				sizedNodeGroup("atomic-partial-ng", 3, true): {
+					buildRemovableNode("node-16", 0),
+					buildRemovableNode("node-17", 1),
+				},
+			},
+			wantEmpty: []*apiv1.Node{
+				buildRemovableNode("node-1", 0).Node,
+				buildRemovableNode("node-2", 0).Node,
+				buildRemovableNode("node-3", 0).Node,
+				buildRemovableNode("node-7", 0).Node,
+				buildRemovableNode("node-10", 0).Node,
+				buildRemovableNode("node-11", 0).Node,
+				buildRemovableNode("node-12", 0).Node,
+			},
+			wantDrain:               []*apiv1.Node{},
+			maxNodeCountToBeRemoved: 9,
 		},
 	}
 	for _, tc := range testCases {
@@ -862,9 +935,10 @@ func TestNodesToDelete(t *testing.T) {
 			assert.NoError(t, err)
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, allNodes, nil)
 			deleteOptions := options.NodeDeleteOptions{}
-			p := New(&context, NewTestProcessors(&context), deleteOptions, nil)
+			p := New(&context, processorstest.NewTestProcessors(&context), deleteOptions, nil)
 			p.latestUpdate = time.Now()
-			p.actuationStatus = deletiontracker.NewNodeDeletionTracker(0 * time.Second)
+			p.scaleDownContext.ActuationStatus = deletiontracker.NewNodeDeletionTracker(0 * time.Second)
+			p.scaleDownContext.MaxNodeCountToRemove = tc.maxNodeCountToBeRemoved
 			p.unneededNodes.Update(allRemovables, time.Now().Add(-1*time.Hour))
 			p.eligibilityChecker = &fakeEligibilityChecker{eligible: asMap(nodeNames(allNodes))}
 			empty, drain := p.NodesToDelete(time.Now())
