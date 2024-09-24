@@ -140,9 +140,11 @@ clusterAPIWorkloadKubeconfigPath: /etc/kubernetes/value
 
 # containerSecurityContext -- [Security context for container](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/)
 containerSecurityContext: {}
+  # allowPrivilegeEscalation: false
   # capabilities:
   #   drop:
   #   - ALL
+  # readOnlyRootFilesystem: true
 
 deployment:
   # deployment.annotations -- Annotations to add to the Deployment object.
@@ -352,8 +354,10 @@ revisionHistoryLimit: 10
 # securityContext -- [Security context for pod](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/)
 securityContext: {}
   # runAsNonRoot: true
-  # runAsUser: 1001
-  # runAsGroup: 1001
+  # runAsUser: 65534
+  # runAsGroup: 65534
+  # seccompProfile:
+  #    type: RuntimeDefault
 
 service:
   # service.create -- If `true`, a Service will be created.
