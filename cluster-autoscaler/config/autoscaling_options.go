@@ -307,6 +307,10 @@ type AutoscalingOptions struct {
 	CheckCapacityProvisioningRequestMaxBatchSize int
 	// CheckCapacityProvisioningRequestBatchTimebox is the maximum time to spend processing a batch of provisioning requests
 	CheckCapacityProvisioningRequestBatchTimebox time.Duration
+	// PodShardingEnabled indicates if pod sharding is enabled
+	PodShardingEnabled bool
+	// PodShardingLabels is a list of labels to use when comparing if two node groups are similar for pod sharding.
+	PodShardingNodeSelectors []string
 }
 
 // KubeClientOptions specify options for kube client
