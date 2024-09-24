@@ -89,7 +89,7 @@ func (h *resourceHandler) GetPatches(_ context.Context, ar *v1.AdmissionRequest)
 		return nil, err
 	}
 
-	klog.V(4).Infof("Processing vpa: %v", vpa)
+	klog.V(4).InfoS("Processing vpa", "vpa", vpa)
 	patches := []resource.PatchRecord{}
 	if vpa.Spec.UpdatePolicy == nil {
 		// Sets the default updatePolicy.
