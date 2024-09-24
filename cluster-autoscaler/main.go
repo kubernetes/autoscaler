@@ -72,6 +72,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/podsharding"
 	scheduler_util "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 	"k8s.io/autoscaler/cluster-autoscaler/version"
@@ -279,6 +280,8 @@ var (
 	checkCapacityBatchProcessing                 = flag.Bool("check-capacity-batch-processing", false, "Whether to enable batch processing for check capacity requests.")
 	checkCapacityProvisioningRequestMaxBatchSize = flag.Int("check-capacity-provisioning-request-max-batch-size", 10, "Maximum number of provisioning requests to process in a single batch.")
 	checkCapacityProvisioningRequestBatchTimebox = flag.Duration("check-capacity-provisioning-request-batch-timebox", 10*time.Second, "Maximum time to process a batch of provisioning requests.")
+	podShardingEnabled                           = flag.Bool("pod-sharding", false, "Enable sharding of pending pods into groups to be handled separately by scale-up algorithm")
+	podShardingNodeSelector                      = multiStringFlag("pod-sharding-node-selector", "Label to use for sharding pods. Can be used multiple times.")
 )
 
 func isFlagPassed(name string) bool {
@@ -457,6 +460,8 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		CheckCapacityBatchProcessing:                 *checkCapacityBatchProcessing,
 		CheckCapacityProvisioningRequestMaxBatchSize: *checkCapacityProvisioningRequestMaxBatchSize,
 		CheckCapacityProvisioningRequestBatchTimebox: *checkCapacityProvisioningRequestBatchTimebox,
+		PodShardingEnabled:                           *podShardingEnabled,
+		PodShardingNodeSelectors:                     *podShardingNodeSelector,
 	}
 }
 
@@ -548,6 +553,28 @@ func buildAutoscaler(context ctx.Context, debuggingSnapshotter debuggingsnapshot
 		opts.LoopStartNotifier = loopstart.NewObserversList([]loopstart.Observer{provreqProcesor})
 
 		podListProcessor.AddProcessor(provreqProcesor)
+	}
+
+	// Add pod sharding related processors if pod sharding is enabled.
+	if autoscalingOptions.PodShardingEnabled {
+		klog.Info("Pod sharding is enabled")
+
+		PodShardingNodeSelectors := make(map[string]string)
+		for _, label := range autoscalingOptions.PodShardingNodeSelectors {
+			parts := strings.Split(label, "=")
+			if len(parts) != 2 {
+				klog.Errorf("Invalid pod sharding label: %s", label)
+				continue
+			}
+
+			PodShardingNodeSelectors[parts[0]] = parts[1]
+		}
+
+		podsharder := podsharding.NewOssPodSharder(PodShardingNodeSelectors)
+		podshardselector := podsharding.NewLruPodShardSelector()
+		podShardFilter := podsharding.NewPredicatePodShardFilter()
+		podShardingProcessor := podsharding.NewPodShardingProcessor(podsharder, podshardselector, podShardFilter)
+		podListProcessor.AddProcessor(podShardingProcessor)
 	}
 
 	if *proactiveScaleupEnabled {
