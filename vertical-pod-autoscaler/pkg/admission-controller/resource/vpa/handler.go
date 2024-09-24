@@ -34,10 +34,11 @@ import (
 
 var (
 	possibleUpdateModes = map[vpa_types.UpdateMode]interface{}{
-		vpa_types.UpdateModeOff:      struct{}{},
-		vpa_types.UpdateModeInitial:  struct{}{},
-		vpa_types.UpdateModeRecreate: struct{}{},
-		vpa_types.UpdateModeAuto:     struct{}{},
+		vpa_types.UpdateModeOff:               struct{}{},
+		vpa_types.UpdateModeInitial:           struct{}{},
+		vpa_types.UpdateModeRecreate:          struct{}{},
+		vpa_types.UpdateModeAuto:              struct{}{},
+		vpa_types.UpdateModeInPlaceOrRecreate: struct{}{},
 	}
 
 	possibleScalingModes = map[vpa_types.ContainerScalingMode]interface{}{

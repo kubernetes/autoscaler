@@ -53,7 +53,8 @@ func TestSelfRegistrationBase(t *testing.T) {
 	assert.Equal(t, "vpa.k8s.io", webhook.Name, "expected webhook name to match")
 
 	PodRule := webhook.Rules[0]
-	assert.Equal(t, []admissionregistration.OperationType{admissionregistration.Create}, PodRule.Operations, "expected operations to match")
+	// we're watching for updates now also because of in-place VPA
+	assert.Equal(t, []admissionregistration.OperationType{admissionregistration.Create, admissionregistration.Update}, PodRule.Operations, "expected operations to match")
 	assert.Equal(t, []string{""}, PodRule.APIGroups, "expected API groups to match")
 	assert.Equal(t, []string{"v1"}, PodRule.APIVersions, "expected API versions to match")
 	assert.Equal(t, []string{"pods"}, PodRule.Resources, "expected resources to match")

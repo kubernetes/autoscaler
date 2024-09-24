@@ -25,10 +25,12 @@ import (
 type PodBuilder interface {
 	WithName(name string) PodBuilder
 	AddContainer(container apiv1.Container) PodBuilder
+	AddContainerStatus(container apiv1.ContainerStatus) PodBuilder
 	WithCreator(creatorObjectMeta *metav1.ObjectMeta, creatorTypeMeta *metav1.TypeMeta) PodBuilder
 	WithLabels(labels map[string]string) PodBuilder
 	WithAnnotations(annotations map[string]string) PodBuilder
 	WithPhase(phase apiv1.PodPhase) PodBuilder
+	WithResizeStatus(resizeStatus apiv1.PodResizeStatus) PodBuilder
 	Get() *apiv1.Pod
 }
 
@@ -42,11 +44,14 @@ func Pod() PodBuilder {
 type podBuilderImpl struct {
 	name              string
 	containers        []apiv1.Container
+	containerStatuses []apiv1.ContainerStatus
 	creatorObjectMeta *metav1.ObjectMeta
 	creatorTypeMeta   *metav1.TypeMeta
 	labels            map[string]string
 	annotations       map[string]string
 	phase             apiv1.PodPhase
+	// additional fields for in-place, since we care about status and resize
+	resizeStatus apiv1.PodResizeStatus
 }
 
 func (pb *podBuilderImpl) WithLabels(labels map[string]string) PodBuilder {
@@ -73,6 +78,12 @@ func (pb *podBuilderImpl) AddContainer(container apiv1.Container) PodBuilder {
 	return &r
 }
 
+func (pb *podBuilderImpl) AddContainerStatus(containerStatus apiv1.ContainerStatus) PodBuilder {
+	r := *pb
+	r.containerStatuses = append(r.containerStatuses, containerStatus)
+	return &r
+}
+
 func (pb *podBuilderImpl) WithCreator(creatorObjectMeta *metav1.ObjectMeta, creatorTypeMeta *metav1.TypeMeta) PodBuilder {
 	r := *pb
 	r.creatorObjectMeta = creatorObjectMeta
@@ -83,6 +94,12 @@ func (pb *podBuilderImpl) WithCreator(creatorObjectMeta *metav1.ObjectMeta, crea
 func (pb *podBuilderImpl) WithPhase(phase apiv1.PodPhase) PodBuilder {
 	r := *pb
 	r.phase = phase
+	return &r
+}
+
+func (pb *podBuilderImpl) WithResizeStatus(resizeStatus apiv1.PodResizeStatus) PodBuilder {
+	r := *pb
+	r.resizeStatus = resizeStatus
 	return &r
 }
 
@@ -99,7 +116,9 @@ func (pb *podBuilderImpl) Get() *apiv1.Pod {
 			Containers: pb.containers,
 		},
 		Status: apiv1.PodStatus{
-			StartTime: &startTime,
+			StartTime:         &startTime,
+			ContainerStatuses: pb.containerStatuses,
+			Resize:            pb.resizeStatus,
 		},
 	}
 

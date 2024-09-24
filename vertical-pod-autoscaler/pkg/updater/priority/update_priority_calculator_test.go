@@ -36,6 +36,8 @@ const (
 	containerName = "container1"
 )
 
+// TODO(jkyros): RunOnce is using GetSortedPrioritizedPods not GetSortedPods, so this isn't testing anything anymore. Come back
+// to make sure we're properly testing again if we decide to keep it that way.
 // TODO(bskiba): Refactor the SortPriority tests as a testcase list test.
 func TestSortPriority(t *testing.T) {
 	pod1 := test.Pod().WithName("POD1").AddContainer(test.Container().WithName(containerName).WithCPURequest(resource.MustParse("2")).Get()).Get()

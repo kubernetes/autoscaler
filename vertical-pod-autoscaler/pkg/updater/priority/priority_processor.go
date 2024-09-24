@@ -49,9 +49,14 @@ func (*defaultPriorityProcessor) GetUpdatePriority(pod *apiv1.Pod, _ *vpa_types.
 	// Sum of recommendations over all containers, per resource type.
 	totalRecommendedPerResource := make(map[apiv1.ResourceName]int64)
 
+	// The denominator doesn't work out if we have all the resources in here
+	totalRecommendedPerStatusResource := make(map[apiv1.ResourceName]int64)
+	// Sum of status requests in containers where the requests already match (e.g. in-place resize is InProgress)
+	totalRequestPerStatusResource := make(map[apiv1.ResourceName]int64)
+
 	hasObservedContainers, vpaContainerSet := parseVpaObservedContainers(pod)
 
-	for _, podContainer := range pod.Spec.Containers {
+	for num, podContainer := range pod.Spec.Containers {
 		if hasObservedContainers && !vpaContainerSet.Has(podContainer.Name) {
 			klog.V(4).Infof("Not listed in %s:%s. Skipping container %s priority calculations",
 				annotations.VpaObservedContainersLabel, pod.GetAnnotations()[annotations.VpaObservedContainersLabel], podContainer.Name)
@@ -67,12 +72,42 @@ func (*defaultPriorityProcessor) GetUpdatePriority(pod *apiv1.Pod, _ *vpa_types.
 			upperBound, hasUpperBound := recommendedRequest.UpperBound[resourceName]
 			if request, hasRequest := podContainer.Resources.Requests[resourceName]; hasRequest {
 				totalRequestPerResource[resourceName] += request.MilliValue()
-				if recommended.MilliValue() > request.MilliValue() {
-					scaleUp = true
-				}
-				if (hasLowerBound && request.Cmp(lowerBound) < 0) ||
-					(hasUpperBound && request.Cmp(upperBound) > 0) {
-					outsideRecommendedRange = true
+
+				// If our resources are equal, we know it's an in-place resize so we need to calculate against status
+				if recommended.MilliValue() == request.MilliValue() {
+					if len(pod.Status.ContainerStatuses) > num && pod.Status.ContainerStatuses[num].Resources != nil {
+						if statusRequest, hasStatusRequest := pod.Status.ContainerStatuses[num].Resources.Requests[resourceName]; hasStatusRequest {
+
+							// TODO(jkyros): Ughhhh I need this for the denominator to work out, otherwise I'm potentially dividing
+							// values across different number of resource categories (e.g. mem is in sync, cpu isn't yet I divide
+							totalRecommendedPerStatusResource[resourceName] += recommended.MilliValue()
+
+							totalRequestPerStatusResource[resourceName] += statusRequest.MilliValue()
+							if recommended.MilliValue() > statusRequest.MilliValue() {
+								scaleUp = true
+								// It's okay if we're actually still resizing, but if we can't now or we're stuck, make sure the pod
+								// is still in the list so we can evict it to go live on a fatter node or something
+								if pod.Status.Resize == apiv1.PodResizeStatusDeferred || pod.Status.Resize == apiv1.PodResizeStatusInfeasible {
+									klog.V(4).Infof("Pod %s looks like it's stuck scaling up (%v state), leaving it in for eviction", pod.Name, pod.Status.Resize)
+								} else {
+									klog.V(4).Infof("Pod %s is in the process of scaling up (%v state), leaving it in so we can see if it's taking too long", pod.Name, pod.Status.Resize)
+								}
+							}
+							// I guess if it's not outside of compliance, it's probably okay it's stuck here?
+							if (hasLowerBound && statusRequest.Cmp(lowerBound) < 0) ||
+								(hasUpperBound && statusRequest.Cmp(upperBound) > 0) {
+								outsideRecommendedRange = true
+							}
+						}
+					}
+				} else {
+					if recommended.MilliValue() > request.MilliValue() {
+						scaleUp = true
+					}
+					if (hasLowerBound && request.Cmp(lowerBound) < 0) ||
+						(hasUpperBound && request.Cmp(upperBound) > 0) {
+						outsideRecommendedRange = true
+					}
 				}
 			} else {
 				// Note: if the request is not specified, the container will use the
@@ -85,13 +120,28 @@ func (*defaultPriorityProcessor) GetUpdatePriority(pod *apiv1.Pod, _ *vpa_types.
 		}
 	}
 	resourceDiff := 0.0
+	resourceDiffStatus := 0.0
 	for resource, totalRecommended := range totalRecommendedPerResource {
 		totalRequest := math.Max(float64(totalRequestPerResource[resource]), 1.0)
 		resourceDiff += math.Abs(totalRequest-float64(totalRecommended)) / totalRequest
 	}
+
+	// TODO(jkyros): Calculate the skew for status for in-place updates, we can probably merge these calculations
+	// someday when they work :)
+	// Ohhhh are we dividing by the wrong number of resources because they aren't populated for status
+	// that still doesn't work though
+	for resource, totalRecommended := range totalRecommendedPerStatusResource {
+		totalStatusRequest := math.Max(float64(totalRequestPerStatusResource[resource]), 1.0)
+		resourceDiffStatus += math.Abs(totalStatusRequest-float64(totalRecommended)) / totalStatusRequest
+
+	}
+
+	resourceDiff = resourceDiff + resourceDiffStatus
+
 	return PodPriority{
 		OutsideRecommendedRange: outsideRecommendedRange,
 		ScaleUp:                 scaleUp,
 		ResourceDiff:            resourceDiff,
 	}
+
 }

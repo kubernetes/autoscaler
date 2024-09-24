@@ -22,12 +22,12 @@ import (
 	"testing"
 	"time"
 
-	"golang.org/x/time/rate"
-	v1 "k8s.io/api/autoscaling/v1"
-
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/time/rate"
+	v1 "k8s.io/api/autoscaling/v1"
 	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -157,6 +157,9 @@ func testRunOnceBase(
 			Get()
 
 		pods[i].Labels = labels
+		// We will test in-place separately, but we do need to account for these calls
+		eviction.On("CanInPlaceUpdate", pods[i]).Return(false)
+		eviction.On("IsInPlaceUpdating", pods[i]).Return(false)
 		eviction.On("CanEvict", pods[i]).Return(true)
 		eviction.On("Evict", pods[i], nil).Return(nil)
 	}
@@ -171,12 +174,17 @@ func testRunOnceBase(
 		Name:       rc.Name,
 		APIVersion: rc.APIVersion,
 	}
+	// TOD0(jkyros): I added the recommendationProvided condition here because in-place needs to wait for a
+	// recommendation to scale, causing this test to fail (because in-place checks before eviction, and in-place will
+	// wait to scale -- and not fall back to eviction -- until the VPA has made a recommendation)
+
 	vpaObj := test.VerticalPodAutoscaler().
 		WithContainer(containerName).
 		WithTarget("2", "200M").
 		WithMinAllowed(containerName, "1", "100M").
 		WithMaxAllowed(containerName, "3", "1G").
-		WithTargetRef(targetRef).Get()
+		WithTargetRef(targetRef).
+		AppendCondition(vpa_types.RecommendationProvided, corev1.ConditionTrue, "reason", "msg", time.Unix(0, 0)).Get()
 
 	vpaObj.Spec.UpdatePolicy = &vpa_types.PodUpdatePolicy{UpdateMode: &updateMode}
 	vpaLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{vpaObj}, nil).Once()
@@ -308,14 +316,19 @@ func TestRunOnceIgnoreNamespaceMatchingPods(t *testing.T) {
 		Name:       rc.Name,
 		APIVersion: rc.APIVersion,
 	}
+
+	// TOD0(jkyros): I added the recommendationProvided condition here because in-place needs to wait for a
+	// recommendation to scale, causing this test to fail (because in-place checks before eviction, and in-place will
+	// wait to scale -- and not fall back to eviction -- until the VPA has made a recommendation)
 	vpaObj := test.VerticalPodAutoscaler().
 		WithNamespace("default").
 		WithContainer(containerName).
 		WithTarget("2", "200M").
 		WithMinAllowed(containerName, "1", "100M").
 		WithMaxAllowed(containerName, "3", "1G").
-		WithTargetRef(targetRef).Get()
-
+		WithTargetRef(targetRef).
+		AppendCondition(vpa_types.RecommendationProvided, corev1.ConditionTrue, "reason", "msg", time.Unix(0, 0)).
+		Get()
 	vpaLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{vpaObj}, nil).Once()
 
 	mockSelectorFetcher := target_mock.NewMockVpaTargetSelectorFetcher(ctrl)
