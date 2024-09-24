@@ -73,6 +73,10 @@ const (
 	NotUnreadyLongEnough
 	// NodeGroupMinSizeReached - node can't be removed because its node group is at its minimal size already.
 	NodeGroupMinSizeReached
+	// NodeGroupMaxDeletionCountReached - node can't be removed because max node count to be removed value set in planner reached
+	NodeGroupMaxDeletionCountReached
+	// AtomicScaleDownFailed - node can't be removed as node group has ZeroOrMaxNodeScaling enabled and number of nodes to remove are not equal to target size
+	AtomicScaleDownFailed
 	// MinimalResourceLimitExceeded - node can't be removed because it would violate cluster-wide minimal resource limits.
 	MinimalResourceLimitExceeded
 	// CurrentlyBeingDeleted - node can't be removed because it's already in the process of being deleted.
