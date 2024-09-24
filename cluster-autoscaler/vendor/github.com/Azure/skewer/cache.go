@@ -8,9 +8,10 @@ import (
 
 // Config contains configuration options for a cache.
 type Config struct {
-	location string
-	filter   string
-	client   client
+	location                 string
+	includeExtendedLocations string
+	filter                   string
+	client                   client
 }
 
 // Cache stores a list of known skus, possibly fetched with a provided client
@@ -27,6 +28,14 @@ func WithLocation(location string) Option {
 	return func(c *Config) (*Config, error) {
 		c.location = location
 		c.filter = fmt.Sprintf("location eq '%s'", location)
+		return c, nil
+	}
+}
+
+// WithExtendedLocations is a functional option to include extended locations
+func WithExtendedLocations() Option {
+	return func(c *Config) (*Config, error) {
+		c.includeExtendedLocations = "true"
 		return c, nil
 	}
 }
@@ -139,7 +148,7 @@ func NewStaticCache(data []SKU, opts ...Option) (*Cache, error) {
 }
 
 func (c *Cache) refresh(ctx context.Context) error {
-	data, err := c.config.client.List(ctx, c.config.filter)
+	data, err := c.config.client.List(ctx, c.config.filter, c.config.includeExtendedLocations)
 	if err != nil {
 		return err
 	}
