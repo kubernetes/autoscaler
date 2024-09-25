@@ -33,7 +33,7 @@ autoDiscovery:
   labels: []
     # - color: green
     # - shape: circle
-# autoscalingGroups -- For AWS, Azure AKS or Magnum. At least one element is required if not using `autoDiscovery`. For example:
+# autoscalingGroups -- For AWS, Azure AKS, Exoscale or Magnum. At least one element is required if not using `autoDiscovery`. For example:
 # <pre>
 # - name: asg1<br />
 #   maxSize: 2<br />

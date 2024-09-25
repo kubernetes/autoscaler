@@ -3,8 +3,18 @@
 The Cluster Autoscaler (CA) for Exoscale scales worker nodes running in
 Exoscale SKS Nodepools or Instance Pools.
 
+- [Cluster Autoscaler for Exoscale](#cluster-autoscaler-for-exoscale)
+  - [Configuration](#configuration)
+    - [Authenticating to the Exoscale API](#authenticating-to-the-exoscale-api)
+    - [Optional configuration](#optional-configuration)
+  - [Deployment](#deployment)
+    - [Helm](#helm)
+    - [Manifest](#manifest)
+  - [⚠️  Important Notes](#️--important-notes)
 
 ## Configuration
+
+### Authenticating to the Exoscale API
 
 > Note: the following guide assumes you have the permissions to create
 > resources in the `kube-system` namespace of the target Kubernetes cluster.
@@ -49,7 +59,7 @@ environment.
 You can restrict API operation your IAM key can perform:
 
 * When deploying the Cluster Autoscaler in SKS, your can restrict your IAM access key
-to these API operations : 
+to these API operations :
 
 ```
 evict-sks-nodepool-members
@@ -74,7 +84,19 @@ get-quota
 scale-instance-pool
 ```
 
-### Deploying the Cluster Autoscaler
+### Optional configuration
+
+By default, all nodepools in the k8s cluster are considered for scaling.
+The flag `--nodes=<min>:<max>:<nodepool-name>` may be specified to limit the minimum and
+maximum size of a particular nodepool.
+
+## Deployment
+
+### Helm
+
+See the [Helm Chart README](https://github.com/kubernetes/autoscaler/tree/master/charts/cluster-autoscaler).
+
+### Manifest
 
 To deploy the CA on your Kubernetes cluster, you can use the manifest provided as example:
 
@@ -92,10 +114,10 @@ kubectl apply -f ./examples/cluster-autoscaler.yaml
 
 ## ⚠️  Important Notes
 
-* The minimum node group size is 1
-* The maximum node group size is computed based on the current [Compute
-  instances limit][exo-limits] of the Exoscale account the Cluster Autoscaler
-  is running in.
+* The minimum and maximum node group size of particular nodepools
+  may be specified via the `--nodes` flag, if omitted (default),
+  the minimum is 1 and maximum is computed based on the current [Compute instances limit][exo-limits]
+  of the Exoscale account the Cluster Autoscaler is running in.
 * The Instance Pool candidate for scaling is determined based on the Compute
   instance the Kubernetes node is running on, depending on cluster resource
   constraining events emitted by the Kubernetes scheduler.
