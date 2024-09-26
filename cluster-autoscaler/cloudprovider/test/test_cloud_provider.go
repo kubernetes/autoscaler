@@ -297,6 +297,10 @@ func (tcp *TestCloudProvider) SetResourceLimiter(resourceLimiter *cloudprovider.
 	tcp.resourceLimiter = resourceLimiter
 }
 
+func (tcp *TestCloudProvider) SetMachineTemplates(machineTemplates map[string]*framework.NodeInfo) {
+	tcp.machineTemplates = machineTemplates
+}
+
 // Cleanup this is a function to close resources associated with the cloud provider
 func (tcp *TestCloudProvider) Cleanup() error {
 	return nil
