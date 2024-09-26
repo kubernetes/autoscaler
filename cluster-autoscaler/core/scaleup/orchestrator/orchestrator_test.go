@@ -26,13 +26,9 @@ import (
 	"testing"
 	"time"
 
-	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupconfig"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups/asyncnodegroups"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
-	kube_record "k8s.io/client-go/tools/record"
-	"k8s.io/component-base/metrics/legacyregistry"
-	schedulermetrics "k8s.io/kubernetes/pkg/scheduler/metrics"
-
+	appsv1 "k8s.io/api/apps/v1"
+	apiv1 "k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
@@ -44,20 +40,21 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/processors"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupconfig"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups/asyncnodegroups"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfosprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	processorstest "k8s.io/autoscaler/cluster-autoscaler/processors/test"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
-
-	appsv1 "k8s.io/api/apps/v1"
-	apiv1 "k8s.io/api/core/v1"
-	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes/fake"
+	kube_record "k8s.io/client-go/tools/record"
+	"k8s.io/component-base/metrics/legacyregistry"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -72,8 +69,6 @@ var defaultOptions = config.AutoscalingOptions{
 
 // Scale up scenarios.
 func TestScaleUpOK(t *testing.T) {
-	schedulermetrics.Register()
-
 	config := &ScaleUpTestConfig{
 		Nodes: []NodeConfig{
 			{Name: "n1", Cpu: 100, Memory: 100, Gpu: 0, Ready: true, Group: "ng1"},

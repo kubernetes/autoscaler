@@ -28,6 +28,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/spf13/pflag"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/actuation"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaleup/orchestrator"
 	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
@@ -35,11 +36,10 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/besteffortatomic"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/checkcapacity"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqclient"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
 	kubelet_config "k8s.io/kubernetes/pkg/kubelet/apis/config"
-
-	"github.com/spf13/pflag"
 
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -88,7 +88,6 @@ import (
 	"k8s.io/component-base/metrics/legacyregistry"
 	"k8s.io/klog/v2"
 	scheduler_config "k8s.io/kubernetes/pkg/scheduler/apis/config"
-	schedulermetrics "k8s.io/kubernetes/pkg/scheduler/metrics"
 )
 
 // MultiStringFlag is a flag for passing multiple parameters using same flag
@@ -494,7 +493,7 @@ func buildAutoscaler(context ctx.Context, debuggingSnapshotter debuggingsnapshot
 	}
 	informerFactory := informers.NewSharedInformerFactoryWithOptions(kubeClient, 0, informers.WithTransform(trim))
 
-	predicateChecker, err := predicatechecker.NewSchedulerBasedPredicateChecker(informerFactory, autoscalingOptions.SchedulerConfig)
+	fwHandle, err := framework.NewHandle(informerFactory, autoscalingOptions.SchedulerConfig)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -503,11 +502,12 @@ func buildAutoscaler(context ctx.Context, debuggingSnapshotter debuggingsnapshot
 
 	opts := core.AutoscalerOptions{
 		AutoscalingOptions:   autoscalingOptions,
+		FrameworkHandle:      fwHandle,
 		ClusterSnapshot:      clustersnapshot.NewDeltaClusterSnapshot(),
 		KubeClient:           kubeClient,
 		InformerFactory:      informerFactory,
 		DebuggingSnapshotter: debuggingSnapshotter,
-		PredicateChecker:     predicateChecker,
+		PredicateChecker:     predicatechecker.NewSchedulerBasedPredicateChecker(fwHandle),
 		DeleteOptions:        deleteOptions,
 		DrainabilityRules:    drainabilityRules,
 		ScaleUpOrchestrator:  orchestrator.New(),
@@ -632,7 +632,6 @@ func buildAutoscaler(context ctx.Context, debuggingSnapshotter debuggingsnapshot
 }
 
 func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter) {
-	schedulermetrics.Register()
 	metrics.RegisterAll(*emitPerNodeGroupMetrics)
 	context, cancel := ctx.WithCancel(ctx.Background())
 	defer cancel()

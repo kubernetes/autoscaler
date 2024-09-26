@@ -20,17 +20,16 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/client-go/kubernetes/fake"
-	schedulermetrics "k8s.io/kubernetes/pkg/scheduler/metrics"
 )
 
 func TestAtomicResizeFilterUnremovableNodes(t *testing.T) {
-	schedulermetrics.Register()
 	testCases := []struct {
 		name       string
 		nodeGroups []struct {

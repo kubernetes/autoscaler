@@ -24,59 +24,23 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/client-go/informers"
 	v1listers "k8s.io/client-go/listers/core/v1"
 	klog "k8s.io/klog/v2"
-	"k8s.io/kubernetes/pkg/scheduler/apis/config"
-	scheduler_config "k8s.io/kubernetes/pkg/scheduler/apis/config/latest"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
-	scheduler_plugins "k8s.io/kubernetes/pkg/scheduler/framework/plugins"
-	schedulerframeworkruntime "k8s.io/kubernetes/pkg/scheduler/framework/runtime"
 )
 
 // SchedulerBasedPredicateChecker checks whether all required predicates pass for given Pod and Node.
 // The verification is done by calling out to scheduler code.
 type SchedulerBasedPredicateChecker struct {
-	framework              schedulerframework.Framework
-	delegatingSharedLister *DelegatingSchedulerSharedLister
-	nodeLister             v1listers.NodeLister
-	podLister              v1listers.PodLister
-	lastIndex              int
+	fwHandle   *framework.Handle
+	nodeLister v1listers.NodeLister
+	podLister  v1listers.PodLister
+	lastIndex  int
 }
 
 // NewSchedulerBasedPredicateChecker builds scheduler based PredicateChecker.
-func NewSchedulerBasedPredicateChecker(informerFactory informers.SharedInformerFactory, schedConfig *config.KubeSchedulerConfiguration) (*SchedulerBasedPredicateChecker, error) {
-	if schedConfig == nil {
-		var err error
-		schedConfig, err = scheduler_config.Default()
-		if err != nil {
-			return nil, fmt.Errorf("couldn't create scheduler config: %v", err)
-		}
-	}
-
-	if len(schedConfig.Profiles) != 1 {
-		return nil, fmt.Errorf("unexpected scheduler config: expected one scheduler profile only (found %d profiles)", len(schedConfig.Profiles))
-	}
-	sharedLister := NewDelegatingSchedulerSharedLister()
-
-	framework, err := schedulerframeworkruntime.NewFramework(
-		context.TODO(),
-		scheduler_plugins.NewInTreeRegistry(),
-		&schedConfig.Profiles[0],
-		schedulerframeworkruntime.WithInformerFactory(informerFactory),
-		schedulerframeworkruntime.WithSnapshotSharedLister(sharedLister),
-	)
-
-	if err != nil {
-		return nil, fmt.Errorf("couldn't create scheduler framework; %v", err)
-	}
-
-	checker := &SchedulerBasedPredicateChecker{
-		framework:              framework,
-		delegatingSharedLister: sharedLister,
-	}
-
-	return checker, nil
+func NewSchedulerBasedPredicateChecker(fwHandle *framework.Handle) *SchedulerBasedPredicateChecker {
+	return &SchedulerBasedPredicateChecker{fwHandle: fwHandle}
 }
 
 // FitsAnyNode checks if the given pod can be placed on any of the given nodes.
@@ -102,11 +66,11 @@ func (p *SchedulerBasedPredicateChecker) FitsAnyNodeMatching(clusterSnapshot clu
 		return "", fmt.Errorf("error obtaining nodeInfos from schedulerLister")
 	}
 
-	p.delegatingSharedLister.UpdateDelegate(clusterSnapshot)
-	defer p.delegatingSharedLister.ResetDelegate()
+	p.fwHandle.DelegatingLister.UpdateDelegate(clusterSnapshot)
+	defer p.fwHandle.DelegatingLister.ResetDelegate()
 
 	state := schedulerframework.NewCycleState()
-	preFilterResult, preFilterStatus, _ := p.framework.RunPreFilterPlugins(context.TODO(), state, pod)
+	preFilterResult, preFilterStatus, _ := p.fwHandle.Framework.RunPreFilterPlugins(context.TODO(), state, pod)
 	if !preFilterStatus.IsSuccess() {
 		return "", fmt.Errorf("error running pre filter plugins for pod %s; %s", pod.Name, preFilterStatus.Message())
 	}
@@ -126,7 +90,7 @@ func (p *SchedulerBasedPredicateChecker) FitsAnyNodeMatching(clusterSnapshot clu
 			continue
 		}
 
-		filterStatus := p.framework.RunFilterPlugins(context.TODO(), state, pod, nodeInfo.ToScheduler())
+		filterStatus := p.fwHandle.Framework.RunFilterPlugins(context.TODO(), state, pod, nodeInfo.ToScheduler())
 		if filterStatus.IsSuccess() {
 			p.lastIndex = (p.lastIndex + i + 1) % len(nodeInfosList)
 			return nodeInfo.Node().Name, nil
@@ -146,11 +110,11 @@ func (p *SchedulerBasedPredicateChecker) CheckPredicates(clusterSnapshot cluster
 		return NewPredicateError(InternalPredicateError, "", errorMessage, nil, emptyString)
 	}
 
-	p.delegatingSharedLister.UpdateDelegate(clusterSnapshot)
-	defer p.delegatingSharedLister.ResetDelegate()
+	p.fwHandle.DelegatingLister.UpdateDelegate(clusterSnapshot)
+	defer p.fwHandle.DelegatingLister.ResetDelegate()
 
 	state := schedulerframework.NewCycleState()
-	_, preFilterStatus, _ := p.framework.RunPreFilterPlugins(context.TODO(), state, pod)
+	_, preFilterStatus, _ := p.fwHandle.Framework.RunPreFilterPlugins(context.TODO(), state, pod)
 	if !preFilterStatus.IsSuccess() {
 		return NewPredicateError(
 			InternalPredicateError,
@@ -160,7 +124,7 @@ func (p *SchedulerBasedPredicateChecker) CheckPredicates(clusterSnapshot cluster
 			emptyString)
 	}
 
-	filterStatus := p.framework.RunFilterPlugins(context.TODO(), state, pod, nodeInfo.ToScheduler())
+	filterStatus := p.fwHandle.Framework.RunFilterPlugins(context.TODO(), state, pod, nodeInfo.ToScheduler())
 
 	if !filterStatus.IsSuccess() {
 		filterName := filterStatus.Plugin()
