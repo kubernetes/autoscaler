@@ -113,7 +113,7 @@ func (r *recommender) UpdateVPAs() {
 				if len(pods) != vpa.PodCount {
 					klog.ErrorS(nil, "ClusterState pod count and matching pods disagree for VPA", "vpa", klog.KRef(vpa.ID.Namespace, vpa.ID.VpaName), "podCount", vpa.PodCount, "MatchingPods", pods)
 				}
-				klog.InfoS("VPA dump", "vpa", vpa, "hasMatchingPods", hasMatchingPods, "podCount", vpa.PodCount, "MatchingPods", pods)
+				klog.InfoS("VPA dump", "vpa", vpa, "hasMatchingPods", hasMatchingPods, "podCount", vpa.PodCount, "matchingPods", pods)
 			}
 		}
 		cnt.Add(vpa)
