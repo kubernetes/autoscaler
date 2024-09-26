@@ -36,7 +36,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	utils_test "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/client-go/kubernetes/fake"
-	schedulermetrics "k8s.io/kubernetes/pkg/scheduler/metrics"
 )
 
 type nodeGroupConfig struct {
@@ -54,8 +53,6 @@ type deltaForNodeTestCase struct {
 }
 
 func TestDeltaForNode(t *testing.T) {
-	schedulermetrics.Register()
-
 	testCases := []deltaForNodeTestCase{
 		{
 			nodeGroupConfig: nodeGroupConfig{Name: "ng1", Min: 3, Max: 10, Size: 5, CPU: 8, Mem: 16},

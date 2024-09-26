@@ -131,6 +131,7 @@ func (callbacks *staticAutoscalerProcessorCallbacks) reset() {
 // NewStaticAutoscaler creates an instance of Autoscaler filled with provided parameters
 func NewStaticAutoscaler(
 	opts config.AutoscalingOptions,
+	fwHandle *framework.Handle,
 	predicateChecker predicatechecker.PredicateChecker,
 	clusterSnapshot clustersnapshot.ClusterSnapshot,
 	autoscalingKubeClients *context.AutoscalingKubeClients,
@@ -154,6 +155,7 @@ func NewStaticAutoscaler(
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
 	autoscalingContext := context.NewAutoscalingContext(
 		opts,
+		fwHandle,
 		predicateChecker,
 		clusterSnapshot,
 		autoscalingKubeClients,

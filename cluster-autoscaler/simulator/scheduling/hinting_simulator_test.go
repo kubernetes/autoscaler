@@ -20,19 +20,16 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+
+	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
-	schedulermetrics "k8s.io/kubernetes/pkg/scheduler/metrics"
-
-	"github.com/stretchr/testify/assert"
-	apiv1 "k8s.io/api/core/v1"
 )
 
 func TestTrySchedulePods(t *testing.T) {
-	schedulermetrics.Register()
-
 	testCases := []struct {
 		desc            string
 		nodes           []*apiv1.Node
