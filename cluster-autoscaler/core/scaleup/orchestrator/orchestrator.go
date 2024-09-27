@@ -61,6 +61,11 @@ func New() *ScaleUpOrchestrator {
 	}
 }
 
+// IsInitialized returns true if the orchestrator is initialized.
+func (o *ScaleUpOrchestrator) IsInitialized() bool {
+	return o.initialized
+}
+
 // Initialize initializes the orchestrator object with required fields.
 func (o *ScaleUpOrchestrator) Initialize(
 	autoscalingContext *context.AutoscalingContext,
@@ -89,7 +94,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 	nodeInfos map[string]*framework.NodeInfo,
 	allOrNothing bool, // Either request enough capacity for all unschedulablePods, or don't request it at all.
 ) (*status.ScaleUpStatus, errors.AutoscalerError) {
-	if !o.initialized {
+	if !o.IsInitialized() {
 		return status.UpdateScaleUpError(&status.ScaleUpStatus{}, errors.NewAutoscalerError(errors.InternalError, "ScaleUpOrchestrator is not initialized"))
 	}
 
@@ -99,13 +104,64 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 	}
 	klogx.V(1).Over(loggingQuota).Infof("%v other pods are also unschedulable", -loggingQuota.Left())
 
-	buildPodEquivalenceGroupsStart := time.Now()
-	podEquivalenceGroups := equivalence.BuildPodGroups(unschedulablePods)
-	metrics.UpdateDurationFromStart(metrics.BuildPodEquivalenceGroups, buildPodEquivalenceGroupsStart)
+	// Build equivalence groups for unschedulable pods
+	podEquivalenceGroups := BuildPodEquivalenceGroups(unschedulablePods)
+
+	// Simulation of scale-up and preparation of scale-up plan
+	simulationResult, simulationScaleUpStatus, aErr := o.SimulateScaleUp(podEquivalenceGroups, nodes, nodeInfos, allOrNothing)
+	if aErr != nil || (simulationScaleUpStatus != nil && simulationResult == nil) {
+		return simulationScaleUpStatus, aErr
+	}
+
+	// Prepare node groups for scale-up
+	preparationResult, preparationScaleUpStatus, aErr := o.PrepareNodeGroupsForScaleUp(
+		simulationResult.BestOption,
+		simulationResult.NewNodes,
+		simulationResult.SkippedNodeGroups,
+		simulationResult.NodeGroups,
+		simulationResult.NodeInfos,
+		simulationResult.SchedulablePodGroups,
+		podEquivalenceGroups,
+		daemonSets,
+		allOrNothing,
+	)
+
+	if aErr != nil || (preparationScaleUpStatus != nil && preparationResult == nil) {
+		return preparationScaleUpStatus, aErr
+	}
+
+	// Apply scale-up plan
+	return o.ExecuteScaleUp(
+		simulationResult.BestOption.Pods,
+		simulationResult.SkippedNodeGroups,
+		simulationResult.NodeGroups,
+		simulationResult.NodeInfos,
+		podEquivalenceGroups,
+		preparationResult.ScaleUpInfos,
+		preparationResult.CreateNodeGroupResults,
+		GetPodsAwaitingEvaluation(podEquivalenceGroups, simulationResult.BestOption.NodeGroup.Id()),
+		allOrNothing,
+	)
+}
+
+// SimulateScaleUp runs the logic for determining if a scale-up is necessary and prepares the scale-up plan.
+func (o *ScaleUpOrchestrator) SimulateScaleUp(
+	podEquivalenceGroups []*equivalence.PodGroup,
+	nodes []*apiv1.Node,
+	nodeInfos map[string]*framework.NodeInfo,
+	allOrNothing bool,
+) (*ScaleUpSimulationResult, *status.ScaleUpStatus, errors.AutoscalerError) {
+	unschedulablePods := equivalence.PodsFromPodGroup(podEquivalenceGroups)
+
+	var (
+		scaleUpStatus *status.ScaleUpStatus
+		aErr          errors.AutoscalerError
+	)
 
 	upcomingNodes, aErr := o.UpcomingNodes(nodeInfos)
 	if aErr != nil {
-		return status.UpdateScaleUpError(&status.ScaleUpStatus{}, aErr.AddPrefix("could not get upcoming nodes: "))
+		scaleUpStatus, aErr = status.UpdateScaleUpError(&status.ScaleUpStatus{}, aErr.AddPrefix("could not get upcoming nodes: "))
+		return nil, scaleUpStatus, aErr
 	}
 	klog.V(4).Infof("Upcoming %d nodes", len(upcomingNodes))
 
@@ -114,16 +170,18 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 		var err error
 		nodeGroups, nodeInfos, err = o.processors.NodeGroupListProcessor.Process(o.autoscalingContext, nodeGroups, nodeInfos, unschedulablePods)
 		if err != nil {
-			return status.UpdateScaleUpError(&status.ScaleUpStatus{}, errors.ToAutoscalerError(errors.InternalError, err))
+			scaleUpStatus, aErr = status.UpdateScaleUpError(&status.ScaleUpStatus{}, errors.ToAutoscalerError(errors.InternalError, err))
+			return nil, scaleUpStatus, aErr
 		}
 	}
 
-	// Initialise binpacking limiter.
+	// Initialize binpacking limiter.
 	o.processors.BinpackingLimiter.InitBinpacking(o.autoscalingContext, nodeGroups)
 
 	resourcesLeft, aErr := o.resourceManager.ResourcesLeft(o.autoscalingContext, nodeInfos, nodes)
 	if aErr != nil {
-		return status.UpdateScaleUpError(&status.ScaleUpStatus{}, aErr.AddPrefix("could not compute total resources: "))
+		scaleUpStatus, aErr = status.UpdateScaleUpError(&status.ScaleUpStatus{}, aErr.AddPrefix("could not compute total resources: "))
+		return nil, scaleUpStatus, aErr
 	}
 
 	now := time.Now()
@@ -166,7 +224,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 
 	if len(options) == 0 {
 		klog.V(1).Info("No expansion options")
-		return &status.ScaleUpStatus{
+		return nil, &status.ScaleUpStatus{
 			Result:                  status.ScaleUpNoOptionsAvailable,
 			PodsRemainUnschedulable: GetRemainingPods(podEquivalenceGroups, skippedNodeGroups),
 			ConsideredNodeGroups:    nodeGroups,
@@ -176,7 +234,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 	// Pick some expansion option.
 	bestOption := o.autoscalingContext.ExpanderStrategy.BestOption(options, nodeInfos)
 	if bestOption == nil || bestOption.NodeCount <= 0 {
-		return &status.ScaleUpStatus{
+		return nil, &status.ScaleUpStatus{
 			Result:                  status.ScaleUpNoOptionsAvailable,
 			PodsRemainUnschedulable: GetRemainingPods(podEquivalenceGroups, skippedNodeGroups),
 			ConsideredNodeGroups:    nodeGroups,
@@ -191,14 +249,16 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 	// Cap new nodes to supported number of nodes in the cluster.
 	newNodes, aErr := o.GetCappedNewNodeCount(bestOption.NodeCount, len(nodes)+len(upcomingNodes))
 	if aErr != nil {
-		return status.UpdateScaleUpError(&status.ScaleUpStatus{PodsTriggeredScaleUp: bestOption.Pods}, aErr)
+		scaleUpStatus, aErr = status.UpdateScaleUpError(&status.ScaleUpStatus{PodsTriggeredScaleUp: bestOption.Pods}, aErr)
+		return nil, scaleUpStatus, aErr
 	}
 
 	newNodes, aErr = o.applyLimits(newNodes, resourcesLeft, bestOption.NodeGroup, nodeInfos)
 	if aErr != nil {
-		return status.UpdateScaleUpError(
+		scaleUpStatus, aErr = status.UpdateScaleUpError(
 			&status.ScaleUpStatus{PodsTriggeredScaleUp: bestOption.Pods},
 			aErr)
+		return nil, scaleUpStatus, aErr
 	}
 
 	if newNodes < bestOption.NodeCount {
@@ -207,32 +267,73 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 			// Can't execute a scale-up that will accommodate all pods, so nothing is considered schedulable.
 			klog.V(1).Info("Not attempting scale-up due to all-or-nothing strategy: not all pods would be accommodated")
 			markedEquivalenceGroups := markAllGroupsAsUnschedulable(podEquivalenceGroups, AllOrNothingReason)
-			return buildNoOptionsAvailableStatus(markedEquivalenceGroups, skippedNodeGroups, nodeGroups), nil
+			return nil, buildNoOptionsAvailableStatus(markedEquivalenceGroups, skippedNodeGroups, nodeGroups), nil
 		}
 	}
 
+	return &ScaleUpSimulationResult{
+		BestOption:           bestOption,
+		NewNodes:             newNodes,
+		NodeInfos:            nodeInfos,
+		SkippedNodeGroups:    skippedNodeGroups,
+		NodeGroups:           nodeGroups,
+		SchedulablePodGroups: schedulablePodGroups,
+		PodEquivalenceGroups: podEquivalenceGroups,
+	}, nil, nil
+}
+
+// BuildPodEquivalenceGroups prepares pod groups with equivalent scheduling properties.
+func BuildPodEquivalenceGroups(unschedulablePods []*apiv1.Pod) []*equivalence.PodGroup {
+	buildPodEquivalenceGroupsStart := time.Now()
+	podEquivalenceGroups := equivalence.BuildPodGroups(unschedulablePods)
+	metrics.UpdateDurationFromStart(metrics.BuildPodEquivalenceGroups, buildPodEquivalenceGroupsStart)
+	return podEquivalenceGroups
+}
+
+// PrepareNodeGroupsForScaleUp creates new node groups, balances scale-ups and checks if the scale-up is possible.
+func (o *ScaleUpOrchestrator) PrepareNodeGroupsForScaleUp(
+	bestOption *expander.Option,
+	newNodes int,
+	skippedNodeGroups map[string]status.Reasons,
+	nodeGroups []cloudprovider.NodeGroup,
+	nodeInfos map[string]*framework.NodeInfo,
+	schedulablePodGroups map[string][]estimator.PodEquivalenceGroup,
+	podEquivalenceGroups []*equivalence.PodGroup,
+	daemonSets []*appsv1.DaemonSet,
+	allOrNothing bool,
+) (*ScaleUpPreparationResult, *status.ScaleUpStatus, errors.AutoscalerError) {
 	// If necessary, create the node group. This is no longer simulation, an empty node group will be created by cloud provider if supported.
-	createNodeGroupResults := make([]nodegroups.CreateNodeGroupResult, 0)
+	var (
+		scaleUpStatus          *status.ScaleUpStatus
+		aErr                   errors.AutoscalerError
+		createNodeGroupResults []nodegroups.CreateNodeGroupResult
+	)
+
 	if !bestOption.NodeGroup.Exist() && !o.processors.AsyncNodeGroupStateChecker.IsUpcoming(bestOption.NodeGroup) {
 		if allOrNothing && bestOption.NodeGroup.MaxSize() < newNodes {
 			klog.V(1).Infof("Can only create a new node group with max %d nodes, need %d nodes", bestOption.NodeGroup.MaxSize(), newNodes)
 			// Can't execute a scale-up that will accommodate all pods, so nothing is considered schedulable.
 			klog.V(1).Info("Not attempting scale-up due to all-or-nothing strategy: not all pods would be accommodated")
 			markedEquivalenceGroups := markAllGroupsAsUnschedulable(podEquivalenceGroups, AllOrNothingReason)
-			return buildNoOptionsAvailableStatus(markedEquivalenceGroups, skippedNodeGroups, nodeGroups), nil
+			return nil, buildNoOptionsAvailableStatus(markedEquivalenceGroups, skippedNodeGroups, nodeGroups), nil
 		}
-		var scaleUpStatus *status.ScaleUpStatus
+
 		createNodeGroupResults, scaleUpStatus, aErr = o.CreateNodeGroup(bestOption, nodeInfos, schedulablePodGroups, podEquivalenceGroups, daemonSets, allOrNothing)
 		if aErr != nil {
-			return scaleUpStatus, aErr
+			return nil, scaleUpStatus, aErr
 		}
 	}
 
+	now := time.Now()
+
 	scaleUpInfos, aErr := o.balanceScaleUps(now, bestOption.NodeGroup, newNodes, nodeInfos, schedulablePodGroups)
 	if aErr != nil {
-		return status.UpdateScaleUpError(
+		scaleUpStatus, aErr = status.UpdateScaleUpError(
 			&status.ScaleUpStatus{CreateNodeGroupResults: createNodeGroupResults, PodsTriggeredScaleUp: bestOption.Pods},
-			aErr)
+			aErr,
+		)
+
+		return nil, scaleUpStatus, aErr
 	}
 
 	// Last check before scale-up. Node group capacity (both due to max size limits & current size) is only checked when balancing.
@@ -240,25 +341,44 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 	for _, sui := range scaleUpInfos {
 		totalCapacity += sui.NewSize - sui.CurrentSize
 	}
+
 	if totalCapacity < newNodes {
 		klog.V(1).Infof("Can only add %d nodes due to node group limits, need %d nodes", totalCapacity, newNodes)
 		if allOrNothing {
 			// Can't execute a scale-up that will accommodate all pods, so nothing is considered schedulable.
 			klog.V(1).Info("Not attempting scale-up due to all-or-nothing strategy: not all pods would be accommodated")
 			markedEquivalenceGroups := markAllGroupsAsUnschedulable(podEquivalenceGroups, AllOrNothingReason)
-			return buildNoOptionsAvailableStatus(markedEquivalenceGroups, skippedNodeGroups, nodeGroups), nil
+			return nil, buildNoOptionsAvailableStatus(markedEquivalenceGroups, skippedNodeGroups, nodeGroups), nil
 		}
 	}
 
+	return &ScaleUpPreparationResult{
+		ScaleUpInfos:           scaleUpInfos,
+		CreateNodeGroupResults: createNodeGroupResults,
+	}, nil, nil
+}
+
+// ExecuteScaleUp applies the actual scale-up based on the simulation and preparation results.
+func (o *ScaleUpOrchestrator) ExecuteScaleUp(
+	bestOptionPods []*apiv1.Pod,
+	skippedNodeGroups map[string]status.Reasons,
+	consideredNodeGroups []cloudprovider.NodeGroup,
+	nodeInfos map[string]*framework.NodeInfo,
+	podEquivalenceGroups []*equivalence.PodGroup,
+	scaleUpInfos []nodegroupset.ScaleUpInfo,
+	createNodeGroupResults []nodegroups.CreateNodeGroupResult,
+	podsAwaitEvaluation []*apiv1.Pod,
+	atomic bool,
+) (*status.ScaleUpStatus, errors.AutoscalerError) {
 	// Execute scale up.
 	klog.V(1).Infof("Final scale-up plan: %v", scaleUpInfos)
-	aErr, failedNodeGroups := o.scaleUpExecutor.ExecuteScaleUps(scaleUpInfos, nodeInfos, now, allOrNothing)
+	aErr, failedNodeGroups := o.scaleUpExecutor.ExecuteScaleUps(scaleUpInfos, nodeInfos, time.Now(), atomic)
 	if aErr != nil {
 		return status.UpdateScaleUpError(
 			&status.ScaleUpStatus{
 				CreateNodeGroupResults: createNodeGroupResults,
 				FailedResizeNodeGroups: failedNodeGroups,
-				PodsTriggeredScaleUp:   bestOption.Pods,
+				PodsTriggeredScaleUp:   bestOptionPods,
 			},
 			aErr,
 		)
@@ -269,10 +389,10 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 		Result:                  status.ScaleUpSuccessful,
 		ScaleUpInfos:            scaleUpInfos,
 		PodsRemainUnschedulable: GetRemainingPods(podEquivalenceGroups, skippedNodeGroups),
-		ConsideredNodeGroups:    nodeGroups,
+		ConsideredNodeGroups:    consideredNodeGroups,
 		CreateNodeGroupResults:  createNodeGroupResults,
-		PodsTriggeredScaleUp:    bestOption.Pods,
-		PodsAwaitEvaluation:     GetPodsAwaitingEvaluation(podEquivalenceGroups, bestOption.NodeGroup.Id()),
+		PodsTriggeredScaleUp:    bestOptionPods,
+		PodsAwaitEvaluation:     podsAwaitEvaluation,
 	}, nil
 }
 
@@ -699,9 +819,7 @@ func (o *ScaleUpOrchestrator) balanceScaleUps(
 	}
 
 	targetNodeGroups := []cloudprovider.NodeGroup{nodeGroup}
-	for _, ng := range similarNodeGroups {
-		targetNodeGroups = append(targetNodeGroups, ng)
-	}
+	targetNodeGroups = append(targetNodeGroups, similarNodeGroups...)
 
 	if len(targetNodeGroups) > 1 {
 		var names []string
@@ -755,6 +873,23 @@ func (o *ScaleUpOrchestrator) ComputeSimilarNodeGroups(
 	}
 
 	return validSimilarNodeGroups
+}
+
+// ScaleUpSimulationResult contains the result of the scale-up simulation.
+type ScaleUpSimulationResult struct {
+	BestOption           *expander.Option
+	NewNodes             int
+	NodeInfos            map[string]*framework.NodeInfo
+	SkippedNodeGroups    map[string]status.Reasons
+	NodeGroups           []cloudprovider.NodeGroup
+	SchedulablePodGroups map[string][]estimator.PodEquivalenceGroup
+	PodEquivalenceGroups []*equivalence.PodGroup
+}
+
+// ScaleUpPreparationResult contains the result of the scale-up preparation.
+type ScaleUpPreparationResult struct {
+	ScaleUpInfos           []nodegroupset.ScaleUpInfo
+	CreateNodeGroupResults []nodegroups.CreateNodeGroupResult
 }
 
 func matchingSchedulablePodGroups(podGroups []estimator.PodEquivalenceGroup, similarPodGroups []estimator.PodEquivalenceGroup) bool {
