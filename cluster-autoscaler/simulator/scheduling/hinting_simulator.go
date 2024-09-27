@@ -20,11 +20,11 @@ import (
 	"fmt"
 
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/klogx"
 
 	apiv1 "k8s.io/api/core/v1"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // Status contains information about pods scheduled by the HintingSimulator
@@ -55,7 +55,7 @@ func NewHintingSimulator(predicateChecker predicatechecker.PredicateChecker) *Hi
 // after the first scheduling attempt that fails. This is useful if all provided
 // pods need to be scheduled.
 // Note: this function does not fork clusterSnapshot: this has to be done by the caller.
-func (s *HintingSimulator) TrySchedulePods(clusterSnapshot clustersnapshot.ClusterSnapshot, pods []*apiv1.Pod, isNodeAcceptable func(*schedulerframework.NodeInfo) bool, breakOnFailure bool) ([]Status, int, error) {
+func (s *HintingSimulator) TrySchedulePods(clusterSnapshot clustersnapshot.ClusterSnapshot, pods []*apiv1.Pod, isNodeAcceptable func(*framework.NodeInfo) bool, breakOnFailure bool) ([]Status, int, error) {
 	similarPods := NewSimilarPodsScheduling()
 
 	var statuses []Status
@@ -85,13 +85,13 @@ func (s *HintingSimulator) TrySchedulePods(clusterSnapshot clustersnapshot.Clust
 	return statuses, similarPods.OverflowingControllerCount(), nil
 }
 
-func (s *HintingSimulator) findNodeWithHints(clusterSnapshot clustersnapshot.ClusterSnapshot, pod *apiv1.Pod, isNodeAcceptable func(*schedulerframework.NodeInfo) bool) (string, error) {
+func (s *HintingSimulator) findNodeWithHints(clusterSnapshot clustersnapshot.ClusterSnapshot, pod *apiv1.Pod, isNodeAcceptable func(*framework.NodeInfo) bool) (string, error) {
 	hk := HintKeyFromPod(pod)
 	if hintedNode, hasHint := s.hints.Get(hk); hasHint {
 		if err := s.predicateChecker.CheckPredicates(clusterSnapshot, pod, hintedNode); err == nil {
 			s.hints.Set(hk, hintedNode)
 
-			nodeInfo, err := clusterSnapshot.NodeInfos().Get(hintedNode)
+			nodeInfo, err := clusterSnapshot.GetNodeInfo(hintedNode)
 			if err != nil {
 				return "", err
 			}
@@ -104,7 +104,7 @@ func (s *HintingSimulator) findNodeWithHints(clusterSnapshot clustersnapshot.Clu
 	return "", nil
 }
 
-func (s *HintingSimulator) findNode(similarPods *SimilarPodsScheduling, clusterSnapshot clustersnapshot.ClusterSnapshot, pod *apiv1.Pod, loggingQuota *klogx.Quota, isNodeAcceptable func(*schedulerframework.NodeInfo) bool) string {
+func (s *HintingSimulator) findNode(similarPods *SimilarPodsScheduling, clusterSnapshot clustersnapshot.ClusterSnapshot, pod *apiv1.Pod, loggingQuota *klogx.Quota, isNodeAcceptable func(*framework.NodeInfo) bool) string {
 	if similarPods.IsSimilarUnschedulable(pod) {
 		klogx.V(4).UpTo(loggingQuota).Infof("failed to find place for %s/%s based on similar pods scheduling", pod.Namespace, pod.Name)
 		return ""
@@ -127,6 +127,6 @@ func (s *HintingSimulator) DropOldHints() {
 }
 
 // ScheduleAnywhere can be passed to TrySchedulePods when there are no extra restrictions on nodes to consider.
-func ScheduleAnywhere(_ *schedulerframework.NodeInfo) bool {
+func ScheduleAnywhere(_ *framework.NodeInfo) bool {
 	return true
 }

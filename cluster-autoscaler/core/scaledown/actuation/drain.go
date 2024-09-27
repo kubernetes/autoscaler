@@ -27,6 +27,7 @@ import (
 	kube_errors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
 	kubelet_config "k8s.io/kubernetes/pkg/kubelet/apis/config"
 
@@ -35,7 +36,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/daemonset"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	pod_util "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
-	"k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 const (

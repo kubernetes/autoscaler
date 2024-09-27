@@ -20,6 +20,7 @@ import (
 	"testing"
 	"time"
 
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
@@ -31,7 +32,7 @@ import (
 func TestSanitizePods(t *testing.T) {
 	pod := BuildTestPod("p1", 80, 0)
 	pod.Spec.NodeName = "n1"
-	pods := []*apiv1.Pod{pod}
+	pods := []*framework.PodInfo{{Pod: pod}}
 
 	node := BuildTestNode("node", 1000, 1000)
 

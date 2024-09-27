@@ -24,10 +24,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 	schedulermetrics "k8s.io/kubernetes/pkg/scheduler/metrics"
 )
 
@@ -35,15 +35,15 @@ func TestFilterOutSchedulable(t *testing.T) {
 	schedulermetrics.Register()
 
 	node := buildReadyTestNode("node", 2000, 100)
-	matchesAllNodes := func(*schedulerframework.NodeInfo) bool { return true }
-	matchesNoNodes := func(*schedulerframework.NodeInfo) bool { return false }
+	matchesAllNodes := func(*framework.NodeInfo) bool { return true }
+	matchesNoNodes := func(*framework.NodeInfo) bool { return false }
 
 	testCases := map[string]struct {
 		nodesWithPods           map[*apiv1.Node][]*apiv1.Pod
 		unschedulableCandidates []*apiv1.Pod
 		expectedScheduledPods   []*apiv1.Pod
 		expectedUnscheduledPods []*apiv1.Pod
-		nodeFilter              func(*schedulerframework.NodeInfo) bool
+		nodeFilter              func(*framework.NodeInfo) bool
 	}{
 		"single empty node, no pods": {
 			nodesWithPods: map[*apiv1.Node][]*apiv1.Pod{node: {}},

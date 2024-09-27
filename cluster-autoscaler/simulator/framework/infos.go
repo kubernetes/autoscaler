@@ -43,7 +43,9 @@ func NewNodeInfo(node *apiv1.Node, pods ...*PodInfo) *NodeInfo {
 	result := &NodeInfo{
 		NodeInfo: schedulerframework.NewNodeInfo(),
 	}
-	result.NodeInfo.SetNode(node)
+	if node != nil {
+		result.NodeInfo.SetNode(node)
+	}
 	for _, pod := range pods {
 		result.AddPod(pod)
 	}

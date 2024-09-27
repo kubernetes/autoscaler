@@ -21,21 +21,21 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/daemonset"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	pod_util "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
 )
 
 // BuildNodeInfoForNode build a NodeInfo structure for the given node as if the node was just created.
-func BuildNodeInfoForNode(node *apiv1.Node, scheduledPods []*apiv1.Pod, daemonsets []*appsv1.DaemonSet, forceDaemonSets bool) (*schedulerframework.NodeInfo, errors.AutoscalerError) {
-	nodeInfo := schedulerframework.NewNodeInfo()
+func BuildNodeInfoForNode(node *apiv1.Node, scheduledPods []*apiv1.Pod, daemonsets []*appsv1.DaemonSet, forceDaemonSets bool) (*framework.NodeInfo, errors.AutoscalerError) {
+	nodeInfo := framework.NewNodeInfo(node)
 	nodeInfo.SetNode(node)
 	return addExpectedPods(nodeInfo, scheduledPods, daemonsets, forceDaemonSets)
 }
 
-func addExpectedPods(nodeInfo *schedulerframework.NodeInfo, scheduledPods []*apiv1.Pod, daemonsets []*appsv1.DaemonSet, forceDaemonSets bool) (*schedulerframework.NodeInfo, errors.AutoscalerError) {
+func addExpectedPods(nodeInfo *framework.NodeInfo, scheduledPods []*apiv1.Pod, daemonsets []*appsv1.DaemonSet, forceDaemonSets bool) (*framework.NodeInfo, errors.AutoscalerError) {
 	runningDS := make(map[types.UID]bool)
 	for _, pod := range scheduledPods {
 		// Ignore scheduled pods in deletion phase
@@ -44,7 +44,7 @@ func addExpectedPods(nodeInfo *schedulerframework.NodeInfo, scheduledPods []*api
 		}
 		// Add scheduled mirror and DS pods
 		if pod_util.IsMirrorPod(pod) || pod_util.IsDaemonSetPod(pod) {
-			nodeInfo.AddPod(pod)
+			nodeInfo.AddPod(&framework.PodInfo{Pod: pod})
 		}
 		// Mark DS pods as running
 		controllerRef := metav1.GetControllerOf(pod)
