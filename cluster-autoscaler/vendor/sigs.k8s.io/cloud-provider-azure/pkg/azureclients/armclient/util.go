@@ -19,6 +19,7 @@ package armclient
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"html"
 	"io"
@@ -186,8 +187,8 @@ func DoHackRegionalRetryForGET(c *Client) autorest.SendDecorator {
 			emptyResp = (regionalResponse.ContentLength == 0 || trimmed == "" || trimmed == "{}") && regionalResponse.StatusCode >= 200 && regionalResponse.StatusCode < 300
 			if emptyResp {
 				contentLengthErrStr := fmt.Sprintf("empty response with trimmed body %q, ContentLength %d and StatusCode %d", trimmed, regionalResponse.ContentLength, regionalResponse.StatusCode)
-				klog.Errorf(contentLengthErrStr)
-				return response, fmt.Errorf(contentLengthErrStr)
+				klog.Error(contentLengthErrStr)
+				return response, errors.New(contentLengthErrStr)
 			}
 
 			return regionalResponse, regionalError
