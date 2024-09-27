@@ -1,0 +1,241 @@
+/*
+Copyright 2024 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+package framework
+
+import (
+	"fmt"
+	"testing"
+
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
+
+	apiv1 "k8s.io/api/core/v1"
+	resourceapi "k8s.io/api/resource/v1alpha3"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
+)
+
+func TestNodeInfo(t *testing.T) {
+	node := test.BuildTestNode("test-node", 1000, 1024)
+	pods := []*apiv1.Pod{
+		// Use pods requesting host-ports to make sure that NodeInfo fields other than node and Pods also
+		// get set correctly (in this case - the UsedPorts field).
+		test.BuildTestPod("hostport-pod-0", 100, 16, test.WithHostPort(1337)),
+		test.BuildTestPod("hostport-pod-1", 100, 16, test.WithHostPort(1338)),
+		test.BuildTestPod("hostport-pod-2", 100, 16, test.WithHostPort(1339)),
+		test.BuildTestPod("regular-pod-0", 100, 16),
+		test.BuildTestPod("regular-pod-1", 100, 16),
+		test.BuildTestPod("regular-pod-2", 100, 16),
+	}
+	schedulerNodeInfo := newSchedNodeInfo(node, pods)
+	slices := []*resourceapi.ResourceSlice{
+		{
+			ObjectMeta: v1.ObjectMeta{
+				Name: "test-node-slice-0",
+			},
+			Spec: resourceapi.ResourceSliceSpec{
+				NodeName: "test-node",
+				Driver:   "test.driver.com",
+				Pool:     resourceapi.ResourcePool{Name: "test-node", Generation: 13, ResourceSliceCount: 2},
+				Devices:  []resourceapi.Device{{Name: "device-0"}, {Name: "device-1"}},
+			}},
+		{
+			ObjectMeta: v1.ObjectMeta{
+				Name: "test-node-slice-1",
+			},
+			Spec: resourceapi.ResourceSliceSpec{
+				NodeName: "test-node",
+				Driver:   "test.driver.com",
+				Pool:     resourceapi.ResourcePool{Name: "test-node", Generation: 13, ResourceSliceCount: 2},
+				Devices:  []resourceapi.Device{{Name: "device-2"}, {Name: "device-3"}},
+			},
+		},
+	}
+
+	for _, tc := range []struct {
+		testName                string
+		modFn                   func(info *schedulerframework.NodeInfo) *NodeInfo
+		wantSchedNodeInfo       *schedulerframework.NodeInfo
+		wantLocalResourceSlices []*resourceapi.ResourceSlice
+		wantPods                []*PodInfo
+	}{
+		{
+			testName: "wrapping via NewNodeInfo",
+			modFn: func(info *schedulerframework.NodeInfo) *NodeInfo {
+				return NewNodeInfo(info.Node(), nil, testPodInfos(pods, false)...)
+			},
+			wantSchedNodeInfo: schedulerNodeInfo,
+			wantPods:          testPodInfos(pods, false),
+		},
+		{
+			testName: "wrapping via NewNodeInfo with DRA objects",
+			modFn: func(info *schedulerframework.NodeInfo) *NodeInfo {
+				return NewNodeInfo(info.Node(), slices, testPodInfos(pods, true)...)
+			},
+			wantSchedNodeInfo:       schedulerNodeInfo,
+			wantLocalResourceSlices: slices,
+			wantPods:                testPodInfos(pods, true),
+		},
+		{
+			testName: "wrapping via NewTestNodeInfo",
+			modFn: func(info *schedulerframework.NodeInfo) *NodeInfo {
+				var pods []*apiv1.Pod
+				for _, pod := range info.Pods {
+					pods = append(pods, pod.Pod)
+				}
+				return NewTestNodeInfo(info.Node(), pods...)
+			},
+			wantSchedNodeInfo: schedulerNodeInfo,
+			wantPods:          testPodInfos(pods, false),
+		},
+		{
+			testName:          "wrapping via WrapSchedulerNodeInfo",
+			modFn:             WrapSchedulerNodeInfo,
+			wantSchedNodeInfo: schedulerNodeInfo,
+			wantPods:          testPodInfos(pods, false),
+		},
+		{
+			testName: "wrapping via SetNode+AddPod",
+			modFn: func(info *schedulerframework.NodeInfo) *NodeInfo {
+				result := NewNodeInfo(nil, nil)
+				result.SetNode(info.Node())
+				for _, pod := range info.Pods {
+					result.AddPod(&PodInfo{Pod: pod.Pod})
+				}
+				return result
+			},
+			wantSchedNodeInfo: schedulerNodeInfo,
+			wantPods:          testPodInfos(pods, false),
+		},
+		{
+			testName: "wrapping via SetNode+AddPod with DRA objects",
+			modFn: func(info *schedulerframework.NodeInfo) *NodeInfo {
+				result := NewNodeInfo(nil, nil)
+				result.LocalResourceSlices = slices
+				result.SetNode(info.Node())
+				for _, podInfo := range testPodInfos(pods, true) {
+					result.AddPod(podInfo)
+				}
+				return result
+			},
+			wantSchedNodeInfo:       schedulerNodeInfo,
+			wantLocalResourceSlices: slices,
+			wantPods:                testPodInfos(pods, true),
+		},
+		{
+			testName: "removing pods",
+			modFn: func(info *schedulerframework.NodeInfo) *NodeInfo {
+				result := NewNodeInfo(info.Node(), slices, testPodInfos(pods, true)...)
+				for _, pod := range []*apiv1.Pod{pods[0], pods[2], pods[4]} {
+					if err := result.RemovePod(pod); err != nil {
+						t.Errorf("RemovePod unexpected error: %v", err)
+					}
+				}
+				return result
+			},
+			wantSchedNodeInfo:       newSchedNodeInfo(node, []*apiv1.Pod{pods[1], pods[3], pods[5]}),
+			wantLocalResourceSlices: slices,
+			wantPods:                testPodInfos([]*apiv1.Pod{pods[1], pods[3], pods[5]}, true),
+		},
+	} {
+		t.Run(tc.testName, func(t *testing.T) {
+			wrappedNodeInfo := tc.modFn(schedulerNodeInfo)
+
+			// Assert that the scheduler NodeInfo object is as expected.
+			nodeInfoCmpOpts := []cmp.Option{
+				// The Node is the only unexported field in this type, and we want to compare it.
+				cmp.AllowUnexported(schedulerframework.NodeInfo{}),
+				// Generation is expected to be different.
+				cmpopts.IgnoreFields(schedulerframework.NodeInfo{}, "Generation"),
+				// The pod order changes in a particular way whenever schedulerframework.RemovePod() is called. Instead of
+				// relying on that schedulerframework implementation detail in assertions, just ignore the order.
+				cmpopts.SortSlices(func(p1, p2 *schedulerframework.PodInfo) bool {
+					return p1.Pod.Name < p2.Pod.Name
+				}),
+			}
+			if diff := cmp.Diff(tc.wantSchedNodeInfo, wrappedNodeInfo.ToScheduler(), nodeInfoCmpOpts...); diff != "" {
+				t.Errorf("ToScheduler() output differs from expected, diff (-want +got): %s", diff)
+			}
+
+			// Assert that the Node() method matches the scheduler object.
+			if diff := cmp.Diff(tc.wantSchedNodeInfo.Node(), wrappedNodeInfo.Node()); diff != "" {
+				t.Errorf("Node() output differs from expected, diff  (-want +got): %s", diff)
+			}
+
+			// Assert that LocalResourceSlices are as expected.
+			if diff := cmp.Diff(tc.wantLocalResourceSlices, wrappedNodeInfo.LocalResourceSlices); diff != "" {
+				t.Errorf("LocalResourceSlices differ from expected, diff  (-want +got): %s", diff)
+			}
+
+			// Assert that the pods list in the wrapper is as expected.
+			// The pod order changes in a particular way whenever schedulerframework.RemovePod() is called. Instead of
+			// relying on that schedulerframework implementation detail in assertions, just ignore the order.
+			podsInfosIgnoreOrderOpt := cmpopts.SortSlices(func(p1, p2 *PodInfo) bool {
+				return p1.Name < p2.Name
+			})
+			if diff := cmp.Diff(tc.wantPods, wrappedNodeInfo.Pods(), podsInfosIgnoreOrderOpt); diff != "" {
+				t.Errorf("Pods() output differs from expected, diff (-want +got): %s", diff)
+			}
+
+			// Assert that the extra info map only contains information about pods in the list. This verifies that
+			// the map is properly cleaned up during RemovePod.
+			possiblePodUids := make(map[types.UID]bool)
+			for _, pod := range tc.wantPods {
+				possiblePodUids[pod.UID] = true
+			}
+			for podUid := range wrappedNodeInfo.podsExtraInfo {
+				if !possiblePodUids[podUid] {
+					t.Errorf("podsExtraInfo contains entry for unexpected UID %q", podUid)
+				}
+			}
+		})
+	}
+}
+
+func testPodInfos(pods []*apiv1.Pod, addClaims bool) []*PodInfo {
+	var result []*PodInfo
+	for _, pod := range pods {
+		podInfo := &PodInfo{Pod: pod}
+		if addClaims {
+			for i := range 3 {
+				podInfo.NeededResourceClaims = append(podInfo.NeededResourceClaims, &resourceapi.ResourceClaim{
+					ObjectMeta: v1.ObjectMeta{
+						Name: fmt.Sprintf("%s-claim-%d", pod.Name, i),
+					},
+					Spec: resourceapi.ResourceClaimSpec{
+						Devices: resourceapi.DeviceClaim{
+							Requests: []resourceapi.DeviceRequest{
+								{Name: "request-0"},
+								{Name: "request-1"},
+							},
+						},
+					},
+				})
+			}
+		}
+		result = append(result, podInfo)
+	}
+	return result
+}
+
+func newSchedNodeInfo(node *apiv1.Node, pods []*apiv1.Pod) *schedulerframework.NodeInfo {
+	result := schedulerframework.NewNodeInfo(pods...)
+	result.SetNode(node)
+	return result
+}
