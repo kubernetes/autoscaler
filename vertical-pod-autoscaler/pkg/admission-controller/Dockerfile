@@ -32,4 +32,3 @@ ARG TARGETARCH
 COPY --from=builder /gopath/src/k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/admission-controller-$TARGETARCH /admission-controller
 
 ENTRYPOINT ["/admission-controller"]
-CMD ["--v=4", "--stderrthreshold=info"]
