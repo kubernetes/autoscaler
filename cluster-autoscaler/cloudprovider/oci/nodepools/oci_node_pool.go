@@ -18,9 +18,9 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/client-go/kubernetes"
 	klog "k8s.io/klog/v2"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	ocicommon "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/common"
 )
@@ -262,24 +262,24 @@ func (np *nodePool) Nodes() ([]cloudprovider.Instance, error) {
 	return np.manager.GetNodePoolNodes(np)
 }
 
-// TemplateNodeInfo returns a schedulerframework.NodeInfo structure of an empty
+// TemplateNodeInfo returns a framework.NodeInfo structure of an empty
 // (as if just started) node. This will be used in scale-up simulations to
 // predict what would a new node look like if a node group was expanded. The returned
 // NodeInfo is expected to have a fully populated Node object, with all of the labels,
 // capacity and allocatable information as well as all pods that are started on
 // the node by default, using manifest (most likely only kube-proxy). Implementation optional.
-func (np *nodePool) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
+func (np *nodePool) TemplateNodeInfo() (*framework.NodeInfo, error) {
 	node, err := np.manager.GetNodePoolTemplateNode(np)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to build node pool template")
 	}
 
-	nodeInfo := schedulerframework.NewNodeInfo(
-		cloudprovider.BuildKubeProxy(np.id),
-		ocicommon.BuildFlannelPod(),
-		ocicommon.BuildProxymuxClientPod(),
+	nodeInfo := framework.NewNodeInfo(
+		node, nil,
+		&framework.PodInfo{Pod: cloudprovider.BuildKubeProxy(np.id)},
+		&framework.PodInfo{Pod: ocicommon.BuildFlannelPod()},
+		&framework.PodInfo{Pod: ocicommon.BuildProxymuxClientPod()},
 	)
-	nodeInfo.SetNode(node)
 	return nodeInfo, nil
 }
 

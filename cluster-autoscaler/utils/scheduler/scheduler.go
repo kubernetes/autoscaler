@@ -24,6 +24,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/util/uuid"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	scheduler_config "k8s.io/kubernetes/pkg/scheduler/apis/config"
 	scheduler_scheme "k8s.io/kubernetes/pkg/scheduler/apis/config/scheme"
 	scheduler_validation "k8s.io/kubernetes/pkg/scheduler/apis/config/validation"
@@ -40,22 +41,22 @@ const (
 // CreateNodeNameToInfoMap obtains a list of pods and pivots that list into a map where the keys are node names
 // and the values are the aggregated information for that node. Pods waiting lower priority pods preemption
 // (pod.Status.NominatedNodeName is set) are also added to list of pods for a node.
-func CreateNodeNameToInfoMap(pods []*apiv1.Pod, nodes []*apiv1.Node) map[string]*schedulerframework.NodeInfo {
-	nodeNameToNodeInfo := make(map[string]*schedulerframework.NodeInfo)
+func CreateNodeNameToInfoMap(pods []*apiv1.Pod, nodes []*apiv1.Node) map[string]*framework.NodeInfo {
+	nodeNameToNodeInfo := make(map[string]*framework.NodeInfo)
 	for _, pod := range pods {
 		nodeName := pod.Spec.NodeName
 		if nodeName == "" {
 			nodeName = pod.Status.NominatedNodeName
 		}
 		if _, ok := nodeNameToNodeInfo[nodeName]; !ok {
-			nodeNameToNodeInfo[nodeName] = schedulerframework.NewNodeInfo()
+			nodeNameToNodeInfo[nodeName] = framework.NewNodeInfo(nil, nil)
 		}
-		nodeNameToNodeInfo[nodeName].AddPod(pod)
+		nodeNameToNodeInfo[nodeName].AddPod(&framework.PodInfo{Pod: pod})
 	}
 
 	for _, node := range nodes {
 		if _, ok := nodeNameToNodeInfo[node.Name]; !ok {
-			nodeNameToNodeInfo[node.Name] = schedulerframework.NewNodeInfo()
+			nodeNameToNodeInfo[node.Name] = framework.NewNodeInfo(nil, nil)
 		}
 		nodeNameToNodeInfo[node.Name].SetNode(node)
 	}
@@ -81,7 +82,7 @@ func isHugePageResourceName(name apiv1.ResourceName) bool {
 // DeepCopyTemplateNode copies NodeInfo object used as a template. It changes
 // names of UIDs of both node and pods running on it, so that copies can be used
 // to represent multiple nodes.
-func DeepCopyTemplateNode(nodeTemplate *schedulerframework.NodeInfo, suffix string) *schedulerframework.NodeInfo {
+func DeepCopyTemplateNode(nodeTemplate *framework.NodeInfo, suffix string) *framework.NodeInfo {
 	node := nodeTemplate.Node().DeepCopy()
 	node.Name = fmt.Sprintf("%s-%s", node.Name, suffix)
 	node.UID = uuid.NewUUID()
@@ -89,13 +90,12 @@ func DeepCopyTemplateNode(nodeTemplate *schedulerframework.NodeInfo, suffix stri
 		node.Labels = make(map[string]string)
 	}
 	node.Labels["kubernetes.io/hostname"] = node.Name
-	nodeInfo := schedulerframework.NewNodeInfo()
-	nodeInfo.SetNode(node)
+	nodeInfo := framework.NewNodeInfo(node, nil)
 	for _, podInfo := range nodeTemplate.Pods {
 		pod := podInfo.Pod.DeepCopy()
 		pod.Name = fmt.Sprintf("%s-%s", podInfo.Pod.Name, suffix)
 		pod.UID = uuid.NewUUID()
-		nodeInfo.AddPod(pod)
+		nodeInfo.AddPod(&framework.PodInfo{Pod: pod})
 	}
 	return nodeInfo
 }

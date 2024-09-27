@@ -22,10 +22,10 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 	klog "k8s.io/klog/v2"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // BinpackingNodeEstimator estimates the number of needed nodes to handle the given amount of pods.
@@ -89,7 +89,7 @@ func newEstimationState() *estimationState {
 // Returns the number of nodes needed to accommodate all pods from the list.
 func (e *BinpackingNodeEstimator) Estimate(
 	podsEquivalenceGroups []PodEquivalenceGroup,
-	nodeTemplate *schedulerframework.NodeInfo,
+	nodeTemplate *framework.NodeInfo,
 	nodeGroup cloudprovider.NodeGroup,
 ) (int, []*apiv1.Pod) {
 
@@ -136,7 +136,7 @@ func (e *BinpackingNodeEstimator) tryToScheduleOnExistingNodes(
 		pod := pods[index]
 
 		// Check schedulability on all nodes created during simulation
-		nodeName, err := e.predicateChecker.FitsAnyNodeMatching(e.clusterSnapshot, pod, func(nodeInfo *schedulerframework.NodeInfo) bool {
+		nodeName, err := e.predicateChecker.FitsAnyNodeMatching(e.clusterSnapshot, pod, func(nodeInfo *framework.NodeInfo) bool {
 			return estimationState.newNodeNames[nodeInfo.Node().Name]
 		})
 		if err != nil {
@@ -152,7 +152,7 @@ func (e *BinpackingNodeEstimator) tryToScheduleOnExistingNodes(
 
 func (e *BinpackingNodeEstimator) tryToScheduleOnNewNodes(
 	estimationState *estimationState,
-	nodeTemplate *schedulerframework.NodeInfo,
+	nodeTemplate *framework.NodeInfo,
 	pods []*apiv1.Pod,
 ) error {
 	for _, pod := range pods {
@@ -208,7 +208,7 @@ func (e *BinpackingNodeEstimator) tryToScheduleOnNewNodes(
 
 func (e *BinpackingNodeEstimator) addNewNodeToSnapshot(
 	estimationState *estimationState,
-	template *schedulerframework.NodeInfo,
+	template *framework.NodeInfo,
 ) error {
 	newNodeInfo := scheduler.DeepCopyTemplateNode(template, fmt.Sprintf("e-%d", estimationState.newNodeNameIndex))
 	var pods []*apiv1.Pod

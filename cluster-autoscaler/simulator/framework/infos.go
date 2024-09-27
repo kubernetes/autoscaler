@@ -51,7 +51,9 @@ func NewNodeInfo(node *apiv1.Node, slices []*resourceapi.ResourceSlice, pods ...
 		NodeInfo:            schedulerframework.NewNodeInfo(),
 		LocalResourceSlices: slices,
 	}
-	result.NodeInfo.SetNode(node)
+	if node != nil {
+		result.NodeInfo.SetNode(node)
+	}
 	for _, pod := range pods {
 		result.AddPod(pod)
 	}

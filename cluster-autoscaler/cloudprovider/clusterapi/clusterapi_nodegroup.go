@@ -18,17 +18,18 @@ package clusterapi
 
 import (
 	"fmt"
-	"k8s.io/klog/v2"
 	"math/rand"
 	"strconv"
 	"time"
+
+	"k8s.io/klog/v2"
 
 	"github.com/pkg/errors"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
@@ -249,7 +250,7 @@ func (ng *nodegroup) Nodes() ([]cloudprovider.Instance, error) {
 // allocatable information as well as all pods that are started on the
 // node by default, using manifest (most likely only kube-proxy).
 // Implementation optional.
-func (ng *nodegroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
+func (ng *nodegroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 	if !ng.scalableResource.CanScaleFromZero() {
 		return nil, cloudprovider.ErrNotImplemented
 	}
@@ -277,9 +278,7 @@ func (ng *nodegroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
 		return nil, err
 	}
 
-	nodeInfo := schedulerframework.NewNodeInfo(cloudprovider.BuildKubeProxy(ng.scalableResource.Name()))
-	nodeInfo.SetNode(&node)
-
+	nodeInfo := framework.NewNodeInfo(&node, nil, &framework.PodInfo{Pod: cloudprovider.BuildKubeProxy(ng.scalableResource.Name())})
 	return nodeInfo, nil
 }
 

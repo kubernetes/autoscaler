@@ -25,8 +25,8 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	klog "k8s.io/klog/v2"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 const (
@@ -269,7 +269,7 @@ func (ng *cherryNodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 }
 
 // TemplateNodeInfo returns a node template for this node group.
-func (ng *cherryNodeGroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
+func (ng *cherryNodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 	return ng.cherryManager.templateNodeInfo(ng.id)
 }
 

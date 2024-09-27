@@ -22,6 +22,7 @@ import (
 
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
@@ -30,7 +31,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 var (
@@ -51,13 +51,12 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 	SetNodeReadyState(justReady5, true, now)
 
 	tn := BuildTestNode("tn", 5000, 5000)
-	tni := schedulerframework.NewNodeInfo()
-	tni.SetNode(tn)
+	tni := framework.NewNodeInfo(tn, nil)
 
 	// Cloud provider with TemplateNodeInfo implemented.
 	provider1 := testprovider.NewTestAutoprovisioningCloudProvider(
 		nil, nil, nil, nil, nil,
-		map[string]*schedulerframework.NodeInfo{"ng3": tni, "ng4": tni, "ng5": tni})
+		map[string]*framework.NodeInfo{"ng3": tni, "ng4": tni, "ng5": tni})
 	provider1.AddNodeGroup("ng1", 1, 10, 1) // Nodegroup with ready node.
 	provider1.AddNode("ng1", ready1)
 	provider1.AddNodeGroup("ng2", 1, 10, 1) // Nodegroup with ready and unready node.
@@ -134,8 +133,7 @@ func TestGetNodeInfosForGroupsCache(t *testing.T) {
 	SetNodeReadyState(ready6, true, now.Add(-2*time.Minute))
 
 	tn := BuildTestNode("tn", 10000, 10000)
-	tni := schedulerframework.NewNodeInfo()
-	tni.SetNode(tn)
+	tni := framework.NewNodeInfo(tn, nil)
 
 	lastDeletedGroup := ""
 	onDeleteGroup := func(id string) error {
@@ -146,7 +144,7 @@ func TestGetNodeInfosForGroupsCache(t *testing.T) {
 	// Cloud provider with TemplateNodeInfo implemented.
 	provider1 := testprovider.NewTestAutoprovisioningCloudProvider(
 		nil, nil, nil, onDeleteGroup, nil,
-		map[string]*schedulerframework.NodeInfo{"ng3": tni, "ng4": tni})
+		map[string]*framework.NodeInfo{"ng3": tni, "ng4": tni})
 	provider1.AddNodeGroup("ng1", 1, 10, 1) // Nodegroup with ready node.
 	provider1.AddNode("ng1", ready1)
 	provider1.AddNodeGroup("ng2", 1, 10, 1) // Nodegroup with ready and unready node.
@@ -226,8 +224,7 @@ func TestGetNodeInfosForGroupsCache(t *testing.T) {
 	assert.False(t, found)
 
 	// Fill cache manually
-	infoNg4Node6 := schedulerframework.NewNodeInfo()
-	infoNg4Node6.SetNode(ready6.DeepCopy())
+	infoNg4Node6 := framework.NewNodeInfo(ready6.DeepCopy(), nil)
 	niProcessor.nodeInfoCache = map[string]cacheItem{"ng4": {NodeInfo: infoNg4Node6, added: now}}
 	res, err = niProcessor.Process(&ctx, []*apiv1.Node{unready4, unready3, ready2, ready1}, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
 	// Check if cache was used
@@ -261,8 +258,7 @@ func TestGetNodeInfosCacheExpired(t *testing.T) {
 		},
 	}
 	tn := BuildTestNode("tn", 5000, 5000)
-	tni := schedulerframework.NewNodeInfo()
-	tni.SetNode(tn)
+	tni := framework.NewNodeInfo(tn, nil)
 	// Cache expire time is set.
 	niProcessor1 := NewMixedTemplateNodeInfoProvider(&cacheTtl, false)
 	niProcessor1.nodeInfoCache = map[string]cacheItem{

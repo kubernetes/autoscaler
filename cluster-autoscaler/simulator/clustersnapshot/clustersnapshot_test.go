@@ -23,6 +23,7 @@ import (
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
@@ -42,7 +43,7 @@ func nodeNames(nodes []*apiv1.Node) []string {
 	return names
 }
 
-func extractNodes(nodeInfos []*schedulerframework.NodeInfo) []*apiv1.Node {
+func extractNodes(nodeInfos []*framework.NodeInfo) []*apiv1.Node {
 	nodes := []*apiv1.Node{}
 	for _, ni := range nodeInfos {
 		nodes = append(nodes, ni.Node())
@@ -61,7 +62,7 @@ func compareStates(t *testing.T, a, b snapshotState) {
 }
 
 func getSnapshotState(t *testing.T, snapshot ClusterSnapshot) snapshotState {
-	nodes, err := snapshot.NodeInfos().List()
+	nodes, err := snapshot.ListNodeInfos()
 	assert.NoError(t, err)
 	var pods []*apiv1.Pod
 	for _, nodeInfo := range nodes {

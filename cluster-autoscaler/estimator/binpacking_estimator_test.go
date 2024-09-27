@@ -24,10 +24,10 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -219,8 +219,7 @@ func TestBinpackingEstimate(t *testing.T) {
 			processor := NewDecreasingPodOrderer()
 			estimator := NewBinpackingNodeEstimator(predicateChecker, clusterSnapshot, limiter, processor, nil /* EstimationContext */, nil /* EstimationAnalyserFunc */)
 			node := makeNode(tc.millicores, tc.memory, 10, "template", "zone-mars")
-			nodeInfo := schedulerframework.NewNodeInfo()
-			nodeInfo.SetNode(node)
+			nodeInfo := framework.NewNodeInfo(node, nil)
 
 			estimatedNodes, estimatedPods := estimator.Estimate(tc.podsEquivalenceGroup, nodeInfo, nil)
 			assert.Equal(t, tc.expectNodeCount, estimatedNodes)
@@ -274,8 +273,7 @@ func BenchmarkBinpackingEstimate(b *testing.B) {
 		processor := NewDecreasingPodOrderer()
 		estimator := NewBinpackingNodeEstimator(predicateChecker, clusterSnapshot, limiter, processor, nil /* EstimationContext */, nil /* EstimationAnalyserFunc */)
 		node := makeNode(millicores, memory, podsPerNode, "template", "zone-mars")
-		nodeInfo := schedulerframework.NewNodeInfo()
-		nodeInfo.SetNode(node)
+		nodeInfo := framework.NewNodeInfo(node, nil)
 
 		estimatedNodes, estimatedPods := estimator.Estimate(podsEquivalenceGroup, nodeInfo, nil)
 		assert.Equal(b, expectNodeCount, estimatedNodes)

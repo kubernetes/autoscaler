@@ -24,8 +24,8 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	klog "k8s.io/klog/v2"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // equinixMetalNodeGroup implements NodeGroup interface from cluster-autoscaler/cloudprovider.
@@ -260,7 +260,7 @@ func (ng *equinixMetalNodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 }
 
 // TemplateNodeInfo returns a node template for this node group.
-func (ng *equinixMetalNodeGroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
+func (ng *equinixMetalNodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 	return ng.equinixMetalManager.templateNodeInfo(ng.id)
 }
 

@@ -21,18 +21,18 @@ import (
 	"testing"
 
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 var err = fmt.Errorf("error")
 
 type testNodeInfoGetter struct {
-	m map[string]*schedulerframework.NodeInfo
+	m map[string]*framework.NodeInfo
 }
 
-func (t *testNodeInfoGetter) GetNodeInfo(nodeName string) (*schedulerframework.NodeInfo, error) {
+func (t *testNodeInfoGetter) GetNodeInfo(nodeName string) (*framework.NodeInfo, error) {
 	if nodeInfo, ok := t.m[nodeName]; ok {
 		return nodeInfo, nil
 	}
@@ -40,27 +40,23 @@ func (t *testNodeInfoGetter) GetNodeInfo(nodeName string) (*schedulerframework.N
 }
 
 func TestScaleDownEarlierThan(t *testing.T) {
-	niEmpty := schedulerframework.NewNodeInfo()
 	nodeEmptyName := "nodeEmpty"
 	nodeEmpty := BuildTestNode(nodeEmptyName, 0, 100)
-	niEmpty.SetNode(nodeEmpty)
+	niEmpty := framework.NewNodeInfo(nodeEmpty, nil)
 
-	niEmpty2 := schedulerframework.NewNodeInfo()
 	nodeEmptyName2 := "nodeEmpty2"
 	nodeEmpty2 := BuildTestNode(nodeEmptyName2, 0, 100)
-	niEmpty.SetNode(nodeEmpty2)
+	niEmpty2 := framework.NewNodeInfo(nodeEmpty2, nil)
 
-	niNonEmpty := schedulerframework.NewNodeInfo()
 	nodeNonEmptyName := "nodeNonEmpty"
 	nodeNonEmpty := BuildTestNode(nodeNonEmptyName, 0, 100)
-	niNonEmpty.SetNode(nodeNonEmpty)
+	niNonEmpty := framework.NewNodeInfo(nodeNonEmpty, nil)
 	pod := BuildTestPod("p1", 0, 100)
-	pi, _ := schedulerframework.NewPodInfo(pod)
-	niNonEmpty.AddPodInfo(pi)
+	niNonEmpty.AddPod(&framework.PodInfo{Pod: pod})
 
 	noNodeInfoNode := BuildTestNode("n1", 0, 100)
 
-	niGetter := testNodeInfoGetter{map[string]*schedulerframework.NodeInfo{nodeEmptyName: niEmpty, nodeNonEmptyName: niNonEmpty, nodeEmptyName2: niEmpty2}}
+	niGetter := testNodeInfoGetter{map[string]*framework.NodeInfo{nodeEmptyName: niEmpty, nodeNonEmptyName: niNonEmpty, nodeEmptyName2: niEmpty2}}
 
 	deleteOptions := options.NodeDeleteOptions{
 		SkipNodesWithSystemPods:           true,

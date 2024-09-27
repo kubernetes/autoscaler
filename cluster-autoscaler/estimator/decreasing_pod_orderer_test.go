@@ -21,8 +21,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/test"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 func TestPodPriorityProcessor(t *testing.T) {
@@ -57,8 +57,7 @@ func TestPodPriorityProcessor(t *testing.T) {
 			tc := tc
 			t.Parallel()
 			processor := NewDecreasingPodOrderer()
-			nodeInfo := schedulerframework.NewNodeInfo()
-			nodeInfo.SetNode(node)
+			nodeInfo := framework.NewNodeInfo(node, nil)
 			actual := processor.Order(tc.inputPodsEquivalentGroup, nodeInfo, nil)
 			assert.Equal(t, tc.expectedPodsEquivalentGroup, actual)
 		})

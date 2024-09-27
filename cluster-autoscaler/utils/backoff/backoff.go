@@ -20,7 +20,7 @@ import (
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 )
 
 // Status contains information about back off status.
@@ -32,11 +32,11 @@ type Status struct {
 // Backoff allows time-based backing off of node groups considered in scale up algorithm
 type Backoff interface {
 	// Backoff execution for the given node group. Returns time till execution is backed off.
-	Backoff(nodeGroup cloudprovider.NodeGroup, nodeInfo *schedulerframework.NodeInfo, errorInfo cloudprovider.InstanceErrorInfo, currentTime time.Time) time.Time
+	Backoff(nodeGroup cloudprovider.NodeGroup, nodeInfo *framework.NodeInfo, errorInfo cloudprovider.InstanceErrorInfo, currentTime time.Time) time.Time
 	// BackoffStatus returns whether the execution is backed off for the given node group and error info when the node group is backed off.
-	BackoffStatus(nodeGroup cloudprovider.NodeGroup, nodeInfo *schedulerframework.NodeInfo, currentTime time.Time) Status
+	BackoffStatus(nodeGroup cloudprovider.NodeGroup, nodeInfo *framework.NodeInfo, currentTime time.Time) Status
 	// RemoveBackoff removes backoff data for the given node group.
-	RemoveBackoff(nodeGroup cloudprovider.NodeGroup, nodeInfo *schedulerframework.NodeInfo)
+	RemoveBackoff(nodeGroup cloudprovider.NodeGroup, nodeInfo *framework.NodeInfo)
 	// RemoveStaleBackoffData removes stale backoff data.
 	RemoveStaleBackoffData(currentTime time.Time)
 }

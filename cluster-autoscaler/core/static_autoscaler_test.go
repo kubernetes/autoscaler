@@ -52,6 +52,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/utilization"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
@@ -70,7 +71,6 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes/fake"
 	v1appslister "k8s.io/client-go/listers/apps/v1"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
@@ -332,8 +332,7 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 	p2 := BuildTestPod("p2", 600, 100, MarkUnschedulable())
 
 	tn := BuildTestNode("tn", 1000, 1000)
-	tni := schedulerframework.NewNodeInfo()
-	tni.SetNode(tn)
+	tni := framework.NewNodeInfo(tn, nil)
 
 	provider := testprovider.NewTestAutoprovisioningCloudProvider(
 		func(id string, delta int) error {
@@ -344,7 +343,7 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 			return ret
 		},
 		nil, nil,
-		nil, map[string]*schedulerframework.NodeInfo{"ng1": tni, "ng2": tni, "ng3": tni})
+		nil, map[string]*framework.NodeInfo{"ng1": tni, "ng2": tni, "ng3": tni})
 	provider.AddNodeGroup("ng1", 1, 10, 1)
 	provider.AddNode("ng1", n1)
 	ng1 := reflect.ValueOf(provider.GetNodeGroup("ng1")).Interface().(*testprovider.TestNodeGroup)
@@ -510,8 +509,7 @@ func TestStaticAutoscalerRunOnceWithScaleDownDelayPerNG(t *testing.T) {
 	SetNodeReadyState(n2, true, time.Now())
 
 	tn := BuildTestNode("tn", 1000, 1000)
-	tni := schedulerframework.NewNodeInfo()
-	tni.SetNode(tn)
+	tni := framework.NewNodeInfo(tn, nil)
 
 	provider := testprovider.NewTestAutoprovisioningCloudProvider(
 		func(id string, delta int) error {
@@ -522,7 +520,7 @@ func TestStaticAutoscalerRunOnceWithScaleDownDelayPerNG(t *testing.T) {
 			return ret
 		},
 		nil, nil,
-		nil, map[string]*schedulerframework.NodeInfo{"ng1": tni, "ng2": tni})
+		nil, map[string]*framework.NodeInfo{"ng1": tni, "ng2": tni})
 	assert.NotNil(t, provider)
 
 	provider.AddNodeGroup("ng1", 0, 10, 1)
@@ -740,16 +738,13 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 
 	tn1 := BuildTestNode("tn1", 100, 1000)
 	SetNodeReadyState(tn1, true, time.Now())
-	tni1 := schedulerframework.NewNodeInfo()
-	tni1.SetNode(tn1)
+	tni1 := framework.NewNodeInfo(tn1, nil)
 	tn2 := BuildTestNode("tn2", 1000, 1000)
 	SetNodeReadyState(tn2, true, time.Now())
-	tni2 := schedulerframework.NewNodeInfo()
-	tni2.SetNode(tn2)
+	tni2 := framework.NewNodeInfo(tn2, nil)
 	tn3 := BuildTestNode("tn3", 100, 1000)
 	SetNodeReadyState(tn2, true, time.Now())
-	tni3 := schedulerframework.NewNodeInfo()
-	tni3.SetNode(tn3)
+	tni3 := framework.NewNodeInfo(tn3, nil)
 
 	provider := testprovider.NewTestAutoprovisioningCloudProvider(
 		func(id string, delta int) error {
@@ -763,7 +758,7 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 		}, func(id string) error {
 			return onNodeGroupDeleteMock.Delete(id)
 		},
-		[]string{"TN1", "TN2"}, map[string]*schedulerframework.NodeInfo{"TN1": tni1, "TN2": tni2, "ng1": tni3})
+		[]string{"TN1", "TN2"}, map[string]*framework.NodeInfo{"TN1": tni1, "TN2": tni2, "ng1": tni3})
 	provider.AddNodeGroup("ng1", 1, 10, 1)
 	provider.AddAutoprovisionedNodeGroup("autoprovisioned-TN1", 0, 10, 0, "TN1")
 	autoprovisionedTN1 := reflect.ValueOf(provider.GetNodeGroup("autoprovisioned-TN1")).Interface().(*testprovider.TestNodeGroup)
@@ -2001,13 +1996,13 @@ func (f *candidateTrackingFakePlanner) NodeUtilizationMap() map[string]utilizati
 }
 
 func assertSnapshotNodeCount(t *testing.T, snapshot clustersnapshot.ClusterSnapshot, wantCount int) {
-	nodeInfos, err := snapshot.NodeInfos().List()
+	nodeInfos, err := snapshot.ListNodeInfos()
 	assert.NoError(t, err)
 	assert.Len(t, nodeInfos, wantCount)
 }
 
 func assertNodesNotInSnapshot(t *testing.T, snapshot clustersnapshot.ClusterSnapshot, nodeNames map[string]bool) {
-	nodeInfos, err := snapshot.NodeInfos().List()
+	nodeInfos, err := snapshot.ListNodeInfos()
 	assert.NoError(t, err)
 	for _, nodeInfo := range nodeInfos {
 		assert.NotContains(t, nodeNames, nodeInfo.Node().Name)
@@ -2015,7 +2010,7 @@ func assertNodesNotInSnapshot(t *testing.T, snapshot clustersnapshot.ClusterSnap
 }
 
 func assertNodesInSnapshot(t *testing.T, snapshot clustersnapshot.ClusterSnapshot, nodeNames map[string]bool) {
-	nodeInfos, err := snapshot.NodeInfos().List()
+	nodeInfos, err := snapshot.ListNodeInfos()
 	assert.NoError(t, err)
 	snapshotNodeNames := map[string]bool{}
 	for _, nodeInfo := range nodeInfos {

@@ -21,13 +21,13 @@ import (
 	"testing"
 	"time"
 
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -35,8 +35,7 @@ import (
 func TestGetDaemonSetPodsForNode(t *testing.T) {
 	node := BuildTestNode("node", 1000, 1000)
 	SetNodeReadyState(node, true, time.Now())
-	nodeInfo := schedulerframework.NewNodeInfo()
-	nodeInfo.SetNode(node)
+	nodeInfo := framework.NewNodeInfo(node, nil)
 
 	ds1 := newDaemonSet("ds1", "0.1", "100M", nil)
 	ds2 := newDaemonSet("ds2", "0.1", "100M", map[string]string{"foo": "bar"})

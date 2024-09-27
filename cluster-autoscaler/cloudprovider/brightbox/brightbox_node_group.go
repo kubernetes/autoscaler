@@ -31,6 +31,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/brightbox/gobrightbox/status"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/brightbox/k8ssdk"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	klog "k8s.io/klog/v2"
 	v1helper "k8s.io/kubernetes/pkg/apis/core/v1/helper"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
@@ -239,13 +240,13 @@ func (ng *brightboxNodeGroup) Exist() bool {
 	return err == nil
 }
 
-// TemplateNodeInfo returns a schedulerframework.NodeInfo structure of an empty
+// TemplateNodeInfo returns a framework.NodeInfo structure of an empty
 // (as if just started) node. This will be used in scale-up simulations to
 // predict what would a new node look like if a node group was expanded. The returned
 // NodeInfo is expected to have a fully populated Node object, with all of the labels,
 // capacity and allocatable information as well as all pods that are started on
 // the node by default, using manifest (most likely only kube-proxy). Implementation optional.
-func (ng *brightboxNodeGroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
+func (ng *brightboxNodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 	klog.V(4).Info("TemplateNodeInfo")
 	klog.V(4).Infof("Looking for server type %q", ng.serverOptions.ServerType)
 	serverType, err := ng.findServerType()
@@ -268,8 +269,7 @@ func (ng *brightboxNodeGroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, 
 			Conditions:  cloudprovider.BuildReadyConditions(),
 		},
 	}
-	nodeInfo := schedulerframework.NewNodeInfo(cloudprovider.BuildKubeProxy(ng.Id()))
-	nodeInfo.SetNode(&node)
+	nodeInfo := framework.NewNodeInfo(&node, nil, &framework.PodInfo{Pod: cloudprovider.BuildKubeProxy(ng.Id())})
 	return nodeInfo, nil
 }
 
