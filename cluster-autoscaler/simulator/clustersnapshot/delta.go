@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
@@ -400,6 +401,31 @@ func NewDeltaClusterSnapshot() *DeltaClusterSnapshot {
 	snapshot := &DeltaClusterSnapshot{}
 	snapshot.Clear()
 	return snapshot
+}
+
+func (snapshot *DeltaClusterSnapshot) GetNodeInfo(nodeName string) (*framework.NodeInfo, error) {
+	schedNodeInfo, err := snapshot.getNodeInfo(nodeName)
+	if err != nil {
+		return nil, err
+	}
+	return framework.WrapSchedulerNodeInfo(schedNodeInfo), nil
+}
+
+func (snapshot *DeltaClusterSnapshot) ListNodeInfos() ([]*framework.NodeInfo, error) {
+	schedNodeInfos := snapshot.data.getNodeInfoList()
+	return framework.WrapSchedulerNodeInfos(schedNodeInfos), nil
+}
+
+func (snapshot *DeltaClusterSnapshot) AddNodeInfo(nodeInfo *framework.NodeInfo) error {
+	if err := snapshot.data.addNode(nodeInfo.Node()); err != nil {
+		return err
+	}
+	for _, podInfo := range nodeInfo.Pods {
+		if err := snapshot.data.addPod(podInfo.Pod, nodeInfo.Node().Name); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // AddNode adds node to the snapshot.

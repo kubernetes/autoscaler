@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
@@ -35,12 +36,12 @@ type internalBasicSnapshotData struct {
 	pvcNamespacePodMap map[string]map[string]bool
 }
 
-func (data *internalBasicSnapshotData) listNodeInfos() ([]*schedulerframework.NodeInfo, error) {
+func (data *internalBasicSnapshotData) listNodeInfos() []*schedulerframework.NodeInfo {
 	nodeInfoList := make([]*schedulerframework.NodeInfo, 0, len(data.nodeInfoMap))
 	for _, v := range data.nodeInfoMap {
 		nodeInfoList = append(nodeInfoList, v)
 	}
-	return nodeInfoList, nil
+	return nodeInfoList
 }
 
 func (data *internalBasicSnapshotData) listNodeInfosThatHavePodsWithAffinityList() ([]*schedulerframework.NodeInfo, error) {
@@ -212,6 +213,31 @@ func (snapshot *BasicClusterSnapshot) getInternalData() *internalBasicSnapshotDa
 	return snapshot.data[len(snapshot.data)-1]
 }
 
+func (snapshot *BasicClusterSnapshot) GetNodeInfo(nodeName string) (*framework.NodeInfo, error) {
+	schedNodeInfo, err := snapshot.getInternalData().getNodeInfo(nodeName)
+	if err != nil {
+		return nil, err
+	}
+	return framework.WrapSchedulerNodeInfo(schedNodeInfo), nil
+}
+
+func (snapshot *BasicClusterSnapshot) ListNodeInfos() ([]*framework.NodeInfo, error) {
+	schedNodeInfos := snapshot.getInternalData().listNodeInfos()
+	return framework.WrapSchedulerNodeInfos(schedNodeInfos), nil
+}
+
+func (snapshot *BasicClusterSnapshot) AddNodeInfo(nodeInfo *framework.NodeInfo) error {
+	if err := snapshot.getInternalData().addNode(nodeInfo.Node()); err != nil {
+		return err
+	}
+	for _, podInfo := range nodeInfo.Pods {
+		if err := snapshot.getInternalData().addPod(podInfo.Pod, nodeInfo.Node().Name); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // AddNode adds node to the snapshot.
 func (snapshot *BasicClusterSnapshot) AddNode(node *apiv1.Node) error {
 	return snapshot.getInternalData().addNode(node)
@@ -302,7 +328,7 @@ func (snapshot *BasicClusterSnapshot) StorageInfos() schedulerframework.StorageI
 
 // List returns the list of nodes in the snapshot.
 func (snapshot *basicClusterSnapshotNodeLister) List() ([]*schedulerframework.NodeInfo, error) {
-	return (*BasicClusterSnapshot)(snapshot).getInternalData().listNodeInfos()
+	return (*BasicClusterSnapshot)(snapshot).getInternalData().listNodeInfos(), nil
 }
 
 // HavePodsWithAffinityList returns the list of nodes with at least one pods with inter-pod affinity
