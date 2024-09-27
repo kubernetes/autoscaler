@@ -19,6 +19,7 @@ package podsharding
 import (
 	"k8s.io/api/core/v1"
 	apitypes "k8s.io/apimachinery/pkg/types"
+	"k8s.io/klog/v2"
 )
 
 // FeatureShardComputeFunction function computes part of shard to which pod belongs, looking at specific feature.
@@ -73,5 +74,8 @@ func (sharder *CompositePodSharder) ComputePodShards(pods []*v1.Pod) []*PodShard
 	for _, podShard := range podShards {
 		result = append(result, podShard)
 	}
+
+	klog.V(4).Infof("Computed %d pod shards", len(result))
+
 	return result
 }

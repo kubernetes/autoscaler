@@ -200,6 +200,21 @@ func ProvisioningRequestsForPods(client *ProvisioningRequestClient, unschedulabl
 	return prList
 }
 
+// SegregatePodsByProvisioningRequest segregates pods by ProvisioningRequest.
+func SegregatePodsByProvisioningRequest(client *ProvisioningRequestClient, pods []*apiv1.Pod) map[string][]*apiv1.Pod {
+	podsByPR := make(map[string][]*apiv1.Pod)
+	for _, pod := range pods {
+		if len(pod.OwnerReferences) == 0 {
+			klog.Errorf("pod %s has no OwnerReference", pod.Name)
+			continue
+		}
+
+		provReq := fmt.Sprintf("%s/%s", pod.Namespace, pod.OwnerReferences[0].Name)
+		podsByPR[provReq] = append(podsByPR[provReq], pod)
+	}
+	return podsByPR
+}
+
 // DeleteProvisioningRequest deletes the given ProvisioningRequest CR using the ProvisioningRequestInterface and returns an error in case of failure.
 func (c *ProvisioningRequestClient) DeleteProvisioningRequest(pr *v1.ProvisioningRequest) error {
 	ctx, cancel := context.WithTimeout(context.Background(), provisioningRequestClientCallTimeout)

@@ -131,7 +131,7 @@ func TestProvisioningRequestPodsInjector(t *testing.T) {
 		client := provreqclient.NewFakeProvisioningRequestClient(context.Background(), t, tc.provReqs...)
 		backoffTime := lru.New(100)
 		backoffTime.Add(key(notProvisionedRecentlyProvReqB), 2*time.Minute)
-		injector := ProvisioningRequestPodsInjector{1 * time.Minute, 10 * time.Minute, backoffTime, clock.NewFakePassiveClock(now), client, now}
+		injector := ProvisioningRequestPodsInjector{1 * time.Minute, 10 * time.Minute, backoffTime, clock.NewFakePassiveClock(now), client, now, false, 1}
 		getUnscheduledPods, err := injector.Process(nil, provreqwrapper.BuildTestPods("ns", "pod", tc.existingUnsUnschedulablePodCount))
 		if err != nil {
 			t.Errorf("%s failed: injector.Process return error %v", tc.name, err)

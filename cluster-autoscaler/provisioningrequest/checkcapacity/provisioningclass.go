@@ -193,7 +193,7 @@ func (o *checkCapacityProvClass) shouldStopBatchProcessing(prsProcessed int, sta
 
 // getNextPrPods retreives pods from the next CheckCapacity ProvisioningRequest.
 func (o *checkCapacityProvClass) getNextPrPods(provisioningRequestsProcessed map[string]bool) ([]*apiv1.Pod, error) {
-	return o.provreqInjector.GetPodsFromNextRequest(func(pr *provreqwrapper.ProvisioningRequest) bool {
+	pods, _, err := o.provreqInjector.GetPodsFromNextRequest(func(pr *provreqwrapper.ProvisioningRequest) bool {
 		if pr.Spec.ProvisioningClassName != v1.ProvisioningClassCheckCapacity {
 			return false
 		}
@@ -202,6 +202,8 @@ func (o *checkCapacityProvClass) getNextPrPods(provisioningRequestsProcessed map
 		}
 		return true
 	})
+
+	return pods, err
 }
 
 // combinedStatusSet is a helper struct to combine multiple ScaleUpStatuses into one. It keeps track of the best result and all errors that occurred during the ScaleUp process.

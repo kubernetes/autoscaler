@@ -311,6 +311,10 @@ type AutoscalingOptions struct {
 	PodShardingEnabled bool
 	// PodShardingLabels is a list of labels to use when comparing if two node groups are similar for pod sharding.
 	PodShardingNodeSelectors []string
+	// BestEffortAtomicProvisioningRequestShardedMaxInjectionQuantity is the maximum number of BestEffortAtomic ProvisioningRequests that can be injected into the cluster in a single loop iteration when pod sharding is enabled.
+	BestEffortAtomicProvisioningRequestShardedMaxInjectionQuantity int
+	// BestEffortAtomicProvisioningRequestShardedSimulationTimebox is the maximum time that can be spent on BestEffortAtomic ProvisioningRequest simulation when pod sharding is enabled.
+	BestEffortAtomicProvisioningRequestShardedSimulationTimebox time.Duration
 }
 
 // KubeClientOptions specify options for kube client

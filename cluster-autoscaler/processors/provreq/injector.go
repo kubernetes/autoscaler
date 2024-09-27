@@ -22,7 +22,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest"
 	provreqconditions "k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/conditions"
@@ -43,6 +43,8 @@ type ProvisioningRequestPodsInjector struct {
 	clock                              clock.PassiveClock
 	client                             *provreqclient.ProvisioningRequestClient
 	lastProvisioningRequestProcessTime time.Time
+	injectAll                          bool
+	maxInjectionQuantity               int
 }
 
 // IsAvailableForProvisioning checks if the provisioning request is the correct state for processing and provisioning has not been attempted recently.
@@ -94,10 +96,10 @@ func (p *ProvisioningRequestPodsInjector) MarkAsFailed(pr *provreqwrapper.Provis
 // GetPodsFromNextRequest picks one ProvisioningRequest meeting the condition passed using isSupportedClass function, marks it as accepted and returns pods from it.
 func (p *ProvisioningRequestPodsInjector) GetPodsFromNextRequest(
 	isSupportedClass func(*provreqwrapper.ProvisioningRequest) bool,
-) ([]*apiv1.Pod, error) {
+) ([]*apiv1.Pod, string, error) {
 	provReqs, err := p.client.ProvisioningRequests()
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 	for _, pr := range provReqs {
 		if !isSupportedClass(pr) {
@@ -123,10 +125,53 @@ func (p *ProvisioningRequestPodsInjector) GetPodsFromNextRequest(
 		if err := p.MarkAsAccepted(pr); err != nil {
 			continue
 		}
-
-		return podsFromProvReq, nil
+		return podsFromProvReq, pr.Spec.ProvisioningClassName, nil
 	}
-	return nil, nil
+	return nil, "", nil
+}
+
+// GetPodsFromMultipleRequests picks all ProvisioningRequests meeting the condition passed using isSupportedClass function, marks them as accepted and returns pods from them.
+func (p *ProvisioningRequestPodsInjector) GetPodsFromMultipleRequests(
+	isSupportedClass func(*provreqwrapper.ProvisioningRequest) bool,
+	maxInjectionQuantity int,
+) ([]*apiv1.Pod, error) {
+	provReqs, err := p.client.ProvisioningRequests()
+	if err != nil {
+		return nil, err
+	}
+	var podsFromProvReq []*apiv1.Pod
+	count := 0
+	for _, pr := range provReqs {
+		if count >= maxInjectionQuantity {
+			break
+		}
+		if !isSupportedClass(pr) {
+			continue
+		}
+		conditions := pr.Status.Conditions
+		if apimeta.IsStatusConditionTrue(conditions, v1.Failed) || apimeta.IsStatusConditionTrue(conditions, v1.Provisioned) {
+			p.backoffDuration.Remove(key(pr))
+			continue
+		}
+
+		// Inject pods if ProvReq wasn't scaled up before or it has Provisioned == False condition more than defaultRetryTime
+		if !p.IsAvailableForProvisioning(pr) {
+			continue
+		}
+
+		provreqpods, err := provreqpods.PodsForProvisioningRequest(pr)
+		if err != nil {
+			klog.Errorf("Failed to get pods for ProvisioningRequest %v", pr.Name)
+			p.MarkAsFailed(pr, provreqconditions.FailedToCreatePodsReason, err.Error())
+			continue
+		}
+		if err := p.MarkAsAccepted(pr); err != nil {
+			continue
+		}
+		podsFromProvReq = append(podsFromProvReq, provreqpods...)
+		count++
+	}
+	return podsFromProvReq, nil
 }
 
 // Process pick one ProvisioningRequest, update Accepted condition and inject pods to unscheduled pods list.
@@ -134,7 +179,7 @@ func (p *ProvisioningRequestPodsInjector) Process(
 	_ *context.AutoscalingContext,
 	unschedulablePods []*apiv1.Pod,
 ) ([]*apiv1.Pod, error) {
-	podsFromProvReq, err := p.GetPodsFromNextRequest(
+	podsFromProvReq, provisioningClass, err := p.GetPodsFromNextRequest(
 		func(pr *provreqwrapper.ProvisioningRequest) bool {
 			_, found := provisioningrequest.SupportedProvisioningClasses[pr.Spec.ProvisioningClassName]
 			if !found {
@@ -147,19 +192,43 @@ func (p *ProvisioningRequestPodsInjector) Process(
 		return unschedulablePods, err
 	}
 
-	return append(unschedulablePods, podsFromProvReq...), nil
+	unschedulablePods = append(unschedulablePods, podsFromProvReq...)
+
+	if provisioningClass == v1.ProvisioningClassBestEffortAtomicScaleUp {
+		podsFromProvReqs, err := p.GetPodsFromMultipleRequests(
+			func(pr *provreqwrapper.ProvisioningRequest) bool {
+				return pr.Spec.ProvisioningClassName == v1.ProvisioningClassBestEffortAtomicScaleUp
+			},
+			p.maxInjectionQuantity-1)
+
+		if err != nil {
+			return unschedulablePods, err
+		}
+
+		unschedulablePods = append(unschedulablePods, podsFromProvReqs...)
+	}
+
+	return unschedulablePods, nil
 }
 
 // CleanUp cleans up the processor's internal structures.
 func (p *ProvisioningRequestPodsInjector) CleanUp() {}
 
 // NewProvisioningRequestPodsInjector creates a ProvisioningRequest filter processor.
-func NewProvisioningRequestPodsInjector(kubeConfig *rest.Config, initialBackoffTime, maxBackoffTime time.Duration, maxCacheSize int) (*ProvisioningRequestPodsInjector, error) {
+func NewProvisioningRequestPodsInjector(kubeConfig *rest.Config, initialBackoffTime, maxBackoffTime time.Duration, maxCacheSize int, injectAll bool, maxInjectionQuantity int) (*ProvisioningRequestPodsInjector, error) {
 	client, err := provreqclient.NewProvisioningRequestClient(kubeConfig)
 	if err != nil {
 		return nil, err
 	}
-	return &ProvisioningRequestPodsInjector{initialRetryTime: initialBackoffTime, maxBackoffTime: maxBackoffTime, backoffDuration: lru.New(maxCacheSize), client: client, clock: clock.RealClock{}, lastProvisioningRequestProcessTime: time.Now()}, nil
+	return &ProvisioningRequestPodsInjector{
+		initialRetryTime:                   initialBackoffTime,
+		maxBackoffTime:                     maxBackoffTime,
+		backoffDuration:                    lru.New(maxCacheSize),
+		client:                             client,
+		clock:                              clock.RealClock{},
+		lastProvisioningRequestProcessTime: time.Now(),
+		injectAll:                          injectAll,
+		maxInjectionQuantity:               maxInjectionQuantity}, nil
 }
 
 func key(pr *provreqwrapper.ProvisioningRequest) string {

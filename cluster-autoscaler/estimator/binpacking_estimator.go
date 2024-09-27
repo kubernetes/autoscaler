@@ -18,6 +18,7 @@ package estimator
 
 import (
 	"fmt"
+	"time"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -91,12 +92,13 @@ func (e *BinpackingNodeEstimator) Estimate(
 	podsEquivalenceGroups []PodEquivalenceGroup,
 	nodeTemplate *framework.NodeInfo,
 	nodeGroup cloudprovider.NodeGroup,
-) (int, []*apiv1.Pod) {
+) (int, []*apiv1.Pod, clustersnapshot.ClusterSnapshot) {
 
 	e.limiter.StartEstimation(podsEquivalenceGroups, nodeGroup, e.context)
 	defer e.limiter.EndEstimation()
 
 	podsEquivalenceGroups = e.podOrderer.Order(podsEquivalenceGroups, nodeTemplate, nodeGroup)
+	var snapshotExport clustersnapshot.ClusterSnapshot
 
 	e.clusterSnapshot.Fork()
 	defer func() {
@@ -111,20 +113,22 @@ func (e *BinpackingNodeEstimator) Estimate(
 		remainingPods, err = e.tryToScheduleOnExistingNodes(estimationState, podsEquivalenceGroup.Pods)
 		if err != nil {
 			klog.Errorf(err.Error())
-			return 0, nil
+			return 0, nil, nil
 		}
 
 		err = e.tryToScheduleOnNewNodes(estimationState, nodeTemplate, remainingPods)
 		if err != nil {
 			klog.Errorf(err.Error())
-			return 0, nil
+			return 0, nil, nil
 		}
 	}
 
 	if e.estimationAnalyserFunc != nil {
 		e.estimationAnalyserFunc(e.clusterSnapshot, nodeGroup, estimationState.newNodesWithPods)
 	}
-	return len(estimationState.newNodesWithPods), estimationState.scheduledPods
+
+	snapshotExport = e.clusterSnapshot.Export()
+	return len(estimationState.newNodesWithPods), estimationState.scheduledPods, snapshotExport
 }
 
 func (e *BinpackingNodeEstimator) tryToScheduleOnExistingNodes(
@@ -210,7 +214,7 @@ func (e *BinpackingNodeEstimator) addNewNodeToSnapshot(
 	estimationState *estimationState,
 	template *framework.NodeInfo,
 ) error {
-	newNodeInfo := scheduler.DeepCopyTemplateNode(template, fmt.Sprintf("e-%d", estimationState.newNodeNameIndex))
+	newNodeInfo := scheduler.DeepCopyTemplateNode(template, fmt.Sprintf("e-%d-%d", estimationState.newNodeNameIndex, time.Now().UnixMicro()))
 	var pods []*apiv1.Pod
 	for _, podInfo := range newNodeInfo.Pods() {
 		pods = append(pods, podInfo.Pod)

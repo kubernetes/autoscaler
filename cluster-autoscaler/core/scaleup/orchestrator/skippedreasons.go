@@ -27,8 +27,8 @@ type SkippedReasons struct {
 }
 
 // NewSkippedReasons creates new SkippedReason object.
-func NewSkippedReasons(m string) *SkippedReasons {
-	return &SkippedReasons{[]string{m}}
+func NewSkippedReasons(m ...string) *SkippedReasons {
+	return &SkippedReasons{m}
 }
 
 // Reasons returns a slice of reasons why the node group was not considered for scale up.

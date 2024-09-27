@@ -18,16 +18,25 @@ package podsharding
 
 import (
 	"k8s.io/api/core/v1"
+	pr_pods "k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/pods"
 )
 
 // NewOssPodSharder returns a PodSharder that shards pods based on the podShardingLabels specified.
-func NewOssPodSharder(podShardingLabels map[string]string) PodSharder {
+func NewOssPodSharder(podShardingLabels map[string]string, provisioningRequestsEnabled bool) PodSharder {
 	computeFunctions := []FeatureShardComputeFunction{
 		{
 			"label",
 			computeLabelNameShard(podShardingLabels),
 		},
 	}
+
+	if provisioningRequestsEnabled {
+		computeFunctions = append(computeFunctions, FeatureShardComputeFunction{
+			"provisioning",
+			provisioningRequestShard,
+		})
+	}
+
 	return NewCompositePodSharder(computeFunctions)
 }
 
@@ -44,4 +53,12 @@ func computeLabelNameShard(podShardingLabels map[string]string) func(*v1.Pod, *N
 			}
 		}
 	}
+}
+
+func provisioningRequestShard(pod *v1.Pod, nodeGroupDescriptor *NodeGroupDescriptor) {
+	provClass, found := pr_pods.ProvisioningClassName(pod)
+	if !found {
+		return
+	}
+	nodeGroupDescriptor.ProvisioningClassName = provClass
 }

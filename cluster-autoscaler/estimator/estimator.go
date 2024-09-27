@@ -53,7 +53,7 @@ func (p *PodEquivalenceGroup) Exemplar() *apiv1.Pod {
 // to schedule on those nodes.
 type Estimator interface {
 	// Estimate estimates how many nodes are needed to provision pods coming from the given equivalence groups.
-	Estimate([]PodEquivalenceGroup, *framework.NodeInfo, cloudprovider.NodeGroup) (int, []*apiv1.Pod)
+	Estimate([]PodEquivalenceGroup, *framework.NodeInfo, cloudprovider.NodeGroup) (int, []*apiv1.Pod, clustersnapshot.ClusterSnapshot)
 }
 
 // EstimatorBuilder creates a new estimator object.

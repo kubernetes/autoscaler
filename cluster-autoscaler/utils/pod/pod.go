@@ -50,7 +50,7 @@ func IsMirrorPod(pod *apiv1.Pod) bool {
 // IsStaticPod returns true if the pod is a static pod.
 func IsStaticPod(pod *apiv1.Pod) bool {
 	if pod.Annotations != nil {
-		if source, ok := pod.Annotations[types.ConfigSourceAnnotationKey]; ok == true {
+		if source, ok := pod.Annotations[types.ConfigSourceAnnotationKey]; ok {
 			return source != types.ApiserverSource
 		}
 	}

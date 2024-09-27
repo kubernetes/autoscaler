@@ -36,6 +36,20 @@ const (
 	DeprecatedProvisioningClassPodAnnotationKey = "cluster-autoscaler.kubernetes.io/provisioning-class-name"
 )
 
+// ProvisioningClassName checks if pod is consuming ProvReq and returns the name of
+// the ProvisioningClass. If pod is not consuming ProvReq returns false and empty string.
+func ProvisioningClassName(pod *corev1.Pod) (string, bool) {
+	if pod == nil || pod.Annotations == nil {
+		return "", false
+	}
+	provClass, found := pod.Annotations[v1.ProvisioningClassPodAnnotationKey]
+	if !found {
+		provClass, found = pod.Annotations[DeprecatedProvisioningClassPodAnnotationKey]
+	}
+
+	return provClass, found
+}
+
 // PodsForProvisioningRequest returns a list of pods for which Provisioning
 // Request needs to provision resources.
 func PodsForProvisioningRequest(pr *provreqwrapper.ProvisioningRequest) ([]*corev1.Pod, error) {

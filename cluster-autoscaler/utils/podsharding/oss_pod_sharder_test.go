@@ -150,7 +150,7 @@ func TestPodSharderWithoutProvReq(t *testing.T) {
 		"anotherSharding": "nodeSelector",
 	}
 
-	testPodSharder(t, NewOssPodSharder(shardingNodeSelectors), testCases)
+	testPodSharder(t, NewOssPodSharder(shardingNodeSelectors, false), testCases)
 }
 
 type shardComputeFunctionTestCase struct {
