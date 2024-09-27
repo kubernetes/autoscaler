@@ -26,18 +26,18 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqclient"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
 	ca_errors "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // ProvisioningClass is an interface for ProvisioningRequests.
 type ProvisioningClass interface {
 	Provision([]*apiv1.Pod, []*apiv1.Node, []*appsv1.DaemonSet,
-		map[string]*schedulerframework.NodeInfo) (*status.ScaleUpStatus, ca_errors.AutoscalerError)
+		map[string]*framework.NodeInfo) (*status.ScaleUpStatus, ca_errors.AutoscalerError)
 	Initialize(*context.AutoscalingContext, *ca_processors.AutoscalingProcessors, *clusterstate.ClusterStateRegistry,
 		estimator.EstimatorBuilder, taints.TaintConfig, *scheduling.HintingSimulator)
 }
@@ -82,7 +82,7 @@ func (o *provReqOrchestrator) ScaleUp(
 	unschedulablePods []*apiv1.Pod,
 	nodes []*apiv1.Node,
 	daemonSets []*appsv1.DaemonSet,
-	nodeInfos map[string]*schedulerframework.NodeInfo,
+	nodeInfos map[string]*framework.NodeInfo,
 	_ bool, // Provision() doesn't use this parameter.
 ) (*status.ScaleUpStatus, ca_errors.AutoscalerError) {
 	if !o.initialized {
@@ -105,7 +105,7 @@ func (o *provReqOrchestrator) ScaleUp(
 // ScaleUpToNodeGroupMinSize doesn't have implementation for ProvisioningRequest Orchestrator.
 func (o *provReqOrchestrator) ScaleUpToNodeGroupMinSize(
 	nodes []*apiv1.Node,
-	nodeInfos map[string]*schedulerframework.NodeInfo,
+	nodeInfos map[string]*framework.NodeInfo,
 ) (*status.ScaleUpStatus, ca_errors.AutoscalerError) {
 	return nil, nil
 }

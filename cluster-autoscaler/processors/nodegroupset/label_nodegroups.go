@@ -17,18 +17,18 @@ limitations under the License.
 package nodegroupset
 
 import (
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	klog "k8s.io/klog/v2"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // CreateLabelNodeInfoComparator returns a comparator that checks for node group similarity using the given labels.
 func CreateLabelNodeInfoComparator(labels []string) NodeInfoComparator {
-	return func(n1, n2 *schedulerframework.NodeInfo) bool {
+	return func(n1, n2 *framework.NodeInfo) bool {
 		return areLabelsSame(n1, n2, labels)
 	}
 }
 
-func areLabelsSame(n1, n2 *schedulerframework.NodeInfo, labels []string) bool {
+func areLabelsSame(n1, n2 *framework.NodeInfo, labels []string) bool {
 	for _, label := range labels {
 		val1, exists := n1.Node().ObjectMeta.Labels[label]
 		if !exists {

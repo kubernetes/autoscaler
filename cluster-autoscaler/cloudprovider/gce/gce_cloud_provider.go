@@ -26,10 +26,10 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	klog "k8s.io/klog/v2"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 const (
@@ -361,13 +361,12 @@ func (mig *gceMig) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*con
 }
 
 // TemplateNodeInfo returns a node template for this node group.
-func (mig *gceMig) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
+func (mig *gceMig) TemplateNodeInfo() (*framework.NodeInfo, error) {
 	node, err := mig.gceManager.GetMigTemplateNode(mig)
 	if err != nil {
 		return nil, err
 	}
-	nodeInfo := schedulerframework.NewNodeInfo(cloudprovider.BuildKubeProxy(mig.Id()))
-	nodeInfo.SetNode(node)
+	nodeInfo := framework.NewNodeInfo(node, nil, &framework.PodInfo{Pod: cloudprovider.BuildKubeProxy(mig.Id())})
 	return nodeInfo, nil
 }
 

@@ -18,7 +18,7 @@ package nodegroupset
 
 import (
 	"k8s.io/autoscaler/cluster-autoscaler/config"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 )
 
 // CreateGceNodeInfoComparator returns a comparator that checks if two nodes should be considered
@@ -37,7 +37,7 @@ func CreateGceNodeInfoComparator(extraIgnoredLabels []string, ratioOpts config.N
 		gceIgnoredLabels[k] = true
 	}
 
-	return func(n1, n2 *schedulerframework.NodeInfo) bool {
+	return func(n1, n2 *framework.NodeInfo) bool {
 		return IsCloudProviderNodeInfoSimilar(n1, n2, gceIgnoredLabels, ratioOpts)
 	}
 }

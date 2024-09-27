@@ -6,15 +6,16 @@ package instancepools
 
 import (
 	"fmt"
+
 	"github.com/pkg/errors"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/common"
 	ocicommon "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/common"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/klog/v2"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // InstancePoolNodeGroup implements the NodeGroup interface using OCI instance pools.
@@ -172,23 +173,23 @@ func (ip *InstancePoolNodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 	return ip.manager.GetInstancePoolNodes(*ip)
 }
 
-// TemplateNodeInfo returns a schedulerframework.NodeInfo structure of an empty
+// TemplateNodeInfo returns a framework.NodeInfo structure of an empty
 // (as if just started) node. This will be used in scale-up simulations to
 // predict what would a new node look like if a instance-pool was expanded. The returned
 // NodeInfo is expected to have a fully populated Node object, with all of the labels,
 // capacity and allocatable information as well as all pods that are started on
 // the node by default, using manifest (most likely only kube-proxy). Implementation optional.
-func (ip *InstancePoolNodeGroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
+func (ip *InstancePoolNodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 	node, err := ip.manager.GetInstancePoolTemplateNode(*ip)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to build node info template")
 	}
 
-	nodeInfo := schedulerframework.NewNodeInfo(
-		cloudprovider.BuildKubeProxy(ip.id),
-		ocicommon.BuildCSINodePod(),
+	nodeInfo := framework.NewNodeInfo(
+		node, nil,
+		&framework.PodInfo{Pod: cloudprovider.BuildKubeProxy(ip.id)},
+		&framework.PodInfo{Pod: ocicommon.BuildCSINodePod()},
 	)
-	nodeInfo.SetNode(node)
 	return nodeInfo, nil
 }
 

@@ -18,8 +18,7 @@ package factory
 
 import (
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
-
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 )
 
 type chainStrategy struct {
@@ -34,7 +33,7 @@ func newChainStrategy(filters []expander.Filter, fallback expander.Strategy) exp
 	}
 }
 
-func (c *chainStrategy) BestOption(options []expander.Option, nodeInfo map[string]*schedulerframework.NodeInfo) *expander.Option {
+func (c *chainStrategy) BestOption(options []expander.Option, nodeInfo map[string]*framework.NodeInfo) *expander.Option {
 	filteredOptions := options
 	for _, filter := range c.filters {
 		filteredOptions = filter.BestOptions(filteredOptions, nodeInfo)

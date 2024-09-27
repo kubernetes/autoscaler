@@ -20,16 +20,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
+
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/scaleway/scalewaygo"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/klog/v2"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
-	"strings"
 )
 
 // NodeGroup implements cloudprovider.NodeGroup interface.
@@ -198,13 +199,13 @@ func (ng *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 	return nodes, nil
 }
 
-// TemplateNodeInfo returns a schedulerframework.NodeInfo structure of an empty
+// TemplateNodeInfo returns a framework.NodeInfo structure of an empty
 // (as if just started) node. This will be used in scale-up simulations to
 // predict what would a new node look like if a node group was expanded. The returned
 // NodeInfo is expected to have a fully populated Node object, with all of the labels,
 // capacity and allocatable information as well as all pods that are started on
 // the node by default, using manifest (most likely only kube-proxy).
-func (ng *NodeGroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
+func (ng *NodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 	klog.V(4).Infof("TemplateNodeInfo,PoolID=%s", ng.p.ID)
 	node := apiv1.Node{
 		ObjectMeta: metav1.ObjectMeta{
@@ -235,8 +236,7 @@ func (ng *NodeGroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
 	node.Status.Conditions = cloudprovider.BuildReadyConditions()
 	node.Spec.Taints = parseTaints(ng.specs.Taints)
 
-	nodeInfo := schedulerframework.NewNodeInfo(cloudprovider.BuildKubeProxy(ng.p.Name))
-	nodeInfo.SetNode(&node)
+	nodeInfo := framework.NewNodeInfo(&node, nil, &framework.PodInfo{Pod: cloudprovider.BuildKubeProxy(ng.p.Name)})
 	return nodeInfo, nil
 }
 

@@ -24,8 +24,8 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/grpcplugin/protos"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -72,7 +72,7 @@ func createGRPCClient(expanderCert string, expanderUrl string) protos.ExpanderCl
 	return protos.NewExpanderClient(conn)
 }
 
-func (g *grpcclientstrategy) BestOptions(expansionOptions []expander.Option, nodeInfo map[string]*schedulerframework.NodeInfo) []expander.Option {
+func (g *grpcclientstrategy) BestOptions(expansionOptions []expander.Option, nodeInfo map[string]*framework.NodeInfo) []expander.Option {
 	if g.grpcClient == nil {
 		klog.Errorf("Incorrect gRPC client config, filtering no options")
 		return expansionOptions
@@ -117,7 +117,7 @@ func populateOptionsForGRPC(expansionOptions []expander.Option) ([]*protos.Optio
 }
 
 // populateNodeInfoForGRPC looks at the corresponding v1.Node object per NodeInfo object, and populates the grpcNodeInfoMap with these to pass over grpc
-func populateNodeInfoForGRPC(nodeInfos map[string]*schedulerframework.NodeInfo) map[string]*v1.Node {
+func populateNodeInfoForGRPC(nodeInfos map[string]*framework.NodeInfo) map[string]*v1.Node {
 	grpcNodeInfoMap := make(map[string]*v1.Node)
 	for nodeId, nodeInfo := range nodeInfos {
 		grpcNodeInfoMap[nodeId] = nodeInfo.Node()

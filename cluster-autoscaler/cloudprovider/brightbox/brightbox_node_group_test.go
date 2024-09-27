@@ -316,7 +316,7 @@ func TestTemplateNodeInfo(t *testing.T) {
 		Return(fakeServerTypezx45f(), nil)
 	obj, err := makeFakeNodeGroup(t, testclient).TemplateNodeInfo()
 	require.NoError(t, err)
-	assert.Equal(t, fakeResource(), obj.Allocatable)
+	assert.Equal(t, fakeResource(), obj.ToScheduler().Allocatable)
 }
 
 func TestNodeGroupErrors(t *testing.T) {

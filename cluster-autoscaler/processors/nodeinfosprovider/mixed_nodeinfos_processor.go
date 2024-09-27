@@ -26,10 +26,10 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	klog "k8s.io/klog/v2"
 )
@@ -38,7 +38,7 @@ const stabilizationDelay = 1 * time.Minute
 const maxCacheExpireTime = 87660 * time.Hour
 
 type cacheItem struct {
-	*schedulerframework.NodeInfo
+	*framework.NodeInfo
 	added time.Time
 }
 
@@ -72,15 +72,15 @@ func (p *MixedTemplateNodeInfoProvider) CleanUp() {
 }
 
 // Process returns the nodeInfos set for this cluster
-func (p *MixedTemplateNodeInfoProvider) Process(ctx *context.AutoscalingContext, nodes []*apiv1.Node, daemonsets []*appsv1.DaemonSet, taintConfig taints.TaintConfig, now time.Time) (map[string]*schedulerframework.NodeInfo, errors.AutoscalerError) {
+func (p *MixedTemplateNodeInfoProvider) Process(ctx *context.AutoscalingContext, nodes []*apiv1.Node, daemonsets []*appsv1.DaemonSet, taintConfig taints.TaintConfig, now time.Time) (map[string]*framework.NodeInfo, errors.AutoscalerError) {
 	// TODO(mwielgus): This returns map keyed by url, while most code (including scheduler) uses node.Name for a key.
 	// TODO(mwielgus): Review error policy - sometimes we may continue with partial errors.
-	result := make(map[string]*schedulerframework.NodeInfo)
+	result := make(map[string]*framework.NodeInfo)
 	seenGroups := make(map[string]bool)
 
 	podsForNodes, err := getPodsForNodes(ctx.ListerRegistry)
 	if err != nil {
-		return map[string]*schedulerframework.NodeInfo{}, err
+		return map[string]*framework.NodeInfo{}, err
 	}
 
 	// processNode returns information whether the nodeTemplate was generated and if there was an error.
@@ -105,12 +105,10 @@ func (p *MixedTemplateNodeInfoProvider) Process(ctx *context.AutoscalingContext,
 			}
 
 			var pods []*apiv1.Pod
-			for _, podInfo := range nodeInfo.Pods {
+			for _, podInfo := range nodeInfo.Pods() {
 				pods = append(pods, podInfo.Pod)
 			}
-
-			sanitizedNodeInfo := schedulerframework.NewNodeInfo(utils.SanitizePods(pods, sanitizedNode)...)
-			sanitizedNodeInfo.SetNode(sanitizedNode)
+			sanitizedNodeInfo := framework.NewNodeInfo(sanitizedNode, nil, utils.SanitizePods(nodeInfo.Pods(), sanitizedNode)...)
 			result[id] = sanitizedNodeInfo
 			return true, id, nil
 		}
@@ -124,7 +122,7 @@ func (p *MixedTemplateNodeInfoProvider) Process(ctx *context.AutoscalingContext,
 		}
 		added, id, typedErr := processNode(node)
 		if typedErr != nil {
-			return map[string]*schedulerframework.NodeInfo{}, typedErr
+			return map[string]*framework.NodeInfo{}, typedErr
 		}
 		if added && p.nodeInfoCache != nil {
 			nodeInfoCopy := utils.DeepCopyNodeInfo(result[id])
@@ -158,7 +156,7 @@ func (p *MixedTemplateNodeInfoProvider) Process(ctx *context.AutoscalingContext,
 				continue
 			} else {
 				klog.Errorf("Unable to build proper template node for %s: %v", id, err)
-				return map[string]*schedulerframework.NodeInfo{}, errors.ToAutoscalerError(errors.CloudProviderError, err)
+				return map[string]*framework.NodeInfo{}, errors.ToAutoscalerError(errors.CloudProviderError, err)
 			}
 		}
 		result[id] = nodeInfo
@@ -179,11 +177,11 @@ func (p *MixedTemplateNodeInfoProvider) Process(ctx *context.AutoscalingContext,
 		}
 		added, _, typedErr := processNode(node)
 		if typedErr != nil {
-			return map[string]*schedulerframework.NodeInfo{}, typedErr
+			return map[string]*framework.NodeInfo{}, typedErr
 		}
 		nodeGroup, err := ctx.CloudProvider.NodeGroupForNode(node)
 		if err != nil {
-			return map[string]*schedulerframework.NodeInfo{}, errors.ToAutoscalerError(
+			return map[string]*framework.NodeInfo{}, errors.ToAutoscalerError(
 				errors.CloudProviderError, err)
 		}
 		if added {

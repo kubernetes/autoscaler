@@ -207,7 +207,7 @@ func TestBuildNodeInfoForNode(t *testing.T) {
 				for _, pod := range tc.wantPods {
 					wantPods = append(wantPods, cleanPodMetadata(pod))
 				}
-				for _, podInfo := range nodeInfo.Pods {
+				for _, podInfo := range nodeInfo.Pods() {
 					pods = append(pods, cleanPodMetadata(podInfo.Pod))
 				}
 				assert.ElementsMatch(t, tc.wantPods, pods)

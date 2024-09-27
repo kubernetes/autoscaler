@@ -285,7 +285,7 @@ func (a *Actuator) deleteNodesAsync(nodes []*apiv1.Node, nodeGroup cloudprovider
 	}
 
 	for _, node := range nodes {
-		nodeInfo, err := clusterSnapshot.NodeInfos().Get(node.Name)
+		nodeInfo, err := clusterSnapshot.GetNodeInfo(node.Name)
 		if err != nil {
 			klog.Errorf("Scale-down: can't retrieve node %q from snapshot, err: %v", node.Name, err)
 			nodeDeleteResult := status.NodeDeleteResult{ResultType: status.NodeDeleteErrorInternal, Err: errors.NewAutoscalerError(errors.InternalError, "nodeInfos.Get for %q returned error: %v", node.Name, err)}
@@ -317,7 +317,7 @@ func (a *Actuator) scaleDownNodeToReport(node *apiv1.Node, drain bool) (*status.
 	if err != nil {
 		return nil, err
 	}
-	nodeInfo, err := a.ctx.ClusterSnapshot.NodeInfos().Get(node.Name)
+	nodeInfo, err := a.ctx.ClusterSnapshot.GetNodeInfo(node.Name)
 	if err != nil {
 		return nil, err
 	}

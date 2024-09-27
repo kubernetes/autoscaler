@@ -22,11 +22,11 @@ import (
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 var (
@@ -107,7 +107,7 @@ type fakeNodeInfoGetter struct {
 	names map[string]bool
 }
 
-func (f *fakeNodeInfoGetter) Get(name string) (*schedulerframework.NodeInfo, error) {
+func (f *fakeNodeInfoGetter) GetNodeInfo(name string) (*framework.NodeInfo, error) {
 	// We don't actually care about the node info object itself, just its presence.
 	_, found := f.names[name]
 	if found {

@@ -125,13 +125,12 @@ func TestFilterOutExpendable(t *testing.T) {
 			assert.ElementsMatch(t, tc.wantPods, pods)
 
 			var podsInSnapshot []*apiv1.Pod
-			nodeInfoLister := snapshot.NodeInfos()
 			// Get pods in snapshot
 			for _, n := range tc.nodes {
-				nodeInfo, err := nodeInfoLister.Get(n.Name)
+				nodeInfo, err := snapshot.GetNodeInfo(n.Name)
 				assert.NoError(t, err)
-				assert.NotEqual(t, nodeInfo.Pods, nil)
-				for _, podInfo := range nodeInfo.Pods {
+				assert.NotEqual(t, nodeInfo.Pods(), nil)
+				for _, podInfo := range nodeInfo.Pods() {
 					podsInSnapshot = append(podsInSnapshot, podInfo.Pod)
 				}
 			}
