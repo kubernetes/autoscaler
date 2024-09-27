@@ -20,6 +20,7 @@ import (
 	"errors"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
@@ -42,6 +43,16 @@ type ClusterSnapshot interface {
 	AddNodeWithPods(node *apiv1.Node, pods []*apiv1.Pod) error
 	// IsPVCUsedByPods returns if the pvc is used by any pod, key = <namespace>/<pvc_name>
 	IsPVCUsedByPods(key string) bool
+
+	// AddNodeInfo adds the given NodeInfo to the snapshot. The Node and the Pods are added, as well as
+	// any DRA objects passed along them.
+	AddNodeInfo(nodeInfo *framework.NodeInfo) error
+	// GetNodeInfo returns an internal NodeInfo for a given Node - all information about the Node tracked in the snapshot.
+	// This means the Node itself, its scheduled Pods, as well as all relevant DRA objects. The internal NodeInfos
+	// obtained via this method should always be used in CA code instead of directly using *schedulerframework.NodeInfo.
+	GetNodeInfo(nodeName string) (*framework.NodeInfo, error)
+	// ListNodeInfos returns internal NodeInfos for all Nodes tracked in the snapshot. See the comment on GetNodeInfo.
+	ListNodeInfos() ([]*framework.NodeInfo, error)
 
 	// Fork creates a fork of snapshot state. All modifications can later be reverted to moment of forking via Revert().
 	// Use WithForkedSnapshot() helper function instead if possible.
