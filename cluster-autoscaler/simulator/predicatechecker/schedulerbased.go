@@ -21,6 +21,7 @@ import (
 	"fmt"
 
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/informers"
@@ -80,18 +81,18 @@ func NewSchedulerBasedPredicateChecker(informerFactory informers.SharedInformerF
 
 // FitsAnyNode checks if the given pod can be placed on any of the given nodes.
 func (p *SchedulerBasedPredicateChecker) FitsAnyNode(clusterSnapshot clustersnapshot.ClusterSnapshot, pod *apiv1.Pod) (string, error) {
-	return p.FitsAnyNodeMatching(clusterSnapshot, pod, func(*schedulerframework.NodeInfo) bool {
+	return p.FitsAnyNodeMatching(clusterSnapshot, pod, func(*framework.NodeInfo) bool {
 		return true
 	})
 }
 
 // FitsAnyNodeMatching checks if the given pod can be placed on any of the given nodes matching the provided function.
-func (p *SchedulerBasedPredicateChecker) FitsAnyNodeMatching(clusterSnapshot clustersnapshot.ClusterSnapshot, pod *apiv1.Pod, nodeMatches func(*schedulerframework.NodeInfo) bool) (string, error) {
+func (p *SchedulerBasedPredicateChecker) FitsAnyNodeMatching(clusterSnapshot clustersnapshot.ClusterSnapshot, pod *apiv1.Pod, nodeMatches func(*framework.NodeInfo) bool) (string, error) {
 	if clusterSnapshot == nil {
 		return "", fmt.Errorf("ClusterSnapshot not provided")
 	}
 
-	nodeInfosList, err := clusterSnapshot.NodeInfos().List()
+	nodeInfosList, err := clusterSnapshot.ListNodeInfos()
 	if err != nil {
 		// This should never happen.
 		//
@@ -125,7 +126,7 @@ func (p *SchedulerBasedPredicateChecker) FitsAnyNodeMatching(clusterSnapshot clu
 			continue
 		}
 
-		filterStatus := p.framework.RunFilterPlugins(context.TODO(), state, pod, nodeInfo)
+		filterStatus := p.framework.RunFilterPlugins(context.TODO(), state, pod, nodeInfo.ToScheduler())
 		if filterStatus.IsSuccess() {
 			p.lastIndex = (p.lastIndex + i + 1) % len(nodeInfosList)
 			return nodeInfo.Node().Name, nil
@@ -139,7 +140,7 @@ func (p *SchedulerBasedPredicateChecker) CheckPredicates(clusterSnapshot cluster
 	if clusterSnapshot == nil {
 		return NewPredicateError(InternalPredicateError, "", "ClusterSnapshot not provided", nil, emptyString)
 	}
-	nodeInfo, err := clusterSnapshot.NodeInfos().Get(nodeName)
+	nodeInfo, err := clusterSnapshot.GetNodeInfo(nodeName)
 	if err != nil {
 		errorMessage := fmt.Sprintf("Error obtaining NodeInfo for name %s; %v", nodeName, err)
 		return NewPredicateError(InternalPredicateError, "", errorMessage, nil, emptyString)
@@ -159,7 +160,7 @@ func (p *SchedulerBasedPredicateChecker) CheckPredicates(clusterSnapshot cluster
 			emptyString)
 	}
 
-	filterStatus := p.framework.RunFilterPlugins(context.TODO(), state, pod, nodeInfo)
+	filterStatus := p.framework.RunFilterPlugins(context.TODO(), state, pod, nodeInfo.ToScheduler())
 
 	if !filterStatus.IsSuccess() {
 		filterName := filterStatus.Plugin()
@@ -184,7 +185,7 @@ func (p *SchedulerBasedPredicateChecker) CheckPredicates(clusterSnapshot cluster
 	return nil
 }
 
-func (p *SchedulerBasedPredicateChecker) buildDebugInfo(filterName string, nodeInfo *schedulerframework.NodeInfo) func() string {
+func (p *SchedulerBasedPredicateChecker) buildDebugInfo(filterName string, nodeInfo *framework.NodeInfo) func() string {
 	switch filterName {
 	case "TaintToleration":
 		taints := nodeInfo.Node().Spec.Taints

@@ -20,10 +20,10 @@ import (
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 
 	apiv1 "k8s.io/api/core/v1"
 	klog "k8s.io/klog/v2"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // Nodes tracks the state of cluster nodes that cannot be removed.
@@ -40,21 +40,21 @@ func NewNodes() *Nodes {
 	}
 }
 
-// NodeInfoGetter is anything that can return NodeInfo object by name.
-type NodeInfoGetter interface {
-	Get(name string) (*schedulerframework.NodeInfo, error)
+// nodeInfoGetter is anything that can return NodeInfo object by name.
+type nodeInfoGetter interface {
+	GetNodeInfo(name string) (*framework.NodeInfo, error)
 }
 
 // Update updates the internal structure according to current state of the
 // cluster. Removes the nodes that are no longer in the nodes list.
-func (n *Nodes) Update(nodeInfos NodeInfoGetter, timestamp time.Time) {
+func (n *Nodes) Update(nodeInfos nodeInfoGetter, timestamp time.Time) {
 	n.reasons = make(map[string]*simulator.UnremovableNode)
 	if len(n.ttls) <= 0 {
 		return
 	}
 	newTTLs := make(map[string]time.Time, len(n.ttls))
 	for name, ttl := range n.ttls {
-		if _, err := nodeInfos.Get(name); err != nil {
+		if _, err := nodeInfos.GetNodeInfo(name); err != nil {
 			// Not logging on error level as most likely cause is that node is no longer in the cluster.
 			klog.Infof("Can't retrieve node %s from snapshot, removing from unremovable nodes, err: %v", name, err)
 			continue
