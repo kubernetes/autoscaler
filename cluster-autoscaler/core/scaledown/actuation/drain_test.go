@@ -37,6 +37,7 @@ import (
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
 	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/daemonset"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
@@ -612,7 +613,7 @@ func TestPodsToEvict(t *testing.T) {
 		t.Run(tn, func(t *testing.T) {
 			snapshot := clustersnapshot.NewBasicClusterSnapshot()
 			node := BuildTestNode("test-node", 1000, 1000)
-			err := snapshot.AddNodeWithPods(node, tc.pods)
+			err := snapshot.AddNodeInfo(framework.NewTestNodeInfo(node, tc.pods...))
 			if err != nil {
 				t.Errorf("AddNodeWithPods unexpected error: %v", err)
 			}

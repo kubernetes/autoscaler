@@ -211,11 +211,7 @@ func (e *BinpackingNodeEstimator) addNewNodeToSnapshot(
 	template *framework.NodeInfo,
 ) error {
 	newNodeInfo := scheduler.DeepCopyTemplateNode(template, fmt.Sprintf("e-%d", estimationState.newNodeNameIndex))
-	var pods []*apiv1.Pod
-	for _, podInfo := range newNodeInfo.Pods {
-		pods = append(pods, podInfo.Pod)
-	}
-	if err := e.clusterSnapshot.AddNodeWithPods(newNodeInfo.Node(), pods); err != nil {
+	if err := e.clusterSnapshot.AddNodeInfo(newNodeInfo); err != nil {
 		return err
 	}
 	estimationState.newNodeNameIndex++
