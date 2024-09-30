@@ -24,7 +24,6 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
-	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
@@ -78,11 +77,6 @@ func (p *MixedTemplateNodeInfoProvider) Process(ctx *context.AutoscalingContext,
 	result := make(map[string]*framework.NodeInfo)
 	seenGroups := make(map[string]bool)
 
-	podsForNodes, err := getPodsForNodes(ctx.ListerRegistry)
-	if err != nil {
-		return map[string]*framework.NodeInfo{}, err
-	}
-
 	// processNode returns information whether the nodeTemplate was generated and if there was an error.
 	processNode := func(node *apiv1.Node) (bool, string, errors.AutoscalerError) {
 		nodeGroup, err := ctx.CloudProvider.NodeGroupForNode(node)
@@ -94,22 +88,15 @@ func (p *MixedTemplateNodeInfoProvider) Process(ctx *context.AutoscalingContext,
 		}
 		id := nodeGroup.Id()
 		if _, found := result[id]; !found {
-			// Build nodeInfo.
-			sanitizedNode, err := utils.SanitizeNode(node, id, taintConfig)
+			nodeInfo, err := ctx.ClusterSnapshot.GetNodeInfo(node.Name)
 			if err != nil {
-				return false, "", err
+				return false, "", errors.NewAutoscalerError(errors.InternalError, "error while retrieving node %s from cluster snapshot - this shouldn't happen: %v", node.Name, err)
 			}
-			nodeInfo, err := simulator.BuildNodeInfoForNode(sanitizedNode, podsForNodes[node.Name], daemonsets, p.forceDaemonSets)
+			templateNodeInfo, caErr := simulator.TemplateNodeInfoFromExampleNodeInfo(nodeInfo, id, daemonsets, p.forceDaemonSets, taintConfig)
 			if err != nil {
-				return false, "", err
+				return false, "", caErr
 			}
-
-			var pods []*apiv1.Pod
-			for _, podInfo := range nodeInfo.Pods {
-				pods = append(pods, podInfo.Pod)
-			}
-			sanitizedNodeInfo := framework.NewNodeInfo(sanitizedNode, utils.SanitizePods(nodeInfo.Pods, sanitizedNode)...)
-			result[id] = sanitizedNodeInfo
+			result[id] = templateNodeInfo
 			return true, id, nil
 		}
 		return false, "", nil
@@ -125,7 +112,7 @@ func (p *MixedTemplateNodeInfoProvider) Process(ctx *context.AutoscalingContext,
 			return map[string]*framework.NodeInfo{}, typedErr
 		}
 		if added && p.nodeInfoCache != nil {
-			nodeInfoCopy := utils.DeepCopyNodeInfo(result[id])
+			nodeInfoCopy := simulator.DeepCopyNodeInfo(result[id])
 			p.nodeInfoCache[id] = cacheItem{NodeInfo: nodeInfoCopy, added: time.Now()}
 		}
 	}
@@ -142,7 +129,7 @@ func (p *MixedTemplateNodeInfoProvider) Process(ctx *context.AutoscalingContext,
 				if p.isCacheItemExpired(cacheItem.added) {
 					delete(p.nodeInfoCache, id)
 				} else {
-					result[id] = utils.DeepCopyNodeInfo(cacheItem.NodeInfo)
+					result[id] = simulator.DeepCopyNodeInfo(cacheItem.NodeInfo)
 					continue
 				}
 			}
@@ -150,7 +137,7 @@ func (p *MixedTemplateNodeInfoProvider) Process(ctx *context.AutoscalingContext,
 
 		// No good template, trying to generate one. This is called only if there are no
 		// working nodes in the node groups. By default CA tries to use a real-world example.
-		nodeInfo, err := utils.GetNodeInfoFromTemplate(nodeGroup, daemonsets, taintConfig)
+		nodeInfo, err := simulator.TemplateNodeInfoFromNodeGroupTemplate(nodeGroup, daemonsets, taintConfig)
 		if err != nil {
 			if err == cloudprovider.ErrNotImplemented {
 				continue
@@ -190,19 +177,6 @@ func (p *MixedTemplateNodeInfoProvider) Process(ctx *context.AutoscalingContext,
 	}
 
 	return result, nil
-}
-
-func getPodsForNodes(listers kube_util.ListerRegistry) (map[string][]*apiv1.Pod, errors.AutoscalerError) {
-	pods, err := listers.AllPodLister().List()
-	if err != nil {
-		return nil, errors.ToAutoscalerError(errors.ApiCallError, err)
-	}
-	scheduledPods := kube_util.ScheduledPods(pods)
-	podsForNodes := map[string][]*apiv1.Pod{}
-	for _, p := range scheduledPods {
-		podsForNodes[p.Spec.NodeName] = append(podsForNodes[p.Spec.NodeName], p)
-	}
-	return podsForNodes, nil
 }
 
 func isNodeGoodTemplateCandidate(node *apiv1.Node, now time.Time) bool {

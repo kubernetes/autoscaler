@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2024 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,11 +26,38 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
+	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/kubernetes/pkg/controller/daemon"
 )
 
-func TestBuildNodeInfoForNode(t *testing.T) {
+func TestSanitizePod(t *testing.T) {
+	pod := BuildTestPod("p1", 80, 0)
+	pod.Spec.NodeName = "n1"
+
+	node := BuildTestNode("node", 1000, 1000)
+
+	resNode := sanitizeNode(node, "test-group", nil)
+	res := sanitizePod(pod, resNode.Name, "abc")
+	assert.Equal(t, res.Spec.NodeName, resNode.Name)
+	assert.Equal(t, res.Name, "p1-abc")
+}
+
+func TestSanitizeLabels(t *testing.T) {
+	oldNode := BuildTestNode("ng1-1", 1000, 1000)
+	oldNode.Labels = map[string]string{
+		apiv1.LabelHostname: "abc",
+		"x":                 "y",
+	}
+	node := sanitizeNode(oldNode, "bzium", nil)
+	assert.NotEqual(t, node.Labels[apiv1.LabelHostname], "abc", nil)
+	assert.Equal(t, node.Labels["x"], "y")
+	assert.NotEqual(t, node.Name, oldNode.Name)
+	assert.Equal(t, node.Labels[apiv1.LabelHostname], node.Name)
+}
+
+func TestTemplateNodeInfoFromExampleNodeInfo(t *testing.T) {
 	ds1 := &appsv1.DaemonSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "ds1",
@@ -74,40 +101,40 @@ func TestBuildNodeInfoForNode(t *testing.T) {
 	}{
 		{
 			name: "node without any pods",
-			node: test.BuildTestNode("n", 1000, 10),
+			node: BuildTestNode("n", 1000, 10),
 		},
 		{
 			name: "node with non-DS/mirror pods",
-			node: test.BuildTestNode("n", 1000, 10),
+			node: BuildTestNode("n", 1000, 10),
 			pods: []*apiv1.Pod{
-				test.BuildScheduledTestPod("p1", 100, 1, "n"),
-				test.BuildScheduledTestPod("p2", 100, 1, "n"),
+				BuildScheduledTestPod("p1", 100, 1, "n"),
+				BuildScheduledTestPod("p2", 100, 1, "n"),
 			},
 		},
 		{
 			name: "node with a mirror pod",
-			node: test.BuildTestNode("n", 1000, 10),
+			node: BuildTestNode("n", 1000, 10),
 			pods: []*apiv1.Pod{
-				test.SetMirrorPodSpec(test.BuildScheduledTestPod("p1", 100, 1, "n")),
+				SetMirrorPodSpec(BuildScheduledTestPod("p1", 100, 1, "n")),
 			},
 			wantPods: []*apiv1.Pod{
-				test.SetMirrorPodSpec(test.BuildScheduledTestPod("p1", 100, 1, "n")),
+				SetMirrorPodSpec(BuildScheduledTestPod("p1", 100, 1, "n")),
 			},
 		},
 		{
 			name: "node with a deleted mirror pod",
-			node: test.BuildTestNode("n", 1000, 10),
+			node: BuildTestNode("n", 1000, 10),
 			pods: []*apiv1.Pod{
-				test.SetMirrorPodSpec(test.BuildScheduledTestPod("p1", 100, 1, "n")),
-				setDeletionTimestamp(test.SetMirrorPodSpec(test.BuildScheduledTestPod("p2", 100, 1, "n"))),
+				SetMirrorPodSpec(BuildScheduledTestPod("p1", 100, 1, "n")),
+				setDeletionTimestamp(SetMirrorPodSpec(BuildScheduledTestPod("p2", 100, 1, "n"))),
 			},
 			wantPods: []*apiv1.Pod{
-				test.SetMirrorPodSpec(test.BuildScheduledTestPod("p1", 100, 1, "n")),
+				SetMirrorPodSpec(BuildScheduledTestPod("p1", 100, 1, "n")),
 			},
 		},
 		{
 			name: "node with DS pods [forceDS=false, no daemon sets]",
-			node: test.BuildTestNode("n", 1000, 10),
+			node: BuildTestNode("n", 1000, 10),
 			pods: []*apiv1.Pod{
 				buildDSPod(ds1, "n"),
 				setDeletionTimestamp(buildDSPod(ds2, "n")),
@@ -118,7 +145,7 @@ func TestBuildNodeInfoForNode(t *testing.T) {
 		},
 		{
 			name: "node with DS pods [forceDS=false, some daemon sets]",
-			node: test.BuildTestNode("n", 1000, 10),
+			node: BuildTestNode("n", 1000, 10),
 			pods: []*apiv1.Pod{
 				buildDSPod(ds1, "n"),
 				setDeletionTimestamp(buildDSPod(ds2, "n")),
@@ -130,7 +157,7 @@ func TestBuildNodeInfoForNode(t *testing.T) {
 		},
 		{
 			name: "node with a DS pod [forceDS=true, no daemon sets]",
-			node: test.BuildTestNode("n", 1000, 10),
+			node: BuildTestNode("n", 1000, 10),
 			pods: []*apiv1.Pod{
 				buildDSPod(ds1, "n"),
 				setDeletionTimestamp(buildDSPod(ds2, "n")),
@@ -142,7 +169,7 @@ func TestBuildNodeInfoForNode(t *testing.T) {
 		},
 		{
 			name: "node with a DS pod [forceDS=true, some daemon sets]",
-			node: test.BuildTestNode("n", 1000, 10),
+			node: BuildTestNode("n", 1000, 10),
 			pods: []*apiv1.Pod{
 				buildDSPod(ds1, "n"),
 				setDeletionTimestamp(buildDSPod(ds2, "n")),
@@ -156,36 +183,36 @@ func TestBuildNodeInfoForNode(t *testing.T) {
 		},
 		{
 			name: "everything together [forceDS=false]",
-			node: test.BuildTestNode("n", 1000, 10),
+			node: BuildTestNode("n", 1000, 10),
 			pods: []*apiv1.Pod{
-				test.BuildScheduledTestPod("p1", 100, 1, "n"),
-				test.BuildScheduledTestPod("p2", 100, 1, "n"),
-				test.SetMirrorPodSpec(test.BuildScheduledTestPod("p3", 100, 1, "n")),
-				setDeletionTimestamp(test.SetMirrorPodSpec(test.BuildScheduledTestPod("p4", 100, 1, "n"))),
+				BuildScheduledTestPod("p1", 100, 1, "n"),
+				BuildScheduledTestPod("p2", 100, 1, "n"),
+				SetMirrorPodSpec(BuildScheduledTestPod("p3", 100, 1, "n")),
+				setDeletionTimestamp(SetMirrorPodSpec(BuildScheduledTestPod("p4", 100, 1, "n"))),
 				buildDSPod(ds1, "n"),
 				setDeletionTimestamp(buildDSPod(ds2, "n")),
 			},
 			daemonSets: []*appsv1.DaemonSet{ds1, ds2, ds3},
 			wantPods: []*apiv1.Pod{
-				test.SetMirrorPodSpec(test.BuildScheduledTestPod("p3", 100, 1, "n")),
+				SetMirrorPodSpec(BuildScheduledTestPod("p3", 100, 1, "n")),
 				buildDSPod(ds1, "n"),
 			},
 		},
 		{
 			name: "everything together [forceDS=true]",
-			node: test.BuildTestNode("n", 1000, 10),
+			node: BuildTestNode("n", 1000, 10),
 			pods: []*apiv1.Pod{
-				test.BuildScheduledTestPod("p1", 100, 1, "n"),
-				test.BuildScheduledTestPod("p2", 100, 1, "n"),
-				test.SetMirrorPodSpec(test.BuildScheduledTestPod("p3", 100, 1, "n")),
-				setDeletionTimestamp(test.SetMirrorPodSpec(test.BuildScheduledTestPod("p4", 100, 1, "n"))),
+				BuildScheduledTestPod("p1", 100, 1, "n"),
+				BuildScheduledTestPod("p2", 100, 1, "n"),
+				SetMirrorPodSpec(BuildScheduledTestPod("p3", 100, 1, "n")),
+				setDeletionTimestamp(SetMirrorPodSpec(BuildScheduledTestPod("p4", 100, 1, "n"))),
 				buildDSPod(ds1, "n"),
 				setDeletionTimestamp(buildDSPod(ds2, "n")),
 			},
 			daemonSets: []*appsv1.DaemonSet{ds1, ds2, ds3},
 			forceDS:    true,
 			wantPods: []*apiv1.Pod{
-				test.SetMirrorPodSpec(test.BuildScheduledTestPod("p3", 100, 1, "n")),
+				SetMirrorPodSpec(BuildScheduledTestPod("p3", 100, 1, "n")),
 				buildDSPod(ds1, "n"),
 				buildDSPod(ds2, "n"),
 			},
@@ -194,13 +221,17 @@ func TestBuildNodeInfoForNode(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			nodeInfo, err := BuildNodeInfoForNode(tc.node, tc.pods, tc.daemonSets, tc.forceDS)
+			exampleNodeInfo := framework.NewNodeInfo(tc.node)
+			for _, pod := range tc.pods {
+				exampleNodeInfo.AddPod(&framework.PodInfo{Pod: pod})
+			}
+			nodeInfo, err := TemplateNodeInfoFromExampleNodeInfo(exampleNodeInfo, "nodeGroupId", tc.daemonSets, tc.forceDS, taints.TaintConfig{})
 
 			if tc.wantError {
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
-				assert.Equal(t, nodeInfo.Node(), tc.node)
+				assert.Equal(t, cleanNodeMetadata(nodeInfo.Node()), cleanNodeMetadata(tc.node))
 
 				// clean pod metadata for comparison purposes
 				var wantPods, pods []*apiv1.Pod
@@ -216,10 +247,30 @@ func TestBuildNodeInfoForNode(t *testing.T) {
 	}
 }
 
+func TestTemplateNodeInfoFromNodeGroupTemplate(t *testing.T) {
+	// TODO(DRA): Write.
+}
+
+func TestFreshNodeInfoFromTemplateNodeInfo(t *testing.T) {
+	// TODO(DRA): Write.
+}
+
+func TestDeepCopyNodeInfo(t *testing.T) {
+	// TODO(DRA): Write.
+}
+
 func cleanPodMetadata(pod *apiv1.Pod) *apiv1.Pod {
 	pod.Name = strings.Split(pod.Name, "-")[0]
+	pod.UID = ""
 	pod.OwnerReferences = nil
+	pod.Spec.NodeName = ""
 	return pod
+}
+
+func cleanNodeMetadata(node *apiv1.Node) *apiv1.Node {
+	node.UID = ""
+	node.Name = ""
+	return node
 }
 
 func buildDSPod(ds *appsv1.DaemonSet, nodeName string) *apiv1.Pod {
