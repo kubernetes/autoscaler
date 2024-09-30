@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute" //nolint:staticcheck
 	"github.com/pkg/errors"
 )
 
@@ -33,7 +33,7 @@ func (e *ErrCapabilityValueNil) Error() string {
 }
 
 // ErrCapabilityValueParse will be returned when a capability was found by
-// name but the value was nil.
+// name but there was error parsing the capability.
 type ErrCapabilityValueParse struct {
 	capability string
 	value      string
@@ -47,6 +47,11 @@ func (e *ErrCapabilityValueParse) Error() string {
 // VCPU returns the number of vCPUs this SKU supports.
 func (s *SKU) VCPU() (int64, error) {
 	return s.GetCapabilityIntegerQuantity(VCPUs)
+}
+
+// GPU returns the number of GPU this SKU supports.
+func (s *SKU) GPU() (int64, error) {
+	return s.GetCapabilityIntegerQuantity(GPUs)
 }
 
 // Memory returns the amount of memory this SKU supports.
@@ -94,7 +99,7 @@ func (s *SKU) IsUltraSSDAvailableInAvailabilityZone(zone string) bool {
 // IsUltraSSDAvailable returns true when a VM size has ultra SSD enabled
 // in at least 1 unrestricted zone.
 //
-// Deprecated. Use either IsUltraSSDAvailableWithoutAvailabilityZone or IsUltraSSDAvailableInAvailabilityZone
+// Deprecated: use either IsUltraSSDAvailableWithoutAvailabilityZone or IsUltraSSDAvailableInAvailabilityZone
 func (s *SKU) IsUltraSSDAvailable() bool {
 	return s.HasZonalCapability(UltraSSDAvailable)
 }
@@ -111,10 +116,27 @@ func (s *SKU) IsAcceleratedNetworkingSupported() bool {
 	return s.HasCapability(AcceleratedNetworking)
 }
 
+// IsPremiumIO returns true when the VM size supports PremiumIO.
+func (s *SKU) IsPremiumIO() bool {
+	return s.HasCapability(CapabilityPremiumIO)
+}
+
+// IsHyperVGen1Supported returns true when the VM size supports
+// accelerated networking.
+func (s *SKU) IsHyperVGen1Supported() bool {
+	return s.HasCapabilityWithSeparator(HyperVGenerations, HyperVGeneration1)
+}
+
 // IsHyperVGen2Supported returns true when the VM size supports
 // accelerated networking.
 func (s *SKU) IsHyperVGen2Supported() bool {
 	return s.HasCapabilityWithSeparator(HyperVGenerations, HyperVGeneration2)
+}
+
+// GetCPUArchitectureType returns cpu arch for the VM size.
+// It errors if value is nil or not found.
+func (s *SKU) GetCPUArchitectureType() (string, error) {
+	return s.GetCapabilityString(CapabilityCPUArchitectureType)
 }
 
 // GetCapabilityIntegerQuantity retrieves and parses the value of an
@@ -128,7 +150,7 @@ func (s *SKU) GetCapabilityIntegerQuantity(name string) (int64, error) {
 	for _, capability := range *s.Capabilities {
 		if capability.Name != nil && *capability.Name == name {
 			if capability.Value != nil {
-				intVal, err := strconv.ParseInt(*capability.Value, 10, 64)
+				intVal, err := strconv.ParseInt(*capability.Value, ten, sixtyFour)
 				if err != nil {
 					return -1, &ErrCapabilityValueParse{name, *capability.Value, err}
 				}
@@ -151,7 +173,7 @@ func (s *SKU) GetCapabilityFloatQuantity(name string) (float64, error) {
 	for _, capability := range *s.Capabilities {
 		if capability.Name != nil && *capability.Name == name {
 			if capability.Value != nil {
-				intVal, err := strconv.ParseFloat(*capability.Value, 64)
+				intVal, err := strconv.ParseFloat(*capability.Value, sixtyFour)
 				if err != nil {
 					return -1, &ErrCapabilityValueParse{name, *capability.Value, err}
 				}
@@ -161,6 +183,23 @@ func (s *SKU) GetCapabilityFloatQuantity(name string) (float64, error) {
 		}
 	}
 	return -1, &ErrCapabilityNotFound{name}
+}
+
+// GetCapabilityString retrieves string capability with the provided name.
+// It errors if the capability is not found or the value was nil
+func (s *SKU) GetCapabilityString(name string) (string, error) {
+	if s.Capabilities == nil {
+		return "", &ErrCapabilityNotFound{name}
+	}
+	for _, capability := range *s.Capabilities {
+		if capability.Name != nil && *capability.Name == name {
+			if capability.Value != nil {
+				return *capability.Value, nil
+			}
+			return "", &ErrCapabilityValueNil{name}
+		}
+	}
+	return "", &ErrCapabilityNotFound{name}
 }
 
 // HasCapability return true for a capability which can be either
@@ -213,7 +252,7 @@ func (s *SKU) HasZonalCapability(name string) bool {
 
 // HasCapabilityInZone return true if the specified capability name is supported in the
 // specified zone.
-func (s *SKU) HasCapabilityInZone(name string, zone string) bool {
+func (s *SKU) HasCapabilityInZone(name, zone string) bool {
 	if s.LocationInfo == nil {
 		return false
 	}
@@ -281,7 +320,7 @@ func (s *SKU) HasCapabilityWithMinCapacity(name string, value int64) (bool, erro
 	for _, capability := range *s.Capabilities {
 		if capability.Name != nil && strings.EqualFold(*capability.Name, name) {
 			if capability.Value != nil {
-				intVal, err := strconv.ParseInt(*capability.Value, 10, 64)
+				intVal, err := strconv.ParseInt(*capability.Value, ten, sixtyFour)
 				if err != nil {
 					return false, errors.Wrapf(err, "failed to parse string '%s' as int64", *capability.Value)
 				}
@@ -379,6 +418,21 @@ func (s *SKU) GetFamilyName() string {
 	return *s.Family
 }
 
+// GetSize returns the size of this resource sku. It normalizes pointers
+// to the empty string for comparison purposes. For example,
+// "M416ms_v2" for a virtual machine.
+func (s *SKU) GetSize() string {
+	if s.Size == nil {
+		return ""
+	}
+
+	return *s.Size
+}
+
+func (s *SKU) GetVMSize() (*VMSizeType, error) {
+	return getVMSize(s.GetSize())
+}
+
 // GetLocation returns the location for a given SKU.
 func (s *SKU) GetLocation() (string, error) {
 	if s.Locations == nil {
@@ -435,8 +489,27 @@ func (s *SKU) HasLocationRestriction(location string) bool {
 	return false
 }
 
+// IsConfidentialComputingTypeSNP return true if ConfidentialComputingType is SNP for this sku.
+func (s *SKU) IsConfidentialComputingTypeSNP() (bool, error) {
+	return s.HasCapabilityWithSeparator(CapabilityConfidentialComputingType, ConfidentialComputingTypeSNP), nil
+}
+
+// Official documentation for Trusted Launch states:
+// The response will be similar to the following form:
+// IsTrustedLaunchEnabled True in the output indicates that the Generation 2 VM size does not support Trusted launch.
+// If it's a Generation 2 VM size and TrustedLaunchDisabled is not part of the output,
+// it implies that Trusted launch is supported for that VM size.
+func (s *SKU) IsTrustedLaunchEnabled() (bool, error) {
+	if s.IsHyperVGen2Supported() {
+		if !s.HasCapabilityWithSeparator(CapabilityTrustedLaunchDisabled, string(CapabilitySupported)) {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
 // AvailabilityZones returns the list of Availability Zones which have this resource SKU available and unrestricted.
-func (s *SKU) AvailabilityZones(location string) map[string]bool { // nolint:gocyclo
+func (s *SKU) AvailabilityZones(location string) map[string]bool { //nolint:gocyclo
 	if s.LocationInfo == nil {
 		return nil
 	}

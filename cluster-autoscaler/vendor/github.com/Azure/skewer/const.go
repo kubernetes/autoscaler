@@ -24,6 +24,8 @@ const (
 	AcceleratedNetworking = "AcceleratedNetworkingEnabled"
 	// VCPUs identifies the capability for the number of vCPUS.
 	VCPUs = "vCPUs"
+	// GPUs identifies the capability for the number of GPUS.
+	GPUs = "GPUs"
 	// MemoryGB identifies the capability for memory capacity.
 	MemoryGB = "MemoryGB"
 	// HyperVGenerations identifies the hyper-v generations this vm sku supports.
@@ -39,6 +41,16 @@ const (
 	// MaxResourceVolumeMB identifies the maximum size of the temporary
 	// disk for a vm.
 	MaxResourceVolumeMB = "MaxResourceVolumeMB"
+	// CapabilityPremiumIO identifies the capability for PremiumIO.
+	CapabilityPremiumIO = "PremiumIO"
+	// CapabilityCpuArchitectureType identifies the type of CPU architecture (x64,Arm64).
+	CapabilityCPUArchitectureType = "CpuArchitectureType"
+	// CapabilityTrustedLaunchDisabled identifes whether TrustedLaunch is disabled.
+	CapabilityTrustedLaunchDisabled = "TrustedLaunchDisabled"
+	// CapabilityConfidentialComputingType identifies the type of ConfidentialComputing.
+	CapabilityConfidentialComputingType = "ConfidentialComputingType"
+	// ConfidentialComputingTypeSNP denoted the "SNP" ConfidentialComputing.
+	ConfidentialComputingTypeSNP = "SNP"
 )
 
 const (
@@ -48,4 +60,9 @@ const (
 	// HyperVGeneration2 identifies a sku which supports HyperV
 	// Generation 2.
 	HyperVGeneration2 = "V2"
+)
+
+const (
+	ten       = 10
+	sixtyFour = 64
 )
