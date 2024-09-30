@@ -286,15 +286,10 @@ func BenchmarkFilterOutSchedulable(b *testing.B) {
 				assert.NoError(b, err)
 
 				clusterSnapshot := snapshotFactory()
-				if err := clusterSnapshot.AddNodes(nodes); err != nil {
+				if err := clusterSnapshot.Initialize(nodes, scheduledPods); err != nil {
 					assert.NoError(b, err)
 				}
 
-				for _, pod := range scheduledPods {
-					if err := clusterSnapshot.AddPod(pod, pod.Spec.NodeName); err != nil {
-						assert.NoError(b, err)
-					}
-				}
 				b.ResetTimer()
 
 				for i := 0; i < b.N; i++ {

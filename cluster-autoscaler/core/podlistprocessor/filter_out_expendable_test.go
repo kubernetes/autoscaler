@@ -109,7 +109,8 @@ func TestFilterOutExpendable(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			processor := NewFilterOutExpendablePodListProcessor()
 			snapshot := clustersnapshot.NewBasicClusterSnapshot()
-			snapshot.AddNodes(tc.nodes)
+			err := snapshot.Initialize(tc.nodes, nil)
+			assert.NoError(t, err)
 
 			pods, err := processor.Process(&context.AutoscalingContext{
 				ClusterSnapshot: snapshot,

@@ -136,16 +136,6 @@ func (data *internalDeltaSnapshotData) buildNodeInfoList() []*schedulerframework
 	return nodeInfoList
 }
 
-// Convenience method to avoid writing loop for adding nodes.
-func (data *internalDeltaSnapshotData) addNodes(nodes []*apiv1.Node) error {
-	for _, node := range nodes {
-		if err := data.addNode(node); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 func (data *internalDeltaSnapshotData) addNode(node *apiv1.Node) error {
 	nodeInfo := schedulerframework.NewNodeInfo()
 	nodeInfo.SetNode(node)
@@ -431,14 +421,30 @@ func (snapshot *DeltaClusterSnapshot) AddNodeInfo(nodeInfo *framework.NodeInfo) 
 	return nil
 }
 
+// Initialize implements ClusterSnapshot.
+func (snapshot *DeltaClusterSnapshot) Initialize(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod) error {
+	snapshot.Clear()
+
+	knownNodes := make(map[string]bool)
+	for _, node := range nodes {
+		if err := snapshot.AddNode(node); err != nil {
+			return err
+		}
+		knownNodes[node.Name] = true
+	}
+	for _, pod := range scheduledPods {
+		if knownNodes[pod.Spec.NodeName] {
+			if err := snapshot.AddPod(pod, pod.Spec.NodeName); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
 // AddNode adds node to the snapshot.
 func (snapshot *DeltaClusterSnapshot) AddNode(node *apiv1.Node) error {
 	return snapshot.data.addNode(node)
-}
-
-// AddNodes adds nodes in batch to the snapshot.
-func (snapshot *DeltaClusterSnapshot) AddNodes(nodes []*apiv1.Node) error {
-	return snapshot.data.addNodes(nodes)
 }
 
 // RemoveNode removes nodes (and pods scheduled to it) from the snapshot.

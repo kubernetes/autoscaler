@@ -75,12 +75,8 @@ func getSnapshotState(t *testing.T, snapshot ClusterSnapshot) snapshotState {
 
 func startSnapshot(t *testing.T, snapshotFactory func() ClusterSnapshot, state snapshotState) ClusterSnapshot {
 	snapshot := snapshotFactory()
-	err := snapshot.AddNodes(state.nodes)
+	err := snapshot.Initialize(state.nodes, state.pods)
 	assert.NoError(t, err)
-	for _, pod := range state.pods {
-		err := snapshot.AddPod(pod, pod.Spec.NodeName)
-		assert.NoError(t, err)
-	}
 	return snapshot
 }
 
@@ -324,8 +320,10 @@ func TestClear(t *testing.T) {
 
 				snapshot.Fork()
 
-				err := snapshot.AddNodes(extraNodes)
-				assert.NoError(t, err)
+				for _, node := range extraNodes {
+					err := snapshot.AddNode(node)
+					assert.NoError(t, err)
+				}
 
 				for _, pod := range extraPods {
 					err := snapshot.AddPod(pod, pod.Spec.NodeName)
@@ -340,7 +338,6 @@ func TestClear(t *testing.T) {
 
 				// Clear() should break out of forked state.
 				snapshot.Fork()
-				assert.NoError(t, err)
 			})
 	}
 }
