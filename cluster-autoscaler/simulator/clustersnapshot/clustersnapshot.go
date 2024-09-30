@@ -29,10 +29,12 @@ import (
 // It exposes mutation methods and can be viewed as scheduler's SharedLister.
 type ClusterSnapshot interface {
 	schedulerframework.SharedLister
+
+	// Initialize clears the snapshot and initializes it with real objects from the cluster - Nodes,
+	// scheduled pods.
+	Initialize(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod) error
 	// AddNode adds node to the snapshot.
 	AddNode(node *apiv1.Node) error
-	// AddNodes adds nodes to the snapshot.
-	AddNodes(nodes []*apiv1.Node) error
 	// RemoveNode removes nodes (and pods scheduled to it) from the snapshot.
 	RemoveNode(nodeName string) error
 	// AddPod adds pod to the snapshot and schedules it to given node.
