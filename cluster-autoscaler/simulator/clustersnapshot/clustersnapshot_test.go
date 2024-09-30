@@ -94,9 +94,9 @@ func validTestCases(t *testing.T) []modificationTestCase {
 
 	testCases := []modificationTestCase{
 		{
-			name: "add node",
+			name: "add empty nodeInfo",
 			op: func(snapshot ClusterSnapshot) {
-				err := snapshot.AddNode(node)
+				err := snapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
 				assert.NoError(t, err)
 			},
 			modifiedState: snapshotState{
@@ -133,7 +133,7 @@ func validTestCases(t *testing.T) []modificationTestCase {
 				err := snapshot.RemoveNode(node.Name)
 				assert.NoError(t, err)
 
-				err = snapshot.AddNode(node)
+				err = snapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
 				assert.NoError(t, err)
 			},
 			modifiedState: snapshotState{
@@ -199,7 +199,7 @@ func TestForking(t *testing.T) {
 				tc.op(snapshot)
 				snapshot.Fork()
 
-				snapshot.AddNode(node)
+				snapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
 
 				snapshot.Revert()
 				snapshot.Revert()
@@ -243,7 +243,7 @@ func TestForking(t *testing.T) {
 				snapshot.Fork()
 				tc.op(snapshot)
 				snapshot.Fork()
-				snapshot.AddNode(node)
+				snapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
 				snapshot.Revert()
 				err := snapshot.Commit()
 				assert.NoError(t, err)
@@ -321,7 +321,7 @@ func TestClear(t *testing.T) {
 				snapshot.Fork()
 
 				for _, node := range extraNodes {
-					err := snapshot.AddNode(node)
+					err := snapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
 					assert.NoError(t, err)
 				}
 
@@ -379,7 +379,7 @@ func TestNode404(t *testing.T) {
 					snapshot := snapshotFactory()
 
 					node := BuildTestNode("node", 10, 100)
-					err := snapshot.AddNode(node)
+					err := snapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
 					assert.NoError(t, err)
 
 					snapshot.Fork()
@@ -405,7 +405,7 @@ func TestNode404(t *testing.T) {
 					snapshot := snapshotFactory()
 
 					node := BuildTestNode("node", 10, 100)
-					err := snapshot.AddNode(node)
+					err := snapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
 					assert.NoError(t, err)
 
 					err = snapshot.RemoveNode("node")
@@ -428,9 +428,6 @@ func TestNodeAlreadyExists(t *testing.T) {
 		name string
 		op   func(ClusterSnapshot) error
 	}{
-		{"add node", func(snapshot ClusterSnapshot) error {
-			return snapshot.AddNode(node)
-		}},
 		{"add nodeInfo", func(snapshot ClusterSnapshot) error {
 			return snapshot.AddNodeInfo(framework.NewTestNodeInfo(node, pod))
 		}},
@@ -442,7 +439,7 @@ func TestNodeAlreadyExists(t *testing.T) {
 				func(t *testing.T) {
 					snapshot := snapshotFactory()
 
-					err := snapshot.AddNode(node)
+					err := snapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
 					assert.NoError(t, err)
 
 					// Node already in base.
@@ -454,7 +451,7 @@ func TestNodeAlreadyExists(t *testing.T) {
 				func(t *testing.T) {
 					snapshot := snapshotFactory()
 
-					err := snapshot.AddNode(node)
+					err := snapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
 					assert.NoError(t, err)
 
 					snapshot.Fork()
@@ -471,7 +468,7 @@ func TestNodeAlreadyExists(t *testing.T) {
 
 					snapshot.Fork()
 
-					err := snapshot.AddNode(node)
+					err := snapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
 					assert.NoError(t, err)
 
 					// Node already in fork.
@@ -484,7 +481,7 @@ func TestNodeAlreadyExists(t *testing.T) {
 
 					snapshot.Fork()
 
-					err := snapshot.AddNode(node)
+					err := snapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
 					assert.NoError(t, err)
 
 					err = snapshot.Commit()

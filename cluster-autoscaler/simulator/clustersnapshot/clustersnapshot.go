@@ -34,8 +34,6 @@ type ClusterSnapshot interface {
 	// with the provided data. scheduledPods are correlated to their Nodes based on spec.NodeName.
 	SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod) error
 
-	// AddNode adds node to the snapshot.
-	AddNode(node *apiv1.Node) error
 	// RemoveNode removes nodes (and pods scheduled to it) from the snapshot.
 	RemoveNode(nodeName string) error
 	// AddPod adds pod to the snapshot and schedules it to given node.
