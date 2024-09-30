@@ -248,9 +248,9 @@ func TestFitsAnyNode(t *testing.T) {
 	}
 
 	clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot()
-	err = clusterSnapshot.AddNode(n1000)
+	err = clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(n1000))
 	assert.NoError(t, err)
-	err = clusterSnapshot.AddNode(n2000)
+	err = clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(n2000))
 	assert.NoError(t, err)
 
 	for _, tc := range testCases {
@@ -286,7 +286,7 @@ func TestDebugInfo(t *testing.T) {
 
 	clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot()
 
-	err := clusterSnapshot.AddNode(node1)
+	err := clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(node1))
 	assert.NoError(t, err)
 
 	// with default predicate checker

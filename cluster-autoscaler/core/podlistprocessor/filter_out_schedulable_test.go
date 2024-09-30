@@ -183,16 +183,12 @@ func TestFilterOutSchedulable(t *testing.T) {
 			allExpectedScheduledPods = append(allExpectedScheduledPods, tc.expectedScheduledPods...)
 
 			for node, pods := range tc.nodesWithPods {
-				err := clusterSnapshot.AddNode(node)
-				assert.NoError(t, err)
-
 				for _, pod := range pods {
 					pod.Spec.NodeName = node.Name
-					err = clusterSnapshot.AddPod(pod, node.Name)
-					assert.NoError(t, err)
-
 					allExpectedScheduledPods = append(allExpectedScheduledPods, pod)
 				}
+				err := clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(node, pods...))
+				assert.NoError(t, err)
 			}
 
 			clusterSnapshot.Fork()

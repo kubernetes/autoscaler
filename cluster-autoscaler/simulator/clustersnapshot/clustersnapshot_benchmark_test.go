@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -67,7 +68,7 @@ func assignPodsToNodes(pods []*apiv1.Pod, nodes []*apiv1.Node) {
 	}
 }
 
-func BenchmarkAddNode(b *testing.B) {
+func BenchmarkAddNodeInfo(b *testing.B) {
 	testCases := []int{1, 10, 100, 1000, 5000, 15000, 100000}
 
 	for snapshotName, snapshotFactory := range snapshots {
@@ -75,13 +76,13 @@ func BenchmarkAddNode(b *testing.B) {
 			nodes := createTestNodes(tc)
 			clusterSnapshot := snapshotFactory()
 			b.ResetTimer()
-			b.Run(fmt.Sprintf("%s: AddNode() %d", snapshotName, tc), func(b *testing.B) {
+			b.Run(fmt.Sprintf("%s: AddNodeInfo() %d", snapshotName, tc), func(b *testing.B) {
 				for i := 0; i < b.N; i++ {
 					b.StopTimer()
 					clusterSnapshot.Clear()
 					b.StartTimer()
 					for _, node := range nodes {
-						err := clusterSnapshot.AddNode(node)
+						err := clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
 						if err != nil {
 							assert.NoError(b, err)
 						}
@@ -171,12 +172,12 @@ func BenchmarkForkAddRevert(b *testing.B) {
 				b.Run(fmt.Sprintf("%s: ForkAddRevert (%d nodes, %d pods)", snapshotName, ntc, ptc), func(b *testing.B) {
 					for i := 0; i < b.N; i++ {
 						clusterSnapshot.Fork()
-						err = clusterSnapshot.AddNode(tmpNode1)
+						err = clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(tmpNode1))
 						if err != nil {
 							assert.NoError(b, err)
 						}
 						clusterSnapshot.Fork()
-						err = clusterSnapshot.AddNode(tmpNode2)
+						err = clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(tmpNode2))
 						if err != nil {
 							assert.NoError(b, err)
 						}
@@ -216,7 +217,7 @@ func BenchmarkBuildNodeInfoList(b *testing.B) {
 			}
 			snapshot.Fork()
 			for _, node := range nodes[tc.nodeCount:] {
-				if err := snapshot.AddNode(node); err != nil {
+				if err := snapshot.AddNodeInfo(framework.NewTestNodeInfo(node)); err != nil {
 					assert.NoError(b, err)
 				}
 			}
