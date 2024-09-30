@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"k8s.io/autoscaler/cluster-autoscaler/dynamicresources"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
@@ -104,7 +105,7 @@ func BenchmarkListNodeInfos(b *testing.B) {
 			fwHandle, err := framework.TestFrameworkHandle()
 			assert.NoError(b, err)
 			clusterSnapshot := snapshotFactory(fwHandle)
-			err = clusterSnapshot.Initialize(nodes, nil)
+			err = clusterSnapshot.Initialize(nodes, nil, dynamicresources.Snapshot{})
 			if err != nil {
 				assert.NoError(b, err)
 			}
@@ -135,14 +136,14 @@ func BenchmarkAddPods(b *testing.B) {
 			fwHandle, err := framework.TestFrameworkHandle()
 			assert.NoError(b, err)
 			clusterSnapshot := snapshotFactory(fwHandle)
-			err = clusterSnapshot.Initialize(nodes, nil)
+			err = clusterSnapshot.Initialize(nodes, nil, dynamicresources.Snapshot{})
 			assert.NoError(b, err)
 			b.ResetTimer()
 			b.Run(fmt.Sprintf("%s: AddPod() 30*%d", snapshotName, tc), func(b *testing.B) {
 				for i := 0; i < b.N; i++ {
 					b.StopTimer()
 
-					err = clusterSnapshot.Initialize(nodes, nil)
+					err = clusterSnapshot.Initialize(nodes, nil, dynamicresources.Snapshot{})
 					if err != nil {
 						assert.NoError(b, err)
 					}
@@ -172,7 +173,7 @@ func BenchmarkForkAddRevert(b *testing.B) {
 				fwHandle, err := framework.TestFrameworkHandle()
 				assert.NoError(b, err)
 				clusterSnapshot := snapshotFactory(fwHandle)
-				err = clusterSnapshot.Initialize(nodes, pods)
+				err = clusterSnapshot.Initialize(nodes, pods, dynamicresources.Snapshot{})
 				assert.NoError(b, err)
 				tmpNode1 := BuildTestNode("tmp-1", 2000, 2000000)
 				tmpNode2 := BuildTestNode("tmp-2", 2000, 2000000)
@@ -222,7 +223,7 @@ func BenchmarkBuildNodeInfoList(b *testing.B) {
 			fwHandle, err := framework.TestFrameworkHandle()
 			assert.NoError(b, err)
 			snapshot := NewDeltaClusterSnapshot(fwHandle, true)
-			if err := snapshot.Initialize(nodes[:tc.nodeCount], nil); err != nil {
+			if err := snapshot.Initialize(nodes[:tc.nodeCount], nil, dynamicresources.Snapshot{}); err != nil {
 				assert.NoError(b, err)
 			}
 			snapshot.Fork()
@@ -246,7 +247,7 @@ func BenchmarkBuildNodeInfoList(b *testing.B) {
 			fwHandle, err := framework.TestFrameworkHandle()
 			assert.NoError(b, err)
 			snapshot := NewDeltaClusterSnapshot(fwHandle, true)
-			if err := snapshot.Initialize(nodes, nil); err != nil {
+			if err := snapshot.Initialize(nodes, nil, dynamicresources.Snapshot{}); err != nil {
 				assert.NoError(b, err)
 			}
 			b.ResetTimer()

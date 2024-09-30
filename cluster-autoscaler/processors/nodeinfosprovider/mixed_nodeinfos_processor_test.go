@@ -22,6 +22,7 @@ import (
 
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/dynamicresources"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
@@ -81,7 +82,7 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 
 	nodes := []*apiv1.Node{justReady5, unready4, unready3, ready2, ready1}
 	snapshot := clustersnapshot.NewBasicClusterSnapshot(fwHandle, true)
-	err := snapshot.Initialize(nodes, nil)
+	err := snapshot.Initialize(nodes, nil, dynamicresources.Snapshot{})
 	assert.NoError(t, err)
 
 	ctx := context.AutoscalingContext{
@@ -172,7 +173,7 @@ func TestGetNodeInfosForGroupsCache(t *testing.T) {
 
 	nodes := []*apiv1.Node{unready4, unready3, ready2, ready1}
 	snapshot := clustersnapshot.NewBasicClusterSnapshot(fwHandle, true)
-	err := snapshot.Initialize(nodes, nil)
+	err := snapshot.Initialize(nodes, nil, dynamicresources.Snapshot{})
 	assert.NoError(t, err)
 
 	// Fill cache
@@ -267,7 +268,7 @@ func TestGetNodeInfosCacheExpired(t *testing.T) {
 
 	nodes := []*apiv1.Node{ready1}
 	snapshot := clustersnapshot.NewBasicClusterSnapshot(fwHandle, true)
-	err := snapshot.Initialize(nodes, nil)
+	err := snapshot.Initialize(nodes, nil, dynamicresources.Snapshot{})
 	assert.NoError(t, err)
 
 	ctx := context.AutoscalingContext{

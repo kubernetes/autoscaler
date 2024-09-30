@@ -23,6 +23,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/dynamicresources"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
@@ -284,7 +285,7 @@ func BenchmarkFilterOutSchedulable(b *testing.B) {
 				predicateChecker := predicatechecker.NewSchedulerBasedPredicateChecker(fwHandle)
 
 				clusterSnapshot := snapshotFactory(fwHandle)
-				if err := clusterSnapshot.Initialize(nodes, scheduledPods); err != nil {
+				if err := clusterSnapshot.Initialize(nodes, scheduledPods, dynamicresources.Snapshot{}); err != nil {
 					assert.NoError(b, err)
 				}
 

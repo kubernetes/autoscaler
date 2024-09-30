@@ -24,6 +24,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/dynamicresources"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -110,7 +111,7 @@ func TestFilterOutExpendable(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			processor := NewFilterOutExpendablePodListProcessor()
 			snapshot := clustersnapshot.NewBasicClusterSnapshot(framework.TestFrameworkHandleOrDie(t), true)
-			err := snapshot.Initialize(tc.nodes, nil)
+			err := snapshot.Initialize(tc.nodes, nil, dynamicresources.Snapshot{})
 			assert.NoError(t, err)
 
 			pods, err := processor.Process(&context.AutoscalingContext{

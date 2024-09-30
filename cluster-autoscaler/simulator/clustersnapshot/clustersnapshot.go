@@ -20,6 +20,7 @@ import (
 	"errors"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/dynamicresources"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
@@ -31,8 +32,9 @@ type ClusterSnapshot interface {
 	schedulerframework.SharedLister
 
 	// Initialize clears the snapshot and initializes it with real objects from the cluster - Nodes,
-	// scheduled pods.
-	Initialize(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod) error
+	// scheduled pods, and all DRA objects (including e.g. ResourceClaims referenced by unschedulable Pods,
+	// or non-Node-local ResourceSlices).
+	Initialize(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod, draSnapshot dynamicresources.Snapshot) error
 
 	// RemoveNode removes nodes (and pods scheduled to it) from the snapshot.
 	RemoveNode(nodeName string) error

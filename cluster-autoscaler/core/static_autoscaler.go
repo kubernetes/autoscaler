@@ -37,6 +37,7 @@ import (
 	orchestrator "k8s.io/autoscaler/cluster-autoscaler/core/scaleup/orchestrator"
 	core_utils "k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/dynamicresources"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
@@ -92,6 +93,7 @@ type StaticAutoscaler struct {
 	processorCallbacks      *staticAutoscalerProcessorCallbacks
 	initialized             bool
 	taintConfig             taints.TaintConfig
+	draProvider             *dynamicresources.Provider
 }
 
 type staticAutoscalerProcessorCallbacks struct {
@@ -145,7 +147,8 @@ func NewStaticAutoscaler(
 	remainingPdbTracker pdb.RemainingPdbTracker,
 	scaleUpOrchestrator scaleup.Orchestrator,
 	deleteOptions options.NodeDeleteOptions,
-	drainabilityRules rules.Rules) *StaticAutoscaler {
+	drainabilityRules rules.Rules,
+	draProvider *dynamicresources.Provider) *StaticAutoscaler {
 
 	clusterStateConfig := clusterstate.ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: opts.MaxTotalUnreadyPercentage,
@@ -176,7 +179,7 @@ func NewStaticAutoscaler(
 	processorCallbacks.scaleDownPlanner = scaleDownPlanner
 
 	ndt := deletiontracker.NewNodeDeletionTracker(0 * time.Second)
-	scaleDownActuator := actuation.NewActuator(autoscalingContext, processors.ScaleStateNotifier, ndt, deleteOptions, drainabilityRules, processors.NodeGroupConfigProcessor)
+	scaleDownActuator := actuation.NewActuator(autoscalingContext, processors.ScaleStateNotifier, ndt, deleteOptions, drainabilityRules, processors.NodeGroupConfigProcessor, draProvider)
 	autoscalingContext.ScaleDownActuator = scaleDownActuator
 
 	if scaleUpOrchestrator == nil {
@@ -200,6 +203,7 @@ func NewStaticAutoscaler(
 		processorCallbacks:      processorCallbacks,
 		clusterStateRegistry:    clusterStateRegistry,
 		taintConfig:             taintConfig,
+		draProvider:             draProvider,
 	}
 }
 
@@ -244,8 +248,17 @@ func (a *StaticAutoscaler) cleanUpIfRequired() {
 }
 
 func (a *StaticAutoscaler) initializeClusterSnapshot(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod) caerrors.AutoscalerError {
-	a.ClusterSnapshot.Clear()
-	if err := a.ClusterSnapshot.Initialize(nodes, scheduledPods); err != nil {
+	var draSnapshot dynamicresources.Snapshot
+	if a.AutoscalingContext.EnableDynamicResources {
+		snap, err := a.draProvider.Snapshot()
+		if err != nil {
+			klog.Warningf("Couldn't retrieve DRA objects, this probably means that DRA is misconfigured in the cluster. Scaling involving DRA pods won't work, proceeding. Error: %v", err)
+		} else {
+			draSnapshot = snap
+		}
+	}
+
+	if err := a.ClusterSnapshot.Initialize(nodes, scheduledPods, draSnapshot); err != nil {
 		return caerrors.ToAutoscalerError(caerrors.InternalError, err)
 	}
 	return nil

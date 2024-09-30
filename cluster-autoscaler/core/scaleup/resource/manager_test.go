@@ -29,6 +29,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/test"
+	"k8s.io/autoscaler/cluster-autoscaler/dynamicresources"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfosprovider"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
@@ -69,7 +70,7 @@ func TestDeltaForNode(t *testing.T) {
 
 		ng := testCase.nodeGroupConfig
 		group, nodes := newNodeGroup(t, cp, ng.Name, ng.Min, ng.Max, ng.Size, ng.CPU, ng.Mem)
-		err := ctx.ClusterSnapshot.Initialize(nodes, nil)
+		err := ctx.ClusterSnapshot.Initialize(nodes, nil, dynamicresources.Snapshot{})
 		assert.NoError(t, err)
 		nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&ctx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, time.Now())
 
@@ -112,7 +113,7 @@ func TestResourcesLeft(t *testing.T) {
 
 		ng := testCase.nodeGroupConfig
 		_, nodes := newNodeGroup(t, cp, ng.Name, ng.Min, ng.Max, ng.Size, ng.CPU, ng.Mem)
-		err := ctx.ClusterSnapshot.Initialize(nodes, nil)
+		err := ctx.ClusterSnapshot.Initialize(nodes, nil, dynamicresources.Snapshot{})
 		assert.NoError(t, err)
 		nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&ctx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, time.Now())
 
@@ -165,7 +166,7 @@ func TestApplyLimits(t *testing.T) {
 
 		ng := testCase.nodeGroupConfig
 		group, nodes := newNodeGroup(t, cp, ng.Name, ng.Min, ng.Max, ng.Size, ng.CPU, ng.Mem)
-		err := ctx.ClusterSnapshot.Initialize(nodes, nil)
+		err := ctx.ClusterSnapshot.Initialize(nodes, nil, dynamicresources.Snapshot{})
 		assert.NoError(t, err)
 		nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&ctx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, time.Now())
 
@@ -232,7 +233,7 @@ func TestResourceManagerWithGpuResource(t *testing.T) {
 	assert.NoError(t, err)
 
 	nodes := []*corev1.Node{n1}
-	err = context.ClusterSnapshot.Initialize(nodes, nil)
+	err = context.ClusterSnapshot.Initialize(nodes, nil, dynamicresources.Snapshot{})
 	assert.NoError(t, err)
 	nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&context, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, time.Now())
 

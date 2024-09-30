@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/dynamicresources"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
@@ -36,6 +37,7 @@ type BasicClusterSnapshot struct {
 type internalBasicSnapshotData struct {
 	nodeInfoMap        map[string]*schedulerframework.NodeInfo
 	pvcNamespacePodMap map[string]map[string]bool
+	draSnapshot        dynamicresources.Snapshot
 }
 
 func (data *internalBasicSnapshotData) listNodeInfos() []*schedulerframework.NodeInfo {
@@ -124,6 +126,7 @@ func newInternalBasicSnapshotData() *internalBasicSnapshotData {
 	return &internalBasicSnapshotData{
 		nodeInfoMap:        make(map[string]*schedulerframework.NodeInfo),
 		pvcNamespacePodMap: make(map[string]map[string]bool),
+		draSnapshot:        dynamicresources.Snapshot{},
 	}
 }
 
@@ -142,6 +145,7 @@ func (data *internalBasicSnapshotData) clone() *internalBasicSnapshotData {
 	return &internalBasicSnapshotData{
 		nodeInfoMap:        clonedNodeInfoMap,
 		pvcNamespacePodMap: clonedPvcNamespaceNodeMap,
+		draSnapshot:        data.draSnapshot.Clone(),
 	}
 }
 
@@ -231,19 +235,24 @@ func (snapshot *BasicClusterSnapshot) AddNodeInfo(nodeInfo *framework.NodeInfo) 
 	return nil
 }
 
-func (snapshot *BasicClusterSnapshot) Initialize(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod) error {
+func (snapshot *BasicClusterSnapshot) Initialize(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod, draSnapshot dynamicresources.Snapshot) error {
 	snapshot.Clear()
+	baseData := snapshot.getInternalData()
+
+	if snapshot.draEnabled {
+		baseData.draSnapshot = draSnapshot
+	}
 
 	knownNodes := make(map[string]bool)
 	for _, node := range nodes {
-		if err := snapshot.getInternalData().addNode(node); err != nil {
+		if err := baseData.addNode(node); err != nil {
 			return err
 		}
 		knownNodes[node.Name] = true
 	}
 	for _, pod := range scheduledPods {
 		if knownNodes[pod.Spec.NodeName] {
-			if err := snapshot.getInternalData().addPod(pod, pod.Spec.NodeName); err != nil {
+			if err := baseData.addPod(pod, pod.Spec.NodeName); err != nil {
 				return err
 			}
 		}

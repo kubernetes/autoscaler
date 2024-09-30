@@ -23,6 +23,7 @@ import (
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/dynamicresources"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
@@ -79,7 +80,7 @@ func getSnapshotState(t *testing.T, snapshot ClusterSnapshot) snapshotState {
 
 func startSnapshot(t *testing.T, snapshotFactory func(fwHandle *framework.Handle) ClusterSnapshot, state snapshotState) ClusterSnapshot {
 	snapshot := snapshotFactory(framework.TestFrameworkHandleOrDie(t))
-	err := snapshot.Initialize(state.nodes, state.pods)
+	err := snapshot.Initialize(state.nodes, state.pods, dynamicresources.Snapshot{})
 	assert.NoError(t, err)
 	return snapshot
 }
