@@ -22,10 +22,12 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
+	resourceapi "k8s.io/api/resource/v1alpha3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/uuid"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/dynamicresources"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/daemonset"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
@@ -55,42 +57,57 @@ func TemplateNodeInfoFromExampleNodeInfo(example *framework.NodeInfo, nodeGroupI
 
 	expectedPods, err := podsExpectedOnFreshNode(example, daemonsets, forceDaemonSets)
 	if err != nil {
-		return nil, err
+		return nil, errors.ToAutoscalerError(errors.InternalError, err)
 	}
-	exampleWithOnlyExpectedPods := framework.NewNodeInfo(example.Node(), nil, expectedPods...)
+	exampleWithOnlyExpectedPods := framework.NewNodeInfo(example.Node(), example.LocalResourceSlices, expectedPods...)
 
-	return sanitizeNodeInfo(exampleWithOnlyExpectedPods, newNodeNameBase, randSuffix, &taintConfig), nil
+	templateNodeInfo, err := sanitizeNodeInfo(exampleWithOnlyExpectedPods, newNodeNameBase, randSuffix, &taintConfig)
+	if err != nil {
+		return nil, errors.ToAutoscalerError(errors.InternalError, err)
+	}
+	return templateNodeInfo, nil
 }
 
 // FreshNodeInfoFromTemplateNodeInfo duplicates the provided template NodeInfo, returning a fresh NodeInfo that can be injected into the cluster snapshot.
 // The NodeInfo is sanitized (names, UIDs are changed, etc.), so that it can be injected along other copies created from the same template.
-func FreshNodeInfoFromTemplateNodeInfo(template *framework.NodeInfo, suffix string) *framework.NodeInfo {
+func FreshNodeInfoFromTemplateNodeInfo(template *framework.NodeInfo, suffix string) (*framework.NodeInfo, error) {
 	// Template node infos should already have taints and pods filtered, so not setting these parameters.
 	return sanitizeNodeInfo(template, template.Node().Name, suffix, nil)
 }
 
 // DeepCopyNodeInfo clones the provided NodeInfo
 func DeepCopyNodeInfo(nodeInfo *framework.NodeInfo) *framework.NodeInfo {
-	newPods := make([]*framework.PodInfo, 0)
+	var podsCopy []*framework.PodInfo
 	for _, podInfo := range nodeInfo.Pods {
-		newPods = append(newPods, &framework.PodInfo{Pod: podInfo.Pod.DeepCopy()})
+		var claimsCopy []*resourceapi.ResourceClaim
+		for _, claim := range podInfo.NeededResourceClaims {
+			claimsCopy = append(claimsCopy, claim.DeepCopy())
+		}
+		podsCopy = append(podsCopy, &framework.PodInfo{Pod: podInfo.Pod.DeepCopy(), NeededResourceClaims: claimsCopy})
 	}
-
-	// Build a new node info.
-	newNodeInfo := framework.NewNodeInfo(nodeInfo.Node().DeepCopy(), nil, newPods...)
+	var slicesCopy []*resourceapi.ResourceSlice
+	for _, slice := range nodeInfo.LocalResourceSlices {
+		slicesCopy = append(slicesCopy, slice.DeepCopy())
+	}
+	newNodeInfo := framework.NewNodeInfo(nodeInfo.Node().DeepCopy(), slicesCopy, podsCopy...)
 	return newNodeInfo
 }
 
-func sanitizeNodeInfo(nodeInfo *framework.NodeInfo, newNodeNameBase string, namesSuffix string, taintConfig *taints.TaintConfig) *framework.NodeInfo {
+func sanitizeNodeInfo(nodeInfo *framework.NodeInfo, newNodeNameBase string, namesSuffix string, taintConfig *taints.TaintConfig) (*framework.NodeInfo, error) {
 	freshNodeName := fmt.Sprintf("%s-%s", newNodeNameBase, namesSuffix)
 	freshNode := sanitizeNode(nodeInfo.Node(), freshNodeName, taintConfig)
-	result := framework.NewNodeInfo(freshNode, nil)
+	freshResourceSlices, oldPoolNames := dynamicresources.SanitizeNodeResourceSlices(nodeInfo.LocalResourceSlices, freshNode.Name, namesSuffix)
+	result := framework.NewNodeInfo(freshNode, freshResourceSlices)
 
 	for _, podInfo := range nodeInfo.Pods {
 		freshPod := sanitizePod(podInfo.Pod, freshNode.Name, namesSuffix)
-		result.AddPod(&framework.PodInfo{Pod: freshPod})
+		freshResourceClaims, err := dynamicresources.SanitizePodResourceClaims(freshPod, podInfo.Pod, podInfo.NeededResourceClaims, namesSuffix, nodeInfo.Node().Name, freshNodeName, oldPoolNames)
+		if err != nil {
+			return nil, err
+		}
+		result.AddPod(&framework.PodInfo{Pod: freshPod, NeededResourceClaims: freshResourceClaims})
 	}
-	return result
+	return result, nil
 }
 
 func sanitizeNode(node *apiv1.Node, newName string, taintConfig *taints.TaintConfig) *apiv1.Node {
@@ -112,14 +129,14 @@ func sanitizeNode(node *apiv1.Node, newName string, taintConfig *taints.TaintCon
 }
 
 func sanitizePod(pod *apiv1.Pod, nodeName, nameSuffix string) *apiv1.Pod {
-	sanitizedPod := pod.DeepCopy()
+	sanitizedPod := dynamicresources.SanitizeResourceClaimRefs(pod, nameSuffix)
 	sanitizedPod.UID = uuid.NewUUID()
 	sanitizedPod.Name = fmt.Sprintf("%s-%s", pod.Name, nameSuffix)
 	sanitizedPod.Spec.NodeName = nodeName
 	return sanitizedPod
 }
 
-func podsExpectedOnFreshNode(exampleNodeInfo *framework.NodeInfo, daemonsets []*appsv1.DaemonSet, forceDaemonSets bool) ([]*framework.PodInfo, errors.AutoscalerError) {
+func podsExpectedOnFreshNode(exampleNodeInfo *framework.NodeInfo, daemonsets []*appsv1.DaemonSet, forceDaemonSets bool) ([]*framework.PodInfo, error) {
 	var result []*framework.PodInfo
 	runningDS := make(map[types.UID]bool)
 	for _, pod := range exampleNodeInfo.Pods {
@@ -147,7 +164,7 @@ func podsExpectedOnFreshNode(exampleNodeInfo *framework.NodeInfo, daemonsets []*
 		}
 		daemonPods, err := daemonset.GetDaemonSetPodsForNode(exampleNodeInfo, pendingDS)
 		if err != nil {
-			return nil, errors.ToAutoscalerError(errors.InternalError, err)
+			return nil, err
 		}
 		for _, pod := range daemonPods {
 			result = append(result, pod)

@@ -19,6 +19,7 @@ package dynamicresources
 import (
 	"fmt"
 
+	v1 "k8s.io/api/core/v1"
 	resourceapi "k8s.io/api/resource/v1alpha3"
 )
 
@@ -72,4 +73,46 @@ func AllCurrentGenSlices(slices []*resourceapi.ResourceSlice) ([]*resourceapi.Re
 	}
 
 	return maxGenSlices, nil
+}
+
+func nodeSelectorSingleNode(selector *v1.NodeSelector) string {
+	if selector == nil {
+		// Nil selector means all nodes, so not a single node.
+		return ""
+	}
+	if len(selector.NodeSelectorTerms) != 1 {
+		// Selector for a single node doesn't need multiple ORed terms.
+		return ""
+	}
+	term := selector.NodeSelectorTerms[0]
+	if len(term.MatchExpressions) > 0 {
+		// Selector for a single node doesn't need expression matching.
+		return ""
+	}
+	if len(term.MatchFields) != 1 {
+		// Selector for a single node should have just 1 matchFields entry for its nodeName.
+		return ""
+	}
+	matchField := term.MatchFields[0]
+	if matchField.Key != "metadata.name" || matchField.Operator != v1.NodeSelectorOpIn || len(matchField.Values) != 1 {
+		// Selector for a single node should have operator In with 1 value - the node name.
+		return ""
+	}
+	return matchField.Values[0]
+}
+
+func createNodeSelectorSingleNode(nodeName string) *v1.NodeSelector {
+	return &v1.NodeSelector{
+		NodeSelectorTerms: []v1.NodeSelectorTerm{
+			{
+				MatchFields: []v1.NodeSelectorRequirement{
+					{
+						Key:      "metadata.name",
+						Operator: v1.NodeSelectorOpIn,
+						Values:   []string{nodeName},
+					},
+				},
+			},
+		},
+	}
 }

@@ -210,7 +210,10 @@ func (e *BinpackingNodeEstimator) addNewNodeToSnapshot(
 	estimationState *estimationState,
 	template *framework.NodeInfo,
 ) error {
-	newNodeInfo := core_utils.FreshNodeInfoFromTemplateNodeInfo(template, fmt.Sprintf("e-%d", estimationState.newNodeNameIndex))
+	newNodeInfo, err := core_utils.FreshNodeInfoFromTemplateNodeInfo(template, fmt.Sprintf("e-%d", estimationState.newNodeNameIndex))
+	if err != nil {
+		return err
+	}
 	if err := e.clusterSnapshot.AddNodeInfo(newNodeInfo); err != nil {
 		return err
 	}
