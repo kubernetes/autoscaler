@@ -26,6 +26,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 )
@@ -267,7 +268,7 @@ func TestCurrentlyDrainedNodesPodListProcessor(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ctx := context.AutoscalingContext{
 				ScaleDownActuator: &mockActuator{&mockActuationStatus{tc.drainedNodes}},
-				ClusterSnapshot:   clustersnapshot.NewBasicClusterSnapshot(),
+				ClusterSnapshot:   clustersnapshot.NewBasicClusterSnapshot(framework.TestFrameworkHandleOrDie(t), true),
 			}
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, ctx.ClusterSnapshot, tc.nodes, tc.pods)
 

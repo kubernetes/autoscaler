@@ -112,7 +112,7 @@ func TestTargetCountInjectionPodListProcessor(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			p := NewPodInjectionPodListProcessor(podinjectionbackoff.NewFakePodControllerRegistry())
-			clusterSnapshot := clustersnapshot.NewDeltaClusterSnapshot()
+			clusterSnapshot := clustersnapshot.NewDeltaClusterSnapshot(framework.TestFrameworkHandleOrDie(t), true)
 			err := clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(node, tc.scheduledPods...))
 			assert.NoError(t, err)
 			ctx := context.AutoscalingContext{

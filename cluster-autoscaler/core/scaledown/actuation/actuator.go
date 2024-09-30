@@ -356,7 +356,7 @@ func (a *Actuator) taintNode(node *apiv1.Node) error {
 }
 
 func (a *Actuator) createSnapshot(nodes []*apiv1.Node) (clustersnapshot.ClusterSnapshot, error) {
-	snapshot := clustersnapshot.NewBasicClusterSnapshot()
+	snapshot := clustersnapshot.NewBasicClusterSnapshot(a.ctx.FrameworkHandle, a.ctx.EnableDynamicResources)
 	pods, err := a.ctx.AllPodLister().List()
 	if err != nil {
 		return nil, err

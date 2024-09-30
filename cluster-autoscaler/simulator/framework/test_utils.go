@@ -16,7 +16,14 @@ limitations under the License.
 
 package framework
 
-import apiv1 "k8s.io/api/core/v1"
+import (
+	"testing"
+
+	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/client-go/informers"
+	clientsetfake "k8s.io/client-go/kubernetes/fake"
+	scheduler_config_latest "k8s.io/kubernetes/pkg/scheduler/apis/config/latest"
+)
 
 func NewTestNodeInfo(node *apiv1.Node, pods ...*apiv1.Pod) *NodeInfo {
 	nodeInfo := NewNodeInfo(node, nil)
@@ -24,4 +31,24 @@ func NewTestNodeInfo(node *apiv1.Node, pods ...*apiv1.Pod) *NodeInfo {
 		nodeInfo.AddPod(&PodInfo{Pod: pod, NeededResourceClaims: nil})
 	}
 	return nodeInfo
+}
+
+func TestFrameworkHandle() (*Handle, error) {
+	defaultConfig, err := scheduler_config_latest.Default()
+	if err != nil {
+		return nil, err
+	}
+	fwHandle, err := NewHandle(informers.NewSharedInformerFactory(clientsetfake.NewSimpleClientset(), 0), defaultConfig)
+	if err != nil {
+		return nil, err
+	}
+	return fwHandle, nil
+}
+
+func TestFrameworkHandleOrDie(t *testing.T) *Handle {
+	handle, err := TestFrameworkHandle()
+	if err != nil {
+		t.Error(err)
+	}
+	return handle
 }

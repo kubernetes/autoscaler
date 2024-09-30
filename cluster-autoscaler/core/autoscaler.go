@@ -34,6 +34,7 @@ import (
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
@@ -49,6 +50,7 @@ type AutoscalerOptions struct {
 	InformerFactory        informers.SharedInformerFactory
 	AutoscalingKubeClients *context.AutoscalingKubeClients
 	CloudProvider          cloudprovider.CloudProvider
+	FrameworkHandle        *framework.Handle
 	PredicateChecker       predicatechecker.PredicateChecker
 	ClusterSnapshot        clustersnapshot.ClusterSnapshot
 	ExpanderStrategy       expander.Strategy
@@ -86,6 +88,7 @@ func NewAutoscaler(opts AutoscalerOptions, informerFactory informers.SharedInfor
 	}
 	return NewStaticAutoscaler(
 		opts.AutoscalingOptions,
+		opts.FrameworkHandle,
 		opts.PredicateChecker,
 		opts.ClusterSnapshot,
 		opts.AutoscalingKubeClients,
@@ -114,8 +117,18 @@ func initializeDefaultOptions(opts *AutoscalerOptions, informerFactory informers
 	if opts.AutoscalingKubeClients == nil {
 		opts.AutoscalingKubeClients = context.NewAutoscalingKubeClients(opts.AutoscalingOptions, opts.KubeClient, opts.InformerFactory)
 	}
+	if opts.FrameworkHandle == nil {
+		fwHandle, err := framework.NewHandle(opts.InformerFactory, opts.SchedulerConfig)
+		if err != nil {
+			return err
+		}
+		opts.FrameworkHandle = fwHandle
+	}
 	if opts.ClusterSnapshot == nil {
-		opts.ClusterSnapshot = clustersnapshot.NewBasicClusterSnapshot()
+		opts.ClusterSnapshot = clustersnapshot.NewBasicClusterSnapshot(opts.FrameworkHandle, opts.EnableDynamicResources)
+	}
+	if opts.PredicateChecker == nil {
+		opts.PredicateChecker = predicatechecker.NewSchedulerBasedPredicateChecker(opts.FrameworkHandle)
 	}
 	if opts.RemainingPdbTracker == nil {
 		opts.RemainingPdbTracker = pdb.NewBasicRemainingPdbTracker()

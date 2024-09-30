@@ -43,7 +43,9 @@ import (
 //	pod affinity - causes scheduler framework to list pods with non-empty selector,
 //		so basic caching doesn't help.
 type DeltaClusterSnapshot struct {
-	data *internalDeltaSnapshotData
+	data       *internalDeltaSnapshotData
+	draEnabled bool
+	fwHandle   *framework.Handle
 }
 
 type deltaSnapshotNodeLister DeltaClusterSnapshot
@@ -387,8 +389,8 @@ func (snapshot *DeltaClusterSnapshot) StorageInfos() schedulerframework.StorageI
 }
 
 // NewDeltaClusterSnapshot creates instances of DeltaClusterSnapshot.
-func NewDeltaClusterSnapshot() *DeltaClusterSnapshot {
-	snapshot := &DeltaClusterSnapshot{}
+func NewDeltaClusterSnapshot(fwHandle *framework.Handle, draEnabled bool) *DeltaClusterSnapshot {
+	snapshot := &DeltaClusterSnapshot{fwHandle: fwHandle, draEnabled: draEnabled}
 	snapshot.Clear()
 	return snapshot
 }

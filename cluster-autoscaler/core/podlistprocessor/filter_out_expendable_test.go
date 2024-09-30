@@ -25,6 +25,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/test"
 )
@@ -108,7 +109,7 @@ func TestFilterOutExpendable(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			processor := NewFilterOutExpendablePodListProcessor()
-			snapshot := clustersnapshot.NewBasicClusterSnapshot()
+			snapshot := clustersnapshot.NewBasicClusterSnapshot(framework.TestFrameworkHandleOrDie(t), true)
 			err := snapshot.Initialize(tc.nodes, nil)
 			assert.NoError(t, err)
 

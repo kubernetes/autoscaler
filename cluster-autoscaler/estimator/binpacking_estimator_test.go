@@ -209,13 +209,13 @@ func TestBinpackingEstimate(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot()
+			fwHandle := framework.TestFrameworkHandleOrDie(t)
+			clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot(fwHandle, true)
 			// Add one node in different zone to trigger topology spread constraints
 			err := clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(makeNode(100, 100, 10, "oldnode", "zone-jupiter")))
 			assert.NoError(t, err)
 
-			predicateChecker, err := predicatechecker.NewTestPredicateChecker()
-			assert.NoError(t, err)
+			predicateChecker := predicatechecker.NewSchedulerBasedPredicateChecker(fwHandle)
 			limiter := NewThresholdBasedEstimationLimiter([]Threshold{NewStaticThreshold(tc.maxNodes, time.Duration(0))})
 			processor := NewDecreasingPodOrderer()
 			estimator := NewBinpackingNodeEstimator(predicateChecker, clusterSnapshot, limiter, processor, nil /* EstimationContext */, nil /* EstimationAnalyserFunc */)
@@ -265,12 +265,13 @@ func BenchmarkBinpackingEstimate(b *testing.B) {
 	}
 
 	for i := 0; i < b.N; i++ {
-		clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot()
-		err := clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(makeNode(100, 100, 10, "oldnode", "zone-jupiter")))
+		fwHandle, err := framework.TestFrameworkHandle()
+		assert.NoError(b, err)
+		clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot(fwHandle, true)
+		err = clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(makeNode(100, 100, 10, "oldnode", "zone-jupiter")))
 		assert.NoError(b, err)
 
-		predicateChecker, err := predicatechecker.NewTestPredicateChecker()
-		assert.NoError(b, err)
+		predicateChecker := predicatechecker.NewSchedulerBasedPredicateChecker(fwHandle)
 		limiter := NewThresholdBasedEstimationLimiter([]Threshold{NewStaticThreshold(maxNodes, time.Duration(0))})
 		processor := NewDecreasingPodOrderer()
 		estimator := NewBinpackingNodeEstimator(predicateChecker, clusterSnapshot, limiter, processor, nil /* EstimationContext */, nil /* EstimationAnalyserFunc */)

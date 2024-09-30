@@ -30,9 +30,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var snapshots = map[string]func() ClusterSnapshot{
-	"basic": func() ClusterSnapshot { return NewBasicClusterSnapshot() },
-	"delta": func() ClusterSnapshot { return NewDeltaClusterSnapshot() },
+var snapshots = map[string]func(fwHandle *framework.Handle) ClusterSnapshot{
+	"basic": func(fwHandle *framework.Handle) ClusterSnapshot {
+		return NewBasicClusterSnapshot(fwHandle, true)
+	},
+	"delta": func(fwHandle *framework.Handle) ClusterSnapshot {
+		return NewDeltaClusterSnapshot(fwHandle, true)
+	},
 }
 
 func nodeNames(nodes []*apiv1.Node) []string {
@@ -73,8 +77,8 @@ func getSnapshotState(t *testing.T, snapshot ClusterSnapshot) snapshotState {
 	return snapshotState{extractNodes(nodes), pods}
 }
 
-func startSnapshot(t *testing.T, snapshotFactory func() ClusterSnapshot, state snapshotState) ClusterSnapshot {
-	snapshot := snapshotFactory()
+func startSnapshot(t *testing.T, snapshotFactory func(fwHandle *framework.Handle) ClusterSnapshot, state snapshotState) ClusterSnapshot {
+	snapshot := snapshotFactory(framework.TestFrameworkHandleOrDie(t))
 	err := snapshot.Initialize(state.nodes, state.pods)
 	assert.NoError(t, err)
 	return snapshot
@@ -367,7 +371,7 @@ func TestNode404(t *testing.T) {
 		for _, op := range ops {
 			t.Run(fmt.Sprintf("%s: %s empty", name, op.name),
 				func(t *testing.T) {
-					snapshot := snapshotFactory()
+					snapshot := snapshotFactory(framework.TestFrameworkHandleOrDie(t))
 
 					// Empty snapshot - shouldn't be able to operate on nodes that are not here.
 					err := op.op(snapshot)
@@ -376,7 +380,7 @@ func TestNode404(t *testing.T) {
 
 			t.Run(fmt.Sprintf("%s: %s fork", name, op.name),
 				func(t *testing.T) {
-					snapshot := snapshotFactory()
+					snapshot := snapshotFactory(framework.TestFrameworkHandleOrDie(t))
 
 					node := BuildTestNode("node", 10, 100)
 					err := snapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
@@ -402,7 +406,7 @@ func TestNode404(t *testing.T) {
 
 			t.Run(fmt.Sprintf("%s: %s base", name, op.name),
 				func(t *testing.T) {
-					snapshot := snapshotFactory()
+					snapshot := snapshotFactory(framework.TestFrameworkHandleOrDie(t))
 
 					node := BuildTestNode("node", 10, 100)
 					err := snapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
@@ -437,7 +441,7 @@ func TestNodeAlreadyExists(t *testing.T) {
 		for _, op := range ops {
 			t.Run(fmt.Sprintf("%s: %s base", name, op.name),
 				func(t *testing.T) {
-					snapshot := snapshotFactory()
+					snapshot := snapshotFactory(framework.TestFrameworkHandleOrDie(t))
 
 					err := snapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
 					assert.NoError(t, err)
@@ -449,7 +453,7 @@ func TestNodeAlreadyExists(t *testing.T) {
 
 			t.Run(fmt.Sprintf("%s: %s base, forked", name, op.name),
 				func(t *testing.T) {
-					snapshot := snapshotFactory()
+					snapshot := snapshotFactory(framework.TestFrameworkHandleOrDie(t))
 
 					err := snapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
 					assert.NoError(t, err)
@@ -464,7 +468,7 @@ func TestNodeAlreadyExists(t *testing.T) {
 
 			t.Run(fmt.Sprintf("%s: %s fork", name, op.name),
 				func(t *testing.T) {
-					snapshot := snapshotFactory()
+					snapshot := snapshotFactory(framework.TestFrameworkHandleOrDie(t))
 
 					snapshot.Fork()
 
@@ -477,7 +481,7 @@ func TestNodeAlreadyExists(t *testing.T) {
 				})
 			t.Run(fmt.Sprintf("%s: %s committed", name, op.name),
 				func(t *testing.T) {
-					snapshot := snapshotFactory()
+					snapshot := snapshotFactory(framework.TestFrameworkHandleOrDie(t))
 
 					snapshot.Fork()
 
@@ -617,7 +621,7 @@ func TestPVCUsedByPods(t *testing.T) {
 	for snapshotName, snapshotFactory := range snapshots {
 		for _, tc := range testcase {
 			t.Run(fmt.Sprintf("%s with snapshot (%s)", tc.desc, snapshotName), func(t *testing.T) {
-				snapshot := snapshotFactory()
+				snapshot := snapshotFactory(framework.TestFrameworkHandleOrDie(t))
 				err := snapshot.AddNodeInfo(framework.NewTestNodeInfo(tc.node, tc.pods...))
 				assert.NoError(t, err)
 
@@ -687,7 +691,7 @@ func TestPVCClearAndFork(t *testing.T) {
 
 	for snapshotName, snapshotFactory := range snapshots {
 		t.Run(fmt.Sprintf("fork and revert snapshot with pvc pods with snapshot: %s", snapshotName), func(t *testing.T) {
-			snapshot := snapshotFactory()
+			snapshot := snapshotFactory(framework.TestFrameworkHandleOrDie(t))
 			err := snapshot.AddNodeInfo(framework.NewTestNodeInfo(node, pod1))
 			assert.NoError(t, err)
 			volumeExists := snapshot.StorageInfos().IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", "claim1"))
@@ -712,7 +716,7 @@ func TestPVCClearAndFork(t *testing.T) {
 		})
 
 		t.Run(fmt.Sprintf("clear snapshot with pvc pods with snapshot: %s", snapshotName), func(t *testing.T) {
-			snapshot := snapshotFactory()
+			snapshot := snapshotFactory(framework.TestFrameworkHandleOrDie(t))
 			err := snapshot.AddNodeInfo(framework.NewTestNodeInfo(node, pod1))
 			assert.NoError(t, err)
 			volumeExists := snapshot.StorageInfos().IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", "claim1"))

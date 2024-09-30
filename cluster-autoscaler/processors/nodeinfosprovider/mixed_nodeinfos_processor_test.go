@@ -76,12 +76,12 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
 	registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
 
-	predicateChecker, err := predicatechecker.NewTestPredicateChecker()
-	assert.NoError(t, err)
+	fwHandle := framework.TestFrameworkHandleOrDie(t)
+	predicateChecker := predicatechecker.NewSchedulerBasedPredicateChecker(fwHandle)
 
 	nodes := []*apiv1.Node{justReady5, unready4, unready3, ready2, ready1}
-	snapshot := clustersnapshot.NewBasicClusterSnapshot()
-	err = snapshot.Initialize(nodes, nil)
+	snapshot := clustersnapshot.NewBasicClusterSnapshot(fwHandle, true)
+	err := snapshot.Initialize(nodes, nil)
 	assert.NoError(t, err)
 
 	ctx := context.AutoscalingContext{
@@ -114,7 +114,7 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 	// Test for a nodegroup without nodes and TemplateNodeInfo not implemented by cloud proivder
 	ctx = context.AutoscalingContext{
 		CloudProvider:    provider2,
-		ClusterSnapshot:  clustersnapshot.NewBasicClusterSnapshot(),
+		ClusterSnapshot:  clustersnapshot.NewBasicClusterSnapshot(fwHandle, true),
 		PredicateChecker: predicateChecker,
 		AutoscalingKubeClients: context.AutoscalingKubeClients{
 			ListerRegistry: registry,
@@ -167,12 +167,12 @@ func TestGetNodeInfosForGroupsCache(t *testing.T) {
 	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
 	registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
 
-	predicateChecker, err := predicatechecker.NewTestPredicateChecker()
-	assert.NoError(t, err)
+	fwHandle := framework.TestFrameworkHandleOrDie(t)
+	predicateChecker := predicatechecker.NewSchedulerBasedPredicateChecker(fwHandle)
 
 	nodes := []*apiv1.Node{unready4, unready3, ready2, ready1}
-	snapshot := clustersnapshot.NewBasicClusterSnapshot()
-	err = snapshot.Initialize(nodes, nil)
+	snapshot := clustersnapshot.NewBasicClusterSnapshot(fwHandle, true)
+	err := snapshot.Initialize(nodes, nil)
 	assert.NoError(t, err)
 
 	// Fill cache
@@ -261,12 +261,13 @@ func TestGetNodeInfosCacheExpired(t *testing.T) {
 	provider := testprovider.NewTestAutoprovisioningCloudProvider(nil, nil, nil, nil, nil, nil)
 	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
 	registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
-	predicateChecker, err := predicatechecker.NewTestPredicateChecker()
-	assert.NoError(t, err)
+
+	fwHandle := framework.TestFrameworkHandleOrDie(t)
+	predicateChecker := predicatechecker.NewSchedulerBasedPredicateChecker(fwHandle)
 
 	nodes := []*apiv1.Node{ready1}
-	snapshot := clustersnapshot.NewBasicClusterSnapshot()
-	err = snapshot.Initialize(nodes, nil)
+	snapshot := clustersnapshot.NewBasicClusterSnapshot(fwHandle, true)
+	err := snapshot.Initialize(nodes, nil)
 	assert.NoError(t, err)
 
 	ctx := context.AutoscalingContext{

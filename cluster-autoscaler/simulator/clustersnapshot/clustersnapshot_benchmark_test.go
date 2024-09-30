@@ -74,7 +74,9 @@ func BenchmarkAddNodeInfo(b *testing.B) {
 	for snapshotName, snapshotFactory := range snapshots {
 		for _, tc := range testCases {
 			nodes := createTestNodes(tc)
-			clusterSnapshot := snapshotFactory()
+			fwHandle, err := framework.TestFrameworkHandle()
+			assert.NoError(b, err)
+			clusterSnapshot := snapshotFactory(fwHandle)
 			b.ResetTimer()
 			b.Run(fmt.Sprintf("%s: AddNodeInfo() %d", snapshotName, tc), func(b *testing.B) {
 				for i := 0; i < b.N; i++ {
@@ -99,8 +101,10 @@ func BenchmarkListNodeInfos(b *testing.B) {
 	for snapshotName, snapshotFactory := range snapshots {
 		for _, tc := range testCases {
 			nodes := createTestNodes(tc)
-			clusterSnapshot := snapshotFactory()
-			err := clusterSnapshot.Initialize(nodes, nil)
+			fwHandle, err := framework.TestFrameworkHandle()
+			assert.NoError(b, err)
+			clusterSnapshot := snapshotFactory(fwHandle)
+			err = clusterSnapshot.Initialize(nodes, nil)
 			if err != nil {
 				assert.NoError(b, err)
 			}
@@ -128,8 +132,10 @@ func BenchmarkAddPods(b *testing.B) {
 			nodes := createTestNodes(tc)
 			pods := createTestPods(tc * 30)
 			assignPodsToNodes(pods, nodes)
-			clusterSnapshot := snapshotFactory()
-			err := clusterSnapshot.Initialize(nodes, nil)
+			fwHandle, err := framework.TestFrameworkHandle()
+			assert.NoError(b, err)
+			clusterSnapshot := snapshotFactory(fwHandle)
+			err = clusterSnapshot.Initialize(nodes, nil)
 			assert.NoError(b, err)
 			b.ResetTimer()
 			b.Run(fmt.Sprintf("%s: AddPod() 30*%d", snapshotName, tc), func(b *testing.B) {
@@ -163,8 +169,10 @@ func BenchmarkForkAddRevert(b *testing.B) {
 			for _, ptc := range podTestCases {
 				pods := createTestPods(ntc * ptc)
 				assignPodsToNodes(pods, nodes)
-				clusterSnapshot := snapshotFactory()
-				err := clusterSnapshot.Initialize(nodes, pods)
+				fwHandle, err := framework.TestFrameworkHandle()
+				assert.NoError(b, err)
+				clusterSnapshot := snapshotFactory(fwHandle)
+				err = clusterSnapshot.Initialize(nodes, pods)
 				assert.NoError(b, err)
 				tmpNode1 := BuildTestNode("tmp-1", 2000, 2000000)
 				tmpNode2 := BuildTestNode("tmp-2", 2000, 2000000)
@@ -211,7 +219,9 @@ func BenchmarkBuildNodeInfoList(b *testing.B) {
 	for _, tc := range testCases {
 		b.Run(fmt.Sprintf("fork add 1000 to %d", tc.nodeCount), func(b *testing.B) {
 			nodes := createTestNodes(tc.nodeCount + 1000)
-			snapshot := NewDeltaClusterSnapshot()
+			fwHandle, err := framework.TestFrameworkHandle()
+			assert.NoError(b, err)
+			snapshot := NewDeltaClusterSnapshot(fwHandle, true)
 			if err := snapshot.Initialize(nodes[:tc.nodeCount], nil); err != nil {
 				assert.NoError(b, err)
 			}
@@ -233,7 +243,9 @@ func BenchmarkBuildNodeInfoList(b *testing.B) {
 	for _, tc := range testCases {
 		b.Run(fmt.Sprintf("base %d", tc.nodeCount), func(b *testing.B) {
 			nodes := createTestNodes(tc.nodeCount)
-			snapshot := NewDeltaClusterSnapshot()
+			fwHandle, err := framework.TestFrameworkHandle()
+			assert.NoError(b, err)
+			snapshot := NewDeltaClusterSnapshot(fwHandle, true)
 			if err := snapshot.Initialize(nodes, nil); err != nil {
 				assert.NoError(b, err)
 			}

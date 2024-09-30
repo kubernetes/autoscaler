@@ -611,7 +611,7 @@ func TestPodsToEvict(t *testing.T) {
 		},
 	} {
 		t.Run(tn, func(t *testing.T) {
-			snapshot := clustersnapshot.NewBasicClusterSnapshot()
+			snapshot := clustersnapshot.NewBasicClusterSnapshot(framework.TestFrameworkHandleOrDie(t), true)
 			node := BuildTestNode("test-node", 1000, 1000)
 			err := snapshot.AddNodeInfo(framework.NewTestNodeInfo(node, tc.pods...))
 			if err != nil {

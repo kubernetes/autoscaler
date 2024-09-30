@@ -214,15 +214,16 @@ func NewScaleTestAutoscalingContext(
 	if err != nil {
 		return context.AutoscalingContext{}, err
 	}
-	predicateChecker, err := predicatechecker.NewTestPredicateChecker()
+	fwHandle, err := framework.TestFrameworkHandle()
 	if err != nil {
 		return context.AutoscalingContext{}, err
 	}
+	predicateChecker := predicatechecker.NewSchedulerBasedPredicateChecker(fwHandle)
 	remainingPdbTracker := pdb.NewBasicRemainingPdbTracker()
 	if debuggingSnapshotter == nil {
 		debuggingSnapshotter = debuggingsnapshot.NewDebuggingSnapshotter(false)
 	}
-	clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot()
+	clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot(fwHandle, options.EnableDynamicResources)
 	return context.AutoscalingContext{
 		AutoscalingOptions: options,
 		AutoscalingKubeClients: context.AutoscalingKubeClients{

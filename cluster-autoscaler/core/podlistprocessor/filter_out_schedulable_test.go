@@ -172,9 +172,9 @@ func TestFilterOutSchedulable(t *testing.T) {
 
 	for tn, tc := range testCases {
 		t.Run(tn, func(t *testing.T) {
-			clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot()
-			predicateChecker, err := predicatechecker.NewTestPredicateChecker()
-			assert.NoError(t, err)
+			fwHandle := framework.TestFrameworkHandleOrDie(t)
+			clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot(fwHandle, true)
+			predicateChecker := predicatechecker.NewSchedulerBasedPredicateChecker(fwHandle)
 
 			var allExpectedScheduledPods []*apiv1.Pod
 			allExpectedScheduledPods = append(allExpectedScheduledPods, tc.expectedScheduledPods...)
@@ -248,9 +248,13 @@ func BenchmarkFilterOutSchedulable(b *testing.B) {
 			pendingPods:   12000,
 		},
 	}
-	snapshots := map[string]func() clustersnapshot.ClusterSnapshot{
-		"basic": func() clustersnapshot.ClusterSnapshot { return clustersnapshot.NewBasicClusterSnapshot() },
-		"delta": func() clustersnapshot.ClusterSnapshot { return clustersnapshot.NewDeltaClusterSnapshot() },
+	snapshots := map[string]func(fwHandle *framework.Handle) clustersnapshot.ClusterSnapshot{
+		"basic": func(fwHandle *framework.Handle) clustersnapshot.ClusterSnapshot {
+			return clustersnapshot.NewBasicClusterSnapshot(fwHandle, true)
+		},
+		"delta": func(fwHandle *framework.Handle) clustersnapshot.ClusterSnapshot {
+			return clustersnapshot.NewDeltaClusterSnapshot(fwHandle, true)
+		},
 	}
 	for snapshotName, snapshotFactory := range snapshots {
 		for _, tc := range tests {
@@ -275,10 +279,11 @@ func BenchmarkFilterOutSchedulable(b *testing.B) {
 					}
 				}
 
-				predicateChecker, err := predicatechecker.NewTestPredicateChecker()
+				fwHandle, err := framework.TestFrameworkHandle()
 				assert.NoError(b, err)
+				predicateChecker := predicatechecker.NewSchedulerBasedPredicateChecker(fwHandle)
 
-				clusterSnapshot := snapshotFactory()
+				clusterSnapshot := snapshotFactory(fwHandle)
 				if err := clusterSnapshot.Initialize(nodes, scheduledPods); err != nil {
 					assert.NoError(b, err)
 				}

@@ -133,9 +133,9 @@ func TestTrySchedulePods(t *testing.T) {
 		tc := tc
 		t.Run(tc.desc, func(t *testing.T) {
 			t.Parallel()
-			clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot()
-			predicateChecker, err := predicatechecker.NewTestPredicateChecker()
-			assert.NoError(t, err)
+			fwHandle := framework.TestFrameworkHandleOrDie(t)
+			clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot(fwHandle, true)
+			predicateChecker := predicatechecker.NewSchedulerBasedPredicateChecker(fwHandle)
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, clusterSnapshot, tc.nodes, tc.pods)
 			s := NewHintingSimulator(predicateChecker)
 			statuses, _, err := s.TrySchedulePods(clusterSnapshot, tc.newPods, tc.acceptableNodes, false)
@@ -210,9 +210,9 @@ func TestPodSchedulesOnHintedNode(t *testing.T) {
 		tc := tc
 		t.Run(tc.desc, func(t *testing.T) {
 			t.Parallel()
-			clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot()
-			predicateChecker, err := predicatechecker.NewTestPredicateChecker()
-			assert.NoError(t, err)
+			fwHandle := framework.TestFrameworkHandleOrDie(t)
+			clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot(fwHandle, true)
+			predicateChecker := predicatechecker.NewSchedulerBasedPredicateChecker(fwHandle)
 			nodes := make([]*apiv1.Node, 0, len(tc.nodeNames))
 			for _, n := range tc.nodeNames {
 				nodes = append(nodes, buildReadyNode(n, 9999, 9999))

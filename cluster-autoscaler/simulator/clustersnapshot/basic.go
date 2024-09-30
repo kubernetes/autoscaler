@@ -28,7 +28,9 @@ import (
 // BasicClusterSnapshot is simple, reference implementation of ClusterSnapshot.
 // It is inefficient. But hopefully bug-free and good for initial testing.
 type BasicClusterSnapshot struct {
-	data []*internalBasicSnapshotData
+	data       []*internalBasicSnapshotData
+	draEnabled bool
+	fwHandle   *framework.Handle
 }
 
 type internalBasicSnapshotData struct {
@@ -194,8 +196,8 @@ func (data *internalBasicSnapshotData) removePod(namespace, podName, nodeName st
 }
 
 // NewBasicClusterSnapshot creates instances of BasicClusterSnapshot.
-func NewBasicClusterSnapshot() *BasicClusterSnapshot {
-	snapshot := &BasicClusterSnapshot{}
+func NewBasicClusterSnapshot(fwHandle *framework.Handle, draEnabled bool) *BasicClusterSnapshot {
+	snapshot := &BasicClusterSnapshot{fwHandle: fwHandle, draEnabled: draEnabled}
 	snapshot.Clear()
 	return snapshot
 }

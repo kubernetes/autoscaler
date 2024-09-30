@@ -495,11 +495,12 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 
 	opts := core.AutoscalerOptions{
 		AutoscalingOptions:   autoscalingOptions,
-		ClusterSnapshot:      clustersnapshot.NewDeltaClusterSnapshot(),
+		FrameworkHandle:      fwHandle,
+		ClusterSnapshot:      clustersnapshot.NewDeltaClusterSnapshot(fwHandle, autoscalingOptions.EnableDynamicResources),
+		PredicateChecker:     predicatechecker.NewSchedulerBasedPredicateChecker(fwHandle),
 		KubeClient:           kubeClient,
 		InformerFactory:      informerFactory,
 		DebuggingSnapshotter: debuggingSnapshotter,
-		PredicateChecker:     predicatechecker.NewSchedulerBasedPredicateChecker(fwHandle),
 		DeleteOptions:        deleteOptions,
 		DrainabilityRules:    drainabilityRules,
 		ScaleUpOrchestrator:  orchestrator.New(),
