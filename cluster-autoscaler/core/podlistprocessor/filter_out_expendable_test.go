@@ -21,6 +21,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
@@ -109,7 +110,8 @@ func TestFilterOutExpendable(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			processor := NewFilterOutExpendablePodListProcessor()
 			snapshot := clustersnapshot.NewBasicClusterSnapshot()
-			snapshot.AddNodes(tc.nodes)
+			err := snapshot.SetClusterState(tc.nodes, nil)
+			assert.NoError(t, err)
 
 			pods, err := processor.Process(&context.AutoscalingContext{
 				ClusterSnapshot: snapshot,
