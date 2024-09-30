@@ -22,6 +22,7 @@ import (
 
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -78,14 +79,20 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 	predicateChecker, err := predicatechecker.NewTestPredicateChecker()
 	assert.NoError(t, err)
 
+	nodes := []*apiv1.Node{justReady5, unready4, unready3, ready2, ready1}
+	snapshot := clustersnapshot.NewBasicClusterSnapshot()
+	err = snapshot.Initialize(nodes, nil)
+	assert.NoError(t, err)
+
 	ctx := context.AutoscalingContext{
 		CloudProvider:    provider1,
+		ClusterSnapshot:  snapshot,
 		PredicateChecker: predicateChecker,
 		AutoscalingKubeClients: context.AutoscalingKubeClients{
 			ListerRegistry: registry,
 		},
 	}
-	res, err := NewMixedTemplateNodeInfoProvider(&cacheTtl, false).Process(&ctx, []*apiv1.Node{justReady5, unready4, unready3, ready2, ready1}, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
+	res, err := NewMixedTemplateNodeInfoProvider(&cacheTtl, false).Process(&ctx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
 	assert.NoError(t, err)
 	assert.Equal(t, 5, len(res))
 	info, found := res["ng1"]
@@ -107,6 +114,7 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 	// Test for a nodegroup without nodes and TemplateNodeInfo not implemented by cloud proivder
 	ctx = context.AutoscalingContext{
 		CloudProvider:    provider2,
+		ClusterSnapshot:  clustersnapshot.NewBasicClusterSnapshot(),
 		PredicateChecker: predicateChecker,
 		AutoscalingKubeClients: context.AutoscalingKubeClients{
 			ListerRegistry: registry,
@@ -162,16 +170,22 @@ func TestGetNodeInfosForGroupsCache(t *testing.T) {
 	predicateChecker, err := predicatechecker.NewTestPredicateChecker()
 	assert.NoError(t, err)
 
+	nodes := []*apiv1.Node{unready4, unready3, ready2, ready1}
+	snapshot := clustersnapshot.NewBasicClusterSnapshot()
+	err = snapshot.Initialize(nodes, nil)
+	assert.NoError(t, err)
+
 	// Fill cache
 	ctx := context.AutoscalingContext{
 		CloudProvider:    provider1,
+		ClusterSnapshot:  snapshot,
 		PredicateChecker: predicateChecker,
 		AutoscalingKubeClients: context.AutoscalingKubeClients{
 			ListerRegistry: registry,
 		},
 	}
 	niProcessor := NewMixedTemplateNodeInfoProvider(&cacheTtl, false)
-	res, err := niProcessor.Process(&ctx, []*apiv1.Node{unready4, unready3, ready2, ready1}, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
+	res, err := niProcessor.Process(&ctx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
 	assert.NoError(t, err)
 	// Check results
 	assert.Equal(t, 4, len(res))
@@ -205,7 +219,7 @@ func TestGetNodeInfosForGroupsCache(t *testing.T) {
 	assert.Equal(t, "ng3", lastDeletedGroup)
 
 	// Check cache with all nodes removed
-	res, err = niProcessor.Process(&ctx, []*apiv1.Node{unready4, unready3, ready2, ready1}, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
+	res, err = niProcessor.Process(&ctx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
 	assert.NoError(t, err)
 	// Check results
 	assert.Equal(t, 2, len(res))
@@ -226,7 +240,7 @@ func TestGetNodeInfosForGroupsCache(t *testing.T) {
 	// Fill cache manually
 	infoNg4Node6 := framework.NewNodeInfo(ready6.DeepCopy(), nil)
 	niProcessor.nodeInfoCache = map[string]cacheItem{"ng4": {NodeInfo: infoNg4Node6, added: now}}
-	res, err = niProcessor.Process(&ctx, []*apiv1.Node{unready4, unready3, ready2, ready1}, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
+	res, err = niProcessor.Process(&ctx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
 	// Check if cache was used
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(res))
@@ -250,8 +264,14 @@ func TestGetNodeInfosCacheExpired(t *testing.T) {
 	predicateChecker, err := predicatechecker.NewTestPredicateChecker()
 	assert.NoError(t, err)
 
+	nodes := []*apiv1.Node{ready1}
+	snapshot := clustersnapshot.NewBasicClusterSnapshot()
+	err = snapshot.Initialize(nodes, nil)
+	assert.NoError(t, err)
+
 	ctx := context.AutoscalingContext{
 		CloudProvider:    provider,
+		ClusterSnapshot:  snapshot,
 		PredicateChecker: predicateChecker,
 		AutoscalingKubeClients: context.AutoscalingKubeClients{
 			ListerRegistry: registry,
@@ -269,7 +289,7 @@ func TestGetNodeInfosCacheExpired(t *testing.T) {
 	provider.AddNode("ng1", ready1)
 
 	assert.Equal(t, 2, len(niProcessor1.nodeInfoCache))
-	_, err = niProcessor1.Process(&ctx, []*apiv1.Node{ready1}, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
+	_, err = niProcessor1.Process(&ctx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(niProcessor1.nodeInfoCache))
 
@@ -280,7 +300,7 @@ func TestGetNodeInfosCacheExpired(t *testing.T) {
 		"ng2": {NodeInfo: tni, added: now.Add(-2 * time.Second)},
 	}
 	assert.Equal(t, 2, len(niProcessor2.nodeInfoCache))
-	_, err = niProcessor1.Process(&ctx, []*apiv1.Node{ready1}, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
+	_, err = niProcessor1.Process(&ctx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(niProcessor2.nodeInfoCache))
 
