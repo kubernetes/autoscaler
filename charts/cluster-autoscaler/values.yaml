@@ -398,6 +398,9 @@ serviceMonitor:
   # serviceMonitor.annotations -- Annotations to add to service monitor
   annotations: {}
   ## [RelabelConfig](https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api.md#monitoring.coreos.com/v1.RelabelConfig)
+  # serviceMonitor.relabelings -- RelabelConfigs to apply to metrics before scraping.
+  relabelings: {}
+  ## [RelabelConfig](https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api.md#monitoring.coreos.com/v1.RelabelConfig)
   # serviceMonitor.metricRelabelings -- MetricRelabelConfigs to apply to samples before ingestion.
   metricRelabelings: {}
 
