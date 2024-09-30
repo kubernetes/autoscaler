@@ -41,8 +41,6 @@ type ClusterSnapshot interface {
 	AddPod(pod *apiv1.Pod, nodeName string) error
 	// RemovePod removes pod from the snapshot.
 	RemovePod(namespace string, podName string, nodeName string) error
-	// IsPVCUsedByPods returns if the pvc is used by any pod, key = <namespace>/<pvc_name>
-	IsPVCUsedByPods(key string) bool
 
 	// AddNodeInfo adds the given NodeInfo to the snapshot. The Node and the Pods are added, as well as
 	// any DRA objects passed along them.
