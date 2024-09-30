@@ -624,14 +624,14 @@ func TestPVCUsedByPods(t *testing.T) {
 				err := snapshot.AddNodeInfo(framework.NewTestNodeInfo(tc.node, tc.pods...))
 				assert.NoError(t, err)
 
-				volumeExists := snapshot.IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", tc.claimName))
+				volumeExists := snapshot.StorageInfos().IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", tc.claimName))
 				assert.Equal(t, tc.exists, volumeExists)
 
 				if tc.removePod != "" {
 					err = snapshot.RemovePod("default", tc.removePod, "node")
 					assert.NoError(t, err)
 
-					volumeExists = snapshot.IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", tc.claimName))
+					volumeExists = snapshot.StorageInfos().IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", tc.claimName))
 					assert.Equal(t, tc.existsAfterRemove, volumeExists)
 				}
 			})
@@ -693,23 +693,23 @@ func TestPVCClearAndFork(t *testing.T) {
 			snapshot := snapshotFactory()
 			err := snapshot.AddNodeInfo(framework.NewTestNodeInfo(node, pod1))
 			assert.NoError(t, err)
-			volumeExists := snapshot.IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", "claim1"))
+			volumeExists := snapshot.StorageInfos().IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", "claim1"))
 			assert.Equal(t, true, volumeExists)
 
 			snapshot.Fork()
 			assert.NoError(t, err)
-			volumeExists = snapshot.IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", "claim1"))
+			volumeExists = snapshot.StorageInfos().IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", "claim1"))
 			assert.Equal(t, true, volumeExists)
 
 			err = snapshot.AddPod(pod2, "node")
 			assert.NoError(t, err)
 
-			volumeExists = snapshot.IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", "claim2"))
+			volumeExists = snapshot.StorageInfos().IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", "claim2"))
 			assert.Equal(t, true, volumeExists)
 
 			snapshot.Revert()
 
-			volumeExists = snapshot.IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", "claim2"))
+			volumeExists = snapshot.StorageInfos().IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", "claim2"))
 			assert.Equal(t, false, volumeExists)
 
 		})
@@ -718,11 +718,11 @@ func TestPVCClearAndFork(t *testing.T) {
 			snapshot := snapshotFactory()
 			err := snapshot.AddNodeInfo(framework.NewTestNodeInfo(node, pod1))
 			assert.NoError(t, err)
-			volumeExists := snapshot.IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", "claim1"))
+			volumeExists := snapshot.StorageInfos().IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", "claim1"))
 			assert.Equal(t, true, volumeExists)
 
 			snapshot.Clear()
-			volumeExists = snapshot.IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", "claim1"))
+			volumeExists = snapshot.StorageInfos().IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", "claim1"))
 			assert.Equal(t, false, volumeExists)
 
 		})
