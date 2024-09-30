@@ -153,15 +153,6 @@ func (data *internalBasicSnapshotData) addNode(node *apiv1.Node) error {
 	return nil
 }
 
-func (data *internalBasicSnapshotData) addNodes(nodes []*apiv1.Node) error {
-	for _, node := range nodes {
-		if err := data.addNode(node); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 func (data *internalBasicSnapshotData) removeNode(nodeName string) error {
 	if _, found := data.nodeInfoMap[nodeName]; !found {
 		return ErrNodeNotFound
@@ -241,14 +232,30 @@ func (snapshot *BasicClusterSnapshot) AddNodeInfo(nodeInfo *framework.NodeInfo) 
 	return nil
 }
 
+// SetClusterState sets the cluster state.
+func (snapshot *BasicClusterSnapshot) SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod) error {
+	snapshot.Clear()
+
+	knownNodes := make(map[string]bool)
+	for _, node := range nodes {
+		if err := snapshot.AddNode(node); err != nil {
+			return err
+		}
+		knownNodes[node.Name] = true
+	}
+	for _, pod := range scheduledPods {
+		if knownNodes[pod.Spec.NodeName] {
+			if err := snapshot.AddPod(pod, pod.Spec.NodeName); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
 // AddNode adds node to the snapshot.
 func (snapshot *BasicClusterSnapshot) AddNode(node *apiv1.Node) error {
 	return snapshot.getInternalData().addNode(node)
-}
-
-// AddNodes adds nodes in batch to the snapshot.
-func (snapshot *BasicClusterSnapshot) AddNodes(nodes []*apiv1.Node) error {
-	return snapshot.getInternalData().addNodes(nodes)
 }
 
 // RemoveNode removes nodes (and pods scheduled to it) from the snapshot.
