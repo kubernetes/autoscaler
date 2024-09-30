@@ -108,9 +108,9 @@ func validTestCases(t *testing.T) []modificationTestCase {
 			},
 		},
 		{
-			name: "add node with pods",
+			name: "add nodeInfo",
 			op: func(snapshot ClusterSnapshot) {
-				err := snapshot.AddNodeWithPods(node, []*apiv1.Pod{pod})
+				err := snapshot.AddNodeInfo(framework.NewTestNodeInfo(node, pod))
 				assert.NoError(t, err)
 			},
 			modifiedState: snapshotState{
@@ -434,8 +434,8 @@ func TestNodeAlreadyExists(t *testing.T) {
 		{"add node", func(snapshot ClusterSnapshot) error {
 			return snapshot.AddNode(node)
 		}},
-		{"add node with pod", func(snapshot ClusterSnapshot) error {
-			return snapshot.AddNodeWithPods(node, []*apiv1.Pod{pod})
+		{"add nodeInfo", func(snapshot ClusterSnapshot) error {
+			return snapshot.AddNodeInfo(framework.NewTestNodeInfo(node, pod))
 		}},
 	}
 
@@ -624,7 +624,7 @@ func TestPVCUsedByPods(t *testing.T) {
 		for _, tc := range testcase {
 			t.Run(fmt.Sprintf("%s with snapshot (%s)", tc.desc, snapshotName), func(t *testing.T) {
 				snapshot := snapshotFactory()
-				err := snapshot.AddNodeWithPods(tc.node, tc.pods)
+				err := snapshot.AddNodeInfo(framework.NewTestNodeInfo(tc.node, tc.pods...))
 				assert.NoError(t, err)
 
 				volumeExists := snapshot.IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", tc.claimName))
@@ -694,7 +694,7 @@ func TestPVCClearAndFork(t *testing.T) {
 	for snapshotName, snapshotFactory := range snapshots {
 		t.Run(fmt.Sprintf("fork and revert snapshot with pvc pods with snapshot: %s", snapshotName), func(t *testing.T) {
 			snapshot := snapshotFactory()
-			err := snapshot.AddNodeWithPods(node, []*apiv1.Pod{pod1})
+			err := snapshot.AddNodeInfo(framework.NewTestNodeInfo(node, pod1))
 			assert.NoError(t, err)
 			volumeExists := snapshot.IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", "claim1"))
 			assert.Equal(t, true, volumeExists)
@@ -719,7 +719,7 @@ func TestPVCClearAndFork(t *testing.T) {
 
 		t.Run(fmt.Sprintf("clear snapshot with pvc pods with snapshot: %s", snapshotName), func(t *testing.T) {
 			snapshot := snapshotFactory()
-			err := snapshot.AddNodeWithPods(node, []*apiv1.Pod{pod1})
+			err := snapshot.AddNodeInfo(framework.NewTestNodeInfo(node, pod1))
 			assert.NoError(t, err)
 			volumeExists := snapshot.IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", "claim1"))
 			assert.Equal(t, true, volumeExists)

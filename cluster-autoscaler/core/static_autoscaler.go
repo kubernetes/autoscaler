@@ -689,13 +689,9 @@ func (a *StaticAutoscaler) addUpcomingNodesToClusterSnapshot(upcomingCounts map[
 		}
 		isUpcomingNodeGroup := a.processors.AsyncNodeGroupStateChecker.IsUpcoming(nodeGroup)
 		for _, upcomingNode := range upcomingNodes {
-			var pods []*apiv1.Pod
-			for _, podInfo := range upcomingNode.Pods() {
-				pods = append(pods, podInfo.Pod)
-			}
-			err := a.ClusterSnapshot.AddNodeWithPods(upcomingNode.Node(), pods)
+			err := a.ClusterSnapshot.AddNodeInfo(upcomingNode)
 			if err != nil {
-				return fmt.Errorf("Failed to add upcoming node %s to cluster snapshot: %w", upcomingNode.Node().Name, err)
+				return fmt.Errorf("failed to add upcoming node %s to cluster snapshot: %w", upcomingNode.Node().Name, err)
 			}
 			if isUpcomingNodeGroup {
 				upcomingNodesFromUpcomingNodeGroups++
