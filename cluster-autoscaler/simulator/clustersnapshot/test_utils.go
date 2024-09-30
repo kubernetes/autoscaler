@@ -21,6 +21,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 )
 
 // InitializeClusterSnapshotOrDie clears cluster snapshot and then initializes it with given set of nodes and pods.
@@ -35,7 +36,7 @@ func InitializeClusterSnapshotOrDie(
 	snapshot.Clear()
 
 	for _, node := range nodes {
-		err = snapshot.AddNode(node)
+		err = snapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
 		assert.NoError(t, err, "error while adding node %s", node.Name)
 	}
 

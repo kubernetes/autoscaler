@@ -423,24 +423,19 @@ func (snapshot *DeltaClusterSnapshot) Initialize(nodes []*apiv1.Node, scheduledP
 
 	knownNodes := make(map[string]bool)
 	for _, node := range nodes {
-		if err := snapshot.AddNode(node); err != nil {
+		if err := snapshot.data.addNode(node); err != nil {
 			return err
 		}
 		knownNodes[node.Name] = true
 	}
 	for _, pod := range scheduledPods {
 		if knownNodes[pod.Spec.NodeName] {
-			if err := snapshot.AddPod(pod, pod.Spec.NodeName); err != nil {
+			if err := snapshot.data.addPod(pod, pod.Spec.NodeName); err != nil {
 				return err
 			}
 		}
 	}
 	return nil
-}
-
-// AddNode adds node to the snapshot.
-func (snapshot *DeltaClusterSnapshot) AddNode(node *apiv1.Node) error {
-	return snapshot.data.addNode(node)
 }
 
 // RemoveNode removes nodes (and pods scheduled to it) from the snapshot.
