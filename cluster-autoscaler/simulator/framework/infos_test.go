@@ -208,6 +208,91 @@ func TestNodeInfo(t *testing.T) {
 	}
 }
 
+func TestDeepCopyNodeInfo(t *testing.T) {
+	node := test.BuildTestNode("node", 1000, 1000)
+	pods := []*PodInfo{
+		{Pod: test.BuildTestPod("p1", 80, 0, test.WithNodeName(node.Name))},
+		{
+			Pod: test.BuildTestPod("p2", 80, 0, test.WithNodeName(node.Name)),
+			NeededResourceClaims: []*resourceapi.ResourceClaim{
+				{ObjectMeta: v1.ObjectMeta{Name: "claim1"}, Spec: resourceapi.ResourceClaimSpec{Devices: resourceapi.DeviceClaim{Requests: []resourceapi.DeviceRequest{{Name: "req1"}}}}},
+				{ObjectMeta: v1.ObjectMeta{Name: "claim2"}, Spec: resourceapi.ResourceClaimSpec{Devices: resourceapi.DeviceClaim{Requests: []resourceapi.DeviceRequest{{Name: "req2"}}}}},
+			},
+		},
+	}
+	slices := []*resourceapi.ResourceSlice{
+		{ObjectMeta: v1.ObjectMeta{Name: "slice1"}, Spec: resourceapi.ResourceSliceSpec{NodeName: "node"}},
+		{ObjectMeta: v1.ObjectMeta{Name: "slice2"}, Spec: resourceapi.ResourceSliceSpec{NodeName: "node"}},
+	}
+
+	for _, tc := range []struct {
+		testName string
+		nodeInfo *NodeInfo
+	}{
+		{
+			testName: "empty NodeInfo",
+			nodeInfo: NewNodeInfo(nil, nil),
+		},
+		{
+			testName: "NodeInfo with only Node set",
+			nodeInfo: NewNodeInfo(node, nil),
+		},
+		{
+			testName: "NodeInfo with only Pods set",
+			nodeInfo: NewNodeInfo(nil, nil, pods...),
+		},
+		{
+			testName: "NodeInfo with both Node and Pods set",
+			nodeInfo: NewNodeInfo(node, nil, pods...),
+		},
+		{
+			testName: "NodeInfo with Node, ResourceSlices, and Pods set",
+			nodeInfo: NewNodeInfo(node, slices, pods...),
+		},
+	} {
+		t.Run(tc.testName, func(t *testing.T) {
+			// Verify that the contents are identical after copying.
+			nodeInfoCopy := tc.nodeInfo.DeepCopy()
+			if diff := cmp.Diff(tc.nodeInfo, nodeInfoCopy,
+				cmp.AllowUnexported(schedulerframework.NodeInfo{}, NodeInfo{}, PodInfo{}, podExtraInfo{}),
+				// We don't care about this field staying the same, and it differs because it's a global counter bumped
+				// on every AddPod.
+				cmpopts.IgnoreFields(schedulerframework.NodeInfo{}, "Generation"),
+			); diff != "" {
+				t.Errorf("nodeInfo differs after DeepCopyNodeInfo, diff (-want +got): %s", diff)
+			}
+
+			// Verify that the object addresses changed in the copy.
+			if tc.nodeInfo == nodeInfoCopy {
+				t.Error("nodeInfo address identical after DeepCopyNodeInfo")
+			}
+			if tc.nodeInfo.ToScheduler() == nodeInfoCopy.ToScheduler() {
+				t.Error("schedulerframework.NodeInfo address identical after DeepCopyNodeInfo")
+			}
+			for i := range len(tc.nodeInfo.LocalResourceSlices) {
+				if tc.nodeInfo.LocalResourceSlices[i] == nodeInfoCopy.LocalResourceSlices[i] {
+					t.Errorf("%d-th LocalResourceSlice address identical after DeepCopyNodeInfo", i)
+				}
+			}
+			for podIndex := range len(tc.nodeInfo.Pods()) {
+				oldPodInfo := tc.nodeInfo.Pods()[podIndex]
+				newPodInfo := nodeInfoCopy.Pods()[podIndex]
+				if oldPodInfo == newPodInfo {
+					t.Errorf("%d-th PodInfo address identical after DeepCopyNodeInfo", podIndex)
+				}
+				if oldPodInfo.Pod == newPodInfo.Pod {
+					t.Errorf("%d-th PodInfo.Pod address identical after DeepCopyNodeInfo", podIndex)
+				}
+				for claimIndex := range len(newPodInfo.NeededResourceClaims) {
+					if oldPodInfo.NeededResourceClaims[podIndex] == newPodInfo.NeededResourceClaims[podIndex] {
+						t.Errorf("%d-th PodInfo - %d-th NeededResourceClaim address identical after DeepCopyNodeInfo", podIndex, claimIndex)
+					}
+				}
+			}
+		})
+	}
+}
+
 func testPodInfos(pods []*apiv1.Pod, addClaims bool) []*PodInfo {
 	var result []*PodInfo
 	for _, pod := range pods {

@@ -21,10 +21,10 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	core_utils "k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 	"k8s.io/klog/v2"
 )
 
@@ -210,7 +210,7 @@ func (e *BinpackingNodeEstimator) addNewNodeToSnapshot(
 	estimationState *estimationState,
 	template *framework.NodeInfo,
 ) error {
-	newNodeInfo := scheduler.DeepCopyTemplateNode(template, fmt.Sprintf("e-%d", estimationState.newNodeNameIndex))
+	newNodeInfo := core_utils.NodeInfoSanitizedDeepCopy(template, fmt.Sprintf("e-%d", estimationState.newNodeNameIndex))
 	if err := e.clusterSnapshot.AddNodeInfo(newNodeInfo); err != nil {
 		return err
 	}
