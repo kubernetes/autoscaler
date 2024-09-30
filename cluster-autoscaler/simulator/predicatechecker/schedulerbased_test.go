@@ -24,6 +24,7 @@ import (
 
 	testconfig "k8s.io/autoscaler/cluster-autoscaler/config/test"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	scheduler "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
@@ -144,7 +145,7 @@ func TestCheckPredicate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var err error
 			clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot()
-			err = clusterSnapshot.AddNodeWithPods(tt.node, tt.scheduledPods)
+			err = clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(tt.node, tt.scheduledPods...))
 			assert.NoError(t, err)
 
 			predicateError := tt.predicateChecker.CheckPredicates(clusterSnapshot, tt.testPod, tt.node.Name)

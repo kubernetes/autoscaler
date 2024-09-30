@@ -43,6 +43,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/observers/nodegroupchange"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupconfig"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups/asyncnodegroups"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/utilization"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
@@ -1156,7 +1157,7 @@ func TestStartDeletion(t *testing.T) {
 				csr := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, ctx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}), asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker())
 				for _, bucket := range emptyNodeGroupViews {
 					for _, node := range bucket.Nodes {
-						err := ctx.ClusterSnapshot.AddNodeWithPods(node, tc.pods[node.Name])
+						err := ctx.ClusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(node, tc.pods[node.Name]...))
 						if err != nil {
 							t.Fatalf("Couldn't add node %q to snapshot: %v", node.Name, err)
 						}
@@ -1168,7 +1169,7 @@ func TestStartDeletion(t *testing.T) {
 						if !found {
 							t.Fatalf("Drain node %q doesn't have pods defined in the test case.", node.Name)
 						}
-						err := ctx.ClusterSnapshot.AddNodeWithPods(node, pods)
+						err := ctx.ClusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(node, pods...))
 						if err != nil {
 							t.Fatalf("Couldn't add node %q to snapshot: %v", node.Name, err)
 						}
