@@ -244,6 +244,9 @@ extraVolumeSecrets: {}
   #     - key: subkey
   #       path: mypath
 
+# initContainers -- Any additional init containers.
+initContainers: []
+
 # fullnameOverride -- String to fully override `cluster-autoscaler.fullname` template.
 fullnameOverride: ""
 
