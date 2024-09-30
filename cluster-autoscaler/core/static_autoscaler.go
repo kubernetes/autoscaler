@@ -659,7 +659,11 @@ func (a *StaticAutoscaler) addUpcomingNodesToClusterSnapshot(upcomingCounts map[
 	nodeGroups := a.nodeGroupsById()
 	upcomingNodeGroups := make(map[string]int)
 	upcomingNodesFromUpcomingNodeGroups := 0
-	for nodeGroupName, upcomingNodeInfos := range getUpcomingNodeInfos(upcomingCounts, nodeInfosForGroups) {
+	upcomingNodeInfosPerNg, err := getUpcomingNodeInfos(upcomingCounts, nodeInfosForGroups)
+	if err != nil {
+		return err
+	}
+	for nodeGroupName, upcomingNodeInfos := range upcomingNodeInfosPerNg {
 		nodeGroup := nodeGroups[nodeGroupName]
 		if nodeGroup == nil {
 			return fmt.Errorf("failed to find node group: %s", nodeGroupName)
@@ -1008,7 +1012,7 @@ func allPodsAreNew(pods []*apiv1.Pod, currentTime time.Time) bool {
 	return found && oldest.Add(unschedulablePodWithGpuTimeBuffer).After(currentTime)
 }
 
-func getUpcomingNodeInfos(upcomingCounts map[string]int, nodeInfos map[string]*framework.NodeInfo) map[string][]*framework.NodeInfo {
+func getUpcomingNodeInfos(upcomingCounts map[string]int, nodeInfos map[string]*framework.NodeInfo) (map[string][]*framework.NodeInfo, error) {
 	upcomingNodes := make(map[string][]*framework.NodeInfo)
 	for nodeGroup, numberOfNodes := range upcomingCounts {
 		nodeTemplate, found := nodeInfos[nodeGroup]
@@ -1027,11 +1031,15 @@ func getUpcomingNodeInfos(upcomingCounts map[string]int, nodeInfos map[string]*f
 			// Ensure new nodes have different names because nodeName
 			// will be used as a map key. Also deep copy pods (daemonsets &
 			// any pods added by cloud provider on template).
-			nodes = append(nodes, simulator.NodeInfoSanitizedDeepCopy(nodeTemplate, fmt.Sprintf("upcoming-%d", i)))
+			freshNodeInfo, err := simulator.SanitizedNodeInfo(nodeTemplate, fmt.Sprintf("upcoming-%d", i))
+			if err != nil {
+				return nil, err
+			}
+			nodes = append(nodes, freshNodeInfo)
 		}
 		upcomingNodes[nodeGroup] = nodes
 	}
-	return upcomingNodes
+	return upcomingNodes, nil
 }
 
 func calculateCoresMemoryTotal(nodes []*apiv1.Node, timestamp time.Time) (int64, int64) {
