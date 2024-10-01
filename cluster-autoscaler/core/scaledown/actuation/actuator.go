@@ -331,7 +331,7 @@ func (a *Actuator) scaleDownNodeToReport(node *apiv1.Node, drain bool) (*status.
 	}
 
 	gpuConfig := a.ctx.CloudProvider.GetNodeGpuConfig(node)
-	utilInfo, err := utilization.Calculate(nodeInfo, ignoreDaemonSetsUtilization, a.ctx.IgnoreMirrorPodsUtilization, gpuConfig, time.Now())
+	utilInfo, err := utilization.Calculate(nodeInfo, ignoreDaemonSetsUtilization, a.ctx.IgnoreMirrorPodsUtilization, a.ctx.DynamicResourceAllocationEnabled, gpuConfig, time.Now())
 	if err != nil {
 		return nil, err
 	}
