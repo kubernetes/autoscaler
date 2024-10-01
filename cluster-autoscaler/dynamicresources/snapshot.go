@@ -21,6 +21,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	resourceapi "k8s.io/api/resource/v1alpha3"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 type resourceClaimRef struct {
@@ -36,6 +37,24 @@ type Snapshot struct {
 	resourceSlicesByNodeName   map[string][]*resourceapi.ResourceSlice
 	nonNodeLocalResourceSlices []*resourceapi.ResourceSlice
 	deviceClasses              map[string]*resourceapi.DeviceClass
+}
+
+// ResourceClaims exposes the Snapshot as schedulerframework.ResourceClaimTracker, in order to interact with
+// the scheduler framework.
+func (s Snapshot) ResourceClaims() schedulerframework.ResourceClaimTracker {
+	return snapshotClaimTracker(s)
+}
+
+// ResourceSlices exposes the Snapshot as schedulerframework.ResourceSliceLister, in order to interact with
+// the scheduler framework.
+func (s Snapshot) ResourceSlices() schedulerframework.ResourceSliceLister {
+	return snapshotSliceLister(s)
+}
+
+// DeviceClasses exposes the Snapshot as schedulerframework.DeviceClassLister, in order to interact with
+// the scheduler framework.
+func (s Snapshot) DeviceClasses() schedulerframework.DeviceClassLister {
+	return snapshotClassLister(s)
 }
 
 // Clone returns a copy of this Snapshot that can be independently modified without affecting this Snapshot.

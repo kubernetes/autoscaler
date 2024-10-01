@@ -329,7 +329,7 @@ func TestDebugInfo(t *testing.T) {
 }
 
 func newTestFwHandleWithCustomConfigOrDie(t *testing.T, schedConfig *config.KubeSchedulerConfiguration) *framework.Handle {
-	fwHandle, err := framework.NewHandle(informers.NewSharedInformerFactory(clientsetfake.NewSimpleClientset(), 0), schedConfig)
+	fwHandle, err := framework.NewHandle(informers.NewSharedInformerFactory(clientsetfake.NewSimpleClientset(), 0), schedConfig, true)
 	if err != nil {
 		t.Error(err)
 	}

@@ -19,13 +19,20 @@ package framework
 import (
 	"fmt"
 
+	resourceapi "k8s.io/api/resource/v1alpha3"
+	"k8s.io/apimachinery/pkg/types"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
+
+type SharedLister interface {
+	schedulerframework.SharedLister
+	schedulerframework.SharedDraManager
+}
 
 // DelegatingSchedulerSharedLister is an implementation of scheduler.SharedLister which
 // passes logic to delegate. Delegate can be updated.
 type DelegatingSchedulerSharedLister struct {
-	delegate schedulerframework.SharedLister
+	delegate SharedLister
 }
 
 // NewDelegatingSchedulerSharedLister creates new NewDelegatingSchedulerSharedLister
@@ -45,8 +52,20 @@ func (lister *DelegatingSchedulerSharedLister) StorageInfos() schedulerframework
 	return lister.delegate.StorageInfos()
 }
 
+func (lister *DelegatingSchedulerSharedLister) ResourceClaims() schedulerframework.ResourceClaimTracker {
+	return lister.delegate.ResourceClaims()
+}
+
+func (lister *DelegatingSchedulerSharedLister) ResourceSlices() schedulerframework.ResourceSliceLister {
+	return lister.delegate.ResourceSlices()
+}
+
+func (lister *DelegatingSchedulerSharedLister) DeviceClasses() schedulerframework.DeviceClassLister {
+	return lister.delegate.DeviceClasses()
+}
+
 // UpdateDelegate updates the delegate
-func (lister *DelegatingSchedulerSharedLister) UpdateDelegate(delegate schedulerframework.SharedLister) {
+func (lister *DelegatingSchedulerSharedLister) UpdateDelegate(delegate SharedLister) {
 	lister.delegate = delegate
 }
 
@@ -58,6 +77,9 @@ func (lister *DelegatingSchedulerSharedLister) ResetDelegate() {
 type unsetSharedLister struct{}
 type unsetNodeInfoLister unsetSharedLister
 type unsetStorageInfoLister unsetSharedLister
+type unsetDeviceClassLister unsetSharedLister
+type unsetResourceSliceLister unsetSharedLister
+type unsetResourceClaimsTracker unsetSharedLister
 
 // List always returns an error
 func (lister *unsetNodeInfoLister) List() ([]*schedulerframework.NodeInfo, error) {
@@ -82,6 +104,48 @@ func (lister *unsetNodeInfoLister) Get(nodeName string) (*schedulerframework.Nod
 func (lister *unsetStorageInfoLister) IsPVCUsedByPods(key string) bool {
 	return false
 }
+func (u unsetDeviceClassLister) List() ([]*resourceapi.DeviceClass, error) {
+	return nil, fmt.Errorf("lister not set in delegate")
+}
+
+func (u unsetDeviceClassLister) Get(className string) (*resourceapi.DeviceClass, error) {
+	return nil, fmt.Errorf("lister not set in delegate")
+}
+
+func (u unsetResourceSliceLister) List() ([]*resourceapi.ResourceSlice, error) {
+	return nil, fmt.Errorf("lister not set in delegate")
+}
+
+func (u unsetResourceClaimsTracker) Get(namespace, claimName string) (*resourceapi.ResourceClaim, error) {
+	return nil, fmt.Errorf("lister not set in delegate")
+}
+
+func (u unsetResourceClaimsTracker) List() ([]*resourceapi.ResourceClaim, error) {
+	return nil, fmt.Errorf("lister not set in delegate")
+}
+
+func (u unsetResourceClaimsTracker) ListAllAllocated() ([]*resourceapi.ResourceClaim, error) {
+	return nil, fmt.Errorf("lister not set in delegate")
+}
+
+func (u unsetResourceClaimsTracker) SignalClaimPendingAllocation(claimUid types.UID, allocatedClaim *resourceapi.ResourceClaim) error {
+	return fmt.Errorf("lister not set in delegate")
+}
+
+func (u unsetResourceClaimsTracker) ClaimHasPendingAllocation(claimUid types.UID) bool {
+	return false
+}
+
+func (u unsetResourceClaimsTracker) RemoveClaimPendingAllocation(claimUid types.UID) (deleted bool) {
+	return false
+}
+
+func (u unsetResourceClaimsTracker) AssumeClaimAfterAPICall(claim *resourceapi.ResourceClaim) error {
+	return fmt.Errorf("lister not set in delegate")
+}
+
+func (u unsetResourceClaimsTracker) AssumedClaimRestore(namespace, claimName string) {
+}
 
 // NodeInfos: Pods returns a fake NodeInfoLister which always returns an error
 func (lister *unsetSharedLister) NodeInfos() schedulerframework.NodeInfoLister {
@@ -91,6 +155,19 @@ func (lister *unsetSharedLister) NodeInfos() schedulerframework.NodeInfoLister {
 // StorageInfos: Pods returns a fake StorageInfoLister which always returns an error
 func (lister *unsetSharedLister) StorageInfos() schedulerframework.StorageInfoLister {
 	return (*unsetStorageInfoLister)(lister)
+}
+
+func (lister *unsetSharedLister) ResourceClaims() schedulerframework.ResourceClaimTracker {
+	return (*unsetResourceClaimsTracker)(lister)
+}
+
+func (lister *unsetSharedLister) ResourceSlices() schedulerframework.ResourceSliceLister {
+	return (*unsetResourceSliceLister)(lister)
+}
+
+func (lister *unsetSharedLister) DeviceClasses() schedulerframework.DeviceClassLister {
+	return (*unsetDeviceClassLister)(lister)
+
 }
 
 var unsetSharedListerSingleton *unsetSharedLister

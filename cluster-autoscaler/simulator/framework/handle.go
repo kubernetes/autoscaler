@@ -33,7 +33,7 @@ type Handle struct {
 	DelegatingLister *DelegatingSchedulerSharedLister
 }
 
-func NewHandle(informerFactory informers.SharedInformerFactory, schedConfig *config.KubeSchedulerConfiguration) (*Handle, error) {
+func NewHandle(informerFactory informers.SharedInformerFactory, schedConfig *config.KubeSchedulerConfiguration, draEnabled bool) (*Handle, error) {
 	if schedConfig == nil {
 		var err error
 		schedConfig, err = scheduler_config.Default()
@@ -47,12 +47,19 @@ func NewHandle(informerFactory informers.SharedInformerFactory, schedConfig *con
 	}
 	sharedLister := NewDelegatingSchedulerSharedLister()
 
+	opts := []schedulerframeworkruntime.Option{
+		schedulerframeworkruntime.WithInformerFactory(informerFactory),
+		schedulerframeworkruntime.WithSnapshotSharedLister(sharedLister),
+	}
+	if draEnabled {
+		opts = append(opts, schedulerframeworkruntime.WithSharedDraManager(sharedLister))
+	}
+
 	framework, err := schedulerframeworkruntime.NewFramework(
 		context.TODO(),
 		scheduler_plugins.NewInTreeRegistry(),
 		&schedConfig.Profiles[0],
-		schedulerframeworkruntime.WithInformerFactory(informerFactory),
-		schedulerframeworkruntime.WithSnapshotSharedLister(sharedLister),
+		opts...,
 	)
 
 	if err != nil {

@@ -325,6 +325,18 @@ func (snapshot *BasicClusterSnapshot) StorageInfos() schedulerframework.StorageI
 	return (*basicClusterSnapshotStorageLister)(snapshot)
 }
 
+func (snapshot *BasicClusterSnapshot) ResourceClaims() schedulerframework.ResourceClaimTracker {
+	return snapshot.getInternalData().draSnapshot.ResourceClaims()
+}
+
+func (snapshot *BasicClusterSnapshot) ResourceSlices() schedulerframework.ResourceSliceLister {
+	return snapshot.getInternalData().draSnapshot.ResourceSlices()
+}
+
+func (snapshot *BasicClusterSnapshot) DeviceClasses() schedulerframework.DeviceClassLister {
+	return snapshot.getInternalData().draSnapshot.DeviceClasses()
+}
+
 // List returns the list of nodes in the snapshot.
 func (snapshot *basicClusterSnapshotNodeLister) List() ([]*schedulerframework.NodeInfo, error) {
 	return (*BasicClusterSnapshot)(snapshot).getInternalData().listNodeInfos(), nil

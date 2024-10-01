@@ -29,7 +29,7 @@ import (
 // ClusterSnapshot is abstraction of cluster state used for predicate simulations.
 // It exposes mutation methods and can be viewed as scheduler's SharedLister.
 type ClusterSnapshot interface {
-	schedulerframework.SharedLister
+	framework.SharedLister
 
 	// Initialize clears the snapshot and initializes it with real objects from the cluster - Nodes,
 	// scheduled pods, and all DRA objects (including e.g. ResourceClaims referenced by unschedulable Pods,

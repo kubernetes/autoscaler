@@ -389,6 +389,21 @@ func (snapshot *DeltaClusterSnapshot) StorageInfos() schedulerframework.StorageI
 	return (*deltaSnapshotStorageLister)(snapshot)
 }
 
+func (snapshot *DeltaClusterSnapshot) ResourceClaims() schedulerframework.ResourceClaimTracker {
+	// TODO(DRA): Implement DRA support, handle draSnapshot.
+	panic("implement me")
+}
+
+func (snapshot *DeltaClusterSnapshot) ResourceSlices() schedulerframework.ResourceSliceLister {
+	// TODO(DRA): Implement DRA support, handle draSnapshot.
+	panic("implement me")
+}
+
+func (snapshot *DeltaClusterSnapshot) DeviceClasses() schedulerframework.DeviceClassLister {
+	// TODO(DRA): Implement DRA support, handle draSnapshot.
+	panic("implement me")
+}
+
 // NewDeltaClusterSnapshot creates instances of DeltaClusterSnapshot.
 func NewDeltaClusterSnapshot(fwHandle *framework.Handle, draEnabled bool) *DeltaClusterSnapshot {
 	snapshot := &DeltaClusterSnapshot{fwHandle: fwHandle, draEnabled: draEnabled}
