@@ -464,7 +464,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 	allNodes = subtractNodesByName(allNodes, allRegisteredUpcoming)
 	// Remove the nodes from the snapshot as well so that the state is consistent.
 	for _, notStartedNodeName := range allRegisteredUpcoming {
-		err := a.ClusterSnapshot.RemoveNode(notStartedNodeName)
+		err := a.ClusterSnapshot.RemoveNodeInfo(notStartedNodeName)
 		if err != nil {
 			klog.Errorf("Failed to remove NotStarted node %s from cluster snapshot: %v", notStartedNodeName, err)
 			// ErrNodeNotFound shouldn't happen (so it needs to be logged above if it does), but what we care about here is that the
@@ -660,16 +660,16 @@ func (a *StaticAutoscaler) addUpcomingNodesToClusterSnapshot(upcomingCounts map[
 	nodeGroups := a.nodeGroupsById()
 	upcomingNodeGroups := make(map[string]int)
 	upcomingNodesFromUpcomingNodeGroups := 0
-	for nodeGroupName, upcomingNodes := range getUpcomingNodeInfos(upcomingCounts, nodeInfosForGroups) {
+	for nodeGroupName, upcomingNodeInfos := range getUpcomingNodeInfos(upcomingCounts, nodeInfosForGroups) {
 		nodeGroup := nodeGroups[nodeGroupName]
 		if nodeGroup == nil {
 			return fmt.Errorf("failed to find node group: %s", nodeGroupName)
 		}
 		isUpcomingNodeGroup := a.processors.AsyncNodeGroupStateChecker.IsUpcoming(nodeGroup)
-		for _, upcomingNode := range upcomingNodes {
-			err := a.ClusterSnapshot.AddNodeInfo(upcomingNode)
+		for _, upcomingNodeInfo := range upcomingNodeInfos {
+			err := a.ClusterSnapshot.AddNodeInfo(upcomingNodeInfo)
 			if err != nil {
-				return fmt.Errorf("failed to add upcoming node %s to cluster snapshot: %w", upcomingNode.Node().Name, err)
+				return fmt.Errorf("failed to add upcoming node %s to cluster snapshot: %w", upcomingNodeInfo.Node().Name, err)
 			}
 			if isUpcomingNodeGroup {
 				upcomingNodesFromUpcomingNodeGroups++

@@ -133,7 +133,7 @@ func BenchmarkAddPods(b *testing.B) {
 			err := clusterSnapshot.SetClusterState(nodes, nil)
 			assert.NoError(b, err)
 			b.ResetTimer()
-			b.Run(fmt.Sprintf("%s: AddPod() 30*%d", snapshotName, tc), func(b *testing.B) {
+			b.Run(fmt.Sprintf("%s: ForceAddPod() 30*%d", snapshotName, tc), func(b *testing.B) {
 				for i := 0; i < b.N; i++ {
 					b.StopTimer()
 
@@ -143,7 +143,7 @@ func BenchmarkAddPods(b *testing.B) {
 					}
 					b.StartTimer()
 					for _, pod := range pods {
-						err = clusterSnapshot.AddPod(pod, pod.Spec.NodeName)
+						err = clusterSnapshot.ForceAddPod(pod, pod.Spec.NodeName)
 						if err != nil {
 							assert.NoError(b, err)
 						}
