@@ -159,7 +159,7 @@ func (data *internalBasicSnapshotData) addNode(node *apiv1.Node) error {
 	return nil
 }
 
-func (data *internalBasicSnapshotData) removeNode(nodeName string) error {
+func (data *internalBasicSnapshotData) removeNodeInfo(nodeName string) error {
 	if _, found := data.nodeInfoMap[nodeName]; !found {
 		return ErrNodeNotFound
 	}
@@ -170,7 +170,7 @@ func (data *internalBasicSnapshotData) removeNode(nodeName string) error {
 	return nil
 }
 
-func (data *internalBasicSnapshotData) addPod(pod *apiv1.Pod, nodeName string) error {
+func (data *internalBasicSnapshotData) schedulePod(pod *apiv1.Pod, nodeName string) error {
 	if _, found := data.nodeInfoMap[nodeName]; !found {
 		return ErrNodeNotFound
 	}
@@ -179,7 +179,7 @@ func (data *internalBasicSnapshotData) addPod(pod *apiv1.Pod, nodeName string) e
 	return nil
 }
 
-func (data *internalBasicSnapshotData) removePod(namespace, podName, nodeName string) error {
+func (data *internalBasicSnapshotData) unschedulePod(namespace, podName, nodeName string) error {
 	nodeInfo, found := data.nodeInfoMap[nodeName]
 	if !found {
 		return ErrNodeNotFound
@@ -228,7 +228,7 @@ func (snapshot *BasicClusterSnapshot) AddNodeInfo(nodeInfo *framework.NodeInfo) 
 		return err
 	}
 	for _, podInfo := range nodeInfo.Pods {
-		if err := snapshot.getInternalData().addPod(podInfo.Pod, nodeInfo.Node().Name); err != nil {
+		if err := snapshot.getInternalData().schedulePod(podInfo.Pod, nodeInfo.Node().Name); err != nil {
 			return err
 		}
 	}
@@ -252,7 +252,7 @@ func (snapshot *BasicClusterSnapshot) Initialize(nodes []*apiv1.Node, scheduledP
 	}
 	for _, pod := range scheduledPods {
 		if knownNodes[pod.Spec.NodeName] {
-			if err := baseData.addPod(pod, pod.Spec.NodeName); err != nil {
+			if err := baseData.schedulePod(pod, pod.Spec.NodeName); err != nil {
 				return err
 			}
 		}
@@ -260,19 +260,19 @@ func (snapshot *BasicClusterSnapshot) Initialize(nodes []*apiv1.Node, scheduledP
 	return nil
 }
 
-// RemoveNode removes nodes (and pods scheduled to it) from the snapshot.
-func (snapshot *BasicClusterSnapshot) RemoveNode(nodeName string) error {
-	return snapshot.getInternalData().removeNode(nodeName)
+// RemoveNodeInfo removes nodes (and pods scheduled to it) from the snapshot.
+func (snapshot *BasicClusterSnapshot) RemoveNodeInfo(nodeName string) error {
+	return snapshot.getInternalData().removeNodeInfo(nodeName)
 }
 
-// AddPod adds pod to the snapshot and schedules it to given node.
-func (snapshot *BasicClusterSnapshot) AddPod(pod *apiv1.Pod, nodeName string) error {
-	return snapshot.getInternalData().addPod(pod, nodeName)
+// SchedulePod adds pod to the snapshot and schedules it to given node.
+func (snapshot *BasicClusterSnapshot) SchedulePod(pod *apiv1.Pod, nodeName string) error {
+	return snapshot.getInternalData().schedulePod(pod, nodeName)
 }
 
-// RemovePod removes pod from the snapshot.
-func (snapshot *BasicClusterSnapshot) RemovePod(namespace, podName, nodeName string) error {
-	return snapshot.getInternalData().removePod(namespace, podName, nodeName)
+// UnschedulePod removes pod from the snapshot.
+func (snapshot *BasicClusterSnapshot) UnschedulePod(namespace, podName, nodeName string) error {
+	return snapshot.getInternalData().unschedulePod(namespace, podName, nodeName)
 }
 
 // IsPVCUsedByPods returns if the pvc is used by any pod

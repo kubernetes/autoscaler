@@ -180,7 +180,7 @@ func (data *internalDeltaSnapshotData) clearPodCaches() {
 	data.pvcNamespaceMap = nil
 }
 
-func (data *internalDeltaSnapshotData) removeNode(nodeName string) error {
+func (data *internalDeltaSnapshotData) removeNodeInfo(nodeName string) error {
 	_, foundInDelta := data.addedNodeInfoMap[nodeName]
 	if foundInDelta {
 		// If node was added within this delta, delete this change.
@@ -230,7 +230,7 @@ func (data *internalDeltaSnapshotData) nodeInfoToModify(nodeName string) (*sched
 	return dni, true
 }
 
-func (data *internalDeltaSnapshotData) addPod(pod *apiv1.Pod, nodeName string) error {
+func (data *internalDeltaSnapshotData) schedulePod(pod *apiv1.Pod, nodeName string) error {
 	ni, found := data.nodeInfoToModify(nodeName)
 	if !found {
 		return ErrNodeNotFound
@@ -243,7 +243,7 @@ func (data *internalDeltaSnapshotData) addPod(pod *apiv1.Pod, nodeName string) e
 	return nil
 }
 
-func (data *internalDeltaSnapshotData) removePod(namespace, name, nodeName string) error {
+func (data *internalDeltaSnapshotData) unschedulePod(namespace, name, nodeName string) error {
 	// This always clones node info, even if the pod is actually missing.
 	// Not sure if we mind, since removing non-existent pod
 	// probably means things are very bad anyway.
@@ -299,12 +299,12 @@ func (data *internalDeltaSnapshotData) commit() (*internalDeltaSnapshotData, err
 		return data, nil
 	}
 	for node := range data.deletedNodeInfos {
-		if err := data.baseData.removeNode(node); err != nil {
+		if err := data.baseData.removeNodeInfo(node); err != nil {
 			return nil, err
 		}
 	}
 	for _, node := range data.modifiedNodeInfoMap {
-		if err := data.baseData.removeNode(node.Node().Name); err != nil {
+		if err := data.baseData.removeNodeInfo(node.Node().Name); err != nil {
 			return nil, err
 		}
 		if err := data.baseData.addNodeInfo(node); err != nil {
@@ -414,7 +414,7 @@ func (snapshot *DeltaClusterSnapshot) AddNodeInfo(nodeInfo *framework.NodeInfo) 
 		return err
 	}
 	for _, podInfo := range nodeInfo.Pods {
-		if err := snapshot.data.addPod(podInfo.Pod, nodeInfo.Node().Name); err != nil {
+		if err := snapshot.data.schedulePod(podInfo.Pod, nodeInfo.Node().Name); err != nil {
 			return err
 		}
 	}
@@ -437,7 +437,7 @@ func (snapshot *DeltaClusterSnapshot) Initialize(nodes []*apiv1.Node, scheduledP
 	}
 	for _, pod := range scheduledPods {
 		if knownNodes[pod.Spec.NodeName] {
-			if err := snapshot.data.addPod(pod, pod.Spec.NodeName); err != nil {
+			if err := snapshot.data.schedulePod(pod, pod.Spec.NodeName); err != nil {
 				return err
 			}
 		}
@@ -445,19 +445,19 @@ func (snapshot *DeltaClusterSnapshot) Initialize(nodes []*apiv1.Node, scheduledP
 	return nil
 }
 
-// RemoveNode removes nodes (and pods scheduled to it) from the snapshot.
-func (snapshot *DeltaClusterSnapshot) RemoveNode(nodeName string) error {
-	return snapshot.data.removeNode(nodeName)
+// RemoveNodeInfo removes nodes (and pods scheduled to it) from the snapshot.
+func (snapshot *DeltaClusterSnapshot) RemoveNodeInfo(nodeName string) error {
+	return snapshot.data.removeNodeInfo(nodeName)
 }
 
-// AddPod adds pod to the snapshot and schedules it to given node.
-func (snapshot *DeltaClusterSnapshot) AddPod(pod *apiv1.Pod, nodeName string) error {
-	return snapshot.data.addPod(pod, nodeName)
+// SchedulePod adds pod to the snapshot and schedules it to given node.
+func (snapshot *DeltaClusterSnapshot) SchedulePod(pod *apiv1.Pod, nodeName string) error {
+	return snapshot.data.schedulePod(pod, nodeName)
 }
 
-// RemovePod removes pod from the snapshot.
-func (snapshot *DeltaClusterSnapshot) RemovePod(namespace, podName, nodeName string) error {
-	return snapshot.data.removePod(namespace, podName, nodeName)
+// UnschedulePod removes pod from the snapshot.
+func (snapshot *DeltaClusterSnapshot) UnschedulePod(namespace, podName, nodeName string) error {
+	return snapshot.data.unschedulePod(namespace, podName, nodeName)
 }
 
 // IsPVCUsedByPods returns if the pvc is used by any pod

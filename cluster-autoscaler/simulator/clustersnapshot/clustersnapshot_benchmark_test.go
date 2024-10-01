@@ -125,7 +125,7 @@ func BenchmarkListNodeInfos(b *testing.B) {
 	}
 }
 
-func BenchmarkAddPods(b *testing.B) {
+func BenchmarkSchedulePods(b *testing.B) {
 	testCases := []int{1, 10, 100, 1000, 5000, 15000}
 
 	for snapshotName, snapshotFactory := range snapshots {
@@ -139,7 +139,7 @@ func BenchmarkAddPods(b *testing.B) {
 			err = clusterSnapshot.Initialize(nodes, nil, dynamicresources.Snapshot{})
 			assert.NoError(b, err)
 			b.ResetTimer()
-			b.Run(fmt.Sprintf("%s: AddPod() 30*%d", snapshotName, tc), func(b *testing.B) {
+			b.Run(fmt.Sprintf("%s: SchedulePod() 30*%d", snapshotName, tc), func(b *testing.B) {
 				for i := 0; i < b.N; i++ {
 					b.StopTimer()
 
@@ -149,7 +149,7 @@ func BenchmarkAddPods(b *testing.B) {
 					}
 					b.StartTimer()
 					for _, pod := range pods {
-						err = clusterSnapshot.AddPod(pod, pod.Spec.NodeName)
+						err = clusterSnapshot.SchedulePod(pod, pod.Spec.NodeName)
 						if err != nil {
 							assert.NoError(b, err)
 						}

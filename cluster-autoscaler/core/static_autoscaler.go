@@ -486,7 +486,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 	allNodes = subtractNodesByName(allNodes, allRegisteredUpcoming)
 	// Remove the nodes from the snapshot as well so that the state is consistent.
 	for _, notStartedNodeName := range allRegisteredUpcoming {
-		err := a.ClusterSnapshot.RemoveNode(notStartedNodeName)
+		err := a.ClusterSnapshot.RemoveNodeInfo(notStartedNodeName)
 		if err != nil {
 			klog.Errorf("Failed to remove NotStarted node %s from cluster snapshot: %v", notStartedNodeName, err)
 			// ErrNodeNotFound shouldn't happen (so it needs to be logged above if it does), but what we care about here is that the

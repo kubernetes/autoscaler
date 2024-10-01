@@ -219,7 +219,7 @@ func (r *RemovalSimulator) findPlaceFor(removedNode string, pods []*apiv1.Pod, n
 
 	// remove pods from clusterSnapshot first
 	for _, pod := range pods {
-		if err := r.clusterSnapshot.RemovePod(pod.Namespace, pod.Name, removedNode); err != nil {
+		if err := r.clusterSnapshot.UnschedulePod(pod.Namespace, pod.Name, removedNode); err != nil {
 			// just log error
 			klog.Errorf("Simulating removal of %s/%s return error; %v", pod.Namespace, pod.Name, err)
 		}

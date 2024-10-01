@@ -228,7 +228,7 @@ func (e *BinpackingNodeEstimator) tryToAddNode(
 	pod *apiv1.Pod,
 	nodeName string,
 ) error {
-	if err := e.clusterSnapshot.AddPod(pod, nodeName); err != nil {
+	if err := e.clusterSnapshot.SchedulePod(pod, nodeName); err != nil {
 		return fmt.Errorf("Error adding pod %v.%v to node %v in ClusterSnapshot; %v", pod.Namespace, pod.Name, nodeName, err)
 	}
 	estimationState.newNodesWithPods[nodeName] = true
