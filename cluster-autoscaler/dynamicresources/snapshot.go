@@ -21,6 +21,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	resourceapi "k8s.io/api/resource/v1alpha3"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
@@ -55,6 +56,42 @@ func (s Snapshot) ResourceSlices() schedulerframework.ResourceSliceLister {
 // the scheduler framework.
 func (s Snapshot) DeviceClasses() schedulerframework.DeviceClassLister {
 	return snapshotClassLister(s)
+}
+
+// WrapSchedulerNodeInfo wraps the provided *schedulerframework.NodeInfo into an internal *framework.NodeInfo, adding
+// dra information. Node-local ResourceSlices are added to the NodeInfo, and all ResourceClaims referenced by each Pod
+// are added to each PodInfo. Returns an error if any of the Pods is missing a ResourceClaim.
+func (s Snapshot) WrapSchedulerNodeInfo(schedNodeInfo *schedulerframework.NodeInfo) (*framework.NodeInfo, error) {
+	var pods []*framework.PodInfo
+	for _, podInfo := range schedNodeInfo.Pods {
+		podClaims, err := s.PodClaims(podInfo.Pod)
+		if err != nil {
+			return nil, err
+		}
+		pods = append(pods, &framework.PodInfo{
+			Pod:                  podInfo.Pod,
+			NeededResourceClaims: podClaims,
+		})
+	}
+	nodeSlices, _ := s.NodeResourceSlices(schedNodeInfo.Node())
+	return &framework.NodeInfo{
+		NodeInfo:            schedNodeInfo,
+		LocalResourceSlices: nodeSlices,
+		Pods:                pods,
+	}, nil
+}
+
+// WrapSchedulerNodeInfos calls WrapSchedulerNodeInfo() on a list of *schedulerframework.NodeInfos.
+func (s Snapshot) WrapSchedulerNodeInfos(schedNodeInfos []*schedulerframework.NodeInfo) ([]*framework.NodeInfo, error) {
+	var result []*framework.NodeInfo
+	for _, schedNodeInfo := range schedNodeInfos {
+		nodeInfo, err := s.WrapSchedulerNodeInfo(schedNodeInfo)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, nodeInfo)
+	}
+	return result, nil
 }
 
 // Clone returns a copy of this Snapshot that can be independently modified without affecting this Snapshot.

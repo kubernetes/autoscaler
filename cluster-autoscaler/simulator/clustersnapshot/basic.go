@@ -17,9 +17,11 @@ limitations under the License.
 package clustersnapshot
 
 import (
+	"context"
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
+	resourceapi "k8s.io/api/resource/v1alpha3"
 	"k8s.io/autoscaler/cluster-autoscaler/dynamicresources"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
@@ -35,6 +37,7 @@ type BasicClusterSnapshot struct {
 }
 
 type internalBasicSnapshotData struct {
+	owningSnapshot     *BasicClusterSnapshot
 	nodeInfoMap        map[string]*schedulerframework.NodeInfo
 	pvcNamespacePodMap map[string]map[string]bool
 	draSnapshot        dynamicresources.Snapshot
@@ -122,8 +125,9 @@ func (data *internalBasicSnapshotData) removePvcUsedByPod(pod *apiv1.Pod) {
 	}
 }
 
-func newInternalBasicSnapshotData() *internalBasicSnapshotData {
+func newInternalBasicSnapshotData(owningSnapshot *BasicClusterSnapshot) *internalBasicSnapshotData {
 	return &internalBasicSnapshotData{
+		owningSnapshot:     owningSnapshot,
 		nodeInfoMap:        make(map[string]*schedulerframework.NodeInfo),
 		pvcNamespacePodMap: make(map[string]map[string]bool),
 		draSnapshot:        dynamicresources.Snapshot{},
@@ -143,16 +147,27 @@ func (data *internalBasicSnapshotData) clone() *internalBasicSnapshotData {
 		}
 	}
 	return &internalBasicSnapshotData{
+		owningSnapshot:     data.owningSnapshot,
 		nodeInfoMap:        clonedNodeInfoMap,
 		pvcNamespacePodMap: clonedPvcNamespaceNodeMap,
 		draSnapshot:        data.draSnapshot.Clone(),
 	}
 }
 
-func (data *internalBasicSnapshotData) addNode(node *apiv1.Node) error {
+func (data *internalBasicSnapshotData) addNode(node *apiv1.Node, extraSlices []*resourceapi.ResourceSlice) error {
 	if _, found := data.nodeInfoMap[node.Name]; found {
 		return fmt.Errorf("node %s already in snapshot", node.Name)
 	}
+
+	if data.owningSnapshot.draEnabled && len(extraSlices) > 0 {
+		// We need to add extra ResourceSlices to the DRA snapshot. The DRA snapshot should contain all real slices after Initialize(),
+		// so these should be fake node-local slices for a fake duplicated Node.
+		err := data.draSnapshot.AddNodeResourceSlices(node.Name, extraSlices)
+		if err != nil {
+			return fmt.Errorf("couldn't add ResourceSlices to DRA snapshot: %v", err)
+		}
+	}
+
 	nodeInfo := schedulerframework.NewNodeInfo()
 	nodeInfo.SetNode(node)
 	data.nodeInfoMap[node.Name] = nodeInfo
@@ -160,22 +175,77 @@ func (data *internalBasicSnapshotData) addNode(node *apiv1.Node) error {
 }
 
 func (data *internalBasicSnapshotData) removeNodeInfo(nodeName string) error {
-	if _, found := data.nodeInfoMap[nodeName]; !found {
+	nodeInfo, found := data.nodeInfoMap[nodeName]
+	if !found {
 		return ErrNodeNotFound
 	}
-	for _, pod := range data.nodeInfoMap[nodeName].Pods {
+	for _, pod := range nodeInfo.Pods {
 		data.removePvcUsedByPod(pod.Pod)
+		if data.owningSnapshot.draEnabled {
+			data.draSnapshot.RemovePodClaims(pod.Pod)
+		}
 	}
 	delete(data.nodeInfoMap, nodeName)
+	if data.owningSnapshot.draEnabled {
+		data.draSnapshot.RemoveNodeResourceSlices(nodeName)
+	}
 	return nil
 }
 
-func (data *internalBasicSnapshotData) schedulePod(pod *apiv1.Pod, nodeName string) error {
-	if _, found := data.nodeInfoMap[nodeName]; !found {
+func (data *internalBasicSnapshotData) schedulePod(pod *apiv1.Pod, nodeName string, reserveState *schedulerframework.CycleState, extraClaims []*resourceapi.ResourceClaim) error {
+	nodeInfo, found := data.nodeInfoMap[nodeName]
+	if !found {
 		return ErrNodeNotFound
 	}
-	data.nodeInfoMap[nodeName].AddPod(pod)
+
+	if needAllocatedClaims := len(pod.Spec.ResourceClaims); needAllocatedClaims > 0 && data.owningSnapshot.draEnabled {
+		err := data.handlePodClaimsScheduling(pod, nodeInfo.Node(), reserveState, extraClaims)
+		if err != nil {
+			return err
+		}
+	}
+
+	nodeInfo.AddPod(pod)
 	data.addPvcUsedByPod(pod)
+	return nil
+}
+
+func (data *internalBasicSnapshotData) handlePodClaimsScheduling(pod *apiv1.Pod, node *apiv1.Node, reserveState *schedulerframework.CycleState, extraClaims []*resourceapi.ResourceClaim) error {
+	if len(extraClaims) > 0 {
+		// We need to add some extra ResourceClaims to the DRA snapshot. The DRA snapshot should contain all real claims after Initialize(),
+		// so these should be fake pod-owned claims for a fake duplicated pod.
+		err := data.draSnapshot.AddClaims(extraClaims)
+		if err != nil {
+			return fmt.Errorf("error while adding allocated ResosurceClaims for pod %s/%s: %v", pod.Namespace, pod.Name, err)
+		}
+	}
+	if reserveState != nil {
+		// We need to run the scheduler Reserve phase to allocate the appropriate ResourceClaims in the DRA snapshot. The allocations are
+		// actually computed and cached in the Filter phase, and Reserve only grabs them from the cycle state. So this should be quick, but
+		// it needs the cycle state from after running the Filter phase.
+		err := data.owningSnapshot.runReserveNodeForPod(pod, reserveState, node.Name)
+		if err != nil {
+			return fmt.Errorf("error while trying to run Reserve node %s for pod %s/%s: %v", node.Name, pod.Namespace, pod.Name, err)
+		}
+	}
+
+	// The pod isn't added to the ReservedFor field of the claim during the Reserve phase (it happens later, in PreBind). We can just do it
+	// manually here. It shouldn't fail, it only fails if ReservedFor is at max length already, but that is checked during the Filter phase.
+	err := data.draSnapshot.ReservePodClaims(pod)
+	if err != nil {
+		return fmt.Errorf("couldnn't add pod reservations to claims, this shouldn't happen: %v", err)
+	}
+
+	// Verify that all needed claims are tracked in the DRA snapshot, allocated, and available on the Node.
+	claims, err := data.draSnapshot.PodClaims(pod)
+	if err != nil {
+		return fmt.Errorf("couldn't obtain pod %s/%s claims: %v", pod.Namespace, pod.Name, err)
+	}
+	for _, claim := range claims {
+		if available, err := dynamicresources.ClaimAvailableOnNode(claim, node); err != nil || !available {
+			return fmt.Errorf("pod %s/%s needs claim %s to schedule, but it isn't available on node %s (allocated: %v, available: %v, err: %v)", pod.Namespace, pod.Name, claim.Name, node.Name, dynamicresources.ClaimAllocated(claim), available, err)
+		}
+	}
 	return nil
 }
 
@@ -184,19 +254,38 @@ func (data *internalBasicSnapshotData) unschedulePod(namespace, podName, nodeNam
 	if !found {
 		return ErrNodeNotFound
 	}
-	logger := klog.Background()
+	var foundPod *apiv1.Pod
 	for _, podInfo := range nodeInfo.Pods {
 		if podInfo.Pod.Namespace == namespace && podInfo.Pod.Name == podName {
-			data.removePvcUsedByPod(podInfo.Pod)
-			err := nodeInfo.RemovePod(logger, podInfo.Pod)
-			if err != nil {
-				data.addPvcUsedByPod(podInfo.Pod)
-				return fmt.Errorf("cannot remove pod; %v", err)
-			}
-			return nil
+			foundPod = podInfo.Pod
+			break
 		}
 	}
-	return fmt.Errorf("pod %s/%s not in snapshot", namespace, podName)
+
+	if foundPod == nil {
+		return fmt.Errorf("pod %s/%s not in snapshot", namespace, podName)
+	}
+
+	data.removePvcUsedByPod(foundPod)
+
+	logger := klog.Background()
+	err := nodeInfo.RemovePod(logger, foundPod)
+	if err != nil {
+		data.addPvcUsedByPod(foundPod)
+		return fmt.Errorf("cannot remove pod; %v", err)
+	}
+
+	if len(foundPod.Spec.ResourceClaims) == 0 || !data.owningSnapshot.draEnabled {
+		return nil
+	}
+
+	err = data.draSnapshot.UnreservePodClaims(foundPod)
+	if err != nil {
+		nodeInfo.AddPod(foundPod)
+		data.addPvcUsedByPod(foundPod)
+		return fmt.Errorf("cannot unreserve pod's dynamic requests: %v", err)
+	}
+	return nil
 }
 
 // NewBasicClusterSnapshot creates instances of BasicClusterSnapshot.
@@ -210,25 +299,44 @@ func (snapshot *BasicClusterSnapshot) getInternalData() *internalBasicSnapshotDa
 	return snapshot.data[len(snapshot.data)-1]
 }
 
+func (snapshot *BasicClusterSnapshot) runReserveNodeForPod(pod *apiv1.Pod, preReserveCycleState *schedulerframework.CycleState, nodeName string) error {
+	snapshot.fwHandle.DelegatingLister.UpdateDelegate(snapshot)
+	defer snapshot.fwHandle.DelegatingLister.ResetDelegate()
+
+	status := snapshot.fwHandle.Framework.RunReservePluginsReserve(context.Background(), preReserveCycleState, pod, nodeName)
+	if !status.IsSuccess() {
+		return fmt.Errorf("couldn't reserve node %s for pod %s/%s: %v", nodeName, pod.Namespace, pod.Name, status.Message())
+	}
+	return nil
+}
+
 func (snapshot *BasicClusterSnapshot) GetNodeInfo(nodeName string) (*framework.NodeInfo, error) {
-	schedNodeInfo, err := snapshot.getInternalData().getNodeInfo(nodeName)
+	data := snapshot.getInternalData()
+	schedNodeInfo, err := data.getNodeInfo(nodeName)
 	if err != nil {
 		return nil, err
+	}
+	if snapshot.draEnabled {
+		return data.draSnapshot.WrapSchedulerNodeInfo(schedNodeInfo)
 	}
 	return framework.WrapSchedulerNodeInfo(schedNodeInfo), nil
 }
 
 func (snapshot *BasicClusterSnapshot) ListNodeInfos() ([]*framework.NodeInfo, error) {
-	schedNodeInfos := snapshot.getInternalData().listNodeInfos()
+	data := snapshot.getInternalData()
+	schedNodeInfos := data.listNodeInfos()
+	if snapshot.draEnabled {
+		return data.draSnapshot.WrapSchedulerNodeInfos(schedNodeInfos)
+	}
 	return framework.WrapSchedulerNodeInfos(schedNodeInfos), nil
 }
 
 func (snapshot *BasicClusterSnapshot) AddNodeInfo(nodeInfo *framework.NodeInfo) error {
-	if err := snapshot.getInternalData().addNode(nodeInfo.Node()); err != nil {
+	if err := snapshot.getInternalData().addNode(nodeInfo.Node(), nodeInfo.LocalResourceSlices); err != nil {
 		return err
 	}
 	for _, podInfo := range nodeInfo.Pods {
-		if err := snapshot.getInternalData().schedulePod(podInfo.Pod, nodeInfo.Node().Name); err != nil {
+		if err := snapshot.getInternalData().schedulePod(podInfo.Pod, nodeInfo.Node().Name, nil, podInfo.NeededResourceClaims); err != nil {
 			return err
 		}
 	}
@@ -245,14 +353,14 @@ func (snapshot *BasicClusterSnapshot) Initialize(nodes []*apiv1.Node, scheduledP
 
 	knownNodes := make(map[string]bool)
 	for _, node := range nodes {
-		if err := baseData.addNode(node); err != nil {
+		if err := baseData.addNode(node, nil); err != nil {
 			return err
 		}
 		knownNodes[node.Name] = true
 	}
 	for _, pod := range scheduledPods {
 		if knownNodes[pod.Spec.NodeName] {
-			if err := baseData.schedulePod(pod, pod.Spec.NodeName); err != nil {
+			if err := baseData.schedulePod(pod, pod.Spec.NodeName, nil, nil); err != nil {
 				return err
 			}
 		}
@@ -267,7 +375,7 @@ func (snapshot *BasicClusterSnapshot) RemoveNodeInfo(nodeName string) error {
 
 // SchedulePod adds pod to the snapshot and schedules it to given node.
 func (snapshot *BasicClusterSnapshot) SchedulePod(pod *apiv1.Pod, nodeName string, reserveState *schedulerframework.CycleState) error {
-	return snapshot.getInternalData().schedulePod(pod, nodeName)
+	return snapshot.getInternalData().schedulePod(pod, nodeName, reserveState, nil)
 }
 
 // UnschedulePod removes pod from the snapshot.
@@ -306,7 +414,7 @@ func (snapshot *BasicClusterSnapshot) Commit() error {
 
 // Clear reset cluster snapshot to empty, unforked state
 func (snapshot *BasicClusterSnapshot) Clear() {
-	baseData := newInternalBasicSnapshotData()
+	baseData := newInternalBasicSnapshotData(snapshot)
 	snapshot.data = []*internalBasicSnapshotData{baseData}
 }
 

@@ -24,6 +24,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
+	"k8s.io/component-helpers/scheduling/corev1"
 	"k8s.io/utils/ptr"
 )
 
@@ -58,6 +59,20 @@ func ClaimReservedForPod(claim *resourceapi.ResourceClaim, pod *apiv1.Pod) bool 
 		}
 	}
 	return false
+}
+
+// ClaimAvailableOnNode returns whether the provided claim is allocated and available on the provided Node.
+func ClaimAvailableOnNode(claim *resourceapi.ResourceClaim, node *apiv1.Node) (bool, error) {
+	if !ClaimAllocated(claim) {
+		// Not allocated so not available anywhere.
+		return false, nil
+	}
+	selector := claim.Status.Allocation.NodeSelector
+	if selector == nil {
+		// nil means available everywhere.
+		return true, nil
+	}
+	return corev1.MatchNodeSelectorTerms(node, claim.Status.Allocation.NodeSelector)
 }
 
 // DeallocateClaimInPlace clears the allocation of the provided claim.
