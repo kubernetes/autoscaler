@@ -153,7 +153,7 @@ func (data *internalBasicSnapshotData) addNode(node *apiv1.Node) error {
 	return nil
 }
 
-func (data *internalBasicSnapshotData) removeNode(nodeName string) error {
+func (data *internalBasicSnapshotData) removeNodeInfo(nodeName string) error {
 	if _, found := data.nodeInfoMap[nodeName]; !found {
 		return ErrNodeNotFound
 	}
@@ -253,18 +253,18 @@ func (snapshot *BasicClusterSnapshot) SetClusterState(nodes []*apiv1.Node, sched
 	return nil
 }
 
-// RemoveNode removes nodes (and pods scheduled to it) from the snapshot.
-func (snapshot *BasicClusterSnapshot) RemoveNode(nodeName string) error {
-	return snapshot.getInternalData().removeNode(nodeName)
+// RemoveNodeInfo removes nodes (and pods scheduled to it) from the snapshot.
+func (snapshot *BasicClusterSnapshot) RemoveNodeInfo(nodeName string) error {
+	return snapshot.getInternalData().removeNodeInfo(nodeName)
 }
 
-// AddPod adds pod to the snapshot and schedules it to given node.
-func (snapshot *BasicClusterSnapshot) AddPod(pod *apiv1.Pod, nodeName string) error {
+// ForceAddPod adds pod to the snapshot and schedules it to given node.
+func (snapshot *BasicClusterSnapshot) ForceAddPod(pod *apiv1.Pod, nodeName string) error {
 	return snapshot.getInternalData().addPod(pod, nodeName)
 }
 
-// RemovePod removes pod from the snapshot.
-func (snapshot *BasicClusterSnapshot) RemovePod(namespace, podName, nodeName string) error {
+// ForceRemovePod removes pod from the snapshot.
+func (snapshot *BasicClusterSnapshot) ForceRemovePod(namespace, podName, nodeName string) error {
 	return snapshot.getInternalData().removePod(namespace, podName, nodeName)
 }
 

@@ -34,16 +34,17 @@ type ClusterSnapshot interface {
 	// with the provided data. scheduledPods are correlated to their Nodes based on spec.NodeName.
 	SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod) error
 
-	// RemoveNode removes nodes (and pods scheduled to it) from the snapshot.
-	RemoveNode(nodeName string) error
-	// AddPod adds pod to the snapshot and schedules it to given node.
-	AddPod(pod *apiv1.Pod, nodeName string) error
-	// RemovePod removes pod from the snapshot.
-	RemovePod(namespace string, podName string, nodeName string) error
+	// ForceAddPod adds the given Pod to the Node with the given nodeName inside the snapshot.
+	ForceAddPod(pod *apiv1.Pod, nodeName string) error
+	// ForceRemovePod removes the given Pod (and all DRA objects it owns) from the snapshot.
+	ForceRemovePod(namespace string, podName string, nodeName string) error
 
 	// AddNodeInfo adds the given NodeInfo to the snapshot. The Node and the Pods are added, as well as
 	// any DRA objects passed along them.
 	AddNodeInfo(nodeInfo *framework.NodeInfo) error
+	// RemoveNodeInfo removes the given NodeInfo from the snapshot The Node and the Pods are removed, as well as
+	// any DRA objects owned by them.
+	RemoveNodeInfo(nodeName string) error
 	// GetNodeInfo returns an internal NodeInfo for a given Node - all information about the Node tracked in the snapshot.
 	// This means the Node itself, its scheduled Pods, as well as all relevant DRA objects. The internal NodeInfos
 	// obtained via this method should always be used in CA code instead of directly using *schedulerframework.NodeInfo.
