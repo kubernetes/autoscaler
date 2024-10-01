@@ -36,7 +36,13 @@ type ClusterSnapshot interface {
 	// or non-Node-local ResourceSlices).
 	Initialize(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod, draSnapshot dynamicresources.Snapshot) error
 
-	SchedulePod(pod *apiv1.Pod, nodeName string) error
+	// SchedulePod schedules the given Pod onto the Node with the given nodeName inside the snapshot. If reserveState is passed,
+	// and the Pod references ResourceClaims, the Reserve phase of the scheduler framework is run in order to allocate the
+	// claims inside the snapshot. Returns an error if the pod references a ResourceClaim that isn't tracked in the snapshot, and
+	// allocated to the given Node.
+	SchedulePod(pod *apiv1.Pod, nodeName string, reserveState *schedulerframework.CycleState) error
+	// UnschedulePod removes the given Pod from the given Node inside the snapshot. The ResourceClaims referenced by the Pod are
+	// deallocated and left in the snapshot, so that the Pod can be scheduled on another Node using SchedulePod.
 	UnschedulePod(namespace string, podName string, nodeName string) error
 
 	// AddNodeInfo adds the given NodeInfo to the snapshot. The Node and the Pods are added, as well as

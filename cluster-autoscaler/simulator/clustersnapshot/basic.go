@@ -266,7 +266,7 @@ func (snapshot *BasicClusterSnapshot) RemoveNodeInfo(nodeName string) error {
 }
 
 // SchedulePod adds pod to the snapshot and schedules it to given node.
-func (snapshot *BasicClusterSnapshot) SchedulePod(pod *apiv1.Pod, nodeName string) error {
+func (snapshot *BasicClusterSnapshot) SchedulePod(pod *apiv1.Pod, nodeName string, reserveState *schedulerframework.CycleState) error {
 	return snapshot.getInternalData().schedulePod(pod, nodeName)
 }
 

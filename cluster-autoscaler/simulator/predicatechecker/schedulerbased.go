@@ -44,16 +44,16 @@ func NewSchedulerBasedPredicateChecker(fwHandle *framework.Handle) *SchedulerBas
 }
 
 // FitsAnyNode checks if the given pod can be placed on any of the given nodes.
-func (p *SchedulerBasedPredicateChecker) FitsAnyNode(clusterSnapshot clustersnapshot.ClusterSnapshot, pod *apiv1.Pod) (string, error) {
+func (p *SchedulerBasedPredicateChecker) FitsAnyNode(clusterSnapshot clustersnapshot.ClusterSnapshot, pod *apiv1.Pod) (string, *schedulerframework.CycleState, error) {
 	return p.FitsAnyNodeMatching(clusterSnapshot, pod, func(*framework.NodeInfo) bool {
 		return true
 	})
 }
 
 // FitsAnyNodeMatching checks if the given pod can be placed on any of the given nodes matching the provided function.
-func (p *SchedulerBasedPredicateChecker) FitsAnyNodeMatching(clusterSnapshot clustersnapshot.ClusterSnapshot, pod *apiv1.Pod, nodeMatches func(*framework.NodeInfo) bool) (string, error) {
+func (p *SchedulerBasedPredicateChecker) FitsAnyNodeMatching(clusterSnapshot clustersnapshot.ClusterSnapshot, pod *apiv1.Pod, nodeMatches func(*framework.NodeInfo) bool) (string, *schedulerframework.CycleState, error) {
 	if clusterSnapshot == nil {
-		return "", fmt.Errorf("ClusterSnapshot not provided")
+		return "", nil, fmt.Errorf("ClusterSnapshot not provided")
 	}
 
 	nodeInfosList, err := clusterSnapshot.ListNodeInfos()
@@ -63,7 +63,7 @@ func (p *SchedulerBasedPredicateChecker) FitsAnyNodeMatching(clusterSnapshot clu
 		// Scheduler requires interface returning error, but no implementation
 		// of ClusterSnapshot ever does it.
 		klog.Errorf("Error obtaining nodeInfos from schedulerLister")
-		return "", fmt.Errorf("error obtaining nodeInfos from schedulerLister")
+		return "", nil, fmt.Errorf("error obtaining nodeInfos from schedulerLister")
 	}
 
 	p.fwHandle.DelegatingLister.UpdateDelegate(clusterSnapshot)
@@ -72,7 +72,7 @@ func (p *SchedulerBasedPredicateChecker) FitsAnyNodeMatching(clusterSnapshot clu
 	state := schedulerframework.NewCycleState()
 	preFilterResult, preFilterStatus, _ := p.fwHandle.Framework.RunPreFilterPlugins(context.TODO(), state, pod)
 	if !preFilterStatus.IsSuccess() {
-		return "", fmt.Errorf("error running pre filter plugins for pod %s; %s", pod.Name, preFilterStatus.Message())
+		return "", nil, fmt.Errorf("error running pre filter plugins for pod %s; %s", pod.Name, preFilterStatus.Message())
 	}
 
 	for i := range nodeInfosList {
@@ -93,21 +93,21 @@ func (p *SchedulerBasedPredicateChecker) FitsAnyNodeMatching(clusterSnapshot clu
 		filterStatus := p.fwHandle.Framework.RunFilterPlugins(context.TODO(), state, pod, nodeInfo.ToScheduler())
 		if filterStatus.IsSuccess() {
 			p.lastIndex = (p.lastIndex + i + 1) % len(nodeInfosList)
-			return nodeInfo.Node().Name, nil
+			return nodeInfo.Node().Name, state, nil
 		}
 	}
-	return "", fmt.Errorf("cannot put pod %s on any node", pod.Name)
+	return "", nil, fmt.Errorf("cannot put pod %s on any node", pod.Name)
 }
 
 // CheckPredicates checks if the given pod can be placed on the given node.
-func (p *SchedulerBasedPredicateChecker) CheckPredicates(clusterSnapshot clustersnapshot.ClusterSnapshot, pod *apiv1.Pod, nodeName string) *PredicateError {
+func (p *SchedulerBasedPredicateChecker) CheckPredicates(clusterSnapshot clustersnapshot.ClusterSnapshot, pod *apiv1.Pod, nodeName string) (*schedulerframework.CycleState, *PredicateError) {
 	if clusterSnapshot == nil {
-		return NewPredicateError(InternalPredicateError, "", "ClusterSnapshot not provided", nil, emptyString)
+		return nil, NewPredicateError(InternalPredicateError, "", "ClusterSnapshot not provided", nil, emptyString)
 	}
 	nodeInfo, err := clusterSnapshot.GetNodeInfo(nodeName)
 	if err != nil {
 		errorMessage := fmt.Sprintf("Error obtaining NodeInfo for name %s; %v", nodeName, err)
-		return NewPredicateError(InternalPredicateError, "", errorMessage, nil, emptyString)
+		return nil, NewPredicateError(InternalPredicateError, "", errorMessage, nil, emptyString)
 	}
 
 	p.fwHandle.DelegatingLister.UpdateDelegate(clusterSnapshot)
@@ -116,7 +116,7 @@ func (p *SchedulerBasedPredicateChecker) CheckPredicates(clusterSnapshot cluster
 	state := schedulerframework.NewCycleState()
 	_, preFilterStatus, _ := p.fwHandle.Framework.RunPreFilterPlugins(context.TODO(), state, pod)
 	if !preFilterStatus.IsSuccess() {
-		return NewPredicateError(
+		return nil, NewPredicateError(
 			InternalPredicateError,
 			"",
 			preFilterStatus.Message(),
@@ -131,14 +131,14 @@ func (p *SchedulerBasedPredicateChecker) CheckPredicates(clusterSnapshot cluster
 		filterMessage := filterStatus.Message()
 		filterReasons := filterStatus.Reasons()
 		if filterStatus.IsRejected() {
-			return NewPredicateError(
+			return nil, NewPredicateError(
 				NotSchedulablePredicateError,
 				filterName,
 				filterMessage,
 				filterReasons,
 				p.buildDebugInfo(filterName, nodeInfo))
 		}
-		return NewPredicateError(
+		return nil, NewPredicateError(
 			InternalPredicateError,
 			filterName,
 			filterMessage,
@@ -146,7 +146,7 @@ func (p *SchedulerBasedPredicateChecker) CheckPredicates(clusterSnapshot cluster
 			p.buildDebugInfo(filterName, nodeInfo))
 	}
 
-	return nil
+	return state, nil
 }
 
 func (p *SchedulerBasedPredicateChecker) buildDebugInfo(filterName string, nodeInfo *framework.NodeInfo) func() string {

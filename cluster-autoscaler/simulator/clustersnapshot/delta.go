@@ -451,7 +451,7 @@ func (snapshot *DeltaClusterSnapshot) RemoveNodeInfo(nodeName string) error {
 }
 
 // SchedulePod adds pod to the snapshot and schedules it to given node.
-func (snapshot *DeltaClusterSnapshot) SchedulePod(pod *apiv1.Pod, nodeName string) error {
+func (snapshot *DeltaClusterSnapshot) SchedulePod(pod *apiv1.Pod, nodeName string, postFilterState *schedulerframework.CycleState) error {
 	return snapshot.data.schedulePod(pod, nodeName)
 }
 

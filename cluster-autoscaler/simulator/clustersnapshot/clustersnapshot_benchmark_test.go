@@ -149,7 +149,7 @@ func BenchmarkSchedulePods(b *testing.B) {
 					}
 					b.StartTimer()
 					for _, pod := range pods {
-						err = clusterSnapshot.SchedulePod(pod, pod.Spec.NodeName)
+						err = clusterSnapshot.SchedulePod(pod, pod.Spec.NodeName, nil)
 						if err != nil {
 							assert.NoError(b, err)
 						}

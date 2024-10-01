@@ -42,10 +42,10 @@ func InitializeClusterSnapshotOrDie(
 
 	for _, pod := range pods {
 		if pod.Spec.NodeName != "" {
-			err = snapshot.SchedulePod(pod, pod.Spec.NodeName)
+			err = snapshot.SchedulePod(pod, pod.Spec.NodeName, nil)
 			assert.NoError(t, err, "error while adding pod %s/%s to node %s", pod.Namespace, pod.Name, pod.Spec.NodeName)
 		} else if pod.Status.NominatedNodeName != "" {
-			err = snapshot.SchedulePod(pod, pod.Status.NominatedNodeName)
+			err = snapshot.SchedulePod(pod, pod.Status.NominatedNodeName, nil)
 			assert.NoError(t, err, "error while adding pod %s/%s to nominated node %s", pod.Namespace, pod.Name, pod.Status.NominatedNodeName)
 		} else {
 			assert.Fail(t, "pod %s/%s does not have Spec.NodeName nor Status.NominatedNodeName set", pod.Namespace, pod.Name)
