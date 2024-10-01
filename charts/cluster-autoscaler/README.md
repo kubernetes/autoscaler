@@ -471,7 +471,7 @@ vpa:
 | securityContext | object | `{}` | [Security context for pod](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/) |
 | service.annotations | object | `{}` | Annotations to add to service |
 | service.create | bool | `true` | If `true`, a Service will be created. |
-| service.externalIPs | list | `[]` | List of IP addresses at which the service is available. Ref: https://kubernetes.io/docs/user-guide/services/#external-ips. |
+| service.externalIPs | list | `[]` | List of IP addresses at which the service is available. Ref: https://kubernetes.io/docs/concepts/services-networking/service/#external-ips. |
 | service.labels | object | `{}` | Labels to add to service |
 | service.loadBalancerIP | string | `""` | IP address to assign to load balancer (if supported). |
 | service.loadBalancerSourceRanges | list | `[]` | List of IP CIDRs allowed access to load balancer (if supported). |
