@@ -23,6 +23,7 @@ import (
 	resourceapi "k8s.io/api/resource/v1alpha3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/utils/ptr"
 )
 
@@ -95,6 +96,24 @@ func AddPodReservationIfNeededInPlace(claim *resourceapi.ResourceClaim, pod *api
 		claim.Status.ReservedFor = append(claim.Status.ReservedFor, podClaimConsumerReference(pod))
 	}
 	return nil
+}
+
+// NodeInfoResourceClaims returns all ResourceClaims contained in the PodInfos in this NodeInfo. Shared claims
+// are taken into account, each claim should only be returned once.
+func NodeInfoResourceClaims(nodeInfo *framework.NodeInfo) []*resourceapi.ResourceClaim {
+	processedClaims := map[resourceClaimRef]bool{}
+	var result []*resourceapi.ResourceClaim
+	for _, pod := range nodeInfo.Pods {
+		for _, claim := range pod.NeededResourceClaims {
+			if processedClaims[resourceClaimRef{Namespace: claim.Namespace, Name: claim.Name}] {
+				// Shared claim, already grouped.
+				continue
+			}
+			result = append(result, claim)
+			processedClaims[resourceClaimRef{Namespace: claim.Namespace, Name: claim.Name}] = true
+		}
+	}
+	return result
 }
 
 func claimConsumerReferenceMatchesPod(pod *apiv1.Pod, ref resourceapi.ResourceClaimConsumerReference) bool {

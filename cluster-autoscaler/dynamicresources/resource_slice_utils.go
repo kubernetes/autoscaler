@@ -21,6 +21,7 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	resourceapi "k8s.io/api/resource/v1alpha3"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 )
 
 // GetAllDevices aggregates all Devices from the provided ResourceSlices into one list.
@@ -73,6 +74,92 @@ func AllCurrentGenSlices(slices []*resourceapi.ResourceSlice) ([]*resourceapi.Re
 	}
 
 	return maxGenSlices, nil
+}
+
+// GroupAllocatedDevices groups the devices from claim allocations by their driver and pool. Returns an error
+// if any of the claims isn't allocated.
+func GroupAllocatedDevices(claims []*resourceapi.ResourceClaim) (map[string]map[string][]string, error) {
+	result := map[string]map[string][]string{}
+	for _, claim := range claims {
+		alloc := claim.Status.Allocation
+		if alloc == nil {
+			return nil, fmt.Errorf("claim %s/%s not allocated", claim.Namespace, claim.Name)
+		}
+
+		for _, deviceAlloc := range alloc.Devices.Results {
+			if result[deviceAlloc.Driver] == nil {
+				result[deviceAlloc.Driver] = map[string][]string{}
+			}
+			result[deviceAlloc.Driver][deviceAlloc.Pool] = append(result[deviceAlloc.Driver][deviceAlloc.Pool], deviceAlloc.Device)
+		}
+	}
+	return result, nil
+}
+
+// CalculateDynamicResourceUtils calculates a map of ResourceSlice pool utilization grouped by the driver and pool. Returns
+// an error if the NodeInfo doesn't have all ResourceSlices from a pool.
+func CalculateDynamicResourceUtils(nodeInfo *framework.NodeInfo) (map[string]map[string]float64, error) {
+	result := map[string]map[string]float64{}
+	claims := NodeInfoResourceClaims(nodeInfo)
+	allocatedDevices, err := GroupAllocatedDevices(claims)
+	if err != nil {
+		return nil, err
+	}
+	for driverName, slicesByPool := range GroupSlices(nodeInfo.LocalResourceSlices) {
+		result[driverName] = map[string]float64{}
+		for poolName, poolSlices := range slicesByPool {
+			currentSlices, err := AllCurrentGenSlices(poolSlices)
+			if err != nil {
+				return nil, fmt.Errorf("pool %q error: %v", poolName, err)
+			}
+			poolDevices := GetAllDevices(currentSlices)
+			allocatedDeviceNames := allocatedDevices[driverName][poolName]
+			unallocated, allocated := splitDevicesByAllocation(poolDevices, allocatedDeviceNames)
+			result[driverName][poolName] = calculatePoolUtil(unallocated, allocated)
+		}
+	}
+	return result, nil
+}
+
+// HighestDynamicResourceUtil returns the ResourceSlice driver and pool with the highest utilization.
+func HighestDynamicResourceUtil(nodeInfo *framework.NodeInfo) (v1.ResourceName, float64, error) {
+	utils, err := CalculateDynamicResourceUtils(nodeInfo)
+	if err != nil {
+		return "", 0, err
+	}
+
+	highestUtil := 0.0
+	var highestResourceName v1.ResourceName
+	for driverName, utilsByPool := range utils {
+		for poolName, util := range utilsByPool {
+			if util >= highestUtil {
+				highestUtil = util
+				highestResourceName = v1.ResourceName(driverName + "/" + poolName)
+			}
+		}
+	}
+	return highestResourceName, highestUtil, nil
+}
+
+func calculatePoolUtil(unallocated, allocated []resourceapi.Device) float64 {
+	numAllocated := float64(len(allocated))
+	numUnallocated := float64(len(unallocated))
+	return numAllocated / (numAllocated + numUnallocated)
+}
+
+func splitDevicesByAllocation(devices []resourceapi.Device, allocatedNames []string) (unallocated, allocated []resourceapi.Device) {
+	allocatedNamesSet := map[string]bool{}
+	for _, allocatedName := range allocatedNames {
+		allocatedNamesSet[allocatedName] = true
+	}
+	for _, device := range devices {
+		if allocatedNamesSet[device.Name] {
+			allocated = append(allocated, device)
+		} else {
+			unallocated = append(unallocated, device)
+		}
+	}
+	return unallocated, allocated
 }
 
 func nodeSelectorSingleNode(selector *v1.NodeSelector) string {

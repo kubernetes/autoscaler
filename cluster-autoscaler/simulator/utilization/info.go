@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/dynamicresources"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	pod_util "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
@@ -34,9 +35,10 @@ import (
 
 // Info contains utilization information for a node.
 type Info struct {
-	CpuUtil float64
-	MemUtil float64
-	GpuUtil float64
+	CpuUtil             float64
+	MemUtil             float64
+	GpuUtil             float64
+	DynamicResourceUtil float64
 	// Resource name of highest utilization resource
 	ResourceName apiv1.ResourceName
 	// Max(CpuUtil, MemUtil) or GpuUtils
@@ -47,7 +49,7 @@ type Info struct {
 // memory) or gpu utilization based on if the node has GPU or not. Per resource
 // utilization is the sum of requests for it divided by allocatable. It also
 // returns the individual cpu, memory and gpu utilization.
-func Calculate(nodeInfo *framework.NodeInfo, skipDaemonSetPods, skipMirrorPods bool, gpuConfig *cloudprovider.GpuConfig, currentTime time.Time) (utilInfo Info, err error) {
+func Calculate(nodeInfo *framework.NodeInfo, skipDaemonSetPods, skipMirrorPods, draEnabled bool, gpuConfig *cloudprovider.GpuConfig, currentTime time.Time) (utilInfo Info, err error) {
 	if gpuConfig != nil {
 		gpuUtil, err := CalculateUtilizationOfResource(nodeInfo, gpuConfig.ResourceName, skipDaemonSetPods, skipMirrorPods, currentTime)
 		if err != nil {
@@ -57,6 +59,14 @@ func Calculate(nodeInfo *framework.NodeInfo, skipDaemonSetPods, skipMirrorPods b
 		}
 		// Skips cpu and memory utilization calculation for node with GPU.
 		return Info{GpuUtil: gpuUtil, ResourceName: gpuConfig.ResourceName, Utilization: gpuUtil}, err
+	}
+
+	if draEnabled && len(nodeInfo.LocalResourceSlices) > 0 {
+		resourceName, highestUtil, err := dynamicresources.HighestDynamicResourceUtil(nodeInfo)
+		if err != nil {
+			return Info{}, err
+		}
+		return Info{DynamicResourceUtil: highestUtil, Utilization: highestUtil, ResourceName: resourceName}, nil
 	}
 
 	cpu, err := CalculateUtilizationOfResource(nodeInfo, apiv1.ResourceCPU, skipDaemonSetPods, skipMirrorPods, currentTime)
