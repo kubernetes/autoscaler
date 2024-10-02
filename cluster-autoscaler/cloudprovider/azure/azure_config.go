@@ -253,6 +253,9 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 	if _, err = assignBoolFromEnvIfExists(&cfg.EnableDynamicInstanceList, "AZURE_ENABLE_DYNAMIC_INSTANCE_LIST"); err != nil {
 		return nil, err
 	}
+	if _, err = assignBoolFromEnvIfExists(&cfg.EnableDetailedCSEMessage, "AZURE_ENABLE_DETAILED_CSE_MESSAGE"); err != nil {
+		return nil, err
+	}
 	if _, err = assignBoolFromEnvIfExists(&cfg.EnableVmssFlexNodes, "AZURE_ENABLE_VMSS_FLEX_NODES"); err != nil {
 		return nil, err
 	}
