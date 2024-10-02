@@ -212,7 +212,7 @@ func TestErrors(t *testing.T) {
 		{
 			errorCodes:         []string{"CONDITION_NOT_MET"},
 			errorMessage:       "Specified reservation 'rsv-name' does not have available resources for the request.",
-			expectedErrorCode:  "INVALID_RESERVATION",
+			expectedErrorCode:  "RESERVATION_CAPACITY_EXCEEDED",
 			expectedErrorClass: cloudprovider.OtherErrorClass,
 		},
 		{

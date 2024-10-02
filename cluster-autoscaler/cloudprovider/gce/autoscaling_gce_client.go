@@ -68,6 +68,10 @@ const (
 	// be scaled up because the associated reservation was not ready.
 	ErrorReservationNotReady = "RESERVATION_NOT_READY"
 
+	// ErrorReservationCapacityExceeded is an error code for InstanceErrorInfo if the node group couldn't
+	// be scaled up because the associated reservation's capacity has been exceeded.
+	ErrorReservationCapacityExceeded = "RESERVATION_CAPACITY_EXCEEDED"
+
 	// ErrorUnsupportedTpuConfiguration is an error code for InstanceErrorInfo if the
 	// node group couldn't be scaled up because of invalid TPU configuration.
 	ErrorUnsupportedTpuConfiguration = "UNSUPPORTED_TPU_CONFIGURATION"
@@ -92,8 +96,6 @@ var (
 		regexp.MustCompile("VM Family: (.*) is not supported for aggregate reservations. It must be one of"),
 		regexp.MustCompile("Reservation (.*) is incorrect for the requested resources"),
 		regexp.MustCompile("Zone does not currently have sufficient capacity for the requested resources"),
-		regexp.MustCompile("Reservation (.*) does not have sufficient capacity for the requested resources."),
-		regexp.MustCompile("Specified reservation (.*) does not have available resources for the request."),
 		regexp.MustCompile("Specified reservations (.*) do not exist"),
 	}
 )
@@ -581,6 +583,11 @@ func GetErrorInfo(errorCode, errorMessage, instanceStatus string, previousErrorI
 			ErrorClass: cloudprovider.OtherErrorClass,
 			ErrorCode:  ErrorInvalidReservation,
 		}
+	} else if isReservationCapacityExceeded(errorMessage) {
+		return &cloudprovider.InstanceErrorInfo{
+			ErrorClass: cloudprovider.OtherErrorClass,
+			ErrorCode:  ErrorReservationCapacityExceeded,
+		}
 	} else if isTpuConfigurationInvalidError(errorCode, errorMessage) {
 		return &cloudprovider.InstanceErrorInfo{
 			ErrorClass: cloudprovider.OtherErrorClass,
@@ -660,6 +667,11 @@ func isInstanceStatusNotRunningYet(instanceStatus string) bool {
 
 func isReservationNotReady(errorMessage string) bool {
 	return strings.Contains(errorMessage, "it requires reservation to be in READY state")
+}
+
+func isReservationCapacityExceeded(errorMessage string) bool {
+	re := regexp.MustCompile("Specified reservation (.*) does not have available resources for the request.")
+	return re.MatchString(errorMessage)
 }
 
 func isInvalidReservationError(errorMessage string) bool {
