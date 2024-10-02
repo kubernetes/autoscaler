@@ -27,9 +27,9 @@ Follow [the official docs to install `kwok`](https://kwok.sigs.k8s.io/docs/user/
 *Using helm chart*:
 ```shell
 helm repo add cluster-autoscaler https://kubernetes.github.io/autoscaler
-helm upgrade --install <release-name> charts/cluster-autoscaler  \
+helm upgrade --install <release-name> cluster-autoscaler/cluster-autoscaler  \
 --set "serviceMonitor.enabled"=true --set "serviceMonitor.namespace"=default \
---set "cloudprovider"=kwok --set "image.tag"="<image-tag>" \
+--set "cloudProvider"=kwok --set "image.tag"="<image-tag>" \
 --set "image.repository"="<image-repo>" \
 --set "autoDiscovery.clusterName"="kind-kind" \
 --set "serviceMonitor.selector.release"="prom"
