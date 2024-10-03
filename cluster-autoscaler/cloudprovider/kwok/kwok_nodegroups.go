@@ -76,6 +76,10 @@ func (nodeGroup *NodeGroup) IncreaseSize(delta int) error {
 	for i := 0; i < delta; i++ {
 		node := schedNode.Node()
 		node.Name = fmt.Sprintf("%s-%s", nodeGroup.name, rand.String(5))
+		if node.Annotations == nil {
+			node.Annotations = map[string]string{}
+		}
+		node.Annotations["metrics.k8s.io/resource-metrics-path"] = fmt.Sprintf("/metrics/nodes/%s/metrics/resource", node.Name)
 		node.Spec.ProviderID = getProviderID(node.Name)
 		_, err := nodeGroup.kubeClient.CoreV1().Nodes().Create(context.Background(), node, v1.CreateOptions{})
 		if err != nil {
