@@ -200,6 +200,18 @@ func TestErrors(t *testing.T) {
 		},
 		{
 			errorCodes:         []string{"CONDITION_NOT_MET"},
+			errorMessage:       "Specified reservation 'rsv-name' does not exist.",
+			expectedErrorCode:  "RESERVATION_NOT_FOUND",
+			expectedErrorClass: cloudprovider.OtherErrorClass,
+		},
+		{
+			errorCodes:         []string{"CONDITION_NOT_MET"},
+			errorMessage:       "Specified reservations [this-reservation-does-not-exist] do not exist. (when acting as",
+			expectedErrorCode:  "RESERVATION_NOT_FOUND",
+			expectedErrorClass: cloudprovider.OtherErrorClass,
+		},
+		{
+			errorCodes:         []string{"CONDITION_NOT_MET"},
 			errorMessage:       "Cannot insert instance to a reservation with status: CREATING, as it requires reservation to be in READY state.",
 			expectedErrorCode:  "RESERVATION_NOT_READY",
 			expectedErrorClass: cloudprovider.OtherErrorClass,
@@ -217,14 +229,14 @@ func TestErrors(t *testing.T) {
 		},
 		{
 			errorCodes:         []string{"CONDITION_NOT_MET"},
-			errorMessage:       "Unsupported TPU configuration",
-			expectedErrorCode:  ErrorUnsupportedTpuConfiguration,
+			errorMessage:       "No available resources in specified reservations 'rsv-name'",
+			expectedErrorCode:  "RESERVATION_INCOMPATIBLE",
 			expectedErrorClass: cloudprovider.OtherErrorClass,
 		},
 		{
-			errorCodes:         []string{"SPECIFIC_ALLOCATION"},
-			errorMessage:       "Specified reservations [this-reservation-does-not-exist] do not exist. (when acting as",
-			expectedErrorCode:  ErrorInvalidReservation,
+			errorCodes:         []string{"CONDITION_NOT_MET"},
+			errorMessage:       "Unsupported TPU configuration",
+			expectedErrorCode:  ErrorUnsupportedTpuConfiguration,
 			expectedErrorClass: cloudprovider.OtherErrorClass,
 		},
 	}
