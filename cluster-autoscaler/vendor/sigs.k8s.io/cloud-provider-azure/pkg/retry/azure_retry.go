@@ -161,7 +161,7 @@ func doBackoffRetry(s autorest.Sender, r *http.Request, backoff Backoff) (resp *
 	for backoff.Steps > 0 {
 		err = rr.Prepare()
 		if err != nil {
-			return
+			return resp, err
 		}
 		resp, err = s.Do(rr.Request())
 		rerr := GetError(resp, err)
