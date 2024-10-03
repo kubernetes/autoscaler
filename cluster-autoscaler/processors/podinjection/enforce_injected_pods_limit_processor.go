@@ -23,7 +23,6 @@ import (
 )
 
 const (
-
 	// InjectedMetricsLabel is the label for unschedulable pods metric for injected pods.
 	InjectedMetricsLabel = "injected"
 	// SkippedInjectionMetricsLabel is the label for unschedulable pods metric for pods that was not injected due to limit.
@@ -52,11 +51,11 @@ func (p *EnforceInjectedPodsLimitProcessor) Process(ctx *context.AutoscalingCont
 
 	for _, pod := range unschedulablePods {
 		if IsFake(pod) {
-			injectedFakePodsCount += 1
 			if removedFakePodsCount < numberOfFakePodsToRemove {
 				removedFakePodsCount += 1
 				continue
 			}
+			injectedFakePodsCount += 1
 		}
 
 		unschedulablePodsAfterProcessing = append(unschedulablePodsAfterProcessing, pod)
