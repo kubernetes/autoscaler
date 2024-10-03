@@ -67,7 +67,7 @@ func TestFilterOutExpendableAndSplit(t *testing.T) {
 	assert.Equal(t, podWaitingForPreemption1, res2[0])
 }
 
-func TestFilterOutExpendablePods(t *testing.T) {
+func TestSplitExpendablePods(t *testing.T) {
 	p1 := BuildTestPod("p1", 1500, 200000)
 	p2 := BuildTestPod("p2", 3000, 200000)
 
@@ -81,11 +81,13 @@ func TestFilterOutExpendablePods(t *testing.T) {
 	podWaitingForPreemption2.Spec.Priority = &priority2
 	podWaitingForPreemption2.Status.NominatedNodeName = "node1"
 
-	res := FilterOutExpendablePods([]*apiv1.Pod{p1, p2, podWaitingForPreemption1, podWaitingForPreemption2}, 0)
-	assert.Equal(t, 3, len(res))
-	assert.Equal(t, p1, res[0])
-	assert.Equal(t, p2, res[1])
-	assert.Equal(t, podWaitingForPreemption2, res[2])
+	exp, nonExp := SplitExpendablePods([]*apiv1.Pod{p1, p2, podWaitingForPreemption1, podWaitingForPreemption2}, 0)
+	assert.Equal(t, 3, len(nonExp))
+	assert.Equal(t, p1, nonExp[0])
+	assert.Equal(t, p2, nonExp[1])
+	assert.Equal(t, podWaitingForPreemption2, nonExp[2])
+	assert.Equal(t, 1, len(exp))
+	assert.Equal(t, podWaitingForPreemption1, exp[0])
 }
 
 func TestIsExpandablePod(t *testing.T) {

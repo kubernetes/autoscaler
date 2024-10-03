@@ -198,7 +198,7 @@ func (data *internalBasicSnapshotData) schedulePod(pod *apiv1.Pod, nodeName stri
 		return ErrNodeNotFound
 	}
 
-	if needAllocatedClaims := len(pod.Spec.ResourceClaims); needAllocatedClaims > 0 && data.owningSnapshot.draEnabled {
+	if dynamicresources.PodNeedsResourceClaims(pod) && data.owningSnapshot.draEnabled {
 		err := data.handlePodClaimsScheduling(pod, nodeInfo.Node(), reserveState, extraClaims)
 		if err != nil {
 			return err

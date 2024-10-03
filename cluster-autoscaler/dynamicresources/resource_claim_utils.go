@@ -131,6 +131,11 @@ func NodeInfoResourceClaims(nodeInfo *framework.NodeInfo) []*resourceapi.Resourc
 	return result
 }
 
+// PodNeedsResourceClaims returns whether the pod references any ResourceClaims.
+func PodNeedsResourceClaims(pod *apiv1.Pod) bool {
+	return len(pod.Spec.ResourceClaims) > 0
+}
+
 func claimConsumerReferenceMatchesPod(pod *apiv1.Pod, ref resourceapi.ResourceClaimConsumerReference) bool {
 	return ref.APIGroup == "" && ref.Resource == "pods" && ref.Name == pod.Name && ref.UID == pod.UID
 }

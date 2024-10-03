@@ -366,7 +366,7 @@ func (a *Actuator) createSnapshot(nodes []*apiv1.Node) (clustersnapshot.ClusterS
 	}
 
 	scheduledPods := kube_util.ScheduledPods(pods)
-	nonExpendableScheduledPods := utils.FilterOutExpendablePods(scheduledPods, a.ctx.ExpendablePodsPriorityCutoff)
+	expendableScheduledPods, nonExpendableScheduledPods := utils.SplitExpendablePods(scheduledPods, a.ctx.ExpendablePodsPriorityCutoff)
 
 	draSnapshot := dynamicresources.Snapshot{}
 	if a.ctx.EnableDynamicResources {
@@ -376,6 +376,10 @@ func (a *Actuator) createSnapshot(nodes []*apiv1.Node) (clustersnapshot.ClusterS
 			klog.Warningf("Couldn't retrieve DRA objects, this probably means that DRA is misconfigured in the cluster. Scaling involving DRA pods won't work, proceeding. Error: %v", err)
 		} else {
 			draSnapshot = draSnap
+		}
+
+		for _, expendablePod := range expendableScheduledPods {
+			draSnapshot.RemovePodClaims(expendablePod)
 		}
 	}
 

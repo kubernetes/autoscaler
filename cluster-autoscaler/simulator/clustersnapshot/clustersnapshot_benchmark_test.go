@@ -29,6 +29,8 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 )
 
+// TODO(DRA): Add DRA-specific benchmarks.
+
 func createTestNodesWithPrefix(prefix string, n int) []*apiv1.Node {
 	nodes := make([]*apiv1.Node, n, n)
 	for i := 0; i < n; i++ {

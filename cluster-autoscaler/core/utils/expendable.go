@@ -51,15 +51,16 @@ func FilterOutExpendableAndSplit(unschedulableCandidates []*apiv1.Pod, nodes []*
 	return unschedulableNonExpendable, waitingForLowerPriorityPreemption
 }
 
-// FilterOutExpendablePods filters out expendable pods.
-func FilterOutExpendablePods(pods []*apiv1.Pod, expendablePodsPriorityCutoff int) []*apiv1.Pod {
-	var result []*apiv1.Pod
+// SplitExpendablePods filters out expendable pods.
+func SplitExpendablePods(pods []*apiv1.Pod, expendablePodsPriorityCutoff int) (expendable, nonExpendable []*apiv1.Pod) {
 	for _, pod := range pods {
-		if !IsExpendablePod(pod, expendablePodsPriorityCutoff) {
-			result = append(result, pod)
+		if IsExpendablePod(pod, expendablePodsPriorityCutoff) {
+			expendable = append(expendable, pod)
+		} else {
+			nonExpendable = append(nonExpendable, pod)
 		}
 	}
-	return result
+	return expendable, nonExpendable
 }
 
 // IsExpendablePod tests if pod is expendable for give priority cutoff

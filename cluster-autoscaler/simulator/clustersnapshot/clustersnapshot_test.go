@@ -31,6 +31,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// TODO(DRA): Add DRA-specific tests.
+
 var snapshots = map[string]func(fwHandle *framework.Handle) ClusterSnapshot{
 	"basic": func(fwHandle *framework.Handle) ClusterSnapshot {
 		return NewBasicClusterSnapshot(fwHandle, true)

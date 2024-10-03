@@ -377,6 +377,13 @@ func TestStaticAutoscalerDynamicResources(t *testing.T) {
 				{nodeName: node3GpuA1slice.name + "-2", reason: simulator.NoPlaceToMovePods},
 			},
 		},
+		// TODO(DRA): Write.
+		//"expendable pods ResourceClaims are removed from the snapshot": {
+		//
+		//},
+		//"pods with nominatedNodeName using ResourceClaims are correctly scheduled": {
+		//
+		//},
 	}
 
 	for tcName, tc := range testCases {

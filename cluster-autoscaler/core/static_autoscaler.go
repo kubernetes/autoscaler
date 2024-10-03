@@ -247,7 +247,7 @@ func (a *StaticAutoscaler) cleanUpIfRequired() {
 	a.initialized = true
 }
 
-func (a *StaticAutoscaler) initializeClusterSnapshot(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod) caerrors.AutoscalerError {
+func (a *StaticAutoscaler) initializeClusterSnapshot(nodes []*apiv1.Node, expendableScheduledPods, nonExpendableScheduledPods []*apiv1.Pod) caerrors.AutoscalerError {
 	var draSnapshot dynamicresources.Snapshot
 	if a.AutoscalingContext.EnableDynamicResources {
 		snap, err := a.draProvider.Snapshot()
@@ -256,9 +256,13 @@ func (a *StaticAutoscaler) initializeClusterSnapshot(nodes []*apiv1.Node, schedu
 		} else {
 			draSnapshot = snap
 		}
+
+		for _, expendablePod := range expendableScheduledPods {
+			draSnapshot.RemovePodClaims(expendablePod)
+		}
 	}
 
-	if err := a.ClusterSnapshot.Initialize(nodes, scheduledPods, draSnapshot); err != nil {
+	if err := a.ClusterSnapshot.Initialize(nodes, nonExpendableScheduledPods, draSnapshot); err != nil {
 		return caerrors.ToAutoscalerError(caerrors.InternalError, err)
 	}
 	return nil
@@ -359,9 +363,9 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 	} else {
 		metrics.UpdateMaxNodesCount(maxNodesCount)
 	}
-	nonExpendableScheduledPods := core_utils.FilterOutExpendablePods(originalScheduledPods, a.ExpendablePodsPriorityCutoff)
+	expendableScheduledPods, nonExpendableScheduledPods := core_utils.SplitExpendablePods(originalScheduledPods, a.ExpendablePodsPriorityCutoff)
 	// Initialize cluster state to ClusterSnapshot
-	if typedErr := a.initializeClusterSnapshot(allNodes, nonExpendableScheduledPods); typedErr != nil {
+	if typedErr := a.initializeClusterSnapshot(allNodes, expendableScheduledPods, nonExpendableScheduledPods); typedErr != nil {
 		return typedErr.AddPrefix("failed to initialize ClusterSnapshot: ")
 	}
 	// Initialize Pod Disruption Budget tracking
