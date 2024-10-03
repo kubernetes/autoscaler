@@ -197,6 +197,31 @@ func TestBestOptionsValid(t *testing.T) {
 	assert.Equal(t, resp, []expander.Option{eoT3Large})
 }
 
+func TestBestOptionsEmpty(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockClient := mocks.NewMockExpanderClient(ctrl)
+	g := &grpcclientstrategy{mockClient}
+
+	nodeInfos := makeFakeNodeInfos()
+	grpcNodeInfoMap := make(map[string]*v1.Node)
+	for i, opt := range options {
+		grpcNodeInfoMap[opt.NodeGroup.Id()] = nodes[i]
+	}
+	expectedBestOptionsReq := &protos.BestOptionsRequest{
+		Options: []*protos.Option{&grpcEoT2Micro, &grpcEoT2Large, &grpcEoT3Large, &grpcEoM44XLarge},
+		NodeMap: grpcNodeInfoMap,
+	}
+
+	mockClient.EXPECT().BestOptions(
+		gomock.Any(), gomock.Eq(expectedBestOptionsReq),
+	).Return(&protos.BestOptionsResponse{Options: []*protos.Option{}}, nil)
+
+	resp := g.BestOptions(options, nodeInfos)
+
+	assert.Empty(t, resp)
+}
+
 // All test cases should error, and no options should be filtered
 func TestBestOptionsErrors(t *testing.T) {
 	ctrl := gomock.NewController(t)
