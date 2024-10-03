@@ -19,6 +19,15 @@ package podinjection
 import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/metrics"
+)
+
+const (
+
+	// InjectedMetricsLabel is the label for unschedulable pods metric for injected pods.
+	InjectedMetricsLabel = "injected"
+	// SkippedInjectionMetricsLabel is the label for unschedulable pods metric for pods that was not injected due to limit.
+	SkippedInjectionMetricsLabel = "skipped_injection"
 )
 
 // EnforceInjectedPodsLimitProcessor is a PodListProcessor used to limit the number of injected fake pods.
@@ -37,16 +46,24 @@ func NewEnforceInjectedPodsLimitProcessor(podLimit int) *EnforceInjectedPodsLimi
 func (p *EnforceInjectedPodsLimitProcessor) Process(ctx *context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
 
 	numberOfFakePodsToRemove := len(unschedulablePods) - p.podLimit
+	removedFakePodsCount := 0
+	injectedFakePodsCount := 0
 	var unschedulablePodsAfterProcessing []*apiv1.Pod
 
 	for _, pod := range unschedulablePods {
-		if IsFake(pod) && numberOfFakePodsToRemove > 0 {
-			numberOfFakePodsToRemove -= 1
-			continue
+		if IsFake(pod) {
+			injectedFakePodsCount += 1
+			if removedFakePodsCount < numberOfFakePodsToRemove {
+				removedFakePodsCount += 1
+				continue
+			}
 		}
 
 		unschedulablePodsAfterProcessing = append(unschedulablePodsAfterProcessing, pod)
 	}
+
+	metrics.UpdateUnschedulablePodsCountWithLabel(injectedFakePodsCount, InjectedMetricsLabel)
+	metrics.UpdateUnschedulablePodsCountWithLabel(removedFakePodsCount, SkippedInjectionMetricsLabel)
 
 	return unschedulablePodsAfterProcessing, nil
 }
