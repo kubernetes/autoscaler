@@ -198,6 +198,7 @@ func NewTestProcessors(context *context.AutoscalingContext) *processors.Autoscal
 		ScaleDownCandidatesNotifier: scaledowncandidates.NewObserversList(),
 		ScaleStateNotifier:          nodegroupchange.NewNodeGroupChangeObserversList(),
 		AsyncNodeGroupStateChecker:  asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(),
+		ScaleUpNodeProcessor:        nodes.NewDefaultScaleUpNodeProcessor(),
 	}
 }
 
