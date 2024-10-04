@@ -263,6 +263,9 @@ func (csr *ClusterStateRegistry) updateScaleRequests(currentTime time.Time) {
 	csr.backoff.RemoveStaleBackoffData(currentTime)
 
 	for nodeGroupName, scaleUpRequest := range csr.scaleUpRequests {
+		if csr.asyncNodeGroupStateChecker.IsUpcoming(scaleUpRequest.NodeGroup) {
+			continue
+		}
 		if !csr.areThereUpcomingNodesInNodeGroup(nodeGroupName) {
 			// scale up finished successfully, remove request
 			delete(csr.scaleUpRequests, nodeGroupName)
@@ -450,10 +453,7 @@ func (csr *ClusterStateRegistry) IsNodeGroupHealthy(nodeGroupName string) bool {
 func (csr *ClusterStateRegistry) updateNodeGroupMetrics() {
 	autoscaled := 0
 	autoprovisioned := 0
-	for _, nodeGroup := range csr.cloudProvider.NodeGroups() {
-		if !nodeGroup.Exist() {
-			continue
-		}
+	for _, nodeGroup := range csr.getRunningNodeGroups() {
 		if nodeGroup.Autoprovisioned() {
 			autoprovisioned++
 		} else {
@@ -555,7 +555,7 @@ type AcceptableRange struct {
 // the expected number of ready nodes is between targetSize and targetSize + 3.
 func (csr *ClusterStateRegistry) updateAcceptableRanges(targetSize map[string]int) {
 	result := make(map[string]AcceptableRange)
-	for _, nodeGroup := range csr.cloudProvider.NodeGroups() {
+	for _, nodeGroup := range csr.getRunningNodeGroups() {
 		size := targetSize[nodeGroup.Id()]
 		readiness := csr.perNodeGroupReadiness[nodeGroup.Id()]
 		result[nodeGroup.Id()] = AcceptableRange{
@@ -681,7 +681,7 @@ func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
 // Calculates which node groups have incorrect size.
 func (csr *ClusterStateRegistry) updateIncorrectNodeGroupSizes(currentTime time.Time) {
 	result := make(map[string]IncorrectNodeGroupSize)
-	for _, nodeGroup := range csr.cloudProvider.NodeGroups() {
+	for _, nodeGroup := range csr.getRunningNodeGroups() {
 		acceptableRange, found := csr.acceptableRanges[nodeGroup.Id()]
 		if !found {
 			klog.Warningf("Acceptable range for node group %s not found", nodeGroup.Id())
@@ -781,7 +781,7 @@ func (csr *ClusterStateRegistry) GetStatus(now time.Time) *api.ClusterAutoscaler
 	for _, nodeGroup := range csr.lastStatus.NodeGroups {
 		nodeGroupsLastStatus[nodeGroup.Name] = nodeGroup
 	}
-	for _, nodeGroup := range csr.cloudProvider.NodeGroups() {
+	for _, nodeGroup := range csr.getRunningNodeGroups() {
 		nodeGroupStatus := api.NodeGroupStatus{
 			Name: nodeGroup.Id(),
 		}
@@ -1014,10 +1014,21 @@ func (csr *ClusterStateRegistry) GetUpcomingNodes() (upcomingCounts map[string]i
 	return upcomingCounts, registeredNodeNames
 }
 
+// getRunningNodeGroups returns running node groups, filteres out upcoming ones.
+func (csr *ClusterStateRegistry) getRunningNodeGroups() []cloudprovider.NodeGroup {
+	var result []cloudprovider.NodeGroup
+	for _, nodeGroup := range csr.cloudProvider.NodeGroups() {
+		if !csr.asyncNodeGroupStateChecker.IsUpcoming(nodeGroup) {
+			result = append(result, nodeGroup)
+		}
+	}
+	return result
+}
+
 // getCloudProviderNodeInstances returns map keyed on node group id where value is list of node instances
 // as returned by NodeGroup.Nodes().
 func (csr *ClusterStateRegistry) getCloudProviderNodeInstances() (map[string][]cloudprovider.Instance, error) {
-	for _, nodeGroup := range csr.cloudProvider.NodeGroups() {
+	for _, nodeGroup := range csr.getRunningNodeGroups() {
 		if csr.IsNodeGroupScalingUp(nodeGroup.Id()) {
 			csr.cloudProviderNodeInstancesCache.InvalidateCacheEntry(nodeGroup)
 		}
@@ -1089,7 +1100,7 @@ func (csr *ClusterStateRegistry) GetAutoscaledNodesCount() (currentSize, targetS
 }
 
 func (csr *ClusterStateRegistry) handleInstanceCreationErrors(currentTime time.Time) {
-	nodeGroups := csr.cloudProvider.NodeGroups()
+	nodeGroups := csr.getRunningNodeGroups()
 
 	for _, nodeGroup := range nodeGroups {
 		csr.handleInstanceCreationErrorsForNodeGroup(
