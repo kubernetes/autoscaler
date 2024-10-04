@@ -368,6 +368,14 @@ func (snapshot *BasicClusterSnapshot) Initialize(nodes []*apiv1.Node, scheduledP
 	return nil
 }
 
+func (snapshot *BasicClusterSnapshot) AddResourceClaims(extraClaims []*resourceapi.ResourceClaim) error {
+	return snapshot.getInternalData().draSnapshot.AddClaims(extraClaims)
+}
+
+func (snapshot *BasicClusterSnapshot) GetPodResourceClaims(pod *apiv1.Pod) ([]*resourceapi.ResourceClaim, error) {
+	return snapshot.getInternalData().draSnapshot.PodClaims(pod)
+}
+
 // RemoveNodeInfo removes nodes (and pods scheduled to it) from the snapshot.
 func (snapshot *BasicClusterSnapshot) RemoveNodeInfo(nodeName string) error {
 	return snapshot.getInternalData().removeNodeInfo(nodeName)

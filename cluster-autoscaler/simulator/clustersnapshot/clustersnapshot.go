@@ -20,6 +20,7 @@ import (
 	"errors"
 
 	apiv1 "k8s.io/api/core/v1"
+	resourceapi "k8s.io/api/resource/v1alpha3"
 	"k8s.io/autoscaler/cluster-autoscaler/dynamicresources"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
@@ -57,6 +58,13 @@ type ClusterSnapshot interface {
 	GetNodeInfo(nodeName string) (*framework.NodeInfo, error)
 	// ListNodeInfos returns internal NodeInfos for all Nodes tracked in the snapshot. See the comment on GetNodeInfo.
 	ListNodeInfos() ([]*framework.NodeInfo, error)
+
+	// AddResourceClaims adds additional ResourceClaims to the snapshot. It can be used e.g. if we need to duplicate a Pod that
+	// owns ResourceClaims. Returns an error if any of the claims is already tracked in the snapshot.
+	AddResourceClaims(extraClaims []*resourceapi.ResourceClaim) error
+	// GetPodResourceClaims returns all ResourceClaims referenced by the given pod. It can be used to retrieve ResourceClaims
+	// for pods that aren't scheduled. Returns an error if any of the claims referenced by the pod aren't tracked in the snapshot.
+	GetPodResourceClaims(pod *apiv1.Pod) ([]*resourceapi.ResourceClaim, error)
 
 	// Fork creates a fork of snapshot state. All modifications can later be reverted to moment of forking via Revert().
 	// Use WithForkedSnapshot() helper function instead if possible.

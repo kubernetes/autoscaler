@@ -101,7 +101,7 @@ func sanitizeNodeInfo(nodeInfo *framework.NodeInfo, newNodeNameBase string, name
 
 	for _, podInfo := range nodeInfo.Pods {
 		freshPod := sanitizePod(podInfo.Pod, freshNode.Name, namesSuffix)
-		freshResourceClaims, err := dynamicresources.SanitizePodResourceClaims(freshPod, podInfo.Pod, podInfo.NeededResourceClaims, namesSuffix, nodeInfo.Node().Name, freshNodeName, oldPoolNames)
+		freshResourceClaims, err := dynamicresources.SanitizePodResourceClaims(freshPod, podInfo.Pod, podInfo.NeededResourceClaims, false, namesSuffix, nodeInfo.Node().Name, freshNodeName, oldPoolNames)
 		if err != nil {
 			return nil, err
 		}

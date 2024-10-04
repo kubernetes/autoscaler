@@ -18,20 +18,24 @@ package podinjection
 
 import (
 	apiv1 "k8s.io/api/core/v1"
+	resourceapi "k8s.io/api/resource/v1alpha3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/autoscaler/cluster-autoscaler/dynamicresources"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 )
 
 type podGroup struct {
 	podCount        int
 	desiredReplicas int
-	sample          *apiv1.Pod
+	sample          *framework.PodInfo
 	ownerUid        types.UID
 }
 
 // groupPods creates a map of controller uids and podGroups.
 // If a controller for some pods is not found, such pods are ignored and not grouped
-func groupPods(pods []*apiv1.Pod, controllers []controller) map[types.UID]podGroup {
+func groupPods(pods []*apiv1.Pod, controllers []controller, snapshot clustersnapshot.ClusterSnapshot, draEnabled bool) map[types.UID]podGroup {
 	podGroups := map[types.UID]podGroup{}
 	for _, con := range controllers {
 		podGroups[con.uid] = makePodGroup(con.desiredReplicas)
@@ -39,14 +43,14 @@ func groupPods(pods []*apiv1.Pod, controllers []controller) map[types.UID]podGro
 
 	for _, pod := range pods {
 		for _, ownerRef := range pod.OwnerReferences {
-			podGroups = updatePodGroups(pod, ownerRef, podGroups)
+			podGroups = updatePodGroups(pod, ownerRef, podGroups, snapshot, draEnabled)
 		}
 	}
 	return podGroups
 }
 
 // updatePodGroups updates the pod group if ownerRef is the controller of the pod
-func updatePodGroups(pod *apiv1.Pod, ownerRef metav1.OwnerReference, podGroups map[types.UID]podGroup) map[types.UID]podGroup {
+func updatePodGroups(pod *apiv1.Pod, ownerRef metav1.OwnerReference, podGroups map[types.UID]podGroup, snapshot clustersnapshot.ClusterSnapshot, draEnabled bool) map[types.UID]podGroup {
 	if ownerRef.Controller == nil {
 		return podGroups
 	}
@@ -58,8 +62,23 @@ func updatePodGroups(pod *apiv1.Pod, ownerRef metav1.OwnerReference, podGroups m
 		return podGroups
 	}
 	if group.sample == nil && pod.Spec.NodeName == "" {
-		group.sample = pod
-		group.ownerUid = ownerRef.UID
+		validSample := true
+
+		var podClaims []*resourceapi.ResourceClaim
+		if draEnabled && dynamicresources.PodNeedsResourceClaims(pod) {
+			claims, err := snapshot.GetPodResourceClaims(pod)
+			if err != nil {
+				// Error means that not all claims for this Pod are created yet, it won't be able to schedule anyway - count it, but don't use as a sample.
+				validSample = false
+			} else {
+				podClaims = claims
+			}
+		}
+
+		if validSample {
+			group.sample = &framework.PodInfo{Pod: pod, NeededResourceClaims: podClaims}
+			group.ownerUid = ownerRef.UID
+		}
 	}
 	group.podCount += 1
 	podGroups[ownerRef.UID] = group

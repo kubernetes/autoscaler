@@ -384,6 +384,10 @@ func TestStaticAutoscalerDynamicResources(t *testing.T) {
 		//"pods with nominatedNodeName using ResourceClaims are correctly scheduled": {
 		//
 		//},
+		// TODO(DRA): Write.
+		//"duplicating unschedulabel pods using ResourceClaims works correctly": {
+		//
+		//},
 	}
 
 	for tcName, tc := range testCases {

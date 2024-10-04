@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
+	resourceapi "k8s.io/api/resource/v1alpha3"
 	"k8s.io/autoscaler/cluster-autoscaler/dynamicresources"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
@@ -458,6 +459,16 @@ func (snapshot *DeltaClusterSnapshot) Initialize(nodes []*apiv1.Node, scheduledP
 		}
 	}
 	return nil
+}
+
+func (snapshot *DeltaClusterSnapshot) AddResourceClaims(extraClaims []*resourceapi.ResourceClaim) error {
+	// TODO(DRA): Implement DRA support.
+	panic("implement me")
+}
+
+func (snapshot *DeltaClusterSnapshot) GetPodResourceClaims(pod *apiv1.Pod) ([]*resourceapi.ResourceClaim, error) {
+	// TODO(DRA): Implement DRA support.
+	panic("implement me")
 }
 
 // RemoveNodeInfo removes nodes (and pods scheduled to it) from the snapshot.

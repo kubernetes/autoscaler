@@ -53,7 +53,7 @@ func SanitizeNodeResourceSlices(nodeLocalSlices []*resourceapi.ResourceSlice, ne
 //     and nameSuffix is appended to all pool names in allocation results, to match the pool names of the new, duplicated node.
 //   - Returns an error if any of the allocated claims is not node-local on oldNodeName. Such allocations can't be sanitized, the only
 //     option is to clear the allocation and run scheduler filters&reserve to get a new allocation when duplicating a pod.
-func SanitizePodResourceClaims(newOwner, oldOwner *v1.Pod, claims []*resourceapi.ResourceClaim, nameSuffix, oldNodeName, newNodeName string, oldNodePoolNames map[string]bool) ([]*resourceapi.ResourceClaim, error) {
+func SanitizePodResourceClaims(newOwner, oldOwner *v1.Pod, claims []*resourceapi.ResourceClaim, clearAllocations bool, nameSuffix, oldNodeName, newNodeName string, oldNodePoolNames map[string]bool) ([]*resourceapi.ResourceClaim, error) {
 	var newResourceClaims []*resourceapi.ResourceClaim
 	for _, claim := range claims {
 		if ownerName, ownerUid := ClaimOwningPod(claim); ownerName != oldOwner.Name || ownerUid != oldOwner.UID {
@@ -66,6 +66,10 @@ func SanitizePodResourceClaims(newOwner, oldOwner *v1.Pod, claims []*resourceapi
 		claimCopy.UID = uuid.NewUUID()
 		claimCopy.Name = fmt.Sprintf("%s-%s", claim.Name, nameSuffix)
 		claimCopy.OwnerReferences = []metav1.OwnerReference{podClaimOwnerReference(newOwner)}
+
+		if clearAllocations {
+			claimCopy.Status.Allocation = nil
+		}
 
 		if claimCopy.Status.Allocation == nil {
 			// Unallocated claim - just clear the consumer reservations to be sure, and we're done.
