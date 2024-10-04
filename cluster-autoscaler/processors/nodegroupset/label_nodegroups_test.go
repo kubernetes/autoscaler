@@ -86,7 +86,7 @@ func TestNodeLabelComparison(t *testing.T) {
 		t.Run(tc.description, func(t *testing.T) {
 			node1.ObjectMeta.Labels = tc.labels1
 			node2.ObjectMeta.Labels = tc.labels2
-			CheckNodesSimilar(t, node1, node2, comparator, tc.isSimilar)
+			checkNodesSimilar(t, node1, node2, comparator, tc.isSimilar)
 		})
 	}
 }

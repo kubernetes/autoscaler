@@ -1,5 +1,5 @@
 /*
-Copyright 2024 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,18 +14,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package aws
+package nodegroupset
 
 import (
 	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
-// CreateNodeInfoComparator returns a comparator that checks if two nodes should be considered
+// CreateAwsNodeInfoComparator returns a comparator that checks if two nodes should be considered
 // part of the same NodeGroupSet. This is true if they match usual conditions checked by IsCloudProviderNodeInfoSimilar,
 // even if they have different AWS-specific labels.
-func CreateNodeInfoComparator(extraIgnoredLabels []string, ratioOpts config.NodeGroupDifferenceRatios) nodegroupset.NodeInfoComparator {
+func CreateAwsNodeInfoComparator(extraIgnoredLabels []string, ratioOpts config.NodeGroupDifferenceRatios) NodeInfoComparator {
 	awsIgnoredLabels := map[string]bool{
 		"alpha.eksctl.io/instance-id":    true, // this is a label used by eksctl to identify instances.
 		"alpha.eksctl.io/nodegroup-name": true, // this is a label used by eksctl to identify "node group" names.
@@ -35,7 +34,7 @@ func CreateNodeInfoComparator(extraIgnoredLabels []string, ratioOpts config.Node
 		"topology.ebs.csi.aws.com/zone":  true, // this is a label used by the AWS EBS CSI driver as a target for Persistent Volume Node Affinity
 	}
 
-	for k, v := range nodegroupset.BasicIgnoredLabels {
+	for k, v := range BasicIgnoredLabels {
 		awsIgnoredLabels[k] = v
 	}
 
@@ -44,6 +43,6 @@ func CreateNodeInfoComparator(extraIgnoredLabels []string, ratioOpts config.Node
 	}
 
 	return func(n1, n2 *schedulerframework.NodeInfo) bool {
-		return nodegroupset.IsCloudProviderNodeInfoSimilar(n1, n2, awsIgnoredLabels, ratioOpts)
+		return IsCloudProviderNodeInfoSimilar(n1, n2, awsIgnoredLabels, ratioOpts)
 	}
 }
