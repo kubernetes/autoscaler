@@ -17,7 +17,7 @@ limitations under the License.
 package spec
 
 import (
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	v1lister "k8s.io/client-go/listers/core/v1"
@@ -53,6 +53,28 @@ type SpecClient interface {
 
 type specClient struct {
 	podLister v1lister.PodLister
+}
+
+type BasicNodeStatus struct {
+	NodeName   string
+	NodeStatus v1.NodeStatus
+}
+
+type NodeStatusClient interface {
+	// Returns BasicNodeStatus for each node in the cluster
+	GetNodeStatus() ([]*BasicNodeStatus, error)
+}
+
+type nodeStatusClient struct {
+	nodeLister v1lister.NodeLister
+}
+
+// NewNodeSpecClient creates new client which can be used to get basic information about nodes specification
+// It requires NodeLister which is a data source for this client.
+func NewNodeStatusClient(nodeLister v1lister.NodeLister) NodeStatusClient {
+	return &nodeStatusClient{
+		nodeLister: nodeLister,
+	}
 }
 
 // NewSpecClient creates new client which can be used to get basic information about pods specification
@@ -127,4 +149,20 @@ func calculateRequestedResources(container v1.Container) model.Resources {
 		model.ResourceMemory: model.ResourceAmount(memoryBytes),
 	}
 
+}
+
+func (nodeClient *nodeStatusClient) GetNodeStatus() ([]*BasicNodeStatus, error) {
+	var nodeStatus []*BasicNodeStatus
+
+	nodes, err := nodeClient.nodeLister.List(labels.Everything())
+	if err != nil {
+		return nil, err
+	}
+	for _, node := range nodes {
+		nodeStatus = append(nodeStatus, &BasicNodeStatus{
+			NodeName:   node.Name,
+			NodeStatus: node.Status,
+		})
+	}
+	return nodeStatus, nil
 }

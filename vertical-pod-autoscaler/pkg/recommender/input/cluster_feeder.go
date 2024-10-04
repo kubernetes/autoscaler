@@ -68,6 +68,9 @@ type ClusterStateFeeder interface {
 	// LoadPods updates clusterState with current specification of Pods and their Containers.
 	LoadPods()
 
+	// LoadNodes updates clusterState with current state of Nodes.
+	LoadNodes()
+
 	// LoadRealTimeMetrics updates clusterState with current usage metrics of containers.
 	LoadRealTimeMetrics()
 
@@ -83,6 +86,7 @@ type ClusterStateFeederFactory struct {
 	VpaCheckpointClient vpa_api.VerticalPodAutoscalerCheckpointsGetter
 	VpaLister           vpa_lister.VerticalPodAutoscalerLister
 	PodLister           v1lister.PodLister
+	NodeLister          v1lister.NodeLister
 	OOMObserver         oom.Observer
 	SelectorFetcher     target.VpaTargetSelectorFetcher
 	MemorySaveMode      bool
@@ -101,6 +105,7 @@ func (m ClusterStateFeederFactory) Make() *clusterStateFeeder {
 		vpaLister:           m.VpaLister,
 		clusterState:        m.ClusterState,
 		specClient:          spec.NewSpecClient(m.PodLister),
+		nodeStatusClient:    spec.NewNodeStatusClient(m.NodeLister),
 		selectorFetcher:     m.SelectorFetcher,
 		memorySaveMode:      m.MemorySaveMode,
 		controllerFetcher:   m.ControllerFetcher,
@@ -175,6 +180,22 @@ func newPodClients(kubeClient kube_client.Interface, resourceEventHandler cache.
 	return podLister
 }
 
+// Creates clients watching nodes: NodeLister (listing only not terminated pods).
+func NewNodeClients(kubeClient kube_client.Interface) v1lister.NodeLister {
+	nodeListWatch := cache.NewListWatchFromClient(kubeClient.CoreV1().RESTClient(), "nodes", metav1.NamespaceAll, fields.Everything())
+	indexer, controller := cache.NewIndexerInformer(
+		nodeListWatch,
+		&apiv1.Node{},
+		time.Hour,
+		cache.ResourceEventHandlerFuncs{},
+		cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
+	)
+	nodeLister := v1lister.NewNodeLister(indexer)
+	stopCh := make(chan struct{})
+	go controller.Run(stopCh)
+	return nodeLister
+}
+
 // NewPodListerAndOOMObserver creates pair of pod lister and OOM observer.
 func NewPodListerAndOOMObserver(kubeClient kube_client.Interface, namespace string) (v1lister.PodLister, oom.Observer) {
 	oomObserver := oom.NewObserver()
@@ -186,6 +207,7 @@ func NewPodListerAndOOMObserver(kubeClient kube_client.Interface, namespace stri
 type clusterStateFeeder struct {
 	coreClient          corev1.CoreV1Interface
 	specClient          spec.SpecClient
+	nodeStatusClient    spec.NodeStatusClient
 	metricsClient       metrics.MetricsClient
 	oomChan             <-chan oom.OomInfo
 	vpaCheckpointClient vpa_api.VerticalPodAutoscalerCheckpointsGetter
@@ -422,6 +444,21 @@ func (feeder *clusterStateFeeder) LoadPods() {
 				klog.Warningf("Failed to add container %+v. Reason: %+v", container.ID, err)
 			}
 		}
+	}
+}
+
+// LoadNodes loads nodes into the cluster state.
+func (feeder *clusterStateFeeder) LoadNodes() {
+	nodes, err := feeder.nodeStatusClient.GetNodeStatus()
+	if err != nil {
+		klog.Errorf("Cannot get NodeStatus. Reason: %+v", err)
+		return
+	}
+	if feeder.clusterState.Nodes == nil {
+		feeder.clusterState.Nodes = make(map[string]apiv1.NodeStatus)
+	}
+	for _, node := range nodes {
+		feeder.clusterState.Nodes[node.NodeName] = node.NodeStatus
 	}
 }
 
