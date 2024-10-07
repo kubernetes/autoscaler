@@ -263,3 +263,34 @@ func TestParseMigUrl(t *testing.T) {
 		})
 	}
 }
+
+func TestIsInstanceTemplateRegional(t *testing.T) {
+	tests := []struct {
+		name           string
+		templateUrl    string
+		expectRegional bool
+		wantErr        error
+	}{
+		{
+			name:           "Has regional instance url",
+			templateUrl:    "https://www.googleapis.com/compute/v1/projects/test-project/regions/us-central1/instanceTemplates/instance-template",
+			expectRegional: true,
+		},
+		{
+			name:           "Has global instance url",
+			templateUrl:    "https://www.googleapis.com/compute/v1/projects/test-project/global/instanceTemplates/instance-template",
+			expectRegional: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			regional, err := IsInstanceTemplateRegional(tt.templateUrl)
+			assert.Equal(t, tt.wantErr, err)
+			if tt.wantErr != nil {
+				return
+			}
+			assert.Equal(t, tt.expectRegional, regional)
+		})
+	}
+}
