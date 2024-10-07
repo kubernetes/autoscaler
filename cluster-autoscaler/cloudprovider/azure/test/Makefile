@@ -1,6 +1,8 @@
 REPO_ROOT:=$(shell git rev-parse --show-toplevel)
 CAS_ROOT:=$(REPO_ROOT)/cluster-autoscaler
 
+BUILD_TAGS=azure
+
 include $(CAS_ROOT)/Makefile
 
 CLUSTER_AUTOSCALER_NAMESPACE?=default
@@ -8,7 +10,7 @@ CLUSTER_AUTOSCALER_SERVICEACCOUNT_NAME?=cluster-autoscaler
 
 .PHONY: build-e2e
 build-e2e:
-	$(MAKE) -C $(CAS_ROOT) build-arch-$(GOARCH) make-image-arch-$(GOARCH)
+	$(MAKE) -C $(CAS_ROOT) build-arch-$(GOARCH) make-image-arch-$(GOARCH) BUILD_TAGS=${BUILD_TAGS}
 	docker push $(IMAGE)-$(GOARCH):$(TAG)
 
 ARTIFACTS?=_artifacts
