@@ -84,7 +84,7 @@ func NewUpdatePriorityCalculator(vpa *vpa_types.VerticalPodAutoscaler,
 func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, now time.Time) {
 	processedRecommendation, _, err := calc.recommendationProcessor.Apply(calc.vpa.Status.Recommendation, calc.vpa.Spec.ResourcePolicy, calc.vpa.Status.Conditions, pod)
 	if err != nil {
-		klog.V(2).Infof("cannot process recommendation for pod %s: %v", klog.KObj(pod), err)
+		klog.V(2).InfoS("Cannot process recommendation for pod", "pod", klog.KObj(pod), "error", err)
 		return
 	}
 
@@ -98,15 +98,14 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, now time.Time) {
 		if hasObservedContainers && !vpaContainerSet.Has(cs.Name) {
 			// Containers not observed by Admission Controller are not supported
 			// by the quick OOM logic.
-			klog.V(4).Infof("Not listed in %s:%s. Skipping container %s quick OOM calculations",
-				annotations.VpaObservedContainersLabel, pod.GetAnnotations()[annotations.VpaObservedContainersLabel], cs.Name)
+			klog.V(4).InfoS("Not listed in VPA observed containers label. Skipping container quick OOM calculations", "label", annotations.VpaObservedContainersLabel, "observedContainers", pod.GetAnnotations()[annotations.VpaObservedContainersLabel], "containerName", cs.Name)
 			continue
 		}
 		crp := vpa_api_util.GetContainerResourcePolicy(cs.Name, calc.vpa.Spec.ResourcePolicy)
 		if crp != nil && crp.Mode != nil && *crp.Mode == vpa_types.ContainerScalingModeOff {
 			// Containers with ContainerScalingModeOff are not considered
 			// during the quick OOM calculation.
-			klog.V(4).Infof("Container with ContainerScalingModeOff. Skipping container %s quick OOM calculations", cs.Name)
+			klog.V(4).InfoS("Container with ContainerScalingModeOff. Skipping container quick OOM calculations", "containerName", cs.Name)
 			continue
 		}
 		terminationState := &cs.LastTerminationState
@@ -114,7 +113,7 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, now time.Time) {
 			terminationState.Terminated.Reason == "OOMKilled" &&
 			terminationState.Terminated.FinishedAt.Time.Sub(terminationState.Terminated.StartedAt.Time) < *evictAfterOOMThreshold {
 			quickOOM = true
-			klog.V(2).Infof("quick OOM detected in pod %s, container %v", klog.KObj(pod), cs.Name)
+			klog.V(2).InfoS("Quick OOM detected in pod", "pod", klog.KObj(pod), "containerName", cs.Name)
 		}
 	}
 
@@ -125,25 +124,25 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, now time.Time) {
 	if !updatePriority.OutsideRecommendedRange && !quickOOM {
 		if pod.Status.StartTime == nil {
 			// TODO: Set proper condition on the VPA.
-			klog.V(4).Infof("not updating pod %s, missing field pod.Status.StartTime", klog.KObj(pod))
+			klog.V(4).InfoS("Not updating pod, missing field pod.Status.StartTime", "pod", klog.KObj(pod))
 			return
 		}
 		if now.Before(pod.Status.StartTime.Add(*podLifetimeUpdateThreshold)) {
-			klog.V(4).Infof("not updating a short-lived pod %s, request within recommended range", klog.KObj(pod))
+			klog.V(4).InfoS("Not updating a short-lived pod, request within recommended range", "pod", klog.KObj(pod))
 			return
 		}
 		if updatePriority.ResourceDiff < calc.config.MinChangePriority {
-			klog.V(4).Infof("not updating pod %s, resource diff too low: %v", klog.KObj(pod), updatePriority)
+			klog.V(4).InfoS("Not updating pod, resource diff too low", "pod", klog.KObj(pod), "updatePriority", updatePriority)
 			return
 		}
 	}
 
 	// If the pod has quick OOMed then evict only if the resources will change
 	if quickOOM && updatePriority.ResourceDiff == 0 {
-		klog.V(4).Infof("not updating pod %s because resource would not change", klog.KObj(pod))
+		klog.V(4).InfoS("Not updating pod because resource would not change", "pod", klog.KObj(pod))
 		return
 	}
-	klog.V(2).Infof("pod accepted for update %s with priority %v - processed recommendations:\n%v", klog.KObj(pod), updatePriority.ResourceDiff, calc.GetProcessedRecommendationTargets(processedRecommendation))
+	klog.V(2).InfoS("Pod accepted for update", "pod", klog.KObj(pod), "updatePriority", updatePriority.ResourceDiff, "processedRecommendations", calc.GetProcessedRecommendationTargets(processedRecommendation))
 	calc.pods = append(calc.pods, prioritizedPod{
 		pod:            pod,
 		priority:       updatePriority,
@@ -159,7 +158,7 @@ func (calc *UpdatePriorityCalculator) GetSortedPods(admission PodEvictionAdmissi
 		if admission.Admit(podPrio.pod, podPrio.recommendation) {
 			result = append(result, podPrio.pod)
 		} else {
-			klog.V(2).Infof("pod removed from update queue by PodEvictionAdmission: %v", podPrio.pod.Name)
+			klog.V(2).InfoS("Pod removed from update queue by PodEvictionAdmission", "podName", podPrio.pod.Name)
 		}
 	}
 
@@ -200,7 +199,7 @@ func parseVpaObservedContainers(pod *apiv1.Pod) (bool, sets.String) {
 	vpaContainerSet := sets.NewString()
 	if hasObservedContainers {
 		if containers, err := annotations.ParseVpaObservedContainersValue(observedContainers); err != nil {
-			klog.Errorf("Vpa annotation %s failed to parse: %v", observedContainers, err)
+			klog.ErrorS(err, "VPA annotation failed to parse", "annotation", observedContainers)
 			hasObservedContainers = false
 		} else {
 			vpaContainerSet.Insert(containers...)
