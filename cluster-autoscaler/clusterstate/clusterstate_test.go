@@ -1225,10 +1225,11 @@ func TestUpdateAcceptableRanges(t *testing.T) {
 			}
 
 			clusterState := &ClusterStateRegistry{
-				cloudProvider:         provider,
-				perNodeGroupReadiness: tc.readiness,
-				scaleUpRequests:       tc.scaleUpRequests,
-				scaleDownRequests:     scaleDownRequests,
+				cloudProvider:              provider,
+				perNodeGroupReadiness:      tc.readiness,
+				scaleUpRequests:            tc.scaleUpRequests,
+				scaleDownRequests:          scaleDownRequests,
+				asyncNodeGroupStateChecker: asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(),
 			}
 
 			clusterState.updateAcceptableRanges(tc.targetSizes)
