@@ -32,7 +32,10 @@ import (
 	"k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
-type asyncNodeGroupInitializer struct {
+// AsyncNodeGroupInitializer is a component of the Orchestrator responsible for initial
+// scale up of asynchronously created node groups.
+type AsyncNodeGroupInitializer struct {
+	allTargetSizes         map[string]int64
 	nodeGroup              cloudprovider.NodeGroup
 	nodeInfo               *framework.NodeInfo
 	scaleUpExecutor        *scaleUpExecutor
@@ -52,8 +55,9 @@ func newAsyncNodeGroupInitializer(
 	scaleUpStatusProcessor status.ScaleUpStatusProcessor,
 	context *context.AutoscalingContext,
 	atomicScaleUp bool,
-) *asyncNodeGroupInitializer {
-	return &asyncNodeGroupInitializer{
+) *AsyncNodeGroupInitializer {
+	return &AsyncNodeGroupInitializer{
+		map[string]int64{},
 		nodeGroup,
 		nodeInfo,
 		scaleUpExecutor,
@@ -65,7 +69,19 @@ func newAsyncNodeGroupInitializer(
 	}
 }
 
-func (s *asyncNodeGroupInitializer) InitializeNodeGroup(result nodegroups.AsyncNodeGroupCreationResult) {
+// GetTargetSize returns a target size of an upcoming node group.
+func (s *AsyncNodeGroupInitializer) GetTargetSize(nodeGroup string) int64 {
+	return s.allTargetSizes[nodeGroup]
+}
+
+// SetTargetSize sets a target size of an upcoming node group.
+func (s *AsyncNodeGroupInitializer) SetTargetSize(nodeGroup string, size int64) {
+	s.allTargetSizes[nodeGroup] = size
+}
+
+// InitializeNodeGroup performs the initial scale up of the node group and all additionally created
+// node groups.
+func (s *AsyncNodeGroupInitializer) InitializeNodeGroup(result nodegroups.AsyncNodeGroupCreationResult) {
 	if result.Error != nil {
 		klog.Errorf("Async node group creation failed. Async scale-up is cancelled. %v", result.Error)
 		scaleUpStatus, _ := status.UpdateScaleUpError(&status.ScaleUpStatus{}, errors.ToAutoscalerError(errors.InternalError, result.Error))
@@ -84,12 +100,17 @@ func (s *asyncNodeGroupInitializer) InitializeNodeGroup(result nodegroups.AsyncN
 	nodeInfos := make(map[string]*framework.NodeInfo)
 	var scaleUpInfos []nodegroupset.ScaleUpInfo
 	for _, nodeGroup := range result.CreationResult.AllCreatedNodeGroups() {
-		if targetSize := result.TargetSizes[nodeGroup.Id()]; targetSize > 0 {
+		upcomingId, ok := result.CreatedToUpcomingMapping[nodeGroup.Id()]
+		if !ok {
+			klog.Errorf("Couldn't retrieve initialization data for new node group %v. It won't get initialized.", nodeGroup.Id())
+			continue
+		}
+		if targetSize := s.GetTargetSize(upcomingId); targetSize > 0 {
 			nodeInfos[nodeGroup.Id()] = nodeInfo
 			scaleUpInfo := nodegroupset.ScaleUpInfo{
 				Group:       nodeGroup,
 				CurrentSize: 0,
-				NewSize:     targetSize,
+				NewSize:     int(targetSize),
 				MaxSize:     nodeGroup.MaxSize(),
 			}
 			scaleUpInfos = append(scaleUpInfos, scaleUpInfo)
