@@ -70,7 +70,7 @@ var _ = Describe("Azure Provider", func() {
 		Expect(k8s.List(ctx, nodes)).To(Succeed())
 		nodeCountBefore := len(nodes.Items)
 
-		By("Creating 100 Pods")
+		By("Creating 30 Pods")
 		// https://raw.githubusercontent.com/kubernetes/website/main/content/en/examples/application/php-apache.yaml
 		deploy := &appsv1.Deployment{
 			ObjectMeta: metav1.ObjectMeta{
@@ -83,7 +83,7 @@ var _ = Describe("Azure Provider", func() {
 						"run": "php-apache",
 					},
 				},
-				Replicas: ptr.To[int32](100),
+				Replicas: ptr.To[int32](30),
 				Template: corev1.PodTemplateSpec{
 					ObjectMeta: metav1.ObjectMeta{
 						Labels: map[string]string{
@@ -131,7 +131,7 @@ var _ = Describe("Azure Provider", func() {
 
 		Eventually(allVMSSStable, "10m", "30s").Should(Succeed())
 
-		By("Deleting 100 Pods")
+		By("Deleting 30 Pods")
 		Expect(k8s.Delete(ctx, deploy)).To(Succeed())
 
 		By("Waiting for the original number of Nodes to be Ready")

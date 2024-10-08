@@ -208,7 +208,7 @@ spec:
         cluster-autoscaler-enabled: "true"
         cluster-autoscaler-name: ${CLUSTER_NAME}
         max: "5"
-        min: "1"
+        min: "0"
       type: VirtualMachineScaleSets
       vmSize: ${AZURE_AKS_NODE_MACHINE_TYPE:=Standard_D2s_v3}
       orchestratorVersion: "${KUBERNETES_VERSION}"
@@ -257,7 +257,7 @@ spec:
         cluster-autoscaler-enabled: "true"
         cluster-autoscaler-name: ${CLUSTER_NAME}
         max: "5"
-        min: "1"
+        min: "0"
       type: VirtualMachineScaleSets
       vmSize: ${AZURE_AKS_NODE_MACHINE_TYPE:=Standard_D2s_v3}
       orchestratorVersion: "${KUBERNETES_VERSION}"
