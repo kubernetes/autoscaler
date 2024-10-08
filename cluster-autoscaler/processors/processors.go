@@ -46,6 +46,8 @@ type AutoscalingProcessors struct {
 	NodeGroupSetProcessor nodegroupset.NodeGroupSetProcessor
 	// ScaleUpStatusProcessor is used to process the state of the cluster after a scale-up.
 	ScaleUpStatusProcessor status.ScaleUpStatusProcessor
+	// ScaleUpNodeProcessor is used to process the nodes of the cluster before scale-up.
+	ScaleUpNodeProcessor nodes.ScaleUpNodeProcessor
 	// ScaleDownNodeProcessor is used to process the nodes of the cluster before scale-down.
 	ScaleDownNodeProcessor nodes.ScaleDownNodeProcessor
 	// ScaleDownSetProcessor is used to make final selection of nodes to scale-down.
@@ -88,6 +90,7 @@ func DefaultProcessors(options config.AutoscalingOptions) *AutoscalingProcessors
 			MaxFreeDifferenceRatio:           config.DefaultMaxFreeDifferenceRatio,
 		}),
 		ScaleUpStatusProcessor: status.NewDefaultScaleUpStatusProcessor(),
+		ScaleUpNodeProcessor:   nodes.NewDefaultScaleUpNodeProcessor(),
 		ScaleDownNodeProcessor: nodes.NewPreFilteringScaleDownNodeProcessor(),
 		ScaleDownSetProcessor: nodes.NewCompositeScaleDownSetProcessor(
 			[]nodes.ScaleDownSetProcessor{
@@ -114,6 +117,7 @@ func (ap *AutoscalingProcessors) CleanUp() {
 	ap.NodeGroupListProcessor.CleanUp()
 	ap.NodeGroupSetProcessor.CleanUp()
 	ap.ScaleUpStatusProcessor.CleanUp()
+	ap.ScaleUpNodeProcessor.CleanUp()
 	ap.ScaleDownSetProcessor.CleanUp()
 	ap.ScaleDownStatusProcessor.CleanUp()
 	ap.AutoscalingStatusProcessor.CleanUp()

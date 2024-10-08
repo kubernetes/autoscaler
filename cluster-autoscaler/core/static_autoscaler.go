@@ -342,6 +342,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 		klog.Errorf("Failed to refresh cloud provider config: %v", err)
 		return caerrors.ToAutoscalerError(caerrors.CloudProviderError, err)
 	}
+	allNodes, readyNodes = a.processors.ScaleUpNodeProcessor.Process(a.AutoscalingContext, allNodes, readyNodes)
 	a.loopStartNotifier.Refresh()
 
 	// Update node groups min/max and maximum number of nodes being set for all node groups after cloud provider refresh
