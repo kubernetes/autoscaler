@@ -262,7 +262,7 @@ func (feeder *clusterStateFeeder) InitFromCheckpoints() {
 		}
 		for _, checkpoint := range checkpointList.Items {
 
-			klog.V(3).InfoS("Loading VPA checkpoint", "namespace", checkpoint.ObjectMeta.Namespace, "VPA", checkpoint.Spec.VPAObjectName, "container", checkpoint.Spec.ContainerName)
+			klog.V(3).InfoS("Loading VPA checkpoint", "namespace", checkpoint.ObjectMeta.Namespace, "vpa", checkpoint.Spec.VPAObjectName, "container", checkpoint.Spec.ContainerName)
 			err = feeder.setVpaCheckpoint(&checkpoint)
 			if err != nil {
 				klog.ErrorS(err, "Error while loading checkpoint")
