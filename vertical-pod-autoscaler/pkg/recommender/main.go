@@ -27,16 +27,6 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/uuid"
-	"k8s.io/client-go/informers"
-	kube_client "k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/leaderelection"
-	"k8s.io/client-go/tools/leaderelection/resourcelock"
-	kube_flag "k8s.io/component-base/cli/flag"
-	componentbaseconfig "k8s.io/component-base/config"
-	componentbaseoptions "k8s.io/component-base/config/options"
-	"k8s.io/klog/v2"
-	resourceclient "k8s.io/metrics/pkg/client/clientset/versioned/typed/metrics/v1beta1"
-
 	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/checkpoint"
@@ -53,6 +43,15 @@ import (
 	metrics_recommender "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/recommender"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/server"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
+	"k8s.io/client-go/informers"
+	kube_client "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/leaderelection"
+	"k8s.io/client-go/tools/leaderelection/resourcelock"
+	kube_flag "k8s.io/component-base/cli/flag"
+	componentbaseconfig "k8s.io/component-base/config"
+	componentbaseoptions "k8s.io/component-base/config/options"
+	"k8s.io/klog/v2"
+	resourceclient "k8s.io/metrics/pkg/client/clientset/versioned/typed/metrics/v1beta1"
 )
 
 var (
@@ -67,7 +66,7 @@ var (
 	kubeApiBurst           = flag.Float64("kube-api-burst", 10.0, `QPS burst limit when making requests to Kubernetes apiserver`)
 	enableProfiling        = flag.Bool("profiling", false, "Is debug/pprof endpoint enabled")
 
-	storage = flag.String("storage", "", `Specifies storage mode. Supported values: prometheus, checkpoint (default)`)
+	storage = flag.String("storage", "checkpoint", `Specifies storage mode. Supported values: prometheus, none, checkpoint`)
 	// prometheus history provider configs
 	historyLength              = flag.String("history-length", "8d", `How much time back prometheus have to be queried to get historical metrics`)
 	historyResolution          = flag.String("history-resolution", "1h", `Resolution at which Prometheus is queried for historical metrics`)
@@ -206,8 +205,6 @@ func run(healthCheck *metrics.HealthCheck) {
 
 	model.InitializeAggregationsConfig(model.NewAggregationsConfig(*memoryAggregationInterval, *memoryAggregationIntervalCount, *memoryHistogramDecayHalfLife, *cpuHistogramDecayHalfLife, *oomBumpUpRatio, *oomMinBumpUp))
 
-	useCheckpoints := *storage != "prometheus"
-
 	var postProcessors []routines.RecommendationPostProcessor
 	if *postProcessorCPUasInteger {
 		postProcessors = append(postProcessors, &routines.IntegerCPUPostProcessor{})
@@ -232,6 +229,34 @@ func run(healthCheck *metrics.HealthCheck) {
 		source = input_metrics.NewPodMetricsesSource(resourceclient.NewForConfigOrDie(config))
 	}
 
+	promQueryTimeout, err := time.ParseDuration(*queryTimeout)
+	if err != nil {
+		klog.Fatalf("Could not parse --prometheus-query-timeout as a time.Duration: %v", err)
+	}
+	promHistoryConfig := history.PrometheusHistoryProviderConfig{
+		Address:                *prometheusAddress,
+		QueryTimeout:           promQueryTimeout,
+		HistoryLength:          *historyLength,
+		HistoryResolution:      *historyResolution,
+		PodLabelPrefix:         *podLabelPrefix,
+		PodLabelsMetricName:    *podLabelsMetricName,
+		PodNamespaceLabel:      *podNamespaceLabel,
+		PodNameLabel:           *podNameLabel,
+		CtrNamespaceLabel:      *ctrNamespaceLabel,
+		CtrPodNameLabel:        *ctrPodNameLabel,
+		CtrNameLabel:           *ctrNameLabel,
+		CadvisorMetricsJobName: *prometheusJobName,
+		Namespace:              *vpaObjectNamespace,
+		PrometheusBasicAuthTransport: history.PrometheusBasicAuthTransport{
+			Username: *username,
+			Password: *password,
+		},
+	}
+
+	historySource, err := input.GetHistorySourceFromArg(*storage)
+	if err != nil {
+		klog.Fatalf("Could not initialize history source: %v", err)
+	}
 	ignoredNamespaces := strings.Split(*ignoredVpaObjectNamespaces, ",")
 
 	clusterStateFeeder := input.ClusterStateFeederFactory{
@@ -246,6 +271,8 @@ func run(healthCheck *metrics.HealthCheck) {
 		MemorySaveMode:      *memorySaver,
 		ControllerFetcher:   controllerFetcher,
 		RecommenderName:     *recommenderName,
+		HistorySource:       historySource,
+		PromHistoryConfig:   promHistoryConfig,
 		IgnoredNamespaces:   ignoredNamespaces,
 	}.Make()
 	controllerFetcher.Start(context.Background(), scaleCacheLoopPeriod)
@@ -259,41 +286,12 @@ func run(healthCheck *metrics.HealthCheck) {
 		PodResourceRecommender:       logic.CreatePodResourceRecommender(),
 		RecommendationPostProcessors: postProcessors,
 		CheckpointsGCInterval:        *checkpointsGCInterval,
-		UseCheckpoints:               useCheckpoints,
+		UseCheckpoints:               historySource == input.Checkpoints,
 	}.Make()
 
-	promQueryTimeout, err := time.ParseDuration(*queryTimeout)
-	if err != nil {
-		klog.Fatalf("Could not parse --prometheus-query-timeout as a time.Duration: %v", err)
-	}
-
-	if useCheckpoints {
-		recommender.GetClusterStateFeeder().InitFromCheckpoints()
-	} else {
-		config := history.PrometheusHistoryProviderConfig{
-			Address:                *prometheusAddress,
-			QueryTimeout:           promQueryTimeout,
-			HistoryLength:          *historyLength,
-			HistoryResolution:      *historyResolution,
-			PodLabelPrefix:         *podLabelPrefix,
-			PodLabelsMetricName:    *podLabelsMetricName,
-			PodNamespaceLabel:      *podNamespaceLabel,
-			PodNameLabel:           *podNameLabel,
-			CtrNamespaceLabel:      *ctrNamespaceLabel,
-			CtrPodNameLabel:        *ctrPodNameLabel,
-			CtrNameLabel:           *ctrNameLabel,
-			CadvisorMetricsJobName: *prometheusJobName,
-			Namespace:              *vpaObjectNamespace,
-			PrometheusBasicAuthTransport: history.PrometheusBasicAuthTransport{
-				Username: *username,
-				Password: *password,
-			},
-		}
-		provider, err := history.NewPrometheusHistoryProvider(config)
-		if err != nil {
-			klog.Fatalf("Could not initialize history provider: %v", err)
-		}
-		recommender.GetClusterStateFeeder().InitFromHistoryProvider(provider)
+	stateFeederInitErr := recommender.GetClusterStateFeeder().Init()
+	if stateFeederInitErr != nil {
+		klog.Fatalf("Could not initialize cluster state feeder: %v", stateFeederInitErr)
 	}
 
 	// Start updating health check endpoint.
