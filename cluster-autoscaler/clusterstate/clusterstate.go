@@ -648,7 +648,7 @@ func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
 			continue
 		}
 		if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
-			klog.Warningf("Nodegroup is nil for %s", unregistered.Node.Name)
+			klog.V(4).Infof("Nodegroup is nil for %s", unregistered.Node.Name)
 			continue
 		}
 		perNgCopy := perNodeGroup[nodeGroup.Id()]
@@ -1067,7 +1067,7 @@ func (csr *ClusterStateRegistry) hasCloudProviderInstance(node *apiv1.Node) bool
 	if err == nil {
 		return exists
 	}
-	if !errors.Is(err, cloudprovider.ErrNotImplemented) {
+	if !errors.Is(err, cloudprovider.ErrNotImplemented) && klog.V(4).Enabled() {
 		klog.Warningf("Failed to check cloud provider has instance for %s: %v", node.Name, err)
 	}
 	return !taints.HasToBeDeletedTaint(node)
