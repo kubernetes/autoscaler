@@ -61,10 +61,12 @@ func (c *nodePoolCache) rebuild(staticNodePools map[string]NodePool, maxGetNodep
 			}
 		}
 		if err != nil {
-			klog.Errorf("Failed to fetch the nodepool : %v", id)
-			return statusCode, err
+			// in order to let cluster autoscaler still do its work even with a wrong nodepoolid,
+			// we avoid returning an error but instead log and do not add it to cache so it won't be used for scaling.
+			klog.Errorf("The nodepool will not be considered for scaling until next check : %v", id)
+		} else {
+			c.set(&resp.NodePool)
 		}
-		c.set(&resp.NodePool)
 	}
 	return statusCode, nil
 }
