@@ -100,6 +100,9 @@ type Config struct {
 
 	UseFederatedWorkloadIdentityExtension bool   `json:"useFederatedWorkloadIdentityExtension" yaml:"useFederatedWorkloadIdentityExtension"`
 	AADFederatedTokenFile                 string `json:"aadFederatedTokenFile" yaml:"aadFederatedTokenFile"`
+
+	// EnableFastDeleteOnFailedProvisioning defines whether to delete the experimental faster VMSS instance deletion on failed provisioning
+	EnableFastDeleteOnFailedProvisioning bool `json:"enableFastDeleteOnFailedProvisioning,omitempty" yaml:"enableFastDeleteOnFailedProvisioning,omitempty"`
 }
 
 // These are only here for backward compabitility. Their equivalent exists in providerazure.Config with a different name.
@@ -297,6 +300,9 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 	if _, err = assignFromEnvIfExists(&cfg.NodeResourceGroup, "AZURE_NODE_RESOURCE_GROUP"); err != nil {
 		return nil, err
 	}
+	if _, err = assignBoolFromEnvIfExists(&cfg.EnableFastDeleteOnFailedProvisioning, "AZURE_ENABLE_FAST_DELETE_ON_FAILED_PROVISIONING"); err != nil {
+		return nil, err
+	}
 
 	// Nonstatic defaults
 	cfg.VMType = strings.ToLower(cfg.VMType)
@@ -327,6 +333,12 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 		}
 
 		cfg.DeploymentParameters = parameters
+	}
+	if enableFastDeleteOnFailedProvisioning := os.Getenv("AZURE_ENABLE_FAST_DELETE_ON_FAILED_PROVISIONING"); enableFastDeleteOnFailedProvisioning != "" {
+		cfg.EnableFastDeleteOnFailedProvisioning, err = strconv.ParseBool(enableFastDeleteOnFailedProvisioning)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse AZURE_ENABLE_FAST_DELETE_ON_FAILED_PROVISIONING: %q, %v", enableFastDeleteOnFailedProvisioning, err)
+		}
 	}
 	providerazureconfig.InitializeCloudProviderRateLimitConfig(&cfg.CloudProviderRateLimitConfig)
 
