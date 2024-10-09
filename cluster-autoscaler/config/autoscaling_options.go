@@ -301,6 +301,8 @@ type AutoscalingOptions struct {
 	ProvisioningRequestMaxBackoffTime time.Duration
 	// ProvisioningRequestMaxCacheSize is the max size for ProvisioningRequest cache that is stored for retry backoff.
 	ProvisioningRequestMaxBackoffCacheSize int
+	// EnableDynamicResources configures whether logic for handling DRA objects is enabled.
+	EnableDynamicResources bool
 }
 
 // KubeClientOptions specify options for kube client

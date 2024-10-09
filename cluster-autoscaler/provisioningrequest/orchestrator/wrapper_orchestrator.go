@@ -27,9 +27,9 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // WrapperOrchestrator is an orchestrator which wraps Scale Up for ProvisioningRequests and regular pods.
@@ -67,7 +67,7 @@ func (o *WrapperOrchestrator) ScaleUp(
 	unschedulablePods []*apiv1.Pod,
 	nodes []*apiv1.Node,
 	daemonSets []*appsv1.DaemonSet,
-	nodeInfos map[string]*schedulerframework.NodeInfo,
+	nodeInfos map[string]*framework.NodeInfo,
 	allOrNothing bool,
 ) (*status.ScaleUpStatus, errors.AutoscalerError) {
 	defer func() { o.scaleUpRegularPods = !o.scaleUpRegularPods }()
@@ -102,7 +102,7 @@ func splitOut(unschedulablePods []*apiv1.Pod) (provReqPods, regularPods []*apiv1
 // appropriate status or error if an unexpected error occurred.
 func (o *WrapperOrchestrator) ScaleUpToNodeGroupMinSize(
 	nodes []*apiv1.Node,
-	nodeInfos map[string]*schedulerframework.NodeInfo,
+	nodeInfos map[string]*framework.NodeInfo,
 ) (*status.ScaleUpStatus, errors.AutoscalerError) {
 	return o.podsOrchestrator.ScaleUpToNodeGroupMinSize(nodes, nodeInfos)
 }

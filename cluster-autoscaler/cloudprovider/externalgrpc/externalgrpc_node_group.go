@@ -28,8 +28,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/externalgrpc/protos"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	klog "k8s.io/klog/v2"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // NodeGroup implements cloudprovider.NodeGroup interface. NodeGroup contains
@@ -44,7 +44,7 @@ type NodeGroup struct {
 	grpcTimeout time.Duration
 
 	mutex    sync.Mutex
-	nodeInfo **schedulerframework.NodeInfo // used to cache NodeGroupTemplateNodeInfo() grpc calls
+	nodeInfo **framework.NodeInfo // used to cache NodeGroupTemplateNodeInfo() grpc calls
 }
 
 // MaxSize returns maximum size of the node group.
@@ -188,7 +188,7 @@ func (n *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 	return instances, nil
 }
 
-// TemplateNodeInfo returns a schedulerframework.NodeInfo structure of an empty
+// TemplateNodeInfo returns a framework.NodeInfo structure of an empty
 // (as if just started) node. This will be used in scale-up simulations to
 // predict what would a new node look like if a node group was expanded. The
 // returned NodeInfo is expected to have a fully populated Node object, with
@@ -200,7 +200,7 @@ func (n *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 // complex approach and does not cover all the scenarios. For the sake of simplicity,
 // the `nodeInfo` is defined as a Kubernetes `k8s.io.api.core.v1.Node` type
 // where the system could still extract certain info about the node.
-func (n *NodeGroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
+func (n *NodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 	n.mutex.Lock()
 	defer n.mutex.Unlock()
 
@@ -224,11 +224,10 @@ func (n *NodeGroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
 	}
 	pbNodeInfo := res.GetNodeInfo()
 	if pbNodeInfo == nil {
-		n.nodeInfo = new(*schedulerframework.NodeInfo)
+		n.nodeInfo = new(*framework.NodeInfo)
 		return nil, nil
 	}
-	nodeInfo := schedulerframework.NewNodeInfo()
-	nodeInfo.SetNode(pbNodeInfo)
+	nodeInfo := framework.NewNodeInfo(pbNodeInfo, nil)
 	n.nodeInfo = &nodeInfo
 	return nodeInfo, nil
 }

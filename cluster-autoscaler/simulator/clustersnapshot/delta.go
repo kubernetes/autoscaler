@@ -20,6 +20,9 @@ import (
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
+	resourceapi "k8s.io/api/resource/v1alpha3"
+	"k8s.io/autoscaler/cluster-autoscaler/dynamicresources"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
@@ -42,7 +45,9 @@ import (
 //	pod affinity - causes scheduler framework to list pods with non-empty selector,
 //		so basic caching doesn't help.
 type DeltaClusterSnapshot struct {
-	data *internalDeltaSnapshotData
+	data       *internalDeltaSnapshotData
+	draEnabled bool
+	fwHandle   *framework.Handle
 }
 
 type deltaSnapshotNodeLister DeltaClusterSnapshot
@@ -135,16 +140,6 @@ func (data *internalDeltaSnapshotData) buildNodeInfoList() []*schedulerframework
 	return nodeInfoList
 }
 
-// Convenience method to avoid writing loop for adding nodes.
-func (data *internalDeltaSnapshotData) addNodes(nodes []*apiv1.Node) error {
-	for _, node := range nodes {
-		if err := data.addNode(node); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 func (data *internalDeltaSnapshotData) addNode(node *apiv1.Node) error {
 	nodeInfo := schedulerframework.NewNodeInfo()
 	nodeInfo.SetNode(node)
@@ -186,7 +181,7 @@ func (data *internalDeltaSnapshotData) clearPodCaches() {
 	data.pvcNamespaceMap = nil
 }
 
-func (data *internalDeltaSnapshotData) removeNode(nodeName string) error {
+func (data *internalDeltaSnapshotData) removeNodeInfo(nodeName string) error {
 	_, foundInDelta := data.addedNodeInfoMap[nodeName]
 	if foundInDelta {
 		// If node was added within this delta, delete this change.
@@ -236,7 +231,7 @@ func (data *internalDeltaSnapshotData) nodeInfoToModify(nodeName string) (*sched
 	return dni, true
 }
 
-func (data *internalDeltaSnapshotData) addPod(pod *apiv1.Pod, nodeName string) error {
+func (data *internalDeltaSnapshotData) schedulePod(pod *apiv1.Pod, nodeName string) error {
 	ni, found := data.nodeInfoToModify(nodeName)
 	if !found {
 		return ErrNodeNotFound
@@ -249,7 +244,7 @@ func (data *internalDeltaSnapshotData) addPod(pod *apiv1.Pod, nodeName string) e
 	return nil
 }
 
-func (data *internalDeltaSnapshotData) removePod(namespace, name, nodeName string) error {
+func (data *internalDeltaSnapshotData) unschedulePod(namespace, name, nodeName string) error {
 	// This always clones node info, even if the pod is actually missing.
 	// Not sure if we mind, since removing non-existent pod
 	// probably means things are very bad anyway.
@@ -305,12 +300,12 @@ func (data *internalDeltaSnapshotData) commit() (*internalDeltaSnapshotData, err
 		return data, nil
 	}
 	for node := range data.deletedNodeInfos {
-		if err := data.baseData.removeNode(node); err != nil {
+		if err := data.baseData.removeNodeInfo(node); err != nil {
 			return nil, err
 		}
 	}
 	for _, node := range data.modifiedNodeInfoMap {
-		if err := data.baseData.removeNode(node.Node().Name); err != nil {
+		if err := data.baseData.removeNodeInfo(node.Node().Name); err != nil {
 			return nil, err
 		}
 		if err := data.baseData.addNodeInfo(node); err != nil {
@@ -395,49 +390,100 @@ func (snapshot *DeltaClusterSnapshot) StorageInfos() schedulerframework.StorageI
 	return (*deltaSnapshotStorageLister)(snapshot)
 }
 
+func (snapshot *DeltaClusterSnapshot) ResourceClaims() schedulerframework.ResourceClaimTracker {
+	// TODO(DRA): Implement DRA support, handle draSnapshot.
+	panic("implement me")
+}
+
+func (snapshot *DeltaClusterSnapshot) ResourceSlices() schedulerframework.ResourceSliceLister {
+	// TODO(DRA): Implement DRA support, handle draSnapshot.
+	panic("implement me")
+}
+
+func (snapshot *DeltaClusterSnapshot) DeviceClasses() schedulerframework.DeviceClassLister {
+	// TODO(DRA): Implement DRA support, handle draSnapshot.
+	panic("implement me")
+}
+
 // NewDeltaClusterSnapshot creates instances of DeltaClusterSnapshot.
-func NewDeltaClusterSnapshot() *DeltaClusterSnapshot {
-	snapshot := &DeltaClusterSnapshot{}
+func NewDeltaClusterSnapshot(fwHandle *framework.Handle, draEnabled bool) *DeltaClusterSnapshot {
+	snapshot := &DeltaClusterSnapshot{fwHandle: fwHandle, draEnabled: draEnabled}
 	snapshot.Clear()
 	return snapshot
 }
 
-// AddNode adds node to the snapshot.
-func (snapshot *DeltaClusterSnapshot) AddNode(node *apiv1.Node) error {
-	return snapshot.data.addNode(node)
+func (snapshot *DeltaClusterSnapshot) GetNodeInfo(nodeName string) (*framework.NodeInfo, error) {
+	schedNodeInfo, err := snapshot.getNodeInfo(nodeName)
+	if err != nil {
+		return nil, err
+	}
+	return framework.WrapSchedulerNodeInfo(schedNodeInfo), nil
 }
 
-// AddNodes adds nodes in batch to the snapshot.
-func (snapshot *DeltaClusterSnapshot) AddNodes(nodes []*apiv1.Node) error {
-	return snapshot.data.addNodes(nodes)
+func (snapshot *DeltaClusterSnapshot) ListNodeInfos() ([]*framework.NodeInfo, error) {
+	schedNodeInfos := snapshot.data.getNodeInfoList()
+	return framework.WrapSchedulerNodeInfos(schedNodeInfos), nil
 }
 
-// AddNodeWithPods adds a node and set of pods to be scheduled to this node to the snapshot.
-func (snapshot *DeltaClusterSnapshot) AddNodeWithPods(node *apiv1.Node, pods []*apiv1.Pod) error {
-	if err := snapshot.AddNode(node); err != nil {
+func (snapshot *DeltaClusterSnapshot) AddNodeInfo(nodeInfo *framework.NodeInfo) error {
+	if err := snapshot.data.addNode(nodeInfo.Node()); err != nil {
 		return err
 	}
-	for _, pod := range pods {
-		if err := snapshot.AddPod(pod, node.Name); err != nil {
+	for _, podInfo := range nodeInfo.Pods {
+		if err := snapshot.data.schedulePod(podInfo.Pod, nodeInfo.Node().Name); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-// RemoveNode removes nodes (and pods scheduled to it) from the snapshot.
-func (snapshot *DeltaClusterSnapshot) RemoveNode(nodeName string) error {
-	return snapshot.data.removeNode(nodeName)
+func (snapshot *DeltaClusterSnapshot) Initialize(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod, draSnapshot dynamicresources.Snapshot) error {
+	snapshot.Clear()
+
+	if snapshot.draEnabled {
+		// TODO(DRA): Implement DRA support, handle draSnapshot.
+	}
+
+	knownNodes := make(map[string]bool)
+	for _, node := range nodes {
+		if err := snapshot.data.addNode(node); err != nil {
+			return err
+		}
+		knownNodes[node.Name] = true
+	}
+	for _, pod := range scheduledPods {
+		if knownNodes[pod.Spec.NodeName] {
+			if err := snapshot.data.schedulePod(pod, pod.Spec.NodeName); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
-// AddPod adds pod to the snapshot and schedules it to given node.
-func (snapshot *DeltaClusterSnapshot) AddPod(pod *apiv1.Pod, nodeName string) error {
-	return snapshot.data.addPod(pod, nodeName)
+func (snapshot *DeltaClusterSnapshot) AddResourceClaims(extraClaims []*resourceapi.ResourceClaim) error {
+	// TODO(DRA): Implement DRA support.
+	panic("implement me")
 }
 
-// RemovePod removes pod from the snapshot.
-func (snapshot *DeltaClusterSnapshot) RemovePod(namespace, podName, nodeName string) error {
-	return snapshot.data.removePod(namespace, podName, nodeName)
+func (snapshot *DeltaClusterSnapshot) GetPodResourceClaims(pod *apiv1.Pod) ([]*resourceapi.ResourceClaim, error) {
+	// TODO(DRA): Implement DRA support.
+	panic("implement me")
+}
+
+// RemoveNodeInfo removes nodes (and pods scheduled to it) from the snapshot.
+func (snapshot *DeltaClusterSnapshot) RemoveNodeInfo(nodeName string) error {
+	return snapshot.data.removeNodeInfo(nodeName)
+}
+
+// SchedulePod adds pod to the snapshot and schedules it to given node.
+func (snapshot *DeltaClusterSnapshot) SchedulePod(pod *apiv1.Pod, nodeName string, postFilterState *schedulerframework.CycleState) error {
+	return snapshot.data.schedulePod(pod, nodeName)
+}
+
+// UnschedulePod removes pod from the snapshot.
+func (snapshot *DeltaClusterSnapshot) UnschedulePod(namespace, podName, nodeName string) error {
+	return snapshot.data.unschedulePod(namespace, podName, nodeName)
 }
 
 // IsPVCUsedByPods returns if the pvc is used by any pod

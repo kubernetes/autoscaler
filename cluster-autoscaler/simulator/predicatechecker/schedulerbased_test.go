@@ -24,8 +24,12 @@ import (
 
 	testconfig "k8s.io/autoscaler/cluster-autoscaler/config/test"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	scheduler "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	"k8s.io/client-go/informers"
+	clientsetfake "k8s.io/client-go/kubernetes/fake"
+	"k8s.io/kubernetes/pkg/scheduler/apis/config"
 
 	"github.com/stretchr/testify/assert"
 
@@ -43,8 +47,7 @@ func TestCheckPredicate(t *testing.T) {
 	n1000Unschedulable := BuildTestNode("n1000", 1000, 2000000)
 	SetNodeReadyState(n1000Unschedulable, true, time.Time{})
 
-	defaultPredicateChecker, err := NewTestPredicateChecker()
-	assert.NoError(t, err)
+	defaultPredicateChecker := NewSchedulerBasedPredicateChecker(framework.TestFrameworkHandleOrDie(t))
 
 	// temp dir
 	tmpDir, err := os.MkdirTemp("", "scheduler-configs")
@@ -62,15 +65,15 @@ func TestCheckPredicate(t *testing.T) {
 
 	customConfig, err := scheduler.ConfigFromPath(customConfigFile)
 	assert.NoError(t, err)
-	customPredicateChecker, err := NewTestPredicateCheckerWithCustomConfig(customConfig)
-	assert.NoError(t, err)
+	customFwHandle := newTestFwHandleWithCustomConfigOrDie(t, customConfig)
+	customPredicateChecker := NewSchedulerBasedPredicateChecker(customFwHandle)
 
 	tests := []struct {
 		name             string
 		node             *apiv1.Node
 		scheduledPods    []*apiv1.Pod
 		testPod          *apiv1.Pod
-		predicateChecker PredicateChecker
+		predicateChecker *SchedulerBasedPredicateChecker
 		expectError      bool
 	}{
 		// default predicate checker test cases
@@ -143,18 +146,20 @@ func TestCheckPredicate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var err error
-			clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot()
-			err = clusterSnapshot.AddNodeWithPods(tt.node, tt.scheduledPods)
+			clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot(tt.predicateChecker.fwHandle, true)
+			err = clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(tt.node, tt.scheduledPods...))
 			assert.NoError(t, err)
 
-			predicateError := tt.predicateChecker.CheckPredicates(clusterSnapshot, tt.testPod, tt.node.Name)
+			state, predicateError := tt.predicateChecker.CheckPredicates(clusterSnapshot, tt.testPod, tt.node.Name)
 			if tt.expectError {
 				assert.NotNil(t, predicateError)
 				assert.Equal(t, NotSchedulablePredicateError, predicateError.ErrorType())
 				assert.Equal(t, "Insufficient cpu", predicateError.Message())
 				assert.Contains(t, predicateError.VerboseMessage(), "Insufficient cpu; predicateName=NodeResourcesFit")
+				assert.Nil(t, state)
 			} else {
 				assert.Nil(t, predicateError)
+				assert.NotNil(t, state)
 			}
 		})
 	}
@@ -168,8 +173,7 @@ func TestFitsAnyNode(t *testing.T) {
 	n1000 := BuildTestNode("n1000", 1000, 2000000)
 	n2000 := BuildTestNode("n2000", 2000, 2000000)
 
-	defaultPredicateChecker, err := NewTestPredicateChecker()
-	assert.NoError(t, err)
+	defaultPredicateChecker := NewSchedulerBasedPredicateChecker(framework.TestFrameworkHandleOrDie(t))
 
 	// temp dir
 	tmpDir, err := os.MkdirTemp("", "scheduler-configs")
@@ -187,12 +191,12 @@ func TestFitsAnyNode(t *testing.T) {
 
 	customConfig, err := scheduler.ConfigFromPath(customConfigFile)
 	assert.NoError(t, err)
-	customPredicateChecker, err := NewTestPredicateCheckerWithCustomConfig(customConfig)
-	assert.NoError(t, err)
+	fwHandle := newTestFwHandleWithCustomConfigOrDie(t, customConfig)
+	customPredicateChecker := NewSchedulerBasedPredicateChecker(fwHandle)
 
 	testCases := []struct {
 		name             string
-		predicateChecker PredicateChecker
+		predicateChecker *SchedulerBasedPredicateChecker
 		pod              *apiv1.Pod
 		expectedNodes    []string
 		expectError      bool
@@ -243,19 +247,21 @@ func TestFitsAnyNode(t *testing.T) {
 		},
 	}
 
-	clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot()
-	err = clusterSnapshot.AddNode(n1000)
-	assert.NoError(t, err)
-	err = clusterSnapshot.AddNode(n2000)
-	assert.NoError(t, err)
-
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			nodeName, err := tc.predicateChecker.FitsAnyNode(clusterSnapshot, tc.pod)
+			clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot(tc.predicateChecker.fwHandle, true)
+			err = clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(n1000))
+			assert.NoError(t, err)
+			err = clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(n2000))
+			assert.NoError(t, err)
+
+			nodeName, state, err := tc.predicateChecker.FitsAnyNode(clusterSnapshot, tc.pod)
 			if tc.expectError {
 				assert.Error(t, err)
+				assert.Nil(t, state)
 			} else {
 				assert.NoError(t, err)
+				assert.NotNil(t, state)
 				assert.Contains(t, tc.expectedNodes, nodeName)
 			}
 		})
@@ -280,18 +286,18 @@ func TestDebugInfo(t *testing.T) {
 	}
 	SetNodeReadyState(node1, true, time.Time{})
 
-	clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot()
-
-	err := clusterSnapshot.AddNode(node1)
+	defaultFwHandle := framework.TestFrameworkHandleOrDie(t)
+	defaultClusterSnapshot := clustersnapshot.NewBasicClusterSnapshot(defaultFwHandle, true)
+	err := defaultClusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(node1))
 	assert.NoError(t, err)
 
 	// with default predicate checker
-	defaultPredicateChecker, err := NewTestPredicateChecker()
-	assert.NoError(t, err)
-	predicateErr := defaultPredicateChecker.CheckPredicates(clusterSnapshot, p1, "n1")
+	defaultPredicateChecker := NewSchedulerBasedPredicateChecker(defaultFwHandle)
+	state, predicateErr := defaultPredicateChecker.CheckPredicates(defaultClusterSnapshot, p1, "n1")
 	assert.NotNil(t, predicateErr)
 	assert.Equal(t, "node(s) had untolerated taint {SomeTaint: WhyNot?}", predicateErr.Message())
 	assert.Contains(t, predicateErr.VerboseMessage(), "RandomTaint")
+	assert.Nil(t, state)
 
 	// with custom predicate checker
 
@@ -311,8 +317,21 @@ func TestDebugInfo(t *testing.T) {
 
 	customConfig, err := scheduler.ConfigFromPath(customConfigFile)
 	assert.NoError(t, err)
-	customPredicateChecker, err := NewTestPredicateCheckerWithCustomConfig(customConfig)
+	customFwHandle := newTestFwHandleWithCustomConfigOrDie(t, customConfig)
+	customClusterSnapshot := clustersnapshot.NewBasicClusterSnapshot(customFwHandle, true)
+	err = customClusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(node1))
 	assert.NoError(t, err)
-	predicateErr = customPredicateChecker.CheckPredicates(clusterSnapshot, p1, "n1")
+
+	customPredicateChecker := NewSchedulerBasedPredicateChecker(customFwHandle)
+	state, predicateErr = customPredicateChecker.CheckPredicates(customClusterSnapshot, p1, "n1")
 	assert.Nil(t, predicateErr)
+	assert.NotNil(t, state)
+}
+
+func newTestFwHandleWithCustomConfigOrDie(t *testing.T, schedConfig *config.KubeSchedulerConfiguration) *framework.Handle {
+	fwHandle, err := framework.NewHandle(informers.NewSharedInformerFactory(clientsetfake.NewSimpleClientset(), 0), schedConfig, true)
+	if err != nil {
+		t.Error(err)
+	}
+	return fwHandle
 }

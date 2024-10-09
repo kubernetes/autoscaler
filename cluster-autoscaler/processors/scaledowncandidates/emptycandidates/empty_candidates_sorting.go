@@ -23,20 +23,20 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 type nodeInfoGetter interface {
-	GetNodeInfo(nodeName string) (*schedulerframework.NodeInfo, error)
+	GetNodeInfo(nodeName string) (*framework.NodeInfo, error)
 }
 
 type nodeInfoGetterImpl struct {
 	c clustersnapshot.ClusterSnapshot
 }
 
-func (n *nodeInfoGetterImpl) GetNodeInfo(nodeName string) (*schedulerframework.NodeInfo, error) {
-	return n.c.NodeInfos().Get(nodeName)
+func (n *nodeInfoGetterImpl) GetNodeInfo(nodeName string) (*framework.NodeInfo, error) {
+	return n.c.GetNodeInfo(nodeName)
 }
 
 // NewNodeInfoGetter limits ClusterSnapshot interface to NodeInfoGet() method.

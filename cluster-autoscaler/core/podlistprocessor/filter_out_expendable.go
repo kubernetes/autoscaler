@@ -22,8 +22,10 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	core_utils "k8s.io/autoscaler/cluster-autoscaler/core/utils"
+	"k8s.io/autoscaler/cluster-autoscaler/dynamicresources"
 	caerrors "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	klog "k8s.io/klog/v2"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 type filterOutExpendable struct {
@@ -55,10 +57,20 @@ func (p *filterOutExpendable) Process(context *context.AutoscalingContext, pods 
 // this is not strictly correct as we are not simulating preemption itself but it matches
 // CA logic from before migration to scheduler framework. So let's keep it for now
 func (p *filterOutExpendable) addPreemptingPodsToSnapshot(pods []*apiv1.Pod, ctx *context.AutoscalingContext) error {
+	// TODO(DRA): Shouldn't we remove the preempted pods from the snapshot first?
 	for _, p := range pods {
-		if err := ctx.ClusterSnapshot.AddPod(p, p.Status.NominatedNodeName); err != nil {
-			klog.Errorf("Failed to update snapshot with pod %s/%s waiting for preemption: %v", p.Namespace, p.Name, err)
-			return caerrors.ToAutoscalerError(caerrors.InternalError, err)
+		var schedulingState *schedulerframework.CycleState
+		if ctx.EnableDynamicResources && dynamicresources.PodNeedsResourceClaims(p) {
+			state, err := ctx.PredicateChecker.CheckPredicates(ctx.ClusterSnapshot, p, p.Status.NominatedNodeName)
+			if err != nil {
+				klog.Warningf("Tried to running Filters for preempting pod %s/%s on nominatedNodeName, but they failed - ignoring the pod. Error: %v", p.Namespace, p.Name, err)
+				continue
+			}
+			schedulingState = state
+		}
+
+		if err := ctx.ClusterSnapshot.SchedulePod(p, p.Status.NominatedNodeName, schedulingState); err != nil {
+			return caerrors.NewAutoscalerError(caerrors.InternalError, "Failed to update snapshot with pod %s/%s waiting for preemption, this shouldn't happen after filters passed: %v", p.Namespace, p.Name, err)
 		}
 	}
 	return nil

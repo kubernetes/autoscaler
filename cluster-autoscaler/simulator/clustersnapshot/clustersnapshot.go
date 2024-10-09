@@ -20,6 +20,9 @@ import (
 	"errors"
 
 	apiv1 "k8s.io/api/core/v1"
+	resourceapi "k8s.io/api/resource/v1alpha3"
+	"k8s.io/autoscaler/cluster-autoscaler/dynamicresources"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
@@ -27,21 +30,41 @@ import (
 // ClusterSnapshot is abstraction of cluster state used for predicate simulations.
 // It exposes mutation methods and can be viewed as scheduler's SharedLister.
 type ClusterSnapshot interface {
-	schedulerframework.SharedLister
-	// AddNode adds node to the snapshot.
-	AddNode(node *apiv1.Node) error
-	// AddNodes adds nodes to the snapshot.
-	AddNodes(nodes []*apiv1.Node) error
-	// RemoveNode removes nodes (and pods scheduled to it) from the snapshot.
-	RemoveNode(nodeName string) error
-	// AddPod adds pod to the snapshot and schedules it to given node.
-	AddPod(pod *apiv1.Pod, nodeName string) error
-	// RemovePod removes pod from the snapshot.
-	RemovePod(namespace string, podName string, nodeName string) error
-	// AddNodeWithPods adds a node and set of pods to be scheduled to this node to the snapshot.
-	AddNodeWithPods(node *apiv1.Node, pods []*apiv1.Pod) error
-	// IsPVCUsedByPods returns if the pvc is used by any pod, key = <namespace>/<pvc_name>
-	IsPVCUsedByPods(key string) bool
+	framework.SharedLister
+
+	// Initialize clears the snapshot and initializes it with real objects from the cluster - Nodes,
+	// scheduled pods, and all DRA objects (including e.g. ResourceClaims referenced by unschedulable Pods,
+	// or non-Node-local ResourceSlices).
+	Initialize(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod, draSnapshot dynamicresources.Snapshot) error
+
+	// SchedulePod schedules the given Pod onto the Node with the given nodeName inside the snapshot. If reserveState is passed,
+	// and the Pod references ResourceClaims, the Reserve phase of the scheduler framework is run in order to allocate the
+	// claims inside the snapshot. Returns an error if the pod references a ResourceClaim that isn't tracked in the snapshot, and
+	// allocated to the given Node.
+	SchedulePod(pod *apiv1.Pod, nodeName string, reserveState *schedulerframework.CycleState) error
+	// UnschedulePod removes the given Pod from the given Node inside the snapshot. The ResourceClaims referenced by the Pod are
+	// deallocated and left in the snapshot, so that the Pod can be scheduled on another Node using SchedulePod.
+	UnschedulePod(namespace string, podName string, nodeName string) error
+
+	// AddNodeInfo adds the given NodeInfo to the snapshot. The Node and the Pods are added, as well as
+	// any DRA objects passed along them.
+	AddNodeInfo(nodeInfo *framework.NodeInfo) error
+	// RemoveNodeInfo removes the given NodeInfo from the snapshot The Node and the Pods are removed, as well as
+	// any DRA objects owned by them.
+	RemoveNodeInfo(nodeName string) error
+	// GetNodeInfo returns an internal NodeInfo for a given Node - all information about the Node tracked in the snapshot.
+	// This means the Node itself, its scheduled Pods, as well as all relevant DRA objects. The internal NodeInfos
+	// obtained via this method should always be used in CA code instead of directly using *schedulerframework.NodeInfo.
+	GetNodeInfo(nodeName string) (*framework.NodeInfo, error)
+	// ListNodeInfos returns internal NodeInfos for all Nodes tracked in the snapshot. See the comment on GetNodeInfo.
+	ListNodeInfos() ([]*framework.NodeInfo, error)
+
+	// AddResourceClaims adds additional ResourceClaims to the snapshot. It can be used e.g. if we need to duplicate a Pod that
+	// owns ResourceClaims. Returns an error if any of the claims is already tracked in the snapshot.
+	AddResourceClaims(extraClaims []*resourceapi.ResourceClaim) error
+	// GetPodResourceClaims returns all ResourceClaims referenced by the given pod. It can be used to retrieve ResourceClaims
+	// for pods that aren't scheduled. Returns an error if any of the claims referenced by the pod aren't tracked in the snapshot.
+	GetPodResourceClaims(pod *apiv1.Pod) ([]*resourceapi.ResourceClaim, error)
 
 	// Fork creates a fork of snapshot state. All modifications can later be reverted to moment of forking via Revert().
 	// Use WithForkedSnapshot() helper function instead if possible.

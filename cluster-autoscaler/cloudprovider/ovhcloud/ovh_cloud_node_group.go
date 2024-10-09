@@ -28,8 +28,8 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/ovhcloud/sdk"
@@ -215,7 +215,7 @@ func (ng *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 }
 
 // TemplateNodeInfo returns a node template for this node group.
-func (ng *NodeGroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
+func (ng *NodeGroup) TemplateNodeInfo() (*framework.NodeInfo, error) {
 	// Forge node template in a node group
 	node := &apiv1.Node{
 		ObjectMeta: metav1.ObjectMeta{
@@ -252,9 +252,7 @@ func (ng *NodeGroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
 	node.Status.Allocatable = node.Status.Capacity
 
 	// Setup node info template
-	nodeInfo := schedulerframework.NewNodeInfo(cloudprovider.BuildKubeProxy(ng.Id()))
-	nodeInfo.SetNode(node)
-
+	nodeInfo := framework.NewNodeInfo(node, nil, &framework.PodInfo{Pod: cloudprovider.BuildKubeProxy(ng.Id())})
 	return nodeInfo, nil
 }
 

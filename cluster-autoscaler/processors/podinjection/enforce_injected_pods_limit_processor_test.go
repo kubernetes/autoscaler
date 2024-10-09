@@ -40,7 +40,7 @@ func TestEnforceInjectedPodsLimitProcessor(t *testing.T) {
 		{
 			name:              "Real pods = 0 && fake pods < PodLimit",
 			podLimit:          10,
-			unschedulablePods: makeFakePods(ownerUid, samplePod, 5),
+			unschedulablePods: makeFakePodsIgnoreClaims(ownerUid, samplePod, 5),
 			expectedNumberOfResultedUnschedulablePods:     5,
 			expectedNumberOfResultedUnschedulableFakePods: 5,
 			expectedNumberOfResultedUnschedulableRealPods: 0,
@@ -48,7 +48,7 @@ func TestEnforceInjectedPodsLimitProcessor(t *testing.T) {
 		{
 			name:              "Real pods = 0 && fake pods > PodLimit",
 			podLimit:          10,
-			unschedulablePods: makeFakePods(ownerUid, samplePod, 15),
+			unschedulablePods: makeFakePodsIgnoreClaims(ownerUid, samplePod, 15),
 			expectedNumberOfResultedUnschedulablePods:     10,
 			expectedNumberOfResultedUnschedulableFakePods: 10,
 			expectedNumberOfResultedUnschedulableRealPods: 0,
@@ -56,7 +56,7 @@ func TestEnforceInjectedPodsLimitProcessor(t *testing.T) {
 		{
 			name:              "Real pods > PodLimit && some fake pods",
 			podLimit:          10,
-			unschedulablePods: append(makeTestingPods(11), makeFakePods(ownerUid, samplePod, 5)...),
+			unschedulablePods: append(makeTestingPods(11), makeFakePodsIgnoreClaims(ownerUid, samplePod, 5)...),
 			expectedNumberOfResultedUnschedulablePods:     11,
 			expectedNumberOfResultedUnschedulableFakePods: 0,
 			expectedNumberOfResultedUnschedulableRealPods: 11,
@@ -64,7 +64,7 @@ func TestEnforceInjectedPodsLimitProcessor(t *testing.T) {
 		{
 			name:              "Real pods = PodLimit && some fake pods",
 			podLimit:          10,
-			unschedulablePods: append(makeTestingPods(10), makeFakePods(ownerUid, samplePod, 5)...),
+			unschedulablePods: append(makeTestingPods(10), makeFakePodsIgnoreClaims(ownerUid, samplePod, 5)...),
 			expectedNumberOfResultedUnschedulablePods:     10,
 			expectedNumberOfResultedUnschedulableFakePods: 0,
 			expectedNumberOfResultedUnschedulableRealPods: 10,
@@ -72,7 +72,7 @@ func TestEnforceInjectedPodsLimitProcessor(t *testing.T) {
 		{
 			name:              "Real pods < PodLimit && real pods + fake pods > PodLimit",
 			podLimit:          10,
-			unschedulablePods: append(makeTestingPods(3), makeFakePods(ownerUid, samplePod, 10)...),
+			unschedulablePods: append(makeTestingPods(3), makeFakePodsIgnoreClaims(ownerUid, samplePod, 10)...),
 			expectedNumberOfResultedUnschedulablePods:     10,
 			expectedNumberOfResultedUnschedulableFakePods: 7,
 			expectedNumberOfResultedUnschedulableRealPods: 3,
@@ -80,7 +80,7 @@ func TestEnforceInjectedPodsLimitProcessor(t *testing.T) {
 		{
 			name:              "Real pods < PodLimit && real pods + fake pods < PodLimit",
 			podLimit:          10,
-			unschedulablePods: append(makeTestingPods(3), makeFakePods(ownerUid, samplePod, 4)...),
+			unschedulablePods: append(makeTestingPods(3), makeFakePodsIgnoreClaims(ownerUid, samplePod, 4)...),
 			expectedNumberOfResultedUnschedulablePods:     7,
 			expectedNumberOfResultedUnschedulableFakePods: 4,
 			expectedNumberOfResultedUnschedulableRealPods: 3,
@@ -88,7 +88,7 @@ func TestEnforceInjectedPodsLimitProcessor(t *testing.T) {
 		{
 			name:              "Real pods < PodLimit && real pods + fake pods = PodLimit",
 			podLimit:          10,
-			unschedulablePods: append(makeTestingPods(3), makeFakePods(ownerUid, samplePod, 7)...),
+			unschedulablePods: append(makeTestingPods(3), makeFakePodsIgnoreClaims(ownerUid, samplePod, 7)...),
 			expectedNumberOfResultedUnschedulablePods:     10,
 			expectedNumberOfResultedUnschedulableFakePods: 7,
 			expectedNumberOfResultedUnschedulableRealPods: 3,

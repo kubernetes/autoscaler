@@ -24,12 +24,16 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/dynamicresources"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/test"
 )
 
 func TestFilterOutExpendable(t *testing.T) {
+	// TODO(DRA): Add DRA-specific test cases.
 	testCases := []struct {
 		name               string
 		pods               []*apiv1.Pod
@@ -108,11 +112,15 @@ func TestFilterOutExpendable(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			processor := NewFilterOutExpendablePodListProcessor()
-			snapshot := clustersnapshot.NewBasicClusterSnapshot()
-			snapshot.AddNodes(tc.nodes)
+			fwHandle := framework.TestFrameworkHandleOrDie(t)
+			snapshot := clustersnapshot.NewBasicClusterSnapshot(fwHandle, true)
+			err := snapshot.Initialize(tc.nodes, nil, dynamicresources.Snapshot{})
+			assert.NoError(t, err)
+			predChecker := predicatechecker.NewSchedulerBasedPredicateChecker(fwHandle)
 
 			pods, err := processor.Process(&context.AutoscalingContext{
-				ClusterSnapshot: snapshot,
+				PredicateChecker: predChecker,
+				ClusterSnapshot:  snapshot,
 				AutoscalingOptions: config.AutoscalingOptions{
 					ExpendablePodsPriorityCutoff: tc.priorityCutoff,
 				},

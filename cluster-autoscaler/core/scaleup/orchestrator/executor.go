@@ -24,8 +24,8 @@ import (
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
@@ -63,7 +63,7 @@ func newScaleUpExecutor(
 // If there were multiple concurrent errors one combined error is returned.
 func (e *scaleUpExecutor) ExecuteScaleUps(
 	scaleUpInfos []nodegroupset.ScaleUpInfo,
-	nodeInfos map[string]*schedulerframework.NodeInfo,
+	nodeInfos map[string]*framework.NodeInfo,
 	now time.Time,
 	atomic bool,
 ) (errors.AutoscalerError, []cloudprovider.NodeGroup) {
@@ -76,7 +76,7 @@ func (e *scaleUpExecutor) ExecuteScaleUps(
 
 func (e *scaleUpExecutor) executeScaleUpsSync(
 	scaleUpInfos []nodegroupset.ScaleUpInfo,
-	nodeInfos map[string]*schedulerframework.NodeInfo,
+	nodeInfos map[string]*framework.NodeInfo,
 	now time.Time,
 	atomic bool,
 ) (errors.AutoscalerError, []cloudprovider.NodeGroup) {
@@ -96,7 +96,7 @@ func (e *scaleUpExecutor) executeScaleUpsSync(
 
 func (e *scaleUpExecutor) executeScaleUpsParallel(
 	scaleUpInfos []nodegroupset.ScaleUpInfo,
-	nodeInfos map[string]*schedulerframework.NodeInfo,
+	nodeInfos map[string]*framework.NodeInfo,
 	now time.Time,
 	atomic bool,
 ) (errors.AutoscalerError, []cloudprovider.NodeGroup) {
@@ -156,7 +156,7 @@ func (e *scaleUpExecutor) increaseSize(nodeGroup cloudprovider.NodeGroup, increa
 
 func (e *scaleUpExecutor) executeScaleUp(
 	info nodegroupset.ScaleUpInfo,
-	nodeInfo *schedulerframework.NodeInfo,
+	nodeInfo *framework.NodeInfo,
 	availableGPUTypes map[string]struct{},
 	now time.Time,
 	atomic bool,

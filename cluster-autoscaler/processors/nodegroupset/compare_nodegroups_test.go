@@ -19,14 +19,13 @@ package nodegroupset
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func checkNodesSimilar(t *testing.T, n1, n2 *apiv1.Node, comparator NodeInfoComparator, shouldEqual bool) {
@@ -34,10 +33,8 @@ func checkNodesSimilar(t *testing.T, n1, n2 *apiv1.Node, comparator NodeInfoComp
 }
 
 func checkNodesSimilarWithPods(t *testing.T, n1, n2 *apiv1.Node, pods1, pods2 []*apiv1.Pod, comparator NodeInfoComparator, shouldEqual bool) {
-	ni1 := schedulerframework.NewNodeInfo(pods1...)
-	ni1.SetNode(n1)
-	ni2 := schedulerframework.NewNodeInfo(pods2...)
-	ni2.SetNode(n2)
+	ni1 := framework.NewTestNodeInfo(n1, pods1...)
+	ni2 := framework.NewTestNodeInfo(n2, pods2...)
 	assert.Equal(t, shouldEqual, comparator(ni1, ni2))
 }
 

@@ -23,9 +23,10 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/dynamicresources"
 	podinjectionbackoff "k8s.io/autoscaler/cluster-autoscaler/processors/podinjection/backoff"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
-	"k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 const (
@@ -60,20 +61,34 @@ func (p *PodInjectionPodListProcessor) Process(ctx *context.AutoscalingContext, 
 	controllers := listControllers(ctx)
 	controllers = p.skipBackedoffControllers(controllers)
 
-	nodeInfos, err := ctx.ClusterSnapshot.NodeInfos().List()
+	nodeInfos, err := ctx.ClusterSnapshot.ListNodeInfos()
 	if err != nil {
 		klog.Errorf("Failed to list nodeInfos from cluster snapshot: %v", err)
 		return unschedulablePods, fmt.Errorf("failed to list nodeInfos from cluster snapshot: %v", err)
 	}
 	scheduledPods := podsFromNodeInfos(nodeInfos)
 
-	groupedPods := groupPods(append(scheduledPods, unschedulablePods...), controllers)
+	groupedPods := groupPods(append(scheduledPods, unschedulablePods...), controllers, ctx.ClusterSnapshot, ctx.EnableDynamicResources)
 	var podsToInject []*apiv1.Pod
 
 	for _, groupedPod := range groupedPods {
 		var fakePodCount = groupedPod.fakePodCount()
-		fakePods := makeFakePods(groupedPod.ownerUid, groupedPod.sample, fakePodCount)
-		podsToInject = append(podsToInject, fakePods...)
+		fakePods, err := makeFakePods(groupedPod.ownerUid, groupedPod.sample, fakePodCount)
+		if err != nil {
+			return nil, err
+		}
+		for _, podInfo := range fakePods {
+			podsToInject = append(podsToInject, podInfo.Pod)
+
+			if ctx.EnableDynamicResources && dynamicresources.PodNeedsResourceClaims(podInfo.Pod) {
+				// If the pod we're duplicating owns any ResourceClaims, we need to duplicate and inject them into the cluster snapshot in order
+				// for the pods to be able to schedule.
+				err := ctx.ClusterSnapshot.AddResourceClaims(podInfo.NeededResourceClaims)
+				if err != nil {
+					return nil, err
+				}
+			}
+		}
 	}
 
 	unschedulablePodsAfterProcessing := append(unschedulablePods, podsToInject...)
@@ -87,15 +102,24 @@ func (p *PodInjectionPodListProcessor) CleanUp() {
 
 // makeFakePods creates podCount number of copies of the sample pod
 // makeFakePods also adds annotation to the pod to be marked as "fake"
-func makeFakePods(ownerUid types.UID, samplePod *apiv1.Pod, podCount int) []*apiv1.Pod {
-	var fakePods []*apiv1.Pod
+func makeFakePods(ownerUid types.UID, samplePod *framework.PodInfo, podCount int) ([]*framework.PodInfo, error) {
+	var fakePods []*framework.PodInfo
 	for i := 1; i <= podCount; i++ {
 		newPod := withFakePodAnnotation(samplePod.DeepCopy())
-		newPod.Name = fmt.Sprintf("%s-copy-%d", samplePod.Name, i)
+		nameSuffix := fmt.Sprintf("copy-%d", i)
+		newPod.Name = fmt.Sprintf("%s-%s", samplePod.Name, nameSuffix)
 		newPod.UID = types.UID(fmt.Sprintf("%s-%d", string(ownerUid), i))
-		fakePods = append(fakePods, newPod)
+
+		// Filter to only the claims owned by the duplicated pod, clear allocations to be sure, sanitize. These will need to be added to the cluster snapshot
+		// in order for the fake pod to be able to schedule.
+		newResourceClaims, err := dynamicresources.SanitizePodResourceClaims(newPod, samplePod.Pod, samplePod.NeededResourceClaims, true, nameSuffix, "", "", nil)
+		if err != nil {
+			return nil, err
+		}
+
+		fakePods = append(fakePods, &framework.PodInfo{Pod: newPod, NeededResourceClaims: newResourceClaims})
 	}
-	return fakePods
+	return fakePods, nil
 }
 
 // withFakePodAnnotation adds annotation of key `FakePodAnnotationKey` with value `FakePodAnnotationValue` to passed pod.

@@ -33,10 +33,9 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
-	"k8s.io/kubernetes/pkg/scheduler/framework"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 type testIteration struct {
@@ -215,16 +214,10 @@ func scheduleAll(toSchedule []*budgets.NodeGroupView, scheduler *GroupDeletionSc
 			return fmt.Errorf("failed to get target size for node group %q: %s", bucket.Group.Id(), err)
 		}
 		for _, node := range bucket.Nodes {
-			scheduler.ScheduleDeletion(infoForNode(node), bucket.Group, bucketSize, false)
+			scheduler.ScheduleDeletion(framework.NewNodeInfo(node, nil), bucket.Group, bucketSize, false)
 		}
 	}
 	return nil
-}
-
-func infoForNode(n *apiv1.Node) *framework.NodeInfo {
-	info := schedulerframework.NewNodeInfo()
-	info.SetNode(n)
-	return info
 }
 
 func mergeLists(lists ...[]*budgets.NodeGroupView) []*budgets.NodeGroupView {

@@ -29,6 +29,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
+	"k8s.io/autoscaler/cluster-autoscaler/dynamicresources"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/observers/nodegroupchange"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
@@ -61,6 +62,7 @@ type Actuator struct {
 	configGetter              actuatorNodeGroupConfigGetter
 	nodeDeleteDelayAfterTaint time.Duration
 	pastLatencies             *expiring.List
+	draProvider               *dynamicresources.Provider
 }
 
 // actuatorNodeGroupConfigGetter is an interface to limit the functions that can be used
@@ -71,7 +73,7 @@ type actuatorNodeGroupConfigGetter interface {
 }
 
 // NewActuator returns a new instance of Actuator.
-func NewActuator(ctx *context.AutoscalingContext, scaleStateNotifier nodegroupchange.NodeGroupChangeObserver, ndt *deletiontracker.NodeDeletionTracker, deleteOptions options.NodeDeleteOptions, drainabilityRules rules.Rules, configGetter actuatorNodeGroupConfigGetter) *Actuator {
+func NewActuator(ctx *context.AutoscalingContext, scaleStateNotifier nodegroupchange.NodeGroupChangeObserver, ndt *deletiontracker.NodeDeletionTracker, deleteOptions options.NodeDeleteOptions, drainabilityRules rules.Rules, configGetter actuatorNodeGroupConfigGetter, draProvider *dynamicresources.Provider) *Actuator {
 	ndb := NewNodeDeletionBatcher(ctx, scaleStateNotifier, ndt, ctx.NodeDeletionBatcherInterval)
 	legacyFlagDrainConfig := SingleRuleDrainConfig(ctx.MaxGracefulTerminationSec)
 	var evictor Evictor
@@ -90,6 +92,7 @@ func NewActuator(ctx *context.AutoscalingContext, scaleStateNotifier nodegroupch
 		configGetter:              configGetter,
 		nodeDeleteDelayAfterTaint: ctx.NodeDeleteDelayAfterTaint,
 		pastLatencies:             expiring.NewList(),
+		draProvider:               draProvider,
 	}
 }
 
@@ -285,7 +288,7 @@ func (a *Actuator) deleteNodesAsync(nodes []*apiv1.Node, nodeGroup cloudprovider
 	}
 
 	for _, node := range nodes {
-		nodeInfo, err := clusterSnapshot.NodeInfos().Get(node.Name)
+		nodeInfo, err := clusterSnapshot.GetNodeInfo(node.Name)
 		if err != nil {
 			klog.Errorf("Scale-down: can't retrieve node %q from snapshot, err: %v", node.Name, err)
 			nodeDeleteResult := status.NodeDeleteResult{ResultType: status.NodeDeleteErrorInternal, Err: errors.NewAutoscalerError(errors.InternalError, "nodeInfos.Get for %q returned error: %v", node.Name, err)}
@@ -317,7 +320,7 @@ func (a *Actuator) scaleDownNodeToReport(node *apiv1.Node, drain bool) (*status.
 	if err != nil {
 		return nil, err
 	}
-	nodeInfo, err := a.ctx.ClusterSnapshot.NodeInfos().Get(node.Name)
+	nodeInfo, err := a.ctx.ClusterSnapshot.GetNodeInfo(node.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -328,7 +331,7 @@ func (a *Actuator) scaleDownNodeToReport(node *apiv1.Node, drain bool) (*status.
 	}
 
 	gpuConfig := a.ctx.CloudProvider.GetNodeGpuConfig(node)
-	utilInfo, err := utilization.Calculate(nodeInfo, ignoreDaemonSetsUtilization, a.ctx.IgnoreMirrorPodsUtilization, gpuConfig, time.Now())
+	utilInfo, err := utilization.Calculate(nodeInfo, ignoreDaemonSetsUtilization, a.ctx.IgnoreMirrorPodsUtilization, a.ctx.EnableDynamicResources, gpuConfig, time.Now())
 	if err != nil {
 		return nil, err
 	}
@@ -356,32 +359,34 @@ func (a *Actuator) taintNode(node *apiv1.Node) error {
 }
 
 func (a *Actuator) createSnapshot(nodes []*apiv1.Node) (clustersnapshot.ClusterSnapshot, error) {
-	knownNodes := make(map[string]bool)
-	snapshot := clustersnapshot.NewBasicClusterSnapshot()
+	snapshot := clustersnapshot.NewBasicClusterSnapshot(a.ctx.FrameworkHandle, a.ctx.EnableDynamicResources)
 	pods, err := a.ctx.AllPodLister().List()
 	if err != nil {
 		return nil, err
 	}
 
 	scheduledPods := kube_util.ScheduledPods(pods)
-	nonExpendableScheduledPods := utils.FilterOutExpendablePods(scheduledPods, a.ctx.ExpendablePodsPriorityCutoff)
+	expendableScheduledPods, nonExpendableScheduledPods := utils.SplitExpendablePods(scheduledPods, a.ctx.ExpendablePodsPriorityCutoff)
 
-	for _, node := range nodes {
-		if err := snapshot.AddNode(node); err != nil {
-			return nil, err
+	draSnapshot := dynamicresources.Snapshot{}
+	if a.ctx.EnableDynamicResources {
+		// Grab a live snapshot of DRA objects.
+		draSnap, err := a.draProvider.Snapshot()
+		if err != nil {
+			klog.Warningf("Couldn't retrieve DRA objects, this probably means that DRA is misconfigured in the cluster. Scaling involving DRA pods won't work, proceeding. Error: %v", err)
+		} else {
+			draSnapshot = draSnap
 		}
 
-		knownNodes[node.Name] = true
-	}
-
-	for _, pod := range nonExpendableScheduledPods {
-		if knownNodes[pod.Spec.NodeName] {
-			if err := snapshot.AddPod(pod, pod.Spec.NodeName); err != nil {
-				return nil, err
-			}
+		for _, expendablePod := range expendableScheduledPods {
+			draSnapshot.RemovePodClaims(expendablePod)
 		}
 	}
 
+	err = snapshot.Initialize(nodes, nonExpendableScheduledPods, draSnapshot)
+	if err != nil {
+		return nil, err
+	}
 	return snapshot, nil
 }
 
