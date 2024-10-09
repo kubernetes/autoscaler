@@ -276,7 +276,10 @@ func (m *ociManagerImpl) Cleanup() error {
 func (m *ociManagerImpl) GetNodePools() []NodePool {
 	var nodePools []NodePool
 	for _, np := range m.staticNodePools {
-		nodePools = append(nodePools, np)
+		nodePoolInCache := m.nodePoolCache.cache[np.Id()]
+		if nodePoolInCache != nil {
+			nodePools = append(nodePools, np)
+		}
 	}
 	return nodePools
 }
