@@ -285,7 +285,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 			apiv1.ResourceCPU:    ParseQuantityOrDie("400m"),
 			apiv1.ResourceMemory: ParseQuantityOrDie("600Mi"),
 		}
-		framework.Logf("Created Hamster deployment %v", d)
+		framework.Logf("Created hamster deployment %v", d)
 		ginkgo.By("Setting up a VPA CRD")
 		containerName := GetHamsterContainerNameByIndex(0)
 		vpaCRD := test.VerticalPodAutoscaler().
