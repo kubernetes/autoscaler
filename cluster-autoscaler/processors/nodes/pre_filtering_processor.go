@@ -54,7 +54,7 @@ func (n *PreFilteringScaleDownNodeProcessor) GetScaleDownCandidates(ctx *context
 			continue
 		}
 		if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
-			klog.V(4).Infof("Node %s should not be processed by cluster autoscaler (no node group config)", node.Name)
+			klog.V(5).Infof("Node %s should not be processed by cluster autoscaler (no node group config)", node.Name)
 			continue
 		}
 		size, found := nodeGroupSize[nodeGroup.Id()]
