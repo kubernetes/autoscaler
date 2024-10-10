@@ -29,7 +29,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
-	klog "k8s.io/klog/v2"
 	"k8s.io/kubernetes/test/e2e/framework"
 	framework_deployment "k8s.io/kubernetes/test/e2e/framework/deployment"
 	podsecurity "k8s.io/pod-security-admission/api"
@@ -157,7 +156,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 			apiv1.ResourceCPU:    ParseQuantityOrDie("100m"),
 			apiv1.ResourceMemory: ParseQuantityOrDie("100Mi"),
 		}
-		klog.Infof("d: %+v", d)
+		framework.Logf("Created hamster deployment %v", d)
 		ginkgo.By("Setting up a VPA CRD")
 		containerName := GetHamsterContainerNameByIndex(0)
 		vpaCRD := test.VerticalPodAutoscaler().
@@ -286,7 +285,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 			apiv1.ResourceCPU:    ParseQuantityOrDie("400m"),
 			apiv1.ResourceMemory: ParseQuantityOrDie("600Mi"),
 		}
-		klog.Infof("d: %+v", d)
+		framework.Logf("Created hamster deployment %v", d)
 		ginkgo.By("Setting up a VPA CRD")
 		containerName := GetHamsterContainerNameByIndex(0)
 		vpaCRD := test.VerticalPodAutoscaler().
