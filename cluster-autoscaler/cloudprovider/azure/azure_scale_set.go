@@ -87,6 +87,8 @@ type ScaleSet struct {
 
 	// uses Azure Dedicated Host
 	dedicatedHost bool
+
+	enableFastDeleteOnFailedProvisioning bool
 }
 
 // NewScaleSet creates a new NewScaleSet.
@@ -127,6 +129,8 @@ func NewScaleSet(spec *dynamic.NodeGroupSpec, az *AzureManager, curSize int64, d
 	if az.config.EnableDetailedCSEMessage {
 		klog.V(2).Infof("enableDetailedCSEMessage: %t", scaleSet.enableDetailedCSEMessage)
 	}
+
+	scaleSet.enableFastDeleteOnFailedProvisioning = az.config.EnableFastDeleteOnFailedProvisioning
 
 	return scaleSet, nil
 }
