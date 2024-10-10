@@ -71,7 +71,7 @@ func (n *nodePool) IncreaseSize(delta int) error {
 	if delta <= 0 {
 		return errors.New("size increase must be positive")
 	}
-	size, err := n.manager.GetNodeGroupSize(n)
+	size, err := n.manager.GetNodeGroupTargetSize(n)
 	if err != nil {
 		return err
 	}
