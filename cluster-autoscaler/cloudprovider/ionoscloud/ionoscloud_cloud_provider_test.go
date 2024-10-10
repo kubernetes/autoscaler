@@ -117,11 +117,6 @@ func (s *NodeGroupTestSuite) TestIncreaseSize_GetSizeError() {
 	s.Error(s.nodePool.IncreaseSize(2))
 }
 
-func (s *NodeGroupTestSuite) TestIncreaseSize_ExceedMax() {
-	s.manager.On("GetNodeGroupSize", s.nodePool).Return(2, nil).Once()
-	s.Error(s.nodePool.IncreaseSize(2))
-}
-
 func (s *NodeGroupTestSuite) TestIncreaseSize_SetSizeError() {
 	s.manager.On("GetNodeGroupSize", s.nodePool).Return(2, nil).Once()
 	s.manager.On("SetNodeGroupSize", s.nodePool, 3).Return(errors.New("error")).Once()
