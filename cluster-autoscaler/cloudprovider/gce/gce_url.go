@@ -78,6 +78,11 @@ func GenerateMigUrl(domainUrl string, ref GceRef) string {
 	return fmt.Sprintf(migUrlTemplate, ref.Project, ref.Zone, ref.Name)
 }
 
+// IsInstanceTemplateRegional determines whether or not an instance template is regional based on the url
+func IsInstanceTemplateRegional(templateUrl string) (bool, error) {
+	return regexp.MatchString("(/projects/.*[A-Za-z0-9]+.*/regions/)", templateUrl)
+}
+
 func parseGceUrl(url, expectedResource string) (project string, zone string, name string, err error) {
 	reg := regexp.MustCompile(fmt.Sprintf("https://.*/projects/.*/zones/.*/%s/.*", expectedResource))
 	errMsg := fmt.Errorf("wrong url: expected format <url>/projects/<project-id>/zones/<zone>/%s/<name>, got %s", expectedResource, url)
