@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2023, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 // Code generated. DO NOT EDIT.
 
@@ -79,17 +79,14 @@ type VolumeAttachment interface {
 	// The iscsi login state of the volume attachment. For a Iscsi volume attachment,
 	// all iscsi sessions need to be all logged-in or logged-out to be in logged-in or logged-out state.
 	GetIscsiLoginState() VolumeAttachmentIscsiLoginStateEnum
+
+	// Flag indicating if this volume was created for the customer as part of a simplified launch.
+	// Used to determine whether the volume requires deletion on instance termination.
+	GetIsVolumeCreatedDuringLaunch() *bool
 }
 
 type volumeattachment struct {
 	JsonData                       []byte
-	AvailabilityDomain             *string                             `mandatory:"true" json:"availabilityDomain"`
-	CompartmentId                  *string                             `mandatory:"true" json:"compartmentId"`
-	Id                             *string                             `mandatory:"true" json:"id"`
-	InstanceId                     *string                             `mandatory:"true" json:"instanceId"`
-	LifecycleState                 VolumeAttachmentLifecycleStateEnum  `mandatory:"true" json:"lifecycleState"`
-	TimeCreated                    *common.SDKTime                     `mandatory:"true" json:"timeCreated"`
-	VolumeId                       *string                             `mandatory:"true" json:"volumeId"`
 	Device                         *string                             `mandatory:"false" json:"device"`
 	DisplayName                    *string                             `mandatory:"false" json:"displayName"`
 	IsReadOnly                     *bool                               `mandatory:"false" json:"isReadOnly"`
@@ -97,6 +94,14 @@ type volumeattachment struct {
 	IsPvEncryptionInTransitEnabled *bool                               `mandatory:"false" json:"isPvEncryptionInTransitEnabled"`
 	IsMultipath                    *bool                               `mandatory:"false" json:"isMultipath"`
 	IscsiLoginState                VolumeAttachmentIscsiLoginStateEnum `mandatory:"false" json:"iscsiLoginState,omitempty"`
+	IsVolumeCreatedDuringLaunch    *bool                               `mandatory:"false" json:"isVolumeCreatedDuringLaunch"`
+	AvailabilityDomain             *string                             `mandatory:"true" json:"availabilityDomain"`
+	CompartmentId                  *string                             `mandatory:"true" json:"compartmentId"`
+	Id                             *string                             `mandatory:"true" json:"id"`
+	InstanceId                     *string                             `mandatory:"true" json:"instanceId"`
+	LifecycleState                 VolumeAttachmentLifecycleStateEnum  `mandatory:"true" json:"lifecycleState"`
+	TimeCreated                    *common.SDKTime                     `mandatory:"true" json:"timeCreated"`
+	VolumeId                       *string                             `mandatory:"true" json:"volumeId"`
 	AttachmentType                 string                              `json:"attachmentType"`
 }
 
@@ -125,6 +130,7 @@ func (m *volumeattachment) UnmarshalJSON(data []byte) error {
 	m.IsPvEncryptionInTransitEnabled = s.Model.IsPvEncryptionInTransitEnabled
 	m.IsMultipath = s.Model.IsMultipath
 	m.IscsiLoginState = s.Model.IscsiLoginState
+	m.IsVolumeCreatedDuringLaunch = s.Model.IsVolumeCreatedDuringLaunch
 	m.AttachmentType = s.Model.AttachmentType
 
 	return err
@@ -152,43 +158,9 @@ func (m *volumeattachment) UnmarshalPolymorphicJSON(data []byte) (interface{}, e
 		err = json.Unmarshal(data, &mm)
 		return mm, err
 	default:
+		common.Logf("Recieved unsupported enum value for VolumeAttachment: %s.", m.AttachmentType)
 		return *m, nil
 	}
-}
-
-// GetAvailabilityDomain returns AvailabilityDomain
-func (m volumeattachment) GetAvailabilityDomain() *string {
-	return m.AvailabilityDomain
-}
-
-// GetCompartmentId returns CompartmentId
-func (m volumeattachment) GetCompartmentId() *string {
-	return m.CompartmentId
-}
-
-// GetId returns Id
-func (m volumeattachment) GetId() *string {
-	return m.Id
-}
-
-// GetInstanceId returns InstanceId
-func (m volumeattachment) GetInstanceId() *string {
-	return m.InstanceId
-}
-
-// GetLifecycleState returns LifecycleState
-func (m volumeattachment) GetLifecycleState() VolumeAttachmentLifecycleStateEnum {
-	return m.LifecycleState
-}
-
-// GetTimeCreated returns TimeCreated
-func (m volumeattachment) GetTimeCreated() *common.SDKTime {
-	return m.TimeCreated
-}
-
-// GetVolumeId returns VolumeId
-func (m volumeattachment) GetVolumeId() *string {
-	return m.VolumeId
 }
 
 // GetDevice returns Device
@@ -224,6 +196,46 @@ func (m volumeattachment) GetIsMultipath() *bool {
 // GetIscsiLoginState returns IscsiLoginState
 func (m volumeattachment) GetIscsiLoginState() VolumeAttachmentIscsiLoginStateEnum {
 	return m.IscsiLoginState
+}
+
+// GetIsVolumeCreatedDuringLaunch returns IsVolumeCreatedDuringLaunch
+func (m volumeattachment) GetIsVolumeCreatedDuringLaunch() *bool {
+	return m.IsVolumeCreatedDuringLaunch
+}
+
+// GetAvailabilityDomain returns AvailabilityDomain
+func (m volumeattachment) GetAvailabilityDomain() *string {
+	return m.AvailabilityDomain
+}
+
+// GetCompartmentId returns CompartmentId
+func (m volumeattachment) GetCompartmentId() *string {
+	return m.CompartmentId
+}
+
+// GetId returns Id
+func (m volumeattachment) GetId() *string {
+	return m.Id
+}
+
+// GetInstanceId returns InstanceId
+func (m volumeattachment) GetInstanceId() *string {
+	return m.InstanceId
+}
+
+// GetLifecycleState returns LifecycleState
+func (m volumeattachment) GetLifecycleState() VolumeAttachmentLifecycleStateEnum {
+	return m.LifecycleState
+}
+
+// GetTimeCreated returns TimeCreated
+func (m volumeattachment) GetTimeCreated() *common.SDKTime {
+	return m.TimeCreated
+}
+
+// GetVolumeId returns VolumeId
+func (m volumeattachment) GetVolumeId() *string {
+	return m.VolumeId
 }
 
 func (m volumeattachment) String() string {

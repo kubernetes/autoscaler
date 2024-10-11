@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2023, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 // Code generated. DO NOT EDIT.
 
@@ -30,6 +30,9 @@ type ShapeOcpuOptions struct {
 
 	// The maximum number of OCPUs.
 	Max *float32 `mandatory:"false" json:"max"`
+
+	// The maximum number of cores available per NUMA node.
+	MaxPerNumaNode *float32 `mandatory:"false" json:"maxPerNumaNode"`
 }
 
 func (m ShapeOcpuOptions) String() string {

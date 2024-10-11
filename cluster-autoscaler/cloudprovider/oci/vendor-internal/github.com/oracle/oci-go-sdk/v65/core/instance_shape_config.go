@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2023, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 // Code generated. DO NOT EDIT.
 
@@ -65,6 +65,11 @@ type InstanceShapeConfig struct {
 	// A short description of the local disks available to this instance.
 	// If the instance does not have any local disks, this field is `null`.
 	LocalDiskDescription *string `mandatory:"false" json:"localDiskDescription"`
+
+	// The total number of VCPUs available to the instance. This can be used instead of OCPUs,
+	// in which case the actual number of OCPUs will be calculated based on this value
+	// and the actual hardware. This must be a multiple of 2.
+	Vcpus *int `mandatory:"false" json:"vcpus"`
 }
 
 func (m InstanceShapeConfig) String() string {

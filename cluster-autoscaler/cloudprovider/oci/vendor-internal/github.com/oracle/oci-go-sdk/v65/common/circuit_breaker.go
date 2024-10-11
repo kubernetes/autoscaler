@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2023, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 
 package common
@@ -62,7 +62,7 @@ type CircuitBreakerSetting struct {
 	numberOfRecordedHistoryResponse int
 }
 
-// Convert CircuitBreakerSetting to human-readable string representation
+// String Converts CircuitBreakerSetting to human-readable string representation
 func (cbst CircuitBreakerSetting) String() string {
 	return fmt.Sprintf("{name=%v, isEnabled=%v, closeStateWindow=%v, openStateWindow=%v, failureRateThreshold=%v, minimumRequests=%v, successStatCodeMap=%v, successStatErrCodeMap=%v, serviceName=%v, historyCount=%v}",
 		cbst.name, cbst.isEnabled, cbst.closeStateWindow, cbst.openStateWindow, cbst.failureRateThreshold, cbst.minimumRequests, cbst.successStatCodeMap, cbst.successStatErrCodeMap, cbst.serviceName, cbst.numberOfRecordedHistoryResponse)
@@ -77,7 +77,7 @@ type ResponseHistory struct {
 	statusCode   int
 }
 
-// Convert ResponseHistory to human-readable string representation
+// String Converts ResponseHistory to human-readable string representation
 func (rh ResponseHistory) String() string {
 	return fmt.Sprintf("Opc-Req-id - %v\nErrorCode - %v - %v\nErrorMessage - %v\n\n", rh.opcReqID, rh.statusCode, rh.errorCode, rh.errorMessage)
 }
