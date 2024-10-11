@@ -292,10 +292,7 @@ func (scaleSet *ScaleSet) waitForCreateOrUpdateInstances(future *azure.Future) {
 }
 
 // setScaleSetSize sets ScaleSet size.
-func (scaleSet *ScaleSet) setScaleSetSize(size int64) error {
-	scaleSet.sizeMutex.Lock()
-	defer scaleSet.sizeMutex.Unlock()
-
+func (scaleSet *ScaleSet) setScaleSetSize(size int64, delta int) error {
 	vmssInfo, exists := scaleSet.getVMSSFromCache()
 	if !exists {
 		klog.Errorf("Failed to get information for VMSS: (%q)", scaleSet.Name)
