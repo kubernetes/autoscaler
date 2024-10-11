@@ -25,10 +25,10 @@ import (
 	ocicommon "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/common"
 	ipconsts "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/instancepools/consts"
 	npconsts "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/nodepools/consts"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v65/common"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v65/common/auth"
-	oke "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v65/containerengine"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v65/core"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/oci-go-sdk/github.com/oracle/oci-go-sdk/v65/common"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/oci-go-sdk/github.com/oracle/oci-go-sdk/v65/common/auth"
+	oke "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/oci-go-sdk/github.com/oracle/oci-go-sdk/v65/containerengine"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/oci-go-sdk/github.com/oracle/oci-go-sdk/v65/core"
 )
 
 const (

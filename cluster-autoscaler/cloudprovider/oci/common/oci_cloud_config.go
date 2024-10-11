@@ -9,11 +9,9 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"gopkg.in/gcfg.v1"
 	ipconsts "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/instancepools/consts"
 	npconsts "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/nodepools/consts"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v65/common"
-	"k8s.io/klog/v2"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/oci-go-sdk/github.com/oracle/oci-go-sdk/v65/common"
 )
 
 // CloudConfig holds the cloud config for OCI provider.

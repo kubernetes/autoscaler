@@ -9,11 +9,9 @@ import (
 	"net/http"
 	"sync"
 
-	"k8s.io/klog/v2"
-
 	"github.com/pkg/errors"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v65/common"
-	oke "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v65/containerengine"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/oci-go-sdk/github.com/oracle/oci-go-sdk/v65/common"
+	oke "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/oci-go-sdk/github.com/oracle/oci-go-sdk/v65/containerengine"
 )
 
 func newNodePoolCache(okeClient *oke.ContainerEngineClient) *nodePoolCache {

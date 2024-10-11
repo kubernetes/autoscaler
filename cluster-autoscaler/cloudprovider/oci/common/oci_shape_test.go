@@ -6,13 +6,13 @@ package common
 
 import (
 	"context"
-	oke "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v65/containerengine"
+	oke "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/oci-go-sdk/github.com/oracle/oci-go-sdk/v65/containerengine"
 	"reflect"
 	"strings"
 	"testing"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v65/common"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v65/core"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/oci-go-sdk/github.com/oracle/oci-go-sdk/v65/common"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/oci-go-sdk/github.com/oracle/oci-go-sdk/v65/core"
 )
 
 type mockShapeClient struct {
