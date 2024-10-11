@@ -44,7 +44,6 @@ func (c *nodePoolCache) rebuild(staticNodePools map[string]NodePool, maxGetNodep
 	klog.Infof("rebuilding cache")
 	for id := range staticNodePools {
 		var resp oke.GetNodePoolResponse
-		var err error
 		for i := 1; i <= maxGetNodepoolRetries; i++ {
 			// prevent us from getting a node pool at the same time that we're performing delete actions on the node pool.
 			c.mu.Lock()
