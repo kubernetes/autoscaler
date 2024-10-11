@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2023, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 // Code generated. DO NOT EDIT.
 
@@ -28,10 +28,6 @@ type CreateInstancePoolPlacementConfigurationDetails struct {
 	// Example: `Uocm:PHX-AD-1`
 	AvailabilityDomain *string `mandatory:"true" json:"availabilityDomain"`
 
-	// The OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of the primary subnet to place
-	// instances.
-	PrimarySubnetId *string `mandatory:"true" json:"primarySubnetId"`
-
 	// The fault domains to place instances.
 	// If you don't provide any values, the system makes a best effort to distribute
 	// instances across all fault domains based on capacity.
@@ -43,6 +39,12 @@ type CreateInstancePoolPlacementConfigurationDetails struct {
 	// in the Identity and Access Management Service API.
 	// Example: `[FAULT-DOMAIN-1, FAULT-DOMAIN-2, FAULT-DOMAIN-3]`
 	FaultDomains []string `mandatory:"false" json:"faultDomains"`
+
+	// The OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of the primary subnet in which to place instances. This field is deprecated.
+	// Use `primaryVnicSubnets` instead to set VNIC data for instances in the pool.
+	PrimarySubnetId *string `mandatory:"false" json:"primarySubnetId"`
+
+	PrimaryVnicSubnets *InstancePoolPlacementPrimarySubnet `mandatory:"false" json:"primaryVnicSubnets"`
 
 	// The set of secondary VNIC data for instances in the pool.
 	SecondaryVnicSubnets []InstancePoolPlacementSecondaryVnicSubnet `mandatory:"false" json:"secondaryVnicSubnets"`

@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2023, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 // Code generated. DO NOT EDIT.
 
@@ -61,7 +61,7 @@ type ByoipRange struct {
 	// Example: `{"Department": "Finance"}`
 	FreeformTags map[string]string `mandatory:"false" json:"freeformTags"`
 
-	// The IPv6 CIDR block being imported to the Oracle cloud. This CIDR block must be /48 or larger, and can be subdivided into sub-ranges used
+	// The IPv6 prefix being imported to the Oracle cloud. This prefix must be /48 or larger, and can be subdivided into sub-ranges used
 	// across multiple VCNs. A BYOIPv6 prefix can be also assigned across multiple VCNs, and each VCN must be /64 or larger. You may specify
 	// a ULA or private IPv6 prefix of /64 or larger to use in the VCN. IPv6-enabled subnets will remain a fixed /64 in size.
 	Ipv6CidrBlock *string `mandatory:"false" json:"ipv6CidrBlock"`

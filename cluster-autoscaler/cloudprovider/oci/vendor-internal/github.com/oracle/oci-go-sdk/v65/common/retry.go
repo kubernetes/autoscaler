@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2023, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 
 package common
@@ -184,7 +184,7 @@ var GlobalRetry *RetryPolicy = nil
 // RetryPolicyOption is the type of the options for NewRetryPolicy.
 type RetryPolicyOption func(rp *RetryPolicy)
 
-// Convert retry policy to human-readable string representation
+// String Converts retry policy to human-readable string representation
 func (rp RetryPolicy) String() string {
 	return fmt.Sprintf("{MaximumNumberAttempts=%v, MinSleepBetween=%v, MaxSleepBetween=%v, ExponentialBackoffBase=%v, NonEventuallyConsistentPolicy=%v}",
 		rp.MaximumNumberAttempts, rp.MinSleepBetween, rp.MaxSleepBetween, rp.ExponentialBackoffBase, rp.NonEventuallyConsistentPolicy)
@@ -753,7 +753,7 @@ func determinePolicyToUse(policy RetryPolicy) (RetryPolicy, *time.Time, float64)
 	var useDefaultTimingInstead = true
 	var endOfWindowTime = (*time.Time)(nil)
 	var backoffScalingFactor = 1.0
-	var policyToUse RetryPolicy = policy
+	var policyToUse = policy
 
 	eowt := EcContext.GetEndOfWindow()
 	if eowt != nil {
@@ -774,17 +774,17 @@ func determinePolicyToUse(policy RetryPolicy) (RetryPolicy, *time.Time, float64)
 				Debugln(fmt.Sprintf("Use eventually consistent timing, durationToEndOfWindow = %v, maximumCumulativeBackoffWithoutJitter = %v, backoffScalingFactor = %.2f",
 					durationToEndOfWindow, maximumCumulativeBackoffWithoutJitter, backoffScalingFactor))
 			} else {
-				Debugln(fmt.Sprintf("Use default timing, end of EC window is sooner than default retries"))
+				Debugln("Use default timing, end of EC window is sooner than default retries")
 			}
 		} else {
 			useDefaultTimingInstead = false
 			policyToUse = *policy.NonEventuallyConsistentPolicy
-			Debugln(fmt.Sprintf("Use default timing and strategy, end of EC window is in the past"))
+			Debugln("Use default timing and strategy, end of EC window is in the past")
 		}
 	} else {
 		useDefaultTimingInstead = false
 		policyToUse = *policy.NonEventuallyConsistentPolicy
-		Debugln(fmt.Sprintf("Use default timing and strategy, no EC window set"))
+		Debugln("Use default timing and strategy, no EC window set")
 	}
 
 	if useDefaultTimingInstead {

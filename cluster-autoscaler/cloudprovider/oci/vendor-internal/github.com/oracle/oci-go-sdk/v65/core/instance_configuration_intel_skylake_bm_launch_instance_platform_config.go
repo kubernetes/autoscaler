@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2023, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 // Code generated. DO NOT EDIT.
 
@@ -37,6 +37,31 @@ type InstanceConfigurationIntelSkylakeBmLaunchInstancePlatformConfig struct {
 
 	// Whether the instance is a confidential instance. If this value is `true`, the instance is a confidential instance. The default value is `false`.
 	IsMemoryEncryptionEnabled *bool `mandatory:"false" json:"isMemoryEncryptionEnabled"`
+
+	// Whether symmetric multithreading is enabled on the instance. Symmetric multithreading is also
+	// called simultaneous multithreading (SMT) or Intel Hyper-Threading.
+	// Intel and AMD processors have two hardware execution threads per core (OCPU). SMT permits multiple
+	// independent threads of execution, to better use the resources and increase the efficiency
+	// of the CPU. When multithreading is disabled, only one thread is permitted to run on each core, which
+	// can provide higher or more predictable performance for some workloads.
+	IsSymmetricMultiThreadingEnabled *bool `mandatory:"false" json:"isSymmetricMultiThreadingEnabled"`
+
+	// Whether the input-output memory management unit is enabled.
+	IsInputOutputMemoryManagementUnitEnabled *bool `mandatory:"false" json:"isInputOutputMemoryManagementUnitEnabled"`
+
+	// The percentage of cores enabled. Value must be a multiple of 25%. If the requested percentage
+	// results in a fractional number of cores, the system rounds up the number of cores across processors
+	// and provisions an instance with a whole number of cores.
+	// If the applications that you run on the instance use a core-based licensing model and need fewer cores
+	// than the full size of the shape, you can disable cores to reduce your licensing costs. The instance
+	// itself is billed for the full shape, regardless of whether all cores are enabled.
+	PercentageOfCoresEnabled *int `mandatory:"false" json:"percentageOfCoresEnabled"`
+
+	// Instance Platform Configuration Configuration Map for flexible setting input.
+	ConfigMap map[string]string `mandatory:"false" json:"configMap"`
+
+	// The number of NUMA nodes per socket (NPS).
+	NumaNodesPerSocket InstanceConfigurationIntelSkylakeBmLaunchInstancePlatformConfigNumaNodesPerSocketEnum `mandatory:"false" json:"numaNodesPerSocket,omitempty"`
 }
 
 // GetIsSecureBootEnabled returns IsSecureBootEnabled
@@ -68,6 +93,9 @@ func (m InstanceConfigurationIntelSkylakeBmLaunchInstancePlatformConfig) String(
 // Not recommended for calling this function directly
 func (m InstanceConfigurationIntelSkylakeBmLaunchInstancePlatformConfig) ValidateEnumValue() (bool, error) {
 	errMessage := []string{}
+	if _, ok := GetMappingInstanceConfigurationIntelSkylakeBmLaunchInstancePlatformConfigNumaNodesPerSocketEnum(string(m.NumaNodesPerSocket)); !ok && m.NumaNodesPerSocket != "" {
+		errMessage = append(errMessage, fmt.Sprintf("unsupported enum value for NumaNodesPerSocket: %s. Supported values are: %s.", m.NumaNodesPerSocket, strings.Join(GetInstanceConfigurationIntelSkylakeBmLaunchInstancePlatformConfigNumaNodesPerSocketEnumStringValues(), ",")))
+	}
 
 	if len(errMessage) > 0 {
 		return true, fmt.Errorf(strings.Join(errMessage, "\n"))
@@ -87,4 +115,46 @@ func (m InstanceConfigurationIntelSkylakeBmLaunchInstancePlatformConfig) Marshal
 	}
 
 	return json.Marshal(&s)
+}
+
+// InstanceConfigurationIntelSkylakeBmLaunchInstancePlatformConfigNumaNodesPerSocketEnum Enum with underlying type: string
+type InstanceConfigurationIntelSkylakeBmLaunchInstancePlatformConfigNumaNodesPerSocketEnum string
+
+// Set of constants representing the allowable values for InstanceConfigurationIntelSkylakeBmLaunchInstancePlatformConfigNumaNodesPerSocketEnum
+const (
+	InstanceConfigurationIntelSkylakeBmLaunchInstancePlatformConfigNumaNodesPerSocketNps1 InstanceConfigurationIntelSkylakeBmLaunchInstancePlatformConfigNumaNodesPerSocketEnum = "NPS1"
+	InstanceConfigurationIntelSkylakeBmLaunchInstancePlatformConfigNumaNodesPerSocketNps2 InstanceConfigurationIntelSkylakeBmLaunchInstancePlatformConfigNumaNodesPerSocketEnum = "NPS2"
+)
+
+var mappingInstanceConfigurationIntelSkylakeBmLaunchInstancePlatformConfigNumaNodesPerSocketEnum = map[string]InstanceConfigurationIntelSkylakeBmLaunchInstancePlatformConfigNumaNodesPerSocketEnum{
+	"NPS1": InstanceConfigurationIntelSkylakeBmLaunchInstancePlatformConfigNumaNodesPerSocketNps1,
+	"NPS2": InstanceConfigurationIntelSkylakeBmLaunchInstancePlatformConfigNumaNodesPerSocketNps2,
+}
+
+var mappingInstanceConfigurationIntelSkylakeBmLaunchInstancePlatformConfigNumaNodesPerSocketEnumLowerCase = map[string]InstanceConfigurationIntelSkylakeBmLaunchInstancePlatformConfigNumaNodesPerSocketEnum{
+	"nps1": InstanceConfigurationIntelSkylakeBmLaunchInstancePlatformConfigNumaNodesPerSocketNps1,
+	"nps2": InstanceConfigurationIntelSkylakeBmLaunchInstancePlatformConfigNumaNodesPerSocketNps2,
+}
+
+// GetInstanceConfigurationIntelSkylakeBmLaunchInstancePlatformConfigNumaNodesPerSocketEnumValues Enumerates the set of values for InstanceConfigurationIntelSkylakeBmLaunchInstancePlatformConfigNumaNodesPerSocketEnum
+func GetInstanceConfigurationIntelSkylakeBmLaunchInstancePlatformConfigNumaNodesPerSocketEnumValues() []InstanceConfigurationIntelSkylakeBmLaunchInstancePlatformConfigNumaNodesPerSocketEnum {
+	values := make([]InstanceConfigurationIntelSkylakeBmLaunchInstancePlatformConfigNumaNodesPerSocketEnum, 0)
+	for _, v := range mappingInstanceConfigurationIntelSkylakeBmLaunchInstancePlatformConfigNumaNodesPerSocketEnum {
+		values = append(values, v)
+	}
+	return values
+}
+
+// GetInstanceConfigurationIntelSkylakeBmLaunchInstancePlatformConfigNumaNodesPerSocketEnumStringValues Enumerates the set of values in String for InstanceConfigurationIntelSkylakeBmLaunchInstancePlatformConfigNumaNodesPerSocketEnum
+func GetInstanceConfigurationIntelSkylakeBmLaunchInstancePlatformConfigNumaNodesPerSocketEnumStringValues() []string {
+	return []string{
+		"NPS1",
+		"NPS2",
+	}
+}
+
+// GetMappingInstanceConfigurationIntelSkylakeBmLaunchInstancePlatformConfigNumaNodesPerSocketEnum performs case Insensitive comparison on enum value and return the desired enum
+func GetMappingInstanceConfigurationIntelSkylakeBmLaunchInstancePlatformConfigNumaNodesPerSocketEnum(val string) (InstanceConfigurationIntelSkylakeBmLaunchInstancePlatformConfigNumaNodesPerSocketEnum, bool) {
+	enum, ok := mappingInstanceConfigurationIntelSkylakeBmLaunchInstancePlatformConfigNumaNodesPerSocketEnumLowerCase[strings.ToLower(val)]
+	return enum, ok
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2023, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 // Code generated. DO NOT EDIT.
 
@@ -34,15 +34,15 @@ type RouteRule struct {
 	// `cidrBlock` and `destination` will be rejected.
 	// A destination IP address range in CIDR notation. Matching packets will
 	// be routed to the indicated network entity (the target).
-	// Cannot be an IPv6 CIDR.
+	// Cannot be an IPv6 prefix.
 	// Example: `0.0.0.0/0`
 	CidrBlock *string `mandatory:"false" json:"cidrBlock"`
 
 	// Conceptually, this is the range of IP addresses used for matching when routing
 	// traffic. Required if you provide a `destinationType`.
 	// Allowed values:
-	//   * IP address range in CIDR notation. Can be an IPv4 or IPv6 CIDR. For example: `192.168.1.0/24`
-	//   or `2001:0db8:0123:45::/56`. If you set this to an IPv6 CIDR, the route rule's target
+	//   * IP address range in CIDR notation. Can be an IPv4 CIDR block or IPv6 prefix. For example: `192.168.1.0/24`
+	//   or `2001:0db8:0123:45::/56`. If you set this to an IPv6 prefix, the route rule's target
 	//   can only be a DRG or internet gateway.
 	//   IPv6 addressing is supported for all commercial and government regions.
 	//   See IPv6 Addresses (https://docs.cloud.oracle.com/iaas/Content/Network/Concepts/ipv6.htm).

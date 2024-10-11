@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2023, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 // Code generated. DO NOT EDIT.
 
@@ -25,10 +25,11 @@ import (
 // AttachParavirtualizedVolumeDetails The representation of AttachParavirtualizedVolumeDetails
 type AttachParavirtualizedVolumeDetails struct {
 
-	// The OCID of the instance.
+	// The OCID of the instance. For AttachVolume operation, this is a required field for the request,
+	// see AttachVolume.
 	InstanceId *string `mandatory:"true" json:"instanceId"`
 
-	// The OCID of the volume.
+	// The OCID of the volume. If CreateVolumeDetails is specified, this field must be omitted from the request.
 	VolumeId *string `mandatory:"true" json:"volumeId"`
 
 	// The device name. To retrieve a list of devices for a given instance, see ListInstanceDevices.

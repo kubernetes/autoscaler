@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2023, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 // Code generated. DO NOT EDIT.
 
@@ -54,6 +54,9 @@ type CreateVolumeGroupDetails struct {
 	// The list of volume group replicas that this volume group will be enabled to have
 	// in the specified destination availability domains.
 	VolumeGroupReplicas []VolumeGroupReplicaDetails `mandatory:"false" json:"volumeGroupReplicas"`
+
+	// The clusterPlacementGroup Id of the volume group for volume group placement.
+	ClusterPlacementGroupId *string `mandatory:"false" json:"clusterPlacementGroupId"`
 }
 
 func (m CreateVolumeGroupDetails) String() string {
@@ -75,14 +78,15 @@ func (m CreateVolumeGroupDetails) ValidateEnumValue() (bool, error) {
 // UnmarshalJSON unmarshals from json
 func (m *CreateVolumeGroupDetails) UnmarshalJSON(data []byte) (e error) {
 	model := struct {
-		BackupPolicyId      *string                           `json:"backupPolicyId"`
-		DefinedTags         map[string]map[string]interface{} `json:"definedTags"`
-		DisplayName         *string                           `json:"displayName"`
-		FreeformTags        map[string]string                 `json:"freeformTags"`
-		VolumeGroupReplicas []VolumeGroupReplicaDetails       `json:"volumeGroupReplicas"`
-		AvailabilityDomain  *string                           `json:"availabilityDomain"`
-		CompartmentId       *string                           `json:"compartmentId"`
-		SourceDetails       volumegroupsourcedetails          `json:"sourceDetails"`
+		BackupPolicyId          *string                           `json:"backupPolicyId"`
+		DefinedTags             map[string]map[string]interface{} `json:"definedTags"`
+		DisplayName             *string                           `json:"displayName"`
+		FreeformTags            map[string]string                 `json:"freeformTags"`
+		VolumeGroupReplicas     []VolumeGroupReplicaDetails       `json:"volumeGroupReplicas"`
+		ClusterPlacementGroupId *string                           `json:"clusterPlacementGroupId"`
+		AvailabilityDomain      *string                           `json:"availabilityDomain"`
+		CompartmentId           *string                           `json:"compartmentId"`
+		SourceDetails           volumegroupsourcedetails          `json:"sourceDetails"`
 	}{}
 
 	e = json.Unmarshal(data, &model)
@@ -99,9 +103,8 @@ func (m *CreateVolumeGroupDetails) UnmarshalJSON(data []byte) (e error) {
 	m.FreeformTags = model.FreeformTags
 
 	m.VolumeGroupReplicas = make([]VolumeGroupReplicaDetails, len(model.VolumeGroupReplicas))
-	for i, n := range model.VolumeGroupReplicas {
-		m.VolumeGroupReplicas[i] = n
-	}
+	copy(m.VolumeGroupReplicas, model.VolumeGroupReplicas)
+	m.ClusterPlacementGroupId = model.ClusterPlacementGroupId
 
 	m.AvailabilityDomain = model.AvailabilityDomain
 

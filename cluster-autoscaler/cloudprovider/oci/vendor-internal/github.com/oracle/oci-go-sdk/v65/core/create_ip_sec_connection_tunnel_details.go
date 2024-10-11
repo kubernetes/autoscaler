@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2023, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 // Code generated. DO NOT EDIT.
 
@@ -58,6 +58,16 @@ type CreateIpSecConnectionTunnelDetails struct {
 	PhaseTwoConfig *PhaseTwoConfigDetails `mandatory:"false" json:"phaseTwoConfig"`
 
 	DpdConfig *DpdConfig `mandatory:"false" json:"dpdConfig"`
+
+	// The headend IP that you can choose on the Oracle side to terminate your private IPSec tunnel.
+	OracleTunnelIp *string `mandatory:"false" json:"oracleTunnelIp"`
+
+	// The list of virtual circuit OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm)s over which your network can reach this tunnel.
+	AssociatedVirtualCircuits []string `mandatory:"false" json:"associatedVirtualCircuits"`
+
+	// The OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of the DRG route table assigned to this attachment.
+	// The DRG route table manages traffic inside the DRG.
+	DrgRouteTableId *string `mandatory:"false" json:"drgRouteTableId"`
 
 	EncryptionDomainConfig *CreateIpSecTunnelEncryptionDomainDetails `mandatory:"false" json:"encryptionDomainConfig"`
 }
