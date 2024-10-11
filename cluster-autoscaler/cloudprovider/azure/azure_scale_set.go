@@ -261,7 +261,6 @@ func (scaleSet *ScaleSet) getScaleSetSize() (int64, error) {
 	return size, err
 }
 
-
 // waitForCreateOrUpdate waits for the outcome of VMSS capacity update initiated via CreateOrUpdateAsync.
 func (scaleSet *ScaleSet) waitForCreateOrUpdateInstances(future *azure.Future) {
 	var err error
