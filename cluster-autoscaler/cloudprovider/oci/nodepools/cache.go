@@ -40,11 +40,11 @@ func (c *nodePoolCache) nodePools() map[string]*oke.NodePool {
 	return result
 }
 
-func (c *nodePoolCache) rebuild(staticNodePools map[string]NodePool, maxGetNodepoolRetries int) (httpStatusCode int, err error) {
+func (c *nodePoolCache) rebuild(staticNodePools map[string]NodePool, maxGetNodepoolRetries int) (err error) {
 	klog.Infof("rebuilding cache")
-	var statusCode int
 	for id := range staticNodePools {
 		var resp oke.GetNodePoolResponse
+		var err error
 		for i := 1; i <= maxGetNodepoolRetries; i++ {
 			// prevent us from getting a node pool at the same time that we're performing delete actions on the node pool.
 			c.mu.Lock()
@@ -52,8 +52,6 @@ func (c *nodePoolCache) rebuild(staticNodePools map[string]NodePool, maxGetNodep
 				NodePoolId: common.String(id),
 			})
 			c.mu.Unlock()
-			httpResp := resp.HTTPResponse()
-			statusCode = httpResp.StatusCode
 			if err != nil {
 				klog.Errorf("Failed to fetch the nodepool : %v. Retries available : %v", id, maxGetNodepoolRetries-i)
 			} else {
@@ -68,7 +66,7 @@ func (c *nodePoolCache) rebuild(staticNodePools map[string]NodePool, maxGetNodep
 			c.set(&resp.NodePool)
 		}
 	}
-	return statusCode, nil
+	return nil
 }
 
 // removeInstance tries to remove the instance from the node pool.

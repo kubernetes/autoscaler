@@ -253,15 +253,11 @@ func (m *ociManagerImpl) TaintToPreventFurtherSchedulingOnRestart(nodes []*apiv1
 }
 
 func (m *ociManagerImpl) forceRefresh() error {
-	httpStatusCode, err := m.nodePoolCache.rebuild(m.staticNodePools, maxGetNodepoolRetries)
+	err := m.nodePoolCache.rebuild(m.staticNodePools, maxGetNodepoolRetries)
 	if err != nil {
-		if httpStatusCode == 404 {
-			m.lastRefresh = time.Now()
-			klog.Errorf("Failed to fetch the nodepools. Retrying after %v", m.lastRefresh.Add(m.cfg.Global.RefreshInterval))
-			return err
-		}
 		return err
 	}
+	
 	m.lastRefresh = time.Now()
 	klog.Infof("Refreshed NodePool list, next refresh after %v", m.lastRefresh.Add(m.cfg.Global.RefreshInterval))
 	return nil
