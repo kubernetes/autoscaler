@@ -257,7 +257,7 @@ func (m *ociManagerImpl) forceRefresh() error {
 	if err != nil {
 		return err
 	}
-	
+
 	m.lastRefresh = time.Now()
 	klog.Infof("Refreshed NodePool list, next refresh after %v", m.lastRefresh.Add(m.cfg.Global.RefreshInterval))
 	return nil
