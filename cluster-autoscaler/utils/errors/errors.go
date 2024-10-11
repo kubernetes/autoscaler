@@ -81,6 +81,9 @@ func ToAutoscalerError(defaultType AutoscalerErrorType, err error) AutoscalerErr
 	if e, ok := err.(AutoscalerError); ok {
 		return e
 	}
+	if err == nil {
+		return nil
+	}
 	return NewAutoscalerError(defaultType, "%v", err)
 }
 

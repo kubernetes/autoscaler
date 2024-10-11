@@ -80,7 +80,7 @@ const (
 	VultrProviderName = "vultr"
 	// PacketProviderName gets the provider name of packet
 	PacketProviderName = "packet"
-	// EquinixMetalProviderName gets the provider name of packet
+	// EquinixMetalProviderName gets the provider name of equinixmetal
 	EquinixMetalProviderName = "equinixmetal"
 	// TencentcloudProviderName gets the provider name of tencentcloud
 	TencentcloudProviderName = "tencentcloud"
@@ -183,14 +183,11 @@ type NodeGroup interface {
 	IncreaseSize(delta int) error
 
 	// AtomicIncreaseSize tries to increase the size of the node group atomically.
-	// - If the method returns nil, it guarantees that delta instances will be added to the node group
-	//   within its MaxNodeProvisionTime. The function should wait until node group size is updated.
-	//   The cloud provider is responsible for tracking and ensuring successful scale up asynchronously.
-	// - If the method returns an error, it guarantees that no new instances will be added to the node group
-	//   as a result of this call. The cloud provider is responsible for ensuring that before returning from the method.
-	// Implementation is optional. If implemented, CA will take advantage of the method while scaling up
-	// GenericScaleUp ProvisioningClass, guaranteeing that all instances required for such a ProvisioningRequest
-	// are provisioned atomically.
+	// It returns error if requesting the entire delta fails. The method doesn't wait until the new instances appear.
+	// Implementation is optional. Implementation of this method generally requires external cloud provider support
+	// for atomically requesting multiple instances. If implemented, CA will take advantage of the method while scaling up
+	// BestEffortAtomicScaleUp ProvisioningClass, guaranteeing that all instances required for such a
+	// ProvisioningRequest are provisioned atomically.
 	AtomicIncreaseSize(delta int) error
 
 	// DeleteNodes deletes nodes from this node group. Error is returned either on
@@ -243,7 +240,7 @@ type NodeGroup interface {
 
 	// GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
 	// NodeGroup. Returning a nil will result in using default options.
-	// Implementation optional.
+	// Implementation optional. Callers MUST handle `cloudprovider.ErrNotImplemented`.
 	GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error)
 }
 

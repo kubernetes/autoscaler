@@ -95,7 +95,6 @@ const (
 type RemovalSimulator struct {
 	listers             kube_util.ListerRegistry
 	clusterSnapshot     clustersnapshot.ClusterSnapshot
-	usageTracker        *UsageTracker
 	canPersist          bool
 	deleteOptions       options.NodeDeleteOptions
 	drainabilityRules   rules.Rules
@@ -104,11 +103,10 @@ type RemovalSimulator struct {
 
 // NewRemovalSimulator returns a new RemovalSimulator.
 func NewRemovalSimulator(listers kube_util.ListerRegistry, clusterSnapshot clustersnapshot.ClusterSnapshot, predicateChecker predicatechecker.PredicateChecker,
-	usageTracker *UsageTracker, deleteOptions options.NodeDeleteOptions, drainabilityRules rules.Rules, persistSuccessfulSimulations bool) *RemovalSimulator {
+	deleteOptions options.NodeDeleteOptions, drainabilityRules rules.Rules, persistSuccessfulSimulations bool) *RemovalSimulator {
 	return &RemovalSimulator{
 		listers:             listers,
 		clusterSnapshot:     clusterSnapshot,
-		usageTracker:        usageTracker,
 		canPersist:          persistSuccessfulSimulations,
 		deleteOptions:       deleteOptions,
 		drainabilityRules:   drainabilityRules,
@@ -241,10 +239,6 @@ func (r *RemovalSimulator) findPlaceFor(removedNode string, pods []*apiv1.Pod, n
 	}
 	if len(statuses) != len(newpods) {
 		return fmt.Errorf("can reschedule only %d out of %d pods", len(statuses), len(newpods))
-	}
-
-	for _, status := range statuses {
-		r.usageTracker.RegisterUsage(removedNode, status.NodeName, timestamp)
 	}
 	return nil
 }

@@ -25,6 +25,7 @@ type Server struct {
 	Volumes         []int64            `json:"volumes"`
 	PrimaryDiskSize int                `json:"primary_disk_size"`
 	PlacementGroup  *PlacementGroup    `json:"placement_group"`
+	LoadBalancers   []int64            `json:"load_balancers"`
 }
 
 // ServerProtection defines the schema of a server's resource protection.

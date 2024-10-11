@@ -21,7 +21,6 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 )
 
@@ -37,7 +36,7 @@ func expectAllow(t *testing.T, l EstimationLimiter) {
 
 func resetLimiter(_ *testing.T, l EstimationLimiter) {
 	l.EndEstimation()
-	l.StartEstimation([]*apiv1.Pod{}, nil, nil)
+	l.StartEstimation([]PodEquivalenceGroup{}, nil, nil)
 }
 
 type dynamicThreshold struct {
@@ -173,7 +172,7 @@ func TestThresholdBasedLimiter(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			limiter := NewThresholdBasedEstimationLimiter(tc.thresholds).(*thresholdBasedEstimationLimiter)
-			limiter.StartEstimation([]*apiv1.Pod{}, nil, nil)
+			limiter.StartEstimation([]PodEquivalenceGroup{}, nil, nil)
 
 			if tc.startDelta != time.Duration(0) {
 				limiter.start = limiter.start.Add(tc.startDelta)

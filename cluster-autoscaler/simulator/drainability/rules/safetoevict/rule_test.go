@@ -54,7 +54,7 @@ func TestDrainable(t *testing.T) {
 		},
 	} {
 		t.Run(desc, func(t *testing.T) {
-			got := New().Drainable(nil, tc.pod)
+			got := New().Drainable(nil, tc.pod, nil)
 			if diff := cmp.Diff(tc.want, got); diff != "" {
 				t.Errorf("Rule.Drainable(%v): got status diff (-want +got):\n%s", tc.pod.Name, diff)
 			}

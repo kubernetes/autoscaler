@@ -184,7 +184,7 @@ const (
 	// CapacityRevoked indicates that requested resources are not longer valid.
 	CapacityRevoked string = "CapacityRevoked"
 	// Provisioned indicates that all of the requested resources were created
-	// and are available in the cluster. CA will set this condition when the
+	// and registered in the cluster. CA will set this condition when the
 	// VM creation finishes successfully.
 	Provisioned string = "Provisioned"
 	// Failed indicates that it is impossible to obtain resources to fulfill
@@ -194,10 +194,14 @@ const (
 )
 
 const (
-	// ProvisioningClassCheckCapacity denotes that CA will check if free capacity
-	// is available in the cluster.
-	ProvisioningClassCheckCapacity string = "check-capacity.kubernetes.io"
-	// ProvisioningClassAtomicScaleUp denotes that CA try to provision the capacity
+	// ProvisioningClassCheckCapacity denotes that CA will check if current cluster state can fulfill this request,
+	// and reserve the capacity for a specified time.
+	ProvisioningClassCheckCapacity string = "check-capacity.autoscaling.x-k8s.io"
+	// ProvisioningClassBestEffortAtomicScaleUp denotes that CA try to provision the capacity
 	// in an atomic manner.
-	ProvisioningClassAtomicScaleUp string = "atomic-scale-up.kubernetes.io"
+	ProvisioningClassBestEffortAtomicScaleUp string = "best-effort-atomic-scale-up.autoscaling.x-k8s.io"
+	// ProvisioningRequestPodAnnotationKey is a key used to annotate pods consuming provisioning request.
+	ProvisioningRequestPodAnnotationKey = "autoscaling.x-k8s.io/consume-provisioning-request"
+	// ProvisioningClassPodAnnotationKey is a key used to add annotation about Provisioning Class
+	ProvisioningClassPodAnnotationKey = "autoscaling.x-k8s.io/provisioning-class-name"
 )

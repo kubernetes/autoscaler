@@ -85,14 +85,11 @@ func (e Evictor) DrainNode(ctx *acontext.AutoscalingContext, nodeInfo *framework
 	return e.drainNodeWithPodsBasedOnPodPriority(ctx, node, pods, dsPods)
 }
 
-// EvictDaemonSetPods groups  daemonSet pods in the node in to priority groups and, evicts daemonSet pods in the ascending order of priorities.
-// If priority evictor is not enable, eviction of daemonSet pods is the best effort.
+// EvictDaemonSetPods creates eviction objects for all DaemonSet pods on the node.
+// Eviction of DaemonSet pods are best effort. Does not wait for evictions to finish.
 func (e Evictor) EvictDaemonSetPods(ctx *acontext.AutoscalingContext, nodeInfo *framework.NodeInfo) (map[string]status.PodEvictionResult, error) {
 	node := nodeInfo.Node()
 	dsPods, _ := podsToEvict(nodeInfo, ctx.DaemonSetEvictionForEmptyNodes)
-	if e.fullDsEviction {
-		return e.drainNodeWithPodsBasedOnPodPriority(ctx, node, dsPods, nil)
-	}
 	return e.drainNodeWithPodsBasedOnPodPriority(ctx, node, nil, dsPods)
 }
 
@@ -157,7 +154,7 @@ func (e Evictor) waitPodsToDisappear(ctx *acontext.AutoscalingContext, node *api
 
 	for _, pod := range pods {
 		podReturned, err := ctx.ClientSet.CoreV1().Pods(pod.Namespace).Get(context.TODO(), pod.Name, metav1.GetOptions{})
-		if err == nil && (podReturned == nil || podReturned.Spec.NodeName == node.Name) {
+		if err == nil && (podReturned == nil || podReturned.Name == "" || podReturned.Spec.NodeName == node.Name) {
 			evictionResults[pod.Name] = status.PodEvictionResult{Pod: pod, TimedOut: true, Err: nil}
 		} else if err != nil && !kube_errors.IsNotFound(err) {
 			evictionResults[pod.Name] = status.PodEvictionResult{Pod: pod, TimedOut: true, Err: err}

@@ -37,8 +37,6 @@ IMAGE=$(REGISTRY)/cluster-autoscaler$(PROVIDER)
 export DOCKER_CLI_EXPERIMENTAL := enabled
 
 build:
-	@echo "⚠️  WARNING: The vendor directory will be removed soon. \
-	Please make sure your dependencies are managed via Go modules."
 	@$(MAKE) build-arch-$(GOARCH)
 
 build-arch-%: clean-arch-%
@@ -109,7 +107,7 @@ container-arch-%: build-in-docker-arch-% make-image-arch-%
 	@echo "Full in-docker image ${TAG}${FOR_PROVIDER}-$* completed"
 
 test-in-docker: clean docker-builder
-	docker run ${RM_FLAG} -v `pwd`:/cluster-autoscaler/:Z autoscaling-builder:latest bash -c 'cd /cluster-autoscaler && go mod vendor && go test -race ./... ${TAGS_FLAG}'
+	docker run ${RM_FLAG} -v `pwd`:/cluster-autoscaler/:Z autoscaling-builder:latest bash -c 'cd /cluster-autoscaler && go test -race ./... ${TAGS_FLAG}'
 
 .PHONY: all build test-unit clean format execute-release dev-release docker-builder build-in-docker release generate push-image push-manifest
 

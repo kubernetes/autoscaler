@@ -22,6 +22,7 @@ import (
 	"fmt"
 
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
+	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
 	v1beta1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1beta1"
 	cache "k8s.io/client-go/tools/cache"
 )
@@ -52,7 +53,11 @@ func (f *genericInformer) Lister() cache.GenericLister {
 // TODO extend this to unknown resources with a client pool
 func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource) (GenericInformer, error) {
 	switch resource {
-	// Group=autoscaling.x-k8s.io, Version=v1beta1
+	// Group=autoscaling.x-k8s.io, Version=v1
+	case v1.SchemeGroupVersion.WithResource("provisioningrequests"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Autoscaling().V1().ProvisioningRequests().Informer()}, nil
+
+		// Group=autoscaling.x-k8s.io, Version=v1beta1
 	case v1beta1.SchemeGroupVersion.WithResource("provisioningrequests"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Autoscaling().V1beta1().ProvisioningRequests().Informer()}, nil
 

@@ -43,13 +43,14 @@ const defaultAPIEnvironment = "api"
 // Manager handles Exoscale communication and data caching of
 // node groups (Instance Pools).
 type Manager struct {
-	ctx        context.Context
-	client     exoscaleClient
-	zone       string
-	nodeGroups []cloudprovider.NodeGroup
+	ctx           context.Context
+	client        exoscaleClient
+	zone          string
+	nodeGroups    []cloudprovider.NodeGroup
+	discoveryOpts cloudprovider.NodeGroupDiscoveryOptions
 }
 
-func newManager() (*Manager, error) {
+func newManager(discoveryOpts cloudprovider.NodeGroupDiscoveryOptions) (*Manager, error) {
 	var (
 		zone           string
 		apiKey         string
@@ -82,9 +83,10 @@ func newManager() (*Manager, error) {
 	debugf("initializing manager with zone=%s environment=%s", zone, apiEnvironment)
 
 	m := &Manager{
-		ctx:    exoapi.WithEndpoint(context.Background(), exoapi.NewReqEndpoint(apiEnvironment, zone)),
-		client: client,
-		zone:   zone,
+		ctx:           exoapi.WithEndpoint(context.Background(), exoapi.NewReqEndpoint(apiEnvironment, zone)),
+		client:        client,
+		zone:          zone,
+		discoveryOpts: discoveryOpts,
 	}
 
 	return m, nil

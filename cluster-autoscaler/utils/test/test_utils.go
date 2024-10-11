@@ -103,6 +103,60 @@ func WithNodeName(nodeName string) func(*apiv1.Pod) {
 	}
 }
 
+// WithNamespace sets a namespace to the pod.
+func WithNamespace(namespace string) func(*apiv1.Pod) {
+	return func(pod *apiv1.Pod) {
+		pod.ObjectMeta.Namespace = namespace
+	}
+}
+
+// WithLabels sets a Labels to the pod.
+func WithLabels(labels map[string]string) func(*apiv1.Pod) {
+	return func(pod *apiv1.Pod) {
+		pod.ObjectMeta.Labels = labels
+	}
+}
+
+// WithHostPort sets a namespace to the pod.
+func WithHostPort(hostport int32) func(*apiv1.Pod) {
+	return func(pod *apiv1.Pod) {
+		if hostport > 0 {
+			pod.Spec.Containers[0].Ports = []apiv1.ContainerPort{
+				{
+					HostPort: hostport,
+				},
+			}
+		}
+	}
+}
+
+// WithMaxSkew sets a namespace to the pod.
+func WithMaxSkew(maxSkew int32, topologySpreadingKey string) func(*apiv1.Pod) {
+	return func(pod *apiv1.Pod) {
+		if maxSkew > 0 {
+			pod.Spec.TopologySpreadConstraints = []apiv1.TopologySpreadConstraint{
+				{
+					MaxSkew:           maxSkew,
+					TopologyKey:       topologySpreadingKey,
+					WhenUnsatisfiable: "DoNotSchedule",
+					LabelSelector: &metav1.LabelSelector{
+						MatchLabels: map[string]string{
+							"app": "estimatee",
+						},
+					},
+				},
+			}
+		}
+	}
+}
+
+// WithDeletionTimestamp sets deletion timestamp to the pod.
+func WithDeletionTimestamp(deletionTimestamp time.Time) func(*apiv1.Pod) {
+	return func(pod *apiv1.Pod) {
+		pod.DeletionTimestamp = &metav1.Time{Time: deletionTimestamp}
+	}
+}
+
 // BuildTestPodWithEphemeralStorage creates a pod with cpu, memory and ephemeral storage resources.
 func BuildTestPodWithEphemeralStorage(name string, cpu, mem, ephemeralStorage int64) *apiv1.Pod {
 	startTime := metav1.Unix(0, 0)

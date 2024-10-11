@@ -48,6 +48,8 @@ var (
 		"nvidia-tesla-t4":   {},
 		"nvidia-tesla-a100": {},
 		"nvidia-a10g":       {},
+		"nvidia-l4":         {},
+		"nvidia-l40s":       {},
 	}
 )
 

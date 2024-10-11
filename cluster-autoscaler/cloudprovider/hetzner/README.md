@@ -96,3 +96,8 @@ cd cluster-autoscaler/cloudprovider/hetzner
 UPSTREAM_REF=v2.0.0 hack/update-vendor.sh
 git add hcloud-go/
 ```
+
+## Debugging
+
+To enable debug logging, set the log level of the autoscaler to at least level 5 via cli flag: `--v=5`  
+The logs will include all requests and responses made towards the Hetzner API including headers and body.

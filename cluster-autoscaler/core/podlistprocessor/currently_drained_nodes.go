@@ -51,6 +51,11 @@ func currentlyDrainedPods(context *context.AutoscalingContext) []*apiv1.Pod {
 			continue
 		}
 		for _, podInfo := range nodeInfo.Pods {
+			// Filter out pods that has deletion timestamp set
+			if podInfo.Pod.DeletionTimestamp != nil {
+				klog.Infof("Pod %v has deletion timestamp set, skipping injection to unschedulable pods list", podInfo.Pod.Name)
+				continue
+			}
 			pods = append(pods, podInfo.Pod)
 		}
 	}

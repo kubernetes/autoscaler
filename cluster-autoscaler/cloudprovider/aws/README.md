@@ -48,9 +48,11 @@ should be updated to restrict the resources/add conditionals:
         "autoscaling:DescribeAutoScalingInstances",
         "autoscaling:DescribeLaunchConfigurations",
         "autoscaling:DescribeScalingActivities",
-        "autoscaling:DescribeTags",
+        "ec2:DescribeImages",
         "ec2:DescribeInstanceTypes",
-        "ec2:DescribeLaunchTemplateVersions"
+        "ec2:DescribeLaunchTemplateVersions",
+        "ec2:GetInstanceTypesFromInstanceRequirements",
+        "eks:DescribeNodegroup"
       ],
       "Resource": ["*"]
     },
@@ -58,10 +60,7 @@ should be updated to restrict the resources/add conditionals:
       "Effect": "Allow",
       "Action": [
         "autoscaling:SetDesiredCapacity",
-        "autoscaling:TerminateInstanceInAutoScalingGroup",
-        "ec2:DescribeImages",
-        "ec2:GetInstanceTypesFromInstanceRequirements",
-        "eks:DescribeNodegroup"
+        "autoscaling:TerminateInstanceInAutoScalingGroup"
       ],
       "Resource": ["*"]
     }

@@ -17,6 +17,7 @@ limitations under the License.
 package controllerfetcher
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -48,8 +49,10 @@ const (
 	testReplicationController = "test-rc"
 )
 
-var wellKnownControllers = []wellKnownController{daemonSet, deployment, replicaSet, statefulSet, replicationController, job, cronJob}
-var trueVar = true
+var (
+	wellKnownControllers = []wellKnownController{daemonSet, deployment, replicaSet, statefulSet, replicationController, job, cronJob}
+	trueVar              = true
+)
 
 func simpleControllerFetcher() *controllerFetcher {
 	f := controllerFetcher{}
@@ -389,13 +392,23 @@ func TestControllerFetcher(t *testing.T) {
 			expectedKey:   nil,
 			expectedError: fmt.Errorf("Unhandled targetRef v1 / Node / node, last error node is not a valid owner"),
 		},
+		{
+			name: "custom resource with no scale subresource",
+			key: &ControllerKeyWithAPIVersion{
+				ApiVersion: "Foo/Foo", ControllerKey: ControllerKey{
+					Name: "bah", Kind: "Foo", Namespace: testNamespace},
+			},
+			objects:       []runtime.Object{},
+			expectedKey:   nil, // Pod owner does not support scale subresource so should return nil"
+			expectedError: nil,
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			f := simpleControllerFetcher()
 			for _, obj := range tc.objects {
 				addController(t, f, obj)
 			}
-			topMostWellKnownOrScalableController, err := f.FindTopMostWellKnownOrScalable(tc.key)
+			topMostWellKnownOrScalableController, err := f.FindTopMostWellKnownOrScalable(context.Background(), tc.key)
 			if tc.expectedKey == nil {
 				assert.Nil(t, topMostWellKnownOrScalableController)
 			} else {

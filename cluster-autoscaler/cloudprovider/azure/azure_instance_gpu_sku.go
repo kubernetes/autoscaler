@@ -17,9 +17,10 @@ limitations under the License.
 package azure
 
 import (
+	"strings"
+
 	"github.com/Azure/skewer"
 	"github.com/pkg/errors"
-	"strings"
 )
 
 var (

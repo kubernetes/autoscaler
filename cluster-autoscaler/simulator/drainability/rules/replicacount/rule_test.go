@@ -311,7 +311,7 @@ func TestDrainable(t *testing.T) {
 				Listers:   registry,
 				Timestamp: testTime,
 			}
-			status := New(0).Drainable(drainCtx, test.pod)
+			status := New(0).Drainable(drainCtx, test.pod, nil)
 			assert.Equal(t, test.wantReason, status.BlockingReason)
 			assert.Equal(t, test.wantError, status.Error != nil)
 		})

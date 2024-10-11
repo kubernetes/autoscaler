@@ -19,7 +19,6 @@ package estimator
 import (
 	"time"
 
-	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	klog "k8s.io/klog/v2"
 )
@@ -32,7 +31,7 @@ type thresholdBasedEstimationLimiter struct {
 	thresholds  []Threshold
 }
 
-func (tbel *thresholdBasedEstimationLimiter) StartEstimation(_ []*apiv1.Pod, nodeGroup cloudprovider.NodeGroup, context EstimationContext) {
+func (tbel *thresholdBasedEstimationLimiter) StartEstimation(_ []PodEquivalenceGroup, nodeGroup cloudprovider.NodeGroup, context EstimationContext) {
 	tbel.start = time.Now()
 	tbel.nodes = 0
 	tbel.maxNodes = 0

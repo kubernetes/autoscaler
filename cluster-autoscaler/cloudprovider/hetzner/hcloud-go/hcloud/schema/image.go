@@ -11,7 +11,7 @@ type Image struct {
 	Description  string            `json:"description"`
 	ImageSize    *float32          `json:"image_size"`
 	DiskSize     float32           `json:"disk_size"`
-	Created      time.Time         `json:"created"`
+	Created      *time.Time        `json:"created"`
 	CreatedFrom  *ImageCreatedFrom `json:"created_from"`
 	BoundTo      *int64            `json:"bound_to"`
 	OSFlavor     string            `json:"os_flavor"`
@@ -19,8 +19,8 @@ type Image struct {
 	Architecture string            `json:"architecture"`
 	RapidDeploy  bool              `json:"rapid_deploy"`
 	Protection   ImageProtection   `json:"protection"`
-	Deprecated   time.Time         `json:"deprecated"`
-	Deleted      time.Time         `json:"deleted"`
+	Deprecated   *time.Time        `json:"deprecated"`
+	Deleted      *time.Time        `json:"deleted"`
 	Labels       map[string]string `json:"labels"`
 }
 
