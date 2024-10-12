@@ -161,8 +161,8 @@ func (scaleSet *ScaleSet) Autoprovisioned() bool {
 // GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
 // NodeGroup. Returning a nil will result in using default options.
 func (scaleSet *ScaleSet) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
-	template, exists := scaleSet.getVMSSFromCache()
-	if !exists {
+	template, err := scaleSet.getVMSSFromCache()
+	if err != nil {
 		klog.Errorf("failed to get information for VMSS: %s", scaleSet.Name)
 		return nil, nil
 	}
@@ -174,24 +174,20 @@ func (scaleSet *ScaleSet) MaxSize() int {
 	return scaleSet.maxSize
 }
 
-func (scaleSet *ScaleSet) getVMSSFromCache() (compute.VirtualMachineScaleSet, bool) {
+func (scaleSet *ScaleSet) getVMSSFromCache() (compute.VirtualMachineScaleSet, error) {
 	allVMSS := scaleSet.manager.azureCache.getScaleSets()
-
 	if _, exists := allVMSS[scaleSet.Name]; !exists {
-		klog.Errorf("could not find vmss: %s", scaleSet.Name)
-		return compute.VirtualMachineScaleSet{}, exists
+		return compute.VirtualMachineScaleSet{}, fmt.Errorf("could not find vmss: %s", scaleSet.Name)
 	}
-
-	return allVMSS[scaleSet.Name], true
+	return allVMSS[scaleSet.Name], nil
 }
 
 func (scaleSet *ScaleSet) getCurSize() (int64, error) {
 	scaleSet.sizeMutex.Lock()
 	defer scaleSet.sizeMutex.Unlock()
 
-	set, exists := scaleSet.getVMSSFromCache()
-	if !exists {
-		err := fmt.Errorf("could not find vmss: %s", scaleSet.Name)
+	set, err := scaleSet.getVMSSFromCache()
+	if err != nil {
 		klog.Errorf("failed to get information for VMSS: %s, error: %v", scaleSet.Name, err)
 		return -1, err
 	}
@@ -230,7 +226,7 @@ func (scaleSet *ScaleSet) getCurSize() (int64, error) {
 		set, rerr = scaleSet.manager.azClient.virtualMachineScaleSetsClient.Get(ctx, scaleSet.manager.config.ResourceGroup, scaleSet.Name)
 		if rerr != nil {
 			klog.Errorf("failed to get information for VMSS: %s, error: %v", scaleSet.Name, rerr)
-			return -1, err
+			return -1, rerr.Error()
 		}
 	}
 
@@ -293,10 +289,10 @@ func (scaleSet *ScaleSet) waitForCreateOrUpdateInstances(future *azure.Future) {
 
 // setScaleSetSize sets ScaleSet size.
 func (scaleSet *ScaleSet) setScaleSetSize(size int64, delta int) error {
-	vmssInfo, exists := scaleSet.getVMSSFromCache()
-	if !exists {
-		klog.Errorf("Failed to get information for VMSS: (%q)", scaleSet.Name)
-		return nil
+	vmssInfo, err := scaleSet.getVMSSFromCache()
+	if err != nil {
+		klog.Errorf("Failed to get information for VMSS (%q): %v", scaleSet.Name, err)
+		return err
 	}
 
 	requiredInstances := delta
@@ -374,11 +370,10 @@ func (scaleSet *ScaleSet) GetFlexibleScaleSetVms() ([]compute.VirtualMachine, *r
 	defer cancel()
 
 	// get VMSS info from cache to obtain ID currently scaleSet does not store ID info.
-	vmssInfo, exists := scaleSet.getVMSSFromCache()
+	vmssInfo, err := scaleSet.getVMSSFromCache()
 
-	if !exists {
-		err := fmt.Errorf("Failed to get information for VMSS: (%q)", scaleSet.Name)
-		klog.Error(err)
+	if err != nil {
+		klog.Errorf("Failed to get information for VMSS (%q): %v", scaleSet.Name, err)
 		var rerr = &retry.Error{
 			RawError: err,
 		}
@@ -631,9 +626,9 @@ func (scaleSet *ScaleSet) Debug() string {
 
 // TemplateNodeInfo returns a node template for this scale set.
 func (scaleSet *ScaleSet) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
-	template, exists := scaleSet.getVMSSFromCache()
-	if !exists {
-		return nil, fmt.Errorf("Failed to get information for VMSS: (%q)", scaleSet.Name)
+	template, err := scaleSet.getVMSSFromCache()
+	if err != nil {
+		return nil, err
 	}
 
 	inputLabels := map[string]string{}
@@ -837,10 +832,10 @@ func (scaleSet *ScaleSet) invalidateLastSizeRefreshWithLock() {
 }
 
 func (scaleSet *ScaleSet) getOrchestrationMode() (compute.OrchestrationMode, error) {
-	vmss, exists := scaleSet.getVMSSFromCache()
-	if !exists {
-		klog.Errorf("failed to get information for VMSS: %s", scaleSet.Name)
-		return "", nil
+	vmss, err := scaleSet.getVMSSFromCache()
+	if err != nil {
+		klog.Errorf("failed to get information for VMSS: %s, error: %v", scaleSet.Name, err)
+		return "", err
 	}
 	return vmss.OrchestrationMode, nil
 }
@@ -866,7 +861,7 @@ func (scaleSet *ScaleSet) cseErrors(extensions *[]compute.VirtualMachineExtensio
 func (scaleSet *ScaleSet) getSKU() string {
 	vmssInfo, err := scaleSet.getVMSSFromCache()
 	if err != nil {
-		klog.Errorf("Failed to get information for VMSS (%q): %v", scaleSet.Name, err)
+		klog.Errorf("Failed to get information for VMSS (%q)", scaleSet.Name)
 		return ""
 	}
 	return to.String(vmssInfo.Sku.Name)
