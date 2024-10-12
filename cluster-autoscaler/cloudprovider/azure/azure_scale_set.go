@@ -176,9 +176,11 @@ func (scaleSet *ScaleSet) MaxSize() int {
 
 func (scaleSet *ScaleSet) getVMSSFromCache() (compute.VirtualMachineScaleSet, error) {
 	allVMSS := scaleSet.manager.azureCache.getScaleSets()
+
 	if _, exists := allVMSS[scaleSet.Name]; !exists {
 		return compute.VirtualMachineScaleSet{}, fmt.Errorf("could not find vmss: %s", scaleSet.Name)
 	}
+
 	return allVMSS[scaleSet.Name], nil
 }
 
@@ -861,7 +863,7 @@ func (scaleSet *ScaleSet) cseErrors(extensions *[]compute.VirtualMachineExtensio
 func (scaleSet *ScaleSet) getSKU() string {
 	vmssInfo, err := scaleSet.getVMSSFromCache()
 	if err != nil {
-		klog.Errorf("Failed to get information for VMSS (%q)", scaleSet.Name)
+		klog.Errorf("Failed to get information for VMSS (%q): %v", scaleSet.Name, err)
 		return ""
 	}
 	return to.String(vmssInfo.Sku.Name)
