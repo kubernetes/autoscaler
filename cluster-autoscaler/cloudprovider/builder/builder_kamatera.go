@@ -31,7 +31,7 @@ var AvailableCloudProviders = []string{
 	cloudprovider.KamateraProviderName,
 }
 
-// DefaultCloudProvider is Kamatera.
+// DefaultCloudProvider for Kamatera-only build is Kamatera.
 const DefaultCloudProvider = cloudprovider.KamateraProviderName
 
 func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, _ informers.SharedInformerFactory) cloudprovider.CloudProvider {
