@@ -31,7 +31,7 @@ var AvailableCloudProviders = []string{
 	cloudprovider.HetznerProviderName,
 }
 
-// DefaultCloudProvider is Hetzner.
+// DefaultCloudProvider for Hetzner-only build is Hetzner.
 const DefaultCloudProvider = cloudprovider.HetznerProviderName
 
 func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, _ informers.SharedInformerFactory) cloudprovider.CloudProvider {
