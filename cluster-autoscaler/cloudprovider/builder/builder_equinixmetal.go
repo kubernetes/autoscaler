@@ -32,7 +32,7 @@ var AvailableCloudProviders = []string{
 	cloudprovider.EquinixMetalProviderName,
 }
 
-// DefaultCloudProvider for Packet-only build is Packet.
+// DefaultCloudProvider for Packet or Equinix Metal-only build is Equinix Metal.
 const DefaultCloudProvider = cloudprovider.EquinixMetalProviderName
 
 func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, _ informers.SharedInformerFactory) cloudprovider.CloudProvider {
