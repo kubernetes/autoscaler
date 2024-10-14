@@ -21,6 +21,7 @@ package builder
 
 import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/vultr"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/client-go/informers"
 )
@@ -30,13 +31,13 @@ var AvailableCloudProviders = []string{
 	cloudprovider.VultrProviderName,
 }
 
-// DefaultCloudProvider for linode-only build is linode.
+// DefaultCloudProvider for vultr-only build is vultr.
 const DefaultCloudProvider = cloudprovider.VultrProviderName
 
 func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, _ informers.SharedInformerFactory) cloudprovider.CloudProvider {
 	switch opts.CloudProviderName {
 	case cloudprovider.VultrProviderName:
-		return vultr.BuildLinode(opts, do, rl)
+		return vultr.BuildVultr(opts, do, rl)
 	}
 
 	return nil
