@@ -29,7 +29,8 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
-	"k8s.io/client-go/kubernetes/scheme"
+
+	corescheme "k8s.io/client-go/kubernetes/scheme"
 	clientv1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	v1lister "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/tools/cache"
@@ -38,6 +39,7 @@ import (
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/scheme"
 	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
@@ -226,7 +228,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 				return
 			}
 			klog.V(2).Infof("evicting pod %s", klog.KObj(pod))
-			evictErr := evictionLimiter.Evict(pod, u.eventRecorder)
+			evictErr := evictionLimiter.Evict(pod, vpa, u.eventRecorder)
 			if evictErr != nil {
 				klog.Warningf("evicting pod %s failed: %v", klog.KObj(pod), evictErr)
 			} else {
@@ -311,6 +313,12 @@ func newEventRecorder(kubeClient kube_client.Interface) record.EventRecorder {
 	eventBroadcaster.StartLogging(klog.V(4).Infof)
 	if _, isFake := kubeClient.(*fake.Clientset); !isFake {
 		eventBroadcaster.StartRecordingToSink(&clientv1.EventSinkImpl{Interface: clientv1.New(kubeClient.CoreV1().RESTClient()).Events("")})
+	} else {
+		eventBroadcaster.StartRecordingToSink(&clientv1.EventSinkImpl{Interface: kubeClient.CoreV1().Events("")})
 	}
-	return eventBroadcaster.NewRecorder(scheme.Scheme, apiv1.EventSource{Component: "vpa-updater"})
+
+	vpascheme := scheme.Scheme
+	corescheme.AddToScheme(vpascheme)
+
+	return eventBroadcaster.NewRecorder(vpascheme, apiv1.EventSource{Component: "vpa-updater"})
 }
