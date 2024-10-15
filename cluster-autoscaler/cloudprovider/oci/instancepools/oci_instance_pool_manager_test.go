@@ -6,16 +6,16 @@ package instancepools
 
 import (
 	"context"
-	apiv1 "k8s.io/api/core/v1"
-	ocicommon "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/common"
 	"github.com/oracle/oci-go-sdk/v65/core"
 	"github.com/oracle/oci-go-sdk/v65/workrequests"
+	apiv1 "k8s.io/api/core/v1"
+	ocicommon "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/common"
 	kubeletapis "k8s.io/kubelet/pkg/apis"
 	"reflect"
 	"testing"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"github.com/oracle/oci-go-sdk/v65/common"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 )
 
 // this is a copy of the mockShapeClient code in common/oci_shape_test.go

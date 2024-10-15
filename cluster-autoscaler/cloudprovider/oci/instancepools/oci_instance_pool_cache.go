@@ -12,13 +12,13 @@ import (
 	"sync"
 	"time"
 
+	"github.com/oracle/oci-go-sdk/v65/common"
+	"github.com/oracle/oci-go-sdk/v65/core"
+	"github.com/oracle/oci-go-sdk/v65/workrequests"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/util/wait"
 	ocicommon "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/common"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/instancepools/consts"
-	"github.com/oracle/oci-go-sdk/v65/common"
-	"github.com/oracle/oci-go-sdk/v65/core"
-	"github.com/oracle/oci-go-sdk/v65/workrequests"
 	"k8s.io/klog/v2"
 )
 

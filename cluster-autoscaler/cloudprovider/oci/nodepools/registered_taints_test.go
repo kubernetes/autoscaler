@@ -8,8 +8,8 @@ import (
 	"reflect"
 	"testing"
 
-	apiv1 "k8s.io/api/core/v1"
 	oke "github.com/oracle/oci-go-sdk/v65/containerengine"
+	apiv1 "k8s.io/api/core/v1"
 )
 
 func Test_ociInitialTaintsGetterImpl_Get(t *testing.T) {

@@ -10,10 +10,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/pkg/errors"
 	"github.com/oracle/oci-go-sdk/v65/common"
 	oke "github.com/oracle/oci-go-sdk/v65/containerengine"
 	"github.com/oracle/oci-go-sdk/v65/core"
+	"github.com/pkg/errors"
 	"k8s.io/klog/v2"
 )
 

@@ -11,9 +11,9 @@ import (
 
 	"k8s.io/klog/v2"
 
-	"github.com/pkg/errors"
 	"github.com/oracle/oci-go-sdk/v65/common"
 	oke "github.com/oracle/oci-go-sdk/v65/containerengine"
+	"github.com/pkg/errors"
 )
 
 func newNodePoolCache(okeClient *oke.ContainerEngineClient) *nodePoolCache {

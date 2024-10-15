@@ -11,13 +11,13 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/oracle/oci-go-sdk/v65/common"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"github.com/oracle/oci-go-sdk/v65/common"
 	kubeletapis "k8s.io/kubelet/pkg/apis"
 
-	ocicommon "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/common"
 	oke "github.com/oracle/oci-go-sdk/v65/containerengine"
+	ocicommon "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/common"
 )
 
 func TestNodePoolFromArgs(t *testing.T) {

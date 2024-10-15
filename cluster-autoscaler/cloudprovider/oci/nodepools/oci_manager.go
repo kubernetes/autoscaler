@@ -22,13 +22,13 @@ import (
 	"k8s.io/client-go/kubernetes"
 	klog "k8s.io/klog/v2"
 
-	ocicommon "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/common"
-	ipconsts "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/instancepools/consts"
-	npconsts "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/nodepools/consts"
 	"github.com/oracle/oci-go-sdk/v65/common"
 	"github.com/oracle/oci-go-sdk/v65/common/auth"
 	oke "github.com/oracle/oci-go-sdk/v65/containerengine"
 	"github.com/oracle/oci-go-sdk/v65/core"
+	ocicommon "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/common"
+	ipconsts "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/instancepools/consts"
+	npconsts "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/nodepools/consts"
 )
 
 const (

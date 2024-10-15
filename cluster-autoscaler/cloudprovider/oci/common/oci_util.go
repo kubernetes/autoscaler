@@ -16,9 +16,9 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/klog/v2"
 
+	"github.com/oracle/oci-go-sdk/v65/common"
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"github.com/oracle/oci-go-sdk/v65/common"
 )
 
 // IsRetryable returns true if the given error is retryable.

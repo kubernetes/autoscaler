@@ -8,11 +8,11 @@ import (
 	"os"
 	"time"
 
+	"github.com/oracle/oci-go-sdk/v65/common"
 	"github.com/pkg/errors"
 	"gopkg.in/gcfg.v1"
 	ipconsts "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/instancepools/consts"
 	npconsts "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/nodepools/consts"
-	"github.com/oracle/oci-go-sdk/v65/common"
 	"k8s.io/klog/v2"
 )
 
