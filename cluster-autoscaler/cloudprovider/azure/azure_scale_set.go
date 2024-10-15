@@ -232,8 +232,7 @@ func (scaleSet *ScaleSet) getCurSize() (int64, *GetVMSSFailedError) {
 		set, rerr = scaleSet.manager.azClient.virtualMachineScaleSetsClient.Get(ctx, scaleSet.manager.config.ResourceGroup, scaleSet.Name)
 		if rerr != nil {
 			klog.Errorf("failed to get information for VMSS: %s, error: %v", scaleSet.Name, rerr)
-			notFound := rerr.IsNotFound()
-			return -1, newGetVMSSFailedError(rerr.Error(), notFound)
+			return -1, newGetVMSSFailedError(rerr.Error(), rerr.IsNotFound())
 		}
 	}
 
@@ -255,8 +254,7 @@ func (scaleSet *ScaleSet) getCurSize() (int64, *GetVMSSFailedError) {
 
 // getScaleSetSize gets Scale Set size.
 func (scaleSet *ScaleSet) getScaleSetSize() (int64, error) {
-	// First, get the size of the ScaleSet reported by API
-	// -1 indiciates the ScaleSet hasn't been initialized
+	// First, get the current size of the ScaleSet
 	size, getVMSSError := scaleSet.getCurSize()
 	if size == -1 || getVMSSError != nil {
 		klog.V(3).Infof("getScaleSetSize: either size is -1 (actual: %d) or error exists (actual err:%v)", size, getVMSSError.error)
