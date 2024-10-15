@@ -1244,6 +1244,10 @@ func TestGetScaleSetOptions(t *testing.T) {
 	assert.Equal(t, *opts, defaultOptions)
 }
 
+// TestVMSSNotFound ensures that AzureManager is still able to be built
+// if one nodeGroup (VMSS) is not found. Previously, we would fail on manager creation
+// if even one expected nodeGroup was not found. When manager creation errored out,
+// BuildAzure returns log.Fatalf() which caused CAS to crash.
 func TestVMSSNotFound(t *testing.T) {
 	// client setup
 	ctrl := gomock.NewController(t)

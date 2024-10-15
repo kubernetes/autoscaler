@@ -188,14 +188,14 @@ func (scaleSet *ScaleSet) getVMSSFromCache() (compute.VirtualMachineScaleSet, er
 	return allVMSS[scaleSet.Name], nil
 }
 
-func (scaleSet *ScaleSet) getCurSize() (int64, *VMSSNotFoundError) {
+func (scaleSet *ScaleSet) getCurSize() (int64, *GetVMSSFailedError) {
 	scaleSet.sizeMutex.Lock()
 	defer scaleSet.sizeMutex.Unlock()
 
 	set, err := scaleSet.getVMSSFromCache()
 	if err != nil {
 		klog.Errorf("failed to get information for VMSS: %s, error: %v", scaleSet.Name, err)
-		return -1, &VMSSNotFoundError{source: "cache", error: err}
+		return -1, newGetVMSSFailedError(err, true)
 	}
 
 	// // Remove check for returning in-memory size when VMSS is in updating state
@@ -232,7 +232,8 @@ func (scaleSet *ScaleSet) getCurSize() (int64, *VMSSNotFoundError) {
 		set, rerr = scaleSet.manager.azClient.virtualMachineScaleSetsClient.Get(ctx, scaleSet.manager.config.ResourceGroup, scaleSet.Name)
 		if rerr != nil {
 			klog.Errorf("failed to get information for VMSS: %s, error: %v", scaleSet.Name, rerr)
-			return -1, &VMSSNotFoundError{source: "api", error: rerr.Error()}
+			notFound := rerr.IsNotFound()
+			return -1, newGetVMSSFailedError(rerr.Error(), notFound)
 		}
 	}
 
@@ -256,10 +257,10 @@ func (scaleSet *ScaleSet) getCurSize() (int64, *VMSSNotFoundError) {
 func (scaleSet *ScaleSet) getScaleSetSize() (int64, error) {
 	// First, get the size of the ScaleSet reported by API
 	// -1 indiciates the ScaleSet hasn't been initialized
-	size, notFoundErr := scaleSet.getCurSize()
-	if size == -1 || notFoundErr != nil {
-		klog.V(3).Infof("getScaleSetSize: either size is -1 (actual: %d) or error exists (actual err:%v)", size, notFoundErr.error)
-		return size, notFoundErr.error
+	size, getVMSSError := scaleSet.getCurSize()
+	if size == -1 || getVMSSError != nil {
+		klog.V(3).Infof("getScaleSetSize: either size is -1 (actual: %d) or error exists (actual err:%v)", size, getVMSSError.error)
+		return size, getVMSSError.error
 	}
 	return size, nil
 }
@@ -653,15 +654,13 @@ func (scaleSet *ScaleSet) TemplateNodeInfo() (*schedulerframework.NodeInfo, erro
 
 // Nodes returns a list of all nodes that belong to this node group.
 func (scaleSet *ScaleSet) Nodes() ([]cloudprovider.Instance, error) {
-	curSize, notFoundErr := scaleSet.getCurSize()
-	if notFoundErr != nil {
-		klog.Errorf("Failed to get current size for vmss %q: %v", scaleSet.Name, notFoundErr.error)
-		switch notFoundErr.source {
-		case "cache":
-			return nil, nil // Don't return error if VMSS not found from cache
-		case "api":
-			return nil, notFoundErr.error // We want to return retriable error if API errors occur.
+	curSize, getVMSSError := scaleSet.getCurSize()
+	if getVMSSError != nil {
+		klog.Errorf("Failed to get current size for vmss %q: %v", scaleSet.Name, getVMSSError.error)
+		if getVMSSError.notFound {
+			return nil, nil // Don't return error if VMSS not found
 		}
+		return nil, getVMSSError.error // We want to return error if other errors occur.
 	}
 
 	scaleSet.instanceMutex.Lock()
@@ -892,13 +891,20 @@ func (scaleSet *ScaleSet) verifyNodeGroup(instance *azureRef, commonNgID string)
 	return nil
 }
 
-// VMSSNotFoundError is used to differentiate between
-// get VMSS errors from API and cache
-type VMSSNotFoundError struct {
-	source string
-	error  error
+// GetVMSSFailedError is used to differentiate between
+// NotFound and other errors
+type GetVMSSFailedError struct {
+	notFound bool
+	error    error
 }
 
-func (v *VMSSNotFoundError) Error() string {
+func newGetVMSSFailedError(error error, notFound bool) *GetVMSSFailedError {
+	return &GetVMSSFailedError{
+		error:    error,
+		notFound: notFound,
+	}
+}
+
+func (v *GetVMSSFailedError) Error() string {
 	return v.error.Error()
 }
