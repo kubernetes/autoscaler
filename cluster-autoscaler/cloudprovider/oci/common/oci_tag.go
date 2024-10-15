@@ -5,7 +5,7 @@ Copyright 2021-2024 Oracle and/or its affiliates.
 package common
 
 import (
-	oke "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v65/containerengine"
+	oke "github.com/oracle/oci-go-sdk/v65/containerengine"
 )
 
 // TagsGetter returns the oci tags for the pool.

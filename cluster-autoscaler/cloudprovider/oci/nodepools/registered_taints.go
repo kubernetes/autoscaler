@@ -11,7 +11,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	taintutil "k8s.io/kubernetes/pkg/util/taints"
 
-	oke "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v65/containerengine"
+	oke "github.com/oracle/oci-go-sdk/v65/containerengine"
 )
 
 // RegisteredTaintsGetter returns the initial registered taints for the node pool.
