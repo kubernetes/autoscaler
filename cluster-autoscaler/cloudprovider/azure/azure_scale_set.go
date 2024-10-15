@@ -164,6 +164,10 @@ func (scaleSet *ScaleSet) GetOptions(defaults config.NodeGroupAutoscalingOptions
 	template, err := scaleSet.getVMSSFromCache()
 	if err != nil {
 		klog.Errorf("failed to get information for VMSS: %s", scaleSet.Name)
+		// Note: We don't return an error here and instead accept defaults.
+		// Every invocation of GetOptions() returns an error if this condition is met:
+		// `if err != nil && err != cloudprovider.ErrNotImplemented`
+		// The error return value is intended to only capture unimplemented.
 		return nil, nil
 	}
 	return scaleSet.manager.GetScaleSetOptions(*template.Name, defaults), nil
@@ -184,14 +188,14 @@ func (scaleSet *ScaleSet) getVMSSFromCache() (compute.VirtualMachineScaleSet, er
 	return allVMSS[scaleSet.Name], nil
 }
 
-func (scaleSet *ScaleSet) getCurSize() (int64, error) {
+func (scaleSet *ScaleSet) getCurSize() (int64, *VMSSNotFoundError) {
 	scaleSet.sizeMutex.Lock()
 	defer scaleSet.sizeMutex.Unlock()
 
 	set, err := scaleSet.getVMSSFromCache()
 	if err != nil {
 		klog.Errorf("failed to get information for VMSS: %s, error: %v", scaleSet.Name, err)
-		return -1, err
+		return -1, &VMSSNotFoundError{source: "cache", error: err}
 	}
 
 	// // Remove check for returning in-memory size when VMSS is in updating state
@@ -228,7 +232,7 @@ func (scaleSet *ScaleSet) getCurSize() (int64, error) {
 		set, rerr = scaleSet.manager.azClient.virtualMachineScaleSetsClient.Get(ctx, scaleSet.manager.config.ResourceGroup, scaleSet.Name)
 		if rerr != nil {
 			klog.Errorf("failed to get information for VMSS: %s, error: %v", scaleSet.Name, rerr)
-			return -1, rerr.Error()
+			return -1, &VMSSNotFoundError{source: "api", error: rerr.Error()}
 		}
 	}
 
@@ -252,11 +256,12 @@ func (scaleSet *ScaleSet) getCurSize() (int64, error) {
 func (scaleSet *ScaleSet) getScaleSetSize() (int64, error) {
 	// First, get the size of the ScaleSet reported by API
 	// -1 indiciates the ScaleSet hasn't been initialized
-	size, err := scaleSet.getCurSize()
-	if size == -1 || err != nil {
-		klog.V(3).Infof("getScaleSetSize: either size is -1 (actual: %d) or error exists (actual err:%v)", size, err)
+	size, notFoundErr := scaleSet.getCurSize()
+	if size == -1 || notFoundErr != nil {
+		klog.V(3).Infof("getScaleSetSize: either size is -1 (actual: %d) or error exists (actual err:%v)", size, notFoundErr.error)
+		return size, notFoundErr.error
 	}
-	return size, err
+	return size, nil
 }
 
 // waitForCreateOrUpdate waits for the outcome of VMSS capacity update initiated via CreateOrUpdateAsync.
@@ -648,10 +653,15 @@ func (scaleSet *ScaleSet) TemplateNodeInfo() (*schedulerframework.NodeInfo, erro
 
 // Nodes returns a list of all nodes that belong to this node group.
 func (scaleSet *ScaleSet) Nodes() ([]cloudprovider.Instance, error) {
-	curSize, err := scaleSet.getCurSize()
-	if err != nil {
-		klog.Errorf("Failed to get current size for vmss %q: %v", scaleSet.Name, err)
-		return nil, nil // Don't return error if VMSS not found
+	curSize, notFoundErr := scaleSet.getCurSize()
+	if notFoundErr != nil {
+		klog.Errorf("Failed to get current size for vmss %q: %v", scaleSet.Name, notFoundErr.error)
+		switch notFoundErr.source {
+		case "cache":
+			return nil, nil // Don't return error if VMSS not found from cache
+		case "api":
+			return nil, notFoundErr.error // We want to return retriable error if API errors occur.
+		}
 	}
 
 	scaleSet.instanceMutex.Lock()
@@ -664,7 +674,7 @@ func (scaleSet *ScaleSet) Nodes() ([]cloudprovider.Instance, error) {
 	}
 
 	// Forcefully updating the instanceCache as the instanceCacheSize didn't match curSize or cache is invalid.
-	err = scaleSet.updateInstanceCache()
+	err := scaleSet.updateInstanceCache()
 	if err != nil {
 		return nil, err
 	}
@@ -880,4 +890,15 @@ func (scaleSet *ScaleSet) verifyNodeGroup(instance *azureRef, commonNgID string)
 			instance.Name, commonNgID)
 	}
 	return nil
+}
+
+// This error type is used to differentiate between
+// VMSS client and VMSS cache errors
+type VMSSNotFoundError struct {
+	source string
+	error  error
+}
+
+func (v *VMSSNotFoundError) Error() string {
+	return v.error.Error()
 }
