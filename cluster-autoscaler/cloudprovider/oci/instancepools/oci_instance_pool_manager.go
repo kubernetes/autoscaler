@@ -24,11 +24,11 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 
-	"github.com/pkg/errors"
 	"github.com/oracle/oci-go-sdk/v65/common"
 	"github.com/oracle/oci-go-sdk/v65/common/auth"
 	"github.com/oracle/oci-go-sdk/v65/core"
 	"github.com/oracle/oci-go-sdk/v65/workrequests"
+	"github.com/pkg/errors"
 )
 
 var (
