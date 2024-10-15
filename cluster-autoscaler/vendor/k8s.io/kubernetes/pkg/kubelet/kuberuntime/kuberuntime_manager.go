@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sort"
 	"time"
 
@@ -65,6 +66,7 @@ import (
 	"k8s.io/kubernetes/pkg/kubelet/util/cache"
 	"k8s.io/kubernetes/pkg/kubelet/util/format"
 	sc "k8s.io/kubernetes/pkg/securitycontext"
+	utilfs "k8s.io/kubernetes/pkg/util/filesystem"
 )
 
 const (
@@ -266,6 +268,14 @@ func NewKubeGenericRuntimeManager(
 	if _, err := osInterface.Stat(podLogsRootDirectory); os.IsNotExist(err) {
 		if err := osInterface.MkdirAll(podLogsRootDirectory, 0755); err != nil {
 			klog.ErrorS(err, "Failed to create pod log directory", "path", podLogsRootDirectory)
+		}
+
+		if runtime.GOOS == "windows" {
+			// On Windows we should not allow other users to read the logs directory
+			// to avoid allowing non-root containers from reading the logs of other pods.
+			if err := utilfs.Chmod(podLogsRootDirectory, 0750); err != nil {
+				klog.ErrorS(err, "Failed to set permissions on pod log directory", "path", podLogsRootDirectory)
+			}
 		}
 	}
 
@@ -834,6 +844,8 @@ func (m *kubeGenericRuntimeManager) computePodActions(ctx context.Context, pod *
 		ContainersToKill:  make(map[kubecontainer.ContainerID]containerToKillInfo),
 	}
 
+	handleRestartableInitContainers := utilfeature.DefaultFeatureGate.Enabled(features.SidecarContainers) && types.HasRestartableInitContainer(pod)
+
 	// If we need to (re-)create the pod sandbox, everything will need to be
 	// killed and recreated, and init containers should be purged.
 	if createPodSandbox {
@@ -863,7 +875,7 @@ func (m *kubeGenericRuntimeManager) computePodActions(ctx context.Context, pod *
 		// is done and there is no container to start.
 		if len(containersToStart) == 0 {
 			hasInitialized := false
-			if !utilfeature.DefaultFeatureGate.Enabled(features.SidecarContainers) {
+			if !handleRestartableInitContainers {
 				_, _, hasInitialized = findNextInitContainerToRun(pod, podStatus)
 			} else {
 				// If there is any regular container, it means all init containers have
@@ -881,7 +893,7 @@ func (m *kubeGenericRuntimeManager) computePodActions(ctx context.Context, pod *
 		// state.
 		if len(pod.Spec.InitContainers) != 0 {
 			// Pod has init containers, return the first one.
-			if !utilfeature.DefaultFeatureGate.Enabled(features.SidecarContainers) {
+			if !handleRestartableInitContainers {
 				changes.NextInitContainerToStart = &pod.Spec.InitContainers[0]
 			} else {
 				changes.InitContainersToStart = []int{0}
@@ -904,7 +916,7 @@ func (m *kubeGenericRuntimeManager) computePodActions(ctx context.Context, pod *
 	}
 
 	// Check initialization progress.
-	if !utilfeature.DefaultFeatureGate.Enabled(features.SidecarContainers) {
+	if !handleRestartableInitContainers {
 		initLastStatus, next, done := findNextInitContainerToRun(pod, podStatus)
 		if !done {
 			if next != nil {
@@ -1031,7 +1043,7 @@ func (m *kubeGenericRuntimeManager) computePodActions(ctx context.Context, pod *
 
 	if keepCount == 0 && len(changes.ContainersToStart) == 0 {
 		changes.KillPod = true
-		if utilfeature.DefaultFeatureGate.Enabled(features.SidecarContainers) {
+		if handleRestartableInitContainers {
 			// To prevent the restartable init containers to keep pod alive, we should
 			// not restart them.
 			changes.InitContainersToStart = nil
@@ -1275,7 +1287,7 @@ func (m *kubeGenericRuntimeManager) SyncPod(ctx context.Context, pod *v1.Pod, po
 		start(ctx, "ephemeral container", metrics.EphemeralContainer, ephemeralContainerStartSpec(&pod.Spec.EphemeralContainers[idx]))
 	}
 
-	if !utilfeature.DefaultFeatureGate.Enabled(features.SidecarContainers) {
+	if !types.HasRestartableInitContainer(pod) {
 		// Step 6: start the init container.
 		if container := podContainerChanges.NextInitContainerToStart; container != nil {
 			// Start the next init container.
