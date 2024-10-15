@@ -1,5 +1,8 @@
+//go:build freebsd || linux || darwin
+// +build freebsd linux darwin
+
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2023 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,7 +17,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package version
+package filesystem
 
-// ClusterAutoscalerVersion contains version of CA.
-const ClusterAutoscalerVersion = "1.28.7"
+import (
+	"os"
+)
+
+// Chmod is the same as os.Chmod on Linux.
+func Chmod(name string, mode os.FileMode) error {
+	return os.Chmod(name, mode)
+}
+
+// MkdirAll is the same as os.MkdirAll on Linux.
+func MkdirAll(path string, perm os.FileMode) error {
+	return os.MkdirAll(path, perm)
+}
