@@ -892,8 +892,8 @@ func (scaleSet *ScaleSet) verifyNodeGroup(instance *azureRef, commonNgID string)
 	return nil
 }
 
-// This error type is used to differentiate between
-// VMSS client and VMSS cache errors
+// VMSSNotFoundError is used to differentiate between
+// get VMSS errors from API and cache
 type VMSSNotFoundError struct {
 	source string
 	error  error
