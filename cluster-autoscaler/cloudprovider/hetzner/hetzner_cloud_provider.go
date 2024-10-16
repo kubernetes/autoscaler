@@ -17,6 +17,7 @@ limitations under the License.
 package hetzner
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -27,6 +28,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/hetzner/hcloud-go/hcloud"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
@@ -178,6 +180,29 @@ func (d *HetznerCloudProvider) Refresh() error {
 	return nil
 }
 
+// Check if any defined placement groups could potentially have more than the maximum allowed number of nodes
+func getLargePlacementGroups(nodeGroups map[string]*hetznerNodeGroup, threshold int) []hcloud.PlacementGroup {
+	placementGroupTotals := make(map[hcloud.PlacementGroup]int)
+
+	// Calculate totals for each placement group
+	for _, nodeGroup := range nodeGroups {
+		if nodeGroup.placementGroup.Name != "" { // Check if placementGroup is defined
+			placementGroup := nodeGroup.placementGroup
+			placementGroupTotals[placementGroup] += nodeGroup.maxSize
+		}
+	}
+
+	// Collect placement groups with total maxSize > threshold
+	var largePlacementGroups []hcloud.PlacementGroup
+	for placementGroup, totalMaxSize := range placementGroupTotals {
+		if totalMaxSize > threshold {
+			largePlacementGroups = append(largePlacementGroups, placementGroup)
+		}
+	}
+
+	return largePlacementGroups
+}
+
 // BuildHetzner builds the Hetzner cloud provider.
 func BuildHetzner(_ config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	manager, err := newManager()
@@ -225,6 +250,51 @@ func BuildHetzner(_ config.AutoscalingOptions, do cloudprovider.NodeGroupDiscove
 			targetSize:         len(servers),
 			clusterUpdateMutex: &clusterUpdateLock,
 		}
+
+		// If a placement group was specified, check with the API to see if it exists
+		if manager.clusterConfig.IsUsingNewFormat && placementGroupRef := manager.clusterConfig.NodeConfigs[spec.name].PlacementGroup; placementGroupRef != nil {
+
+			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			defer cancel()
+
+			placementGroup, _, err := manager.client.PlacementGroup.Get(ctx, placementGroupRef)
+
+			// Check if an error occurred
+			if err != nil {
+				if err == context.DeadlineExceeded {
+					klog.Fatalf("Timed out checking if placement group `%s` exists.", placementGroupRef)
+				} else {
+					klog.Fatalf("Failed to verify if placement group `%s` exists error: %v", placementGroupRef, err)
+				}
+			}
+
+			// If the placement group exists, add it to the node group config
+			if placementGroup != nil {
+				manager.nodeGroups[spec.name].placementGroup = placementGroup
+			} else {
+				klog.Fatalf("The requested placement group `%s` does not appear to exist.", placementGroupRef)
+			}
+		}
+	}
+
+	// Get placement groups with total maxSize over the maximum allowed
+	maxPlacementGroupSize := 10
+
+	largePlacementGroups := getLargePlacementGroups(manager.nodeGroups, maxPlacementGroupSize)
+
+	// Fail if we have placement groups over the max size
+	if (len(largePlacementGroups) > 0) {
+
+		// Gather placement group names
+		var placementGroupNames string
+		for i, pg := range largePlacementGroups {
+			if i > 0 {
+				placementGroupNames += ", "
+			}
+			placementGroupNames += pg.Name
+		}
+
+		klog.Fatalf("The following placement groups have a potential size over the allowed maximum of %d: %s.", maxPlacementGroupSize, placementGroupNames)
 	}
 
 	return provider
