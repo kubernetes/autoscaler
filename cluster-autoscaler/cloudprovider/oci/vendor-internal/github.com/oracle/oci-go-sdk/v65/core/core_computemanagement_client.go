@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2023, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 // Code generated. DO NOT EDIT.
 
@@ -32,6 +32,9 @@ type ComputeManagementClient struct {
 // NewComputeManagementClientWithConfigurationProvider Creates a new default ComputeManagement client with the given configuration provider.
 // the configuration provider will be used for the default signer as well as reading the region
 func NewComputeManagementClientWithConfigurationProvider(configProvider common.ConfigurationProvider) (client ComputeManagementClient, err error) {
+	if enabled := common.CheckForEnabledServices("core"); !enabled {
+		return client, fmt.Errorf("the Developer Tool configuration disabled this service, this behavior is controlled by OciSdkEnabledServicesMap variables. Please check if your local developer-tool-configuration.json file configured the service you're targeting or contact the cloud provider on the availability of this service")
+	}
 	provider, err := auth.GetGenericConfigurationProvider(configProvider)
 	if err != nil {
 		return client, err
@@ -83,7 +86,7 @@ func (client *ComputeManagementClient) setConfigurationProvider(configProvider c
 	region, _ := configProvider.Region()
 	client.SetRegion(region)
 	if client.Host == "" {
-		return fmt.Errorf("Invalid region or Host. Endpoint cannot be constructed without endpointServiceName or serviceEndpointTemplate for a dotted region")
+		return fmt.Errorf("invalid region or Host. Endpoint cannot be constructed without endpointServiceName or serviceEndpointTemplate for a dotted region")
 	}
 	client.config = &configProvider
 	return nil
@@ -220,7 +223,8 @@ func (client ComputeManagementClient) attachLoadBalancer(ctx context.Context, re
 	return response, err
 }
 
-// ChangeClusterNetworkCompartment Moves a cluster network into a different compartment within the same tenancy. For
+// ChangeClusterNetworkCompartment Moves a cluster network with instance pools (https://docs.cloud.oracle.com/iaas/Content/Compute/Tasks/managingclusternetworks.htm)
+// into a different compartment within the same tenancy. For
 // information about moving resources between compartments, see
 // Moving Resources to a Different Compartment (https://docs.cloud.oracle.com/iaas/Content/Identity/Tasks/managingcompartments.htm#moveRes).
 // When you move a cluster network to a different compartment, associated resources such as the instances
@@ -424,8 +428,18 @@ func (client ComputeManagementClient) changeInstancePoolCompartment(ctx context.
 	return response, err
 }
 
-// CreateClusterNetwork Creates a cluster network. For more information about cluster networks, see
-// Managing Cluster Networks (https://docs.cloud.oracle.com/iaas/Content/Compute/Tasks/managingclusternetworks.htm).
+// CreateClusterNetwork Creates a cluster network with instance pools (https://docs.cloud.oracle.com/iaas/Content/Compute/Tasks/managingclusternetworks.htm).
+// A cluster network is a group of high performance computing (HPC), GPU, or optimized bare metal
+// instances that are connected with an ultra low-latency remote direct memory access (RDMA) network.
+// Cluster networks with instance pools use instance pools to manage groups of identical instances.
+// Use cluster networks with instance pools when you want predictable capacity for a specific number of identical
+// instances that are managed as a group.
+// If you want to manage instances in the RDMA network independently of each other or use different types of instances
+// in the network group, create a compute cluster by using the CreateComputeCluster
+// operation.
+// To determine whether capacity is available for a specific shape before you create a cluster network,
+// use the CreateComputeCapacityReport
+// operation.
 //
 // # See also
 //
@@ -551,6 +565,9 @@ func (client ComputeManagementClient) createInstanceConfiguration(ctx context.Co
 }
 
 // CreateInstancePool Creates an instance pool.
+// To determine whether capacity is available for a specific shape before you create an instance pool,
+// use the CreateComputeCapacityReport
+// operation.
 //
 // # See also
 //
@@ -793,7 +810,7 @@ func (client ComputeManagementClient) detachLoadBalancer(ctx context.Context, re
 	return response, err
 }
 
-// GetClusterNetwork Gets information about the specified cluster network.
+// GetClusterNetwork Gets information about a cluster network with instance pools (https://docs.cloud.oracle.com/iaas/Content/Compute/Tasks/managingclusternetworks.htm).
 //
 // # See also
 //
@@ -1084,6 +1101,9 @@ func (client ComputeManagementClient) getInstancePoolLoadBalancerAttachment(ctx 
 // provide these parameters when you create an instance from the instance configuration.
 // For more information, see the InstanceConfiguration
 // resource.
+// To determine whether capacity is available for a specific shape before you create an instance,
+// use the CreateComputeCapacityReport
+// operation.
 //
 // # See also
 //
@@ -1145,7 +1165,7 @@ func (client ComputeManagementClient) launchInstanceConfiguration(ctx context.Co
 	return response, err
 }
 
-// ListClusterNetworkInstances Lists the instances in the specified cluster network.
+// ListClusterNetworkInstances Lists the instances in a cluster network with instance pools (https://docs.cloud.oracle.com/iaas/Content/Compute/Tasks/managingclusternetworks.htm).
 //
 // # See also
 //
@@ -1202,7 +1222,8 @@ func (client ComputeManagementClient) listClusterNetworkInstances(ctx context.Co
 	return response, err
 }
 
-// ListClusterNetworks Lists the cluster networks in the specified compartment.
+// ListClusterNetworks Lists the cluster networks with instance pools (https://docs.cloud.oracle.com/iaas/Content/Compute/Tasks/managingclusternetworks.htm)
+// in the specified compartment.
 //
 // # See also
 //
@@ -1558,6 +1579,71 @@ func (client ComputeManagementClient) softresetInstancePool(ctx context.Context,
 	return response, err
 }
 
+// SoftstopInstancePool Performs the softstop (ACPI shutdown and power on) action on the specified instance pool,
+// which performs the action on all the instances in the pool.
+// Softstop gracefully reboots the instances by sending a shutdown command to the operating systems.
+// After waiting 15 minutes for the OS to shutdown, the instances are powered off and then powered back on.
+//
+// # See also
+//
+// Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/SoftstopInstancePool.go.html to see an example of how to use SoftstopInstancePool API.
+func (client ComputeManagementClient) SoftstopInstancePool(ctx context.Context, request SoftstopInstancePoolRequest) (response SoftstopInstancePoolResponse, err error) {
+	var ociResponse common.OCIResponse
+	policy := common.NoRetryPolicy()
+	if client.RetryPolicy() != nil {
+		policy = *client.RetryPolicy()
+	}
+	if request.RetryPolicy() != nil {
+		policy = *request.RetryPolicy()
+	}
+
+	if !(request.OpcRetryToken != nil && *request.OpcRetryToken != "") {
+		request.OpcRetryToken = common.String(common.RetryToken())
+	}
+
+	ociResponse, err = common.Retry(ctx, request, client.softstopInstancePool, policy)
+	if err != nil {
+		if ociResponse != nil {
+			if httpResponse := ociResponse.HTTPResponse(); httpResponse != nil {
+				opcRequestId := httpResponse.Header.Get("opc-request-id")
+				response = SoftstopInstancePoolResponse{RawResponse: httpResponse, OpcRequestId: &opcRequestId}
+			} else {
+				response = SoftstopInstancePoolResponse{}
+			}
+		}
+		return
+	}
+	if convertedResponse, ok := ociResponse.(SoftstopInstancePoolResponse); ok {
+		response = convertedResponse
+	} else {
+		err = fmt.Errorf("failed to convert OCIResponse into SoftstopInstancePoolResponse")
+	}
+	return
+}
+
+// softstopInstancePool implements the OCIOperation interface (enables retrying operations)
+func (client ComputeManagementClient) softstopInstancePool(ctx context.Context, request common.OCIRequest, binaryReqBody *common.OCIReadSeekCloser, extraHeaders map[string]string) (common.OCIResponse, error) {
+
+	httpRequest, err := request.HTTPRequest(http.MethodPost, "/instancePools/{instancePoolId}/actions/softstop", binaryReqBody, extraHeaders)
+	if err != nil {
+		return nil, err
+	}
+
+	var response SoftstopInstancePoolResponse
+	var httpResponse *http.Response
+	httpResponse, err = client.Call(ctx, &httpRequest)
+	defer common.CloseBodyIfValid(httpResponse)
+	response.RawResponse = httpResponse
+	if err != nil {
+		apiReferenceLink := "https://docs.oracle.com/iaas/api/#/en/iaas/20160918/InstancePool/SoftstopInstancePool"
+		err = common.PostProcessServiceError(err, "ComputeManagement", "SoftstopInstancePool", apiReferenceLink)
+		return response, err
+	}
+
+	err = common.UnmarshalResponse(httpResponse, &response)
+	return response, err
+}
+
 // StartInstancePool Performs the start (power on) action on the specified instance pool,
 // which performs the action on all the instances in the pool.
 //
@@ -1684,7 +1770,7 @@ func (client ComputeManagementClient) stopInstancePool(ctx context.Context, requ
 	return response, err
 }
 
-// TerminateClusterNetwork Terminates the specified cluster network.
+// TerminateClusterNetwork Deletes (terminates) a cluster network with instance pools (https://docs.cloud.oracle.com/iaas/Content/Compute/Tasks/managingclusternetworks.htm).
 // When you delete a cluster network, all of its resources are permanently deleted,
 // including associated instances and instance pools.
 //
@@ -1805,7 +1891,8 @@ func (client ComputeManagementClient) terminateInstancePool(ctx context.Context,
 	return response, err
 }
 
-// UpdateClusterNetwork Updates the specified cluster network. The OCID of the cluster network remains the same.
+// UpdateClusterNetwork Updates a cluster network with instance pools (https://docs.cloud.oracle.com/iaas/Content/Compute/Tasks/managingclusternetworks.htm).
+// The OCID of the cluster network remains the same.
 //
 // # See also
 //

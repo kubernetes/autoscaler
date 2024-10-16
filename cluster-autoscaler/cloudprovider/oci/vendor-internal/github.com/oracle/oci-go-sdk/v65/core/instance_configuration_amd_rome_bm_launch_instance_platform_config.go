@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2023, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 // Code generated. DO NOT EDIT.
 
@@ -64,6 +64,9 @@ type InstanceConfigurationAmdRomeBmLaunchInstancePlatformConfig struct {
 	// than the full size of the shape, you can disable cores to reduce your licensing costs. The instance
 	// itself is billed for the full shape, regardless of whether all cores are enabled.
 	PercentageOfCoresEnabled *int `mandatory:"false" json:"percentageOfCoresEnabled"`
+
+	// Instance Platform Configuration Configuration Map for flexible setting input.
+	ConfigMap map[string]string `mandatory:"false" json:"configMap"`
 
 	// The number of NUMA nodes per socket (NPS).
 	NumaNodesPerSocket InstanceConfigurationAmdRomeBmLaunchInstancePlatformConfigNumaNodesPerSocketEnum `mandatory:"false" json:"numaNodesPerSocket,omitempty"`

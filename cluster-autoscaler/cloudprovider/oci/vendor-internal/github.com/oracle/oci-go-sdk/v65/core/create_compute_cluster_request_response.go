@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2023, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 // Code generated. DO NOT EDIT.
 
@@ -18,12 +18,13 @@ import (
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/CreateComputeCluster.go.html to see an example of how to use CreateComputeClusterRequest.
 type CreateComputeClusterRequest struct {
 
-	// Details for creating a compute cluster (https://docs.cloud.oracle.com/iaas/Content/Compute/Tasks/compute-clusters.htm), which is a remote direct memory access (RDMA) network group.
-	// When first created, the compute cluster is empty.
-	// After the compute cluster is created, you can use the compute cluster's OCID with the LaunchInstance
-	// operation to create instances in the compute cluster.
-	// Compute clusters allow you to manage instances in the cluster individually.
-	// For details about creating a cluster network that uses intance pools to manage groups of identical instances,
+	// The data for creating a compute cluster (https://docs.cloud.oracle.com/iaas/Content/Compute/Tasks/compute-clusters.htm). A compute cluster
+	// is an empty remote direct memory access (RDMA) network group.
+	// After the compute cluster is created, you can use the compute cluster's OCID with the
+	// LaunchInstance operation to create instances in the compute cluster.
+	// The instances must be created in the same compartment and availability domain as the cluster.
+	// Use compute clusters when you want to manage instances in the cluster individually in the RDMA network group.
+	// For details about creating a cluster network that uses instance pools to manage groups of identical instances,
 	// see CreateClusterNetworkDetails.
 	CreateComputeClusterDetails `contributesTo:"body"`
 

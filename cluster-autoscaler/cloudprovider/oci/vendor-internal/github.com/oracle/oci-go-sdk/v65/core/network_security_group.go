@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2023, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 // Code generated. DO NOT EDIT.
 
@@ -31,21 +31,21 @@ import (
 //
 // After creating an NSG, you can add VNICs and security rules to it. For example, when you create
 // an instance, you can specify one or more NSGs to add the instance to (see
-// CreateVnicDetails). Or you can add an existing
-// instance to an NSG with UpdateVnic.
+// `CreateVnicDetails)`. Or you can add an existing
+// instance to an NSG with `UpdateVnic`.
 // To add security rules to an NSG, see
-// AddNetworkSecurityGroupSecurityRules.
+// `AddNetworkSecurityGroupSecurityRules`.
 // To list the VNICs in an NSG, see
-// ListNetworkSecurityGroupVnics.
+// `ListNetworkSecurityGroupVnics`.
 // To list the security rules in an NSG, see
-// ListNetworkSecurityGroupSecurityRules.
+// `ListNetworkSecurityGroupSecurityRules`.
 // For more information about network security groups, see
-// Network Security Groups (https://docs.cloud.oracle.com/iaas/Content/Network/Concepts/networksecuritygroups.htm).
+// `Network Security Groups (https://docs.cloud.oracle.com/iaas/Content/Network/Concepts/networksecuritygroups.htm)`.
 // **Important:** Oracle Cloud Infrastructure Compute service images automatically include firewall rules (for example,
 // Linux iptables, Windows firewall). If there are issues with some type of access to an instance,
 // make sure all of the following are set correctly:
 //   - Any security rules in any NSGs the instance's VNIC belongs to
-//   - Any SecurityList associated with the instance's subnet
+//   - Any `SecurityList` associated with the instance's subnet
 //   - The instance's OS firewall rules
 //
 // To use any of the API operations, you must be authorized in an IAM policy. If you're not authorized,

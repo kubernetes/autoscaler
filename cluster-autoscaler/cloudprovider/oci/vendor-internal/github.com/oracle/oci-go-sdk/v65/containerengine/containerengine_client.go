@@ -1,12 +1,12 @@
-// Copyright (c) 2016, 2018, 2023, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 // Code generated. DO NOT EDIT.
 
-// Container Engine for Kubernetes API
+// Kubernetes Engine API
 //
-// API for the Container Engine for Kubernetes service. Use this API to build, deploy,
+// API for the Kubernetes Engine service (also known as the Container Engine for Kubernetes service). Use this API to build, deploy,
 // and manage cloud-native applications. For more information, see
-// Overview of Container Engine for Kubernetes (https://docs.cloud.oracle.com/iaas/Content/ContEng/Concepts/contengoverview.htm).
+// Overview of Kubernetes Engine (https://docs.cloud.oracle.com/iaas/Content/ContEng/Concepts/contengoverview.htm).
 //
 
 package containerengine
@@ -28,6 +28,9 @@ type ContainerEngineClient struct {
 // NewContainerEngineClientWithConfigurationProvider Creates a new default ContainerEngine client with the given configuration provider.
 // the configuration provider will be used for the default signer as well as reading the region
 func NewContainerEngineClientWithConfigurationProvider(configProvider common.ConfigurationProvider) (client ContainerEngineClient, err error) {
+	if enabled := common.CheckForEnabledServices("containerengine"); !enabled {
+		return client, fmt.Errorf("the Developer Tool configuration disabled this service, this behavior is controlled by OciSdkEnabledServicesMap variables. Please check if your local developer-tool-configuration.json file configured the service you're targeting or contact the cloud provider on the availability of this service")
+	}
 	provider, err := auth.GetGenericConfigurationProvider(configProvider)
 	if err != nil {
 		return client, err
@@ -79,7 +82,7 @@ func (client *ContainerEngineClient) setConfigurationProvider(configProvider com
 	region, _ := configProvider.Region()
 	client.SetRegion(region)
 	if client.Host == "" {
-		return fmt.Errorf("Invalid region or Host. Endpoint cannot be constructed without endpointServiceName or serviceEndpointTemplate for a dotted region")
+		return fmt.Errorf("invalid region or Host. Endpoint cannot be constructed without endpointServiceName or serviceEndpointTemplate for a dotted region")
 	}
 	client.config = &configProvider
 	return nil
@@ -139,8 +142,71 @@ func (client ContainerEngineClient) clusterMigrateToNativeVcn(ctx context.Contex
 	defer common.CloseBodyIfValid(httpResponse)
 	response.RawResponse = httpResponse
 	if err != nil {
-		apiReferenceLink := "https://docs.oracle.com/iaas/api/#/en/containerengine/20180222/Cluster/ClusterMigrateToNativeVcn"
+		apiReferenceLink := ""
 		err = common.PostProcessServiceError(err, "ContainerEngine", "ClusterMigrateToNativeVcn", apiReferenceLink)
+		return response, err
+	}
+
+	err = common.UnmarshalResponse(httpResponse, &response)
+	return response, err
+}
+
+// CompleteCredentialRotation Complete cluster credential rotation. Retire old credentials from kubernetes components.
+//
+// # See also
+//
+// Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/containerengine/CompleteCredentialRotation.go.html to see an example of how to use CompleteCredentialRotation API.
+// A default retry strategy applies to this operation CompleteCredentialRotation()
+func (client ContainerEngineClient) CompleteCredentialRotation(ctx context.Context, request CompleteCredentialRotationRequest) (response CompleteCredentialRotationResponse, err error) {
+	var ociResponse common.OCIResponse
+	policy := common.DefaultRetryPolicy()
+	if client.RetryPolicy() != nil {
+		policy = *client.RetryPolicy()
+	}
+	if request.RetryPolicy() != nil {
+		policy = *request.RetryPolicy()
+	}
+
+	if !(request.OpcRetryToken != nil && *request.OpcRetryToken != "") {
+		request.OpcRetryToken = common.String(common.RetryToken())
+	}
+
+	ociResponse, err = common.Retry(ctx, request, client.completeCredentialRotation, policy)
+	if err != nil {
+		if ociResponse != nil {
+			if httpResponse := ociResponse.HTTPResponse(); httpResponse != nil {
+				opcRequestId := httpResponse.Header.Get("opc-request-id")
+				response = CompleteCredentialRotationResponse{RawResponse: httpResponse, OpcRequestId: &opcRequestId}
+			} else {
+				response = CompleteCredentialRotationResponse{}
+			}
+		}
+		return
+	}
+	if convertedResponse, ok := ociResponse.(CompleteCredentialRotationResponse); ok {
+		response = convertedResponse
+	} else {
+		err = fmt.Errorf("failed to convert OCIResponse into CompleteCredentialRotationResponse")
+	}
+	return
+}
+
+// completeCredentialRotation implements the OCIOperation interface (enables retrying operations)
+func (client ContainerEngineClient) completeCredentialRotation(ctx context.Context, request common.OCIRequest, binaryReqBody *common.OCIReadSeekCloser, extraHeaders map[string]string) (common.OCIResponse, error) {
+
+	httpRequest, err := request.HTTPRequest(http.MethodPost, "/clusters/{clusterId}/actions/completeCredentialRotation", binaryReqBody, extraHeaders)
+	if err != nil {
+		return nil, err
+	}
+
+	var response CompleteCredentialRotationResponse
+	var httpResponse *http.Response
+	httpResponse, err = client.Call(ctx, &httpRequest)
+	defer common.CloseBodyIfValid(httpResponse)
+	response.RawResponse = httpResponse
+	if err != nil {
+		apiReferenceLink := ""
+		err = common.PostProcessServiceError(err, "ContainerEngine", "CompleteCredentialRotation", apiReferenceLink)
 		return response, err
 	}
 
@@ -202,7 +268,7 @@ func (client ContainerEngineClient) createCluster(ctx context.Context, request c
 	defer common.CloseBodyIfValid(httpResponse)
 	response.RawResponse = httpResponse
 	if err != nil {
-		apiReferenceLink := "https://docs.oracle.com/iaas/api/#/en/containerengine/20180222/Cluster/CreateCluster"
+		apiReferenceLink := ""
 		err = common.PostProcessServiceError(err, "ContainerEngine", "CreateCluster", apiReferenceLink)
 		return response, err
 	}
@@ -259,7 +325,7 @@ func (client ContainerEngineClient) createKubeconfig(ctx context.Context, reques
 	httpResponse, err = client.Call(ctx, &httpRequest)
 	response.RawResponse = httpResponse
 	if err != nil {
-		apiReferenceLink := "https://docs.oracle.com/iaas/api/#/en/containerengine/20180222/Cluster/CreateKubeconfig"
+		apiReferenceLink := ""
 		err = common.PostProcessServiceError(err, "ContainerEngine", "CreateKubeconfig", apiReferenceLink)
 		return response, err
 	}
@@ -322,7 +388,7 @@ func (client ContainerEngineClient) createNodePool(ctx context.Context, request 
 	defer common.CloseBodyIfValid(httpResponse)
 	response.RawResponse = httpResponse
 	if err != nil {
-		apiReferenceLink := "https://docs.oracle.com/iaas/api/#/en/containerengine/20180222/NodePool/CreateNodePool"
+		apiReferenceLink := ""
 		err = common.PostProcessServiceError(err, "ContainerEngine", "CreateNodePool", apiReferenceLink)
 		return response, err
 	}
@@ -385,8 +451,71 @@ func (client ContainerEngineClient) createVirtualNodePool(ctx context.Context, r
 	defer common.CloseBodyIfValid(httpResponse)
 	response.RawResponse = httpResponse
 	if err != nil {
-		apiReferenceLink := "https://docs.oracle.com/iaas/api/#/en/containerengine/20180222/VirtualNodePool/CreateVirtualNodePool"
+		apiReferenceLink := ""
 		err = common.PostProcessServiceError(err, "ContainerEngine", "CreateVirtualNodePool", apiReferenceLink)
+		return response, err
+	}
+
+	err = common.UnmarshalResponse(httpResponse, &response)
+	return response, err
+}
+
+// CreateWorkloadMapping Create the specified workloadMapping for a cluster.
+//
+// # See also
+//
+// Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/containerengine/CreateWorkloadMapping.go.html to see an example of how to use CreateWorkloadMapping API.
+// A default retry strategy applies to this operation CreateWorkloadMapping()
+func (client ContainerEngineClient) CreateWorkloadMapping(ctx context.Context, request CreateWorkloadMappingRequest) (response CreateWorkloadMappingResponse, err error) {
+	var ociResponse common.OCIResponse
+	policy := common.DefaultRetryPolicy()
+	if client.RetryPolicy() != nil {
+		policy = *client.RetryPolicy()
+	}
+	if request.RetryPolicy() != nil {
+		policy = *request.RetryPolicy()
+	}
+
+	if !(request.OpcRetryToken != nil && *request.OpcRetryToken != "") {
+		request.OpcRetryToken = common.String(common.RetryToken())
+	}
+
+	ociResponse, err = common.Retry(ctx, request, client.createWorkloadMapping, policy)
+	if err != nil {
+		if ociResponse != nil {
+			if httpResponse := ociResponse.HTTPResponse(); httpResponse != nil {
+				opcRequestId := httpResponse.Header.Get("opc-request-id")
+				response = CreateWorkloadMappingResponse{RawResponse: httpResponse, OpcRequestId: &opcRequestId}
+			} else {
+				response = CreateWorkloadMappingResponse{}
+			}
+		}
+		return
+	}
+	if convertedResponse, ok := ociResponse.(CreateWorkloadMappingResponse); ok {
+		response = convertedResponse
+	} else {
+		err = fmt.Errorf("failed to convert OCIResponse into CreateWorkloadMappingResponse")
+	}
+	return
+}
+
+// createWorkloadMapping implements the OCIOperation interface (enables retrying operations)
+func (client ContainerEngineClient) createWorkloadMapping(ctx context.Context, request common.OCIRequest, binaryReqBody *common.OCIReadSeekCloser, extraHeaders map[string]string) (common.OCIResponse, error) {
+
+	httpRequest, err := request.HTTPRequest(http.MethodPost, "/clusters/{clusterId}/workloadMappings", binaryReqBody, extraHeaders)
+	if err != nil {
+		return nil, err
+	}
+
+	var response CreateWorkloadMappingResponse
+	var httpResponse *http.Response
+	httpResponse, err = client.Call(ctx, &httpRequest)
+	defer common.CloseBodyIfValid(httpResponse)
+	response.RawResponse = httpResponse
+	if err != nil {
+		apiReferenceLink := ""
+		err = common.PostProcessServiceError(err, "ContainerEngine", "CreateWorkloadMapping", apiReferenceLink)
 		return response, err
 	}
 
@@ -443,7 +572,7 @@ func (client ContainerEngineClient) deleteCluster(ctx context.Context, request c
 	defer common.CloseBodyIfValid(httpResponse)
 	response.RawResponse = httpResponse
 	if err != nil {
-		apiReferenceLink := "https://docs.oracle.com/iaas/api/#/en/containerengine/20180222/Cluster/DeleteCluster"
+		apiReferenceLink := ""
 		err = common.PostProcessServiceError(err, "ContainerEngine", "DeleteCluster", apiReferenceLink)
 		return response, err
 	}
@@ -501,7 +630,7 @@ func (client ContainerEngineClient) deleteNode(ctx context.Context, request comm
 	defer common.CloseBodyIfValid(httpResponse)
 	response.RawResponse = httpResponse
 	if err != nil {
-		apiReferenceLink := "https://docs.oracle.com/iaas/api/#/en/containerengine/20180222/NodePool/DeleteNode"
+		apiReferenceLink := ""
 		err = common.PostProcessServiceError(err, "ContainerEngine", "DeleteNode", apiReferenceLink)
 		return response, err
 	}
@@ -559,7 +688,7 @@ func (client ContainerEngineClient) deleteNodePool(ctx context.Context, request 
 	defer common.CloseBodyIfValid(httpResponse)
 	response.RawResponse = httpResponse
 	if err != nil {
-		apiReferenceLink := "https://docs.oracle.com/iaas/api/#/en/containerengine/20180222/NodePool/DeleteNodePool"
+		apiReferenceLink := ""
 		err = common.PostProcessServiceError(err, "ContainerEngine", "DeleteNodePool", apiReferenceLink)
 		return response, err
 	}
@@ -617,7 +746,7 @@ func (client ContainerEngineClient) deleteVirtualNodePool(ctx context.Context, r
 	defer common.CloseBodyIfValid(httpResponse)
 	response.RawResponse = httpResponse
 	if err != nil {
-		apiReferenceLink := "https://docs.oracle.com/iaas/api/#/en/containerengine/20180222/VirtualNodePool/DeleteVirtualNodePool"
+		apiReferenceLink := ""
 		err = common.PostProcessServiceError(err, "ContainerEngine", "DeleteVirtualNodePool", apiReferenceLink)
 		return response, err
 	}
@@ -675,8 +804,66 @@ func (client ContainerEngineClient) deleteWorkRequest(ctx context.Context, reque
 	defer common.CloseBodyIfValid(httpResponse)
 	response.RawResponse = httpResponse
 	if err != nil {
-		apiReferenceLink := "https://docs.oracle.com/iaas/api/#/en/containerengine/20180222/WorkRequest/DeleteWorkRequest"
+		apiReferenceLink := ""
 		err = common.PostProcessServiceError(err, "ContainerEngine", "DeleteWorkRequest", apiReferenceLink)
+		return response, err
+	}
+
+	err = common.UnmarshalResponse(httpResponse, &response)
+	return response, err
+}
+
+// DeleteWorkloadMapping Delete workloadMapping for a provisioned cluster.
+//
+// # See also
+//
+// Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/containerengine/DeleteWorkloadMapping.go.html to see an example of how to use DeleteWorkloadMapping API.
+// A default retry strategy applies to this operation DeleteWorkloadMapping()
+func (client ContainerEngineClient) DeleteWorkloadMapping(ctx context.Context, request DeleteWorkloadMappingRequest) (response DeleteWorkloadMappingResponse, err error) {
+	var ociResponse common.OCIResponse
+	policy := common.DefaultRetryPolicy()
+	if client.RetryPolicy() != nil {
+		policy = *client.RetryPolicy()
+	}
+	if request.RetryPolicy() != nil {
+		policy = *request.RetryPolicy()
+	}
+	ociResponse, err = common.Retry(ctx, request, client.deleteWorkloadMapping, policy)
+	if err != nil {
+		if ociResponse != nil {
+			if httpResponse := ociResponse.HTTPResponse(); httpResponse != nil {
+				opcRequestId := httpResponse.Header.Get("opc-request-id")
+				response = DeleteWorkloadMappingResponse{RawResponse: httpResponse, OpcRequestId: &opcRequestId}
+			} else {
+				response = DeleteWorkloadMappingResponse{}
+			}
+		}
+		return
+	}
+	if convertedResponse, ok := ociResponse.(DeleteWorkloadMappingResponse); ok {
+		response = convertedResponse
+	} else {
+		err = fmt.Errorf("failed to convert OCIResponse into DeleteWorkloadMappingResponse")
+	}
+	return
+}
+
+// deleteWorkloadMapping implements the OCIOperation interface (enables retrying operations)
+func (client ContainerEngineClient) deleteWorkloadMapping(ctx context.Context, request common.OCIRequest, binaryReqBody *common.OCIReadSeekCloser, extraHeaders map[string]string) (common.OCIResponse, error) {
+
+	httpRequest, err := request.HTTPRequest(http.MethodDelete, "/clusters/{clusterId}/workloadMappings/{workloadMappingId}", binaryReqBody, extraHeaders)
+	if err != nil {
+		return nil, err
+	}
+
+	var response DeleteWorkloadMappingResponse
+	var httpResponse *http.Response
+	httpResponse, err = client.Call(ctx, &httpRequest)
+	defer common.CloseBodyIfValid(httpResponse)
+	response.RawResponse = httpResponse
+	if err != nil {
+		apiReferenceLink := ""
+		err = common.PostProcessServiceError(err, "ContainerEngine", "DeleteWorkloadMapping", apiReferenceLink)
 		return response, err
 	}
 
@@ -733,7 +920,7 @@ func (client ContainerEngineClient) disableAddon(ctx context.Context, request co
 	defer common.CloseBodyIfValid(httpResponse)
 	response.RawResponse = httpResponse
 	if err != nil {
-		apiReferenceLink := "https://docs.oracle.com/iaas/api/#/en/containerengine/20180222/Cluster/DisableAddon"
+		apiReferenceLink := ""
 		err = common.PostProcessServiceError(err, "ContainerEngine", "DisableAddon", apiReferenceLink)
 		return response, err
 	}
@@ -791,7 +978,7 @@ func (client ContainerEngineClient) getAddon(ctx context.Context, request common
 	defer common.CloseBodyIfValid(httpResponse)
 	response.RawResponse = httpResponse
 	if err != nil {
-		apiReferenceLink := "https://docs.oracle.com/iaas/api/#/en/containerengine/20180222/Cluster/GetAddon"
+		apiReferenceLink := ""
 		err = common.PostProcessServiceError(err, "ContainerEngine", "GetAddon", apiReferenceLink)
 		return response, err
 	}
@@ -849,7 +1036,7 @@ func (client ContainerEngineClient) getCluster(ctx context.Context, request comm
 	defer common.CloseBodyIfValid(httpResponse)
 	response.RawResponse = httpResponse
 	if err != nil {
-		apiReferenceLink := "https://docs.oracle.com/iaas/api/#/en/containerengine/20180222/Cluster/GetCluster"
+		apiReferenceLink := ""
 		err = common.PostProcessServiceError(err, "ContainerEngine", "GetCluster", apiReferenceLink)
 		return response, err
 	}
@@ -907,7 +1094,7 @@ func (client ContainerEngineClient) getClusterMigrateToNativeVcnStatus(ctx conte
 	defer common.CloseBodyIfValid(httpResponse)
 	response.RawResponse = httpResponse
 	if err != nil {
-		apiReferenceLink := "https://docs.oracle.com/iaas/api/#/en/containerengine/20180222/ClusterMigrateToNativeVcnStatus/GetClusterMigrateToNativeVcnStatus"
+		apiReferenceLink := ""
 		err = common.PostProcessServiceError(err, "ContainerEngine", "GetClusterMigrateToNativeVcnStatus", apiReferenceLink)
 		return response, err
 	}
@@ -965,8 +1152,66 @@ func (client ContainerEngineClient) getClusterOptions(ctx context.Context, reque
 	defer common.CloseBodyIfValid(httpResponse)
 	response.RawResponse = httpResponse
 	if err != nil {
-		apiReferenceLink := "https://docs.oracle.com/iaas/api/#/en/containerengine/20180222/ClusterOptions/GetClusterOptions"
+		apiReferenceLink := ""
 		err = common.PostProcessServiceError(err, "ContainerEngine", "GetClusterOptions", apiReferenceLink)
+		return response, err
+	}
+
+	err = common.UnmarshalResponse(httpResponse, &response)
+	return response, err
+}
+
+// GetCredentialRotationStatus Get cluster credential rotation status.
+//
+// # See also
+//
+// Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/containerengine/GetCredentialRotationStatus.go.html to see an example of how to use GetCredentialRotationStatus API.
+// A default retry strategy applies to this operation GetCredentialRotationStatus()
+func (client ContainerEngineClient) GetCredentialRotationStatus(ctx context.Context, request GetCredentialRotationStatusRequest) (response GetCredentialRotationStatusResponse, err error) {
+	var ociResponse common.OCIResponse
+	policy := common.DefaultRetryPolicy()
+	if client.RetryPolicy() != nil {
+		policy = *client.RetryPolicy()
+	}
+	if request.RetryPolicy() != nil {
+		policy = *request.RetryPolicy()
+	}
+	ociResponse, err = common.Retry(ctx, request, client.getCredentialRotationStatus, policy)
+	if err != nil {
+		if ociResponse != nil {
+			if httpResponse := ociResponse.HTTPResponse(); httpResponse != nil {
+				opcRequestId := httpResponse.Header.Get("opc-request-id")
+				response = GetCredentialRotationStatusResponse{RawResponse: httpResponse, OpcRequestId: &opcRequestId}
+			} else {
+				response = GetCredentialRotationStatusResponse{}
+			}
+		}
+		return
+	}
+	if convertedResponse, ok := ociResponse.(GetCredentialRotationStatusResponse); ok {
+		response = convertedResponse
+	} else {
+		err = fmt.Errorf("failed to convert OCIResponse into GetCredentialRotationStatusResponse")
+	}
+	return
+}
+
+// getCredentialRotationStatus implements the OCIOperation interface (enables retrying operations)
+func (client ContainerEngineClient) getCredentialRotationStatus(ctx context.Context, request common.OCIRequest, binaryReqBody *common.OCIReadSeekCloser, extraHeaders map[string]string) (common.OCIResponse, error) {
+
+	httpRequest, err := request.HTTPRequest(http.MethodGet, "/clusters/{clusterId}/credentialRotationStatus", binaryReqBody, extraHeaders)
+	if err != nil {
+		return nil, err
+	}
+
+	var response GetCredentialRotationStatusResponse
+	var httpResponse *http.Response
+	httpResponse, err = client.Call(ctx, &httpRequest)
+	defer common.CloseBodyIfValid(httpResponse)
+	response.RawResponse = httpResponse
+	if err != nil {
+		apiReferenceLink := ""
+		err = common.PostProcessServiceError(err, "ContainerEngine", "GetCredentialRotationStatus", apiReferenceLink)
 		return response, err
 	}
 
@@ -1023,7 +1268,7 @@ func (client ContainerEngineClient) getNodePool(ctx context.Context, request com
 	defer common.CloseBodyIfValid(httpResponse)
 	response.RawResponse = httpResponse
 	if err != nil {
-		apiReferenceLink := "https://docs.oracle.com/iaas/api/#/en/containerengine/20180222/NodePool/GetNodePool"
+		apiReferenceLink := ""
 		err = common.PostProcessServiceError(err, "ContainerEngine", "GetNodePool", apiReferenceLink)
 		return response, err
 	}
@@ -1081,7 +1326,7 @@ func (client ContainerEngineClient) getNodePoolOptions(ctx context.Context, requ
 	defer common.CloseBodyIfValid(httpResponse)
 	response.RawResponse = httpResponse
 	if err != nil {
-		apiReferenceLink := "https://docs.oracle.com/iaas/api/#/en/containerengine/20180222/NodePoolOptions/GetNodePoolOptions"
+		apiReferenceLink := ""
 		err = common.PostProcessServiceError(err, "ContainerEngine", "GetNodePoolOptions", apiReferenceLink)
 		return response, err
 	}
@@ -1139,7 +1384,7 @@ func (client ContainerEngineClient) getVirtualNode(ctx context.Context, request 
 	defer common.CloseBodyIfValid(httpResponse)
 	response.RawResponse = httpResponse
 	if err != nil {
-		apiReferenceLink := "https://docs.oracle.com/iaas/api/#/en/containerengine/20180222/VirtualNodePool/GetVirtualNode"
+		apiReferenceLink := ""
 		err = common.PostProcessServiceError(err, "ContainerEngine", "GetVirtualNode", apiReferenceLink)
 		return response, err
 	}
@@ -1197,7 +1442,7 @@ func (client ContainerEngineClient) getVirtualNodePool(ctx context.Context, requ
 	defer common.CloseBodyIfValid(httpResponse)
 	response.RawResponse = httpResponse
 	if err != nil {
-		apiReferenceLink := "https://docs.oracle.com/iaas/api/#/en/containerengine/20180222/VirtualNodePool/GetVirtualNodePool"
+		apiReferenceLink := ""
 		err = common.PostProcessServiceError(err, "ContainerEngine", "GetVirtualNodePool", apiReferenceLink)
 		return response, err
 	}
@@ -1255,8 +1500,66 @@ func (client ContainerEngineClient) getWorkRequest(ctx context.Context, request 
 	defer common.CloseBodyIfValid(httpResponse)
 	response.RawResponse = httpResponse
 	if err != nil {
-		apiReferenceLink := "https://docs.oracle.com/iaas/api/#/en/containerengine/20180222/WorkRequest/GetWorkRequest"
+		apiReferenceLink := ""
 		err = common.PostProcessServiceError(err, "ContainerEngine", "GetWorkRequest", apiReferenceLink)
+		return response, err
+	}
+
+	err = common.UnmarshalResponse(httpResponse, &response)
+	return response, err
+}
+
+// GetWorkloadMapping Get the specified workloadMapping for a cluster.
+//
+// # See also
+//
+// Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/containerengine/GetWorkloadMapping.go.html to see an example of how to use GetWorkloadMapping API.
+// A default retry strategy applies to this operation GetWorkloadMapping()
+func (client ContainerEngineClient) GetWorkloadMapping(ctx context.Context, request GetWorkloadMappingRequest) (response GetWorkloadMappingResponse, err error) {
+	var ociResponse common.OCIResponse
+	policy := common.DefaultRetryPolicy()
+	if client.RetryPolicy() != nil {
+		policy = *client.RetryPolicy()
+	}
+	if request.RetryPolicy() != nil {
+		policy = *request.RetryPolicy()
+	}
+	ociResponse, err = common.Retry(ctx, request, client.getWorkloadMapping, policy)
+	if err != nil {
+		if ociResponse != nil {
+			if httpResponse := ociResponse.HTTPResponse(); httpResponse != nil {
+				opcRequestId := httpResponse.Header.Get("opc-request-id")
+				response = GetWorkloadMappingResponse{RawResponse: httpResponse, OpcRequestId: &opcRequestId}
+			} else {
+				response = GetWorkloadMappingResponse{}
+			}
+		}
+		return
+	}
+	if convertedResponse, ok := ociResponse.(GetWorkloadMappingResponse); ok {
+		response = convertedResponse
+	} else {
+		err = fmt.Errorf("failed to convert OCIResponse into GetWorkloadMappingResponse")
+	}
+	return
+}
+
+// getWorkloadMapping implements the OCIOperation interface (enables retrying operations)
+func (client ContainerEngineClient) getWorkloadMapping(ctx context.Context, request common.OCIRequest, binaryReqBody *common.OCIReadSeekCloser, extraHeaders map[string]string) (common.OCIResponse, error) {
+
+	httpRequest, err := request.HTTPRequest(http.MethodGet, "/clusters/{clusterId}/workloadMappings/{workloadMappingId}", binaryReqBody, extraHeaders)
+	if err != nil {
+		return nil, err
+	}
+
+	var response GetWorkloadMappingResponse
+	var httpResponse *http.Response
+	httpResponse, err = client.Call(ctx, &httpRequest)
+	defer common.CloseBodyIfValid(httpResponse)
+	response.RawResponse = httpResponse
+	if err != nil {
+		apiReferenceLink := ""
+		err = common.PostProcessServiceError(err, "ContainerEngine", "GetWorkloadMapping", apiReferenceLink)
 		return response, err
 	}
 
@@ -1318,7 +1621,7 @@ func (client ContainerEngineClient) installAddon(ctx context.Context, request co
 	defer common.CloseBodyIfValid(httpResponse)
 	response.RawResponse = httpResponse
 	if err != nil {
-		apiReferenceLink := "https://docs.oracle.com/iaas/api/#/en/containerengine/20180222/Cluster/InstallAddon"
+		apiReferenceLink := ""
 		err = common.PostProcessServiceError(err, "ContainerEngine", "InstallAddon", apiReferenceLink)
 		return response, err
 	}
@@ -1376,7 +1679,7 @@ func (client ContainerEngineClient) listAddonOptions(ctx context.Context, reques
 	defer common.CloseBodyIfValid(httpResponse)
 	response.RawResponse = httpResponse
 	if err != nil {
-		apiReferenceLink := "https://docs.oracle.com/iaas/api/#/en/containerengine/20180222/AddonOptionSummary/ListAddonOptions"
+		apiReferenceLink := ""
 		err = common.PostProcessServiceError(err, "ContainerEngine", "ListAddonOptions", apiReferenceLink)
 		return response, err
 	}
@@ -1434,7 +1737,7 @@ func (client ContainerEngineClient) listAddons(ctx context.Context, request comm
 	defer common.CloseBodyIfValid(httpResponse)
 	response.RawResponse = httpResponse
 	if err != nil {
-		apiReferenceLink := "https://docs.oracle.com/iaas/api/#/en/containerengine/20180222/Cluster/ListAddons"
+		apiReferenceLink := ""
 		err = common.PostProcessServiceError(err, "ContainerEngine", "ListAddons", apiReferenceLink)
 		return response, err
 	}
@@ -1492,7 +1795,7 @@ func (client ContainerEngineClient) listClusters(ctx context.Context, request co
 	defer common.CloseBodyIfValid(httpResponse)
 	response.RawResponse = httpResponse
 	if err != nil {
-		apiReferenceLink := "https://docs.oracle.com/iaas/api/#/en/containerengine/20180222/ClusterSummary/ListClusters"
+		apiReferenceLink := ""
 		err = common.PostProcessServiceError(err, "ContainerEngine", "ListClusters", apiReferenceLink)
 		return response, err
 	}
@@ -1550,7 +1853,7 @@ func (client ContainerEngineClient) listNodePools(ctx context.Context, request c
 	defer common.CloseBodyIfValid(httpResponse)
 	response.RawResponse = httpResponse
 	if err != nil {
-		apiReferenceLink := "https://docs.oracle.com/iaas/api/#/en/containerengine/20180222/NodePoolSummary/ListNodePools"
+		apiReferenceLink := ""
 		err = common.PostProcessServiceError(err, "ContainerEngine", "ListNodePools", apiReferenceLink)
 		return response, err
 	}
@@ -1608,7 +1911,7 @@ func (client ContainerEngineClient) listPodShapes(ctx context.Context, request c
 	defer common.CloseBodyIfValid(httpResponse)
 	response.RawResponse = httpResponse
 	if err != nil {
-		apiReferenceLink := "https://docs.oracle.com/iaas/api/#/en/containerengine/20180222/PodShapeSummary/ListPodShapes"
+		apiReferenceLink := ""
 		err = common.PostProcessServiceError(err, "ContainerEngine", "ListPodShapes", apiReferenceLink)
 		return response, err
 	}
@@ -1666,7 +1969,7 @@ func (client ContainerEngineClient) listVirtualNodePools(ctx context.Context, re
 	defer common.CloseBodyIfValid(httpResponse)
 	response.RawResponse = httpResponse
 	if err != nil {
-		apiReferenceLink := "https://docs.oracle.com/iaas/api/#/en/containerengine/20180222/VirtualNodePoolSummary/ListVirtualNodePools"
+		apiReferenceLink := ""
 		err = common.PostProcessServiceError(err, "ContainerEngine", "ListVirtualNodePools", apiReferenceLink)
 		return response, err
 	}
@@ -1724,7 +2027,7 @@ func (client ContainerEngineClient) listVirtualNodes(ctx context.Context, reques
 	defer common.CloseBodyIfValid(httpResponse)
 	response.RawResponse = httpResponse
 	if err != nil {
-		apiReferenceLink := "https://docs.oracle.com/iaas/api/#/en/containerengine/20180222/VirtualNodePool/ListVirtualNodes"
+		apiReferenceLink := ""
 		err = common.PostProcessServiceError(err, "ContainerEngine", "ListVirtualNodes", apiReferenceLink)
 		return response, err
 	}
@@ -1782,7 +2085,7 @@ func (client ContainerEngineClient) listWorkRequestErrors(ctx context.Context, r
 	defer common.CloseBodyIfValid(httpResponse)
 	response.RawResponse = httpResponse
 	if err != nil {
-		apiReferenceLink := "https://docs.oracle.com/iaas/api/#/en/containerengine/20180222/WorkRequestError/ListWorkRequestErrors"
+		apiReferenceLink := ""
 		err = common.PostProcessServiceError(err, "ContainerEngine", "ListWorkRequestErrors", apiReferenceLink)
 		return response, err
 	}
@@ -1840,7 +2143,7 @@ func (client ContainerEngineClient) listWorkRequestLogs(ctx context.Context, req
 	defer common.CloseBodyIfValid(httpResponse)
 	response.RawResponse = httpResponse
 	if err != nil {
-		apiReferenceLink := "https://docs.oracle.com/iaas/api/#/en/containerengine/20180222/WorkRequestLogEntry/ListWorkRequestLogs"
+		apiReferenceLink := ""
 		err = common.PostProcessServiceError(err, "ContainerEngine", "ListWorkRequestLogs", apiReferenceLink)
 		return response, err
 	}
@@ -1898,8 +2201,129 @@ func (client ContainerEngineClient) listWorkRequests(ctx context.Context, reques
 	defer common.CloseBodyIfValid(httpResponse)
 	response.RawResponse = httpResponse
 	if err != nil {
-		apiReferenceLink := "https://docs.oracle.com/iaas/api/#/en/containerengine/20180222/WorkRequestSummary/ListWorkRequests"
+		apiReferenceLink := ""
 		err = common.PostProcessServiceError(err, "ContainerEngine", "ListWorkRequests", apiReferenceLink)
+		return response, err
+	}
+
+	err = common.UnmarshalResponse(httpResponse, &response)
+	return response, err
+}
+
+// ListWorkloadMappings List workloadMappings for a provisioned cluster.
+//
+// # See also
+//
+// Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/containerengine/ListWorkloadMappings.go.html to see an example of how to use ListWorkloadMappings API.
+// A default retry strategy applies to this operation ListWorkloadMappings()
+func (client ContainerEngineClient) ListWorkloadMappings(ctx context.Context, request ListWorkloadMappingsRequest) (response ListWorkloadMappingsResponse, err error) {
+	var ociResponse common.OCIResponse
+	policy := common.DefaultRetryPolicy()
+	if client.RetryPolicy() != nil {
+		policy = *client.RetryPolicy()
+	}
+	if request.RetryPolicy() != nil {
+		policy = *request.RetryPolicy()
+	}
+	ociResponse, err = common.Retry(ctx, request, client.listWorkloadMappings, policy)
+	if err != nil {
+		if ociResponse != nil {
+			if httpResponse := ociResponse.HTTPResponse(); httpResponse != nil {
+				opcRequestId := httpResponse.Header.Get("opc-request-id")
+				response = ListWorkloadMappingsResponse{RawResponse: httpResponse, OpcRequestId: &opcRequestId}
+			} else {
+				response = ListWorkloadMappingsResponse{}
+			}
+		}
+		return
+	}
+	if convertedResponse, ok := ociResponse.(ListWorkloadMappingsResponse); ok {
+		response = convertedResponse
+	} else {
+		err = fmt.Errorf("failed to convert OCIResponse into ListWorkloadMappingsResponse")
+	}
+	return
+}
+
+// listWorkloadMappings implements the OCIOperation interface (enables retrying operations)
+func (client ContainerEngineClient) listWorkloadMappings(ctx context.Context, request common.OCIRequest, binaryReqBody *common.OCIReadSeekCloser, extraHeaders map[string]string) (common.OCIResponse, error) {
+
+	httpRequest, err := request.HTTPRequest(http.MethodGet, "/clusters/{clusterId}/workloadMappings", binaryReqBody, extraHeaders)
+	if err != nil {
+		return nil, err
+	}
+
+	var response ListWorkloadMappingsResponse
+	var httpResponse *http.Response
+	httpResponse, err = client.Call(ctx, &httpRequest)
+	defer common.CloseBodyIfValid(httpResponse)
+	response.RawResponse = httpResponse
+	if err != nil {
+		apiReferenceLink := ""
+		err = common.PostProcessServiceError(err, "ContainerEngine", "ListWorkloadMappings", apiReferenceLink)
+		return response, err
+	}
+
+	err = common.UnmarshalResponse(httpResponse, &response)
+	return response, err
+}
+
+// StartCredentialRotation Start cluster credential rotation by adding new credentials, old credentials will still work after this operation.
+//
+// # See also
+//
+// Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/containerengine/StartCredentialRotation.go.html to see an example of how to use StartCredentialRotation API.
+// A default retry strategy applies to this operation StartCredentialRotation()
+func (client ContainerEngineClient) StartCredentialRotation(ctx context.Context, request StartCredentialRotationRequest) (response StartCredentialRotationResponse, err error) {
+	var ociResponse common.OCIResponse
+	policy := common.DefaultRetryPolicy()
+	if client.RetryPolicy() != nil {
+		policy = *client.RetryPolicy()
+	}
+	if request.RetryPolicy() != nil {
+		policy = *request.RetryPolicy()
+	}
+
+	if !(request.OpcRetryToken != nil && *request.OpcRetryToken != "") {
+		request.OpcRetryToken = common.String(common.RetryToken())
+	}
+
+	ociResponse, err = common.Retry(ctx, request, client.startCredentialRotation, policy)
+	if err != nil {
+		if ociResponse != nil {
+			if httpResponse := ociResponse.HTTPResponse(); httpResponse != nil {
+				opcRequestId := httpResponse.Header.Get("opc-request-id")
+				response = StartCredentialRotationResponse{RawResponse: httpResponse, OpcRequestId: &opcRequestId}
+			} else {
+				response = StartCredentialRotationResponse{}
+			}
+		}
+		return
+	}
+	if convertedResponse, ok := ociResponse.(StartCredentialRotationResponse); ok {
+		response = convertedResponse
+	} else {
+		err = fmt.Errorf("failed to convert OCIResponse into StartCredentialRotationResponse")
+	}
+	return
+}
+
+// startCredentialRotation implements the OCIOperation interface (enables retrying operations)
+func (client ContainerEngineClient) startCredentialRotation(ctx context.Context, request common.OCIRequest, binaryReqBody *common.OCIReadSeekCloser, extraHeaders map[string]string) (common.OCIResponse, error) {
+
+	httpRequest, err := request.HTTPRequest(http.MethodPost, "/clusters/{clusterId}/actions/startCredentialRotation", binaryReqBody, extraHeaders)
+	if err != nil {
+		return nil, err
+	}
+
+	var response StartCredentialRotationResponse
+	var httpResponse *http.Response
+	httpResponse, err = client.Call(ctx, &httpRequest)
+	defer common.CloseBodyIfValid(httpResponse)
+	response.RawResponse = httpResponse
+	if err != nil {
+		apiReferenceLink := ""
+		err = common.PostProcessServiceError(err, "ContainerEngine", "StartCredentialRotation", apiReferenceLink)
 		return response, err
 	}
 
@@ -1956,7 +2380,7 @@ func (client ContainerEngineClient) updateAddon(ctx context.Context, request com
 	defer common.CloseBodyIfValid(httpResponse)
 	response.RawResponse = httpResponse
 	if err != nil {
-		apiReferenceLink := "https://docs.oracle.com/iaas/api/#/en/containerengine/20180222/Cluster/UpdateAddon"
+		apiReferenceLink := ""
 		err = common.PostProcessServiceError(err, "ContainerEngine", "UpdateAddon", apiReferenceLink)
 		return response, err
 	}
@@ -2014,7 +2438,7 @@ func (client ContainerEngineClient) updateCluster(ctx context.Context, request c
 	defer common.CloseBodyIfValid(httpResponse)
 	response.RawResponse = httpResponse
 	if err != nil {
-		apiReferenceLink := "https://docs.oracle.com/iaas/api/#/en/containerengine/20180222/Cluster/UpdateCluster"
+		apiReferenceLink := ""
 		err = common.PostProcessServiceError(err, "ContainerEngine", "UpdateCluster", apiReferenceLink)
 		return response, err
 	}
@@ -2072,7 +2496,7 @@ func (client ContainerEngineClient) updateClusterEndpointConfig(ctx context.Cont
 	defer common.CloseBodyIfValid(httpResponse)
 	response.RawResponse = httpResponse
 	if err != nil {
-		apiReferenceLink := "https://docs.oracle.com/iaas/api/#/en/containerengine/20180222/Cluster/UpdateClusterEndpointConfig"
+		apiReferenceLink := ""
 		err = common.PostProcessServiceError(err, "ContainerEngine", "UpdateClusterEndpointConfig", apiReferenceLink)
 		return response, err
 	}
@@ -2130,7 +2554,7 @@ func (client ContainerEngineClient) updateNodePool(ctx context.Context, request 
 	defer common.CloseBodyIfValid(httpResponse)
 	response.RawResponse = httpResponse
 	if err != nil {
-		apiReferenceLink := "https://docs.oracle.com/iaas/api/#/en/containerengine/20180222/NodePool/UpdateNodePool"
+		apiReferenceLink := ""
 		err = common.PostProcessServiceError(err, "ContainerEngine", "UpdateNodePool", apiReferenceLink)
 		return response, err
 	}
@@ -2188,8 +2612,66 @@ func (client ContainerEngineClient) updateVirtualNodePool(ctx context.Context, r
 	defer common.CloseBodyIfValid(httpResponse)
 	response.RawResponse = httpResponse
 	if err != nil {
-		apiReferenceLink := "https://docs.oracle.com/iaas/api/#/en/containerengine/20180222/VirtualNodePool/UpdateVirtualNodePool"
+		apiReferenceLink := ""
 		err = common.PostProcessServiceError(err, "ContainerEngine", "UpdateVirtualNodePool", apiReferenceLink)
+		return response, err
+	}
+
+	err = common.UnmarshalResponse(httpResponse, &response)
+	return response, err
+}
+
+// UpdateWorkloadMapping Update workloadMapping details for a cluster.
+//
+// # See also
+//
+// Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/containerengine/UpdateWorkloadMapping.go.html to see an example of how to use UpdateWorkloadMapping API.
+// A default retry strategy applies to this operation UpdateWorkloadMapping()
+func (client ContainerEngineClient) UpdateWorkloadMapping(ctx context.Context, request UpdateWorkloadMappingRequest) (response UpdateWorkloadMappingResponse, err error) {
+	var ociResponse common.OCIResponse
+	policy := common.DefaultRetryPolicy()
+	if client.RetryPolicy() != nil {
+		policy = *client.RetryPolicy()
+	}
+	if request.RetryPolicy() != nil {
+		policy = *request.RetryPolicy()
+	}
+	ociResponse, err = common.Retry(ctx, request, client.updateWorkloadMapping, policy)
+	if err != nil {
+		if ociResponse != nil {
+			if httpResponse := ociResponse.HTTPResponse(); httpResponse != nil {
+				opcRequestId := httpResponse.Header.Get("opc-request-id")
+				response = UpdateWorkloadMappingResponse{RawResponse: httpResponse, OpcRequestId: &opcRequestId}
+			} else {
+				response = UpdateWorkloadMappingResponse{}
+			}
+		}
+		return
+	}
+	if convertedResponse, ok := ociResponse.(UpdateWorkloadMappingResponse); ok {
+		response = convertedResponse
+	} else {
+		err = fmt.Errorf("failed to convert OCIResponse into UpdateWorkloadMappingResponse")
+	}
+	return
+}
+
+// updateWorkloadMapping implements the OCIOperation interface (enables retrying operations)
+func (client ContainerEngineClient) updateWorkloadMapping(ctx context.Context, request common.OCIRequest, binaryReqBody *common.OCIReadSeekCloser, extraHeaders map[string]string) (common.OCIResponse, error) {
+
+	httpRequest, err := request.HTTPRequest(http.MethodPut, "/clusters/{clusterId}/workloadMappings/{workloadMappingId}", binaryReqBody, extraHeaders)
+	if err != nil {
+		return nil, err
+	}
+
+	var response UpdateWorkloadMappingResponse
+	var httpResponse *http.Response
+	httpResponse, err = client.Call(ctx, &httpRequest)
+	defer common.CloseBodyIfValid(httpResponse)
+	response.RawResponse = httpResponse
+	if err != nil {
+		apiReferenceLink := ""
+		err = common.PostProcessServiceError(err, "ContainerEngine", "UpdateWorkloadMapping", apiReferenceLink)
 		return response, err
 	}
 
