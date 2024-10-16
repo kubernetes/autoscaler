@@ -71,6 +71,7 @@ func TestIncreaseSize(t *testing.T) {
 	for _, n := range nodes {
 		assert.Contains(t, n.Spec.ProviderID, "kwok")
 		assert.Contains(t, n.GetName(), ng.name)
+		assert.Contains(t, n.Annotations["metrics.k8s.io/resource-metrics-path"], fmt.Sprintf("/metrics/nodes/%s/metrics/resource", n.GetName()))
 	}
 
 	// delta is negative
