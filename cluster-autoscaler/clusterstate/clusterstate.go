@@ -420,7 +420,7 @@ func (csr *ClusterStateRegistry) IsClusterHealthy() bool {
 func (csr *ClusterStateRegistry) IsNodeGroupHealthy(nodeGroupName string) bool {
 	acceptable, found := csr.acceptableRanges[nodeGroupName]
 	if !found {
-		klog.Warningf("Failed to find acceptable ranges for %v", nodeGroupName)
+		klog.V(5).Infof("Failed to find acceptable ranges for %v", nodeGroupName)
 		return false
 	}
 
@@ -430,7 +430,7 @@ func (csr *ClusterStateRegistry) IsNodeGroupHealthy(nodeGroupName string) bool {
 		if acceptable.CurrentTarget == 0 || (acceptable.MinNodes == 0 && acceptable.CurrentTarget > 0) {
 			return true
 		}
-		klog.Warningf("Failed to find readiness information for %v", nodeGroupName)
+		klog.V(5).Infof("Failed to find readiness information for %v", nodeGroupName)
 		return false
 	}
 
