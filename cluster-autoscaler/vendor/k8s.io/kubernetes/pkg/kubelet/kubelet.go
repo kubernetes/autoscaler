@@ -38,7 +38,7 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"k8s.io/client-go/informers"
-
+	utilfs "k8s.io/kubernetes/pkg/util/filesystem"
 	"k8s.io/mount-utils"
 	"k8s.io/utils/integer"
 	netutils "k8s.io/utils/net"
@@ -1366,17 +1366,17 @@ func (kl *Kubelet) setupDataDirs() error {
 	if err := os.MkdirAll(kl.getPodsDir(), 0750); err != nil {
 		return fmt.Errorf("error creating pods directory: %v", err)
 	}
-	if err := os.MkdirAll(kl.getPluginsDir(), 0750); err != nil {
+	if err := utilfs.MkdirAll(kl.getPluginsDir(), 0750); err != nil {
 		return fmt.Errorf("error creating plugins directory: %v", err)
 	}
-	if err := os.MkdirAll(kl.getPluginsRegistrationDir(), 0750); err != nil {
+	if err := utilfs.MkdirAll(kl.getPluginsRegistrationDir(), 0750); err != nil {
 		return fmt.Errorf("error creating plugins registry directory: %v", err)
 	}
 	if err := os.MkdirAll(kl.getPodResourcesDir(), 0750); err != nil {
 		return fmt.Errorf("error creating podresources directory: %v", err)
 	}
 	if utilfeature.DefaultFeatureGate.Enabled(features.ContainerCheckpoint) {
-		if err := os.MkdirAll(kl.getCheckpointsDir(), 0700); err != nil {
+		if err := utilfs.MkdirAll(kl.getCheckpointsDir(), 0700); err != nil {
 			return fmt.Errorf("error creating checkpoint directory: %v", err)
 		}
 	}
@@ -1463,6 +1463,14 @@ func (kl *Kubelet) initializeModules() error {
 	if _, err := os.Stat(ContainerLogsDir); err != nil {
 		if err := kl.os.MkdirAll(ContainerLogsDir, 0755); err != nil {
 			return fmt.Errorf("failed to create directory %q: %v", ContainerLogsDir, err)
+		}
+	}
+
+	if sysruntime.GOOS == "windows" {
+		// On Windows we should not allow other users to read the logs directory
+		// to avoid allowing non-root containers from reading the logs of other containers.
+		if err := utilfs.Chmod(ContainerLogsDir, 0750); err != nil {
+			return fmt.Errorf("failed to set permissions on directory %q: %w", ContainerLogsDir, err)
 		}
 	}
 
@@ -2013,11 +2021,12 @@ func (kl *Kubelet) SyncTerminatingPod(_ context.Context, pod *v1.Pod, podStatus 
 	// catch race conditions introduced by callers updating pod status out of order.
 	// TODO: have KillPod return the terminal status of stopped containers and write that into the
 	//  cache immediately
-	podStatus, err := kl.containerRuntime.GetPodStatus(ctx, pod.UID, pod.Name, pod.Namespace)
+	stoppedPodStatus, err := kl.containerRuntime.GetPodStatus(ctx, pod.UID, pod.Name, pod.Namespace)
 	if err != nil {
 		klog.ErrorS(err, "Unable to read pod status prior to final pod termination", "pod", klog.KObj(pod), "podUID", pod.UID)
 		return err
 	}
+	preserveDataFromBeforeStopping(stoppedPodStatus, podStatus)
 	var runningContainers []string
 	type container struct {
 		Name       string
@@ -2028,7 +2037,7 @@ func (kl *Kubelet) SyncTerminatingPod(_ context.Context, pod *v1.Pod, podStatus 
 	var containers []container
 	klogV := klog.V(4)
 	klogVEnabled := klogV.Enabled()
-	for _, s := range podStatus.ContainerStatuses {
+	for _, s := range stoppedPodStatus.ContainerStatuses {
 		if s.State == kubecontainer.ContainerStateRunning {
 			runningContainers = append(runningContainers, s.ID.String())
 		}
@@ -2057,13 +2066,22 @@ func (kl *Kubelet) SyncTerminatingPod(_ context.Context, pod *v1.Pod, podStatus 
 	// The computation is done here to ensure the pod status used for it contains
 	// information about the container end states (including exit codes) - when
 	// SyncTerminatedPod is called the containers may already be removed.
-	apiPodStatus = kl.generateAPIPodStatus(pod, podStatus, true)
+	apiPodStatus = kl.generateAPIPodStatus(pod, stoppedPodStatus, true)
 	kl.statusManager.SetPodStatus(pod, apiPodStatus)
 
 	// we have successfully stopped all containers, the pod is terminating, our status is "done"
 	klog.V(4).InfoS("Pod termination stopped all running containers", "pod", klog.KObj(pod), "podUID", pod.UID)
 
 	return nil
+}
+
+// preserveDataFromBeforeStopping preserves data, like IPs, which are expected
+// to be sent to the API server after termination, but are no longer returned by
+// containerRuntime.GetPodStatus for a stopped pod.
+// Note that Kubelet restart, after the pod is stopped, may still cause losing
+// track of the data.
+func preserveDataFromBeforeStopping(stoppedPodStatus, podStatus *kubecontainer.PodStatus) {
+	stoppedPodStatus.IPs = podStatus.IPs
 }
 
 // SyncTerminatingRuntimePod is expected to terminate running containers in a pod that we have no
@@ -2532,7 +2550,8 @@ func (kl *Kubelet) HandlePodAdditions(pods []*v1.Pod) {
 		// shutting it down. If the pod hasn't started yet, we know that when
 		// the pod worker is invoked it will also avoid setting up the pod, so
 		// we simply avoid doing any work.
-		if !kl.podWorkers.IsPodTerminationRequested(pod.UID) {
+		// We also do not try to admit the pod that is already in terminated state.
+		if !kl.podWorkers.IsPodTerminationRequested(pod.UID) && !podutil.IsPodPhaseTerminal(pod.Status.Phase) {
 			// We failed pods that we rejected, so activePods include all admitted
 			// pods that are alive.
 			activePods := kl.filterOutInactivePods(existingPods)
