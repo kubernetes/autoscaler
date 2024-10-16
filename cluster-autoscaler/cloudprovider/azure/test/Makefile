@@ -18,7 +18,8 @@ ARTIFACTS?=_artifacts
 .PHONY: test-e2e
 test-e2e: build-e2e
 	go run github.com/onsi/ginkgo/v2/ginkgo --tags e2e -v --trace --output-dir "$(ARTIFACTS)" --junit-report="junit.e2e_suite.1.xml" e2e -- \
-		-resource-group="$$(KUBECONFIG= kubectl get managedclusters -n default -o jsonpath='{.items[0].status.nodeResourceGroup}')" \
+		-node-resource-group="$$(KUBECONFIG= kubectl get managedclusters -n default -o jsonpath='{.items[0].status.nodeResourceGroup}')" \
+		-cluster-resource-group="$$(KUBECONFIG= kubectl get azureasomanagedcluster -n default -o jsonpath='{.items[0].spec.resources[?(@.kind=="ResourceGroup")].metadata.name}')" \
 		-cluster-name="$$(KUBECONFIG= kubectl get cluster -n default -o jsonpath='{.items[0].metadata.name}')" \
 		-client-id="$$(KUBECONFIG= kubectl get userassignedidentities -n default -o jsonpath='{.items[0].status.clientId}')" \
 		-cas-namespace="$(CLUSTER_AUTOSCALER_NAMESPACE)" \
