@@ -22,6 +22,7 @@ import (
 	"time"
 
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/grpcplugin/protos"
 	"k8s.io/klog/v2"
@@ -111,9 +112,18 @@ func populateOptionsForGRPC(expansionOptions []expander.Option) ([]*protos.Optio
 	nodeGroupIDOptionMap := make(map[string]expander.Option)
 	for _, option := range expansionOptions {
 		nodeGroupIDOptionMap[option.NodeGroup.Id()] = option
-		grpcOptionsSlice = append(grpcOptionsSlice, newOptionMessage(option.NodeGroup.Id(), int32(option.NodeCount), option.Debug, option.Pods))
+		similarNodeGroupIds := getSimilarNodeGroupIds(option)
+		grpcOptionsSlice = append(grpcOptionsSlice, newOptionMessage(option.NodeGroup.Id(), int32(option.NodeCount), option.Debug, option.Pods, similarNodeGroupIds))
 	}
 	return grpcOptionsSlice, nodeGroupIDOptionMap
+}
+
+func getSimilarNodeGroupIds(option expander.Option) []string {
+	var similarNodeGroupIds []string
+	for _, sng := range option.SimilarNodeGroups {
+		similarNodeGroupIds = append(similarNodeGroupIds, sng.Id())
+	}
+	return similarNodeGroupIds
 }
 
 // populateNodeInfoForGRPC looks at the corresponding v1.Node object per NodeInfo object, and populates the grpcNodeInfoMap with these to pass over grpc
@@ -133,7 +143,9 @@ func transformAndSanitizeOptionsFromGRPC(bestOptionsResponseOptions []*protos.Op
 			continue
 		}
 		if _, ok := nodeGroupIDOptionMap[option.NodeGroupId]; ok {
-			options = append(options, nodeGroupIDOptionMap[option.NodeGroupId])
+			expanderOption := nodeGroupIDOptionMap[option.NodeGroupId]
+			expanderOption.SimilarNodeGroups = getRetainedSimilarNodegroups(option, expanderOption)
+			options = append(options, expanderOption)
 		} else {
 			klog.Errorf("GRPC server returned invalid nodeGroup ID: %s", option.NodeGroupId)
 			continue
@@ -142,6 +154,25 @@ func transformAndSanitizeOptionsFromGRPC(bestOptionsResponseOptions []*protos.Op
 	return options
 }
 
-func newOptionMessage(nodeGroupId string, nodeCount int32, debug string, pods []*v1.Pod) *protos.Option {
-	return &protos.Option{NodeGroupId: nodeGroupId, NodeCount: nodeCount, Debug: debug, Pod: pods}
+// Any similar options that were not included in the original grpcExpander request, but were added
+// as part of the response, will be ignored
+func getRetainedSimilarNodegroups(grpcOption *protos.Option, expanderOption expander.Option) []cloudprovider.NodeGroup {
+	var retainedSimilarNodeGroups []cloudprovider.NodeGroup
+	for _, sng := range expanderOption.SimilarNodeGroups {
+		retained := false
+		for _, id := range grpcOption.SimilarNodeGroupIds {
+			if sng.Id() == id {
+				retained = true
+				continue
+			}
+		}
+		if retained {
+			retainedSimilarNodeGroups = append(retainedSimilarNodeGroups, sng)
+		}
+	}
+	return retainedSimilarNodeGroups
+}
+
+func newOptionMessage(nodeGroupId string, nodeCount int32, debug string, pods []*v1.Pod, similarNodeGroupIds []string) *protos.Option {
+	return &protos.Option{NodeGroupId: nodeGroupId, NodeCount: nodeCount, Debug: debug, Pod: pods, SimilarNodeGroupIds: similarNodeGroupIds}
 }
