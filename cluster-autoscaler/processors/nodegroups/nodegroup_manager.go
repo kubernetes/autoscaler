@@ -60,6 +60,11 @@ type AsyncNodeGroupInitializer interface {
 	// Note that the node group may be different than the initialized node group, if node group creation
 	// results in creation of multiple node groups.
 	SetTargetSize(nodeGroupId string, size int64)
+	// ChangeTargetSize changes by given delta a size to which the provided node goup will be initialized.
+	// Delta may be positive or negative value.
+	// Note that the node group may be different than the initialized node group, if node group creation
+	// results in creation of multiple node groups.
+	ChangeTargetSize(nodeGroup string, delta int64)
 }
 
 // NoOpNodeGroupManager is a no-op implementation of NodeGroupManager.
