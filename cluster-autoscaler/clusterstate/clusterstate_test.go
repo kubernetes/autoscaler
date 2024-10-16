@@ -1225,10 +1225,11 @@ func TestUpdateAcceptableRanges(t *testing.T) {
 			}
 
 			clusterState := &ClusterStateRegistry{
-				cloudProvider:         provider,
-				perNodeGroupReadiness: tc.readiness,
-				scaleUpRequests:       tc.scaleUpRequests,
-				scaleDownRequests:     scaleDownRequests,
+				cloudProvider:              provider,
+				perNodeGroupReadiness:      tc.readiness,
+				scaleUpRequests:            tc.scaleUpRequests,
+				scaleDownRequests:          scaleDownRequests,
+				asyncNodeGroupStateChecker: asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(),
 			}
 
 			clusterState.updateAcceptableRanges(tc.targetSizes)
@@ -1452,6 +1453,43 @@ func TestTruncateIfExceedMaxSize(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			got := truncateIfExceedMaxLength(tc.message, tc.maxSize)
 			assert.Equal(t, tc.wantMessage, got)
+		})
+	}
+}
+
+func TestIsNodeGroupRegistered(t *testing.T) {
+	provider := testprovider.NewTestCloudProvider(nil, nil)
+	registeredNodeGroupName := "registered-node-group"
+	provider.AddNodeGroup(registeredNodeGroupName, 1, 10, 1)
+	fakeClient := &fake.Clientset{}
+	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false, "some-map")
+	clusterstate := NewClusterStateRegistry(
+		provider,
+		ClusterStateRegistryConfig{MaxTotalUnreadyPercentage: 10, OkTotalUnreadyCount: 1},
+		fakeLogRecorder,
+		newBackoff(),
+		nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}),
+		asyncnodegroups.NewDefaultAsyncNodeGroupStateChecker(),
+	)
+	clusterstate.Recalculate()
+
+	testCases := []struct {
+		nodeGroupName string
+		want          bool
+	}{
+		{
+			nodeGroupName: registeredNodeGroupName,
+			want:          true,
+		},
+		{
+			nodeGroupName: "unregistered-node-group",
+			want:          false,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.nodeGroupName, func(t *testing.T) {
+			registered := clusterstate.IsNodeGroupRegistered(tc.nodeGroupName)
+			assert.Equal(t, tc.want, registered)
 		})
 	}
 }
