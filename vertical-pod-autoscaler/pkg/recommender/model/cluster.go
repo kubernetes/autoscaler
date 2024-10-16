@@ -43,6 +43,8 @@ const (
 type ClusterState struct {
 	// Pods in the cluster.
 	Pods map[PodID]*PodState
+	// Nodes in the cluster.
+	Nodes map[string]apiv1.NodeStatus
 	// VPA objects in the cluster.
 	Vpas map[VpaID]*Vpa
 	// VPA objects in the cluster that have no recommendation mapped to the first
@@ -408,7 +410,7 @@ func (cluster *ClusterState) getContributiveAggregateStateKeys(ctx context.Conte
 	for _, pod := range cluster.Pods {
 		// Pod is considered contributive in any of following situations:
 		// 1) It is in active state - i.e. not PodSucceeded nor PodFailed.
-		// 2) Its associated controller (e.g. Deployment) still exists.
+		// 2) Its associated controller (e.g. Deployment) still exists.maxAllowed
 		podControllerExists := cluster.GetControllerForPodUnderVPA(ctx, pod, controllerFetcher) != nil
 		podActive := pod.Phase != apiv1.PodSucceeded && pod.Phase != apiv1.PodFailed
 		if podActive || podControllerExists {
