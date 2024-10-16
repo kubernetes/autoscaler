@@ -26,12 +26,12 @@ import (
 	"k8s.io/client-go/informers"
 )
 
-// AvailableCloudProviders supported by the digtalocean cloud provider builder.
+// AvailableCloudProviders supported by the DigitalOcean cloud provider builder.
 var AvailableCloudProviders = []string{
 	cloudprovider.DigitalOceanProviderName,
 }
 
-// DefaultCloudProvider for do-only build is DigitalOcean.
+// DefaultCloudProvider for DigitalOcean-only build is DigitalOcean.
 const DefaultCloudProvider = cloudprovider.DigitalOceanProviderName
 
 func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, _ informers.SharedInformerFactory) cloudprovider.CloudProvider {
