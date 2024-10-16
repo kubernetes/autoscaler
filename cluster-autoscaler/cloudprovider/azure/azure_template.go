@@ -40,6 +40,17 @@ const (
 	// AKSLabelKeyPrefixValue represents prefix for AKS Labels
 	AKSLabelKeyPrefixValue = AKSLabelPrefixValue + "/"
 
+	// AKSManagedTagPrefix is the prefix of managed tags
+	AKSManagedTagPrefix = "aks-managed-"
+
+	// Tag + Label pairs that don't match prefix translation
+	ServicePrincipalVersion = "servicePrincipalVersion"
+	ServicePrincipalVersionLabelKey          = AKSLabelKeyPrefixValue + "service-principal-version"
+	WindowsPasswordVersion  = "aksWindowsPasswordVersion"
+	WindowsPasswordVersionLabelKey           = AKSLabelKeyPrefixValue + "windows-password-version"
+	WindowsGmsaVersion      = "aksWindowsGmsaVersion"
+	WindowsGmsaVersionLabelKey               = AKSLabelKeyPrefixValue + "windows-gmsa-version"
+
 	azureDiskTopologyKey = "topology.disk.csi.azure.com/zone"
 	// For NP-series SKU, the xilinx device plugin uses that resource name
 	// https://github.com/Xilinx/FPGA_as_a_Service/tree/master/k8s-fpga-device-plugin
@@ -146,16 +157,8 @@ func buildNodeFromTemplate(nodeGroupName string, inputLabels map[string]string, 
 	node.Status.Allocatable = node.Status.Capacity
 
 	// NodeLabels
-	if template.Tags != nil {
-		for k, v := range template.Tags {
-			if v != nil {
-				node.Labels[k] = *v
-			} else {
-				node.Labels[k] = ""
-			}
-
-		}
-	}
+	labelsFromManagedTags := translateAKSManagedTagsToLabels(template.Tags)
+	node.Labels = cloudprovider.JoinStringMaps(node.Labels, labelsFromManagedTags)
 
 	// GenericLabels
 	node.Labels = cloudprovider.JoinStringMaps(node.Labels, buildGenericLabels(template, nodeName))
@@ -167,19 +170,8 @@ func buildNodeFromTemplate(nodeGroupName string, inputLabels map[string]string, 
 	if len(inputLabels) > 0 {
 		labels = inputLabels
 	} else {
+		// Autoscaler's own logic of translation from vmss tags to node labels
 		labels = extractLabelsFromScaleSet(template.Tags)
-	}
-
-	// Add the agentpool label, its value should come from the VMSS poolName tag
-	// NOTE: The plan is for agentpool label to be deprecated in favor of the aks-prefixed one
-	// We will have to live with both labels for a while
-	if node.Labels[legacyPoolNameTag] != "" {
-		labels[legacyAgentPoolNodeLabelKey] = node.Labels[legacyPoolNameTag]
-		labels[agentPoolNodeLabelKey] = node.Labels[legacyPoolNameTag]
-	}
-	if node.Labels[poolNameTag] != "" {
-		labels[legacyAgentPoolNodeLabelKey] = node.Labels[poolNameTag]
-		labels[agentPoolNodeLabelKey] = node.Labels[poolNameTag]
 	}
 
 	// Add the storage profile and storage tier labels
@@ -236,12 +228,56 @@ func buildNodeFromTemplate(nodeGroupName string, inputLabels map[string]string, 
 	return &node, nil
 }
 
+func translateAKSManagedTagsToLabels(vmssTags map[string]*string) map[string]string {
+	result := make(map[string]string)
+	if vmssTags != nil {
+		for tagKey, v := range vmssTags {
+			if v != nil {
+				value := *v
+				// Add the agentpool label, its value should come from the VMSS poolName tag
+				// NOTE: The plan is for agentpool label to be deprecated in favor of the aks-prefixed one
+				// We will have to live with both labels for a while
+				if tagKey == legacyPoolNameTag {
+					result[legacyAgentPoolNodeLabelKey] = value
+					result[agentPoolNodeLabelKey] = value
+				} else if tagKey == poolNameTag {
+					result[legacyAgentPoolNodeLabelKey] = value
+					result[agentPoolNodeLabelKey] = value
+				} else {
+					labelKey := translateTagKeyToLabelKey(tagKey)
+					result[labelKey] = value
+				}
+			} else {
+				result[labelKey] = ""
+			}
+		}
+	}
+}
+
+func translateTagKeyToLabelKey(tagKey string) string {
+	if strings.HasPrefix(tagKey, AKSManagedTagPrefix) {
+		keyWithoutPrefix := strings.TrimPrefix(tagKey, AKSManagedTagPrefix)
+		labelKey := AKSLabelKeyPrefixValue + keyWithoutPrefix
+		return labelKey
+	}
+	tagLabelPairsThatDontMatchTranslation := map[string]string{
+		ServicePrincipalVersion: ServicePrincipalVersionLabelKey,
+		WindowsPasswordVersion: WindowsPasswordVersionLabelKey,
+		WindowsGmsaVersion: WindowsGmsaVersionLabelKey,
+	}
+	if labelKey, ok := tagLabelPairsThatDontMatchTranslation[tagKey]; ok {
+		return labelKey
+	}
+	// Fallback to old logic of using the direct tagKey. However, this should possibly be removed,
+	// since there is no guarentee there will be an associated label with the tag
+	return tagKey
+}
+
 func buildInstanceOS(template compute.VirtualMachineScaleSet) string {
 	instanceOS := cloudprovider.DefaultOS
 	if template.VirtualMachineProfile != nil && template.VirtualMachineProfile.OsProfile != nil && template.VirtualMachineProfile.OsProfile.WindowsConfiguration != nil {
 		instanceOS = "windows"
 	}
-
 	return instanceOS
 }
 
