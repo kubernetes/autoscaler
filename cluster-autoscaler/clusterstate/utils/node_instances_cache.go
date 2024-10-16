@@ -153,7 +153,7 @@ func (cache *CloudProviderNodeInstancesCache) InvalidateCacheEntry(nodeGroup clo
 
 // Refresh refreshes cache.
 func (cache *CloudProviderNodeInstancesCache) Refresh() {
-	klog.Infof("Start refreshing cloud provider node instances cache")
+	klog.V(4).Infof("Start refreshing cloud provider node instances cache")
 	refreshStart := time.Now()
 
 	nodeGroups := cache.cloudProvider.NodeGroups()

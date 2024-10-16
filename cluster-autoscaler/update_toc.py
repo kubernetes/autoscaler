@@ -24,7 +24,7 @@ def updateFAQ():
         faq_content = faq_file.read()
     faq_lines = faq_content.splitlines()
     while faq_lines and faq_lines[-1] == '':
-      faq_lines = faq_lines[:-1]
+        faq_lines = faq_lines[:-1]
 
     prefixes = (SECTION_PREFIX, QUESTION_PREFIX)
     toc_elements = []
