@@ -17,9 +17,13 @@ limitations under the License.
 package orchestrator
 
 import (
+	"sync"
 	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
+	"k8s.io/klog/v2"
+	"k8s.io/kubernetes/pkg/scheduler/framework"
+
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
@@ -28,13 +32,13 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
-	"k8s.io/klog/v2"
-	"k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // AsyncNodeGroupInitializer is a component of the Orchestrator responsible for initial
 // scale up of asynchronously created node groups.
 type AsyncNodeGroupInitializer struct {
+	// guards allTragetSizes
+	mutex                  sync.Mutex
 	allTargetSizes         map[string]int64
 	nodeGroup              cloudprovider.NodeGroup
 	nodeInfo               *framework.NodeInfo
@@ -57,25 +61,40 @@ func newAsyncNodeGroupInitializer(
 	atomicScaleUp bool,
 ) *AsyncNodeGroupInitializer {
 	return &AsyncNodeGroupInitializer{
-		map[string]int64{},
-		nodeGroup,
-		nodeInfo,
-		scaleUpExecutor,
-		taintConfig,
-		daemonSets,
-		scaleUpStatusProcessor,
-		context,
-		atomicScaleUp,
+		allTargetSizes:         map[string]int64{},
+		nodeGroup:              nodeGroup,
+		nodeInfo:               nodeInfo,
+		scaleUpExecutor:        scaleUpExecutor,
+		taintConfig:            taintConfig,
+		daemonSets:             daemonSets,
+		scaleUpStatusProcessor: scaleUpStatusProcessor,
+		context:                context,
+		atomicScaleUp:          atomicScaleUp,
 	}
 }
 
 // GetTargetSize returns a target size of an upcoming node group.
 func (s *AsyncNodeGroupInitializer) GetTargetSize(nodeGroup string) int64 {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
 	return s.allTargetSizes[nodeGroup]
 }
 
 // SetTargetSize sets a target size of an upcoming node group.
 func (s *AsyncNodeGroupInitializer) SetTargetSize(nodeGroup string, size int64) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	s.allTargetSizes[nodeGroup] = size
+}
+
+// ChangeTargetSize changes by delta a target size of an upcoming node group.
+func (s *AsyncNodeGroupInitializer) ChangeTargetSize(nodeGroup string, delta int64) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	size := s.allTargetSizes[nodeGroup] + delta
+	if size < 0 {
+		size = 0
+	}
 	s.allTargetSizes[nodeGroup] = size
 }
 
@@ -102,7 +121,7 @@ func (s *AsyncNodeGroupInitializer) InitializeNodeGroup(result nodegroups.AsyncN
 	for _, nodeGroup := range result.CreationResult.AllCreatedNodeGroups() {
 		upcomingId, ok := result.CreatedToUpcomingMapping[nodeGroup.Id()]
 		if !ok {
-			klog.Errorf("Couldn't retrieve initialization data for new node group %v. It won't get initialized.", nodeGroup.Id())
+			klog.Errorf("Couldn't retrieve initialization data for new node group %v. It won't get initialized. Available created to upcoming node group mapping: %v", nodeGroup.Id(), result.CreatedToUpcomingMapping)
 			continue
 		}
 		if targetSize := s.GetTargetSize(upcomingId); targetSize > 0 {
@@ -127,12 +146,4 @@ func (s *AsyncNodeGroupInitializer) InitializeNodeGroup(result nodegroups.AsyncN
 		return
 	}
 	klog.Infof("Initial scale-up succeeded. Scale ups: %v", scaleUpInfos)
-}
-
-func nodeGroupIds(nodeGroups []cloudprovider.NodeGroup) []string {
-	var result []string
-	for _, ng := range nodeGroups {
-		result = append(result, ng.Id())
-	}
-	return result
 }
