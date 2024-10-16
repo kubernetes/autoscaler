@@ -152,7 +152,7 @@ spec:
                   - key: node-role.kubernetes.io/control-plane
                     operator: Exists
       containers:
-        - image: registry.k8s.io/autoscaling/cluster-autoscaler:latest  # or your custom image
+        - image: registry.k8s.io/autoscaling/cluster-autoscaler:v1.20.0  # or your custom image
           name: cluster-autoscaler
           resources:
             limits:
