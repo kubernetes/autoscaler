@@ -6,11 +6,13 @@ underlying cluster-api types of RKE2.
 
 ## Configuration
 
-The `cluster-autoscaler` for Rancher needs a configuration file to work by
-using `--cloud-config` parameter. An up-to-date example can be found in
-[examples/config.yaml](./examples/config.yaml).
+The `cluster-autoscaler` for Rancher needs a configuration file to work by using
+`--cloud-config` parameter. A `cluster-autoscaler` instance can target a single
+downstream RKE2 cluster specified in the config. An up-to-date example can be
+found in [examples/config.yaml](./examples/config.yaml).
 
 ### Configuration via environment variables
+
 In order to override URL, token or clustername use following environment variables:
  - RANCHER_URL
  - RANCHER_TOKEN
