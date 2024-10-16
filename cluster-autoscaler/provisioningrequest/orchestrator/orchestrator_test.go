@@ -327,7 +327,7 @@ func TestScaleUp(t *testing.T) {
 			scaleUpResult:      status.ScaleUpSuccessful,
 			batchProcessing:    true,
 			maxBatchSize:       5,
-			batchTimebox:       1 * time.Nanosecond,
+			batchTimebox:       0 * time.Nanosecond,
 			numProvisionedTrue: 1,
 		},
 		{
@@ -393,6 +393,7 @@ func TestScaleUp(t *testing.T) {
 		},
 	}
 	for _, tc := range testCases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -405,7 +406,13 @@ func TestScaleUp(t *testing.T) {
 				}
 				return fmt.Errorf("unexpected scale-up of %s by %d", name, n)
 			}
-			client := provreqclient.NewFakeProvisioningRequestClient(context.Background(), t, tc.provReqs...)
+
+			testProvReqs := []*provreqwrapper.ProvisioningRequest{}
+			for _, pr := range tc.provReqs {
+				testProvReqs = append(testProvReqs, &provreqwrapper.ProvisioningRequest{ProvisioningRequest: pr.DeepCopy(), PodTemplates: pr.PodTemplates})
+			}
+
+			client := provreqclient.NewFakeProvisioningRequestClient(context.Background(), t, testProvReqs...)
 			orchestrator, nodeInfos := setupTest(t, client, allNodes, onScaleUpFunc, tc.autoprovisioning, tc.batchProcessing, tc.maxBatchSize, tc.batchTimebox)
 
 			st, err := orchestrator.ScaleUp(prPods, []*apiv1.Node{}, []*appsv1.DaemonSet{}, nodeInfos, false)
