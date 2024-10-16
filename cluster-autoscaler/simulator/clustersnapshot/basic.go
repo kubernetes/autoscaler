@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
@@ -35,12 +36,12 @@ type internalBasicSnapshotData struct {
 	pvcNamespacePodMap map[string]map[string]bool
 }
 
-func (data *internalBasicSnapshotData) listNodeInfos() ([]*schedulerframework.NodeInfo, error) {
+func (data *internalBasicSnapshotData) listNodeInfos() []*schedulerframework.NodeInfo {
 	nodeInfoList := make([]*schedulerframework.NodeInfo, 0, len(data.nodeInfoMap))
 	for _, v := range data.nodeInfoMap {
 		nodeInfoList = append(nodeInfoList, v)
 	}
-	return nodeInfoList, nil
+	return nodeInfoList
 }
 
 func (data *internalBasicSnapshotData) listNodeInfosThatHavePodsWithAffinityList() ([]*schedulerframework.NodeInfo, error) {
@@ -152,15 +153,6 @@ func (data *internalBasicSnapshotData) addNode(node *apiv1.Node) error {
 	return nil
 }
 
-func (data *internalBasicSnapshotData) addNodes(nodes []*apiv1.Node) error {
-	for _, node := range nodes {
-		if err := data.addNode(node); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 func (data *internalBasicSnapshotData) removeNode(nodeName string) error {
 	if _, found := data.nodeInfoMap[nodeName]; !found {
 		return ErrNodeNotFound
@@ -212,24 +204,50 @@ func (snapshot *BasicClusterSnapshot) getInternalData() *internalBasicSnapshotDa
 	return snapshot.data[len(snapshot.data)-1]
 }
 
-// AddNode adds node to the snapshot.
-func (snapshot *BasicClusterSnapshot) AddNode(node *apiv1.Node) error {
-	return snapshot.getInternalData().addNode(node)
+// GetNodeInfo implements ClusterSnapshot.
+func (snapshot *BasicClusterSnapshot) GetNodeInfo(nodeName string) (*framework.NodeInfo, error) {
+	schedNodeInfo, err := snapshot.getInternalData().getNodeInfo(nodeName)
+	if err != nil {
+		return nil, err
+	}
+	return framework.WrapSchedulerNodeInfo(schedNodeInfo), nil
 }
 
-// AddNodes adds nodes in batch to the snapshot.
-func (snapshot *BasicClusterSnapshot) AddNodes(nodes []*apiv1.Node) error {
-	return snapshot.getInternalData().addNodes(nodes)
+// ListNodeInfos implements ClusterSnapshot.
+func (snapshot *BasicClusterSnapshot) ListNodeInfos() ([]*framework.NodeInfo, error) {
+	schedNodeInfos := snapshot.getInternalData().listNodeInfos()
+	return framework.WrapSchedulerNodeInfos(schedNodeInfos), nil
 }
 
-// AddNodeWithPods adds a node and set of pods to be scheduled to this node to the snapshot.
-func (snapshot *BasicClusterSnapshot) AddNodeWithPods(node *apiv1.Node, pods []*apiv1.Pod) error {
-	if err := snapshot.AddNode(node); err != nil {
+// AddNodeInfo implements ClusterSnapshot.
+func (snapshot *BasicClusterSnapshot) AddNodeInfo(nodeInfo *framework.NodeInfo) error {
+	if err := snapshot.getInternalData().addNode(nodeInfo.Node()); err != nil {
 		return err
 	}
-	for _, pod := range pods {
-		if err := snapshot.AddPod(pod, node.Name); err != nil {
+	for _, podInfo := range nodeInfo.Pods {
+		if err := snapshot.getInternalData().addPod(podInfo.Pod, nodeInfo.Node().Name); err != nil {
 			return err
+		}
+	}
+	return nil
+}
+
+// Initialize implements ClusterSnapshot.
+func (snapshot *BasicClusterSnapshot) Initialize(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod) error {
+	snapshot.Clear()
+
+	knownNodes := make(map[string]bool)
+	for _, node := range nodes {
+		if err := snapshot.getInternalData().addNode(node); err != nil {
+			return err
+		}
+		knownNodes[node.Name] = true
+	}
+	for _, pod := range scheduledPods {
+		if knownNodes[pod.Spec.NodeName] {
+			if err := snapshot.getInternalData().addPod(pod, pod.Spec.NodeName); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -302,7 +320,7 @@ func (snapshot *BasicClusterSnapshot) StorageInfos() schedulerframework.StorageI
 
 // List returns the list of nodes in the snapshot.
 func (snapshot *basicClusterSnapshotNodeLister) List() ([]*schedulerframework.NodeInfo, error) {
-	return (*BasicClusterSnapshot)(snapshot).getInternalData().listNodeInfos()
+	return (*BasicClusterSnapshot)(snapshot).getInternalData().listNodeInfos(), nil
 }
 
 // HavePodsWithAffinityList returns the list of nodes with at least one pods with inter-pod affinity

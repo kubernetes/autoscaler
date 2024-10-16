@@ -23,9 +23,9 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	pod_util "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
-	"k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // Rule is a drainability rule on how to handle replicated pods.

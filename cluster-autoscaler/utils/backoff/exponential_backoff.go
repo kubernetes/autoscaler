@@ -20,8 +20,7 @@ import (
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 )
 
 // Backoff handles backing off executions.
@@ -67,7 +66,7 @@ func NewIdBasedExponentialBackoff(initialBackoffDuration time.Duration, maxBacko
 }
 
 // Backoff execution for the given node group. Returns time till execution is backed off.
-func (b *exponentialBackoff) Backoff(nodeGroup cloudprovider.NodeGroup, nodeInfo *schedulerframework.NodeInfo, errorInfo cloudprovider.InstanceErrorInfo, currentTime time.Time) time.Time {
+func (b *exponentialBackoff) Backoff(nodeGroup cloudprovider.NodeGroup, nodeInfo *framework.NodeInfo, errorInfo cloudprovider.InstanceErrorInfo, currentTime time.Time) time.Time {
 	duration := b.initialBackoffDuration
 	key := b.nodeGroupKey(nodeGroup)
 	if backoffInfo, found := b.backoffInfo[key]; found {
@@ -94,7 +93,7 @@ func (b *exponentialBackoff) Backoff(nodeGroup cloudprovider.NodeGroup, nodeInfo
 }
 
 // BackoffStatus returns whether the execution is backed off for the given node group and error info when the node group is backed off.
-func (b *exponentialBackoff) BackoffStatus(nodeGroup cloudprovider.NodeGroup, nodeInfo *schedulerframework.NodeInfo, currentTime time.Time) Status {
+func (b *exponentialBackoff) BackoffStatus(nodeGroup cloudprovider.NodeGroup, nodeInfo *framework.NodeInfo, currentTime time.Time) Status {
 	backoffInfo, found := b.backoffInfo[b.nodeGroupKey(nodeGroup)]
 	if !found || backoffInfo.backoffUntil.Before(currentTime) {
 		return Status{IsBackedOff: false}
@@ -106,7 +105,7 @@ func (b *exponentialBackoff) BackoffStatus(nodeGroup cloudprovider.NodeGroup, no
 }
 
 // RemoveBackoff removes backoff data for the given node group.
-func (b *exponentialBackoff) RemoveBackoff(nodeGroup cloudprovider.NodeGroup, nodeInfo *schedulerframework.NodeInfo) {
+func (b *exponentialBackoff) RemoveBackoff(nodeGroup cloudprovider.NodeGroup, nodeInfo *framework.NodeInfo) {
 	delete(b.backoffInfo, b.nodeGroupKey(nodeGroup))
 }
 
