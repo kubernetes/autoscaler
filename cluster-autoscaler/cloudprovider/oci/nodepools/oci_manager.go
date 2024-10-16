@@ -209,23 +209,22 @@ func autoDiscoverNodeGroups(m *ociManagerImpl, okeClient okeClient, nodeGroup no
 	if reqErr != nil {
 		klog.Errorf("failed to fetch the nodepool list with clusterId: %s, compartmentId: %s. Error: %v", nodeGroup.clusterId, nodeGroup.compartmentId, reqErr)
 		return false, reqErr
-	} else {
-		for _, nodePoolSummary := range resp.Items {
-			klog.V(5).Infof("found nodepool %v", nodePoolSummary)
-			if validateNodepoolTags(nodeGroup.tags, nodePoolSummary.FreeformTags, nodePoolSummary.DefinedTags) {
-				nodepool := &nodePool{}
-				nodepool.id = *nodePoolSummary.Id
-				nodepool.minSize = nodeGroup.minSize
-				nodepool.maxSize = nodeGroup.maxSize
+	}
+	for _, nodePoolSummary := range resp.Items {
+		klog.V(5).Infof("found nodepool %v", nodePoolSummary)
+		if validateNodepoolTags(nodeGroup.tags, nodePoolSummary.FreeformTags, nodePoolSummary.DefinedTags) {
+			nodepool := &nodePool{}
+			nodepool.id = *nodePoolSummary.Id
+			nodepool.minSize = nodeGroup.minSize
+			nodepool.maxSize = nodeGroup.maxSize
 
-				nodepool.manager = nodeGroup.manager
-				nodepool.kubeClient = nodeGroup.kubeClient
+			nodepool.manager = nodeGroup.manager
+			nodepool.kubeClient = nodeGroup.kubeClient
 
-				m.staticNodePools[nodepool.id] = nodepool
-				klog.V(5).Infof("auto discovered nodepool in compartment : %s , nodepoolid: %s", nodeGroup.compartmentId, nodepool.id)
-			} else {
-				klog.Warningf("nodepool ignored as the tags do not satisfy the requirement : %s , %v, %v", *nodePoolSummary.Id, nodePoolSummary.FreeformTags, nodePoolSummary.DefinedTags)
-			}
+			m.staticNodePools[nodepool.id] = nodepool
+			klog.V(5).Infof("auto discovered nodepool in compartment : %s , nodepoolid: %s", nodeGroup.compartmentId, nodepool.id)
+		} else {
+			klog.Warningf("nodepool ignored as the tags do not satisfy the requirement : %s , %v, %v", *nodePoolSummary.Id, nodePoolSummary.FreeformTags, nodePoolSummary.DefinedTags)
 		}
 	}
 	return true, nil
