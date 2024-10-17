@@ -63,7 +63,8 @@ const validAzureCfg = `{
 	"routeRateLimit": {
 		"cloudProviderRateLimit": true,
 		"cloudProviderRateLimitQPS": 3
-	}
+	},
+	"enableFastDeleteOnFailedProvisioning": true
 }`
 
 const validAzureCfgLegacy = `{
@@ -268,8 +269,9 @@ func TestCreateAzureManagerValidConfig(t *testing.T) {
 				},
 			},
 		},
-		VmssVmsCacheJitter:  120,
-		MaxDeploymentsCount: 8,
+		VmssVmsCacheJitter:                   120,
+		MaxDeploymentsCount:                  8,
+		EnableFastDeleteOnFailedProvisioning: true,
 	}
 
 	assert.NoError(t, err)
@@ -665,6 +667,7 @@ func TestCreateAzureManagerWithNilConfig(t *testing.T) {
 	t.Setenv("CLUSTER_NAME", "mycluster")
 	t.Setenv("ARM_CLUSTER_RESOURCE_GROUP", "myrg")
 	t.Setenv("ARM_BASE_URL_FOR_AP_CLIENT", "nodeprovisioner-svc.nodeprovisioner.svc.cluster.local")
+	t.Setenv("AZURE_ENABLE_FAST_DELETE_ON_FAILED_PROVISIONING", "true")
 
 	t.Run("environment variables correctly set", func(t *testing.T) {
 		manager, err := createAzureManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)
@@ -906,6 +909,7 @@ func TestCreateAzureManagerWithEnvOverridingConfig(t *testing.T) {
 	t.Setenv("CLUSTER_NAME", "mycluster")
 	t.Setenv("ARM_CLUSTER_RESOURCE_GROUP", "myrg")
 	t.Setenv("ARM_BASE_URL_FOR_AP_CLIENT", "nodeprovisioner-svc.nodeprovisioner.svc.cluster.local")
+	t.Setenv("AZURE_ENABLE_FAST_DELETE_ON_FAILED_PROVISIONING", "true")
 
 	t.Run("environment variables correctly set", func(t *testing.T) {
 		manager, err := createAzureManagerInternal(strings.NewReader(validAzureCfgForStandardVMType), cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)

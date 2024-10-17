@@ -97,6 +97,9 @@ type Config struct {
 
 	// (DEPRECATED, DO NOT USE) GetVmssSizeRefreshPeriod (seconds) defines how frequently to call GET VMSS API to fetch VMSS info per nodegroup instance
 	GetVmssSizeRefreshPeriod int `json:"getVmssSizeRefreshPeriod,omitempty" yaml:"getVmssSizeRefreshPeriod,omitempty"`
+
+	// EnableFastDeleteOnFailedProvisioning defines whether to delete the experimental faster VMSS instance deletion on failed provisioning
+	EnableFastDeleteOnFailedProvisioning bool `json:"enableFastDeleteOnFailedProvisioning,omitempty" yaml:"enableFastDeleteOnFailedProvisioning,omitempty"`
 }
 
 // These are only here for backward compabitility. Their equivalent exists in providerazure.Config with a different name.
@@ -324,6 +327,12 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 		}
 
 		cfg.DeploymentParameters = parameters
+	}
+	if enableFastDeleteOnFailedProvisioning := os.Getenv("AZURE_ENABLE_FAST_DELETE_ON_FAILED_PROVISIONING"); enableFastDeleteOnFailedProvisioning != "" {
+		cfg.EnableFastDeleteOnFailedProvisioning, err = strconv.ParseBool(enableFastDeleteOnFailedProvisioning)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse AZURE_ENABLE_FAST_DELETE_ON_FAILED_PROVISIONING: %q, %v", enableFastDeleteOnFailedProvisioning, err)
+		}
 	}
 	providerazureconfig.InitializeCloudProviderRateLimitConfig(&cfg.CloudProviderRateLimitConfig)
 
