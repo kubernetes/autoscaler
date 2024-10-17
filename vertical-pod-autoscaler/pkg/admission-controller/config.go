@@ -143,7 +143,8 @@ func selfRegistration(clientset kubernetes.Interface, caCert []byte, webHookDela
 	}
 	webhookLabelsMap, err := convertLabelsToMap(webHookLabels)
 	if err != nil {
-		klog.Fatal(err)
+		klog.Warning(err)
+		webhookLabelsMap = map[string]string{}
 	}
 	webhookConfig := &admissionregistration.MutatingWebhookConfiguration{
 		ObjectMeta: metav1.ObjectMeta{
