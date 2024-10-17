@@ -211,7 +211,6 @@ func autoDiscoverNodeGroups(m *ociManagerImpl, okeClient okeClient, nodeGroup no
 		return false, reqErr
 	}
 	for _, nodePoolSummary := range resp.Items {
-		klog.V(5).Infof("found nodepool %v", nodePoolSummary)
 		if validateNodepoolTags(nodeGroup.tags, nodePoolSummary.FreeformTags, nodePoolSummary.DefinedTags) {
 			nodepool := &nodePool{}
 			nodepool.id = *nodePoolSummary.Id
