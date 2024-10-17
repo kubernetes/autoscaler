@@ -449,10 +449,12 @@ func TestScaleUp(t *testing.T) {
 
 func setupTest(t *testing.T, client *provreqclient.ProvisioningRequestClient, nodes []*apiv1.Node, onScaleUpFunc func(string, int) error, autoprovisioning bool, batchProcessing bool, maxBatchSize int, batchTimebox time.Duration) (*provReqOrchestrator, map[string]*schedulerframework.NodeInfo) {
 	provider := testprovider.NewTestCloudProvider(onScaleUpFunc, nil)
+	clock := clocktesting.NewFakePassiveClock(time.Now())
+	now := clock.Now()
 	if autoprovisioning {
 		machineTypes := []string{"large-machine"}
 		template := BuildTestNode("large-node-template", 100, 100)
-		SetNodeReadyState(template, true, time.Now())
+		SetNodeReadyState(template, true, now)
 		nodeInfoTemplate := schedulerframework.NewNodeInfo()
 		nodeInfoTemplate.SetNode(template)
 		machineTemplates := map[string]*schedulerframework.NodeInfo{
@@ -486,8 +488,6 @@ func setupTest(t *testing.T, client *provreqclient.ProvisioningRequestClient, no
 		processors.NodeGroupListProcessor = &MockAutoprovisioningNodeGroupListProcessor{T: t}
 		processors.NodeGroupManager = &MockAutoprovisioningNodeGroupManager{T: t, ExtraGroups: 2}
 	}
-
-	now := time.Now()
 	nodeInfos, err := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&autoscalingContext, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
 	assert.NoError(t, err)
 
