@@ -394,6 +394,12 @@ func TestScaleUp(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		tc := tc
+
+		nodes := []*apiv1.Node{}
+		for _, n := range allNodes {
+			nodes = append(nodes, n.DeepCopy())
+		}
+
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -413,7 +419,7 @@ func TestScaleUp(t *testing.T) {
 			}
 
 			client := provreqclient.NewFakeProvisioningRequestClient(context.Background(), t, testProvReqs...)
-			orchestrator, nodeInfos := setupTest(t, client, allNodes, onScaleUpFunc, tc.autoprovisioning, tc.batchProcessing, tc.maxBatchSize, tc.batchTimebox)
+			orchestrator, nodeInfos := setupTest(t, client, nodes, onScaleUpFunc, tc.autoprovisioning, tc.batchProcessing, tc.maxBatchSize, tc.batchTimebox)
 
 			st, err := orchestrator.ScaleUp(prPods, []*apiv1.Node{}, []*appsv1.DaemonSet{}, nodeInfos, false)
 			if !tc.err {
