@@ -18,6 +18,7 @@ package gce
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 )
 
