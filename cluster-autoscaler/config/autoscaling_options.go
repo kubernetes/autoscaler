@@ -301,6 +301,10 @@ type AutoscalingOptions struct {
 	ProvisioningRequestMaxBackoffTime time.Duration
 	// ProvisioningRequestMaxCacheSize is the max size for ProvisioningRequest cache that is stored for retry backoff.
 	ProvisioningRequestMaxBackoffCacheSize int
+	// PodShardingEnabled indicates if pod sharding is enabled
+	PodShardingEnabled bool
+	// PodShardingLabels is a list of labels to use when comparing if two node groups are similar for pod sharding.
+	PodShardingNodeSelectors []string
 }
 
 // KubeClientOptions specify options for kube client
