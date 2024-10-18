@@ -153,7 +153,7 @@ func BuildOCI(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscover
 	if err != nil {
 		klog.Fatalf("Failed to get pool type: %v", err)
 	}
-	nodepoolTagsFound, err := ocicommon.HasNodePoolTags(opts.NodeGroupAutoDiscovery)
+	_, nodepoolTagsFound, err := ocicommon.HasNodeGroupTags(opts.NodeGroupAutoDiscovery)
 	if err != nil {
 		klog.Fatalf("Failed to get auto discovery tags: %v", err)
 	}
