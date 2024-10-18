@@ -110,7 +110,7 @@ func ResourceNamesApiToModel(resources []apiv1.ResourceName) *[]ResourceName {
 		case apiv1.ResourceMemory:
 			result = append(result, ResourceMemory)
 		default:
-			klog.ErrorS(nil, "Cannot traslate resource name", "resourceName", resource)
+			klog.ErrorS(nil, "Cannot translate resource name", "resourceName", resource)
 			continue
 		}
 	}
