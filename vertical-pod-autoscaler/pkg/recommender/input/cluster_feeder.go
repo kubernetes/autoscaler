@@ -296,7 +296,7 @@ func (feeder *clusterStateFeeder) GarbageCollectCheckpoints() {
 				if err == nil {
 					klog.V(3).InfoS("Orphaned VPA checkpoint cleanup - deleting", "namespace", namespace, "checkpoint", checkpoint.Name)
 				} else {
-					klog.ErrorS(err, "Orphaned VPA checkpoint cleanup - error deleting", "namespace", namespace, "checkpoint", checkpoint.Name)
+					klog.ErrorS(err, "Orphaned VPA checkpoint cleanup - error deleting", klog.KRef(namespace, checkpoint.Name))
 				}
 			}
 		}
