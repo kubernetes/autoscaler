@@ -86,7 +86,7 @@ func parseEvictionEvent(event *apiv1.Event) []OomInfo {
 		}
 		memory, err := resource.ParseQuantity(offendingContainersUsage[i])
 		if err != nil {
-			klog.Errorf("Cannot parse resource quantity in eviction event %v. Error: %v", offendingContainersUsage[i], err)
+			klog.ErrorS(err, "Cannot parse resource quantity in eviction", "event", offendingContainersUsage[i])
 			continue
 		}
 		oomInfo := OomInfo{
@@ -107,7 +107,7 @@ func parseEvictionEvent(event *apiv1.Event) []OomInfo {
 
 // OnEvent inspects k8s eviction events and translates them to OomInfo.
 func (o *observer) OnEvent(event *apiv1.Event) {
-	klog.V(1).Infof("OOM Observer processing event: %+v", event)
+	klog.V(1).InfoS("OOM Observer processing event", "event", event)
 	for _, oomInfo := range parseEvictionEvent(event) {
 		o.observedOomsChannel <- oomInfo
 	}
@@ -139,11 +139,11 @@ func (o *observer) OnAdd(obj interface{}, isInInitialList bool) {}
 func (o *observer) OnUpdate(oldObj, newObj interface{}) {
 	oldPod, ok := oldObj.(*apiv1.Pod)
 	if !ok {
-		klog.Errorf("OOM observer received invalid oldObj: %v", oldObj)
+		klog.ErrorS(nil, "OOM observer received invalid oldObj", "oldObj", oldObj)
 	}
 	newPod, ok := newObj.(*apiv1.Pod)
 	if !ok {
-		klog.Errorf("OOM observer received invalid newObj: %v", newObj)
+		klog.ErrorS(nil, "OOM observer received invalid newObj", "newObj", newObj)
 	}
 
 	for _, containerStatus := range newPod.Status.ContainerStatuses {
