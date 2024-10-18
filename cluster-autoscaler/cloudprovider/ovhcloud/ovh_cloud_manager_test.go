@@ -290,3 +290,95 @@ func TestOvhCloudManager_cacheConcurrency(t *testing.T) {
 		manager.getNodeGroupPerProviderID("")
 	})
 }
+
+func TestOvhCloudManager_setNodePoolsState(t *testing.T) {
+	manager := newTestManager(t)
+	np1 := sdk.NodePool{ID: "np1", DesiredNodes: 1}
+	np2 := sdk.NodePool{ID: "np2", DesiredNodes: 2}
+	np3 := sdk.NodePool{ID: "np3", DesiredNodes: 3}
+
+	type fields struct {
+		NodePoolsPerID         map[string]*sdk.NodePool
+		NodeGroupPerProviderID map[string]*NodeGroup
+	}
+	type args struct {
+		poolsList []sdk.NodePool
+
+		nodePoolsPerID         map[string]*sdk.NodePool
+		nodeGroupPerProviderID map[string]*NodeGroup
+	}
+	tests := []struct {
+		name                       string
+		fields                     fields
+		args                       args
+		wantNodePoolsPerID         map[string]uint32 // ID => desired nodes
+		wantNodeGroupPerProviderID map[string]uint32 // ID => desired nodes
+	}{
+		{
+			name: "NodePoolsPerID and NodeGroupPerProviderID empty",
+			fields: fields{
+				NodePoolsPerID:         map[string]*sdk.NodePool{},
+				NodeGroupPerProviderID: map[string]*NodeGroup{},
+			},
+			args: args{
+				poolsList: []sdk.NodePool{
+					np1,
+				},
+			},
+			wantNodePoolsPerID:         map[string]uint32{"np1": 1},
+			wantNodeGroupPerProviderID: map[string]uint32{},
+		},
+		{
+			name: "NodePoolsPerID and NodeGroupPerProviderID empty",
+			fields: fields{
+				NodePoolsPerID: map[string]*sdk.NodePool{
+					"np2": &np2,
+					"np3": &np3,
+				},
+				NodeGroupPerProviderID: map[string]*NodeGroup{
+					"np2-node-id": {NodePool: &np2},
+					"np3-node-id": {NodePool: &np3},
+				},
+			},
+			args: args{
+				poolsList: []sdk.NodePool{
+					{
+						ID:           "np1",
+						DesiredNodes: 1,
+					},
+					{
+						ID:           "np2",
+						DesiredNodes: 20,
+					},
+				},
+			},
+			wantNodePoolsPerID: map[string]uint32{
+				"np1": 1,  // np1 added
+				"np2": 20, // np2 updated
+				// np3 removed
+			},
+			wantNodeGroupPerProviderID: map[string]uint32{
+				"np2-node-id": 20,
+				"np3-node-id": 3, // Node reference that eventually stays in cache must not crash
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			manager.NodePoolsPerID = tt.fields.NodePoolsPerID
+			manager.NodeGroupPerProviderID = tt.fields.NodeGroupPerProviderID
+
+			manager.setNodePoolsState(tt.args.poolsList)
+
+			assert.Len(t, manager.NodePoolsPerID, len(tt.wantNodePoolsPerID))
+			for id, desiredNodes := range tt.wantNodePoolsPerID {
+				assert.Equal(t, desiredNodes, manager.NodePoolsPerID[id].DesiredNodes)
+			}
+
+			assert.Len(t, manager.NodeGroupPerProviderID, len(tt.wantNodeGroupPerProviderID))
+			for nodeID, desiredNodes := range tt.wantNodeGroupPerProviderID {
+				assert.Equal(t, desiredNodes, manager.NodeGroupPerProviderID[nodeID].DesiredNodes)
+			}
+		})
+	}
+}
