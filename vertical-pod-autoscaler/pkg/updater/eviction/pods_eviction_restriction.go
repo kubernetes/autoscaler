@@ -140,7 +140,7 @@ func (e *podsEvictionRestrictionImpl) Evict(podToEvict *apiv1.Pod, eventRecorder
 	}
 	err := e.client.CoreV1().Pods(podToEvict.Namespace).EvictV1(context.TODO(), eviction)
 	if err != nil {
-		klog.ErrorS(err, "Failed to evict pod", "namespace", podToEvict.Namespace, "name", podToEvict.Name)
+		klog.ErrorS(err, "Failed to evict pod", klog.KObj(podToEvict))
 		return err
 	}
 	eventRecorder.Event(podToEvict, apiv1.EventTypeNormal, "EvictedByVPA",
