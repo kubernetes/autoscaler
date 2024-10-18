@@ -188,7 +188,7 @@ Name | Type | Description | Default
 `kubeconfig` | String | Path to a kubeconfig. Only required if out-of-cluster. | ""
 `kube-api-qps` | Float64 | QPS limit when making requests to Kubernetes apiserver | 5.0
 `kube-api-burst` | Float64 | QPS burst limit when making requests to Kubernetes apiserver | 10.0
-`storage` | String | Specifies storage mode. Supported values: prometheus, checkpoint (default) | ""
+`storage` | String | Specifies storage mode. Supported values: prometheus, none, checkpoint (default) | ""
 `history-length` | String | How much time back prometheus have to be queried to get historical metrics | "8d"
 `history-resolution` | String | Resolution at which Prometheus is queried for historical metrics | "1h"
 `prometheus-query-timeout` | String | How long to wait before killing long queries | "5m"

@@ -54,13 +54,24 @@ const (
 	DefaultRecommenderName = "default"
 )
 
+// HistorySource is an enum type for history source
+type HistorySource int
+
+const (
+	// Checkpoints is a history source that uses VPA checkpoints custom resources
+	Checkpoints HistorySource = iota
+	// Prometheus is a history source that uses prometheus
+	Prometheus
+	// None is a history source that doesn't use any history
+	None
+	// Undefined is a history source that is not set
+	Undefined
+)
+
 // ClusterStateFeeder can update state of ClusterState object.
 type ClusterStateFeeder interface {
-	// InitFromHistoryProvider loads historical pod spec into clusterState.
-	InitFromHistoryProvider(historyProvider history.HistoryProvider)
-
-	// InitFromCheckpoints loads historical checkpoints into clusterState.
-	InitFromCheckpoints()
+	// Init initializes ClusterStateFeeder
+	Init() error
 
 	// LoadVPAs updates clusterState with current state of VPAs.
 	LoadVPAs(ctx context.Context)
@@ -88,6 +99,8 @@ type ClusterStateFeederFactory struct {
 	MemorySaveMode      bool
 	ControllerFetcher   controllerfetcher.ControllerFetcher
 	RecommenderName     string
+	HistorySource       HistorySource
+	PromHistoryConfig   history.PrometheusHistoryProviderConfig
 	IgnoredNamespaces   []string
 }
 
@@ -105,6 +118,8 @@ func (m ClusterStateFeederFactory) Make() *clusterStateFeeder {
 		memorySaveMode:      m.MemorySaveMode,
 		controllerFetcher:   m.ControllerFetcher,
 		recommenderName:     m.RecommenderName,
+		historySource:       m.HistorySource,
+		promHistoryConfig:   m.PromHistoryConfig,
 		ignoredNamespaces:   m.IgnoredNamespaces,
 	}
 }
@@ -195,14 +210,61 @@ type clusterStateFeeder struct {
 	memorySaveMode      bool
 	controllerFetcher   controllerfetcher.ControllerFetcher
 	recommenderName     string
+	historySource       HistorySource
+	promHistoryConfig   history.PrometheusHistoryProviderConfig
 	ignoredNamespaces   []string
 }
 
-func (feeder *clusterStateFeeder) InitFromHistoryProvider(historyProvider history.HistoryProvider) {
+func (feeder *clusterStateFeeder) Init() error {
+	switch feeder.historySource {
+	case Checkpoints:
+		klog.Infof("Using checkpoints as a history provider")
+		feeder.initFromCheckpoints()
+	case Prometheus:
+		klog.Infof("Using prometheus as a history provider")
+
+		provider, promInitErr := history.NewPrometheusHistoryProvider(feeder.promHistoryConfig)
+		if promInitErr != nil {
+			klog.Errorf("Could not initialize history provider")
+			return promInitErr
+		}
+
+		historyInitErr := feeder.initFromHistoryProvider(provider)
+		if historyInitErr != nil {
+			klog.Errorf("Failed to load prometheus history")
+			return historyInitErr
+		}
+	case None:
+		klog.Infof("Running without a history provider")
+	default:
+		klog.Errorf("Wrong history provider option")
+		return fmt.Errorf("history provider option is not set. Supported values: prometheus, none, checkpoint")
+	}
+	return nil
+}
+
+// GetHistorySourceFromArg reads the history source from the command line argument and returns the corresponding enum value
+func GetHistorySourceFromArg(historySource string) (HistorySource, error) {
+	switch historySource {
+	case "checkpoint":
+		return Checkpoints, nil
+	case "prometheus":
+		return Prometheus, nil
+	case "none":
+		return None, nil
+	default:
+		return Undefined, fmt.Errorf("storage option '%s' is not supported. Supported values: prometheus, none, checkpoint", historySource)
+	}
+}
+
+func (feeder *clusterStateFeeder) initFromHistoryProvider(historyProvider history.HistoryProvider) error {
 	klog.V(3).Info("Initializing VPA from history provider")
 	clusterHistory, err := historyProvider.GetClusterHistory()
 	if err != nil {
-		klog.Errorf("Cannot get cluster history: %v", err)
+		return err
+	}
+	if len(clusterHistory) == 0 {
+		klog.Warningf("history provider returned no pods")
 	}
 	for podID, podHistory := range clusterHistory {
 		klog.V(4).Infof("Adding pod %v with labels %v", podID, podHistory.LastLabels)
@@ -227,6 +289,7 @@ func (feeder *clusterStateFeeder) InitFromHistoryProvider(historyProvider histor
 			}
 		}
 	}
+	return nil
 }
 
 func (feeder *clusterStateFeeder) setVpaCheckpoint(checkpoint *vpa_types.VerticalPodAutoscalerCheckpoint) error {
@@ -245,7 +308,7 @@ func (feeder *clusterStateFeeder) setVpaCheckpoint(checkpoint *vpa_types.Vertica
 	return nil
 }
 
-func (feeder *clusterStateFeeder) InitFromCheckpoints() {
+func (feeder *clusterStateFeeder) initFromCheckpoints() {
 	klog.V(3).Info("Initializing VPA from checkpoints")
 	feeder.LoadVPAs(context.TODO())
 

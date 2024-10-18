@@ -502,7 +502,7 @@ func TestClusterStateFeeder_InitFromHistoryProvider(t *testing.T) {
 	feeder := clusterStateFeeder{
 		clusterState: clusterState,
 	}
-	feeder.InitFromHistoryProvider(&provider)
+	feeder.initFromHistoryProvider(&provider)
 	if !assert.Contains(t, feeder.clusterState.Pods, pod1) {
 		return
 	}
