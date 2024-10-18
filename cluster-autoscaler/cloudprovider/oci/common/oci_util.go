@@ -205,3 +205,21 @@ func GetAllPoolTypes(groups []string) (string, error) {
 	}
 	return ocidType, nil
 }
+
+// HasNodePoolTags checks if nodepoolTags is provided
+func HasNodePoolTags(nodeGroupAutoDiscoveryList []string) (bool, error) {
+	instancePoolTagsFound := false
+	nodePoolTagsFound := false
+	for _, arg := range nodeGroupAutoDiscoveryList {
+		if strings.Contains(arg, "nodepoolTags") {
+			nodePoolTagsFound = true
+		}
+		if strings.Contains(arg, "instancepoolTags") {
+			instancePoolTagsFound = true
+		}
+	}
+	if instancePoolTagsFound == true && nodePoolTagsFound == true {
+		return nodePoolTagsFound, fmt.Errorf("can not use both instancepoolTags and nodepoolTags")
+	}
+	return nodePoolTagsFound, nil
+}
