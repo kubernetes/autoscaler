@@ -69,6 +69,8 @@ func TestDeltaForNode(t *testing.T) {
 
 		ng := testCase.nodeGroupConfig
 		group, nodes := newNodeGroup(t, cp, ng.Name, ng.Min, ng.Max, ng.Size, ng.CPU, ng.Mem)
+		err := ctx.ClusterSnapshot.Initialize(nodes, nil)
+		assert.NoError(t, err)
 		nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&ctx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, time.Now())
 
 		rm := NewManager(processors.CustomResourcesProcessor)
@@ -110,6 +112,8 @@ func TestResourcesLeft(t *testing.T) {
 
 		ng := testCase.nodeGroupConfig
 		_, nodes := newNodeGroup(t, cp, ng.Name, ng.Min, ng.Max, ng.Size, ng.CPU, ng.Mem)
+		err := ctx.ClusterSnapshot.Initialize(nodes, nil)
+		assert.NoError(t, err)
 		nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&ctx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, time.Now())
 
 		rm := NewManager(processors.CustomResourcesProcessor)
@@ -161,6 +165,8 @@ func TestApplyLimits(t *testing.T) {
 
 		ng := testCase.nodeGroupConfig
 		group, nodes := newNodeGroup(t, cp, ng.Name, ng.Min, ng.Max, ng.Size, ng.CPU, ng.Mem)
+		err := ctx.ClusterSnapshot.Initialize(nodes, nil)
+		assert.NoError(t, err)
 		nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&ctx, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, time.Now())
 
 		rm := NewManager(processors.CustomResourcesProcessor)
@@ -226,6 +232,8 @@ func TestResourceManagerWithGpuResource(t *testing.T) {
 	assert.NoError(t, err)
 
 	nodes := []*corev1.Node{n1}
+	err = context.ClusterSnapshot.Initialize(nodes, nil)
+	assert.NoError(t, err)
 	nodeInfos, _ := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&context, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, time.Now())
 
 	rm := NewManager(processors.CustomResourcesProcessor)

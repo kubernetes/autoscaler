@@ -46,19 +46,18 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
 	caerrors "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
-	scheduler_utils "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	"k8s.io/utils/integer"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	klog "k8s.io/klog/v2"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 const (
@@ -244,22 +243,8 @@ func (a *StaticAutoscaler) cleanUpIfRequired() {
 
 func (a *StaticAutoscaler) initializeClusterSnapshot(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod) caerrors.AutoscalerError {
 	a.ClusterSnapshot.Clear()
-
-	knownNodes := make(map[string]bool)
-	for _, node := range nodes {
-		if err := a.ClusterSnapshot.AddNode(node); err != nil {
-			klog.Errorf("Failed to add node %s to cluster snapshot: %v", node.Name, err)
-			return caerrors.ToAutoscalerError(caerrors.InternalError, err)
-		}
-		knownNodes[node.Name] = true
-	}
-	for _, pod := range scheduledPods {
-		if knownNodes[pod.Spec.NodeName] {
-			if err := a.ClusterSnapshot.AddPod(pod, pod.Spec.NodeName); err != nil {
-				klog.Errorf("Failed to add pod %s scheduled to node %s to cluster snapshot: %v", pod.Name, pod.Spec.NodeName, err)
-				return caerrors.ToAutoscalerError(caerrors.InternalError, err)
-			}
-		}
+	if err := a.ClusterSnapshot.Initialize(nodes, scheduledPods); err != nil {
+		return caerrors.ToAutoscalerError(caerrors.InternalError, err)
 	}
 	return nil
 }
@@ -496,8 +481,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 			}
 		}
 	}
-
-	l, err := a.ClusterSnapshot.NodeInfos().List()
+	l, err := a.ClusterSnapshot.ListNodeInfos()
 	if err != nil {
 		klog.Errorf("Unable to fetch ClusterNode List for Debugging Snapshot, %v", err)
 	} else {
@@ -679,7 +663,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 	return nil
 }
 
-func (a *StaticAutoscaler) addUpcomingNodesToClusterSnapshot(upcomingCounts map[string]int, nodeInfosForGroups map[string]*schedulerframework.NodeInfo) error {
+func (a *StaticAutoscaler) addUpcomingNodesToClusterSnapshot(upcomingCounts map[string]int, nodeInfosForGroups map[string]*framework.NodeInfo) error {
 	nodeGroups := a.nodeGroupsById()
 	upcomingNodeGroups := make(map[string]int)
 	upcomingNodesFromUpcomingNodeGroups := 0
@@ -690,13 +674,9 @@ func (a *StaticAutoscaler) addUpcomingNodesToClusterSnapshot(upcomingCounts map[
 		}
 		isUpcomingNodeGroup := a.processors.AsyncNodeGroupStateChecker.IsUpcoming(nodeGroup)
 		for _, upcomingNode := range upcomingNodes {
-			var pods []*apiv1.Pod
-			for _, podInfo := range upcomingNode.Pods {
-				pods = append(pods, podInfo.Pod)
-			}
-			err := a.ClusterSnapshot.AddNodeWithPods(upcomingNode.Node(), pods)
+			err := a.ClusterSnapshot.AddNodeInfo(upcomingNode)
 			if err != nil {
-				return fmt.Errorf("Failed to add upcoming node %s to cluster snapshot: %w", upcomingNode.Node().Name, err)
+				return fmt.Errorf("failed to add upcoming node %s to cluster snapshot: %w", upcomingNode.Node().Name, err)
 			}
 			if isUpcomingNodeGroup {
 				upcomingNodesFromUpcomingNodeGroups++
@@ -989,7 +969,7 @@ func filterNodesFromSelectedGroups(cp cloudprovider.CloudProvider, nodes ...*api
 	return filtered
 }
 
-func (a *StaticAutoscaler) updateClusterState(allNodes []*apiv1.Node, nodeInfosForGroups map[string]*schedulerframework.NodeInfo, currentTime time.Time) caerrors.AutoscalerError {
+func (a *StaticAutoscaler) updateClusterState(allNodes []*apiv1.Node, nodeInfosForGroups map[string]*framework.NodeInfo, currentTime time.Time) caerrors.AutoscalerError {
 	err := a.clusterStateRegistry.UpdateNodes(allNodes, nodeInfosForGroups, currentTime)
 	if err != nil {
 		klog.Errorf("Failed to update node registry: %v", err)
@@ -1016,8 +996,8 @@ func allPodsAreNew(pods []*apiv1.Pod, currentTime time.Time) bool {
 	return found && oldest.Add(unschedulablePodWithGpuTimeBuffer).After(currentTime)
 }
 
-func getUpcomingNodeInfos(upcomingCounts map[string]int, nodeInfos map[string]*schedulerframework.NodeInfo) map[string][]*schedulerframework.NodeInfo {
-	upcomingNodes := make(map[string][]*schedulerframework.NodeInfo)
+func getUpcomingNodeInfos(upcomingCounts map[string]int, nodeInfos map[string]*framework.NodeInfo) map[string][]*framework.NodeInfo {
+	upcomingNodes := make(map[string][]*framework.NodeInfo)
 	for nodeGroup, numberOfNodes := range upcomingCounts {
 		nodeTemplate, found := nodeInfos[nodeGroup]
 		if !found {
@@ -1030,12 +1010,12 @@ func getUpcomingNodeInfos(upcomingCounts map[string]int, nodeInfos map[string]*s
 		}
 		nodeTemplate.Node().Annotations[NodeUpcomingAnnotation] = "true"
 
-		var nodes []*schedulerframework.NodeInfo
+		var nodes []*framework.NodeInfo
 		for i := 0; i < numberOfNodes; i++ {
 			// Ensure new nodes have different names because nodeName
 			// will be used as a map key. Also deep copy pods (daemonsets &
 			// any pods added by cloud provider on template).
-			nodes = append(nodes, scheduler_utils.DeepCopyTemplateNode(nodeTemplate, fmt.Sprintf("upcoming-%d", i)))
+			nodes = append(nodes, simulator.FreshNodeInfoFromTemplateNodeInfo(nodeTemplate, fmt.Sprintf("upcoming-%d", i)))
 		}
 		upcomingNodes[nodeGroup] = nodes
 	}

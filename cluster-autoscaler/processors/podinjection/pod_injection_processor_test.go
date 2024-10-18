@@ -29,6 +29,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	podinjectionbackoff "k8s.io/autoscaler/cluster-autoscaler/processors/podinjection/backoff"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 )
@@ -112,10 +113,8 @@ func TestTargetCountInjectionPodListProcessor(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			p := NewPodInjectionPodListProcessor(podinjectionbackoff.NewFakePodControllerRegistry())
 			clusterSnapshot := clustersnapshot.NewDeltaClusterSnapshot()
-			clusterSnapshot.AddNode(node)
-			for _, pod := range tc.scheduledPods {
-				clusterSnapshot.AddPod(pod, node.Name)
-			}
+			err := clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(node, tc.scheduledPods...))
+			assert.NoError(t, err)
 			ctx := context.AutoscalingContext{
 				AutoscalingKubeClients: context.AutoscalingKubeClients{
 					ListerRegistry: kubernetes.NewListerRegistry(nil, nil, nil, nil, nil, nil, jobLister, replicaSetLister, statefulsetLister),

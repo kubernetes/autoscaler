@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
@@ -133,16 +134,6 @@ func (data *internalDeltaSnapshotData) buildNodeInfoList() []*schedulerframework
 	}
 
 	return nodeInfoList
-}
-
-// Convenience method to avoid writing loop for adding nodes.
-func (data *internalDeltaSnapshotData) addNodes(nodes []*apiv1.Node) error {
-	for _, node := range nodes {
-		if err := data.addNode(node); err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 func (data *internalDeltaSnapshotData) addNode(node *apiv1.Node) error {
@@ -402,24 +393,50 @@ func NewDeltaClusterSnapshot() *DeltaClusterSnapshot {
 	return snapshot
 }
 
-// AddNode adds node to the snapshot.
-func (snapshot *DeltaClusterSnapshot) AddNode(node *apiv1.Node) error {
-	return snapshot.data.addNode(node)
+// GetNodeInfo implements ClusterSnapshot.
+func (snapshot *DeltaClusterSnapshot) GetNodeInfo(nodeName string) (*framework.NodeInfo, error) {
+	schedNodeInfo, err := snapshot.getNodeInfo(nodeName)
+	if err != nil {
+		return nil, err
+	}
+	return framework.WrapSchedulerNodeInfo(schedNodeInfo), nil
 }
 
-// AddNodes adds nodes in batch to the snapshot.
-func (snapshot *DeltaClusterSnapshot) AddNodes(nodes []*apiv1.Node) error {
-	return snapshot.data.addNodes(nodes)
+// ListNodeInfos implements ClusterSnapshot.
+func (snapshot *DeltaClusterSnapshot) ListNodeInfos() ([]*framework.NodeInfo, error) {
+	schedNodeInfos := snapshot.data.getNodeInfoList()
+	return framework.WrapSchedulerNodeInfos(schedNodeInfos), nil
 }
 
-// AddNodeWithPods adds a node and set of pods to be scheduled to this node to the snapshot.
-func (snapshot *DeltaClusterSnapshot) AddNodeWithPods(node *apiv1.Node, pods []*apiv1.Pod) error {
-	if err := snapshot.AddNode(node); err != nil {
+// AddNodeInfo implements ClusterSnapshot.
+func (snapshot *DeltaClusterSnapshot) AddNodeInfo(nodeInfo *framework.NodeInfo) error {
+	if err := snapshot.data.addNode(nodeInfo.Node()); err != nil {
 		return err
 	}
-	for _, pod := range pods {
-		if err := snapshot.AddPod(pod, node.Name); err != nil {
+	for _, podInfo := range nodeInfo.Pods {
+		if err := snapshot.data.addPod(podInfo.Pod, nodeInfo.Node().Name); err != nil {
 			return err
+		}
+	}
+	return nil
+}
+
+// Initialize implements ClusterSnapshot.
+func (snapshot *DeltaClusterSnapshot) Initialize(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod) error {
+	snapshot.Clear()
+
+	knownNodes := make(map[string]bool)
+	for _, node := range nodes {
+		if err := snapshot.data.addNode(node); err != nil {
+			return err
+		}
+		knownNodes[node.Name] = true
+	}
+	for _, pod := range scheduledPods {
+		if knownNodes[pod.Spec.NodeName] {
+			if err := snapshot.data.addPod(pod, pod.Spec.NodeName); err != nil {
+				return err
+			}
 		}
 	}
 	return nil

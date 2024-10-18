@@ -20,6 +20,7 @@ import (
 	"errors"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
@@ -28,20 +29,27 @@ import (
 // It exposes mutation methods and can be viewed as scheduler's SharedLister.
 type ClusterSnapshot interface {
 	schedulerframework.SharedLister
-	// AddNode adds node to the snapshot.
-	AddNode(node *apiv1.Node) error
-	// AddNodes adds nodes to the snapshot.
-	AddNodes(nodes []*apiv1.Node) error
+
+	// Initialize clears the snapshot and initializes it with real objects from the cluster - Nodes,
+	// scheduled pods.
+	Initialize(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod) error
+
 	// RemoveNode removes nodes (and pods scheduled to it) from the snapshot.
 	RemoveNode(nodeName string) error
 	// AddPod adds pod to the snapshot and schedules it to given node.
 	AddPod(pod *apiv1.Pod, nodeName string) error
 	// RemovePod removes pod from the snapshot.
 	RemovePod(namespace string, podName string, nodeName string) error
-	// AddNodeWithPods adds a node and set of pods to be scheduled to this node to the snapshot.
-	AddNodeWithPods(node *apiv1.Node, pods []*apiv1.Pod) error
-	// IsPVCUsedByPods returns if the pvc is used by any pod, key = <namespace>/<pvc_name>
-	IsPVCUsedByPods(key string) bool
+
+	// AddNodeInfo adds the given NodeInfo to the snapshot. The Node and the Pods are added, as well as
+	// any DRA objects passed along them.
+	AddNodeInfo(nodeInfo *framework.NodeInfo) error
+	// GetNodeInfo returns an internal NodeInfo for a given Node - all information about the Node tracked in the snapshot.
+	// This means the Node itself, its scheduled Pods, as well as all relevant DRA objects. The internal NodeInfos
+	// obtained via this method should always be used in CA code instead of directly using *schedulerframework.NodeInfo.
+	GetNodeInfo(nodeName string) (*framework.NodeInfo, error)
+	// ListNodeInfos returns internal NodeInfos for all Nodes tracked in the snapshot. See the comment on GetNodeInfo.
+	ListNodeInfos() ([]*framework.NodeInfo, error)
 
 	// Fork creates a fork of snapshot state. All modifications can later be reverted to moment of forking via Revert().
 	// Use WithForkedSnapshot() helper function instead if possible.

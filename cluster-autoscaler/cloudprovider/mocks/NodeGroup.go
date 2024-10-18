@@ -20,7 +20,7 @@ import (
 	cloudprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	config "k8s.io/autoscaler/cluster-autoscaler/config"
 
-	framework "k8s.io/kubernetes/pkg/scheduler/framework"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 
 	mock "github.com/stretchr/testify/mock"
 

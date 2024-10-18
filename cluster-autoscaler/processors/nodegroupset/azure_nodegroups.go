@@ -18,7 +18,7 @@ package nodegroupset
 
 import (
 	"k8s.io/autoscaler/cluster-autoscaler/config"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 )
 
 // AzureNodepoolLegacyLabel is a label specifying which Azure node pool a particular node belongs to.
@@ -40,13 +40,13 @@ const aksConsolidatedAdditionalProperties = "kubernetes.azure.com/consolidated-a
 // AKS node image version
 const aksNodeImageVersion = "kubernetes.azure.com/node-image-version"
 
-func nodesFromSameAzureNodePool(n1, n2 *schedulerframework.NodeInfo) bool {
+func nodesFromSameAzureNodePool(n1, n2 *framework.NodeInfo) bool {
 	n1AzureNodePool := n1.Node().Labels[AzureNodepoolLabel]
 	n2AzureNodePool := n2.Node().Labels[AzureNodepoolLabel]
 	return (n1AzureNodePool != "" && n1AzureNodePool == n2AzureNodePool) || nodesFromSameAzureNodePoolLegacy(n1, n2)
 }
 
-func nodesFromSameAzureNodePoolLegacy(n1, n2 *schedulerframework.NodeInfo) bool {
+func nodesFromSameAzureNodePoolLegacy(n1, n2 *framework.NodeInfo) bool {
 	n1AzureNodePool := n1.Node().Labels[AzureNodepoolLegacyLabel]
 	n2AzureNodePool := n2.Node().Labels[AzureNodepoolLegacyLabel]
 	return n1AzureNodePool != "" && n1AzureNodePool == n2AzureNodePool
@@ -74,7 +74,7 @@ func CreateAzureNodeInfoComparator(extraIgnoredLabels []string, ratioOpts config
 		azureIgnoredLabels[k] = true
 	}
 
-	return func(n1, n2 *schedulerframework.NodeInfo) bool {
+	return func(n1, n2 *framework.NodeInfo) bool {
 		if nodesFromSameAzureNodePool(n1, n2) {
 			return true
 		}
