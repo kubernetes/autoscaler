@@ -294,7 +294,7 @@ func (feeder *clusterStateFeeder) GarbageCollectCheckpoints() {
 			if !exists {
 				err = feeder.vpaCheckpointClient.VerticalPodAutoscalerCheckpoints(namespace).Delete(context.TODO(), checkpoint.Name, metav1.DeleteOptions{})
 				if err == nil {
-					klog.V(3).InfoS("Orphaned VPA checkpoint cleanup - deleting", "namespace", namespace, "checkpoint", checkpoint.Name)
+					klog.V(3).InfoS("Orphaned VPA checkpoint cleanup - deleting", klog.KRef(namespace, checkpoint.Name))
 				} else {
 					klog.ErrorS(err, "Orphaned VPA checkpoint cleanup - error deleting", klog.KRef(namespace, checkpoint.Name))
 				}
