@@ -199,7 +199,7 @@ func parseVpaObservedContainers(pod *apiv1.Pod) (bool, sets.String) {
 	vpaContainerSet := sets.NewString()
 	if hasObservedContainers {
 		if containers, err := annotations.ParseVpaObservedContainersValue(observedContainers); err != nil {
-			klog.ErrorS(err, "VPA annotation failed to parse", "annotation", observedContainers)
+			klog.ErrorS(err, "VPA annotation failed to parse", "pod", klog.KObj(pod), "annotation", observedContainers)
 			hasObservedContainers = false
 		} else {
 			vpaContainerSet.Insert(containers...)
