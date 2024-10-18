@@ -234,7 +234,7 @@ func (f *podsEvictionRestrictionFactoryImpl) NewPodsEvictionRestriction(pods []*
 			var err error
 			configured, err = f.getReplicaCount(creator)
 			if err != nil {
-				klog.ErrorS(err, "Failed to obtain replication info", "kind", creator.Kind, "namespace", creator.Namespace, "name", creator.Name)
+				klog.ErrorS(err, "Failed to obtain replication info", "kind", creator.Kind, klog.KRef(creator.Namespace, creator.Name))
 				continue
 			}
 		}
