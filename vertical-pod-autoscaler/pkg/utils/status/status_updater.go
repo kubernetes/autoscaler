@@ -70,6 +70,6 @@ func (su *Updater) updateStatus() {
 	defer cancel()
 
 	if err := su.client.UpdateStatus(ctx); err != nil {
-		klog.Errorf("Status update by %s failed: %v", su.client.holderIdentity, err)
+		klog.ErrorS(err, "Status update failed", "holderIdentity", su.client.holderIdentity)
 	}
 }

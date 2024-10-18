@@ -54,7 +54,7 @@ type patchRecord struct {
 func patchVpaStatus(vpaClient vpa_api.VerticalPodAutoscalerInterface, vpaName string, patches []patchRecord) (result *vpa_types.VerticalPodAutoscaler, err error) {
 	bytes, err := json.Marshal(patches)
 	if err != nil {
-		klog.Errorf("Cannot marshal VPA status patches %+v. Reason: %+v", patches, err)
+		klog.ErrorS(err, "Cannot marshal VPA status patches", "patches", patches)
 		return
 	}
 
@@ -89,9 +89,9 @@ func NewVpasLister(vpaClient *vpa_clientset.Clientset, stopChannel <-chan struct
 	vpaLister := vpa_lister.NewVerticalPodAutoscalerLister(indexer)
 	go controller.Run(stopChannel)
 	if !cache.WaitForCacheSync(make(chan struct{}), controller.HasSynced) {
-		klog.Fatalf("Failed to sync VPA cache during initialization")
+		klog.ErrorS(nil, "Failed to sync VPA cache during initialization")
 	} else {
-		klog.Info("Initial VPA synced successfully")
+		klog.InfoS("Initial VPA synced successfully")
 	}
 	return vpaLister
 }
@@ -150,7 +150,7 @@ func GetControllingVPAForPod(ctx context.Context, pod *core.Pod, vpas []*VpaWith
 	}
 	parentController, err := ctrlFetcher.FindTopMostWellKnownOrScalable(ctx, k)
 	if err != nil {
-		klog.Errorf("fail to get pod controller: pod=%s err=%s", klog.KObj(pod), err.Error())
+		klog.ErrorS(err, "Failed to get pod controller", "pod", klog.KObj(pod))
 		return nil
 	}
 	if parentController == nil {
