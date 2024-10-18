@@ -278,7 +278,7 @@ kubectl apply -f ./cloudprovider/oci/examples/oci-nodepool-cluster-autoscaler-w-
   correctly (`oci-cloud-controller-manager`).
 - Avoid manually changing pools that are managed by the Cluster Autoscaler. For example, do not add or remove nodes
   using kubectl, or using the Console (or the Oracle Cloud Infrastructure CLI or API).
-- `--node-group-auto-discovery` and `--node-autoprovisioning-enabled=true` are not supported.
+- `--node-autoprovisioning-enabled=true` are not supported.
 - `--node-group-auto-discovery` and `node` parameters can not be used together as it can cause conflicts.
 - We set a `nvidia.com/gpu:NoSchedule` taint on nodes in a GPU enabled pools.
 
