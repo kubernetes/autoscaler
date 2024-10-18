@@ -468,7 +468,7 @@ func registerSignalHandlers(autoscaler core.Autoscaler) {
 	}()
 }
 
-func buildAutoscaler(context ctx.Context, debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter) (core.Autoscaler, *loop.LoopTrigger, error) {
+func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter) (core.Autoscaler, error) {
 	// Create basic config from flags.
 	autoscalingOptions := createAutoscalingOptions()
 
@@ -487,7 +487,7 @@ func buildAutoscaler(context ctx.Context, debuggingSnapshotter debuggingsnapshot
 
 	predicateChecker, err := predicatechecker.NewSchedulerBasedPredicateChecker(informerFactory, autoscalingOptions.SchedulerConfig)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	deleteOptions := options.NewNodeDeleteOptions(autoscalingOptions)
 	drainabilityRules := rules.Default(deleteOptions)
@@ -508,14 +508,13 @@ func buildAutoscaler(context ctx.Context, debuggingSnapshotter debuggingsnapshot
 	opts.Processors.TemplateNodeInfoProvider = nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nodeInfoCacheExpireTime, *forceDaemonSets)
 	podListProcessor := podlistprocessor.NewDefaultPodListProcessor(opts.PredicateChecker, scheduling.ScheduleAnywhere)
 
-	var ProvisioningRequestInjector *provreq.ProvisioningRequestPodsInjector
 	if autoscalingOptions.ProvisioningRequestEnabled {
 		podListProcessor.AddProcessor(provreq.NewProvisioningRequestPodsFilter(provreq.NewDefautlEventManager()))
 
 		restConfig := kube_util.GetKubeConfig(autoscalingOptions.KubeClientOpts)
 		client, err := provreqclient.NewProvisioningRequestClient(restConfig)
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 		provreqOrchestrator := provreqorchestrator.New(client, []provreqorchestrator.ProvisioningClass{
 			checkcapacity.New(client),
@@ -526,11 +525,11 @@ func buildAutoscaler(context ctx.Context, debuggingSnapshotter debuggingsnapshot
 		opts.ScaleUpOrchestrator = scaleUpOrchestrator
 		provreqProcesor := provreq.NewProvReqProcessor(client, opts.PredicateChecker)
 		opts.LoopStartNotifier = loopstart.NewObserversList([]loopstart.Observer{provreqProcesor})
-		ProvisioningRequestInjector, err := provreq.NewProvisioningRequestPodsInjector(restConfig, opts.ProvisioningRequestInitialBackoffTime, opts.ProvisioningRequestMaxBackoffTime, opts.ProvisioningRequestMaxBackoffCacheSize)
+		injector, err := provreq.NewProvisioningRequestPodsInjector(restConfig, opts.ProvisioningRequestInitialBackoffTime, opts.ProvisioningRequestMaxBackoffTime, opts.ProvisioningRequestMaxBackoffCacheSize)
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
-		podListProcessor.AddProcessor(ProvisioningRequestInjector)
+		podListProcessor.AddProcessor(injector)
 		podListProcessor.AddProcessor(provreqProcesor)
 	}
 
@@ -595,7 +594,7 @@ func buildAutoscaler(context ctx.Context, debuggingSnapshotter debuggingsnapshot
 	// Create autoscaler.
 	autoscaler, err := core.NewAutoscaler(opts, informerFactory)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	// Start informers. This must come after fully constructing the autoscaler because
@@ -603,22 +602,13 @@ func buildAutoscaler(context ctx.Context, debuggingSnapshotter debuggingsnapshot
 	stop := make(chan struct{})
 	informerFactory.Start(stop)
 
-	podObserver := loop.StartPodObserver(context, kube_util.CreateKubeClient(autoscalingOptions.KubeClientOpts))
-
-	// A ProvisioningRequestPodsInjector is used as provisioningRequestProcessingTimesGetter here to obtain the last time a
-	// ProvisioningRequest was processed. This is because the ProvisioningRequestPodsInjector in addition to injecting pods
-	// also marks the ProvisioningRequest as accepted or failed.
-	trigger := loop.NewLoopTrigger(autoscaler, ProvisioningRequestInjector, podObserver, *scanInterval)
-
-	return autoscaler, trigger, nil
+	return autoscaler, nil
 }
 
 func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter) {
 	metrics.RegisterAll(*emitPerNodeGroupMetrics)
-	context, cancel := ctx.WithCancel(ctx.Background())
-	defer cancel()
 
-	autoscaler, trigger, err := buildAutoscaler(context, debuggingSnapshotter)
+	autoscaler, err := buildAutoscaler(debuggingSnapshotter)
 	if err != nil {
 		klog.Fatalf("Failed to create autoscaler: %v", err)
 	}
@@ -635,7 +625,11 @@ func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapsho
 	}
 
 	// Autoscale ad infinitum.
+	context, cancel := ctx.WithCancel(ctx.Background())
+	defer cancel()
 	if *frequentLoopsEnabled {
+		podObserver := loop.StartPodObserver(context, kube_util.CreateKubeClient(createAutoscalingOptions().KubeClientOpts))
+		trigger := loop.NewLoopTrigger(podObserver, autoscaler, *scanInterval)
 		lastRun := time.Now()
 		for {
 			trigger.Wait(lastRun)
