@@ -113,7 +113,7 @@ type UnregisteredNode struct {
 // ScaleUpFailure contains information about a failure of a scale-up.
 type ScaleUpFailure struct {
 	NodeGroup cloudprovider.NodeGroup
-	Reason    metrics.FailedScaleUpReason
+	Reason    metrics.FailedScaleReason
 	Time      time.Time
 }
 
@@ -319,7 +319,7 @@ func (csr *ClusterStateRegistry) backoffNodeGroup(nodeGroup cloudprovider.NodeGr
 func (csr *ClusterStateRegistry) RegisterFailedScaleUp(nodeGroup cloudprovider.NodeGroup, reason string, errorMessage, gpuResourceName, gpuType string, currentTime time.Time) {
 	csr.Lock()
 	defer csr.Unlock()
-	csr.registerFailedScaleUpNoLock(nodeGroup, metrics.FailedScaleUpReason(reason), cloudprovider.InstanceErrorInfo{
+	csr.registerFailedScaleUpNoLock(nodeGroup, metrics.FailedScaleReason(reason), cloudprovider.InstanceErrorInfo{
 		ErrorClass:   cloudprovider.OtherErrorClass,
 		ErrorCode:    string(reason),
 		ErrorMessage: errorMessage,
@@ -331,7 +331,7 @@ func (csr *ClusterStateRegistry) RegisterFailedScaleUp(nodeGroup cloudprovider.N
 func (csr *ClusterStateRegistry) RegisterFailedScaleDown(_ cloudprovider.NodeGroup, _ string, _ time.Time) {
 }
 
-func (csr *ClusterStateRegistry) registerFailedScaleUpNoLock(nodeGroup cloudprovider.NodeGroup, reason metrics.FailedScaleUpReason, errorInfo cloudprovider.InstanceErrorInfo, gpuResourceName, gpuType string, currentTime time.Time) {
+func (csr *ClusterStateRegistry) registerFailedScaleUpNoLock(nodeGroup cloudprovider.NodeGroup, reason metrics.FailedScaleReason, errorInfo cloudprovider.InstanceErrorInfo, gpuResourceName, gpuType string, currentTime time.Time) {
 	csr.scaleUpFailures[nodeGroup.Id()] = append(csr.scaleUpFailures[nodeGroup.Id()], ScaleUpFailure{NodeGroup: nodeGroup, Reason: reason, Time: currentTime})
 	metrics.RegisterFailedScaleUp(reason, gpuResourceName, gpuType)
 	csr.backoffNodeGroup(nodeGroup, errorInfo, currentTime)
@@ -1164,7 +1164,7 @@ func (csr *ClusterStateRegistry) handleInstanceCreationErrorsForNodeGroup(
 			// Decrease the scale up request by the number of deleted nodes
 			csr.registerOrUpdateScaleUpNoLock(nodeGroup, -len(unseenInstanceIds), currentTime)
 
-			csr.registerFailedScaleUpNoLock(nodeGroup, metrics.FailedScaleUpReason(errorCode.code), cloudprovider.InstanceErrorInfo{
+			csr.registerFailedScaleUpNoLock(nodeGroup, metrics.FailedScaleReason(errorCode.code), cloudprovider.InstanceErrorInfo{
 				ErrorClass:   errorCode.class,
 				ErrorCode:    errorCode.code,
 				ErrorMessage: csr.buildErrorMessageEventString(currentUniqueErrorMessagesForErrorCode[errorCode]),

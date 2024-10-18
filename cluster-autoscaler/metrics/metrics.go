@@ -34,8 +34,8 @@ import (
 // NodeScaleDownReason describes reason for removing node
 type NodeScaleDownReason string
 
-// FailedScaleUpReason describes reason of failed scale-up
-type FailedScaleUpReason string
+// FailedScaleReason describes reason of failed scale-up
+type FailedScaleReason string
 
 // FunctionLabel is a name of Cluster Autoscaler operation for which
 // we measure duration
@@ -63,11 +63,11 @@ const (
 	Unready NodeScaleDownReason = "unready"
 
 	// CloudProviderError caused scale-up to fail
-	CloudProviderError FailedScaleUpReason = "cloudProviderError"
+	CloudProviderError FailedScaleReason = "cloudProviderError"
 	// APIError caused scale-up to fail
-	APIError FailedScaleUpReason = "apiCallError"
+	APIError FailedScaleReason = "apiCallError"
 	// Timeout was encountered when trying to scale-up
-	Timeout FailedScaleUpReason = "timeout"
+	Timeout FailedScaleReason = "timeout"
 
 	// DirectionScaleDown is the direction of skipped scaling event when scaling in (shrinking)
 	DirectionScaleDown string = "down"
@@ -310,6 +310,22 @@ var (
 		}, []string{"reason", "gpu_resource_name", "gpu_name"},
 	)
 
+	failedScaleDownCount = k8smetrics.NewCounterVec(
+		&k8smetrics.CounterOpts{
+			Namespace: caNamespace,
+			Name:      "failed_scale_down_total",
+			Help:      "Number of times scale-down operation has failed.",
+		}, []string{"reason"},
+	)
+
+	failedGPUScaleDownCount = k8smetrics.NewCounterVec(
+		&k8smetrics.CounterOpts{
+			Namespace: caNamespace,
+			Name:      "failed_gpu_scale_down_total",
+			Help:      "Number of times scale-down operation has failed.",
+		}, []string{"reason", "gpu_resource_name", "gpu_name"},
+	)
+
 	scaleDownCount = k8smetrics.NewCounterVec(
 		&k8smetrics.CounterOpts{
 			Namespace: caNamespace,
@@ -448,6 +464,8 @@ func RegisterAll(emitPerNodeGroupMetrics bool) {
 	legacyregistry.MustRegister(gpuScaleUpCount)
 	legacyregistry.MustRegister(failedScaleUpCount)
 	legacyregistry.MustRegister(failedGPUScaleUpCount)
+	legacyregistry.MustRegister(failedScaleDownCount)
+	legacyregistry.MustRegister(failedGPUScaleDownCount)
 	legacyregistry.MustRegister(scaleDownCount)
 	legacyregistry.MustRegister(gpuScaleDownCount)
 	legacyregistry.MustRegister(evictionsCount)
@@ -614,7 +632,7 @@ func RegisterScaleUp(nodesCount int, gpuResourceName, gpuType string) {
 }
 
 // RegisterFailedScaleUp records a failed scale-up operation
-func RegisterFailedScaleUp(reason FailedScaleUpReason, gpuResourceName, gpuType string) {
+func RegisterFailedScaleUp(reason FailedScaleReason, gpuResourceName, gpuType string) {
 	failedScaleUpCount.WithLabelValues(string(reason)).Inc()
 	if gpuType != gpu.MetricsNoGPU {
 		failedGPUScaleUpCount.WithLabelValues(string(reason), gpuResourceName, gpuType).Inc()
@@ -626,6 +644,14 @@ func RegisterScaleDown(nodesCount int, gpuResourceName, gpuType string, reason N
 	scaleDownCount.WithLabelValues(string(reason)).Add(float64(nodesCount))
 	if gpuType != gpu.MetricsNoGPU {
 		gpuScaleDownCount.WithLabelValues(string(reason), gpuResourceName, gpuType).Add(float64(nodesCount))
+	}
+}
+
+// RegisterFailedScaleDown records a failed scale-down operation
+func RegisterFailedScaleDown(reason FailedScaleReason, gpuResourceName, gpuType string) {
+	failedScaleDownCount.WithLabelValues(string(reason)).Inc()
+	if gpuType != gpu.MetricsNoGPU {
+		failedGPUScaleDownCount.WithLabelValues(string(reason), gpuResourceName, gpuType).Inc()
 	}
 }
 
