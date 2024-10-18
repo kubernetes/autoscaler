@@ -158,7 +158,7 @@ func (calc *UpdatePriorityCalculator) GetSortedPods(admission PodEvictionAdmissi
 		if admission.Admit(podPrio.pod, podPrio.recommendation) {
 			result = append(result, podPrio.pod)
 		} else {
-			klog.V(2).InfoS("Pod removed from update queue by PodEvictionAdmission", "podName", podPrio.pod.Name)
+			klog.V(2).InfoS("Pod removed from update queue by PodEvictionAdmission", "pod", klog.KObj(podPrio.pod))
 		}
 	}
 
