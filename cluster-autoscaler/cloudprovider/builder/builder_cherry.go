@@ -31,7 +31,7 @@ var AvailableCloudProviders = []string{
 	cherry.ProviderName,
 }
 
-// DefaultCloudProvider for Cherry-only build is Cherry
+// DefaultCloudProvider for Cherry-only build is Cherry.
 const DefaultCloudProvider = cherry.ProviderName
 
 func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, _ informers.SharedInformerFactory) cloudprovider.CloudProvider {

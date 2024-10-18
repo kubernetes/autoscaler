@@ -34,7 +34,7 @@ var AvailableCloudProviders = []string{
 // DefaultCloudProvider for cloudstack-only build is cloudstack.
 const DefaultCloudProvider = cloudprovider.CloudStackProviderName
 
-func BuildCloudStack(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, _ informers.SharedInformerFactory) cloudprovider.CloudProvider {
+func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, _ informers.SharedInformerFactory) cloudprovider.CloudProvider {
 	switch opts.CloudProviderName {
 	case cloudprovider.CloudStackProviderName:
 		return cloudstack.BuildCloudStack(opts, do, rl)
