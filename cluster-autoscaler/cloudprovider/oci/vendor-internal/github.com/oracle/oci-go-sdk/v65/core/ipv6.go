@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2023, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 // Code generated. DO NOT EDIT.
 
@@ -40,7 +40,7 @@ type Ipv6 struct {
 	// The OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of the IPv6.
 	Id *string `mandatory:"true" json:"id"`
 
-	// The IPv6 address of the `IPv6` object. The address is within the IPv6 CIDR block of the VNIC's subnet
+	// The IPv6 address of the `IPv6` object. The address is within the IPv6 prefix of the VNIC's subnet
 	// (see the `ipv6CidrBlock` attribute for the Subnet object.
 	// Example: `2001:0db8:0123:1111:abcd:ef01:2345:6789`
 	IpAddress *string `mandatory:"true" json:"ipAddress"`

@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2023, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 // Code generated. DO NOT EDIT.
 
@@ -21,7 +21,7 @@ import (
 	"strings"
 )
 
-// CreateCaptureFilterDetails A capture filter contains a set of rules governing what traffic a VTAP mirrors.
+// CreateCaptureFilterDetails A capture filter contains a set of rules governing what traffic a VTAP mirrors or a VCN flow log collects.
 type CreateCaptureFilterDetails struct {
 
 	// The OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of the compartment containing the capture filter.
@@ -46,6 +46,9 @@ type CreateCaptureFilterDetails struct {
 
 	// The set of rules governing what traffic a VTAP mirrors.
 	VtapCaptureFilterRules []VtapCaptureFilterRuleDetails `mandatory:"false" json:"vtapCaptureFilterRules"`
+
+	// The set of rules governing what traffic the VCN flow log collects.
+	FlowLogCaptureFilterRules []FlowLogCaptureFilterRuleDetails `mandatory:"false" json:"flowLogCaptureFilterRules"`
 }
 
 func (m CreateCaptureFilterDetails) String() string {
@@ -72,15 +75,18 @@ type CreateCaptureFilterDetailsFilterTypeEnum string
 
 // Set of constants representing the allowable values for CreateCaptureFilterDetailsFilterTypeEnum
 const (
-	CreateCaptureFilterDetailsFilterTypeVtap CreateCaptureFilterDetailsFilterTypeEnum = "VTAP"
+	CreateCaptureFilterDetailsFilterTypeVtap    CreateCaptureFilterDetailsFilterTypeEnum = "VTAP"
+	CreateCaptureFilterDetailsFilterTypeFlowlog CreateCaptureFilterDetailsFilterTypeEnum = "FLOWLOG"
 )
 
 var mappingCreateCaptureFilterDetailsFilterTypeEnum = map[string]CreateCaptureFilterDetailsFilterTypeEnum{
-	"VTAP": CreateCaptureFilterDetailsFilterTypeVtap,
+	"VTAP":    CreateCaptureFilterDetailsFilterTypeVtap,
+	"FLOWLOG": CreateCaptureFilterDetailsFilterTypeFlowlog,
 }
 
 var mappingCreateCaptureFilterDetailsFilterTypeEnumLowerCase = map[string]CreateCaptureFilterDetailsFilterTypeEnum{
-	"vtap": CreateCaptureFilterDetailsFilterTypeVtap,
+	"vtap":    CreateCaptureFilterDetailsFilterTypeVtap,
+	"flowlog": CreateCaptureFilterDetailsFilterTypeFlowlog,
 }
 
 // GetCreateCaptureFilterDetailsFilterTypeEnumValues Enumerates the set of values for CreateCaptureFilterDetailsFilterTypeEnum
@@ -96,6 +102,7 @@ func GetCreateCaptureFilterDetailsFilterTypeEnumValues() []CreateCaptureFilterDe
 func GetCreateCaptureFilterDetailsFilterTypeEnumStringValues() []string {
 	return []string{
 		"VTAP",
+		"FLOWLOG",
 	}
 }
 

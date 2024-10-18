@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2023, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 // Code generated. DO NOT EDIT.
 
@@ -21,10 +21,10 @@ import (
 	"strings"
 )
 
-// RemoveSubnetIpv6CidrDetails Details object for removing an IPv6 CIDR Block from a Subnet.
+// RemoveSubnetIpv6CidrDetails Details object for removing an IPv6 prefix from a subnet.
 type RemoveSubnetIpv6CidrDetails struct {
 
-	// This field is not required and should only be specified when removing an IPv6 CIDR
+	// This field is not required and should only be specified when removing an IPv6 prefix
 	// from a subnet's IPv6 address space.
 	// SeeIPv6 Addresses (https://docs.cloud.oracle.com/iaas/Content/Network/Concepts/ipv6.htm).
 	// Example: `2001:0db8:0123::/64`

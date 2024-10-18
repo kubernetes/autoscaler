@@ -2,14 +2,14 @@
 [![wercker status](https://app.wercker.com/status/09bc4818e7b1d70b04285331a9bdbc41/s/master "wercker status")](https://app.wercker.com/project/byKey/09bc4818e7b1d70b04285331a9bdbc41)
 
 This is the Go SDK for Oracle Cloud Infrastructure. This project is open source and maintained by Oracle Corp. 
-The home page for the project is [here](https://godoc.org/github.com/oracle/oci-go-sdk/v65/).
+The home page for the project is [here](https://godoc.org/k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v65/).
 
 ## Survey
 Are you a Developer using the OCI SDK? If so, please fill out our survey to help us make the OCI SDK better for you. Click [here](https://oracle.questionpro.com/t/APeMlZka26?custom3=pkg) for the survey page.
 
 
 ## Dependencies
-- Install [Go programming language](https://golang.org/dl/), Go1.14, 1.15, 1.16, 1.17 and 1.18 is supported By OCI Go SDK.
+- Install [Go programming language](https://golang.org/dl/), Go1.17, 1.18, 1.19, 1.20, and 1.21 are supported By OCI Go SDK.
 - Install [GNU Make](https://www.gnu.org/software/make/), using the package manager or binary distribution tool appropriate for your platform.
  
 ## Versioning
@@ -75,7 +75,7 @@ type ConfigurationProvider interface {
 	AuthType() (AuthConfig, error)
 }
 ```
-Or simply use one of  structs exposed by the `oci-go-sdk` that already implement the above [interface](https://godoc.org/github.com/oracle/oci-go-sdk/v65/common#ConfigurationProvider)
+Or simply use one of  structs exposed by the `oci-go-sdk` that already implement the above [interface](https://godoc.org/k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v65/common#ConfigurationProvider)
 
 ### Making a Request
 To make a request to an Oracle Cloud Infrastructure service, create a client for the service and then use the client to call a function from the service.
@@ -140,7 +140,7 @@ in this package are meant to be used by the service packages.
 Examples can be found [here](https://github.com/oracle/oci-go-sdk/tree/master/example)
 
 ## Documentation
-Full documentation can be found [on the godocs site](https://godoc.org/github.com/oracle/oci-go-sdk/v65/).
+Full documentation can be found [on the godocs site](https://godoc.org/k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v65/).
 
 ## Help
 * The [Issues](https://github.com/oracle/oci-go-sdk/issues) page of this GitHub repository.
@@ -150,13 +150,13 @@ Full documentation can be found [on the godocs site](https://godoc.org/github.co
 
 
 ## Contributing
-`oci-go-sdk` is an open source project. See [CONTRIBUTING](/CONTRIBUTING.md) for details.
+This project welcomes contributions from the community. Before submitting a pull request, please [review our contribution guide](./CONTRIBUTING.md)
 
-Oracle gratefully acknowledges the contributions to oci-go-sdk that have been made by the community.
-
+## Security
+Please consult the [security guide](./SECURITY.md) for our responsible security vulnerability disclosure process
 
 ## License
-Copyright (c) 2016, 2018, 2021, Oracle and/or its affiliates.  All rights reserved.
+Copyright (c) 2016, 2023, Oracle and/or its affiliates.  All rights reserved.
 This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl
 or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 
@@ -206,6 +206,35 @@ go install github.com/gofrs/flock
 - Install [go lint](https://github.com/golang/lint) with the command:
 ```
 go install github.com/golang/lint/golint
+```
+- Install [staticcheck](https://github.com/dominikh/go-tools) with the command:
+```
+go install honnef.co/go/tools/cmd/staticcheck@2023.1.7
+```
+
+### Linting and Staticcheck
+Linting (performed by golint) can be done with the following command:
+
+```
+make lint
+```
+Linting will perform a number of formatting changes across the code base.
+
+
+```
+make static-check
+```
+This command is also run by the make build and make test commands.
+Staticcheck will provide formatting warnings but will not make any changes to any files.
+You can also cause staticcheck to be run before calls to "git commit" with the pre-commit plugin.
+
+```
+pre-commit install
+```
+You can install pre-commit itself, you can use your package manager of choice, such as
+
+```
+brew install pre-commit
 ```
 
 ### Build

@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2023, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 // Code generated. DO NOT EDIT.
 
@@ -24,7 +24,9 @@ import (
 // AddNetworkSecurityGroupSecurityRulesDetails The representation of AddNetworkSecurityGroupSecurityRulesDetails
 type AddNetworkSecurityGroupSecurityRulesDetails struct {
 
-	// The NSG security rules to add.
+	// An array of security rules to add to the NSG. You can add up to 25 rules in a single
+	// `AddNetworkSecurityGroupSecurityRules` operation.
+	// Adding more than 25 rules requires multiple operations.
 	SecurityRules []AddSecurityRuleDetails `mandatory:"false" json:"securityRules"`
 }
 
