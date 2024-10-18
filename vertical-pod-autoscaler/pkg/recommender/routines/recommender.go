@@ -91,7 +91,7 @@ func (r *recommender) UpdateVPAs() {
 		if !found {
 			continue
 		}
-		resources := r.podResourceRecommender.GetRecommendedPodResources(GetContainerNameToAggregateStateMap(vpa))
+		resources := r.podResourceRecommender.GetRecommendedPodResources(GetContainerNameToAggregateStateMap(vpa), r.clusterState.Nodes)
 		had := vpa.HasRecommendation()
 
 		listOfResourceRecommendation := logic.MapToListOfRecommendedContainerResources(resources)
@@ -158,9 +158,12 @@ func (r *recommender) RunOnce() {
 	r.clusterStateFeeder.LoadPods()
 	timer.ObserveStep("LoadPods")
 
+	r.clusterStateFeeder.LoadNodes()
+	timer.ObserveStep("LoadNodes")
+
 	r.clusterStateFeeder.LoadRealTimeMetrics()
-	timer.ObserveStep("LoadMetrics")
 	klog.V(3).Infof("ClusterState is tracking %v PodStates and %v VPAs", len(r.clusterState.Pods), len(r.clusterState.Vpas))
+	klog.V(3).InfoS("ClusterState Nodes: ", r.clusterState.Nodes)
 
 	r.UpdateVPAs()
 	timer.ObserveStep("UpdateVPAs")

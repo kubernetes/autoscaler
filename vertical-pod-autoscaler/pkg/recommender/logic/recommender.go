@@ -20,25 +20,28 @@ import (
 	"flag"
 	"sort"
 
+	apiv1 "k8s.io/api/core/v1"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
+	"k8s.io/klog/v2"
 )
 
 var (
-	safetyMarginFraction       = flag.Float64("recommendation-margin-fraction", 0.15, `Fraction of usage added as the safety margin to the recommended request`)
-	podMinCPUMillicores        = flag.Float64("pod-recommendation-min-cpu-millicores", 25, `Minimum CPU recommendation for a pod`)
-	podMinMemoryMb             = flag.Float64("pod-recommendation-min-memory-mb", 250, `Minimum memory recommendation for a pod`)
-	targetCPUPercentile        = flag.Float64("target-cpu-percentile", 0.9, "CPU usage percentile that will be used as a base for CPU target recommendation. Doesn't affect CPU lower bound, CPU upper bound nor memory recommendations.")
-	lowerBoundCPUPercentile    = flag.Float64("recommendation-lower-bound-cpu-percentile", 0.5, `CPU usage percentile that will be used for the lower bound on CPU recommendation.`)
-	upperBoundCPUPercentile    = flag.Float64("recommendation-upper-bound-cpu-percentile", 0.95, `CPU usage percentile that will be used for the upper bound on CPU recommendation.`)
-	targetMemoryPercentile     = flag.Float64("target-memory-percentile", 0.9, "Memory usage percentile that will be used as a base for memory target recommendation. Doesn't affect memory lower bound nor memory upper bound.")
-	lowerBoundMemoryPercentile = flag.Float64("recommendation-lower-bound-memory-percentile", 0.5, `Memory usage percentile that will be used for the lower bound on memory recommendation.`)
-	upperBoundMemoryPercentile = flag.Float64("recommendation-upper-bound-memory-percentile", 0.95, `Memory usage percentile that will be used for the upper bound on memory recommendation.`)
+	safetyMarginFraction             = flag.Float64("recommendation-margin-fraction", 0.15, `Fraction of usage added as the safety margin to the recommended request`)
+	podMinCPUMillicores              = flag.Float64("pod-recommendation-min-cpu-millicores", 25, `Minimum CPU recommendation for a pod`)
+	podMinMemoryMb                   = flag.Float64("pod-recommendation-min-memory-mb", 250, `Minimum memory recommendation for a pod`)
+	podAutoDetectedMaxNodeAllocation = flag.Bool("auto-detected-max-node-allocation", true, "If true, the recommender will use the maximum node allocation as the upper bound for the recommendation.")
+	targetCPUPercentile              = flag.Float64("target-cpu-percentile", 0.9, "CPU usage percentile that will be used as a base for CPU target recommendation. Doesn't affect CPU lower bound, CPU upper bound nor memory recommendations.")
+	lowerBoundCPUPercentile          = flag.Float64("recommendation-lower-bound-cpu-percentile", 0.5, `CPU usage percentile that will be used for the lower bound on CPU recommendation.`)
+	upperBoundCPUPercentile          = flag.Float64("recommendation-upper-bound-cpu-percentile", 0.95, `CPU usage percentile that will be used for the upper bound on CPU recommendation.`)
+	targetMemoryPercentile           = flag.Float64("target-memory-percentile", 0.9, "Memory usage percentile that will be used as a base for memory target recommendation. Doesn't affect memory lower bound nor memory upper bound.")
+	lowerBoundMemoryPercentile       = flag.Float64("recommendation-lower-bound-memory-percentile", 0.5, `Memory usage percentile that will be used for the lower bound on memory recommendation.`)
+	upperBoundMemoryPercentile       = flag.Float64("recommendation-upper-bound-memory-percentile", 0.95, `Memory usage percentile that will be used for the upper bound on memory recommendation.`)
 )
 
 // PodResourceRecommender computes resource recommendation for a Vpa object.
 type PodResourceRecommender interface {
-	GetRecommendedPodResources(containerNameToAggregateStateMap model.ContainerNameToAggregateStateMap) RecommendedPodResources
+	GetRecommendedPodResources(containerNameToAggregateStateMap model.ContainerNameToAggregateStateMap, nodes map[string]apiv1.NodeStatus) RecommendedPodResources
 }
 
 // RecommendedPodResources is a Map from container name to recommended resources.
@@ -61,7 +64,7 @@ type podResourceRecommender struct {
 	upperBoundEstimator ResourceEstimator
 }
 
-func (r *podResourceRecommender) GetRecommendedPodResources(containerNameToAggregateStateMap model.ContainerNameToAggregateStateMap) RecommendedPodResources {
+func (r *podResourceRecommender) GetRecommendedPodResources(containerNameToAggregateStateMap model.ContainerNameToAggregateStateMap, nodes map[string]apiv1.NodeStatus) RecommendedPodResources {
 	var recommendation = make(RecommendedPodResources)
 	if len(containerNameToAggregateStateMap) == 0 {
 		return recommendation
@@ -77,6 +80,29 @@ func (r *podResourceRecommender) GetRecommendedPodResources(containerNameToAggre
 		WithMinResources(minResources, r.targetEstimator),
 		WithMinResources(minResources, r.lowerBoundEstimator),
 		WithMinResources(minResources, r.upperBoundEstimator),
+	}
+
+	if *podAutoDetectedMaxNodeAllocation {
+		// Get the maximum node allocatable resources
+		klog.InfoS("Using the maximum node allocatable resources as the upper bound for the recommendation")
+		maxNodeStatus := r.GetMaxNodeStatus(nodes, r.upperBoundEstimator)
+		maxAllocatableCPU := model.CPUAmountFromCores(float64(maxNodeStatus.Allocatable.Cpu().MilliValue()) / 1000)
+		maxAllocatableMemory := model.MemoryAmountFromBytes(float64(maxNodeStatus.Allocatable.Memory().Value()))
+		for containerName, aggregatedContainerState := range containerNameToAggregateStateMap {
+			containerRecommendation := recommender.estimateContainerResources(aggregatedContainerState)
+			// Cap the upper bound to the maximum node allocatable resources
+			containerRecommendation.UpperBound[model.ResourceCPU] = model.ResourceAmountMax(
+				containerRecommendation.UpperBound[model.ResourceCPU],
+				model.CPUAmountFromCores(model.CoresFromCPUAmount(maxAllocatableCPU)*0.95), // Use 95% of max allocatable as a safety margin
+			)
+			containerRecommendation.UpperBound[model.ResourceMemory] = model.ResourceAmountMax(
+				containerRecommendation.UpperBound[model.ResourceMemory],
+				model.MemoryAmountFromBytes(model.BytesFromMemoryAmount(maxAllocatableMemory)*0.95), // Use 95% of max allocatable as a safety margin
+			)
+			klog.InfoS("Recommendation for container", "container", containerName, "target", containerRecommendation.Target, "lowerBound", containerRecommendation.LowerBound, "upperBound", containerRecommendation.UpperBound)
+			recommendation[containerName] = containerRecommendation
+		}
+		return recommendation
 	}
 
 	for containerName, aggregatedContainerState := range containerNameToAggregateStateMap {
@@ -141,7 +167,6 @@ func CreatePodResourceRecommender() PodResourceRecommender {
 	// 30m history  : *0.9
 	// 60m history  : *0.95
 	lowerBoundEstimator = WithConfidenceMultiplier(0.001, -2.0, lowerBoundEstimator)
-
 	return &podResourceRecommender{
 		targetEstimator,
 		lowerBoundEstimator,
@@ -174,4 +199,23 @@ func MapToListOfRecommendedContainerResources(resources RecommendedPodResources)
 		ContainerRecommendations: containerResources,
 	}
 	return recommendation
+}
+
+func (r *podResourceRecommender) GetMaxNodeStatus(nodes map[string]apiv1.NodeStatus, estimator ResourceEstimator) apiv1.NodeStatus {
+	var maxNodeStatus apiv1.NodeStatus
+	var selectedNode string
+	maxNodeCpu := model.CPUAmountFromCores(0)
+	maxNodeMemory := model.MemoryAmountFromBytes(0)
+	for nodeName, nodeStatus := range nodes {
+		nodeCpu := model.CPUAmountFromCores(float64(nodeStatus.Allocatable.Cpu().MilliValue()) / 1000)
+		nodeMemory := model.MemoryAmountFromBytes(float64(nodeStatus.Allocatable.Memory().Value()))
+		if nodeCpu > maxNodeCpu && nodeMemory > maxNodeMemory {
+			selectedNode = nodeName
+			maxNodeCpu = nodeCpu
+			maxNodeMemory = nodeMemory
+			maxNodeStatus = nodeStatus
+		}
+	}
+	klog.InfoS("Selected node for max node status", "node", selectedNode, "cpu", maxNodeCpu, "memory", maxNodeMemory)
+	return maxNodeStatus
 }

@@ -203,6 +203,8 @@ func run(healthCheck *metrics.HealthCheck) {
 	factory := informers.NewSharedInformerFactoryWithOptions(kubeClient, defaultResyncPeriod, informers.WithNamespace(*vpaObjectNamespace))
 	controllerFetcher := controllerfetcher.NewControllerFetcher(config, kubeClient, factory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor)
 	podLister, oomObserver := input.NewPodListerAndOOMObserver(kubeClient, *vpaObjectNamespace)
+	klog.InfoS("Getting node lister")
+	nodeLister := input.NewNodeClients(kubeClient)
 
 	model.InitializeAggregationsConfig(model.NewAggregationsConfig(*memoryAggregationInterval, *memoryAggregationIntervalCount, *memoryHistogramDecayHalfLife, *cpuHistogramDecayHalfLife, *oomBumpUpRatio, *oomMinBumpUp))
 
@@ -236,6 +238,7 @@ func run(healthCheck *metrics.HealthCheck) {
 
 	clusterStateFeeder := input.ClusterStateFeederFactory{
 		PodLister:           podLister,
+		NodeLister:          nodeLister,
 		OOMObserver:         oomObserver,
 		KubeClient:          kubeClient,
 		MetricsClient:       input_metrics.NewMetricsClient(source, *vpaObjectNamespace, "default-metrics-client"),
