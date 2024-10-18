@@ -84,7 +84,7 @@ func NewUpdatePriorityCalculator(vpa *vpa_types.VerticalPodAutoscaler,
 func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, now time.Time) {
 	processedRecommendation, _, err := calc.recommendationProcessor.Apply(calc.vpa.Status.Recommendation, calc.vpa.Spec.ResourcePolicy, calc.vpa.Status.Conditions, pod)
 	if err != nil {
-		klog.V(2).InfoS("Cannot process recommendation for pod", "pod", klog.KObj(pod), "error", err)
+		klog.V(2).ErrorS(err, "Cannot process recommendation for pod", "pod", klog.KObj(pod))
 		return
 	}
 
