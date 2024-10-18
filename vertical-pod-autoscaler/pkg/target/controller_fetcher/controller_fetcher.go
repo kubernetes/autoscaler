@@ -261,7 +261,7 @@ func (f *controllerFetcher) isWellKnownOrScalable(ctx context.Context, key *Cont
 	//if not well known check if it supports scaling
 	groupKind, err := key.groupKind()
 	if err != nil {
-		klog.ErrorS(err, "Could not find groupKind", "namespace", key.Namespace, "name", key.Name)
+		klog.ErrorS(err, "Could not find groupKind", klog.KRef(key.Namespace, key.Name))
 		return false
 	}
 
