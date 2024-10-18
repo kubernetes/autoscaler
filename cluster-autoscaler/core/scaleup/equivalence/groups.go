@@ -55,6 +55,15 @@ type equivalenceGroup struct {
 	representant *apiv1.Pod
 }
 
+// PodsFromPodGroup returns all pods from the equivalence group.
+func PodsFromPodGroup(podGroups []*PodGroup) []*apiv1.Pod {
+	var pods []*apiv1.Pod
+	for _, podGroup := range podGroups {
+		pods = append(pods, podGroup.Pods...)
+	}
+	return pods
+}
+
 const maxEquivalenceGroupsByController = 10
 
 // groupPodsBySchedulingProperties groups pods based on scheduling properties. Group ID is meaningless.
