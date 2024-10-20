@@ -26,14 +26,23 @@ We propose to improve the VPA recommender by making it aware of the maximum node
 
 ## Design Details
 ### Implementation Options
-1. Query Cluster Autoscaler: 
+1. Feature Flag:
+   The behavior of querying Cluster Autoscaler will be controlled by a clearly defined flag. This ensures that users can explicitly enable or disable this feature, providing clarity on whether they can rely on CA for recommendation limits.
+
+2. Caching Mechanism:
+   To optimize performance and reduce the load on the Cluster Autoscaler, a caching mechanism may be implemented. This would involve storing the retrieved node size information for a configurable period before refreshing.
+
+3. Cluster Autoscaler Availability Warning:
+   The system should implement a warning mechanism to alert users when Cluster Autoscaler is not present in the cluster. This warning will help users understand why the feature might not be functioning as expected and guide them towards proper configuration.
+
+4. Query Cluster Autoscaler: 
    VPA could query the Cluster Autoscaler (CA) for feedback, potentially using the [provisioning-request](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/proposals/provisioning-request.md) API or a similar mechanism. This approach aligns well with CA's design, as it is built to handle questions related to resource availability and scheduling.
    For more information on supported provisioning classes, refer to the [Cluster Autoscaler FAQ](https://github.com/kubernetes/autoscaler/blob/3a29dc2690102a6758cd085e9d6a3bcf4d7c29d8/cluster-autoscaler/FAQ.md#supported-provisioningclasses).
 
-2. Check Current Cluster Nodes:
+5. Check Current Cluster Nodes:
    Analyze the available nodes and, if needed, perform calculations based on the largest node. Implementation has been started in [PR #7345](https://github.com/kubernetes/autoscaler/pull/7345).
 
-3. Set Fixed Values:
+6. Set Fixed Values:
    Use predefined limits, similar to the implementation [here](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/pkg/recommender/logic/recommender.go).
 
 ### Challenges
