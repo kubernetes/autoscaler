@@ -107,7 +107,7 @@ func (r *recommender) UpdateVPAs() {
 		hasMatchingPods := vpa.PodCount > 0
 		vpa.UpdateConditions(hasMatchingPods)
 		if err := r.clusterState.RecordRecommendation(vpa, time.Now()); err != nil {
-			klog.Warningf("%v", err)
+			klog.V(0).InfoS("", "err", err)
 			if klog.V(4).Enabled() {
 				pods := r.clusterState.GetMatchingPods(vpa)
 				if len(pods) != vpa.PodCount {
@@ -130,7 +130,7 @@ func (r *recommender) MaintainCheckpoints(ctx context.Context, minCheckpointsPer
 	now := time.Now()
 	if r.useCheckpoints {
 		if err := r.checkpointWriter.StoreCheckpoints(ctx, now, minCheckpointsPerRun); err != nil {
-			klog.Warningf("Failed to store checkpoints. Reason: %+v", err)
+			klog.V(0).InfoS("Failed to store checkpoints", "err", err)
 		}
 		if time.Since(r.lastCheckpointGC) > r.checkpointsGCInterval {
 			r.lastCheckpointGC = now

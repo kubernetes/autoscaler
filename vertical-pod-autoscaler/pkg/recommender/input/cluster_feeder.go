@@ -213,7 +213,7 @@ func (feeder *clusterStateFeeder) InitFromHistoryProvider(historyProvider histor
 				ContainerName: containerName,
 			}
 			if err = feeder.clusterState.AddOrUpdateContainer(containerID, nil); err != nil {
-				klog.Warningf("Failed to add container %+v. Reason: %+v", containerID, err)
+				klog.V(0).InfoS("Failed to add container", "containerID", containerID, "err", err)
 			}
 			klog.V(4).Infof("Adding %d samples for container %v", len(sampleList), containerID)
 			for _, sample := range sampleList {
@@ -222,7 +222,7 @@ func (feeder *clusterStateFeeder) InitFromHistoryProvider(historyProvider histor
 						ContainerUsageSample: sample,
 						Container:            containerID,
 					}); err != nil {
-					klog.Warningf("Error adding metric sample for container %v: %v", containerID, err)
+					klog.V(0).InfoS("Failed to add sample", "sample", sample, "containerID", containerID, "err", err)
 				}
 			}
 		}
@@ -419,7 +419,7 @@ func (feeder *clusterStateFeeder) LoadPods() {
 		feeder.clusterState.AddOrUpdatePod(pod.ID, pod.PodLabels, pod.Phase)
 		for _, container := range pod.Containers {
 			if err = feeder.clusterState.AddOrUpdateContainer(container.ID, container.Request); err != nil {
-				klog.Warningf("Failed to add container %+v. Reason: %+v", container.ID, err)
+				klog.V(0).InfoS("Failed to add container", "containerID", container.ID, "err", err)
 			}
 		}
 	}
@@ -440,7 +440,7 @@ func (feeder *clusterStateFeeder) LoadRealTimeMetrics() {
 				if _, isKeyError := err.(model.KeyError); isKeyError && feeder.memorySaveMode {
 					continue
 				}
-				klog.Warningf("Error adding metric sample for container %v: %v", sample.Container, err)
+				klog.V(0).InfoS("Failed to add sample for container", "containerID", sample.Container, "err", err)
 				droppedSampleCount++
 			} else {
 				sampleCount++
@@ -454,7 +454,7 @@ Loop:
 		case oomInfo := <-feeder.oomChan:
 			klog.V(3).Infof("OOM detected %+v", oomInfo)
 			if err = feeder.clusterState.RecordOOM(oomInfo.ContainerID, oomInfo.Timestamp, oomInfo.Memory); err != nil {
-				klog.Warningf("Failed to record OOM %+v. Reason: %+v", oomInfo, err)
+				klog.V(0).InfoS("Failed to record OOM", "oomInfo", oomInfo, "err", err)
 			}
 		default:
 			break Loop
