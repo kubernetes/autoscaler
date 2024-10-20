@@ -115,7 +115,7 @@ func (container *ContainerState) observeQualityMetrics(usage ResourceAmount, isO
 	case corev1.ResourceMemory:
 		recommendationValue = float64(recommendation.Value())
 	default:
-		klog.Warningf("Unknown resource: %v", resource)
+		klog.V(0).InfoS("Unknown resource", "resource", resource)
 		return
 	}
 	metrics_quality.ObserveQualityMetrics(usageValue, recommendationValue, isOOM, resource, updateMode)
