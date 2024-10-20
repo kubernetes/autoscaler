@@ -126,8 +126,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 			return
 		}
 		if !isValid {
-			klog.Warningf("Admission Controller status has been refreshed more than %v ago. Skipping eviction loop",
-				status.AdmissionControllerStatusTimeout)
+			klog.V(0).InfoS("Admission Controller status is not valid. Skipping eviction loop", "timeout", status.AdmissionControllerStatusTimeout)
 			return
 		}
 	}
@@ -163,7 +162,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 	}
 
 	if len(vpas) == 0 {
-		klog.Warningf("no VPA objects to process")
+		klog.V(0).InfoS("No VPA objects to process")
 		if u.evictionAdmission != nil {
 			u.evictionAdmission.CleanUp()
 		}
@@ -222,13 +221,13 @@ func (u *updater) RunOnce(ctx context.Context) {
 			}
 			err := u.evictionRateLimiter.Wait(ctx)
 			if err != nil {
-				klog.Warningf("evicting pod %s failed: %v", klog.KObj(pod), err)
+				klog.V(0).InfoS("Eviction rate limiter wait failed", "error", err)
 				return
 			}
 			klog.V(2).InfoS("Evicting pod", "pod", klog.KObj(pod))
 			evictErr := evictionLimiter.Evict(pod, u.eventRecorder)
 			if evictErr != nil {
-				klog.Warningf("evicting pod %s failed: %v", klog.KObj(pod), evictErr)
+				klog.V(0).InfoS("Eviction failed", "error", evictErr, "pod", klog.KObj(pod))
 			} else {
 				withEvicted = true
 				metrics_updater.AddEvictedPod(vpaSize)

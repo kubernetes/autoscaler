@@ -203,7 +203,7 @@ func (f *podsEvictionRestrictionFactoryImpl) NewPodsEvictionRestriction(pods []*
 			continue
 		}
 		if creator == nil {
-			klog.Warningf("pod %s not replicated", pod.Name)
+			klog.V(0).InfoS("Pod is not managed by any controller", "pod", klog.KObj(pod))
 			continue
 		}
 		livePods[*creator] = append(livePods[*creator], pod)

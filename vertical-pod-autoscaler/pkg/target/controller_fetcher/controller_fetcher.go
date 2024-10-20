@@ -136,7 +136,7 @@ func NewControllerFetcher(config *rest.Config, kubeClient kube_client.Interface,
 		go informer.Run(stopCh)
 		synced := cache.WaitForCacheSync(stopCh, informer.HasSynced)
 		if !synced {
-			klog.Warningf("Could not sync cache for %s: %v", kind, err)
+			klog.V(0).InfoS("Initial sync failed", "kind", kind)
 		} else {
 			klog.InfoS("Initial sync completed", "kind", kind)
 		}
