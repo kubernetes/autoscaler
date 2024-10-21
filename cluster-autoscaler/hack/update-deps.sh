@@ -88,10 +88,9 @@ cluster_autoscaler:update_deps() {
     mod_version=$(echo "${gomod_json}" | "${SED}" -n 's|.*"Version": "\(.*\)".*|\1|p')
     if [ "${pkg}" = "./cluster-autoscaler" ]; then
       go mod edit "-replace=${mod}=${mod}@${mod_version}"
-    else
-      go get "${mod}@${mod_version}"
-      go mod tidy
     fi
+    go get "${mod}@${mod_version}"
+    go mod tidy
   done
 
   if [ "${pkg}" = "./cluster-autoscaler" ]; then
