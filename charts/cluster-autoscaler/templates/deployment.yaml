@@ -218,6 +218,27 @@ spec:
           {{- else if eq .Values.cloudProvider "kwok" }}
             - name: KWOK_PROVIDER_CONFIGMAP
               value: "{{.Values.kwokConfigMapName | default "kwok-provider-config"}}"
+          {{- else if eq .Values.cloudProvider "civo" }}
+            - name: CIVO_API_URL
+              valueFrom:
+                secretKeyRef:
+                  key: api-url
+                  name: {{ default (include "cluster-autoscaler.fullname" .) .Values.secretKeyRefNameOverride }}
+            - name: CIVO_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  key: api-key
+                  name: {{ default (include "cluster-autoscaler.fullname" .) .Values.secretKeyRefNameOverride }}
+            - name: CIVO_CLUSTER_ID
+              valueFrom:
+                secretKeyRef:
+                  key: cluster-id
+                  name: {{ default (include "cluster-autoscaler.fullname" .) .Values.secretKeyRefNameOverride }}
+            - name: CIVO_REGION
+              valueFrom:
+                secretKeyRef:
+                  key: region
+                  name: {{ default (include "cluster-autoscaler.fullname" .) .Values.secretKeyRefNameOverride }}
           {{- end }}
           {{- range $key, $value := .Values.extraEnv }}
             - name: {{ $key }}
