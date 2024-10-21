@@ -62,6 +62,8 @@ const (
 	ClusterAutoscalerNoActivity ClusterAutoscalerConditionStatus = "NoActivity"
 	// ClusterAutoscalerBackoff status means that due to a recently failed scale-up no further scale-ups attempts will be made for some time.
 	ClusterAutoscalerBackoff ClusterAutoscalerConditionStatus = "Backoff"
+	// ClusterAutoscalerHasDynamicHeadroom status means that one or more nodes in a node group has available headroom for vertical scaling which should be preferred over adding more nodes.
+	ClusterAutoscalerHasDynamicHeadroom ClusterAutoscalerConditionStatus = "HasDynamicHeadroom"
 )
 
 // RegisteredUnreadyNodeCount contains node counts of registered but unready nodes.

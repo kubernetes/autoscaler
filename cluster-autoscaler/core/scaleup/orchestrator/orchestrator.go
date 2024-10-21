@@ -631,6 +631,9 @@ func (o *ScaleUpOrchestrator) IsNodeGroupReadyToScaleUp(nodeGroup cloudprovider.
 		}
 		klog.Warningf("Node group %s is not ready for scaleup - backoff with status: %v", nodeGroup.Id(), scaleUpSafety.BackoffStatus)
 		return BackoffReason
+	} else if scaleUpSafety.HasDynamicHeadroom {
+		klog.Warningf("Node group %s is not ready for scaleup - vertical node scaling is still possible", nodeGroup.Id())
+		return NotReadyReason
 	}
 	return nil
 }

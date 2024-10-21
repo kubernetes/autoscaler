@@ -52,6 +52,11 @@ const (
 	messageTrancated = "<truncated>"
 )
 
+const (
+	// NodeHasDynamicHeadroomAnnotation is the name of annotation marking node as having available dynamic headroom for vertical scaling.
+	NodeHasDynamicHeadroomAnnotation = "cluster-autoscaler.kubernetes.io/node-has-dynamic-headroom"
+)
+
 var (
 	errMaxNodeProvisionTimeProviderNotSet = errors.New("MaxNodeProvisionTimeProvider was not set in cluster state")
 )
@@ -151,9 +156,10 @@ type ClusterStateRegistry struct {
 
 // NodeGroupScalingSafety contains information about the safety of the node group to scale up/down.
 type NodeGroupScalingSafety struct {
-	SafeToScale   bool
-	Healthy       bool
-	BackoffStatus backoff.Status
+	SafeToScale        bool
+	Healthy            bool
+	BackoffStatus      backoff.Status
+	HasDynamicHeadroom bool
 }
 
 // NewClusterStateRegistry creates new ClusterStateRegistry.
@@ -472,7 +478,8 @@ func (csr *ClusterStateRegistry) BackoffStatusForNodeGroup(nodeGroup cloudprovid
 func (csr *ClusterStateRegistry) NodeGroupScaleUpSafety(nodeGroup cloudprovider.NodeGroup, now time.Time) NodeGroupScalingSafety {
 	isHealthy := csr.IsNodeGroupHealthy(nodeGroup.Id())
 	backoffStatus := csr.backoff.BackoffStatus(nodeGroup, csr.nodeInfosForGroups[nodeGroup.Id()], now)
-	return NodeGroupScalingSafety{SafeToScale: isHealthy && !backoffStatus.IsBackedOff, Healthy: isHealthy, BackoffStatus: backoffStatus}
+	hasDynamicHeadroom := csr.nodeGroupHasDynamicHeadroom(nodeGroup)
+	return NodeGroupScalingSafety{SafeToScale: isHealthy && !backoffStatus.IsBackedOff, Healthy: isHealthy, BackoffStatus: backoffStatus, HasDynamicHeadroom: hasDynamicHeadroom}
 }
 
 func (csr *ClusterStateRegistry) getProvisionedAndTargetSizesForNodeGroup(nodeGroupName string) (provisioned, target int, ok bool) {
@@ -606,6 +613,18 @@ type Readiness struct {
 	// This field is only used for exposing information externally and
 	// doesn't influence CA behavior.
 	ResourceUnready []string
+}
+
+func (csr *ClusterStateRegistry) nodeGroupHasDynamicHeadroom(nodeGroup cloudprovider.NodeGroup) bool {
+	for _, node := range csr.nodes {
+		ng, err := csr.cloudProvider.NodeGroupForNode(node)
+		if err != nil && ng.Id() == nodeGroup.Id() {
+			if node.Annotations != nil && node.Annotations[NodeHasDynamicHeadroomAnnotation] == "true" {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
@@ -877,6 +896,8 @@ func (csr *ClusterStateRegistry) buildScaleUpStatusNodeGroup(nodeGroup cloudprov
 			ErrorCode:    scaleUpSafety.BackoffStatus.ErrorInfo.ErrorCode,
 			ErrorMessage: truncateIfExceedMaxLength(scaleUpSafety.BackoffStatus.ErrorInfo.ErrorMessage, maxErrorMessageSize),
 		}
+	} else if scaleUpSafety.HasDynamicHeadroom {
+		condition.Status = api.ClusterAutoscalerHasDynamicHeadroom
 	} else {
 		condition.Status = api.ClusterAutoscalerNoActivity
 	}
