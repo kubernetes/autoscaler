@@ -6,7 +6,8 @@
    - [Goals](#goals)
 - [Proposal](#proposal)
 - [Design Details](#design-details)
-   - [Implementation Options](#implementation-options)
+   - [Proposed Solution](#proposed-solution)
+   - [Alternatives](#alternatives)
    - [Challenges](#challenges)
    - [Test Plan](#test-plan)
 <!-- /toc -->
@@ -18,19 +19,22 @@ VPA currently allows configuring the maximum allowed recommendation per resource
 In dynamic environments, manual configuration of .maxAllowed can be error-prone, especially as cluster sizes and node configurations change over time. Automating this process by making the VPA recommender aware of the largest node size ensures more reliable scaling decisions. This helps prevents situations where Pods become unschedulable due to excessive resource recommendations.
 
 ### Goals
-* Make Recommendations More Accurate and Easier to Schedule: Try to have the VPA recommender suggest resources that fit within the largest node’s capacity, helping pods get scheduled more easily and lowering the chance of downtime.
+* Make Recommendations More Accurate and Easier to Schedule: Try to have the VPA recommender suggest resources that fit within the largest node's capacity, helping pods get scheduled more easily and lowering the chance of downtime.
 * Adapt to Changing Environments: Adjust recommendations as the cluster size or node configurations change to better reflect the current state of the cluster.
 
 ## Proposal
 We propose to improve the VPA recommender by making it aware of the maximum node size, preventing it from generating recommendations that would render Pods unschedulable. This will involve querying for cluster information and adjusting recommendations accordingly.
 
 ## Design Details
-### Implementation Options
+
+### Proposed Solution
+We propose to use the Cluster Autoscaler's provisioning-request API to obtain information about the maximum node size. This approach aligns well with CA's design and capabilities. The implementation will include:
+
 1. Feature Flag:
    The behavior of querying Cluster Autoscaler will be controlled by a clearly defined flag. This ensures that users can explicitly enable or disable this feature, providing clarity on whether they can rely on CA for recommendation limits.
 
 2. Caching Mechanism:
-   To optimize performance and reduce the load on the Cluster Autoscaler, a caching mechanism may be implemented. This would involve storing the retrieved node size information for a configurable period before refreshing.
+   To optimize performance and reduce the load on the Cluster Autoscaler, a caching mechanism will be implemented. This would involve storing the retrieved node size information for a configurable period before refreshing.
 
 3. Cluster Autoscaler Availability Warning:
    The system should implement a warning mechanism to alert users when Cluster Autoscaler is not present in the cluster. This warning will help users understand why the feature might not be functioning as expected and guide them towards proper configuration.
@@ -39,10 +43,12 @@ We propose to improve the VPA recommender by making it aware of the maximum node
    VPA could query the Cluster Autoscaler (CA) for feedback, potentially using the [provisioning-request](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/proposals/provisioning-request.md) API or a similar mechanism. This approach aligns well with CA's design, as it is built to handle questions related to resource availability and scheduling.
    For more information on supported provisioning classes, refer to the [Cluster Autoscaler FAQ](https://github.com/kubernetes/autoscaler/blob/3a29dc2690102a6758cd085e9d6a3bcf4d7c29d8/cluster-autoscaler/FAQ.md#supported-provisioningclasses).
 
-5. Check Current Cluster Nodes:
+### Alternatives
+
+1. Check Current Cluster Nodes:
    Analyze the available nodes and, if needed, perform calculations based on the largest node. Implementation has been started in [PR #7345](https://github.com/kubernetes/autoscaler/pull/7345).
 
-6. Set Fixed Values:
+2. Set Fixed Values:
    Use predefined limits, similar to the implementation [here](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/pkg/recommender/logic/recommender.go).
 
 ### Challenges
