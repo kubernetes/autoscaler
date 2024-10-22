@@ -638,9 +638,8 @@ func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
 			if errNg != nil {
 				klog.Warningf("Failed to get nodegroup for %s: %v", node.Name, errNg)
 			}
-			if errReady != nil {
-				klog.Warningf("Failed to get readiness info for %s: %v", node.Name, errReady)
-			}
+		} else if errReady != nil {
+			klog.Warningf("Failed to get readiness info for %s: %v", node.Name, errReady)
 		} else {
 			perNodeGroup[nodeGroup.Id()] = update(perNodeGroup[nodeGroup.Id()], node, nr)
 		}
