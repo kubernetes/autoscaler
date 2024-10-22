@@ -5,6 +5,8 @@ Copyright 2021-2023 Oracle and/or its affiliates.
 package instancepools
 
 import (
+	"strings"
+
 	"github.com/pkg/errors"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -65,8 +67,25 @@ func (ocp *OciCloudProvider) NodeGroupForNode(n *apiv1.Node) (cloudprovider.Node
 }
 
 // HasInstance returns whether a given node has a corresponding instance in this cloud provider
-func (ocp *OciCloudProvider) HasInstance(n *apiv1.Node) (bool, error) {
-	return true, cloudprovider.ErrNotImplemented
+func (ocp *OciCloudProvider) HasInstance(node *apiv1.Node) (bool, error) {
+	instance, err := ocicommon.NodeToOciRef(node)
+	if err != nil {
+		return false, err
+	}
+	instancePool, err := ocp.poolManager.GetInstancePoolForInstance(instance)
+	if err != nil {
+		return false, err
+	}
+	instances, err := ocp.poolManager.GetInstancePoolNodes(*instancePool)
+	if err != nil {
+		return false, err
+	}
+	for _, i := range instances {
+		if i.Id == instance.InstanceID {
+			return true, nil
+		}
+	}
+	return false, nil
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.
@@ -134,7 +153,7 @@ func BuildOCI(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscover
 	if err != nil {
 		klog.Fatalf("Failed to get pool type: %v", err)
 	}
-	if ocidType == npconsts.OciNodePoolResourceIdent {
+	if strings.HasPrefix(ocidType, npconsts.OciNodePoolResourceIdent) {
 		manager, err := nodepools.CreateNodePoolManager(opts.CloudConfig, do, createKubeClient(opts))
 		if err != nil {
 			klog.Fatalf("Could not create OCI OKE cloud provider: %v", err)

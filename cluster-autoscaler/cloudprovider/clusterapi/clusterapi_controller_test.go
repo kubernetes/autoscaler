@@ -458,7 +458,9 @@ func makeLinkedNodeAndMachine(i int, namespace, clusterName string, owner metav1
 		ObjectMeta: metav1.ObjectMeta{
 			Name: fmt.Sprintf("%s-%s-node-%d", namespace, owner.Name, i),
 			Annotations: map[string]string{
-				machineAnnotationKey: fmt.Sprintf("%s/%s-%s-machine-%d", namespace, namespace, owner.Name, i),
+				clusterNameAnnotationKey:      clusterName,
+				clusterNamespaceAnnotationKey: namespace,
+				machineAnnotationKey:          fmt.Sprintf("%s-%s-machine-%d", namespace, owner.Name, i),
 			},
 		},
 		Spec: corev1.NodeSpec{

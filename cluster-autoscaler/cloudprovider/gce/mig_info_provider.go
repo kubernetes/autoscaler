@@ -26,8 +26,10 @@ import (
 	"time"
 
 	gce "google.golang.org/api/compute/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/client-go/util/workqueue"
-	klog "k8s.io/klog/v2"
+	"k8s.io/klog/v2"
 )
 
 // MigInfoProvider allows obtaining information about MIGs
@@ -61,15 +63,16 @@ type timeProvider interface {
 }
 
 type cachingMigInfoProvider struct {
-	migInfoMutex                   sync.Mutex
-	cache                          *GceCache
-	migLister                      MigLister
-	gceClient                      AutoscalingGceClient
-	projectId                      string
-	concurrentGceRefreshes         int
-	migInstanceMutex               sync.Mutex
-	migInstancesMinRefreshWaitTime time.Duration
-	timeProvider                   timeProvider
+	migInfoMutex                      sync.Mutex
+	cache                             *GceCache
+	migLister                         MigLister
+	gceClient                         AutoscalingGceClient
+	projectId                         string
+	concurrentGceRefreshes            int
+	migInstanceMutex                  sync.Mutex
+	migInstancesMinRefreshWaitTime    time.Duration
+	timeProvider                      timeProvider
+	bulkGceMigInstancesListingEnabled bool
 }
 
 type realTime struct{}
@@ -79,15 +82,16 @@ func (r *realTime) Now() time.Time {
 }
 
 // NewCachingMigInfoProvider creates an instance of caching MigInfoProvider
-func NewCachingMigInfoProvider(cache *GceCache, migLister MigLister, gceClient AutoscalingGceClient, projectId string, concurrentGceRefreshes int, migInstancesMinRefreshWaitTime time.Duration) MigInfoProvider {
+func NewCachingMigInfoProvider(cache *GceCache, migLister MigLister, gceClient AutoscalingGceClient, projectId string, concurrentGceRefreshes int, migInstancesMinRefreshWaitTime time.Duration, bulkGceMigInstancesListingEnabled bool) MigInfoProvider {
 	return &cachingMigInfoProvider{
-		cache:                          cache,
-		migLister:                      migLister,
-		gceClient:                      gceClient,
-		projectId:                      projectId,
-		concurrentGceRefreshes:         concurrentGceRefreshes,
-		migInstancesMinRefreshWaitTime: migInstancesMinRefreshWaitTime,
-		timeProvider:                   &realTime{},
+		cache:                             cache,
+		migLister:                         migLister,
+		gceClient:                         gceClient,
+		projectId:                         projectId,
+		concurrentGceRefreshes:            concurrentGceRefreshes,
+		migInstancesMinRefreshWaitTime:    migInstancesMinRefreshWaitTime,
+		timeProvider:                      &realTime{},
+		bulkGceMigInstancesListingEnabled: bulkGceMigInstancesListingEnabled,
 	}
 }
 
@@ -150,6 +154,11 @@ func (c *cachingMigInfoProvider) getCachedMigForInstance(instanceRef GceRef) (Mi
 func (c *cachingMigInfoProvider) RegenerateMigInstancesCache() error {
 	c.cache.InvalidateAllMigInstances()
 	c.cache.InvalidateAllInstancesToMig()
+
+	if c.bulkGceMigInstancesListingEnabled {
+		return c.bulkListMigInstances()
+	}
+
 	migs := c.migLister.GetMigs()
 	errors := make([]error, len(migs))
 	workqueue.ParallelizeUntil(context.Background(), c.concurrentGceRefreshes, len(migs), func(piece int) {
@@ -160,6 +169,127 @@ func (c *cachingMigInfoProvider) RegenerateMigInstancesCache() error {
 		if err != nil {
 			return err
 		}
+	}
+	return nil
+}
+
+func (c *cachingMigInfoProvider) bulkListMigInstances() error {
+	c.cache.InvalidateMigInstancesStateCount()
+	err := c.fillMigInfoCache()
+	if err != nil {
+		return err
+	}
+	instances, listErr := c.listInstancesInAllZonesWithMigs()
+	migToInstances := groupInstancesToMigs(instances)
+	updateErr := c.updateMigInstancesCache(migToInstances)
+
+	if listErr != nil {
+		return listErr
+	}
+	return updateErr
+}
+
+func (c *cachingMigInfoProvider) listInstancesInAllZonesWithMigs() ([]GceInstance, error) {
+	var zones []string
+	for zone := range c.listAllZonesWithMigs() {
+		zones = append(zones, zone)
+	}
+	var allInstances []GceInstance
+	errors := make([]error, len(zones))
+	zoneInstances := make([][]GceInstance, len(zones))
+	defer metrics.UpdateDurationFromStart(metrics.BulkListAllGceInstances, time.Now())
+
+	workqueue.ParallelizeUntil(context.Background(), len(zones), len(zones), func(piece int) {
+		zoneInstances[piece], errors[piece] = c.gceClient.FetchAllInstances(c.projectId, zones[piece], "")
+	})
+
+	for _, instances := range zoneInstances {
+		allInstances = append(allInstances, instances...)
+	}
+	for _, err := range errors {
+		if err != nil {
+			return allInstances, err
+		}
+	}
+	return allInstances, nil
+}
+
+func groupInstancesToMigs(instances []GceInstance) map[GceRef][]GceInstance {
+	migToInstances := map[GceRef][]GceInstance{}
+	for _, instance := range instances {
+		migToInstances[instance.Igm] = append(migToInstances[instance.Igm], instance)
+	}
+	return migToInstances
+}
+
+func (c *cachingMigInfoProvider) isMigInstancesConsistent(mig Mig, migToInstances map[GceRef][]GceInstance) bool {
+	migRef := mig.GceRef()
+	instancesStateCount, found := c.cache.GetMigInstancesStateCount(migRef)
+	if !found {
+		return false
+	}
+	instanceCount := instancesStateCount[cloudprovider.InstanceRunning] + instancesStateCount[cloudprovider.InstanceCreating] + instancesStateCount[cloudprovider.InstanceDeleting]
+
+	instances, found := migToInstances[migRef]
+	if !found && instanceCount > 0 {
+		return false
+	}
+	return instanceCount == int64(len(instances))
+}
+
+func (c *cachingMigInfoProvider) isMigCreatingOrDeletingInstances(mig Mig) bool {
+	migRef := mig.GceRef()
+	instancesStateCount, found := c.cache.GetMigInstancesStateCount(migRef)
+	if !found {
+		return false
+	}
+	return instancesStateCount[cloudprovider.InstanceCreating] > 0 || instancesStateCount[cloudprovider.InstanceDeleting] > 0
+}
+
+// updateMigInstancesCache updates the mig instances for each mig
+func (c *cachingMigInfoProvider) updateMigInstancesCache(migToInstances map[GceRef][]GceInstance) error {
+	defer metrics.UpdateDurationFromStart(metrics.BulkListMigInstances, time.Now())
+	inconsistentInstancesMigsCount := 0
+	defer func() {
+		if inconsistentInstancesMigsCount > 0 {
+			klog.Warningf("Inconsistent instances migs count: %v", inconsistentInstancesMigsCount)
+		}
+		metrics.UpdateInconsistentInstancesMigsCount(inconsistentInstancesMigsCount)
+	}()
+	var errors []error
+	for _, mig := range c.migLister.GetMigs() {
+		migRef := mig.GceRef()
+		// If there is an inconsistency between number of instances according to instances.List
+		// and number of instances according to migInstancesStateCount for the given mig, which can be due to
+		// - abandoned instance
+		// - missing/malformed "created-by" reference
+		// we use an igm.ListInstances call as the authoritative source of instance information
+		if !c.isMigInstancesConsistent(mig, migToInstances) {
+			if err := c.fillMigInstances(migRef); err != nil {
+				errors = append(errors, err)
+			}
+			inconsistentInstancesMigsCount += 1
+			continue
+		}
+
+		// mig instances are re-fetched along with instance.Status.ErrorInfo for migs with
+		// instances in creating or deleting state
+		if c.isMigCreatingOrDeletingInstances(mig) {
+			if err := c.fillMigInstances(migRef); err != nil {
+				errors = append(errors, err)
+			}
+			continue
+		}
+
+		// for all other cases, mig instances cache is updated with the instances obtained from instance.List api
+		instances := migToInstances[migRef]
+		err := c.cache.SetMigInstances(migRef, instances, c.timeProvider.Now())
+		if err != nil {
+			errors = append(errors, err)
+		}
+	}
+	if len(errors) > 0 {
+		return errors[0]
 	}
 	return nil
 }
@@ -359,6 +489,7 @@ func (c *cachingMigInfoProvider) fillMigInfoCache() error {
 				c.cache.SetMigTargetSize(zoneMigRef, zoneMig.TargetSize)
 				c.cache.SetMigBasename(zoneMigRef, zoneMig.BaseInstanceName)
 				c.cache.SetListManagedInstancesResults(zoneMigRef, zoneMig.ListManagedInstancesResults)
+				c.cache.SetMigInstancesStateCount(zoneMigRef, createInstancesStateCount(zoneMig.TargetSize, zoneMig.CurrentActions))
 
 				templateUrl, err := url.Parse(zoneMig.InstanceTemplate)
 				if err == nil {
@@ -443,4 +574,22 @@ func (c *cachingMigInfoProvider) GetListManagedInstancesResults(migRef GceRef) (
 	}
 	c.cache.SetListManagedInstancesResults(migRef, listManagedInstancesResults)
 	return listManagedInstancesResults, nil
+}
+
+func createInstancesStateCount(targetSize int64, actionsSummary *gce.InstanceGroupManagerActionsSummary) map[cloudprovider.InstanceState]int64 {
+	if actionsSummary == nil {
+		return nil
+	}
+	stateCount := map[cloudprovider.InstanceState]int64{
+		cloudprovider.InstanceCreating: 0,
+		cloudprovider.InstanceDeleting: 0,
+		cloudprovider.InstanceRunning:  0,
+	}
+	stateCount[getInstanceState("ABANDONING")] += actionsSummary.Abandoning
+	stateCount[getInstanceState("CREATING")] += actionsSummary.Creating
+	stateCount[getInstanceState("CREATING_WITHOUT_RETRIES")] += actionsSummary.CreatingWithoutRetries
+	stateCount[getInstanceState("DELETING")] += actionsSummary.Deleting
+	stateCount[getInstanceState("RECREATING")] += actionsSummary.Recreating
+	stateCount[cloudprovider.InstanceRunning] = targetSize - stateCount[cloudprovider.InstanceCreating]
+	return stateCount
 }

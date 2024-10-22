@@ -17,34 +17,83 @@ limitations under the License.
 package main
 
 import (
+	"crypto/tls"
 	"os"
+	"path"
+	"sync"
 
+	"github.com/fsnotify/fsnotify"
 	"k8s.io/klog/v2"
 )
 
-type certsContainer struct {
-	caCert, serverKey, serverCert []byte
-}
-
 type certsConfig struct {
 	clientCaFile, tlsCertFile, tlsPrivateKey *string
+	reload                                   *bool
 }
 
 func readFile(filePath string) []byte {
 	res, err := os.ReadFile(filePath)
 	if err != nil {
-		klog.Errorf("Error reading certificate file at %s: %v", filePath, err)
+		klog.ErrorS(err, "Error reading certificate file", "file", filePath)
 		return nil
 	}
-
-	klog.V(3).Infof("Successfully read %d bytes from %v", len(res), filePath)
+	klog.V(3).InfoS("Successfully read bytes from file", "bytes", len(res), "file", filePath)
 	return res
 }
 
-func initCerts(config certsConfig) certsContainer {
-	res := certsContainer{}
-	res.caCert = readFile(*config.clientCaFile)
-	res.serverCert = readFile(*config.tlsCertFile)
-	res.serverKey = readFile(*config.tlsPrivateKey)
-	return res
+type certReloader struct {
+	tlsCertPath string
+	tlsKeyPath  string
+	cert        *tls.Certificate
+	mu          sync.RWMutex
+}
+
+func (cr *certReloader) start(stop <-chan struct{}) error {
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		return err
+	}
+
+	if err = watcher.Add(path.Dir(cr.tlsCertPath)); err != nil {
+		return err
+	}
+	if err = watcher.Add(path.Dir(cr.tlsKeyPath)); err != nil {
+		return err
+	}
+	go func() {
+		defer watcher.Close()
+		for {
+			select {
+			case event := <-watcher.Events:
+				if event.Has(fsnotify.Create) || event.Has(fsnotify.Write) {
+					klog.V(2).InfoS("New certificate found, reloading")
+					if err := cr.load(); err != nil {
+						klog.ErrorS(err, "Failed to reload certificate")
+					}
+				}
+			case err := <-watcher.Errors:
+				klog.Warningf("Error watching certificate files: %s", err)
+			case <-stop:
+				return
+			}
+		}
+	}()
+	return nil
+}
+
+func (cr *certReloader) load() error {
+	cert, err := tls.LoadX509KeyPair(cr.tlsCertPath, cr.tlsKeyPath)
+	if err != nil {
+		return err
+	}
+	cr.mu.Lock()
+	defer cr.mu.Unlock()
+	cr.cert = &cert
+	return nil
+}
+
+func (cr *certReloader) getCertificate(_ *tls.ClientHelloInfo) (*tls.Certificate, error) {
+	cr.mu.RLock()
+	defer cr.mu.RUnlock()
+	return cr.cert, nil
 }

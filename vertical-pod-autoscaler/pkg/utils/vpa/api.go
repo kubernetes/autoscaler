@@ -127,7 +127,7 @@ func stronger(a, b *vpa_types.VerticalPodAutoscaler) bool {
 }
 
 // GetControllingVPAForPod chooses the earliest created VPA from the input list that matches the given Pod.
-func GetControllingVPAForPod(pod *core.Pod, vpas []*VpaWithSelector, ctrlFetcher controllerfetcher.ControllerFetcher) *VpaWithSelector {
+func GetControllingVPAForPod(ctx context.Context, pod *core.Pod, vpas []*VpaWithSelector, ctrlFetcher controllerfetcher.ControllerFetcher) *VpaWithSelector {
 
 	var ownerRefrence *meta.OwnerReference
 	for i := range pod.OwnerReferences {
@@ -148,9 +148,9 @@ func GetControllingVPAForPod(pod *core.Pod, vpas []*VpaWithSelector, ctrlFetcher
 		},
 		ApiVersion: ownerRefrence.APIVersion,
 	}
-	parentController, err := ctrlFetcher.FindTopMostWellKnownOrScalable(k)
+	parentController, err := ctrlFetcher.FindTopMostWellKnownOrScalable(ctx, k)
 	if err != nil {
-		klog.Errorf("fail to get pod controller: pod=%s err=%s", pod.Name, err.Error())
+		klog.Errorf("fail to get pod controller: pod=%s err=%s", klog.KObj(pod), err.Error())
 		return nil
 	}
 	if parentController == nil {
@@ -231,7 +231,7 @@ func CreateOrUpdateVpaCheckpoint(vpaCheckpointClient vpa_api.VerticalPodAutoscal
 		_, err = vpaCheckpointClient.Create(context.TODO(), vpaCheckpoint, meta.CreateOptions{})
 	}
 	if err != nil {
-		return fmt.Errorf("Cannot save checkpoint for vpa %v container %v. Reason: %+v", vpaCheckpoint.ObjectMeta.Name, vpaCheckpoint.Spec.ContainerName, err)
+		return fmt.Errorf("Cannot save checkpoint for vpa %s/%s container %s. Reason: %+v", vpaCheckpoint.Namespace, vpaCheckpoint.Name, vpaCheckpoint.Spec.ContainerName, err)
 	}
 	return nil
 }

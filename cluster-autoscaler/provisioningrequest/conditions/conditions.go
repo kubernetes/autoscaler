@@ -19,45 +19,54 @@ package conditions
 import (
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1beta1"
+	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
 	"k8s.io/klog/v2"
 )
 
 const (
-	//AcceptedReason is added when ProvisioningRequest is accepted by ClusterAutoscaler
+	// AcceptedReason is added when ProvisioningRequest is accepted by ClusterAutoscaler
 	AcceptedReason = "Accepted"
-	//AcceptedMsg is added when ProvisioningRequest is accepted by ClusterAutoscaler
+	// AcceptedMsg is added when ProvisioningRequest is accepted by ClusterAutoscaler
 	AcceptedMsg = "ProvisioningRequest is accepted by ClusterAutoscaler"
-	//CapacityIsNotFoundReason is added when capacity was not found in the cluster.
+	// CapacityIsNotFoundReason is added when capacity was not found in the cluster.
 	CapacityIsNotFoundReason = "CapacityIsNotFound"
-	//CapacityIsFoundReason is added when capacity was found in the cluster.
+	// CapacityIsFoundReason is added when capacity was found in the cluster.
 	CapacityIsFoundReason = "CapacityIsFound"
 	// CapacityIsFoundMsg is added when capacity was found in the cluster.
 	CapacityIsFoundMsg = "Capacity is found in the cluster"
-	//FailedToCreatePodsReason is added when CA failed to create pods for ProvisioningRequest.
+	// CapacityIsProvisionedReason is added when capacity was requested successfully.
+	CapacityIsProvisionedReason = "CapacityIsProvisioned"
+	// CapacityIsProvisionedMsg is added when capacity was requested successfully.
+	CapacityIsProvisionedMsg = "Capacity is found in the cluster"
+	// FailedToCheckCapacityReason is added when CA failed to check pre-existing capacity.
+	FailedToCheckCapacityReason = "FailedToCheckCapacity"
+	// FailedToCheckCapacityMsg is added when CA failed to check pre-existing capacity.
+	FailedToCheckCapacityMsg = "Failed to check pre-existing capacity in the cluster"
+	// FailedToCreatePodsReason is added when CA failed to create pods for ProvisioningRequest.
 	FailedToCreatePodsReason = "FailedToCreatePods"
-	//FailedToBookCapacityReason is added when Cluster Autoscaler failed to book capacity in the cluster.
+	// FailedToBookCapacityReason is added when Cluster Autoscaler failed to book capacity in the cluster.
 	FailedToBookCapacityReason = "FailedToBookCapacity"
-	//CapacityReservationTimeExpiredReason is added whed capacity reservation time is expired.
+	// CapacityReservationTimeExpiredReason is added whed capacity reservation time is expired.
 	CapacityReservationTimeExpiredReason = "CapacityReservationTimeExpired"
-	//CapacityReservationTimeExpiredMsg is added if capacity reservation time is expired.
+	// CapacityReservationTimeExpiredMsg is added if capacity reservation time is expired.
 	CapacityReservationTimeExpiredMsg = "Capacity reservation time is expired"
-	//ExpiredReason is added if ProvisioningRequest is expired.
+	// ExpiredReason is added if ProvisioningRequest is expired.
 	ExpiredReason = "Expired"
-	//ExpiredMsg is added if ProvisioningRequest is expired.
+	// ExpiredMsg is added if ProvisioningRequest is expired.
 	ExpiredMsg = "ProvisioningRequest is expired"
 )
 
 // ShouldCapacityBeBooked returns whether capacity should be booked.
 func ShouldCapacityBeBooked(pr *provreqwrapper.ProvisioningRequest) bool {
-	if pr.Spec.ProvisioningClassName != v1beta1.ProvisioningClassCheckCapacity {
+	if ok, found := provisioningrequest.SupportedProvisioningClasses[pr.Spec.ProvisioningClassName]; !ok || !found {
 		return false
 	}
 	conditions := pr.Status.Conditions
-	if apimeta.IsStatusConditionTrue(conditions, v1beta1.Failed) || apimeta.IsStatusConditionTrue(conditions, v1beta1.BookingExpired) {
+	if apimeta.IsStatusConditionTrue(conditions, v1.Failed) || apimeta.IsStatusConditionTrue(conditions, v1.BookingExpired) {
 		return false
-	} else if apimeta.IsStatusConditionTrue(conditions, v1beta1.Provisioned) {
+	} else if apimeta.IsStatusConditionTrue(conditions, v1.Provisioned) {
 		return true
 	}
 	return false
@@ -76,7 +85,7 @@ func AddOrUpdateCondition(pr *provreqwrapper.ProvisioningRequest, conditionType 
 	}
 	prevConditions := pr.Status.Conditions
 	switch conditionType {
-	case v1beta1.Provisioned, v1beta1.BookingExpired, v1beta1.Failed, v1beta1.Accepted:
+	case v1.Provisioned, v1.BookingExpired, v1.Failed, v1.Accepted:
 		conditionFound := false
 		for _, condition := range prevConditions {
 			if condition.Type == conditionType {

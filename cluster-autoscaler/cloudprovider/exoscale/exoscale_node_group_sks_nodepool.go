@@ -28,6 +28,10 @@ import (
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
+const (
+	scaleToZeroSupported = false
+)
+
 // sksNodepoolNodeGroup implements cloudprovider.NodeGroup interface for Exoscale SKS Nodepools.
 type sksNodepoolNodeGroup struct {
 	sksNodepool *egoscale.SKSNodepool
@@ -36,21 +40,19 @@ type sksNodepoolNodeGroup struct {
 	m *Manager
 
 	sync.Mutex
+
+	minSize int
+	maxSize int
 }
 
 // MaxSize returns maximum size of the node group.
 func (n *sksNodepoolNodeGroup) MaxSize() int {
-	limit, err := n.m.computeInstanceQuota()
-	if err != nil {
-		return 0
-	}
-
-	return limit
+	return n.maxSize
 }
 
 // MinSize returns minimum size of the node group.
 func (n *sksNodepoolNodeGroup) MinSize() int {
-	return 1
+	return n.minSize
 }
 
 // TargetSize returns the current target size of the node group. It is possible that the

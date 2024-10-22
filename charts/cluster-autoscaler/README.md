@@ -238,10 +238,20 @@ Additional config parameters available, see the `values.yaml` for more details
 
 ### Exoscale
 
-The following parameters are required:
+Create a `values.yaml` file with the following content:
+```yaml
+cloudProvider: exoscale
+autoDiscovery:
+  clusterName: cluster.local # this value is not used, but must be set
+```
 
-- `cloudProvider=exoscale`
-- `autoDiscovery.clusterName=<CLUSTER NAME>`
+Optionally, you may specify the minimum and maximum size of a particular nodepool by adding the following to the `values.yaml` file:
+```yaml
+autoscalingGroups:
+  - name: your-nodepool-name
+    maxSize: 10
+    minSize: 1
+```
 
 Create an Exoscale API key with appropriate permissions as described in [cluster-autoscaler/cloudprovider/exoscale/README.md](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/exoscale/README.md).
 A secret of name `<release-name>-exoscale-cluster-autoscaler` needs to be created, containing the api key and secret, as well as the zone.
@@ -255,9 +265,7 @@ $ kubectl create secret generic my-release-exoscale-cluster-autoscaler \
 After creating the secret, the chart may be installed:
 
 ```console
-$ helm install my-release autoscaler/cluster-autoscaler \
-    --set cloudProvider=exoscale \
-    --set autoDiscovery.clusterName=<CLUSTER NAME>
+$ helm install my-release autoscaler/cluster-autoscaler -f values.yaml
 ```
 
 Read [cluster-autoscaler/cloudprovider/exoscale/README.md](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/exoscale/README.md) for further information on the setup without helm.
@@ -391,7 +399,7 @@ vpa:
 | autoDiscovery.namespace | string | `nil` | Enable autodiscovery via cluster namespace for for `cloudProvider=clusterapi` |
 | autoDiscovery.roles | list | `["worker"]` | Magnum node group roles to match. |
 | autoDiscovery.tags | list | `["k8s.io/cluster-autoscaler/enabled","k8s.io/cluster-autoscaler/{{ .Values.autoDiscovery.clusterName }}"]` | ASG tags to match, run through `tpl`. |
-| autoscalingGroups | list | `[]` | For AWS, Azure AKS or Magnum. At least one element is required if not using `autoDiscovery`. For example: <pre> - name: asg1<br />   maxSize: 2<br />   minSize: 1 </pre> For Hetzner Cloud, the `instanceType` and `region` keys are also required. <pre> - name: mypool<br />   maxSize: 2<br />   minSize: 1<br />   instanceType: CPX21<br />   region: FSN1 </pre> |
+| autoscalingGroups | list | `[]` | For AWS, Azure AKS, Exoscale or Magnum. At least one element is required if not using `autoDiscovery`. For example: <pre> - name: asg1<br />   maxSize: 2<br />   minSize: 1 </pre> For Hetzner Cloud, the `instanceType` and `region` keys are also required. <pre> - name: mypool<br />   maxSize: 2<br />   minSize: 1<br />   instanceType: CPX21<br />   region: FSN1 </pre> |
 | autoscalingGroupsnamePrefix | list | `[]` | For GCE. At least one element is required if not using `autoDiscovery`. For example: <pre> - name: ig01<br />   maxSize: 10<br />   minSize: 0 </pre> |
 | awsAccessKeyID | string | `""` | AWS access key ID ([if AWS user keys used](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md#using-aws-credentials)) |
 | awsRegion | string | `"us-east-1"` | AWS region (required if `cloudProvider=aws`) |
@@ -422,6 +430,7 @@ vpa:
 | extraEnv | object | `{}` | Additional container environment variables. |
 | extraEnvConfigMaps | object | `{}` | Additional container environment variables from ConfigMaps. |
 | extraEnvSecrets | object | `{}` | Additional container environment variables from Secrets. |
+| extraObjects | list | `[]` | Extra K8s manifests to deploy |
 | extraVolumeMounts | list | `[]` | Additional volumes to mount. |
 | extraVolumeSecrets | object | `{}` | Additional volumes to mount from Secrets. |
 | extraVolumes | list | `[]` | Additional volumes. |
@@ -430,7 +439,8 @@ vpa:
 | image.pullPolicy | string | `"IfNotPresent"` | Image pull policy |
 | image.pullSecrets | list | `[]` | Image pull secrets |
 | image.repository | string | `"registry.k8s.io/autoscaling/cluster-autoscaler"` | Image repository |
-| image.tag | string | `"v1.30.0"` | Image tag |
+| image.tag | string | `"v1.31.0"` | Image tag |
+| initContainers | list | `[]` | Any additional init containers. |
 | kubeTargetVersionOverride | string | `""` | Allow overriding the `.Capabilities.KubeVersion.GitVersion` check. Useful for `helm template` commands. |
 | kwokConfigMapName | string | `"kwok-provider-config"` | configmap for configuring kwok provider |
 | magnumCABundlePath | string | `"/etc/kubernetes/ca-bundle.crt"` | Path to the host's CA bundle, from `ca-file` in the cloud-config file. |
@@ -461,7 +471,7 @@ vpa:
 | securityContext | object | `{}` | [Security context for pod](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/) |
 | service.annotations | object | `{}` | Annotations to add to service |
 | service.create | bool | `true` | If `true`, a Service will be created. |
-| service.externalIPs | list | `[]` | List of IP addresses at which the service is available. Ref: https://kubernetes.io/docs/user-guide/services/#external-ips. |
+| service.externalIPs | list | `[]` | List of IP addresses at which the service is available. Ref: https://kubernetes.io/docs/concepts/services-networking/service/#external-ips. |
 | service.labels | object | `{}` | Labels to add to service |
 | service.loadBalancerIP | string | `""` | IP address to assign to load balancer (if supported). |
 | service.loadBalancerSourceRanges | list | `[]` | List of IP CIDRs allowed access to load balancer (if supported). |
@@ -474,6 +484,7 @@ vpa:
 | serviceMonitor.metricRelabelings | object | `{}` | MetricRelabelConfigs to apply to samples before ingestion. |
 | serviceMonitor.namespace | string | `"monitoring"` | Namespace which Prometheus is running in. |
 | serviceMonitor.path | string | `"/metrics"` | The path to scrape for metrics; autoscaler exposes `/metrics` (this is standard) |
+| serviceMonitor.relabelings | object | `{}` | RelabelConfigs to apply to metrics before scraping. |
 | serviceMonitor.selector | object | `{"release":"prometheus-operator"}` | Default to kube-prometheus install (CoreOS recommended), but should be set according to Prometheus install. |
 | tolerations | list | `[]` | List of node taints to tolerate (requires Kubernetes >= 1.6). |
 | topologySpreadConstraints | list | `[]` | You can use topology spread constraints to control how Pods are spread across your cluster among failure-domains such as regions, zones, nodes, and other user-defined topology domains. (requires Kubernetes >= 1.19). |

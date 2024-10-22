@@ -29,16 +29,19 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
 	corev1helpers "k8s.io/component-helpers/scheduling/corev1"
 	klog "k8s.io/klog/v2"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 type filterOutSchedulablePodListProcessor struct {
 	schedulingSimulator *scheduling.HintingSimulator
+	nodeFilter          func(*schedulerframework.NodeInfo) bool
 }
 
 // NewFilterOutSchedulablePodListProcessor creates a PodListProcessor filtering out schedulable pods
-func NewFilterOutSchedulablePodListProcessor(predicateChecker predicatechecker.PredicateChecker) *filterOutSchedulablePodListProcessor {
+func NewFilterOutSchedulablePodListProcessor(predicateChecker predicatechecker.PredicateChecker, nodeFilter func(*schedulerframework.NodeInfo) bool) *filterOutSchedulablePodListProcessor {
 	return &filterOutSchedulablePodListProcessor{
 		schedulingSimulator: scheduling.NewHintingSimulator(predicateChecker),
+		nodeFilter:          nodeFilter,
 	}
 }
 
@@ -98,7 +101,7 @@ func (p *filterOutSchedulablePodListProcessor) filterOutSchedulableByPacking(uns
 		return corev1helpers.PodPriority(unschedulableCandidates[i]) > corev1helpers.PodPriority(unschedulableCandidates[j])
 	})
 
-	statuses, overflowingControllerCount, err := p.schedulingSimulator.TrySchedulePods(clusterSnapshot, unschedulableCandidates, scheduling.ScheduleAnywhere, false)
+	statuses, overflowingControllerCount, err := p.schedulingSimulator.TrySchedulePods(clusterSnapshot, unschedulableCandidates, p.nodeFilter, false)
 	if err != nil {
 		return nil, err
 	}

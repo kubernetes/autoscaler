@@ -17,10 +17,11 @@ limitations under the License.
 package utils
 
 import (
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/test"
-	"testing"
 )
 
 func TestPodSpecSemanticallyEqual(t *testing.T) {
@@ -42,6 +43,26 @@ func TestPodSpecSemanticallyEqual(t *testing.T) {
 			p2Spec: apiv1.PodSpec{
 				Volumes: []apiv1.Volume{
 					{Name: "projected2", VolumeSource: apiv1.VolumeSource{Projected: projectedSAVol}},
+				},
+			},
+			result: true,
+		},
+		{
+			name: "two pods with different ENV",
+			p1Spec: apiv1.PodSpec{
+				Containers: []apiv1.Container{
+					{Env: []apiv1.EnvVar{{Name: "foo", Value: "bar"}}},
+				},
+				InitContainers: []apiv1.Container{
+					{Env: []apiv1.EnvVar{{Name: "foo", Value: "bar"}}},
+				},
+			},
+			p2Spec: apiv1.PodSpec{
+				Containers: []apiv1.Container{
+					{Env: []apiv1.EnvVar{{Name: "baz", Value: "foo"}}},
+				},
+				InitContainers: []apiv1.Container{
+					{Env: []apiv1.EnvVar{{Name: "baz", Value: "bar"}}},
 				},
 			},
 			result: true,
@@ -72,6 +93,7 @@ func TestPodSpecSemanticallyEqual(t *testing.T) {
 					{Image: "foo/baz", Name: "foobaz"},
 				},
 			},
+			result: false,
 		},
 		{
 			name: "two pods with different hostnames",
@@ -177,6 +199,27 @@ func TestSanitizePodSpec(t *testing.T) {
 					{Image: "foo/bar", Name: "foobar"},
 					{Image: "foo/baz", Name: "foo/baz", VolumeMounts: []apiv1.VolumeMount{{Name: "volume-nz94b"}, {Name: "empty-dir"}}},
 					{Image: "foo/qux", Name: "foo/qux"},
+				},
+			},
+		},
+		{
+			name: "pod spec with env",
+			inputPodSpec: apiv1.PodSpec{
+				NodeSelector: map[string]string{"foo": "bar"},
+				Containers: []apiv1.Container{
+					{Image: "foo/bar", Name: "foobar", Env: []apiv1.EnvVar{{Name: "foo", Value: "bar"}}},
+				},
+				InitContainers: []apiv1.Container{
+					{Image: "foo/baz", Name: "foobaz", Env: []apiv1.EnvVar{{Name: "foo2", Value: "bar2"}}},
+				},
+			},
+			outputPodSpec: apiv1.PodSpec{
+				NodeSelector: map[string]string{"foo": "bar"},
+				Containers: []apiv1.Container{
+					{Image: "foo/bar", Name: "foobar"},
+				},
+				InitContainers: []apiv1.Container{
+					{Image: "foo/baz", Name: "foobaz"},
 				},
 			},
 		},

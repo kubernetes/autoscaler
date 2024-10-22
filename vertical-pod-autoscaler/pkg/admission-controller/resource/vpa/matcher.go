@@ -17,6 +17,8 @@ limitations under the License.
 package vpa
 
 import (
+	"context"
+
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/klog/v2"
@@ -31,7 +33,7 @@ import (
 // Matcher is capable of returning a single matching VPA object
 // for a pod. Will return nil if no matching object is found.
 type Matcher interface {
-	GetMatchingVPA(pod *core.Pod) *vpa_types.VerticalPodAutoscaler
+	GetMatchingVPA(ctx context.Context, pod *core.Pod) *vpa_types.VerticalPodAutoscaler
 }
 
 type matcher struct {
@@ -49,10 +51,10 @@ func NewMatcher(vpaLister vpa_lister.VerticalPodAutoscalerLister,
 		controllerFetcher: controllerFetcher}
 }
 
-func (m *matcher) GetMatchingVPA(pod *core.Pod) *vpa_types.VerticalPodAutoscaler {
+func (m *matcher) GetMatchingVPA(ctx context.Context, pod *core.Pod) *vpa_types.VerticalPodAutoscaler {
 	configs, err := m.vpaLister.VerticalPodAutoscalers(pod.Namespace).List(labels.Everything())
 	if err != nil {
-		klog.Errorf("failed to get vpa configs: %v", err)
+		klog.ErrorS(err, "Failed to get vpa configs")
 		return nil
 	}
 	onConfigs := make([]*vpa_api_util.VpaWithSelector, 0)
@@ -60,9 +62,9 @@ func (m *matcher) GetMatchingVPA(pod *core.Pod) *vpa_types.VerticalPodAutoscaler
 		if vpa_api_util.GetUpdateMode(vpaConfig) == vpa_types.UpdateModeOff {
 			continue
 		}
-		selector, err := m.selectorFetcher.Fetch(vpaConfig)
+		selector, err := m.selectorFetcher.Fetch(ctx, vpaConfig)
 		if err != nil {
-			klog.V(3).Infof("skipping VPA object %v because we cannot fetch selector: %s", vpaConfig.Name, err)
+			klog.V(3).InfoS("Skipping VPA object because we cannot fetch selector", "vpa", klog.KObj(vpaConfig), "error", err)
 			continue
 		}
 		onConfigs = append(onConfigs, &vpa_api_util.VpaWithSelector{
@@ -70,8 +72,8 @@ func (m *matcher) GetMatchingVPA(pod *core.Pod) *vpa_types.VerticalPodAutoscaler
 			Selector: selector,
 		})
 	}
-	klog.V(2).Infof("Let's choose from %d configs for pod %s/%s", len(onConfigs), pod.Namespace, pod.Name)
-	result := vpa_api_util.GetControllingVPAForPod(pod, onConfigs, m.controllerFetcher)
+	klog.V(2).InfoS("Let's choose from", "configs", len(onConfigs), "pod", klog.KObj(pod))
+	result := vpa_api_util.GetControllingVPAForPod(ctx, pod, onConfigs, m.controllerFetcher)
 	if result != nil {
 		return result.Vpa
 	}

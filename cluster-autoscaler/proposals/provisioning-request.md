@@ -184,9 +184,12 @@ not required in ProvReq’s template, though can be specified):
 
 ```yaml
 annotations:
-    "cluster-autoscaler.kubernetes.io/provisioning-class-name": "provreq-class-name"
-    "cluster-autoscaler.kubernetes.io/consume-provisioning-request": "provreq-name"
+    "autoscaling.x-k8s.io/provisioning-class-name": "provreq-class-name"
+    "autoscaling.x-k8s.io/consume-provisioning-request": "provreq-name"
 ```
+
+Previous prosoal included annotations with prefix `cluster-autoscaler.kubernetes.io`
+but were deprecated as part of API reivew.
 
 If those are provided for the pods that consume the ProvReq with `check-capacity.kubernetes.io` class,
 the CA will not provision the capacity, even if it was needed (as some other pods might have been

@@ -18,10 +18,13 @@ package priority
 
 import (
 	"flag"
+	"fmt"
 	"sort"
+	"strings"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/util/sets"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
@@ -81,7 +84,7 @@ func NewUpdatePriorityCalculator(vpa *vpa_types.VerticalPodAutoscaler,
 func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, now time.Time) {
 	processedRecommendation, _, err := calc.recommendationProcessor.Apply(calc.vpa.Status.Recommendation, calc.vpa.Spec.ResourcePolicy, calc.vpa.Status.Conditions, pod)
 	if err != nil {
-		klog.V(2).Infof("cannot process recommendation for pod %s/%s: %v", pod.Namespace, pod.Name, err)
+		klog.V(2).Infof("cannot process recommendation for pod %s: %v", klog.KObj(pod), err)
 		return
 	}
 
@@ -111,7 +114,7 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, now time.Time) {
 			terminationState.Terminated.Reason == "OOMKilled" &&
 			terminationState.Terminated.FinishedAt.Time.Sub(terminationState.Terminated.StartedAt.Time) < *evictAfterOOMThreshold {
 			quickOOM = true
-			klog.V(2).Infof("quick OOM detected in pod %v/%v, container %v", pod.Namespace, pod.Name, cs.Name)
+			klog.V(2).Infof("quick OOM detected in pod %s, container %v", klog.KObj(pod), cs.Name)
 		}
 	}
 
@@ -122,25 +125,25 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, now time.Time) {
 	if !updatePriority.OutsideRecommendedRange && !quickOOM {
 		if pod.Status.StartTime == nil {
 			// TODO: Set proper condition on the VPA.
-			klog.V(4).Infof("not updating pod %v/%v, missing field pod.Status.StartTime", pod.Namespace, pod.Name)
+			klog.V(4).Infof("not updating pod %s, missing field pod.Status.StartTime", klog.KObj(pod))
 			return
 		}
 		if now.Before(pod.Status.StartTime.Add(*podLifetimeUpdateThreshold)) {
-			klog.V(4).Infof("not updating a short-lived pod %v/%v, request within recommended range", pod.Namespace, pod.Name)
+			klog.V(4).Infof("not updating a short-lived pod %s, request within recommended range", klog.KObj(pod))
 			return
 		}
 		if updatePriority.ResourceDiff < calc.config.MinChangePriority {
-			klog.V(4).Infof("not updating pod %v/%v, resource diff too low: %v", pod.Namespace, pod.Name, updatePriority)
+			klog.V(4).Infof("not updating pod %s, resource diff too low: %v", klog.KObj(pod), updatePriority)
 			return
 		}
 	}
 
 	// If the pod has quick OOMed then evict only if the resources will change
 	if quickOOM && updatePriority.ResourceDiff == 0 {
-		klog.V(4).Infof("not updating pod %v/%v because resource would not change", pod.Namespace, pod.Name)
+		klog.V(4).Infof("not updating pod %s because resource would not change", klog.KObj(pod))
 		return
 	}
-	klog.V(2).Infof("pod accepted for update %v/%v with priority %v", pod.Namespace, pod.Name, updatePriority.ResourceDiff)
+	klog.V(2).Infof("pod accepted for update %s with priority %v - processed recommendations:\n%v", klog.KObj(pod), updatePriority.ResourceDiff, calc.GetProcessedRecommendationTargets(processedRecommendation))
 	calc.pods = append(calc.pods, prioritizedPod{
 		pod:            pod,
 		priority:       updatePriority,
@@ -161,6 +164,35 @@ func (calc *UpdatePriorityCalculator) GetSortedPods(admission PodEvictionAdmissi
 	}
 
 	return result
+}
+
+// GetProcessedRecommendationTargets takes a RecommendedPodResources object and returns a formatted string
+// with the recommended pod resources. Specifically, it formats the target and uncapped target CPU and memory.
+func (calc *UpdatePriorityCalculator) GetProcessedRecommendationTargets(r *vpa_types.RecommendedPodResources) string {
+	sb := &strings.Builder{}
+	for _, cr := range r.ContainerRecommendations {
+		sb.WriteString(fmt.Sprintf("%s: ", cr.ContainerName))
+		if cr.Target != nil {
+			sb.WriteString("target: ")
+			if !cr.Target.Memory().IsZero() {
+				sb.WriteString(fmt.Sprintf("%dk ", cr.Target.Memory().ScaledValue(resource.Kilo)))
+			}
+			if !cr.Target.Cpu().IsZero() {
+				sb.WriteString(fmt.Sprintf("%vm; ", cr.Target.Cpu().MilliValue()))
+			}
+		}
+		if cr.UncappedTarget != nil {
+			sb.WriteString("uncappedTarget: ")
+			if !cr.UncappedTarget.Memory().IsZero() {
+				sb.WriteString(fmt.Sprintf("%dk ", cr.UncappedTarget.Memory().ScaledValue(resource.Kilo)))
+			}
+			if !cr.UncappedTarget.Cpu().IsZero() {
+				sb.WriteString(fmt.Sprintf("%vm;", cr.UncappedTarget.Cpu().MilliValue()))
+			}
+		}
+		sb.WriteString("\n")
+	}
+	return sb.String()
 }
 
 func parseVpaObservedContainers(pod *apiv1.Pod) (bool, sets.String) {

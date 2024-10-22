@@ -200,4 +200,8 @@ const (
 	// ProvisioningClassBestEffortAtomicScaleUp denotes that CA try to provision the capacity
 	// in an atomic manner.
 	ProvisioningClassBestEffortAtomicScaleUp string = "best-effort-atomic-scale-up.autoscaling.x-k8s.io"
+	// ProvisioningRequestPodAnnotationKey is a key used to annotate pods consuming provisioning request.
+	ProvisioningRequestPodAnnotationKey = "autoscaling.x-k8s.io/consume-provisioning-request"
+	// ProvisioningClassPodAnnotationKey is a key used to add annotation about Provisioning Class
+	ProvisioningClassPodAnnotationKey = "autoscaling.x-k8s.io/provisioning-class-name"
 )

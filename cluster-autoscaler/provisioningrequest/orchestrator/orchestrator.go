@@ -21,27 +21,21 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1beta1"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
-	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/checkcapacity"
-	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/conditions"
-	provreq_pods "k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/pods"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqclient"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
 	ca_errors "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
-	"k8s.io/client-go/rest"
-	"k8s.io/klog/v2"
 
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
-type provisioningClass interface {
+// ProvisioningClass is an interface for ProvisioningRequests.
+type ProvisioningClass interface {
 	Provision([]*apiv1.Pod, []*apiv1.Node, []*appsv1.DaemonSet,
 		map[string]*schedulerframework.NodeInfo) (*status.ScaleUpStatus, ca_errors.AutoscalerError)
 	Initialize(*context.AutoscalingContext, *ca_processors.AutoscalingProcessors, *clusterstate.ClusterStateRegistry,
@@ -54,17 +48,15 @@ type provReqOrchestrator struct {
 	context             *context.AutoscalingContext
 	client              *provreqclient.ProvisioningRequestClient
 	injector            *scheduling.HintingSimulator
-	provisioningClasses []provisioningClass
+	provisioningClasses []ProvisioningClass
 }
 
 // New return new orchestrator.
-func New(kubeConfig *rest.Config) (*provReqOrchestrator, error) {
-	client, err := provreqclient.NewProvisioningRequestClient(kubeConfig)
-	if err != nil {
-		return nil, err
+func New(client *provreqclient.ProvisioningRequestClient, classes []ProvisioningClass) *provReqOrchestrator {
+	return &provReqOrchestrator{
+		client:              client,
+		provisioningClasses: classes,
 	}
-
-	return &provReqOrchestrator{client: client, provisioningClasses: []provisioningClass{checkcapacity.New(client)}}, nil
 }
 
 // Initialize initialize orchestrator.
@@ -99,7 +91,6 @@ func (o *provReqOrchestrator) ScaleUp(
 
 	o.context.ClusterSnapshot.Fork()
 	defer o.context.ClusterSnapshot.Revert()
-	o.bookCapacity()
 
 	// unschedulablePods pods should belong to one ProvisioningClass, so only one provClass should try to ScaleUp.
 	for _, provClass := range o.provisioningClasses {
@@ -117,36 +108,4 @@ func (o *provReqOrchestrator) ScaleUpToNodeGroupMinSize(
 	nodeInfos map[string]*schedulerframework.NodeInfo,
 ) (*status.ScaleUpStatus, ca_errors.AutoscalerError) {
 	return nil, nil
-}
-
-func (o *provReqOrchestrator) bookCapacity() error {
-	provReqs, err := o.client.ProvisioningRequests()
-	if err != nil {
-		return fmt.Errorf("couldn't fetch ProvisioningRequests in the cluster: %v", err)
-	}
-	podsToCreate := []*apiv1.Pod{}
-	for _, provReq := range provReqs {
-		if conditions.ShouldCapacityBeBooked(provReq) {
-			pods, err := provreq_pods.PodsForProvisioningRequest(provReq)
-			if err != nil {
-				// ClusterAutoscaler was able to create pods before, so we shouldn't have error here.
-				// If there is an error, mark PR as invalid, because we won't be able to book capacity
-				// for it anyway.
-				conditions.AddOrUpdateCondition(provReq, v1beta1.Failed, metav1.ConditionTrue, conditions.FailedToBookCapacityReason, fmt.Sprintf("Couldn't create pods, err: %v", err), metav1.Now())
-				if _, err := o.client.UpdateProvisioningRequest(provReq.ProvisioningRequest); err != nil {
-					klog.Errorf("failed to add Accepted condition to ProvReq %s/%s, err: %v", provReq.Namespace, provReq.Name, err)
-				}
-				continue
-			}
-			podsToCreate = append(podsToCreate, pods...)
-		}
-	}
-	if len(podsToCreate) == 0 {
-		return nil
-	}
-	// scheduling the pods to reserve capacity for provisioning request with BookCapacity condition
-	if _, _, err = o.injector.TrySchedulePods(o.context.ClusterSnapshot, podsToCreate, scheduling.ScheduleAnywhere, false); err != nil {
-		klog.Warningf("Error during capacity booking: %v", err)
-	}
-	return nil
 }

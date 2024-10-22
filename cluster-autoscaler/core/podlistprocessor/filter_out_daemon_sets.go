@@ -37,8 +37,6 @@ func (p *filterOutDaemonSetPodListProcessor) Process(context *context.Autoscalin
 	// for scheduling. To improve that we are filtering them here, as the CA won't be
 	// able to help them so there is no point to in passing them to scale-up logic.
 
-	klog.V(4).Infof("Filtering out daemon set pods")
-
 	var nonDaemonSetPods []*apiv1.Pod
 	for _, pod := range unschedulablePods {
 		if !podutils.IsDaemonSetPod(pod) {
