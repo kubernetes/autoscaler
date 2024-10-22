@@ -64,7 +64,7 @@ func getVpasToCheckpoint(clusterVpas map[model.VpaID]*model.Vpa) []*model.Vpa {
 	vpas := make([]*model.Vpa, 0, len(clusterVpas))
 	for _, vpa := range clusterVpas {
 		if isFetchingHistory(vpa) {
-			klog.V(3).Infof("VPA %s is loading history, skipping checkpoints", klog.KRef(vpa.ID.Namespace, vpa.ID.VpaName))
+			klog.V(3).InfoS("VPA is loading history, skipping checkpoints", "vpa", klog.KRef(vpa.ID.Namespace, vpa.ID.VpaName))
 			continue
 		}
 		vpas = append(vpas, vpa)
@@ -94,7 +94,7 @@ func (writer *checkpointWriter) StoreCheckpoints(ctx context.Context, now time.T
 		for container, aggregatedContainerState := range aggregateContainerStateMap {
 			containerCheckpoint, err := aggregatedContainerState.SaveToCheckpoint()
 			if err != nil {
-				klog.Errorf("Cannot serialize checkpoint for vpa %s/%s container %v. Reason: %+v", vpa.ID.Namespace, vpa.ID.VpaName, container, err)
+				klog.ErrorS(err, "Cannot serialize checkpoint", "vpa", klog.KRef(vpa.ID.Namespace, vpa.ID.VpaName), "container", container)
 				continue
 			}
 			checkpointName := fmt.Sprintf("%s-%s", vpa.ID.VpaName, container)
@@ -108,11 +108,9 @@ func (writer *checkpointWriter) StoreCheckpoints(ctx context.Context, now time.T
 			}
 			err = api_util.CreateOrUpdateVpaCheckpoint(writer.vpaCheckpointClient.VerticalPodAutoscalerCheckpoints(vpa.ID.Namespace), &vpaCheckpoint)
 			if err != nil {
-				klog.Errorf("Cannot save VPA %s/%s checkpoint for %s. Reason: %+v",
-					vpa.ID.Namespace, vpaCheckpoint.Spec.VPAObjectName, vpaCheckpoint.Spec.ContainerName, err)
+				klog.ErrorS(err, "Cannot save checkpoint for VPA", klog.KRef(vpa.ID.Namespace, vpaCheckpoint.Spec.VPAObjectName), "container", vpaCheckpoint.Spec.ContainerName)
 			} else {
-				klog.V(3).Infof("Saved VPA %s/%s checkpoint for %s",
-					vpa.ID.Namespace, vpaCheckpoint.Spec.VPAObjectName, vpaCheckpoint.Spec.ContainerName)
+				klog.V(3).InfoS("Saved checkpoint for VPA", klog.KRef(vpa.ID.Namespace, vpaCheckpoint.Spec.VPAObjectName), "container", vpaCheckpoint.Spec.ContainerName)
 				vpa.CheckpointWritten = now
 			}
 			minCheckpoints--
