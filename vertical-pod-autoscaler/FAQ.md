@@ -156,6 +156,8 @@ spec:
   - name: updater
     args:
     - "--min-replicas=1"
+    - "--v=4"
+    - "--stderrthreshold=info"
 ```
 
 and then deploy it manually if your vpa is already configured.

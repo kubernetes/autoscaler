@@ -19,14 +19,11 @@ package metrics
 
 import (
 	"math"
-	"net/http"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	_ "k8s.io/component-base/metrics/prometheus/restclient" // for client-go metrics registration
-	"k8s.io/klog/v2"
 )
 
 // ExecutionTimer measures execution time of a computation, split into major steps
@@ -45,18 +42,6 @@ const (
 	// Anything above that size will be reported in the top bucket.
 	MaxVpaSizeLog = 20
 )
-
-// Initialize sets up Prometheus to expose metrics & (optionally) health-check on the given address
-func Initialize(address string, healthCheck *HealthCheck) {
-	go func() {
-		http.Handle("/metrics", promhttp.Handler())
-		if healthCheck != nil {
-			http.Handle("/health-check", healthCheck)
-		}
-		err := http.ListenAndServe(address, nil)
-		klog.Fatalf("Failed to start metrics: %v", err)
-	}()
-}
 
 // NewExecutionTimer provides a timer for admission latency; call ObserveXXX() on it to measure
 func NewExecutionTimer(histo *prometheus.HistogramVec) *ExecutionTimer {

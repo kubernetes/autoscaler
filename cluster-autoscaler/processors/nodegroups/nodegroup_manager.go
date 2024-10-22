@@ -42,9 +42,9 @@ type NodeGroupManager interface {
 
 // AsyncNodeGroupCreationResult captures result of NodeGroupManager.CreateNodeGroupAsync call.
 type AsyncNodeGroupCreationResult struct {
-	TargetSizes    map[string]int
-	CreationResult CreateNodeGroupResult
-	Error          errors.AutoscalerError
+	CreationResult           CreateNodeGroupResult
+	Error                    errors.AutoscalerError
+	CreatedToUpcomingMapping map[string]string
 }
 
 // AsyncNodeGroupInitializer is responsible for initializing asynchronously created node groups.
@@ -52,6 +52,19 @@ type AsyncNodeGroupCreationResult struct {
 type AsyncNodeGroupInitializer interface {
 	// InitializeNodeGroup initializes asynchronously created node group.
 	InitializeNodeGroup(result AsyncNodeGroupCreationResult)
+	// GetTargetSize return a size to which the provided node group will be initialized.
+	// Note that the node group may be different than the initialized node group, if node group creation
+	// triggers creation of multiple node groups.
+	GetTargetSize(nodeGroupId string) int64
+	// SetTargetSize updates a size to which the provided node group will be initialized.
+	// Note that the node group may be different than the initialized node group, if node group creation
+	// results in creation of multiple node groups.
+	SetTargetSize(nodeGroupId string, size int64)
+	// ChangeTargetSize changes by given delta a size to which the provided node goup will be initialized.
+	// Delta may be positive or negative value.
+	// Note that the node group may be different than the initialized node group, if node group creation
+	// results in creation of multiple node groups.
+	ChangeTargetSize(nodeGroup string, delta int64)
 }
 
 // NoOpNodeGroupManager is a no-op implementation of NodeGroupManager.

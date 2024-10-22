@@ -176,10 +176,9 @@ func (e *scaleUpExecutor) executeScaleUp(
 	if increase < 0 {
 		return errors.NewAutoscalerError(errors.InternalError, fmt.Sprintf("increase in number of nodes cannot be negative, got: %v", increase))
 	}
-	if e.asyncNodeGroupStateChecker.IsUpcoming(info.Group) {
+	if !info.Group.Exist() && e.asyncNodeGroupStateChecker.IsUpcoming(info.Group) {
 		// Don't emit scale up event for upcoming node group as it will be generated after
 		// the node group is created, during initial scale up.
-		klog.V(0).Infof("Scale-up: group %s is an upcoming node group, skipping emit scale up event", info.Group.Id())
 		return nil
 	}
 	e.scaleStateNotifier.RegisterScaleUp(info.Group, increase, time.Now())

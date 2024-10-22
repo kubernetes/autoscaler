@@ -60,13 +60,29 @@ const (
 	ErrorCodeVmExternalIpAccessPolicyConstraint = "VM_EXTERNAL_IP_ACCESS_POLICY_CONSTRAINT"
 
 	// ErrorInvalidReservation is an error code for InstanceErrorInfo if the node group couldn't
-	// be scaled up because no reservation was found, or the reservation associated with the MIG
-	// was invalid.
+	// be scaled up because the reservation associated with the MIG was invalid.
 	ErrorInvalidReservation = "INVALID_RESERVATION"
+
+	// ErrorReservationNotFound is an error code for InstanceErrorInfo if the node group couldn't
+	// be scaled up because no reservation was found, or the reservation was in different location,
+	// or the reservation was incorrectly shared.
+	ErrorReservationNotFound = "RESERVATION_NOT_FOUND"
 
 	// ErrorReservationNotReady is an error code for InstanceErrorInfo if the node group couldn't
 	// be scaled up because the associated reservation was not ready.
 	ErrorReservationNotReady = "RESERVATION_NOT_READY"
+
+	// ErrorReservationCapacityExceeded is an error code for InstanceErrorInfo if the node group couldn't
+	// be scaled up because the associated reservation's capacity has been exceeded.
+	ErrorReservationCapacityExceeded = "RESERVATION_CAPACITY_EXCEEDED"
+
+	// ErrorReservationIncompatible is an error code for InstanceErrorInfo if the node group couldn't
+	// be scaled up because the associated reservation is not compatible with the node group.
+	ErrorReservationIncompatible = "RESERVATION_INCOMPATIBLE"
+
+	// ErrorUnsupportedTpuConfiguration is an error code for InstanceErrorInfo if the
+	// node group couldn't be scaled up because of invalid TPU configuration.
+	ErrorUnsupportedTpuConfiguration = "UNSUPPORTED_TPU_CONFIGURATION"
 
 	// ErrorCodeOther is an error code used in InstanceErrorInfo if other error occurs.
 	ErrorCodeOther = "OTHER"
@@ -88,7 +104,6 @@ var (
 		regexp.MustCompile("VM Family: (.*) is not supported for aggregate reservations. It must be one of"),
 		regexp.MustCompile("Reservation (.*) is incorrect for the requested resources"),
 		regexp.MustCompile("Zone does not currently have sufficient capacity for the requested resources"),
-		regexp.MustCompile("Reservation (.*) does not have sufficient capacity for the requested resources."),
 	}
 )
 
@@ -565,15 +580,35 @@ func GetErrorInfo(errorCode, errorMessage, instanceStatus string, previousErrorI
 			ErrorClass: cloudprovider.OtherErrorClass,
 			ErrorCode:  ErrorCodeVmExternalIpAccessPolicyConstraint,
 		}
-	} else if isReservationNotReady(errorCode, errorMessage) {
+	} else if isReservationNotReady(errorMessage) {
 		return &cloudprovider.InstanceErrorInfo{
 			ErrorClass: cloudprovider.OtherErrorClass,
 			ErrorCode:  ErrorReservationNotReady,
 		}
-	} else if isInvalidReservationError(errorCode, errorMessage) {
+	} else if isInvalidReservationError(errorMessage) {
 		return &cloudprovider.InstanceErrorInfo{
 			ErrorClass: cloudprovider.OtherErrorClass,
 			ErrorCode:  ErrorInvalidReservation,
+		}
+	} else if isReservationNotFound(errorMessage) {
+		return &cloudprovider.InstanceErrorInfo{
+			ErrorClass: cloudprovider.OtherErrorClass,
+			ErrorCode:  ErrorReservationNotFound,
+		}
+	} else if isReservationCapacityExceeded(errorMessage) {
+		return &cloudprovider.InstanceErrorInfo{
+			ErrorClass: cloudprovider.OtherErrorClass,
+			ErrorCode:  ErrorReservationCapacityExceeded,
+		}
+	} else if isReservationIncompatible(errorMessage) {
+		return &cloudprovider.InstanceErrorInfo{
+			ErrorClass: cloudprovider.OtherErrorClass,
+			ErrorCode:  ErrorReservationIncompatible,
+		}
+	} else if isTpuConfigurationInvalidError(errorCode, errorMessage) {
+		return &cloudprovider.InstanceErrorInfo{
+			ErrorClass: cloudprovider.OtherErrorClass,
+			ErrorCode:  ErrorUnsupportedTpuConfiguration,
 		}
 	} else if isInstanceStatusNotRunningYet(instanceStatus) {
 		if previousErrorInfo != nil {
@@ -638,15 +673,35 @@ func isVmExternalIpAccessPolicyConstraintError(errorCode, errorMessage string) b
 	return strings.Contains(errorCode, "CONDITION_NOT_MET") && regexProjectPolicyConstraint.MatchString(errorMessage)
 }
 
+func isTpuConfigurationInvalidError(errorCode, errorMessage string) bool {
+	return strings.Contains(errorCode, "CONDITION_NOT_MET") &&
+		strings.Contains(errorMessage, "Unsupported TPU configuration")
+}
+
 func isInstanceStatusNotRunningYet(instanceStatus string) bool {
 	return instanceStatus == "" || instanceStatus == "PROVISIONING" || instanceStatus == "STAGING"
 }
 
-func isReservationNotReady(errorCode, errorMessage string) bool {
+func isReservationNotReady(errorMessage string) bool {
 	return strings.Contains(errorMessage, "it requires reservation to be in READY state")
 }
 
-func isInvalidReservationError(errorCode, errorMessage string) bool {
+func isReservationNotFound(errorMessage string) bool {
+	re := regexp.MustCompile("Specified reservations? (.*) do(es)? not exist")
+	return re.MatchString(errorMessage)
+}
+
+func isReservationCapacityExceeded(errorMessage string) bool {
+	re := regexp.MustCompile("Specified reservation (.*) does not have available resources for the request.")
+	return re.MatchString(errorMessage)
+}
+
+func isReservationIncompatible(errorMessage string) bool {
+	pattern := "No available resources in specified reservations"
+	return strings.Contains(errorMessage, pattern)
+}
+
+func isInvalidReservationError(errorMessage string) bool {
 	for _, re := range regexReservationErrors {
 		if re.MatchString(errorMessage) {
 			return true

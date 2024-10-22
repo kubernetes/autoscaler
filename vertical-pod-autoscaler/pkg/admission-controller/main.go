@@ -42,6 +42,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics"
 	metrics_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/admission"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/server"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/status"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
@@ -70,6 +71,7 @@ var (
 	kubeconfig                 = flag.String("kubeconfig", "", "Path to a kubeconfig. Only required if out-of-cluster.")
 	kubeApiQps                 = flag.Float64("kube-api-qps", 5.0, `QPS limit when making requests to Kubernetes apiserver`)
 	kubeApiBurst               = flag.Float64("kube-api-burst", 10.0, `QPS burst limit when making requests to Kubernetes apiserver`)
+	enableProfiling            = flag.Bool("profiling", false, "Is debug/pprof endpoint enabled")
 	namespace                  = os.Getenv("NAMESPACE")
 	serviceName                = flag.String("webhook-service", "vpa-webhook", "Kubernetes service under which webhook is registered. Used when registerByURL is set to false.")
 	webhookAddress             = flag.String("webhook-address", "", "Address under which webhook is registered. Used when registerByURL is set to true.")
@@ -92,8 +94,8 @@ func main() {
 	}
 
 	healthCheck := metrics.NewHealthCheck(time.Minute)
-	metrics.Initialize(*address, healthCheck)
 	metrics_admission.Register()
+	server.Initialize(enableProfiling, healthCheck, address)
 
 	config := common.CreateKubeConfigOrDie(*kubeconfig, float32(*kubeApiQps), int(*kubeApiBurst))
 
@@ -108,7 +110,7 @@ func main() {
 	var limitRangeCalculator limitrange.LimitRangeCalculator
 	limitRangeCalculator, err := limitrange.NewLimitsRangeCalculator(factory)
 	if err != nil {
-		klog.Errorf("Failed to create limitRangeCalculator, falling back to not checking limits. Error message: %s", err)
+		klog.ErrorS(err, "Failed to create limitRangeCalculator, falling back to not checking limits.")
 		limitRangeCalculator = limitrange.NewNoopLimitsCalculator()
 	}
 	recommendationProvider := recommendation.NewProvider(limitRangeCalculator, vpa_api_util.NewCappingRecommendationProcessor(limitRangeCalculator))
