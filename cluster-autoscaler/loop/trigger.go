@@ -27,6 +27,7 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/klog/v2"
 	podv1 "k8s.io/kubernetes/pkg/api/v1/pod"
+	"reflect"
 )
 
 const maxPodChangeAge = 10 * time.Second
@@ -43,19 +44,29 @@ type scalingTimesGetter interface {
 	LastScaleDownDeleteTime() time.Time
 }
 
+// provisioningRequestProcessingTimesGetter exposes recent provisioning request processing activity regardless of wether the
+// ProvisioningRequest was marked as accepted or failed. This is because a ProvisioningRequest being processed indicates that
+// there are other ProvisioningRequests that require processing regardless of the outcome of the current one. Thus, the next iteration
+// should be started immediately.
+type provisioningRequestProcessingTimesGetter interface {
+	LastProvisioningRequestProcessTime() time.Time
+}
+
 // LoopTrigger object implements criteria used to start new autoscaling iteration
 type LoopTrigger struct {
-	podObserver        *UnschedulablePodObserver
-	scanInterval       time.Duration
-	scalingTimesGetter scalingTimesGetter
+	podObserver                          *UnschedulablePodObserver
+	scanInterval                         time.Duration
+	scalingTimesGetter                   scalingTimesGetter
+	provisioningRequestProcessTimeGetter provisioningRequestProcessingTimesGetter
 }
 
 // NewLoopTrigger creates a LoopTrigger object
-func NewLoopTrigger(podObserver *UnschedulablePodObserver, scalingTimesGetter scalingTimesGetter, scanInterval time.Duration) *LoopTrigger {
+func NewLoopTrigger(scalingTimesGetter scalingTimesGetter, provisioningRequestProcessTimeGetter provisioningRequestProcessingTimesGetter, podObserver *UnschedulablePodObserver, scanInterval time.Duration) *LoopTrigger {
 	return &LoopTrigger{
-		podObserver:        podObserver,
-		scanInterval:       scanInterval,
-		scalingTimesGetter: scalingTimesGetter,
+		podObserver:                          podObserver,
+		scanInterval:                         scanInterval,
+		scalingTimesGetter:                   scalingTimesGetter,
+		provisioningRequestProcessTimeGetter: provisioningRequestProcessTimeGetter,
 	}
 }
 
@@ -66,14 +77,18 @@ func (t *LoopTrigger) Wait(lastRun time.Time) {
 
 	// To improve scale-up throughput, Cluster Autoscaler starts new iteration
 	// immediately if the previous one was productive.
-	if !t.scalingTimesGetter.LastScaleUpTime().Before(lastRun) ||
-		!t.scalingTimesGetter.LastScaleDownDeleteTime().Before(lastRun) {
-		select {
-		case <-t.podObserver.unschedulablePodChan:
-			klog.Info("Autoscaler loop triggered by unschedulable pod appearing")
-		default:
-			klog.Infof("Autoscaler loop triggered immediately after a productive iteration")
-		}
+	if !t.scalingTimesGetter.LastScaleUpTime().Before(lastRun) {
+		t.logTriggerReason("Autoscaler loop triggered immediately after a scale up")
+		return
+	}
+
+	if !t.scalingTimesGetter.LastScaleDownDeleteTime().Before(lastRun) {
+		t.logTriggerReason("Autoscaler loop triggered immediately after a scale down")
+		return
+	}
+
+	if t.provisioningRequestWasProcessed(lastRun) {
+		t.logTriggerReason("Autoscaler loop triggered immediately after a provisioning request was processed")
 		return
 	}
 
@@ -116,6 +131,25 @@ func StartPodObserver(ctx context.Context, kubeClient kube_client.Interface) *Un
 	return &UnschedulablePodObserver{
 		unschedulablePodChan: podChan,
 	}
+}
+
+// logTriggerReason logs a message if the next iteration was not triggered by unschedulable pods appearing, else it logs a message that the next iteration was triggered by unschedulable pods appearing
+func (t *LoopTrigger) logTriggerReason(message string) {
+	select {
+	case <-t.podObserver.unschedulablePodChan:
+		klog.Info("Autoscaler loop triggered by unschedulable pod appearing")
+	default:
+		klog.Infof(message)
+	}
+}
+
+func (t *LoopTrigger) provisioningRequestWasProcessed(lastRun time.Time) bool {
+	if t.provisioningRequestProcessTimeGetter != nil && !reflect.ValueOf(t.provisioningRequestProcessTimeGetter).IsNil() {
+		return !t.provisioningRequestProcessTimeGetter.LastProvisioningRequestProcessTime().Before(lastRun)
+	}
+
+	klog.V(5).Infof("provisioningRequestProcessTimeGetter is unset")
+	return false
 }
 
 // isRecentUnschedulablePod checks if the object is an unschedulable pod observed recently.
