@@ -317,7 +317,9 @@ func newEventRecorder(kubeClient kube_client.Interface) record.EventRecorder {
 	}
 
 	vpascheme := scheme.Scheme
-	corescheme.AddToScheme(vpascheme)
+	if err := corescheme.AddToScheme(vpascheme); err != nil {
+		klog.Fatalf("Error adding core scheme: %v", err)
+	}
 
 	return eventBroadcaster.NewRecorder(vpascheme, apiv1.EventSource{Component: "vpa-updater"})
 }
