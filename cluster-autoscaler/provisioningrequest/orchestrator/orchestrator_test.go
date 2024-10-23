@@ -47,9 +47,12 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 	"k8s.io/client-go/kubernetes/fake"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
+	schedulermetrics "k8s.io/kubernetes/pkg/scheduler/metrics"
 )
 
 func TestScaleUp(t *testing.T) {
+	schedulermetrics.Register()
+
 	// Set up a cluster with 200 nodes:
 	// - 100 nodes with high cpu, low memory in autoscaled group with max 150
 	// - 100 nodes with high memory, low cpu not in autoscaled group

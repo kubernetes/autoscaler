@@ -32,6 +32,7 @@ import (
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/client-go/kubernetes/fake"
+	schedulermetrics "k8s.io/kubernetes/pkg/scheduler/metrics"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -127,6 +128,7 @@ func version(n simulator.NodeToBeRemoved) string {
 }
 
 func TestRemovableAt(t *testing.T) {
+	schedulermetrics.Register()
 
 	testCases := []struct {
 		name                string
