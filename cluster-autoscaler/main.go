@@ -88,6 +88,7 @@ import (
 	"k8s.io/component-base/metrics/legacyregistry"
 	"k8s.io/klog/v2"
 	scheduler_config "k8s.io/kubernetes/pkg/scheduler/apis/config"
+	schedulermetrics "k8s.io/kubernetes/pkg/scheduler/metrics"
 )
 
 // MultiStringFlag is a flag for passing multiple parameters using same flag
@@ -614,6 +615,7 @@ func buildAutoscaler(context ctx.Context, debuggingSnapshotter debuggingsnapshot
 }
 
 func run(healthCheck *metrics.HealthCheck, debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter) {
+	schedulermetrics.Register()
 	metrics.RegisterAll(*emitPerNodeGroupMetrics)
 	context, cancel := ctx.WithCancel(ctx.Background())
 	defer cancel()

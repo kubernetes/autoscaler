@@ -28,9 +28,12 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
+	schedulermetrics "k8s.io/kubernetes/pkg/scheduler/metrics"
 )
 
 func TestFilterOutSchedulable(t *testing.T) {
+	schedulermetrics.Register()
+
 	node := buildReadyTestNode("node", 2000, 100)
 	matchesAllNodes := func(*schedulerframework.NodeInfo) bool { return true }
 	matchesNoNodes := func(*schedulerframework.NodeInfo) bool { return false }

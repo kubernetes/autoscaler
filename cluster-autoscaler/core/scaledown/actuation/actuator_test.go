@@ -49,6 +49,7 @@ import (
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/client-go/kubernetes/fake"
 	core "k8s.io/client-go/testing"
+	schedulermetrics "k8s.io/kubernetes/pkg/scheduler/metrics"
 )
 
 type nodeGroupViewInfo struct {
@@ -998,6 +999,8 @@ func getStartDeletionTestCases(ignoreDaemonSetsUtilization bool, suffix string) 
 }
 
 func TestStartDeletion(t *testing.T) {
+	schedulermetrics.Register()
+
 	testSets := []map[string]startDeletionTestCase{
 		// IgnoreDaemonSetsUtilization is false
 		getStartDeletionTestCases(false, "testNg1"),
