@@ -26,6 +26,7 @@ import (
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	schedulermetrics "k8s.io/kubernetes/pkg/scheduler/metrics"
 
 	"github.com/stretchr/testify/assert"
 	appsv1 "k8s.io/api/apps/v1"
@@ -38,6 +39,8 @@ var (
 )
 
 func TestGetNodeInfosForGroups(t *testing.T) {
+	schedulermetrics.Register()
+
 	now := time.Now()
 	ready1 := BuildTestNode("n1", 1000, 1000)
 	SetNodeReadyState(ready1, true, now.Add(-2*time.Minute))

@@ -62,6 +62,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	kube_record "k8s.io/client-go/tools/record"
+	schedulermetrics "k8s.io/kubernetes/pkg/scheduler/metrics"
 
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
@@ -311,6 +312,8 @@ func setupAutoscaler(config *autoscalerSetupConfig) (*StaticAutoscaler, error) {
 // TODO: Refactor tests to use setupAutoscaler
 
 func TestStaticAutoscalerRunOnce(t *testing.T) {
+	schedulermetrics.Register()
+
 	readyNodeLister := kubernetes.NewTestNodeLister(nil)
 	allNodeLister := kubernetes.NewTestNodeLister(nil)
 	allPodListerMock := &podListerMock{}

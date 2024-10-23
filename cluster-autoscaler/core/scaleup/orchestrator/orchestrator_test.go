@@ -30,6 +30,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups/asyncnodegroups"
 	kube_record "k8s.io/client-go/tools/record"
 	"k8s.io/component-base/metrics/legacyregistry"
+	schedulermetrics "k8s.io/kubernetes/pkg/scheduler/metrics"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
@@ -70,6 +71,8 @@ var defaultOptions = config.AutoscalingOptions{
 
 // Scale up scenarios.
 func TestScaleUpOK(t *testing.T) {
+	schedulermetrics.Register()
+
 	config := &ScaleUpTestConfig{
 		Nodes: []NodeConfig{
 			{Name: "n1", Cpu: 100, Memory: 100, Gpu: 0, Ready: true, Group: "ng1"},
