@@ -31,6 +31,8 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/kubernetes/fake"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
@@ -356,4 +358,57 @@ func TestRunOnceIgnoreNamespaceMatching(t *testing.T) {
 
 	updater.RunOnce(context.Background())
 	eviction.AssertNumberOfCalls(t, "Evict", 0)
+}
+
+func TestNewEventRecorder(t *testing.T) {
+	fakeClient := fake.NewSimpleClientset()
+	er := newEventRecorder(fakeClient)
+
+	maxRetries := 5
+	retryDelay := 100 * time.Millisecond
+	contextTimeout := 5 * time.Second
+
+	testCases := []struct {
+		reason  string
+		object  runtime.Object
+		message string
+	}{
+		{
+			reason:  "EvictedPod",
+			object:  &apiv1.Pod{},
+			message: "Evicted pod",
+		},
+		{
+			reason:  "EvictedPod",
+			object:  &vpa_types.VerticalPodAutoscaler{},
+			message: "Evicted pod",
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.reason, func(t *testing.T) {
+			er.Event(tc.object, apiv1.EventTypeNormal, tc.reason, tc.message)
+
+			var events *apiv1.EventList
+			var err error
+			// Add delay for fake client to catch up due to be being asynchronous
+			for i := 0; i < maxRetries; i++ {
+				ctx, cancel := context.WithTimeout(context.Background(), contextTimeout)
+				defer cancel()
+				events, err = fakeClient.CoreV1().Events("default").List(ctx, metav1.ListOptions{})
+				if err == nil && len(events.Items) > 0 {
+					break
+				}
+				time.Sleep(retryDelay)
+			}
+
+			assert.NoError(t, err, "should be able to list events")
+			assert.Equal(t, 1, len(events.Items), "should have exactly 1 event")
+
+			event := events.Items[0]
+			assert.Equal(t, tc.reason, event.Reason)
+			assert.Equal(t, tc.message, event.Message)
+			assert.Equal(t, apiv1.EventTypeNormal, event.Type)
+			assert.Equal(t, "vpa-updater", event.Source.Component)
+		})
+	}
 }
