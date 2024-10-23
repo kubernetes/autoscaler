@@ -322,12 +322,13 @@ func TestEvictReplicatedByReplicaSet(t *testing.T) {
 		assert.True(t, eviction.CanEvict(pod))
 	}
 
+	basicVpa := getBasicVpa()
 	for _, pod := range pods[:2] {
-		err := eviction.Evict(pod, getBasicVpa(), test.FakeEventRecorder())
+		err := eviction.Evict(pod, basicVpa, test.FakeEventRecorder())
 		assert.Nil(t, err, "Should evict with no error")
 	}
 	for _, pod := range pods[2:] {
-		err := eviction.Evict(pod, getBasicVpa(), test.FakeEventRecorder())
+		err := eviction.Evict(pod, basicVpa, test.FakeEventRecorder())
 		assert.Error(t, err, "Error expected")
 	}
 }
