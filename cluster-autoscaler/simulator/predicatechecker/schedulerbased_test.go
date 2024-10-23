@@ -26,6 +26,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	scheduler "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	schedulermetrics "k8s.io/kubernetes/pkg/scheduler/metrics"
 
 	"github.com/stretchr/testify/assert"
 
@@ -33,6 +34,8 @@ import (
 )
 
 func TestCheckPredicate(t *testing.T) {
+	schedulermetrics.Register()
+
 	p450 := BuildTestPod("p450", 450, 500000)
 	p600 := BuildTestPod("p600", 600, 500000)
 	p8000 := BuildTestPod("p8000", 8000, 0)

@@ -25,6 +25,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kubernetes/pkg/scheduler/framework"
+	schedulermetrics "k8s.io/kubernetes/pkg/scheduler/metrics"
 
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
@@ -238,6 +239,8 @@ func (f *fakeInjector) TrySchedulePods(clusterSnapshot clustersnapshot.ClusterSn
 }
 
 func TestBookCapacity(t *testing.T) {
+	schedulermetrics.Register()
+
 	testCases := []struct {
 		name             string
 		conditions       []string
