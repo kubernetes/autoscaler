@@ -315,14 +315,14 @@ func TestEvictReplicatedByReplicaSet(t *testing.T) {
 		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&rs.ObjectMeta, &rs.TypeMeta).Get()
 	}
 
+	basicVpa := getBasicVpa()
 	factory, _ := getEvictionRestrictionFactory(nil, &rs, nil, nil, 2, 0.5)
-	eviction := factory.NewPodsEvictionRestriction(pods, getBasicVpa())
+	eviction := factory.NewPodsEvictionRestriction(pods, basicVpa)
 
 	for _, pod := range pods {
 		assert.True(t, eviction.CanEvict(pod))
 	}
 
-	basicVpa := getBasicVpa()
 	for _, pod := range pods[:2] {
 		err := eviction.Evict(pod, basicVpa, test.FakeEventRecorder())
 		assert.Nil(t, err, "Should evict with no error")
@@ -355,19 +355,20 @@ func TestEvictReplicatedByStatefulSet(t *testing.T) {
 		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&ss.ObjectMeta, &ss.TypeMeta).Get()
 	}
 
+	basicVpa := getBasicVpa()
 	factory, _ := getEvictionRestrictionFactory(nil, nil, &ss, nil, 2, 0.5)
-	eviction := factory.NewPodsEvictionRestriction(pods, getBasicVpa())
+	eviction := factory.NewPodsEvictionRestriction(pods, basicVpa)
 
 	for _, pod := range pods {
 		assert.True(t, eviction.CanEvict(pod))
 	}
 
 	for _, pod := range pods[:2] {
-		err := eviction.Evict(pod, getBasicVpa(), test.FakeEventRecorder())
+		err := eviction.Evict(pod, basicVpa, test.FakeEventRecorder())
 		assert.Nil(t, err, "Should evict with no error")
 	}
 	for _, pod := range pods[2:] {
-		err := eviction.Evict(pod, getBasicVpa(), test.FakeEventRecorder())
+		err := eviction.Evict(pod, basicVpa, test.FakeEventRecorder())
 		assert.Error(t, err, "Error expected")
 	}
 }
@@ -392,19 +393,21 @@ func TestEvictReplicatedByDaemonSet(t *testing.T) {
 	for i := range pods {
 		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&ds.ObjectMeta, &ds.TypeMeta).Get()
 	}
+
+	basicVpa := getBasicVpa()
 	factory, _ := getEvictionRestrictionFactory(nil, nil, nil, &ds, 2, 0.5)
-	eviction := factory.NewPodsEvictionRestriction(pods, getBasicVpa())
+	eviction := factory.NewPodsEvictionRestriction(pods, basicVpa)
 
 	for _, pod := range pods {
 		assert.True(t, eviction.CanEvict(pod))
 	}
 
 	for _, pod := range pods[:2] {
-		err := eviction.Evict(pod, getBasicVpa(), test.FakeEventRecorder())
+		err := eviction.Evict(pod, basicVpa, test.FakeEventRecorder())
 		assert.Nil(t, err, "Should evict with no error")
 	}
 	for _, pod := range pods[2:] {
-		err := eviction.Evict(pod, getBasicVpa(), test.FakeEventRecorder())
+		err := eviction.Evict(pod, basicVpa, test.FakeEventRecorder())
 		assert.Error(t, err, "Error expected")
 	}
 }
@@ -427,19 +430,20 @@ func TestEvictReplicatedByJob(t *testing.T) {
 		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&job.ObjectMeta, &job.TypeMeta).Get()
 	}
 
+	basicVpa := getBasicVpa()
 	factory, _ := getEvictionRestrictionFactory(nil, nil, nil, nil, 2, 0.5)
-	eviction := factory.NewPodsEvictionRestriction(pods, getBasicVpa())
+	eviction := factory.NewPodsEvictionRestriction(pods, basicVpa)
 
 	for _, pod := range pods {
 		assert.True(t, eviction.CanEvict(pod))
 	}
 
 	for _, pod := range pods[:2] {
-		err := eviction.Evict(pod, getBasicVpa(), test.FakeEventRecorder())
+		err := eviction.Evict(pod, basicVpa, test.FakeEventRecorder())
 		assert.Nil(t, err, "Should evict with no error")
 	}
 	for _, pod := range pods[2:] {
-		err := eviction.Evict(pod, getBasicVpa(), test.FakeEventRecorder())
+		err := eviction.Evict(pod, basicVpa, test.FakeEventRecorder())
 		assert.Error(t, err, "Error expected")
 	}
 }
@@ -466,15 +470,16 @@ func TestEvictTooFewReplicas(t *testing.T) {
 		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get()
 	}
 
+	basicVpa := getBasicVpa()
 	factory, _ := getEvictionRestrictionFactory(&rc, nil, nil, nil, 10, 0.5)
-	eviction := factory.NewPodsEvictionRestriction(pods, getBasicVpa())
+	eviction := factory.NewPodsEvictionRestriction(pods, basicVpa)
 
 	for _, pod := range pods {
 		assert.False(t, eviction.CanEvict(pod))
 	}
 
 	for _, pod := range pods {
-		err := eviction.Evict(pod, getBasicVpa(), test.FakeEventRecorder())
+		err := eviction.Evict(pod, basicVpa, test.FakeEventRecorder())
 		assert.Error(t, err, "Error expected")
 	}
 }
@@ -502,19 +507,20 @@ func TestEvictionTolerance(t *testing.T) {
 		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get()
 	}
 
+	basicVpa := getBasicVpa()
 	factory, _ := getEvictionRestrictionFactory(&rc, nil, nil, nil, 2 /*minReplicas*/, tolerance)
-	eviction := factory.NewPodsEvictionRestriction(pods, getBasicVpa())
+	eviction := factory.NewPodsEvictionRestriction(pods, basicVpa)
 
 	for _, pod := range pods {
 		assert.True(t, eviction.CanEvict(pod))
 	}
 
 	for _, pod := range pods[:4] {
-		err := eviction.Evict(pod, getBasicVpa(), test.FakeEventRecorder())
+		err := eviction.Evict(pod, basicVpa, test.FakeEventRecorder())
 		assert.Nil(t, err, "Should evict with no error")
 	}
 	for _, pod := range pods[4:] {
-		err := eviction.Evict(pod, getBasicVpa(), test.FakeEventRecorder())
+		err := eviction.Evict(pod, basicVpa, test.FakeEventRecorder())
 		assert.Error(t, err, "Error expected")
 	}
 }
@@ -542,19 +548,20 @@ func TestEvictAtLeastOne(t *testing.T) {
 		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get()
 	}
 
+	basicVpa := getBasicVpa()
 	factory, _ := getEvictionRestrictionFactory(&rc, nil, nil, nil, 2, tolerance)
-	eviction := factory.NewPodsEvictionRestriction(pods, getBasicVpa())
+	eviction := factory.NewPodsEvictionRestriction(pods, basicVpa)
 
 	for _, pod := range pods {
 		assert.True(t, eviction.CanEvict(pod))
 	}
 
 	for _, pod := range pods[:1] {
-		err := eviction.Evict(pod, getBasicVpa(), test.FakeEventRecorder())
+		err := eviction.Evict(pod, basicVpa, test.FakeEventRecorder())
 		assert.Nil(t, err, "Should evict with no error")
 	}
 	for _, pod := range pods[1:] {
-		err := eviction.Evict(pod, getBasicVpa(), test.FakeEventRecorder())
+		err := eviction.Evict(pod, basicVpa, test.FakeEventRecorder())
 		assert.Error(t, err, "Error expected")
 	}
 }
@@ -576,6 +583,8 @@ func TestEvictEmitEvent(t *testing.T) {
 		return test.Pod().WithName(fmt.Sprintf("test-%v", index)).WithCreator(&rc.ObjectMeta, &rc.TypeMeta)
 	}
 
+	basicVpa := getBasicVpa()
+
 	testCases := []struct {
 		name              string
 		replicas          int32
@@ -587,7 +596,7 @@ func TestEvictEmitEvent(t *testing.T) {
 			name:              "Pods that can be evicted",
 			replicas:          4,
 			evictionTolerance: 0.5,
-			vpa:               getBasicVpa(),
+			vpa:               basicVpa,
 			pods: []podWithExpectations{
 				{
 					pod:             generatePod().WithPhase(apiv1.PodPending).Get(),
@@ -605,7 +614,7 @@ func TestEvictEmitEvent(t *testing.T) {
 			name:              "Pod that can not be evicted",
 			replicas:          4,
 			evictionTolerance: 0.5,
-			vpa:               getBasicVpa(),
+			vpa:               basicVpa,
 			pods: []podWithExpectations{
 
 				{
