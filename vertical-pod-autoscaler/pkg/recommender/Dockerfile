@@ -32,4 +32,3 @@ ARG TARGETARCH
 COPY --from=builder /gopath/src/k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/recommender-$TARGETARCH /recommender
 
 ENTRYPOINT ["/recommender"]
-CMD ["--v=4", "--stderrthreshold=info", "--prometheus-address=http://prometheus.monitoring.svc"]
