@@ -364,6 +364,10 @@ func TestNewEventRecorder(t *testing.T) {
 	fakeClient := fake.NewSimpleClientset()
 	er := newEventRecorder(fakeClient)
 
+	maxRetries := 5
+	retryDelay := 100 * time.Millisecond
+	contextTimeout := 5 * time.Second
+
 	testCases := []struct {
 		reason  string
 		object  runtime.Object
@@ -387,12 +391,14 @@ func TestNewEventRecorder(t *testing.T) {
 			var events *apiv1.EventList
 			var err error
 			// Add delay for fake client to catch up due to be being asynchronous
-			for i := 0; i < 5; i++ {
-				events, err = fakeClient.CoreV1().Events("default").List(context.TODO(), metav1.ListOptions{})
+			for i := 0; i < maxRetries; i++ {
+				ctx, cancel := context.WithTimeout(context.Background(), contextTimeout)
+				defer cancel()
+				events, err = fakeClient.CoreV1().Events("default").List(ctx, metav1.ListOptions{})
 				if err == nil && len(events.Items) > 0 {
 					break
 				}
-				time.Sleep(100 * time.Millisecond)
+				time.Sleep(retryDelay)
 			}
 
 			assert.NoError(t, err, "should be able to list events")
