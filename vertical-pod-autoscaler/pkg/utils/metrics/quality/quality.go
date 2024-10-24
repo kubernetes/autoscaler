@@ -167,7 +167,7 @@ func observeUsageRecommendationDiff(usage, recommendation float64, isRecommendat
 				strconv.FormatBool(isRecommendationMissing), strconv.FormatBool(isOOM)).Observe(diff)
 		}
 	default:
-		klog.Warningf("Unknown resource: %v", resource)
+		klog.V(0).InfoS("Unknown resource", "resource", resource)
 	}
 }
 
@@ -179,7 +179,7 @@ func observeRecommendation(recommendation float64, isOOM bool, resource corev1.R
 	case corev1.ResourceMemory:
 		memoryRecommendations.WithLabelValues(updateModeToString(updateMode), strconv.FormatBool(isOOM)).Observe(recommendation)
 	default:
-		klog.Warningf("Unknown resource: %v", resource)
+		klog.V(0).InfoS("Unknown resource", "resource", resource)
 	}
 }
 
@@ -204,7 +204,7 @@ func ObserveRecommendationChange(previous, current corev1.ResourceList, updateMo
 	}
 	// This is not really expected thus a warning.
 	if current == nil {
-		klog.Warningf("Cannot compare with current recommendation being nil. VPA mode: %v, size: %v", updateMode, vpaSize)
+		klog.V(0).InfoS("Current recommendation is nil", "update_mode", updateMode, "size", vpaSize)
 		return
 	}
 
@@ -217,7 +217,7 @@ func ObserveRecommendationChange(previous, current corev1.ResourceList, updateMo
 			log2 := metrics.GetVpaSizeLog2(vpaSize)
 			relativeRecommendationChange.WithLabelValues(updateModeToString(updateMode), string(resource), strconv.Itoa(log2)).Observe(diff)
 		} else {
-			klog.Warningf("Cannot compare as old recommendation for %v is 0. VPA mode: %v, size: %v", resource, updateMode, vpaSize)
+			klog.V(0).InfoS("Cannot compare as old recommendation is 0", "resource", resource, "vpa_mode", updateMode, "size", vpaSize)
 		}
 	}
 }
@@ -230,7 +230,7 @@ func quantityAsFloat(resource corev1.ResourceName, quantity resource.Quantity) f
 	case corev1.ResourceMemory:
 		return float64(quantity.Value())
 	default:
-		klog.Warningf("Unknown resource: %v", resource)
+		klog.V(0).InfoS("Unknown resource", "resource", resource)
 		return 0.0
 	}
 }

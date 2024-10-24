@@ -76,13 +76,13 @@ func (c *cappingRecommendationProcessor) Apply(
 		container := getContainer(containerRecommendation.ContainerName, pod)
 
 		if container == nil {
-			klog.V(2).Infof("no matching Container found for recommendation %s", containerRecommendation.ContainerName)
+			klog.V(2).InfoS("No matching Container found for recommendation", "containerName", containerRecommendation.ContainerName)
 			continue
 		}
 
 		containerLimitRange, err := c.limitsRangeCalculator.GetContainerLimitRangeItem(pod.Namespace)
 		if err != nil {
-			klog.Warningf("failed to fetch LimitRange for %v namespace", pod.Namespace)
+			klog.V(0).InfoS("Failed to fetch LimitRange for namespace", "namespace", pod.Namespace)
 		}
 		updatedContainerResources, containerAnnotations, err := getCappedRecommendationForContainer(
 			*container, &containerRecommendation, policy, containerLimitRange)

@@ -123,8 +123,7 @@ func main() {
 	componentbaseoptions.BindLeaderElectionFlags(&leaderElection, pflag.CommandLine)
 
 	kube_flag.InitFlags()
-	klog.V(1).Infof("Vertical Pod Autoscaler %s Recommender: %v", common.VerticalPodAutoscalerVersion, *recommenderName)
-
+	klog.V(1).InfoS("Vertical Pod Autoscaler Recommender", "version", common.VerticalPodAutoscalerVersion, "recommenderName", *recommenderName)
 	if len(*vpaObjectNamespace) > 0 && len(*ignoredVpaObjectNamespaces) > 0 {
 		klog.Fatalf("--vpa-object-namespace and --ignored-vpa-object-namespaces are mutually exclusive and can't be set together.")
 	}
@@ -225,10 +224,10 @@ func run(healthCheck *metrics.HealthCheck) {
 			resourceMetrics[apiv1.ResourceMemory] = *externalMemoryMetric
 		}
 		externalClientOptions := &input_metrics.ExternalClientOptions{ResourceMetrics: resourceMetrics, ContainerNameLabel: *ctrNameLabel}
-		klog.V(1).Infof("Using External Metrics: %+v", externalClientOptions)
+		klog.V(1).InfoS("Using External Metrics", "options", externalClientOptions)
 		source = input_metrics.NewExternalClient(config, clusterState, *externalClientOptions)
 	} else {
-		klog.V(1).Infof("Using Metrics Server.")
+		klog.V(1).InfoS("Using Metrics Server")
 		source = input_metrics.NewPodMetricsesSource(resourceclient.NewForConfigOrDie(config))
 	}
 

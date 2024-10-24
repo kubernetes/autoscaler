@@ -122,12 +122,11 @@ func (u *updater) RunOnce(ctx context.Context) {
 	if u.useAdmissionControllerStatus {
 		isValid, err := u.statusValidator.IsStatusValid(ctx, status.AdmissionControllerStatusTimeout)
 		if err != nil {
-			klog.Errorf("Error getting Admission Controller status: %v. Skipping eviction loop", err)
+			klog.ErrorS(err, "Error getting Admission Controller status. Skipping eviction loop")
 			return
 		}
 		if !isValid {
-			klog.Warningf("Admission Controller status has been refreshed more than %v ago. Skipping eviction loop",
-				status.AdmissionControllerStatusTimeout)
+			klog.V(0).InfoS("Admission Controller status is not valid. Skipping eviction loop", "timeout", status.AdmissionControllerStatusTimeout)
 			return
 		}
 	}
@@ -142,17 +141,17 @@ func (u *updater) RunOnce(ctx context.Context) {
 
 	for _, vpa := range vpaList {
 		if slices.Contains(u.ignoredNamespaces, vpa.Namespace) {
-			klog.V(3).Infof("skipping VPA object %s in namespace %s as namespace is ignored", vpa.Name, vpa.Namespace)
+			klog.V(3).InfoS("Skipping VPA object in ignored namespace", "vpa", klog.KObj(vpa), "namespace", vpa.Namespace)
 			continue
 		}
 		if vpa_api_util.GetUpdateMode(vpa) != vpa_types.UpdateModeRecreate &&
 			vpa_api_util.GetUpdateMode(vpa) != vpa_types.UpdateModeAuto {
-			klog.V(3).Infof("skipping VPA object %s because its mode is not \"Recreate\" or \"Auto\"", klog.KObj(vpa))
+			klog.V(3).InfoS("Skipping VPA object because its mode is not \"Recreate\" or \"Auto\"", "vpa", klog.KObj(vpa))
 			continue
 		}
 		selector, err := u.selectorFetcher.Fetch(ctx, vpa)
 		if err != nil {
-			klog.V(3).Infof("skipping VPA object %s because we cannot fetch selector", klog.KObj(vpa))
+			klog.V(3).InfoS("Skipping VPA object because we cannot fetch selector", "vpa", klog.KObj(vpa))
 			continue
 		}
 
@@ -163,7 +162,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 	}
 
 	if len(vpas) == 0 {
-		klog.Warningf("no VPA objects to process")
+		klog.V(0).InfoS("No VPA objects to process")
 		if u.evictionAdmission != nil {
 			u.evictionAdmission.CleanUp()
 		}
@@ -172,7 +171,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 
 	podsList, err := u.podLister.List(labels.Everything())
 	if err != nil {
-		klog.Errorf("failed to get pods list: %v", err)
+		klog.ErrorS(err, "Failed to get pods list")
 		return
 	}
 	timer.ObserveStep("ListPods")
@@ -222,13 +221,13 @@ func (u *updater) RunOnce(ctx context.Context) {
 			}
 			err := u.evictionRateLimiter.Wait(ctx)
 			if err != nil {
-				klog.Warningf("evicting pod %s failed: %v", klog.KObj(pod), err)
+				klog.V(0).InfoS("Eviction rate limiter wait failed", "error", err)
 				return
 			}
-			klog.V(2).Infof("evicting pod %s", klog.KObj(pod))
+			klog.V(2).InfoS("Evicting pod", "pod", klog.KObj(pod))
 			evictErr := evictionLimiter.Evict(pod, u.eventRecorder)
 			if evictErr != nil {
-				klog.Warningf("evicting pod %s failed: %v", klog.KObj(pod), evictErr)
+				klog.V(0).InfoS("Eviction failed", "error", evictErr, "pod", klog.KObj(pod))
 			} else {
 				withEvicted = true
 				metrics_updater.AddEvictedPod(vpaSize)
@@ -251,7 +250,7 @@ func getRateLimiter(evictionRateLimit float64, evictionRateLimitBurst int) *rate
 		// As a special case if the rate is set to rate.Inf, the burst rate is ignored
 		// see https://github.com/golang/time/blob/master/rate/rate.go#L37
 		evictionRateLimiter = rate.NewLimiter(rate.Inf, 0)
-		klog.V(1).Info("Rate limit disabled")
+		klog.V(1).InfoS("Rate limit disabled")
 	} else {
 		evictionRateLimiter = rate.NewLimiter(rate.Limit(evictionRateLimit), evictionRateLimitBurst)
 	}
@@ -308,7 +307,7 @@ func newPodLister(kubeClient kube_client.Interface, namespace string) v1lister.P
 
 func newEventRecorder(kubeClient kube_client.Interface) record.EventRecorder {
 	eventBroadcaster := record.NewBroadcaster()
-	eventBroadcaster.StartLogging(klog.V(4).Infof)
+	eventBroadcaster.StartLogging(klog.V(4).InfoS)
 	if _, isFake := kubeClient.(*fake.Clientset); !isFake {
 		eventBroadcaster.StartRecordingToSink(&clientv1.EventSinkImpl{Interface: clientv1.New(kubeClient.CoreV1().RESTClient()).Events("")})
 	}
