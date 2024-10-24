@@ -1,12 +1,12 @@
-// Copyright (c) 2016, 2018, 2023, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 // Code generated. DO NOT EDIT.
 
-// Container Engine for Kubernetes API
+// Kubernetes Engine API
 //
-// API for the Container Engine for Kubernetes service. Use this API to build, deploy,
+// API for the Kubernetes Engine service (also known as the Container Engine for Kubernetes service). Use this API to build, deploy,
 // and manage cloud-native applications. For more information, see
-// Overview of Container Engine for Kubernetes (https://docs.cloud.oracle.com/iaas/Content/ContEng/Concepts/contengoverview.htm).
+// Overview of Kubernetes Engine (https://docs.cloud.oracle.com/iaas/Content/ContEng/Concepts/contengoverview.htm).
 //
 
 package containerengine
@@ -67,20 +67,11 @@ func (m *NodePoolOptions) UnmarshalJSON(data []byte) (e error) {
 	}
 	var nn interface{}
 	m.KubernetesVersions = make([]string, len(model.KubernetesVersions))
-	for i, n := range model.KubernetesVersions {
-		m.KubernetesVersions[i] = n
-	}
-
+	copy(m.KubernetesVersions, model.KubernetesVersions)
 	m.Shapes = make([]string, len(model.Shapes))
-	for i, n := range model.Shapes {
-		m.Shapes[i] = n
-	}
-
+	copy(m.Shapes, model.Shapes)
 	m.Images = make([]string, len(model.Images))
-	for i, n := range model.Images {
-		m.Images[i] = n
-	}
-
+	copy(m.Images, model.Images)
 	m.Sources = make([]NodeSourceOption, len(model.Sources))
 	for i, n := range model.Sources {
 		nn, e = n.UnmarshalPolymorphicJSON(n.JsonData)
@@ -93,6 +84,5 @@ func (m *NodePoolOptions) UnmarshalJSON(data []byte) (e error) {
 			m.Sources[i] = nil
 		}
 	}
-
 	return
 }

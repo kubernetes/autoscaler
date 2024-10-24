@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2023, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 
 package common
@@ -296,7 +296,7 @@ func addToBody(request *http.Request, value reflect.Value, field reflect.StructF
 }
 
 func checkBinaryBodyLength(request *http.Request) (contentLen int64, err error) {
-	if reflect.TypeOf(request.Body) == reflect.TypeOf(ioutil.NopCloser(nil)) {
+	if isNopCloser(request.Body) {
 		ioReader := reflect.ValueOf(request.Body).Field(0).Interface().(io.Reader)
 		switch t := ioReader.(type) {
 		case *bytes.Reader:
@@ -319,10 +319,34 @@ func checkBinaryBodyLength(request *http.Request) (contentLen int64, err error) 
 	return getNormalBinaryBodyLength(request)
 }
 
+// Helper function to judge if this struct is a nopCloser or nopCloserWriterTo
+func isNopCloser(readCloser io.ReadCloser) bool {
+	if reflect.TypeOf(readCloser) == reflect.TypeOf(io.NopCloser(nil)) || reflect.TypeOf(readCloser) == reflect.TypeOf(io.NopCloser(struct {
+		io.Reader
+		io.WriterTo
+	}{})) {
+		return true
+	}
+	return false
+}
+
 func getNormalBinaryBodyLength(request *http.Request) (contentLen int64, err error) {
-	dumpRequestBody := ioutil.NopCloser(bytes.NewBuffer(nil))
+	// If binary body is seekable
+	seeker := getSeeker(request.Body)
+	if seeker != nil {
+		// save the current position, calculate the unread body length and seek it back to current position
+		if curPos, err := seeker.Seek(0, io.SeekCurrent); err == nil {
+			if endPos, err := seeker.Seek(0, io.SeekEnd); err == nil {
+				contentLen = endPos - curPos
+				if _, err = seeker.Seek(curPos, io.SeekStart); err == nil {
+					return contentLen, nil
+				}
+			}
+		}
+	}
+
+	var dumpRequestBody io.ReadCloser
 	if dumpRequestBody, request.Body, err = drainBody(request.Body); err != nil {
-		dumpRequestBody = ioutil.NopCloser(bytes.NewBuffer(nil))
 		return contentLen, err
 	}
 	contentBody, err := ioutil.ReadAll(dumpRequestBody)
@@ -330,6 +354,19 @@ func getNormalBinaryBodyLength(request *http.Request) (contentLen int64, err err
 		return contentLen, err
 	}
 	return int64(len(contentBody)), nil
+}
+
+func getSeeker(readCloser io.ReadCloser) (seeker io.Seeker) {
+	if seeker, ok := readCloser.(io.Seeker); ok {
+		return seeker
+	}
+	// the binary body is wrapped with io.NopCloser
+	if isNopCloser(readCloser) {
+		if seeker, ok := reflect.ValueOf(readCloser).Field(0).Interface().(io.Seeker); ok {
+			return seeker
+		}
+	}
+	return seeker
 }
 
 func addToQuery(request *http.Request, value reflect.Value, field reflect.StructField) (e error) {
@@ -972,7 +1009,7 @@ func addFromHeaderCollection(response *http.Response, value *reflect.Value, fiel
 	Debugln("Unmarshaling from header-collection to field:", field.Name)
 	var headerPrefix string
 	if headerPrefix = field.Tag.Get("prefix"); headerPrefix == "" {
-		return fmt.Errorf("Unmarshaling response to a header-collection requires the 'prefix' tag for field: %s", field.Name)
+		return fmt.Errorf("unmarshaling response to a header-collection requires the 'prefix' tag for field: %s", field.Name)
 	}
 
 	mapCollection := make(map[string]string)
@@ -1030,6 +1067,11 @@ func responseToStruct(response *http.Response, val *reflect.Value, unmarshaler P
 // Further this method will consume the body it should be safe to close it after this function
 // Notice the current implementation only supports native types:int, strings, floats, bool as the field types
 func UnmarshalResponse(httpResponse *http.Response, responseStruct interface{}) (err error) {
+
+	// Check for text/event-stream content type, and return without unmarshalling
+	if httpResponse != nil && httpResponse.Header != nil && strings.ToLower(httpResponse.Header.Get("content-type")) == "text/event-stream" {
+		return
+	}
 
 	var val *reflect.Value
 	if val, err = checkForValidResponseStruct(responseStruct); err != nil {

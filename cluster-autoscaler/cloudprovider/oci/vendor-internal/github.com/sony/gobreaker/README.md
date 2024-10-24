@@ -1,7 +1,7 @@
 gobreaker
 =========
 
-[![GoDoc](https://godoc.org/k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/sony/gobreaker?status.svg)](http://godoc.org/k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/sony/gobreaker)
+[![GoDoc](https://godoc.org/github.com/sony/gobreaker?status.svg)](http://godoc.org/github.com/sony/gobreaker)
 
 [gobreaker][repo-url] implements the [Circuit Breaker pattern](https://msdn.microsoft.com/en-us/library/dn589784.aspx) in Go.
 
@@ -9,7 +9,7 @@ Installation
 ------------
 
 ```
-go get k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/sony/gobreaker
+go get github.com/sony/gobreaker
 ```
 
 Usage
@@ -119,14 +119,14 @@ func Get(url string) ([]byte, error) {
 }
 ```
 
-See [example](https://k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/sony/gobreaker/blob/master/example) for details.
+See [example](https://github.com/sony/gobreaker/blob/master/example) for details.
 
 License
 -------
 
 The MIT License (MIT)
 
-See [LICENSE](https://k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/sony/gobreaker/blob/master/LICENSE) for details.
+See [LICENSE](https://github.com/sony/gobreaker/blob/master/LICENSE) for details.
 
 
-[repo-url]: https://k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/sony/gobreaker
+[repo-url]: https://github.com/sony/gobreaker

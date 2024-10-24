@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2023, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 // Code generated. DO NOT EDIT.
 
@@ -54,6 +54,9 @@ type ListVolumesRequest struct {
 
 	// The OCID of the volume group.
 	VolumeGroupId *string `mandatory:"false" contributesTo:"query" name:"volumeGroupId"`
+
+	// A filter to return only resources that match the given cluster placement group Id exactly.
+	ClusterPlacementGroupId *string `mandatory:"false" contributesTo:"query" name:"clusterPlacementGroupId"`
 
 	// A filter to only return resources that match the given lifecycle state. The state
 	// value is case-insensitive.

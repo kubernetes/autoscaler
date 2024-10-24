@@ -1,12 +1,12 @@
-// Copyright (c) 2016, 2018, 2023, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 // Code generated. DO NOT EDIT.
 
-// Container Engine for Kubernetes API
+// Kubernetes Engine API
 //
-// API for the Container Engine for Kubernetes service. Use this API to build, deploy,
+// API for the Kubernetes Engine service (also known as the Container Engine for Kubernetes service). Use this API to build, deploy,
 // and manage cloud-native applications. For more information, see
-// Overview of Container Engine for Kubernetes (https://docs.cloud.oracle.com/iaas/Content/ContEng/Concepts/contengoverview.htm).
+// Overview of Kubernetes Engine (https://docs.cloud.oracle.com/iaas/Content/ContEng/Concepts/contengoverview.htm).
 //
 
 package containerengine
@@ -24,7 +24,7 @@ type NodePoolSummary struct {
 	// The OCID of the node pool.
 	Id *string `mandatory:"false" json:"id"`
 
-	// The state of the nodepool.
+	// The state of the nodepool. For more information, see Monitoring Clusters (https://docs.cloud.oracle.com/Content/ContEng/Tasks/contengmonitoringclusters.htm)
 	LifecycleState NodePoolLifecycleStateEnum `mandatory:"false" json:"lifecycleState,omitempty"`
 
 	// Details about the state of the nodepool.
@@ -90,6 +90,8 @@ type NodePoolSummary struct {
 	SystemTags map[string]map[string]interface{} `mandatory:"false" json:"systemTags"`
 
 	NodeEvictionNodePoolSettings *NodeEvictionNodePoolSettings `mandatory:"false" json:"nodeEvictionNodePoolSettings"`
+
+	NodePoolCyclingDetails *NodePoolCyclingDetails `mandatory:"false" json:"nodePoolCyclingDetails"`
 }
 
 func (m NodePoolSummary) String() string {
@@ -136,6 +138,7 @@ func (m *NodePoolSummary) UnmarshalJSON(data []byte) (e error) {
 		DefinedTags                  map[string]map[string]interface{} `json:"definedTags"`
 		SystemTags                   map[string]map[string]interface{} `json:"systemTags"`
 		NodeEvictionNodePoolSettings *NodeEvictionNodePoolSettings     `json:"nodeEvictionNodePoolSettings"`
+		NodePoolCyclingDetails       *NodePoolCyclingDetails           `json:"nodePoolCyclingDetails"`
 	}{}
 
 	e = json.Unmarshal(data, &model)
@@ -186,19 +189,13 @@ func (m *NodePoolSummary) UnmarshalJSON(data []byte) (e error) {
 	m.NodeShape = model.NodeShape
 
 	m.InitialNodeLabels = make([]KeyValue, len(model.InitialNodeLabels))
-	for i, n := range model.InitialNodeLabels {
-		m.InitialNodeLabels[i] = n
-	}
-
+	copy(m.InitialNodeLabels, model.InitialNodeLabels)
 	m.SshPublicKey = model.SshPublicKey
 
 	m.QuantityPerSubnet = model.QuantityPerSubnet
 
 	m.SubnetIds = make([]string, len(model.SubnetIds))
-	for i, n := range model.SubnetIds {
-		m.SubnetIds[i] = n
-	}
-
+	copy(m.SubnetIds, model.SubnetIds)
 	m.NodeConfigDetails = model.NodeConfigDetails
 
 	m.FreeformTags = model.FreeformTags
@@ -208,6 +205,8 @@ func (m *NodePoolSummary) UnmarshalJSON(data []byte) (e error) {
 	m.SystemTags = model.SystemTags
 
 	m.NodeEvictionNodePoolSettings = model.NodeEvictionNodePoolSettings
+
+	m.NodePoolCyclingDetails = model.NodePoolCyclingDetails
 
 	return
 }
