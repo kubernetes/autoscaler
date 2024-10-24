@@ -9,6 +9,7 @@ GOOS?=linux
 GOARCH?=$(shell go env GOARCH)
 REGISTRY?=staging-k8s.gcr.io
 DOCKER_NETWORK?=default
+SUPPORTED_BUILD_TAGS=gce aws azure kubemark alicloud magnum digitalocean clusterapi huaweicloud ionoscloud linode hetzner bizflycloud brightbox equinixmetal oci vultr tencentcloud scaleway externalgrpc civo rancher volcengine baiducloud cherry cloudstack exoscale kamatera ovhcloud
 ifdef BUILD_TAGS
   TAGS_FLAG=--tags ${BUILD_TAGS}
   PROVIDER=-${BUILD_TAGS}
@@ -41,6 +42,12 @@ build:
 
 build-arch-%: clean-arch-%
 	$(ENVVAR) GOOS=$(GOOS) GOARCH=$* go build -o cluster-autoscaler-$* ${LDFLAGS_FLAG} ${TAGS_FLAG}
+
+test-build-tags:
+	@for tag in $(SUPPORTED_BUILD_TAGS); do \
+		echo "Testing build with tag $$tag"; \
+		BUILD_TAGS=$$tag $(MAKE) build; \
+	done
 
 test-unit: clean build
 	go test --test.short -race ./... ${TAGS_FLAG}
