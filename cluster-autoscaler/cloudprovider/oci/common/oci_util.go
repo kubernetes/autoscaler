@@ -219,7 +219,10 @@ func HasNodeGroupTags(nodeGroupAutoDiscoveryList []string) (bool, bool, error) {
 		}
 	}
 	if instancePoolTagsFound == true && nodePoolTagsFound == true {
-		return instancePoolTagsFound, nodePoolTagsFound, fmt.Errorf("can not use both instancepoolTags and nodepoolTags")
+		return instancePoolTagsFound, nodePoolTagsFound, fmt.Errorf("can not use both instancepoolTags and nodepoolTags in node-group-auto-discovery")
+	}
+	if len(nodeGroupAutoDiscoveryList) > 0 && instancePoolTagsFound == false && nodePoolTagsFound == false {
+		return instancePoolTagsFound, nodePoolTagsFound, fmt.Errorf("either instancepoolTags or nodepoolTags should be provided in node-group-auto-discovery")
 	}
 	return instancePoolTagsFound, nodePoolTagsFound, nil
 }
