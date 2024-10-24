@@ -21,9 +21,9 @@ import (
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 	schedulermetrics "k8s.io/kubernetes/pkg/scheduler/metrics"
 
 	"github.com/stretchr/testify/assert"
@@ -38,7 +38,7 @@ func TestTrySchedulePods(t *testing.T) {
 		nodes           []*apiv1.Node
 		pods            []*apiv1.Pod
 		newPods         []*apiv1.Pod
-		acceptableNodes func(*schedulerframework.NodeInfo) bool
+		acceptableNodes func(*framework.NodeInfo) bool
 		wantStatuses    []Status
 		wantErr         bool
 	}{
@@ -257,7 +257,7 @@ func buildScheduledPod(name string, cpu, mem int64, nodeName string) *apiv1.Pod 
 func countPods(t *testing.T, clusterSnapshot clustersnapshot.ClusterSnapshot) int {
 	t.Helper()
 	count := 0
-	nis, err := clusterSnapshot.NodeInfos().List()
+	nis, err := clusterSnapshot.ListNodeInfos()
 	assert.NoError(t, err)
 	for _, ni := range nis {
 		count += len(ni.Pods)
@@ -267,7 +267,7 @@ func countPods(t *testing.T, clusterSnapshot clustersnapshot.ClusterSnapshot) in
 
 func nodeNameForPod(t *testing.T, clusterSnapshot clustersnapshot.ClusterSnapshot, pod string) string {
 	t.Helper()
-	nis, err := clusterSnapshot.NodeInfos().List()
+	nis, err := clusterSnapshot.ListNodeInfos()
 	assert.NoError(t, err)
 	for _, ni := range nis {
 		for _, pi := range ni.Pods {
@@ -279,8 +279,8 @@ func nodeNameForPod(t *testing.T, clusterSnapshot clustersnapshot.ClusterSnapsho
 	return ""
 }
 
-func singleNodeOk(nodeName string) func(*schedulerframework.NodeInfo) bool {
-	return func(nodeInfo *schedulerframework.NodeInfo) bool {
+func singleNodeOk(nodeName string) func(*framework.NodeInfo) bool {
+	return func(nodeInfo *framework.NodeInfo) bool {
 		return nodeName == nodeInfo.Node().Name
 	}
 }

@@ -26,7 +26,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
+	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
@@ -41,12 +41,12 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqclient"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 	"k8s.io/client-go/kubernetes/fake"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 	schedulermetrics "k8s.io/kubernetes/pkg/scheduler/metrics"
 )
 
@@ -273,15 +273,14 @@ func TestScaleUp(t *testing.T) {
 	}
 }
 
-func setupTest(t *testing.T, nodes []*apiv1.Node, prs []*provreqwrapper.ProvisioningRequest, onScaleUpFunc func(string, int) error, autoprovisioning bool) (*provReqOrchestrator, map[string]*schedulerframework.NodeInfo) {
+func setupTest(t *testing.T, nodes []*apiv1.Node, prs []*provreqwrapper.ProvisioningRequest, onScaleUpFunc func(string, int) error, autoprovisioning bool) (*provReqOrchestrator, map[string]*framework.NodeInfo) {
 	provider := testprovider.NewTestCloudProvider(onScaleUpFunc, nil)
 	if autoprovisioning {
 		machineTypes := []string{"large-machine"}
 		template := BuildTestNode("large-node-template", 100, 100)
 		SetNodeReadyState(template, true, time.Now())
-		nodeInfoTemplate := schedulerframework.NewNodeInfo()
-		nodeInfoTemplate.SetNode(template)
-		machineTemplates := map[string]*schedulerframework.NodeInfo{
+		nodeInfoTemplate := framework.NewNodeInfo(template)
+		machineTemplates := map[string]*framework.NodeInfo{
 			"large-machine": nodeInfoTemplate,
 		}
 		onNodeGroupCreateFunc := func(name string) error { return nil }

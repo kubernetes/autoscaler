@@ -25,8 +25,8 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/grpcplugin/protos"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/mocks"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
@@ -124,11 +124,10 @@ func TestPopulateOptionsForGrpc(t *testing.T) {
 	}
 }
 
-func makeFakeNodeInfos() map[string]*schedulerframework.NodeInfo {
-	nodeInfos := make(map[string]*schedulerframework.NodeInfo)
+func makeFakeNodeInfos() map[string]*framework.NodeInfo {
+	nodeInfos := make(map[string]*framework.NodeInfo)
 	for i, opt := range options {
-		nodeInfo := schedulerframework.NewNodeInfo()
-		nodeInfo.SetNode(nodes[i])
+		nodeInfo := framework.NewNodeInfo(nodes[i])
 		nodeInfos[opt.NodeGroup.Id()] = nodeInfo
 	}
 	return nodeInfos
@@ -251,7 +250,7 @@ func TestBestOptionsErrors(t *testing.T) {
 	testCases := []struct {
 		desc         string
 		client       grpcclientstrategy
-		nodeInfo     map[string]*schedulerframework.NodeInfo
+		nodeInfo     map[string]*framework.NodeInfo
 		mockResponse protos.BestOptionsResponse
 		errResponse  error
 	}{

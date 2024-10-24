@@ -22,8 +22,8 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/kubernetes/pkg/controller/daemon"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 const (
@@ -33,14 +33,14 @@ const (
 )
 
 // GetDaemonSetPodsForNode returns daemonset nodes for the given pod.
-func GetDaemonSetPodsForNode(nodeInfo *schedulerframework.NodeInfo, daemonsets []*appsv1.DaemonSet) ([]*apiv1.Pod, error) {
-	result := make([]*apiv1.Pod, 0)
+func GetDaemonSetPodsForNode(nodeInfo *framework.NodeInfo, daemonsets []*appsv1.DaemonSet) ([]*framework.PodInfo, error) {
+	result := make([]*framework.PodInfo, 0)
 	for _, ds := range daemonsets {
 		shouldRun, _ := daemon.NodeShouldRunDaemonPod(nodeInfo.Node(), ds)
 		if shouldRun {
 			pod := daemon.NewPod(ds, nodeInfo.Node().Name)
 			pod.Name = fmt.Sprintf("%s-pod-%d", ds.Name, rand.Int63())
-			result = append(result, pod)
+			result = append(result, &framework.PodInfo{Pod: pod})
 		}
 	}
 	return result, nil

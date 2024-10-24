@@ -285,7 +285,7 @@ func (a *Actuator) deleteNodesAsync(nodes []*apiv1.Node, nodeGroup cloudprovider
 	}
 
 	for _, node := range nodes {
-		nodeInfo, err := clusterSnapshot.NodeInfos().Get(node.Name)
+		nodeInfo, err := clusterSnapshot.GetNodeInfo(node.Name)
 		if err != nil {
 			klog.Errorf("Scale-down: can't retrieve node %q from snapshot, err: %v", node.Name, err)
 			nodeDeleteResult := status.NodeDeleteResult{ResultType: status.NodeDeleteErrorInternal, Err: errors.NewAutoscalerError(errors.InternalError, "nodeInfos.Get for %q returned error: %v", node.Name, err)}
@@ -317,7 +317,7 @@ func (a *Actuator) scaleDownNodeToReport(node *apiv1.Node, drain bool) (*status.
 	if err != nil {
 		return nil, err
 	}
-	nodeInfo, err := a.ctx.ClusterSnapshot.NodeInfos().Get(node.Name)
+	nodeInfo, err := a.ctx.ClusterSnapshot.GetNodeInfo(node.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -356,7 +356,6 @@ func (a *Actuator) taintNode(node *apiv1.Node) error {
 }
 
 func (a *Actuator) createSnapshot(nodes []*apiv1.Node) (clustersnapshot.ClusterSnapshot, error) {
-	knownNodes := make(map[string]bool)
 	snapshot := clustersnapshot.NewBasicClusterSnapshot()
 	pods, err := a.ctx.AllPodLister().List()
 	if err != nil {
@@ -366,22 +365,10 @@ func (a *Actuator) createSnapshot(nodes []*apiv1.Node) (clustersnapshot.ClusterS
 	scheduledPods := kube_util.ScheduledPods(pods)
 	nonExpendableScheduledPods := utils.FilterOutExpendablePods(scheduledPods, a.ctx.ExpendablePodsPriorityCutoff)
 
-	for _, node := range nodes {
-		if err := snapshot.AddNode(node); err != nil {
-			return nil, err
-		}
-
-		knownNodes[node.Name] = true
+	err = snapshot.Initialize(nodes, nonExpendableScheduledPods)
+	if err != nil {
+		return nil, err
 	}
-
-	for _, pod := range nonExpendableScheduledPods {
-		if knownNodes[pod.Spec.NodeName] {
-			if err := snapshot.AddPod(pod, pod.Spec.NodeName); err != nil {
-				return nil, err
-			}
-		}
-	}
-
 	return snapshot, nil
 }
 

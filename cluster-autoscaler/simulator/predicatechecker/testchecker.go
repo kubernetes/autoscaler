@@ -17,6 +17,7 @@ limitations under the License.
 package predicatechecker
 
 import (
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/client-go/informers"
 	clientsetfake "k8s.io/client-go/kubernetes/fake"
 	"k8s.io/kubernetes/pkg/scheduler/apis/config"
@@ -25,21 +26,19 @@ import (
 
 // NewTestPredicateChecker builds test version of PredicateChecker.
 func NewTestPredicateChecker() (PredicateChecker, error) {
-	schedConfig, err := scheduler_config_latest.Default()
+	defaultConfig, err := scheduler_config_latest.Default()
 	if err != nil {
 		return nil, err
 	}
-
-	// just call out to NewSchedulerBasedPredicateChecker but use fake kubeClient
-	return NewSchedulerBasedPredicateChecker(informers.NewSharedInformerFactory(clientsetfake.NewSimpleClientset(), 0), schedConfig)
+	return NewTestPredicateCheckerWithCustomConfig(defaultConfig)
 }
 
 // NewTestPredicateCheckerWithCustomConfig builds test version of PredicateChecker with custom scheduler config.
 func NewTestPredicateCheckerWithCustomConfig(schedConfig *config.KubeSchedulerConfiguration) (PredicateChecker, error) {
-	if schedConfig != nil {
-		// just call out to NewSchedulerBasedPredicateChecker but use fake kubeClient
-		return NewSchedulerBasedPredicateChecker(informers.NewSharedInformerFactory(clientsetfake.NewSimpleClientset(), 0), schedConfig)
+	// just call out to NewSchedulerBasedPredicateChecker but use fake kubeClient
+	fwHandle, err := framework.NewHandle(informers.NewSharedInformerFactory(clientsetfake.NewSimpleClientset(), 0), schedConfig)
+	if err != nil {
+		return nil, err
 	}
-
-	return NewTestPredicateChecker()
+	return NewSchedulerBasedPredicateChecker(fwHandle), nil
 }
