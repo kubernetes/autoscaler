@@ -58,7 +58,7 @@ func TestCheckPredicate(t *testing.T) {
 
 	customConfigFile := filepath.Join(tmpDir, "custom_config.yaml")
 	if err := os.WriteFile(customConfigFile,
-		[]byte(testconfig.SchedulerConfigNodeResourcesFitDisabled),
+		[]byte(testconfig.SchedulerConfigMultiProfiles),
 		os.FileMode(0600)); err != nil {
 		t.Fatal(err)
 	}
@@ -67,6 +67,9 @@ func TestCheckPredicate(t *testing.T) {
 	assert.NoError(t, err)
 	customPredicateChecker, err := NewTestPredicateCheckerWithCustomConfig(customConfig)
 	assert.NoError(t, err)
+
+	defaultSchedulerName := "default-scheduler"
+	customSchedulerName := "custom-scheduler"
 
 	tests := []struct {
 		name             string
@@ -111,34 +114,66 @@ func TestCheckPredicate(t *testing.T) {
 		},
 		// custom predicate checker test cases
 		{
-			name:             "custom - other pod - ok",
+			name:             "custom - other pod - p600 - default scheduler - insuficient cpu",
 			node:             n1000,
 			scheduledPods:    []*apiv1.Pod{p450},
+			testPod:          withSchedulerName(p600, defaultSchedulerName),
+			expectError:      true,
+			predicateChecker: customPredicateChecker,
+		},
+		{
+			name:             "custom - other pod - p600 - custom scheduler - ok",
+			node:             n1000,
+			scheduledPods:    []*apiv1.Pod{p450},
+			testPod:          withSchedulerName(p600, customSchedulerName),
+			expectError:      false,
+			predicateChecker: customPredicateChecker,
+		},
+		{
+			name:             "custom - other pod - p500 - default scheduler - ok",
+			node:             n1000,
+			scheduledPods:    []*apiv1.Pod{p450},
+			testPod:          withSchedulerName(p500, defaultSchedulerName),
+			expectError:      false,
+			predicateChecker: customPredicateChecker,
+		},
+		{
+			name:             "custom - other pod - p500 - custom scheduler - ok",
+			node:             n1000,
+			scheduledPods:    []*apiv1.Pod{p450},
+			testPod:          withSchedulerName(p500, customSchedulerName),
+			expectError:      false,
+			predicateChecker: customPredicateChecker,
+		},
+		{
+			name:             "custom - empty - p8000 - default scheduler - insuficient cpu",
+			node:             n1000,
+			scheduledPods:    []*apiv1.Pod{},
+			testPod:          withSchedulerName(p8000, defaultSchedulerName),
+			expectError:      true,
+			predicateChecker: customPredicateChecker,
+		},
+		{
+			name:             "custom - empty - p8000 - custom scheduler - ok",
+			node:             n1000,
+			scheduledPods:    []*apiv1.Pod{},
+			testPod:          withSchedulerName(p8000, customSchedulerName),
+			expectError:      false,
+			predicateChecker: customPredicateChecker,
+		},
+		{
+			name:             "custom - empty - p600 - default scheduler - ok",
+			node:             n1000,
+			scheduledPods:    []*apiv1.Pod{},
 			testPod:          p600,
 			expectError:      false,
 			predicateChecker: customPredicateChecker,
 		},
 		{
-			name:             "custom -other pod - ok",
-			node:             n1000,
-			scheduledPods:    []*apiv1.Pod{p450},
-			testPod:          p500,
-			expectError:      false,
-			predicateChecker: customPredicateChecker,
-		},
-		{
-			name:             "custom -empty - ok",
+			name:             "custom - empty - p600 - custom scheduler - ok",
 			node:             n1000,
 			scheduledPods:    []*apiv1.Pod{},
-			testPod:          p8000,
-			expectError:      false,
-			predicateChecker: customPredicateChecker,
-		},
-		{
-			name:             "custom -empty - ok",
-			node:             n1000,
-			scheduledPods:    []*apiv1.Pod{},
-			testPod:          p600,
+			testPod:          withSchedulerName(p600, customSchedulerName),
 			expectError:      false,
 			predicateChecker: customPredicateChecker,
 		},
@@ -183,7 +218,7 @@ func TestFitsAnyNode(t *testing.T) {
 
 	customConfigFile := filepath.Join(tmpDir, "custom_config.yaml")
 	if err := os.WriteFile(customConfigFile,
-		[]byte(testconfig.SchedulerConfigNodeResourcesFitDisabled),
+		[]byte(testconfig.SchedulerConfigMultiProfiles),
 		os.FileMode(0600)); err != nil {
 		t.Fatal(err)
 	}
@@ -192,6 +227,9 @@ func TestFitsAnyNode(t *testing.T) {
 	assert.NoError(t, err)
 	customPredicateChecker, err := NewTestPredicateCheckerWithCustomConfig(customConfig)
 	assert.NoError(t, err)
+
+	defaultSchedulerName := "default-scheduler"
+	customSchedulerName := "custom-scheduler"
 
 	testCases := []struct {
 		name             string
@@ -224,23 +262,37 @@ func TestFitsAnyNode(t *testing.T) {
 
 		// custom predicate checker test cases
 		{
-			name:             "custom - small pod - no error",
+			name:             "custom - small pod - custom scheduler - no error",
 			predicateChecker: customPredicateChecker,
-			pod:              p900,
+			pod:              withSchedulerName(p900, customSchedulerName),
 			expectedNodes:    []string{"n1000", "n2000"},
 			expectError:      false,
 		},
 		{
-			name:             "custom - medium pod - no error",
+			name:             "custom - medium pod - default scheduler - no error",
 			predicateChecker: customPredicateChecker,
-			pod:              p1900,
+			pod:              withSchedulerName(p1900, defaultSchedulerName),
+			expectedNodes:    []string{"n2000"},
+			expectError:      false,
+		},
+		{
+			name:             "custom - medium pod - custom scheduler - no error",
+			predicateChecker: customPredicateChecker,
+			pod:              withSchedulerName(p1900, customSchedulerName),
 			expectedNodes:    []string{"n1000", "n2000"},
 			expectError:      false,
 		},
 		{
-			name:             "custom - large pod - insufficient cpu",
+			name:             "custom - large pod - default scheduler - insufficient cpu",
 			predicateChecker: customPredicateChecker,
-			pod:              p2100,
+			pod:              withSchedulerName(p2100, defaultSchedulerName),
+			expectedNodes:    []string{},
+			expectError:      true,
+		},
+		{
+			name:             "custom - large pod - custom scheduler - insufficient cpu",
+			predicateChecker: customPredicateChecker,
+			pod:              withSchedulerName(p2100, customSchedulerName),
 			expectedNodes:    []string{"n1000", "n2000"},
 			expectError:      false,
 		},
@@ -318,4 +370,10 @@ func TestDebugInfo(t *testing.T) {
 	assert.NoError(t, err)
 	predicateErr = customPredicateChecker.CheckPredicates(clusterSnapshot, p1, "n1")
 	assert.Nil(t, predicateErr)
+}
+
+func withSchedulerName(pod *apiv1.Pod, schedulerName string) *apiv1.Pod {
+	p := pod.DeepCopy()
+	p.Spec.SchedulerName = schedulerName
+	return p
 }
