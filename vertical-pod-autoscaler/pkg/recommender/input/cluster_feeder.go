@@ -73,6 +73,12 @@ type ClusterStateFeeder interface {
 
 	// GarbageCollectCheckpoints removes historical checkpoints that don't have a matching VPA.
 	GarbageCollectCheckpoints()
+
+	// MarkAggregates marks all aggregates in all VPAs as not under VPAs
+	MarkAggregates()
+
+	// SweepAggregates garbage collects all aggregates in all VPAs aggregate lists that are no longer under VPAs
+	SweepAggregates()
 }
 
 // ClusterStateFeederFactory makes instances of ClusterStateFeeder.
@@ -290,13 +296,27 @@ func (feeder *clusterStateFeeder) GarbageCollectCheckpoints() {
 		}
 		for _, checkpoint := range checkpointList.Items {
 			vpaID := model.VpaID{Namespace: checkpoint.Namespace, VpaName: checkpoint.Spec.VPAObjectName}
-			_, exists := feeder.clusterState.Vpas[vpaID]
+			vpa, exists := feeder.clusterState.Vpas[vpaID]
 			if !exists {
 				err = feeder.vpaCheckpointClient.VerticalPodAutoscalerCheckpoints(namespace).Delete(context.TODO(), checkpoint.Name, metav1.DeleteOptions{})
 				if err == nil {
 					klog.V(3).InfoS("Orphaned VPA checkpoint cleanup - deleting", klog.KRef(namespace, checkpoint.Name))
 				} else {
 					klog.ErrorS(err, "Orphaned VPA checkpoint cleanup - error deleting", klog.KRef(namespace, checkpoint.Name))
+				}
+			}
+			// Also clean up a checkpoint if the VPA is still there, but the container is gone. AggregateStateByContainerName
+			// merges in the initial aggregates so we can use it to check "both lists" (initial, aggregates) at once
+			// TODO(jkyros): could we also just wait until it got "old" enough, e.g. the checkpoint hasn't
+			// been updated for an hour, blow it away? Because once we remove it from the aggregate lists, it will stop
+			// being maintained.
+			_, aggregateExists := vpa.AggregateStateByContainerName()[checkpoint.Spec.ContainerName]
+			if !aggregateExists {
+				err = feeder.vpaCheckpointClient.VerticalPodAutoscalerCheckpoints(namespace).Delete(context.TODO(), checkpoint.Name, metav1.DeleteOptions{})
+				if err == nil {
+					klog.V(3).Infof("Orphaned VPA checkpoint cleanup - deleting %v/%v.", namespace, checkpoint.Name)
+				} else {
+					klog.Errorf("Cannot delete VPA checkpoint %v/%v. Reason: %+v", namespace, checkpoint.Name, err)
 				}
 			}
 		}
@@ -394,6 +414,55 @@ func (feeder *clusterStateFeeder) LoadVPAs(ctx context.Context) {
 		}
 	}
 	feeder.clusterState.ObservedVpas = vpaCRDs
+}
+
+// MarkAggregates marks all aggregates IsUnderVPA=false, so when we go
+// through LoadPods(), the valid ones will get marked back to true, and
+// we can garbage collect the false ones from the VPAs' aggregate lists.
+func (feeder *clusterStateFeeder) MarkAggregates() {
+	for _, vpa := range feeder.clusterState.Vpas {
+		for _, container := range vpa.AggregateContainerStates() {
+			container.IsUnderVPA = false
+		}
+		for _, container := range vpa.ContainersInitialAggregateState {
+			container.IsUnderVPA = false
+		}
+	}
+}
+
+// SweepAggregates garbage collects all aggregates/initial aggregates from the VPA where the
+// aggregate's container no longer exists.
+func (feeder *clusterStateFeeder) SweepAggregates() {
+
+	var aggregatesPruned int
+	var initialAggregatesPruned int
+
+	// TODO(jkyros): This only removes the container state from the VPA's aggregate states, there
+	// is still a reference to them in feeder.clusterState.aggregateStateMap, and those get
+	// garbage collected eventually by the rate limited aggregate garbage collector later.
+	// Maybe we should clean those up here too since we know which ones are stale?
+	for _, vpa := range feeder.clusterState.Vpas {
+
+		for containerKey, container := range vpa.AggregateContainerStates() {
+			if !container.IsUnderVPA {
+				klog.V(4).Infof("Deleting Aggregate for VPA %s/%s: container %s no longer present", vpa.ID.Namespace, vpa.ID.VpaName, containerKey.ContainerName())
+				vpa.DeleteAggregation(containerKey)
+				aggregatesPruned = aggregatesPruned + 1
+
+			}
+		}
+		for containerKey, container := range vpa.ContainersInitialAggregateState {
+			if !container.IsUnderVPA {
+				klog.V(4).Infof("Deleting Initial Aggregate for VPA %s/%s: container %s no longer present", vpa.ID.Namespace, vpa.ID.VpaName, containerKey)
+				delete(vpa.ContainersInitialAggregateState, containerKey)
+				initialAggregatesPruned = initialAggregatesPruned + 1
+
+			}
+		}
+	}
+	if initialAggregatesPruned > 0 || aggregatesPruned > 0 {
+		klog.Infof("Pruned %d aggregate and %d initial aggregate containers", aggregatesPruned, initialAggregatesPruned)
+	}
 }
 
 // LoadPods loads pod into the cluster state.
