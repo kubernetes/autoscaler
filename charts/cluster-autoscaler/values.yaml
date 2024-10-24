@@ -196,6 +196,12 @@ extraArgs:
   # balancing-ignore-label_1: first-label-to-ignore
   # balancing-ignore-label_2: second-label-to-ignore
 
+# customArgs -- Additional custom container arguments.
+# Refer to https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#what-are-the-parameters-to-ca for the full list of cluster autoscaler
+# parameters and their default values.
+# List of arguments as strings.
+customArgs: []
+
 # extraEnv -- Additional container environment variables.
 extraEnv: {}
 
