@@ -22,6 +22,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum/gophercloud/openstack/compute/v2/flavors"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum/gophercloud/openstack/containerinfra/v1/nodegroups"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 )
@@ -45,6 +46,7 @@ type magnumManager interface {
 	fetchNodeGroupStackIDs(nodegroup string) (nodeGroupStacks, error)
 	uniqueNameAndIDForNodeGroup(nodegroup string) (string, string, error)
 	nodeGroupForNode(node *apiv1.Node) (string, error)
+	getFlavorById(flavor string) (*flavors.Flavor, error)
 }
 
 // createMagnumManager creates the necessary OpenStack clients and returns
@@ -78,5 +80,10 @@ func createMagnumManager(configReader io.Reader, discoverOpts cloudprovider.Node
 		return nil, fmt.Errorf("could not create heat client: %v", err)
 	}
 
-	return createMagnumManagerImpl(clusterClient, heatClient, opts)
+	novaClient, err := createNovaClient(cfg, provider, opts)
+	if err != nil {
+		return nil, fmt.Errorf("could not create nova client: %v", err)
+	}
+
+	return createMagnumManagerImpl(clusterClient, heatClient, novaClient, opts)
 }
