@@ -167,7 +167,7 @@ use-instance-principals = true
 n/a
 
 ### Node Group Auto Discovery
-`--node-group-auto-discovery` could be given in below pattern. It would discover the nodepools under given compartment by matching the nodepool tags (either they are Freeform or Defined tags)
+`--node-group-auto-discovery` could be given in below pattern. It would discover the nodepools under given compartment by matching the nodepool tags (either they are Freeform or Defined tags). All of the parameters are mandatory.
 ```
 clusterId:<clusterId>,compartmentId:<compartmentId>,nodepoolTags:<tagKey1>=<tagValue1>&<tagKey2>=<tagValue2>,min:<min>,max:<max>
 ```
