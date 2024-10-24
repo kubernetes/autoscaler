@@ -166,6 +166,13 @@ use-instance-principals = true
 
 n/a
 
+### Node Group Auto Discovery
+`--node-group-auto-discovery` could be given in below pattern. It would discover the nodepools under given compartment by matching the nodepool tags (either they are Freeform or Defined tags). All of the parameters are mandatory.
+```
+clusterId:<clusterId>,compartmentId:<compartmentId>,nodepoolTags:<tagKey1>=<tagValue1>&<tagKey2>=<tagValue2>,min:<min>,max:<max>
+```
+Auto discovery can not be used along with static discovery (`node` parameter) to prevent conflicts.
+
 ## Deployment
 
 ### Create OCI config secret (only if _not_ using Instance Principals)
@@ -271,7 +278,8 @@ kubectl apply -f ./cloudprovider/oci/examples/oci-nodepool-cluster-autoscaler-w-
   correctly (`oci-cloud-controller-manager`).
 - Avoid manually changing pools that are managed by the Cluster Autoscaler. For example, do not add or remove nodes
   using kubectl, or using the Console (or the Oracle Cloud Infrastructure CLI or API).
-- `--node-group-auto-discovery` and `--node-autoprovisioning-enabled=true` are not supported.
+- `--node-autoprovisioning-enabled=true` are not supported.
+- `--node-group-auto-discovery` and `node` parameters can not be used together as it can cause conflicts.
 - We set a `nvidia.com/gpu:NoSchedule` taint on nodes in a GPU enabled pools.
 
 ## Helpful links
