@@ -272,8 +272,7 @@ func nodePoolFromArg(value string) (*nodePool, error) {
 
 // nodeGroupFromArg parses a node group spec represented in the form of
 // `clusterId:<clusterId>,compartmentId:<compartmentId>,nodepoolTags:<tagKey1>=<tagValue1>&<tagKey2>=<tagValue2>,min:<min>,max:<max>`
-// and produces a node group auto discovery object,
-// nodepoolTags are optional and CA will capture all nodes if no tags are provided.
+// and produces a node group auto discovery object
 func nodeGroupFromArg(value string) (*nodeGroupAutoDiscovery, error) {
 	// this regex will find the key-value pairs in any given order if separated with a colon
 	regexPattern := `(?:` + compartmentId + `:(?P<` + compartmentId + `>[^,]+)`
@@ -333,8 +332,12 @@ func nodeGroupFromArg(value string) (*nodeGroupAutoDiscovery, error) {
 			parts := strings.Split(pair, "=")
 			if len(parts) == 2 {
 				spec.tags[parts[0]] = parts[1]
+			} else {
+				return nil, fmt.Errorf("nodepoolTags should be given in tagKey=tagValue format, this is not valid: %s", pair)
 			}
 		}
+	} else {
+		return nil, fmt.Errorf("failed to set %s, it is missing in node-group-auto-discovery parameter", nodepoolTags)
 	}
 
 	klog.Infof("node group auto discovery spec constructed: %+v", spec)

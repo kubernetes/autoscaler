@@ -390,16 +390,16 @@ func TestRemoveInstance(t *testing.T) {
 }
 
 func TestNodeGroupFromArg(t *testing.T) {
-	var nodeGroupArg = "clusterId:testClusterId,compartmentId:testCompartmentId,nodepoolTags:ca-managed=true&namespace.foo=bar,min:1,max:5"
+	var nodeGroupArg = "clusterId:ocid1.cluster.oc1.test-region.test,compartmentId:ocid1.compartment.oc1.test-region.test,nodepoolTags:ca-managed=true&namespace.foo=bar,min:1,max:5"
 	nodeGroupAutoDiscovery, err := nodeGroupFromArg(nodeGroupArg)
 	if err != nil {
 		t.Errorf("Error: #{err}")
 	}
-	if nodeGroupAutoDiscovery.clusterId != "testClusterId" {
-		t.Errorf("Error: clusterId should be testClusterId")
+	if nodeGroupAutoDiscovery.clusterId != "ocid1.cluster.oc1.test-region.test" {
+		t.Errorf("Error: clusterId should be ocid1.cluster.oc1.test-region.test")
 	}
-	if nodeGroupAutoDiscovery.compartmentId != "testCompartmentId" {
-		t.Errorf("Error: compartmentId should be testCompartmentId")
+	if nodeGroupAutoDiscovery.compartmentId != "ocid1.compartment.oc1.test-region.test" {
+		t.Errorf("Error: compartmentId should be ocid1.compartment.oc1.test-region.test")
 	}
 	if nodeGroupAutoDiscovery.minSize != 1 {
 		t.Errorf("Error: minSize should be 1")
@@ -417,41 +417,67 @@ func TestNodeGroupFromArg(t *testing.T) {
 
 func TestValidateNodePoolTags(t *testing.T) {
 
-	var nodeGroupTags map[string]string = nil
-	var nodePoolTags map[string]string = nil
-	var definedTags map[string]map[string]interface{} = nil
-
-	if validateNodepoolTags(nodeGroupTags, nodePoolTags, definedTags) == false {
-		t.Errorf("validateNodepoolTags shouldn't return false for empty tags map")
+	testCases := map[string]struct {
+		nodeGroupTags  map[string]string
+		freeFormTags   map[string]string
+		definedTags    map[string]map[string]interface{}
+		expectedResult bool
+	}{
+		"no-tags": {
+			nodeGroupTags:  nil,
+			freeFormTags:   nil,
+			definedTags:    nil,
+			expectedResult: true,
+		},
+		"node-group tags provided but no tags on nodepool": {
+			nodeGroupTags: map[string]string{
+				"testTag": "testTagValue",
+			},
+			freeFormTags:   nil,
+			definedTags:    nil,
+			expectedResult: false,
+		},
+		"node-group tags and free-form tags do not match": {
+			nodeGroupTags: map[string]string{
+				"testTag": "testTagValue",
+			},
+			freeFormTags: map[string]string{
+				"foo": "bar",
+			},
+			definedTags:    nil,
+			expectedResult: false,
+		},
+		"free-form tags have required node-group tags": {
+			nodeGroupTags: map[string]string{
+				"testTag": "testTagValue",
+			},
+			freeFormTags: map[string]string{
+				"foo":     "bar",
+				"testTag": "testTagValue",
+			},
+			definedTags:    nil,
+			expectedResult: true,
+		},
+		"defined tags have required node-group tags": {
+			nodeGroupTags: map[string]string{
+				"ns.testTag": "testTagValue",
+			},
+			freeFormTags: nil,
+			definedTags: map[string]map[string]interface{}{
+				"ns": {
+					"testTag": "testTagValue",
+				},
+			},
+			expectedResult: true,
+		},
 	}
 
-	nodeGroupTags = make(map[string]string)
-	nodeGroupTags["test"] = "test"
-
-	if validateNodepoolTags(nodeGroupTags, nodePoolTags, definedTags) == true {
-		t.Errorf("validateNodepoolTags shouldn't return true for tags missing")
-	}
-
-	nodePoolTags = make(map[string]string)
-	nodePoolTags["foo"] = "bar"
-
-	if validateNodepoolTags(nodeGroupTags, nodePoolTags, definedTags) == true {
-		t.Errorf("validateNodepoolTags shouldn't return true for not matching tags")
-	}
-
-	nodePoolTags["test"] = "test"
-
-	if validateNodepoolTags(nodeGroupTags, nodePoolTags, definedTags) == false {
-		t.Errorf("validateNodepoolTags shouldn't return false for matching tags")
-	}
-
-	nodeGroupTags["ns.tag1"] = "tag2"
-	definedTagsMap := make(map[string]interface{})
-	definedTagsMap["tag1"] = "tag2"
-	definedTags = make(map[string]map[string]interface{})
-	definedTags["ns"] = definedTagsMap
-
-	if validateNodepoolTags(nodeGroupTags, nodePoolTags, definedTags) == false {
-		t.Errorf("validateNodepoolTags shouldn't return false for namespaced tags")
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			result := validateNodepoolTags(tc.nodeGroupTags, tc.freeFormTags, tc.definedTags)
+			if result != tc.expectedResult {
+				t.Errorf("Testcase '%s' failed: got %t ; expected %t", name, result, tc.expectedResult)
+			}
+		})
 	}
 }
