@@ -1244,6 +1244,49 @@ func TestGetScaleSetOptions(t *testing.T) {
 	assert.Equal(t, *opts, defaultOptions)
 }
 
+// TestVMSSNotFound ensures that AzureManager is still able to be built
+// if one nodeGroup (VMSS) is not found. Previously, we would fail on manager creation
+// if even one expected nodeGroup was not found. When manager creation errored out,
+// BuildAzure returns log.Fatalf() which caused CAS to crash.
+func TestVMSSNotFound(t *testing.T) {
+	// client setup
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
+	mockVMClient := mockvmclient.NewMockInterface(ctrl)
+	mockVMSSVMClient := mockvmssvmclient.NewMockInterface(ctrl)
+	client := azClient{}
+	client.virtualMachineScaleSetsClient = mockVMSSClient
+	client.virtualMachinesClient = mockVMClient
+	client.virtualMachineScaleSetVMsClient = mockVMSSVMClient
+
+	// Expect that no vmss are present in the vmss client
+	mockVMSSVMClient.EXPECT().List(gomock.Any(), "fakeId", testASG, gomock.Any()).Return([]compute.VirtualMachineScaleSetVM{}, nil).AnyTimes()
+	mockVMClient.EXPECT().List(gomock.Any(), "fakeId").Return([]compute.VirtualMachine{}, nil).AnyTimes()
+	mockVMSSClient.EXPECT().List(gomock.Any(), "fakeId").Return([]compute.VirtualMachineScaleSet{}, nil).AnyTimes()
+
+	// Add explicit node group to look for during init
+	ngdo := cloudprovider.NodeGroupDiscoveryOptions{
+		NodeGroupSpecs: []string{
+			fmt.Sprintf("%d:%d:%s", 1, 3, testASG),
+		},
+	}
+
+	// We expect the initial BuildAzure flow to pass when a NodeGroup is detected
+	// that doesn't have a corresponding VMSS in the cache.
+	t.Run("should not error when VMSS not found in cache", func(t *testing.T) {
+		manager, err := createAzureManagerInternal(strings.NewReader(validAzureCfg), ngdo, &client)
+		assert.NoError(t, err)
+		// expect one nodegroup to be present
+		nodeGroups := manager.getNodeGroups()
+		assert.Len(t, nodeGroups, 1)
+		assert.Equal(t, nodeGroups[0].Id(), testASG)
+		// expect no scale sets to be present
+		scaleSets := manager.azureCache.getScaleSets()
+		assert.Len(t, scaleSets, 0)
+	})
+}
+
 func assertStructsMinimallyEqual(t *testing.T, struct1, struct2 interface{}) bool {
 	return compareStructFields(t, reflect.ValueOf(struct1), reflect.ValueOf(struct2))
 }
