@@ -138,7 +138,7 @@ func newApiNode(orchmode compute.OrchestrationMode, vmID int64) *apiv1.Node {
 	}
 	return node
 }
-func TestMaxSize(t *testing.T) {
+func TestScaleSetMaxSize(t *testing.T) {
 	provider := newTestProvider(t)
 	registered := provider.azureManager.RegisterNodeGroup(
 		newTestScaleSet(provider.azureManager, "test-asg"))
@@ -147,7 +147,7 @@ func TestMaxSize(t *testing.T) {
 	assert.Equal(t, provider.NodeGroups()[0].MaxSize(), 5)
 }
 
-func TestMinSize(t *testing.T) {
+func TestScaleSetMinSize(t *testing.T) {
 	provider := newTestProvider(t)
 	registered := provider.azureManager.RegisterNodeGroup(
 		newTestScaleSet(provider.azureManager, "test-asg"))
@@ -156,7 +156,7 @@ func TestMinSize(t *testing.T) {
 	assert.Equal(t, provider.NodeGroups()[0].MinSize(), 1)
 }
 
-func TestMinSizeZero(t *testing.T) {
+func TestScaleSetMinSizeZero(t *testing.T) {
 	provider := newTestProvider(t)
 	registered := provider.azureManager.RegisterNodeGroup(
 		newTestScaleSetMinSizeZero(provider.azureManager, testASG))
@@ -165,7 +165,7 @@ func TestMinSizeZero(t *testing.T) {
 	assert.Equal(t, provider.NodeGroups()[0].MinSize(), 0)
 }
 
-func TestTargetSize(t *testing.T) {
+func TestScaleSetTargetSize(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -235,7 +235,7 @@ func TestTargetSize(t *testing.T) {
 	}
 }
 
-func TestIncreaseSize(t *testing.T) {
+func TestScaleSetIncreaseSize(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -352,7 +352,7 @@ func TestIncreaseSize(t *testing.T) {
 
 // TestIncreaseSizeOnVMProvisioningFailed has been tweeked only for Uniform Orchestration mode.
 // If ProvisioningState == failed and power state is not running, Status.State == InstanceCreating with errorInfo populated.
-func TestIncreaseSizeOnVMProvisioningFailed(t *testing.T) {
+func TestScaleSetIncreaseSizeOnVMProvisioningFailed(t *testing.T) {
 	testCases := map[string]struct {
 		expectInstanceRunning    bool
 		isMissingInstanceView    bool
@@ -441,7 +441,7 @@ func TestIncreaseSizeOnVMProvisioningFailed(t *testing.T) {
 	}
 }
 
-func TestIncreaseSizeOnVMSSUpdating(t *testing.T) {
+func TestScaleSetIncreaseSizeOnVMSSUpdating(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -491,7 +491,7 @@ func TestIncreaseSizeOnVMSSUpdating(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestBelongs(t *testing.T) {
+func TestScaleSetBelongs(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -543,7 +543,7 @@ func TestBelongs(t *testing.T) {
 	}
 }
 
-func TestDeleteNodes(t *testing.T) {
+func TestScaleSetDeleteNodes(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -681,7 +681,7 @@ func TestDeleteNodes(t *testing.T) {
 	}
 }
 
-func TestDeleteNodeUnregistered(t *testing.T) {
+func TestScaleSetDeleteNodeUnregistered(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -794,7 +794,7 @@ func TestDeleteNodeUnregistered(t *testing.T) {
 	}
 }
 
-func TestDeleteInstancesWithForceDeleteEnabled(t *testing.T) {
+func TestScaleSetDeleteInstancesWithForceDeleteEnabled(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	manager := newTestAzureManager(t)
@@ -908,7 +908,7 @@ func TestDeleteInstancesWithForceDeleteEnabled(t *testing.T) {
 
 }
 
-func TestDeleteNoConflictRequest(t *testing.T) {
+func TestScaleSetDeleteNoConflictRequest(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -969,7 +969,7 @@ func TestDeleteNoConflictRequest(t *testing.T) {
 	err = scaleSet.DeleteNodes([]*apiv1.Node{node})
 }
 
-func TestId(t *testing.T) {
+func TestScaleSetId(t *testing.T) {
 	provider := newTestProvider(t)
 	registered := provider.azureManager.RegisterNodeGroup(
 		newTestScaleSet(provider.azureManager, "test-asg"))
@@ -978,7 +978,7 @@ func TestId(t *testing.T) {
 	assert.Equal(t, provider.NodeGroups()[0].Id(), "test-asg")
 }
 
-func TestDebug(t *testing.T) {
+func TestAgentPoolDebug(t *testing.T) {
 	asg := ScaleSet{
 		manager: newTestAzureManager(t),
 		minSize: 5,
@@ -1057,7 +1057,7 @@ func TestScaleSetNodes(t *testing.T) {
 
 }
 
-func TestEnableVmssFlexNodesFlag(t *testing.T) {
+func TestScaleSetEnableVmssFlexNodesFlag(t *testing.T) {
 
 	// flag set to false
 	ctrl := gomock.NewController(t)
@@ -1089,7 +1089,7 @@ func TestEnableVmssFlexNodesFlag(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTemplateNodeInfo(t *testing.T) {
+func TestScaleSetTemplateNodeInfo(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -1211,7 +1211,7 @@ func TestTemplateNodeInfo(t *testing.T) {
 	})
 
 }
-func TestCseErrors(t *testing.T) {
+func TestScaleSetCseErrors(t *testing.T) {
 	errorMessage := to.StringPtr("Error Message Test")
 	vmssVMs := compute.VirtualMachineScaleSetVM{
 		Name:       to.StringPtr("vmTest"),
