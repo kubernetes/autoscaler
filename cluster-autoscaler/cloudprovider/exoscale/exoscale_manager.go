@@ -96,14 +96,46 @@ func newManager(discoveryOpts cloudprovider.NodeGroupDiscoveryOptions) (*Manager
 // based on the `--scan-interval`. By default it's 10 seconds.
 func (m *Manager) Refresh() error {
 	var nodeGroups []cloudprovider.NodeGroup
+
+	// load clusters, it's required for SKS node groups check
+	sksClusters, err := m.client.ListSKSClusters(m.ctx, m.zone)
+	if err != nil {
+		errorf("unable to list SKS clusters: %v", err)
+		return err
+	}
+
 	for _, ng := range m.nodeGroups {
-		if _, err := m.client.GetInstancePool(m.ctx, m.zone, ng.Id()); err != nil {
-			if errors.Is(err, exoapi.ErrNotFound) {
+		// Check SKS Nodepool existence first
+		found := false
+		for _, c := range sksClusters {
+			for _, np := range c.Nodepools {
+				if *np.ID == ng.Id() {
+					if _, err := m.client.GetInstancePool(m.ctx, m.zone, *np.InstancePoolID); err != nil {
+						if !errors.Is(err, exoapi.ErrNotFound) {
+							errorf("unable to retrieve SKS Instance Pool %s: %v", ng.Id(), err)
+							return err
+						}
+					} else {
+						found = true
+						break
+					}
+				}
+			}
+		}
+
+		if !found {
+			// If SKS Nodepool is not found, check the Instance Pool
+			// it was the previous behavior which was less convenient for end user UX
+			if _, err := m.client.GetInstancePool(m.ctx, m.zone, ng.Id()); err != nil {
+				if !errors.Is(err, exoapi.ErrNotFound) {
+					errorf("unable to retrieve SKS Instance Pool %s: %v", ng.Id(), err)
+					return err
+				}
+
+				// Neither SKS Nodepool nor Instance Pool found, remove it from cache
 				debugf("removing node group %s from manager cache", ng.Id())
 				continue
 			}
-			errorf("unable to retrieve Instance Pool %s: %v", ng.Id(), err)
-			return err
 		}
 
 		nodeGroups = append(nodeGroups, ng)

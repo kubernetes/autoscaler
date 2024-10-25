@@ -206,7 +206,7 @@ func (ts *cloudProviderTestSuite) TestSKSNodepoolNodeGroup_Id() {
 		maxSize: int(testComputeInstanceQuotaLimit),
 	}
 
-	ts.Require().Equal(testInstancePoolID, nodeGroup.Id())
+	ts.Require().Equal(testSKSNodepoolID, nodeGroup.Id())
 }
 
 func (ts *cloudProviderTestSuite) TestSKSNodepoolNodeGroup_Nodes() {
