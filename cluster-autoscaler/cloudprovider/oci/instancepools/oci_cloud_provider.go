@@ -153,8 +153,14 @@ func BuildOCI(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscover
 	if err != nil {
 		klog.Fatalf("Failed to get pool type: %v", err)
 	}
-	if strings.HasPrefix(ocidType, npconsts.OciNodePoolResourceIdent) {
-		manager, err := nodepools.CreateNodePoolManager(opts.CloudConfig, do, createKubeClient(opts))
+	_, nodepoolTagsFound, err := ocicommon.HasNodeGroupTags(opts.NodeGroupAutoDiscovery)
+	if err != nil {
+		klog.Fatalf("Failed to get auto discovery tags: %v", err)
+	}
+	if strings.HasPrefix(ocidType, npconsts.OciNodePoolResourceIdent) && nodepoolTagsFound == true {
+		klog.Fatalf("-nodes and -node-group-auto-discovery parameters can not be used together.")
+	} else if strings.HasPrefix(ocidType, npconsts.OciNodePoolResourceIdent) || nodepoolTagsFound == true {
+		manager, err := nodepools.CreateNodePoolManager(opts.CloudConfig, opts.NodeGroupAutoDiscovery, do, createKubeClient(opts))
 		if err != nil {
 			klog.Fatalf("Could not create OCI OKE cloud provider: %v", err)
 		}
