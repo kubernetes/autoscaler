@@ -314,6 +314,26 @@ func (snapshot *BasicClusterSnapshot) Clear() {
 	snapshot.data = []*internalBasicSnapshotData{baseData}
 }
 
+// Export returns a shallow copy of the snapshot.
+func (snapshot *BasicClusterSnapshot) Export() ClusterSnapshot {
+	exportedSnapshot := &BasicClusterSnapshot{}
+	exportedSnapshot.data = make([]*internalBasicSnapshotData, len(snapshot.data))
+	for i, data := range snapshot.data {
+		exportedSnapshot.data[i] = data.clone()
+	}
+	return exportedSnapshot
+}
+
+// Rebase rebases the snapshot to a new base snapshot.
+func (snapshot *BasicClusterSnapshot) Rebase(base ClusterSnapshot) error {
+	baseSnapshot, ok := base.(*BasicClusterSnapshot)
+	if !ok {
+		return fmt.Errorf("cannot rebase to different type of snapshot")
+	}
+	snapshot.data = []*internalBasicSnapshotData{baseSnapshot.getInternalData().clone(), snapshot.data[len(snapshot.data)-1]}
+	return nil
+}
+
 // implementation of SharedLister interface
 
 type basicClusterSnapshotNodeLister BasicClusterSnapshot
