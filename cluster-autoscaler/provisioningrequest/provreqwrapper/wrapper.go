@@ -50,7 +50,6 @@ func NewProvisioningRequest(pr *v1.ProvisioningRequest, podTemplates []*apiv1.Po
 // SetConditions of the Provisioning Request.
 func (pr *ProvisioningRequest) SetConditions(conditions []metav1.Condition) {
 	pr.Status.Conditions = conditions
-	return
 }
 
 // PodSets of the Provisioning Request.

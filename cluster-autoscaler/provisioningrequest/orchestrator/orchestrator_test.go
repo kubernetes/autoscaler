@@ -34,6 +34,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupconfig"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfosprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/provreq"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/besteffortatomic"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/checkcapacity"
@@ -44,8 +45,9 @@ import (
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 	"k8s.io/client-go/kubernetes/fake"
+	clocktesting "k8s.io/utils/clock/testing"
+
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 	schedulermetrics "k8s.io/kubernetes/pkg/scheduler/metrics"
 )
@@ -81,12 +83,38 @@ func TestScaleUp(t *testing.T) {
 			Class:    v1.ProvisioningClassCheckCapacity,
 		})
 
+	anotherCheckCapacityCpuProvReq := provreqwrapper.BuildValidTestProvisioningRequestFromOptions(
+		provreqwrapper.TestProvReqOptions{
+			Name:     "anotherCheckCapacityCpuProvReq",
+			CPU:      "5m",
+			Memory:   "5",
+			PodCount: int32(100),
+			Class:    v1.ProvisioningClassCheckCapacity,
+		})
+
 	newCheckCapacityMemProvReq := provreqwrapper.BuildValidTestProvisioningRequestFromOptions(
 		provreqwrapper.TestProvReqOptions{
 			Name:     "newCheckCapacityMemProvReq",
 			CPU:      "1m",
 			Memory:   "100",
 			PodCount: int32(100),
+			Class:    v1.ProvisioningClassCheckCapacity,
+		})
+	impossibleCheckCapacityReq := provreqwrapper.BuildValidTestProvisioningRequestFromOptions(
+		provreqwrapper.TestProvReqOptions{
+			Name:     "impossibleCheckCapacityRequest",
+			CPU:      "1m",
+			Memory:   "1",
+			PodCount: int32(5001),
+			Class:    v1.ProvisioningClassCheckCapacity,
+		})
+
+	anotherImpossibleCheckCapacityReq := provreqwrapper.BuildValidTestProvisioningRequestFromOptions(
+		provreqwrapper.TestProvReqOptions{
+			Name:     "anotherImpossibleCheckCapacityRequest",
+			CPU:      "1m",
+			Memory:   "1",
+			PodCount: int32(5001),
 			Class:    v1.ProvisioningClassCheckCapacity,
 		})
 
@@ -166,12 +194,17 @@ func TestScaleUp(t *testing.T) {
 		})
 
 	testCases := []struct {
-		name             string
-		provReqs         []*provreqwrapper.ProvisioningRequest
-		provReqToScaleUp *provreqwrapper.ProvisioningRequest
-		scaleUpResult    status.ScaleUpResult
-		autoprovisioning bool
-		err              bool
+		name                string
+		provReqs            []*provreqwrapper.ProvisioningRequest
+		provReqToScaleUp    *provreqwrapper.ProvisioningRequest
+		scaleUpResult       status.ScaleUpResult
+		autoprovisioning    bool
+		err                 bool
+		batchProcessing     bool
+		maxBatchSize        int
+		batchTimebox        time.Duration
+		numProvisionedTrue  int
+		numProvisionedFalse int
 	}{
 		{
 			name:          "no ProvisioningRequests",
@@ -239,10 +272,137 @@ func TestScaleUp(t *testing.T) {
 			autoprovisioning: true,
 			scaleUpResult:    status.ScaleUpSuccessful,
 		},
+		// Batch processing tests
+		{
+			name:               "batch processing of check capacity requests with one request",
+			provReqs:           []*provreqwrapper.ProvisioningRequest{newCheckCapacityCpuProvReq},
+			provReqToScaleUp:   newCheckCapacityCpuProvReq,
+			scaleUpResult:      status.ScaleUpSuccessful,
+			batchProcessing:    true,
+			maxBatchSize:       3,
+			batchTimebox:       5 * time.Minute,
+			numProvisionedTrue: 1,
+		},
+		{
+			name:               "batch processing of check capacity requests with less requests than max batch size",
+			provReqs:           []*provreqwrapper.ProvisioningRequest{newCheckCapacityCpuProvReq, newCheckCapacityMemProvReq},
+			provReqToScaleUp:   newCheckCapacityCpuProvReq,
+			scaleUpResult:      status.ScaleUpSuccessful,
+			batchProcessing:    true,
+			maxBatchSize:       3,
+			batchTimebox:       5 * time.Minute,
+			numProvisionedTrue: 2,
+		},
+		{
+			name:               "batch processing of check capacity requests with requests equal to max batch size",
+			provReqs:           []*provreqwrapper.ProvisioningRequest{newCheckCapacityCpuProvReq, newCheckCapacityMemProvReq},
+			provReqToScaleUp:   newCheckCapacityCpuProvReq,
+			scaleUpResult:      status.ScaleUpSuccessful,
+			batchProcessing:    true,
+			maxBatchSize:       2,
+			batchTimebox:       5 * time.Minute,
+			numProvisionedTrue: 2,
+		},
+		{
+			name:               "batch processing of check capacity requests with more requests than max batch size",
+			provReqs:           []*provreqwrapper.ProvisioningRequest{newCheckCapacityCpuProvReq, newCheckCapacityMemProvReq, anotherCheckCapacityCpuProvReq},
+			provReqToScaleUp:   newCheckCapacityCpuProvReq,
+			scaleUpResult:      status.ScaleUpSuccessful,
+			batchProcessing:    true,
+			maxBatchSize:       2,
+			batchTimebox:       5 * time.Minute,
+			numProvisionedTrue: 2,
+		},
+		{
+			name:               "batch processing of check capacity requests where cluster contains already provisioned requests",
+			provReqs:           []*provreqwrapper.ProvisioningRequest{newCheckCapacityCpuProvReq, bookedCapacityProvReq, anotherCheckCapacityCpuProvReq},
+			provReqToScaleUp:   newCheckCapacityCpuProvReq,
+			scaleUpResult:      status.ScaleUpSuccessful,
+			batchProcessing:    true,
+			maxBatchSize:       2,
+			batchTimebox:       5 * time.Minute,
+			numProvisionedTrue: 3,
+		},
+		{
+			name:               "batch processing of check capacity requests where timebox is exceeded",
+			provReqs:           []*provreqwrapper.ProvisioningRequest{newCheckCapacityCpuProvReq, newCheckCapacityMemProvReq},
+			provReqToScaleUp:   newCheckCapacityCpuProvReq,
+			scaleUpResult:      status.ScaleUpSuccessful,
+			batchProcessing:    true,
+			maxBatchSize:       5,
+			batchTimebox:       0 * time.Nanosecond,
+			numProvisionedTrue: 1,
+		},
+		{
+			name:               "batch processing of check capacity requests where max batch size is invalid",
+			provReqs:           []*provreqwrapper.ProvisioningRequest{newCheckCapacityCpuProvReq, newCheckCapacityMemProvReq},
+			provReqToScaleUp:   newCheckCapacityCpuProvReq,
+			scaleUpResult:      status.ScaleUpSuccessful,
+			batchProcessing:    true,
+			maxBatchSize:       0,
+			batchTimebox:       5 * time.Minute,
+			numProvisionedTrue: 1,
+		},
+		{
+			name:               "batch processing of check capacity requests where best effort atomic scale-up request is also present in cluster",
+			provReqs:           []*provreqwrapper.ProvisioningRequest{newCheckCapacityMemProvReq, newCheckCapacityCpuProvReq, atomicScaleUpProvReq},
+			provReqToScaleUp:   newCheckCapacityMemProvReq,
+			scaleUpResult:      status.ScaleUpSuccessful,
+			batchProcessing:    true,
+			maxBatchSize:       2,
+			batchTimebox:       5 * time.Minute,
+			numProvisionedTrue: 2,
+		},
+		{
+			name:               "process atomic scale-up requests where batch processing of check capacity requests is enabled",
+			provReqs:           []*provreqwrapper.ProvisioningRequest{possibleAtomicScaleUpReq},
+			provReqToScaleUp:   possibleAtomicScaleUpReq,
+			scaleUpResult:      status.ScaleUpSuccessful,
+			batchProcessing:    true,
+			maxBatchSize:       3,
+			batchTimebox:       5 * time.Minute,
+			numProvisionedTrue: 1,
+		},
+		{
+			name:               "process atomic scale-up requests where batch processing of check capacity requests is enabled and check capacity requests are present in cluster",
+			provReqs:           []*provreqwrapper.ProvisioningRequest{newCheckCapacityMemProvReq, newCheckCapacityCpuProvReq, atomicScaleUpProvReq},
+			provReqToScaleUp:   atomicScaleUpProvReq,
+			scaleUpResult:      status.ScaleUpNotNeeded,
+			batchProcessing:    true,
+			maxBatchSize:       3,
+			batchTimebox:       5 * time.Minute,
+			numProvisionedTrue: 1,
+		},
+		{
+			name:                "batch processing of check capacity requests where some requests' capacity is not available",
+			provReqs:            []*provreqwrapper.ProvisioningRequest{newCheckCapacityMemProvReq, impossibleCheckCapacityReq, newCheckCapacityCpuProvReq},
+			provReqToScaleUp:    newCheckCapacityMemProvReq,
+			scaleUpResult:       status.ScaleUpSuccessful,
+			batchProcessing:     true,
+			maxBatchSize:        3,
+			batchTimebox:        5 * time.Minute,
+			numProvisionedTrue:  2,
+			numProvisionedFalse: 1,
+		},
+		{
+			name:                "batch processing of check capacity requests where all requests' capacity is not available",
+			provReqs:            []*provreqwrapper.ProvisioningRequest{impossibleCheckCapacityReq, anotherImpossibleCheckCapacityReq},
+			provReqToScaleUp:    impossibleCheckCapacityReq,
+			scaleUpResult:       status.ScaleUpNoOptionsAvailable,
+			batchProcessing:     true,
+			maxBatchSize:        3,
+			batchTimebox:        5 * time.Minute,
+			numProvisionedFalse: 2,
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc
-		allNodes := allNodes
+
+		nodes := []*apiv1.Node{}
+		for _, n := range allNodes {
+			nodes = append(nodes, n.DeepCopy())
+		}
+
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -255,7 +415,14 @@ func TestScaleUp(t *testing.T) {
 				}
 				return fmt.Errorf("unexpected scale-up of %s by %d", name, n)
 			}
-			orchestrator, nodeInfos := setupTest(t, allNodes, tc.provReqs, onScaleUpFunc, tc.autoprovisioning)
+
+			testProvReqs := []*provreqwrapper.ProvisioningRequest{}
+			for _, pr := range tc.provReqs {
+				testProvReqs = append(testProvReqs, &provreqwrapper.ProvisioningRequest{ProvisioningRequest: pr.DeepCopy(), PodTemplates: pr.PodTemplates})
+			}
+
+			client := provreqclient.NewFakeProvisioningRequestClient(context.Background(), t, testProvReqs...)
+			orchestrator, nodeInfos := setupTest(t, client, nodes, onScaleUpFunc, tc.autoprovisioning, tc.batchProcessing, tc.maxBatchSize, tc.batchTimebox)
 
 			st, err := orchestrator.ScaleUp(prPods, []*apiv1.Node{}, []*appsv1.DaemonSet{}, nodeInfos, false)
 			if !tc.err {
@@ -266,6 +433,16 @@ func TestScaleUp(t *testing.T) {
 					t.Errorf("noScaleUpInfo: %#v", st.PodsRemainUnschedulable[0].RejectedNodeGroups)
 				}
 				assert.Equal(t, tc.scaleUpResult, st.Result)
+
+				provReqsAfterScaleUp, err := client.ProvisioningRequestsNoCache()
+				assert.NoError(t, err)
+				assert.Equal(t, len(tc.provReqs), len(provReqsAfterScaleUp))
+
+				if tc.batchProcessing {
+					// Since batch processing returns aggregated result, we need to check the number of provisioned requests which have the provisioned condition.
+					assert.Equal(t, tc.numProvisionedTrue, NumProvisioningRequestsWithCondition(provReqsAfterScaleUp, v1.Provisioned, metav1.ConditionTrue))
+					assert.Equal(t, tc.numProvisionedFalse, NumProvisioningRequestsWithCondition(provReqsAfterScaleUp, v1.Provisioned, metav1.ConditionFalse))
+				}
 			} else {
 				assert.Error(t, err)
 			}
@@ -273,12 +450,14 @@ func TestScaleUp(t *testing.T) {
 	}
 }
 
-func setupTest(t *testing.T, nodes []*apiv1.Node, prs []*provreqwrapper.ProvisioningRequest, onScaleUpFunc func(string, int) error, autoprovisioning bool) (*provReqOrchestrator, map[string]*schedulerframework.NodeInfo) {
+func setupTest(t *testing.T, client *provreqclient.ProvisioningRequestClient, nodes []*apiv1.Node, onScaleUpFunc func(string, int) error, autoprovisioning bool, batchProcessing bool, maxBatchSize int, batchTimebox time.Duration) (*provReqOrchestrator, map[string]*schedulerframework.NodeInfo) {
 	provider := testprovider.NewTestCloudProvider(onScaleUpFunc, nil)
+	clock := clocktesting.NewFakePassiveClock(time.Now())
+	now := clock.Now()
 	if autoprovisioning {
 		machineTypes := []string{"large-machine"}
 		template := BuildTestNode("large-node-template", 100, 100)
-		SetNodeReadyState(template, true, time.Now())
+		SetNodeReadyState(template, true, now)
 		nodeInfoTemplate := schedulerframework.NewNodeInfo()
 		nodeInfoTemplate.SetNode(template)
 		machineTemplates := map[string]*schedulerframework.NodeInfo{
@@ -295,30 +474,26 @@ func setupTest(t *testing.T, nodes []*apiv1.Node, prs []*provreqwrapper.Provisio
 
 	podLister := kube_util.NewTestPodLister(nil)
 	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
-	autoscalingContext, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{}, &fake.Clientset{}, listers, provider, nil, nil)
+
+	options := config.AutoscalingOptions{}
+	if batchProcessing {
+		options.CheckCapacityBatchProcessing = true
+		options.CheckCapacityProvisioningRequestMaxBatchSize = maxBatchSize
+		options.CheckCapacityProvisioningRequestBatchTimebox = batchTimebox
+	}
+
+	autoscalingContext, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil, nil)
 	assert.NoError(t, err)
 
 	clustersnapshot.InitializeClusterSnapshotOrDie(t, autoscalingContext.ClusterSnapshot, nodes, nil)
-	client := provreqclient.NewFakeProvisioningRequestClient(context.Background(), t, prs...)
 	processors := NewTestProcessors(&autoscalingContext)
 	if autoprovisioning {
 		processors.NodeGroupListProcessor = &MockAutoprovisioningNodeGroupListProcessor{T: t}
 		processors.NodeGroupManager = &MockAutoprovisioningNodeGroupManager{T: t, ExtraGroups: 2}
 	}
-
-	now := time.Now()
 	nodeInfos, err := nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false).Process(&autoscalingContext, nodes, []*appsv1.DaemonSet{}, taints.TaintConfig{}, now)
 	assert.NoError(t, err)
 
-	options := config.AutoscalingOptions{
-		EstimatorName:                    estimator.BinpackingEstimatorName,
-		MaxCoresTotal:                    config.DefaultMaxClusterCores,
-		MaxMemoryTotal:                   config.DefaultMaxClusterMemory * units.GiB,
-		MinCoresTotal:                    0,
-		MinMemoryTotal:                   0,
-		NodeAutoprovisioningEnabled:      autoprovisioning,
-		MaxAutoprovisionedNodeGroupCount: 10,
-	}
 	estimatorBuilder, _ := estimator.NewEstimatorBuilder(
 		estimator.BinpackingEstimatorName,
 		estimator.NewThresholdBasedEstimationLimiter(nil),
@@ -326,13 +501,34 @@ func setupTest(t *testing.T, nodes []*apiv1.Node, prs []*provreqwrapper.Provisio
 		nil,
 	)
 
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, autoscalingContext.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(options.NodeGroupDefaults), processors.AsyncNodeGroupStateChecker)
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, autoscalingContext.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(autoscalingContext.NodeGroupDefaults), processors.AsyncNodeGroupStateChecker)
 	clusterState.UpdateNodes(nodes, nodeInfos, now)
+
+	var injector *provreq.ProvisioningRequestPodsInjector
+	if batchProcessing {
+		injector = provreq.NewFakePodsInjector(client, clocktesting.NewFakePassiveClock(now))
+	}
 
 	orchestrator := &provReqOrchestrator{
 		client:              client,
-		provisioningClasses: []ProvisioningClass{checkcapacity.New(client), besteffortatomic.New(client)},
+		provisioningClasses: []ProvisioningClass{checkcapacity.New(client, injector), besteffortatomic.New(client)},
 	}
+
 	orchestrator.Initialize(&autoscalingContext, processors, clusterState, estimatorBuilder, taints.TaintConfig{})
 	return orchestrator, nodeInfos
+}
+
+func NumProvisioningRequestsWithCondition(prList []*provreqwrapper.ProvisioningRequest, conditionType string, conditionStatus metav1.ConditionStatus) int {
+	count := 0
+
+	for _, pr := range prList {
+		for _, c := range pr.Status.Conditions {
+			if c.Type == conditionType && c.Status == conditionStatus {
+				count++
+				break
+			}
+		}
+	}
+
+	return count
 }
