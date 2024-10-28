@@ -19,7 +19,7 @@ VPA currently allows configuring the maximum allowed recommendation per resource
 In dynamic environments, manual configuration of .maxAllowed can be error-prone, especially as cluster sizes and node configurations change over time. Automating this process by making the VPA recommender aware of the largest node size ensures more reliable scaling decisions. This helps prevents situations where Pods become unschedulable due to excessive resource recommendations.
 
 ### Goals
-* Make Recommendations More Accurate and Easier to Schedule: Try to have the VPA recommender suggest resources that fit within the largest node's capacity, helping pods get scheduled more easily and lowering the chance of downtime.
+* Ensure Pods will still schedulable when a recommendation would be applied: Have the VPA recommender only suggest resources that fit within the largest node's capacity, preventing situation which require manual interaction.
 * Adapt to Changing Environments: Adjust recommendations as the cluster size or node configurations change to better reflect the current state of the cluster.
 
 ## Proposal
