@@ -96,7 +96,7 @@ func NewVpaTargetSelectorFetcher(config *rest.Config, kubeClient kube_client.Int
 		if !synced {
 			klog.Fatalf("Could not sync cache for %s: %v", kind, err)
 		} else {
-			klog.Infof("Initial sync of %s completed", kind)
+			klog.InfoS("Initial sync completed", "kind", kind)
 		}
 	}
 
