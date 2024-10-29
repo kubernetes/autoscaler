@@ -87,14 +87,9 @@ func DefaultProcessors(options config.AutoscalingOptions) *AutoscalingProcessors
 			MaxCapacityMemoryDifferenceRatio: config.DefaultMaxCapacityMemoryDifferenceRatio,
 			MaxFreeDifferenceRatio:           config.DefaultMaxFreeDifferenceRatio,
 		}),
-		ScaleUpStatusProcessor: status.NewDefaultScaleUpStatusProcessor(),
-		ScaleDownNodeProcessor: nodes.NewPreFilteringScaleDownNodeProcessor(),
-		ScaleDownSetProcessor: nodes.NewCompositeScaleDownSetProcessor(
-			[]nodes.ScaleDownSetProcessor{
-				nodes.NewMaxNodesProcessor(),
-				nodes.NewAtomicResizeFilteringProcessor(),
-			},
-		),
+		ScaleUpStatusProcessor:      status.NewDefaultScaleUpStatusProcessor(),
+		ScaleDownNodeProcessor:      nodes.NewPreFilteringScaleDownNodeProcessor(),
+		ScaleDownSetProcessor:       nodes.NewAtomicResizeFilteringProcessor(),
 		ScaleDownStatusProcessor:    status.NewDefaultScaleDownStatusProcessor(),
 		AutoscalingStatusProcessor:  status.NewDefaultAutoscalingStatusProcessor(),
 		NodeGroupManager:            nodegroups.NewDefaultNodeGroupManager(),
