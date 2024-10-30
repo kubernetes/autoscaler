@@ -69,11 +69,17 @@ func (c *nodePoolCache) rebuild(staticNodePools map[string]NodePool, maxGetNodep
 }
 
 // removeInstance tries to remove the instance from the node pool.
-func (c *nodePoolCache) removeInstance(nodePoolID, instanceID string) error {
+func (c *nodePoolCache) removeInstance(nodePoolID, instanceID string, nodeName string) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
+	if instanceID == "" {
+		klog.Errorf("Node %s doesn't have an instance id so it can't be deleted.", nodeName)
+		return errors.Errorf("Node %s doesn't have an instance id so it can't be deleted.", nodeName)
+	}
+
 	klog.Infof("Deleting instance %q from node pool %q", instanceID, nodePoolID)
+
 	// always try to remove the instance. This call is idempotent
 	scaleDown := true
 	resp, err := c.okeClient.DeleteNode(context.Background(), oke.DeleteNodeRequest{
