@@ -18,8 +18,9 @@ package clusterapi
 
 import (
 	"fmt"
-	"k8s.io/klog/v2"
 	"math/rand"
+
+	"k8s.io/klog/v2"
 
 	"github.com/pkg/errors"
 
