@@ -44,13 +44,15 @@ SUITE=$1
 
 export GO111MODULE=on
 
+export WORKSPACE=${WORKSPACE:-/workspace/_artifacts}
+
 case ${SUITE} in
   recommender|updater|admission-controller|actuation|full-vpa)
     export KUBECONFIG=$HOME/.kube/config
     pushd ${SCRIPT_ROOT}/e2e
-    go test -mod vendor ./v1beta2/*go -v --test.timeout=90m --args --ginkgo.v=true --ginkgo.focus="\[VPA\] \[${SUITE}\]" --report-dir=/workspace/_artifacts --disable-log-dump --ginkgo.timeout=90m
+    go test -mod vendor ./v1beta2/*go -v --test.timeout=90m --args --ginkgo.v=true --ginkgo.focus="\[VPA\] \[${SUITE}\]" --report-dir=${WORKSPACE} --disable-log-dump --ginkgo.timeout=90m
     V1BETA2_RESULT=$?
-    go test -mod vendor ./v1/*go -v --test.timeout=90m --args --ginkgo.v=true --ginkgo.focus="\[VPA\] \[${SUITE}\]" --report-dir=/workspace/_artifacts --disable-log-dump --ginkgo.timeout=90m
+    go test -mod vendor ./v1/*go -v --test.timeout=90m --args --ginkgo.v=true --ginkgo.focus="\[VPA\] \[${SUITE}\]" --report-dir=${WORKSPACE} --disable-log-dump --ginkgo.timeout=90m
     V1_RESULT=$?
     popd
     echo v1beta2 test result: ${V1BETA2_RESULT}

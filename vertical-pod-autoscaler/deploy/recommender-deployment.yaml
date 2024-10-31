@@ -21,7 +21,7 @@ spec:
       containers:
       - name: recommender
         image: registry.k8s.io/autoscaling/vpa-recommender:1.2.1
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         resources:
           limits:
             cpu: 200m

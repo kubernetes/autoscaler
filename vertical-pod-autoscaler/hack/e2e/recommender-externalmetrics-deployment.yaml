@@ -20,10 +20,10 @@ spec:
         runAsUser: 65534 # nobody
       containers:
       - name: recommender
-        image: localhost:5001/vpa-recommender-amd64:latest
+        image: localhost:5001/vpa-recommender:latest
         imagePullPolicy: Never
         args:
-          - /recommender-amd64
+          - /recommender
           - --use-external-metrics=true
           - --external-metrics-cpu-metric=cpu
           - --external-metrics-memory-metric=mem
