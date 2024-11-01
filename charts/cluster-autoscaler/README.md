@@ -470,6 +470,7 @@ vpa:
 | secretKeyRefNameOverride | string | `""` | Overrides the name of the Secret to use when loading the secretKeyRef for AWS and Azure env variables |
 | securityContext | object | `{}` | [Security context for pod](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/) |
 | service.annotations | object | `{}` | Annotations to add to service |
+| service.clusterIP | string | `""` | IP address to assign to service |
 | service.create | bool | `true` | If `true`, a Service will be created. |
 | service.externalIPs | list | `[]` | List of IP addresses at which the service is available. Ref: https://kubernetes.io/docs/concepts/services-networking/service/#external-ips. |
 | service.labels | object | `{}` | Labels to add to service |

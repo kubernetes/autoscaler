@@ -372,6 +372,9 @@ service:
   # service.externalIPs -- List of IP addresses at which the service is available. Ref: https://kubernetes.io/docs/concepts/services-networking/service/#external-ips.
   externalIPs: []
 
+  # service.clusterIP -- IP address to assign to service
+  clusterIP: ""
+
   # service.loadBalancerIP -- IP address to assign to load balancer (if supported).
   loadBalancerIP: ""
   # service.loadBalancerSourceRanges -- List of IP CIDRs allowed access to load balancer (if supported).
