@@ -340,6 +340,14 @@ extraVolumeMounts:
   readOnly: true
 ```
 
+### Custom arguments
+
+You can use the `customArgs` value to give any argument to cluster autoscaler command.
+
+Typical use case is to give an environment variable as an argument which will be interpolated at execution time.
+
+This is helpful when you need to inject values from configmap or secret.
+
 ## Troubleshooting
 
 The chart will succeed even if the container arguments are incorrect. A few minutes after starting `kubectl logs -l "app=aws-cluster-autoscaler" --tail=50` should loop through something like
