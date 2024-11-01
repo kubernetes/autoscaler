@@ -109,8 +109,8 @@ func PodLabelsMatchVPA(podNamespace string, labels labels.Set, vpaNamespace stri
 	return vpaSelector.Matches(labels)
 }
 
-// stronger returns true iff a is before b in the order to control a Pod (that matches both VPAs).
-func stronger(a, b *vpa_types.VerticalPodAutoscaler) bool {
+// Stronger returns true iff a is before b in the order to control a Pod (that matches both VPAs).
+func Stronger(a, b *vpa_types.VerticalPodAutoscaler) bool {
 	// Assume a is not nil and each valid object is before nil object.
 	if b == nil {
 		return true
@@ -129,28 +129,9 @@ func stronger(a, b *vpa_types.VerticalPodAutoscaler) bool {
 // GetControllingVPAForPod chooses the earliest created VPA from the input list that matches the given Pod.
 func GetControllingVPAForPod(ctx context.Context, pod *core.Pod, vpas []*VpaWithSelector, ctrlFetcher controllerfetcher.ControllerFetcher) *VpaWithSelector {
 
-	var ownerRefrence *meta.OwnerReference
-	for i := range pod.OwnerReferences {
-		r := pod.OwnerReferences[i]
-		if r.Controller != nil && *r.Controller {
-			ownerRefrence = &r
-		}
-	}
-	if ownerRefrence == nil {
-		// If the pod has no ownerReference, it cannot be under a VPA.
-		return nil
-	}
-	k := &controllerfetcher.ControllerKeyWithAPIVersion{
-		ControllerKey: controllerfetcher.ControllerKey{
-			Namespace: pod.Namespace,
-			Kind:      ownerRefrence.Kind,
-			Name:      ownerRefrence.Name,
-		},
-		ApiVersion: ownerRefrence.APIVersion,
-	}
-	parentController, err := ctrlFetcher.FindTopMostWellKnownOrScalable(ctx, k)
+	parentController, err := FindParentControllerForPod(ctx, pod, ctrlFetcher)
 	if err != nil {
-		klog.ErrorS(err, "Failed to get pod controller", "pod", klog.KObj(pod))
+		klog.ErrorS(err, "Failed to get parent controller for pod", "pod", klog.KObj(pod))
 		return nil
 	}
 	if parentController == nil {
@@ -162,6 +143,7 @@ func GetControllingVPAForPod(ctx context.Context, pod *core.Pod, vpas []*VpaWith
 	// Choose the strongest VPA from the ones that match this Pod.
 	for _, vpaWithSelector := range vpas {
 		if vpaWithSelector.Vpa.Spec.TargetRef == nil {
+			klog.V(5).InfoS("Skipping VPA object because targetRef is not defined. If this is a v1beta1 object, switch to v1", "vpa", klog.KObj(vpaWithSelector.Vpa))
 			continue
 		}
 		if vpaWithSelector.Vpa.Spec.TargetRef.Kind != parentController.Kind ||
@@ -169,12 +151,36 @@ func GetControllingVPAForPod(ctx context.Context, pod *core.Pod, vpas []*VpaWith
 			vpaWithSelector.Vpa.Spec.TargetRef.Name != parentController.Name {
 			continue // This pod is not associated to the right controller
 		}
-		if PodMatchesVPA(pod, vpaWithSelector) && stronger(vpaWithSelector.Vpa, controllingVpa) {
+		if PodMatchesVPA(pod, vpaWithSelector) && Stronger(vpaWithSelector.Vpa, controllingVpa) {
 			controlling = vpaWithSelector
 			controllingVpa = controlling.Vpa
 		}
 	}
 	return controlling
+}
+
+// FindParentControllerForPod returns the parent controller (topmost well-known or scalable controller) for the given Pod.
+func FindParentControllerForPod(ctx context.Context, pod *core.Pod, ctrlFetcher controllerfetcher.ControllerFetcher) (*controllerfetcher.ControllerKeyWithAPIVersion, error) {
+	var ownerRefrence *meta.OwnerReference
+	for i := range pod.OwnerReferences {
+		r := pod.OwnerReferences[i]
+		if r.Controller != nil && *r.Controller {
+			ownerRefrence = &r
+		}
+	}
+	if ownerRefrence == nil {
+		// If the pod has no ownerReference, it cannot be under a VPA.
+		return nil, nil
+	}
+	k := &controllerfetcher.ControllerKeyWithAPIVersion{
+		ControllerKey: controllerfetcher.ControllerKey{
+			Namespace: pod.Namespace,
+			Kind:      ownerRefrence.Kind,
+			Name:      ownerRefrence.Name,
+		},
+		ApiVersion: ownerRefrence.APIVersion,
+	}
+	return ctrlFetcher.FindTopMostWellKnownOrScalable(ctx, k)
 }
 
 // GetUpdateMode returns the updatePolicy.updateMode for a given VPA.
