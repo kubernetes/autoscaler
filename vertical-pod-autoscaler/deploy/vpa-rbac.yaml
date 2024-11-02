@@ -291,6 +291,7 @@ rules:
       - delete
       - get
       - list
+      - patch
   - apiGroups:
       - "poc.autoscaling.k8s.io"
     resources:
