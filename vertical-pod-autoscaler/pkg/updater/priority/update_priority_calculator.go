@@ -38,8 +38,7 @@ var (
 	podLifetimeUpdateThreshold = flag.Duration("in-recommendation-bounds-eviction-lifetime-threshold", time.Hour*12, "Pods that live for at least that long can be evicted even if their request is within the [MinRecommended...MaxRecommended] range")
 
 	evictAfterOOMThreshold = flag.Duration("evict-after-oom-threshold", 10*time.Minute,
-		`Evict pod that has only one container and it OOMed in less than
-		evict-after-oom-threshold since start.`)
+		`Evict pod that has OOMed in less than evict-after-oom-threshold since start.`)
 )
 
 // UpdatePriorityCalculator is responsible for prioritizing updates on pods.

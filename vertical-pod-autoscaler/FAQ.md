@@ -221,7 +221,7 @@ Name | Type | Description | Default
 |-|-|-|-|
 `pod-update-threshold` | Float64 | Ignore updates that have priority lower than the value of this flag | 0.1
 `in-recommendation-bounds-eviction-lifetime-threshold` | Duration | Pods that live for at least that long can be evicted even if their request is within the [MinRecommended...MaxRecommended] range | time.Hour*12
-`evict-after-oom-threshold` | Duration | Evict pod that has only one container and it OOMed in less than evict-after-oom-threshold since start. | 10*time.Minute
+`evict-after-oom-threshold` | Duration | Evict pod that has OOMed in less than evict-after-oom-threshold since start. | 10*time.Minute
 `updater-interval` | Duration | How often updater should run | 1*time.Minute
 `min-replicas` | Int | Minimum number of replicas to perform update | 2
 `eviction-tolerance` | Float64 | Fraction of replica count that can be evicted for update, if more than one pod can be evicted. | 0.5
