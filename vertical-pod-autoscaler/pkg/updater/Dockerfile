@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM --platform=$BUILDPLATFORM golang:1.23.2 as builder
+FROM --platform=$BUILDPLATFORM golang:1.23.2 AS builder
 
-ENV GOPATH /gopath/
-ENV PATH $GOPATH/bin:$PATH
+ENV GOPATH=/gopath/
+ENV PATH=$GOPATH/bin:$PATH
 
 COPY . /gopath/src/k8s.io/autoscaler/vertical-pod-autoscaler
 WORKDIR /gopath/src/k8s.io/autoscaler/vertical-pod-autoscaler
