@@ -88,8 +88,7 @@ var (
 func main() {
 	klog.InitFlags(nil)
 	kube_flag.InitFlags()
-	klog.V(1).Infof("Vertical Pod Autoscaler %s Admission Controller", common.VerticalPodAutoscalerVersion)
-
+	klog.V(1).InfoS("Starting Vertical Pod Autoscaler Admission Controller", "version", common.VerticalPodAutoscalerVersion)
 	if len(*vpaObjectNamespace) > 0 && len(*ignoredVpaObjectNamespaces) > 0 {
 		klog.Fatalf("--vpa-object-namespace and --ignored-vpa-object-namespaces are mutually exclusive and can't be set together.")
 	}
