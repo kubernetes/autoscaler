@@ -190,6 +190,8 @@ func defaultLeaderElectionConfiguration() componentbaseconfig.LeaderElectionConf
 		RenewDeadline:     metav1.Duration{Duration: defaultRenewDeadline},
 		RetryPeriod:       metav1.Duration{Duration: defaultRetryPeriod},
 		ResourceLock:      resourcelock.LeasesResourceLock,
+		// Note that the following default conflicts with the GKE default system component that also uses a lease with this name.
+		// When deploying in GKE, be sure to use a different lease name!
 		ResourceName:      "vpa-recommender",
 		ResourceNamespace: metav1.NamespaceSystem,
 	}
