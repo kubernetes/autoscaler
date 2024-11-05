@@ -420,6 +420,10 @@ Using it in conjunction with `--ignored-vpa-object-namespaces=kube-system` or `-
   size, available quota) and cause **pods to go pending**. This can be partly
   addressed by using VPA together with [Cluster Autoscaler](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#basics).
 * Multiple VPA resources matching the same pod have undefined behavior.
+* Running the vpa-recommender with leader election enabled (`--leader-elect=true`) in a GKE cluster
+  causes contention with a lease called `vpa-recommender` held by the GKE system component of the
+  same name. To run your own VPA in GKE, make sure to specify a different lease name using
+  `--leader-elect-resource-name=vpa-recommender-lease` (or specify your own lease name).
 
 # Related links
 
