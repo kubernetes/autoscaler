@@ -28,7 +28,6 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/hetzner/hcloud-go/hcloud"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
@@ -300,7 +299,7 @@ func BuildHetzner(_ config.AutoscalingOptions, do cloudprovider.NodeGroupDiscove
 			if i > 0 {
 				placementGroupIDs += ", "
 			}
-			placementGroupIDs += strconv.Itoa(placementGroupID)
+			placementGroupIDs += strconv.FormatInt(placementGroupID, 10)
 		}
 
 		klog.Fatalf("The following placement groups have a potential size over the allowed maximum of %d: %s.", maxPlacementGroupSize, placementGroupIDs)
