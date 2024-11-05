@@ -6,6 +6,7 @@
 - [How can I apply VPA to my Custom Resource?](#how-can-i-apply-vpa-to-my-custom-resource)
 - [How can I use Prometheus as a history provider for the VPA recommender?](#how-can-i-use-prometheus-as-a-history-provider-for-the-vpa-recommender)
 - [I get recommendations for my single pod replicaSet, but they are not applied. Why?](#i-get-recommendations-for-my-single-pod-replicaset-but-they-are-not-applied)
+- [Can I run the VPA in an HA configuration?](#can-i-run-the-vpa-in-an-ha-configuration)
 - [What are the parameters to VPA recommender?](#what-are-the-parameters-to-vpa-recommender)
 - [What are the parameters to VPA updater?](#what-are-the-parameters-to-vpa-updater)
 
@@ -161,6 +162,16 @@ spec:
 ```
 
 and then deploy it manually if your vpa is already configured.
+
+### Can I run the VPA in an HA configuration?
+
+The VPA admission-controller can be run with multiple active Pods at any given time.
+
+Both the updater and recommender can only run a single active Pod at a time. Should you
+want to run a Deployment with more than one pod, it's recommended to enable a lease
+election with the `--leader-elect=true` parameter.
+
+**NOTE**: If using GKE, you must set `--leader-elect-resource-name` to something OTHER than "vpa-recommender", for example "vpa-recommender-lease".
 
 ### What are the parameters to VPA recommender?
 
