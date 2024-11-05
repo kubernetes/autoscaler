@@ -182,28 +182,28 @@ func (d *HetznerCloudProvider) Refresh() error {
 }
 
 // Check if any defined placement groups could potentially have more than the maximum allowed number of nodes
-func getLargePlacementGroups(nodeGroups map[string]*hetznerNodeGroup, threshold int) []*hcloud.PlacementGroup {
-	placementGroupTotals := make(map[hcloud.PlacementGroup]int)
+func getLargePlacementGroups(nodeGroups map[string]*hetznerNodeGroup, threshold int) []int64 {
+	placementGroupTotals := make(map[int64]int)
 
 	// Calculate totals for each placement group
 	for _, nodeGroup := range nodeGroups {
-		if nodeGroup.placementGroup == nil || nodeGroup.placementGroup.Name == "" {
+		if nodeGroup.placementGroup == nil || nodeGroup.placementGroup.ID == 0 {
 			continue
 		}
 
-		placementGroup := nodeGroup.placementGroup
-		placementGroupTotals[placementGroup] += nodeGroup.maxSize
+		placementGroupID := nodeGroup.placementGroup.ID
+		placementGroupTotals[placementGroupID] += nodeGroup.maxSize
 	}
 
 	// Collect placement groups with total maxSize > threshold
-	var largePlacementGroups []*hcloud.PlacementGroup
-	for placementGroup, totalMaxSize := range placementGroupTotals {
+	var largePlacementGroupIDs []int64
+	for id, totalMaxSize := range placementGroupTotals {
 		if totalMaxSize > threshold {
-			largePlacementGroups = append(largePlacementGroups, placementGroup)
+			largePlacementGroupIDs = append(largePlacementGroupIDs, id)
 		}
 	}
 
-	return largePlacementGroups
+	return largePlacementGroupIDs
 }
 
 // BuildHetzner builds the Hetzner cloud provider.
@@ -295,15 +295,15 @@ func BuildHetzner(_ config.AutoscalingOptions, do cloudprovider.NodeGroupDiscove
 	if len(largePlacementGroups) > 0 {
 
 		// Gather placement group names
-		var placementGroupNames string
-		for i, pg := range largePlacementGroups {
+		var placementGroupIDs string
+		for i, placementGroupID := range largePlacementGroups {
 			if i > 0 {
-				placementGroupNames += ", "
+				placementGroupIDs += ", "
 			}
-			placementGroupNames += pg.Name
+			placementGroupIDs += strconv.Itoa(placementGroupID)
 		}
 
-		klog.Fatalf("The following placement groups have a potential size over the allowed maximum of %d: %s.", maxPlacementGroupSize, placementGroupNames)
+		klog.Fatalf("The following placement groups have a potential size over the allowed maximum of %d: %s.", maxPlacementGroupSize, placementGroupIDs)
 	}
 
 	return provider
