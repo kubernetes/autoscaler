@@ -91,16 +91,13 @@ func CalculateUtilizationOfResource(nodeInfo *schedulerframework.NodeInfo, resou
 		return 0, fmt.Errorf("%v is 0 at %s", resourceName, nodeInfo.Node().Name)
 	}
 
-	opts := resourcehelper.PodResourcesOptions{}
-
 	// if skipDaemonSetPods = True, DaemonSet pods resourses will be subtracted
 	// from the node allocatable and won't be added to pods requests
 	// the same with the Mirror pod.
 	podsRequest := resource.MustParse("0")
 	daemonSetAndMirrorPodsUtilization := resource.MustParse("0")
 	for _, podInfo := range nodeInfo.Pods {
-		requestedResourceList := resourcehelper.PodRequests(podInfo.Pod, opts)
-		resourceValue := requestedResourceList[resourceName]
+		resourceValue := resourcehelper.GetResourceRequestQuantity(podInfo.Pod, resourceName)
 
 		// factor daemonset pods out of the utilization calculations
 		if skipDaemonSetPods && pod_util.IsDaemonSetPod(podInfo.Pod) {
