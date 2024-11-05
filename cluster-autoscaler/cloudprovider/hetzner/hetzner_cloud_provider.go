@@ -187,9 +187,9 @@ func getLargePlacementGroups(nodeGroups map[string]*hetznerNodeGroup, threshold 
 
 	// Calculate totals for each placement group
 	for _, nodeGroup := range nodeGroups {
-		if nodeGroup.placementGroup == nil || nodeGroup.placementGroup.Name == "" {  
-            continue  
-        }
+		if nodeGroup.placementGroup == nil || nodeGroup.placementGroup.Name == "" {
+			continue
+		}
 
 		placementGroup := nodeGroup.placementGroup
 		placementGroupTotals[placementGroup] += nodeGroup.maxSize
