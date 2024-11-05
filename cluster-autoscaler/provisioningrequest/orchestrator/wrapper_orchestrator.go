@@ -71,17 +71,17 @@ func (o *WrapperOrchestrator) ScaleUp(
 	allOrNothing bool,
 ) (*status.ScaleUpStatus, errors.AutoscalerError) {
 	defer func() {
-		o.autoscalingContext.ProvisioningRequstScaleUpMode = !o.autoscalingContext.ProvisioningRequstScaleUpMode
+		o.autoscalingContext.ProvisioningRequestScaleUpMode = !o.autoscalingContext.ProvisioningRequestScaleUpMode
 	}()
 
 	provReqPods, regularPods := splitOut(unschedulablePods)
 	if len(provReqPods) == 0 {
-		o.autoscalingContext.ProvisioningRequstScaleUpMode = false
+		o.autoscalingContext.ProvisioningRequestScaleUpMode = false
 	} else if len(regularPods) == 0 {
-		o.autoscalingContext.ProvisioningRequstScaleUpMode = true
+		o.autoscalingContext.ProvisioningRequestScaleUpMode = true
 	}
 
-	if o.autoscalingContext.ProvisioningRequstScaleUpMode {
+	if o.autoscalingContext.ProvisioningRequestScaleUpMode {
 		return o.provReqOrchestrator.ScaleUp(provReqPods, nodes, daemonSets, nodeInfos, allOrNothing)
 	}
 	return o.podsOrchestrator.ScaleUp(regularPods, nodes, daemonSets, nodeInfos, allOrNothing)
