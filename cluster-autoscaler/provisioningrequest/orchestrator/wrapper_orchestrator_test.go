@@ -41,7 +41,7 @@ const (
 
 func TestWrapperScaleUp(t *testing.T) {
 	o := WrapperOrchestrator{
-		autoscalingContext:  &context.AutoscalingContext{ProvisioningRequstScaleUpMode: true},
+		autoscalingContext:  &context.AutoscalingContext{ProvisioningRequestScaleUpMode: true},
 		provReqOrchestrator: &fakeScaleUp{provisioningRequestErrorMsg},
 		podsOrchestrator:    &fakeScaleUp{regularPodsErrorMsg},
 	}

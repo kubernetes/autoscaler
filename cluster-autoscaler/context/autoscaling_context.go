@@ -62,7 +62,7 @@ type AutoscalingContext struct {
 	// ClusterStateRegistry tracks the health of the node groups and pending scale-ups and scale-downs
 	ClusterStateRegistry *clusterstate.ClusterStateRegistry
 	//ProvisionRequstScaleUpMode indicates whether ClusterAutoscaler tries to accommodate ProvisioningRequest in current scale up iteration.
-	ProvisioningRequstScaleUpMode bool
+	ProvisioningRequestScaleUpMode bool
 }
 
 // AutoscalingKubeClients contains all Kubernetes API clients,
