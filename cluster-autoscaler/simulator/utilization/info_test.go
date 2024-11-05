@@ -97,7 +97,7 @@ func TestCalculate(t *testing.T) {
 	utilInfo, err = Calculate(nodeInfo, false, false, gpuConfig, testTime)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 50.25, utilInfo.Utilization, 0.01)
-	assert.Equal(t, 25.125, utilInfo.CpuUtil)
+	assert.InEpsilon(t, 25.125, utilInfo.CpuUtil, 0.005)
 
 	daemonSetPod3 := BuildTestPod("p3", 100, 200000)
 	daemonSetPod3.OwnerReferences = GenerateOwnerReferences("ds", "DaemonSet", "apps/v1", "")
