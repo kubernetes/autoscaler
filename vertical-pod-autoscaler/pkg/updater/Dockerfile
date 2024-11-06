@@ -32,4 +32,3 @@ ARG TARGETARCH
 COPY --from=builder /gopath/src/k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/updater-$TARGETARCH /updater
 
 ENTRYPOINT ["/updater"]
-CMD ["--v=4", "--stderrthreshold=info"]

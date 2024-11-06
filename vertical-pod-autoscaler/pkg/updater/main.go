@@ -24,7 +24,6 @@ import (
 	"time"
 
 	"github.com/spf13/pflag"
-	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/uuid"
 	"k8s.io/client-go/informers"
@@ -66,18 +65,12 @@ var (
 
 	evictionRateBurst = flag.Int("eviction-rate-burst", 1, `Burst of pods that can be evicted.`)
 
-	address         = flag.String("address", ":8943", "The address to expose Prometheus metrics.")
-	kubeconfig      = flag.String("kubeconfig", "", "Path to a kubeconfig. Only required if out-of-cluster.")
-	kubeApiQps      = flag.Float64("kube-api-qps", 5.0, `QPS limit when making requests to Kubernetes apiserver`)
-	kubeApiBurst    = flag.Float64("kube-api-burst", 10.0, `QPS burst limit when making requests to Kubernetes apiserver`)
-	enableProfiling = flag.Bool("profiling", false, "Is debug/pprof endpoint enabled")
+	address = flag.String("address", ":8943", "The address to expose Prometheus metrics.")
 
 	useAdmissionControllerStatus = flag.Bool("use-admission-controller-status", true,
 		"If true, updater will only evict pods when admission controller status is valid.")
 
-	namespace                  = os.Getenv("NAMESPACE")
-	vpaObjectNamespace         = flag.String("vpa-object-namespace", apiv1.NamespaceAll, "Namespace to search for VPA objects. Empty means all namespaces will be used. Must not be used if ignored-vpa-object-namespaces is set.")
-	ignoredVpaObjectNamespaces = flag.String("ignored-vpa-object-namespaces", "", "Comma separated list of namespaces to ignore. Must not be used if vpa-object-namespace is used.")
+	namespace = os.Getenv("NAMESPACE")
 )
 
 const (
@@ -88,7 +81,9 @@ const (
 )
 
 func main() {
+	commonFlags := common.InitCommonFlags()
 	klog.InitFlags(nil)
+	common.InitLoggingFlags()
 
 	leaderElection := defaultLeaderElectionConfiguration()
 	componentbaseoptions.BindLeaderElectionFlags(&leaderElection, pflag.CommandLine)
@@ -96,17 +91,17 @@ func main() {
 	kube_flag.InitFlags()
 	klog.V(1).InfoS("Vertical Pod Autoscaler Updater", "version", common.VerticalPodAutoscalerVersion)
 
-	if len(*vpaObjectNamespace) > 0 && len(*ignoredVpaObjectNamespaces) > 0 {
+	if len(commonFlags.VpaObjectNamespace) > 0 && len(commonFlags.IgnoredVpaObjectNamespaces) > 0 {
 		klog.Fatalf("--vpa-object-namespace and --ignored-vpa-object-namespaces are mutually exclusive and can't be set together.")
 	}
 
 	healthCheck := metrics.NewHealthCheck(*updaterInterval * 5)
-	server.Initialize(enableProfiling, healthCheck, address)
+	server.Initialize(&commonFlags.EnableProfiling, healthCheck, address)
 
 	metrics_updater.Register()
 
 	if !leaderElection.LeaderElect {
-		run(healthCheck)
+		run(healthCheck, commonFlags)
 	} else {
 		id, err := os.Hostname()
 		if err != nil {
@@ -114,7 +109,7 @@ func main() {
 		}
 		id = id + "_" + string(uuid.NewUUID())
 
-		config := common.CreateKubeConfigOrDie(*kubeconfig, float32(*kubeApiQps), int(*kubeApiBurst))
+		config := common.CreateKubeConfigOrDie(commonFlags.KubeConfig, float32(commonFlags.KubeApiQps), int(commonFlags.KubeApiBurst))
 		kubeClient := kube_client.NewForConfigOrDie(config)
 
 		lock, err := resourcelock.New(
@@ -139,7 +134,7 @@ func main() {
 			ReleaseOnCancel: true,
 			Callbacks: leaderelection.LeaderCallbacks{
 				OnStartedLeading: func(_ context.Context) {
-					run(healthCheck)
+					run(healthCheck, commonFlags)
 				},
 				OnStoppedLeading: func() {
 					klog.Fatal("lost master")
@@ -167,8 +162,8 @@ func defaultLeaderElectionConfiguration() componentbaseconfig.LeaderElectionConf
 	}
 }
 
-func run(healthCheck *metrics.HealthCheck) {
-	config := common.CreateKubeConfigOrDie(*kubeconfig, float32(*kubeApiQps), int(*kubeApiBurst))
+func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
+	config := common.CreateKubeConfigOrDie(commonFlag.KubeConfig, float32(commonFlag.KubeApiQps), int(commonFlag.KubeApiBurst))
 	kubeClient := kube_client.NewForConfigOrDie(config)
 	vpaClient := vpa_clientset.NewForConfigOrDie(config)
 	factory := informers.NewSharedInformerFactory(kubeClient, defaultResyncPeriod)
@@ -185,7 +180,7 @@ func run(healthCheck *metrics.HealthCheck) {
 		admissionControllerStatusNamespace = namespace
 	}
 
-	ignoredNamespaces := strings.Split(*ignoredVpaObjectNamespaces, ",")
+	ignoredNamespaces := strings.Split(commonFlag.IgnoredVpaObjectNamespaces, ",")
 
 	// TODO: use SharedInformerFactory in updater
 	updater, err := updater.NewUpdater(
@@ -202,7 +197,7 @@ func run(healthCheck *metrics.HealthCheck) {
 		targetSelectorFetcher,
 		controllerFetcher,
 		priority.NewProcessor(),
-		*vpaObjectNamespace,
+		commonFlag.VpaObjectNamespace,
 		ignoredNamespaces,
 	)
 	if err != nil {
