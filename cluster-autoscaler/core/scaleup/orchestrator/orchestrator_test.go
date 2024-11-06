@@ -28,6 +28,7 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupconfig"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups/asyncnodegroups"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	kube_record "k8s.io/client-go/tools/record"
 	"k8s.io/component-base/metrics/legacyregistry"
 	schedulermetrics "k8s.io/kubernetes/pkg/scheduler/metrics"
@@ -57,7 +58,6 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes/fake"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -146,8 +146,7 @@ func TestZeroOrMaxNodeScaling(t *testing.T) {
 
 	n := BuildTestNode("n", 1000, 1000)
 	SetNodeReadyState(n, true, time.Time{})
-	nodeInfo := schedulerframework.NewNodeInfo()
-	nodeInfo.SetNode(n)
+	nodeInfo := framework.NewTestNodeInfo(n)
 
 	cases := map[string]struct {
 		testConfig      *ScaleUpTestConfig
@@ -835,8 +834,7 @@ func TestNoCreateNodeGroupMaxCoresLimitHit(t *testing.T) {
 
 	largeNode := BuildTestNode("n", 8000, 8000)
 	SetNodeReadyState(largeNode, true, time.Time{})
-	largeNodeInfo := schedulerframework.NewNodeInfo()
-	largeNodeInfo.SetNode(largeNode)
+	largeNodeInfo := framework.NewTestNodeInfo(largeNode)
 
 	config := &ScaleUpTestConfig{
 		EnableAutoprovisioning: true,
@@ -1004,7 +1002,7 @@ func runSimpleScaleUpTest(t *testing.T, config *ScaleUpTestConfig) *ScaleUpTestR
 	}
 	if len(config.NodeTemplateConfigs) > 0 {
 		machineTypes := []string{}
-		machineTemplates := map[string]*schedulerframework.NodeInfo{}
+		machineTemplates := map[string]*framework.NodeInfo{}
 		for _, ntc := range config.NodeTemplateConfigs {
 			machineTypes = append(machineTypes, ntc.MachineType)
 			machineTemplates[ntc.NodeGroupName] = ntc.NodeInfo
@@ -1285,7 +1283,7 @@ type constNodeGroupSetProcessor struct {
 	similarNodeGroups []cloudprovider.NodeGroup
 }
 
-func (p *constNodeGroupSetProcessor) FindSimilarNodeGroups(_ *context.AutoscalingContext, _ cloudprovider.NodeGroup, _ map[string]*schedulerframework.NodeInfo) ([]cloudprovider.NodeGroup, errors.AutoscalerError) {
+func (p *constNodeGroupSetProcessor) FindSimilarNodeGroups(_ *context.AutoscalingContext, _ cloudprovider.NodeGroup, _ map[string]*framework.NodeInfo) ([]cloudprovider.NodeGroup, errors.AutoscalerError) {
 	return p.similarNodeGroups, nil
 }
 
@@ -1516,8 +1514,7 @@ func TestScaleUpAutoprovisionedNodeGroup(t *testing.T) {
 
 	t1 := BuildTestNode("t1", 4000, 1000000)
 	SetNodeReadyState(t1, true, time.Time{})
-	ti1 := schedulerframework.NewNodeInfo()
-	ti1.SetNode(t1)
+	ti1 := framework.NewTestNodeInfo(t1)
 
 	provider := testprovider.NewTestAutoprovisioningCloudProvider(
 		func(nodeGroup string, increase int) error {
@@ -1526,7 +1523,7 @@ func TestScaleUpAutoprovisionedNodeGroup(t *testing.T) {
 		}, nil, func(nodeGroup string) error {
 			createdGroups <- nodeGroup
 			return nil
-		}, nil, []string{"T1"}, map[string]*schedulerframework.NodeInfo{"T1": ti1})
+		}, nil, []string{"T1"}, map[string]*framework.NodeInfo{"T1": ti1})
 
 	options := config.AutoscalingOptions{
 		EstimatorName:                    estimator.BinpackingEstimatorName,
@@ -1570,8 +1567,7 @@ func TestScaleUpBalanceAutoprovisionedNodeGroups(t *testing.T) {
 
 	t1 := BuildTestNode("t1", 100, 1000000)
 	SetNodeReadyState(t1, true, time.Time{})
-	ti1 := schedulerframework.NewNodeInfo()
-	ti1.SetNode(t1)
+	ti1 := framework.NewTestNodeInfo(t1)
 
 	provider := testprovider.NewTestAutoprovisioningCloudProvider(
 		func(nodeGroup string, increase int) error {
@@ -1580,7 +1576,7 @@ func TestScaleUpBalanceAutoprovisionedNodeGroups(t *testing.T) {
 		}, nil, func(nodeGroup string) error {
 			createdGroups <- nodeGroup
 			return nil
-		}, nil, []string{"T1"}, map[string]*schedulerframework.NodeInfo{"T1": ti1})
+		}, nil, []string{"T1"}, map[string]*framework.NodeInfo{"T1": ti1})
 
 	options := config.AutoscalingOptions{
 		BalanceSimilarNodeGroups:         true,
@@ -1672,20 +1668,18 @@ func TestScaleUpToMeetNodeGroupMinSize(t *testing.T) {
 func TestScaleupAsyncNodeGroupsEnabled(t *testing.T) {
 	t1 := BuildTestNode("t1", 100, 0)
 	SetNodeReadyState(t1, true, time.Time{})
-	ti1 := schedulerframework.NewNodeInfo()
-	ti1.SetNode(t1)
+	ti1 := framework.NewTestNodeInfo(t1)
 
 	t2 := BuildTestNode("t2", 0, 100)
 	SetNodeReadyState(t2, true, time.Time{})
-	ti2 := schedulerframework.NewNodeInfo()
-	ti2.SetNode(t2)
+	ti2 := framework.NewTestNodeInfo(t2)
 
 	testCases := []struct {
 		upcomingNodeGroupsNames []string
 		podsToAdd               []*v1.Pod
 		isUpcomingMockMap       map[string]bool
 		machineTypes            []string
-		machineTemplates        map[string]*schedulerframework.NodeInfo
+		machineTemplates        map[string]*framework.NodeInfo
 		expectedCreatedGroups   map[string]bool
 		expectedExpandedGroups  map[string]int
 	}{
@@ -1694,7 +1688,7 @@ func TestScaleupAsyncNodeGroupsEnabled(t *testing.T) {
 			podsToAdd:               []*v1.Pod{BuildTestPod("p1", 80, 0), BuildTestPod("p2", 80, 0)},
 			isUpcomingMockMap:       map[string]bool{"autoprovisioned-T1": true},
 			machineTypes:            []string{"T1"},
-			machineTemplates:        map[string]*schedulerframework.NodeInfo{"T1": ti1},
+			machineTemplates:        map[string]*framework.NodeInfo{"T1": ti1},
 			expectedCreatedGroups:   map[string]bool{},
 			expectedExpandedGroups:  map[string]int{"autoprovisioned-T1": 2},
 		},
@@ -1703,7 +1697,7 @@ func TestScaleupAsyncNodeGroupsEnabled(t *testing.T) {
 			podsToAdd:               []*v1.Pod{BuildTestPod("p1", 80, 0)},
 			isUpcomingMockMap:       map[string]bool{},
 			machineTypes:            []string{"T1"},
-			machineTemplates:        map[string]*schedulerframework.NodeInfo{"T1": ti1},
+			machineTemplates:        map[string]*framework.NodeInfo{"T1": ti1},
 			expectedCreatedGroups:   map[string]bool{"autoprovisioned-T1": true},
 			expectedExpandedGroups:  map[string]int{"autoprovisioned-T1": 1},
 		},
@@ -1712,7 +1706,7 @@ func TestScaleupAsyncNodeGroupsEnabled(t *testing.T) {
 			podsToAdd:               []*v1.Pod{BuildTestPod("p3", 0, 100), BuildTestPod("p2", 0, 100)},
 			isUpcomingMockMap:       map[string]bool{"autoprovisioned-T1": true},
 			machineTypes:            []string{"T1", "T2"},
-			machineTemplates:        map[string]*schedulerframework.NodeInfo{"T1": ti1, "T2": ti2},
+			machineTemplates:        map[string]*framework.NodeInfo{"T1": ti1, "T2": ti2},
 			expectedCreatedGroups:   map[string]bool{"autoprovisioned-T2": true},
 			expectedExpandedGroups:  map[string]int{"autoprovisioned-T2": 2},
 		},

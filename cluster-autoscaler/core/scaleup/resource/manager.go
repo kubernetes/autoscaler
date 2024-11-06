@@ -26,9 +26,9 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/customresources"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/klog/v2"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // LimitUnknown is used as a value in ResourcesLimits if actual limit could not be obtained due to errors talking to cloud provider.
@@ -59,7 +59,7 @@ func NewManager(crp customresources.CustomResourcesProcessor) *Manager {
 }
 
 // DeltaForNode calculates the amount of resources that will be used from the cluster when creating a node.
-func (m *Manager) DeltaForNode(ctx *context.AutoscalingContext, nodeInfo *schedulerframework.NodeInfo, nodeGroup cloudprovider.NodeGroup) (Delta, errors.AutoscalerError) {
+func (m *Manager) DeltaForNode(ctx *context.AutoscalingContext, nodeInfo *framework.NodeInfo, nodeGroup cloudprovider.NodeGroup) (Delta, errors.AutoscalerError) {
 	resultScaleUpDelta := make(Delta)
 	nodeCPU, nodeMemory := utils.GetNodeCoresAndMemory(nodeInfo.Node())
 	resultScaleUpDelta[cloudprovider.ResourceNameCores] = nodeCPU
@@ -85,7 +85,7 @@ func (m *Manager) DeltaForNode(ctx *context.AutoscalingContext, nodeInfo *schedu
 }
 
 // ResourcesLeft calculates the amount of resources left in the cluster.
-func (m *Manager) ResourcesLeft(ctx *context.AutoscalingContext, nodeInfos map[string]*schedulerframework.NodeInfo, nodes []*corev1.Node) (Limits, errors.AutoscalerError) {
+func (m *Manager) ResourcesLeft(ctx *context.AutoscalingContext, nodeInfos map[string]*framework.NodeInfo, nodes []*corev1.Node) (Limits, errors.AutoscalerError) {
 	nodesFromNotAutoscaledGroups, err := utils.FilterOutNodesFromNotAutoscaledGroups(nodes, ctx.CloudProvider)
 	if err != nil {
 		return nil, err.AddPrefix("failed to filter out nodes which are from not autoscaled groups: ")
@@ -143,7 +143,7 @@ func (m *Manager) ResourcesLeft(ctx *context.AutoscalingContext, nodeInfos map[s
 }
 
 // ApplyLimits calculates the new node count by applying the left resource limits of the cluster.
-func (m *Manager) ApplyLimits(ctx *context.AutoscalingContext, newCount int, resourceLeft Limits, nodeInfo *schedulerframework.NodeInfo, nodeGroup cloudprovider.NodeGroup) (int, errors.AutoscalerError) {
+func (m *Manager) ApplyLimits(ctx *context.AutoscalingContext, newCount int, resourceLeft Limits, nodeInfo *framework.NodeInfo, nodeGroup cloudprovider.NodeGroup) (int, errors.AutoscalerError) {
 	delta, err := m.DeltaForNode(ctx, nodeInfo, nodeGroup)
 	if err != nil {
 		return 0, err
@@ -203,7 +203,7 @@ func LimitsNotExceeded() LimitsCheckResult {
 	return LimitsCheckResult{false, []string{}}
 }
 
-func (m *Manager) coresMemoryTotal(ctx *context.AutoscalingContext, nodeInfos map[string]*schedulerframework.NodeInfo, nodesFromNotAutoscaledGroups []*corev1.Node) (int64, int64, errors.AutoscalerError) {
+func (m *Manager) coresMemoryTotal(ctx *context.AutoscalingContext, nodeInfos map[string]*framework.NodeInfo, nodesFromNotAutoscaledGroups []*corev1.Node) (int64, int64, errors.AutoscalerError) {
 	var coresTotal int64
 	var memoryTotal int64
 	for _, nodeGroup := range ctx.CloudProvider.NodeGroups() {
@@ -233,7 +233,7 @@ func (m *Manager) coresMemoryTotal(ctx *context.AutoscalingContext, nodeInfos ma
 	return coresTotal, memoryTotal, nil
 }
 
-func (m *Manager) customResourcesTotal(ctx *context.AutoscalingContext, nodeInfos map[string]*schedulerframework.NodeInfo, nodesFromNotAutoscaledGroups []*corev1.Node) (map[string]int64, errors.AutoscalerError) {
+func (m *Manager) customResourcesTotal(ctx *context.AutoscalingContext, nodeInfos map[string]*framework.NodeInfo, nodesFromNotAutoscaledGroups []*corev1.Node) (map[string]int64, errors.AutoscalerError) {
 	result := make(map[string]int64)
 	for _, nodeGroup := range ctx.CloudProvider.NodeGroups() {
 		currentSize, err := nodeGroup.TargetSize()

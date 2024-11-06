@@ -43,13 +43,13 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqclient"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqwrapper"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/client-go/kubernetes/fake"
 	clocktesting "k8s.io/utils/clock/testing"
 
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 	schedulermetrics "k8s.io/kubernetes/pkg/scheduler/metrics"
 )
 
@@ -451,7 +451,7 @@ func TestScaleUp(t *testing.T) {
 	}
 }
 
-func setupTest(t *testing.T, client *provreqclient.ProvisioningRequestClient, nodes []*apiv1.Node, onScaleUpFunc func(string, int) error, autoprovisioning bool, batchProcessing bool, maxBatchSize int, batchTimebox time.Duration) (*provReqOrchestrator, map[string]*schedulerframework.NodeInfo) {
+func setupTest(t *testing.T, client *provreqclient.ProvisioningRequestClient, nodes []*apiv1.Node, onScaleUpFunc func(string, int) error, autoprovisioning bool, batchProcessing bool, maxBatchSize int, batchTimebox time.Duration) (*provReqOrchestrator, map[string]*framework.NodeInfo) {
 	provider := testprovider.NewTestCloudProvider(onScaleUpFunc, nil)
 	clock := clocktesting.NewFakePassiveClock(time.Now())
 	now := clock.Now()
@@ -459,9 +459,8 @@ func setupTest(t *testing.T, client *provreqclient.ProvisioningRequestClient, no
 		machineTypes := []string{"large-machine"}
 		template := BuildTestNode("large-node-template", 100, 100)
 		SetNodeReadyState(template, true, now)
-		nodeInfoTemplate := schedulerframework.NewNodeInfo()
-		nodeInfoTemplate.SetNode(template)
-		machineTemplates := map[string]*schedulerframework.NodeInfo{
+		nodeInfoTemplate := framework.NewTestNodeInfo(template)
+		machineTemplates := map[string]*framework.NodeInfo{
 			"large-machine": nodeInfoTemplate,
 		}
 		onNodeGroupCreateFunc := func(name string) error { return nil }

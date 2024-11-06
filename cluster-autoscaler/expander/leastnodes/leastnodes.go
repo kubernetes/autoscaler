@@ -20,7 +20,7 @@ import (
 	"math"
 
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 )
 
 type leastnodes struct {
@@ -32,7 +32,7 @@ func NewFilter() expander.Filter {
 }
 
 // BestOptions selects the expansion option that uses the least number of nodes
-func (m *leastnodes) BestOptions(expansionOptions []expander.Option, nodeInfo map[string]*schedulerframework.NodeInfo) []expander.Option {
+func (m *leastnodes) BestOptions(expansionOptions []expander.Option, nodeInfo map[string]*framework.NodeInfo) []expander.Option {
 	leastNodes := math.MaxInt
 	var leastOptions []expander.Option
 

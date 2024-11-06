@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
@@ -34,7 +35,6 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kubernetes/pkg/kubelet/types"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 func TestFindEmptyNodes(t *testing.T) {
@@ -78,23 +78,18 @@ func TestFindNodesToRemove(t *testing.T) {
 	schedulermetrics.Register()
 
 	emptyNode := BuildTestNode("n1", 1000, 2000000)
-	emptyNodeInfo := schedulerframework.NewNodeInfo()
-	emptyNodeInfo.SetNode(emptyNode)
 
 	// two small pods backed by ReplicaSet
 	drainableNode := BuildTestNode("n2", 1000, 2000000)
-	drainableNodeInfo := schedulerframework.NewNodeInfo()
-	drainableNodeInfo.SetNode(drainableNode)
+	drainableNodeInfo := framework.NewTestNodeInfo(drainableNode)
 
 	// one small pod, not backed by anything
 	nonDrainableNode := BuildTestNode("n3", 1000, 2000000)
-	nonDrainableNodeInfo := schedulerframework.NewNodeInfo()
-	nonDrainableNodeInfo.SetNode(nonDrainableNode)
+	nonDrainableNodeInfo := framework.NewTestNodeInfo(nonDrainableNode)
 
 	// one very large pod
 	fullNode := BuildTestNode("n4", 1000, 2000000)
-	fullNodeInfo := schedulerframework.NewNodeInfo()
-	fullNodeInfo.SetNode(fullNode)
+	fullNodeInfo := framework.NewTestNodeInfo(fullNode)
 
 	SetNodeReadyState(emptyNode, true, time.Time{})
 	SetNodeReadyState(drainableNode, true, time.Time{})
@@ -123,20 +118,20 @@ func TestFindNodesToRemove(t *testing.T) {
 	pod1 := BuildTestPod("p1", 100, 100000)
 	pod1.OwnerReferences = ownerRefs
 	pod1.Spec.NodeName = "n2"
-	drainableNodeInfo.AddPod(pod1)
+	drainableNodeInfo.AddPod(&framework.PodInfo{Pod: pod1})
 
 	pod2 := BuildTestPod("p2", 100, 100000)
 	pod2.OwnerReferences = ownerRefs
 	pod2.Spec.NodeName = "n2"
-	drainableNodeInfo.AddPod(pod2)
+	drainableNodeInfo.AddPod(&framework.PodInfo{Pod: pod2})
 
 	pod3 := BuildTestPod("p3", 100, 100000)
 	pod3.Spec.NodeName = "n3"
-	nonDrainableNodeInfo.AddPod(pod3)
+	nonDrainableNodeInfo.AddPod(&framework.PodInfo{Pod: pod3})
 
 	pod4 := BuildTestPod("p4", 1000, 100000)
 	pod4.Spec.NodeName = "n4"
-	fullNodeInfo.AddPod(pod4)
+	fullNodeInfo.AddPod(&framework.PodInfo{Pod: pod4})
 
 	emptyNodeToRemove := NodeToBeRemoved{
 		Node: emptyNode,
