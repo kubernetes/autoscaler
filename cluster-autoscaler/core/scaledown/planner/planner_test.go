@@ -35,6 +35,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/unremovable"
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
+	processorstest "k8s.io/autoscaler/cluster-autoscaler/processors/test"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
@@ -43,9 +44,12 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/client-go/kubernetes/fake"
+	schedulermetrics "k8s.io/kubernetes/pkg/scheduler/metrics"
 )
 
 func TestUpdateClusterState(t *testing.T) {
+	schedulermetrics.Register()
+
 	testCases := []struct {
 		name                string
 		nodes               []*apiv1.Node
@@ -498,7 +502,7 @@ func TestUpdateClusterState(t *testing.T) {
 			assert.NoError(t, err)
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, tc.nodes, tc.pods)
 			deleteOptions := options.NodeDeleteOptions{}
-			p := New(&context, NewTestProcessors(&context), deleteOptions, nil)
+			p := New(&context, processorstest.NewTestProcessors(&context), deleteOptions, nil)
 			p.eligibilityChecker = &fakeEligibilityChecker{eligible: asMap(tc.eligible)}
 			if tc.isSimulationTimeout {
 				context.AutoscalingOptions.ScaleDownSimulationTimeout = 1 * time.Second
@@ -694,7 +698,7 @@ func TestUpdateClusterStatUnneededNodesLimit(t *testing.T) {
 			assert.NoError(t, err)
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, nil)
 			deleteOptions := options.NodeDeleteOptions{}
-			p := New(&context, NewTestProcessors(&context), deleteOptions, nil)
+			p := New(&context, processorstest.NewTestProcessors(&context), deleteOptions, nil)
 			p.eligibilityChecker = &fakeEligibilityChecker{eligible: asMap(nodeNames(nodes))}
 			p.minUpdateInterval = tc.updateInterval
 			p.unneededNodes.Update(previouslyUnneeded, time.Now())
@@ -862,9 +866,9 @@ func TestNodesToDelete(t *testing.T) {
 			assert.NoError(t, err)
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, allNodes, nil)
 			deleteOptions := options.NodeDeleteOptions{}
-			p := New(&context, NewTestProcessors(&context), deleteOptions, nil)
+			p := New(&context, processorstest.NewTestProcessors(&context), deleteOptions, nil)
 			p.latestUpdate = time.Now()
-			p.actuationStatus = deletiontracker.NewNodeDeletionTracker(0 * time.Second)
+			p.scaleDownContext.ActuationStatus = deletiontracker.NewNodeDeletionTracker(0 * time.Second)
 			p.unneededNodes.Update(allRemovables, time.Now().Add(-1*time.Hour))
 			p.eligibilityChecker = &fakeEligibilityChecker{eligible: asMap(nodeNames(allNodes))}
 			empty, drain := p.NodesToDelete(time.Now())

@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM --platform=$BUILDPLATFORM golang:1.23.1 as builder
+FROM --platform=$BUILDPLATFORM golang:1.23.2 AS builder
 
-ENV GOPATH /gopath/
-ENV PATH $GOPATH/bin:$PATH
+ENV GOPATH=/gopath/
+ENV PATH=$GOPATH/bin:$PATH
 
 COPY . /gopath/src/k8s.io/autoscaler/vertical-pod-autoscaler
 WORKDIR /gopath/src/k8s.io/autoscaler/vertical-pod-autoscaler
@@ -25,7 +25,7 @@ ARG TARGETOS TARGETARCH
 RUN CGO_ENABLED=0 LD_FLAGS=-s GOARCH=$TARGETARCH GOOS=$TARGETOS go build -C pkg/updater -mod vendor -o updater-$TARGETARCH
 
 FROM gcr.io/distroless/static:latest
-MAINTAINER Marcin Wielgus "mwielgus@google.com"
+LABEL maintainer="Marcin Wielgus <mwielgus@google.com>"
 
 ARG TARGETARCH
 

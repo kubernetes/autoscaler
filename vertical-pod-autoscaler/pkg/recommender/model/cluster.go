@@ -362,19 +362,19 @@ func (cluster *ClusterState) findOrCreateAggregateContainerState(containerID Con
 // 2) The last sample is too old to give meaningful recommendation (>8 days),
 // 3) There are no samples and the aggregate state was created >8 days ago.
 func (cluster *ClusterState) garbageCollectAggregateCollectionStates(ctx context.Context, now time.Time, controllerFetcher controllerfetcher.ControllerFetcher) {
-	klog.V(1).Info("Garbage collection of AggregateCollectionStates triggered")
+	klog.V(1).InfoS("Garbage collection of AggregateCollectionStates triggered")
 	keysToDelete := make([]AggregateStateKey, 0)
 	contributiveKeys := cluster.getContributiveAggregateStateKeys(ctx, controllerFetcher)
 	for key, aggregateContainerState := range cluster.aggregateStateMap {
 		isKeyContributive := contributiveKeys[key]
 		if !isKeyContributive && aggregateContainerState.isEmpty() {
 			keysToDelete = append(keysToDelete, key)
-			klog.V(1).Infof("Removing empty and not contributive AggregateCollectionState for %+v", key)
+			klog.V(1).InfoS("Removing empty and not contributive AggregateCollectionState", "key", key)
 			continue
 		}
 		if aggregateContainerState.isExpired(now) {
 			keysToDelete = append(keysToDelete, key)
-			klog.V(1).Infof("Removing expired AggregateCollectionState for %+v", key)
+			klog.V(1).InfoS("Removing expired AggregateCollectionState", "key", key)
 		}
 	}
 	for _, key := range keysToDelete {

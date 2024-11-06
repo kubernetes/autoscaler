@@ -149,3 +149,22 @@ func (c *ProvisioningRequestClient) ProvisioningRequestNoCache(namespace, name s
 	}
 	return provreqwrapper.NewProvisioningRequest(v1, podTemplates), nil
 }
+
+// ProvisioningRequestsNoCache returns all ProvisioningRequests directly from client. For test purposes only.
+func (c *ProvisioningRequestClient) ProvisioningRequestsNoCache() ([]*provreqwrapper.ProvisioningRequest, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), provisioningRequestClientCallTimeout)
+	defer cancel()
+	v1s, err := c.client.AutoscalingV1().ProvisioningRequests("").List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return nil, err
+	}
+	prs := make([]*provreqwrapper.ProvisioningRequest, 0, len(v1s.Items))
+	for _, v1 := range v1s.Items {
+		podTemplates, err := c.FetchPodTemplates(&v1)
+		if err != nil {
+			return nil, err
+		}
+		prs = append(prs, provreqwrapper.NewProvisioningRequest(&v1, podTemplates))
+	}
+	return prs, nil
+}

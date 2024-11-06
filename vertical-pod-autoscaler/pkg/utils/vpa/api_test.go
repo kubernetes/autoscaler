@@ -33,6 +33,7 @@ import (
 	vpa_fake "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/fake"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
+	"k8s.io/utils/ptr"
 )
 
 const (
@@ -301,6 +302,91 @@ func TestGetContainerControlledResources(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			got := GetContainerControlledValues(tc.containerName, tc.policy)
+			assert.Equal(t, got, tc.expected)
+		})
+	}
+}
+
+func TestFindParentControllerForPod(t *testing.T) {
+	for _, tc := range []struct {
+		name        string
+		pod         *core.Pod
+		ctrlFetcher controllerfetcher.ControllerFetcher
+		expected    *controllerfetcher.ControllerKeyWithAPIVersion
+	}{
+		{
+			name: "should return nil for Pod without ownerReferences",
+			pod: &core.Pod{
+				ObjectMeta: meta.ObjectMeta{
+					OwnerReferences: nil,
+				},
+			},
+			ctrlFetcher: &NilControllerFetcher{},
+			expected:    nil,
+		},
+		{
+			name: "should return nil for Pod with ownerReference with controller=nil",
+			pod: &core.Pod{
+				ObjectMeta: meta.ObjectMeta{
+					OwnerReferences: []meta.OwnerReference{
+						{
+							APIVersion: "apps/v1",
+							Controller: nil,
+							Kind:       "ReplicaSet",
+							Name:       "foo",
+						},
+					},
+				},
+			},
+			ctrlFetcher: &controllerfetcher.FakeControllerFetcher{},
+			expected:    nil,
+		},
+		{
+			name: "should return nil for Pod with ownerReference with controller=false",
+			pod: &core.Pod{
+				ObjectMeta: meta.ObjectMeta{
+					OwnerReferences: []meta.OwnerReference{
+						{
+							APIVersion: "apps/v1",
+							Controller: ptr.To(false),
+							Kind:       "ReplicaSet",
+							Name:       "foo",
+						},
+					},
+				},
+			},
+			ctrlFetcher: &controllerfetcher.FakeControllerFetcher{},
+			expected:    nil,
+		},
+		{
+			name: "should pass the Pod ownerReference to the fake ControllerFetcher",
+			pod: &core.Pod{
+				ObjectMeta: meta.ObjectMeta{
+					Namespace: "bar",
+					OwnerReferences: []meta.OwnerReference{
+						{
+							APIVersion: "apps/v1",
+							Controller: ptr.To(true),
+							Kind:       "ReplicaSet",
+							Name:       "foo",
+						},
+					},
+				},
+			},
+			ctrlFetcher: &controllerfetcher.FakeControllerFetcher{},
+			expected: &controllerfetcher.ControllerKeyWithAPIVersion{
+				ControllerKey: controllerfetcher.ControllerKey{
+					Namespace: "bar",
+					Kind:      "ReplicaSet",
+					Name:      "foo",
+				},
+				ApiVersion: "apps/v1",
+			},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := FindParentControllerForPod(context.Background(), tc.pod, tc.ctrlFetcher)
+			assert.NoError(t, err, "Unexpected error occurred.")
 			assert.Equal(t, got, tc.expected)
 		})
 	}

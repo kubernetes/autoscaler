@@ -92,12 +92,12 @@ func (f *controllerFetcher) periodicallyRefreshCache(ctx context.Context, period
 			return
 		case <-time.After(period):
 			keysToRefresh := f.scaleSubresourceCacheStorage.GetKeysToRefresh()
-			klog.V(5).Info("Starting to refresh entries in controllerFetchers scaleSubresourceCacheStorage")
+			klog.V(5).InfoS("Starting to refresh entries in controllerFetchers scaleSubresourceCacheStorage")
 			for _, item := range keysToRefresh {
 				scale, err := f.scaleNamespacer.Scales(item.namespace).Get(context.TODO(), item.groupResource, item.name, metav1.GetOptions{})
 				f.scaleSubresourceCacheStorage.Refresh(item.namespace, item.groupResource, item.name, scale, err)
 			}
-			klog.V(5).Infof("Finished refreshing %d entries in controllerFetchers scaleSubresourceCacheStorage", len(keysToRefresh))
+			klog.V(5).InfoS("Finished refreshing entries in controllerFetchers scaleSubresourceCacheStorage", "refreshed", len(keysToRefresh))
 			f.scaleSubresourceCacheStorage.RemoveExpired()
 		}
 	}
@@ -136,9 +136,9 @@ func NewControllerFetcher(config *rest.Config, kubeClient kube_client.Interface,
 		go informer.Run(stopCh)
 		synced := cache.WaitForCacheSync(stopCh, informer.HasSynced)
 		if !synced {
-			klog.Warningf("Could not sync cache for %s: %v", kind, err)
+			klog.V(0).InfoS("Initial sync failed", "kind", kind)
 		} else {
-			klog.Infof("Initial sync of %s completed", kind)
+			klog.InfoS("Initial sync completed", "kind", kind)
 		}
 	}
 
@@ -261,7 +261,7 @@ func (f *controllerFetcher) isWellKnownOrScalable(ctx context.Context, key *Cont
 	//if not well known check if it supports scaling
 	groupKind, err := key.groupKind()
 	if err != nil {
-		klog.Errorf("Could not find groupKind for %s/%s: %v", key.Namespace, key.Name, err)
+		klog.ErrorS(err, "Could not find groupKind", klog.KRef(key.Namespace, key.Name))
 		return false
 	}
 
@@ -271,7 +271,7 @@ func (f *controllerFetcher) isWellKnownOrScalable(ctx context.Context, key *Cont
 
 	mappings, err := f.mapper.RESTMappings(groupKind)
 	if err != nil {
-		klog.Errorf("Could not find mappings for %s: %v", groupKind, err)
+		klog.ErrorS(err, "Could not find mappings", klog.KRef(key.Namespace, key.Name))
 		return false
 	}
 

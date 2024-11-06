@@ -36,8 +36,7 @@ import (
 // Each loop WrapperOrchestrator split out regular and pods from ProvisioningRequest, pick one group that
 // wasn't picked in the last loop and run ScaleUp for it.
 type WrapperOrchestrator struct {
-	// scaleUpRegularPods indicates that ScaleUp for regular pods will be run in the current CA loop, if they are present.
-	scaleUpRegularPods  bool
+	autoscalingContext  *context.AutoscalingContext
 	podsOrchestrator    scaleup.Orchestrator
 	provReqOrchestrator scaleup.Orchestrator
 }
@@ -58,6 +57,7 @@ func (o *WrapperOrchestrator) Initialize(
 	estimatorBuilder estimator.EstimatorBuilder,
 	taintConfig taints.TaintConfig,
 ) {
+	o.autoscalingContext = autoscalingContext
 	o.podsOrchestrator.Initialize(autoscalingContext, processors, clusterStateRegistry, estimatorBuilder, taintConfig)
 	o.provReqOrchestrator.Initialize(autoscalingContext, processors, clusterStateRegistry, estimatorBuilder, taintConfig)
 }
@@ -70,19 +70,21 @@ func (o *WrapperOrchestrator) ScaleUp(
 	nodeInfos map[string]*schedulerframework.NodeInfo,
 	allOrNothing bool,
 ) (*status.ScaleUpStatus, errors.AutoscalerError) {
-	defer func() { o.scaleUpRegularPods = !o.scaleUpRegularPods }()
+	defer func() {
+		o.autoscalingContext.ProvisioningRequestScaleUpMode = !o.autoscalingContext.ProvisioningRequestScaleUpMode
+	}()
 
 	provReqPods, regularPods := splitOut(unschedulablePods)
 	if len(provReqPods) == 0 {
-		o.scaleUpRegularPods = true
+		o.autoscalingContext.ProvisioningRequestScaleUpMode = false
 	} else if len(regularPods) == 0 {
-		o.scaleUpRegularPods = false
+		o.autoscalingContext.ProvisioningRequestScaleUpMode = true
 	}
 
-	if o.scaleUpRegularPods {
-		return o.podsOrchestrator.ScaleUp(regularPods, nodes, daemonSets, nodeInfos, allOrNothing)
+	if o.autoscalingContext.ProvisioningRequestScaleUpMode {
+		return o.provReqOrchestrator.ScaleUp(provReqPods, nodes, daemonSets, nodeInfos, allOrNothing)
 	}
-	return o.provReqOrchestrator.ScaleUp(provReqPods, nodes, daemonSets, nodeInfos, allOrNothing)
+	return o.podsOrchestrator.ScaleUp(regularPods, nodes, daemonSets, nodeInfos, allOrNothing)
 }
 
 func splitOut(unschedulablePods []*apiv1.Pod) (provReqPods, regularPods []*apiv1.Pod) {

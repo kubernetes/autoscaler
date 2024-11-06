@@ -24,7 +24,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/pods"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest"
 	provreqconditions "k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/conditions"
 	provreqpods "k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/pods"
@@ -38,11 +37,12 @@ import (
 
 // ProvisioningRequestPodsInjector creates in-memory pods from ProvisioningRequest and inject them to unscheduled pods list.
 type ProvisioningRequestPodsInjector struct {
-	initialRetryTime time.Duration
-	maxBackoffTime   time.Duration
-	backoffDuration  *lru.Cache
-	clock            clock.PassiveClock
-	client           *provreqclient.ProvisioningRequestClient
+	initialRetryTime                   time.Duration
+	maxBackoffTime                     time.Duration
+	backoffDuration                    *lru.Cache
+	clock                              clock.PassiveClock
+	client                             *provreqclient.ProvisioningRequestClient
+	lastProvisioningRequestProcessTime time.Time
 }
 
 // IsAvailableForProvisioning checks if the provisioning request is the correct state for processing and provisioning has not been attempted recently.
@@ -78,6 +78,7 @@ func (p *ProvisioningRequestPodsInjector) MarkAsAccepted(pr *provreqwrapper.Prov
 		klog.Errorf("failed add Accepted condition to ProvReq %s/%s, err: %v", pr.Namespace, pr.Name, err)
 		return err
 	}
+	p.lastProvisioningRequestProcessTime = p.clock.Now()
 	return nil
 }
 
@@ -87,6 +88,7 @@ func (p *ProvisioningRequestPodsInjector) MarkAsFailed(pr *provreqwrapper.Provis
 	if _, err := p.client.UpdateProvisioningRequest(pr.ProvisioningRequest); err != nil {
 		klog.Errorf("failed add Failed condition to ProvReq %s/%s, err: %v", pr.Namespace, pr.Name, err)
 	}
+	p.lastProvisioningRequestProcessTime = p.clock.Now()
 }
 
 // GetPodsFromNextRequest picks one ProvisioningRequest meeting the condition passed using isSupportedClass function, marks it as accepted and returns pods from it.
@@ -112,7 +114,7 @@ func (p *ProvisioningRequestPodsInjector) GetPodsFromNextRequest(
 			continue
 		}
 
-		provreqpods, err := provreqpods.PodsForProvisioningRequest(pr)
+		podsFromProvReq, err := provreqpods.PodsForProvisioningRequest(pr)
 		if err != nil {
 			klog.Errorf("Failed to get pods for ProvisioningRequest %v", pr.Name)
 			p.MarkAsFailed(pr, provreqconditions.FailedToCreatePodsReason, err.Error())
@@ -121,7 +123,8 @@ func (p *ProvisioningRequestPodsInjector) GetPodsFromNextRequest(
 		if err := p.MarkAsAccepted(pr); err != nil {
 			continue
 		}
-		return provreqpods, nil
+
+		return podsFromProvReq, nil
 	}
 	return nil, nil
 }
@@ -151,14 +154,19 @@ func (p *ProvisioningRequestPodsInjector) Process(
 func (p *ProvisioningRequestPodsInjector) CleanUp() {}
 
 // NewProvisioningRequestPodsInjector creates a ProvisioningRequest filter processor.
-func NewProvisioningRequestPodsInjector(kubeConfig *rest.Config, initialBackoffTime, maxBackoffTime time.Duration, maxCacheSize int) (pods.PodListProcessor, error) {
+func NewProvisioningRequestPodsInjector(kubeConfig *rest.Config, initialBackoffTime, maxBackoffTime time.Duration, maxCacheSize int) (*ProvisioningRequestPodsInjector, error) {
 	client, err := provreqclient.NewProvisioningRequestClient(kubeConfig)
 	if err != nil {
 		return nil, err
 	}
-	return &ProvisioningRequestPodsInjector{initialRetryTime: initialBackoffTime, maxBackoffTime: maxBackoffTime, backoffDuration: lru.New(maxCacheSize), client: client, clock: clock.RealClock{}}, nil
+	return &ProvisioningRequestPodsInjector{initialRetryTime: initialBackoffTime, maxBackoffTime: maxBackoffTime, backoffDuration: lru.New(maxCacheSize), client: client, clock: clock.RealClock{}, lastProvisioningRequestProcessTime: time.Now()}, nil
 }
 
 func key(pr *provreqwrapper.ProvisioningRequest) string {
 	return string(pr.UID)
+}
+
+// LastProvisioningRequestProcessTime returns the time when the last provisioning request was processed.
+func (p *ProvisioningRequestPodsInjector) LastProvisioningRequestProcessTime() time.Time {
+	return p.lastProvisioningRequestProcessTime
 }

@@ -110,7 +110,7 @@ func (s *AdmissionServer) admit(ctx context.Context, data []byte) (*admissionv1.
 		patchType := admissionv1.PatchTypeJSONPatch
 		response.PatchType = &patchType
 		response.Patch = patch
-		klog.V(4).Infof("Sending patches: %v", patches)
+		klog.V(4).InfoS("Sending patches", "patches", patches)
 	}
 
 	var status metrics_admission.AdmissionStatus

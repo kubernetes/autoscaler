@@ -30,10 +30,12 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/test"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfosprovider"
+	processorstest "k8s.io/autoscaler/cluster-autoscaler/processors/test"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	utils_test "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/client-go/kubernetes/fake"
+	schedulermetrics "k8s.io/kubernetes/pkg/scheduler/metrics"
 )
 
 type nodeGroupConfig struct {
@@ -51,6 +53,8 @@ type deltaForNodeTestCase struct {
 }
 
 func TestDeltaForNode(t *testing.T) {
+	schedulermetrics.Register()
+
 	testCases := []deltaForNodeTestCase{
 		{
 			nodeGroupConfig: nodeGroupConfig{Name: "ng1", Min: 3, Max: 10, Size: 5, CPU: 8, Mem: 16},
@@ -65,7 +69,7 @@ func TestDeltaForNode(t *testing.T) {
 	for _, testCase := range testCases {
 		cp := testprovider.NewTestCloudProvider(nil, nil)
 		ctx := newContext(t, cp)
-		processors := test.NewTestProcessors(&ctx)
+		processors := processorstest.NewTestProcessors(&ctx)
 
 		ng := testCase.nodeGroupConfig
 		group, nodes := newNodeGroup(t, cp, ng.Name, ng.Min, ng.Max, ng.Size, ng.CPU, ng.Mem)
@@ -106,7 +110,7 @@ func TestResourcesLeft(t *testing.T) {
 	for _, testCase := range testCases {
 		cp := newCloudProvider(t, 1000, 1000)
 		ctx := newContext(t, cp)
-		processors := test.NewTestProcessors(&ctx)
+		processors := processorstest.NewTestProcessors(&ctx)
 
 		ng := testCase.nodeGroupConfig
 		_, nodes := newNodeGroup(t, cp, ng.Name, ng.Min, ng.Max, ng.Size, ng.CPU, ng.Mem)
@@ -157,7 +161,7 @@ func TestApplyLimits(t *testing.T) {
 	for _, testCase := range testCases {
 		cp := testprovider.NewTestCloudProvider(nil, nil)
 		ctx := newContext(t, cp)
-		processors := test.NewTestProcessors(&ctx)
+		processors := processorstest.NewTestProcessors(&ctx)
 
 		ng := testCase.nodeGroupConfig
 		group, nodes := newNodeGroup(t, cp, ng.Name, ng.Min, ng.Max, ng.Size, ng.CPU, ng.Mem)
@@ -215,7 +219,7 @@ func TestResourceManagerWithGpuResource(t *testing.T) {
 	provider.SetResourceLimiter(resourceLimiter)
 
 	context := newContext(t, provider)
-	processors := test.NewTestProcessors(&context)
+	processors := processorstest.NewTestProcessors(&context)
 
 	n1 := newNode(t, "n1", 8, 16)
 	utils_test.AddGpusToNode(n1, 4)

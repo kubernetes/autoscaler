@@ -244,6 +244,9 @@ extraVolumeSecrets: {}
   #     - key: subkey
   #       path: mypath
 
+# initContainers -- Any additional init containers.
+initContainers: []
+
 # fullnameOverride -- String to fully override `cluster-autoscaler.fullname` template.
 fullnameOverride: ""
 
@@ -366,8 +369,11 @@ service:
   annotations: {}
   # service.labels -- Labels to add to service
   labels: {}
-  # service.externalIPs -- List of IP addresses at which the service is available. Ref: https://kubernetes.io/docs/user-guide/services/#external-ips.
+  # service.externalIPs -- List of IP addresses at which the service is available. Ref: https://kubernetes.io/docs/concepts/services-networking/service/#external-ips.
   externalIPs: []
+
+  # service.clusterIP -- IP address to assign to service
+  clusterIP: ""
 
   # service.loadBalancerIP -- IP address to assign to load balancer (if supported).
   loadBalancerIP: ""
@@ -397,6 +403,9 @@ serviceMonitor:
   path: /metrics
   # serviceMonitor.annotations -- Annotations to add to service monitor
   annotations: {}
+  ## [RelabelConfig](https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api.md#monitoring.coreos.com/v1.RelabelConfig)
+  # serviceMonitor.relabelings -- RelabelConfigs to apply to metrics before scraping.
+  relabelings: {}
   ## [RelabelConfig](https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api.md#monitoring.coreos.com/v1.RelabelConfig)
   # serviceMonitor.metricRelabelings -- MetricRelabelConfigs to apply to samples before ingestion.
   metricRelabelings: {}

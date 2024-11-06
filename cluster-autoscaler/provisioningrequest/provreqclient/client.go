@@ -26,7 +26,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
+	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/clientset/versioned"
 	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/informers/externalversions"
 	listers "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/client/listers/autoscaling.x-k8s.io/v1"
@@ -54,7 +54,7 @@ type ProvisioningRequestClient struct {
 func NewProvisioningRequestClient(kubeConfig *rest.Config) (*ProvisioningRequestClient, error) {
 	prClient, err := newPRClient(kubeConfig)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create Provisioning Request client: %v", err)
+		return nil, fmt.Errorf("failed to create Provisioning Request client: %v", err)
 	}
 
 	provReqLister, err := newPRsLister(prClient, make(chan struct{}))
@@ -64,7 +64,7 @@ func NewProvisioningRequestClient(kubeConfig *rest.Config) (*ProvisioningRequest
 
 	podTemplateClient, err := kubernetes.NewForConfig(kubeConfig)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create Pod Template client: %v", err)
+		return nil, fmt.Errorf("failed to create Pod Template client: %v", err)
 	}
 
 	podTemplLister, err := newPodTemplatesLister(podTemplateClient, make(chan struct{}))
@@ -130,12 +130,7 @@ func (c *ProvisioningRequestClient) UpdateProvisioningRequest(pr *v1.Provisionin
 	ctx, cancel := context.WithTimeout(context.Background(), provisioningRequestClientCallTimeout)
 	defer cancel()
 
-	// UpdateStatus API call on a copy of the PR with cleared Spec field ensures that
-	// the default null template.metadata.creationTimestamp field of PodTemplateSpec
-	// will not generate false error logs as a side effect.
-	prCopy := pr.DeepCopy()
-	prCopy.Spec = v1.ProvisioningRequestSpec{}
-	updatedPr, err := c.client.AutoscalingV1().ProvisioningRequests(prCopy.Namespace).UpdateStatus(ctx, prCopy, metav1.UpdateOptions{})
+	updatedPr, err := c.client.AutoscalingV1().ProvisioningRequests(pr.Namespace).UpdateStatus(ctx, pr, metav1.UpdateOptions{})
 	if err != nil {
 		return pr, err
 	}
@@ -186,7 +181,7 @@ func ProvisioningRequestsForPods(client *ProvisioningRequestClient, unschedulabl
 		return prList
 	}
 	for _, pod := range unschedulablePods {
-		if pod.OwnerReferences == nil || len(pod.OwnerReferences) == 0 {
+		if len(pod.OwnerReferences) == 0 {
 			klog.Errorf("pod %s has no OwnerReference", pod.Name)
 			continue
 		}

@@ -384,11 +384,12 @@ func buildNodeGroupLabels(n *hetznerNodeGroup) (map[string]string, error) {
 	klog.V(4).Infof("Build node group label for %s", n.id)
 
 	labels := map[string]string{
-		apiv1.LabelInstanceType:      n.instanceType,
-		apiv1.LabelTopologyRegion:    n.region,
-		apiv1.LabelArchStable:        archLabel,
-		"csi.hetzner.cloud/location": n.region,
-		nodeGroupLabel:               n.id,
+		apiv1.LabelInstanceType:              n.instanceType,
+		apiv1.LabelTopologyRegion:            n.region,
+		apiv1.LabelArchStable:                archLabel,
+		"csi.hetzner.cloud/location":         n.region,
+		"instance.hetzner.cloud/provided-by": "cloud",
+		nodeGroupLabel:                       n.id,
 	}
 
 	if n.manager.clusterConfig.IsUsingNewFormat {

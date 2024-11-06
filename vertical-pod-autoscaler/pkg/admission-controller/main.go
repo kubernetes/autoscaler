@@ -62,9 +62,8 @@ var (
 		tlsPrivateKey: flag.String("tls-private-key", "/etc/tls-certs/serverKey.pem", "Path to server certificate key PEM file."),
 		reload:        flag.Bool("reload-cert", false, "If set to true, reload leaf certificate."),
 	}
-	ciphers       = flag.String("tls-ciphers", "", "A comma-separated or colon-separated list of ciphers to accept.  Only works when min-tls-version is set to tls1_2.")
-	minTlsVersion = flag.String("min-tls-version", "tls1_2", "The minimum TLS version to accept.  Must be set to either tls1_2 (default) or tls1_3.")
-
+	ciphers              = flag.String("tls-ciphers", "", "A comma-separated or colon-separated list of ciphers to accept.  Only works when min-tls-version is set to tls1_2.")
+	minTlsVersion        = flag.String("min-tls-version", "tls1_2", "The minimum TLS version to accept.  Must be set to either tls1_2 (default) or tls1_3.")
 	port                 = flag.Int("port", 8000, "The port to listen on.")
 	address              = flag.String("address", ":8944", "The address to expose Prometheus metrics.")
 	namespace            = os.Getenv("NAMESPACE")
@@ -74,6 +73,7 @@ var (
 	webhookTimeout       = flag.Int("webhook-timeout-seconds", 30, "Timeout in seconds that the API server should wait for this webhook to respond before failing.")
 	webHookFailurePolicy = flag.Bool("webhook-failure-policy-fail", false, "If set to true, will configure the admission webhook failurePolicy to \"Fail\". Use with caution.")
 	registerWebhook      = flag.Bool("register-webhook", true, "If set to true, admission webhook object will be created on start up to register with the API server.")
+	webhookLabels        = flag.String("webhook-labels", "", "Comma separated list of labels to add to the webhook object. Format: key1:value1,key2:value2")
 	registerByURL        = flag.Bool("register-by-url", false, "If set to true, admission webhook will be registered by URL (webhookAddress:webhookPort) instead of by service name")
 )
 
@@ -82,7 +82,7 @@ func main() {
 	klog.InitFlags(nil)
 	common.InitLoggingFlags()
 	kube_flag.InitFlags()
-	klog.V(1).Infof("Vertical Pod Autoscaler %s Admission Controller", common.VerticalPodAutoscalerVersion)
+	klog.V(1).InfoS("Starting Vertical Pod Autoscaler Admission Controller", "version", common.VerticalPodAutoscalerVersion)
 
 	if len(commonFlags.VpaObjectNamespace) > 0 && len(commonFlags.IgnoredVpaObjectNamespaces) > 0 {
 		klog.Fatalf("--vpa-object-namespace and --ignored-vpa-object-namespaces are mutually exclusive and can't be set together.")
@@ -144,7 +144,7 @@ func main() {
 	ignoredNamespaces := strings.Split(commonFlags.IgnoredVpaObjectNamespaces, ",")
 	go func() {
 		if *registerWebhook {
-			selfRegistration(kubeClient, readFile(*certsConfiguration.clientCaFile), webHookDelay, namespace, *serviceName, url, *registerByURL, int32(*webhookTimeout), commonFlags.VpaObjectNamespace, ignoredNamespaces, *webHookFailurePolicy)
+			selfRegistration(kubeClient, readFile(*certsConfiguration.clientCaFile), webHookDelay, namespace, *serviceName, url, *registerByURL, int32(*webhookTimeout), commonFlags.VpaObjectNamespace, ignoredNamespaces, *webHookFailurePolicy, *webhookLabels)
 		}
 		// Start status updates after the webhook is initialized.
 		statusUpdater.Run(stopCh)

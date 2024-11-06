@@ -28,6 +28,7 @@ import (
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
+	schedulermetrics "k8s.io/kubernetes/pkg/scheduler/metrics"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -65,6 +66,8 @@ func makeNode(cpu, mem, podCount int64, name string, zone string) *apiv1.Node {
 }
 
 func TestBinpackingEstimate(t *testing.T) {
+	schedulermetrics.Register()
+
 	highResourcePodGroup := makePodEquivalenceGroup(
 		BuildTestPod(
 			"estimatee",
