@@ -9,7 +9,7 @@
 #   - github.com/deepmap/oapi-codegen
 #   - k8s.io/klog
 
-if [[ $# -ne 1 ]]; then 
+if [[ $# -ne 1 ]]; then
     echo "usage: $0 <path to local egoscale Git checkout>"
     exit 1
 fi

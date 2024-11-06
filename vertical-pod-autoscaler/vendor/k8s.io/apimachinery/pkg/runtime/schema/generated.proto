@@ -23,4 +23,3 @@ package k8s.io.apimachinery.pkg.runtime.schema;
 
 // Package-wide variables from generator "generated".
 option go_package = "k8s.io/apimachinery/pkg/runtime/schema";
-

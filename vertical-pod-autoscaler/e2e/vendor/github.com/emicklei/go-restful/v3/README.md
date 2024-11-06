@@ -18,7 +18,7 @@ REST asks developers to use HTTP methods explicitly and in a way that's consiste
 - DELETE = Delete if you are requesting the server to delete the resource
 - PATCH = Update partial content of a resource
 - OPTIONS = Get information about the communication options for the request URI
-    
+
 ### Usage
 
 #### Without Go Modules
@@ -53,17 +53,17 @@ ws.
 ws.Route(ws.GET("/{user-id}").To(u.findUser).
 	Doc("get a user").
 	Param(ws.PathParameter("user-id", "identifier of the user").DataType("string")).
-	Writes(User{}))		
+	Writes(User{}))
 ...
-	
+
 func (u UserResource) findUser(request *restful.Request, response *restful.Response) {
 	id := request.PathParameter("user-id")
 	...
 }
 ```
-	
-[Full API of a UserResource](https://github.com/emicklei/go-restful/blob/v3/examples/user-resource/restful-user-resource.go) 
-		
+
+[Full API of a UserResource](https://github.com/emicklei/go-restful/blob/v3/examples/user-resource/restful-user-resource.go)
+
 ### Features
 
 - Routes for request &#8594; function mapping with path parameter (e.g. {id} but also prefix_{var} and {var}_suffix) support
@@ -95,7 +95,7 @@ There are several hooks to customize the behavior of the go-restful package.
 - Trace logging
 - Compression
 - Encoders for other serializers
-- Use [jsoniter](https://github.com/json-iterator/go) by building this package using a build tag, e.g. `go build -tags=jsoniter .` 
+- Use [jsoniter](https://github.com/json-iterator/go) by building this package using a build tag, e.g. `go build -tags=jsoniter .`
 
 ## Resources
 

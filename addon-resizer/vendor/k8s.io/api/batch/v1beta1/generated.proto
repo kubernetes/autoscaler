@@ -135,4 +135,3 @@ message JobTemplateSpec {
   // +optional
   optional k8s.io.api.batch.v1.JobSpec spec = 2;
 }
-

@@ -1,9 +1,9 @@
 ## Purpose
 
-This repository defines an interface to mounting filesystems to be consumed by 
-various Kubernetes and out-of-tree CSI components. 
+This repository defines an interface to mounting filesystems to be consumed by
+various Kubernetes and out-of-tree CSI components.
 
-Consumers of this repository can make use of functions like 'Mount' to mount 
+Consumers of this repository can make use of functions like 'Mount' to mount
 source to target as fstype with given options, 'Unmount' to unmount a target.
 Other useful functions include 'List' all mounted file systems and find all
 mount references to a path using 'GetMountRefs'
@@ -28,4 +28,3 @@ Code of Conduct](code-of-conduct.md).
 ### Contibution Guidelines
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for more information.
-

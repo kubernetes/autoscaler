@@ -73,4 +73,3 @@ message PodPresetSpec {
   // +optional
   repeated k8s.io.api.core.v1.VolumeMount volumeMounts = 5;
 }
-

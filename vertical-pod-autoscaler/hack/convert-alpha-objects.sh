@@ -44,4 +44,3 @@ echo
 echo "NOTE: The recommendations will NOT be kept between versions."
 echo "There will be a disruption period until beta VPA computes new recommendations."
 echo
-

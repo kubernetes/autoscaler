@@ -25,5 +25,3 @@ COPY . .
 RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -gcflags="-N -l" -o /bin/gobizfly *.go
 
 ENTRYPOINT [ "/bin/gobizfly" ]
-
-

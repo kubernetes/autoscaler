@@ -59,4 +59,3 @@ message ExternalMetricValueList {
   // value of the metric matching a given set of labels
   repeated ExternalMetricValue items = 2;
 }
-

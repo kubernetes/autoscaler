@@ -1,4 +1,4 @@
-# 
+#
 # Balancer scaling 2 deployments using priority policy.
 #
 apiVersion: apps/v1

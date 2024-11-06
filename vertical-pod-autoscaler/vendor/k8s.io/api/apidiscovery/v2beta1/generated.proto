@@ -153,4 +153,3 @@ message APIVersionDiscovery {
   // performing an operation should not use the aggregated document
   optional string freshness = 3;
 }
-

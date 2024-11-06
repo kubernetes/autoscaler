@@ -40,4 +40,3 @@ message IntOrString {
 
   optional string strVal = 3;
 }
-

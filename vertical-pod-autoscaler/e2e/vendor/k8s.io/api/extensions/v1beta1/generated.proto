@@ -1028,4 +1028,3 @@ message ScaleStatus {
   // +optional
   optional string targetSelector = 3;
 }
-

@@ -570,4 +570,3 @@ message VolumeNodeResources {
   // +optional
   optional int32 count = 1;
 }
-

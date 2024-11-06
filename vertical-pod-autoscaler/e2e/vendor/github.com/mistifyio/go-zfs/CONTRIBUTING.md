@@ -42,7 +42,7 @@ Push your feature branch to your fork.
 
 [Open a Pull Request](https://help.github.com/articles/using-pull-requests) against the upstream master branch. Please give your pull request a clear title and description and note which issue(s) your pull request fixes.
 
-* All Go code should be formatted using [gofmt](http://golang.org/cmd/gofmt/). 
+* All Go code should be formatted using [gofmt](http://golang.org/cmd/gofmt/).
 * Every exported function should have [documentation](http://blog.golang.org/godoc-documenting-go-code) and corresponding [tests](http://golang.org/doc/code.html#Testing).
 
 **Important:** By submitting a patch, you agree to allow the project owners to license your work under the [Apache 2.0 License](./LICENSE).

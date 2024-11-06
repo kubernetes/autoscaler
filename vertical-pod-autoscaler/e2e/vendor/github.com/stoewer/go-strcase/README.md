@@ -6,9 +6,9 @@
 Go strcase
 ==========
 
-The package `strcase` converts between different kinds of naming formats such as camel case 
+The package `strcase` converts between different kinds of naming formats such as camel case
 (`CamelCase`), snake case (`snake_case`) or kebab case (`kebab-case`).
-The package is designed to work only with strings consisting of standard ASCII letters. 
+The package is designed to work only with strings consisting of standard ASCII letters.
 Unicode is currently not supported.
 
 Versioning and stability
@@ -40,7 +40,7 @@ Dependencies
 * `github.com/stretchr/testify`
 
 Run linters and unit tests
--------------------------- 
+--------------------------
 
 To run the static code analysis, linters and tests use the following commands:
 

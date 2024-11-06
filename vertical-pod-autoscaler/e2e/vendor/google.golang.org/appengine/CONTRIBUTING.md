@@ -12,7 +12,7 @@
 
     `git remote add fork git@github.com:GITHUB_USERNAME/appengine.git`
 1. Make changes, commit to your fork.
-1. Send a pull request with your changes. 
+1. Send a pull request with your changes.
    The first line of your commit message is conventionally a one-line summary of the change, prefixed by the primary affected package, and is used as the title of your pull request.
 
 # Testing

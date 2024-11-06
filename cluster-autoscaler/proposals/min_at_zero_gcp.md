@@ -1,4 +1,4 @@
-# Cluster Autoscaler - min at 0 
+# Cluster Autoscaler - min at 0
 ### Design Document for Google Cloud Platform
 ##### Author: mwielgus
 
@@ -115,7 +115,7 @@ So it is also quite easy to get all of the capacity information from it.
 
 ### [1B] - Node allocatable
 
-In GKE 1.5.6 allocatable for new nodes is equal to capacity, however on GCE there is allocatable memory is a bit smaller than capacity. 
+In GKE 1.5.6 allocatable for new nodes is equal to capacity, however on GCE there is allocatable memory is a bit smaller than capacity.
 Initially, for simplicity, we can assume that the new node will have -0.1cpu/-200mb of capacity, but we will have to be more precise before the release.
 More details of how the allocatables are calculated are available here: https://github.com/kubernetes/kubernetes/blob/c20e63bfb98fecef7461dbaf8ed52e31fe12cd11/pkg/kubelet/cm/node_container_manager.go#L184.
 Being wrong or underestimating here is not fatal, most users will probably be OK with this. Once some nodes are present we will have more precise estimates. The worst thing that can happen is that the scale up may not be triggered if the request is exactly at the node capacity - system pods.
@@ -154,7 +154,7 @@ NODE_LABELS: a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-p
 
 NODE_LABELS: cloud.google.com/gke-local-ssd=true,cloud.google.com/gke-nodepool=pool-1
 ```
-The kubelet code that populates labels not available in kube_env is here: 
+The kubelet code that populates labels not available in kube_env is here:
 https://github.com/kubernetes/kubernetes/blob/ceff8d8d4d7ac271cd03dcae73edde048a685df5/pkg/kubelet/kubelet_node_status.go#L196
 
 The bottom line is that all of the labels can be easily obtained.
@@ -164,14 +164,14 @@ The bottom line is that all of the labels can be easily obtained.
 In GKE (since 1.6) we run 1 types of pods by default on the node - Kube-proxy that requires only cpu. Unfortunately the amount of cpu is not well-defined and is hidden inside the startup script. https://github.com/kubernetes/kubernetes/blob/6bf9f2f0bbf25c550e9dd93bfa0a3cda4feec954/cluster/gce/gci/configure-helper.sh#L797
 
 The amount is fixed at 100m and I guess it is unlikely to change so it can be probably hardcoded in CA as well.
-	
+
 ### [3] - There is no live example of what DaemonSets would be run on the new node.
 
 All daemon sets can be listed from apiserver and checked against the node with all the labels, capacities, allocatables and manifest-run pods obtained in previous steps. CA codebase already has the set of predicates imported so checking which pods should run on the node will be relatively easy.
 
 # Solution
 
-Given all the information above it should be relatively simple to write a module that given the access to GCP Api 
+Given all the information above it should be relatively simple to write a module that given the access to GCP Api
 and Kubernetes API server. We will expand the NodeGroup interface (https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/cloud_provider.go#L40)
 with a method TemplateNodeInfo, taking no parameters and returning NodeInfo (containing api.Node and all pods running by default on the node) or error if unable to do so.
 

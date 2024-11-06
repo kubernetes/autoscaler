@@ -77,4 +77,3 @@ message GetHostnameRequest {
 message GetHostnameResponse {
   required string hostname = 1;
 }
-

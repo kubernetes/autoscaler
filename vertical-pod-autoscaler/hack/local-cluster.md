@@ -13,7 +13,7 @@ use a stack of 4 additional programs to support testing:
 4. Prometheus Adapter to provide an External Metrics interface to Prometheus.
 
 The External Metrics tests run by configuring a `recommender` to use the External Metrics interface
-from the Prometheus Adapter.  With that configuration, it runs the standard `recommender` test suite. 
+from the Prometheus Adapter.  With that configuration, it runs the standard `recommender` test suite.
 
 ## Non-recommender tests
 The `recommender` and `recommender-externalmetrics` test work locally, but none of the others do;
@@ -26,7 +26,6 @@ to work around this.  This only runs in the local `kind` case, not in a real clu
 
 # RBAC Changes
 The local test cases support running the `recommender` with external metrics.  This requires
-additional permissions we don't want to automatically enable for all customers via the 
+additional permissions we don't want to automatically enable for all customers via the
 configuration given in `deploy/vpa-rbac.yaml`.  The scripts use a context diff `hack/e2e/vpa-rbac.diff`
 to enable those permission when running locally.
-

@@ -31,7 +31,7 @@ Raw Result (easyjson requires static code generation)
 | easyjson encode | 883 ns/op | 576 B/op | 3 allocs/op |
 | jsoniter encode | 837 ns/op | 384 B/op | 4 allocs/op |
 
-Always benchmark with your own workload. 
+Always benchmark with your own workload.
 The result depends heavily on the data input.
 
 # Usage
@@ -45,7 +45,7 @@ import "encoding/json"
 json.Marshal(&data)
 ```
 
-with 
+with
 
 ```go
 import "github.com/json-iterator/go"
@@ -82,7 +82,7 @@ go get github.com/json-iterator/go
 
 Contributors
 
-* [thockin](https://github.com/thockin) 
+* [thockin](https://github.com/thockin)
 * [mattn](https://github.com/mattn)
 * [cch123](https://github.com/cch123)
 * [Oleg Shaldybin](https://github.com/olegshaldybin)

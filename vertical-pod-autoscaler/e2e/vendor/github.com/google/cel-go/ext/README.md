@@ -3,7 +3,7 @@
 CEL extensions are a related set of constants, functions, macros, or other
 features which may not be covered by the core CEL spec.
 
-## Bindings 
+## Bindings
 
 Returns a cel.EnvOption to configure support for local variable bindings
 in expressions.

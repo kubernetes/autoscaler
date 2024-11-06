@@ -1,7 +1,7 @@
 A Ginkgo release is a tagged git sha and a GitHub release.  To cut a release:
 
 1. Ensure CHANGELOG.md is up to date.
-  - Use 
+  - Use
     ```bash
     LAST_VERSION=$(git tag --sort=version:refname | tail -n1)
     CHANGES=$(git log --pretty=format:'- %s [%h]' HEAD...$LAST_VERSION)

@@ -342,7 +342,7 @@ Because we switched from `int` to `int64` as the return value for all integer ma
 - `min` complements `max` (formerly `biggest`)
 - `empty` indicates that a value is the empty value for its type
 - `tuple` creates a tuple inside of a template: `{{$t := tuple "a", "b" "c"}}`
-- `dict` creates a dictionary inside of a template `{{$d := dict "key1" "val1" "key2" "val2"}}` 
+- `dict` creates a dictionary inside of a template `{{$d := dict "key1" "val1" "key2" "val2"}}`
 - Date formatters have been added for HTML dates (as used in `date` input fields)
 - Integer math functions can convert from a number of types, including `string` (via `strconv.ParseInt`).
 

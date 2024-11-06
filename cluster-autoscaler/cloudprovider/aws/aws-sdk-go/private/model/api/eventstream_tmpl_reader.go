@@ -128,7 +128,7 @@ func (u {{ $es.StreamUnmarshalerForEventName }}) UnmarshalerForEventName(eventTy
 	}
 }
 
-// {{ $es.StreamUnknownEventName }} provides a failsafe event for the 
+// {{ $es.StreamUnknownEventName }} provides a failsafe event for the
 // {{ $es.Name }} group of events when an unknown event is received.
 type {{ $es.StreamUnknownEventName }} struct {
 	Type string

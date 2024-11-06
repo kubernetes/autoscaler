@@ -55,4 +55,3 @@ message TableOptions {
   // in version v1beta1 of the meta.k8s.io API group.
   optional string includeObject = 1;
 }
-

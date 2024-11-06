@@ -7,7 +7,7 @@ As a part of Cluster Autoscaler graduation to GA we want to guarantee a certain 
 
 ## CA scales to 1000 nodes
 
-Cluster Autoscaler scales up to a certain number of nodes if it stays responsive. It performs scales up and scale down operations on the cluster within reasonable time frame. If CA is not responsive it can be killed by the liveness probe or fail to provide/release computational resources in cluster when needed, resulting in inability of the cluster to handle additional workload, or in higher cloud provider bills. 
+Cluster Autoscaler scales up to a certain number of nodes if it stays responsive. It performs scales up and scale down operations on the cluster within reasonable time frame. If CA is not responsive it can be killed by the liveness probe or fail to provide/release computational resources in cluster when needed, resulting in inability of the cluster to handle additional workload, or in higher cloud provider bills.
 
 ## Expected performance
 
@@ -19,7 +19,7 @@ Using Kubernetes and [kubemark](https://github.com/kubernetes/community/blob/mas
 * 1 master - 1-core VM
 * 17 nodes - 8-core VMs, each core running up to 8 Kubemark nodes.
 * 1 Kubemark master - 32-core VM
-* 1 dedicated VM for Cluster Autoscaler 
+* 1 dedicated VM for Cluster Autoscaler
 
 ## Test execution
 
@@ -53,7 +53,7 @@ We have run multiple test scenarios with a general setup targeting load of ~1000
    * Do: nothing
    * Expected result: 30 nodes are removed from cluster
 
-5. [Scale-down] Doesn't scale down with underutilized but unremovable nodes 
+5. [Scale-down] Doesn't scale down with underutilized but unremovable nodes
    * Scenario: With a cluster that has a significant number of underutilized but unremovable nodes, we simulate a sudden drop of activity in a cluster that has unremovable nodes.
    * Start with: 1000 pods running on 1000 nodes, 700 nodes 90% full, 300 nodes about 30% full (underutilized, but unremovable due to host post conflicts)
    * Do: nothing

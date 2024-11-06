@@ -191,7 +191,7 @@ Code instrumented with the `go.opentelemetry.io/otel/metric` will need to be mod
   - `OTEL_EVENT_ATTRIBUTE_COUNT_LIMIT`
   - `OTEL_SPAN_LINK_COUNT_LIMIT`
   - `OTEL_LINK_ATTRIBUTE_COUNT_LIMIT`
-  
+
   If the provided environment variables are invalid (negative), the default values would be used.
 - Rename the `gc` runtime name to `go` (#2560)
 - Add resource container ID detection. (#2418)

@@ -272,4 +272,3 @@ message PolicyRule {
   // +optional
   optional bool omitManagedFields = 9;
 }
-

@@ -5,10 +5,10 @@
 ### Signing Contributor License Agreements(CLA)
 
 We'd love to accept your patches! Before we can take them, we have to jump a couple of legal hurdles.
- 
+
  Please fill out either the individual or corporate Contributor License Agreement
  (CLA).
- 
+
    * If you are an individual writing original source code and you're sure you
      own the intellectual property, then you'll need to sign an
      [individual CLA](https://identity.linuxfoundation.org/node/285/node/285/individual-signup).
@@ -21,15 +21,15 @@ We'd love to accept your patches! Before we can take them, we have to jump a cou
  * Fork the desired repo, develop and test your code changes.
  * Submit a pull request.
 
-All changes must be code reviewed. Coding conventions and standards are explained in the official 
-[developer docs](https://github.com/kubernetes/community/tree/master/contributors/devel). Expect 
+All changes must be code reviewed. Coding conventions and standards are explained in the official
+[developer docs](https://github.com/kubernetes/community/tree/master/contributors/devel). Expect
 reviewers to request that you avoid common [go style mistakes](https://github.com/golang/go/wiki/CodeReviewComments)
 in your PRs.
 
 ### Merge Approval
 
-Autoscaler collaborators may add "LGTM" (Looks Good To Me) or an equivalent comment to indicate 
-that a PR is acceptable. Any change requires at least one LGTM. No pull requests can be merged 
+Autoscaler collaborators may add "LGTM" (Looks Good To Me) or an equivalent comment to indicate
+that a PR is acceptable. Any change requires at least one LGTM. No pull requests can be merged
 until at least one Autoscaler collaborator signs off with an LGTM.
 
 ### Support Channels

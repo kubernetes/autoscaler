@@ -85,4 +85,3 @@ roleRef:
   kind: Role
   name: external-snapshotter-leaderelection
   apiGroup: rbac.authorization.k8s.io
-

@@ -32,4 +32,3 @@ spec:
             path: /var/lib/kubelet/plugins/csi-mock
             type: DirectoryOrCreate
           name: socket-dir
-

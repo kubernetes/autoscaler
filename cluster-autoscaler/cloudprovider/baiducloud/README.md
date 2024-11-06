@@ -21,5 +21,5 @@ kubectl apply -f examples/cluster-autoscaler-multiple-asg.yaml
 - By default, cluster autoscaler will wait 10 minutes between scale down operations, you can adjust this using the `--scale-down-delay` flag. E.g. `--scale-down-delay=5m` to decrease the scale down delay to 5 minutes.
 
 ## Maintainer
-* Hongbin Mao [@hello2mao](https://github.com/hello2mao)  
+* Hongbin Mao [@hello2mao](https://github.com/hello2mao)
 * Ti Zhou [@tizhou86](https://github.com/tizhou86)

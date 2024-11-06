@@ -32,4 +32,3 @@ java -Xmx500M -cp ${DIR}/antlr-4.12.0-complete.jar org.antlr.v4.Tool  \
     -package gen \
     -o ${DIR} \
     -visitor ${DIR}/CEL.g4
-

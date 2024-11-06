@@ -48,4 +48,3 @@ RUN ldconfig
 
 CMD ["-h"]
 ENTRYPOINT ["/usr/local/bin/curl"]
-

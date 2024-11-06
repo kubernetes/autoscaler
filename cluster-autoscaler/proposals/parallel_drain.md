@@ -341,4 +341,3 @@ period, `--max-scale-down-parallelism` will default to the value of
     *   node has no-scaledown annotation
     *   node utilization is too high
     *   node is already marked as destination
-

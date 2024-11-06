@@ -77,4 +77,3 @@ message LeaseSpec {
   // +optional
   optional int32 leaseTransitions = 5;
 }
-

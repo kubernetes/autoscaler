@@ -65,4 +65,3 @@ message PriorityClassList {
   // items is the list of PriorityClasses
   repeated PriorityClass items = 2;
 }
-

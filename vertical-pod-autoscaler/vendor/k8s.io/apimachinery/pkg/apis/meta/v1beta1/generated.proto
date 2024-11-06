@@ -38,4 +38,3 @@ message PartialObjectMetadataList {
   // items contains each of the included items.
   repeated k8s.io.apimachinery.pkg.apis.meta.v1.PartialObjectMetadata items = 1;
 }
-

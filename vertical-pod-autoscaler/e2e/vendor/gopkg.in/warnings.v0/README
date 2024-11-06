@@ -1,7 +1,7 @@
 Package warnings implements error handling with non-fatal errors (warnings).
 
 import path:   "gopkg.in/warnings.v0"
-package docs:  https://godoc.org/gopkg.in/warnings.v0 
+package docs:  https://godoc.org/gopkg.in/warnings.v0
 issues:        https://github.com/go-warnings/warnings/issues
 pull requests: https://github.com/go-warnings/warnings/pulls
 

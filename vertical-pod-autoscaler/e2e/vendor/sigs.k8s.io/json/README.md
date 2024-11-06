@@ -14,7 +14,7 @@ The `UnmarshalCaseSensitivePreserveInts()` function behaves like `encoding/json#
 - JSON object keys are treated case-sensitively.
   Object keys must exactly match json tag names (for tagged struct fields)
   or struct field names (for untagged struct fields).
-- JSON integers are unmarshaled into `interface{}` fields as an `int64` instead of a 
+- JSON integers are unmarshaled into `interface{}` fields as an `int64` instead of a
   `float64` when possible, falling back to `float64` on any parse or overflow error.
 - Syntax errors do not return an `encoding/json` `*SyntaxError` error.
   Instead, they return an error which can be passed to `SyntaxErrorOffset()` to obtain an offset.
@@ -29,7 +29,7 @@ and also returns non-fatal strict errors encountered while decoding:
 
 ### Community, discussion, contribution, and support
 
-You can reach the maintainers of this project via the 
+You can reach the maintainers of this project via the
 [sig-api-machinery mailing list / channels](https://github.com/kubernetes/community/tree/master/sig-api-machinery#contact).
 
 ### Code of conduct

@@ -227,7 +227,7 @@ func (es *{{ $esapi.Name }}) waitStreamPartClose() {
 			return es.inputWriter.Close()
 		}
 		return nil
-	}	
+	}
 
 	// Send writes the event to the stream blocking until the event is written.
 	// Returns an error if the event was not written.

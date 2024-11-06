@@ -131,4 +131,3 @@ pinned in the [benchmarks/go.mod][] file. [↩](#anchor-versions)
 [cov]: https://codecov.io/gh/uber-go/zap
 [benchmarking suite]: https://github.com/uber-go/zap/tree/master/benchmarks
 [benchmarks/go.mod]: https://github.com/uber-go/zap/blob/master/benchmarks/go.mod
-

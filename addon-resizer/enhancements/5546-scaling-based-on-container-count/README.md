@@ -15,7 +15,7 @@
 
 Currently Addon Resizer supports scaling based on the number of nodes. Some workloads use resources proportionally to
 the number of containers in the cluster. Since number of containers per node is very different in different clusters
-it's more resource-efficient to scale such workloads based directly on the container count. 
+it's more resource-efficient to scale such workloads based directly on the container count.
 
 ### Goals
 
@@ -46,7 +46,7 @@ Addon Resizer 1.8 assumes in multiple places that it's scaling based on the numb
   to either node count or container count, depending on the value of the `--scaling-mode` flag.
 - Many variable names in code which now refer to node count will refer to cluster size and should be renamed accordingly.
 
-In addition to implementing the feature we should also clean up the code and documentation.  
+In addition to implementing the feature we should also clean up the code and documentation.
 
 ### Risks and Mitigations
 
@@ -59,7 +59,7 @@ all containers could result in higher load on the Cluster API server. Since Addo
 I don't expect this effect to be noticeable.
 
 Also I expect metrics-server to test for this before using the feature and any other users of Addon Resizer are likely
-better off using metrics (which don't have this problem). 
+better off using metrics (which don't have this problem).
 
 ## Design Details
 

@@ -175,7 +175,7 @@ spec:
         app.kubernetes.io/name: metrics-server
         app.kubernetes.io/instance: local-metrics-server
     spec:
-      schedulerName: 
+      schedulerName:
       serviceAccountName: local-metrics-server
       priorityClassName: "system-cluster-critical"
       containers:

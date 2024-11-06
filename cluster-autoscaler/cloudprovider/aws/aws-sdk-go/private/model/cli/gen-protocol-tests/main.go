@@ -164,7 +164,7 @@ func Test{{ .OpName }}(t *testing.T) {
 	svc := New{{ .TestCase.TestSuite.API.StructName }}(unit.Session, &aws.Config{Endpoint: aws.String("{{ .TestCase.TestSuite.ClientEndpoint  }}")})
 	{{ if ne .ParamsString "" }}input := {{ .ParamsString }}
 	{{ range $k, $v := .JSONValues -}}
-	input.{{ $k }} = {{ $v }} 
+	input.{{ $k }} = {{ $v }}
 	{{ end -}}
 	req, _ := svc.{{ .TestCase.Given.ExportedName }}Request(input){{ else }}req, _ := svc.{{ .TestCase.Given.ExportedName }}Request(nil){{ end }}
 	r := req.HTTPRequest

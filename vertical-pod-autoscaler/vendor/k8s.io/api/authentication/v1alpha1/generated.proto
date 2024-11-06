@@ -48,4 +48,3 @@ message SelfSubjectReviewStatus {
   // +optional
   optional k8s.io.api.authentication.v1.UserInfo userInfo = 1;
 }
-

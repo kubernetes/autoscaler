@@ -553,4 +553,3 @@ message StatefulSetUpdateStrategy {
   // RollingUpdate is used to communicate parameters when Type is RollingUpdateStatefulSetStrategyType.
   optional RollingUpdateStatefulSetStrategy rollingUpdate = 2;
 }
-

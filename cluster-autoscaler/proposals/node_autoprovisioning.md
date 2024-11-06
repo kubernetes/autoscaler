@@ -1,4 +1,4 @@
-# Node Auto-provisioning 
+# Node Auto-provisioning
 author: mwielgus
 
 # Introduction
@@ -14,7 +14,7 @@ the configuration process.
 # Changes
 Allowing CA to create node pools at will requires multiple changes in various places in CA and around it.
 
-## Configuration 
+## Configuration
 
 Previously, when the node groups were fixed, the user had to just specify the minimum and maximum size of each of the node groups to keep the cluster within the allowed budget. With NAP it is becoming more complex. GCP machine prices (and other cloud provides as well) linearly depend on the number of cores and gb of memory (and possibly GPUs in the future) we can just ask user to set the min/max amount for each of the resources. So we will add the following flags to the CA:
 * `--node-autoprovisioning` - enables node autoprovisioning in CA
@@ -28,32 +28,32 @@ Moreover, the users might want to keep some of the node pools always in the clus
 
 * `--nodes=min:max:id`
 
-It is assumed that if there is any extra node group/node pool in the cluster, that hasn’t been mentioned in the command line should stay exactly “as-is”. 
+It is assumed that if there is any extra node group/node pool in the cluster, that hasn’t been mentioned in the command line should stay exactly “as-is”.
 
 While there are two options to express the boundaries for CA operations the precedence order is as follows:
 
 * `--min-cpu`, `--max-cpu`, `--min-memory`, `--max-memory` go first. They are not enforcing. If there is more/less resources in the cluster than desired CA will not immediately start/kill nodes. It will move only towards the expected boundaries when needed/appropriate. The difference between the expected cluster size and the current size will not grow. The flags are optional. If they are not specified then the assumption is that the limit is either 0 or +Inf.
 
-* `--nodes=min:max:id` will come second, when applicable. Nodes in that group may go between min and max only if --min-cpu/max-cpu/min-memory/max-memory constraints are met. 
+* `--nodes=min:max:id` will come second, when applicable. Nodes in that group may go between min and max only if --min-cpu/max-cpu/min-memory/max-memory constraints are met.
 
 Example:
 
 There 3 groups in the cluster:
 
-* “main” - not autoprovisioned (no prefix), not autoscaled (not be mentioned in CA’s configuration flags). Contains 2 x n1-standard2.  
+* “main” - not autoprovisioned (no prefix), not autoscaled (not be mentioned in CA’s configuration flags). Contains 2 x n1-standard2.
 * “as” - not autprovisioned  (no prefix), autoscaled (mentioned in CA configuration flags) between 0 and 2 nodes. Contains 1 x n1-standard16.
-* “nodeautoprovisioning_n1-highmem4_1234129” - autoprovisioned (has prefix). Currently contains 2 x n1-highmem4. 
+* “nodeautoprovisioning_n1-highmem4_1234129” - autoprovisioned (has prefix). Currently contains 2 x n1-highmem4.
 
 * If `--max-cpu=5` then no node can be added to any of the groups. No new groups will be created.
 * If `--max-cpu=32` then 1 node might be added to “nodeautoprovisioning_n1-highmem4...” or a new node group, with up to 4 n1-standard1 machines created.
 * If `--max-cpu=80` then:
    * 1 node might be added to “as”
      “Nodeautoprovisioning_n1-highmem4_1234129” may grow up to 15 nodes,
-   * Some other node groups might be created. 
+   * Some other node groups might be created.
 
 Similar logic applies to `--min-cpu`. It might be good to set this value relatively low so that CA is able to disband unneeded machines.
 
-To allow power users to have some control over what exactly can be The provided new methods in cloudprovider API autprovisioned there will be an semi-internal flag with a list of all machine types that CA can autoprovision: 
+To allow power users to have some control over what exactly can be The provided new methods in cloudprovider API autprovisioned there will be an semi-internal flag with a list of all machine types that CA can autoprovision:
 `--machine-types=n1-standard-1,n1-standard-2,n1-standard-4,n1-standard-8,n1-standard-16, n1-highmem-1,n1-highmem-2,...`
 
 Also, for sanity, there will be a flag to limit the total number of node groups in a cluster, set to 50 or so.
@@ -72,9 +72,9 @@ Right now the scale up code assumes that all node groups are already known and s
 
 https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/core/scale_up.go#L77
 
-The list of current node groups to check will have to be expanded with, probably bigger, list of all potential node groups that could be added to the cluster. CA will analyze what labels and other resources are needed by the pods and calculate a set of all labels and additional resources that are useful (and commonly needed) for most of the pods. 
+The list of current node groups to check will have to be expanded with, probably bigger, list of all potential node groups that could be added to the cluster. CA will analyze what labels and other resources are needed by the pods and calculate a set of all labels and additional resources that are useful (and commonly needed) for most of the pods.
 
-By default CA will not set any taints on the nodes. Tolerations, set on a pod, are not requirements. 
+By default CA will not set any taints on the nodes. Tolerations, set on a pod, are not requirements.
 
 Then it will add these labels to all machine types available in the cloud provider and evaluate the theoretical node groups along with the node groups that are already in the cluster. If the picked node group doesn’t exist then CA should create it.
 
@@ -87,14 +87,14 @@ To allow this the following extensions will be made in CloudProvider interface:
 Moreover an extension will be made to node group interface:
 
  * `Exists() (bool, error)` - checks if the node group really exists on the cloud provider side. Allows to tell the theoretical node group from the real one.
- * `Create() error` - creates the node group on the cloud provider side. 
+ * `Create() error` - creates the node group on the cloud provider side.
  * `Delete() error` - deletes the node group on the cloud provider side. This will be executed only for autoprovisioned node groups, once their size drops to 0.
 
 # Calculating best label set for nodes
 
-Assume that PS is a set of pods that would fit on a node of type NG if it had the labels matching to its selector. For each of the machine types we can build a node with no labels and for each pod set the labels according to the pod requirements. If the pod fits to the node it goes to PS. 
+Assume that PS is a set of pods that would fit on a node of type NG if it had the labels matching to its selector. For each of the machine types we can build a node with no labels and for each pod set the labels according to the pod requirements. If the pod fits to the node it goes to PS.
 
-Then we calculate the stats of all node selectors of the pods. For each significantly different node selector we calculate the number of pods that has this specific node selector. We pick the most popular one, and then check if this selector is “compatible” with the second most popular, third (and so on) as well as the selected machine type. 
+Then we calculate the stats of all node selectors of the pods. For each significantly different node selector we calculate the number of pods that has this specific node selector. We pick the most popular one, and then check if this selector is “compatible” with the second most popular, third (and so on) as well as the selected machine type.
 
 Example:
 
@@ -108,7 +108,7 @@ S1 is compatible with S2 and S4. S2 is compatible with S1, S3 and S4. S3 is comp
 The label selector that would come from S1, S2 and S4 would be x="a" and y="b" and machine_type = "n1-standard-2", however
 depending on popularity, the other option is S2, S3, S4 => x="c", y="b" and machine_type = "n1-standard-16".
 
-# Testing 
+# Testing
 
 The following e2e test scenarios will be created to check whether NAP works as expected:
 

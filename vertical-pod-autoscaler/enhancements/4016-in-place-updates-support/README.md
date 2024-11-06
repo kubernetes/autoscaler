@@ -20,7 +20,7 @@
 
 VPA applies its recommendations with a mutating webhook, during pod creation. It can also evict
 pods expecting that it will apply the recommendation when the pod is recreated. This is a
-disruptive process so VPA has some mechanism to avoid too frequent disruptive updates. 
+disruptive process so VPA has some mechanism to avoid too frequent disruptive updates.
 
 This proposal allows VPA to apply its recommendations more frequently, with less disruption by
 using the
@@ -141,7 +141,7 @@ VPA updater considers the following conditions when deciding if it should apply 
    * Quick OOM,
    * Outside recommended range,
    * Long-lived pod with significant change.
- 
+
 `InPlaceOnly` and `InPlaceOrRecreate` will attempt to apply a disruption-free update in place if it meets at least one
 of the following conditions:
 * Quick OOM,
@@ -172,11 +172,11 @@ the same conditions that apply to updates in the `Recreate` mode.
 The following test scenarios will be added to e2e tests. Both `InPlaceOnly` and `InPlaceOrRecreate` modes will be tested
 and they should behave the same:
 
-* Admission controller applies recommendation to pod controlled by VPA. 
+* Admission controller applies recommendation to pod controlled by VPA.
 * Disruption-free in-place update applied to all containers of a pod (request in recommendation bounds).
 * Partial disruption-free update applied to some containers of a pod, some disruptive changes skipped (request in
   recommendation bounds).
-* Disruptive in-place update applied to all containers of a pod (request out ouf recommendation bounds). 
+* Disruptive in-place update applied to all containers of a pod (request out ouf recommendation bounds).
 
 There will be also scenarios testing differences between `InPlaceOnly` and `InPlaceOrRecreate` modesL
 * Disruptive in-place update will fail. In `InPlaceOnly` pod should not be evicted, in the `InPlaceOrRecreate` pod

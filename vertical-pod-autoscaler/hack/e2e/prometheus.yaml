@@ -66,7 +66,7 @@ data:
         - source_labels: [__meta_kubernetes_pod_name]
           action: replace
           target_label: kubernetes_pod_name
-      
+
       - job_name: 'kubernetes-service-endpoints'
 
         kubernetes_sd_configs:
@@ -125,7 +125,7 @@ rules:
   verbs: ["get", "list", "watch"]
 - nonResourceURLs: ["/metrics"]
   verbs: ["get"]
-- apiGroups: 
+- apiGroups:
   - authorization.k8s.io
   resources:
   - subjectaccessreviews
@@ -181,7 +181,7 @@ spec:
   selector:
     matchLabels:
       app: prometheus
-  template: 
+  template:
     metadata:
       labels:
         app: prometheus
@@ -236,7 +236,7 @@ metadata:
   name: prometheus
   namespace: monitoring
 spec:
-  selector: 
+  selector:
     app: prometheus
   ports:
   - name: prometheus
@@ -261,4 +261,3 @@ spec:
     protocol: TCP
     port: 443
     targetPort: https
-

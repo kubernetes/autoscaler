@@ -19,8 +19,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 ### Added
 - Support for private endpoints in the Digital Assistant service
 - Support for canceling backups in the Database service
-- Support for improved labeling of key/value pairs in the Data Labeling service  
- 
+- Support for improved labeling of key/value pairs in the Data Labeling service
+
 ### Breaking Changes
 - Support for retries by default on operations of the Digital Assistant service
 - The property `LifetimeLogicalClock` was removed from the models `Record`, `Dataset` and `Annotation` in the Data Labeling service
@@ -39,7 +39,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Support for additional manageability features for large sensitive data models and masking policies in the Data Safe service
 - Support for getting user profile details and assignments for databases and fleets in the Data Safe service
 - Support for enabling ADDM spotlight for databases in the Operations Insights service
- 
+
 ### Breaking Changes
 - The property `AdditionalDatabaseStatus` was removed from the models `AutonomousDatabase`, `AutonomousDatabaseSummary`, `AutonomousDataWarehouse`and `AutonomousDataWarehouseSummary` in the Database service
 
@@ -48,8 +48,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 ### Added
 - Support for pre-emptible worker nodes in the Container Engine for Kubernetes service
 - Support for larger data storage (now up to 128TB) in the MySQL Database service
-- Support for HTTP health checks for HTTPS backend sets in the Load Balancer service  
-     
+- Support for HTTP health checks for HTTPS backend sets in the Load Balancer service
+
 ### Breaking Changes
 - The property `BackendSetName` was made required in the `ForwardToBackendSet` model in the Load Balancer service
 - Support for the Data Connectivity Management service was removed
@@ -107,7 +107,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Support for specifying update operation constraints when updating an instance in the Compute Service
 - Support for disaster recovery in the Content Management service
 - Support for advanced autonomous databases insights in the Operations Insights service
-     
+
 ### Breaking Changes
 - Support for retries by default on operations of the Analytics Cloud service
 - The enum member `ACTIVE` was removed from the enum LifecycleDetailsActive is removed from OCE service
@@ -124,8 +124,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Support for async jobs in the AI Anomaly Detection service
 - Support for specifying algorithm hints and windows sizes during model training in the AI Anomaly Detection service
 - Support for specifying a sensitivity value during model detection in the AI Anomaly Detection service
-- Support for discovery and monitoring of external Oracle database infrastructure components in the Database Management service   
- 
+- Support for discovery and monitoring of external Oracle database infrastructure components in the Database Management service
+
 ### Breaking Changes
 - The type for property `SystemTags` was changed from `map[string]map[string]interface{}` to `map[string]interface{}` for `ProjectSummary`, `Project`, `ModelSummary`, `Model`, `DataAssetSummary`, `DataAsset`, `AiPrivateEndpointSummary`, `AiPrivateEndpoint` models in the AI Anomaly Detection service
 - Support for retries by default on operations of the AI Anomaly Detection service
@@ -152,7 +152,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Support for uploading master key wallets for deployments in the GoldenGate service
 - Support for custom configurations in the Operations Insights service
 - Support for refreshing the session token in SessionTokenAuthenticationDetailsProvider
-     
+
 ### Breaking Changes
 - The property `CpuCoreCount` has been made optional in `AutonomousDatabase` and `AutonomousDatabaseSummary` model in the Database service
 
@@ -203,9 +203,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Support for optional listeners and service discovery metadata on virtual deployments in the Service Mesh service
 - Support for canceling work requests in the accepted state in the Service Mesh service
 - Support for filtering work requests on associated resource id and operation status in the Service Mesh service
-- Support for sorting while listing work requests, listing work request logs, and listing work request errors in the Service Mesh service  
- 
- 
+- Support for sorting while listing work requests, listing work request logs, and listing work request errors in the Service Mesh service
+
+
 ### Breaking Changes
 - The type for property `RouteRules` was changed from a List of `VirtualServiceTrafficRouteRule` to a List of `VirtualServiceTrafficRouteRuleDetails` in the models `UpdateVirtualServiceRouteTableDetails` and `CreateVirtualServiceRouteTableDetails` in the Service Mesh service
 - The type for property `Mtls` was changed from `CreateMutualTransportLayerSecurityDetails` to `VirtualServiceMutualTransportLayerSecurityDetails` in the models `UpdateVirtualServiceDetails` and `CreateVirtualServiceDetails.` in the Service Mesh service
@@ -243,8 +243,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Support for restricting management of advanced functionality in the Java Management service
 - Support for plugin improvements in the Java Management service
 - Support for collecting diagnostics on deployments in the GoldenGate service
-- Support for onboarding Exadata Public Cloud (ExaCS) targets to the Operations Insights service  
- 
+- Support for onboarding Exadata Public Cloud (ExaCS) targets to the Operations Insights service
+
 ### Breaking Changes
 - A required property `CompartmentId` was added to `PatchAlertsDetails` model in the Data Safe service
 - The property `items` is changed from optional to required in `PatchAlertsDetails` model in the Data Safe service
@@ -327,7 +327,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Support for additional compute shapes in the Big Data service
 - Support for backwards pagination in the Search service
 - Support for elastic compute for Exadata Cloud at Customer in the Database service
- 
+
 ### Breaking Changes
 - Support for default retries on operations of the NoSQL Database Cloud service
 
@@ -342,7 +342,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Support for running a managed build stage with the source code hosted in a Visual Builder Studio repository in the DevOps service
 - Support for triggering a build run based on an event in a Visual Builder Studio repository in the DevOps service
 - Support for additional parameters during cost management scheduling in the Usage service
- 
+
 ### Breaking Changes
 - Support for retries by default on operations of the GoldenGate service
 - Support for retries by default on operations of the Threat Intelligence service
@@ -370,7 +370,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Support for preferred credentials for performing privileged operations in the Database Management service
 - Support for passing a content encoding when posting metrics in the Monitoring service
 - Support for Session Token authentication
-  
+
 ### Breaking Changes
 - The operations `DeleteConnectionValidation` and `ListConnectionValidations` were removed from `DataConnectivityManagementClient` in the Data Connectivity Management service
 - The operation `ListConnectionValidationsResponseEnumerator` was removed from `DataConnectivityManagementPaginators` in the Data Connectivity Management service
@@ -409,7 +409,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Support for fetching data source events and problem entities in the Cloud Guard service
 - Support for E3, E4, Standard3, and Optimized3 flexible compute shapes on notebooks, model deployment, and jobs in the Data Science service
 - Support for streaming application logs to the Logging service in the Data Flow service
- 
+
 ### Breaking Changes
 - Support for retries by default on operations of the Dataflow service
 
@@ -430,8 +430,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Support for round-robin alerting in the Application Performance Monitoring service
 - Support for aggregated network data of synthetic monitors in the Application Performance Monitoring service
 - Support for etags on operations in the Load Balancing service
- 
- 
+
+
 ### Breaking Changes
 - The enum `UsageUnit` was replaced by `UsageUnitEnum` in the Operations Insights service
 - Property `inventoryLog` changed from optional to required in the model `CreateFleetDetails` in Java Management Service
@@ -463,7 +463,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Support for ports, protocols, roles, and SSL secrets when enabling or modifying database management in the Database service
 - Support for monthly security maintenance runs in the Database service
 - Support for monthly infrastructure patching for Exadata Cloud at Customer resources in the Database service
-  
+
 ### Breaking Changes
 - `DataMaskingActivityClient`,`FusionEnvironmentClient`, `FusionEnvironmentFamilyClient`, `RefreshActivityClient`,`ScheduledActivityClient`, and `ServiceAttachmentClient` clients were merged into a single client `FusionApplicationsClient` for the Fusion Apps as a Service service
 - Properties `addressee`, `address1`, `cityOrLocality`, `stateOrRegion`, `zipcode`, `country` are changed from optional to required for ShippingAddress model in Data Transfer Service.
@@ -488,7 +488,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Support for native pod networking in the Container Engine for Kubernetes service
 - Support for creating Data Guard associations with new database systems in the Database service
 - Fix for double encoding in URL
-  
+
 ### Breaking Changes
 - The data type of the property `HostType` was changed from a List of `string` to a List of `HostTypeEnum` in ListHostInsightsRequest in the Operations Insights service
 - The property `PreserveDataVolumes` was removed from the TerminateInstanceRequest in the Compute service
@@ -496,7 +496,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 ## 65.12.0 - 2022-07-05
 ### Added
 - Support for backup policies returned as part of the database system list operation in the MySQL Database service
- 
+
 ### Breaking Changes
 - Support for retries by default on some operations of the Bastion service
 
@@ -519,7 +519,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Support for smaller and larger HeatWave cluster nodes in the MySQL Database service
 - Support for CSV file type datasets for text labeling and JSONL in the Data Labeling service
 - Support for diagnostics in the Database Management service
-  
+
 ### Breaking Changes
 - Support for retries by default on operations of the Network Firewall service
 - Support for retries by default on the createAnnotation operation of the Data Labeling service
@@ -535,7 +535,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Support for time zone in Cloud Autonomous VM (CAVM) clusters in the Database service
 - Support for configuration options in the Application Performance Monitoring service
 - Support for MySQL connections in the Database Tools service
- 
+
 ### Breaking Changes
 - Support for retries by default on operations in the Database Tools service
 - Model `DatabaseToolsAllowedNetworkSources`, `DatabaseToolsVirtualSource` and `ServiceCapability`  removed in Database Tools service
@@ -570,7 +570,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Support for packaged skill and instance metadata management, role-based access options on instance creation, and assigned ownership in the Digital Assistant service
 - Support for compute capacity reservations in the VMWare Solution service
 - Support for Oracle Linux 8 application streams in the OS Management service
-  
+
 ### Breaking Changes
 - Support for retries by default on operations in the API Gateway service
 - Property `specification` is changed from optional to required from model `Deployment` and `CreateDeploymentDetails` in the API Gateway service
@@ -639,7 +639,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Support for dedicated vantage points in the Application Performance Monitoring service
 - Support for reactivating child tenancies in the Organizations service
 - Support for punctuation and the SRT transcription format in the AI Speech service
- 
+
 ### Breaking Changes
 - Support for default retries on some operations in the Networking service
 - Support for default retries on all operations in the Data Safe service
@@ -666,7 +666,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Support for bringing your own IPv6 addresses in the Networking service
 - Support for specifying database edition and maximum CPU core count when creating or updating an autonomous database in the Database service
 - Support for enabling and disabling data collection options when creating or updating Exadata Cloud at Customer VM clusters in the Database service
- 
+
 ### Breaking Changes
 - Support for retries by default on operations in the Identity service
 - Support for retries by default on operations in the Operations Insights service
@@ -688,7 +688,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Support for private OKE clusters and blue-green deployments in the DevOps service
 - Support for international customers to consume and launch third-party paid listings in the Marketplace service
 - Support for additional fields on entities, attributes, and folders in the Data Catalog service
- 
+
 ### Breaking Changes
 - Support for retries by default on operations in the Marketplace service
 
@@ -730,7 +730,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Support for querying additional fields of a resource using return clauses in the Search service
 - Support for clusters and station clusters in the Roving Edge Infrastructure service
 - Support for creating database systems and database homes using customer-managed keys in the Database service
- 
+
 ### Breaking Changes
 - Support for retries enabled by default on operations in the Container Engine for Kubernetes service
 - Support for retries enabled by default on operations in the Resource Manager service
@@ -758,7 +758,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Support for more VM shape configurations when listing shapes in the Compute service
 - Support for customer-managed encryption keys in the Analytics Cloud service
 - Support for FastConnect device information in the Networking service
- 
+
 ### Breaking Changes
 - Update the property `riskLevel` from required to optional in `TargetDetectorDetails` in Cloud Guard service.
 - Update the property `riskLevel` from required to optional in `DetectorDetails` in Cloud Guard service.
@@ -930,9 +930,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Support for EM-managed Exadatas and EM-managed hosts in the Operations Insights service
 
 ### Breaking changes
-- Model `ComputeInstanceGroupBlueGreenDeployStageExecutionProgress`, `ComputeInstanceGroupBlueGreenTrafficShiftDeployStageExecutionProgress`, 
+- Model `ComputeInstanceGroupBlueGreenDeployStageExecutionProgress`, `ComputeInstanceGroupBlueGreenTrafficShiftDeployStageExecutionProgress`,
 `ComputeInstanceGroupCanaryApprovalDeployStageExecutionProgress`, `ComputeInstanceGroupCanaryDeployStageExecutionProgress`,
-  `ComputeInstanceGroupCanaryTrafficShiftDeployStageExecutionProgress`, `RunPipelineDeployStageExecutionProgress` and 
+  `ComputeInstanceGroupCanaryTrafficShiftDeployStageExecutionProgress`, `RunPipelineDeployStageExecutionProgress` and
   `RunValidationTestOnComputeInstanceDeployStageExecutionProgress` were removed in the Build service
 
 ## 49.2.0 - 2021-10-19
@@ -985,11 +985,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Support for user and security assessment features in the Data Safe service
 
 ### Breaking changes
-- Model `RequestSummarizedApplicationUsageDetails`, `RequestSummarizedInstallationUsageDetails`, `RequestSummarizedJreUsageDetails` 
+- Model `RequestSummarizedApplicationUsageDetails`, `RequestSummarizedInstallationUsageDetails`, `RequestSummarizedJreUsageDetails`
   and `RequestSummarizedManagedInstanceUsageDetails` were removed in the Java Management service
-- Operation `RequestSummarizedApplicationUsage`, `RequestSummarizedInstallationUsage`, `RequestSummarizedJreUsage` and 
+- Operation `RequestSummarizedApplicationUsage`, `RequestSummarizedInstallationUsage`, `RequestSummarizedJreUsage` and
 `RequestSummarizedManagedInstanceUsage` were removed in the Java Management service
-  
+
 
 ## 47.1.0 - 2021-09-14
 ### Added
@@ -1096,12 +1096,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Add multipart download example
 
 ### Breaking changes
-- Property `LifecycleState` in model `SenderSummary`'s type was changed from `SenderSummaryLifecycleStateEnum` to `SenderLifecycleStateEnum` 
+- Property `LifecycleState` in model `SenderSummary`'s type was changed from `SenderSummaryLifecycleStateEnum` to `SenderLifecycleStateEnum`
   in the Email Delivery service
 - Parameter `SoryBy` in the operation `ListJobExecutions`'s type `ListJobExecutionsSortByEnum`, item `ListJobExecutionsSortByDisplayname`
   was removed in the Data Catalog service
 
-    
+
 
 ## 42.1.0 - 2021-06-22
 ### Added
@@ -1134,7 +1134,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Support for creating database software images with any supported RUs in the Database service
 - Support for creating database software images from an existing database home in the Database service
 - Support for listing all NSGs associated with a given VLAN in the Networking service
-- Support for a duration windows, task failure reasons, and next execution times on scheduled tasks in the Logging Analytics service 
+- Support for a duration windows, task failure reasons, and next execution times on scheduled tasks in the Logging Analytics service
 - Support for calling Oracle Cloud Infrastructure services in the sa-vinhedo-1 region
 
 ## 41.0.0 - 2021-05-25
@@ -1156,7 +1156,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 ### Added
 - Support for spark-submit compatible options in the Data Flow service
 - Support for Object Storage as a configuration source in the Resource Manager service
-  
+
 ### Fixed
 - Fixed UploadManager creates too many small parts issue
 
@@ -1171,7 +1171,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Support for the Service Catalog service
 - Support for the AI Language service
 - Support for autonomous database on Exadata Cloud at Customer infrastructure patching in the Database service
-- Added default retry policy, which retries on 409(IncorrectState), 429(TooManyRequests) and any 5XX errors except 
+- Added default retry policy, which retries on 409(IncorrectState), 429(TooManyRequests) and any 5XX errors except
   501(MethodNotImplemented), and uses exponential backoff
 
 
@@ -1210,7 +1210,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 - Support for preemptible instances in the Compute service
 - Support for fractional resource usage and availability in the Limits service
 - Support for streaming analytics in the Service Connector Hub service
-- Support for flexible routing inside DRGs to enable packet flow between any two attachments in the Networking service 
+- Support for flexible routing inside DRGs to enable packet flow between any two attachments in the Networking service
 - Support for routing policy to customize dynamic import/export of routes in the Networking service
 - Support for IPv6, including on FastConnect and IPsec resources, in the Networking service
 - Support for request validation policies in the API Gateway service
@@ -1274,19 +1274,19 @@ Logging Analytics service
 - Support for capacity reservations in the Compute service
 
 ### Breaking changes
-- Operation `ListWorkRequests`'s param `Status`'s type was changed from `[]ListWorkRequestsStatusEnum` to 
+- Operation `ListWorkRequests`'s param `Status`'s type was changed from `[]ListWorkRequestsStatusEnum` to
 `[]WorkRequestStatusEnum` in the Analytics service
-- Operation `RequestSummarizedProblems`'s parameter `ListDimensions`'s type was changed from 
+- Operation `RequestSummarizedProblems`'s parameter `ListDimensions`'s type was changed from
 `[]RequestSummarizedProblemsListDimensionsEnum` to `[]ProblemDimensionEnum` in the Cloudguard service
-- Operation `RequestSummarizedResponderExecutions`'s parameter `ResponderExecutionsDimensions`'s type was changed from 
+- Operation `RequestSummarizedResponderExecutions`'s parameter `ResponderExecutionsDimensions`'s type was changed from
 `[]RequestSummarizedResponderExecutionsResponderExecutionsDimensionsEnum` to `[]ResponderDimensionEnum` in the Cloudguard service
-- Operation `ListClusters`'s parameter `LifecycleState`'s type was changed from `[]ListClustersLifecycleStateEnum` to 
+- Operation `ListClusters`'s parameter `LifecycleState`'s type was changed from `[]ListClustersLifecycleStateEnum` to
 `[]ClusterLifecycleStateEnum` in the ContainerEngine service
-- Model `Attribute`'s property `AssociatedRuleTypes`'s type was changed from `[]AttributeAssociatedRuleTypesEnum` to 
+- Model `Attribute`'s property `AssociatedRuleTypes`'s type was changed from `[]AttributeAssociatedRuleTypesEnum` to
 `[]RuleTypeEnum` in the Datacatalog service
 - Model `AttributeSummary`'s property `AssociatedRuleTypes`'s type was changed from `[]AttributeSummaryAssociatedRuleTypesEnum`
 to `[]RuleTypeEnum` in the Datacatalog service
-- Operation `ListCustomProperties`'s parameter `DataTypes`'s type was changed from `[]ListCustomPropertiesDataTypesEnum` to 
+- Operation `ListCustomProperties`'s parameter `DataTypes`'s type was changed from `[]ListCustomPropertiesDataTypesEnum` to
 `[]CustomPropertyDataTypeEnum` in the Datacatalog service
 - Operation `Recommendations`'s parameter `RecommendationType`'s type was changed from `[]RecommendationsRecommendationTypeEnum`
 to `[]RecommendationTypeEnum` in the Datacatalog service
@@ -1296,7 +1296,7 @@ in the Marketplace service
 in the Marketplace service
 - Operation `ListAddressLists`'s parameter `LifecycleState`'s type was changed from `[]ListAddressListsLifecycleStateEnum` to
 `LifecycleStatesEnum` in the Waas service
-- Operation `ListCertificates`'s parameter `LifecycleState`'s type was changed from `[]ListCertificatesLifecycleStateEnum` to 
+- Operation `ListCertificates`'s parameter `LifecycleState`'s type was changed from `[]ListCertificatesLifecycleStateEnum` to
 `[]LifecycleStatesEnum` in the Waas service
 - Operation `ListCustomProtectionRules`'s parameter `LifecycleState`'s type was changed from `[]ListCustomProtectionRulesLifecycleStateEnum`
 to `[]LifecycleStatesEnum` in the Waas service
@@ -1442,7 +1442,7 @@ to `[]LifecycleStatesEnum` in the Waas service
 - Removed deprecated API `StartAutonomousDataWarehouse` from Database service
 - Removed deprecated API `StopAutonomousDataWarehouse` from Database service
 - Removed deprecated API `UpdateAutonomousDataWarehouse` from Database service
-- Method GetLifecycleState()'s return type in the interface `ConfigurationSourceProviderSummary` was changed from 
+- Method GetLifecycleState()'s return type in the interface `ConfigurationSourceProviderSummary` was changed from
 `ConfigurationSourceProviderSummary` to `ConfigurationSourceProviderLifecycleStateEnum`
 
 ## 30.1.0 - 2020-12-08
@@ -1475,9 +1475,9 @@ to `[]LifecycleStatesEnum` in the Waas service
 - Support to bulk editing tags on resources in the Identity service
 
 ### Breaking changes
-- Models `AgentUpload`, `Attribute`, `CreateNamespaceDetails`, `FieldMap`, `GenerateAgentObjectNameDetails`, 
-`LogAnalytics`, `LogAnalyticsCollectionWarning`, `LogAnalyticsSummary`, `OutOfBoxEntityTypeDetails`, `Query`, 
-`QueryWorkRequestResource`, `RegisterEntityTypesDetails`, `ServiceTenancy`, `StringListDetails` and property 
+- Models `AgentUpload`, `Attribute`, `CreateNamespaceDetails`, `FieldMap`, `GenerateAgentObjectNameDetails`,
+`LogAnalytics`, `LogAnalyticsCollectionWarning`, `LogAnalyticsSummary`, `OutOfBoxEntityTypeDetails`, `Query`,
+`QueryWorkRequestResource`, `RegisterEntityTypesDetails`, `ServiceTenancy`, `StringListDetails` and property
 `SortOrdersEnum` are removed in loganalytics service
 - Property 'Id' type changed from *interface{} to *string of model `LogAnalyticsParserFilter` in loganalytics service
 - Property `mappingAbstractCommandDescriptorName` key `CUSLTER_SPLIT` and value `AbstractCommandDescriptorNameCuslterSplit`
@@ -1535,7 +1535,7 @@ were changed to `CLUSTER_SPLIT` and `AbstractCommandDescriptorNameClusterSplit` 
 - Support for resource principal v1.1 authentication.
 
 ### Breaking changes
-- Removed property `IsQuickStart` from model `LogSavedSearch`, `LogSavedSearchSummary`, `UpdateLogSavedSearchDetails` and 
+- Removed property `IsQuickStart` from model `LogSavedSearch`, `LogSavedSearchSummary`, `UpdateLogSavedSearchDetails` and
 `CreateLogSavedSearchDetails` in logging service.
 - Removed LogSavedSearchLifecycleStateEnum `DELETED` in logging service
 
@@ -1622,7 +1622,7 @@ were changed to `CLUSTER_SPLIT` and `AbstractCommandDescriptorNameClusterSplit` 
 - Support for autonomous json databases in the Database service
 - Support for cleaning up uncommitted multipart uploads in the Object Storage service
 - Support for additional list API filters in the Data Catalog service
-- Support for Go SDK logging to file 
+- Support for Go SDK logging to file
 - Support for Go Modules
 
 ### Breaking changes
@@ -1788,7 +1788,7 @@ were changed to `CLUSTER_SPLIT` and `AbstractCommandDescriptorNameClusterSplit` 
 
 ## 17.2.0 - 2020-03-31
 ### Added
-- Support for the Secrets Management service 
+- Support for the Secrets Management service
 - Support for the Big Data service
 - Support for updating class name, file URI, language, and spark version of applications in the Data Flow service
 - Support for cross-region replication in the Object Storage service
@@ -1891,7 +1891,7 @@ were changed to `CLUSTER_SPLIT` and `AbstractCommandDescriptorNameClusterSplit` 
 - Support for the OS Management service
 - Support for the Marketplace service
 - Support for "default"-type vaults in the Key Management service
-- Support for bringing your own keys in the Key Management service 
+- Support for bringing your own keys in the Key Management service
 - Support for cross-region backups of boot volumes in the Block Storage service
 - Support for top-level TSIG keys in the DNS service
 - Support for resizing virtual machine instances to different shapes in the Compute service
@@ -1911,7 +1911,7 @@ were changed to `CLUSTER_SPLIT` and `AbstractCommandDescriptorNameClusterSplit` 
 - Support for recovering deleted compartments in the Identity service
 - Support for sharing volumes across multiple instances in the Block Storage service
 - Support for connect harnesses and stream pools in the Streaming service
-- Support for associating file storage mount targets with network security groups in the File Storage service 
+- Support for associating file storage mount targets with network security groups in the File Storage service
 - Support for calling Oracle Cloud Infrastructure services in the uk-gov-london-1 region
 
 ## 13.0.0 - 2019-11-26
@@ -1921,7 +1921,7 @@ were changed to `CLUSTER_SPLIT` and `AbstractCommandDescriptorNameClusterSplit` 
 
 ### Breaking changes
 - Create database home from VM_CLUSTER_BACKUP is removed from Database Service
-- Response type is changed for following two APIs in Virtual Network Service 
+- Response type is changed for following two APIs in Virtual Network Service
     - Before
 
     ```golang
@@ -1986,7 +1986,7 @@ were changed to `CLUSTER_SPLIT` and `AbstractCommandDescriptorNameClusterSplit` 
 
 ### Breaking changes
 * The TenantId parameter is now Id (Id of the Transfer Application Entitlement) for GetTransferApplianceEntitlementRequest in TransferApplianceEntitlementClient
-* The Audit service version was bumped to 20190901, use older version of Go SDK for Audit service version 20160918 
+* The Audit service version was bumped to 20190901, use older version of Go SDK for Audit service version 20160918
 
 ## 11.0.0 - 2019-10-01
 ### Added
@@ -1998,7 +1998,7 @@ were changed to `CLUSTER_SPLIT` and `AbstractCommandDescriptorNameClusterSplit` 
 - Support for fast provisioning for virtual machine databases in the Database service
 
 ### Breaking changes
-- The field``CreateZoneDetails`` is no longer an anonymous field and the type changed from struct to interface in struct ``CreateZoneRequest``. Here is sample code that shows how to update your code to incorporate this change. 
+- The field``CreateZoneDetails`` is no longer an anonymous field and the type changed from struct to interface in struct ``CreateZoneRequest``. Here is sample code that shows how to update your code to incorporate this change.
 
 
     - Before
@@ -2278,7 +2278,7 @@ were changed to `CLUSTER_SPLIT` and `AbstractCommandDescriptorNameClusterSplit` 
 - Support for specifying metadata on node pools in the Container Engine for Kubernetes service
 - Support for provisioning a new autonomous database or autonomous data warehouse as a clone of another in the Database service
 ### Breaking changes
-- The field``CreateAutonomousDatabaseDetails`` is no longer an anonymous field and the type changed from struct to interface in struct ``CreateAutonomousDatabaseRequest``. Here is sample code that shows how to update your code to incorporate this change. 
+- The field``CreateAutonomousDatabaseDetails`` is no longer an anonymous field and the type changed from struct to interface in struct ``CreateAutonomousDatabaseRequest``. Here is sample code that shows how to update your code to incorporate this change.
 
     - Before
 
@@ -2372,13 +2372,13 @@ were changed to `CLUSTER_SPLIT` and `AbstractCommandDescriptorNameClusterSplit` 
 - Support for calling Oracle Cloud Infrastructure services in the ca-toronto-1 region
 
 ## 3.4.0 - 2019-01-10
-### Added 
+### Added
 - Support for device attributes on volume attachments in the Compute service
 - Support for custom header rulesets in the Load Balancing service
 
 
 ## 3.3.0 - 2018-12-13
-### Added 
+### Added
 - Support for Data Guard for VM shapes in the Database service
 - Support for sparse disk groups for Exadata shapes in the Database service
 - Support for a new field, isLatestForMajorVersion, when listing DB versions in the Database service
@@ -2387,16 +2387,16 @@ were changed to `CLUSTER_SPLIT` and `AbstractCommandDescriptorNameClusterSplit` 
 - Support for resetting credentials for SCIM clients associated with an Identity provider and updating user capabilities in the Identity service
 
 ## 3.2.0 - 2018-11-29
-### Added 
+### Added
 - Support for getting bucket statistics in the Object Storage service
 
 ### Fixed
-- Block Storage service for copying volume backups across regions is now enabled 
+- Block Storage service for copying volume backups across regions is now enabled
 - Object storage `PutObject` and `UploadPart` operations now do not override the client's signer
 
 ## 3.1.0 - 2018-11-15
 ### Added
-- Support for VCN transit routing in the Networking service 
+- Support for VCN transit routing in the Networking service
 
 ## 3.0.0 - 2018-11-01
 ### Added
@@ -2423,7 +2423,7 @@ were changed to `CLUSTER_SPLIT` and `AbstractCommandDescriptorNameClusterSplit` 
 - Raw configuration provider does not check for empty strings [Github issue 134](https://github.com/oracle/oci-go-sdk/issues/134)
 
 ### Breaking change
-- DbDataSizeInMBs field in Backup and BackupSummary struct was renamed to DatabaseSizeInGBs and type changed from *int to *float64 
+- DbDataSizeInMBs field in Backup and BackupSummary struct was renamed to DatabaseSizeInGBs and type changed from *int to *float64
     - Before
     ```golang
     // Size of the database in megabytes (MB) at the time the backup was taken.
@@ -2501,7 +2501,7 @@ were changed to `CLUSTER_SPLIT` and `AbstractCommandDescriptorNameClusterSplit` 
 - CreateKubeconfig function should not close http reponse body [Github Issue 116](https://github.com/oracle/oci-go-sdk/issues/116)
 
 ### Breaking changes
-- Datatype changed from *int to *int64 for several request/response structs. Here is sample code that shows how to update your code to incorporate this change. 
+- Datatype changed from *int to *int64 for several request/response structs. Here is sample code that shows how to update your code to incorporate this change.
 
     - Before
 
@@ -2567,7 +2567,7 @@ were changed to `CLUSTER_SPLIT` and `AbstractCommandDescriptorNameClusterSplit` 
         - ConnectionConfiguration.IdleTimeout
         - ListLoadBalancerHealthsRequest.Limit
         - ListLoadBalancersRequest.Limit
-        - ListPoliciesRequest 
+        - ListPoliciesRequest
         - ListProtocolsRequest.Limit
         - ListShapesRequest.Limit
         - ListWorkRequestsRequest.Limit
@@ -2599,7 +2599,7 @@ were changed to `CLUSTER_SPLIT` and `AbstractCommandDescriptorNameClusterSplit` 
 - Support for launching a database system from a backup in the Database service
 
 ### Breaking changes
-- ``LaunchDbSystemDetails`` is renamed to ``LaunchDbSystemBase`` and the type changed from struct to interface in ``LaunchDbSystemRequest``. Here is sample code that shows how to update your code to incorporate this change. 
+- ``LaunchDbSystemDetails`` is renamed to ``LaunchDbSystemBase`` and the type changed from struct to interface in ``LaunchDbSystemRequest``. Here is sample code that shows how to update your code to incorporate this change.
 
     - Before
 

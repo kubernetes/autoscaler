@@ -77,7 +77,7 @@ vet:
 	else \
 	    echo "Vet finished successfully"; \
 	fi
-	
+
 .PHONY: embedmd
 embedmd:
 	@EMBEDMDOUT=`$(EMBEDMD) -d $(README_FILES) 2>&1`; \

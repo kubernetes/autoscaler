@@ -82,8 +82,8 @@ func ApplyFocusToSpecs(specs Specs, description string, suiteLabels Labels, suit
 
 	if suiteConfig.LabelFilter != "" {
 		labelFilter, _ := types.ParseLabelFilter(suiteConfig.LabelFilter)
-		skipChecks = append(skipChecks, func(spec Spec) bool { 
-			return !labelFilter(UnionOfLabels(suiteLabels, spec.Nodes.UnionOfLabels())) 
+		skipChecks = append(skipChecks, func(spec Spec) bool {
+			return !labelFilter(UnionOfLabels(suiteLabels, spec.Nodes.UnionOfLabels()))
 		})
 	}
 

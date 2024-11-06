@@ -77,7 +77,7 @@ parameters:
   *Note: Addon Resizer uses buckets of cluster sizes, so it will use n larger
   than the cluster size by up to 50% for clusters larger than 16 nodes. For
   smaller clusters, n = 16 will be used.*
- 
+
 2. Memory parameters:
   ```
   --memory

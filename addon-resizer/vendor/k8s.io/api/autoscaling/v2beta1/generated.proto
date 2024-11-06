@@ -522,4 +522,3 @@ message VerticalPodAutoscalerStatus {
   // +patchStrategy=merge
   repeated VerticalPodAutoscalerCondition conditions = 2;
 }
-

@@ -106,4 +106,3 @@ Of course VPA could introduce its own annotation to express the same but it
 seems much more elegant to keep the information in the API object (a solution
 not possible for CA due to lack of such an object) instead of effectively
 spreading the API between VPA objects and Pod annotations.
-

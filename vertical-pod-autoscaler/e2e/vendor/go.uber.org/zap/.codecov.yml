@@ -14,4 +14,3 @@ coverage:
         if_ci_failed: error    # if ci fails report status as success, error, or failure
 ignore:
   - internal/readme/readme.go
-

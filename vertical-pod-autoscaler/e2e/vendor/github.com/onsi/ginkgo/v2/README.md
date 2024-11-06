@@ -68,7 +68,7 @@ Describe("Checking books out of the library", Label("library"), func() {
                 Expect(valjean.Books(ctx)).To(ContainElement(book))
                 Expect(valjean.Holds(ctx)).To(BeEmpty())
             }, SpecTimeout(time.Second * 10))
-        })  
+        })
     })
 
     When("the library does not have the book in question", func() {

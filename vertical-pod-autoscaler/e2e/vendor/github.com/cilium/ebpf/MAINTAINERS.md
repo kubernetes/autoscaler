@@ -1,6 +1,6 @@
 # Maintainers
 
- * [Lorenz Bauer] 
+ * [Lorenz Bauer]
  * [Timo Beckers] (Isovalent)
 
 

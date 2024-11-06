@@ -125,4 +125,3 @@ message EventSeries {
   // lastObservedTime is the time when last Event from the series was seen before last heartbeat.
   optional k8s.io.apimachinery.pkg.apis.meta.v1.MicroTime lastObservedTime = 2;
 }
-

@@ -152,4 +152,3 @@ message ParentReference {
   // +optional
   optional string uid = 5;
 }
-

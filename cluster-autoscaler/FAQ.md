@@ -640,7 +640,7 @@ When using this class, Cluster Autoscaler performs following actions:
   implementation of the AtomicIncreaseSize method. If the method is not implemented, the scale-up
   request will try to increase the node group atomically but doesn't guarantee atomicity.
 
-  * __Reservation from other ProvReqs (if scale up request succeeded)__: Reserves this capacity for the ProvisioningRequest for 10 minutes, 
+  * __Reservation from other ProvReqs (if scale up request succeeded)__: Reserves this capacity for the ProvisioningRequest for 10 minutes,
   preventing other ProvReqs from using it.
 
   * __Condition Updates__:

@@ -119,4 +119,3 @@ message EventSeries {
   // Information whether this series is ongoing or finished.
   optional string state = 3;
 }
-

@@ -121,7 +121,7 @@ service CloudProvider {
   // CloudProvider specific RPC functions
 
   rpc NodeGroups(NodeGroupsRequest)
-    returns (GetNameResponse) {}    
+    returns (GetNameResponse) {}
 
   rpc NodeGroupForNode(NodeGroupForNodeRequest)
     returns (NodeGroupForNodeResponse) {}
@@ -133,35 +133,35 @@ service CloudProvider {
     returns (PricingPodPriceResponse)
 
   rpc GPULabel(GPULabelRequest)
-    returns (GPULabelResponse) {}  
+    returns (GPULabelResponse) {}
 
   rpc GetAvailableGPUTypes(GetAvailableGPUTypesRequest)
-    returns (GetAvailableGPUTypesResponse) {}   
+    returns (GetAvailableGPUTypesResponse) {}
 
   rpc Cleanup(CleanupRequest)
-    returns (CleanupResponse) {}        
+    returns (CleanupResponse) {}
 
   rpc Refresh(RefreshRequest)
     returns (RefreshResponse) {}
 
   // NodeGroup specific RPC functions
   rpc NodeGroupTargetSize(NodeGroupTargetSizeRequest)
-    returns (NodeGroupTargetSizeResponse) {}        
+    returns (NodeGroupTargetSizeResponse) {}
 
   rpc NodeGroupIncreaseSize(NodeGroupIncreaseSizeRequest)
-    returns (NodeGroupIncreaseSizeResponse) {}    
+    returns (NodeGroupIncreaseSizeResponse) {}
 
   rpc NodeGroupDeleteNodes(NodeGroupDeleteNodesRequest)
-    returns (NodeGroupDeleteNodesResponse) {}    
+    returns (NodeGroupDeleteNodesResponse) {}
 
   rpc NodeGroupDecreaseTargetSize(NodeGroupDecreaseTargetSizeRequest)
-    returns (NodeGroupDecreaseTargetSizeResponse) {}         
+    returns (NodeGroupDecreaseTargetSizeResponse) {}
 
   rpc NodeGroupNodes(NodeGroupNodesRequest)
     returns (NodeGroupNodesResponse) {}
 
   rpc NodeGroupTemplateNodeInfo(NodeGroupDTemplateNodeInfoRequest)
-    returns (NodeGroupTemplateNodeInfoResponse) {}                                                               
+    returns (NodeGroupTemplateNodeInfoResponse) {}
 }
 ```
 

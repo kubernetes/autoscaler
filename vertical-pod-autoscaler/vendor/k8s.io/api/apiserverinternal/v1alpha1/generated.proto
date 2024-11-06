@@ -126,4 +126,3 @@ message StorageVersionStatus {
   // +listMapKey=type
   repeated StorageVersionCondition conditions = 3;
 }
-

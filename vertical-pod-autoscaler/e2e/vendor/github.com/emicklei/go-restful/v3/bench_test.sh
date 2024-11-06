@@ -6,5 +6,3 @@ go test -c
 
 #go tool pprof go-restful.test tmp.prof
 go tool pprof go-restful.test curly.prof
-
-
