@@ -51,6 +51,10 @@ type mockAutoScaling struct {
 	mock.Mock
 }
 
+func (as *mockAutoScaling) ScaleWithAdjustment(req *ess.ScaleWithAdjustmentRequest) (*ess.ScaleWithAdjustmentResponse, error) {
+	return nil, nil
+}
+
 func (as *mockAutoScaling) DescribeScalingGroups(req *ess.DescribeScalingGroupsRequest) (*ess.DescribeScalingGroupsResponse, error) {
 	return nil, nil
 }
