@@ -34,6 +34,7 @@ var (
 	targetMemoryPercentile     = flag.Float64("target-memory-percentile", 0.9, "Memory usage percentile that will be used as a base for memory target recommendation. Doesn't affect memory lower bound nor memory upper bound.")
 	lowerBoundMemoryPercentile = flag.Float64("recommendation-lower-bound-memory-percentile", 0.5, `Memory usage percentile that will be used for the lower bound on memory recommendation.`)
 	upperBoundMemoryPercentile = flag.Float64("recommendation-upper-bound-memory-percentile", 0.95, `Memory usage percentile that will be used for the upper bound on memory recommendation.`)
+	humanizeMemory             = flag.Bool("humanize-memory", false, "Convert memory values in recommendations to the highest appropriate SI unit with up to 2 decimal places for better readability.")
 )
 
 // PodResourceRecommender computes resource recommendation for a Vpa object.
@@ -164,10 +165,10 @@ func MapToListOfRecommendedContainerResources(resources RecommendedPodResources)
 	for _, name := range containerNames {
 		containerResources = append(containerResources, vpa_types.RecommendedContainerResources{
 			ContainerName:  name,
-			Target:         model.ResourcesAsResourceList(resources[name].Target),
-			LowerBound:     model.ResourcesAsResourceList(resources[name].LowerBound),
-			UpperBound:     model.ResourcesAsResourceList(resources[name].UpperBound),
-			UncappedTarget: model.ResourcesAsResourceList(resources[name].Target),
+			Target:         model.ResourcesAsResourceList(resources[name].Target, *humanizeMemory),
+			LowerBound:     model.ResourcesAsResourceList(resources[name].LowerBound, *humanizeMemory),
+			UpperBound:     model.ResourcesAsResourceList(resources[name].UpperBound, *humanizeMemory),
+			UncappedTarget: model.ResourcesAsResourceList(resources[name].Target, *humanizeMemory),
 		})
 	}
 	recommendation := &vpa_types.RecommendedPodResources{
