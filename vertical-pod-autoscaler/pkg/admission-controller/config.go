@@ -90,7 +90,7 @@ func configTLS(cfg certsConfig, minTlsVersion, ciphers string, stop <-chan struc
 
 // register this webhook admission controller with the kube-apiserver
 // by creating MutatingWebhookConfiguration.
-func selfRegistration(clientset kubernetes.Interface, caCert []byte, webHookDelay time.Duration, namespace, serviceName, url string, registerByURL bool, timeoutSeconds int32, selectedNamespace string, ignoredNamespaces []string, webHookFailurePolicy bool, webHookLabels string) {
+func selfRegistration(clientset kubernetes.Interface, caCert []byte, webHookDelay time.Duration, namespace, serviceName, url string, registerByURL bool, timeoutSeconds int32, selectedNamespace string, ignoredNamespaces []string, webHookFailurePolicy bool, webHookLabels string, webhookAnnotations string) {
 	time.Sleep(webHookDelay)
 	client := clientset.AdmissionregistrationV1().MutatingWebhookConfigurations()
 	_, err := client.Get(context.TODO(), webhookConfigName, metav1.GetOptions{})
@@ -141,15 +141,22 @@ func selfRegistration(clientset kubernetes.Interface, caCert []byte, webHookDela
 			},
 		}
 	}
-	webhookLabelsMap, err := convertLabelsToMap(webHookLabels)
+	webhookLabelsMap, err := convertLabelsOrAnnotationsToMap(webHookLabels)
 	if err != nil {
 		klog.ErrorS(err, "Unable to parse webhook labels")
 		webhookLabelsMap = map[string]string{}
 	}
+
+	webhookAnnotationsMap, err := convertLabelsOrAnnotationsToMap(webhookAnnotations)
+	if err != nil {
+		klog.ErrorS(err, "Unable to parse webhook annotations")
+		webhookLabelsMap = map[string]string{}
+	}
 	webhookConfig := &admissionregistration.MutatingWebhookConfiguration{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:   webhookConfigName,
-			Labels: webhookLabelsMap,
+			Name:        webhookConfigName,
+			Labels:      webhookLabelsMap,
+			Annotations: webhookAnnotationsMap,
 		},
 		Webhooks: []admissionregistration.MutatingWebhook{
 			{
@@ -188,24 +195,24 @@ func selfRegistration(clientset kubernetes.Interface, caCert []byte, webHookDela
 	}
 }
 
-// convertLabelsToMap convert the labels from string to map
+// convertLabelsOrAnnotationsToMap convert the labels or annotations from string to map
 // the valid labels format is "key1:value1,key2:value2", which could be converted to
 // {"key1": "value1", "key2": "value2"}
-func convertLabelsToMap(labels string) (map[string]string, error) {
+func convertLabelsOrAnnotationsToMap(kv string) (map[string]string, error) {
 	m := make(map[string]string)
-	if labels == "" {
+	if kv == "" {
 		return m, nil
 	}
-	labels = strings.Trim(labels, "\"")
-	s := strings.Split(labels, ",")
+	kv = strings.Trim(kv, "\"")
+	s := strings.Split(kv, ",")
 	for _, tag := range s {
 		kv := strings.SplitN(tag, ":", 2)
 		if len(kv) != 2 {
-			return map[string]string{}, fmt.Errorf("labels '%s' are invalid, the format should be: 'key1:value1,key2:value2'", labels)
+			return map[string]string{}, fmt.Errorf("labels or annotations '%s' are invalid, the format should be: 'key1:value1,key2:value2'", kv)
 		}
 		key := strings.TrimSpace(kv[0])
 		if key == "" {
-			return map[string]string{}, fmt.Errorf("labels '%s' are invalid, the format should be: 'key1:value1,key2:value2'", labels)
+			return map[string]string{}, fmt.Errorf("labels or annotations '%s' are invalid, the format should be: 'key1:value1,key2:value2'", kv)
 		}
 		value := strings.TrimSpace(kv[1])
 		m[key] = value

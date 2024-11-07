@@ -40,7 +40,7 @@ func TestSelfRegistrationBase(t *testing.T) {
 	selectedNamespace := ""
 	ignoredNamespaces := []string{}
 
-	selfRegistration(testClientSet, caCert, webHookDelay, namespace, serviceName, url, registerByURL, timeoutSeconds, selectedNamespace, ignoredNamespaces, false, "key1:value1,key2:value2")
+	selfRegistration(testClientSet, caCert, webHookDelay, namespace, serviceName, url, registerByURL, timeoutSeconds, selectedNamespace, ignoredNamespaces, false, "key1:value1,key2:value2", "key3:value3,key4:value4")
 
 	webhookConfigInterface := testClientSet.AdmissionregistrationV1().MutatingWebhookConfigurations()
 	webhookConfig, err := webhookConfigInterface.Get(context.TODO(), webhookConfigName, metav1.GetOptions{})
@@ -48,6 +48,7 @@ func TestSelfRegistrationBase(t *testing.T) {
 	assert.NoError(t, err, "expected no error fetching webhook configuration")
 	assert.Equal(t, webhookConfigName, webhookConfig.Name, "expected webhook configuration name to match")
 	assert.Equal(t, webhookConfig.Labels, map[string]string{"key1": "value1", "key2": "value2"}, "expected webhook configuration labels to match")
+	assert.Equal(t, webhookConfig.Annotations, map[string]string{"key3": "value3", "key4": "value4"}, "expected webhook configuration annotations to match")
 
 	assert.Len(t, webhookConfig.Webhooks, 1, "expected one webhook configuration")
 	webhook := webhookConfig.Webhooks[0]
@@ -84,7 +85,7 @@ func TestSelfRegistrationWithURL(t *testing.T) {
 	selectedNamespace := ""
 	ignoredNamespaces := []string{}
 
-	selfRegistration(testClientSet, caCert, webHookDelay, namespace, serviceName, url, registerByURL, timeoutSeconds, selectedNamespace, ignoredNamespaces, false, "")
+	selfRegistration(testClientSet, caCert, webHookDelay, namespace, serviceName, url, registerByURL, timeoutSeconds, selectedNamespace, ignoredNamespaces, false, "", "")
 
 	webhookConfigInterface := testClientSet.AdmissionregistrationV1().MutatingWebhookConfigurations()
 	webhookConfig, err := webhookConfigInterface.Get(context.TODO(), webhookConfigName, metav1.GetOptions{})
@@ -112,7 +113,7 @@ func TestSelfRegistrationWithOutURL(t *testing.T) {
 	selectedNamespace := ""
 	ignoredNamespaces := []string{}
 
-	selfRegistration(testClientSet, caCert, webHookDelay, namespace, serviceName, url, registerByURL, timeoutSeconds, selectedNamespace, ignoredNamespaces, false, "")
+	selfRegistration(testClientSet, caCert, webHookDelay, namespace, serviceName, url, registerByURL, timeoutSeconds, selectedNamespace, ignoredNamespaces, false, "", "")
 
 	webhookConfigInterface := testClientSet.AdmissionregistrationV1().MutatingWebhookConfigurations()
 	webhookConfig, err := webhookConfigInterface.Get(context.TODO(), webhookConfigName, metav1.GetOptions{})
@@ -142,7 +143,7 @@ func TestSelfRegistrationWithIgnoredNamespaces(t *testing.T) {
 	selectedNamespace := ""
 	ignoredNamespaces := []string{"test"}
 
-	selfRegistration(testClientSet, caCert, webHookDelay, namespace, serviceName, url, registerByURL, timeoutSeconds, selectedNamespace, ignoredNamespaces, false, "")
+	selfRegistration(testClientSet, caCert, webHookDelay, namespace, serviceName, url, registerByURL, timeoutSeconds, selectedNamespace, ignoredNamespaces, false, "", "")
 
 	webhookConfigInterface := testClientSet.AdmissionregistrationV1().MutatingWebhookConfigurations()
 	webhookConfig, err := webhookConfigInterface.Get(context.TODO(), webhookConfigName, metav1.GetOptions{})
@@ -173,7 +174,7 @@ func TestSelfRegistrationWithSelectedNamespaces(t *testing.T) {
 	selectedNamespace := "test"
 	ignoredNamespaces := []string{}
 
-	selfRegistration(testClientSet, caCert, webHookDelay, namespace, serviceName, url, registerByURL, timeoutSeconds, selectedNamespace, ignoredNamespaces, false, "")
+	selfRegistration(testClientSet, caCert, webHookDelay, namespace, serviceName, url, registerByURL, timeoutSeconds, selectedNamespace, ignoredNamespaces, false, "", "")
 
 	webhookConfigInterface := testClientSet.AdmissionregistrationV1().MutatingWebhookConfigurations()
 	webhookConfig, err := webhookConfigInterface.Get(context.TODO(), webhookConfigName, metav1.GetOptions{})
@@ -205,7 +206,7 @@ func TestSelfRegistrationWithFailurePolicy(t *testing.T) {
 	selectedNamespace := "test"
 	ignoredNamespaces := []string{}
 
-	selfRegistration(testClientSet, caCert, webHookDelay, namespace, serviceName, url, registerByURL, timeoutSeconds, selectedNamespace, ignoredNamespaces, true, "")
+	selfRegistration(testClientSet, caCert, webHookDelay, namespace, serviceName, url, registerByURL, timeoutSeconds, selectedNamespace, ignoredNamespaces, true, "", "")
 
 	webhookConfigInterface := testClientSet.AdmissionregistrationV1().MutatingWebhookConfigurations()
 	webhookConfig, err := webhookConfigInterface.Get(context.TODO(), webhookConfigName, metav1.GetOptions{})
@@ -232,7 +233,7 @@ func TestSelfRegistrationWithOutFailurePolicy(t *testing.T) {
 	selectedNamespace := "test"
 	ignoredNamespaces := []string{}
 
-	selfRegistration(testClientSet, caCert, webHookDelay, namespace, serviceName, url, registerByURL, timeoutSeconds, selectedNamespace, ignoredNamespaces, false, "")
+	selfRegistration(testClientSet, caCert, webHookDelay, namespace, serviceName, url, registerByURL, timeoutSeconds, selectedNamespace, ignoredNamespaces, false, "", "")
 
 	webhookConfigInterface := testClientSet.AdmissionregistrationV1().MutatingWebhookConfigurations()
 	webhookConfig, err := webhookConfigInterface.Get(context.TODO(), webhookConfigName, metav1.GetOptions{})
@@ -259,7 +260,7 @@ func TestSelfRegistrationWithInvalidLabels(t *testing.T) {
 	selectedNamespace := ""
 	ignoredNamespaces := []string{}
 
-	selfRegistration(testClientSet, caCert, webHookDelay, namespace, serviceName, url, registerByURL, timeoutSeconds, selectedNamespace, ignoredNamespaces, false, "foo,bar")
+	selfRegistration(testClientSet, caCert, webHookDelay, namespace, serviceName, url, registerByURL, timeoutSeconds, selectedNamespace, ignoredNamespaces, false, "foo,bar", "bar,foo")
 
 	webhookConfigInterface := testClientSet.AdmissionregistrationV1().MutatingWebhookConfigurations()
 	webhookConfig, err := webhookConfigInterface.Get(context.TODO(), webhookConfigName, metav1.GetOptions{})
@@ -267,6 +268,7 @@ func TestSelfRegistrationWithInvalidLabels(t *testing.T) {
 	assert.NoError(t, err, "expected no error fetching webhook configuration")
 	assert.Equal(t, webhookConfigName, webhookConfig.Name, "expected webhook configuration name to match")
 	assert.Equal(t, webhookConfig.Labels, map[string]string{}, "expected invalid webhook configuration labels to match")
+	assert.Equal(t, webhookConfig.Annotations, map[string]string{}, "expected invalid webhook configuration annotations to match")
 
 	assert.Len(t, webhookConfig.Webhooks, 1, "expected one webhook configuration")
 	webhook := webhookConfig.Webhooks[0]
@@ -290,30 +292,30 @@ func TestSelfRegistrationWithInvalidLabels(t *testing.T) {
 	assert.Equal(t, timeoutSeconds, *webhook.TimeoutSeconds, "expected timeout seconds to match")
 }
 
-func TestConvertLabelsToMap(t *testing.T) {
+func TestConvertLabelsOrAnnotationsToMap(t *testing.T) {
 	testCases := []struct {
 		desc           string
-		labels         string
+		kv             string
 		expectedOutput map[string]string
 		expectedError  bool
 	}{
 		{
 			desc:           "should return empty map when tag is empty",
-			labels:         "",
+			kv:             "",
 			expectedOutput: map[string]string{},
 			expectedError:  false,
 		},
 		{
-			desc:   "single valid tag should be converted",
-			labels: "key:value",
+			desc: "single valid tag should be converted",
+			kv:   "key:value",
 			expectedOutput: map[string]string{
 				"key": "value",
 			},
 			expectedError: false,
 		},
 		{
-			desc:   "multiple valid labels should be converted",
-			labels: "key1:value1,key2:value2",
+			desc: "multiple valid labels or annotations should be converted",
+			kv:   "key1:value1,key2:value2",
 			expectedOutput: map[string]string{
 				"key1": "value1",
 				"key2": "value2",
@@ -321,8 +323,8 @@ func TestConvertLabelsToMap(t *testing.T) {
 			expectedError: false,
 		},
 		{
-			desc:   "whitespaces should be trimmed",
-			labels: "key1:value1, key2:value2",
+			desc: "whitespaces should be trimmed",
+			kv:   "key1:value1, key2:value2",
 			expectedOutput: map[string]string{
 				"key1": "value1",
 				"key2": "value2",
@@ -330,8 +332,8 @@ func TestConvertLabelsToMap(t *testing.T) {
 			expectedError: false,
 		},
 		{
-			desc:   "whitespaces between keys and values should be trimmed",
-			labels: "key1 : value1,key2 : value2",
+			desc: "whitespaces between keys and values should be trimmed",
+			kv:   "key1 : value1,key2 : value2",
 			expectedOutput: map[string]string{
 				"key1": "value1",
 				"key2": "value2",
@@ -340,19 +342,19 @@ func TestConvertLabelsToMap(t *testing.T) {
 		},
 		{
 			desc:           "should return error for invalid format",
-			labels:         "foo,bar",
+			kv:             "foo,bar",
 			expectedOutput: nil,
 			expectedError:  true,
 		},
 		{
 			desc:           "should return error for when key is missed",
-			labels:         "key1:value1,:bar",
+			kv:             "key1:value1,:bar",
 			expectedOutput: nil,
 			expectedError:  true,
 		},
 		{
-			desc:   "should strip additional quotes",
-			labels: "\"key1:value1,key2:value2\"",
+			desc: "should strip additional quotes",
+			kv:   "\"key1:value1,key2:value2\"",
 			expectedOutput: map[string]string{
 				"key1": "value1",
 				"key2": "value2",
@@ -362,7 +364,7 @@ func TestConvertLabelsToMap(t *testing.T) {
 	}
 
 	for i, c := range testCases {
-		m, err := convertLabelsToMap(c.labels)
+		m, err := convertLabelsOrAnnotationsToMap(c.kv)
 		if c.expectedError {
 			assert.NotNil(t, err, "TestCase[%d]: %s", i, c.desc)
 		} else {

@@ -124,6 +124,7 @@ up the changes: ```sudo systemctl restart kubelet.service```
 1. You can specify a minimum TLS version with `--min-tls-version` with acceptable values being `tls1_2` (default), or `tls1_3`.
 1. You can also specify a comma or colon separated list of ciphers for the server to use with `--tls-ciphers` if `--min-tls-version` is set to `tls1_2`.
 1. You can specify a comma separated list to set webhook labels with `--webhook-labels`, example format: key1:value1,key2:value2.
+1. You can specify a comma separated list to set webhook annotations with `--webhook-annotations`, example format: key1:value1,key2:value2.
 
 ### Implementation of the Admission Controller
 

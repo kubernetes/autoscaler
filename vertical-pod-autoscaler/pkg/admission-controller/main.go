@@ -74,6 +74,7 @@ var (
 	webHookFailurePolicy = flag.Bool("webhook-failure-policy-fail", false, "If set to true, will configure the admission webhook failurePolicy to \"Fail\". Use with caution.")
 	registerWebhook      = flag.Bool("register-webhook", true, "If set to true, admission webhook object will be created on start up to register with the API server.")
 	webhookLabels        = flag.String("webhook-labels", "", "Comma separated list of labels to add to the webhook object. Format: key1:value1,key2:value2")
+	webhookAnnotations   = flag.String("webhook-annotations", "", "Comma separated list of annotations to add to the webhook object. Format: key1:value1,key2:value2")
 	registerByURL        = flag.Bool("register-by-url", false, "If set to true, admission webhook will be registered by URL (webhookAddress:webhookPort) instead of by service name")
 )
 
@@ -144,7 +145,7 @@ func main() {
 	ignoredNamespaces := strings.Split(commonFlags.IgnoredVpaObjectNamespaces, ",")
 	go func() {
 		if *registerWebhook {
-			selfRegistration(kubeClient, readFile(*certsConfiguration.clientCaFile), webHookDelay, namespace, *serviceName, url, *registerByURL, int32(*webhookTimeout), commonFlags.VpaObjectNamespace, ignoredNamespaces, *webHookFailurePolicy, *webhookLabels)
+			selfRegistration(kubeClient, readFile(*certsConfiguration.clientCaFile), webHookDelay, namespace, *serviceName, url, *registerByURL, int32(*webhookTimeout), commonFlags.VpaObjectNamespace, ignoredNamespaces, *webHookFailurePolicy, *webhookLabels, *webhookAnnotations)
 		}
 		// Start status updates after the webhook is initialized.
 		statusUpdater.Run(stopCh)
