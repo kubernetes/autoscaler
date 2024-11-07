@@ -42,18 +42,30 @@ if [ $# -gt 1 ]; then
 fi
 
 SUITE=$1
+REQUIRED_COMMANDS="
+docker
+go
+kind
+kubectl
+make
+"
 
-for i in kind docker; do
-  if ! command -v $i 2>&1 > /dev/null
+for i in $REQUIRED_COMMANDS; do
+  if ! command -v $i > /dev/null 2>&1
   then
-    echo "$i could not be found"
+    echo "$i could not be found, please ensure it is installed"
+    echo
+    echo "The following commands are required to run these tests:"
+    echo $REQUIRED_COMMANDS
     exit 1;
   fi
 done
 
-if ! docker ps 2>&1 >/dev/null
+if ! docker ps >/dev/null 2>&1
 then
   echo "docker isn't running"
+  echo
+  echo "Please ensure that docker is running"
   exit 1
 fi
 
