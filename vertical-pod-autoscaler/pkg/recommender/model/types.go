@@ -96,7 +96,7 @@ func ResourcesAsResourceList(resources Resources, humanizeMemory bool) apiv1.Res
 			if humanizeMemory && !quantity.IsZero() {
 				rawValues := quantity.Value()
 				humanizedValue := HumanizeMemoryQuantity(rawValues)
-				klog.InfoS("Converting raw value to humanized value", "rawValue", rawValues, "humanizedValue", humanizedValue)
+				klog.V(4).InfoS("Converting raw value to humanized value", "rawValue", rawValues, "humanizedValue", humanizedValue)
 				quantity = resource.MustParse(humanizedValue)
 			}
 		default:
