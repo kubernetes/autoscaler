@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM --platform=$BUILDPLATFORM golang:1.23.2 AS builder
+FROM --platform=$BUILDPLATFORM golang:1.23.3 AS builder
 
 ENV GOPATH=/gopath/
 ENV PATH=$GOPATH/bin:$PATH
