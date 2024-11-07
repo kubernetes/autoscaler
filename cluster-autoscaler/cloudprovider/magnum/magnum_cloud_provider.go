@@ -27,6 +27,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum/gophercloud/openstack/containerinfra/v1/nodegroups"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
@@ -267,6 +268,7 @@ func (mcp *magnumCloudProvider) refreshNodeGroups() error {
 			maxSize:           *nodeGroup.MaxNodeCount,
 			targetSize:        nodeGroup.NodeCount,
 			deletedNodes:      make(map[string]time.Time),
+			nodeTemplate:      getMagnumNodeTemplate(nodeGroup, mcp.magnumManager),
 		}
 		mcp.AddNodeGroup(ng)
 		mcp.magnumManager.fetchNodeGroupStackIDs(ng.UUID)
@@ -401,4 +403,29 @@ func BuildMagnum(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDisco
 	}
 
 	return provider
+}
+
+func getMagnumNodeTemplate(nodegroup *nodegroups.NodeGroup, client magnumManager) *MagnumNodeTemplate {
+	template := &MagnumNodeTemplate{}
+	flavor, err := client.getFlavorById(nodegroup.FlavorID)
+
+	if err != nil {
+		klog.V(5).ErrorS(err, "Failed to build MagnumNodeTemplate. We return a fake template with 4 cores, 4GB ram and 50GB disk.")
+		template.CPUCores = 4
+		template.RAMMegabytes = 4096
+		template.DiskGigabytes = 50
+	} else {
+		template.CPUCores = flavor.VCPUs
+		template.RAMMegabytes = flavor.RAM
+		template.DiskGigabytes = flavor.Disk
+	}
+
+	if len(nodegroup.Labels) == 0 {
+		template.Labels = make(map[string]string)
+	} else {
+		template.Labels = nodegroup.Labels
+	}
+	template.Labels["magnum.openstack.org/nodegroup"] = nodegroup.Name
+
+	return template
 }
