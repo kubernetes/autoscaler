@@ -94,6 +94,9 @@ type Config struct {
 
 	// (DEPRECATED, DO NOT USE) GetVmssSizeRefreshPeriod (seconds) defines how frequently to call GET VMSS API to fetch VMSS info per nodegroup instance
 	GetVmssSizeRefreshPeriod int `json:"getVmssSizeRefreshPeriod,omitempty" yaml:"getVmssSizeRefreshPeriod,omitempty"`
+
+	// StrictCacheUpdates updates cache values only after positive validation from Azure APIs
+	StrictCacheUpdates bool `json:"strictCacheUpdates,omitempty" yaml:"strictCacheUpdates,omitempty"`
 }
 
 // These are only here for backward compabitility. Their equivalent exists in providerazure.Config with a different name.
@@ -122,6 +125,7 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 	cfg.CloudProviderBackoffJitter = providerazureconsts.BackoffJitterDefault
 	cfg.VMType = providerazureconsts.VMTypeVMSS
 	cfg.MaxDeploymentsCount = int64(defaultMaxDeploymentsCount)
+	cfg.StrictCacheUpdates = false
 
 	// Config file overrides defaults
 	if configReader != nil {
@@ -245,6 +249,9 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 		return nil, err
 	}
 	if _, err = assignBoolFromEnvIfExists(&cfg.EnableForceDelete, "AZURE_ENABLE_FORCE_DELETE"); err != nil {
+		return nil, err
+	}
+	if _, err = assignBoolFromEnvIfExists(&cfg.StrictCacheUpdates, "AZURE_STRICT_CACHE_UPDATES"); err != nil {
 		return nil, err
 	}
 	if _, err = assignBoolFromEnvIfExists(&cfg.EnableDynamicInstanceList, "AZURE_ENABLE_DYNAMIC_INSTANCE_LIST"); err != nil {
