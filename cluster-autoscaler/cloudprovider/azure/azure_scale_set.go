@@ -525,6 +525,24 @@ func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef, hasUnregistered
 		return rerr.Error()
 	}
 
+	if !scaleSet.manager.config.StrictCacheUpdates {
+		// Proactively decrement scale set size so that we don't
+		// go below minimum node count if cache data is stale
+		// only do it for non-unregistered nodes
+
+		if !hasUnregisteredNodes {
+			scaleSet.sizeMutex.Lock()
+			scaleSet.curSize -= int64(len(instanceIDs))
+			scaleSet.lastSizeRefresh = time.Now()
+			scaleSet.sizeMutex.Unlock()
+		}
+
+		// Proactively set the status of the instances to be deleted in cache
+		for _, instance := range instancesToDelete {
+			scaleSet.setInstanceStatusByProviderID(instance.Name, cloudprovider.InstanceStatus{State: cloudprovider.InstanceDeleting})
+		}
+	}
+
 	go scaleSet.waitForDeleteInstances(future, requiredIds)
 	return nil
 }
@@ -538,8 +556,17 @@ func (scaleSet *ScaleSet) waitForDeleteInstances(future *azure.Future, requiredI
 	isSuccess, err := isSuccessHTTPResponse(httpResponse, err)
 	if isSuccess {
 		klog.V(3).Infof(".WaitForDeleteInstancesResult(%v) for %s success", requiredIds.InstanceIds, scaleSet.Name)
-		scaleSet.invalidateInstanceCache()
+		if scaleSet.manager.config.StrictCacheUpdates {
+			if err := scaleSet.manager.forceRefresh(); err != nil {
+				klog.Errorf("forceRefresh failed with error: %v", err)
+			}
+			scaleSet.invalidateInstanceCache()
+		}
 		return
+	}
+	if !scaleSet.manager.config.StrictCacheUpdates {
+		// On failure, invalidate the instanceCache - cannot have instances in deletingState
+		scaleSet.invalidateInstanceCache()
 	}
 	klog.Errorf("WaitForDeleteInstancesResult(%v) for %s failed with error: %v", requiredIds.InstanceIds, scaleSet.Name, err)
 }
