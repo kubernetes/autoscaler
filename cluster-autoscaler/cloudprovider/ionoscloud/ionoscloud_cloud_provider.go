@@ -71,14 +71,11 @@ func (n *nodePool) IncreaseSize(delta int) error {
 	if delta <= 0 {
 		return errors.New("size increase must be positive")
 	}
-	size, err := n.manager.GetNodeGroupSize(n)
+	size, err := n.manager.GetNodeGroupTargetSize(n)
 	if err != nil {
 		return err
 	}
 	targetSize := size + delta
-	if targetSize > n.max {
-		return fmt.Errorf("size increase exceeds upper bound of %d", n.max)
-	}
 	return n.manager.SetNodeGroupSize(n, targetSize)
 }
 
