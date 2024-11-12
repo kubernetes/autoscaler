@@ -13,7 +13,6 @@
 # limitations under the License.
 ARG BASEIMAGE=gcr.io/distroless/static:nonroot-s390x
 FROM $BASEIMAGE
-LABEL maintainer="Marcin Wielgus <mwielgus@google.com>"
 
 COPY cluster-autoscaler-s390x /cluster-autoscaler
 WORKDIR /
