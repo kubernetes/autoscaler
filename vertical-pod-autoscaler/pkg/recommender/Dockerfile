@@ -25,7 +25,6 @@ ARG TARGETOS TARGETARCH
 RUN CGO_ENABLED=0 LD_FLAGS=-s GOARCH=$TARGETARCH GOOS=$TARGETOS go build -C pkg/recommender -mod vendor -o recommender-$TARGETARCH
 
 FROM gcr.io/distroless/static:latest
-LABEL maintainer="Krzysztof Grygiel <kgrygiel@google.com>"
 
 ARG TARGETARCH
 
