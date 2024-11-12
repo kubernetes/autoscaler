@@ -113,23 +113,18 @@ func (s *NodeGroupTestSuite) TestIncreaseSize_InvalidDelta() {
 }
 
 func (s *NodeGroupTestSuite) TestIncreaseSize_GetSizeError() {
-	s.manager.On("GetNodeGroupSize", s.nodePool).Return(0, errors.New("error")).Once()
-	s.Error(s.nodePool.IncreaseSize(2))
-}
-
-func (s *NodeGroupTestSuite) TestIncreaseSize_ExceedMax() {
-	s.manager.On("GetNodeGroupSize", s.nodePool).Return(2, nil).Once()
+	s.manager.On("GetNodeGroupTargetSize", s.nodePool).Return(0, errors.New("error")).Once()
 	s.Error(s.nodePool.IncreaseSize(2))
 }
 
 func (s *NodeGroupTestSuite) TestIncreaseSize_SetSizeError() {
-	s.manager.On("GetNodeGroupSize", s.nodePool).Return(2, nil).Once()
+	s.manager.On("GetNodeGroupTargetSize", s.nodePool).Return(2, nil).Once()
 	s.manager.On("SetNodeGroupSize", s.nodePool, 3).Return(errors.New("error")).Once()
 	s.Error(s.nodePool.IncreaseSize(1))
 }
 
 func (s *NodeGroupTestSuite) TestIncreaseSize_OK() {
-	s.manager.On("GetNodeGroupSize", s.nodePool).Return(2, nil).Once()
+	s.manager.On("GetNodeGroupTargetSize", s.nodePool).Return(2, nil).Once()
 	s.manager.On("SetNodeGroupSize", s.nodePool, 3).Return(nil).Once()
 	s.NoError(s.nodePool.IncreaseSize(1))
 }
