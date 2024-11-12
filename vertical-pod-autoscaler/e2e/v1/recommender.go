@@ -140,7 +140,7 @@ var _ = RecommenderE2eDescribe("Checkpoints", func() {
 		_, err := vpaClientSet.AutoscalingV1().VerticalPodAutoscalerCheckpoints(ns).Create(context.TODO(), &checkpoint, metav1.CreateOptions{})
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
-		fmt.Println("Sleeping for up to 15 minutes...")
+		klog.InfoS("Sleeping for up to 15 minutes...")
 
 		maxRetries := 90
 		retryDelay := 10 * time.Second
@@ -149,7 +149,7 @@ var _ = RecommenderE2eDescribe("Checkpoints", func() {
 			if err == nil && len(list.Items) == 0 {
 				break
 			}
-			fmt.Println("Still waiting...")
+			klog.InfoS("Still waiting...")
 			time.Sleep(retryDelay)
 		}
 
