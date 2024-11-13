@@ -134,6 +134,11 @@ func (ng *nodeGroup) DeleteNodes(toDelete []*corev1.Node) error {
 	return nil
 }
 
+// ForceDeleteNodes deletes nodes from the group regardless of constraints.
+func (ng *nodeGroup) ForceDeleteNodes(nodes []*corev1.Node) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 func (ng *nodeGroup) findNodeByProviderID(providerID string) (*node, error) {
 	nodes, err := ng.nodes()
 	if err != nil {

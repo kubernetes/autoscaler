@@ -226,6 +226,11 @@ func (ng *equinixMetalNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	return nil
 }
 
+// ForceDeleteNodes deletes nodes from the group regardless of constraints.
+func (ng *equinixMetalNodeGroup) ForceDeleteNodes(nodes []*apiv1.Node) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // DecreaseTargetSize decreases the cluster node_count in Equinix Metal.
 func (ng *equinixMetalNodeGroup) DecreaseTargetSize(delta int) error {
 	if delta >= 0 {

@@ -312,6 +312,11 @@ func (vmPool *VMPool) Belongs(node *apiv1.Node) (bool, error) {
 	return true, nil
 }
 
+// ForceDeleteNodes deletes nodes from the group regardless of constraints.
+func (agentPool *VMsPool) ForceDeleteNodes(nodes []*apiv1.Node) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // DecreaseTargetSize decreases the target size of the node group.
 func (vmPool *VMPool) DecreaseTargetSize(delta int) error {
 	// The TargetSize of a VMPool is automatically adjusted after node deletions.
