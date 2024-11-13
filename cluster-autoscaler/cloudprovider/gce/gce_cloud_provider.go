@@ -311,6 +311,11 @@ func (mig *gceMig) DeleteNodes(nodes []*apiv1.Node) error {
 	return mig.gceManager.DeleteInstances(refs)
 }
 
+// ForceDeleteNodes deletes nodes from the group regardless of constraints.
+func (mig *gceMig) ForceDeleteNodes(nodes []*apiv1.Node) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // Id returns mig url.
 func (mig *gceMig) Id() string {
 	return GenerateMigUrl(mig.domainUrl, mig.gceRef)

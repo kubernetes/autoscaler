@@ -123,6 +123,11 @@ func (asg *asg) DeleteNodes(nodes []*apiv1.Node) error {
 	return nil
 }
 
+// ForceDeleteNodes deletes nodes from the group regardless of constraints.
+func (asg *asg) ForceDeleteNodes(nodes []*apiv1.Node) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // Id returns cluster id.
 func (asg *asg) Id() string {
 	return asg.cluster.ID

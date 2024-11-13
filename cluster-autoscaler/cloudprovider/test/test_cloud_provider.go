@@ -453,6 +453,11 @@ func (tng *TestNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	return nil
 }
 
+// ForceDeleteNodes deletes nodes from the group regardless of constraints.
+func (tng *TestNodeGroup) ForceDeleteNodes(nodes []*apiv1.Node) error {
+	return tng.DeleteNodes(nodes)
+}
+
 // Id returns an unique identifier of the node group.
 func (tng *TestNodeGroup) Id() string {
 	tng.Lock()

@@ -349,6 +349,11 @@ func (ng *AwsNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	return ng.awsManager.DeleteInstances(refs)
 }
 
+// ForceDeleteNodes deletes nodes from the group regardless of constraints.
+func (ng *AwsNodeGroup) ForceDeleteNodes(nodes []*apiv1.Node) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // Id returns asg id.
 func (ng *AwsNodeGroup) Id() string {
 	return ng.asg.Name

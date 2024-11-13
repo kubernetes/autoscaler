@@ -106,6 +106,11 @@ func (asg *AutoScalingGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	return asg.manager.DeleteScalingInstances(asg.asgId, instanceIds)
 }
 
+// ForceDeleteNodes deletes nodes from the group regardless of constraints.
+func (asg *AutoScalingGroup) ForceDeleteNodes(nodes []*apiv1.Node) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 func (asg *AutoScalingGroup) belongs(node *apiv1.Node) (bool, error) {
 	instanceId, err := ecsInstanceFromProviderId(node.Spec.ProviderID)
 	if err != nil {
