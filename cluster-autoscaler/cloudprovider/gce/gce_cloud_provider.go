@@ -292,6 +292,11 @@ func (mig *gceMig) DeleteNodes(nodes []*apiv1.Node) error {
 	if int(size) <= mig.MinSize() {
 		return fmt.Errorf("min size reached, nodes will not be deleted")
 	}
+	return mig.ForceDeleteNodes(nodes)
+}
+
+// ForceDeleteNodes deletes nodes from the group regardless of constraints.
+func (mig *gceMig) ForceDeleteNodes(nodes []*apiv1.Node) error {
 	refs := make([]GceRef, 0, len(nodes))
 	for _, node := range nodes {
 
@@ -309,11 +314,6 @@ func (mig *gceMig) DeleteNodes(nodes []*apiv1.Node) error {
 		refs = append(refs, gceref)
 	}
 	return mig.gceManager.DeleteInstances(refs)
-}
-
-// ForceDeleteNodes deletes nodes from the group regardless of constraints.
-func (mig *gceMig) ForceDeleteNodes(nodes []*apiv1.Node) error {
-	return cloudprovider.ErrNotImplemented
 }
 
 // Id returns mig url.
