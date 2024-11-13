@@ -19,13 +19,14 @@ package predicatechecker
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 
 	apiv1 "k8s.io/api/core/v1"
 	v1listers "k8s.io/client-go/listers/core/v1"
-	klog "k8s.io/klog/v2"
+	"k8s.io/klog/v2"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
@@ -44,16 +45,16 @@ func NewSchedulerBasedPredicateChecker(fwHandle *framework.Handle) *SchedulerBas
 }
 
 // FitsAnyNode checks if the given pod can be placed on any of the given nodes.
-func (p *SchedulerBasedPredicateChecker) FitsAnyNode(clusterSnapshot clustersnapshot.ClusterSnapshot, pod *apiv1.Pod) (string, error) {
+func (p *SchedulerBasedPredicateChecker) FitsAnyNode(clusterSnapshot clustersnapshot.ClusterSnapshotStore, pod *apiv1.Pod) (string, clustersnapshot.SchedulingError) {
 	return p.FitsAnyNodeMatching(clusterSnapshot, pod, func(*framework.NodeInfo) bool {
 		return true
 	})
 }
 
 // FitsAnyNodeMatching checks if the given pod can be placed on any of the given nodes matching the provided function.
-func (p *SchedulerBasedPredicateChecker) FitsAnyNodeMatching(clusterSnapshot clustersnapshot.ClusterSnapshot, pod *apiv1.Pod, nodeMatches func(*framework.NodeInfo) bool) (string, error) {
+func (p *SchedulerBasedPredicateChecker) FitsAnyNodeMatching(clusterSnapshot clustersnapshot.ClusterSnapshotStore, pod *apiv1.Pod, nodeMatches func(*framework.NodeInfo) bool) (string, clustersnapshot.SchedulingError) {
 	if clusterSnapshot == nil {
-		return "", fmt.Errorf("ClusterSnapshot not provided")
+		return "", clustersnapshot.NewSchedulingInternalError(pod, "ClusterSnapshot not provided")
 	}
 
 	nodeInfosList, err := clusterSnapshot.ListNodeInfos()
@@ -63,7 +64,7 @@ func (p *SchedulerBasedPredicateChecker) FitsAnyNodeMatching(clusterSnapshot clu
 		// Scheduler requires interface returning error, but no implementation
 		// of ClusterSnapshot ever does it.
 		klog.Errorf("Error obtaining nodeInfos from schedulerLister")
-		return "", fmt.Errorf("error obtaining nodeInfos from schedulerLister")
+		return "", clustersnapshot.NewSchedulingInternalError(pod, "error obtaining nodeInfos from schedulerLister")
 	}
 
 	p.fwHandle.DelegatingLister.UpdateDelegate(clusterSnapshot)
@@ -72,7 +73,7 @@ func (p *SchedulerBasedPredicateChecker) FitsAnyNodeMatching(clusterSnapshot clu
 	state := schedulerframework.NewCycleState()
 	preFilterResult, preFilterStatus, _ := p.fwHandle.Framework.RunPreFilterPlugins(context.TODO(), state, pod)
 	if !preFilterStatus.IsSuccess() {
-		return "", fmt.Errorf("error running pre filter plugins for pod %s; %s", pod.Name, preFilterStatus.Message())
+		return "", clustersnapshot.NewFailingPredicateError(pod, preFilterStatus.Plugin(), preFilterStatus.Reasons(), "PreFilter failed", "")
 	}
 
 	for i := range nodeInfosList {
@@ -96,18 +97,17 @@ func (p *SchedulerBasedPredicateChecker) FitsAnyNodeMatching(clusterSnapshot clu
 			return nodeInfo.Node().Name, nil
 		}
 	}
-	return "", fmt.Errorf("cannot put pod %s on any node", pod.Name)
+	return "", clustersnapshot.NewNoNodesPassingPredicatesFoundError(pod)
 }
 
 // CheckPredicates checks if the given pod can be placed on the given node.
-func (p *SchedulerBasedPredicateChecker) CheckPredicates(clusterSnapshot clustersnapshot.ClusterSnapshot, pod *apiv1.Pod, nodeName string) *PredicateError {
+func (p *SchedulerBasedPredicateChecker) CheckPredicates(clusterSnapshot clustersnapshot.ClusterSnapshotStore, pod *apiv1.Pod, nodeName string) clustersnapshot.SchedulingError {
 	if clusterSnapshot == nil {
-		return NewPredicateError(InternalPredicateError, "", "ClusterSnapshot not provided", nil, emptyString)
+		return clustersnapshot.NewSchedulingInternalError(pod, "ClusterSnapshot not provided")
 	}
 	nodeInfo, err := clusterSnapshot.GetNodeInfo(nodeName)
 	if err != nil {
-		errorMessage := fmt.Sprintf("Error obtaining NodeInfo for name %s; %v", nodeName, err)
-		return NewPredicateError(InternalPredicateError, "", errorMessage, nil, emptyString)
+		return clustersnapshot.NewSchedulingInternalError(pod, fmt.Sprintf("error obtaining NodeInfo for name %q: %v", nodeName, err))
 	}
 
 	p.fwHandle.DelegatingLister.UpdateDelegate(clusterSnapshot)
@@ -116,47 +116,31 @@ func (p *SchedulerBasedPredicateChecker) CheckPredicates(clusterSnapshot cluster
 	state := schedulerframework.NewCycleState()
 	_, preFilterStatus, _ := p.fwHandle.Framework.RunPreFilterPlugins(context.TODO(), state, pod)
 	if !preFilterStatus.IsSuccess() {
-		return NewPredicateError(
-			InternalPredicateError,
-			"",
-			preFilterStatus.Message(),
-			preFilterStatus.Reasons(),
-			emptyString)
+		return clustersnapshot.NewFailingPredicateError(pod, preFilterStatus.Plugin(), preFilterStatus.Reasons(), "PreFilter failed", "")
 	}
 
 	filterStatus := p.fwHandle.Framework.RunFilterPlugins(context.TODO(), state, pod, nodeInfo.ToScheduler())
 
 	if !filterStatus.IsSuccess() {
 		filterName := filterStatus.Plugin()
-		filterMessage := filterStatus.Message()
 		filterReasons := filterStatus.Reasons()
-		if filterStatus.IsRejected() {
-			return NewPredicateError(
-				NotSchedulablePredicateError,
-				filterName,
-				filterMessage,
-				filterReasons,
-				p.buildDebugInfo(filterName, nodeInfo))
+		unexpectedErrMsg := ""
+		if !filterStatus.IsRejected() {
+			unexpectedErrMsg = fmt.Sprintf("unexpected filter status %q", filterStatus.Code().String())
 		}
-		return NewPredicateError(
-			InternalPredicateError,
-			filterName,
-			filterMessage,
-			filterReasons,
-			p.buildDebugInfo(filterName, nodeInfo))
+		return clustersnapshot.NewFailingPredicateError(pod, filterName, filterReasons, unexpectedErrMsg, p.failingFilterDebugInfo(filterName, nodeInfo))
 	}
 
 	return nil
 }
 
-func (p *SchedulerBasedPredicateChecker) buildDebugInfo(filterName string, nodeInfo *framework.NodeInfo) func() string {
+func (p *SchedulerBasedPredicateChecker) failingFilterDebugInfo(filterName string, nodeInfo *framework.NodeInfo) string {
+	infoParts := []string{fmt.Sprintf("nodeName: %q", nodeInfo.Node().Name)}
+
 	switch filterName {
 	case "TaintToleration":
-		taints := nodeInfo.Node().Spec.Taints
-		return func() string {
-			return fmt.Sprintf("taints on node: %#v", taints)
-		}
-	default:
-		return emptyString
+		infoParts = append(infoParts, fmt.Sprintf("nodeTaints: %#v", nodeInfo.Node().Spec.Taints))
 	}
+
+	return strings.Join(infoParts, ", ")
 }

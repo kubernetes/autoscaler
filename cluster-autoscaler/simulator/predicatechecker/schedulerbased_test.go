@@ -27,7 +27,7 @@ import (
 	testconfig "k8s.io/autoscaler/cluster-autoscaler/config/test"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
-	scheduler "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -151,9 +151,11 @@ func TestCheckPredicate(t *testing.T) {
 			predicateError := tt.predicateChecker.CheckPredicates(clusterSnapshot, tt.testPod, tt.node.Name)
 			if tt.expectError {
 				assert.NotNil(t, predicateError)
-				assert.Equal(t, NotSchedulablePredicateError, predicateError.ErrorType())
-				assert.Equal(t, "Insufficient cpu", predicateError.Message())
-				assert.Contains(t, predicateError.VerboseMessage(), "Insufficient cpu; predicateName=NodeResourcesFit")
+				assert.Equal(t, clustersnapshot.FailingPredicateError, predicateError.Type())
+				assert.Equal(t, "NodeResourcesFit", predicateError.FailingPredicateName())
+				assert.Equal(t, []string{"Insufficient cpu"}, predicateError.FailingPredicateReasons())
+				assert.Contains(t, predicateError.Error(), "NodeResourcesFit")
+				assert.Contains(t, predicateError.Error(), "Insufficient cpu")
 			} else {
 				assert.Nil(t, predicateError)
 			}
@@ -291,8 +293,9 @@ func TestDebugInfo(t *testing.T) {
 	assert.NoError(t, err)
 	predicateErr := defaultPredicateChecker.CheckPredicates(clusterSnapshot, p1, "n1")
 	assert.NotNil(t, predicateErr)
-	assert.Equal(t, "node(s) had untolerated taint {SomeTaint: WhyNot?}", predicateErr.Message())
-	assert.Contains(t, predicateErr.VerboseMessage(), "RandomTaint")
+	assert.Contains(t, predicateErr.FailingPredicateReasons(), "node(s) had untolerated taint {SomeTaint: WhyNot?}")
+	assert.Contains(t, predicateErr.Error(), "node(s) had untolerated taint {SomeTaint: WhyNot?}")
+	assert.Contains(t, predicateErr.Error(), "RandomTaint")
 
 	// with custom predicate checker
 
