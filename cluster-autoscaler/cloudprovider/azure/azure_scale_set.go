@@ -656,7 +656,7 @@ func (scaleSet *ScaleSet) Nodes() ([]cloudprovider.Instance, error) {
 	if getVMSSError != nil {
 		klog.Errorf("Failed to get current size for vmss %q: %v", scaleSet.Name, getVMSSError.error)
 		if getVMSSError.notFound {
-			return nil, nil // Don't return error if VMSS not found
+			return []cloudprovider.Instance{}, nil // Don't return error if VMSS not found
 		}
 		return nil, getVMSSError.error // We want to return error if other errors occur.
 	}
