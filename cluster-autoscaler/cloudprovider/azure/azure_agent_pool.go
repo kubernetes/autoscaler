@@ -471,6 +471,11 @@ func (as *AgentPool) DeleteNodes(nodes []*apiv1.Node) error {
 	return as.DeleteInstances(refs)
 }
 
+// ForceDeleteNodes deletes nodes from the group regardless of constraints.
+func (as *AgentPool) ForceDeleteNodes(nodes []*apiv1.Node) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // Debug returns a debug string for the agent pool.
 func (as *AgentPool) Debug() string {
 	return fmt.Sprintf("%s (%d:%d)", as.Name, as.MinSize(), as.MaxSize())

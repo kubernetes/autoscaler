@@ -103,6 +103,11 @@ func (n *nodePool) DeleteNodes(nodes []*apiv1.Node) error {
 	return nil
 }
 
+// ForceDeleteNodes deletes nodes from the group regardless of constraints.
+func (n *nodePool) ForceDeleteNodes(nodes []*apiv1.Node) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // DecreaseTargetSize decreases the target size of the node group. This function
 // doesn't permit to delete any existing node and can be used only to reduce the
 // request for new nodes that have not been yet fulfilled. Delta should be negative.

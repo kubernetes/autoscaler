@@ -626,6 +626,11 @@ func (scaleSet *ScaleSet) DeleteNodes(nodes []*apiv1.Node) error {
 	return scaleSet.DeleteInstances(refs, hasUnregisteredNodes)
 }
 
+// ForceDeleteNodes deletes nodes from the group regardless of constraints.
+func (scaleSet *ScaleSet) ForceDeleteNodes(nodes []*apiv1.Node) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // Id returns ScaleSet id.
 func (scaleSet *ScaleSet) Id() string {
 	return scaleSet.Name

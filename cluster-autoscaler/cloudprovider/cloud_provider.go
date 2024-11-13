@@ -195,6 +195,12 @@ type NodeGroup interface {
 	// should wait until node group size is updated. Implementation required.
 	DeleteNodes([]*apiv1.Node) error
 
+	// ForceDeleteNodes deletes nodes from this node group, without checking for
+	// constraints like minimal size validation etc. Error is returned either on
+	// failure or if the given node doesn't belong to this node group. This function
+	// should wait until node group size is updated.
+	ForceDeleteNodes([]*apiv1.Node) error
+
 	// DecreaseTargetSize decreases the target size of the node group. This function
 	// doesn't permit to delete any existing node and can be used only to reduce the
 	// request for new nodes that have not been yet fulfilled. Delta should be negative.
