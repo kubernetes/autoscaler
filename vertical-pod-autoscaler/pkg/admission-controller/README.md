@@ -44,4 +44,3 @@ apiserver.
 The logic to serve that request involves finding the appropriate VPA, retrieving
 current recommendation from it and encodes the recommendation as a json patch to
 the Pod resource.
-

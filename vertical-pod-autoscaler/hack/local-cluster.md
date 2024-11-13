@@ -18,15 +18,18 @@ The External Metrics tests run by configuring a `recommender` to use the Externa
 from the Prometheus Adapter.  With that configuration, it runs the standard `recommender` test suite. 
 
 ## Non-recommender tests
+
 The `recommender` and `recommender-externalmetrics` test work locally, but none of the others do;
 they require more Makefile work.
 
 # Configuration Notes
+
 To support the regular `recommender` tests locally, we've added the stock Kubernetes Metrics Server.
 Unfortunately, it doesn't work with TLS turned on.  The metrics server is being run in insecure mode
 to work around this.  This only runs in the local `kind` case, not in a real cluster.
 
 # RBAC Changes
+
 The local test cases support running the `recommender` with external metrics.  This requires
 additional permissions we don't want to automatically enable for all customers via the 
 configuration given in `deploy/vpa-rbac.yaml`.  The scripts use a context diff `hack/e2e/vpa-rbac.diff`
