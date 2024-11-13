@@ -46,6 +46,26 @@ type DeltaClusterSnapshot struct {
 	data *internalDeltaSnapshotData
 }
 
+func (snapshot *DeltaClusterSnapshot) SchedulePod(pod *apiv1.Pod, nodeName string) SchedulingError {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (snapshot *DeltaClusterSnapshot) SchedulePodOnAnyNodeMatching(pod *apiv1.Pod, nodeMatches func(*framework.NodeInfo) bool) (matchingNode string, err SchedulingError) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (snapshot *DeltaClusterSnapshot) CheckPredicates(pod *apiv1.Pod, nodeName string) SchedulingError {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (snapshot *DeltaClusterSnapshot) UnschedulePod(namespace string, podName string, nodeName string) error {
+	//TODO implement me
+	panic("implement me")
+}
+
 type deltaSnapshotNodeLister DeltaClusterSnapshot
 type deltaSnapshotStorageLister DeltaClusterSnapshot
 
