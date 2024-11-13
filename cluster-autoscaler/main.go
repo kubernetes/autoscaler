@@ -279,6 +279,7 @@ var (
 	checkCapacityBatchProcessing                 = flag.Bool("check-capacity-batch-processing", false, "Whether to enable batch processing for check capacity requests.")
 	checkCapacityProvisioningRequestMaxBatchSize = flag.Int("check-capacity-provisioning-request-max-batch-size", 10, "Maximum number of provisioning requests to process in a single batch.")
 	checkCapacityProvisioningRequestBatchTimebox = flag.Duration("check-capacity-provisioning-request-batch-timebox", 10*time.Second, "Maximum time to process a batch of provisioning requests.")
+	forceDeleteLongUnregisteredNodes             = flag.Bool("force-delete-unregistered-nodes", false, "Whether to enable force deletion of long unregistered nodes, regardless of the min size of the node group the belong to.")
 )
 
 func isFlagPassed(name string) bool {
@@ -457,6 +458,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		CheckCapacityBatchProcessing:                 *checkCapacityBatchProcessing,
 		CheckCapacityProvisioningRequestMaxBatchSize: *checkCapacityProvisioningRequestMaxBatchSize,
 		CheckCapacityProvisioningRequestBatchTimebox: *checkCapacityProvisioningRequestBatchTimebox,
+		ForceDeleteLongUnregisteredNodes:             *forceDeleteLongUnregisteredNodes,
 	}
 }
 

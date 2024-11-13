@@ -307,6 +307,8 @@ type AutoscalingOptions struct {
 	CheckCapacityProvisioningRequestMaxBatchSize int
 	// CheckCapacityProvisioningRequestBatchTimebox is the maximum time to spend processing a batch of provisioning requests
 	CheckCapacityProvisioningRequestBatchTimebox time.Duration
+	// ForceDeleteLongUnregisteredNodes is used to enable/disable ignoring min size constraints during removal of long unregistered nodes
+	ForceDeleteLongUnregisteredNodes bool
 }
 
 // KubeClientOptions specify options for kube client

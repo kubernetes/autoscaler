@@ -785,29 +785,38 @@ func (a *StaticAutoscaler) removeOldUnregisteredNodes(allUnregisteredNodes []clu
 		nodeGroup := nodeGroups[nodeGroupId]
 
 		klog.V(0).Infof("Removing %v unregistered nodes for node group %v", len(unregisteredNodesToDelete), nodeGroupId)
-		size, err := nodeGroup.TargetSize()
-		if err != nil {
-			klog.Warningf("Failed to get node group size; nodeGroup=%v; err=%v", nodeGroup.Id(), err)
-			continue
+		if !a.ForceDeleteLongUnregisteredNodes {
+			size, err := nodeGroup.TargetSize()
+			if err != nil {
+				klog.Warningf("Failed to get node group size; nodeGroup=%v; err=%v", nodeGroup.Id(), err)
+				continue
+			}
+			possibleToDelete := size - nodeGroup.MinSize()
+			if possibleToDelete <= 0 {
+				klog.Warningf("Node group %s min size reached, skipping removal of %v unregistered nodes", nodeGroupId, len(unregisteredNodesToDelete))
+				continue
+			}
+			if len(unregisteredNodesToDelete) > possibleToDelete {
+				klog.Warningf("Capping node group %s unregistered node removal to %d nodes, removing all %d would exceed min size constaint", nodeGroupId, possibleToDelete, len(unregisteredNodesToDelete))
+				unregisteredNodesToDelete = unregisteredNodesToDelete[:possibleToDelete]
+			}
 		}
-		possibleToDelete := size - nodeGroup.MinSize()
-		if possibleToDelete <= 0 {
-			klog.Warningf("Node group %s min size reached, skipping removal of %v unregistered nodes", nodeGroupId, len(unregisteredNodesToDelete))
-			continue
-		}
-		if len(unregisteredNodesToDelete) > possibleToDelete {
-			klog.Warningf("Capping node group %s unregistered node removal to %d nodes, removing all %d would exceed min size constaint", nodeGroupId, possibleToDelete, len(unregisteredNodesToDelete))
-			unregisteredNodesToDelete = unregisteredNodesToDelete[:possibleToDelete]
-		}
-		nodesToDelete := toNodes(unregisteredNodesToDelete)
 
-		nodesToDelete, err = overrideNodesToDeleteForZeroOrMax(a.NodeGroupDefaults, nodeGroup, nodesToDelete)
+		nodesToDelete := toNodes(unregisteredNodesToDelete)
+		nodesToDelete, err := overrideNodesToDeleteForZeroOrMax(a.NodeGroupDefaults, nodeGroup, nodesToDelete)
 		if err != nil {
 			klog.Warningf("Failed to remove unregistered nodes from node group %s: %v", nodeGroupId, err)
 			continue
 		}
 
-		err = nodeGroup.DeleteNodes(nodesToDelete)
+		if a.ForceDeleteLongUnregisteredNodes {
+			err = nodeGroup.ForceDeleteNodes(nodesToDelete)
+			if err == cloudprovider.ErrNotImplemented {
+				err = nodeGroup.DeleteNodes(nodesToDelete)
+			}
+		} else {
+			err = nodeGroup.DeleteNodes(nodesToDelete)
+		}
 		csr.InvalidateNodeInstancesCacheEntry(nodeGroup)
 		if err != nil {
 			klog.Warningf("Failed to remove %v unregistered nodes from node group %s: %v", len(nodesToDelete), nodeGroupId, err)
