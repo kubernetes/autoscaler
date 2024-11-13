@@ -87,6 +87,8 @@ type ScaleSet struct {
 
 	// uses Azure Dedicated Host
 	dedicatedHost bool
+
+	enableFastDeleteOnFailedProvisioning bool
 }
 
 // NewScaleSet creates a new NewScaleSet.
@@ -127,6 +129,8 @@ func NewScaleSet(spec *dynamic.NodeGroupSpec, az *AzureManager, curSize int64, d
 	if az.config.EnableDetailedCSEMessage {
 		klog.V(2).Infof("enableDetailedCSEMessage: %t", scaleSet.enableDetailedCSEMessage)
 	}
+
+	scaleSet.enableFastDeleteOnFailedProvisioning = az.config.EnableFastDeleteOnFailedProvisioning
 
 	return scaleSet, nil
 }
@@ -696,7 +700,7 @@ func (scaleSet *ScaleSet) buildScaleSetCacheForFlex() error {
 		return rerr.Error()
 	}
 
-	scaleSet.instanceCache = buildInstanceCacheForFlex(vms)
+	scaleSet.instanceCache = buildInstanceCacheForFlex(vms, scaleSet.enableFastDeleteOnFailedProvisioning)
 	scaleSet.lastInstanceRefresh = lastRefresh
 
 	return nil
@@ -754,21 +758,21 @@ func (scaleSet *ScaleSet) buildScaleSetCacheForUniform() error {
 // Note that the GetScaleSetVms() results is not used directly because for the List endpoint,
 // their resource ID format is not consistent with Get endpoint
 // buildInstanceCacheForFlex used by orchestrationMode == compute.Flexible
-func buildInstanceCacheForFlex(vms []compute.VirtualMachine) []cloudprovider.Instance {
+func buildInstanceCacheForFlex(vms []compute.VirtualMachine, enableFastDeleteOnFailedProvisioning bool) []cloudprovider.Instance {
 	var instances []cloudprovider.Instance
 	for _, vm := range vms {
 		powerState := vmPowerStateRunning
 		if vm.InstanceView != nil && vm.InstanceView.Statuses != nil {
 			powerState = vmPowerStateFromStatuses(*vm.InstanceView.Statuses)
 		}
-		addVMToCache(&instances, vm.ID, vm.ProvisioningState, powerState)
+		addVMToCache(&instances, vm.ID, vm.ProvisioningState, powerState, enableFastDeleteOnFailedProvisioning)
 	}
 
 	return instances
 }
 
 // addVMToCache used by orchestrationMode == compute.Flexible
-func addVMToCache(instances *[]cloudprovider.Instance, id, provisioningState *string, powerState string) {
+func addVMToCache(instances *[]cloudprovider.Instance, id, provisioningState *string, powerState string, enableFastDeleteOnFailedProvisioning bool) {
 	// The resource ID is empty string, which indicates the instance may be in deleting state.
 	if len(*id) == 0 {
 		return
@@ -783,13 +787,13 @@ func addVMToCache(instances *[]cloudprovider.Instance, id, provisioningState *st
 
 	*instances = append(*instances, cloudprovider.Instance{
 		Id:     azurePrefix + resourceID,
-		Status: instanceStatusFromProvisioningStateAndPowerState(resourceID, provisioningState, powerState),
+		Status: instanceStatusFromProvisioningStateAndPowerState(resourceID, provisioningState, powerState, enableFastDeleteOnFailedProvisioning),
 	})
 }
 
 // instanceStatusFromProvisioningStateAndPowerState converts the VM provisioning state to cloudprovider.InstanceStatus
 // instanceStatusFromProvisioningStateAndPowerState used by orchestrationMode == compute.Flexible
-func instanceStatusFromProvisioningStateAndPowerState(resourceID string, provisioningState *string, powerState string) *cloudprovider.InstanceStatus {
+func instanceStatusFromProvisioningStateAndPowerState(resourceID string, provisioningState *string, powerState string, enableFastDeleteOnFailedProvisioning bool) *cloudprovider.InstanceStatus {
 	if provisioningState == nil {
 		return nil
 	}
@@ -803,21 +807,23 @@ func instanceStatusFromProvisioningStateAndPowerState(resourceID string, provisi
 	case provisioningStateCreating:
 		status.State = cloudprovider.InstanceCreating
 	case provisioningStateFailed:
-		// Provisioning can fail both during instance creation or after the instance is running.
-		// Per https://learn.microsoft.com/en-us/azure/virtual-machines/states-billing#provisioning-states,
-		// ProvisioningState represents the most recent provisioning state, therefore only report
-		// InstanceCreating errors when the power state indicates the instance has not yet started running
-		if !isRunningVmPowerState(powerState) {
-			klog.V(4).Infof("VM %s reports failed provisioning state with non-running power state: %s", resourceID, powerState)
-			status.State = cloudprovider.InstanceCreating
-			status.ErrorInfo = &cloudprovider.InstanceErrorInfo{
-				ErrorClass:   cloudprovider.OutOfResourcesErrorClass,
-				ErrorCode:    "provisioning-state-failed",
-				ErrorMessage: "Azure failed to provision a node for this node group",
+		if enableFastDeleteOnFailedProvisioning {
+			// Provisioning can fail both during instance creation or after the instance is running.
+			// Per https://learn.microsoft.com/en-us/azure/virtual-machines/states-billing#provisioning-states,
+			// ProvisioningState represents the most recent provisioning state, therefore only report
+			// InstanceCreating errors when the power state indicates the instance has not yet started running
+			if !isRunningVmPowerState(powerState) {
+				klog.V(4).Infof("VM %s reports failed provisioning state with non-running power state: %s", resourceID, powerState)
+				status.State = cloudprovider.InstanceCreating
+				status.ErrorInfo = &cloudprovider.InstanceErrorInfo{
+					ErrorClass:   cloudprovider.OutOfResourcesErrorClass,
+					ErrorCode:    "provisioning-state-failed",
+					ErrorMessage: "Azure failed to provision a node for this node group",
+				}
+			} else {
+				klog.V(5).Infof("VM %s reports a failed provisioning state but is running (%s)", resourceID, powerState)
+				status.State = cloudprovider.InstanceRunning
 			}
-		} else {
-			klog.V(5).Infof("VM %s reports a failed provisioning state but is running (%s)", resourceID, powerState)
-			status.State = cloudprovider.InstanceRunning
 		}
 	default:
 		status.State = cloudprovider.InstanceRunning
