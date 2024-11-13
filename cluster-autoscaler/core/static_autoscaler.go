@@ -49,6 +49,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
+	ca_utils "k8s.io/autoscaler/cluster-autoscaler/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
 	caerrors "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -68,9 +69,6 @@ const (
 	// The idea is that nodes with GPU are very expensive and we're ready to sacrifice
 	// a bit more latency to wait for more pods and make a more informed scale-up decision.
 	unschedulablePodWithGpuTimeBuffer = 30 * time.Second
-
-	// NodeUpcomingAnnotation is an annotation CA adds to nodes which are upcoming.
-	NodeUpcomingAnnotation = "cluster-autoscaler.k8s.io/upcoming-node"
 
 	// podScaleUpDelayAnnotationKey is an annotation how long pod can wait to be scaled up.
 	podScaleUpDelayAnnotationKey = "cluster-autoscaler.kubernetes.io/pod-scale-up-delay"
@@ -1027,7 +1025,7 @@ func getUpcomingNodeInfos(upcomingCounts map[string]int, nodeInfos map[string]*f
 		if nodeTemplate.Node().Annotations == nil {
 			nodeTemplate.Node().Annotations = make(map[string]string)
 		}
-		nodeTemplate.Node().Annotations[NodeUpcomingAnnotation] = "true"
+		nodeTemplate.Node().Annotations[ca_utils.NodeUpcomingAnnotation] = "true"
 
 		var nodes []*framework.NodeInfo
 		for i := 0; i < numberOfNodes; i++ {
