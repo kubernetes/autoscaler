@@ -25,7 +25,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/testsnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
@@ -209,7 +209,7 @@ func TestBinpackingEstimate(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot()
+			clusterSnapshot := testsnapshot.NewTestSnapshotOrDie(t)
 			// Add one node in different zone to trigger topology spread constraints
 			err := clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(makeNode(100, 100, 10, "oldnode", "zone-jupiter")))
 			assert.NoError(t, err)
@@ -265,7 +265,7 @@ func BenchmarkBinpackingEstimate(b *testing.B) {
 	}
 
 	for i := 0; i < b.N; i++ {
-		clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot()
+		clusterSnapshot := testsnapshot.NewTestSnapshotOrDie(b)
 		err := clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(makeNode(100, 100, 10, "oldnode", "zone-jupiter")))
 		assert.NoError(b, err)
 

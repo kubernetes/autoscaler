@@ -284,7 +284,6 @@ func TestDebugInfo(t *testing.T) {
 	SetNodeReadyState(node1, true, time.Time{})
 
 	clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot()
-
 	err := clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(node1))
 	assert.NoError(t, err)
 

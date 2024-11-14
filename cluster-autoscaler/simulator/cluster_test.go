@@ -27,6 +27,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/testsnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
@@ -56,7 +57,7 @@ func TestFindEmptyNodes(t *testing.T) {
 		types.ConfigMirrorAnnotationKey: "",
 	}
 
-	clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot()
+	clusterSnapshot := testsnapshot.NewTestSnapshotOrDie(t)
 	clustersnapshot.InitializeClusterSnapshotOrDie(t, clusterSnapshot, []*apiv1.Node{nodes[0], nodes[1], nodes[2], nodes[3]}, []*apiv1.Pod{pod1, pod2})
 	testTime := time.Date(2020, time.December, 18, 17, 0, 0, 0, time.UTC)
 	r := NewRemovalSimulator(nil, clusterSnapshot, nil, testDeleteOptions(), nil, false)
@@ -138,7 +139,7 @@ func TestFindNodesToRemove(t *testing.T) {
 		PodsToReschedule: []*apiv1.Pod{pod1, pod2},
 	}
 
-	clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot()
+	clusterSnapshot := testsnapshot.NewTestSnapshotOrDie(t)
 	predicateChecker, err := predicatechecker.NewTestPredicateChecker()
 	assert.NoError(t, err)
 

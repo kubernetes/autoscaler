@@ -24,6 +24,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/testsnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
@@ -133,7 +134,7 @@ func TestTrySchedulePods(t *testing.T) {
 		tc := tc
 		t.Run(tc.desc, func(t *testing.T) {
 			t.Parallel()
-			clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot()
+			clusterSnapshot := testsnapshot.NewTestSnapshotOrDie(t)
 			predicateChecker, err := predicatechecker.NewTestPredicateChecker()
 			assert.NoError(t, err)
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, clusterSnapshot, tc.nodes, tc.pods)
@@ -210,7 +211,7 @@ func TestPodSchedulesOnHintedNode(t *testing.T) {
 		tc := tc
 		t.Run(tc.desc, func(t *testing.T) {
 			t.Parallel()
-			clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot()
+			clusterSnapshot := testsnapshot.NewTestSnapshotOrDie(t)
 			predicateChecker, err := predicatechecker.NewTestPredicateChecker()
 			assert.NoError(t, err)
 			nodes := make([]*apiv1.Node, 0, len(tc.nodeNames))
