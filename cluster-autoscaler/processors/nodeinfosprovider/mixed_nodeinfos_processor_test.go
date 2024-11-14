@@ -28,7 +28,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/testsnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
@@ -76,18 +75,14 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
 	registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
 
-	predicateChecker, err := predicatechecker.NewTestPredicateChecker()
-	assert.NoError(t, err)
-
 	nodes := []*apiv1.Node{justReady5, unready4, unready3, ready2, ready1}
 	snapshot := testsnapshot.NewTestSnapshotOrDie(t)
-	err = snapshot.SetClusterState(nodes, nil)
+	err := snapshot.SetClusterState(nodes, nil)
 	assert.NoError(t, err)
 
 	ctx := context.AutoscalingContext{
-		CloudProvider:    provider1,
-		ClusterSnapshot:  snapshot,
-		PredicateChecker: predicateChecker,
+		CloudProvider:   provider1,
+		ClusterSnapshot: snapshot,
 		AutoscalingKubeClients: context.AutoscalingKubeClients{
 			ListerRegistry: registry,
 		},
@@ -113,9 +108,8 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 
 	// Test for a nodegroup without nodes and TemplateNodeInfo not implemented by cloud proivder
 	ctx = context.AutoscalingContext{
-		CloudProvider:    provider2,
-		ClusterSnapshot:  testsnapshot.NewTestSnapshotOrDie(t),
-		PredicateChecker: predicateChecker,
+		CloudProvider:   provider2,
+		ClusterSnapshot: testsnapshot.NewTestSnapshotOrDie(t),
 		AutoscalingKubeClients: context.AutoscalingKubeClients{
 			ListerRegistry: registry,
 		},
@@ -167,19 +161,15 @@ func TestGetNodeInfosForGroupsCache(t *testing.T) {
 	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
 	registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
 
-	predicateChecker, err := predicatechecker.NewTestPredicateChecker()
-	assert.NoError(t, err)
-
 	nodes := []*apiv1.Node{unready4, unready3, ready2, ready1}
 	snapshot := testsnapshot.NewTestSnapshotOrDie(t)
-	err = snapshot.SetClusterState(nodes, nil)
+	err := snapshot.SetClusterState(nodes, nil)
 	assert.NoError(t, err)
 
 	// Fill cache
 	ctx := context.AutoscalingContext{
-		CloudProvider:    provider1,
-		ClusterSnapshot:  snapshot,
-		PredicateChecker: predicateChecker,
+		CloudProvider:   provider1,
+		ClusterSnapshot: snapshot,
 		AutoscalingKubeClients: context.AutoscalingKubeClients{
 			ListerRegistry: registry,
 		},
@@ -261,18 +251,15 @@ func TestGetNodeInfosCacheExpired(t *testing.T) {
 	provider := testprovider.NewTestAutoprovisioningCloudProvider(nil, nil, nil, nil, nil, nil)
 	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
 	registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil)
-	predicateChecker, err := predicatechecker.NewTestPredicateChecker()
-	assert.NoError(t, err)
 
 	nodes := []*apiv1.Node{ready1}
 	snapshot := testsnapshot.NewTestSnapshotOrDie(t)
-	err = snapshot.SetClusterState(nodes, nil)
+	err := snapshot.SetClusterState(nodes, nil)
 	assert.NoError(t, err)
 
 	ctx := context.AutoscalingContext{
-		CloudProvider:    provider,
-		ClusterSnapshot:  snapshot,
-		PredicateChecker: predicateChecker,
+		CloudProvider:   provider,
+		ClusterSnapshot: snapshot,
 		AutoscalingKubeClients: context.AutoscalingKubeClients{
 			ListerRegistry: registry,
 		},

@@ -23,6 +23,10 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"k8s.io/client-go/informers"
+	clientsetfake "k8s.io/client-go/kubernetes/fake"
+	"k8s.io/kubernetes/pkg/scheduler/apis/config"
+	scheduler_config_latest "k8s.io/kubernetes/pkg/scheduler/apis/config/latest"
 
 	testconfig "k8s.io/autoscaler/cluster-autoscaler/config/test"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
@@ -45,7 +49,7 @@ func TestCheckPredicate(t *testing.T) {
 	n1000Unschedulable := BuildTestNode("n1000", 1000, 2000000)
 	SetNodeReadyState(n1000Unschedulable, true, time.Time{})
 
-	defaultPredicateChecker, err := NewTestPredicateChecker()
+	defaultPredicateChecker, err := newTestPredicateChecker()
 	assert.NoError(t, err)
 
 	// temp dir
@@ -64,7 +68,7 @@ func TestCheckPredicate(t *testing.T) {
 
 	customConfig, err := scheduler.ConfigFromPath(customConfigFile)
 	assert.NoError(t, err)
-	customPredicateChecker, err := NewTestPredicateCheckerWithCustomConfig(customConfig)
+	customPredicateChecker, err := newTestPredicateCheckerWithCustomConfig(customConfig)
 	assert.NoError(t, err)
 
 	tests := []struct {
@@ -72,7 +76,7 @@ func TestCheckPredicate(t *testing.T) {
 		node             *apiv1.Node
 		scheduledPods    []*apiv1.Pod
 		testPod          *apiv1.Pod
-		predicateChecker PredicateChecker
+		predicateChecker *SchedulerBasedPredicateChecker
 		expectError      bool
 	}{
 		// default predicate checker test cases
@@ -172,7 +176,7 @@ func TestFitsAnyNode(t *testing.T) {
 	n1000 := BuildTestNode("n1000", 1000, 2000000)
 	n2000 := BuildTestNode("n2000", 2000, 2000000)
 
-	defaultPredicateChecker, err := NewTestPredicateChecker()
+	defaultPredicateChecker, err := newTestPredicateChecker()
 	assert.NoError(t, err)
 
 	// temp dir
@@ -191,12 +195,12 @@ func TestFitsAnyNode(t *testing.T) {
 
 	customConfig, err := scheduler.ConfigFromPath(customConfigFile)
 	assert.NoError(t, err)
-	customPredicateChecker, err := NewTestPredicateCheckerWithCustomConfig(customConfig)
+	customPredicateChecker, err := newTestPredicateCheckerWithCustomConfig(customConfig)
 	assert.NoError(t, err)
 
 	testCases := []struct {
 		name             string
-		predicateChecker PredicateChecker
+		predicateChecker *SchedulerBasedPredicateChecker
 		pod              *apiv1.Pod
 		expectedNodes    []string
 		expectError      bool
@@ -289,7 +293,7 @@ func TestDebugInfo(t *testing.T) {
 	assert.NoError(t, err)
 
 	// with default predicate checker
-	defaultPredicateChecker, err := NewTestPredicateChecker()
+	defaultPredicateChecker, err := newTestPredicateChecker()
 	assert.NoError(t, err)
 	predicateErr := defaultPredicateChecker.CheckPredicates(clusterSnapshot, p1, "n1")
 	assert.NotNil(t, predicateErr)
@@ -315,8 +319,27 @@ func TestDebugInfo(t *testing.T) {
 
 	customConfig, err := scheduler.ConfigFromPath(customConfigFile)
 	assert.NoError(t, err)
-	customPredicateChecker, err := NewTestPredicateCheckerWithCustomConfig(customConfig)
+	customPredicateChecker, err := newTestPredicateCheckerWithCustomConfig(customConfig)
 	assert.NoError(t, err)
 	predicateErr = customPredicateChecker.CheckPredicates(clusterSnapshot, p1, "n1")
 	assert.Nil(t, predicateErr)
+}
+
+// newTestPredicateChecker builds test version of PredicateChecker.
+func newTestPredicateChecker() (*SchedulerBasedPredicateChecker, error) {
+	defaultConfig, err := scheduler_config_latest.Default()
+	if err != nil {
+		return nil, err
+	}
+	return newTestPredicateCheckerWithCustomConfig(defaultConfig)
+}
+
+// newTestPredicateCheckerWithCustomConfig builds test version of PredicateChecker with custom scheduler config.
+func newTestPredicateCheckerWithCustomConfig(schedConfig *config.KubeSchedulerConfiguration) (*SchedulerBasedPredicateChecker, error) {
+	// just call out to NewSchedulerBasedPredicateChecker but use fake kubeClient
+	fwHandle, err := framework.NewHandle(informers.NewSharedInformerFactory(clientsetfake.NewSimpleClientset(), 0), schedConfig)
+	if err != nil {
+		return nil, err
+	}
+	return NewSchedulerBasedPredicateChecker(fwHandle), nil
 }

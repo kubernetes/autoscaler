@@ -465,7 +465,6 @@ func (o *ScaleUpOrchestrator) ComputeExpansionOption(
 
 	estimateStart := time.Now()
 	expansionEstimator := o.estimatorBuilder(
-		o.autoscalingContext.PredicateChecker,
 		o.autoscalingContext.ClusterSnapshot,
 		estimator.NewEstimationContext(o.autoscalingContext.MaxNodesTotal, option.SimilarNodeGroups, currentNodeCount),
 	)
@@ -577,7 +576,7 @@ func (o *ScaleUpOrchestrator) SchedulablePodGroups(
 	var schedulablePodGroups []estimator.PodEquivalenceGroup
 	for _, eg := range podEquivalenceGroups {
 		samplePod := eg.Pods[0]
-		if err := o.autoscalingContext.PredicateChecker.CheckPredicates(o.autoscalingContext.ClusterSnapshot, samplePod, nodeInfo.Node().Name); err == nil {
+		if err := o.autoscalingContext.ClusterSnapshot.CheckPredicates(samplePod, nodeInfo.Node().Name); err == nil {
 			// Add pods to option.
 			schedulablePodGroups = append(schedulablePodGroups, estimator.PodEquivalenceGroup{
 				Pods: eg.Pods,

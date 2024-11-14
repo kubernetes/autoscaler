@@ -27,7 +27,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/testsnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 )
@@ -214,11 +213,9 @@ func TestBinpackingEstimate(t *testing.T) {
 			err := clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(makeNode(100, 100, 10, "oldnode", "zone-jupiter")))
 			assert.NoError(t, err)
 
-			predicateChecker, err := predicatechecker.NewTestPredicateChecker()
-			assert.NoError(t, err)
 			limiter := NewThresholdBasedEstimationLimiter([]Threshold{NewStaticThreshold(tc.maxNodes, time.Duration(0))})
 			processor := NewDecreasingPodOrderer()
-			estimator := NewBinpackingNodeEstimator(predicateChecker, clusterSnapshot, limiter, processor, nil /* EstimationContext */, nil /* EstimationAnalyserFunc */)
+			estimator := NewBinpackingNodeEstimator(clusterSnapshot, limiter, processor, nil /* EstimationContext */, nil /* EstimationAnalyserFunc */)
 			node := makeNode(tc.millicores, tc.memory, 10, "template", "zone-mars")
 			nodeInfo := framework.NewTestNodeInfo(node)
 
@@ -269,11 +266,9 @@ func BenchmarkBinpackingEstimate(b *testing.B) {
 		err := clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(makeNode(100, 100, 10, "oldnode", "zone-jupiter")))
 		assert.NoError(b, err)
 
-		predicateChecker, err := predicatechecker.NewTestPredicateChecker()
-		assert.NoError(b, err)
 		limiter := NewThresholdBasedEstimationLimiter([]Threshold{NewStaticThreshold(maxNodes, time.Duration(0))})
 		processor := NewDecreasingPodOrderer()
-		estimator := NewBinpackingNodeEstimator(predicateChecker, clusterSnapshot, limiter, processor, nil /* EstimationContext */, nil /* EstimationAnalyserFunc */)
+		estimator := NewBinpackingNodeEstimator(clusterSnapshot, limiter, processor, nil /* EstimationContext */, nil /* EstimationAnalyserFunc */)
 		node := makeNode(millicores, memory, podsPerNode, "template", "zone-mars")
 		nodeInfo := framework.NewTestNodeInfo(node)
 
