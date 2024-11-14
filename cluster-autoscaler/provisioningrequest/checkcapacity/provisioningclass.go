@@ -44,6 +44,10 @@ import (
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
+const (
+	NoRetryParameter = "noRetry"
+)
+
 type checkCapacityProvClass struct {
 	context                                      *context.AutoscalingContext
 	client                                       *provreqclient.ProvisioningRequestClient
@@ -139,7 +143,11 @@ func (o *checkCapacityProvClass) checkcapacity(unschedulablePods []*apiv1.Pod, p
 	err, cleanupErr := clustersnapshot.WithForkedSnapshot(o.context.ClusterSnapshot, func() (bool, error) {
 		st, _, err := o.schedulingSimulator.TrySchedulePods(o.context.ClusterSnapshot, unschedulablePods, scheduling.ScheduleAnywhere, true)
 		if len(st) < len(unschedulablePods) || err != nil {
-			conditions.AddOrUpdateCondition(provReq, v1.Provisioned, metav1.ConditionFalse, conditions.CapacityIsNotFoundReason, "Capacity is not found, CA will try to find it later.", metav1.Now())
+			if _, ok := provReq.Spec.Parameters[NoRetryParameter]; ok {
+				conditions.AddOrUpdateCondition(provReq, v1.Failed, metav1.ConditionTrue, conditions.CapacityIsNotFoundReason, "CA could not find requested capacity", metav1.Now())
+			} else {
+				conditions.AddOrUpdateCondition(provReq, v1.Provisioned, metav1.ConditionFalse, conditions.CapacityIsNotFoundReason, "Capacity is not found, CA will try to find it later.", metav1.Now())
+			}
 			capacityAvailable = false
 		} else {
 			conditions.AddOrUpdateCondition(provReq, v1.Provisioned, metav1.ConditionTrue, conditions.CapacityIsFoundReason, conditions.CapacityIsFoundMsg, metav1.Now())
