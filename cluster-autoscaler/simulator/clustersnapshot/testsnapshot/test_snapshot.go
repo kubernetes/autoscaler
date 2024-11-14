@@ -34,7 +34,7 @@ func NewTestSnapshot() (clustersnapshot.ClusterSnapshot, error) {
 	if err != nil {
 		return nil, err
 	}
-	return predicate.NewPredicateSnapshot(store.NewBasicClusterSnapshot(), testFwHandle), nil
+	return predicate.NewPredicateSnapshot(store.NewBasicSnapshotStore(), testFwHandle), nil
 }
 
 // NewTestSnapshotOrDie returns an instance of ClusterSnapshot that can be used in tests.

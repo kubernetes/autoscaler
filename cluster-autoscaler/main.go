@@ -505,7 +505,7 @@ func buildAutoscaler(context ctx.Context, debuggingSnapshotter debuggingsnapshot
 	opts := core.AutoscalerOptions{
 		AutoscalingOptions:   autoscalingOptions,
 		FrameworkHandle:      fwHandle,
-		ClusterSnapshot:      predicate.NewPredicateSnapshot(store.NewDeltaClusterSnapshot(), fwHandle),
+		ClusterSnapshot:      predicate.NewPredicateSnapshot(store.NewDeltaSnapshotStore(), fwHandle),
 		KubeClient:           kubeClient,
 		InformerFactory:      informerFactory,
 		DebuggingSnapshotter: debuggingSnapshotter,

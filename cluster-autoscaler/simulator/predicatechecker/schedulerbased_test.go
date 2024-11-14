@@ -145,7 +145,7 @@ func TestCheckPredicate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var err error
-			clusterSnapshot := store.NewBasicClusterSnapshot()
+			clusterSnapshot := store.NewBasicSnapshotStore()
 			err = clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(tt.node, tt.scheduledPods...))
 			assert.NoError(t, err)
 
@@ -247,7 +247,7 @@ func TestFitsAnyNode(t *testing.T) {
 		},
 	}
 
-	clusterSnapshot := store.NewBasicClusterSnapshot()
+	clusterSnapshot := store.NewBasicSnapshotStore()
 	err = clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(n1000))
 	assert.NoError(t, err)
 	err = clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(n2000))
@@ -284,7 +284,7 @@ func TestDebugInfo(t *testing.T) {
 	}
 	SetNodeReadyState(node1, true, time.Time{})
 
-	clusterSnapshot := store.NewBasicClusterSnapshot()
+	clusterSnapshot := store.NewBasicSnapshotStore()
 	err := clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(node1))
 	assert.NoError(t, err)
 
