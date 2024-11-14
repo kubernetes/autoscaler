@@ -20,27 +20,26 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 )
 
 // PredicateSnapshot implements ClusterSnapshot on top of a ClusterSnapshotStore by using
 // SchedulerBasedPredicateChecker to check scheduler predicates.
 type PredicateSnapshot struct {
 	clustersnapshot.ClusterSnapshotStore
-	predicateChecker *predicatechecker.SchedulerBasedPredicateChecker
+	pluginRunner *SchedulerPluginRunner
 }
 
 // NewPredicateSnapshot builds a PredicateSnapshot.
 func NewPredicateSnapshot(snapshotStore clustersnapshot.ClusterSnapshotStore, fwHandle *framework.Handle) *PredicateSnapshot {
 	return &PredicateSnapshot{
 		ClusterSnapshotStore: snapshotStore,
-		predicateChecker:     predicatechecker.NewSchedulerBasedPredicateChecker(fwHandle),
+		pluginRunner:         NewSchedulerPluginRunner(fwHandle, snapshotStore),
 	}
 }
 
 // SchedulePod adds pod to the snapshot and schedules it to given node.
 func (s *PredicateSnapshot) SchedulePod(pod *apiv1.Pod, nodeName string) clustersnapshot.SchedulingError {
-	if schedErr := s.predicateChecker.CheckPredicates(s, pod, nodeName); schedErr != nil {
+	if schedErr := s.pluginRunner.RunFiltersOnNode(pod, nodeName); schedErr != nil {
 		return schedErr
 	}
 	if err := s.ClusterSnapshotStore.ForceAddPod(pod, nodeName); err != nil {
@@ -51,7 +50,7 @@ func (s *PredicateSnapshot) SchedulePod(pod *apiv1.Pod, nodeName string) cluster
 
 // SchedulePodOnAnyNodeMatching adds pod to the snapshot and schedules it to any node matching the provided function.
 func (s *PredicateSnapshot) SchedulePodOnAnyNodeMatching(pod *apiv1.Pod, anyNodeMatching func(*framework.NodeInfo) bool) (string, clustersnapshot.SchedulingError) {
-	nodeName, schedErr := s.predicateChecker.FitsAnyNodeMatching(s, pod, anyNodeMatching)
+	nodeName, schedErr := s.pluginRunner.RunFiltersUntilPassingNode(pod, anyNodeMatching)
 	if schedErr != nil {
 		return "", schedErr
 	}
@@ -68,5 +67,5 @@ func (s *PredicateSnapshot) UnschedulePod(namespace string, podName string, node
 
 // CheckPredicates checks whether scheduler predicates pass for the given pod on the given node.
 func (s *PredicateSnapshot) CheckPredicates(pod *apiv1.Pod, nodeName string) clustersnapshot.SchedulingError {
-	return s.predicateChecker.CheckPredicates(s, pod, nodeName)
+	return s.pluginRunner.RunFiltersOnNode(pod, nodeName)
 }
