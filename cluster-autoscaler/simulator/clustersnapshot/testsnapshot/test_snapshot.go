@@ -19,6 +19,7 @@ package testsnapshot
 import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/predicate"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/store"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 )
 
@@ -33,7 +34,7 @@ func NewTestSnapshot() (clustersnapshot.ClusterSnapshot, error) {
 	if err != nil {
 		return nil, err
 	}
-	return predicate.NewPredicateSnapshot(clustersnapshot.NewBasicClusterSnapshot(), testFwHandle), nil
+	return predicate.NewPredicateSnapshot(store.NewBasicClusterSnapshot(), testFwHandle), nil
 }
 
 // NewTestSnapshotOrDie returns an instance of ClusterSnapshot that can be used in tests.

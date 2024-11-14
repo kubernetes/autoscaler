@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package clustersnapshot
+package store
 
 import (
 	"fmt"
@@ -22,6 +22,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 )
 
@@ -45,7 +46,7 @@ func BenchmarkBuildNodeInfoList(b *testing.B) {
 
 	for _, tc := range testCases {
 		b.Run(fmt.Sprintf("fork add 1000 to %d", tc.nodeCount), func(b *testing.B) {
-			nodes := CreateTestNodes(tc.nodeCount + 1000)
+			nodes := clustersnapshot.CreateTestNodes(tc.nodeCount + 1000)
 			clusterSnapshot := NewDeltaClusterSnapshot()
 			if err := clusterSnapshot.SetClusterState(nodes[:tc.nodeCount], nil); err != nil {
 				assert.NoError(b, err)
@@ -65,7 +66,7 @@ func BenchmarkBuildNodeInfoList(b *testing.B) {
 	}
 	for _, tc := range testCases {
 		b.Run(fmt.Sprintf("base %d", tc.nodeCount), func(b *testing.B) {
-			nodes := CreateTestNodes(tc.nodeCount)
+			nodes := clustersnapshot.CreateTestNodes(tc.nodeCount)
 			clusterSnapshot := NewDeltaClusterSnapshot()
 			if err := clusterSnapshot.SetClusterState(nodes, nil); err != nil {
 				assert.NoError(b, err)

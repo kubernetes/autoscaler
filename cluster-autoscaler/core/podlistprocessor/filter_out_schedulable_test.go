@@ -25,6 +25,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/store"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/testsnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
@@ -252,10 +253,10 @@ func BenchmarkFilterOutSchedulable(b *testing.B) {
 	}
 	snapshots := map[string]func() clustersnapshot.ClusterSnapshot{
 		"basic": func() clustersnapshot.ClusterSnapshot {
-			return testsnapshot.NewCustomTestSnapshotOrDie(b, clustersnapshot.NewBasicClusterSnapshot())
+			return testsnapshot.NewCustomTestSnapshotOrDie(b, store.NewBasicClusterSnapshot())
 		},
 		"delta": func() clustersnapshot.ClusterSnapshot {
-			return testsnapshot.NewCustomTestSnapshotOrDie(b, clustersnapshot.NewDeltaClusterSnapshot())
+			return testsnapshot.NewCustomTestSnapshotOrDie(b, store.NewDeltaClusterSnapshot())
 		},
 	}
 	for snapshotName, snapshotFactory := range snapshots {

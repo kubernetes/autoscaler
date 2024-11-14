@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Kubernetes Authors.
+Copyright 2024 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,12 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package clustersnapshot
+package store
 
 import (
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
@@ -70,7 +71,7 @@ func (data *internalBasicSnapshotData) getNodeInfo(nodeName string) (*schedulerf
 	if v, ok := data.nodeInfoMap[nodeName]; ok {
 		return v, nil
 	}
-	return nil, ErrNodeNotFound
+	return nil, clustersnapshot.ErrNodeNotFound
 }
 
 func (data *internalBasicSnapshotData) isPVCUsedByPods(key string) bool {
@@ -155,7 +156,7 @@ func (data *internalBasicSnapshotData) addNode(node *apiv1.Node) error {
 
 func (data *internalBasicSnapshotData) removeNodeInfo(nodeName string) error {
 	if _, found := data.nodeInfoMap[nodeName]; !found {
-		return ErrNodeNotFound
+		return clustersnapshot.ErrNodeNotFound
 	}
 	for _, pod := range data.nodeInfoMap[nodeName].Pods {
 		data.removePvcUsedByPod(pod.Pod)
@@ -166,7 +167,7 @@ func (data *internalBasicSnapshotData) removeNodeInfo(nodeName string) error {
 
 func (data *internalBasicSnapshotData) addPod(pod *apiv1.Pod, nodeName string) error {
 	if _, found := data.nodeInfoMap[nodeName]; !found {
-		return ErrNodeNotFound
+		return clustersnapshot.ErrNodeNotFound
 	}
 	data.nodeInfoMap[nodeName].AddPod(pod)
 	data.addPvcUsedByPod(pod)
@@ -176,7 +177,7 @@ func (data *internalBasicSnapshotData) addPod(pod *apiv1.Pod, nodeName string) e
 func (data *internalBasicSnapshotData) removePod(namespace, podName, nodeName string) error {
 	nodeInfo, found := data.nodeInfoMap[nodeName]
 	if !found {
-		return ErrNodeNotFound
+		return clustersnapshot.ErrNodeNotFound
 	}
 	logger := klog.Background()
 	for _, podInfo := range nodeInfo.Pods {

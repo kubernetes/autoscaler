@@ -24,6 +24,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/store"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
@@ -37,14 +38,14 @@ var snapshots = map[string]func() (clustersnapshot.ClusterSnapshot, error){
 		if err != nil {
 			return nil, err
 		}
-		return NewPredicateSnapshot(clustersnapshot.NewBasicClusterSnapshot(), fwHandle), nil
+		return NewPredicateSnapshot(store.NewBasicClusterSnapshot(), fwHandle), nil
 	},
 	"delta": func() (clustersnapshot.ClusterSnapshot, error) {
 		fwHandle, err := framework.NewTestFrameworkHandle()
 		if err != nil {
 			return nil, err
 		}
-		return NewPredicateSnapshot(clustersnapshot.NewDeltaClusterSnapshot(), fwHandle), nil
+		return NewPredicateSnapshot(store.NewDeltaClusterSnapshot(), fwHandle), nil
 	},
 }
 
