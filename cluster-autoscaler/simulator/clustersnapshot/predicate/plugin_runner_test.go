@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Kubernetes Authors.
+Copyright 2024 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package predicatechecker
+package predicate
 
 import (
 	"os"
@@ -23,6 +23,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+
 	"k8s.io/client-go/informers"
 	clientsetfake "k8s.io/client-go/kubernetes/fake"
 	"k8s.io/kubernetes/pkg/scheduler/apis/config"
@@ -38,7 +39,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 )
 
-func TestCheckPredicate(t *testing.T) {
+func TestRunFiltersOnNode(t *testing.T) {
 	p450 := BuildTestPod("p450", 450, 500000)
 	p600 := BuildTestPod("p600", 600, 500000)
 	p8000 := BuildTestPod("p8000", 8000, 0)
@@ -48,9 +49,6 @@ func TestCheckPredicate(t *testing.T) {
 	SetNodeReadyState(n1000, true, time.Time{})
 	n1000Unschedulable := BuildTestNode("n1000", 1000, 2000000)
 	SetNodeReadyState(n1000Unschedulable, true, time.Time{})
-
-	defaultPredicateChecker, err := newTestPredicateChecker()
-	assert.NoError(t, err)
 
 	// temp dir
 	tmpDir, err := os.MkdirTemp("", "scheduler-configs")
@@ -65,95 +63,90 @@ func TestCheckPredicate(t *testing.T) {
 		os.FileMode(0600)); err != nil {
 		t.Fatal(err)
 	}
-
 	customConfig, err := scheduler.ConfigFromPath(customConfigFile)
-	assert.NoError(t, err)
-	customPredicateChecker, err := newTestPredicateCheckerWithCustomConfig(customConfig)
 	assert.NoError(t, err)
 
 	tests := []struct {
-		name             string
-		node             *apiv1.Node
-		scheduledPods    []*apiv1.Pod
-		testPod          *apiv1.Pod
-		predicateChecker *SchedulerBasedPredicateChecker
-		expectError      bool
+		name          string
+		customConfig  *config.KubeSchedulerConfiguration
+		node          *apiv1.Node
+		scheduledPods []*apiv1.Pod
+		testPod       *apiv1.Pod
+		expectError   bool
 	}{
 		// default predicate checker test cases
 		{
-			name:             "default - other pod - insuficient cpu",
-			node:             n1000,
-			scheduledPods:    []*apiv1.Pod{p450},
-			testPod:          p600,
-			expectError:      true,
-			predicateChecker: defaultPredicateChecker,
+			name:          "default - other pod - insuficient cpu",
+			node:          n1000,
+			scheduledPods: []*apiv1.Pod{p450},
+			testPod:       p600,
+			expectError:   true,
 		},
 		{
-			name:             "default - other pod - ok",
-			node:             n1000,
-			scheduledPods:    []*apiv1.Pod{p450},
-			testPod:          p500,
-			expectError:      false,
-			predicateChecker: defaultPredicateChecker,
+			name:          "default - other pod - ok",
+			node:          n1000,
+			scheduledPods: []*apiv1.Pod{p450},
+			testPod:       p500,
+			expectError:   false,
 		},
 		{
-			name:             "default - empty - insuficient cpu",
-			node:             n1000,
-			scheduledPods:    []*apiv1.Pod{},
-			testPod:          p8000,
-			expectError:      true,
-			predicateChecker: defaultPredicateChecker,
+			name:          "default - empty - insuficient cpu",
+			node:          n1000,
+			scheduledPods: []*apiv1.Pod{},
+			testPod:       p8000,
+			expectError:   true,
 		},
 		{
-			name:             "default - empty - ok",
-			node:             n1000,
-			scheduledPods:    []*apiv1.Pod{},
-			testPod:          p600,
-			expectError:      false,
-			predicateChecker: defaultPredicateChecker,
+			name:          "default - empty - ok",
+			node:          n1000,
+			scheduledPods: []*apiv1.Pod{},
+			testPod:       p600,
+			expectError:   false,
 		},
 		// custom predicate checker test cases
 		{
-			name:             "custom - other pod - ok",
-			node:             n1000,
-			scheduledPods:    []*apiv1.Pod{p450},
-			testPod:          p600,
-			expectError:      false,
-			predicateChecker: customPredicateChecker,
+			name:          "custom - other pod - ok",
+			node:          n1000,
+			scheduledPods: []*apiv1.Pod{p450},
+			testPod:       p600,
+			expectError:   false,
+			customConfig:  customConfig,
 		},
 		{
-			name:             "custom -other pod - ok",
-			node:             n1000,
-			scheduledPods:    []*apiv1.Pod{p450},
-			testPod:          p500,
-			expectError:      false,
-			predicateChecker: customPredicateChecker,
+			name:          "custom -other pod - ok",
+			node:          n1000,
+			scheduledPods: []*apiv1.Pod{p450},
+			testPod:       p500,
+			expectError:   false,
+			customConfig:  customConfig,
 		},
 		{
-			name:             "custom -empty - ok",
-			node:             n1000,
-			scheduledPods:    []*apiv1.Pod{},
-			testPod:          p8000,
-			expectError:      false,
-			predicateChecker: customPredicateChecker,
+			name:          "custom -empty - ok",
+			node:          n1000,
+			scheduledPods: []*apiv1.Pod{},
+			testPod:       p8000,
+			expectError:   false,
+			customConfig:  customConfig,
 		},
 		{
-			name:             "custom -empty - ok",
-			node:             n1000,
-			scheduledPods:    []*apiv1.Pod{},
-			testPod:          p600,
-			expectError:      false,
-			predicateChecker: customPredicateChecker,
+			name:          "custom -empty - ok",
+			node:          n1000,
+			scheduledPods: []*apiv1.Pod{},
+			testPod:       p600,
+			expectError:   false,
+			customConfig:  customConfig,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			var err error
-			clusterSnapshot := store.NewBasicSnapshotStore()
-			err = clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(tt.node, tt.scheduledPods...))
+			snapshotStore := store.NewBasicSnapshotStore()
+			err := snapshotStore.AddNodeInfo(framework.NewTestNodeInfo(tt.node, tt.scheduledPods...))
 			assert.NoError(t, err)
 
-			predicateError := tt.predicateChecker.CheckPredicates(clusterSnapshot, tt.testPod, tt.node.Name)
+			pluginRunner, err := newTestPluginRunner(snapshotStore, tt.customConfig)
+			assert.NoError(t, err)
+
+			predicateError := pluginRunner.RunFiltersOnNode(tt.testPod, tt.node.Name)
 			if tt.expectError {
 				assert.NotNil(t, predicateError)
 				assert.Equal(t, clustersnapshot.FailingPredicateError, predicateError.Type())
@@ -168,16 +161,13 @@ func TestCheckPredicate(t *testing.T) {
 	}
 }
 
-func TestFitsAnyNode(t *testing.T) {
+func TestRunFilterUntilPassingNode(t *testing.T) {
 	p900 := BuildTestPod("p900", 900, 1000)
 	p1900 := BuildTestPod("p1900", 1900, 1000)
 	p2100 := BuildTestPod("p2100", 2100, 1000)
 
 	n1000 := BuildTestNode("n1000", 1000, 2000000)
 	n2000 := BuildTestNode("n2000", 2000, 2000000)
-
-	defaultPredicateChecker, err := newTestPredicateChecker()
-	assert.NoError(t, err)
 
 	// temp dir
 	tmpDir, err := os.MkdirTemp("", "scheduler-configs")
@@ -192,74 +182,71 @@ func TestFitsAnyNode(t *testing.T) {
 		os.FileMode(0600)); err != nil {
 		t.Fatal(err)
 	}
-
 	customConfig, err := scheduler.ConfigFromPath(customConfigFile)
-	assert.NoError(t, err)
-	customPredicateChecker, err := newTestPredicateCheckerWithCustomConfig(customConfig)
 	assert.NoError(t, err)
 
 	testCases := []struct {
-		name             string
-		predicateChecker *SchedulerBasedPredicateChecker
-		pod              *apiv1.Pod
-		expectedNodes    []string
-		expectError      bool
+		name          string
+		customConfig  *config.KubeSchedulerConfiguration
+		pod           *apiv1.Pod
+		expectedNodes []string
+		expectError   bool
 	}{
 		// default predicate checker test cases
 		{
-			name:             "default - small pod - no error",
-			predicateChecker: defaultPredicateChecker,
-			pod:              p900,
-			expectedNodes:    []string{"n1000", "n2000"},
-			expectError:      false,
+			name:          "default - small pod - no error",
+			pod:           p900,
+			expectedNodes: []string{"n1000", "n2000"},
+			expectError:   false,
 		},
 		{
-			name:             "default - medium pod - no error",
-			predicateChecker: defaultPredicateChecker,
-			pod:              p1900,
-			expectedNodes:    []string{"n2000"},
-			expectError:      false,
+			name:          "default - medium pod - no error",
+			pod:           p1900,
+			expectedNodes: []string{"n2000"},
+			expectError:   false,
 		},
 		{
-			name:             "default - large pod - insufficient cpu",
-			predicateChecker: defaultPredicateChecker,
-			pod:              p2100,
-			expectError:      true,
+			name:        "default - large pod - insufficient cpu",
+			pod:         p2100,
+			expectError: true,
 		},
 
 		// custom predicate checker test cases
 		{
-			name:             "custom - small pod - no error",
-			predicateChecker: customPredicateChecker,
-			pod:              p900,
-			expectedNodes:    []string{"n1000", "n2000"},
-			expectError:      false,
+			name:          "custom - small pod - no error",
+			customConfig:  customConfig,
+			pod:           p900,
+			expectedNodes: []string{"n1000", "n2000"},
+			expectError:   false,
 		},
 		{
-			name:             "custom - medium pod - no error",
-			predicateChecker: customPredicateChecker,
-			pod:              p1900,
-			expectedNodes:    []string{"n1000", "n2000"},
-			expectError:      false,
+			name:          "custom - medium pod - no error",
+			customConfig:  customConfig,
+			pod:           p1900,
+			expectedNodes: []string{"n1000", "n2000"},
+			expectError:   false,
 		},
 		{
-			name:             "custom - large pod - insufficient cpu",
-			predicateChecker: customPredicateChecker,
-			pod:              p2100,
-			expectedNodes:    []string{"n1000", "n2000"},
-			expectError:      false,
+			name:          "custom - large pod - insufficient cpu",
+			customConfig:  customConfig,
+			pod:           p2100,
+			expectedNodes: []string{"n1000", "n2000"},
+			expectError:   false,
 		},
 	}
 
-	clusterSnapshot := store.NewBasicSnapshotStore()
-	err = clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(n1000))
+	snapshotStore := store.NewBasicSnapshotStore()
+	err = snapshotStore.AddNodeInfo(framework.NewTestNodeInfo(n1000))
 	assert.NoError(t, err)
-	err = clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(n2000))
+	err = snapshotStore.AddNodeInfo(framework.NewTestNodeInfo(n2000))
 	assert.NoError(t, err)
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			nodeName, err := tc.predicateChecker.FitsAnyNode(clusterSnapshot, tc.pod)
+			pluginRunner, err := newTestPluginRunner(snapshotStore, tc.customConfig)
+			assert.NoError(t, err)
+
+			nodeName, err := pluginRunner.RunFiltersUntilPassingNode(tc.pod, func(info *framework.NodeInfo) bool { return true })
 			if tc.expectError {
 				assert.Error(t, err)
 			} else {
@@ -268,7 +255,6 @@ func TestFitsAnyNode(t *testing.T) {
 			}
 		})
 	}
-
 }
 
 func TestDebugInfo(t *testing.T) {
@@ -293,9 +279,9 @@ func TestDebugInfo(t *testing.T) {
 	assert.NoError(t, err)
 
 	// with default predicate checker
-	defaultPredicateChecker, err := newTestPredicateChecker()
+	defaultPluginRunner, err := newTestPluginRunner(clusterSnapshot, nil)
 	assert.NoError(t, err)
-	predicateErr := defaultPredicateChecker.CheckPredicates(clusterSnapshot, p1, "n1")
+	predicateErr := defaultPluginRunner.RunFiltersOnNode(p1, "n1")
 	assert.NotNil(t, predicateErr)
 	assert.Contains(t, predicateErr.FailingPredicateReasons(), "node(s) had untolerated taint {SomeTaint: WhyNot?}")
 	assert.Contains(t, predicateErr.Error(), "node(s) had untolerated taint {SomeTaint: WhyNot?}")
@@ -319,27 +305,25 @@ func TestDebugInfo(t *testing.T) {
 
 	customConfig, err := scheduler.ConfigFromPath(customConfigFile)
 	assert.NoError(t, err)
-	customPredicateChecker, err := newTestPredicateCheckerWithCustomConfig(customConfig)
+	customPluginRunner, err := newTestPluginRunner(clusterSnapshot, customConfig)
 	assert.NoError(t, err)
-	predicateErr = customPredicateChecker.CheckPredicates(clusterSnapshot, p1, "n1")
+	predicateErr = customPluginRunner.RunFiltersOnNode(p1, "n1")
 	assert.Nil(t, predicateErr)
 }
 
-// newTestPredicateChecker builds test version of PredicateChecker.
-func newTestPredicateChecker() (*SchedulerBasedPredicateChecker, error) {
-	defaultConfig, err := scheduler_config_latest.Default()
-	if err != nil {
-		return nil, err
+// newTestPluginRunner builds test version of SchedulerPluginRunner.
+func newTestPluginRunner(snapshotStore clustersnapshot.ClusterSnapshotStore, schedConfig *config.KubeSchedulerConfiguration) (*SchedulerPluginRunner, error) {
+	if schedConfig == nil {
+		defaultConfig, err := scheduler_config_latest.Default()
+		if err != nil {
+			return nil, err
+		}
+		schedConfig = defaultConfig
 	}
-	return newTestPredicateCheckerWithCustomConfig(defaultConfig)
-}
 
-// newTestPredicateCheckerWithCustomConfig builds test version of PredicateChecker with custom scheduler config.
-func newTestPredicateCheckerWithCustomConfig(schedConfig *config.KubeSchedulerConfiguration) (*SchedulerBasedPredicateChecker, error) {
-	// just call out to NewSchedulerBasedPredicateChecker but use fake kubeClient
 	fwHandle, err := framework.NewHandle(informers.NewSharedInformerFactory(clientsetfake.NewSimpleClientset(), 0), schedConfig)
 	if err != nil {
 		return nil, err
 	}
-	return NewSchedulerBasedPredicateChecker(fwHandle), nil
+	return NewSchedulerPluginRunner(fwHandle, snapshotStore), nil
 }
