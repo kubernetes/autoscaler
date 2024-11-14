@@ -31,26 +31,6 @@ type BasicClusterSnapshot struct {
 	data []*internalBasicSnapshotData
 }
 
-func (snapshot *BasicClusterSnapshot) SchedulePod(pod *apiv1.Pod, nodeName string) SchedulingError {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (snapshot *BasicClusterSnapshot) SchedulePodOnAnyNodeMatching(pod *apiv1.Pod, nodeMatches func(*framework.NodeInfo) bool) (matchingNode string, err SchedulingError) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (snapshot *BasicClusterSnapshot) CheckPredicates(pod *apiv1.Pod, nodeName string) SchedulingError {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (snapshot *BasicClusterSnapshot) UnschedulePod(namespace string, podName string, nodeName string) error {
-	//TODO implement me
-	panic("implement me")
-}
-
 type internalBasicSnapshotData struct {
 	nodeInfoMap        map[string]*schedulerframework.NodeInfo
 	pvcNamespacePodMap map[string]map[string]bool
