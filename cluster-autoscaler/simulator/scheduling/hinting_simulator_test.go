@@ -26,7 +26,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/testsnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 )
 
@@ -135,10 +134,8 @@ func TestTrySchedulePods(t *testing.T) {
 		t.Run(tc.desc, func(t *testing.T) {
 			t.Parallel()
 			clusterSnapshot := testsnapshot.NewTestSnapshotOrDie(t)
-			predicateChecker, err := predicatechecker.NewTestPredicateChecker()
-			assert.NoError(t, err)
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, clusterSnapshot, tc.nodes, tc.pods)
-			s := NewHintingSimulator(predicateChecker)
+			s := NewHintingSimulator()
 			statuses, _, err := s.TrySchedulePods(clusterSnapshot, tc.newPods, tc.acceptableNodes, false)
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -212,15 +209,13 @@ func TestPodSchedulesOnHintedNode(t *testing.T) {
 		t.Run(tc.desc, func(t *testing.T) {
 			t.Parallel()
 			clusterSnapshot := testsnapshot.NewTestSnapshotOrDie(t)
-			predicateChecker, err := predicatechecker.NewTestPredicateChecker()
-			assert.NoError(t, err)
 			nodes := make([]*apiv1.Node, 0, len(tc.nodeNames))
 			for _, n := range tc.nodeNames {
 				nodes = append(nodes, buildReadyNode(n, 9999, 9999))
 			}
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, clusterSnapshot, nodes, []*apiv1.Pod{})
 			pods := make([]*apiv1.Pod, 0, len(tc.podNodes))
-			s := NewHintingSimulator(predicateChecker)
+			s := NewHintingSimulator()
 			var expectedStatuses []Status
 			for p, n := range tc.podNodes {
 				pod := BuildTestPod(p, 1, 1)

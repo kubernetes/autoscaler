@@ -23,7 +23,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 )
 
 const (
@@ -57,7 +56,7 @@ type Estimator interface {
 }
 
 // EstimatorBuilder creates a new estimator object.
-type EstimatorBuilder func(predicatechecker.PredicateChecker, clustersnapshot.ClusterSnapshot, EstimationContext) Estimator
+type EstimatorBuilder func(clustersnapshot.ClusterSnapshot, EstimationContext) Estimator
 
 // EstimationAnalyserFunc to be run at the end of the estimation logic.
 type EstimationAnalyserFunc func(clustersnapshot.ClusterSnapshot, cloudprovider.NodeGroup, map[string]bool)
@@ -67,10 +66,9 @@ func NewEstimatorBuilder(name string, limiter EstimationLimiter, orderer Estimat
 	switch name {
 	case BinpackingEstimatorName:
 		return func(
-			predicateChecker predicatechecker.PredicateChecker,
 			clusterSnapshot clustersnapshot.ClusterSnapshot,
 			context EstimationContext) Estimator {
-			return NewBinpackingNodeEstimator(predicateChecker, clusterSnapshot, limiter, orderer, context, estimationAnalyserFunc)
+			return NewBinpackingNodeEstimator(clusterSnapshot, limiter, orderer, context, estimationAnalyserFunc)
 		}, nil
 	}
 	return nil, fmt.Errorf("unknown estimator: %s", name)

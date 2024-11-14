@@ -38,7 +38,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/client-go/informers"
@@ -53,7 +52,6 @@ type AutoscalerOptions struct {
 	AutoscalingKubeClients *context.AutoscalingKubeClients
 	CloudProvider          cloudprovider.CloudProvider
 	FrameworkHandle        *framework.Handle
-	PredicateChecker       predicatechecker.PredicateChecker
 	ClusterSnapshot        clustersnapshot.ClusterSnapshot
 	ExpanderStrategy       expander.Strategy
 	EstimatorBuilder       estimator.EstimatorBuilder
@@ -91,7 +89,6 @@ func NewAutoscaler(opts AutoscalerOptions, informerFactory informers.SharedInfor
 	return NewStaticAutoscaler(
 		opts.AutoscalingOptions,
 		opts.FrameworkHandle,
-		opts.PredicateChecker,
 		opts.ClusterSnapshot,
 		opts.AutoscalingKubeClients,
 		opts.Processors,

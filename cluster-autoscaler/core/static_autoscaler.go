@@ -48,7 +48,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
 	caerrors "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -132,7 +131,6 @@ func (callbacks *staticAutoscalerProcessorCallbacks) reset() {
 func NewStaticAutoscaler(
 	opts config.AutoscalingOptions,
 	fwHandle *framework.Handle,
-	predicateChecker predicatechecker.PredicateChecker,
 	clusterSnapshot clustersnapshot.ClusterSnapshot,
 	autoscalingKubeClients *context.AutoscalingKubeClients,
 	processors *ca_processors.AutoscalingProcessors,
@@ -156,7 +154,6 @@ func NewStaticAutoscaler(
 	autoscalingContext := context.NewAutoscalingContext(
 		opts,
 		fwHandle,
-		predicateChecker,
 		clusterSnapshot,
 		autoscalingKubeClients,
 		cloudProvider,

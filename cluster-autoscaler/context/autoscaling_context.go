@@ -28,7 +28,6 @@ import (
 	processor_callbacks "k8s.io/autoscaler/cluster-autoscaler/processors/callbacks"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
@@ -47,9 +46,6 @@ type AutoscalingContext struct {
 	CloudProvider cloudprovider.CloudProvider
 	// FrameworkHandle can be used to interact with the scheduler framework.
 	FrameworkHandle *framework.Handle
-	// TODO(kgolab) - move away too as it's not config
-	// PredicateChecker to check if a pod can fit into a node.
-	PredicateChecker predicatechecker.PredicateChecker
 	// ClusterSnapshot denotes cluster snapshot used for predicate checking.
 	ClusterSnapshot clustersnapshot.ClusterSnapshot
 	// ExpanderStrategy is the strategy used to choose which node group to expand when scaling up
@@ -104,7 +100,6 @@ func NewResourceLimiterFromAutoscalingOptions(options config.AutoscalingOptions)
 func NewAutoscalingContext(
 	options config.AutoscalingOptions,
 	fwHandle *framework.Handle,
-	predicateChecker predicatechecker.PredicateChecker,
 	clusterSnapshot clustersnapshot.ClusterSnapshot,
 	autoscalingKubeClients *AutoscalingKubeClients,
 	cloudProvider cloudprovider.CloudProvider,
@@ -119,7 +114,6 @@ func NewAutoscalingContext(
 		CloudProvider:          cloudProvider,
 		AutoscalingKubeClients: *autoscalingKubeClients,
 		FrameworkHandle:        fwHandle,
-		PredicateChecker:       predicateChecker,
 		ClusterSnapshot:        clusterSnapshot,
 		ExpanderStrategy:       expanderStrategy,
 		ProcessorCallbacks:     processorCallbacks,

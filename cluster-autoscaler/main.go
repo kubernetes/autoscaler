@@ -40,7 +40,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/predicate"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/store"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
 	kubelet_config "k8s.io/kubernetes/pkg/kubelet/apis/config"
 
@@ -509,7 +508,6 @@ func buildAutoscaler(context ctx.Context, debuggingSnapshotter debuggingsnapshot
 		KubeClient:           kubeClient,
 		InformerFactory:      informerFactory,
 		DebuggingSnapshotter: debuggingSnapshotter,
-		PredicateChecker:     predicatechecker.NewSchedulerBasedPredicateChecker(fwHandle),
 		DeleteOptions:        deleteOptions,
 		DrainabilityRules:    drainabilityRules,
 		ScaleUpOrchestrator:  orchestrator.New(),
@@ -517,7 +515,7 @@ func buildAutoscaler(context ctx.Context, debuggingSnapshotter debuggingsnapshot
 
 	opts.Processors = ca_processors.DefaultProcessors(autoscalingOptions)
 	opts.Processors.TemplateNodeInfoProvider = nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nodeInfoCacheExpireTime, *forceDaemonSets)
-	podListProcessor := podlistprocessor.NewDefaultPodListProcessor(opts.PredicateChecker, scheduling.ScheduleAnywhere)
+	podListProcessor := podlistprocessor.NewDefaultPodListProcessor(scheduling.ScheduleAnywhere)
 
 	var ProvisioningRequestInjector *provreq.ProvisioningRequestPodsInjector
 	if autoscalingOptions.ProvisioningRequestEnabled {
@@ -548,7 +546,7 @@ func buildAutoscaler(context ctx.Context, debuggingSnapshotter debuggingsnapshot
 
 		scaleUpOrchestrator := provreqorchestrator.NewWrapperOrchestrator(provreqOrchestrator)
 		opts.ScaleUpOrchestrator = scaleUpOrchestrator
-		provreqProcesor := provreq.NewProvReqProcessor(client, opts.PredicateChecker)
+		provreqProcesor := provreq.NewProvReqProcessor(client)
 		opts.LoopStartNotifier = loopstart.NewObserversList([]loopstart.Observer{provreqProcesor})
 
 		podListProcessor.AddProcessor(provreqProcesor)

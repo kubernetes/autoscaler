@@ -28,7 +28,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/store"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/testsnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 )
@@ -176,8 +175,6 @@ func TestFilterOutSchedulable(t *testing.T) {
 	for tn, tc := range testCases {
 		t.Run(tn, func(t *testing.T) {
 			clusterSnapshot := testsnapshot.NewTestSnapshotOrDie(t)
-			predicateChecker, err := predicatechecker.NewTestPredicateChecker()
-			assert.NoError(t, err)
 
 			var allExpectedScheduledPods []*apiv1.Pod
 			allExpectedScheduledPods = append(allExpectedScheduledPods, tc.expectedScheduledPods...)
@@ -193,7 +190,7 @@ func TestFilterOutSchedulable(t *testing.T) {
 
 			clusterSnapshot.Fork()
 
-			processor := NewFilterOutSchedulablePodListProcessor(predicateChecker, tc.nodeFilter)
+			processor := NewFilterOutSchedulablePodListProcessor(tc.nodeFilter)
 			unschedulablePods, err := processor.filterOutSchedulableByPacking(tc.unschedulableCandidates, clusterSnapshot)
 
 			assert.NoError(t, err)
@@ -282,9 +279,6 @@ func BenchmarkFilterOutSchedulable(b *testing.B) {
 					}
 				}
 
-				predicateChecker, err := predicatechecker.NewTestPredicateChecker()
-				assert.NoError(b, err)
-
 				clusterSnapshot := snapshotFactory()
 				if err := clusterSnapshot.SetClusterState(nodes, scheduledPods); err != nil {
 					assert.NoError(b, err)
@@ -293,7 +287,7 @@ func BenchmarkFilterOutSchedulable(b *testing.B) {
 				b.ResetTimer()
 
 				for i := 0; i < b.N; i++ {
-					processor := NewFilterOutSchedulablePodListProcessor(predicateChecker, scheduling.ScheduleAnywhere)
+					processor := NewFilterOutSchedulablePodListProcessor(scheduling.ScheduleAnywhere)
 					if stillPending, err := processor.filterOutSchedulableByPacking(pendingPods, clusterSnapshot); err != nil {
 						assert.NoError(b, err)
 					} else if len(stillPending) < tc.pendingPods {
