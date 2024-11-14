@@ -34,6 +34,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/predicate"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/store"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/utilization"
@@ -357,7 +358,7 @@ func (a *Actuator) taintNode(node *apiv1.Node) error {
 }
 
 func (a *Actuator) createSnapshot(nodes []*apiv1.Node) (clustersnapshot.ClusterSnapshot, error) {
-	snapshot := predicate.NewPredicateSnapshot(clustersnapshot.NewBasicClusterSnapshot(), a.ctx.FrameworkHandle)
+	snapshot := predicate.NewPredicateSnapshot(store.NewBasicClusterSnapshot(), a.ctx.FrameworkHandle)
 	pods, err := a.ctx.AllPodLister().List()
 	if err != nil {
 		return nil, err
