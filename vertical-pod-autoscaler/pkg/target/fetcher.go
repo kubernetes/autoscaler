@@ -169,7 +169,7 @@ func getLabelSelector(informer cache.SharedIndexInformer, kind, namespace, name 
 	case (*corev1.ReplicationController):
 		return metav1.LabelSelectorAsSelector(metav1.SetAsLabelSelector(apiObj.Spec.Selector))
 	}
-	return nil, fmt.Errorf("don't know how to read label seletor")
+	return nil, fmt.Errorf("don't know how to read label selector")
 }
 
 func (f *vpaTargetSelectorFetcher) getLabelSelectorFromResource(
