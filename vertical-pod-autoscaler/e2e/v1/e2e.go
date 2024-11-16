@@ -156,8 +156,8 @@ func waitForDaemonSets(c clientset.Interface, ns string, allowedNotReadyNodes in
 	framework.Logf("Waiting up to %v for all daemonsets in namespace '%s' to start",
 		timeout, ns)
 
-	return wait.PollImmediate(framework.Poll, timeout, func() (bool, error) {
-		dsList, err := c.AppsV1().DaemonSets(ns).List(context.TODO(), metav1.ListOptions{})
+	return wait.PollUntilContextTimeout(context.Background(), framework.Poll, timeout, true, func(ctx context.Context) (done bool, err error) {
+		dsList, err := c.AppsV1().DaemonSets(ns).List(ctx, metav1.ListOptions{})
 		if err != nil {
 			framework.Logf("Error getting daemonsets in namespace: '%s': %v", ns, err)
 			return false, err

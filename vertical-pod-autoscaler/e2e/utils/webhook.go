@@ -192,7 +192,7 @@ func newMutatingIsReadyWebhookFixture(f *framework.Framework, certContext *certC
 // the webhook configuration.
 func waitWebhookConfigurationReady(f *framework.Framework) error {
 	cmClient := f.ClientSet.CoreV1().ConfigMaps(f.Namespace.Name + "-markers")
-	return wait.PollImmediate(100*time.Millisecond, 30*time.Second, func() (bool, error) {
+	return wait.PollUntilContextTimeout(context.Background(), 100*time.Millisecond, 30*time.Second, true, func(ctx context.Context) (done bool, err error) {
 		marker := &v1.ConfigMap{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: string(uuid.NewUUID()),
@@ -201,7 +201,7 @@ func waitWebhookConfigurationReady(f *framework.Framework) error {
 				},
 			},
 		}
-		_, err := cmClient.Create(context.TODO(), marker, metav1.CreateOptions{})
+		_, err = cmClient.Create(ctx, marker, metav1.CreateOptions{})
 		if err != nil {
 			// The always-deny webhook does not provide a reason, so check for the error string we expect
 			if strings.Contains(err.Error(), "denied") {
@@ -210,7 +210,7 @@ func waitWebhookConfigurationReady(f *framework.Framework) error {
 			return false, err
 		}
 		// best effort cleanup of markers that are no longer needed
-		_ = cmClient.Delete(context.TODO(), marker.GetName(), metav1.DeleteOptions{})
+		_ = cmClient.Delete(ctx, marker.GetName(), metav1.DeleteOptions{})
 		framework.Logf("Waiting for webhook configuration to be ready...")
 		return false, nil
 	})
