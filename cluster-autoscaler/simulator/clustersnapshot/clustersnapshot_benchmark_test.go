@@ -80,7 +80,7 @@ func BenchmarkAddNodeInfo(b *testing.B) {
 			b.Run(fmt.Sprintf("%s: AddNodeInfo() %d", snapshotName, tc), func(b *testing.B) {
 				for i := 0; i < b.N; i++ {
 					b.StopTimer()
-					clusterSnapshot.Clear()
+					assert.NoError(b, clusterSnapshot.SetClusterState(nil, nil))
 					b.StartTimer()
 					for _, node := range nodes {
 						err := clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
