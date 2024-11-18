@@ -81,3 +81,15 @@ func errMissingPodTemplates(podSets []v1.PodSet, podTemplates []*apiv1.PodTempla
 	}
 	return fmt.Errorf("missing pod templates, %d pod templates were referenced, %d templates were missing: %s", len(podSets), len(missingTemplates), strings.Join(missingTemplates, ","))
 }
+
+// Parameters makes a deep copy of embedded ProvReq and sets its Parameters
+func (pr *ProvisioningRequest) Parameters(params map[string]v1.Parameter) *ProvisioningRequest {
+	prCopy := pr.DeepCopy()
+	if prCopy.Spec.Parameters == nil {
+		prCopy.Spec.Parameters = make(map[string]v1.Parameter, len(params))
+	}
+	for key, val := range params {
+		prCopy.Spec.Parameters[key] = val
+	}
+	return &ProvisioningRequest{prCopy, pr.PodTemplates}
+}
