@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2023, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 // Code generated. DO NOT EDIT.
 
@@ -48,6 +48,9 @@ type UpdateVirtualCircuitDetails struct {
 
 	// Set to `true` to enable BFD for IPv4 BGP peering, or set to `false` to disable BFD. If this is not set, the default is `false`.
 	IsBfdEnabled *bool `mandatory:"false" json:"isBfdEnabled"`
+
+	// Set to `true` for the virtual circuit to carry only encrypted traffic, or set to `false` for the virtual circuit to carry unencrypted traffic. If this is not set, the default is `false`.
+	IsTransportMode *bool `mandatory:"false" json:"isTransportMode"`
 
 	// Deprecated. Instead use `customerAsn`.
 	// If you specify values for both, the request will be rejected.

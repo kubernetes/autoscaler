@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2023, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 
 package auth
@@ -27,22 +27,22 @@ const (
 // Workload RPST Issuance Service (WRIS)
 // x509FederationClientForOkeWorkloadIdentity retrieves a security token from Auth service.
 type x509FederationClientForOkeWorkloadIdentity struct {
-	tenancyID                     string
-	sessionKeySupplier            sessionKeySupplier
-	securityToken                 securityToken
-	authClient                    *common.BaseClient
-	mux                           sync.Mutex
-	proxymuxEndpoint              string
-	kubernetesServiceAccountToken string // jwt
-	kubernetesServiceAccountCert  *x509.CertPool
+	tenancyID                    string
+	sessionKeySupplier           sessionKeySupplier
+	securityToken                securityToken
+	authClient                   *common.BaseClient
+	mux                          sync.Mutex
+	proxymuxEndpoint             string
+	saTokenProvider              ServiceAccountTokenProvider
+	kubernetesServiceAccountCert *x509.CertPool
 }
 
-func newX509FederationClientForOkeWorkloadIdentity(endpoint string, kubernetesServiceAccountToken string,
+func newX509FederationClientForOkeWorkloadIdentity(endpoint string, saTokenProvider ServiceAccountTokenProvider,
 	kubernetesServiceAccountCert *x509.CertPool) (federationClient, error) {
 	client := &x509FederationClientForOkeWorkloadIdentity{
-		proxymuxEndpoint:              endpoint,
-		kubernetesServiceAccountToken: kubernetesServiceAccountToken,
-		kubernetesServiceAccountCert:  kubernetesServiceAccountCert,
+		proxymuxEndpoint:             endpoint,
+		saTokenProvider:              saTokenProvider,
+		kubernetesServiceAccountCert: kubernetesServiceAccountCert,
 	}
 
 	client.sessionKeySupplier = newSessionKeySupplier()
@@ -83,19 +83,29 @@ func (c *x509FederationClientForOkeWorkloadIdentity) getSecurityToken() (securit
 	}
 
 	publicKey := string(c.sessionKeySupplier.PublicKeyPemRaw())
+	common.Logf("Public Key for OKE Workload Identity is:", publicKey)
 	rawPayload := workloadIdentityRequestPayload{Podkey: publicKey}
 	payload, err := json.Marshal(rawPayload)
 	if err != nil {
 		return nil, fmt.Errorf("error getting security token%s", err)
 	}
 
+	common.Logf("Payload for OKE Workload Identity is:", string(payload))
 	request, err := http.NewRequest(http.MethodPost, c.proxymuxEndpoint, bytes.NewBuffer(payload))
 
 	if err != nil {
 		common.Logf("error %s", err)
 		return nil, fmt.Errorf("error getting security token %s", err)
 	}
-	request.Header.Add("Authorization", "Bearer "+c.kubernetesServiceAccountToken)
+
+	kubernetesServiceAccountToken, err := c.saTokenProvider.ServiceAccountToken()
+	if err != nil {
+		common.Logf("error %s", err)
+		return nil, fmt.Errorf("error getting service account token %s", err)
+	}
+
+	common.Logf("Service Account Token for OKE Workload Identity is: ", kubernetesServiceAccountToken)
+	request.Header.Add("Authorization", "Bearer "+kubernetesServiceAccountToken)
 	request.Header.Set("Content-Type", "application/json")
 	opcRequestID := utils.GenerateOpcRequestID()
 	request.Header.Set("opc-request-id", opcRequestID)
@@ -137,7 +147,7 @@ func (c *x509FederationClientForOkeWorkloadIdentity) getSecurityToken() (securit
 	}
 
 	token := parsedBody.Token
-	if &token == nil || len(token) == 0 {
+	if len(token) == 0 {
 		return nil, fmt.Errorf("invalid (empty) token received from Proxymux")
 	}
 	if len(token) < 3 {

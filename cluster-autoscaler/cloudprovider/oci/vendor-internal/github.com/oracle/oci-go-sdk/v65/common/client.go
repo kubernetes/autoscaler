@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2023, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 
 // Package common provides supporting functions and structs used by service packages
@@ -7,21 +7,20 @@ package common
 import (
 	"bytes"
 	"context"
-	"crypto/tls"
-	"crypto/x509"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"math/rand"
-	"net"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"os"
 	"os/user"
 	"path"
+	"path/filepath"
 	"reflect"
 	"runtime"
+	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -102,12 +101,35 @@ const (
 	//circuitBreakerNumberOfHistoryResponseEnv is the number of recorded history responses
 	circuitBreakerNumberOfHistoryResponseEnv = "OCI_SDK_CIRCUITBREAKER_NUM_HISTORY_RESPONSE"
 
+	// ociDefaultRefreshIntervalForCustomCerts is the env var for overriding the defaultRefreshIntervalForCustomCerts.
+	// The value represents the refresh interval in minutes and has a higher precedence than defaultRefreshIntervalForCustomCerts
+	// but has a lower precedence then the refresh interval configured via OciGlobalRefreshIntervalForCustomCerts
+	// If the value is negative, then it is assumed that this property is not configured
+	// if the value is Zero, then the refresh of custom certs will be disabled
+	ociDefaultRefreshIntervalForCustomCerts = "OCI_DEFAULT_REFRESH_INTERVAL_FOR_CUSTOM_CERTS"
+
 	// ociDefaultCertsPath is the env var for the path to the SSL cert file
 	ociDefaultCertsPath = "OCI_DEFAULT_CERTS_PATH"
 
+	// ociDefaultClientCertsPath is the env var for the path to the custom client cert
+	ociDefaultClientCertsPath = "OCI_DEFAULT_CLIENT_CERTS_PATH"
+
+	// ociDefaultClientCertsPrivateKeyPath is the env var for the path to the custom client cert private key
+	ociDefaultClientCertsPrivateKeyPath = "OCI_DEFAULT_CLIENT_CERTS_PRIVATE_KEY_PATH"
+
 	//maxAttemptsForRefreshableRetry is the number of retry when 401 happened on a refreshable auth type
 	maxAttemptsForRefreshableRetry = 3
+
+	//defaultRefreshIntervalForCustomCerts is the default refresh interval in minutes
+	defaultRefreshIntervalForCustomCerts = 30
 )
+
+// OciGlobalRefreshIntervalForCustomCerts is the global policy for overriding the refresh interval in minutes.
+// This variable has a higher precedence than the env variable OCI_DEFAULT_REFRESH_INTERVAL_FOR_CUSTOM_CERTS
+// and the defaultRefreshIntervalForCustomCerts values.
+// If the value is negative, then it is assumed that this property is not configured
+// if the value is Zero, then the refresh of custom certs will be disabled
+var OciGlobalRefreshIntervalForCustomCerts int = -1
 
 // RequestInterceptor function used to customize the request before calling the underlying service
 type RequestInterceptor func(*http.Request) error
@@ -212,32 +234,13 @@ func newBaseClient(signer HTTPRequestSigner, dispatcher HTTPRequestDispatcher) B
 
 func defaultHTTPDispatcher() http.Client {
 	var httpClient http.Client
-	var tp = http.DefaultTransport.(*http.Transport)
-	if isExpectHeaderDisabled := IsEnvVarFalse(UsingExpectHeaderEnvVar); !isExpectHeaderDisabled {
-		tp.Proxy = http.ProxyFromEnvironment
-		tp.DialContext = (&net.Dialer{
-			Timeout:   30 * time.Second,
-			KeepAlive: 30 * time.Second,
-			DualStack: true,
-		}).DialContext
-		tp.ForceAttemptHTTP2 = true
-		tp.MaxIdleConns = 100
-		tp.IdleConnTimeout = 90 * time.Second
-		tp.TLSHandshakeTimeout = 10 * time.Second
-		tp.ExpectContinueTimeout = 3 * time.Second
+	refreshInterval := getCustomCertRefreshInterval()
+	if refreshInterval <= 0 {
+		Debug("Custom cert refresh has been disabled")
 	}
-	if certFile, ok := os.LookupEnv(ociDefaultCertsPath); ok {
-		pool := x509.NewCertPool()
-		pemCert := readCertPem(certFile)
-		cert, err := x509.ParseCertificate(pemCert)
-		if err != nil {
-			Logf("unable to parse content to cert fallback to pem format from env var value: %s", certFile)
-			pool.AppendCertsFromPEM(pemCert)
-		} else {
-			Logf("using custom cert parsed from env var value: %s", certFile)
-			pool.AddCert(cert)
-		}
-		tp.TLSClientConfig = &tls.Config{RootCAs: pool}
+	var tp = &OciHTTPTransportWrapper{
+		RefreshRate:       time.Duration(refreshInterval) * time.Minute,
+		TLSConfigProvider: GetTLSConfigTemplateForTransport(),
 	}
 	httpClient = http.Client{
 		Timeout:   defaultTimeout,
@@ -324,7 +327,7 @@ func getHomeFolder() string {
 func DefaultConfigProvider() ConfigurationProvider {
 	defaultConfigFile := getDefaultConfigFilePath()
 	homeFolder := getHomeFolder()
-	secondaryConfigFile := path.Join(homeFolder, secondaryConfigDirName, defaultConfigFileName)
+	secondaryConfigFile := filepath.Join(homeFolder, secondaryConfigDirName, defaultConfigFileName)
 
 	defaultFileProvider, _ := ConfigurationProviderFromFile(defaultConfigFile, "")
 	secondaryFileProvider, _ := ConfigurationProviderFromFile(secondaryConfigFile, "")
@@ -335,9 +338,21 @@ func DefaultConfigProvider() ConfigurationProvider {
 	return provider
 }
 
+// CustomProfileSessionTokenConfigProvider returns the session token config provider of the given profile.
+// This will look for the configuration in the given config file path.
+func CustomProfileSessionTokenConfigProvider(customConfigPath string, profile string) ConfigurationProvider {
+	if customConfigPath == "" {
+		customConfigPath = getDefaultConfigFilePath()
+	}
+
+	sessionTokenConfigurationProvider, _ := ConfigurationProviderForSessionTokenWithProfile(customConfigPath, profile, "")
+	Debugf("Configuration provided by: %s", sessionTokenConfigurationProvider)
+	return sessionTokenConfigurationProvider
+}
+
 func getDefaultConfigFilePath() string {
 	homeFolder := getHomeFolder()
-	defaultConfigFile := path.Join(homeFolder, defaultConfigDirName, defaultConfigFileName)
+	defaultConfigFile := filepath.Join(homeFolder, defaultConfigDirName, defaultConfigFileName)
 	if _, err := os.Stat(defaultConfigFile); err == nil {
 		return defaultConfigFile
 	}
@@ -383,7 +398,7 @@ func setRawPath(u *url.URL) error {
 func CustomProfileConfigProvider(customConfigPath string, profile string) ConfigurationProvider {
 	homeFolder := getHomeFolder()
 	if customConfigPath == "" {
-		customConfigPath = path.Join(homeFolder, defaultConfigDirName, defaultConfigFileName)
+		customConfigPath = filepath.Join(homeFolder, defaultConfigDirName, defaultConfigFileName)
 	}
 	customFileProvider, _ := ConfigurationProviderFromFileWithProfile(customConfigPath, profile, "")
 	defaultFileProvider, _ := ConfigurationProviderFromFileWithProfile(customConfigPath, "DEFAULT", "")
@@ -493,10 +508,7 @@ func logResponse(response *http.Response, fn func(format string, v ...interface{
 }
 
 func checkBodyLengthExceedLimit(contentLength int64) bool {
-	if contentLength > maxBodyLenForDebug {
-		return true
-	}
-	return false
+	return contentLength > maxBodyLenForDebug
 }
 
 // OCIRequest is any request made to an OCI service.
@@ -537,7 +549,7 @@ func (rsc *OCIReadSeekCloser) Seek(offset int64, whence int) (int64, error) {
 		return rsc.rc.(io.Seeker).Seek(offset, whence)
 	}
 	// once the binary request body is wrapped with ioutil.NopCloser:
-	if reflect.TypeOf(rsc.rc) == reflect.TypeOf(ioutil.NopCloser(nil)) {
+	if isNopCloser(rsc.rc) {
 		unwrappedInterface := reflect.ValueOf(rsc.rc).Field(0).Interface()
 		if _, ok := unwrappedInterface.(io.Seeker); ok {
 			return unwrappedInterface.(io.Seeker).Seek(offset, whence)
@@ -575,7 +587,7 @@ func (rsc *OCIReadSeekCloser) Seekable() bool {
 		return true
 	}
 	// once the binary request body is wrapped with ioutil.NopCloser:
-	if reflect.TypeOf(rsc.rc) == reflect.TypeOf(ioutil.NopCloser(nil)) {
+	if isNopCloser(rsc.rc) {
 		if _, ok := reflect.ValueOf(rsc.rc).Field(0).Interface().(io.Seeker); ok {
 			return true
 		}
@@ -701,6 +713,9 @@ func (client BaseClient) httpDo(request *http.Request) (response *http.Response,
 // CloseBodyIfValid closes the body of an http response if the response and the body are valid
 func CloseBodyIfValid(httpResponse *http.Response) {
 	if httpResponse != nil && httpResponse.Body != nil {
+		if httpResponse.Header != nil && strings.ToLower(httpResponse.Header.Get("content-type")) == "text/event-stream" {
+			return
+		}
 		httpResponse.Body.Close()
 	}
 }
@@ -712,4 +727,22 @@ func (client BaseClient) IsOciRealmSpecificServiceEndpointTemplateEnabled() bool
 		return *client.Configuration.RealmSpecificServiceEndpointTemplateEnabled
 	}
 	return IsEnvVarTrue(OciRealmSpecificServiceEndpointTemplateEnabledEnvVar)
+}
+
+func getCustomCertRefreshInterval() int {
+	if OciGlobalRefreshIntervalForCustomCerts >= 0 {
+		Debugf("Setting refresh interval as %d for custom certs via OciGlobalRefreshIntervalForCustomCerts", OciGlobalRefreshIntervalForCustomCerts)
+		return OciGlobalRefreshIntervalForCustomCerts
+	}
+	if refreshIntervalValue, ok := os.LookupEnv(ociDefaultRefreshIntervalForCustomCerts); ok {
+		refreshInterval, err := strconv.Atoi(refreshIntervalValue)
+		if err != nil || refreshInterval < 0 {
+			Debugf("The environment variable %s is not a valid int or is a negative value, skipping this configuration", ociDefaultRefreshIntervalForCustomCerts)
+		} else {
+			Debugf("Setting refresh interval as %d for custom certs via the env variable %s", refreshInterval, ociDefaultRefreshIntervalForCustomCerts)
+			return refreshInterval
+		}
+	}
+	Debugf("Setting the default refresh interval %d for custom certs", defaultRefreshIntervalForCustomCerts)
+	return defaultRefreshIntervalForCustomCerts
 }
