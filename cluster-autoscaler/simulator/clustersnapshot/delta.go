@@ -389,7 +389,7 @@ func (snapshot *DeltaClusterSnapshot) StorageInfos() schedulerframework.StorageI
 // NewDeltaClusterSnapshot creates instances of DeltaClusterSnapshot.
 func NewDeltaClusterSnapshot() *DeltaClusterSnapshot {
 	snapshot := &DeltaClusterSnapshot{}
-	snapshot.Clear()
+	snapshot.clear()
 	return snapshot
 }
 
@@ -423,7 +423,7 @@ func (snapshot *DeltaClusterSnapshot) AddNodeInfo(nodeInfo *framework.NodeInfo) 
 
 // SetClusterState sets the cluster state.
 func (snapshot *DeltaClusterSnapshot) SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod) error {
-	snapshot.Clear()
+	snapshot.clear()
 
 	knownNodes := make(map[string]bool)
 	for _, node := range nodes {
@@ -489,6 +489,6 @@ func (snapshot *DeltaClusterSnapshot) Commit() error {
 
 // Clear reset cluster snapshot to empty, unforked state
 // Time: O(1)
-func (snapshot *DeltaClusterSnapshot) Clear() {
+func (snapshot *DeltaClusterSnapshot) clear() {
 	snapshot.data = newInternalDeltaSnapshotData()
 }

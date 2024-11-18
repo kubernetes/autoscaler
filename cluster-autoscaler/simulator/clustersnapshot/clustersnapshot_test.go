@@ -275,7 +275,7 @@ func TestForking(t *testing.T) {
 	}
 }
 
-func TestClear(t *testing.T) {
+func TestSetClusterState(t *testing.T) {
 	// Run with -count=1 to avoid caching.
 	localRand := rand.New(rand.NewSource(time.Now().Unix()))
 
@@ -309,9 +309,20 @@ func TestClear(t *testing.T) {
 				snapshot := startSnapshot(t, snapshotFactory, state)
 				compareStates(t, state, getSnapshotState(t, snapshot))
 
-				snapshot.Clear()
+				assert.NoError(t, snapshot.SetClusterState(nil, nil))
 
 				compareStates(t, snapshotState{}, getSnapshotState(t, snapshot))
+			})
+		t.Run(fmt.Sprintf("%s: clear base %d nodes %d pods and set a new state", name, nodeCount, podCount),
+			func(t *testing.T) {
+				snapshot := startSnapshot(t, snapshotFactory, state)
+				compareStates(t, state, getSnapshotState(t, snapshot))
+
+				newNodes, newPods := createTestNodes(13), createTestPods(37)
+				assignPodsToNodes(newPods, newNodes)
+				assert.NoError(t, snapshot.SetClusterState(newNodes, newPods))
+
+				compareStates(t, snapshotState{nodes: newNodes, pods: newPods}, getSnapshotState(t, snapshot))
 			})
 		t.Run(fmt.Sprintf("%s: clear fork %d nodes %d pods %d extra nodes %d extra pods", name, nodeCount, podCount, extraNodeCount, extraPodCount),
 			func(t *testing.T) {
@@ -332,11 +343,11 @@ func TestClear(t *testing.T) {
 
 				compareStates(t, snapshotState{allNodes, allPods}, getSnapshotState(t, snapshot))
 
-				snapshot.Clear()
+				assert.NoError(t, snapshot.SetClusterState(nil, nil))
 
 				compareStates(t, snapshotState{}, getSnapshotState(t, snapshot))
 
-				// Clear() should break out of forked state.
+				// SetClusterState() should break out of forked state.
 				snapshot.Fork()
 			})
 	}
@@ -718,7 +729,7 @@ func TestPVCClearAndFork(t *testing.T) {
 			volumeExists := snapshot.StorageInfos().IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", "claim1"))
 			assert.Equal(t, true, volumeExists)
 
-			snapshot.Clear()
+			assert.NoError(t, snapshot.SetClusterState(nil, nil))
 			volumeExists = snapshot.StorageInfos().IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", "claim1"))
 			assert.Equal(t, false, volumeExists)
 

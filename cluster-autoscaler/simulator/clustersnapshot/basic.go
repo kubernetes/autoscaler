@@ -196,7 +196,7 @@ func (data *internalBasicSnapshotData) removePod(namespace, podName, nodeName st
 // NewBasicClusterSnapshot creates instances of BasicClusterSnapshot.
 func NewBasicClusterSnapshot() *BasicClusterSnapshot {
 	snapshot := &BasicClusterSnapshot{}
-	snapshot.Clear()
+	snapshot.clear()
 	return snapshot
 }
 
@@ -234,7 +234,7 @@ func (snapshot *BasicClusterSnapshot) AddNodeInfo(nodeInfo *framework.NodeInfo) 
 
 // SetClusterState sets the cluster state.
 func (snapshot *BasicClusterSnapshot) SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod) error {
-	snapshot.Clear()
+	snapshot.clear()
 
 	knownNodes := make(map[string]bool)
 	for _, node := range nodes {
@@ -297,8 +297,8 @@ func (snapshot *BasicClusterSnapshot) Commit() error {
 	return nil
 }
 
-// Clear reset cluster snapshot to empty, unforked state
-func (snapshot *BasicClusterSnapshot) Clear() {
+// clear reset cluster snapshot to empty, unforked state
+func (snapshot *BasicClusterSnapshot) clear() {
 	baseData := newInternalBasicSnapshotData()
 	snapshot.data = []*internalBasicSnapshotData{baseData}
 }

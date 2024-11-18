@@ -59,8 +59,6 @@ type ClusterSnapshot interface {
 	Revert()
 	// Commit commits changes done after forking.
 	Commit() error
-	// Clear reset cluster snapshot to empty, unforked state.
-	Clear()
 }
 
 // ErrNodeNotFound means that a node wasn't found in the snapshot.
