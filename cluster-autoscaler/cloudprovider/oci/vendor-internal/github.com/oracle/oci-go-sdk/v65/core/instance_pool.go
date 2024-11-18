@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2023, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 // Code generated. DO NOT EDIT.
 
@@ -66,6 +66,14 @@ type InstancePool struct {
 
 	// The load balancers attached to the instance pool.
 	LoadBalancers []InstancePoolLoadBalancerAttachment `mandatory:"false" json:"loadBalancers"`
+
+	// A user-friendly formatter for the instance pool's instances. Instance displaynames follow the format.
+	// The formatter does not retroactively change instance's displaynames, only instance displaynames in the future follow the format
+	InstanceDisplayNameFormatter *string `mandatory:"false" json:"instanceDisplayNameFormatter"`
+
+	// A user-friendly formatter for the instance pool's instances. Instance hostnames follow the format.
+	// The formatter does not retroactively change instance's hostnames, only instance hostnames in the future follow the format
+	InstanceHostnameFormatter *string `mandatory:"false" json:"instanceHostnameFormatter"`
 }
 
 func (m InstancePool) String() string {

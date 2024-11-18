@@ -1,4 +1,4 @@
-// Copyright (c) 2016, 2018, 2023, Oracle and/or its affiliates.  All rights reserved.
+// Copyright (c) 2016, 2018, 2024, Oracle and/or its affiliates.  All rights reserved.
 // This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 // Code generated. DO NOT EDIT.
 
@@ -29,6 +29,11 @@ type TerminateInstanceRequest struct {
 	// Specifies whether to delete or preserve the boot volume when terminating an instance.
 	// When set to `true`, the boot volume is preserved. The default value is `false`.
 	PreserveBootVolume *bool `mandatory:"false" contributesTo:"query" name:"preserveBootVolume"`
+
+	// Specifies whether to delete or preserve the data volumes created during launch when
+	// terminating an instance. When set to `true`, the data volumes are preserved. The
+	// default value is `true`.
+	PreserveDataVolumesCreatedAtLaunch *bool `mandatory:"false" contributesTo:"query" name:"preserveDataVolumesCreatedAtLaunch"`
 
 	// Unique Oracle-assigned identifier for the request.
 	// If you need to contact Oracle about a particular request, please provide the request ID.
