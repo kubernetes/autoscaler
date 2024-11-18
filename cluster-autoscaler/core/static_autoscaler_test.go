@@ -2257,12 +2257,12 @@ func TestRemoveOldUnregisteredNodes(t *testing.T) {
 	}
 
 	// Nothing should be removed. The unregistered node is not old enough.
-	removed, err := autoscaler.removeOldUnregisteredNodes(unregisteredNodes, context, clusterState, now.Add(-50*time.Minute), fakeLogRecorder)
+	removed, err := autoscaler.removeOldUnregisteredNodes(unregisteredNodes, clusterState, now.Add(-50*time.Minute), fakeLogRecorder)
 	assert.NoError(t, err)
 	assert.False(t, removed)
 
 	// ng1_2 should be removed.
-	removed, err = autoscaler.removeOldUnregisteredNodes(unregisteredNodes, context, clusterState, now, fakeLogRecorder)
+	removed, err = autoscaler.removeOldUnregisteredNodes(unregisteredNodes, clusterState, now, fakeLogRecorder)
 	assert.NoError(t, err)
 	assert.True(t, removed)
 	deletedNode := core_utils.GetStringFromChan(deletedNodes)
@@ -2317,12 +2317,12 @@ func TestRemoveOldUnregisteredNodesAtomic(t *testing.T) {
 	}
 
 	// Nothing should be removed. The unregistered node is not old enough.
-	removed, err := autoscaler.removeOldUnregisteredNodes(unregisteredNodes, context, clusterState, now.Add(-50*time.Minute), fakeLogRecorder)
+	removed, err := autoscaler.removeOldUnregisteredNodes(unregisteredNodes, clusterState, now.Add(-50*time.Minute), fakeLogRecorder)
 	assert.NoError(t, err)
 	assert.False(t, removed)
 
 	// unregNode is long unregistered, so all of the nodes should be removed due to ZeroOrMaxNodeScaling option
-	removed, err = autoscaler.removeOldUnregisteredNodes(unregisteredNodes, context, clusterState, now, fakeLogRecorder)
+	removed, err = autoscaler.removeOldUnregisteredNodes(unregisteredNodes, clusterState, now, fakeLogRecorder)
 	assert.NoError(t, err)
 	assert.True(t, removed)
 	wantNames, deletedNames := []string{}, []string{}
