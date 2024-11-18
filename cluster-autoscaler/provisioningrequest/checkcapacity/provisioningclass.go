@@ -143,7 +143,9 @@ func (o *checkCapacityProvClass) checkcapacity(unschedulablePods []*apiv1.Pod, p
 	err, cleanupErr := clustersnapshot.WithForkedSnapshot(o.context.ClusterSnapshot, func() (bool, error) {
 		st, _, err := o.schedulingSimulator.TrySchedulePods(o.context.ClusterSnapshot, unschedulablePods, scheduling.ScheduleAnywhere, true)
 		if len(st) < len(unschedulablePods) || err != nil {
-			if _, ok := provReq.Spec.Parameters[NoRetryParameter]; ok {
+			if noRetry, ok := provReq.Spec.Parameters[NoRetryParameter]; ok && noRetry == "true" {
+				// Failed=true condition triggers retry in Kueue. Otherwise ProvisioningRequest with Provisioned=Failed
+				// condition block capacity in Kueue even it's in the middle of backoff waiting time.
 				conditions.AddOrUpdateCondition(provReq, v1.Failed, metav1.ConditionTrue, conditions.CapacityIsNotFoundReason, "CA could not find requested capacity", metav1.Now())
 			} else {
 				conditions.AddOrUpdateCondition(provReq, v1.Provisioned, metav1.ConditionFalse, conditions.CapacityIsNotFoundReason, "Capacity is not found, CA will try to find it later.", metav1.Now())
