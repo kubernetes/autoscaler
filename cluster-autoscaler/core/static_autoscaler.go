@@ -424,7 +424,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 	unregisteredNodes := a.clusterStateRegistry.GetUnregisteredNodes()
 	if len(unregisteredNodes) > 0 {
 		klog.V(1).Infof("%d unregistered nodes present", len(unregisteredNodes))
-		removedAny, err := a.removeOldUnregisteredNodes(unregisteredNodes, autoscalingContext,
+		removedAny, err := a.removeOldUnregisteredNodes(unregisteredNodes,
 			a.clusterStateRegistry, currentTime, autoscalingContext.LogRecorder)
 		// There was a problem with removing unregistered nodes. Retry in the next loop.
 		if err != nil {
@@ -752,62 +752,54 @@ func fixNodeGroupSize(context *context.AutoscalingContext, clusterStateRegistry 
 	return fixed, nil
 }
 
-// Removes unregistered nodes if needed. Returns true if anything was removed and error if such occurred.
-func (a *StaticAutoscaler) removeOldUnregisteredNodes(allUnregisteredNodes []clusterstate.UnregisteredNode, context *context.AutoscalingContext,
+// removeOldUnregisteredNodes removes unregistered nodes if needed. Returns true
+// if anything was removed and error if such occurred.
+func (a *StaticAutoscaler) removeOldUnregisteredNodes(allUnregisteredNodes []clusterstate.UnregisteredNode,
 	csr *clusterstate.ClusterStateRegistry, currentTime time.Time, logRecorder *utils.LogEventRecorder) (bool, error) {
 
-	nodeGroups := a.nodeGroupsById()
-	nodesToDeleteByNodeGroupId := make(map[string][]clusterstate.UnregisteredNode)
-	for _, unregisteredNode := range allUnregisteredNodes {
-		nodeGroup, err := a.CloudProvider.NodeGroupForNode(unregisteredNode.Node)
-		if err != nil {
-			klog.Warningf("Failed to get node group for %s: %v", unregisteredNode.Node.Name, err)
-			continue
-		}
-		if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
-			klog.Warningf("No node group for node %s, skipping", unregisteredNode.Node.Name)
-			continue
-		}
-
-		maxNodeProvisionTime, err := csr.MaxNodeProvisionTime(nodeGroup)
-		if err != nil {
-			return false, fmt.Errorf("failed to retrieve maxNodeProvisionTime for node %s in nodeGroup %s", unregisteredNode.Node.Name, nodeGroup.Id())
-		}
-
-		if unregisteredNode.UnregisteredSince.Add(maxNodeProvisionTime).Before(currentTime) {
-			klog.V(0).Infof("Marking unregistered node %v for removal", unregisteredNode.Node.Name)
-			nodesToDeleteByNodeGroupId[nodeGroup.Id()] = append(nodesToDeleteByNodeGroupId[nodeGroup.Id()], unregisteredNode)
-		}
+	unregisteredNodesToRemove, err := a.oldUnregisteredNodes(allUnregisteredNodes, csr, currentTime)
+	if err != nil {
+		return false, err
 	}
 
+	nodeGroups := a.nodeGroupsById()
 	removedAny := false
-	for nodeGroupId, unregisteredNodesToDelete := range nodesToDeleteByNodeGroupId {
+	for nodeGroupId, unregisteredNodesToDelete := range unregisteredNodesToRemove {
 		nodeGroup := nodeGroups[nodeGroupId]
 
 		klog.V(0).Infof("Removing %v unregistered nodes for node group %v", len(unregisteredNodesToDelete), nodeGroupId)
-		size, err := nodeGroup.TargetSize()
-		if err != nil {
-			klog.Warningf("Failed to get node group size; nodeGroup=%v; err=%v", nodeGroup.Id(), err)
-			continue
+		if !a.ForceDeleteLongUnregisteredNodes {
+			size, err := nodeGroup.TargetSize()
+			if err != nil {
+				klog.Warningf("Failed to get node group size; nodeGroup=%v; err=%v", nodeGroup.Id(), err)
+				continue
+			}
+			possibleToDelete := size - nodeGroup.MinSize()
+			if possibleToDelete <= 0 {
+				klog.Warningf("Node group %s min size reached, skipping removal of %v unregistered nodes", nodeGroupId, len(unregisteredNodesToDelete))
+				continue
+			}
+			if len(unregisteredNodesToDelete) > possibleToDelete {
+				klog.Warningf("Capping node group %s unregistered node removal to %d nodes, removing all %d would exceed min size constaint", nodeGroupId, possibleToDelete, len(unregisteredNodesToDelete))
+				unregisteredNodesToDelete = unregisteredNodesToDelete[:possibleToDelete]
+			}
 		}
-		possibleToDelete := size - nodeGroup.MinSize()
-		if possibleToDelete <= 0 {
-			klog.Warningf("Node group %s min size reached, skipping removal of %v unregistered nodes", nodeGroupId, len(unregisteredNodesToDelete))
-			continue
-		}
-		if len(unregisteredNodesToDelete) > possibleToDelete {
-			klog.Warningf("Capping node group %s unregistered node removal to %d nodes, removing all %d would exceed min size constaint", nodeGroupId, possibleToDelete, len(unregisteredNodesToDelete))
-			unregisteredNodesToDelete = unregisteredNodesToDelete[:possibleToDelete]
-		}
-		nodesToDelete := toNodes(unregisteredNodesToDelete)
 
-		nodesToDelete, err = overrideNodesToDeleteForZeroOrMax(a.NodeGroupDefaults, nodeGroup, nodesToDelete)
+		nodesToDelete := toNodes(unregisteredNodesToDelete)
+		nodesToDelete, err := overrideNodesToDeleteForZeroOrMax(a.NodeGroupDefaults, nodeGroup, nodesToDelete)
 		if err != nil {
 			klog.Warningf("Failed to remove unregistered nodes from node group %s: %v", nodeGroupId, err)
 			continue
 		}
 
-		err = nodeGroup.DeleteNodes(nodesToDelete)
+		if a.ForceDeleteLongUnregisteredNodes {
+			err = nodeGroup.ForceDeleteNodes(nodesToDelete)
+			if err == cloudprovider.ErrNotImplemented {
+				err = nodeGroup.DeleteNodes(nodesToDelete)
+			}
+		} else {
+			err = nodeGroup.DeleteNodes(nodesToDelete)
+		}
 		csr.InvalidateNodeInstancesCacheEntry(nodeGroup)
 		if err != nil {
 			klog.Warningf("Failed to remove %v unregistered nodes from node group %s: %v", len(nodesToDelete), nodeGroupId, err)
@@ -825,6 +817,34 @@ func (a *StaticAutoscaler) removeOldUnregisteredNodes(allUnregisteredNodes []clu
 		removedAny = true
 	}
 	return removedAny, nil
+}
+
+// oldUnregisteredNodes returns old unregistered nodes grouped by their node group id.
+func (a *StaticAutoscaler) oldUnregisteredNodes(allUnregisteredNodes []clusterstate.UnregisteredNode, csr *clusterstate.ClusterStateRegistry, currentTime time.Time) (map[string][]clusterstate.UnregisteredNode, error) {
+	nodesByNodeGroupId := make(map[string][]clusterstate.UnregisteredNode)
+	for _, unregisteredNode := range allUnregisteredNodes {
+		nodeGroup, err := a.CloudProvider.NodeGroupForNode(unregisteredNode.Node)
+		if err != nil {
+			klog.Warningf("Failed to get node group for %s: %v", unregisteredNode.Node.Name, err)
+			continue
+		}
+		if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
+			klog.Warningf("No node group for node %s, skipping", unregisteredNode.Node.Name)
+			continue
+		}
+
+		maxNodeProvisionTime, err := csr.MaxNodeProvisionTime(nodeGroup)
+		if err != nil {
+			return nil, fmt.Errorf("failed to retrieve maxNodeProvisionTime for node %s in nodeGroup %s", unregisteredNode.Node.Name, nodeGroup.Id())
+		}
+
+		if unregisteredNode.UnregisteredSince.Add(maxNodeProvisionTime).Before(currentTime) {
+			klog.V(0).Infof("Marking unregistered node %v for removal", unregisteredNode.Node.Name)
+			nodesByNodeGroupId[nodeGroup.Id()] = append(nodesByNodeGroupId[nodeGroup.Id()], unregisteredNode)
+		}
+	}
+
+	return nodesByNodeGroupId, nil
 }
 
 func toNodes(unregisteredNodes []clusterstate.UnregisteredNode) []*apiv1.Node {

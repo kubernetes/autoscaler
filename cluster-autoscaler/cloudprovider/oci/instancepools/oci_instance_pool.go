@@ -108,6 +108,11 @@ func (ip *InstancePoolNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	return ip.manager.DeleteInstances(*ip, refs)
 }
 
+// ForceDeleteNodes deletes nodes from the group regardless of constraints.
+func (ip *InstancePoolNodeGroup) ForceDeleteNodes(nodes []*apiv1.Node) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // DecreaseTargetSize decreases the target size of the instance-pool based node group. This function
 // doesn't permit to delete any existing node and can be used only to reduce the
 // request for new nodes that have not been yet fulfilled. Delta should be negative.

@@ -231,6 +231,11 @@ func (asg *tcAsg) DeleteNodes(nodes []*apiv1.Node) error {
 	return asg.tencentcloudManager.DeleteInstances(refs)
 }
 
+// ForceDeleteNodes deletes nodes from the group regardless of constraints.
+func (asg *tcAsg) ForceDeleteNodes(nodes []*apiv1.Node) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // Id returns asg id.
 func (asg *tcAsg) Id() string {
 	return asg.tencentcloudRef.ID

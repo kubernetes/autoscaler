@@ -150,6 +150,11 @@ func (asg *Asg) DeleteNodes(nodes []*apiv1.Node) error {
 	return asg.manager.DeleteInstances(nodeIds)
 }
 
+// ForceDeleteNodes deletes nodes from the group regardless of constraints.
+func (asg *Asg) ForceDeleteNodes(nodes []*apiv1.Node) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // Id returns asg id.
 func (asg *Asg) Id() string {
 	return asg.id
