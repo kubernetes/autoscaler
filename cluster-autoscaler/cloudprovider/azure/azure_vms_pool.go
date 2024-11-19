@@ -120,6 +120,11 @@ func (agentPool *VMsPool) DeleteNodes(nodes []*apiv1.Node) error {
 	return cloudprovider.ErrNotImplemented
 }
 
+// ForceDeleteNodes deletes nodes from the group regardless of constraints.
+func (agentPool *VMsPool) ForceDeleteNodes(nodes []*apiv1.Node) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // DecreaseTargetSize decreases the target size of the node group.
 func (agentPool *VMsPool) DecreaseTargetSize(delta int) error {
 	// TODO(wenxuan): Implement this method

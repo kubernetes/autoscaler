@@ -189,6 +189,11 @@ func (ng *cherryNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	return nil
 }
 
+// ForceDeleteNodes deletes nodes from the group regardless of constraints.
+func (ng *cherryNodeGroup) ForceDeleteNodes(nodes []*apiv1.Node) error {
+	return cloudprovider.ErrNotImplemented
+}
+
 // getNodesToDelete safely gets all of the nodes added to the delete queue.
 // "safely", as in it locks, gets and then releases the queue.
 func (ng *cherryNodeGroup) getNodesToDelete() []*apiv1.Node {
