@@ -319,6 +319,21 @@ func (snapshot *BasicSnapshotStore) StorageInfos() schedulerframework.StorageInf
 	return (*basicSnapshotStoreStorageLister)(snapshot)
 }
 
+// ResourceClaims exposes snapshot as ResourceClaimTracker
+func (snapshot *BasicSnapshotStore) ResourceClaims() schedulerframework.ResourceClaimTracker {
+	return nil
+}
+
+// ResourceSlices exposes snapshot as ResourceSliceLister.
+func (snapshot *BasicSnapshotStore) ResourceSlices() schedulerframework.ResourceSliceLister {
+	return nil
+}
+
+// DeviceClasses exposes the snapshot as DeviceClassLister.
+func (snapshot *BasicSnapshotStore) DeviceClasses() schedulerframework.DeviceClassLister {
+	return nil
+}
+
 // List returns the list of nodes in the snapshot.
 func (snapshot *basicSnapshotStoreNodeLister) List() ([]*schedulerframework.NodeInfo, error) {
 	return (*BasicSnapshotStore)(snapshot).getInternalData().listNodeInfos(), nil

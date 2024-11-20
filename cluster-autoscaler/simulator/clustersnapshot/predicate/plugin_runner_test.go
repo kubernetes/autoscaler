@@ -321,7 +321,7 @@ func newTestPluginRunner(snapshotStore clustersnapshot.ClusterSnapshotStore, sch
 		schedConfig = defaultConfig
 	}
 
-	fwHandle, err := framework.NewHandle(informers.NewSharedInformerFactory(clientsetfake.NewSimpleClientset(), 0), schedConfig)
+	fwHandle, err := framework.NewHandle(informers.NewSharedInformerFactory(clientsetfake.NewSimpleClientset(), 0), schedConfig, true)
 	if err != nil {
 		return nil, err
 	}
