@@ -243,6 +243,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 					continue
 				}
 			} else {
+				klog.Infof("Not falling back to eviction, probably because we don't have a recommendation yet?")
 				continue
 			}
 
