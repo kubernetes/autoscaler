@@ -496,7 +496,7 @@ func buildAutoscaler(context ctx.Context, debuggingSnapshotter debuggingsnapshot
 	}
 	informerFactory := informers.NewSharedInformerFactoryWithOptions(kubeClient, 0, informers.WithTransform(trim))
 
-	fwHandle, err := framework.NewHandle(informerFactory, autoscalingOptions.SchedulerConfig)
+	fwHandle, err := framework.NewHandle(informerFactory, autoscalingOptions.SchedulerConfig, autoscalingOptions.DynamicResourceAllocationEnabled)
 	if err != nil {
 		return nil, nil, err
 	}

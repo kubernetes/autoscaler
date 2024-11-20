@@ -22,7 +22,6 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // ClusterSnapshot is abstraction of cluster state used for predicate simulations.
@@ -57,7 +56,7 @@ type ClusterSnapshot interface {
 // without going through scheduler predicates. ClusterSnapshotStore shouldn't be directly used outside the clustersnapshot pkg, its methods
 // should be accessed via ClusterSnapshot.
 type ClusterSnapshotStore interface {
-	schedulerframework.SharedLister
+	framework.SharedLister
 
 	// SetClusterState resets the snapshot to an unforked state and replaces the contents of the snapshot
 	// with the provided data. scheduledPods are correlated to their Nodes based on spec.NodeName.
