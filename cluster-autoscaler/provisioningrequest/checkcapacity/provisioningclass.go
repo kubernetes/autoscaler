@@ -45,7 +45,11 @@ import (
 )
 
 const (
-	NoRetryParameter = "noRetry"
+	// NoRetryParameterKey is a a key for ProvReq's Parameters that describes
+	// if ProvisioningRequest should be retried in case CA cannot provision it.
+	// Supported values are "true" and "false" - by default ProvisioningRequests are always retried.
+	// Currently supported only for checkcapacity class.
+	NoRetryParameterKey = "noRetry"
 )
 
 type checkCapacityProvClass struct {
@@ -143,11 +147,14 @@ func (o *checkCapacityProvClass) checkcapacity(unschedulablePods []*apiv1.Pod, p
 	err, cleanupErr := clustersnapshot.WithForkedSnapshot(o.context.ClusterSnapshot, func() (bool, error) {
 		st, _, err := o.schedulingSimulator.TrySchedulePods(o.context.ClusterSnapshot, unschedulablePods, scheduling.ScheduleAnywhere, true)
 		if len(st) < len(unschedulablePods) || err != nil {
-			if noRetry, ok := provReq.Spec.Parameters[NoRetryParameter]; ok && noRetry == "true" {
+			if noRetry, ok := provReq.Spec.Parameters[NoRetryParameterKey]; ok && noRetry == "true" {
 				// Failed=true condition triggers retry in Kueue. Otherwise ProvisioningRequest with Provisioned=Failed
 				// condition block capacity in Kueue even it's in the middle of backoff waiting time.
 				conditions.AddOrUpdateCondition(provReq, v1.Failed, metav1.ConditionTrue, conditions.CapacityIsNotFoundReason, "CA could not find requested capacity", metav1.Now())
 			} else {
+				if noRetry, ok := provReq.Spec.Parameters[NoRetryParameterKey]; ok && noRetry != "false" {
+					klog.Errorf("Invalid value: %v for %v Parameter in %v ProvisioningRequest. Supported values are: \"true\", \"false\"", noRetry, NoRetryParameterKey, provReq.Name)
+				}
 				conditions.AddOrUpdateCondition(provReq, v1.Provisioned, metav1.ConditionFalse, conditions.CapacityIsNotFoundReason, "Capacity is not found, CA will try to find it later.", metav1.Now())
 			}
 			capacityAvailable = false
