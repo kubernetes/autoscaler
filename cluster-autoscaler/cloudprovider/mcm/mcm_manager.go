@@ -29,9 +29,11 @@ import (
 	"fmt"
 	v1appslister "k8s.io/client-go/listers/apps/v1"
 	"k8s.io/utils/pointer"
+	"maps"
 	"math/rand"
 	"net/http"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -111,6 +113,12 @@ var (
 	machineGVR           = schema.GroupVersionResource{Group: machineGroup, Version: machineVersion, Resource: "machines"}
 	machineSetGVR        = schema.GroupVersionResource{Group: machineGroup, Version: machineVersion, Resource: "machinesets"}
 	machineDeploymentGVR = schema.GroupVersionResource{Group: machineGroup, Version: machineVersion, Resource: "machinedeployments"}
+
+	// ErrInvalidNodeTemplate is a sentinel error that indicates that the nodeTemplate is invalid.
+	ErrInvalidNodeTemplate = errors.New("invalid node template")
+	coreResourceNames      = []v1.ResourceName{v1.ResourceCPU, v1.ResourceMemory, "gpu"}
+	extraResourceNames     = []v1.ResourceName{gpu.ResourceNvidiaGPU, v1.ResourcePods, v1.ResourceEphemeralStorage}
+	knownResourceNames     = slices.Concat(coreResourceNames, extraResourceNames)
 )
 
 // McmManager manages the client communication for MachineDeployments.
@@ -130,12 +138,13 @@ type McmManager struct {
 }
 
 type instanceType struct {
-	InstanceType     string
-	VCPU             resource.Quantity
-	Memory           resource.Quantity
-	GPU              resource.Quantity
-	EphemeralStorage resource.Quantity
-	PodCount         resource.Quantity
+	InstanceType      string
+	VCPU              resource.Quantity
+	Memory            resource.Quantity
+	GPU               resource.Quantity
+	EphemeralStorage  resource.Quantity
+	PodCount          resource.Quantity
+	ExtendedResources apiv1.ResourceList
 }
 
 type nodeTemplate struct {
@@ -689,11 +698,9 @@ func generateInstanceStatus(machine *v1alpha1.Machine) *cloudprovider.InstanceSt
 func validateNodeTemplate(nodeTemplateAttributes *v1alpha1.NodeTemplate) error {
 	var allErrs []error
 
-	capacityAttributes := []v1.ResourceName{"cpu", "gpu", "memory"}
-
-	for _, attribute := range capacityAttributes {
+	for _, attribute := range coreResourceNames {
 		if _, ok := nodeTemplateAttributes.Capacity[attribute]; !ok {
-			errMessage := fmt.Errorf("CPU, GPU and memory fields are mandatory")
+			errMessage := fmt.Errorf("the core resource fields %q are mandatory: %w", coreResourceNames, ErrInvalidNodeTemplate)
 			klog.Warning(errMessage)
 			allErrs = append(allErrs, errMessage)
 			break
@@ -701,13 +708,13 @@ func validateNodeTemplate(nodeTemplateAttributes *v1alpha1.NodeTemplate) error {
 	}
 
 	if nodeTemplateAttributes.Region == "" || nodeTemplateAttributes.InstanceType == "" || nodeTemplateAttributes.Zone == "" {
-		errMessage := fmt.Errorf("InstanceType, Region and Zone attributes are mandatory")
+		errMessage := fmt.Errorf("InstanceType, Region and Zone attributes are mandatory: %w", ErrInvalidNodeTemplate)
 		klog.Warning(errMessage)
 		allErrs = append(allErrs, errMessage)
 	}
 
 	if allErrs != nil {
-		return fmt.Errorf("%s", allErrs)
+		return errors.Join(allErrs...)
 	}
 
 	return nil
@@ -771,21 +778,26 @@ func (m *McmManager) GetMachineDeploymentNodeTemplate(machinedeployment *Machine
 				klog.V(1).Infof("Nodes already existing in the worker pool %s", workerPool)
 				baseNode := filteredNodes[0]
 				klog.V(1).Infof("Worker pool node used to form template is %s and its capacity is cpu: %s, memory:%s", baseNode.Name, baseNode.Status.Capacity.Cpu().String(), baseNode.Status.Capacity.Memory().String())
+				extendedResources := filterExtendedResources(baseNode.Status.Capacity)
 				instance = instanceType{
-					VCPU:             baseNode.Status.Capacity[apiv1.ResourceCPU],
-					Memory:           baseNode.Status.Capacity[apiv1.ResourceMemory],
-					GPU:              baseNode.Status.Capacity[gpu.ResourceNvidiaGPU],
-					EphemeralStorage: baseNode.Status.Capacity[apiv1.ResourceEphemeralStorage],
-					PodCount:         baseNode.Status.Capacity[apiv1.ResourcePods],
+					VCPU:              baseNode.Status.Capacity[apiv1.ResourceCPU],
+					Memory:            baseNode.Status.Capacity[apiv1.ResourceMemory],
+					GPU:               baseNode.Status.Capacity[gpu.ResourceNvidiaGPU],
+					EphemeralStorage:  baseNode.Status.Capacity[apiv1.ResourceEphemeralStorage],
+					PodCount:          baseNode.Status.Capacity[apiv1.ResourcePods],
+					ExtendedResources: extendedResources,
 				}
 			} else {
 				klog.V(1).Infof("Generating node template only using nodeTemplate from MachineClass %s: template resources-> cpu: %s,memory: %s", machineClass.Name, nodeTemplateAttributes.Capacity.Cpu().String(), nodeTemplateAttributes.Capacity.Memory().String())
+				extendedResources := filterExtendedResources(nodeTemplateAttributes.Capacity)
 				instance = instanceType{
-					VCPU:   nodeTemplateAttributes.Capacity[apiv1.ResourceCPU],
-					Memory: nodeTemplateAttributes.Capacity[apiv1.ResourceMemory],
-					GPU:    nodeTemplateAttributes.Capacity["gpu"],
+					VCPU:             nodeTemplateAttributes.Capacity[apiv1.ResourceCPU],
+					Memory:           nodeTemplateAttributes.Capacity[apiv1.ResourceMemory],
+					GPU:              nodeTemplateAttributes.Capacity["gpu"],
+					EphemeralStorage: nodeTemplateAttributes.Capacity[apiv1.ResourceEphemeralStorage],
 					// Numbers pods per node will depends on the CNI used and the maxPods kubelet config, default is often 110
-					PodCount: resource.MustParse("110"),
+					PodCount:          resource.MustParse("110"),
+					ExtendedResources: extendedResources,
 				}
 			}
 			instance.InstanceType = nodeTemplateAttributes.InstanceType
@@ -964,6 +976,12 @@ func (m *McmManager) buildNodeFromTemplate(name string, template *nodeTemplate) 
 	node.Status.Capacity["hugepages-1Gi"] = *resource.NewQuantity(0, resource.DecimalSI)
 	node.Status.Capacity["hugepages-2Mi"] = *resource.NewQuantity(0, resource.DecimalSI)
 
+	// populate extended resources from nodeTemplate
+	if len(template.InstanceType.ExtendedResources) > 0 {
+		klog.V(2).Infof("Copying extended resources %v to template node.Status.Capacity", template.InstanceType.ExtendedResources)
+		maps.Copy(node.Status.Capacity, template.InstanceType.ExtendedResources)
+	}
+
 	node.Status.Allocatable = node.Status.Capacity
 
 	// NodeLabels
@@ -1010,4 +1028,13 @@ func isMachineFailedOrTerminating(machine *v1alpha1.Machine) bool {
 		return true
 	}
 	return false
+}
+
+// filterExtendedResources removes knownResourceNames from allResources and retains only the extendedResources.
+func filterExtendedResources(allResources v1.ResourceList) (extendedResources v1.ResourceList) {
+	extendedResources = allResources.DeepCopy()
+	maps.DeleteFunc(extendedResources, func(name v1.ResourceName, _ resource.Quantity) bool {
+		return slices.Contains(knownResourceNames, name)
+	})
+	return
 }
