@@ -48,6 +48,7 @@ type hetznerNodeGroup struct {
 	instanceType string
 
 	clusterUpdateMutex *sync.Mutex
+	placementGroup     *hcloud.PlacementGroup
 }
 
 type hetznerNodeGroupSpec struct {
@@ -485,6 +486,7 @@ func createServer(n *hetznerNodeGroup) error {
 			EnableIPv4: n.manager.publicIPv4,
 			EnableIPv6: n.manager.publicIPv6,
 		},
+		PlacementGroup: n.placementGroup,
 	}
 	if n.manager.sshKey != nil {
 		opts.SSHKeys = []*hcloud.SSHKey{n.manager.sshKey}
