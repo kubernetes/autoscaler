@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
@@ -183,16 +184,12 @@ func TestFilterOutSchedulable(t *testing.T) {
 			allExpectedScheduledPods = append(allExpectedScheduledPods, tc.expectedScheduledPods...)
 
 			for node, pods := range tc.nodesWithPods {
-				err := clusterSnapshot.AddNode(node)
-				assert.NoError(t, err)
-
 				for _, pod := range pods {
 					pod.Spec.NodeName = node.Name
-					err = clusterSnapshot.AddPod(pod, node.Name)
-					assert.NoError(t, err)
-
 					allExpectedScheduledPods = append(allExpectedScheduledPods, pod)
 				}
+				err := clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(node, pods...))
+				assert.NoError(t, err)
 			}
 
 			clusterSnapshot.Fork()
@@ -286,15 +283,10 @@ func BenchmarkFilterOutSchedulable(b *testing.B) {
 				assert.NoError(b, err)
 
 				clusterSnapshot := snapshotFactory()
-				if err := clusterSnapshot.AddNodes(nodes); err != nil {
+				if err := clusterSnapshot.SetClusterState(nodes, scheduledPods); err != nil {
 					assert.NoError(b, err)
 				}
 
-				for _, pod := range scheduledPods {
-					if err := clusterSnapshot.AddPod(pod, pod.Spec.NodeName); err != nil {
-						assert.NoError(b, err)
-					}
-				}
 				b.ResetTimer()
 
 				for i := 0; i < b.N; i++ {

@@ -20,7 +20,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 )
 
 // InitializeClusterSnapshotOrDie clears cluster snapshot and then initializes it with given set of nodes and pods.
@@ -32,19 +34,19 @@ func InitializeClusterSnapshotOrDie(
 	pods []*apiv1.Pod) {
 	var err error
 
-	snapshot.Clear()
+	assert.NoError(t, snapshot.SetClusterState(nil, nil))
 
 	for _, node := range nodes {
-		err = snapshot.AddNode(node)
+		err = snapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
 		assert.NoError(t, err, "error while adding node %s", node.Name)
 	}
 
 	for _, pod := range pods {
 		if pod.Spec.NodeName != "" {
-			err = snapshot.AddPod(pod, pod.Spec.NodeName)
+			err = snapshot.ForceAddPod(pod, pod.Spec.NodeName)
 			assert.NoError(t, err, "error while adding pod %s/%s to node %s", pod.Namespace, pod.Name, pod.Spec.NodeName)
 		} else if pod.Status.NominatedNodeName != "" {
-			err = snapshot.AddPod(pod, pod.Status.NominatedNodeName)
+			err = snapshot.ForceAddPod(pod, pod.Status.NominatedNodeName)
 			assert.NoError(t, err, "error while adding pod %s/%s to nominated node %s", pod.Namespace, pod.Name, pod.Status.NominatedNodeName)
 		} else {
 			assert.Fail(t, "pod %s/%s does not have Spec.NodeName nor Status.NominatedNodeName set", pod.Namespace, pod.Name)

@@ -136,16 +136,6 @@ func (data *internalDeltaSnapshotData) buildNodeInfoList() []*schedulerframework
 	return nodeInfoList
 }
 
-// Convenience method to avoid writing loop for adding nodes.
-func (data *internalDeltaSnapshotData) addNodes(nodes []*apiv1.Node) error {
-	for _, node := range nodes {
-		if err := data.addNode(node); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 func (data *internalDeltaSnapshotData) addNode(node *apiv1.Node) error {
 	nodeInfo := schedulerframework.NewNodeInfo()
 	nodeInfo.SetNode(node)
@@ -187,7 +177,7 @@ func (data *internalDeltaSnapshotData) clearPodCaches() {
 	data.pvcNamespaceMap = nil
 }
 
-func (data *internalDeltaSnapshotData) removeNode(nodeName string) error {
+func (data *internalDeltaSnapshotData) removeNodeInfo(nodeName string) error {
 	_, foundInDelta := data.addedNodeInfoMap[nodeName]
 	if foundInDelta {
 		// If node was added within this delta, delete this change.
@@ -306,12 +296,12 @@ func (data *internalDeltaSnapshotData) commit() (*internalDeltaSnapshotData, err
 		return data, nil
 	}
 	for node := range data.deletedNodeInfos {
-		if err := data.baseData.removeNode(node); err != nil {
+		if err := data.baseData.removeNodeInfo(node); err != nil {
 			return nil, err
 		}
 	}
 	for _, node := range data.modifiedNodeInfoMap {
-		if err := data.baseData.removeNode(node.Node().Name); err != nil {
+		if err := data.baseData.removeNodeInfo(node.Node().Name); err != nil {
 			return nil, err
 		}
 		if err := data.baseData.addNodeInfo(node); err != nil {
@@ -399,7 +389,7 @@ func (snapshot *DeltaClusterSnapshot) StorageInfos() schedulerframework.StorageI
 // NewDeltaClusterSnapshot creates instances of DeltaClusterSnapshot.
 func NewDeltaClusterSnapshot() *DeltaClusterSnapshot {
 	snapshot := &DeltaClusterSnapshot{}
-	snapshot.Clear()
+	snapshot.clear()
 	return snapshot
 }
 
@@ -431,41 +421,39 @@ func (snapshot *DeltaClusterSnapshot) AddNodeInfo(nodeInfo *framework.NodeInfo) 
 	return nil
 }
 
-// AddNode adds node to the snapshot.
-func (snapshot *DeltaClusterSnapshot) AddNode(node *apiv1.Node) error {
-	return snapshot.data.addNode(node)
-}
+// SetClusterState sets the cluster state.
+func (snapshot *DeltaClusterSnapshot) SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod) error {
+	snapshot.clear()
 
-// AddNodes adds nodes in batch to the snapshot.
-func (snapshot *DeltaClusterSnapshot) AddNodes(nodes []*apiv1.Node) error {
-	return snapshot.data.addNodes(nodes)
-}
-
-// AddNodeWithPods adds a node and set of pods to be scheduled to this node to the snapshot.
-func (snapshot *DeltaClusterSnapshot) AddNodeWithPods(node *apiv1.Node, pods []*apiv1.Pod) error {
-	if err := snapshot.AddNode(node); err != nil {
-		return err
-	}
-	for _, pod := range pods {
-		if err := snapshot.AddPod(pod, node.Name); err != nil {
+	knownNodes := make(map[string]bool)
+	for _, node := range nodes {
+		if err := snapshot.data.addNode(node); err != nil {
 			return err
+		}
+		knownNodes[node.Name] = true
+	}
+	for _, pod := range scheduledPods {
+		if knownNodes[pod.Spec.NodeName] {
+			if err := snapshot.data.addPod(pod, pod.Spec.NodeName); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
 }
 
-// RemoveNode removes nodes (and pods scheduled to it) from the snapshot.
-func (snapshot *DeltaClusterSnapshot) RemoveNode(nodeName string) error {
-	return snapshot.data.removeNode(nodeName)
+// RemoveNodeInfo removes nodes (and pods scheduled to it) from the snapshot.
+func (snapshot *DeltaClusterSnapshot) RemoveNodeInfo(nodeName string) error {
+	return snapshot.data.removeNodeInfo(nodeName)
 }
 
-// AddPod adds pod to the snapshot and schedules it to given node.
-func (snapshot *DeltaClusterSnapshot) AddPod(pod *apiv1.Pod, nodeName string) error {
+// ForceAddPod adds pod to the snapshot and schedules it to given node.
+func (snapshot *DeltaClusterSnapshot) ForceAddPod(pod *apiv1.Pod, nodeName string) error {
 	return snapshot.data.addPod(pod, nodeName)
 }
 
-// RemovePod removes pod from the snapshot.
-func (snapshot *DeltaClusterSnapshot) RemovePod(namespace, podName, nodeName string) error {
+// ForceRemovePod removes pod from the snapshot.
+func (snapshot *DeltaClusterSnapshot) ForceRemovePod(namespace, podName, nodeName string) error {
 	return snapshot.data.removePod(namespace, podName, nodeName)
 }
 
@@ -501,6 +489,6 @@ func (snapshot *DeltaClusterSnapshot) Commit() error {
 
 // Clear reset cluster snapshot to empty, unforked state
 // Time: O(1)
-func (snapshot *DeltaClusterSnapshot) Clear() {
+func (snapshot *DeltaClusterSnapshot) clear() {
 	snapshot.data = newInternalDeltaSnapshotData()
 }

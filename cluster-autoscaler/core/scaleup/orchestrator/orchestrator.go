@@ -569,11 +569,7 @@ func (o *ScaleUpOrchestrator) SchedulablePodGroups(
 	defer o.autoscalingContext.ClusterSnapshot.Revert()
 
 	// Add test node to snapshot.
-	var allPods []*apiv1.Pod
-	for _, podInfo := range nodeInfo.Pods() {
-		allPods = append(allPods, podInfo.Pod)
-	}
-	if err := o.autoscalingContext.ClusterSnapshot.AddNodeWithPods(nodeInfo.Node(), allPods); err != nil {
+	if err := o.autoscalingContext.ClusterSnapshot.AddNodeInfo(nodeInfo); err != nil {
 		klog.Errorf("Error while adding test Node: %v", err)
 		return []estimator.PodEquivalenceGroup{}
 	}
