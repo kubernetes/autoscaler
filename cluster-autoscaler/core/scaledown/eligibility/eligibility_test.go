@@ -157,17 +157,16 @@ func getTestCases(ignoreDaemonSetsUtilization bool, suffix string, now time.Time
 			wantUnremovable:  []*simulator.UnremovableNode{},
 			scaleDownUnready: true,
 		},
-		// TODO(DRA): Uncomment once PredicateSnapshot DRA logic is implemented.
-		//{
-		//	desc:             "Node is filtered out because of DRA issues if DRA is enabled",
-		//	nodes:            []*apiv1.Node{regularNode},
-		//	pods:             []*apiv1.Pod{smallPod},
-		//	draSnapshot:      drasnapshot.NewSnapshot(nil, map[string][]*resourceapi.ResourceSlice{"regular": {regularNodeIncompleteResourceSlice}}, nil, nil),
-		//	draEnabled:       true,
-		//	wantUnneeded:     []string{},
-		//	wantUnremovable:  []*simulator.UnremovableNode{{Node: regularNode, Reason: simulator.UnexpectedError}},
-		//	scaleDownUnready: true,
-		//},
+		{
+			desc:             "Node is filtered out because of DRA issues if DRA is enabled",
+			nodes:            []*apiv1.Node{regularNode},
+			pods:             []*apiv1.Pod{smallPod},
+			draSnapshot:      drasnapshot.NewSnapshot(nil, map[string][]*resourceapi.ResourceSlice{"regular": {regularNodeIncompleteResourceSlice}}, nil, nil),
+			draEnabled:       true,
+			wantUnneeded:     []string{},
+			wantUnremovable:  []*simulator.UnremovableNode{{Node: regularNode, Reason: simulator.UnexpectedError}},
+			scaleDownUnready: true,
+		},
 	}
 
 	finalTestCases := []testCase{}

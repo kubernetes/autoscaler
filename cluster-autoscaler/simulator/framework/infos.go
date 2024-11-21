@@ -77,7 +77,9 @@ func (n *NodeInfo) Pods() []*PodInfo {
 // AddPod adds the given Pod and associated data to the NodeInfo.
 func (n *NodeInfo) AddPod(pod *PodInfo) {
 	n.schedNodeInfo.AddPod(pod.Pod)
-	n.podsExtraInfo[pod.UID] = pod.PodExtraInfo
+	if len(pod.PodExtraInfo.NeededResourceClaims) > 0 {
+		n.podsExtraInfo[pod.UID] = pod.PodExtraInfo
+	}
 }
 
 // RemovePod removes the given pod and its associated data from the NodeInfo.
