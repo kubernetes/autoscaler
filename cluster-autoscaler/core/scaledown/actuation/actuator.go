@@ -36,6 +36,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/predicate"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/store"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules"
+	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/utilization"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
@@ -367,7 +368,7 @@ func (a *Actuator) createSnapshot(nodes []*apiv1.Node) (clustersnapshot.ClusterS
 	scheduledPods := kube_util.ScheduledPods(pods)
 	nonExpendableScheduledPods := utils.FilterOutExpendablePods(scheduledPods, a.ctx.ExpendablePodsPriorityCutoff)
 
-	err = snapshot.SetClusterState(nodes, nonExpendableScheduledPods)
+	err = snapshot.SetClusterState(nodes, nonExpendableScheduledPods, drasnapshot.Snapshot{})
 	if err != nil {
 		return nil, err
 	}

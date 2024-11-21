@@ -23,6 +23,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 )
@@ -39,7 +40,7 @@ func BenchmarkAddNodeInfo(b *testing.B) {
 			b.Run(fmt.Sprintf("%s: AddNodeInfo() %d", snapshotName, tc), func(b *testing.B) {
 				for i := 0; i < b.N; i++ {
 					b.StopTimer()
-					assert.NoError(b, clusterSnapshot.SetClusterState(nil, nil))
+					assert.NoError(b, clusterSnapshot.SetClusterState(nil, nil, drasnapshot.Snapshot{}))
 					b.StartTimer()
 					for _, node := range nodes {
 						err := clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
@@ -61,7 +62,7 @@ func BenchmarkListNodeInfos(b *testing.B) {
 			nodes := clustersnapshot.CreateTestNodes(tc)
 			clusterSnapshot, err := snapshotFactory()
 			assert.NoError(b, err)
-			err = clusterSnapshot.SetClusterState(nodes, nil)
+			err = clusterSnapshot.SetClusterState(nodes, nil, drasnapshot.Snapshot{})
 			if err != nil {
 				assert.NoError(b, err)
 			}
@@ -91,14 +92,14 @@ func BenchmarkAddPods(b *testing.B) {
 			clustersnapshot.AssignTestPodsToNodes(pods, nodes)
 			clusterSnapshot, err := snapshotFactory()
 			assert.NoError(b, err)
-			err = clusterSnapshot.SetClusterState(nodes, nil)
+			err = clusterSnapshot.SetClusterState(nodes, nil, drasnapshot.Snapshot{})
 			assert.NoError(b, err)
 			b.ResetTimer()
 			b.Run(fmt.Sprintf("%s: ForceAddPod() 30*%d", snapshotName, tc), func(b *testing.B) {
 				for i := 0; i < b.N; i++ {
 					b.StopTimer()
 
-					err = clusterSnapshot.SetClusterState(nodes, nil)
+					err = clusterSnapshot.SetClusterState(nodes, nil, drasnapshot.Snapshot{})
 					if err != nil {
 						assert.NoError(b, err)
 					}
@@ -127,7 +128,7 @@ func BenchmarkForkAddRevert(b *testing.B) {
 				clustersnapshot.AssignTestPodsToNodes(pods, nodes)
 				clusterSnapshot, err := snapshotFactory()
 				assert.NoError(b, err)
-				err = clusterSnapshot.SetClusterState(nodes, pods)
+				err = clusterSnapshot.SetClusterState(nodes, pods, drasnapshot.Snapshot{})
 				assert.NoError(b, err)
 				tmpNode1 := BuildTestNode("tmp-1", 2000, 2000000)
 				tmpNode2 := BuildTestNode("tmp-2", 2000, 2000000)
