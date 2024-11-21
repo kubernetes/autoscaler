@@ -30,14 +30,14 @@ import (
 
 // SchedulerPluginRunner can be used to run various phases of scheduler plugins through the scheduler framework.
 type SchedulerPluginRunner struct {
-	fwHandle      *framework.Handle
-	snapshotStore clustersnapshot.ClusterSnapshotStore
-	lastIndex     int
+	fwHandle  *framework.Handle
+	snapshot  clustersnapshot.ClusterSnapshot
+	lastIndex int
 }
 
 // NewSchedulerPluginRunner builds a SchedulerPluginRunner.
-func NewSchedulerPluginRunner(fwHandle *framework.Handle, snapshotStore clustersnapshot.ClusterSnapshotStore) *SchedulerPluginRunner {
-	return &SchedulerPluginRunner{fwHandle: fwHandle, snapshotStore: snapshotStore}
+func NewSchedulerPluginRunner(fwHandle *framework.Handle, snapshot clustersnapshot.ClusterSnapshot) *SchedulerPluginRunner {
+	return &SchedulerPluginRunner{fwHandle: fwHandle, snapshot: snapshot}
 }
 
 // RunFiltersUntilPassingNode runs the scheduler framework PreFilter phase once, and then keeps running the Filter phase for all nodes in the cluster that match the provided
@@ -45,12 +45,12 @@ func NewSchedulerPluginRunner(fwHandle *framework.Handle, snapshotStore clusters
 //
 // The node iteration always starts from the next Node from the last Node that was found by this method. TODO: Extract the iteration strategy out of SchedulerPluginRunner.
 func (p *SchedulerPluginRunner) RunFiltersUntilPassingNode(pod *apiv1.Pod, nodeMatches func(*framework.NodeInfo) bool) (string, clustersnapshot.SchedulingError) {
-	nodeInfosList, err := p.snapshotStore.ListNodeInfos()
+	nodeInfosList, err := p.snapshot.ListNodeInfos()
 	if err != nil {
 		return "", clustersnapshot.NewSchedulingInternalError(pod, fmt.Sprintf("error listing NodeInfos: %v", err))
 	}
 
-	p.fwHandle.DelegatingLister.UpdateDelegate(p.snapshotStore)
+	p.fwHandle.DelegatingLister.UpdateDelegate(p.snapshot)
 	defer p.fwHandle.DelegatingLister.ResetDelegate()
 
 	state := schedulerframework.NewCycleState()
@@ -101,12 +101,12 @@ func (p *SchedulerPluginRunner) RunFiltersUntilPassingNode(pod *apiv1.Pod, nodeM
 
 // RunFiltersOnNode runs the scheduler framework PreFilter and Filter phases to check if the given pod can be scheduled on the given node.
 func (p *SchedulerPluginRunner) RunFiltersOnNode(pod *apiv1.Pod, nodeName string) clustersnapshot.SchedulingError {
-	nodeInfo, err := p.snapshotStore.GetNodeInfo(nodeName)
+	nodeInfo, err := p.snapshot.GetNodeInfo(nodeName)
 	if err != nil {
 		return clustersnapshot.NewSchedulingInternalError(pod, fmt.Sprintf("error obtaining NodeInfo for name %q: %v", nodeName, err))
 	}
 
-	p.fwHandle.DelegatingLister.UpdateDelegate(p.snapshotStore)
+	p.fwHandle.DelegatingLister.UpdateDelegate(p.snapshot)
 	defer p.fwHandle.DelegatingLister.ResetDelegate()
 
 	state := schedulerframework.NewCycleState()
