@@ -20,6 +20,7 @@ import (
 	"errors"
 
 	apiv1 "k8s.io/api/core/v1"
+	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
 )
@@ -60,7 +61,7 @@ type ClusterSnapshotStore interface {
 
 	// SetClusterState resets the snapshot to an unforked state and replaces the contents of the snapshot
 	// with the provided data. scheduledPods are correlated to their Nodes based on spec.NodeName.
-	SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod) error
+	SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod, draSnapshot drasnapshot.Snapshot) error
 
 	// ForceAddPod adds the given Pod to the Node with the given nodeName inside the snapshot without checking scheduler predicates.
 	ForceAddPod(pod *apiv1.Pod, nodeName string) error
@@ -79,6 +80,9 @@ type ClusterSnapshotStore interface {
 	GetNodeInfo(nodeName string) (*framework.NodeInfo, error)
 	// ListNodeInfos returns internal NodeInfos for all Nodes tracked in the snapshot. See the comment on GetNodeInfo.
 	ListNodeInfos() ([]*framework.NodeInfo, error)
+
+	// DraSnapshot returns an interface that allows accessing and modifying the DRA objects in the snapshot.
+	DraSnapshot() drasnapshot.Snapshot
 
 	// Fork creates a fork of snapshot state. All modifications can later be reverted to moment of forking via Revert().
 	// Use WithForkedSnapshot() helper function instead if possible.

@@ -21,6 +21,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/klog/v2"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
@@ -389,17 +390,17 @@ func (snapshot *DeltaSnapshotStore) StorageInfos() schedulerframework.StorageInf
 
 // ResourceClaims exposes snapshot as ResourceClaimTracker
 func (snapshot *DeltaSnapshotStore) ResourceClaims() schedulerframework.ResourceClaimTracker {
-	return nil
+	return snapshot.DraSnapshot().ResourceClaims()
 }
 
 // ResourceSlices exposes snapshot as ResourceSliceLister.
 func (snapshot *DeltaSnapshotStore) ResourceSlices() schedulerframework.ResourceSliceLister {
-	return nil
+	return snapshot.DraSnapshot().ResourceSlices()
 }
 
 // DeviceClasses exposes the snapshot as DeviceClassLister.
 func (snapshot *DeltaSnapshotStore) DeviceClasses() schedulerframework.DeviceClassLister {
-	return nil
+	return snapshot.DraSnapshot().DeviceClasses()
 }
 
 // NewDeltaSnapshotStore creates instances of DeltaSnapshotStore.
@@ -407,6 +408,12 @@ func NewDeltaSnapshotStore() *DeltaSnapshotStore {
 	snapshot := &DeltaSnapshotStore{}
 	snapshot.clear()
 	return snapshot
+}
+
+// DraSnapshot returns the DRA snapshot.
+func (snapshot *DeltaSnapshotStore) DraSnapshot() drasnapshot.Snapshot {
+	// TODO(DRA): Return DRA snapshot.
+	return drasnapshot.Snapshot{}
 }
 
 // GetNodeInfo gets a NodeInfo.
@@ -442,7 +449,7 @@ func (snapshot *DeltaSnapshotStore) AddNodeInfo(nodeInfo *framework.NodeInfo) er
 }
 
 // SetClusterState sets the cluster state.
-func (snapshot *DeltaSnapshotStore) SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod) error {
+func (snapshot *DeltaSnapshotStore) SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod, draSnapshot drasnapshot.Snapshot) error {
 	snapshot.clear()
 
 	knownNodes := make(map[string]bool)
@@ -459,6 +466,7 @@ func (snapshot *DeltaSnapshotStore) SetClusterState(nodes []*apiv1.Node, schedul
 			}
 		}
 	}
+	// TODO(DRA): Save DRA snapshot.
 	return nil
 }
 
