@@ -36,6 +36,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/predicate"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/store"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules"
+	draprovider "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/provider"
 	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/utilization"
@@ -64,6 +65,7 @@ type Actuator struct {
 	configGetter              actuatorNodeGroupConfigGetter
 	nodeDeleteDelayAfterTaint time.Duration
 	pastLatencies             *expiring.List
+	draProvider               *draprovider.Provider
 }
 
 // actuatorNodeGroupConfigGetter is an interface to limit the functions that can be used
@@ -74,7 +76,7 @@ type actuatorNodeGroupConfigGetter interface {
 }
 
 // NewActuator returns a new instance of Actuator.
-func NewActuator(ctx *context.AutoscalingContext, scaleStateNotifier nodegroupchange.NodeGroupChangeObserver, ndt *deletiontracker.NodeDeletionTracker, deleteOptions options.NodeDeleteOptions, drainabilityRules rules.Rules, configGetter actuatorNodeGroupConfigGetter) *Actuator {
+func NewActuator(ctx *context.AutoscalingContext, scaleStateNotifier nodegroupchange.NodeGroupChangeObserver, ndt *deletiontracker.NodeDeletionTracker, deleteOptions options.NodeDeleteOptions, drainabilityRules rules.Rules, configGetter actuatorNodeGroupConfigGetter, draProvider *draprovider.Provider) *Actuator {
 	ndb := NewNodeDeletionBatcher(ctx, scaleStateNotifier, ndt, ctx.NodeDeletionBatcherInterval)
 	legacyFlagDrainConfig := SingleRuleDrainConfig(ctx.MaxGracefulTerminationSec)
 	var evictor Evictor
@@ -93,6 +95,7 @@ func NewActuator(ctx *context.AutoscalingContext, scaleStateNotifier nodegroupch
 		configGetter:              configGetter,
 		nodeDeleteDelayAfterTaint: ctx.NodeDeleteDelayAfterTaint,
 		pastLatencies:             expiring.NewList(),
+		draProvider:               draProvider,
 	}
 }
 
@@ -368,7 +371,15 @@ func (a *Actuator) createSnapshot(nodes []*apiv1.Node) (clustersnapshot.ClusterS
 	scheduledPods := kube_util.ScheduledPods(pods)
 	nonExpendableScheduledPods := utils.FilterOutExpendablePods(scheduledPods, a.ctx.ExpendablePodsPriorityCutoff)
 
-	err = snapshot.SetClusterState(nodes, nonExpendableScheduledPods, drasnapshot.Snapshot{})
+	var draSnapshot drasnapshot.Snapshot
+	if a.ctx.DynamicResourceAllocationEnabled && a.draProvider != nil {
+		draSnapshot, err = a.draProvider.Snapshot()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	err = snapshot.SetClusterState(nodes, nonExpendableScheduledPods, draSnapshot)
 	if err != nil {
 		return nil, err
 	}
