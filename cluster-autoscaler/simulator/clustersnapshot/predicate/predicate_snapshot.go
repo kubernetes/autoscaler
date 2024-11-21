@@ -78,7 +78,7 @@ func (s *PredicateSnapshot) RemoveNodeInfo(nodeName string) error {
 
 // SchedulePod adds pod to the snapshot and schedules it to given node.
 func (s *PredicateSnapshot) SchedulePod(pod *apiv1.Pod, nodeName string) clustersnapshot.SchedulingError {
-	if schedErr := s.pluginRunner.RunFiltersOnNode(pod, nodeName); schedErr != nil {
+	if _, _, schedErr := s.pluginRunner.RunFiltersOnNode(pod, nodeName); schedErr != nil {
 		return schedErr
 	}
 	if err := s.ClusterSnapshotStore.ForceAddPod(pod, nodeName); err != nil {
@@ -89,14 +89,14 @@ func (s *PredicateSnapshot) SchedulePod(pod *apiv1.Pod, nodeName string) cluster
 
 // SchedulePodOnAnyNodeMatching adds pod to the snapshot and schedules it to any node matching the provided function.
 func (s *PredicateSnapshot) SchedulePodOnAnyNodeMatching(pod *apiv1.Pod, anyNodeMatching func(*framework.NodeInfo) bool) (string, clustersnapshot.SchedulingError) {
-	nodeName, schedErr := s.pluginRunner.RunFiltersUntilPassingNode(pod, anyNodeMatching)
+	node, _, schedErr := s.pluginRunner.RunFiltersUntilPassingNode(pod, anyNodeMatching)
 	if schedErr != nil {
 		return "", schedErr
 	}
-	if err := s.ClusterSnapshotStore.ForceAddPod(pod, nodeName); err != nil {
+	if err := s.ClusterSnapshotStore.ForceAddPod(pod, node.Name); err != nil {
 		return "", clustersnapshot.NewSchedulingInternalError(pod, err.Error())
 	}
-	return nodeName, nil
+	return node.Name, nil
 }
 
 // UnschedulePod removes the given Pod from the given Node inside the snapshot.
@@ -106,5 +106,6 @@ func (s *PredicateSnapshot) UnschedulePod(namespace string, podName string, node
 
 // CheckPredicates checks whether scheduler predicates pass for the given pod on the given node.
 func (s *PredicateSnapshot) CheckPredicates(pod *apiv1.Pod, nodeName string) clustersnapshot.SchedulingError {
-	return s.pluginRunner.RunFiltersOnNode(pod, nodeName)
+	_, _, err := s.pluginRunner.RunFiltersOnNode(pod, nodeName)
+	return err
 }
