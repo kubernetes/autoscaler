@@ -44,6 +44,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/labels"
 
 	"github.com/stretchr/testify/assert"
+
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	kube_client "k8s.io/client-go/kubernetes"
@@ -178,7 +179,7 @@ func NewScaleTestAutoscalingContext(
 	if debuggingSnapshotter == nil {
 		debuggingSnapshotter = debuggingsnapshot.NewDebuggingSnapshotter(false)
 	}
-	clusterSnapshot, err := testsnapshot.NewTestSnapshot()
+	clusterSnapshot, fwHandle, err := testsnapshot.NewTestSnapshotAndHandle()
 	if err != nil {
 		return context.AutoscalingContext{}, err
 	}
@@ -192,6 +193,7 @@ func NewScaleTestAutoscalingContext(
 		},
 		CloudProvider:        provider,
 		ClusterSnapshot:      clusterSnapshot,
+		FrameworkHandle:      fwHandle,
 		ExpanderStrategy:     random.NewStrategy(),
 		ProcessorCallbacks:   processorCallbacks,
 		DebuggingSnapshotter: debuggingSnapshotter,
