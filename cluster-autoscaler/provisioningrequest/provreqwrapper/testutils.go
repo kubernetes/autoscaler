@@ -160,8 +160,8 @@ func BuildTestPods(namespace, name string, podCount int) []*apiv1.Pod {
 	return pods
 }
 
-// Parameters makes a deep copy of embedded ProvReq and sets its Parameters
-func (pr *ProvisioningRequest) Parameters(params map[string]v1.Parameter) *ProvisioningRequest {
+// CopyWithParameters makes a deep copy of embedded ProvReq and sets its CopyWithParameters
+func (pr *ProvisioningRequest) CopyWithParameters(params map[string]v1.Parameter) *ProvisioningRequest {
 	prCopy := pr.DeepCopy()
 	if prCopy.Spec.Parameters == nil {
 		prCopy.Spec.Parameters = make(map[string]v1.Parameter, len(params))

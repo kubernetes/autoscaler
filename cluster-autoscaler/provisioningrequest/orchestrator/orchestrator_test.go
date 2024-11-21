@@ -246,7 +246,7 @@ func TestScaleUp(t *testing.T) {
 		{
 			name: "impossible check-capacity, with noRetry parameter",
 			provReqs: []*provreqwrapper.ProvisioningRequest{
-				impossibleCheckCapacityReq.Parameters(map[string]v1.Parameter{"noRetry": "true"}),
+				impossibleCheckCapacityReq.CopyWithParameters(map[string]v1.Parameter{"noRetry": "true"}),
 			},
 			provReqToScaleUp: impossibleCheckCapacityReq,
 			scaleUpResult:    status.ScaleUpNoOptionsAvailable,
