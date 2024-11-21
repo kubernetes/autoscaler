@@ -65,6 +65,8 @@ type ClusterSnapshot interface {
 	// name. Returns nil if predicates pass, or a non-nil error specifying why they didn't otherwise. The error Type() can be
 	// checked against SchedulingInternalError to distinguish failing predicates from unexpected errors. Doesn't mutate the snapshot.
 	CheckPredicates(pod *apiv1.Pod, nodeName string) SchedulingError
+
+	// TODO(DRA): Move unschedulable Pods inside ClusterSnapshot (since their DRA objects are already here), refactor PodListProcessor.
 }
 
 // ClusterSnapshotStore is the "low-level" part of ClusterSnapshot, responsible for storing the snapshot state and mutating it directly,

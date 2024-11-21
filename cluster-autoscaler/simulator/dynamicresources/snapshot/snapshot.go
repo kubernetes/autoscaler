@@ -50,6 +50,15 @@ type Snapshot struct {
 
 // NewSnapshot returns a Snapshot created from the provided data.
 func NewSnapshot(claims map[ResourceClaimId]*resourceapi.ResourceClaim, nodeLocalSlices map[string][]*resourceapi.ResourceSlice, globalSlices []*resourceapi.ResourceSlice, deviceClasses map[string]*resourceapi.DeviceClass) Snapshot {
+	if claims == nil {
+		claims = map[ResourceClaimId]*resourceapi.ResourceClaim{}
+	}
+	if nodeLocalSlices == nil {
+		nodeLocalSlices = map[string][]*resourceapi.ResourceSlice{}
+	}
+	if deviceClasses == nil {
+		deviceClasses = map[string]*resourceapi.DeviceClass{}
+	}
 	return Snapshot{
 		resourceClaimsById:         claims,
 		resourceSlicesByNodeName:   nodeLocalSlices,
