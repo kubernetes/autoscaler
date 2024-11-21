@@ -415,13 +415,17 @@ func (snapshot *DeltaSnapshotStore) GetNodeInfo(nodeName string) (*framework.Nod
 	if err != nil {
 		return nil, err
 	}
-	return framework.WrapSchedulerNodeInfo(schedNodeInfo), nil
+	return framework.WrapSchedulerNodeInfo(schedNodeInfo, nil, nil), nil
 }
 
 // ListNodeInfos lists NodeInfos.
 func (snapshot *DeltaSnapshotStore) ListNodeInfos() ([]*framework.NodeInfo, error) {
 	schedNodeInfos := snapshot.data.getNodeInfoList()
-	return framework.WrapSchedulerNodeInfos(schedNodeInfos), nil
+	var result []*framework.NodeInfo
+	for _, schedNodeInfo := range schedNodeInfos {
+		result = append(result, framework.WrapSchedulerNodeInfo(schedNodeInfo, nil, nil))
+	}
+	return result, nil
 }
 
 // AddNodeInfo adds a NodeInfo.
