@@ -27,13 +27,15 @@ import (
 type PredicateSnapshot struct {
 	clustersnapshot.ClusterSnapshotStore
 	pluginRunner *SchedulerPluginRunner
+	draEnabled   bool
 }
 
 // NewPredicateSnapshot builds a PredicateSnapshot.
-func NewPredicateSnapshot(snapshotStore clustersnapshot.ClusterSnapshotStore, fwHandle *framework.Handle) *PredicateSnapshot {
+func NewPredicateSnapshot(snapshotStore clustersnapshot.ClusterSnapshotStore, fwHandle *framework.Handle, draEnabled bool) *PredicateSnapshot {
 	return &PredicateSnapshot{
 		ClusterSnapshotStore: snapshotStore,
 		pluginRunner:         NewSchedulerPluginRunner(fwHandle, snapshotStore),
+		draEnabled:           draEnabled,
 	}
 }
 
