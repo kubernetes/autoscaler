@@ -25,7 +25,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
-	klog "k8s.io/klog/v2"
+	"k8s.io/klog/v2"
 )
 
 // BinpackingNodeEstimator estimates the number of needed nodes to handle the given amount of pods.
@@ -211,11 +211,7 @@ func (e *BinpackingNodeEstimator) addNewNodeToSnapshot(
 	template *framework.NodeInfo,
 ) error {
 	newNodeInfo := scheduler.DeepCopyTemplateNode(template, fmt.Sprintf("e-%d", estimationState.newNodeNameIndex))
-	var pods []*apiv1.Pod
-	for _, podInfo := range newNodeInfo.Pods() {
-		pods = append(pods, podInfo.Pod)
-	}
-	if err := e.clusterSnapshot.AddNodeWithPods(newNodeInfo.Node(), pods); err != nil {
+	if err := e.clusterSnapshot.AddNodeInfo(newNodeInfo); err != nil {
 		return err
 	}
 	estimationState.newNodeNameIndex++
@@ -229,7 +225,7 @@ func (e *BinpackingNodeEstimator) tryToAddNode(
 	pod *apiv1.Pod,
 	nodeName string,
 ) error {
-	if err := e.clusterSnapshot.AddPod(pod, nodeName); err != nil {
+	if err := e.clusterSnapshot.ForceAddPod(pod, nodeName); err != nil {
 		return fmt.Errorf("Error adding pod %v.%v to node %v in ClusterSnapshot; %v", pod.Namespace, pod.Name, nodeName, err)
 	}
 	estimationState.newNodesWithPods[nodeName] = true

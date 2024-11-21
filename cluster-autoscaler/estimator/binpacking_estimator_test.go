@@ -214,7 +214,8 @@ func TestBinpackingEstimate(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot()
 			// Add one node in different zone to trigger topology spread constraints
-			clusterSnapshot.AddNode(makeNode(100, 100, 10, "oldnode", "zone-jupiter"))
+			err := clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(makeNode(100, 100, 10, "oldnode", "zone-jupiter")))
+			assert.NoError(t, err)
 
 			predicateChecker, err := predicatechecker.NewTestPredicateChecker()
 			assert.NoError(t, err)
@@ -268,7 +269,8 @@ func BenchmarkBinpackingEstimate(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot()
-		clusterSnapshot.AddNode(makeNode(100, 100, 10, "oldnode", "zone-jupiter"))
+		err := clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(makeNode(100, 100, 10, "oldnode", "zone-jupiter")))
+		assert.NoError(b, err)
 
 		predicateChecker, err := predicatechecker.NewTestPredicateChecker()
 		assert.NoError(b, err)
