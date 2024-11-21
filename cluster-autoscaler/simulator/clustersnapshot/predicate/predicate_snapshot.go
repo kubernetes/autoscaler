@@ -32,11 +32,48 @@ type PredicateSnapshot struct {
 
 // NewPredicateSnapshot builds a PredicateSnapshot.
 func NewPredicateSnapshot(snapshotStore clustersnapshot.ClusterSnapshotStore, fwHandle *framework.Handle, draEnabled bool) *PredicateSnapshot {
-	return &PredicateSnapshot{
+	snapshot := &PredicateSnapshot{
 		ClusterSnapshotStore: snapshotStore,
-		pluginRunner:         NewSchedulerPluginRunner(fwHandle, snapshotStore),
 		draEnabled:           draEnabled,
 	}
+	// Plugin runner really only needs a framework.SharedLister for running the plugins, but it also needs to run the provided Node-matching functions
+	// which operate on *framework.NodeInfo. The only object that allows obtaining *framework.NodeInfos is PredicateSnapshot, so we have an ugly circular
+	// dependency between PluginRunner and PredicateSnapshot.
+	// TODO: Refactor PluginRunner so that it doesn't depend on PredicateSnapshot (e.g. move retrieving NodeInfos out of PluginRunner, to PredicateSnapshot).
+	snapshot.pluginRunner = NewSchedulerPluginRunner(fwHandle, snapshot)
+	return snapshot
+}
+
+// GetNodeInfo returns an internal NodeInfo wrapping the relevant schedulerframework.NodeInfo.
+func (s *PredicateSnapshot) GetNodeInfo(nodeName string) (*framework.NodeInfo, error) {
+	schedNodeInfo, err := s.ClusterSnapshotStore.NodeInfos().Get(nodeName)
+	if err != nil {
+		return nil, err
+	}
+	return framework.WrapSchedulerNodeInfo(schedNodeInfo, nil, nil), nil
+}
+
+// ListNodeInfos returns internal NodeInfos wrapping all schedulerframework.NodeInfos in the snapshot.
+func (s *PredicateSnapshot) ListNodeInfos() ([]*framework.NodeInfo, error) {
+	schedNodeInfos, err := s.ClusterSnapshotStore.NodeInfos().List()
+	if err != nil {
+		return nil, err
+	}
+	var result []*framework.NodeInfo
+	for _, schedNodeInfo := range schedNodeInfos {
+		result = append(result, framework.WrapSchedulerNodeInfo(schedNodeInfo, nil, nil))
+	}
+	return result, nil
+}
+
+// AddNodeInfo adds the provided internal NodeInfo to the snapshot.
+func (s *PredicateSnapshot) AddNodeInfo(nodeInfo *framework.NodeInfo) error {
+	return s.ClusterSnapshotStore.AddSchedulerNodeInfo(nodeInfo.ToScheduler())
+}
+
+// RemoveNodeInfo removes a NodeInfo matching the provided nodeName from the snapshot.
+func (s *PredicateSnapshot) RemoveNodeInfo(nodeName string) error {
+	return s.ClusterSnapshotStore.RemoveSchedulerNodeInfo(nodeName)
 }
 
 // SchedulePod adds pod to the snapshot and schedules it to given node.

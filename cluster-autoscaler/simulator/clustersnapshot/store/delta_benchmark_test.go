@@ -24,7 +24,7 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 func BenchmarkBuildNodeInfoList(b *testing.B) {
@@ -54,7 +54,9 @@ func BenchmarkBuildNodeInfoList(b *testing.B) {
 			}
 			deltaStore.Fork()
 			for _, node := range nodes[tc.nodeCount:] {
-				if err := deltaStore.AddNodeInfo(framework.NewTestNodeInfo(node)); err != nil {
+				schedNodeInfo := schedulerframework.NewNodeInfo()
+				schedNodeInfo.SetNode(node)
+				if err := deltaStore.AddSchedulerNodeInfo(schedNodeInfo); err != nil {
 					assert.NoError(b, err)
 				}
 			}
