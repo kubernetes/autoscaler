@@ -40,6 +40,9 @@ import (
 	"k8s.io/client-go/scale"
 	"k8s.io/client-go/tools/cache"
 	klog "k8s.io/klog/v2"
+
+	rolloutv1alpha1 "github.com/argoproj/argo-rollouts/pkg/apis/rollouts/v1alpha1"
+	rolloutinformers "github.com/argoproj/argo-rollouts/pkg/client/informers/externalversions"
 )
 
 const (
@@ -63,10 +66,11 @@ const (
 	replicationController wellKnownController = "ReplicationController"
 	job                   wellKnownController = "Job"
 	cronJob               wellKnownController = "CronJob"
+	rollout               wellKnownController = "Rollout"
 )
 
 // NewVpaTargetSelectorFetcher returns new instance of VpaTargetSelectorFetcher
-func NewVpaTargetSelectorFetcher(config *rest.Config, kubeClient kube_client.Interface, factory informers.SharedInformerFactory) VpaTargetSelectorFetcher {
+func NewVpaTargetSelectorFetcher(config *rest.Config, kubeClient kube_client.Interface, factory informers.SharedInformerFactory, rolloutFactory rolloutinformers.SharedInformerFactory) VpaTargetSelectorFetcher {
 	discoveryClient, err := discovery.NewDiscoveryClientForConfig(config)
 	if err != nil {
 		klog.Fatalf("Could not create discoveryClient: %v", err)
@@ -87,6 +91,7 @@ func NewVpaTargetSelectorFetcher(config *rest.Config, kubeClient kube_client.Int
 		replicationController: factory.Core().V1().ReplicationControllers().Informer(),
 		job:                   factory.Batch().V1().Jobs().Informer(),
 		cronJob:               factory.Batch().V1().CronJobs().Informer(),
+		rollout:               rolloutFactory.Argoproj().V1alpha1().Rollouts().Informer(),
 	}
 
 	for kind, informer := range informersMap {
@@ -168,6 +173,8 @@ func getLabelSelector(informer cache.SharedIndexInformer, kind, namespace, name 
 		return metav1.LabelSelectorAsSelector(metav1.SetAsLabelSelector(apiObj.Spec.JobTemplate.Spec.Template.Labels))
 	case (*corev1.ReplicationController):
 		return metav1.LabelSelectorAsSelector(metav1.SetAsLabelSelector(apiObj.Spec.Selector))
+	case (*rolloutv1alpha1.Rollout):
+		return metav1.LabelSelectorAsSelector(apiObj.Spec.Selector)
 	}
 	return nil, fmt.Errorf("don't know how to read label selector")
 }

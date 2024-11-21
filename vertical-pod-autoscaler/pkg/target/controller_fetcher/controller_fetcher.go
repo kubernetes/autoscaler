@@ -40,6 +40,9 @@ import (
 	"k8s.io/client-go/scale"
 	"k8s.io/client-go/tools/cache"
 	klog "k8s.io/klog/v2"
+
+	rolloutv1alpha1 "github.com/argoproj/argo-rollouts/pkg/apis/rollouts/v1alpha1"
+	rolloutinformers "github.com/argoproj/argo-rollouts/pkg/client/informers/externalversions"
 )
 
 type wellKnownController string
@@ -53,6 +56,7 @@ const (
 	replicaSet            wellKnownController = "ReplicaSet"
 	replicationController wellKnownController = "ReplicationController"
 	statefulSet           wellKnownController = "StatefulSet"
+	rollout               wellKnownController = "Rollout"
 )
 
 const (
@@ -108,7 +112,7 @@ func (f *controllerFetcher) Start(ctx context.Context, loopPeriod time.Duration)
 }
 
 // NewControllerFetcher returns a new instance of controllerFetcher
-func NewControllerFetcher(config *rest.Config, kubeClient kube_client.Interface, factory informers.SharedInformerFactory, betweenRefreshes, lifeTime time.Duration, jitterFactor float64) *controllerFetcher {
+func NewControllerFetcher(config *rest.Config, kubeClient kube_client.Interface, factory informers.SharedInformerFactory, rolloutFactory rolloutinformers.SharedInformerFactory, betweenRefreshes, lifeTime time.Duration, jitterFactor float64) *controllerFetcher {
 	discoveryClient, err := discovery.NewDiscoveryClientForConfig(config)
 	if err != nil {
 		klog.Fatalf("Could not create discoveryClient: %v", err)
@@ -129,6 +133,7 @@ func NewControllerFetcher(config *rest.Config, kubeClient kube_client.Interface,
 		replicationController: factory.Core().V1().ReplicationControllers().Informer(),
 		job:                   factory.Batch().V1().Jobs().Informer(),
 		cronJob:               factory.Batch().V1().CronJobs().Informer(),
+		rollout:               rolloutFactory.Argoproj().V1alpha1().Rollouts().Informer(),
 	}
 
 	for kind, informer := range informersMap {
@@ -193,6 +198,8 @@ func getParentOfWellKnownController(informer cache.SharedIndexInformer, controll
 	case (*batchv1.CronJob):
 		return getOwnerController(apiObj.OwnerReferences, namespace), nil
 	case (*corev1.ReplicationController):
+		return getOwnerController(apiObj.OwnerReferences, namespace), nil
+	case (*rolloutv1alpha1.Rollout):
 		return getOwnerController(apiObj.OwnerReferences, namespace), nil
 	}
 

@@ -53,6 +53,9 @@ import (
 	metrics_recommender "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/recommender"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/server"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
+
+	rolloutclientset "github.com/argoproj/argo-rollouts/pkg/client/clientset/versioned"
+	rolloutinformers "github.com/argoproj/argo-rollouts/pkg/client/informers/externalversions"
 )
 
 var (
@@ -197,7 +200,9 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 	kubeClient := kube_client.NewForConfigOrDie(config)
 	clusterState := model.NewClusterState(aggregateContainerStateGCInterval)
 	factory := informers.NewSharedInformerFactoryWithOptions(kubeClient, defaultResyncPeriod, informers.WithNamespace(commonFlag.IgnoredVpaObjectNamespaces))
-	controllerFetcher := controllerfetcher.NewControllerFetcher(config, kubeClient, factory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor)
+	rolloutClient := rolloutclientset.NewForConfigOrDie(config)
+	rolloutInformerFactory := rolloutinformers.NewSharedInformerFactory(rolloutClient, defaultResyncPeriod)
+	controllerFetcher := controllerfetcher.NewControllerFetcher(config, kubeClient, factory, rolloutInformerFactory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor)
 	podLister, oomObserver := input.NewPodListerAndOOMObserver(kubeClient, commonFlag.IgnoredVpaObjectNamespaces)
 
 	model.InitializeAggregationsConfig(model.NewAggregationsConfig(*memoryAggregationInterval, *memoryAggregationIntervalCount, *memoryHistogramDecayHalfLife, *cpuHistogramDecayHalfLife, *oomBumpUpRatio, *oomMinBumpUp))
@@ -238,7 +243,7 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 		VpaCheckpointClient: vpa_clientset.NewForConfigOrDie(config).AutoscalingV1(),
 		VpaLister:           vpa_api_util.NewVpasLister(vpa_clientset.NewForConfigOrDie(config), make(chan struct{}), commonFlag.VpaObjectNamespace),
 		ClusterState:        clusterState,
-		SelectorFetcher:     target.NewVpaTargetSelectorFetcher(config, kubeClient, factory),
+		SelectorFetcher:     target.NewVpaTargetSelectorFetcher(config, kubeClient, factory, rolloutInformerFactory),
 		MemorySaveMode:      *memorySaver,
 		ControllerFetcher:   controllerFetcher,
 		RecommenderName:     *recommenderName,

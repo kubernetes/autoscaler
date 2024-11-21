@@ -47,6 +47,9 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/server"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/status"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
+
+	rolloutclientset "github.com/argoproj/argo-rollouts/pkg/client/clientset/versioned"
+	rolloutinformers "github.com/argoproj/argo-rollouts/pkg/client/informers/externalversions"
 )
 
 var (
@@ -167,8 +170,10 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 	kubeClient := kube_client.NewForConfigOrDie(config)
 	vpaClient := vpa_clientset.NewForConfigOrDie(config)
 	factory := informers.NewSharedInformerFactory(kubeClient, defaultResyncPeriod)
-	targetSelectorFetcher := target.NewVpaTargetSelectorFetcher(config, kubeClient, factory)
-	controllerFetcher := controllerfetcher.NewControllerFetcher(config, kubeClient, factory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor)
+	rolloutClient := rolloutclientset.NewForConfigOrDie(config)
+	rolloutInformerFactory := rolloutinformers.NewSharedInformerFactory(rolloutClient, defaultResyncPeriod)
+	targetSelectorFetcher := target.NewVpaTargetSelectorFetcher(config, kubeClient, factory, rolloutInformerFactory)
+	controllerFetcher := controllerfetcher.NewControllerFetcher(config, kubeClient, factory, rolloutInformerFactory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor)
 	var limitRangeCalculator limitrange.LimitRangeCalculator
 	limitRangeCalculator, err := limitrange.NewLimitsRangeCalculator(factory)
 	if err != nil {
