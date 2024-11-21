@@ -105,10 +105,26 @@ func TestNodeInfo(t *testing.T) {
 			wantPods:          testPodInfos(pods, false),
 		},
 		{
-			testName:          "wrapping via WrapSchedulerNodeInfo",
-			modFn:             WrapSchedulerNodeInfo,
+			testName: "wrapping via WrapSchedulerNodeInfo",
+			modFn: func(info *schedulerframework.NodeInfo) *NodeInfo {
+				return WrapSchedulerNodeInfo(info, nil, nil)
+			},
 			wantSchedNodeInfo: schedulerNodeInfo,
 			wantPods:          testPodInfos(pods, false),
+		},
+		{
+			testName: "wrapping via WrapSchedulerNodeInfo with DRA objects",
+			modFn: func(info *schedulerframework.NodeInfo) *NodeInfo {
+				podInfos := testPodInfos(pods, true)
+				extraInfos := make(map[types.UID]PodExtraInfo)
+				for _, podInfo := range podInfos {
+					extraInfos[podInfo.Pod.UID] = podInfo.PodExtraInfo
+				}
+				return WrapSchedulerNodeInfo(schedulerNodeInfo, slices, extraInfos)
+			},
+			wantSchedNodeInfo:       schedulerNodeInfo,
+			wantLocalResourceSlices: slices,
+			wantPods:                testPodInfos(pods, true),
 		},
 		{
 			testName: "wrapping via SetNode+AddPod",
@@ -214,9 +230,11 @@ func TestDeepCopyNodeInfo(t *testing.T) {
 		{Pod: test.BuildTestPod("p1", 80, 0, test.WithNodeName(node.Name))},
 		{
 			Pod: test.BuildTestPod("p2", 80, 0, test.WithNodeName(node.Name)),
-			NeededResourceClaims: []*resourceapi.ResourceClaim{
-				{ObjectMeta: v1.ObjectMeta{Name: "claim1"}, Spec: resourceapi.ResourceClaimSpec{Devices: resourceapi.DeviceClaim{Requests: []resourceapi.DeviceRequest{{Name: "req1"}}}}},
-				{ObjectMeta: v1.ObjectMeta{Name: "claim2"}, Spec: resourceapi.ResourceClaimSpec{Devices: resourceapi.DeviceClaim{Requests: []resourceapi.DeviceRequest{{Name: "req2"}}}}},
+			PodExtraInfo: PodExtraInfo{
+				NeededResourceClaims: []*resourceapi.ResourceClaim{
+					{ObjectMeta: v1.ObjectMeta{Name: "claim1"}, Spec: resourceapi.ResourceClaimSpec{Devices: resourceapi.DeviceClaim{Requests: []resourceapi.DeviceRequest{{Name: "req1"}}}}},
+					{ObjectMeta: v1.ObjectMeta{Name: "claim2"}, Spec: resourceapi.ResourceClaimSpec{Devices: resourceapi.DeviceClaim{Requests: []resourceapi.DeviceRequest{{Name: "req2"}}}}},
+				},
 			},
 		},
 	}
@@ -254,7 +272,7 @@ func TestDeepCopyNodeInfo(t *testing.T) {
 			// Verify that the contents are identical after copying.
 			nodeInfoCopy := tc.nodeInfo.DeepCopy()
 			if diff := cmp.Diff(tc.nodeInfo, nodeInfoCopy,
-				cmp.AllowUnexported(schedulerframework.NodeInfo{}, NodeInfo{}, PodInfo{}, podExtraInfo{}),
+				cmp.AllowUnexported(schedulerframework.NodeInfo{}, NodeInfo{}),
 				// We don't care about this field staying the same, and it differs because it's a global counter bumped
 				// on every AddPod.
 				cmpopts.IgnoreFields(schedulerframework.NodeInfo{}, "Generation"),

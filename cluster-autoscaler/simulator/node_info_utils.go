@@ -82,7 +82,7 @@ func sanitizeNodeInfo(nodeInfo *framework.NodeInfo, newNodeNameBase string, name
 
 	for _, podInfo := range nodeInfo.Pods() {
 		freshPod := sanitizePod(podInfo.Pod, freshNode.Name, namesSuffix)
-		result.AddPod(&framework.PodInfo{Pod: freshPod})
+		result.AddPod(framework.NewPodInfo(freshPod, nil))
 	}
 	return result
 }
