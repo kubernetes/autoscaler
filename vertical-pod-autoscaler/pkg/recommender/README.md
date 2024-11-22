@@ -3,6 +3,7 @@
 - [Intro](#intro)
 - [Running](#running)
 - [Implementation](#implementation)
+
 ## Intro
 
 Recommender is the core binary of Vertical Pod Autoscaler system.
@@ -13,12 +14,12 @@ can be inspected.
 
 ## Running
 
-* In order to have historical data pulled in by the recommender, install
+- In order to have historical data pulled in by the recommender, install
   Prometheus in your cluster and pass its address through a flag.
-* Create RBAC configuration from `../deploy/vpa-rbac.yaml`.
-* Create a deployment with the recommender pod from
+- Create RBAC configuration from `../deploy/vpa-rbac.yaml`.
+- Create a deployment with the recommender pod from
   `../deploy/recommender-deployment.yaml`.
-* The recommender will start running and pushing its recommendations to VPA
+- The recommender will start running and pushing its recommendations to VPA
   object statuses.
 
 ## Implementation
@@ -32,8 +33,8 @@ After starting the binary, recommender reads the history of running pods and
 their usage from Prometheus into the model.
 It then runs in a loop and at each step performs the following actions:
 
-* update model with recent information on resources (using listers based on
+- update model with recent information on resources (using listers based on
   watch),
-* update model with fresh usage samples from Metrics API,
-* compute new recommendation for each VPA,
-* put any changed recommendations into the VPA resources.
+- update model with fresh usage samples from Metrics API,
+- compute new recommendation for each VPA,
+- put any changed recommendations into the VPA resources.

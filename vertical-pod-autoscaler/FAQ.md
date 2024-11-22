@@ -14,9 +14,10 @@
 
 First check that the VPA admission controller is running correctly:
 
-```$ kubectl get pod -n kube-system | grep vpa-admission-controller```
-
-```vpa-admission-controller-69645795dc-sm88s            1/1       Running   0          1m```
+```console
+$ kubectl get pod -n kube-system | grep vpa-admission-controller
+vpa-admission-controller-69645795dc-sm88s            1/1       Running   0          1m
+```
 
 Check the logs of the admission controller:
 
@@ -149,7 +150,7 @@ This means that the VPA recommender is now using Prometheus as the history provi
 
 ### I get recommendations for my single pod replicaSet but they are not applied
 
-By default, the [`--min-replicas`](pkg/updater/main.go#L44) flag on the updater is set to 2. To change this, you can supply the arg in the [deploys/updater-deployment.yaml](deploy/updater-deployment.yaml) file:
+By default, the [`--min-replicas`](pkg/updater/main.go#L56) flag on the updater is set to 2. To change this, you can supply the arg in the [deploys/updater-deployment.yaml](deploy/updater-deployment.yaml) file:
 
 ```yaml
 spec:
