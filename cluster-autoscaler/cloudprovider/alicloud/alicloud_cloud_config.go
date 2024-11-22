@@ -17,19 +17,24 @@ limitations under the License.
 package alicloud
 
 import (
+	"os"
+
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/metadata"
 	"k8s.io/klog/v2"
-	"os"
 )
 
 const (
-	accessKeyId       = "ACCESS_KEY_ID"
-	accessKeySecret   = "ACCESS_KEY_SECRET"
-	oidcProviderARN   = "ALICLOUD_OIDC_PROVIDER_ARN"
-	oidcTokenFilePath = "ALICLOUD_OIDC_TOKEN_FILE_PATH"
-	roleARN           = "ALICLOUD_ROLE_ARN"
-	roleSessionName   = "ALICLOUD_SESSION_NAME"
-	regionId          = "REGION_ID"
+	accessKeyId          = "ACCESS_KEY_ID"
+	accessKeySecret      = "ACCESS_KEY_SECRET"
+	oidcProviderARN      = "ALIBABA_CLOUD_OIDC_PROVIDER_ARN"
+	oldOidcProviderARN   = "ALICLOUD_OIDC_PROVIDER_ARN"
+	oidcTokenFilePath    = "ALIBABA_CLOUD_OIDC_TOKEN_FILE"
+	oldOidcTokenFilePath = "ALICLOUD_OIDC_TOKEN_FILE_PATH"
+	roleARN              = "ALIBABA_CLOUD_ROLE_ARN"
+	oldRoleARN           = "ALICLOUD_ROLE_ARN"
+	roleSessionName      = "ALIBABA_CLOUD_SESSION_NAME"
+	oldRoleSessionName   = "ALICLOUD_SESSION_NAME"
+	regionId             = "REGION_ID"
 )
 
 type cloudConfig struct {
@@ -58,19 +63,19 @@ func (cc *cloudConfig) isValid() bool {
 	}
 
 	if cc.OIDCProviderARN == "" {
-		cc.OIDCProviderARN = os.Getenv(oidcProviderARN)
+		cc.OIDCProviderARN = firstNotEmpty(os.Getenv(oidcProviderARN), os.Getenv(oldOidcProviderARN))
 	}
 
 	if cc.OIDCTokenFilePath == "" {
-		cc.OIDCTokenFilePath = os.Getenv(oidcTokenFilePath)
+		cc.OIDCTokenFilePath = firstNotEmpty(os.Getenv(oidcTokenFilePath), os.Getenv(oldOidcTokenFilePath))
 	}
 
 	if cc.RoleARN == "" {
-		cc.RoleARN = os.Getenv(roleARN)
+		cc.RoleARN = firstNotEmpty(os.Getenv(roleARN), os.Getenv(oldRoleARN))
 	}
 
 	if cc.RoleSessionName == "" {
-		cc.RoleSessionName = os.Getenv(roleSessionName)
+		cc.RoleSessionName = firstNotEmpty(os.Getenv(roleSessionName), os.Getenv(oldRoleSessionName))
 	}
 
 	if cc.RegionId != "" && cc.AccessKeyID != "" && cc.AccessKeySecret != "" {
@@ -127,4 +132,16 @@ func (cc *cloudConfig) getRegion() string {
 		klog.Errorf("Failed to get RegionId from metadata.Because of %s\n", err.Error())
 	}
 	return r
+}
+
+// firstNotEmpty returns the first non-empty string from the input list.
+// If all strings are empty or no arguments are provided, it returns an empty string.
+func firstNotEmpty(strs ...string) string {
+	for _, str := range strs {
+		if str != "" {
+			return str
+		}
+	}
+
+	return ""
 }

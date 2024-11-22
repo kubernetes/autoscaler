@@ -165,22 +165,22 @@ spec:
             - --nodes=[min]:[max]:[ASG_ID]
           imagePullPolicy: "Always"
           env:
-          - name: ALICLOUD_OIDC_PROVIDER_ARN
+          - name: ALIBABA_CLOUD_OIDC_PROVIDER_ARN
             valueFrom:
               secretKeyRef:
                 name: cloud-config
                 key: oidc-provider-arn
-          - name: ALICLOUD_OIDC_TOKEN_FILE_PATH
+          - name: ALIBABA_CLOUD_OIDC_TOKEN_FILE
             valueFrom:
               secretKeyRef:
                 name: cloud-config
                 key: oidc-token-file-path
-          - name: ALICLOUD_ROLE_ARN
+          - name: ALIBABA_CLOUD_ROLE_ARN
             valueFrom:
               secretKeyRef:
                 name: cloud-config
                 key: role-arn
-          - name: ALICLOUD_SESSION_NAME
+          - name: ALIBABA_CLOUD_SESSION_NAME
             valueFrom:
               secretKeyRef:
                 name: cloud-config
