@@ -19,7 +19,7 @@ package api
 import (
 	"testing"
 
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 
 	"github.com/stretchr/testify/assert"
@@ -29,11 +29,9 @@ type fakeProcessor struct {
 	message string
 }
 
-func (p *fakeProcessor) Apply(podRecommendation *vpa_types.RecommendedPodResources,
-	policy *vpa_types.PodResourcePolicy,
-	conditions []vpa_types.VerticalPodAutoscalerCondition,
+func (p *fakeProcessor) Apply(vpa *vpa_types.VerticalPodAutoscaler,
 	pod *v1.Pod) (*vpa_types.RecommendedPodResources, ContainerToAnnotationsMap, error) {
-	result := podRecommendation.DeepCopy()
+	result := vpa.Status.Recommendation.DeepCopy()
 	result.ContainerRecommendations[0].ContainerName += p.message
 	containerToAnnotationsMap := ContainerToAnnotationsMap{"trace": []string{p.message}}
 	return result, containerToAnnotationsMap, nil
@@ -43,13 +41,18 @@ func TestSequentialProcessor(t *testing.T) {
 	name1 := "processor1"
 	name2 := "processor2"
 	tested := NewSequentialProcessor([]RecommendationProcessor{&fakeProcessor{name1}, &fakeProcessor{name2}})
-	rec1 := &vpa_types.RecommendedPodResources{
-		ContainerRecommendations: []vpa_types.RecommendedContainerResources{
-			{
-				ContainerName: "",
+	vpa1 := &vpa_types.VerticalPodAutoscaler{
+		Status: vpa_types.VerticalPodAutoscalerStatus{
+			Recommendation: &vpa_types.RecommendedPodResources{
+				ContainerRecommendations: []vpa_types.RecommendedContainerResources{
+					{
+						ContainerName: "",
+					},
+				},
 			},
-		}}
-	result, annotations, _ := tested.Apply(rec1, nil, nil, nil)
+		},
+	}
+	result, annotations, _ := tested.Apply(vpa1, nil)
 	assert.Equal(t, name1+name2, result.ContainerRecommendations[0].ContainerName)
 	assert.Contains(t, annotations, "trace")
 	assert.Contains(t, annotations["trace"], name1)

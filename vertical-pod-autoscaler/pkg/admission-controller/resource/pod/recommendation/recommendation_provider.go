@@ -116,7 +116,7 @@ func (p *recommendationProvider) GetContainersResourcesForPod(pod *core.Pod, vpa
 
 	if vpa.Status.Recommendation != nil {
 		var err error
-		recommendedPodResources, annotations, err = p.recommendationProcessor.Apply(vpa.Status.Recommendation, vpa.Spec.ResourcePolicy, vpa.Status.Conditions, pod)
+		recommendedPodResources, annotations, err = p.recommendationProcessor.Apply(vpa, pod)
 		if err != nil {
 			klog.V(2).InfoS("Cannot process recommendation for pod", "pod", klog.KObj(pod))
 			return nil, annotations, err

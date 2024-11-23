@@ -28,27 +28,26 @@ import (
 
 func TestRecommendationNotAvailable(t *testing.T) {
 	pod := test.Pod().WithName("pod1").AddContainer(test.Container().WithName("ctr-name").Get()).Get()
-	podRecommendation := vpa_types.RecommendedPodResources{
-		ContainerRecommendations: []vpa_types.RecommendedContainerResources{
-			{
-				ContainerName: "ctr-name-other",
-				Target: apiv1.ResourceList{
-					apiv1.ResourceCPU:    *resource.NewScaledQuantity(100, 1),
-					apiv1.ResourceMemory: *resource.NewScaledQuantity(50000, 1),
-				},
-			},
-		},
-	}
-	policy := vpa_types.PodResourcePolicy{}
 
-	res, annotations, err := NewCappingRecommendationProcessor(&fakeLimitRangeCalculator{}).Apply(&podRecommendation, &policy, nil, pod)
+	containerName := "ctr-name-other"
+	vpa := test.VerticalPodAutoscaler().
+		WithContainer(containerName).
+		AppendRecommendation(
+			test.Recommendation().
+				WithContainer(containerName).
+				WithTarget("100m", "50000Mi").
+				GetContainerResources()).
+		Get()
+
+	res, annotations, err := NewCappingRecommendationProcessor(&fakeLimitRangeCalculator{}).Apply(vpa, pod)
 	assert.Nil(t, err)
 	assert.Empty(t, annotations)
 	assert.Empty(t, res.ContainerRecommendations)
 }
 
 func TestRecommendationToLimitCapping(t *testing.T) {
-	pod := test.Pod().WithName("pod1").AddContainer(test.Container().WithName("ctr-name").Get()).Get()
+	containerName := "ctr-name"
+	pod := test.Pod().WithName("pod1").AddContainer(test.Container().WithName(containerName).Get()).Get()
 	pod.Spec.Containers[0].Resources.Limits =
 		apiv1.ResourceList{
 			apiv1.ResourceCPU:    *resource.NewScaledQuantity(3, 1),
@@ -69,6 +68,10 @@ func TestRecommendationToLimitCapping(t *testing.T) {
 			},
 		},
 	}
+
+	vpa := test.VerticalPodAutoscaler().WithContainer(containerName).Get()
+	vpa.Status.Recommendation = &podRecommendation
+
 	requestsAndLimits := vpa_types.ContainerControlledValuesRequestsAndLimits
 	requestsOnly := vpa_types.ContainerControlledValuesRequestsOnly
 	for _, tc := range []struct {
@@ -125,7 +128,8 @@ func TestRecommendationToLimitCapping(t *testing.T) {
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			res, annotations, err := NewCappingRecommendationProcessor(&fakeLimitRangeCalculator{}).Apply(&podRecommendation, &tc.policy, nil, pod)
+			vpa.Spec.ResourcePolicy = &tc.policy
+			res, annotations, err := NewCappingRecommendationProcessor(&fakeLimitRangeCalculator{}).Apply(vpa, pod)
 			assert.Nil(t, err)
 			assert.Equal(t, tc.expectedTarget, res.ContainerRecommendations[0].Target)
 
@@ -179,7 +183,14 @@ func TestRecommendationCappedToMinMaxPolicy(t *testing.T) {
 		},
 	}
 
-	res, annotations, err := NewCappingRecommendationProcessor(&fakeLimitRangeCalculator{}).Apply(&podRecommendation, &policy, nil, pod)
+	containerName := "ctr-name"
+	vpa := test.VerticalPodAutoscaler().
+		WithContainer(containerName).
+		Get()
+	vpa.Spec.ResourcePolicy = &policy
+	vpa.Status.Recommendation = &podRecommendation
+
+	res, annotations, err := NewCappingRecommendationProcessor(&fakeLimitRangeCalculator{}).Apply(vpa, pod)
 	assert.Nil(t, err)
 	assert.Equal(t, apiv1.ResourceList{
 		apiv1.ResourceCPU:    *resource.NewScaledQuantity(40, 1),
@@ -238,11 +249,16 @@ var applyTestCases = []struct {
 }
 
 func TestApply(t *testing.T) {
-	pod := test.Pod().WithName("pod1").AddContainer(test.Container().WithName("ctr-name").Get()).Get()
+	containerName := "ctr-name"
+	pod := test.Pod().WithName("pod1").AddContainer(test.Container().WithName(containerName).Get()).Get()
 
 	for _, testCase := range applyTestCases {
+
+		vpa := test.VerticalPodAutoscaler().WithContainer(containerName).Get()
+		vpa.Spec.ResourcePolicy = testCase.Policy
+		vpa.Status.Recommendation = testCase.PodRecommendation
 		res, _, err := NewCappingRecommendationProcessor(&fakeLimitRangeCalculator{}).Apply(
-			testCase.PodRecommendation, testCase.Policy, nil, pod)
+			vpa, pod)
 		assert.Equal(t, testCase.ExpectedPodRecommendation, res)
 		assert.Equal(t, testCase.ExpectedError, err)
 	}
@@ -334,6 +350,12 @@ func TestApplyCapsToLimitRange(t *testing.T) {
 			apiv1.ResourceMemory: resource.MustParse("500M"),
 		},
 	}
+
+	containerName := "container"
+	vpa := test.VerticalPodAutoscaler().
+		WithContainer(containerName).
+		Get()
+
 	recommendation := vpa_types.RecommendedPodResources{
 		ContainerRecommendations: []vpa_types.RecommendedContainerResources{
 			{
@@ -345,6 +367,8 @@ func TestApplyCapsToLimitRange(t *testing.T) {
 			},
 		},
 	}
+	vpa.Status.Recommendation = &recommendation
+
 	pod := apiv1.Pod{
 		Spec: apiv1.PodSpec{
 			Containers: []apiv1.Container{
@@ -378,7 +402,7 @@ func TestApplyCapsToLimitRange(t *testing.T) {
 
 	calculator := fakeLimitRangeCalculator{containerLimitRange: limitRange}
 	processor := NewCappingRecommendationProcessor(&calculator)
-	processedRecommendation, annotations, err := processor.Apply(&recommendation, nil, nil, &pod)
+	processedRecommendation, annotations, err := processor.Apply(vpa, &pod)
 	assert.NoError(t, err)
 	assert.Contains(t, annotations, "container")
 	assert.ElementsMatch(t, []string{"cpu capped to fit Max in container LimitRange", "memory capped to fit Min in container LimitRange"}, annotations["container"])
@@ -1144,7 +1168,13 @@ func TestApplyLimitRangeMinToRequest(t *testing.T) {
 				podLimitRange:       tc.podLimitRange,
 			}
 			processor := NewCappingRecommendationProcessor(&calculator)
-			processedRecommendation, annotations, err := processor.Apply(&tc.resources, tc.policy, nil, &tc.pod)
+
+			containerName := "ctr-name"
+			vpa := test.VerticalPodAutoscaler().WithContainer(containerName).Get()
+			vpa.Spec.ResourcePolicy = tc.policy
+			vpa.Status.Recommendation = &tc.resources
+
+			processedRecommendation, annotations, err := processor.Apply(vpa, &tc.pod)
 			assert.NoError(t, err)
 			for containerName, expectedAnnotations := range tc.expectAnnotations {
 				if assert.Contains(t, annotations, containerName) {
@@ -1270,7 +1300,12 @@ func TestCapPodMemoryWithUnderByteSplit(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			calculator := fakeLimitRangeCalculator{podLimitRange: tc.limitRange}
 			processor := NewCappingRecommendationProcessor(&calculator)
-			processedRecommendation, _, err := processor.Apply(&recommendation, nil, nil, &pod)
+
+			containerName := "ctr-name"
+			vpa := test.VerticalPodAutoscaler().WithContainer(containerName).Get()
+			vpa.Status.Recommendation = &recommendation
+
+			processedRecommendation, _, err := processor.Apply(vpa, &pod)
 			assert.NoError(t, err)
 			assert.Equal(t, tc.expectedRecommendation, *processedRecommendation)
 		})
