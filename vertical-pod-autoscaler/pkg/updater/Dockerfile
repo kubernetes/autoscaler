@@ -25,7 +25,6 @@ ARG TARGETOS TARGETARCH
 RUN CGO_ENABLED=0 LD_FLAGS=-s GOARCH=$TARGETARCH GOOS=$TARGETOS go build -C pkg/updater -mod vendor -o updater-$TARGETARCH
 
 FROM gcr.io/distroless/static:latest
-LABEL maintainer="Marcin Wielgus <mwielgus@google.com>"
 
 ARG TARGETARCH
 
