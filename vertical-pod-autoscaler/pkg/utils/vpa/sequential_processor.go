@@ -34,7 +34,7 @@ type sequentialRecommendationProcessor struct {
 func (p *sequentialRecommendationProcessor) Apply(vpa *vpa_types.VerticalPodAutoscaler,
 	pod *v1.Pod) (*vpa_types.RecommendedPodResources, ContainerToAnnotationsMap, error) {
 
-	recommendation := vpa.Status.Recommendation.DeepCopy()
+	var recommendation *vpa_types.RecommendedPodResources
 
 	accumulatedContainerToAnnotationsMap := ContainerToAnnotationsMap{}
 
@@ -44,6 +44,7 @@ func (p *sequentialRecommendationProcessor) Apply(vpa *vpa_types.VerticalPodAuto
 			containerToAnnotationsMap ContainerToAnnotationsMap
 		)
 		recommendation, containerToAnnotationsMap, err = processor.Apply(vpa, pod)
+		vpa.Status.Recommendation = recommendation
 
 		for container, newAnnotations := range containerToAnnotationsMap {
 			annotations, found := accumulatedContainerToAnnotationsMap[container]
