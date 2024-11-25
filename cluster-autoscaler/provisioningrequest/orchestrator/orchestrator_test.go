@@ -206,6 +206,7 @@ func TestScaleUp(t *testing.T) {
 		batchTimebox        time.Duration
 		numProvisionedTrue  int
 		numProvisionedFalse int
+		numFailedTrue       int
 	}{
 		{
 			name:          "no ProvisioningRequests",
@@ -241,6 +242,15 @@ func TestScaleUp(t *testing.T) {
 			provReqs:         []*provreqwrapper.ProvisioningRequest{newCheckCapacityCpuProvReq, bookedCapacityProvReq, atomicScaleUpProvReq},
 			provReqToScaleUp: newCheckCapacityCpuProvReq,
 			scaleUpResult:    status.ScaleUpSuccessful,
+		},
+		{
+			name: "impossible check-capacity, with noRetry parameter",
+			provReqs: []*provreqwrapper.ProvisioningRequest{
+				impossibleCheckCapacityReq.CopyWithParameters(map[string]v1.Parameter{"noRetry": "true"}),
+			},
+			provReqToScaleUp: impossibleCheckCapacityReq,
+			scaleUpResult:    status.ScaleUpNoOptionsAvailable,
+			numFailedTrue:    1,
 		},
 		{
 			name:             "some capacity is pre-booked, atomic scale-up not needed",
@@ -438,6 +448,7 @@ func TestScaleUp(t *testing.T) {
 				provReqsAfterScaleUp, err := client.ProvisioningRequestsNoCache()
 				assert.NoError(t, err)
 				assert.Equal(t, len(tc.provReqs), len(provReqsAfterScaleUp))
+				assert.Equal(t, tc.numFailedTrue, NumProvisioningRequestsWithCondition(provReqsAfterScaleUp, v1.Failed, metav1.ConditionTrue))
 
 				if tc.batchProcessing {
 					// Since batch processing returns aggregated result, we need to check the number of provisioned requests which have the provisioned condition.
