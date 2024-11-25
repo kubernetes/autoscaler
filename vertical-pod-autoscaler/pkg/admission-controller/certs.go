@@ -145,6 +145,9 @@ func (cr *certReloader) reloadWebhookCA() error {
 	klog.V(2).InfoS("New client CA found, reloading and patching webhook")
 	patch := []byte(fmt.Sprintf(`{"webhooks":[{"name":"%s","clientConfig":{"caBundle":"%s"}}]}`, webhookName, base64NewBundle))
 	_, err = client.Patch(context.TODO(), webhookConfigName, types.StrategicMergePatchType, patch, metav1.PatchOptions{})
+	if err == nil {
+		klog.V(2).InfoS("Successfully patched webhook with new client CA")
+	}
 	return err
 }
 

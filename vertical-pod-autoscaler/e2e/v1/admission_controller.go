@@ -853,8 +853,8 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		gomega.Expect(err2.Error()).To(gomega.MatchRegexp(`.*admission webhook .*vpa.* denied the request: .*`))
 	})
 
-	ginkgo.It("reloads the webhook certificate", func(ctx ginkgo.SpecContext) {
-		ginkgo.By("Retrieving alternative certificate")
+	ginkgo.It("reloads the webhook leaf and CA certificate", func(ctx ginkgo.SpecContext) {
+		ginkgo.By("Retrieving alternative certificates")
 		c := f.ClientSet
 		e2eCertsSecret, err := c.CoreV1().Secrets(metav1.NamespaceSystem).Get(ctx, "vpa-e2e-certs", metav1.GetOptions{})
 		gomega.Expect(err).To(gomega.Succeed(), "Failed to get vpa-e2e-certs secret")
@@ -862,10 +862,11 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		gomega.Expect(err).To(gomega.Succeed(), "Failed to get vpa-tls-certs secret")
 		actualCertsSecret.Data["serverKey.pem"] = e2eCertsSecret.Data["e2eKey.pem"]
 		actualCertsSecret.Data["serverCert.pem"] = e2eCertsSecret.Data["e2eCert.pem"]
+		actualCertsSecret.Data["caCert.pem"] = e2eCertsSecret.Data["e2eCaCert.pem"]
 		_, err = c.CoreV1().Secrets(metav1.NamespaceSystem).Update(ctx, actualCertsSecret, metav1.UpdateOptions{})
 		gomega.Expect(err).To(gomega.Succeed(), "Failed to update vpa-tls-certs secret with e2e rotation certs")
 
-		ginkgo.By("Waiting for certificate reload")
+		ginkgo.By("Waiting for certificate reloads")
 		pods, err := c.CoreV1().Pods(metav1.NamespaceSystem).List(ctx, metav1.ListOptions{})
 		gomega.Expect(err).To(gomega.Succeed())
 
@@ -883,7 +884,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 			logs, err := io.ReadAll(reader)
 			g.Expect(err).To(gomega.Succeed())
 			return string(logs)
-		}).Should(gomega.ContainSubstring("New certificate found, reloading"))
+		}).Should(gomega.And(gomega.ContainSubstring("New certificate found, reloading"), gomega.ContainSubstring("New client CA found, reloading and patching webhook"), gomega.ContainSubstring("Successfully patched webhook with new client CA")))
 
 		ginkgo.By("Setting up invalid VPA object")
 		// there is an invalid "requests" field.
