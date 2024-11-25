@@ -153,7 +153,7 @@ func TestDeleteNodes(t *testing.T) {
 			},
 		},
 		{
-			"should not scale down when machine deployment update call times out",
+			"should not scale down when machine deployment update call times out and should reset priority of the corresponding machine",
 			setup{
 				nodes:              newNodes(2, "fakeID", []bool{true, false}),
 				machines:           newMachines(2, "fakeID", nil, "machinedeployment-1", "machineset-1", []string{"3", "3"}, []bool{false, false}),
@@ -168,10 +168,10 @@ func TestDeleteNodes(t *testing.T) {
 			},
 			action{node: newNodes(1, "fakeID", []bool{true})[0]},
 			expect{
-				machines:   newMachines(1, "fakeID", nil, "machinedeployment-1", "machineset-1", []string{"1"}, []bool{false}),
+				machines:   newMachines(1, "fakeID", nil, "machinedeployment-1", "machineset-1", []string{"3"}, []bool{false}),
 				mdName:     "machinedeployment-1",
 				mdReplicas: 2,
-				err:        fmt.Errorf("unable to scale in machine deployment machinedeployment-1, Error: %v", mdUpdateErrorMsg),
+				err:        errors.Join(nil, fmt.Errorf("unable to scale in machine deployment machinedeployment-1, Error: %w", errors.New(mdUpdateErrorMsg))),
 			},
 		},
 		{
@@ -332,13 +332,13 @@ func TestDeleteNodes(t *testing.T) {
 				flag := false
 				for _, entryMachineItem := range entry.expect.machines {
 					if entryMachineItem.Name == machine.Name {
-						g.Expect(machine.Annotations[priorityAnnotationKey]).To(Equal(entryMachineItem.Annotations[priorityAnnotationKey]))
+						g.Expect(machine.Annotations[machinePriorityAnnotation]).To(Equal(entryMachineItem.Annotations[machinePriorityAnnotation]))
 						flag = true
 						break
 					}
 				}
 				if !flag {
-					g.Expect(machine.Annotations[priorityAnnotationKey]).To(Equal("3"))
+					g.Expect(machine.Annotations[machinePriorityAnnotation]).To(Equal("3"))
 				}
 			}
 		})
@@ -357,7 +357,6 @@ func TestRefresh(t *testing.T) {
 	}
 	table := []data{
 		{
-
 			"should return an error if MCM has zero available replicas",
 			setup{
 				nodes:              newNodes(1, "fakeID", []bool{false}),
@@ -371,7 +370,6 @@ func TestRefresh(t *testing.T) {
 			},
 		},
 		{
-
 			"should return an error if MCM deployment is not found",
 			setup{
 				nodes:              newNodes(1, "fakeID", []bool{false}),
@@ -384,8 +382,7 @@ func TestRefresh(t *testing.T) {
 			},
 		},
 		{
-
-			"should reset priority of a machine with node without ToBeDeletedTaint to 3",
+			"should reset priority of a machine to 3 if machine deployment is not scaled in",
 			setup{
 				nodes:              newNodes(1, "fakeID", []bool{false}),
 				machines:           newMachines(1, "fakeID", nil, "machinedeployment-1", "machineset-1", []string{"1"}, []bool{false}),
@@ -399,11 +396,61 @@ func TestRefresh(t *testing.T) {
 			},
 		},
 		{
-			"should not reset priority of a machine to 3 if the node has ToBeDeleted taint",
+			"should reset priority of a machine to 3 if machine deployment is not scaled in even if ToBeDeletedTaint is present on the corresponding node",
 			setup{
 				nodes:              newNodes(1, "fakeID", []bool{true}),
 				machines:           newMachines(1, "fakeID", nil, "machinedeployment-1", "machineset-1", []string{"1"}, []bool{false}),
 				machineDeployments: newMachineDeployments(1, 1, nil, nil, nil),
+				nodeGroups:         []string{nodeGroup2},
+				mcmDeployment:      newMCMDeployment(1),
+			},
+			expect{
+				machines: newMachines(1, "fakeID", nil, "machinedeployment-1", "machineset-1", []string{"3"}, []bool{false}),
+				err:      nil,
+			},
+		},
+		{
+			"should NOT skip paused machine deployment",
+			setup{
+				nodes:    newNodes(1, "fakeID", []bool{false}),
+				machines: newMachines(1, "fakeID", nil, "machinedeployment-1", "machineset-1", []string{"1"}, []bool{false}),
+				machineDeployments: newMachineDeployments(1, 1, &v1alpha1.MachineDeploymentStatus{
+					Conditions: []v1alpha1.MachineDeploymentCondition{
+						{Type: v1alpha1.MachineDeploymentProgressing, Status: v1alpha1.ConditionUnknown, Reason: machineDeploymentPausedReason},
+					},
+				}, nil, nil),
+				nodeGroups:    []string{nodeGroup2},
+				mcmDeployment: newMCMDeployment(1),
+			},
+			expect{
+				machines: newMachines(1, "fakeID", nil, "machinedeployment-1", "machineset-1", []string{"3"}, []bool{false}),
+				err:      nil,
+			},
+		},
+		{
+			"should ignore terminating/failed machines in checking if number of annotated machines is more than desired",
+			setup{
+				nodes: newNodes(1, "fakeID", []bool{true}),
+				machines: newMachines(1, "fakeID", &v1alpha1.MachineStatus{
+					CurrentStatus: v1alpha1.CurrentStatus{Phase: v1alpha1.MachineFailed},
+				}, "machinedeployment-1", "machineset-1", []string{"1"}, []bool{false}),
+				machineDeployments: newMachineDeployments(1, 1, nil, nil, nil),
+				nodeGroups:         []string{nodeGroup2},
+				mcmDeployment:      newMCMDeployment(1),
+			},
+			expect{
+				machines: newMachines(1, "fakeID", &v1alpha1.MachineStatus{
+					CurrentStatus: v1alpha1.CurrentStatus{Phase: v1alpha1.MachineFailed},
+				}, "machinedeployment-1", "machineset-1", []string{"1"}, []bool{false}),
+				err: nil,
+			},
+		},
+		{
+			"should not reset priority of a machine to 3 if machine deployment is scaled in",
+			setup{
+				nodes:              newNodes(1, "fakeID", []bool{true}),
+				machines:           newMachines(1, "fakeID", nil, "machinedeployment-1", "machineset-1", []string{"1"}, []bool{false}),
+				machineDeployments: newMachineDeployments(1, 0, nil, nil, nil),
 				nodeGroups:         []string{nodeGroup2},
 				mcmDeployment:      newMCMDeployment(1),
 			},
@@ -428,7 +475,7 @@ func TestRefresh(t *testing.T) {
 			},
 			expect{
 				machines: []*v1alpha1.Machine{newMachine("machine-1", "fakeID-1", nil, "machinedeployment-1", "machineset-1", "1", false, true)},
-				err:      errors.Join(fmt.Errorf("could not reset priority annotation on machine machine-1, Error: %v", mcUpdateErrorMsg)),
+				err:      errors.Join(nil, errors.Join(fmt.Errorf("could not reset priority annotation on machine machine-1, Error: %v", mcUpdateErrorMsg))),
 			},
 		},
 	}
@@ -461,7 +508,7 @@ func TestRefresh(t *testing.T) {
 			for _, mc := range entry.expect.machines {
 				machine, err := m.machineClient.Machines(m.namespace).Get(context.TODO(), mc.Name, metav1.GetOptions{})
 				g.Expect(err).To(BeNil())
-				g.Expect(mc.Annotations[priorityAnnotationKey]).To(Equal(machine.Annotations[priorityAnnotationKey]))
+				g.Expect(mc.Annotations[machinePriorityAnnotation]).To(Equal(machine.Annotations[machinePriorityAnnotation]))
 			}
 		})
 	}

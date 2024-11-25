@@ -30,9 +30,8 @@ import (
 )
 
 var (
-	testNamespace         = "test-namespace"
-	priorityAnnotationKey = "machinepriority.machine.sapcloud.io"
-	testTaintValue        = fmt.Sprint(time.Now().Unix())
+	testNamespace  = "test-namespace"
+	testTaintValue = fmt.Sprint(time.Now().Unix())
 )
 
 func newMachineDeployments(
@@ -135,7 +134,7 @@ func newMachines(
 					{Name: msName},
 				},
 				Labels:            map[string]string{machineDeploymentNameLabel: mdName},
-				Annotations:       map[string]string{priorityAnnotationKey: priorityAnnotationValues[i]},
+				Annotations:       map[string]string{machinePriorityAnnotation: priorityAnnotationValues[i]},
 				CreationTimestamp: metav1.Now(),
 			},
 		}

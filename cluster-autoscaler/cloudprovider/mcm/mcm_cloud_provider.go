@@ -225,20 +225,11 @@ func (mcm *mcmCloudProvider) checkMCMAvailableReplicas() error {
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
 // In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
 func (mcm *mcmCloudProvider) Refresh() error {
-
 	err := mcm.checkMCMAvailableReplicas()
 	if err != nil {
 		return err
 	}
-
-	for _, machineDeployment := range mcm.machinedeployments {
-		err := mcm.mcmManager.resetPriorityForNotToBeDeletedMachines(machineDeployment.Name)
-		if err != nil {
-			klog.Errorf("failed to reset priority for machines in MachineDeployment %s, err: %v", machineDeployment.Name, err.Error())
-			return err
-		}
-	}
-	return nil
+	return mcm.mcmManager.Refresh()
 }
 
 // GPULabel returns the label added to nodes with GPU resource.
