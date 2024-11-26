@@ -43,10 +43,11 @@ func newTestScaleSet(manager *AzureManager, name string) *ScaleSet {
 		azureRef: azureRef{
 			Name: name,
 		},
-		manager:           manager,
-		minSize:           1,
-		maxSize:           5,
-		enableForceDelete: manager.config.EnableForceDelete,
+		manager:                              manager,
+		minSize:                              1,
+		maxSize:                              5,
+		enableForceDelete:                    manager.config.EnableForceDelete,
+		enableFastDeleteOnFailedProvisioning: true,
 	}
 }
 
@@ -55,10 +56,11 @@ func newTestScaleSetMinSizeZero(manager *AzureManager, name string) *ScaleSet {
 		azureRef: azureRef{
 			Name: name,
 		},
-		manager:           manager,
-		minSize:           0,
-		maxSize:           5,
-		enableForceDelete: manager.config.EnableForceDelete,
+		manager:                              manager,
+		minSize:                              0,
+		maxSize:                              5,
+		enableForceDelete:                    manager.config.EnableForceDelete,
+		enableFastDeleteOnFailedProvisioning: true,
 	}
 }
 
