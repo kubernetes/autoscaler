@@ -97,6 +97,9 @@ type Config struct {
 
 	// StrictCacheUpdates updates cache values only after positive validation from Azure APIs
 	StrictCacheUpdates bool `json:"strictCacheUpdates,omitempty" yaml:"strictCacheUpdates,omitempty"`
+
+	// EnableFastDeleteOnFailedProvisioning defines whether to delete the experimental faster VMSS instance deletion on failed provisioning
+	EnableFastDeleteOnFailedProvisioning bool `json:"enableFastDeleteOnFailedProvisioning,omitempty" yaml:"enableFastDeleteOnFailedProvisioning,omitempty"`
 }
 
 // These are only here for backward compabitility. Their equivalent exists in providerazure.Config with a different name.
@@ -293,6 +296,9 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 		return nil, err
 	}
 	if _, err = assignIntFromEnvIfExists(&cfg.CloudProviderRateLimitBucketWrite, "RATE_LIMIT_WRITE_BUCKETS"); err != nil {
+		return nil, err
+	}
+	if _, err = assignBoolFromEnvIfExists(&cfg.EnableFastDeleteOnFailedProvisioning, "AZURE_ENABLE_FAST_DELETE_ON_FAILED_PROVISIONING"); err != nil {
 		return nil, err
 	}
 
