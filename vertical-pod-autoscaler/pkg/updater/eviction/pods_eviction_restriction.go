@@ -225,7 +225,7 @@ func (f *podsEvictionRestrictionFactoryImpl) NewPodsEvictionRestriction(pods []*
 	for creator, replicas := range livePods {
 		actual := len(replicas)
 		if actual < required {
-			klog.V(2).InfoS("Too few replicas", "kind", creator.Kind, klog.KRef(creator.Namespace, creator.Name), "livePods", actual, "requiredPods", required, "globalMinReplicas", f.minReplicas)
+			klog.V(2).InfoS("Too few replicas", "kind", creator.Kind, "object", klog.KRef(creator.Namespace, creator.Name), "livePods", actual, "requiredPods", required, "globalMinReplicas", f.minReplicas)
 			continue
 		}
 
