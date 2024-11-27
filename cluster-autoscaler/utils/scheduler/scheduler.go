@@ -23,7 +23,6 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/apimachinery/pkg/util/uuid"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	scheduler_config "k8s.io/kubernetes/pkg/scheduler/apis/config"
 	scheduler_scheme "k8s.io/kubernetes/pkg/scheduler/apis/config/scheme"
@@ -77,27 +76,6 @@ func CreateNodeNameToInfoMap(pods []*apiv1.Pod, nodes []*apiv1.Node) map[string]
 
 func isHugePageResourceName(name apiv1.ResourceName) bool {
 	return strings.HasPrefix(string(name), apiv1.ResourceHugePagesPrefix)
-}
-
-// DeepCopyTemplateNode copies NodeInfo object used as a template. It changes
-// names of UIDs of both node and pods running on it, so that copies can be used
-// to represent multiple nodes.
-func DeepCopyTemplateNode(nodeTemplate *framework.NodeInfo, suffix string) *framework.NodeInfo {
-	node := nodeTemplate.Node().DeepCopy()
-	node.Name = fmt.Sprintf("%s-%s", node.Name, suffix)
-	node.UID = uuid.NewUUID()
-	if node.Labels == nil {
-		node.Labels = make(map[string]string)
-	}
-	node.Labels["kubernetes.io/hostname"] = node.Name
-	nodeInfo := framework.NewNodeInfo(node, nil)
-	for _, podInfo := range nodeTemplate.Pods() {
-		pod := podInfo.Pod.DeepCopy()
-		pod.Name = fmt.Sprintf("%s-%s", podInfo.Pod.Name, suffix)
-		pod.UID = uuid.NewUUID()
-		nodeInfo.AddPod(&framework.PodInfo{Pod: pod})
-	}
-	return nodeInfo
 }
 
 // ResourceToResourceList returns a resource list of the resource.

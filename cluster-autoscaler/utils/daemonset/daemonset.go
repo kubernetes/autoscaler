@@ -22,6 +22,7 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	"k8s.io/kubernetes/pkg/controller/daemon"
 )
@@ -40,6 +41,10 @@ func GetDaemonSetPodsForNode(nodeInfo *framework.NodeInfo, daemonsets []*appsv1.
 		if shouldRun {
 			pod := daemon.NewPod(ds, nodeInfo.Node().Name)
 			pod.Name = fmt.Sprintf("%s-pod-%d", ds.Name, rand.Int63())
+			ptrVal := true
+			pod.ObjectMeta.OwnerReferences = []metav1.OwnerReference{
+				{Kind: "DaemonSet", UID: ds.UID, Name: ds.Name, Controller: &ptrVal},
+			}
 			result = append(result, &framework.PodInfo{Pod: pod})
 		}
 	}
