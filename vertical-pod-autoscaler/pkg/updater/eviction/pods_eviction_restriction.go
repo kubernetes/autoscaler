@@ -140,7 +140,7 @@ func (e *podsEvictionRestrictionImpl) Evict(podToEvict *apiv1.Pod, vpa *vpa_type
 	}
 	err := e.client.CoreV1().Pods(podToEvict.Namespace).EvictV1(context.TODO(), eviction)
 	if err != nil {
-		klog.ErrorS(err, "Failed to evict pod", klog.KObj(podToEvict))
+		klog.ErrorS(err, "Failed to evict pod", "pod", klog.KObj(podToEvict))
 		return err
 	}
 	eventRecorder.Event(podToEvict, apiv1.EventTypeNormal, "EvictedByVPA",
@@ -225,7 +225,7 @@ func (f *podsEvictionRestrictionFactoryImpl) NewPodsEvictionRestriction(pods []*
 	for creator, replicas := range livePods {
 		actual := len(replicas)
 		if actual < required {
-			klog.V(2).InfoS("Too few replicas", "kind", creator.Kind, klog.KRef(creator.Namespace, creator.Name), "livePods", actual, "requiredPods", required, "globalMinReplicas", f.minReplicas)
+			klog.V(2).InfoS("Too few replicas", "kind", creator.Kind, "object", klog.KRef(creator.Namespace, creator.Name), "livePods", actual, "requiredPods", required, "globalMinReplicas", f.minReplicas)
 			continue
 		}
 
@@ -237,7 +237,7 @@ func (f *podsEvictionRestrictionFactoryImpl) NewPodsEvictionRestriction(pods []*
 			var err error
 			configured, err = f.getReplicaCount(creator)
 			if err != nil {
-				klog.ErrorS(err, "Failed to obtain replication info", "kind", creator.Kind, klog.KRef(creator.Namespace, creator.Name))
+				klog.ErrorS(err, "Failed to obtain replication info", "kind", creator.Kind, "object", klog.KRef(creator.Namespace, creator.Name))
 				continue
 			}
 		}

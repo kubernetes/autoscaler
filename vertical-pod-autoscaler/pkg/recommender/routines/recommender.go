@@ -111,7 +111,7 @@ func (r *recommender) UpdateVPAs() {
 			if klog.V(4).Enabled() {
 				pods := r.clusterState.GetMatchingPods(vpa)
 				if len(pods) != vpa.PodCount {
-					klog.ErrorS(nil, "ClusterState pod count and matching pods disagree for VPA", "vpa", klog.KRef(vpa.ID.Namespace, vpa.ID.VpaName), "podCount", vpa.PodCount, "MatchingPods", pods)
+					klog.ErrorS(nil, "ClusterState pod count and matching pods disagree for VPA", "vpa", klog.KRef(vpa.ID.Namespace, vpa.ID.VpaName), "podCount", vpa.PodCount, "matchingPods", pods)
 				}
 				klog.InfoS("VPA dump", "vpa", vpa, "hasMatchingPods", hasMatchingPods, "podCount", vpa.PodCount, "matchingPods", pods)
 			}

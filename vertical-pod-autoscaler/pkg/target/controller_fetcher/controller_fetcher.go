@@ -261,7 +261,7 @@ func (f *controllerFetcher) isWellKnownOrScalable(ctx context.Context, key *Cont
 	//if not well known check if it supports scaling
 	groupKind, err := key.groupKind()
 	if err != nil {
-		klog.ErrorS(err, "Could not find groupKind", klog.KRef(key.Namespace, key.Name))
+		klog.ErrorS(err, "Could not find groupKind", "object", klog.KRef(key.Namespace, key.Name))
 		return false
 	}
 
@@ -271,7 +271,7 @@ func (f *controllerFetcher) isWellKnownOrScalable(ctx context.Context, key *Cont
 
 	mappings, err := f.mapper.RESTMappings(groupKind)
 	if err != nil {
-		klog.ErrorS(err, "Could not find mappings", klog.KRef(key.Namespace, key.Name))
+		klog.ErrorS(err, "Could not find mappings", "groupKind", groupKind, "object", klog.KRef(key.Namespace, key.Name))
 		return false
 	}
 

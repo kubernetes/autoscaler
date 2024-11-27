@@ -204,7 +204,7 @@ func ObserveRecommendationChange(previous, current corev1.ResourceList, updateMo
 	}
 	// This is not really expected thus a warning.
 	if current == nil {
-		klog.V(0).InfoS("Current recommendation is nil", "update_mode", updateMode, "size", vpaSize)
+		klog.V(0).InfoS("Current recommendation is nil", "updateMode", updateMode, "size", vpaSize)
 		return
 	}
 
@@ -217,7 +217,7 @@ func ObserveRecommendationChange(previous, current corev1.ResourceList, updateMo
 			log2 := metrics.GetVpaSizeLog2(vpaSize)
 			relativeRecommendationChange.WithLabelValues(updateModeToString(updateMode), string(resource), strconv.Itoa(log2)).Observe(diff)
 		} else {
-			klog.V(0).InfoS("Cannot compare as old recommendation is 0", "resource", resource, "vpa_mode", updateMode, "size", vpaSize)
+			klog.V(0).InfoS("Cannot compare as old recommendation is 0", "resource", resource, "vpaMode", updateMode, "size", vpaSize)
 		}
 	}
 }
