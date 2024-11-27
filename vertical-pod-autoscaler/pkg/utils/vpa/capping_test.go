@@ -26,6 +26,25 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 )
 
+func TestApplyWithNilVPA(t *testing.T) {
+	pod := test.Pod().WithName("pod1").AddContainer(test.Container().WithName("ctr-name").Get()).Get()
+	processor := NewCappingRecommendationProcessor(&fakeLimitRangeCalculator{})
+
+	res, annotations, err := processor.Apply(nil, pod)
+	assert.Error(t, err)
+	assert.Nil(t, res)
+	assert.Nil(t, annotations)
+}
+func TestApplyWithNilPod(t *testing.T) {
+	vpa := test.VerticalPodAutoscaler().WithContainer("container").Get()
+	processor := NewCappingRecommendationProcessor(&fakeLimitRangeCalculator{})
+
+	res, annotations, err := processor.Apply(vpa, nil)
+	assert.Error(t, err)
+	assert.Nil(t, res)
+	assert.Nil(t, annotations)
+}
+
 func TestRecommendationNotAvailable(t *testing.T) {
 	pod := test.Pod().WithName("pod1").AddContainer(test.Container().WithName("ctr-name").Get()).Get()
 

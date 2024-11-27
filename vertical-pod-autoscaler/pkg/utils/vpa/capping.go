@@ -56,6 +56,13 @@ func (c *cappingRecommendationProcessor) Apply(
 	pod *apiv1.Pod) (*vpa_types.RecommendedPodResources, ContainerToAnnotationsMap, error) {
 	// TODO: Annotate if request enforced by maintaining proportion with limit and allowed limit range is in conflict with policy.
 
+	if vpa == nil {
+		return nil, nil, fmt.Errorf("cannot process nil vpa")
+	}
+	if pod == nil {
+		return nil, nil, fmt.Errorf("cannot process nil pod")
+	}
+
 	policy := vpa.Spec.ResourcePolicy
 	podRecommendation := vpa.Status.Recommendation
 
