@@ -90,9 +90,10 @@ cluster_autoscaler:update_deps() {
       go mod edit "-replace=${mod}=${mod}@${mod_version}"
     else
       go get "${mod}@${mod_version}"
-      go mod tidy
     fi
   done
+
+  go mod tidy
 
   if [ "${pkg}" = "./cluster-autoscaler" ]; then
     go get "k8s.io/kubernetes@v${k8s_version}"
