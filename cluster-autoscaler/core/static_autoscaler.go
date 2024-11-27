@@ -52,7 +52,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
 	caerrors "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
-	scheduler_utils "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	"k8s.io/utils/integer"
 
@@ -1028,7 +1027,7 @@ func getUpcomingNodeInfos(upcomingCounts map[string]int, nodeInfos map[string]*f
 			// Ensure new nodes have different names because nodeName
 			// will be used as a map key. Also deep copy pods (daemonsets &
 			// any pods added by cloud provider on template).
-			nodes = append(nodes, scheduler_utils.DeepCopyTemplateNode(nodeTemplate, fmt.Sprintf("upcoming-%d", i)))
+			nodes = append(nodes, simulator.NodeInfoSanitizedDeepCopy(nodeTemplate, fmt.Sprintf("upcoming-%d", i)))
 		}
 		upcomingNodes[nodeGroup] = nodes
 	}

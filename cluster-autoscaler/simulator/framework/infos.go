@@ -93,6 +93,24 @@ func (n *NodeInfo) ToScheduler() *schedulerframework.NodeInfo {
 	return n.schedNodeInfo
 }
 
+// DeepCopy clones the NodeInfo.
+func (n *NodeInfo) DeepCopy() *NodeInfo {
+	var newPods []*PodInfo
+	for _, podInfo := range n.Pods() {
+		var newClaims []*resourceapi.ResourceClaim
+		for _, claim := range podInfo.NeededResourceClaims {
+			newClaims = append(newClaims, claim.DeepCopy())
+		}
+		newPods = append(newPods, &PodInfo{Pod: podInfo.Pod.DeepCopy(), NeededResourceClaims: newClaims})
+	}
+	var newSlices []*resourceapi.ResourceSlice
+	for _, slice := range n.LocalResourceSlices {
+		newSlices = append(newSlices, slice.DeepCopy())
+	}
+	// Node() can be nil, but DeepCopy() handles nil receivers gracefully.
+	return NewNodeInfo(n.Node().DeepCopy(), newSlices, newPods...)
+}
+
 // NewNodeInfo returns a new internal NodeInfo from the provided data.
 func NewNodeInfo(node *apiv1.Node, slices []*resourceapi.ResourceSlice, pods ...*PodInfo) *NodeInfo {
 	result := &NodeInfo{

@@ -41,8 +41,9 @@ type AutoscalerError interface {
 }
 
 type autoscalerErrorImpl struct {
-	errorType AutoscalerErrorType
-	msg       string
+	errorType  AutoscalerErrorType
+	wrappedErr error
+	msg        string
 }
 
 const (
@@ -75,8 +76,9 @@ func NewAutoscalerError(errorType AutoscalerErrorType, msg string, args ...inter
 	}
 }
 
-// ToAutoscalerError converts an error to AutoscalerError with given type,
+// ToAutoscalerError wraps an error to AutoscalerError with given type,
 // unless it already is an AutoscalerError (in which case it's not modified).
+// errors.Is() works correctly on the wrapped error.
 func ToAutoscalerError(defaultType AutoscalerErrorType, err error) AutoscalerError {
 	if e, ok := err.(AutoscalerError); ok {
 		return e
@@ -84,12 +86,25 @@ func ToAutoscalerError(defaultType AutoscalerErrorType, err error) AutoscalerErr
 	if err == nil {
 		return nil
 	}
-	return NewAutoscalerError(defaultType, "%v", err)
+	return autoscalerErrorImpl{
+		errorType:  defaultType,
+		wrappedErr: err,
+	}
 }
 
 // Error implements golang error interface
 func (e autoscalerErrorImpl) Error() string {
-	return e.msg
+	msg := e.msg
+	if e.wrappedErr != nil {
+		msg = msg + e.wrappedErr.Error()
+	}
+	return msg
+}
+
+// Unwrap returns the error wrapped via ToAutoscalerError or AddPrefix, so that errors.Is() works
+// correctly.
+func (e autoscalerErrorImpl) Unwrap() error {
+	return e.wrappedErr
 }
 
 // Type returns the type of AutoscalerError
@@ -97,15 +112,14 @@ func (e autoscalerErrorImpl) Type() AutoscalerErrorType {
 	return e.errorType
 }
 
-// AddPrefix adds a prefix to error message.
-// Returns the error it's called for convenient inline use.
-// Example:
+// AddPrefix returns an error wrapping this one, with the added prefix. errors.Is() works
+// correctly on the wrapped error.
+// Example usage:
 // if err := DoSomething(myObject); err != nil {
 //
 //	return err.AddPrefix("can't do something with %v: ", myObject)
 //
 // }
 func (e autoscalerErrorImpl) AddPrefix(msg string, args ...interface{}) AutoscalerError {
-	e.msg = fmt.Sprintf(msg, args...) + e.msg
-	return e
+	return autoscalerErrorImpl{errorType: e.errorType, wrappedErr: e, msg: fmt.Sprintf(msg, args...)}
 }
