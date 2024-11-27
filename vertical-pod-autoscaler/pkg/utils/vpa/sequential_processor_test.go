@@ -31,7 +31,7 @@ type fakeProcessor struct {
 
 func (p *fakeProcessor) Apply(vpa *vpa_types.VerticalPodAutoscaler,
 	pod *v1.Pod) (*vpa_types.RecommendedPodResources, ContainerToAnnotationsMap, error) {
-	result := vpa.Status.Recommendation.DeepCopy()
+	result := vpa.Status.Recommendation
 	result.ContainerRecommendations[0].ContainerName += p.message
 	containerToAnnotationsMap := ContainerToAnnotationsMap{"trace": []string{p.message}}
 	return result, containerToAnnotationsMap, nil

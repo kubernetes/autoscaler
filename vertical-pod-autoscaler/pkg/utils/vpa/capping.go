@@ -56,8 +56,8 @@ func (c *cappingRecommendationProcessor) Apply(
 	pod *apiv1.Pod) (*vpa_types.RecommendedPodResources, ContainerToAnnotationsMap, error) {
 	// TODO: Annotate if request enforced by maintaining proportion with limit and allowed limit range is in conflict with policy.
 
-	policy := vpa.Spec.ResourcePolicy.DeepCopy()
-	podRecommendation := vpa.Status.Recommendation.DeepCopy()
+	policy := vpa.Spec.ResourcePolicy
+	podRecommendation := vpa.Status.Recommendation
 
 	if podRecommendation == nil && policy == nil {
 		// If there is no recommendation and no policies have been defined then no recommendation can be computed.
