@@ -1835,11 +1835,8 @@ func TestAuthErrorHandling(t *testing.T) {
 		Options: &defaultOptions,
 	}
 	results := runSimpleScaleUpTest(t, config)
-	expected := errors.NewAutoscalerError(
-		errors.AutoscalerErrorType("authError"),
-		"failed to increase node group size: auth error",
-	)
-	assert.Equal(t, expected, results.ScaleUpError)
+	assert.Equal(t, errors.AutoscalerErrorType("authError"), results.ScaleUpError.Type())
+	assert.Equal(t, "failed to increase node group size: auth error", results.ScaleUpError.Error())
 	assertLegacyRegistryEntry(t, "cluster_autoscaler_failed_scale_ups_total{reason=\"authError\"} 1")
 }
 
