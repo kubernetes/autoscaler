@@ -93,6 +93,7 @@ type memoryMinResourceEstimator struct {
 	baseEstimator MemoryEstimator
 }
 
+// NewCombinedEstimator returns a new combinedEstimator that uses provided estimators.
 func NewCombinedEstimator(cpuEstimator CPUEstimator, memoryEstimator MemoryEstimator) ResourceEstimator {
 	return &combinedEstimator{cpuEstimator, memoryEstimator}
 }
@@ -102,6 +103,7 @@ func NewPercentileCPUEstimator(percentile float64) CPUEstimator {
 	return &percentileCPUEstimator{percentile}
 }
 
+// NewPercentileMemoryEstimator returns a new percentileMemoryEstimator that uses provided percentile.
 func NewPercentileMemoryEstimator(percentile float64) MemoryEstimator {
 	return &percentileMemoryEstimator{percentile}
 }
@@ -111,22 +113,26 @@ func NewMemoryEstimator(percentile float64) MemoryEstimator {
 	return &percentileMemoryEstimator{percentile}
 }
 
+// GetCPUEstimation returns the CPU estimation for the given AggregateContainerState.
 func (e *cpuMarginEstimator) GetCPUEstimation(s *model.AggregateContainerState) model.ResourceAmount {
 	base := e.baseEstimator.GetCPUEstimation(s)
 	margin := model.ScaleResource(base, e.marginFraction)
 	return base + margin
 }
 
+// GetMemoryEstimation returns the memory estimation for the given AggregateContainerState.
 func (e *memoryMarginEstimator) GetMemoryEstimation(s *model.AggregateContainerState) model.ResourceAmount {
 	base := e.baseEstimator.GetMemoryEstimation(s)
 	margin := model.ScaleResource(base, e.marginFraction)
 	return base + margin
 }
 
+// WithCPUMargin returns a CPUEstimator that adds a margin to the base estimator.
 func WithCPUMargin(marginFraction float64, baseEstimator CPUEstimator) CPUEstimator {
 	return &cpuMarginEstimator{marginFraction: marginFraction, baseEstimator: baseEstimator}
 }
 
+// WithMemoryMargin returns a MemoryEstimator that adds a margin to the base estimator.
 func WithMemoryMargin(marginFraction float64, baseEstimator MemoryEstimator) MemoryEstimator {
 	return &memoryMarginEstimator{marginFraction: marginFraction, baseEstimator: baseEstimator}
 }
@@ -197,10 +203,12 @@ func (e *memoryConfidenceMultiplier) GetMemoryEstimation(s *model.AggregateConta
 	return model.ScaleResource(base, math.Pow(1.+e.multiplier/confidence, e.exponent))
 }
 
+// WithCPUMinResource returns a CPUEstimator that returns at least minResource
 func WithCPUMinResource(minResource model.ResourceAmount, baseEstimator CPUEstimator) CPUEstimator {
 	return &cpuMinResourceEstimator{minResource, baseEstimator}
 }
 
+// WithMemoryMinResource returns a MemoryEstimator that returns at least minResource
 func WithMemoryMinResource(minResource model.ResourceAmount, baseEstimator MemoryEstimator) MemoryEstimator {
 	return &memoryMinResourceEstimator{minResource, baseEstimator}
 }
