@@ -26,7 +26,7 @@ import (
 func TestMinResourcesApplied(t *testing.T) {
 	constCPUEstimator := NewConstCPUEstimator(model.CPUAmountFromCores(0.001))
 	constMemoryEstimator := NewConstMemoryEstimator(model.MemoryAmountFromBytes(1e6))
-	
+
 	recommender := podResourceRecommender{
 		targetCPU:        constCPUEstimator,
 		targetMemory:     constMemoryEstimator,
@@ -48,7 +48,7 @@ func TestMinResourcesApplied(t *testing.T) {
 func TestMinResourcesSplitAcrossContainers(t *testing.T) {
 	constCPUEstimator := NewConstCPUEstimator(model.CPUAmountFromCores(0.001))
 	constMemoryEstimator := NewConstMemoryEstimator(model.MemoryAmountFromBytes(1e6))
-	
+
 	recommender := podResourceRecommender{
 		targetCPU:        constCPUEstimator,
 		targetMemory:     constMemoryEstimator,
@@ -73,7 +73,7 @@ func TestMinResourcesSplitAcrossContainers(t *testing.T) {
 func TestControlledResourcesFiltered(t *testing.T) {
 	constCPUEstimator := NewConstCPUEstimator(model.CPUAmountFromCores(0.001))
 	constMemoryEstimator := NewConstMemoryEstimator(model.MemoryAmountFromBytes(1e6))
-	
+
 	recommender := podResourceRecommender{
 		targetCPU:        constCPUEstimator,
 		targetMemory:     constMemoryEstimator,
@@ -102,7 +102,7 @@ func TestControlledResourcesFiltered(t *testing.T) {
 func TestControlledResourcesFilteredDefault(t *testing.T) {
 	constCPUEstimator := NewConstCPUEstimator(model.CPUAmountFromCores(0.001))
 	constMemoryEstimator := NewConstMemoryEstimator(model.MemoryAmountFromBytes(1e6))
-	
+
 	recommender := podResourceRecommender{
 		targetCPU:        constCPUEstimator,
 		targetMemory:     constMemoryEstimator,
