@@ -108,7 +108,7 @@ func NewPercentileMemoryEstimator(percentile float64) MemoryEstimator {
 	return &percentileMemoryEstimator{percentile}
 }
 
-// NewPercentileMemoryEstimator returns a new percentileMemoryEstimator that uses provided percentile.
+// NewMemoryEstimator returns a new percentileMemoryEstimator that uses provided percentile.
 func NewMemoryEstimator(percentile float64) MemoryEstimator {
 	return &percentileMemoryEstimator{percentile}
 }
