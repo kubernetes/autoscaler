@@ -113,6 +113,7 @@ type ProvisioningRequestSpec struct {
 	// +optional
 	// +kubebuilder:validation:XValidation:rule="self == oldSelf",message="Value is immutable"
 	// +kubebuilder:validation:MaxProperties=100
+	// +kubebuilder:validation:XValidation:rule="self.all(k, v, if parent.provisioningClassName == 'check-capacity.autoscaling.x-k8s.io' then k == 'noRetry' && v in ['true', 'false'] else true)",message="For check-capacity.autoscaling.x-k8s.io, only 'noRetry' parameter is supported with values 'true' or 'false'"
 	Parameters map[string]Parameter `json:"parameters"`
 }
 
