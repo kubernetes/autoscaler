@@ -129,7 +129,7 @@ func CreatePodResourceRecommender() PodResourceRecommender {
 	targetCPU = WithCPUMargin(*safetyMarginFraction, targetCPU)
 	lowerBoundCPU = WithCPUMargin(*safetyMarginFraction, lowerBoundCPU)
 	upperBoundCPU = WithCPUMargin(*safetyMarginFraction, upperBoundCPU)
-	
+
 	targetMemory = WithMemoryMargin(*safetyMarginFraction, targetMemory)
 	lowerBoundMemory = WithMemoryMargin(*safetyMarginFraction, lowerBoundMemory)
 	upperBoundMemory = WithMemoryMargin(*safetyMarginFraction, upperBoundMemory)
