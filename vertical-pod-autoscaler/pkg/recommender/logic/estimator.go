@@ -66,11 +66,6 @@ type memoryMarginEstimator struct {
 	baseEstimator  MemoryEstimator
 }
 
-type marginEstimator struct {
-	marginFraction float64
-	baseEstimator  ResourceEstimator
-}
-
 type cpuConfidenceMultiplier struct {
 	multiplier    float64
 	exponent      float64
@@ -136,12 +131,6 @@ func WithCPUMargin(marginFraction float64, baseEstimator CPUEstimator) CPUEstima
 func WithMemoryMargin(marginFraction float64, baseEstimator MemoryEstimator) MemoryEstimator {
 	return &memoryMarginEstimator{marginFraction: marginFraction, baseEstimator: baseEstimator}
 }
-
-// WithMinResources returns a given ResourceEstimator with minResources applied.
-// The returned resources are equal to the max(original resources, minResources)
-// func WithMinResources(minResources model.Resources, baseEstimator ResourceEstimator) ResourceEstimator {
-// 	return &minResourcesEstimator{minResources, baseEstimator}
-// }
 
 // WithCPUConfidenceMultiplier return a CPUEstimator estimator
 func WithCPUConfidenceMultiplier(multiplier, exponent float64, baseEstimator CPUEstimator) CPUEstimator {

@@ -27,10 +27,6 @@ import (
 
 var (
 	anyTime     = time.Unix(0, 0)
-	testRequest = model.Resources{
-		model.ResourceCPU:    model.CPUAmountFromCores(3.14),
-		model.ResourceMemory: model.MemoryAmountFromBytes(3.14e9),
-	}
 )
 
 // Verifies that the PercentileEstimator returns requested percentiles of CPU
@@ -120,7 +116,7 @@ func TestMarginEstimator(t *testing.T) {
 	assert.Equal(t, 3.14e9*1.1, model.BytesFromMemoryAmount(resourceEstimation[model.ResourceMemory]))
 }
 
-// // Verifies that the MinResourcesEstimator returns at least MinResources.
+// Verifies that the MinResourcesEstimator returns at least MinResources.
 func TestMinResourcesEstimator(t *testing.T) {
 	constCPUEstimator := NewConstCPUEstimator(model.CPUAmountFromCores(3.14))
 	minCPU := model.CPUAmountFromCores(0.2)
