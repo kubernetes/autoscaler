@@ -26,7 +26,7 @@ import (
 )
 
 var (
-	anyTime     = time.Unix(0, 0)
+	anyTime = time.Unix(0, 0)
 )
 
 // Verifies that the PercentileEstimator returns requested percentiles of CPU
