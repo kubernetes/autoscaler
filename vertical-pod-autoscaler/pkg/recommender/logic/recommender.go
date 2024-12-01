@@ -127,10 +127,11 @@ func CreatePodResourceRecommender() PodResourceRecommender {
 
 	// Apply safety margins
 	targetCPU = WithCPUMargin(*safetyMarginFraction, targetCPU)
-	targetMemory = WithMemoryMargin(*safetyMarginFraction, targetMemory)
 	lowerBoundCPU = WithCPUMargin(*safetyMarginFraction, lowerBoundCPU)
-	lowerBoundMemory = WithMemoryMargin(*safetyMarginFraction, lowerBoundMemory)
 	upperBoundCPU = WithCPUMargin(*safetyMarginFraction, upperBoundCPU)
+	
+	targetMemory = WithMemoryMargin(*safetyMarginFraction, targetMemory)
+	lowerBoundMemory = WithMemoryMargin(*safetyMarginFraction, lowerBoundMemory)
 	upperBoundMemory = WithMemoryMargin(*safetyMarginFraction, upperBoundMemory)
 
 	// Apply confidence multiplier to the upper bound estimator. This means
