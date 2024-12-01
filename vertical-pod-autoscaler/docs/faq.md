@@ -2,7 +2,7 @@
 
 ## Contents
 
-- [VPA restarts my pods but does not modify CPU or memory settings. Why?](#vpa-restarts-my-pods-but-does-not-modify-CPU-or-memory-settings)
+- [VPA restarts my pods but does not modify CPU or memory settings. Why?](#vpa-restarts-my-pods-but-does-not-modify-cpu-or-memory-settings)
 - [How can I apply VPA to my Custom Resource?](#how-can-i-apply-vpa-to-my-custom-resource)
 - [How can I use Prometheus as a history provider for the VPA recommender?](#how-can-i-use-prometheus-as-a-history-provider-for-the-vpa-recommender)
 - [I get recommendations for my single pod replicaSet, but they are not applied. Why?](#i-get-recommendations-for-my-single-pod-replicaset-but-they-are-not-applied)
@@ -135,7 +135,7 @@ spec:
     - --v=4
     - --storage=prometheus
     - --prometheus-address=http://prometheus.default.svc.cluster.local:9090
-  ```
+```
 
 In this example, Prometheus is running in the default namespace.
 
@@ -148,9 +148,9 @@ Here you should see the flags that you set for the VPA recommender and you shoul
 
 This means that the VPA recommender is now using Prometheus as the history provider.
 
-### I get recommendations for my single pod replicaSet but they are not applied
+### I get recommendations for my single pod replicaset but they are not applied
 
-By default, the [`--min-replicas`](pkg/updater/main.go#L56) flag on the updater is set to 2. To change this, you can supply the arg in the [deploys/updater-deployment.yaml](deploy/updater-deployment.yaml) file:
+By default, the [`--min-replicas`](https://github.com/kubernetes/autoscaler/tree/master/pkg/updater/main.go#L44) flag on the updater is set to 2. To change this, you can supply the arg in the [deploys/updater-deployment.yaml](https://github.com/kubernetes/autoscaler/tree/master/deploy/updater-deployment.yaml) file:
 
 ```yaml
 spec:
@@ -179,7 +179,7 @@ election with the `--leader-elect=true` parameter.
 The following startup parameters are supported for VPA recommender:
 
 Name | Type | Description | Default
-|-|-|-|-|
+-|-|-|-
 `recommendation-margin-fraction` | Float64 | Fraction of usage added as the safety margin to the recommended request | 0.15
 `pod-recommendation-min-cpu-millicores` | Float64 | Minimum CPU recommendation for a pod | 25
 `pod-recommendation-min-memory-mb` | Float64 | Minimum memory recommendation for a pod | 250
@@ -230,7 +230,7 @@ Name | Type | Description | Default
 The following startup parameters are supported for VPA updater:
 
 Name | Type | Description | Default
-|-|-|-|-|
+-|-|-|-
 `pod-update-threshold` | Float64 | Ignore updates that have priority lower than the value of this flag | 0.1
 `in-recommendation-bounds-eviction-lifetime-threshold` | Duration | Pods that live for at least that long can be evicted even if their request is within the [MinRecommended...MaxRecommended] range | time.Hour*12
 `evict-after-oom-threshold` | Duration | Evict pod that has OOMed in less than evict-after-oom-threshold since start. | 10*time.Minute
