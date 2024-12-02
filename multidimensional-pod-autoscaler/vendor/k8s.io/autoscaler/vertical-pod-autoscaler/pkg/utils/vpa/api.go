@@ -29,12 +29,14 @@ import (
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/tools/cache"
+	"k8s.io/klog/v2"
+
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	vpa_api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1"
 	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1"
-	"k8s.io/client-go/tools/cache"
-	"k8s.io/klog/v2"
+	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 )
 
 // VpaWithSelector is a pair of VPA and its selector.
@@ -49,14 +51,14 @@ type patchRecord struct {
 	Value interface{} `json:"value"`
 }
 
-func patchVpa(vpaClient vpa_api.VerticalPodAutoscalerInterface, vpaName string, patches []patchRecord) (result *vpa_types.VerticalPodAutoscaler, err error) {
+func patchVpaStatus(vpaClient vpa_api.VerticalPodAutoscalerInterface, vpaName string, patches []patchRecord) (result *vpa_types.VerticalPodAutoscaler, err error) {
 	bytes, err := json.Marshal(patches)
 	if err != nil {
 		klog.Errorf("Cannot marshal VPA status patches %+v. Reason: %+v", patches, err)
 		return
 	}
 
-	return vpaClient.Patch(context.TODO(), vpaName, types.JSONPatchType, bytes, meta.PatchOptions{})
+	return vpaClient.Patch(context.TODO(), vpaName, types.JSONPatchType, bytes, meta.PatchOptions{}, "status")
 }
 
 // UpdateVpaStatusIfNeeded updates the status field of the VPA API object.
@@ -69,7 +71,7 @@ func UpdateVpaStatusIfNeeded(vpaClient vpa_api.VerticalPodAutoscalerInterface, v
 	}}
 
 	if !apiequality.Semantic.DeepEqual(*oldStatus, *newStatus) {
-		return patchVpa(vpaClient, vpaName, patches)
+		return patchVpaStatus(vpaClient, vpaName, patches)
 	}
 	return nil, nil
 }
@@ -125,11 +127,48 @@ func stronger(a, b *vpa_types.VerticalPodAutoscaler) bool {
 }
 
 // GetControllingVPAForPod chooses the earliest created VPA from the input list that matches the given Pod.
-func GetControllingVPAForPod(pod *core.Pod, vpas []*VpaWithSelector) *VpaWithSelector {
+func GetControllingVPAForPod(pod *core.Pod, vpas []*VpaWithSelector, ctrlFetcher controllerfetcher.ControllerFetcher) *VpaWithSelector {
+
+	var ownerRefrence *meta.OwnerReference
+	for i := range pod.OwnerReferences {
+		r := pod.OwnerReferences[i]
+		if r.Controller != nil && *r.Controller {
+			ownerRefrence = &r
+		}
+	}
+	if ownerRefrence == nil {
+		// If the pod has no ownerReference, it cannot be under a VPA.
+		return nil
+	}
+	k := &controllerfetcher.ControllerKeyWithAPIVersion{
+		ControllerKey: controllerfetcher.ControllerKey{
+			Namespace: pod.Namespace,
+			Kind:      ownerRefrence.Kind,
+			Name:      ownerRefrence.Name,
+		},
+		ApiVersion: ownerRefrence.APIVersion,
+	}
+	parentController, err := ctrlFetcher.FindTopMostWellKnownOrScalable(k)
+	if err != nil {
+		klog.Errorf("fail to get pod controller: pod=%s err=%s", pod.Name, err.Error())
+		return nil
+	}
+	if parentController == nil {
+		return nil
+	}
+
 	var controlling *VpaWithSelector
 	var controllingVpa *vpa_types.VerticalPodAutoscaler
 	// Choose the strongest VPA from the ones that match this Pod.
 	for _, vpaWithSelector := range vpas {
+		if vpaWithSelector.Vpa.Spec.TargetRef == nil {
+			continue
+		}
+		if vpaWithSelector.Vpa.Spec.TargetRef.Kind != parentController.Kind ||
+			vpaWithSelector.Vpa.Namespace != parentController.Namespace ||
+			vpaWithSelector.Vpa.Spec.TargetRef.Name != parentController.Name {
+			continue // This pod is not associated to the right controller
+		}
 		if PodMatchesVPA(pod, vpaWithSelector) && stronger(vpaWithSelector.Vpa, controllingVpa) {
 			controlling = vpaWithSelector
 			controllingVpa = controlling.Vpa

@@ -31,8 +31,8 @@ import (
 	mpa_types "k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1alpha1"
 	"k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/utils/test"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
-	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/controller_fetcher"
 	vpa_model "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
+	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	"k8s.io/client-go/restmapper"
 	"k8s.io/client-go/scale"
 	"k8s.io/klog/v2"
@@ -68,9 +68,9 @@ var (
 )
 
 type fakeControllerFetcher struct {
-	key *controllerfetcher.ControllerKeyWithAPIVersion
-	err error
-	mapper restmapper.DeferredDiscoveryRESTMapper
+	key             *controllerfetcher.ControllerKeyWithAPIVersion
+	err             error
+	mapper          restmapper.DeferredDiscoveryRESTMapper
 	scaleNamespacer scale.ScalesGetter
 }
 
@@ -78,7 +78,7 @@ func (f *fakeControllerFetcher) GetRESTMappings(groupKind schema.GroupKind) ([]*
 	return f.mapper.RESTMappings(groupKind)
 }
 
-func (f *fakeControllerFetcher) Scales(namespace string) (scale.ScaleInterface) {
+func (f *fakeControllerFetcher) Scales(namespace string) scale.ScaleInterface {
 	return f.scaleNamespacer.Scales(namespace)
 }
 

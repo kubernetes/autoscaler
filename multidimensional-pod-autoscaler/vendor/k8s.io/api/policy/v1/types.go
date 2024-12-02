@@ -47,7 +47,55 @@ type PodDisruptionBudgetSpec struct {
 	// by specifying 0. This is a mutually exclusive setting with "minAvailable".
 	// +optional
 	MaxUnavailable *intstr.IntOrString `json:"maxUnavailable,omitempty" protobuf:"bytes,3,opt,name=maxUnavailable"`
+
+	// UnhealthyPodEvictionPolicy defines the criteria for when unhealthy pods
+	// should be considered for eviction. Current implementation considers healthy pods,
+	// as pods that have status.conditions item with type="Ready",status="True".
+	//
+	// Valid policies are IfHealthyBudget and AlwaysAllow.
+	// If no policy is specified, the default behavior will be used,
+	// which corresponds to the IfHealthyBudget policy.
+	//
+	// IfHealthyBudget policy means that running pods (status.phase="Running"),
+	// but not yet healthy can be evicted only if the guarded application is not
+	// disrupted (status.currentHealthy is at least equal to status.desiredHealthy).
+	// Healthy pods will be subject to the PDB for eviction.
+	//
+	// AlwaysAllow policy means that all running pods (status.phase="Running"),
+	// but not yet healthy are considered disrupted and can be evicted regardless
+	// of whether the criteria in a PDB is met. This means perspective running
+	// pods of a disrupted application might not get a chance to become healthy.
+	// Healthy pods will be subject to the PDB for eviction.
+	//
+	// Additional policies may be added in the future.
+	// Clients making eviction decisions should disallow eviction of unhealthy pods
+	// if they encounter an unrecognized policy in this field.
+	//
+	// This field is beta-level. The eviction API uses this field when
+	// the feature gate PDBUnhealthyPodEvictionPolicy is enabled (enabled by default).
+	// +optional
+	UnhealthyPodEvictionPolicy *UnhealthyPodEvictionPolicyType `json:"unhealthyPodEvictionPolicy,omitempty" protobuf:"bytes,4,opt,name=unhealthyPodEvictionPolicy"`
 }
+
+// UnhealthyPodEvictionPolicyType defines the criteria for when unhealthy pods
+// should be considered for eviction.
+// +enum
+type UnhealthyPodEvictionPolicyType string
+
+const (
+	// IfHealthyBudget policy means that running pods (status.phase="Running"),
+	// but not yet healthy can be evicted only if the guarded application is not
+	// disrupted (status.currentHealthy is at least equal to status.desiredHealthy).
+	// Healthy pods will be subject to the PDB for eviction.
+	IfHealthyBudget UnhealthyPodEvictionPolicyType = "IfHealthyBudget"
+
+	// AlwaysAllow policy means that all running pods (status.phase="Running"),
+	// but not yet healthy are considered disrupted and can be evicted regardless
+	// of whether the criteria in a PDB is met. This means perspective running
+	// pods of a disrupted application might not get a chance to become healthy.
+	// Healthy pods will be subject to the PDB for eviction.
+	AlwaysAllow UnhealthyPodEvictionPolicyType = "AlwaysAllow"
+)
 
 // PodDisruptionBudgetStatus represents information about the status of a
 // PodDisruptionBudget. Status may trail the actual state of a system.
@@ -122,6 +170,7 @@ const (
 
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +k8s:prerelease-lifecycle-gen:introduced=1.21
 
 // PodDisruptionBudget is an object to define the max disruption that can be caused to a collection of pods
 type PodDisruptionBudget struct {
@@ -140,6 +189,7 @@ type PodDisruptionBudget struct {
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +k8s:prerelease-lifecycle-gen:introduced=1.21
 
 // PodDisruptionBudgetList is a collection of PodDisruptionBudgets.
 type PodDisruptionBudgetList struct {
@@ -155,6 +205,7 @@ type PodDisruptionBudgetList struct {
 // +genclient
 // +genclient:noVerbs
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +k8s:prerelease-lifecycle-gen:introduced=1.22
 
 // Eviction evicts a pod from its node subject to certain policies and safety constraints.
 // This is a subresource of Pod.  A request to cause such an eviction is

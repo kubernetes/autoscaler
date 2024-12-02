@@ -172,3 +172,17 @@ func scaleQuantityProportionallyMem(scaledQuantity, scaleBase, scaleResult *reso
 	}
 	return resource.NewQuantity(math.MaxInt64, scaledQuantity.Format), true
 }
+
+// RemoveEmptyResourceKeyIfAny ensure that we are not pushing a resource with an empty key. Return true if an empty key was eliminated
+func (cr *ContainerResources) RemoveEmptyResourceKeyIfAny() bool {
+	var found bool
+	if _, foundEmptyKey := cr.Limits[""]; foundEmptyKey {
+		delete(cr.Limits, "")
+		found = true
+	}
+	if _, foundEmptyKey := cr.Requests[""]; foundEmptyKey {
+		delete(cr.Requests, "")
+		found = true
+	}
+	return found
+}

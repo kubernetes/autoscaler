@@ -60,7 +60,7 @@ func (r *recommender) ReconcileHorizontalAutoscaling(ctx context.Context, mpaSha
 		Kind:  mpa.Spec.ScaleTargetRef.Kind,
 	}
 
-	mappings, err := r.controllerFetcher.GetRESTMappings(targetGK)
+	mappings, err := r.selectorFetcher.GetRESTMappings(targetGK)
 	if err != nil {
 		klog.Errorf("%s: FailedGetScale - error: %v", v1.EventTypeWarning, err.Error())
 		r.eventRecorder.Event(mpa, v1.EventTypeWarning, "FailedGetScale", err.Error())
@@ -288,7 +288,7 @@ func (r *recommender) scaleForResourceMappings(ctx context.Context, namespace, n
 	var firstErr error
 	for i, mapping := range mappings {
 		targetGR := mapping.Resource.GroupResource()
-		scale, err := r.controllerFetcher.Scales(namespace).Get(ctx, targetGR, name, metav1.GetOptions{})
+		scale, err := r.selectorFetcher.Scales(namespace).Get(ctx, targetGR, name, metav1.GetOptions{})
 		if err == nil {
 			return scale, targetGR, nil
 		}

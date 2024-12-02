@@ -31,13 +31,14 @@ import (
 	"k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/recommender/checkpoint"
 	"k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/recommender/input"
 	"k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/recommender/model"
+	"k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/target"
 	metrics_recommender "k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/utils/metrics/recommender"
 	mpa_utils "k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/utils/mpa"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
-	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/controller_fetcher"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/logic"
 	vpa_model "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
+	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	vpa_utils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 	"k8s.io/client-go/informers"
 	coreinformers "k8s.io/client-go/informers/core/v1"
@@ -106,6 +107,7 @@ type recommender struct {
 	controllerFetcher             controllerfetcher.ControllerFetcher
 	lastCheckpointGC              time.Time
 	mpaClient                     mpa_api.MultidimPodAutoscalersGetter
+	selectorFetcher               target.MpaTargetSelectorFetcher
 	podResourceRecommender        logic.PodResourceRecommender
 	useCheckpoints                bool
 	lastAggregateContainerStateGC time.Time
@@ -295,6 +297,7 @@ type RecommenderFactory struct {
 	CheckpointWriter       checkpoint.CheckpointWriter
 	PodResourceRecommender logic.PodResourceRecommender
 	MpaClient              mpa_api.MultidimPodAutoscalersGetter
+	SelectorFetcher        target.MpaTargetSelectorFetcher
 
 	CheckpointsGCInterval time.Duration
 	UseCheckpoints        bool
@@ -328,6 +331,7 @@ func (c RecommenderFactory) Make() Recommender {
 		controllerFetcher:             c.ControllerFetcher,
 		useCheckpoints:                c.UseCheckpoints,
 		mpaClient:                     c.MpaClient,
+		selectorFetcher:               c.SelectorFetcher,
 		podResourceRecommender:        c.PodResourceRecommender,
 		lastAggregateContainerStateGC: time.Now(),
 		lastCheckpointGC:              time.Now(),
@@ -373,6 +377,7 @@ func NewRecommender(config *rest.Config, checkpointsGCInterval time.Duration, us
 		ControllerFetcher:      controllerFetcher,
 		CheckpointWriter:       checkpoint.NewCheckpointWriter(clusterState, vpa_clientset.NewForConfigOrDie(config).AutoscalingV1()),
 		MpaClient:              mpa_clientset.NewForConfigOrDie(config).AutoscalingV1alpha1(),
+		SelectorFetcher:        target.NewMpaTargetSelectorFetcher(config, kubeClient, factory),
 		PodResourceRecommender: logic.CreatePodResourceRecommender(),
 		CheckpointsGCInterval:  checkpointsGCInterval,
 		UseCheckpoints:         useCheckpoints,

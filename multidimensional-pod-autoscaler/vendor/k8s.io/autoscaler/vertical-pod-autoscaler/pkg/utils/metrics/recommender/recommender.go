@@ -33,7 +33,14 @@ const (
 )
 
 var (
-	modes = []string{string(vpa_types.UpdateModeOff), string(vpa_types.UpdateModeInitial), string(vpa_types.UpdateModeRecreate), string(vpa_types.UpdateModeAuto)}
+	// TODO: unify this list with the types defined in the VPA handler to avoid
+	// drift if one file is changed and the other one is missed.
+	modes = []string{
+		string(vpa_types.UpdateModeOff),
+		string(vpa_types.UpdateModeInitial),
+		string(vpa_types.UpdateModeRecreate),
+		string(vpa_types.UpdateModeAuto),
+	}
 )
 
 type apiVersion string
@@ -150,20 +157,15 @@ func NewObjectCounter() *ObjectCounter {
 
 // Add updates the helper state to include the given VPA object
 func (oc *ObjectCounter) Add(vpa *model.Vpa) {
-	mode := string(vpa_types.UpdateModeAuto)
+	mode := vpa_types.UpdateModeAuto
 	if vpa.UpdateMode != nil && string(*vpa.UpdateMode) != "" {
-		mode = string(*vpa.UpdateMode)
-	}
-	// TODO: Maybe report v1 version as well.
-	api := v1beta2
-	if vpa.IsV1Beta1API {
-		api = v1beta1
+		mode = *vpa.UpdateMode
 	}
 
 	key := objectCounterKey{
-		mode:              mode,
+		mode:              string(mode),
 		has:               vpa.HasRecommendation(),
-		apiVersion:        api,
+		apiVersion:        apiVersion(vpa.APIVersion),
 		matchesPods:       vpa.HasMatchedPods(),
 		unsupportedConfig: vpa.Conditions.ConditionActive(vpa_types.ConfigUnsupported),
 	}

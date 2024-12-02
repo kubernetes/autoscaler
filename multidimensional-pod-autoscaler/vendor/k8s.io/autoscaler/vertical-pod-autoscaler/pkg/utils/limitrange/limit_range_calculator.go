@@ -24,6 +24,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/informers"
 	listers "k8s.io/client-go/listers/core/v1"
+	"k8s.io/client-go/tools/cache"
 )
 
 // LimitRangeCalculator calculates limit range items that has the same effect as all limit range items present in the cluster.
@@ -55,13 +56,11 @@ func NewLimitsRangeCalculator(f informers.SharedInformerFactory) (*limitsChecker
 	}
 	limitRangeLister := f.Core().V1().LimitRanges().Lister()
 	stopCh := make(chan struct{})
-	f.Start(stopCh)
-	for _, ok := range f.WaitForCacheSync(stopCh) {
-		if !ok {
-			if !f.Core().V1().LimitRanges().Informer().HasSynced() {
-				return nil, fmt.Errorf("informer did not sync")
-			}
-		}
+	informer := f.Core().V1().LimitRanges().Informer()
+	go informer.Run(stopCh)
+	ok := cache.WaitForCacheSync(stopCh, informer.HasSynced)
+	if !ok {
+		return nil, fmt.Errorf("informer did not sync")
 	}
 	return &limitsChecker{limitRangeLister}, nil
 }

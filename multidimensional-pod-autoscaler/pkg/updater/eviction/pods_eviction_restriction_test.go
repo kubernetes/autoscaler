@@ -59,7 +59,9 @@ func TestEvictReplicatedByController(t *testing.T) {
 
 	mpaSingleReplica := getBasicMpa()
 	minReplicas := int32(1)
-	mpaSingleReplica.Spec.Constraints.Global = &mpa_types.HorizontalScalingConstraints{MinReplicas: &minReplicas}
+	mpaSingleReplica.Spec.Constraints = &mpa_types.ScalingConstraints{
+		Global: &mpa_types.HorizontalScalingConstraints{MinReplicas: &minReplicas},
+	}
 
 	index := 0
 	generatePod := func() test.PodBuilder {

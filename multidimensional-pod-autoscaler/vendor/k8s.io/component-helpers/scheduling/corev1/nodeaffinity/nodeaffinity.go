@@ -200,6 +200,15 @@ func (t *nodeSelectorTerm) match(nodeLabels labels.Set, nodeFields fields.Set) (
 	return true, nil
 }
 
+var validSelectorOperators = []v1.NodeSelectorOperator{
+	v1.NodeSelectorOpIn,
+	v1.NodeSelectorOpNotIn,
+	v1.NodeSelectorOpExists,
+	v1.NodeSelectorOpDoesNotExist,
+	v1.NodeSelectorOpGt,
+	v1.NodeSelectorOpLt,
+}
+
 // nodeSelectorRequirementsAsSelector converts the []NodeSelectorRequirement api type into a struct that implements
 // labels.Selector.
 func nodeSelectorRequirementsAsSelector(nsm []v1.NodeSelectorRequirement, path *field.Path) (labels.Selector, []error) {
@@ -225,7 +234,7 @@ func nodeSelectorRequirementsAsSelector(nsm []v1.NodeSelectorRequirement, path *
 		case v1.NodeSelectorOpLt:
 			op = selection.LessThan
 		default:
-			errs = append(errs, field.NotSupported(p.Child("operator"), expr.Operator, nil))
+			errs = append(errs, field.NotSupported(p.Child("operator"), expr.Operator, validSelectorOperators))
 			continue
 		}
 		r, err := labels.NewRequirement(expr.Key, op, expr.Values, field.WithPath(p))
@@ -241,9 +250,9 @@ func nodeSelectorRequirementsAsSelector(nsm []v1.NodeSelectorRequirement, path *
 	return selector, nil
 }
 
-var validFieldSelectorOperators = []string{
-	string(v1.NodeSelectorOpIn),
-	string(v1.NodeSelectorOpNotIn),
+var validFieldSelectorOperators = []v1.NodeSelectorOperator{
+	v1.NodeSelectorOpIn,
+	v1.NodeSelectorOpNotIn,
 }
 
 // nodeSelectorRequirementsAsFieldSelector converts the []NodeSelectorRequirement core type into a struct that implements

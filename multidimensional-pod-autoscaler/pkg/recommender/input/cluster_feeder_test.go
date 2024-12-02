@@ -33,10 +33,10 @@ import (
 	"k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/recommender/model"
 	target_mock "k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/target/mock"
 	"k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/utils/test"
-	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/controller_fetcher"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/history"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/spec"
 	vpa_model "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
+	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 	"k8s.io/client-go/restmapper"
 	"k8s.io/client-go/scale"
 )

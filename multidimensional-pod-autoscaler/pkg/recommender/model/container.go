@@ -176,8 +176,8 @@ func (container *ContainerState) RecordOOM(timestamp time.Time, requestedMemory 
 	// Get max of the request and the recent usage-based memory peak.
 	// Omitting oomPeak here to protect against recommendation running too high on subsequent OOMs.
 	memoryUsed := vpa_model.ResourceAmountMax(requestedMemory, container.memoryPeak)
-	memoryNeeded := vpa_model.ResourceAmountMax(memoryUsed+vpa_model.MemoryAmountFromBytes(vpa_model.OOMMinBumpUp),
-		vpa_model.ScaleResource(memoryUsed, vpa_model.OOMBumpUpRatio))
+	memoryNeeded := vpa_model.ResourceAmountMax(memoryUsed+vpa_model.MemoryAmountFromBytes(vpa_model.GetAggregationsConfig().OOMMinBumpUp),
+		vpa_model.ScaleResource(memoryUsed, vpa_model.GetAggregationsConfig().OOMBumpUpRatio))
 
 	oomMemorySample := vpa_model.ContainerUsageSample{
 		MeasureStart: timestamp,

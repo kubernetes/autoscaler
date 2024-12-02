@@ -27,6 +27,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	mpa_types "k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1alpha1"
@@ -146,7 +147,10 @@ func testRunOnceBase(
 
 	for i := range pods {
 		pods[i] = test.Pod().WithName("test_"+strconv.Itoa(i)).
-			AddContainer(test.BuildTestContainer(containerName, "1", "100M")).
+			AddContainer(test.Container().WithName(containerName).
+				WithCPURequest(resource.MustParse("100m")).
+				WithMemRequest(resource.MustParse("100M")).
+				Get()).
 			WithCreator(&rc.ObjectMeta, &rc.TypeMeta).
 			Get()
 

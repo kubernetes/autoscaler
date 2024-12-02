@@ -120,9 +120,13 @@ func ValidateMPA(mpa *mpa_types.MultidimPodAutoscaler, isCreate bool) error {
 		if _, found := possibleUpdateModes[*mode]; !found {
 			return fmt.Errorf("unexpected UpdateMode value %s", *mode)
 		}
+	}
 
-		if minReplicas := mpa.Spec.Constraints.Global.MinReplicas; minReplicas != nil && *minReplicas <= 0 {
-			return fmt.Errorf("MinReplicas has to be positive, got %v", *minReplicas)
+	if mpa.Spec.Constraints != nil {
+		if mpa.Spec.Constraints.Global != nil {
+			if minReplicas := mpa.Spec.Constraints.Global.MinReplicas; minReplicas != nil && *minReplicas <= 0 {
+				return fmt.Errorf("MinReplicas has to be positive, got %v", *minReplicas)
+			}
 		}
 	}
 

@@ -23,7 +23,7 @@ import (
 	"strings"
 	"sync"
 
-	jsonpatch "github.com/evanphx/json-patch"
+	jsonpatch "gopkg.in/evanphx/json-patch.v4"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -181,7 +181,7 @@ func ObjectReaction(tracker ObjectTracker) ReactionFunc {
 				if err := json.Unmarshal(modified, obj); err != nil {
 					return true, nil, err
 				}
-			case types.StrategicMergePatchType:
+			case types.StrategicMergePatchType, types.ApplyPatchType:
 				mergedByte, err := strategicpatch.StrategicMergePatch(old, action.GetPatch(), obj)
 				if err != nil {
 					return true, nil, err

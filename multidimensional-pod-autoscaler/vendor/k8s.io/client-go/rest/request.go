@@ -22,10 +22,11 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"mime"
 	"net/http"
+	"net/http/httptrace"
 	"net/url"
+	"os"
 	"path"
 	"reflect"
 	"strconv"
@@ -34,13 +35,17 @@ import (
 	"time"
 
 	"golang.org/x/net/http2"
+
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/conversion"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer/streaming"
 	"k8s.io/apimachinery/pkg/util/net"
 	"k8s.io/apimachinery/pkg/watch"
+	clientfeatures "k8s.io/client-go/features"
 	restclientwatch "k8s.io/client-go/rest/watch"
 	"k8s.io/client-go/tools/metrics"
 	"k8s.io/client-go/util/flowcontrol"
@@ -116,8 +121,11 @@ type Request struct {
 	subresource  string
 
 	// output
-	err  error
-	body io.Reader
+	err error
+
+	// only one of body / bodyBytes may be set. requests using body are not retriable.
+	body      io.Reader
+	bodyBytes []byte
 
 	retryFn requestRetryFunc
 }
@@ -437,18 +445,21 @@ func (r *Request) Body(obj interface{}) *Request {
 	}
 	switch t := obj.(type) {
 	case string:
-		data, err := ioutil.ReadFile(t)
+		data, err := os.ReadFile(t)
 		if err != nil {
 			r.err = err
 			return r
 		}
 		glogBody("Request Body", data)
-		r.body = bytes.NewReader(data)
+		r.body = nil
+		r.bodyBytes = data
 	case []byte:
 		glogBody("Request Body", t)
-		r.body = bytes.NewReader(t)
+		r.body = nil
+		r.bodyBytes = t
 	case io.Reader:
 		r.body = t
+		r.bodyBytes = nil
 	case runtime.Object:
 		// callers may pass typed interface pointers, therefore we must check nil with reflection
 		if reflect.ValueOf(t).IsNil() {
@@ -465,7 +476,8 @@ func (r *Request) Body(obj interface{}) *Request {
 			return r
 		}
 		glogBody("Request Body", data)
-		r.body = bytes.NewReader(data)
+		r.body = nil
+		r.bodyBytes = data
 		r.SetHeader("Content-Type", r.c.content.ContentType)
 	default:
 		r.err = fmt.Errorf("unknown type used for body: %+v", obj)
@@ -473,7 +485,13 @@ func (r *Request) Body(obj interface{}) *Request {
 	return r
 }
 
-// URL returns the current working URL.
+// Error returns any error encountered constructing the request, if any.
+func (r *Request) Error() error {
+	return r.err
+}
+
+// URL returns the current working URL. Check the result of Error() to ensure
+// that the returned URL is valid.
 func (r *Request) URL() *url.URL {
 	p := r.pathPrefix
 	if r.namespaceSet && len(r.namespace) > 0 {
@@ -508,6 +526,87 @@ func (r *Request) URL() *url.URL {
 	return finalURL
 }
 
+// finalURLTemplate is similar to URL(), but will make all specific parameter values equal
+// - instead of name or namespace, "{name}" and "{namespace}" will be used, and all query
+// parameters will be reset. This creates a copy of the url so as not to change the
+// underlying object.
+func (r Request) finalURLTemplate() url.URL {
+	newParams := url.Values{}
+	v := []string{"{value}"}
+	for k := range r.params {
+		newParams[k] = v
+	}
+	r.params = newParams
+	u := r.URL()
+	if u == nil {
+		return url.URL{}
+	}
+
+	segments := strings.Split(u.Path, "/")
+	groupIndex := 0
+	index := 0
+	trimmedBasePath := ""
+	if r.c.base != nil && strings.Contains(u.Path, r.c.base.Path) {
+		p := strings.TrimPrefix(u.Path, r.c.base.Path)
+		if !strings.HasPrefix(p, "/") {
+			p = "/" + p
+		}
+		// store the base path that we have trimmed so we can append it
+		// before returning the URL
+		trimmedBasePath = r.c.base.Path
+		segments = strings.Split(p, "/")
+		groupIndex = 1
+	}
+	if len(segments) <= 2 {
+		return *u
+	}
+
+	const CoreGroupPrefix = "api"
+	const NamedGroupPrefix = "apis"
+	isCoreGroup := segments[groupIndex] == CoreGroupPrefix
+	isNamedGroup := segments[groupIndex] == NamedGroupPrefix
+	if isCoreGroup {
+		// checking the case of core group with /api/v1/... format
+		index = groupIndex + 2
+	} else if isNamedGroup {
+		// checking the case of named group with /apis/apps/v1/... format
+		index = groupIndex + 3
+	} else {
+		// this should not happen that the only two possibilities are /api... and /apis..., just want to put an
+		// outlet here in case more API groups are added in future if ever possible:
+		// https://kubernetes.io/docs/concepts/overview/kubernetes-api/#api-groups
+		// if a wrong API groups name is encountered, return the {prefix} for url.Path
+		u.Path = "/{prefix}"
+		u.RawQuery = ""
+		return *u
+	}
+	// switch segLength := len(segments) - index; segLength {
+	switch {
+	// case len(segments) - index == 1:
+	// resource (with no name) do nothing
+	case len(segments)-index == 2:
+		// /$RESOURCE/$NAME: replace $NAME with {name}
+		segments[index+1] = "{name}"
+	case len(segments)-index == 3:
+		if segments[index+2] == "finalize" || segments[index+2] == "status" {
+			// /$RESOURCE/$NAME/$SUBRESOURCE: replace $NAME with {name}
+			segments[index+1] = "{name}"
+		} else {
+			// /namespace/$NAMESPACE/$RESOURCE: replace $NAMESPACE with {namespace}
+			segments[index+1] = "{namespace}"
+		}
+	case len(segments)-index >= 4:
+		segments[index+1] = "{namespace}"
+		// /namespace/$NAMESPACE/$RESOURCE/$NAME: replace $NAMESPACE with {namespace},  $NAME with {name}
+		if segments[index+3] != "finalize" && segments[index+3] != "status" {
+			// /$RESOURCE/$NAME/$SUBRESOURCE: replace $NAME with {name}
+			segments[index+3] = "{name}"
+		}
+	}
+	u.Path = path.Join(trimmedBasePath, path.Join(segments...))
+	return *u
+}
+
 func (r *Request) tryThrottleWithInfo(ctx context.Context, retryInfo string) error {
 	if r.rateLimiter == nil {
 		return nil
@@ -537,7 +636,7 @@ func (r *Request) tryThrottleWithInfo(ctx context.Context, retryInfo string) err
 		// but we use a throttled logger to prevent spamming.
 		globalThrottledLogger.Infof("%s", message)
 	}
-	metrics.RateLimiterLatency.Observe(ctx, r.verb, *r.URL(), latency)
+	metrics.RateLimiterLatency.Observe(ctx, r.verb, r.finalURLTemplate(), latency)
 
 	return err
 }
@@ -637,7 +736,6 @@ func (r *Request) Watch(ctx context.Context) (watch.Interface, error) {
 		}
 
 		resp, err := client.Do(req)
-		updateURLMetrics(ctx, r, resp, err)
 		retry.After(ctx, r, resp, err)
 		if err == nil && resp.StatusCode == http.StatusOK {
 			return r.newStreamWatcher(resp)
@@ -673,6 +771,142 @@ func (r *Request) Watch(ctx context.Context) (watch.Interface, error) {
 	}
 }
 
+type WatchListResult struct {
+	// err holds any errors we might have received
+	// during streaming.
+	err error
+
+	// items hold the collected data
+	items []runtime.Object
+
+	// initialEventsEndBookmarkRV holds the resource version
+	// extracted from the bookmark event that marks
+	// the end of the stream.
+	initialEventsEndBookmarkRV string
+
+	// gv represents the API version
+	// it is used to construct the final list response
+	// normally this information is filled by the server
+	gv schema.GroupVersion
+}
+
+func (r WatchListResult) Into(obj runtime.Object) error {
+	if r.err != nil {
+		return r.err
+	}
+
+	listPtr, err := meta.GetItemsPtr(obj)
+	if err != nil {
+		return err
+	}
+	listVal, err := conversion.EnforcePtr(listPtr)
+	if err != nil {
+		return err
+	}
+	if listVal.Kind() != reflect.Slice {
+		return fmt.Errorf("need a pointer to slice, got %v", listVal.Kind())
+	}
+
+	if len(r.items) == 0 {
+		listVal.Set(reflect.MakeSlice(listVal.Type(), 0, 0))
+	} else {
+		listVal.Set(reflect.MakeSlice(listVal.Type(), len(r.items), len(r.items)))
+		for i, o := range r.items {
+			if listVal.Type().Elem() != reflect.TypeOf(o).Elem() {
+				return fmt.Errorf("received object type = %v at index = %d, doesn't match the list item type = %v", reflect.TypeOf(o).Elem(), i, listVal.Type().Elem())
+			}
+			listVal.Index(i).Set(reflect.ValueOf(o).Elem())
+		}
+	}
+
+	listMeta, err := meta.ListAccessor(obj)
+	if err != nil {
+		return err
+	}
+	listMeta.SetResourceVersion(r.initialEventsEndBookmarkRV)
+
+	typeMeta, err := meta.TypeAccessor(obj)
+	if err != nil {
+		return err
+	}
+	version := r.gv.String()
+	typeMeta.SetAPIVersion(version)
+	typeMeta.SetKind(reflect.TypeOf(obj).Elem().Name())
+
+	return nil
+}
+
+// WatchList establishes a stream to get a consistent snapshot of data
+// from the server as described in https://github.com/kubernetes/enhancements/tree/master/keps/sig-api-machinery/3157-watch-list#proposal
+//
+// Note that the watchlist requires properly setting the ListOptions
+// otherwise it just establishes a regular watch with the server.
+// Check the documentation https://kubernetes.io/docs/reference/using-api/api-concepts/#streaming-lists
+// to see what parameters are currently required.
+func (r *Request) WatchList(ctx context.Context) WatchListResult {
+	if !clientfeatures.FeatureGates().Enabled(clientfeatures.WatchListClient) {
+		return WatchListResult{err: fmt.Errorf("%q feature gate is not enabled", clientfeatures.WatchListClient)}
+	}
+	// TODO(#115478): consider validating request parameters (i.e sendInitialEvents).
+	//  Most users use the generated client, which handles the proper setting of parameters.
+	//  We don't have validation for other methods (e.g., the Watch)
+	//  thus, for symmetry, we haven't added additional checks for the WatchList method.
+	w, err := r.Watch(ctx)
+	if err != nil {
+		return WatchListResult{err: err}
+	}
+	return r.handleWatchList(ctx, w)
+}
+
+// handleWatchList holds the actual logic for easier unit testing.
+// Note that this function will close the passed watch.
+func (r *Request) handleWatchList(ctx context.Context, w watch.Interface) WatchListResult {
+	defer w.Stop()
+	var lastKey string
+	var items []runtime.Object
+
+	for {
+		select {
+		case <-ctx.Done():
+			return WatchListResult{err: ctx.Err()}
+		case event, ok := <-w.ResultChan():
+			if !ok {
+				return WatchListResult{err: fmt.Errorf("unexpected watch close")}
+			}
+			if event.Type == watch.Error {
+				return WatchListResult{err: errors.FromObject(event.Object)}
+			}
+			meta, err := meta.Accessor(event.Object)
+			if err != nil {
+				return WatchListResult{err: fmt.Errorf("failed to parse watch event: %#v", event)}
+			}
+
+			switch event.Type {
+			case watch.Added:
+				// the following check ensures that the response is ordered.
+				// earlier servers had a bug that caused them to not sort the output.
+				// in such cases, return an error which can trigger fallback logic.
+				key := objectKeyFromMeta(meta)
+				if len(lastKey) > 0 && lastKey > key {
+					return WatchListResult{err: fmt.Errorf("cannot add the obj (%#v) with the key = %s, as it violates the ordering guarantees provided by the watchlist feature in beta phase, lastInsertedKey was = %s", event.Object, key, lastKey)}
+				}
+				items = append(items, event.Object)
+				lastKey = key
+			case watch.Bookmark:
+				if meta.GetAnnotations()[metav1.InitialEventsAnnotationKey] == "true" {
+					return WatchListResult{
+						items:                      items,
+						initialEventsEndBookmarkRV: meta.GetResourceVersion(),
+						gv:                         r.c.content.GroupVersion,
+					}
+				}
+			default:
+				return WatchListResult{err: fmt.Errorf("unexpected watch event %#v, expected to only receive watch.Added and watch.Bookmark events", event)}
+			}
+		}
+	}
+}
+
 func (r *Request) newStreamWatcher(resp *http.Response) (watch.Interface, error) {
 	contentType := resp.Header.Get("Content-Type")
 	mediaType, params, err := mime.ParseMediaType(contentType)
@@ -697,22 +931,36 @@ func (r *Request) newStreamWatcher(resp *http.Response) (watch.Interface, error)
 	), nil
 }
 
-// updateURLMetrics is a convenience function for pushing metrics.
-// It also handles corner cases for incomplete/invalid request data.
-func updateURLMetrics(ctx context.Context, req *Request, resp *http.Response, err error) {
-	url := "none"
+// updateRequestResultMetric increments the RequestResult metric counter,
+// it should be called with the (response, err) tuple from the final
+// reply from the server.
+func updateRequestResultMetric(ctx context.Context, req *Request, resp *http.Response, err error) {
+	code, host := sanitize(req, resp, err)
+	metrics.RequestResult.Increment(ctx, code, req.verb, host)
+}
+
+// updateRequestRetryMetric increments the RequestRetry metric counter,
+// it should be called with the (response, err) tuple for each retry
+// except for the final attempt.
+func updateRequestRetryMetric(ctx context.Context, req *Request, resp *http.Response, err error) {
+	code, host := sanitize(req, resp, err)
+	metrics.RequestRetry.IncrementRetry(ctx, code, req.verb, host)
+}
+
+func sanitize(req *Request, resp *http.Response, err error) (string, string) {
+	host := "none"
 	if req.c.base != nil {
-		url = req.c.base.Host
+		host = req.c.base.Host
 	}
 
 	// Errors can be arbitrary strings. Unbound label cardinality is not suitable for a metric
 	// system so we just report them as `<error>`.
-	if err != nil {
-		metrics.RequestResult.Increment(ctx, "<error>", req.verb, url)
-	} else {
-		// Metrics for failure codes
-		metrics.RequestResult.Increment(ctx, strconv.Itoa(resp.StatusCode), req.verb, url)
+	code := "<error>"
+	if resp != nil {
+		code = strconv.Itoa(resp.StatusCode)
 	}
+
+	return code, host
 }
 
 // Stream formats and executes the request, and offers streaming of the response.
@@ -744,11 +992,7 @@ func (r *Request) Stream(ctx context.Context) (io.ReadCloser, error) {
 		if err != nil {
 			return nil, err
 		}
-		if r.body != nil {
-			req.Body = ioutil.NopCloser(r.body)
-		}
 		resp, err := client.Do(req)
-		updateURLMetrics(ctx, r, resp, err)
 		retry.After(ctx, r, resp, err)
 		if err != nil {
 			// we only retry on an HTTP response with 'Retry-After' header
@@ -808,14 +1052,49 @@ func (r *Request) requestPreflightCheck() error {
 }
 
 func (r *Request) newHTTPRequest(ctx context.Context) (*http.Request, error) {
+	var body io.Reader
+	switch {
+	case r.body != nil && r.bodyBytes != nil:
+		return nil, fmt.Errorf("cannot set both body and bodyBytes")
+	case r.body != nil:
+		body = r.body
+	case r.bodyBytes != nil:
+		// Create a new reader specifically for this request.
+		// Giving each request a dedicated reader allows retries to avoid races resetting the request body.
+		body = bytes.NewReader(r.bodyBytes)
+	}
+
 	url := r.URL().String()
-	req, err := http.NewRequest(r.verb, url, r.body)
+	req, err := http.NewRequestWithContext(httptrace.WithClientTrace(ctx, newDNSMetricsTrace(ctx)), r.verb, url, body)
 	if err != nil {
 		return nil, err
 	}
-	req = req.WithContext(ctx)
 	req.Header = r.headers
 	return req, nil
+}
+
+// newDNSMetricsTrace returns an HTTP trace that tracks time spent on DNS lookups per host.
+// This metric is available in client as "rest_client_dns_resolution_duration_seconds".
+func newDNSMetricsTrace(ctx context.Context) *httptrace.ClientTrace {
+	type dnsMetric struct {
+		start time.Time
+		host  string
+		sync.Mutex
+	}
+	dns := &dnsMetric{}
+	return &httptrace.ClientTrace{
+		DNSStart: func(info httptrace.DNSStartInfo) {
+			dns.Lock()
+			defer dns.Unlock()
+			dns.start = time.Now()
+			dns.host = info.Host
+		},
+		DNSDone: func(info httptrace.DNSDoneInfo) {
+			dns.Lock()
+			defer dns.Unlock()
+			metrics.ResolverLatency.Observe(ctx, dns.host, time.Since(dns.start))
+		},
+	}
 }
 
 // request connects to the server and invokes the provided function when a server response is
@@ -826,7 +1105,7 @@ func (r *Request) request(ctx context.Context, fn func(*http.Request, *http.Resp
 	// Metrics for total request latency
 	start := time.Now()
 	defer func() {
-		metrics.RequestLatency.Observe(ctx, r.verb, *r.URL(), time.Since(start))
+		metrics.RequestLatency.Observe(ctx, r.verb, r.finalURLTemplate(), time.Since(start))
 	}()
 
 	if r.err != nil {
@@ -881,7 +1160,6 @@ func (r *Request) request(ctx context.Context, fn func(*http.Request, *http.Resp
 			return err
 		}
 		resp, err := client.Do(req)
-		updateURLMetrics(ctx, r, resp, err)
 		// The value -1 or a value of 0 with a non-nil Body indicates that the length is unknown.
 		// https://pkg.go.dev/net/http#Request
 		if req.ContentLength >= 0 && !(req.Body != nil && req.ContentLength == 0) {
@@ -937,7 +1215,7 @@ func (r *Request) Do(ctx context.Context) Result {
 func (r *Request) DoRaw(ctx context.Context) ([]byte, error) {
 	var result Result
 	err := r.request(ctx, func(req *http.Request, resp *http.Response) {
-		result.body, result.err = ioutil.ReadAll(resp.Body)
+		result.body, result.err = io.ReadAll(resp.Body)
 		glogBody("Response Body", result.body)
 		if resp.StatusCode < http.StatusOK || resp.StatusCode > http.StatusPartialContent {
 			result.err = r.transformUnstructuredResponseError(resp, req, result.body)
@@ -956,7 +1234,7 @@ func (r *Request) DoRaw(ctx context.Context) ([]byte, error) {
 func (r *Request) transformResponse(resp *http.Response, req *http.Request) Result {
 	var body []byte
 	if resp.Body != nil {
-		data, err := ioutil.ReadAll(resp.Body)
+		data, err := io.ReadAll(resp.Body)
 		switch err.(type) {
 		case nil:
 			body = data
@@ -1098,7 +1376,7 @@ const maxUnstructuredResponseTextBytes = 2048
 // TODO: introduce transformation of generic http.Client.Do() errors that separates 4.
 func (r *Request) transformUnstructuredResponseError(resp *http.Response, req *http.Request, body []byte) error {
 	if body == nil && resp.Body != nil {
-		if data, err := ioutil.ReadAll(&io.LimitedReader{R: resp.Body, N: maxUnstructuredResponseTextBytes}); err == nil {
+		if data, err := io.ReadAll(&io.LimitedReader{R: resp.Body, N: maxUnstructuredResponseTextBytes}); err == nil {
 			body = data
 		}
 	}
@@ -1204,6 +1482,14 @@ func (r Result) Get() (runtime.Object, error) {
 // error was returned.)
 func (r Result) StatusCode(statusCode *int) Result {
 	*statusCode = r.statusCode
+	return r
+}
+
+// ContentType returns the "Content-Type" response header into the passed
+// string, returning the Result for possible chaining. (Only valid if no
+// error code was returned.)
+func (r Result) ContentType(contentType *string) Result {
+	*contentType = r.contentType
 	return r
 }
 
@@ -1322,4 +1608,11 @@ func ValidatePathSegmentName(name string, prefix bool) []string {
 		return IsValidPathSegmentPrefix(name)
 	}
 	return IsValidPathSegmentName(name)
+}
+
+func objectKeyFromMeta(objMeta metav1.Object) string {
+	if len(objMeta.GetNamespace()) > 0 {
+		return fmt.Sprintf("%s/%s", objMeta.GetNamespace(), objMeta.GetName())
+	}
+	return objMeta.GetName()
 }

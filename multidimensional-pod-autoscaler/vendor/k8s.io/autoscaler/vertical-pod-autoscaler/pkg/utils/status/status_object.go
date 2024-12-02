@@ -97,7 +97,7 @@ func (c *Client) UpdateStatus() error {
 			return err
 		}
 		lease.Spec.RenewTime = &metav1.MicroTime{Time: time.Now()}
-		lease.Spec.HolderIdentity = pointer.StringPtr(c.holderIdentity)
+		lease.Spec.HolderIdentity = pointer.String(c.holderIdentity)
 		_, err = c.client.Update(context.TODO(), lease, metav1.UpdateOptions{})
 		if apierrors.IsConflict(err) {
 			// Lease was updated by an another replica of the component.
@@ -126,8 +126,8 @@ func (c *Client) newLease() *apicoordinationv1.Lease {
 			Namespace: c.leaseNamespace,
 		},
 		Spec: apicoordinationv1.LeaseSpec{
-			HolderIdentity:       pointer.StringPtr(c.holderIdentity),
-			LeaseDurationSeconds: pointer.Int32Ptr(c.leaseDurationSeconds),
+			HolderIdentity:       pointer.String(c.holderIdentity),
+			LeaseDurationSeconds: pointer.Int32(c.leaseDurationSeconds),
 		},
 	}
 }
