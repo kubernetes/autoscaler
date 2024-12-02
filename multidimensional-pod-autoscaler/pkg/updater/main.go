@@ -44,7 +44,7 @@ var (
 		`How often updater should run (default: 10s)`)
 
 	minReplicas = flag.Int("min-replicas", 2,
-		`Minimum number of replicas to perform update (global setting) which can be overriden by the per-MPA setting.`)
+		`Minimum number of replicas to perform update (global setting) which can be overridden by the per-MPA setting.`)
 
 	evictionToleranceFraction = flag.Float64("eviction-tolerance", 0.5,
 		`Fraction of replica count that can be evicted for update, if more than one pod can be evicted.`)
