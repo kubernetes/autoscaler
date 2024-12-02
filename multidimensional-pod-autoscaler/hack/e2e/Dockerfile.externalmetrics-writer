@@ -1,6 +1,4 @@
-#!/bin/bash
-
-# Copyright 2024 The Kubernetes Authors.
+# Copyright 2023 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,10 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -o errexit
-set -o nounset
-set -o pipefail
+FROM python:3.10-slim
+RUN pip3 install kubernetes argparse requests
 
-SCRIPT_ROOT=$(dirname ${BASH_SOURCE})/..
-
-$SCRIPT_ROOT/deploy/mpa-process-yamls.sh create $*
+COPY emit-metrics.py /
