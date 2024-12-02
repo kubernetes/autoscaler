@@ -33,7 +33,7 @@ var (
 	SchemeBuilder      runtime.SchemeBuilder
 	localSchemeBuilder = &SchemeBuilder
 	// AddToScheme is the func that applies all the stored functions to the scheme.
-	AddToScheme        = SchemeBuilder.AddToScheme
+	AddToScheme = SchemeBuilder.AddToScheme
 )
 
 // Resource takes an unqualified resource and returns a Group qualified GroupResource

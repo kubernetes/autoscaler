@@ -12,10 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+FROM --platform=$BUILDPLATFORM golang:1.23.3 AS builder
+
+ENV GOPATH=/gopath/
+ENV PATH=$GOPATH/bin:$PATH
+
+COPY . /gopath/src/k8s.io/autoscaler/multidimensional-pod-autoscaler
+WORKDIR /gopath/src/k8s.io/autoscaler/multidimensional-pod-autoscaler
+
+ARG TARGETOS TARGETARCH
+
+RUN CGO_ENABLED=0 LD_FLAGS=-s GOARCH=$TARGETARCH GOOS=$TARGETOS go build -C pkg/admission-controller -mod vendor -o admission-controller-$TARGETARCH
+
 FROM gcr.io/distroless/static:latest
-MAINTAINER Tomasz Kulczynski "tkulczynski@google.com"
-ARG ARCH
-copy admission-controller-$ARCH /admission-controller
+
+ARG TARGETARCH
+
+COPY --from=builder /gopath/src/k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/admission-controller/admission-controller-$TARGETARCH /admission-controller
 
 ENTRYPOINT ["/admission-controller"]
-CMD ["--v=4", "--stderrthreshold=info"]

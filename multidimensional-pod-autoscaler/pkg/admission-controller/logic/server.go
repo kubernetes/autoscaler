@@ -17,12 +17,13 @@ limitations under the License.
 package logic
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 
-	v1 "k8s.io/api/admission/v1"
+	admissionv1 "k8s.io/api/admission/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/admission-controller/resource/mpa"
 	"k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/admission-controller/resource/pod"
@@ -33,7 +34,7 @@ import (
 	"k8s.io/klog/v2"
 )
 
-// AdmissionServer is an admission webhook server that modifies pod resources request based on VPA recommendation
+// AdmissionServer is an admission webhook server that modifies pod resources request based on MPA recommendation
 type AdmissionServer struct {
 	limitsChecker    limitrange.LimitRangeCalculator
 	resourceHandlers map[metav1.GroupResource]resource.Handler
@@ -56,12 +57,12 @@ func (s *AdmissionServer) RegisterResourceHandler(resourceHandler resource.Handl
 	s.resourceHandlers[resourceHandler.GroupResource()] = resourceHandler
 }
 
-func (s *AdmissionServer) admit(data []byte) (*v1.AdmissionResponse, metrics_admission.AdmissionStatus, metrics_admission.AdmissionResource) {
+func (s *AdmissionServer) admit(ctx context.Context, data []byte) (*admissionv1.AdmissionResponse, metrics_admission.AdmissionStatus, metrics_admission.AdmissionResource) {
 	// we don't block the admission by default, even on unparsable JSON
-	response := v1.AdmissionResponse{}
+	response := admissionv1.AdmissionResponse{}
 	response.Allowed = true
 
-	ar := v1.AdmissionReview{}
+	ar := admissionv1.AdmissionReview{}
 	if err := json.Unmarshal(data, &ar); err != nil {
 		klog.Error(err)
 		return &response, metrics_admission.Error, metrics_admission.Unknown
@@ -106,10 +107,10 @@ func (s *AdmissionServer) admit(data []byte) (*v1.AdmissionResponse, metrics_adm
 			klog.Errorf("Cannot marshal the patch %v: %v", patches, err)
 			return &response, metrics_admission.Error, resource
 		}
-		patchType := v1.PatchTypeJSONPatch
+		patchType := admissionv1.PatchTypeJSONPatch
 		response.PatchType = &patchType
 		response.Patch = patch
-		klog.V(4).Infof("Sending patches: %v", patches)
+		klog.V(4).InfoS("Sending patches", "patches", patches)
 	}
 
 	var status metrics_admission.AdmissionStatus
@@ -127,44 +128,52 @@ func (s *AdmissionServer) admit(data []byte) (*v1.AdmissionResponse, metrics_adm
 
 // Serve is a handler function of AdmissionServer
 func (s *AdmissionServer) Serve(w http.ResponseWriter, r *http.Request) {
-	timer := metrics_admission.NewAdmissionLatency()
+	ctx := r.Context()
+
+	executionTimer := metrics_admission.NewExecutionTimer()
+	defer executionTimer.ObserveTotal()
+	admissionLatency := metrics_admission.NewAdmissionLatency()
 
 	var body []byte
 	if r.Body != nil {
-		if data, err := ioutil.ReadAll(r.Body); err == nil {
+		if data, err := io.ReadAll(r.Body); err == nil {
 			body = data
 		}
 	}
-
 	// verify the content type is accurate
 	contentType := r.Header.Get("Content-Type")
 	if contentType != "application/json" {
 		klog.Errorf("contentType=%s, expect application/json", contentType)
-		timer.Observe(metrics_admission.Error, metrics_admission.Unknown)
+		admissionLatency.Observe(metrics_admission.Error, metrics_admission.Unknown)
 		return
 	}
+	executionTimer.ObserveStep("read_request")
 
-	reviewResponse, status, resource := s.admit(body)
-	ar := v1.AdmissionReview{
+	reviewResponse, status, resource := s.admit(ctx, body)
+	ar := admissionv1.AdmissionReview{
 		Response: reviewResponse,
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "AdmissionReview",
 			APIVersion: "admission.k8s.io/v1",
 		},
 	}
+	executionTimer.ObserveStep("admit")
 
 	resp, err := json.Marshal(ar)
 	if err != nil {
 		klog.Error(err)
-		timer.Observe(metrics_admission.Error, resource)
+		admissionLatency.Observe(metrics_admission.Error, resource)
 		return
 	}
+	executionTimer.ObserveStep("build_response")
 
-	if _, err := w.Write(resp); err != nil {
+	_, err = w.Write(resp)
+	if err != nil {
 		klog.Error(err)
-		timer.Observe(metrics_admission.Error, resource)
+		admissionLatency.Observe(metrics_admission.Error, resource)
 		return
 	}
+	executionTimer.ObserveStep("write_response")
 
-	timer.Observe(status, resource)
+	admissionLatency.Observe(status, resource)
 }

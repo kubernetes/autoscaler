@@ -89,7 +89,7 @@ func (h *resourceHandler) GetPatches(ar *v1.AdmissionRequest) ([]resource.PatchR
 		return nil, err
 	}
 
-	klog.V(4).Infof("Processing MPA: %v", mpa)
+	klog.V(4).InfoS("Processing mpa", "mpa", mpa)
 	patches := []resource.PatchRecord{}
 	if mpa.Spec.Policy == nil {
 		// Sets the default updatePolicy.
