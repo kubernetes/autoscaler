@@ -23,7 +23,6 @@ import (
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
-	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
 	v1alpha1 "k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1alpha1"
@@ -36,28 +35,30 @@ type FakeMultidimPodAutoscalers struct {
 	ns   string
 }
 
-var multidimpodautoscalersResource = schema.GroupVersionResource{Group: "autoscaling.k8s.io", Version: "v1alpha1", Resource: "multidimpodautoscalers"}
+var multidimpodautoscalersResource = v1alpha1.SchemeGroupVersion.WithResource("multidimpodautoscalers")
 
-var multidimpodautoscalersKind = schema.GroupVersionKind{Group: "autoscaling.k8s.io", Version: "v1alpha1", Kind: "MultidimPodAutoscaler"}
+var multidimpodautoscalersKind = v1alpha1.SchemeGroupVersion.WithKind("MultidimPodAutoscaler")
 
 // Get takes name of the multidimPodAutoscaler, and returns the corresponding multidimPodAutoscaler object, and an error if there is any.
 func (c *FakeMultidimPodAutoscalers) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.MultidimPodAutoscaler, err error) {
+	emptyResult := &v1alpha1.MultidimPodAutoscaler{}
 	obj, err := c.Fake.
-		Invokes(testing.NewGetAction(multidimpodautoscalersResource, c.ns, name), &v1alpha1.MultidimPodAutoscaler{})
+		Invokes(testing.NewGetAction(multidimpodautoscalersResource, c.ns, name), emptyResult)
 
 	if obj == nil {
-		return nil, err
+		return emptyResult, err
 	}
 	return obj.(*v1alpha1.MultidimPodAutoscaler), err
 }
 
 // List takes label and field selectors, and returns the list of MultidimPodAutoscalers that match those selectors.
 func (c *FakeMultidimPodAutoscalers) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha1.MultidimPodAutoscalerList, err error) {
+	emptyResult := &v1alpha1.MultidimPodAutoscalerList{}
 	obj, err := c.Fake.
-		Invokes(testing.NewListAction(multidimpodautoscalersResource, multidimpodautoscalersKind, c.ns, opts), &v1alpha1.MultidimPodAutoscalerList{})
+		Invokes(testing.NewListAction(multidimpodautoscalersResource, multidimpodautoscalersKind, c.ns, opts), emptyResult)
 
 	if obj == nil {
-		return nil, err
+		return emptyResult, err
 	}
 
 	label, _, _ := testing.ExtractFromListOptions(opts)
@@ -82,34 +83,37 @@ func (c *FakeMultidimPodAutoscalers) Watch(ctx context.Context, opts v1.ListOpti
 
 // Create takes the representation of a multidimPodAutoscaler and creates it.  Returns the server's representation of the multidimPodAutoscaler, and an error, if there is any.
 func (c *FakeMultidimPodAutoscalers) Create(ctx context.Context, multidimPodAutoscaler *v1alpha1.MultidimPodAutoscaler, opts v1.CreateOptions) (result *v1alpha1.MultidimPodAutoscaler, err error) {
+	emptyResult := &v1alpha1.MultidimPodAutoscaler{}
 	obj, err := c.Fake.
-		Invokes(testing.NewCreateAction(multidimpodautoscalersResource, c.ns, multidimPodAutoscaler), &v1alpha1.MultidimPodAutoscaler{})
+		Invokes(testing.NewCreateAction(multidimpodautoscalersResource, c.ns, multidimPodAutoscaler), emptyResult)
 
 	if obj == nil {
-		return nil, err
+		return emptyResult, err
 	}
 	return obj.(*v1alpha1.MultidimPodAutoscaler), err
 }
 
 // Update takes the representation of a multidimPodAutoscaler and updates it. Returns the server's representation of the multidimPodAutoscaler, and an error, if there is any.
 func (c *FakeMultidimPodAutoscalers) Update(ctx context.Context, multidimPodAutoscaler *v1alpha1.MultidimPodAutoscaler, opts v1.UpdateOptions) (result *v1alpha1.MultidimPodAutoscaler, err error) {
+	emptyResult := &v1alpha1.MultidimPodAutoscaler{}
 	obj, err := c.Fake.
-		Invokes(testing.NewUpdateAction(multidimpodautoscalersResource, c.ns, multidimPodAutoscaler), &v1alpha1.MultidimPodAutoscaler{})
+		Invokes(testing.NewUpdateAction(multidimpodautoscalersResource, c.ns, multidimPodAutoscaler), emptyResult)
 
 	if obj == nil {
-		return nil, err
+		return emptyResult, err
 	}
 	return obj.(*v1alpha1.MultidimPodAutoscaler), err
 }
 
 // UpdateStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-func (c *FakeMultidimPodAutoscalers) UpdateStatus(ctx context.Context, multidimPodAutoscaler *v1alpha1.MultidimPodAutoscaler, opts v1.UpdateOptions) (*v1alpha1.MultidimPodAutoscaler, error) {
+func (c *FakeMultidimPodAutoscalers) UpdateStatus(ctx context.Context, multidimPodAutoscaler *v1alpha1.MultidimPodAutoscaler, opts v1.UpdateOptions) (result *v1alpha1.MultidimPodAutoscaler, err error) {
+	emptyResult := &v1alpha1.MultidimPodAutoscaler{}
 	obj, err := c.Fake.
-		Invokes(testing.NewUpdateSubresourceAction(multidimpodautoscalersResource, "status", c.ns, multidimPodAutoscaler), &v1alpha1.MultidimPodAutoscaler{})
+		Invokes(testing.NewUpdateSubresourceAction(multidimpodautoscalersResource, "status", c.ns, multidimPodAutoscaler), emptyResult)
 
 	if obj == nil {
-		return nil, err
+		return emptyResult, err
 	}
 	return obj.(*v1alpha1.MultidimPodAutoscaler), err
 }
@@ -132,11 +136,12 @@ func (c *FakeMultidimPodAutoscalers) DeleteCollection(ctx context.Context, opts 
 
 // Patch applies the patch and returns the patched multidimPodAutoscaler.
 func (c *FakeMultidimPodAutoscalers) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.MultidimPodAutoscaler, err error) {
+	emptyResult := &v1alpha1.MultidimPodAutoscaler{}
 	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(multidimpodautoscalersResource, c.ns, name, pt, data, subresources...), &v1alpha1.MultidimPodAutoscaler{})
+		Invokes(testing.NewPatchSubresourceAction(multidimpodautoscalersResource, c.ns, name, pt, data, subresources...), emptyResult)
 
 	if obj == nil {
-		return nil, err
+		return emptyResult, err
 	}
 	return obj.(*v1alpha1.MultidimPodAutoscaler), err
 }

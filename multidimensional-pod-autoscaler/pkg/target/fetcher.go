@@ -54,7 +54,7 @@ type MpaTargetSelectorFetcher interface {
 
 	// For updating the Deployments.
 	GetRESTMappings(groupKind schema.GroupKind) ([]*apimeta.RESTMapping, error)
-	Scales(namespace string) (scale.ScaleInterface)
+	Scales(namespace string) scale.ScaleInterface
 }
 
 type wellKnownController string
@@ -209,6 +209,6 @@ func (f *mpaTargetSelectorFetcher) GetRESTMappings(groupKind schema.GroupKind) (
 	return f.mapper.RESTMappings(groupKind)
 }
 
-func (f *mpaTargetSelectorFetcher) Scales(namespace string) (scale.ScaleInterface) {
+func (f *mpaTargetSelectorFetcher) Scales(namespace string) scale.ScaleInterface {
 	return f.scaleNamespacer.Scales(namespace)
 }

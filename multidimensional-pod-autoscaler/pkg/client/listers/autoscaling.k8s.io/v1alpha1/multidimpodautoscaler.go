@@ -19,9 +19,9 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/labels"
 	v1alpha1 "k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1alpha1"
+	"k8s.io/client-go/listers"
 	"k8s.io/client-go/tools/cache"
 )
 
@@ -38,25 +38,17 @@ type MultidimPodAutoscalerLister interface {
 
 // multidimPodAutoscalerLister implements the MultidimPodAutoscalerLister interface.
 type multidimPodAutoscalerLister struct {
-	indexer cache.Indexer
+	listers.ResourceIndexer[*v1alpha1.MultidimPodAutoscaler]
 }
 
 // NewMultidimPodAutoscalerLister returns a new MultidimPodAutoscalerLister.
 func NewMultidimPodAutoscalerLister(indexer cache.Indexer) MultidimPodAutoscalerLister {
-	return &multidimPodAutoscalerLister{indexer: indexer}
-}
-
-// List lists all MultidimPodAutoscalers in the indexer.
-func (s *multidimPodAutoscalerLister) List(selector labels.Selector) (ret []*v1alpha1.MultidimPodAutoscaler, err error) {
-	err = cache.ListAll(s.indexer, selector, func(m interface{}) {
-		ret = append(ret, m.(*v1alpha1.MultidimPodAutoscaler))
-	})
-	return ret, err
+	return &multidimPodAutoscalerLister{listers.New[*v1alpha1.MultidimPodAutoscaler](indexer, v1alpha1.Resource("multidimpodautoscaler"))}
 }
 
 // MultidimPodAutoscalers returns an object that can list and get MultidimPodAutoscalers.
 func (s *multidimPodAutoscalerLister) MultidimPodAutoscalers(namespace string) MultidimPodAutoscalerNamespaceLister {
-	return multidimPodAutoscalerNamespaceLister{indexer: s.indexer, namespace: namespace}
+	return multidimPodAutoscalerNamespaceLister{listers.NewNamespaced[*v1alpha1.MultidimPodAutoscaler](s.ResourceIndexer, namespace)}
 }
 
 // MultidimPodAutoscalerNamespaceLister helps list and get MultidimPodAutoscalers.
@@ -74,26 +66,5 @@ type MultidimPodAutoscalerNamespaceLister interface {
 // multidimPodAutoscalerNamespaceLister implements the MultidimPodAutoscalerNamespaceLister
 // interface.
 type multidimPodAutoscalerNamespaceLister struct {
-	indexer   cache.Indexer
-	namespace string
-}
-
-// List lists all MultidimPodAutoscalers in the indexer for a given namespace.
-func (s multidimPodAutoscalerNamespaceLister) List(selector labels.Selector) (ret []*v1alpha1.MultidimPodAutoscaler, err error) {
-	err = cache.ListAllByNamespace(s.indexer, s.namespace, selector, func(m interface{}) {
-		ret = append(ret, m.(*v1alpha1.MultidimPodAutoscaler))
-	})
-	return ret, err
-}
-
-// Get retrieves the MultidimPodAutoscaler from the indexer for a given namespace and name.
-func (s multidimPodAutoscalerNamespaceLister) Get(name string) (*v1alpha1.MultidimPodAutoscaler, error) {
-	obj, exists, err := s.indexer.GetByKey(s.namespace + "/" + name)
-	if err != nil {
-		return nil, err
-	}
-	if !exists {
-		return nil, errors.NewNotFound(v1alpha1.Resource("multidimpodautoscaler"), name)
-	}
-	return obj.(*v1alpha1.MultidimPodAutoscaler), nil
+	listers.ResourceIndexer[*v1alpha1.MultidimPodAutoscaler]
 }

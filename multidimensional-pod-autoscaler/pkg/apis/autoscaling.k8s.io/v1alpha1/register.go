@@ -13,9 +13,9 @@ var SchemeGroupVersion = schema.GroupVersion{
 }
 
 var (
-	SchemeBuilder runtime.SchemeBuilder
+	SchemeBuilder      runtime.SchemeBuilder
 	localSchemeBuilder = &SchemeBuilder
-	AddToScheme   = SchemeBuilder.AddToScheme
+	AddToScheme        = SchemeBuilder.AddToScheme
 )
 
 // Resource takes an unqualified resource and returns a Group qualified GroupResource

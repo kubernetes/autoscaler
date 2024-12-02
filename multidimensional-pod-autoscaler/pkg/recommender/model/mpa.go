@@ -101,12 +101,12 @@ type Mpa struct {
 	// Added for HPA-related fields.
 	// TODO: Currently HPA-related logic is directly manipulating the MPA object but not the MPA
 	// model here.
-	Metrics []autoscalingv2.MetricSpec
-	MinReplicas int32
-	MaxReplicas int32
+	Metrics                   []autoscalingv2.MetricSpec
+	MinReplicas               int32
+	MaxReplicas               int32
 	HorizontalScalingBehavior *autoscalingv2.HorizontalPodAutoscalerBehavior
-	DesiredReplicas int32
-	CurrentMetrics []autoscalingv2.MetricStatus
+	DesiredReplicas           int32
+	CurrentMetrics            []autoscalingv2.MetricStatus
 }
 
 // NewMpa returns a new Mpa with a given ID and pod selector. Doesn't set the

@@ -13,6 +13,7 @@ require (
 	k8s.io/apimachinery v0.31.0-alpha.2
 	k8s.io/autoscaler/vertical-pod-autoscaler v1.1.2
 	k8s.io/client-go v0.31.0-alpha.2
+	k8s.io/code-generator v0.31.0-alpha.2
 	k8s.io/component-base v0.31.0-alpha.2
 	k8s.io/klog/v2 v2.120.1
 	k8s.io/kubernetes v1.31.0-alpha.2
@@ -85,12 +86,14 @@ require (
 	go.uber.org/zap v1.26.0 // indirect
 	golang.org/x/crypto v0.23.0 // indirect
 	golang.org/x/exp v0.0.0-20230515195305-f3d0a9c9a5cc // indirect
+	golang.org/x/mod v0.17.0 // indirect
 	golang.org/x/net v0.25.0 // indirect
 	golang.org/x/oauth2 v0.20.0 // indirect
 	golang.org/x/sync v0.7.0 // indirect
 	golang.org/x/sys v0.20.0 // indirect
 	golang.org/x/term v0.20.0 // indirect
 	golang.org/x/text v0.15.0 // indirect
+	golang.org/x/tools v0.21.0 // indirect
 	google.golang.org/genproto v0.0.0-20230822172742-b8732ec3820d // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20230822172742-b8732ec3820d // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230822172742-b8732ec3820d // indirect
@@ -106,6 +109,7 @@ require (
 	k8s.io/cloud-provider v0.0.0 // indirect
 	k8s.io/component-helpers v0.31.0-alpha.2 // indirect
 	k8s.io/controller-manager v0.31.0-alpha.2 // indirect
+	k8s.io/gengo/v2 v2.0.0-20240228010128-51d4e06bde70 // indirect
 	k8s.io/kms v0.31.0-alpha.2 // indirect
 	k8s.io/kube-openapi v0.0.0-20240228011516-70dd3763d340 // indirect
 	k8s.io/kubelet v0.0.0 // indirect
