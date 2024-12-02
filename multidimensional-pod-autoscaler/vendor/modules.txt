@@ -1137,7 +1137,6 @@ k8s.io/client-go/pkg/apis/clientauthentication/v1
 k8s.io/client-go/pkg/apis/clientauthentication/v1beta1
 k8s.io/client-go/pkg/version
 k8s.io/client-go/plugin/pkg/client/auth/exec
-k8s.io/client-go/plugin/pkg/client/auth/oidc
 k8s.io/client-go/rest
 k8s.io/client-go/rest/fake
 k8s.io/client-go/rest/watch
@@ -1317,7 +1316,7 @@ k8s.io/kube-openapi/pkg/validation/strfmt/bson
 # k8s.io/kubelet v0.0.0 => k8s.io/kubelet v0.31.3
 ## explicit; go 1.22.0
 k8s.io/kubelet/pkg/apis
-# k8s.io/kubernetes v1.31.0-alpha.2
+# k8s.io/kubernetes v1.31.3
 ## explicit; go 1.22.0
 k8s.io/kubernetes/pkg/api/legacyscheme
 k8s.io/kubernetes/pkg/api/service
