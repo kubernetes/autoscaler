@@ -45,7 +45,7 @@ To install MPA, please download the source code of MPA
 and run the following command inside the `multidimensional-pod-autoscaler` directory:
 
 ```
-./deploy/mpa-up.sh
+./hack/mpa-up.sh
 ```
 
 Note: the script currently reads environment variables: `$REGISTRY` and `$TAG`.

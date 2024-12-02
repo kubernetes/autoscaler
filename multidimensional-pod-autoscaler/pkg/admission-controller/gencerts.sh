@@ -42,21 +42,28 @@ EOF
 openssl genrsa -out ${TMP_DIR}/caKey.pem 2048
 set +o errexit
 openssl req -x509 -new -nodes -key ${TMP_DIR}/caKey.pem -days 100000 -out ${TMP_DIR}/caCert.pem -subj "/CN=${CN_BASE}_ca" -addext "subjectAltName = DNS:${CN_BASE}_ca"
-# If the error is \"unknown option -addext\", update your openssl version or refer to the vpa-release-0.8 branch.
 if [[ $? -ne 0 ]]; then
   echo "ERROR: Failed to create CA certificate for self-signing."
   exit 1
 fi
 set -o errexit
 
-# Create a server certiticate
+# Create a server certificate
 openssl genrsa -out ${TMP_DIR}/serverKey.pem 2048
 # Note the CN is the DNS name of the service of the webhook.
-openssl req -new -key ${TMP_DIR}/serverKey.pem -out ${TMP_DIR}/server.csr -subj "/CN=mpa-webhook.kube-system.svc" -config ${TMP_DIR}/server.conf -addext "subjectAltName = DNS:mpa-webhook.kube-system.svc"
+openssl req -new -key ${TMP_DIR}/serverKey.pem -out ${TMP_DIR}/server.csr -subj "/CN=mpa-webhook.kube-system.svc" -config ${TMP_DIR}/server.conf
 openssl x509 -req -in ${TMP_DIR}/server.csr -CA ${TMP_DIR}/caCert.pem -CAkey ${TMP_DIR}/caKey.pem -CAcreateserial -out ${TMP_DIR}/serverCert.pem -days 100000 -extensions SAN -extensions v3_req -extfile ${TMP_DIR}/server.conf
 
 echo "Uploading certs to the cluster."
 kubectl create secret --namespace=kube-system generic mpa-tls-certs --from-file=${TMP_DIR}/caKey.pem --from-file=${TMP_DIR}/caCert.pem --from-file=${TMP_DIR}/serverKey.pem --from-file=${TMP_DIR}/serverCert.pem
+
+if [ "${1:-unset}" = "e2e" ]; then
+  openssl genrsa -out ${TMP_DIR}/e2eKey.pem 2048
+  openssl req -new -key ${TMP_DIR}/e2eKey.pem -out ${TMP_DIR}/e2e.csr -subj "/CN=mpa-webhook.kube-system.svc" -config ${TMP_DIR}/server.conf
+  openssl x509 -req -in ${TMP_DIR}/e2e.csr -CA ${TMP_DIR}/caCert.pem -CAkey ${TMP_DIR}/caKey.pem -CAcreateserial -out ${TMP_DIR}/e2eCert.pem -days 100000 -extensions SAN -extensions v3_req -extfile ${TMP_DIR}/server.conf
+  echo "Uploading rotation e2e test certs to the cluster."
+  kubectl create secret --namespace=kube-system generic mpa-e2e-certs --from-file=${TMP_DIR}/e2eKey.pem --from-file=${TMP_DIR}/e2eCert.pem
+fi
 
 # Clean up after we're done.
 echo "Deleting ${TMP_DIR}."
