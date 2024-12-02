@@ -75,7 +75,7 @@ func main() {
 	kube_flag.InitFlags()
 	klog.V(1).Infof("Multi-dimensional Pod Autoscaler %s Admission Controller", common.MultidimPodAutoscalerVersion)
 
-	healthCheck := metrics.NewHealthCheck(time.Minute, false)
+	healthCheck := metrics.NewHealthCheck(time.Minute)
 	metrics.Initialize(*address, healthCheck)
 	metrics_admission.Register()
 

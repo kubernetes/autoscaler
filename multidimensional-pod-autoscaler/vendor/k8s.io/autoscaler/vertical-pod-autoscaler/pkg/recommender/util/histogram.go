@@ -248,10 +248,10 @@ func (h *histogram) SaveToChekpoint() (*vpa_types.HistogramCheckpoint, error) {
 
 func (h *histogram) LoadFromCheckpoint(checkpoint *vpa_types.HistogramCheckpoint) error {
 	if checkpoint == nil {
-		return fmt.Errorf("Cannot load from empty checkpoint")
+		return fmt.Errorf("cannot load from empty checkpoint")
 	}
 	if checkpoint.TotalWeight < 0.0 {
-		return fmt.Errorf("Cannot load checkpoint with negative weight %v", checkpoint.TotalWeight)
+		return fmt.Errorf("cannot load checkpoint with negative weight %v", checkpoint.TotalWeight)
 	}
 	sum := int64(0)
 	for bucket, weight := range checkpoint.BucketWeights {

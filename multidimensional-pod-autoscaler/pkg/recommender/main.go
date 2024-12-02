@@ -119,7 +119,7 @@ func main() {
 
 	vpa_model.InitializeAggregationsConfig(vpa_model.NewAggregationsConfig(*memoryAggregationInterval, *memoryAggregationIntervalCount, *memoryHistogramDecayHalfLife, *cpuHistogramDecayHalfLife, *oomBumpUpRatio, *oomMinBumpUp))
 
-	healthCheck := metrics.NewHealthCheck(*metricsFetcherInterval*5, true)
+	healthCheck := metrics.NewHealthCheck(*metricsFetcherInterval * 5)
 	metrics.Initialize(*address, healthCheck)
 	metrics_recommender.Register()
 	metrics_quality.Register()

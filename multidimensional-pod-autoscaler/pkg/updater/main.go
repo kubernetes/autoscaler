@@ -74,7 +74,7 @@ func main() {
 	kube_flag.InitFlags()
 	klog.V(1).Infof("Multidimensional Pod Autoscaler %s Updater", common.MultidimPodAutoscalerVersion)
 
-	healthCheck := metrics.NewHealthCheck(*updaterInterval*5, true)
+	healthCheck := metrics.NewHealthCheck(*updaterInterval * 5)
 	metrics.Initialize(*address, healthCheck)
 	metrics_updater.Register()
 

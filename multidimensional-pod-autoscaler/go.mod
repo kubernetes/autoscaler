@@ -11,7 +11,7 @@ require (
 	golang.org/x/time v0.4.0
 	k8s.io/api v0.31.3
 	k8s.io/apimachinery v0.31.3
-	k8s.io/autoscaler/vertical-pod-autoscaler v1.1.2
+	k8s.io/autoscaler/vertical-pod-autoscaler v1.2.1
 	k8s.io/client-go v0.31.3
 	k8s.io/code-generator v0.31.3
 	k8s.io/component-base v0.31.3
