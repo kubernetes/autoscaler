@@ -14,7 +14,14 @@ Thanks for taking the time to raise a feature request! Please answer these quest
 **Which component are you using?**:
 
 <!--
-Which component hosted in this repository is this a feature for?
+Which autoscaling component hosted in this repository (cluster-autoscaler, vertical-pod-autoscaler, addon-resizer, helm charts) is the bug in?
+
+Add one of the following areas:
+/area addon-resizer
+/area balancer
+/area cluster-autoscaler
+/area helm-charts
+/area vertical-pod-autoscaler
 -->
 
 **Is your feature request designed to solve a problem? If so describe the problem this feature should solve.**:
