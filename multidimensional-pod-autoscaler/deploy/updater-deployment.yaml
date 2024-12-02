@@ -26,7 +26,7 @@ spec:
         runAsUser: 65534  # nobody
       containers:
         - name: updater
-          image: haoranq4/mpa-updater-amd64:latest
+          image: registry.k8s.io/autoscaling/mpa-updater-amd64:latest
           imagePullPolicy: Always
           env:
             - name: NAMESPACE

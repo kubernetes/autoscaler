@@ -2,13 +2,17 @@
 
 ## Intro
 
-Multi-dimensional Pod Autoscaler (MPA) combines Kubernetes HPA and VPA so that scaling actions can be considered and actuated together in a holistic manner.
+Multi-dimensional Pod Autoscaler (MPA) combines Kubernetes [HPA](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/)
+and [VPA](../vertical-pod-autoscaler/README.md) so that scaling actions can be considered and actuated together in a holistic manner.
 MPA separates the scaling recommendation and actuation completely so that any multi-dimensional autoscaling algorithms can be used as the "recommender".
-The default recommender is a simple combination of HPA and VPA algorithm which (1) set the requests automatically based on usage and (2) set the number of replicas based on a target metric.
+The default recommender is a simple combination of HPA and VPA algorithm which
 
-Same as VPA, MPA is configured with a [Custom Resource Definition object](https://kubernetes.io/docs/concepts/api-extension/custom-resources/)
-called [MultidimPodAutoscaler](https://github.com/IIDA-Institute/autoscaler/blob/mpa-dev/multidimensional-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1alpha1/types.go).
-It allows to specify which pods should be vertically and horizontally autoscaled as well as if/how the resource recommendations are applied.
+1) sets the requests automatically based on usage and
+2) sets the number of replicas based on a target metric.
+
+Like VPA, MPA is configured with a [Custom Resource Definition object](https://kubernetes.io/docs/concepts/api-extension/custom-resources/).
+The custom resource is called [MultidimPodAutoscaler](./pkg/apis/autoscaling.k8s.io/v1alpha1/types.go).
+It specifies which pods should be vertically and horizontally autoscaled as well as if/how the resource recommendations are applied.
 
 To enable multi-dimensional pod autoscaling on your cluster please follow the installation procedure described below.
 
@@ -45,7 +49,7 @@ and run the following command inside the `multidimensional-pod-autoscaler` direc
 ```
 
 Note: the script currently reads environment variables: `$REGISTRY` and `$TAG`.
-Make sure you leave them unset unless you want to use a non-default version of MPA.
+Make sure they're unset unless you want to use a non-default version of MPA.
 
 The script issues multiple `kubectl` commands to the
 cluster that insert the configuration and start all needed pods
@@ -65,7 +69,7 @@ To remove MPA installation:
 
 After [installation](#installation) the system is ready to recommend and set
 resource requests for your pods.
-In order to use it, you need to insert a *Multidimensional Pod Autoscaler* resource for
+In order to use it, you need to insert a *MultidimPodAutoscaler* resource for
 each controller that you want to have automatically computed resource requirements.
 This will be most commonly a **Deployment**.
 There are four modes in which *MPAs* operate, same as [VPA modes](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler#quick-start).
@@ -93,7 +97,7 @@ metadata:
   namespace: default
 spec:
   # recommenders field can be unset when using the default recommender.
-  # recommenders: 
+  # recommenders:
   #   - name: 'hamster-recommender'
   scaleTargetRef:
     apiVersion: "apps/v1"

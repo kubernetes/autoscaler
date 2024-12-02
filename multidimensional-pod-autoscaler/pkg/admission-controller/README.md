@@ -39,7 +39,7 @@ All MPA configurations in the cluster are watched with a lister.
 In the context of pod creation, there is an incoming https request from
 apiserver.
 The logic to serve that request involves finding the appropriate MPA, retrieving
-current recommendation from it and encodes the recommendation as a json patch to
+current recommendation from it and encoding the recommendation as a json patch to
 the Pod resource.
 
 ## Building the Docker Image
