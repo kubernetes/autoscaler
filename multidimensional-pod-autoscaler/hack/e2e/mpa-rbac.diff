@@ -1,5 +1,5 @@
-*** deploy/vpa-rbac.yaml	Wed Jul  5 14:37:35 2023
---- hack/e2e/vpa-rbac.yaml	Thu Jul  6 12:46:19 2023
+*** deploy/mpa-rbac.yaml	Wed Jul  5 14:37:35 2023
+--- hack/e2e/mpa-rbac.yaml	Thu Jul  6 12:46:19 2023
 ***************
 *** 5,10 ****
 --- 5,17 ----

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2018 The Kubernetes Authors.
+# Copyright 2024 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -44,13 +44,15 @@ SUITE=$1
 
 export GO111MODULE=on
 
+export WORKSPACE=${WORKSPACE:-/workspace/_artifacts}
+
 case ${SUITE} in
   recommender|updater|admission-controller|actuation|full-mpa)
     export KUBECONFIG=$HOME/.kube/config
     pushd ${SCRIPT_ROOT}/e2e
-    go test -mod vendor ./v1beta2/*go -v --test.timeout=90m --args --ginkgo.v=true --ginkgo.focus="\[MPA\] \[${SUITE}\]" --report-dir=/workspace/_artifacts --disable-log-dump --ginkgo.timeout=90m
+    go test -mod vendor ./v1beta2/*go -v --test.timeout=90m --args --ginkgo.v=true --ginkgo.focus="\[MPA\] \[${SUITE}\]" --report-dir=${WORKSPACE} --disable-log-dump --ginkgo.timeout=90m
     V1BETA2_RESULT=$?
-    go test -mod vendor ./v1/*go -v --test.timeout=90m --args --ginkgo.v=true --ginkgo.focus="\[MPA\] \[${SUITE}\]" --report-dir=/workspace/_artifacts --disable-log-dump --ginkgo.timeout=90m
+    go test -mod vendor ./v1/*go -v --test.timeout=90m --args --ginkgo.v=true --ginkgo.focus="\[MPA\] \[${SUITE}\]" --report-dir=${WORKSPACE} --disable-log-dump --ginkgo.timeout=90m
     V1_RESULT=$?
     popd
     echo v1beta2 test result: ${V1BETA2_RESULT}

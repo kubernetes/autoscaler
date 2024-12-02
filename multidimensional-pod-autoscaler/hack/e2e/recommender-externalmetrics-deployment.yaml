@@ -2,25 +2,25 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: vpa-recommender
+  name: mpa-recommender
   namespace: kube-system
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: vpa-recommender
+      app: mpa-recommender
   template:
     metadata:
       labels:
-        app: vpa-recommender
+        app: mpa-recommender
     spec:
-      serviceAccountName: vpa-recommender
+      serviceAccountName: mpa-recommender
       securityContext:
         runAsNonRoot: true
         runAsUser: 65534 # nobody
       containers:
       - name: recommender
-        image: localhost:5001/vpa-recommender-amd64:latest
+        image: localhost:5001/mpa-recommender-amd64:latest
         imagePullPolicy: Never
         args:
           - /recommender-amd64
