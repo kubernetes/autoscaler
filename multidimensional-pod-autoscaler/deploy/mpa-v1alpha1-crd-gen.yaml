@@ -1,0 +1,1175 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    api-approved.kubernetes.io: https://github.com/kubernetes/kubernetes/pull/63797
+    controller-gen.kubebuilder.io/version: v0.9.2
+  creationTimestamp: "2022-10-11T07:35:27Z"
+  name: verticalpodautoscalercheckpoints.autoscaling.k8s.io
+spec:
+  group: autoscaling.k8s.io
+  names:
+    kind: VerticalPodAutoscalerCheckpoint
+    listKind: VerticalPodAutoscalerCheckpointList
+    plural: verticalpodautoscalercheckpoints
+    shortNames:
+    - vpacheckpoint
+    singular: verticalpodautoscalercheckpoint
+  scope: Namespaced
+  versions:
+  - name: v1
+    schema:
+      openAPIV3Schema:
+        description: VerticalPodAutoscalerCheckpoint is the checkpoint of the internal
+          state of VPA that is used for recovery after recommender's restart.
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: 'Specification of the checkpoint. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#spec-and-status.'
+            properties:
+              containerName:
+                description: Name of the checkpointed container.
+                type: string
+              vpaObjectName:
+                description: Name of the VPA object that stored VerticalPodAutoscalerCheckpoint
+                  object.
+                type: string
+            type: object
+          status:
+            description: Data of the checkpoint.
+            properties:
+              cpuHistogram:
+                description: Checkpoint of histogram for consumption of CPU.
+                properties:
+                  bucketWeights:
+                    description: Map from bucket index to bucket weight.
+                    type: object
+                    x-kubernetes-preserve-unknown-fields: true
+                  referenceTimestamp:
+                    description: Reference timestamp for samples collected within
+                      this histogram.
+                    format: date-time
+                    nullable: true
+                    type: string
+                  totalWeight:
+                    description: Sum of samples to be used as denominator for weights
+                      from BucketWeights.
+                    type: number
+                type: object
+              firstSampleStart:
+                description: Timestamp of the fist sample from the histograms.
+                format: date-time
+                nullable: true
+                type: string
+              lastSampleStart:
+                description: Timestamp of the last sample from the histograms.
+                format: date-time
+                nullable: true
+                type: string
+              lastUpdateTime:
+                description: The time when the status was last refreshed.
+                format: date-time
+                nullable: true
+                type: string
+              memoryHistogram:
+                description: Checkpoint of histogram for consumption of memory.
+                properties:
+                  bucketWeights:
+                    description: Map from bucket index to bucket weight.
+                    type: object
+                    x-kubernetes-preserve-unknown-fields: true
+                  referenceTimestamp:
+                    description: Reference timestamp for samples collected within
+                      this histogram.
+                    format: date-time
+                    nullable: true
+                    type: string
+                  totalWeight:
+                    description: Sum of samples to be used as denominator for weights
+                      from BucketWeights.
+                    type: number
+                type: object
+              totalSamplesCount:
+                description: Total number of samples in the histograms.
+                type: integer
+              version:
+                description: Version of the format of the stored data.
+                type: string
+            type: object
+        type: object
+    served: true
+    storage: true
+  - name: v1beta2
+    schema:
+      openAPIV3Schema:
+        description: VerticalPodAutoscalerCheckpoint is the checkpoint of the internal
+          state of VPA that is used for recovery after recommender's restart.
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: 'Specification of the checkpoint. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#spec-and-status.'
+            properties:
+              containerName:
+                description: Name of the checkpointed container.
+                type: string
+              vpaObjectName:
+                description: Name of the VPA object that stored VerticalPodAutoscalerCheckpoint
+                  object.
+                type: string
+            type: object
+          status:
+            description: Data of the checkpoint.
+            properties:
+              cpuHistogram:
+                description: Checkpoint of histogram for consumption of CPU.
+                properties:
+                  bucketWeights:
+                    description: Map from bucket index to bucket weight.
+                    type: object
+                    x-kubernetes-preserve-unknown-fields: true
+                  referenceTimestamp:
+                    description: Reference timestamp for samples collected within
+                      this histogram.
+                    format: date-time
+                    nullable: true
+                    type: string
+                  totalWeight:
+                    description: Sum of samples to be used as denominator for weights
+                      from BucketWeights.
+                    type: number
+                type: object
+              firstSampleStart:
+                description: Timestamp of the fist sample from the histograms.
+                format: date-time
+                nullable: true
+                type: string
+              lastSampleStart:
+                description: Timestamp of the last sample from the histograms.
+                format: date-time
+                nullable: true
+                type: string
+              lastUpdateTime:
+                description: The time when the status was last refreshed.
+                format: date-time
+                nullable: true
+                type: string
+              memoryHistogram:
+                description: Checkpoint of histogram for consumption of memory.
+                properties:
+                  bucketWeights:
+                    description: Map from bucket index to bucket weight.
+                    type: object
+                    x-kubernetes-preserve-unknown-fields: true
+                  referenceTimestamp:
+                    description: Reference timestamp for samples collected within
+                      this histogram.
+                    format: date-time
+                    nullable: true
+                    type: string
+                  totalWeight:
+                    description: Sum of samples to be used as denominator for weights
+                      from BucketWeights.
+                    type: number
+                type: object
+              totalSamplesCount:
+                description: Total number of samples in the histograms.
+                type: integer
+              version:
+                description: Version of the format of the stored data.
+                type: string
+            type: object
+        type: object
+    served: true
+    storage: false
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    api-approved.kubernetes.io: https://github.com/kubernetes/kubernetes/pull/63797
+    controller-gen.kubebuilder.io/version: v0.9.2
+  creationTimestamp: "2022-10-11T07:35:27Z"
+  name: multidimpodautoscalers.autoscaling.k8s.io
+spec:
+  group: autoscaling.k8s.io
+  names:
+    kind: MultidimPodAutoscaler
+    listKind: MultidimPodAutoscalerList
+    plural: multidimpodautoscalers
+    shortNames:
+    - mpa
+    singular: multidimpodautoscaler
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .spec.updatePolicy.updateMode
+      name: Mode
+      type: string
+    - jsonPath: .status.recommendation.containerRecommendations[0].target.cpu
+      name: CPU
+      type: string
+    - jsonPath: .status.recommendation.containerRecommendations[0].target.memory
+      name: Mem
+      type: string
+    - jsonPath: .status.conditions[?(@.type=='RecommendationProvided')].status
+      name: Provided
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: MultidimPodAutoscaler is the configuration for a multi-dimensional pod
+          autoscaler, which automatically manages pod resources based on historical
+          and real time resource utilization.
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: 'Specification of the behavior of the autoscaler. More info:
+              https://git.k8s.io/community/contributors/devel/api-conventions.md#spec-and-status.'
+            properties:
+              recommenders:
+                description: Recommender responsible for generating recommendation
+                  for this object. List should be empty (then the default recommender
+                  will generate the recommendation) or contain exactly one recommender.
+                items:
+                  description: MultidimPodAutoscalerRecommenderSelector points to
+                    a specific Multi-dimensional Pod Autoscaler recommender. In the future
+                    it might pass parameters to the recommender.
+                  properties:
+                    name:
+                      description: Name of the recommender responsible for generating
+                        recommendation for this object.
+                      type: string
+                  required:
+                  - name
+                  type: object
+                type: array
+              resourcePolicy:
+                description: Controls how the autoscaler computes recommended resources.
+                  The resource policy may be used to set constraints on the recommendations
+                  for individual containers. If not specified, the autoscaler computes
+                  recommended resources for all containers in the pod, without additional
+                  constraints.
+                properties:
+                  containerPolicies:
+                    description: Per-container resource policies.
+                    items:
+                      description: ContainerResourcePolicy controls how autoscaler
+                        computes the recommended resources for a specific container.
+                      properties:
+                        containerName:
+                          description: Name of the container or DefaultContainerResourcePolicy,
+                            in which case the policy is used by the containers that
+                            don't have their own policy specified.
+                          type: string
+                        controlledResources:
+                          description: Specifies the type of recommendations that
+                            will be computed (and possibly applied) by MPA. If not
+                            specified, the default of [ResourceCPU, ResourceMemory]
+                            will be used.
+                          items:
+                            description: ResourceName is the name identifying various
+                              resources in a ResourceList.
+                            type: string
+                          type: array
+                        controlledValues:
+                          description: Specifies which resource values should be controlled.
+                            The default is "RequestsAndLimits".
+                          enum:
+                          - RequestsAndLimits
+                          - RequestsOnly
+                          type: string
+                        maxAllowed:
+                          additionalProperties:
+                            anyOf:
+                            - type: integer
+                            - type: string
+                            pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                            x-kubernetes-int-or-string: true
+                          description: Specifies the maximum amount of resources that
+                            will be recommended for the container. The default is
+                            no maximum.
+                          type: object
+                        minAllowed:
+                          additionalProperties:
+                            anyOf:
+                            - type: integer
+                            - type: string
+                            pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                            x-kubernetes-int-or-string: true
+                          description: Specifies the minimal amount of resources that
+                            will be recommended for the container. The default is
+                            no minimum.
+                          type: object
+                        mode:
+                          description: Whether autoscaler is enabled for the container.
+                            The default is "Auto".
+                          enum:
+                          - Auto
+                          - "Off"
+                          type: string
+                      type: object
+                    type: array
+                type: object
+              scaleTargetRef:
+                description: ScaleTargetRef points to the controller managing the set of
+                  pods for the autoscaler to control - e.g., Deployment, StatefulSet.
+                  MultidimPodAutoscaler can be targeted at controller implementing
+                  scale subresource (the pod set is retrieved from the controller's
+                  ScaleStatus) or some well known controllers (e.g. for DaemonSet
+                  the pod set is read from the controller's spec). If MultidimPodAutoscaler
+                  cannot use specified target it will report ConfigUnsupported condition.
+                  Note that MultidimPodAutoscaler does not require full implementation
+                  of scale subresource - it will not use it to modify the replica
+                  count. The only thing retrieved is a label selector matching pods
+                  grouped by the target resource.
+                properties:
+                  apiVersion:
+                    description: API version of the referent
+                    type: string
+                  kind:
+                    description: 'Kind of the referent; More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds"'
+                    type: string
+                  name:
+                    description: 'Name of the referent; More info: http://kubernetes.io/docs/user-guide/identifiers#names'
+                    type: string
+                required:
+                - kind
+                - name
+                type: object
+                x-kubernetes-map-type: atomic
+              updatePolicy:
+                description: Describes the rules on how changes are applied to the
+                  pods. If not specified, all fields in the `PodUpdatePolicy` are
+                  set to their default values.
+                properties:
+                  updateMode:
+                    description: Controls when autoscaler applies changes to the pod
+                      resources. The default is 'Auto'.
+                    enum:
+                    - "Off"
+                    - Initial
+                    - Recreate
+                    - Auto
+                    type: string
+                type: object
+              constraints:
+                description: Describes the constraints on horizontal scaling. If not specified, all
+                  fields in the `HorizontalScalingConstraints` are set to their default values.
+                properties:
+                  minReplicas:
+                    description: Minimal number of replicas which need to be alive
+                      for Updater to attempt pod eviction (pending other checks like
+                      PDB). Only positive values are allowed. Overrides global '--min-replicas'
+                      flag.
+                    format: int32
+                    type: integer
+                  maxReplicas:
+                    description: Maximum number of replicas which need to be alive
+                      for Updater to attempt pod eviction (pending other checks like
+                      PDB). Only positive values are allowed. Overrides global '--max-replicas'
+                      flag.
+                    format: int32
+                    type: integer
+                type: object
+              metrics:
+                description: An array of metrics describing the resource type and target.
+                items:
+                  description: Each metric describes the performance or utilization goals for scaling.
+                  properties:
+                    type:
+                      description: Indicates the type of the metric.
+                      type: string
+                      enum:
+                      - "Object"
+                      - "Pods"
+                      - "Resource"
+                      - "ContainerResource"
+                      - "External"
+                    object:
+                      description: Object refers to a metric describing a single kubernetes object (e.g., hits-per-second on an Ingress object).
+                      properties:
+                        describedObject:
+                          description: Specifies the descriptions of a object,such as kind,name apiVersion
+                          properties:
+                            kind:
+                              description: Kind of the referent
+                              type: string
+                            name:
+                              description: Name of the referent
+                              type: string
+                            apiVersion:
+                              description: API version of the referent
+                              type: string
+                          required:
+                          - kind
+                          - name
+                          type: object
+                        target:
+                          description: Specifies the target value for the given metric
+                          properties:
+                            type:
+                              description: Represents whether the metric type is Utilization, Value, or AverageValue
+                              type: string
+                              enum:
+                              - "Utilization"
+                              - "Value"
+                              - "AverageValue"
+                            value:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            averageValue:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            averageUtilization:
+                              description: The target value of the average of the resource metric across all relevant pods, represented as a percentage of the requested value of the resource for the pods
+                              format: int32
+                              type: integer
+                          required:
+                          - type
+                          type: object
+                        metric:
+                          description: Identifies the target metric by name and selector
+                          properties:
+                            name:
+                              description: The name of the given metric
+                              type: string
+                            selector:
+                              description: The string-encoded form of a standard Kubernetes label selector for the given metric
+                              properties:
+                                matchLabels:
+                                  additionalProperties:
+                                    type: string
+                                  type: object
+                                matchExpressions:
+                                  description: A list of label selector requirements
+                                  items:
+                                    description: Label selector requirement
+                                    properties:
+                                      key:
+                                        description: The label key that the selector applies to
+                                        type: string
+                                      operator:
+                                        description: The key's relationship to a set of values.
+                                        type: string
+                                      values:
+                                        description: An array of string values.
+                                        type: array
+                                        items:
+                                          description: N/A
+                                          type: string
+                                    type: object
+                                    required:
+                                    - key
+                                    - operator
+                                  type: array
+                              type: object
+                          required:
+                          - name
+                          type: object
+                      required:
+                      - describedObject
+                      - metric
+                      - target
+                      type: object
+                    pods:
+                      description: Pods refers to a metric describing each pod in the current scale target (e.g., transactions-processed-per-second). The values will be averaged together before being compared to the target value.
+                      properties:
+                        metric:
+                          description: Identifies the target metric by name and selector
+                          properties:
+                            name:
+                              description: The name of the given metric
+                              type: string
+                            selector:
+                              description: The string-encoded form of a standard Kubernetes label selector for the given metric
+                              properties:
+                                matchLabels:
+                                  additionalProperties:
+                                    type: string
+                                  type: object
+                                matchExpressions:
+                                  description: A list of label selector requirements
+                                  items:
+                                    description: Label selector requirement
+                                    properties:
+                                      key:
+                                        description: The label key that the selector applies to
+                                        type: string
+                                      operator:
+                                        description: The key's relationship to a set of values.
+                                        type: string
+                                      values:
+                                        description: An array of string values.
+                                        type: array
+                                        items:
+                                          description: N/A
+                                          type: string
+                                    type: object
+                                    required:
+                                    - key
+                                    - operator
+                                  type: array
+                              type: object
+                          required:
+                          - name
+                          type: object
+                        target:
+                          description: Specifies the target value for the given metric
+                          properties:
+                            type:
+                              description: Represents whether the metric type is Utilization, Value, or AverageValue
+                              type: string
+                              enum:
+                              - "Utilization"
+                              - "Value"
+                              - "AverageValue"
+                            value:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            averageValue:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            averageUtilization:
+                              description: The target value of the average of the resource metric across all relevant pods, represented as a percentage of the requested value of the resource for the pods
+                              format: int32
+                              type: integer
+                          required:
+                          - type
+                          type: object
+                      required:
+                      - metric
+                      - target
+                      type: object
+                    resource:
+                      description: Resource refers to a resource metric (such as those specified in requests and limits) known to Kubernetes describing each pod in the current scale target (e.g. CPU or memory). Such metrics are built in to Kubernetes, and have special scaling options on top of those available to normal per-pod metrics using the "pods" source.
+                      properties:
+                        name:
+                          description: Specifies the name of the resource
+                          type: string
+                        target:
+                          description: Specifies the target value for the given metric
+                          properties:
+                            type:
+                              description: Represents whether the metric type is Utilization, Value, or AverageValue
+                              type: string
+                              enum:
+                              - "Utilization"
+                              - "Value"
+                              - "AverageValue"
+                            value:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            averageValue:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            averageUtilization:
+                              description: The target value of the average of the resource metric across all relevant pods, represented as a percentage of the requested value of the resource for the pods
+                              format: int32
+                              type: integer
+                          required:
+                          - type
+                          type: object
+                      required:
+                      - name
+                      - target
+                      type: object
+                    containerResource:
+                      description: ContainerResource refers to a resource metric (such as those specified in requests and limits) known to Kubernetes describing a single container in each pod of the current scale target (e.g. CPU or memory). Such metrics are built in to Kubernetes, and have special scaling options on top of those available to normal per-pod metrics using the "pods" source.
+                      properties:
+                        name:
+                          description: Specifies the name of the resource
+                          type: string
+                        target:
+                          description: Specifies the target value for the given metric
+                          properties:
+                            type:
+                              description: Represents whether the metric type is Utilization, Value, or AverageValue
+                              type: string
+                              enum:
+                              - "Utilization"
+                              - "Value"
+                              - "AverageValue"
+                            value:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            averageValue:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            averageUtilization:
+                              description: The target value of the average of the resource metric across all relevant pods, represented as a percentage of the requested value of the resource for the pods
+                              format: int32
+                              type: integer
+                          required:
+                          - type
+                          type: object
+                        container:
+                          description: Specifies the name of the container in the pods of the scaling target
+                          type: string
+                      required:
+                      - name
+                      - target
+                      - container
+                      type: object
+                    external:
+                      description: External refers to a global metric that is not associated with any Kubernetes object. It allows autoscaling based on information coming from components running outside of cluster (for example length of queue in cloud messaging service, or QPS from loadbalancer running outside of cluster).
+                      properties:
+                        metric:
+                          description: Identifies the target metric by name and selector
+                          properties:
+                            name:
+                              description: The name of the given metric
+                              type: string
+                            selector:
+                              description: The string-encoded form of a standard Kubernetes label selector for the given metric
+                              properties:
+                                matchLabels:
+                                  additionalProperties:
+                                    type: string
+                                  type: object
+                                matchExpressions:
+                                  description: A list of label selector requirements
+                                  items:
+                                    description: Label selector requirement
+                                    properties:
+                                      key:
+                                        description: The label key that the selector applies to
+                                        type: string
+                                      operator:
+                                        description: The key's relationship to a set of values.
+                                        type: string
+                                      values:
+                                        description: An array of string values.
+                                        type: array
+                                        items:
+                                          description: N/A
+                                          type: string
+                                    type: object
+                                    required:
+                                    - key
+                                    - operator
+                                  type: array
+                              type: object
+                          required:
+                          - name
+                          type: object
+                        target:
+                          description: Specifies the target value for the given metric
+                          properties:
+                            type:
+                              description: Represents whether the metric type is Utilization, Value, or AverageValue
+                              type: string
+                              enum:
+                              - "Utilization"
+                              - "Value"
+                              - "AverageValue"
+                            value:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            averageValue:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            averageUtilization:
+                              description: The target value of the average of the resource metric across all relevant pods, represented as a percentage of the requested value of the resource for the pods
+                              format: int32
+                              type: integer
+                          required:
+                          - type
+                          type: object
+                      required:
+                          - metric
+                          - target
+                      type: object
+                  required:
+                  - type
+                  type: object
+                type: array
+            required:
+            - scaleTargetRef
+            type: object
+          status:
+            description: Current information about the autoscaler.
+            properties:
+              conditions:
+                description: Conditions is the set of conditions required for this
+                  autoscaler to scale its target, and indicates whether or not those
+                  conditions are met.
+                items:
+                  description: MultidimPodAutoscalerCondition describes the state
+                    of a MultidimPodAutoscaler at a certain point.
+                  properties:
+                    lastTransitionTime:
+                      description: lastTransitionTime is the last time the condition
+                        transitioned from one status to another
+                      format: date-time
+                      type: string
+                    message:
+                      description: message is a human-readable explanation containing
+                        details about the transition
+                      type: string
+                    reason:
+                      description: reason is the reason for the condition's last transition.
+                      type: string
+                    status:
+                      description: status is the status of the condition (True, False,
+                        Unknown)
+                      type: string
+                    type:
+                      description: type describes the current condition
+                      type: string
+                  required:
+                  - status
+                  - type
+                  type: object
+                type: array
+              recommendation:
+                description: The most recently computed amount of resources recommended
+                  by the autoscaler for the controlled pods.
+                properties:
+                  containerRecommendations:
+                    description: Resources recommended by the autoscaler for each
+                      container.
+                    items:
+                      description: RecommendedContainerResources is the recommendation
+                        of resources computed by autoscaler for a specific container.
+                        Respects the container resource policy if present in the spec.
+                        In particular the recommendation is not produced for containers
+                        with `ContainerScalingMode` set to 'Off'.
+                      properties:
+                        containerName:
+                          description: Name of the container.
+                          type: string
+                        lowerBound:
+                          additionalProperties:
+                            anyOf:
+                            - type: integer
+                            - type: string
+                            pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                            x-kubernetes-int-or-string: true
+                          description: Minimum recommended amount of resources. Observes
+                            ContainerResourcePolicy. This amount is not guaranteed
+                            to be sufficient for the application to operate in a stable
+                            way, however running with less resources is likely to
+                            have significant impact on performance/availability.
+                          type: object
+                        target:
+                          additionalProperties:
+                            anyOf:
+                            - type: integer
+                            - type: string
+                            pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                            x-kubernetes-int-or-string: true
+                          description: Recommended amount of resources. Observes ContainerResourcePolicy.
+                          type: object
+                        uncappedTarget:
+                          additionalProperties:
+                            anyOf:
+                            - type: integer
+                            - type: string
+                            pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                            x-kubernetes-int-or-string: true
+                          description: The most recent recommended resources target
+                            computed by the autoscaler for the controlled pods, based
+                            only on actual resource usage, not taking into account
+                            the ContainerResourcePolicy. May differ from the Recommendation
+                            if the actual resource usage causes the target to violate
+                            the ContainerResourcePolicy (lower than MinAllowed or
+                            higher that MaxAllowed). Used only as status indication,
+                            will not affect actual resource assignment.
+                          type: object
+                        upperBound:
+                          additionalProperties:
+                            anyOf:
+                            - type: integer
+                            - type: string
+                            pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                            x-kubernetes-int-or-string: true
+                          description: Maximum recommended amount of resources. Observes
+                            ContainerResourcePolicy. Any resources allocated beyond
+                            this value are likely wasted. This value may be larger
+                            than the maximum amount of application is actually capable
+                            of consuming.
+                          type: object
+                      required:
+                      - target
+                      type: object
+                    type: array
+                type: object
+              lastScaleTime:
+                description: The last time the MultidimPodAutoscaler scaled.
+                format: date-time
+                type: string
+              currentReplicas:
+                description: The current number of replicas
+                format: int32
+                type: integer
+              desiredReplicas:
+                description: The desired number of replicas
+                format: int32
+                type: integer
+              currentMetrics:
+                description: The last read state of the metrics used by this autoscaler.
+                items:
+                  description: Describes the last-read state of a single metric.
+                  properties:
+                    type:
+                      description: The type of metric source.
+                      type: string
+                    object:
+                      description: A metric describing a single Kubernetes object.
+                      properties:
+                        metric:
+                          description: Identifies the target metric by name and selector
+                          properties:
+                            name:
+                              description: The name of the given metric
+                              type: string
+                            selector:
+                              description: The string-encoded form of a standard Kubernetes label selector for the given metric
+                              properties:
+                                matchLabels:
+                                  additionalProperties:
+                                    type: string
+                                  type: object
+                                matchExpressions:
+                                  description: A list of label selector requirements
+                                  items:
+                                    description: Label selector requirement
+                                    properties:
+                                      key:
+                                        description: The label key that the selector applies to
+                                        type: string
+                                      operator:
+                                        description: The key's relationship to a set of values.
+                                        type: string
+                                      values:
+                                        description: An array of string values.
+                                        type: array
+                                        items:
+                                          description: N/A
+                                          type: string
+                                    type: object
+                                    required:
+                                    - key
+                                    - operator
+                                  type: array
+                              type: object
+                          required:
+                          - name
+                          type: object
+                        current:
+                          description: The current value for the given metric.
+                          properties:
+                            value:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            averageValue:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            averageUtilization:
+                              description: The target value of the average of the resource metric across all relevant pods, represented as a percentage of the requested value of the resource for the pods
+                              format: int32
+                              type: integer
+                          type: object
+                        describedObject:
+                          description: Specifies the descriptions of a object,such as kind,name apiVersion
+                          properties:
+                            kind:
+                              description: Kind of the referent
+                              type: string
+                            name:
+                              description: Name of the referent
+                              type: string
+                            apiVersion:
+                              description: API version of the referent
+                              type: string
+                          required:
+                          - kind
+                          - name
+                          type: object
+                      required:
+                      - current
+                      - metric
+                      - describedObject
+                      type: object
+                    pods:
+                      description: A metric describing each pod in the current scale target.
+                      properties:
+                        metric:
+                          description: Identifies the target metric by name and selector
+                          properties:
+                            name:
+                              description: The name of the given metric
+                              type: string
+                            selector:
+                              description: The string-encoded form of a standard Kubernetes label selector for the given metric
+                              properties:
+                                matchLabels:
+                                  additionalProperties:
+                                    type: string
+                                  type: object
+                                matchExpressions:
+                                  description: A list of label selector requirements
+                                  items:
+                                    description: Label selector requirement
+                                    properties:
+                                      key:
+                                        description: The label key that the selector applies to
+                                        type: string
+                                      operator:
+                                        description: The key's relationship to a set of values.
+                                        type: string
+                                      values:
+                                        description: An array of string values.
+                                        type: array
+                                        items:
+                                          description: N/A
+                                          type: string
+                                    type: object
+                                    required:
+                                    - key
+                                    - operator
+                                  type: array
+                              type: object
+                          required:
+                          - name
+                          type: object
+                        current:
+                          description: The current value for the given metric.
+                          properties:
+                            value:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            averageValue:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            averageUtilization:
+                              description: The target value of the average of the resource metric across all relevant pods, represented as a percentage of the requested value of the resource for the pods
+                              format: int32
+                              type: integer
+                          type: object
+                      required:
+                      - current
+                      - metric
+                      type: object
+                    resource:
+                      description: A resource metric (request or limit) known to Kubernetes describing each pod in the scale target.
+                      properties:
+                        name:
+                          description: The name of the resource.
+                          type: string
+                        current:
+                          description: The current value for the given metric.
+                          properties:
+                            value:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            averageValue:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            averageUtilization:
+                              description: The target value of the average of the resource metric across all relevant pods, represented as a percentage of the requested value of the resource for the pods
+                              format: int32
+                              type: integer
+                          type: object
+                      required:
+                      - current
+                      - name
+                      type: object
+                    containerResource:
+                      description: A resource metric (request or limit) known to Kubernetes describing a single container in the scale target.
+                      properties:
+                        name:
+                          description: The name of the resource.
+                          type: string
+                        current:
+                          description: The current value for the given metric.
+                          properties:
+                            value:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            averageValue:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            averageUtilization:
+                              description: The target value of the average of the resource metric across all relevant pods, represented as a percentage of the requested value of the resource for the pods
+                              format: int32
+                              type: integer
+                          type: object
+                        container:
+                          description: The name of the container in the pods of the scaling target.
+                          type: string
+                      required:
+                      - current
+                      - name
+                      - container
+                      type: object
+                    external:
+                      description: A global metric that is not associated with any Kubernetes object.
+                      properties:
+                        metric:
+                          description: Identifies the target metric by name and selector
+                          properties:
+                            name:
+                              description: The name of the given metric
+                              type: string
+                            selector:
+                              description: The string-encoded form of a standard Kubernetes label selector for the given metric
+                              properties:
+                                matchLabels:
+                                  additionalProperties:
+                                    type: string
+                                  type: object
+                                matchExpressions:
+                                  description: A list of label selector requirements
+                                  items:
+                                    description: Label selector requirement
+                                    properties:
+                                      key:
+                                        description: The label key that the selector applies to
+                                        type: string
+                                      operator:
+                                        description: The key's relationship to a set of values.
+                                        type: string
+                                      values:
+                                        description: An array of string values.
+                                        type: array
+                                        items:
+                                          description: N/A
+                                          type: string
+                                    type: object
+                                    required:
+                                    - key
+                                    - operator
+                                  type: array
+                              type: object
+                          required:
+                          - name
+                          type: object
+                        current:
+                          description: The current value for the given metric.
+                          properties:
+                            value:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            averageValue:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            averageUtilization:
+                              description: The target value of the average of the resource metric across all relevant pods, represented as a percentage of the requested value of the resource for the pods
+                              format: int32
+                              type: integer
+                          type: object
+                      required:
+                      - metric
+                      - current
+                      type: object
+                  type: object
+                  required:
+                  - type
+                type: array
+            required:
+            - currentReplicas
+            - desiredReplicas
+            type: object
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources: {}
