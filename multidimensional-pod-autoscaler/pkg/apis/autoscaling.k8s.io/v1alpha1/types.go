@@ -87,7 +87,7 @@ type MultidimPodAutoscalerSpec struct {
 	Recommenders []*MultidimPodAutoscalerRecommenderSelector `json:"recommenders,omitempty"`
 }
 
-// Describes the current status of a multidimensional pod autoscaler
+// MultidimPodAutoscalerStatus describes the current status of a multidimensional pod autoscaler
 type MultidimPodAutoscalerStatus struct {
 	// Last time the MultidimPodAutoscaler scaled the number of pods and resizes containers;
 	// Used by the autoscaler to control how often scaling operations are performed.

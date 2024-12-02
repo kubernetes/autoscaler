@@ -208,7 +208,7 @@ func (mpa *Mpa) SetUpdateMode(updatePolicy *mpa_types.PodUpdatePolicy) {
 	}
 }
 
-// Set HPA-related constraints.
+// SetHPAConstraints sets HPA-related constraints.
 func (mpa *Mpa) SetHPAConstraints(metrics []autoscalingv2.MetricSpec, minReplicas int32, maxReplicas int32, hpaBehavior *autoscalingv2.HorizontalPodAutoscalerBehavior) {
 	mpa.Metrics = metrics
 	mpa.MinReplicas = minReplicas
@@ -216,12 +216,12 @@ func (mpa *Mpa) SetHPAConstraints(metrics []autoscalingv2.MetricSpec, minReplica
 	mpa.HorizontalScalingBehavior = hpaBehavior
 }
 
-// Set the desired number of replicas.
+// SetDesiredNumberOfReplicas sets the desired number of replicas.
 func (mpa *Mpa) SetDesiredNumberOfReplicas(replicas int32) {
 	mpa.DesiredReplicas = replicas
 }
 
-// Set the current metrics.
+// SetCurrentMetrics sets the current metrics.
 func (mpa *Mpa) SetCurrentMetrics(metrics []autoscalingv2.MetricStatus) {
 	mpa.CurrentMetrics = metrics
 }

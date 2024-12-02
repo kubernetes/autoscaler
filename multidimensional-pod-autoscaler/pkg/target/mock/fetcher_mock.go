@@ -94,14 +94,17 @@ func (_m *MockMpaTargetSelectorFetcher) Fetch(mpa *mpa_types.MultidimPodAutoscal
 	return ret0, ret1
 }
 
+// Fetch enables configuring expectations on Fetch method
 func (_mr *_MockMpaTargetSelectorFetcherRecorder) Fetch(arg0 interface{}) *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "Fetch", arg0)
 }
 
+// GetRESTMappings enables configuring expectations on GetRESTMappings method
 func (_m *MockMpaTargetSelectorFetcher) GetRESTMappings(groupKind schema.GroupKind) ([]*apimeta.RESTMapping, error) {
 	return _m.mapper.RESTMappings(groupKind)
 }
 
+// Scales enables configuring expectations on Scales method
 func (_m *MockMpaTargetSelectorFetcher) Scales(namespace string) scale.ScaleInterface {
 	return nil
 }
