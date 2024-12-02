@@ -466,7 +466,7 @@ func (cluster *ClusterState) GetControllerForPodUnderVPA(pod *PodState, controll
 	return nil
 }
 
-// GetControllingVPA returns a VPA object controlling given Pod.
+// GetControllingMPA returns a VPA object controlling given Pod.
 func (cluster *ClusterState) GetControllingMPA(pod *PodState) *Mpa {
 	for _, mpa := range cluster.Mpas {
 		if vpa_utils.PodLabelsMatchVPA(pod.ID.Namespace, cluster.labelSetMap[pod.labelSetKey],

@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-
 package v1alpha1
 
 import (
@@ -30,8 +29,10 @@ var SchemeGroupVersion = schema.GroupVersion{
 }
 
 var (
+	// SchemeBuilder is the scheme builder for ProvisioningRequest.
 	SchemeBuilder      runtime.SchemeBuilder
 	localSchemeBuilder = &SchemeBuilder
+	// AddToScheme is the func that applies all the stored functions to the scheme.
 	AddToScheme        = SchemeBuilder.AddToScheme
 )
 

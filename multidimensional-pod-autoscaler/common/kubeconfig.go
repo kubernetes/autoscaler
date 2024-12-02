@@ -17,7 +17,6 @@ limitations under the License.
 package common
 
 import (
-	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/klog/v2"
@@ -28,7 +27,7 @@ func CreateKubeConfigOrDie(kubeconfig string, kubeApiQps float32, kubeApiBurst i
 	var config *rest.Config
 	var err error
 	if len(kubeconfig) > 0 {
-		klog.V(1).Infof("Using kubeconfig file: %s", kubeconfig)
+		klog.V(1).InfoS("Using kubeconfig", "file", kubeconfig)
 		// use the current context in kubeconfig
 		config, err = clientcmd.BuildConfigFromFlags("", kubeconfig)
 		if err != nil {
