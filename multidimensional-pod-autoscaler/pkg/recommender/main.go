@@ -1,5 +1,5 @@
 /*
-Copyright 2017 The Kubernetes Authors.
+Copyright 2024 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -83,25 +83,25 @@ var (
 // HPA-related flags
 var (
 	// horizontalPodAutoscalerSyncPeriod is the period for syncing the number of pods in MPA.
-	hpaSyncPeriod                   = flag.Duration("hpa-sync-period", 15 * time.Second, `The period for syncing the number of pods in horizontal pod autoscaler.`)
+	hpaSyncPeriod = flag.Duration("hpa-sync-period", 15*time.Second, `The period for syncing the number of pods in horizontal pod autoscaler.`)
 	// horizontalPodAutoscalerUpscaleForbiddenWindow is a period after which next upscale allowed.
-	hpaUpscaleForbiddenWindow       = flag.Duration("hpa-upscale-forbidden-window", 3 * time.Minute, `The period after which next upscale allowed.`)
+	hpaUpscaleForbiddenWindow = flag.Duration("hpa-upscale-forbidden-window", 3*time.Minute, `The period after which next upscale allowed.`)
 	// horizontalPodAutoscalerDownscaleForbiddenWindow is a period after which next downscale allowed.
-	hpaDownscaleForbiddenWindow     = flag.Duration("hpa-downscale-forbidden-window", 5 * time.Minute, `The period after which next downscale allowed.`)
+	hpaDownscaleForbiddenWindow = flag.Duration("hpa-downscale-forbidden-window", 5*time.Minute, `The period after which next downscale allowed.`)
 	// HorizontalPodAutoscalerDowncaleStabilizationWindow is a period for which autoscaler will look
 	// backwards and not scale down below any recommendation it made during that period.
-	hpaDownscaleStabilizationWindow = flag.Duration("hpa-downscale-stabilization-window", 5 * time.Minute, `The period for which autoscaler will look backwards and not scale down below any recommendation it made during that period.`)
+	hpaDownscaleStabilizationWindow = flag.Duration("hpa-downscale-stabilization-window", 5*time.Minute, `The period for which autoscaler will look backwards and not scale down below any recommendation it made during that period.`)
 	// horizontalPodAutoscalerTolerance is the tolerance for when resource usage suggests upscaling/downscaling
-	hpaTolerance                    = flag.Float64("hpa-tolerance", 0.1, `The tolerance for when resource usage suggests horizontally upscaling/downscaling.`)
+	hpaTolerance = flag.Float64("hpa-tolerance", 0.1, `The tolerance for when resource usage suggests horizontally upscaling/downscaling.`)
 	// HorizontalPodAutoscalerCPUInitializationPeriod is the period after pod start when CPU samples
 	// might be skipped.
-	hpaCPUInitializationPeriod      = flag.Duration("hpa-cpu-initialization-period", 5 * time.Minute, `The period after pod start when CPU samples might be skipped.`)
+	hpaCPUInitializationPeriod = flag.Duration("hpa-cpu-initialization-period", 5*time.Minute, `The period after pod start when CPU samples might be skipped.`)
 	// HorizontalPodAutoscalerInitialReadinessDelay is period after pod start during which readiness
 	// changes are treated as readiness being set for the first time. The only effect of this is
 	// that HPA will disregard CPU samples from unready pods that had last readiness change during
 	// that period.
-	hpaInitialReadinessDelay        = flag.Duration("hpa-initial-readiness-delay", 30 * time.Second, `The period after pod start during which readiness changes are treated as readiness being set for the first time.`)
-	concurrentHPASyncs = flag.Int64("concurrent-hpa-syncs", 5, `The number of horizontal pod autoscaler objects that are allowed to sync concurrently. Larger number = more responsive MPA objects processing, but more CPU (and network) load.`)
+	hpaInitialReadinessDelay = flag.Duration("hpa-initial-readiness-delay", 30*time.Second, `The period after pod start during which readiness changes are treated as readiness being set for the first time.`)
+	concurrentHPASyncs       = flag.Int64("concurrent-hpa-syncs", 5, `The number of horizontal pod autoscaler objects that are allowed to sync concurrently. Larger number = more responsive MPA objects processing, but more CPU (and network) load.`)
 )
 
 const (
@@ -138,7 +138,7 @@ func main() {
 	}, discoveryResetPeriod, make(chan struct{}))
 	mpaClient := mpa_clientset.NewForConfigOrDie(config)
 	apiVersionsGetter := custom_metrics.NewAvailableAPIsGetter(mpaClient.Discovery())
-	ctx := context.Background()  // TODO: Add a deadline to this ctx?
+	ctx := context.Background() // TODO: Add a deadline to this ctx?
 	// invalidate the discovery information roughly once per resync interval our API
 	// information is *at most* two resync intervals old.
 	go custom_metrics.PeriodicallyInvalidate(
@@ -151,7 +151,7 @@ func main() {
 		custom_metrics.NewForConfig(config, mapper, apiVersionsGetter),
 		external_metrics.NewForConfigOrDie(config),
 	)
-	
+
 	recommender := routines.NewRecommender(config, *checkpointsGCInterval, useCheckpoints, *mpaObjectNamespace, *recommenderName, kubeClient.CoreV1(), metricsClient, *hpaSyncPeriod, *hpaDownscaleStabilizationWindow, *hpaTolerance, *hpaCPUInitializationPeriod, *hpaInitialReadinessDelay)
 	klog.Infof("MPA Recommender created!")
 
@@ -195,9 +195,9 @@ func main() {
 		recommender.RunOnce(int(*concurrentHPASyncs), vpaOrHpa)
 		healthCheck.UpdateLastActivity()
 		klog.Info("Health check completed.")
-		if (vpaOrHpa == "vpa") {
+		if vpaOrHpa == "vpa" {
 			vpaOrHpa = "hpa"
-		} else if (vpaOrHpa == "hpa") {
+		} else if vpaOrHpa == "hpa" {
 			vpaOrHpa = "vpa"
 		}
 	}

@@ -1,5 +1,5 @@
 /*
-Copyright 2017 The Kubernetes Authors.
+Copyright 2024 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -70,12 +70,13 @@ var (
 	scaleUpLimitFactor  = 2.0
 	scaleUpLimitMinimum = 4.0
 )
+
 type timestampedRecommendation struct {
 	recommendation int32
 	timestamp      time.Time
 }
 type timestampedScaleEvent struct {
-	replicaChange int32  // absolute value, non-negative
+	replicaChange int32 // absolute value, non-negative
 	timestamp     time.Time
 	outdated      bool
 }
@@ -110,18 +111,18 @@ type recommender struct {
 	lastAggregateContainerStateGC time.Time
 
 	// Fields for HPA.
-	replicaCalc                   *hpa.ReplicaCalculator
-	eventRecorder                 record.EventRecorder
-	downscaleStabilisationWindow  time.Duration
+	replicaCalc                  *hpa.ReplicaCalculator
+	eventRecorder                record.EventRecorder
+	downscaleStabilisationWindow time.Duration
 	// Controllers that need to be synced.
 	// Latest unstabilized recommendations for each autoscaler.
-	recommendations               map[model.MpaID][]timestampedRecommendation
-	recommendationsLock           sync.Mutex
+	recommendations     map[model.MpaID][]timestampedRecommendation
+	recommendationsLock sync.Mutex
 	// Latest autoscaler events.
-	scaleUpEvents                 map[model.MpaID][]timestampedScaleEvent
-	scaleUpEventsLock             sync.RWMutex
-	scaleDownEvents               map[model.MpaID][]timestampedScaleEvent
-	scaleDownEventsLock           sync.RWMutex
+	scaleUpEvents       map[model.MpaID][]timestampedScaleEvent
+	scaleUpEventsLock   sync.RWMutex
+	scaleDownEvents     map[model.MpaID][]timestampedScaleEvent
+	scaleDownEventsLock sync.RWMutex
 }
 
 func (r *recommender) GetClusterState() *model.ClusterState {
@@ -152,7 +153,7 @@ func (r *recommender) UpdateMPAs(ctx context.Context, vpaOrHpa string) {
 		}
 
 		// Vertical Pod Autoscaling
-		if (vpaOrHpa != "hpa") {
+		if vpaOrHpa != "hpa" {
 			klog.V(4).Infof("Vertical scaling...")
 			resources := r.podResourceRecommender.GetRecommendedPodResources(GetContainerNameToAggregateStateMap(mpa))
 			had := mpa.HasRecommendation()
@@ -188,7 +189,7 @@ func (r *recommender) UpdateMPAs(ctx context.Context, vpaOrHpa string) {
 		}
 
 		// Horizontal Pod Autoscaling
-		if (vpaOrHpa != "vpa") {
+		if vpaOrHpa != "vpa" {
 			observedMpa.Status.Recommendation = mpa.AsStatus().Recommendation
 			observedMpa.Status.Conditions = mpa.AsStatus().Conditions
 			klog.V(4).Infof("Horizontal scaling...")
@@ -332,16 +333,16 @@ func (c RecommenderFactory) Make() Recommender {
 		lastCheckpointGC:              time.Now(),
 
 		// From HPA.
-		downscaleStabilisationWindow:  c.DownscaleStabilisationWindow,
+		downscaleStabilisationWindow: c.DownscaleStabilisationWindow,
 		// podLister is able to list/get Pods from the shared cache from the informer passed in to
 		// NewHorizontalController.
-		eventRecorder:                 recorder,
-		recommendations:               map[model.MpaID][]timestampedRecommendation{},
-		recommendationsLock:           sync.Mutex{},
-		scaleUpEvents:                 map[model.MpaID][]timestampedScaleEvent{},
-		scaleUpEventsLock:             sync.RWMutex{},
-		scaleDownEvents:               map[model.MpaID][]timestampedScaleEvent{},
-		scaleDownEventsLock:           sync.RWMutex{},
+		eventRecorder:       recorder,
+		recommendations:     map[model.MpaID][]timestampedRecommendation{},
+		recommendationsLock: sync.Mutex{},
+		scaleUpEvents:       map[model.MpaID][]timestampedScaleEvent{},
+		scaleUpEventsLock:   sync.RWMutex{},
+		scaleDownEvents:     map[model.MpaID][]timestampedScaleEvent{},
+		scaleDownEventsLock: sync.RWMutex{},
 	}
 
 	replicaCalc := hpa.NewReplicaCalculator(

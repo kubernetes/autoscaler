@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The Kubernetes Authors.
+Copyright 2024 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -237,7 +237,7 @@ type clusterStateFeeder struct {
 	memorySaveMode      bool
 	controllerFetcher   controllerfetcher.ControllerFetcher
 	recommenderName     string
-	PodLister           v1lister.PodLister  // For HPA.
+	PodLister           v1lister.PodLister // For HPA.
 }
 
 func (feeder *clusterStateFeeder) InitFromHistoryProvider(historyProvider history.HistoryProvider) {

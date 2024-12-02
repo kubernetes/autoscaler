@@ -1,5 +1,5 @@
 /*
-Copyright 2017 The Kubernetes Authors.
+Copyright 2024 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -177,7 +177,7 @@ func (container *ContainerState) RecordOOM(timestamp time.Time, requestedMemory 
 	// Omitting oomPeak here to protect against recommendation running too high on subsequent OOMs.
 	memoryUsed := vpa_model.ResourceAmountMax(requestedMemory, container.memoryPeak)
 	memoryNeeded := vpa_model.ResourceAmountMax(memoryUsed+vpa_model.MemoryAmountFromBytes(vpa_model.OOMMinBumpUp),
-	vpa_model.ScaleResource(memoryUsed, vpa_model.OOMBumpUpRatio))
+		vpa_model.ScaleResource(memoryUsed, vpa_model.OOMBumpUpRatio))
 
 	oomMemorySample := vpa_model.ContainerUsageSample{
 		MeasureStart: timestamp,

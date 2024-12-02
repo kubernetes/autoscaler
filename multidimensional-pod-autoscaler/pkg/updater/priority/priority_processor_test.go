@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Kubernetes Authors.
+Copyright 2024 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -39,8 +39,8 @@ func TestGetUpdatePriority(t *testing.T) {
 	}{
 		{
 			name: "simple scale up",
-			pod: vpa_test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "2", "")).Get(),
-			mpa: test.MultidimPodAutoscaler().WithContainer(containerName).WithTarget("10", "").Get(),
+			pod:  vpa_test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "2", "")).Get(),
+			mpa:  test.MultidimPodAutoscaler().WithContainer(containerName).WithTarget("10", "").Get(),
 			expectedPrio: PodPriority{
 				OutsideRecommendedRange: false,
 				ResourceDiff:            4.0,
@@ -48,8 +48,8 @@ func TestGetUpdatePriority(t *testing.T) {
 			},
 		}, {
 			name: "simple scale down",
-			pod: vpa_test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "4", "")).Get(),
-			mpa: test.MultidimPodAutoscaler().WithContainer(containerName).WithTarget("2", "").Get(),
+			pod:  vpa_test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "4", "")).Get(),
+			mpa:  test.MultidimPodAutoscaler().WithContainer(containerName).WithTarget("2", "").Get(),
 			expectedPrio: PodPriority{
 				OutsideRecommendedRange: false,
 				ResourceDiff:            0.5,
@@ -57,8 +57,8 @@ func TestGetUpdatePriority(t *testing.T) {
 			},
 		}, {
 			name: "no resource diff",
-			pod: vpa_test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "2", "")).Get(),
-			mpa: test.MultidimPodAutoscaler().WithContainer(containerName).WithTarget("2", "").Get(),
+			pod:  vpa_test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "2", "")).Get(),
+			mpa:  test.MultidimPodAutoscaler().WithContainer(containerName).WithTarget("2", "").Get(),
 			expectedPrio: PodPriority{
 				OutsideRecommendedRange: false,
 				ResourceDiff:            0.0,
@@ -66,8 +66,8 @@ func TestGetUpdatePriority(t *testing.T) {
 			},
 		}, {
 			name: "scale up on milliquanitites",
-			pod: vpa_test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "10m", "")).Get(),
-			mpa: test.MultidimPodAutoscaler().WithContainer(containerName).WithTarget("900m", "").Get(),
+			pod:  vpa_test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "10m", "")).Get(),
+			mpa:  test.MultidimPodAutoscaler().WithContainer(containerName).WithTarget("900m", "").Get(),
 			expectedPrio: PodPriority{
 				OutsideRecommendedRange: false,
 				ResourceDiff:            89.0,
@@ -75,7 +75,7 @@ func TestGetUpdatePriority(t *testing.T) {
 			},
 		}, {
 			name: "scale up outside recommended range",
-			pod: vpa_test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "4", "")).Get(),
+			pod:  vpa_test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "4", "")).Get(),
 			mpa: test.MultidimPodAutoscaler().WithContainer(containerName).
 				WithTarget("10", "").
 				WithLowerBound("6", "").
@@ -87,7 +87,7 @@ func TestGetUpdatePriority(t *testing.T) {
 			},
 		}, {
 			name: "scale down outside recommended range",
-			pod: vpa_test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "8", "")).Get(),
+			pod:  vpa_test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "8", "")).Get(),
 			mpa: test.MultidimPodAutoscaler().WithContainer(containerName).
 				WithTarget("2", "").
 				WithLowerBound("1", "").
@@ -99,8 +99,8 @@ func TestGetUpdatePriority(t *testing.T) {
 			},
 		}, {
 			name: "scale up with multiple quantities",
-			pod: vpa_test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "2", "")).Get(),
-			mpa: test.MultidimPodAutoscaler().WithContainer(containerName).WithTarget("10", "").Get(),
+			pod:  vpa_test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "2", "")).Get(),
+			mpa:  test.MultidimPodAutoscaler().WithContainer(containerName).WithTarget("10", "").Get(),
 			expectedPrio: PodPriority{
 				OutsideRecommendedRange: false,
 				ResourceDiff:            4.0,
@@ -108,8 +108,8 @@ func TestGetUpdatePriority(t *testing.T) {
 			},
 		}, {
 			name: "multiple resources, both scale up",
-			pod: vpa_test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "3", "10M")).Get(),
-			mpa: test.MultidimPodAutoscaler().WithContainer(containerName).WithTarget("6", "20M").Get(),
+			pod:  vpa_test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "3", "10M")).Get(),
+			mpa:  test.MultidimPodAutoscaler().WithContainer(containerName).WithTarget("6", "20M").Get(),
 			expectedPrio: PodPriority{
 				OutsideRecommendedRange: false,
 				ResourceDiff:            1.0 + 1.0, // summed relative diffs for resources
@@ -117,8 +117,8 @@ func TestGetUpdatePriority(t *testing.T) {
 			},
 		}, {
 			name: "multiple resources, only one scale up",
-			pod: vpa_test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "4", "10M")).Get(),
-			mpa: test.MultidimPodAutoscaler().WithContainer(containerName).WithTarget("2", "20M").Get(),
+			pod:  vpa_test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "4", "10M")).Get(),
+			mpa:  test.MultidimPodAutoscaler().WithContainer(containerName).WithTarget("2", "20M").Get(),
 			expectedPrio: PodPriority{
 				OutsideRecommendedRange: false,
 				ResourceDiff:            1.5 + 0.0, // summed relative diffs for resources
@@ -126,7 +126,7 @@ func TestGetUpdatePriority(t *testing.T) {
 			},
 		}, {
 			name: "multiple resources, both scale down",
-			pod: vpa_test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "4", "20M")).Get(),
+			pod:  vpa_test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "4", "20M")).Get(),
 			mpa:  test.MultidimPodAutoscaler().WithContainer(containerName).WithTarget("2", "10M").Get(),
 			expectedPrio: PodPriority{
 				OutsideRecommendedRange: false,
@@ -135,7 +135,7 @@ func TestGetUpdatePriority(t *testing.T) {
 			},
 		}, {
 			name: "multiple resources, one outside recommended range",
-			pod: vpa_test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "4", "20M")).Get(),
+			pod:  vpa_test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "4", "20M")).Get(),
 			mpa: test.MultidimPodAutoscaler().WithContainer(containerName).
 				WithTarget("2", "10M").
 				WithLowerBound("1", "5M").

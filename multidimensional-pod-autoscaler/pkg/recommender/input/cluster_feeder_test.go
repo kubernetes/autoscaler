@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Kubernetes Authors.
+Copyright 2024 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -42,9 +42,9 @@ import (
 )
 
 type fakeControllerFetcher struct {
-	key *controllerfetcher.ControllerKeyWithAPIVersion
-	err error
-	mapper restmapper.DeferredDiscoveryRESTMapper
+	key             *controllerfetcher.ControllerKeyWithAPIVersion
+	err             error
+	mapper          restmapper.DeferredDiscoveryRESTMapper
 	scaleNamespacer scale.ScalesGetter
 }
 
@@ -56,7 +56,7 @@ func (f *fakeControllerFetcher) GetRESTMappings(groupKind schema.GroupKind) ([]*
 	return f.mapper.RESTMappings(groupKind)
 }
 
-func (f *fakeControllerFetcher) Scales(namespace string) (scale.ScaleInterface) {
+func (f *fakeControllerFetcher) Scales(namespace string) scale.ScaleInterface {
 	return f.scaleNamespacer.Scales(namespace)
 }
 

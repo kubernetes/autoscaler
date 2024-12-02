@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The Kubernetes Authors.
+Copyright 2024 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -36,18 +36,18 @@ func GetContainerNameToAggregateStateMap(mpa *model.Mpa) vpa_model.ContainerName
 		if !autoscalingDisabled && aggregatedContainerState.TotalSamplesCount > 0 {
 			aggregatedContainerState.UpdateFromPolicy(containerResourcePolicy)
 			vpaAggregatedContainerState := vpa_model.AggregateContainerState{
-                AggregateCPUUsage: aggregatedContainerState.AggregateCPUUsage,
-                AggregateMemoryPeaks: aggregatedContainerState.AggregateMemoryPeaks,
-                FirstSampleStart: aggregatedContainerState.FirstSampleStart,
-                LastSampleStart: aggregatedContainerState.LastSampleStart,
-                TotalSamplesCount: aggregatedContainerState.TotalSamplesCount,
-                CreationTime: aggregatedContainerState.CreationTime,
-                LastRecommendation: aggregatedContainerState.LastRecommendation,
-                IsUnderVPA: aggregatedContainerState.IsUnderVPA,
-                UpdateMode: aggregatedContainerState.UpdateMode,
-                ScalingMode: aggregatedContainerState.ScalingMode,
-                ControlledResources: aggregatedContainerState.ControlledResources,
-        }
+				AggregateCPUUsage:    aggregatedContainerState.AggregateCPUUsage,
+				AggregateMemoryPeaks: aggregatedContainerState.AggregateMemoryPeaks,
+				FirstSampleStart:     aggregatedContainerState.FirstSampleStart,
+				LastSampleStart:      aggregatedContainerState.LastSampleStart,
+				TotalSamplesCount:    aggregatedContainerState.TotalSamplesCount,
+				CreationTime:         aggregatedContainerState.CreationTime,
+				LastRecommendation:   aggregatedContainerState.LastRecommendation,
+				IsUnderVPA:           aggregatedContainerState.IsUnderVPA,
+				UpdateMode:           aggregatedContainerState.UpdateMode,
+				ScalingMode:          aggregatedContainerState.ScalingMode,
+				ControlledResources:  aggregatedContainerState.ControlledResources,
+			}
 			filteredContainerNameToAggregateStateMap[containerName] = &vpaAggregatedContainerState
 		}
 	}
