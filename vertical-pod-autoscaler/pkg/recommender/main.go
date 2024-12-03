@@ -182,12 +182,13 @@ const (
 
 func defaultLeaderElectionConfiguration() componentbaseconfig.LeaderElectionConfiguration {
 	return componentbaseconfig.LeaderElectionConfiguration{
-		LeaderElect:       false,
-		LeaseDuration:     metav1.Duration{Duration: defaultLeaseDuration},
-		RenewDeadline:     metav1.Duration{Duration: defaultRenewDeadline},
-		RetryPeriod:       metav1.Duration{Duration: defaultRetryPeriod},
-		ResourceLock:      resourcelock.LeasesResourceLock,
-		ResourceName:      "vpa-recommender",
+		LeaderElect:   false,
+		LeaseDuration: metav1.Duration{Duration: defaultLeaseDuration},
+		RenewDeadline: metav1.Duration{Duration: defaultRenewDeadline},
+		RetryPeriod:   metav1.Duration{Duration: defaultRetryPeriod},
+		ResourceLock:  resourcelock.LeasesResourceLock,
+		// This was changed from "vpa-recommender" to avoid conflicts with managed VPA deployments.
+		ResourceName:      "vpa-recommender-lease",
 		ResourceNamespace: metav1.NamespaceSystem,
 	}
 }
