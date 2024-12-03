@@ -41,18 +41,21 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
+          args: --timeout=30m
           working-directory: ${{ env.GOPATH }}/src/k8s.io/autoscaler/balancer
           version: v1.60
 
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
+          args: --timeout=30m
           working-directory: ${{ env.GOPATH }}/src/k8s.io/autoscaler/cluster-autoscaler
           version: v1.60
       
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
+          args: --timeout=30m
           working-directory: ${{ env.GOPATH }}/src/k8s.io/autoscaler/vertical-pod-autoscaler
           version: v1.60
 
