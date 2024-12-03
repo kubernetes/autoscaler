@@ -29,6 +29,6 @@ type RecommendationProcessor interface {
 	// Apply processes and updates recommendation for given pod, based on container limits,
 	// VPA policy and possibly other internal RecommendationProcessor context.
 	// Must return a non-nil pointer to RecommendedPodResources or error.
-	Apply(Vpa *vpa_types.VerticalPodAutoscaler,
+	Apply(vpa *vpa_types.VerticalPodAutoscaler,
 		pod *v1.Pod) (*vpa_types.RecommendedPodResources, ContainerToAnnotationsMap, error)
 }
