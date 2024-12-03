@@ -154,22 +154,24 @@ func (cluster *clusterState) AddOrUpdatePod(podID PodID, newLabels labels.Set, p
 	}
 
 	newlabelSetKey := cluster.getLabelSetKey(newLabels)
-	if podExists && pod.labelSetKey != newlabelSetKey {
-		// This Pod is already counted in the old VPA, remove the link.
-		cluster.removePodFromItsVpa(pod)
-	}
-	if !podExists || pod.labelSetKey != newlabelSetKey {
+	if pod.labelSetKey != newlabelSetKey {
+		if podExists {
+			// This Pod is already counted in the old VPA, remove the link.
+			cluster.removePodFromItsVpa(pod)
+		}
 		pod.labelSetKey = newlabelSetKey
 		// Set the links between the containers and aggregations based on the current pod labels.
 		for containerName, container := range pod.Containers {
 			containerID := ContainerID{PodID: podID, ContainerName: containerName}
 			container.aggregator = cluster.findOrCreateAggregateContainerState(containerID)
 		}
-
-		cluster.addPodToItsVpa(pod)
+		cluster.setVPAContainersPerPod(pod, true)
+	} else if !podExists {
+		cluster.setVPAContainersPerPod(pod, true)
+	} else if len(pod.Containers) > 1 {
+		// Tally the number of containers for later when we're averaging the recommendations if there's more than one container
+		cluster.setVPAContainersPerPod(pod, false)
 	}
-	// Tally the number of containers for later when we're averaging the recommendations
-	cluster.setVPAContainersPerPod(pod)
 	pod.Phase = phase
 }
 
@@ -177,7 +179,8 @@ func (cluster *clusterState) AddOrUpdatePod(podID PodID, newLabels labels.Set, p
 // so that later when we're splitting the minimum recommendations over containers,  we're splitting them over
 // the correct number and not just the number of aggregates that have *ever* been present. (We don't want minimum resources
 // to erroneously shrink, either)
-func (cluster *clusterState) setVPAContainersPerPod(pod *PodState) {
+// If addPodToItsVpa is true, it also increments the pod count for the VPA.
+func (cluster *clusterState) setVPAContainersPerPod(pod *PodState, addPodToItsVpa bool) {
 	for _, vpa := range cluster.vpas {
 		if vpa_utils.PodLabelsMatchVPA(pod.ID.Namespace, cluster.labelSetMap[pod.labelSetKey], vpa.ID.Namespace, vpa.PodSelector) {
 			// We want the "high water mark" of the most containers in the pod in the event
@@ -185,17 +188,9 @@ func (cluster *clusterState) setVPAContainersPerPod(pod *PodState) {
 			if len(pod.Containers) > vpa.ContainersPerPod {
 				vpa.ContainersPerPod = len(pod.Containers)
 			}
-		}
-	}
-
-}
-
-// addPodToItsVpa increases the count of Pods associated with a VPA object.
-// Does a scan similar to findOrCreateAggregateContainerState so could be optimized if needed.
-func (cluster *clusterState) addPodToItsVpa(pod *PodState) {
-	for _, vpa := range cluster.vpas {
-		if vpa_utils.PodLabelsMatchVPA(pod.ID.Namespace, cluster.labelSetMap[pod.labelSetKey], vpa.ID.Namespace, vpa.PodSelector) {
-			vpa.PodCount++
+			if addPodToItsVpa {
+				vpa.PodCount++
+			}
 		}
 	}
 }
