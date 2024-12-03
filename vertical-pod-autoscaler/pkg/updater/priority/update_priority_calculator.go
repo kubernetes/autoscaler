@@ -193,9 +193,9 @@ func (calc *UpdatePriorityCalculator) GetProcessedRecommendationTargets(r *vpa_t
 	return sb.String()
 }
 
-func parseVpaObservedContainers(pod *apiv1.Pod) (bool, sets.Set[string]) {
+func parseVpaObservedContainers(pod *apiv1.Pod) (bool, sets.String) {
 	observedContainers, hasObservedContainers := pod.GetAnnotations()[annotations.VpaObservedContainersLabel]
-	vpaContainerSet := sets.New[string]()
+	vpaContainerSet := sets.NewString()
 	if hasObservedContainers {
 		if containers, err := annotations.ParseVpaObservedContainersValue(observedContainers); err != nil {
 			klog.ErrorS(err, "VPA annotation failed to parse", "pod", klog.KObj(pod), "annotation", observedContainers)
