@@ -79,6 +79,7 @@ for i in ${COMPONENTS}; do
   fi
   ALL_ARCHITECTURES=${ARCH} make --directory ${SCRIPT_ROOT}/pkg/${i} docker-build REGISTRY=${REGISTRY} TAG=${TAG}
   docker tag ${REGISTRY}/mpa-${i}-${ARCH}:${TAG} ${REGISTRY}/mpa-${i}:${TAG}
+  kind load docker-image ${REGISTRY}/mpa-${i}-${ARCH}:${TAG}
   kind load docker-image ${REGISTRY}/mpa-${i}:${TAG}
 done
 

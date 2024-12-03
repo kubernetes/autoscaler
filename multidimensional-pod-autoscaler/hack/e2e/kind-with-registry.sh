@@ -28,7 +28,7 @@ if [ "$(docker inspect -f '{{.State.Running}}' "${reg_name}" 2>/dev/null || true
 fi
 
 # Create a cluster with the local registry enabled in containerd
-cat <<EOF | kind create cluster --image=kindest/node:v1.26.3 --config=-
+cat <<EOF | kind create cluster --image=kindest/node:v1.31.2 --config=-
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 containerdConfigPatches:

@@ -85,7 +85,7 @@ kind load docker-image localhost:5001/write-metrics:dev
 
 case ${SUITE} in
   recommender|recommender-externalmetrics|updater|admission-controller|full-mpa)
-    ${SCRIPT_ROOT}/hack/vpa-down.sh
+    ${SCRIPT_ROOT}/hack/mpa-down.sh
     echo " ** Deploying for suite ${SUITE}"
     ${SCRIPT_ROOT}/hack/deploy-for-e2e-locally.sh ${SUITE}
 

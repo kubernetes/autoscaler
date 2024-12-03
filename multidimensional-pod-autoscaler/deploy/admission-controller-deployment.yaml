@@ -20,7 +20,7 @@ spec:
         runAsUser: 65534 # nobody
       containers:
         - name: admission-controller
-          image: registry.k8s.io/autoscaling/mpa-admission-controller-amd64:latest
+          image: registry.k8s.io/autoscaling/mpa-admission-controller:latest
           imagePullPolicy: Always
           env:
             - name: NAMESPACE

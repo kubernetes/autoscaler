@@ -26,7 +26,7 @@ spec:
         runAsUser: 65534 # nobody
       containers:
       - name: recommender
-        image: registry.k8s.io/autoscaling/mpa-recommender-amd64:latest
+        image: registry.k8s.io/autoscaling/mpa-recommender:latest
         imagePullPolicy: Always
         resources:
           limits:
