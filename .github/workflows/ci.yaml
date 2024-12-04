@@ -9,6 +9,8 @@ env:
 
 permissions:
   contents: read
+  pull-requests: read
+  checks: write
 
 jobs:
   test-and-verify:
