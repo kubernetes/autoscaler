@@ -100,7 +100,7 @@ func (writer *checkpointWriter) StoreCheckpoints(ctx context.Context, now time.T
 				continue
 			}
 			checkpointName := fmt.Sprintf("%s-%s", mpa.ID.MpaName, container)
-			vpaCheckpoint := mpa_types.MultidimPodAutoscalerCheckpoint{
+			mpaCheckpoint := mpa_types.MultidimPodAutoscalerCheckpoint{
 				ObjectMeta: metav1.ObjectMeta{Name: checkpointName},
 				Spec: vpa_types.VerticalPodAutoscalerCheckpointSpec{
 					ContainerName: container,
@@ -108,13 +108,13 @@ func (writer *checkpointWriter) StoreCheckpoints(ctx context.Context, now time.T
 				},
 				Status: *containerCheckpoint,
 			}
-			err = api_util.CreateOrUpdateMpaCheckpoint(writer.mpaCheckpointClient.MultidimPodAutoscalerCheckpoints(mpa.ID.Namespace), &vpaCheckpoint)
+			err = api_util.CreateOrUpdateMpaCheckpoint(writer.mpaCheckpointClient.MultidimPodAutoscalerCheckpoints(mpa.ID.Namespace), &mpaCheckpoint)
 			if err != nil {
 				klog.Errorf("Cannot save MPA %s/%s checkpoint for %s. Reason: %+v",
-					mpa.ID.Namespace, vpaCheckpoint.Spec.VPAObjectName, vpaCheckpoint.Spec.ContainerName, err)
+					mpa.ID.Namespace, mpaCheckpoint.Spec.VPAObjectName, mpaCheckpoint.Spec.ContainerName, err)
 			} else {
 				klog.V(3).Infof("Saved MPA %s/%s checkpoint for %s",
-					mpa.ID.Namespace, vpaCheckpoint.Spec.VPAObjectName, vpaCheckpoint.Spec.ContainerName)
+					mpa.ID.Namespace, mpaCheckpoint.Spec.VPAObjectName, mpaCheckpoint.Spec.ContainerName)
 				mpa.CheckpointWritten = now
 			}
 			minCheckpoints--
