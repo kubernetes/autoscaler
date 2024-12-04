@@ -19,6 +19,7 @@ package framework
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	"k8s.io/client-go/informers"
 	schedulerconfig "k8s.io/kubernetes/pkg/scheduler/apis/config"
@@ -27,6 +28,10 @@ import (
 	schedulerplugins "k8s.io/kubernetes/pkg/scheduler/framework/plugins"
 	schedulerframeworkruntime "k8s.io/kubernetes/pkg/scheduler/framework/runtime"
 	schedulermetrics "k8s.io/kubernetes/pkg/scheduler/metrics"
+)
+
+var (
+	initMetricsOnce sync.Once
 )
 
 // Handle is meant for interacting with the scheduler framework.
@@ -50,7 +55,9 @@ func NewHandle(informerFactory informers.SharedInformerFactory, schedConfig *sch
 	}
 	sharedLister := NewDelegatingSchedulerSharedLister()
 
-	schedulermetrics.InitMetrics()
+	initMetricsOnce.Do(func() {
+		schedulermetrics.InitMetrics()
+	})
 	framework, err := schedulerframeworkruntime.NewFramework(
 		context.TODO(),
 		schedulerplugins.NewInTreeRegistry(),
