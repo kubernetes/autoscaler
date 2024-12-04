@@ -37,7 +37,15 @@ type PreFilteringScaleDownNodeProcessor struct {
 // that would become unscheduled after a scale down.
 func (n *PreFilteringScaleDownNodeProcessor) GetPodDestinationCandidates(ctx *context.AutoscalingContext,
 	nodes []*apiv1.Node) ([]*apiv1.Node, errors.AutoscalerError) {
-	return nodes, nil
+	result := make([]*apiv1.Node, 0, len(nodes))
+	for _, node := range nodes {
+		if node.Annotations == nil {
+			result = append(result, node)
+		} else if val, ok := node.Annotations[utils.NodeUpcomingAnnotation]; !ok || val != "true" {
+			result = append(result, node)
+		}
+	}
+	return result, nil
 }
 
 // GetScaleDownCandidates returns nodes that potentially could be scaled down and

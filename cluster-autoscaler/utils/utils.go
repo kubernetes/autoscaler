@@ -24,6 +24,11 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 )
 
+const (
+	// NodeUpcomingAnnotation is an annotation CA adds to nodes which are upcoming.
+	NodeUpcomingAnnotation = "cluster-autoscaler.k8s.io/upcoming-node"
+)
+
 // GetNodeGroupSizeMap return a map of node group id and its target size
 func GetNodeGroupSizeMap(cloudProvider cloudprovider.CloudProvider) map[string]int {
 	nodeGroupSize := make(map[string]int)

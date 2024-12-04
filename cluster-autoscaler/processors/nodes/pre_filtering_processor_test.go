@@ -24,20 +24,23 @@ import (
 
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/utils"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 )
 
 func TestPreFilteringScaleDownNodeProcessor_GetPodDestinationCandidates(t *testing.T) {
 	n1 := BuildTestNode("n1", 100, 1000)
 	n2 := BuildTestNode("n2", 100, 1000)
+	n3 := BuildTestNode("n3", 100, 1000)
+	n3.Annotations = map[string]string{utils.NodeUpcomingAnnotation: "true"}
 	ctx := &context.AutoscalingContext{}
 	defaultProcessor := NewPreFilteringScaleDownNodeProcessor()
 	expectedNodes := []*apiv1.Node{n1, n2}
-	nodes := []*apiv1.Node{n1, n2}
+	nodes := []*apiv1.Node{n1, n2, n3}
 	nodes, err := defaultProcessor.GetPodDestinationCandidates(ctx, nodes)
 
 	assert.NoError(t, err)
-	assert.Equal(t, nodes, expectedNodes)
+	assert.Equal(t, expectedNodes, nodes)
 }
 
 func TestPreFilteringScaleDownNodeProcessor_GetScaleDownCandidateNodes(t *testing.T) {
