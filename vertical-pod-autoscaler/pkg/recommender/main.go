@@ -25,6 +25,7 @@ import (
 
 	"github.com/spf13/pflag"
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/uuid"
 	"k8s.io/client-go/informers"
@@ -103,6 +104,8 @@ var (
 var (
 	// CPU as integer to benefit for CPU management Static Policy ( https://kubernetes.io/docs/tasks/administer-cluster/cpu-management-policies/#static-policy )
 	postProcessorCPUasInteger = flag.Bool("cpu-integer-post-processor-enabled", false, "Enable the cpu-integer recommendation post processor. The post processor will round up CPU recommendations to a whole CPU for pods which were opted in by setting an appropriate label on VPA object (experimental)")
+	maxAllowedCPU             = resource.QuantityValue{}
+	maxAllowedMemory          = resource.QuantityValue{}
 )
 
 const (
@@ -116,6 +119,9 @@ const (
 )
 
 func main() {
+	flag.Var(&maxAllowedCPU, "max-allowed-cpu", "Maximum amount of CPU that will be recommended for a container. VerticalPodAutoscaler-level maximum allowed takes precedence over the global maximum allowed.")
+	flag.Var(&maxAllowedMemory, "max-allowed-memory", "Maximum amount of memory that will be recommended for a container. VerticalPodAutoscaler-level maximum allowed takes precedence over the global maximum allowed.")
+
 	commonFlags := common.InitCommonFlags()
 	klog.InitFlags(nil)
 	common.InitLoggingFlags()
@@ -221,8 +227,16 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 		postProcessors = append(postProcessors, &routines.IntegerCPUPostProcessor{})
 	}
 
+	var globalMaxAllowed apiv1.ResourceList
+	if !maxAllowedCPU.Quantity.IsZero() {
+		setGlobalMaxAllowed(&globalMaxAllowed, apiv1.ResourceCPU, maxAllowedCPU.Quantity)
+	}
+	if !maxAllowedMemory.Quantity.IsZero() {
+		setGlobalMaxAllowed(&globalMaxAllowed, apiv1.ResourceMemory, maxAllowedMemory.Quantity)
+	}
+
 	// CappingPostProcessor, should always come in the last position for post-processing
-	postProcessors = append(postProcessors, &routines.CappingPostProcessor{})
+	postProcessors = append(postProcessors, routines.NewCappingRecommendationProcessor(globalMaxAllowed))
 	var source input_metrics.PodMetricsLister
 	if *useExternalMetrics {
 		resourceMetrics := map[apiv1.ResourceName]string{}
@@ -315,4 +329,12 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 		recommender.RunOnce()
 		healthCheck.UpdateLastActivity()
 	}
+}
+
+func setGlobalMaxAllowed(globalMaxAllowed *apiv1.ResourceList, key apiv1.ResourceName, value resource.Quantity) {
+	if *globalMaxAllowed == nil {
+		*globalMaxAllowed = make(map[apiv1.ResourceName]resource.Quantity, 2)
+	}
+
+	(*globalMaxAllowed)[key] = value
 }
