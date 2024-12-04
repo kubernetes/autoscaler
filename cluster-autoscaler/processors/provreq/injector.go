@@ -71,17 +71,6 @@ func (p *ProvisioningRequestPodsInjector) IsAvailableForProvisioning(pr *provreq
 	return true
 }
 
-// MarkAsAccepted marks the ProvisioningRequest as accepted.
-func (p *ProvisioningRequestPodsInjector) MarkAsAccepted(pr *provreqwrapper.ProvisioningRequest) error {
-	provreqconditions.AddOrUpdateCondition(pr, v1.Accepted, metav1.ConditionTrue, provreqconditions.AcceptedReason, provreqconditions.AcceptedMsg, metav1.NewTime(p.clock.Now()))
-	if _, err := p.client.UpdateProvisioningRequest(pr.ProvisioningRequest); err != nil {
-		klog.Errorf("failed add Accepted condition to ProvReq %s/%s, err: %v", pr.Namespace, pr.Name, err)
-		return err
-	}
-	p.lastProvisioningRequestProcessTime = p.clock.Now()
-	return nil
-}
-
 // MarkAsFailed marks the ProvisioningRequest as failed.
 func (p *ProvisioningRequestPodsInjector) MarkAsFailed(pr *provreqwrapper.ProvisioningRequest, reason string, message string) {
 	provreqconditions.AddOrUpdateCondition(pr, v1.Failed, metav1.ConditionTrue, reason, message, metav1.NewTime(p.clock.Now()))
@@ -118,9 +107,6 @@ func (p *ProvisioningRequestPodsInjector) GetPodsFromNextRequest(
 		if err != nil {
 			klog.Errorf("Failed to get pods for ProvisioningRequest %v", pr.Name)
 			p.MarkAsFailed(pr, provreqconditions.FailedToCreatePodsReason, err.Error())
-			continue
-		}
-		if err := p.MarkAsAccepted(pr); err != nil {
 			continue
 		}
 

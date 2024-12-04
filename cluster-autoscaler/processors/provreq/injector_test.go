@@ -21,7 +21,6 @@ import (
 	"testing"
 	"time"
 
-	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/provreqclient"
@@ -83,25 +82,21 @@ func TestProvisioningRequestPodsInjector(t *testing.T) {
 		provReqs                         []*provreqwrapper.ProvisioningRequest
 		existingUnsUnschedulablePodCount int
 		wantUnscheduledPodCount          int
-		wantUpdatedConditionName         string
 	}{
 		{
 			name:                     "New ProvisioningRequest, pods are injected and Accepted condition is added",
 			provReqs:                 []*provreqwrapper.ProvisioningRequest{newProvReqA, provisionedAcceptedProvReqB},
 			wantUnscheduledPodCount:  podsA,
-			wantUpdatedConditionName: newProvReqA.Name,
 		},
 		{
 			name:                     "New ProvisioningRequest, pods are injected and Accepted condition is updated",
 			provReqs:                 []*provreqwrapper.ProvisioningRequest{newAcceptedProvReqA, provisionedAcceptedProvReqB},
 			wantUnscheduledPodCount:  podsA,
-			wantUpdatedConditionName: newAcceptedProvReqA.Name,
 		},
 		{
 			name:                     "Provisioned=False, pods are injected",
 			provReqs:                 []*provreqwrapper.ProvisioningRequest{notProvisionedAcceptedProvReqB, failedProvReq},
 			wantUnscheduledPodCount:  podsB,
-			wantUpdatedConditionName: notProvisionedAcceptedProvReqB.Name,
 		},
 		{
 			name:     "Provisioned=True, no pods are injected",
@@ -124,7 +119,6 @@ func TestProvisioningRequestPodsInjector(t *testing.T) {
 			provReqs:                         []*provreqwrapper.ProvisioningRequest{newProvReqA},
 			existingUnsUnschedulablePodCount: 50,
 			wantUnscheduledPodCount:          podsA + 50,
-			wantUpdatedConditionName:         newProvReqA.Name,
 		},
 	}
 	for _, tc := range testCases {
@@ -138,14 +132,6 @@ func TestProvisioningRequestPodsInjector(t *testing.T) {
 		}
 		if len(getUnscheduledPods) != tc.wantUnscheduledPodCount {
 			t.Errorf("%s failed: injector.Process return %d unscheduled pods, want %d", tc.name, len(getUnscheduledPods), tc.wantUnscheduledPodCount)
-		}
-		if tc.wantUpdatedConditionName == "" {
-			continue
-		}
-		pr, _ := client.ProvisioningRequestNoCache("ns", tc.wantUpdatedConditionName)
-		accepted := apimeta.FindStatusCondition(pr.Status.Conditions, v1.Accepted)
-		if accepted == nil || accepted.LastTransitionTime != metav1.NewTime(now) {
-			t.Errorf("%s: injector.Process hasn't update accepted condition for ProvisioningRequest %s", tc.name, tc.wantUpdatedConditionName)
 		}
 	}
 

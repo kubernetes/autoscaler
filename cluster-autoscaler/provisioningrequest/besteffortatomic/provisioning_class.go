@@ -94,6 +94,7 @@ func (o *bestEffortAtomicProvClass) Provision(
 
 	// For provisioning requests, unschedulablePods are actually all injected pods. Some may even be schedulable!
 	actuallyUnschedulablePods, err := o.filterOutSchedulable(unschedulablePods)
+	conditions.AddOrUpdateCondition(pr, v1.Accepted, metav1.ConditionTrue, conditions.AcceptedReason, conditions.AcceptedMsg, metav1.Now())
 	if err != nil {
 		conditions.AddOrUpdateCondition(pr, v1.Provisioned, metav1.ConditionFalse, conditions.FailedToCheckCapacityReason, conditions.FailedToCheckCapacityMsg, metav1.Now())
 		if _, updateErr := o.client.UpdateProvisioningRequest(pr.ProvisioningRequest); updateErr != nil {
