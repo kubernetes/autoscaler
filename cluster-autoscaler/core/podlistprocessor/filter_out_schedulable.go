@@ -26,7 +26,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
 	corev1helpers "k8s.io/component-helpers/scheduling/corev1"
 	klog "k8s.io/klog/v2"
@@ -38,9 +37,9 @@ type filterOutSchedulablePodListProcessor struct {
 }
 
 // NewFilterOutSchedulablePodListProcessor creates a PodListProcessor filtering out schedulable pods
-func NewFilterOutSchedulablePodListProcessor(predicateChecker predicatechecker.PredicateChecker, nodeFilter func(*framework.NodeInfo) bool) *filterOutSchedulablePodListProcessor {
+func NewFilterOutSchedulablePodListProcessor(nodeFilter func(*framework.NodeInfo) bool) *filterOutSchedulablePodListProcessor {
 	return &filterOutSchedulablePodListProcessor{
-		schedulingSimulator: scheduling.NewHintingSimulator(predicateChecker),
+		schedulingSimulator: scheduling.NewHintingSimulator(),
 		nodeFilter:          nodeFilter,
 	}
 }
