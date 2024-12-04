@@ -43,7 +43,7 @@ var multidimpodautoscalersKind = v1alpha1.SchemeGroupVersion.WithKind("MultidimP
 func (c *FakeMultidimPodAutoscalers) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.MultidimPodAutoscaler, err error) {
 	emptyResult := &v1alpha1.MultidimPodAutoscaler{}
 	obj, err := c.Fake.
-		Invokes(testing.NewGetAction(multidimpodautoscalersResource, c.ns, name), emptyResult)
+		Invokes(testing.NewGetActionWithOptions(multidimpodautoscalersResource, c.ns, name, options), emptyResult)
 
 	if obj == nil {
 		return emptyResult, err
@@ -55,7 +55,7 @@ func (c *FakeMultidimPodAutoscalers) Get(ctx context.Context, name string, optio
 func (c *FakeMultidimPodAutoscalers) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha1.MultidimPodAutoscalerList, err error) {
 	emptyResult := &v1alpha1.MultidimPodAutoscalerList{}
 	obj, err := c.Fake.
-		Invokes(testing.NewListAction(multidimpodautoscalersResource, multidimpodautoscalersKind, c.ns, opts), emptyResult)
+		Invokes(testing.NewListActionWithOptions(multidimpodautoscalersResource, multidimpodautoscalersKind, c.ns, opts), emptyResult)
 
 	if obj == nil {
 		return emptyResult, err
@@ -77,7 +77,7 @@ func (c *FakeMultidimPodAutoscalers) List(ctx context.Context, opts v1.ListOptio
 // Watch returns a watch.Interface that watches the requested multidimPodAutoscalers.
 func (c *FakeMultidimPodAutoscalers) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
 	return c.Fake.
-		InvokesWatch(testing.NewWatchAction(multidimpodautoscalersResource, c.ns, opts))
+		InvokesWatch(testing.NewWatchActionWithOptions(multidimpodautoscalersResource, c.ns, opts))
 
 }
 
@@ -85,7 +85,7 @@ func (c *FakeMultidimPodAutoscalers) Watch(ctx context.Context, opts v1.ListOpti
 func (c *FakeMultidimPodAutoscalers) Create(ctx context.Context, multidimPodAutoscaler *v1alpha1.MultidimPodAutoscaler, opts v1.CreateOptions) (result *v1alpha1.MultidimPodAutoscaler, err error) {
 	emptyResult := &v1alpha1.MultidimPodAutoscaler{}
 	obj, err := c.Fake.
-		Invokes(testing.NewCreateAction(multidimpodautoscalersResource, c.ns, multidimPodAutoscaler), emptyResult)
+		Invokes(testing.NewCreateActionWithOptions(multidimpodautoscalersResource, c.ns, multidimPodAutoscaler, opts), emptyResult)
 
 	if obj == nil {
 		return emptyResult, err
@@ -97,7 +97,7 @@ func (c *FakeMultidimPodAutoscalers) Create(ctx context.Context, multidimPodAuto
 func (c *FakeMultidimPodAutoscalers) Update(ctx context.Context, multidimPodAutoscaler *v1alpha1.MultidimPodAutoscaler, opts v1.UpdateOptions) (result *v1alpha1.MultidimPodAutoscaler, err error) {
 	emptyResult := &v1alpha1.MultidimPodAutoscaler{}
 	obj, err := c.Fake.
-		Invokes(testing.NewUpdateAction(multidimpodautoscalersResource, c.ns, multidimPodAutoscaler), emptyResult)
+		Invokes(testing.NewUpdateActionWithOptions(multidimpodautoscalersResource, c.ns, multidimPodAutoscaler, opts), emptyResult)
 
 	if obj == nil {
 		return emptyResult, err
@@ -110,7 +110,7 @@ func (c *FakeMultidimPodAutoscalers) Update(ctx context.Context, multidimPodAuto
 func (c *FakeMultidimPodAutoscalers) UpdateStatus(ctx context.Context, multidimPodAutoscaler *v1alpha1.MultidimPodAutoscaler, opts v1.UpdateOptions) (result *v1alpha1.MultidimPodAutoscaler, err error) {
 	emptyResult := &v1alpha1.MultidimPodAutoscaler{}
 	obj, err := c.Fake.
-		Invokes(testing.NewUpdateSubresourceAction(multidimpodautoscalersResource, "status", c.ns, multidimPodAutoscaler), emptyResult)
+		Invokes(testing.NewUpdateSubresourceActionWithOptions(multidimpodautoscalersResource, "status", c.ns, multidimPodAutoscaler, opts), emptyResult)
 
 	if obj == nil {
 		return emptyResult, err
@@ -128,7 +128,7 @@ func (c *FakeMultidimPodAutoscalers) Delete(ctx context.Context, name string, op
 
 // DeleteCollection deletes a collection of objects.
 func (c *FakeMultidimPodAutoscalers) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
-	action := testing.NewDeleteCollectionAction(multidimpodautoscalersResource, c.ns, listOpts)
+	action := testing.NewDeleteCollectionActionWithOptions(multidimpodautoscalersResource, c.ns, opts, listOpts)
 
 	_, err := c.Fake.Invokes(action, &v1alpha1.MultidimPodAutoscalerList{})
 	return err
@@ -138,7 +138,7 @@ func (c *FakeMultidimPodAutoscalers) DeleteCollection(ctx context.Context, opts 
 func (c *FakeMultidimPodAutoscalers) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.MultidimPodAutoscaler, err error) {
 	emptyResult := &v1alpha1.MultidimPodAutoscaler{}
 	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(multidimpodautoscalersResource, c.ns, name, pt, data, subresources...), emptyResult)
+		Invokes(testing.NewPatchSubresourceActionWithOptions(multidimpodautoscalersResource, c.ns, name, pt, data, opts, subresources...), emptyResult)
 
 	if obj == nil {
 		return emptyResult, err

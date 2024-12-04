@@ -14,8 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// +k8s:deepcopy-gen=package
-// +k8s:defaulter-gen=TypeMeta
-// +groupName=autoscaling.k8s.io
+// +k8s:deepcopy-gen=package,register
 
+// Package v1alpha1 contains definitions of Multi-Dimensional Pod Autoscaler related objects.
+// +groupName=autoscaling.k8s.io
+// +kubebuilder:object:generate=true
 package v1alpha1

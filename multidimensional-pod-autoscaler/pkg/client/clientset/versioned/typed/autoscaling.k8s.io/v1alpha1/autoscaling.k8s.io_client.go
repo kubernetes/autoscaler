@@ -29,6 +29,7 @@ import (
 type AutoscalingV1alpha1Interface interface {
 	RESTClient() rest.Interface
 	MultidimPodAutoscalersGetter
+	MultidimPodAutoscalerCheckpointsGetter
 }
 
 // AutoscalingV1alpha1Client is used to interact with features provided by the autoscaling.k8s.io group.
@@ -38,6 +39,10 @@ type AutoscalingV1alpha1Client struct {
 
 func (c *AutoscalingV1alpha1Client) MultidimPodAutoscalers(namespace string) MultidimPodAutoscalerInterface {
 	return newMultidimPodAutoscalers(c, namespace)
+}
+
+func (c *AutoscalingV1alpha1Client) MultidimPodAutoscalerCheckpoints(namespace string) MultidimPodAutoscalerCheckpointInterface {
+	return newMultidimPodAutoscalerCheckpoints(c, namespace)
 }
 
 // NewForConfig creates a new AutoscalingV1alpha1Client for the given config.

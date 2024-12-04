@@ -35,7 +35,6 @@ import (
 	metrics_recommender "k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/utils/metrics/recommender"
 	mpa_utils "k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/utils/mpa"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
-	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/logic"
 	vpa_model "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
@@ -375,7 +374,7 @@ func NewRecommender(config *rest.Config, checkpointsGCInterval time.Duration, us
 		ClusterState:           clusterState,
 		ClusterStateFeeder:     input.NewClusterStateFeeder(config, clusterState, *memorySaver, namespace, "default-metrics-client", recommenderName),
 		ControllerFetcher:      controllerFetcher,
-		CheckpointWriter:       checkpoint.NewCheckpointWriter(clusterState, vpa_clientset.NewForConfigOrDie(config).AutoscalingV1()),
+		CheckpointWriter:       checkpoint.NewCheckpointWriter(clusterState, mpa_clientset.NewForConfigOrDie(config).AutoscalingV1alpha1()),
 		MpaClient:              mpa_clientset.NewForConfigOrDie(config).AutoscalingV1alpha1(),
 		SelectorFetcher:        target.NewMpaTargetSelectorFetcher(config, kubeClient, factory),
 		PodResourceRecommender: logic.CreatePodResourceRecommender(),

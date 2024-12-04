@@ -32,7 +32,7 @@ trap cleanup EXIT
 if [[ -z $(which controller-gen) ]]; then
     (
         cd $WORKSPACE
-	      go install sigs.k8s.io/controller-tools/cmd/controller-gen@v0.9.2
+	      go install sigs.k8s.io/controller-tools/cmd/controller-gen@v0.16.5
     )
     CONTROLLER_GEN=${GOBIN:-$(go env GOPATH)/bin}/controller-gen
 else
@@ -48,6 +48,7 @@ cd ${WORKSPACE}
 cat <<EOF > kustomization.yaml
 resources:
 - autoscaling.k8s.io_multidimpodautoscalers.yaml
+- autoscaling.k8s.io_multidimpodautoscalercheckpoints.yaml
 commonAnnotations:
   "api-approved.kubernetes.io": "https://github.com/kubernetes/kubernetes/pull/63797"
 EOF

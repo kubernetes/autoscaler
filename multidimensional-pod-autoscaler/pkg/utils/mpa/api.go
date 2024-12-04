@@ -35,7 +35,6 @@ import (
 	mpa_api "k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1alpha1"
 	mpa_lister "k8s.io/autoscaler/multidimensional-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1alpha1"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
-	vpa_api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/klog/v2"
 )
@@ -84,8 +83,8 @@ func NewMpasLister(mpaClient *mpa_clientset.Clientset, stopChannel <-chan struct
 
 // CreateOrUpdateMpaCheckpoint updates the status field of the MPA Checkpoint API object.
 // If object doesn't exits it is created.
-func CreateOrUpdateMpaCheckpoint(mpaCheckpointClient vpa_api.VerticalPodAutoscalerCheckpointInterface,
-	mpaCheckpoint *vpa_types.VerticalPodAutoscalerCheckpoint) error {
+func CreateOrUpdateMpaCheckpoint(mpaCheckpointClient mpa_api.MultidimPodAutoscalerCheckpointInterface,
+	mpaCheckpoint *mpa_types.MultidimPodAutoscalerCheckpoint) error {
 	patches := make([]patchRecord, 0)
 	patches = append(patches, patchRecord{
 		Op:    "replace",

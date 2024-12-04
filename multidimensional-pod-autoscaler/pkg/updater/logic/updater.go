@@ -298,14 +298,11 @@ func (u *updater) RunOnceUpdatingDeployment(ctx context.Context) {
 			u.eventRecorder.Event(mpa, v1.EventTypeWarning, "FailedGetScale", err.Error())
 			return
 		}
-		fmt.Printf("targetGV %v targetGV.Group: %v\n", targetGV, targetGV.Group)
 		targetGK := schema.GroupKind{
 			Group: targetGV.Group,
 			Kind:  mpa.Spec.ScaleTargetRef.Kind,
 		}
-		fmt.Printf("targetGK: %v\n", targetGK)
 		mappings, err := u.selectorFetcher.GetRESTMappings(targetGK)
-		fmt.Printf("mapping: %v\n", mappings)
 		if err != nil {
 			klog.Errorf("%s: FailedGetScale - error: %v", v1.EventTypeWarning, err.Error())
 			u.eventRecorder.Event(mpa, v1.EventTypeWarning, "FailedGetScale", err.Error())

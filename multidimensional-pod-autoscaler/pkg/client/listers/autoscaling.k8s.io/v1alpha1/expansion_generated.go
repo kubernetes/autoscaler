@@ -25,3 +25,11 @@ type MultidimPodAutoscalerListerExpansion interface{}
 // MultidimPodAutoscalerNamespaceListerExpansion allows custom methods to be added to
 // MultidimPodAutoscalerNamespaceLister.
 type MultidimPodAutoscalerNamespaceListerExpansion interface{}
+
+// MultidimPodAutoscalerCheckpointListerExpansion allows custom methods to be added to
+// MultidimPodAutoscalerCheckpointLister.
+type MultidimPodAutoscalerCheckpointListerExpansion interface{}
+
+// MultidimPodAutoscalerCheckpointNamespaceListerExpansion allows custom methods to be added to
+// MultidimPodAutoscalerCheckpointNamespaceLister.
+type MultidimPodAutoscalerCheckpointNamespaceListerExpansion interface{}
