@@ -46,13 +46,11 @@ func CalculateSummary(podList []*v1.Pod, now time.Time, startupTimeout time.Dura
 		case v1.PodRunning:
 			result.Total++
 			result.Running++
-			break
 		case v1.PodPending:
 			result.Total++
 			if p.CreationTimestamp.Add(startupTimeout).Before(now) {
 				result.NotStartedWithinDeadline++
 			}
-			break
 		}
 	}
 	return result
