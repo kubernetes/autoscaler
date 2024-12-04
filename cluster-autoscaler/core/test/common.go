@@ -36,9 +36,8 @@ import (
 	processor_callbacks "k8s.io/autoscaler/cluster-autoscaler/processors/callbacks"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/testsnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -175,15 +174,14 @@ func NewScaleTestAutoscalingContext(
 	if err != nil {
 		return context.AutoscalingContext{}, err
 	}
-	predicateChecker, err := predicatechecker.NewTestPredicateChecker()
-	if err != nil {
-		return context.AutoscalingContext{}, err
-	}
 	remainingPdbTracker := pdb.NewBasicRemainingPdbTracker()
 	if debuggingSnapshotter == nil {
 		debuggingSnapshotter = debuggingsnapshot.NewDebuggingSnapshotter(false)
 	}
-	clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot()
+	clusterSnapshot, err := testsnapshot.NewTestSnapshot()
+	if err != nil {
+		return context.AutoscalingContext{}, err
+	}
 	return context.AutoscalingContext{
 		AutoscalingOptions: options,
 		AutoscalingKubeClients: context.AutoscalingKubeClients{
@@ -193,7 +191,6 @@ func NewScaleTestAutoscalingContext(
 			ListerRegistry: listers,
 		},
 		CloudProvider:        provider,
-		PredicateChecker:     predicateChecker,
 		ClusterSnapshot:      clusterSnapshot,
 		ExpanderStrategy:     random.NewStrategy(),
 		ProcessorCallbacks:   processorCallbacks,

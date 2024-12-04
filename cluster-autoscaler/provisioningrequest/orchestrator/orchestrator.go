@@ -69,7 +69,7 @@ func (o *provReqOrchestrator) Initialize(
 ) {
 	o.initialized = true
 	o.context = autoscalingContext
-	o.injector = scheduling.NewHintingSimulator(autoscalingContext.PredicateChecker)
+	o.injector = scheduling.NewHintingSimulator()
 	for _, mode := range o.provisioningClasses {
 		mode.Initialize(autoscalingContext, processors, clusterStateRegistry, estimatorBuilder, taintConfig, o.injector)
 	}

@@ -27,7 +27,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	processor_callbacks "k8s.io/autoscaler/cluster-autoscaler/processors/callbacks"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
@@ -44,9 +44,8 @@ type AutoscalingContext struct {
 	AutoscalingKubeClients
 	// CloudProvider used in CA.
 	CloudProvider cloudprovider.CloudProvider
-	// TODO(kgolab) - move away too as it's not config
-	// PredicateChecker to check if a pod can fit into a node.
-	PredicateChecker predicatechecker.PredicateChecker
+	// FrameworkHandle can be used to interact with the scheduler framework.
+	FrameworkHandle *framework.Handle
 	// ClusterSnapshot denotes cluster snapshot used for predicate checking.
 	ClusterSnapshot clustersnapshot.ClusterSnapshot
 	// ExpanderStrategy is the strategy used to choose which node group to expand when scaling up
@@ -100,7 +99,7 @@ func NewResourceLimiterFromAutoscalingOptions(options config.AutoscalingOptions)
 // NewAutoscalingContext returns an autoscaling context from all the necessary parameters passed via arguments
 func NewAutoscalingContext(
 	options config.AutoscalingOptions,
-	predicateChecker predicatechecker.PredicateChecker,
+	fwHandle *framework.Handle,
 	clusterSnapshot clustersnapshot.ClusterSnapshot,
 	autoscalingKubeClients *AutoscalingKubeClients,
 	cloudProvider cloudprovider.CloudProvider,
@@ -114,7 +113,7 @@ func NewAutoscalingContext(
 		AutoscalingOptions:     options,
 		CloudProvider:          cloudProvider,
 		AutoscalingKubeClients: *autoscalingKubeClients,
-		PredicateChecker:       predicateChecker,
+		FrameworkHandle:        fwHandle,
 		ClusterSnapshot:        clusterSnapshot,
 		ExpanderStrategy:       expanderStrategy,
 		ProcessorCallbacks:     processorCallbacks,

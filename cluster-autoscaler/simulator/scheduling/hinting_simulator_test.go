@@ -20,19 +20,16 @@ import (
 	"testing"
 	"time"
 
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
-	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
-	schedulermetrics "k8s.io/kubernetes/pkg/scheduler/metrics"
-
 	"github.com/stretchr/testify/assert"
+
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/testsnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
+	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 )
 
 func TestTrySchedulePods(t *testing.T) {
-	schedulermetrics.Register()
-
 	testCases := []struct {
 		desc            string
 		nodes           []*apiv1.Node
@@ -136,11 +133,9 @@ func TestTrySchedulePods(t *testing.T) {
 		tc := tc
 		t.Run(tc.desc, func(t *testing.T) {
 			t.Parallel()
-			clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot()
-			predicateChecker, err := predicatechecker.NewTestPredicateChecker()
-			assert.NoError(t, err)
+			clusterSnapshot := testsnapshot.NewTestSnapshotOrDie(t)
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, clusterSnapshot, tc.nodes, tc.pods)
-			s := NewHintingSimulator(predicateChecker)
+			s := NewHintingSimulator()
 			statuses, _, err := s.TrySchedulePods(clusterSnapshot, tc.newPods, tc.acceptableNodes, false)
 			if tc.wantErr {
 				assert.Error(t, err)
@@ -213,16 +208,14 @@ func TestPodSchedulesOnHintedNode(t *testing.T) {
 		tc := tc
 		t.Run(tc.desc, func(t *testing.T) {
 			t.Parallel()
-			clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot()
-			predicateChecker, err := predicatechecker.NewTestPredicateChecker()
-			assert.NoError(t, err)
+			clusterSnapshot := testsnapshot.NewTestSnapshotOrDie(t)
 			nodes := make([]*apiv1.Node, 0, len(tc.nodeNames))
 			for _, n := range tc.nodeNames {
 				nodes = append(nodes, buildReadyNode(n, 9999, 9999))
 			}
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, clusterSnapshot, nodes, []*apiv1.Pod{})
 			pods := make([]*apiv1.Pod, 0, len(tc.podNodes))
-			s := NewHintingSimulator(predicateChecker)
+			s := NewHintingSimulator()
 			var expectedStatuses []Status
 			for p, n := range tc.podNodes {
 				pod := BuildTestPod(p, 1, 1)

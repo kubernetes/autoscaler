@@ -20,17 +20,15 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/testsnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
-	schedulermetrics "k8s.io/kubernetes/pkg/scheduler/metrics"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func makePodEquivalenceGroup(pod *apiv1.Pod, podCount int) PodEquivalenceGroup {
@@ -66,8 +64,6 @@ func makeNode(cpu, mem, podCount int64, name string, zone string) *apiv1.Node {
 }
 
 func TestBinpackingEstimate(t *testing.T) {
-	schedulermetrics.Register()
-
 	highResourcePodGroup := makePodEquivalenceGroup(
 		BuildTestPod(
 			"estimatee",
@@ -212,16 +208,14 @@ func TestBinpackingEstimate(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot()
+			clusterSnapshot := testsnapshot.NewTestSnapshotOrDie(t)
 			// Add one node in different zone to trigger topology spread constraints
 			err := clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(makeNode(100, 100, 10, "oldnode", "zone-jupiter")))
 			assert.NoError(t, err)
 
-			predicateChecker, err := predicatechecker.NewTestPredicateChecker()
-			assert.NoError(t, err)
 			limiter := NewThresholdBasedEstimationLimiter([]Threshold{NewStaticThreshold(tc.maxNodes, time.Duration(0))})
 			processor := NewDecreasingPodOrderer()
-			estimator := NewBinpackingNodeEstimator(predicateChecker, clusterSnapshot, limiter, processor, nil /* EstimationContext */, nil /* EstimationAnalyserFunc */)
+			estimator := NewBinpackingNodeEstimator(clusterSnapshot, limiter, processor, nil /* EstimationContext */, nil /* EstimationAnalyserFunc */)
 			node := makeNode(tc.millicores, tc.memory, 10, "template", "zone-mars")
 			nodeInfo := framework.NewTestNodeInfo(node)
 
@@ -268,15 +262,13 @@ func BenchmarkBinpackingEstimate(b *testing.B) {
 	}
 
 	for i := 0; i < b.N; i++ {
-		clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot()
+		clusterSnapshot := testsnapshot.NewTestSnapshotOrDie(b)
 		err := clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(makeNode(100, 100, 10, "oldnode", "zone-jupiter")))
 		assert.NoError(b, err)
 
-		predicateChecker, err := predicatechecker.NewTestPredicateChecker()
-		assert.NoError(b, err)
 		limiter := NewThresholdBasedEstimationLimiter([]Threshold{NewStaticThreshold(maxNodes, time.Duration(0))})
 		processor := NewDecreasingPodOrderer()
-		estimator := NewBinpackingNodeEstimator(predicateChecker, clusterSnapshot, limiter, processor, nil /* EstimationContext */, nil /* EstimationAnalyserFunc */)
+		estimator := NewBinpackingNodeEstimator(clusterSnapshot, limiter, processor, nil /* EstimationContext */, nil /* EstimationAnalyserFunc */)
 		node := makeNode(millicores, memory, podsPerNode, "template", "zone-mars")
 		nodeInfo := framework.NewTestNodeInfo(node)
 

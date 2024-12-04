@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Kubernetes Authors.
+Copyright 2024 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package clustersnapshot
+package predicate
 
 import (
 	"fmt"
@@ -23,6 +23,8 @@ import (
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/store"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
@@ -30,9 +32,21 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var snapshots = map[string]func() ClusterSnapshot{
-	"basic": func() ClusterSnapshot { return NewBasicClusterSnapshot() },
-	"delta": func() ClusterSnapshot { return NewDeltaClusterSnapshot() },
+var snapshots = map[string]func() (clustersnapshot.ClusterSnapshot, error){
+	"basic": func() (clustersnapshot.ClusterSnapshot, error) {
+		fwHandle, err := framework.NewTestFrameworkHandle()
+		if err != nil {
+			return nil, err
+		}
+		return NewPredicateSnapshot(store.NewBasicSnapshotStore(), fwHandle), nil
+	},
+	"delta": func() (clustersnapshot.ClusterSnapshot, error) {
+		fwHandle, err := framework.NewTestFrameworkHandle()
+		if err != nil {
+			return nil, err
+		}
+		return NewPredicateSnapshot(store.NewDeltaSnapshotStore(), fwHandle), nil
+	},
 }
 
 func nodeNames(nodes []*apiv1.Node) []string {
@@ -61,7 +75,7 @@ func compareStates(t *testing.T, a, b snapshotState) {
 	assert.ElementsMatch(t, a.pods, b.pods)
 }
 
-func getSnapshotState(t *testing.T, snapshot ClusterSnapshot) snapshotState {
+func getSnapshotState(t *testing.T, snapshot clustersnapshot.ClusterSnapshot) snapshotState {
 	nodes, err := snapshot.ListNodeInfos()
 	assert.NoError(t, err)
 	var pods []*apiv1.Pod
@@ -73,16 +87,17 @@ func getSnapshotState(t *testing.T, snapshot ClusterSnapshot) snapshotState {
 	return snapshotState{extractNodes(nodes), pods}
 }
 
-func startSnapshot(t *testing.T, snapshotFactory func() ClusterSnapshot, state snapshotState) ClusterSnapshot {
-	snapshot := snapshotFactory()
-	err := snapshot.SetClusterState(state.nodes, state.pods)
+func startSnapshot(t *testing.T, snapshotFactory func() (clustersnapshot.ClusterSnapshot, error), state snapshotState) clustersnapshot.ClusterSnapshot {
+	snapshot, err := snapshotFactory()
+	assert.NoError(t, err)
+	err = snapshot.SetClusterState(state.nodes, state.pods)
 	assert.NoError(t, err)
 	return snapshot
 }
 
 type modificationTestCase struct {
 	name          string
-	op            func(ClusterSnapshot)
+	op            func(clustersnapshot.ClusterSnapshot)
 	state         snapshotState
 	modifiedState snapshotState
 }
@@ -95,7 +110,7 @@ func validTestCases(t *testing.T) []modificationTestCase {
 	testCases := []modificationTestCase{
 		{
 			name: "add empty nodeInfo",
-			op: func(snapshot ClusterSnapshot) {
+			op: func(snapshot clustersnapshot.ClusterSnapshot) {
 				err := snapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
 				assert.NoError(t, err)
 			},
@@ -105,7 +120,7 @@ func validTestCases(t *testing.T) []modificationTestCase {
 		},
 		{
 			name: "add nodeInfo",
-			op: func(snapshot ClusterSnapshot) {
+			op: func(snapshot clustersnapshot.ClusterSnapshot) {
 				err := snapshot.AddNodeInfo(framework.NewTestNodeInfo(node, pod))
 				assert.NoError(t, err)
 			},
@@ -119,7 +134,7 @@ func validTestCases(t *testing.T) []modificationTestCase {
 			state: snapshotState{
 				nodes: []*apiv1.Node{node},
 			},
-			op: func(snapshot ClusterSnapshot) {
+			op: func(snapshot clustersnapshot.ClusterSnapshot) {
 				err := snapshot.RemoveNodeInfo(node.Name)
 				assert.NoError(t, err)
 			},
@@ -129,7 +144,7 @@ func validTestCases(t *testing.T) []modificationTestCase {
 			state: snapshotState{
 				nodes: []*apiv1.Node{node},
 			},
-			op: func(snapshot ClusterSnapshot) {
+			op: func(snapshot clustersnapshot.ClusterSnapshot) {
 				err := snapshot.RemoveNodeInfo(node.Name)
 				assert.NoError(t, err)
 
@@ -145,10 +160,10 @@ func validTestCases(t *testing.T) []modificationTestCase {
 			state: snapshotState{
 				nodes: []*apiv1.Node{node},
 			},
-			op: func(snapshot ClusterSnapshot) {
-				err := snapshot.ForceAddPod(pod, node.Name)
-				assert.NoError(t, err)
-				err = snapshot.RemoveNodeInfo(node.Name)
+			op: func(snapshot clustersnapshot.ClusterSnapshot) {
+				schedErr := snapshot.ForceAddPod(pod, node.Name)
+				assert.NoError(t, schedErr)
+				err := snapshot.RemoveNodeInfo(node.Name)
 				assert.NoError(t, err)
 			},
 		},
@@ -284,20 +299,20 @@ func TestSetClusterState(t *testing.T) {
 	extraNodeCount := localRand.Intn(100)
 	extraPodCount := localRand.Intn(1000)
 
-	nodes := createTestNodes(nodeCount)
-	pods := createTestPods(podCount)
-	assignPodsToNodes(pods, nodes)
+	nodes := clustersnapshot.CreateTestNodes(nodeCount)
+	pods := clustersnapshot.CreateTestPods(podCount)
+	clustersnapshot.AssignTestPodsToNodes(pods, nodes)
 
 	state := snapshotState{nodes, pods}
 
-	extraNodes := createTestNodesWithPrefix("extra", extraNodeCount)
+	extraNodes := clustersnapshot.CreateTestNodesWithPrefix("extra", extraNodeCount)
 
 	allNodes := make([]*apiv1.Node, len(nodes)+len(extraNodes), len(nodes)+len(extraNodes))
 	copy(allNodes, nodes)
 	copy(allNodes[len(nodes):], extraNodes)
 
-	extraPods := createTestPodsWithPrefix("extra", extraPodCount)
-	assignPodsToNodes(extraPods, allNodes)
+	extraPods := clustersnapshot.CreateTestPodsWithPrefix("extra", extraPodCount)
+	clustersnapshot.AssignTestPodsToNodes(extraPods, allNodes)
 
 	allPods := make([]*apiv1.Pod, len(pods)+len(extraPods), len(pods)+len(extraPods))
 	copy(allPods, pods)
@@ -318,8 +333,8 @@ func TestSetClusterState(t *testing.T) {
 				snapshot := startSnapshot(t, snapshotFactory, state)
 				compareStates(t, state, getSnapshotState(t, snapshot))
 
-				newNodes, newPods := createTestNodes(13), createTestPods(37)
-				assignPodsToNodes(newPods, newNodes)
+				newNodes, newPods := clustersnapshot.CreateTestNodes(13), clustersnapshot.CreateTestPods(37)
+				clustersnapshot.AssignTestPodsToNodes(newPods, newNodes)
 				assert.NoError(t, snapshot.SetClusterState(newNodes, newPods))
 
 				compareStates(t, snapshotState{nodes: newNodes, pods: newPods}, getSnapshotState(t, snapshot))
@@ -357,19 +372,19 @@ func TestNode404(t *testing.T) {
 	// Anything and everything that returns errNodeNotFound should be tested here.
 	ops := []struct {
 		name string
-		op   func(ClusterSnapshot) error
+		op   func(clustersnapshot.ClusterSnapshot) error
 	}{
-		{"add pod", func(snapshot ClusterSnapshot) error {
+		{"add pod", func(snapshot clustersnapshot.ClusterSnapshot) error {
 			return snapshot.ForceAddPod(BuildTestPod("p1", 0, 0), "node")
 		}},
-		{"remove pod", func(snapshot ClusterSnapshot) error {
+		{"remove pod", func(snapshot clustersnapshot.ClusterSnapshot) error {
 			return snapshot.ForceRemovePod("default", "p1", "node")
 		}},
-		{"get node", func(snapshot ClusterSnapshot) error {
+		{"get node", func(snapshot clustersnapshot.ClusterSnapshot) error {
 			_, err := snapshot.NodeInfos().Get("node")
 			return err
 		}},
-		{"remove nodeInfo", func(snapshot ClusterSnapshot) error {
+		{"remove nodeInfo", func(snapshot clustersnapshot.ClusterSnapshot) error {
 			return snapshot.RemoveNodeInfo("node")
 		}},
 	}
@@ -378,19 +393,21 @@ func TestNode404(t *testing.T) {
 		for _, op := range ops {
 			t.Run(fmt.Sprintf("%s: %s empty", name, op.name),
 				func(t *testing.T) {
-					snapshot := snapshotFactory()
+					snapshot, err := snapshotFactory()
+					assert.NoError(t, err)
 
 					// Empty snapshot - shouldn't be able to operate on nodes that are not here.
-					err := op.op(snapshot)
+					err = op.op(snapshot)
 					assert.Error(t, err)
 				})
 
 			t.Run(fmt.Sprintf("%s: %s fork", name, op.name),
 				func(t *testing.T) {
-					snapshot := snapshotFactory()
+					snapshot, err := snapshotFactory()
+					assert.NoError(t, err)
 
 					node := BuildTestNode("node", 10, 100)
-					err := snapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
+					err = snapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
 					assert.NoError(t, err)
 
 					snapshot.Fork()
@@ -413,10 +430,11 @@ func TestNode404(t *testing.T) {
 
 			t.Run(fmt.Sprintf("%s: %s base", name, op.name),
 				func(t *testing.T) {
-					snapshot := snapshotFactory()
+					snapshot, err := snapshotFactory()
+					assert.NoError(t, err)
 
 					node := BuildTestNode("node", 10, 100)
-					err := snapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
+					err = snapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
 					assert.NoError(t, err)
 
 					err = snapshot.RemoveNodeInfo("node")
@@ -437,9 +455,9 @@ func TestNodeAlreadyExists(t *testing.T) {
 
 	ops := []struct {
 		name string
-		op   func(ClusterSnapshot) error
+		op   func(clustersnapshot.ClusterSnapshot) error
 	}{
-		{"add nodeInfo", func(snapshot ClusterSnapshot) error {
+		{"add nodeInfo", func(snapshot clustersnapshot.ClusterSnapshot) error {
 			return snapshot.AddNodeInfo(framework.NewTestNodeInfo(node, pod))
 		}},
 	}
@@ -448,9 +466,10 @@ func TestNodeAlreadyExists(t *testing.T) {
 		for _, op := range ops {
 			t.Run(fmt.Sprintf("%s: %s base", name, op.name),
 				func(t *testing.T) {
-					snapshot := snapshotFactory()
+					snapshot, err := snapshotFactory()
+					assert.NoError(t, err)
 
-					err := snapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
+					err = snapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
 					assert.NoError(t, err)
 
 					// Node already in base.
@@ -460,9 +479,10 @@ func TestNodeAlreadyExists(t *testing.T) {
 
 			t.Run(fmt.Sprintf("%s: %s base, forked", name, op.name),
 				func(t *testing.T) {
-					snapshot := snapshotFactory()
+					snapshot, err := snapshotFactory()
+					assert.NoError(t, err)
 
-					err := snapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
+					err = snapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
 					assert.NoError(t, err)
 
 					snapshot.Fork()
@@ -475,11 +495,12 @@ func TestNodeAlreadyExists(t *testing.T) {
 
 			t.Run(fmt.Sprintf("%s: %s fork", name, op.name),
 				func(t *testing.T) {
-					snapshot := snapshotFactory()
+					snapshot, err := snapshotFactory()
+					assert.NoError(t, err)
 
 					snapshot.Fork()
 
-					err := snapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
+					err = snapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
 					assert.NoError(t, err)
 
 					// Node already in fork.
@@ -488,11 +509,12 @@ func TestNodeAlreadyExists(t *testing.T) {
 				})
 			t.Run(fmt.Sprintf("%s: %s committed", name, op.name),
 				func(t *testing.T) {
-					snapshot := snapshotFactory()
+					snapshot, err := snapshotFactory()
+					assert.NoError(t, err)
 
 					snapshot.Fork()
 
-					err := snapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
+					err = snapshot.AddNodeInfo(framework.NewTestNodeInfo(node))
 					assert.NoError(t, err)
 
 					err = snapshot.Commit()
@@ -628,8 +650,9 @@ func TestPVCUsedByPods(t *testing.T) {
 	for snapshotName, snapshotFactory := range snapshots {
 		for _, tc := range testcase {
 			t.Run(fmt.Sprintf("%s with snapshot (%s)", tc.desc, snapshotName), func(t *testing.T) {
-				snapshot := snapshotFactory()
-				err := snapshot.AddNodeInfo(framework.NewTestNodeInfo(tc.node, tc.pods...))
+				snapshot, err := snapshotFactory()
+				assert.NoError(t, err)
+				err = snapshot.AddNodeInfo(framework.NewTestNodeInfo(tc.node, tc.pods...))
 				assert.NoError(t, err)
 
 				volumeExists := snapshot.StorageInfos().IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", tc.claimName))
@@ -698,8 +721,9 @@ func TestPVCClearAndFork(t *testing.T) {
 
 	for snapshotName, snapshotFactory := range snapshots {
 		t.Run(fmt.Sprintf("fork and revert snapshot with pvc pods with snapshot: %s", snapshotName), func(t *testing.T) {
-			snapshot := snapshotFactory()
-			err := snapshot.AddNodeInfo(framework.NewTestNodeInfo(node, pod1))
+			snapshot, err := snapshotFactory()
+			assert.NoError(t, err)
+			err = snapshot.AddNodeInfo(framework.NewTestNodeInfo(node, pod1))
 			assert.NoError(t, err)
 			volumeExists := snapshot.StorageInfos().IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", "claim1"))
 			assert.Equal(t, true, volumeExists)
@@ -723,8 +747,9 @@ func TestPVCClearAndFork(t *testing.T) {
 		})
 
 		t.Run(fmt.Sprintf("clear snapshot with pvc pods with snapshot: %s", snapshotName), func(t *testing.T) {
-			snapshot := snapshotFactory()
-			err := snapshot.AddNodeInfo(framework.NewTestNodeInfo(node, pod1))
+			snapshot, err := snapshotFactory()
+			assert.NoError(t, err)
+			err = snapshot.AddNodeInfo(framework.NewTestNodeInfo(node, pod1))
 			assert.NoError(t, err)
 			volumeExists := snapshot.StorageInfos().IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", "claim1"))
 			assert.Equal(t, true, volumeExists)
@@ -752,7 +777,7 @@ func TestWithForkedSnapshot(t *testing.T) {
 				return false, err
 			}
 			t.Run(fmt.Sprintf("%s: %s WithForkedSnapshot for failed function", name, tc.name), func(t *testing.T) {
-				err1, err2 := WithForkedSnapshot(snapshot, failedFunc)
+				err1, err2 := clustersnapshot.WithForkedSnapshot(snapshot, failedFunc)
 				assert.Error(t, err1)
 				assert.NoError(t, err2)
 
@@ -760,7 +785,7 @@ func TestWithForkedSnapshot(t *testing.T) {
 				compareStates(t, tc.state, getSnapshotState(t, snapshot))
 			})
 			t.Run(fmt.Sprintf("%s: %s WithForkedSnapshot for success function", name, tc.name), func(t *testing.T) {
-				err1, err2 := WithForkedSnapshot(snapshot, successFunc)
+				err1, err2 := clustersnapshot.WithForkedSnapshot(snapshot, successFunc)
 				assert.Error(t, err1)
 				assert.NoError(t, err2)
 
