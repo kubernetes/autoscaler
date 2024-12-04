@@ -86,6 +86,11 @@ func GetSigner(provider string) (ssh.Signer, error) {
 		if keyfile == "" {
 			keyfile = "id_rsa"
 		}
+	case "azure":
+		keyfile = os.Getenv("AZURE_SSH_KEY")
+		if keyfile == "" {
+			keyfile = "id_rsa"
+		}
 	default:
 		return nil, fmt.Errorf("GetSigner(...) not implemented for %s", provider)
 	}
@@ -241,7 +246,7 @@ func runSSHCommand(ctx context.Context, cmd, user, host string, signer ssh.Signe
 	}
 	client, err := ssh.Dial("tcp", host, config)
 	if err != nil {
-		err = wait.PollWithContext(ctx, 5*time.Second, 20*time.Second, func(ctx context.Context) (bool, error) {
+		err = wait.PollUntilContextTimeout(ctx, 5*time.Second, 20*time.Second, false, func(ctx context.Context) (bool, error) {
 			fmt.Printf("error dialing %s@%s: '%v', retrying\n", user, host, err)
 			if client, err = ssh.Dial("tcp", host, config); err != nil {
 				return false, nil // retrying, error will be logged above
@@ -295,7 +300,7 @@ func runSSHCommandViaBastion(ctx context.Context, cmd, user, bastion, host strin
 	}
 	bastionClient, err := ssh.Dial("tcp", bastion, config)
 	if err != nil {
-		err = wait.PollWithContext(ctx, 5*time.Second, 20*time.Second, func(ctx context.Context) (bool, error) {
+		err = wait.PollUntilContextTimeout(ctx, 5*time.Second, 20*time.Second, false, func(ctx context.Context) (bool, error) {
 			fmt.Printf("error dialing %s@%s: '%v', retrying\n", user, bastion, err)
 			if bastionClient, err = ssh.Dial("tcp", bastion, config); err != nil {
 				return false, err
@@ -422,7 +427,7 @@ func nodeAddresses(nodelist *v1.NodeList, addrType v1.NodeAddressType) []string 
 func waitListSchedulableNodes(ctx context.Context, c clientset.Interface) (*v1.NodeList, error) {
 	var nodes *v1.NodeList
 	var err error
-	if wait.PollImmediateWithContext(ctx, pollNodeInterval, singleCallTimeout, func(ctx context.Context) (bool, error) {
+	if wait.PollUntilContextTimeout(ctx, pollNodeInterval, singleCallTimeout, true, func(ctx context.Context) (bool, error) {
 		nodes, err = c.CoreV1().Nodes().List(ctx, metav1.ListOptions{FieldSelector: fields.Set{
 			"spec.unschedulable": "false",
 		}.AsSelector().String()})

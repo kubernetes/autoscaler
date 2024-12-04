@@ -716,19 +716,17 @@ func (p *podWorkers) IsPodForMirrorPodTerminatingByFullName(podFullName string) 
 }
 
 func isPodStatusCacheTerminal(status *kubecontainer.PodStatus) bool {
-	runningContainers := 0
-	runningSandboxes := 0
 	for _, container := range status.ContainerStatuses {
 		if container.State == kubecontainer.ContainerStateRunning {
-			runningContainers++
+			return false
 		}
 	}
 	for _, sb := range status.SandboxStatuses {
 		if sb.State == runtimeapi.PodSandboxState_SANDBOX_READY {
-			runningSandboxes++
+			return false
 		}
 	}
-	return runningContainers == 0 && runningSandboxes == 0
+	return true
 }
 
 // UpdatePod carries a configuration change or termination state to a pod. A pod is either runnable,
@@ -981,10 +979,12 @@ func calculateEffectiveGracePeriod(status *podSyncStatus, pod *v1.Pod, options *
 	// enforce the restriction that a grace period can only decrease and track whatever our value is,
 	// then ensure a calculated value is passed down to lower levels
 	gracePeriod := status.gracePeriod
+	overridden := false
 	// this value is bedrock truth - the apiserver owns telling us this value calculated by apiserver
 	if override := pod.DeletionGracePeriodSeconds; override != nil {
 		if gracePeriod == 0 || *override < gracePeriod {
 			gracePeriod = *override
+			overridden = true
 		}
 	}
 	// we allow other parts of the kubelet (namely eviction) to request this pod be terminated faster
@@ -992,12 +992,13 @@ func calculateEffectiveGracePeriod(status *podSyncStatus, pod *v1.Pod, options *
 		if override := options.PodTerminationGracePeriodSecondsOverride; override != nil {
 			if gracePeriod == 0 || *override < gracePeriod {
 				gracePeriod = *override
+				overridden = true
 			}
 		}
 	}
 	// make a best effort to default this value to the pod's desired intent, in the event
 	// the kubelet provided no requested value (graceful termination?)
-	if gracePeriod == 0 && pod.Spec.TerminationGracePeriodSeconds != nil {
+	if !overridden && gracePeriod == 0 && pod.Spec.TerminationGracePeriodSeconds != nil {
 		gracePeriod = *pod.Spec.TerminationGracePeriodSeconds
 	}
 	// no matter what, we always supply a grace period of 1
@@ -1658,7 +1659,7 @@ func killPodNow(podWorkers PodWorkers, recorder record.EventRecorder) eviction.K
 
 		// we timeout and return an error if we don't get a callback within a reasonable time.
 		// the default timeout is relative to the grace period (we settle on 10s to wait for kubelet->runtime traffic to complete in sigkill)
-		timeout := int64(gracePeriod + (gracePeriod / 2))
+		timeout := gracePeriod + (gracePeriod / 2)
 		minTimeout := int64(10)
 		if timeout < minTimeout {
 			timeout = minTimeout

@@ -22,6 +22,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kubernetes/pkg/kubelet/cm/containermap"
+	"k8s.io/kubernetes/pkg/kubelet/cm/resourceupdates"
 	"k8s.io/kubernetes/pkg/kubelet/cm/topologymanager"
 	"k8s.io/kubernetes/pkg/kubelet/config"
 	kubecontainer "k8s.io/kubernetes/pkg/kubelet/container"
@@ -33,7 +34,7 @@ import (
 // Manager manages all the Device Plugins running on a node.
 type Manager interface {
 	// Start starts device plugin registration service.
-	Start(activePods ActivePodsFunc, sourcesReady config.SourcesReady, initialContainers containermap.ContainerMap, initialContainerRunningSet sets.String) error
+	Start(activePods ActivePodsFunc, sourcesReady config.SourcesReady, initialContainers containermap.ContainerMap, initialContainerRunningSet sets.Set[string]) error
 
 	// Allocate configures and assigns devices to a container in a pod. From
 	// the requested device resources, Allocate will communicate with the
@@ -63,6 +64,9 @@ type Manager interface {
 	// GetDevices returns information about the devices assigned to pods and containers
 	GetDevices(podUID, containerName string) ResourceDeviceInstances
 
+	// UpdateAllocatedResourcesStatus updates the status of allocated resources for the pod.
+	UpdateAllocatedResourcesStatus(pod *v1.Pod, status *v1.PodStatus)
+
 	// GetAllocatableDevices returns information about all the devices known to the manager
 	GetAllocatableDevices() ResourceDeviceInstances
 
@@ -81,6 +85,9 @@ type Manager interface {
 
 	// UpdateAllocatedDevices frees any Devices that are bound to terminated pods.
 	UpdateAllocatedDevices()
+
+	// Updates returns a channel that receives an Update when the device changed its status.
+	Updates() <-chan resourceupdates.Update
 }
 
 // DeviceRunContainerOptions contains the combined container runtime settings to consume its allocated devices.

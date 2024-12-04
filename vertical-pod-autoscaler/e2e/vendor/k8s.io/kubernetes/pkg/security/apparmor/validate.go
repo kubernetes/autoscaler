@@ -23,10 +23,7 @@ import (
 
 	"github.com/opencontainers/runc/libcontainer/apparmor"
 	v1 "k8s.io/api/core/v1"
-	utilfeature "k8s.io/apiserver/pkg/util/feature"
 	podutil "k8s.io/kubernetes/pkg/api/v1/pod"
-	"k8s.io/kubernetes/pkg/apis/core/validation"
-	"k8s.io/kubernetes/pkg/features"
 )
 
 // Whether AppArmor should be disabled by default.
@@ -62,15 +59,15 @@ func (v *validator) Validate(pod *v1.Pod) error {
 
 	var retErr error
 	podutil.VisitContainers(&pod.Spec, podutil.AllContainers, func(container *v1.Container, containerType podutil.ContainerType) bool {
-		profile := GetProfileName(pod, container.Name)
-		retErr = validation.ValidateAppArmorProfileFormat(profile)
-		if retErr != nil {
-			return false
+		profile := GetProfile(pod, container)
+		if profile == nil {
+			return true
 		}
+
 		// TODO(#64841): This would ideally be part of validation.ValidateAppArmorProfileFormat, but
 		// that is called for API validation, and this is tightening validation.
-		if strings.HasPrefix(profile, v1.AppArmorBetaProfileNamePrefix) {
-			if strings.TrimSpace(strings.TrimPrefix(profile, v1.AppArmorBetaProfileNamePrefix)) == "" {
+		if profile.Type == v1.AppArmorProfileTypeLocalhost {
+			if profile.LocalhostProfile == nil || strings.TrimSpace(*profile.LocalhostProfile) == "" {
 				retErr = fmt.Errorf("invalid empty AppArmor profile name: %q", profile)
 				return false
 			}
@@ -90,11 +87,6 @@ func (v *validator) ValidateHost() error {
 
 // validateHost verifies that the host and runtime is capable of enforcing AppArmor profiles.
 func validateHost() error {
-	// Check feature-gates
-	if !utilfeature.DefaultFeatureGate.Enabled(features.AppArmor) {
-		return errors.New("AppArmor disabled by feature-gate")
-	}
-
 	// Check build support.
 	if isDisabledBuild {
 		return errors.New("binary not compiled for linux")

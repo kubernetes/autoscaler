@@ -23,6 +23,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	utilfeature "k8s.io/apiserver/pkg/util/feature"
+	"k8s.io/kubernetes/pkg/api/v1/service"
 	"k8s.io/kubernetes/pkg/features"
 	"k8s.io/kubernetes/pkg/util/parsers"
 	"k8s.io/utils/pointer"
@@ -66,6 +67,15 @@ func SetDefaults_Volume(obj *v1.Volume) {
 	if pointer.AllPtrFieldsNil(&obj.VolumeSource) {
 		obj.VolumeSource = v1.VolumeSource{
 			EmptyDir: &v1.EmptyDirVolumeSource{},
+		}
+	}
+	if utilfeature.DefaultFeatureGate.Enabled(features.ImageVolume) && obj.Image != nil && obj.Image.PullPolicy == "" {
+		// PullPolicy defaults to Always if :latest tag is specified, or IfNotPresent otherwise.
+		_, tag, _, _ := parsers.ParseImageName(obj.Image.Reference)
+		if tag == "latest" {
+			obj.Image.PullPolicy = v1.PullAlways
+		} else {
+			obj.Image.PullPolicy = v1.PullIfNotPresent
 		}
 	}
 }
@@ -122,11 +132,9 @@ func SetDefaults_Service(obj *v1.Service) {
 			sp.TargetPort = intstr.FromInt32(sp.Port)
 		}
 	}
-	// Defaults ExternalTrafficPolicy field for NodePort / LoadBalancer service
+	// Defaults ExternalTrafficPolicy field for externally-accessible service
 	// to Global for consistency.
-	if (obj.Spec.Type == v1.ServiceTypeNodePort ||
-		obj.Spec.Type == v1.ServiceTypeLoadBalancer) &&
-		obj.Spec.ExternalTrafficPolicy == "" {
+	if service.ExternallyAccessible(obj) && obj.Spec.ExternalTrafficPolicy == "" {
 		obj.Spec.ExternalTrafficPolicy = v1.ServiceExternalTrafficPolicyCluster
 	}
 
@@ -142,6 +150,19 @@ func SetDefaults_Service(obj *v1.Service) {
 			obj.Spec.AllocateLoadBalancerNodePorts = pointer.Bool(true)
 		}
 	}
+
+	if obj.Spec.Type == v1.ServiceTypeLoadBalancer {
+		if utilfeature.DefaultFeatureGate.Enabled(features.LoadBalancerIPMode) {
+			ipMode := v1.LoadBalancerIPModeVIP
+
+			for i, ing := range obj.Status.LoadBalancer.Ingress {
+				if ing.IP != "" && ing.IPMode == nil {
+					obj.Status.LoadBalancer.Ingress[i].IPMode = &ipMode
+				}
+			}
+		}
+	}
+
 }
 func SetDefaults_Pod(obj *v1.Pod) {
 	// If limits are specified, but requests are not, default requests to limits
@@ -215,12 +236,6 @@ func SetDefaults_PodSpec(obj *v1.PodSpec) {
 	}
 	if obj.RestartPolicy == "" {
 		obj.RestartPolicy = v1.RestartPolicyAlways
-	}
-	if utilfeature.DefaultFeatureGate.Enabled(features.DefaultHostNetworkHostPortsInPodTemplates) {
-		if obj.HostNetwork {
-			defaultHostNetworkPorts(&obj.Containers)
-			defaultHostNetworkPorts(&obj.InitContainers)
-		}
 	}
 	if obj.SecurityContext == nil {
 		obj.SecurityContext = &v1.PodSecurityContext{}
@@ -303,34 +318,6 @@ func SetDefaults_PersistentVolumeClaimSpec(obj *v1.PersistentVolumeClaimSpec) {
 	if obj.VolumeMode == nil {
 		obj.VolumeMode = new(v1.PersistentVolumeMode)
 		*obj.VolumeMode = v1.PersistentVolumeFilesystem
-	}
-}
-func SetDefaults_ISCSIVolumeSource(obj *v1.ISCSIVolumeSource) {
-	if obj.ISCSIInterface == "" {
-		obj.ISCSIInterface = "default"
-	}
-}
-func SetDefaults_ISCSIPersistentVolumeSource(obj *v1.ISCSIPersistentVolumeSource) {
-	if obj.ISCSIInterface == "" {
-		obj.ISCSIInterface = "default"
-	}
-}
-func SetDefaults_AzureDiskVolumeSource(obj *v1.AzureDiskVolumeSource) {
-	if obj.CachingMode == nil {
-		obj.CachingMode = new(v1.AzureDataDiskCachingMode)
-		*obj.CachingMode = v1.AzureDataDiskCachingReadWrite
-	}
-	if obj.Kind == nil {
-		obj.Kind = new(v1.AzureDataDiskKind)
-		*obj.Kind = v1.AzureSharedBlobDisk
-	}
-	if obj.FSType == nil {
-		obj.FSType = new(string)
-		*obj.FSType = "ext4"
-	}
-	if obj.ReadOnly == nil {
-		obj.ReadOnly = new(bool)
-		*obj.ReadOnly = false
 	}
 }
 func SetDefaults_Endpoints(obj *v1.Endpoints) {
@@ -433,48 +420,6 @@ func defaultHostNetworkPorts(containers *[]v1.Container) {
 				(*containers)[i].Ports[j].HostPort = (*containers)[i].Ports[j].ContainerPort
 			}
 		}
-	}
-}
-
-func SetDefaults_RBDVolumeSource(obj *v1.RBDVolumeSource) {
-	if obj.RBDPool == "" {
-		obj.RBDPool = "rbd"
-	}
-	if obj.RadosUser == "" {
-		obj.RadosUser = "admin"
-	}
-	if obj.Keyring == "" {
-		obj.Keyring = "/etc/ceph/keyring"
-	}
-}
-
-func SetDefaults_RBDPersistentVolumeSource(obj *v1.RBDPersistentVolumeSource) {
-	if obj.RBDPool == "" {
-		obj.RBDPool = "rbd"
-	}
-	if obj.RadosUser == "" {
-		obj.RadosUser = "admin"
-	}
-	if obj.Keyring == "" {
-		obj.Keyring = "/etc/ceph/keyring"
-	}
-}
-
-func SetDefaults_ScaleIOVolumeSource(obj *v1.ScaleIOVolumeSource) {
-	if obj.StorageMode == "" {
-		obj.StorageMode = "ThinProvisioned"
-	}
-	if obj.FSType == "" {
-		obj.FSType = "xfs"
-	}
-}
-
-func SetDefaults_ScaleIOPersistentVolumeSource(obj *v1.ScaleIOPersistentVolumeSource) {
-	if obj.StorageMode == "" {
-		obj.StorageMode = "ThinProvisioned"
-	}
-	if obj.FSType == "" {
-		obj.FSType = "xfs"
 	}
 }
 

@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/onsi/ginkgo/v2"
+	"github.com/onsi/gomega"
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -45,10 +46,11 @@ func WaitForAllNodesSchedulable(ctx context.Context, c clientset.Interface, time
 	}
 
 	framework.Logf("Waiting up to %v for all (but %d) nodes to be schedulable", timeout, framework.TestContext.AllowedNotReadyNodes)
-	return wait.PollImmediateWithContext(
+	return wait.PollUntilContextTimeout(
 		ctx,
 		30*time.Second,
 		timeout,
+		true,
 		CheckReadyForTests(ctx, c, framework.TestContext.NonblockingTaints, framework.TestContext.AllowedNotReadyNodes, largeClusterThreshold),
 	)
 }
@@ -63,7 +65,7 @@ func ExpectNodeHasLabel(ctx context.Context, c clientset.Interface, nodeName str
 	ginkgo.By("verifying the node has the label " + labelKey + " " + labelValue)
 	node, err := c.CoreV1().Nodes().Get(ctx, nodeName, metav1.GetOptions{})
 	framework.ExpectNoError(err)
-	framework.ExpectEqual(node.Labels[labelKey], labelValue)
+	gomega.Expect(node.Labels).To(gomega.HaveKeyWithValue(labelKey, labelValue))
 }
 
 // RemoveLabelOffNode is for cleaning up labels temporarily added to node,
@@ -120,7 +122,7 @@ func allNodesReady(ctx context.Context, c clientset.Interface, timeout time.Dura
 	framework.Logf("Waiting up to %v for all (but %d) nodes to be ready", timeout, framework.TestContext.AllowedNotReadyNodes)
 
 	var notReady []*v1.Node
-	err := wait.PollImmediateWithContext(ctx, framework.Poll, timeout, func(ctx context.Context) (bool, error) {
+	err := wait.PollUntilContextTimeout(ctx, framework.Poll, timeout, true, func(ctx context.Context) (bool, error) {
 		notReady = nil
 		// It should be OK to list unschedulable Nodes here.
 		nodes, err := c.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
@@ -141,7 +143,7 @@ func allNodesReady(ctx context.Context, c clientset.Interface, timeout time.Dura
 		return len(notReady) <= framework.TestContext.AllowedNotReadyNodes, nil
 	})
 
-	if err != nil && err != wait.ErrWaitTimeout {
+	if err != nil && !wait.Interrupted(err) {
 		return err
 	}
 

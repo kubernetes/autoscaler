@@ -17,6 +17,7 @@ limitations under the License.
 package options
 
 import (
+	"context"
 	"fmt"
 	"math/rand"
 	"net"
@@ -221,7 +222,7 @@ func (o *CloudControllerManagerOptions) ApplyTo(c *config.Config, allControllers
 		return err
 	}
 
-	c.EventBroadcaster = record.NewBroadcaster()
+	c.EventBroadcaster = record.NewBroadcaster(record.WithContext(context.TODO())) // TODO: move broadcaster construction to a place where there is a proper context.
 	c.EventRecorder = c.EventBroadcaster.NewRecorder(scheme.Scheme, v1.EventSource{Component: userAgent})
 
 	rootClientBuilder := clientbuilder.SimpleControllerClientBuilder{
@@ -263,7 +264,7 @@ func (o *CloudControllerManagerOptions) Validate(allControllers []string, disabl
 	if o.WebhookServing != nil {
 		errors = append(errors, o.WebhookServing.Validate()...)
 
-		if o.WebhookServing.BindPort == o.SecureServing.BindPort {
+		if o.WebhookServing.BindPort == o.SecureServing.BindPort && o.WebhookServing.BindPort != 0 {
 			errors = append(errors, fmt.Errorf("--webhook-secure-port cannot be the same value as --secure-port"))
 		}
 	}

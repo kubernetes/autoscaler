@@ -28,7 +28,7 @@ import (
 	"fmt"
 
 	v1 "k8s.io/api/core/v1"
-	resourcev1alpha2 "k8s.io/api/resource/v1alpha2"
+	resourceapi "k8s.io/api/resource/v1alpha3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -59,14 +59,12 @@ var (
 //     In this case the boolean determines whether IsForPod must be called
 //     after retrieving the ResourceClaim and before using it.
 //
-// If podClaim.Template is not nil, the caller must check that the
-// ResourceClaim is indeed the one that was created for the Pod by calling
-// IsUsable.
+// Determining the name depends on Kubernetes >= 1.28.
 func Name(pod *v1.Pod, podClaim *v1.PodResourceClaim) (name *string, mustCheckOwner bool, err error) {
 	switch {
-	case podClaim.Source.ResourceClaimName != nil:
-		return podClaim.Source.ResourceClaimName, false, nil
-	case podClaim.Source.ResourceClaimTemplateName != nil:
+	case podClaim.ResourceClaimName != nil:
+		return podClaim.ResourceClaimName, false, nil
+	case podClaim.ResourceClaimTemplateName != nil:
 		for _, status := range pod.Status.ResourceClaimStatuses {
 			if status.Name == podClaim.Name {
 				return status.ResourceClaimName, true, nil
@@ -82,7 +80,7 @@ func Name(pod *v1.Pod, podClaim *v1.PodResourceClaim) (name *string, mustCheckOw
 // was created for the Pod. It returns an error that is informative
 // enough to be returned by the caller without adding further details
 // about the Pod or ResourceClaim.
-func IsForPod(pod *v1.Pod, claim *resourcev1alpha2.ResourceClaim) error {
+func IsForPod(pod *v1.Pod, claim *resourceapi.ResourceClaim) error {
 	// Checking the namespaces is just a precaution. The caller should
 	// never pass in a ResourceClaim that isn't from the same namespace as the
 	// Pod.
@@ -94,7 +92,7 @@ func IsForPod(pod *v1.Pod, claim *resourcev1alpha2.ResourceClaim) error {
 
 // IsReservedForPod checks whether a claim lists the pod as one of the objects
 // that the claim was reserved for.
-func IsReservedForPod(pod *v1.Pod, claim *resourcev1alpha2.ResourceClaim) bool {
+func IsReservedForPod(pod *v1.Pod, claim *resourceapi.ResourceClaim) bool {
 	for _, reserved := range claim.Status.ReservedFor {
 		if reserved.UID == pod.UID {
 			return true
@@ -104,7 +102,7 @@ func IsReservedForPod(pod *v1.Pod, claim *resourcev1alpha2.ResourceClaim) bool {
 }
 
 // CanBeReserved checks whether the claim could be reserved for another object.
-func CanBeReserved(claim *resourcev1alpha2.ResourceClaim) bool {
-	return claim.Status.Allocation.Shareable ||
-		len(claim.Status.ReservedFor) == 0
+func CanBeReserved(claim *resourceapi.ResourceClaim) bool {
+	// Currently no restrictions on sharing...
+	return true
 }

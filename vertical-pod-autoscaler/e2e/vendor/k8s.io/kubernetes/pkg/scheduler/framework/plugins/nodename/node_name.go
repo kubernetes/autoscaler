@@ -41,10 +41,10 @@ const (
 
 // EventsToRegister returns the possible events that may make a Pod
 // failed by this plugin schedulable.
-func (pl *NodeName) EventsToRegister() []framework.ClusterEventWithHint {
+func (pl *NodeName) EventsToRegister(_ context.Context) ([]framework.ClusterEventWithHint, error) {
 	return []framework.ClusterEventWithHint{
 		{Event: framework.ClusterEvent{Resource: framework.Node, ActionType: framework.Add | framework.Update}},
-	}
+	}, nil
 }
 
 // Name returns name of the plugin. It is used in logs, etc.
@@ -67,6 +67,6 @@ func Fits(pod *v1.Pod, nodeInfo *framework.NodeInfo) bool {
 }
 
 // New initializes a new plugin and returns it.
-func New(_ runtime.Object, _ framework.Handle) (framework.Plugin, error) {
+func New(_ context.Context, _ runtime.Object, _ framework.Handle) (framework.Plugin, error) {
 	return &NodeName{}, nil
 }

@@ -184,6 +184,23 @@ type VolumeSource struct {
 	//
 	// +optional
 	Ephemeral *EphemeralVolumeSource
+	// Image represents an OCI object (a container image or artifact) pulled and mounted on the kubelet's host machine.
+	// The volume is resolved at pod startup depending on which PullPolicy value is provided:
+	//
+	// - Always: the kubelet always attempts to pull the reference. Container creation will fail If the pull fails.
+	// - Never: the kubelet never pulls the reference and only uses a local image or artifact. Container creation will fail if the reference isn't present.
+	// - IfNotPresent: the kubelet pulls if the reference isn't already present on disk. Container creation will fail if the reference isn't present and the pull fails.
+	//
+	// The volume gets re-resolved if the pod gets deleted and recreated, which means that new remote content will become available on pod recreation.
+	// A failure to resolve or pull the image during pod startup will block containers from starting and may add significant latency. Failures will be retried using normal volume backoff and will be reported on the pod reason and message.
+	// The types of objects that may be mounted by this volume are defined by the container runtime implementation on a host machine and at minimum must include all valid types supported by the container image field.
+	// The OCI object gets mounted in a single directory (spec.containers[*].volumeMounts.mountPath) by merging the manifest layers in the same way as for container images.
+	// The volume will be mounted read-only (ro) and non-executable files (noexec).
+	// Sub path mounts for containers are not supported (spec.containers[*].volumeMounts.subpath).
+	// The field spec.securityContext.fsGroupChangePolicy has no effect on this volume type.
+	// +featureGate=ImageVolume
+	// +optional
+	Image *ImageVolumeSource
 }
 
 // PersistentVolumeSource is similar to VolumeSource but meant for the administrator who creates PVs.
@@ -335,6 +352,16 @@ type PersistentVolumeSpec struct {
 	// This field influences the scheduling of pods that use this volume.
 	// +optional
 	NodeAffinity *VolumeNodeAffinity
+	// Name of VolumeAttributesClass to which this persistent volume belongs. Empty value
+	// is not allowed. When this field is not set, it indicates that this volume does not belong to any
+	// VolumeAttributesClass. This field is mutable and can be changed by the CSI driver
+	// after a volume has been updated successfully to a new class.
+	// For an unbound PersistentVolume, the volumeAttributesClassName will be matched with unbound
+	// PersistentVolumeClaims during the binding process.
+	// This is a beta field and requires enabling VolumeAttributesClass feature (off by default).
+	// +featureGate=VolumeAttributesClass
+	// +optional
+	VolumeAttributesClassName *string
 }
 
 // VolumeNodeAffinity defines constraints that limit what nodes this volume can be accessed from.
@@ -382,8 +409,6 @@ type PersistentVolumeStatus struct {
 	Reason string
 	// LastPhaseTransitionTime is the time the phase transitioned from one to another
 	// and automatically resets to current time everytime a volume phase transitions.
-	// This is an alpha field and requires enabling PersistentVolumeLastPhaseTransitionTime feature.
-	// +featureGate=PersistentVolumeLastPhaseTransitionTime
 	// +optional
 	LastPhaseTransitionTime *metav1.Time
 }
@@ -440,7 +465,7 @@ type PersistentVolumeClaimSpec struct {
 	// that are lower than previous value but must still be higher than capacity recorded in the
 	// status field of the claim.
 	// +optional
-	Resources ResourceRequirements
+	Resources VolumeResourceRequirements
 	// VolumeName is the binding reference to the PersistentVolume backing this
 	// claim. When set to non-empty value Selector is not evaluated
 	// +optional
@@ -488,6 +513,21 @@ type PersistentVolumeClaimSpec struct {
 	// (Alpha) Using the namespace field of dataSourceRef requires the CrossNamespaceVolumeDataSource feature gate to be enabled.
 	// +optional
 	DataSourceRef *TypedObjectReference
+	// volumeAttributesClassName may be used to set the VolumeAttributesClass used by this claim.
+	// If specified, the CSI driver will create or update the volume with the attributes defined
+	// in the corresponding VolumeAttributesClass. This has a different purpose than storageClassName,
+	// it can be changed after the claim is created. An empty string value means that no VolumeAttributesClass
+	// will be applied to the claim but it's not allowed to reset this field to empty string once it is set.
+	// If unspecified and the PersistentVolumeClaim is unbound, the default VolumeAttributesClass
+	// will be set by the persistentvolume controller if it exists.
+	// If the resource referred to by volumeAttributesClass does not exist, this PersistentVolumeClaim will be
+	// set to a Pending state, as reflected by the modifyVolumeStatus field, until such as a resource
+	// exists.
+	// More info: https://kubernetes.io/docs/concepts/storage/volume-attributes-classes/
+	// (Beta) Using this field requires the VolumeAttributesClass feature gate to be enabled (off by default).
+	// +featureGate=VolumeAttributesClass
+	// +optional
+	VolumeAttributesClassName *string
 }
 
 type TypedObjectReference struct {
@@ -509,15 +549,32 @@ type TypedObjectReference struct {
 }
 
 // PersistentVolumeClaimConditionType defines the condition of PV claim.
-// Valid values are either "Resizing" or "FileSystemResizePending".
+// Valid values are:
+//   - "Resizing", "FileSystemResizePending"
+//
+// If RecoverVolumeExpansionFailure feature gate is enabled, then following additional values can be expected:
+//   - "ControllerResizeError", "NodeResizeError"
+//
+// If VolumeAttributesClass feature gate is enabled, then following additional values can be expected:
+//   - "ModifyVolumeError", "ModifyingVolume"
 type PersistentVolumeClaimConditionType string
 
-// These are valid conditions of Pvc
+// These are valid conditions of PVC
 const (
 	// An user trigger resize of pvc has been started
 	PersistentVolumeClaimResizing PersistentVolumeClaimConditionType = "Resizing"
 	// PersistentVolumeClaimFileSystemResizePending - controller resize is finished and a file system resize is pending on node
 	PersistentVolumeClaimFileSystemResizePending PersistentVolumeClaimConditionType = "FileSystemResizePending"
+
+	// PersistentVolumeClaimControllerResizeError indicates an error while resizing volume for size in the controller
+	PersistentVolumeClaimControllerResizeError PersistentVolumeClaimConditionType = "ControllerResizeError"
+	// PersistentVolumeClaimNodeResizeError indicates an error while resizing volume for size in the node.
+	PersistentVolumeClaimNodeResizeError PersistentVolumeClaimConditionType = "NodeResizeError"
+
+	// Applying the target VolumeAttributesClass encountered an error
+	PersistentVolumeClaimVolumeModifyVolumeError PersistentVolumeClaimConditionType = "ModifyVolumeError"
+	// Volume is being modified
+	PersistentVolumeClaimVolumeModifyingVolume PersistentVolumeClaimConditionType = "ModifyingVolume"
 )
 
 // +enum
@@ -530,19 +587,52 @@ const (
 	// State set when resize controller starts resizing the volume in control-plane
 	PersistentVolumeClaimControllerResizeInProgress ClaimResourceStatus = "ControllerResizeInProgress"
 
-	// State set when resize has failed in resize controller with a terminal error.
+	// State set when resize has failed in resize controller with a terminal unrecoverable error.
 	// Transient errors such as timeout should not set this status and should leave allocatedResourceStatus
 	// unmodified, so as resize controller can resume the volume expansion.
-	PersistentVolumeClaimControllerResizeFailed ClaimResourceStatus = "ControllerResizeFailed"
+	PersistentVolumeClaimControllerResizeInfeasible ClaimResourceStatus = "ControllerResizeInfeasible"
 
 	// State set when resize controller has finished resizing the volume but further resizing of volume
 	// is needed on the node.
 	PersistentVolumeClaimNodeResizePending ClaimResourceStatus = "NodeResizePending"
 	// State set when kubelet starts resizing the volume.
 	PersistentVolumeClaimNodeResizeInProgress ClaimResourceStatus = "NodeResizeInProgress"
-	// State set when resizing has failed in kubelet with a terminal error. Transient errors don't set NodeResizeFailed
-	PersistentVolumeClaimNodeResizeFailed ClaimResourceStatus = "NodeResizeFailed"
+	// State set when resizing has failed in kubelet with a terminal unrecoverable error. Transient errors
+	// shouldn't set this status
+	PersistentVolumeClaimNodeResizeInfeasible ClaimResourceStatus = "NodeResizeInfeasible"
 )
+
+// +enum
+// New statuses can be added in the future. Consumers should check for unknown statuses and fail appropriately
+type PersistentVolumeClaimModifyVolumeStatus string
+
+const (
+	// Pending indicates that the PersistentVolumeClaim cannot be modified due to unmet requirements, such as
+	// the specified VolumeAttributesClass not existing
+	PersistentVolumeClaimModifyVolumePending PersistentVolumeClaimModifyVolumeStatus = "Pending"
+	// InProgress indicates that the volume is being modified
+	PersistentVolumeClaimModifyVolumeInProgress PersistentVolumeClaimModifyVolumeStatus = "InProgress"
+	// Infeasible indicates that the request has been rejected as invalid by the CSI driver. To
+	// resolve the error, a valid VolumeAttributesClass needs to be specified
+	PersistentVolumeClaimModifyVolumeInfeasible PersistentVolumeClaimModifyVolumeStatus = "Infeasible"
+)
+
+// ModifyVolumeStatus represents the status object of ControllerModifyVolume operation
+type ModifyVolumeStatus struct {
+	// targetVolumeAttributesClassName is the name of the VolumeAttributesClass the PVC currently being reconciled
+	TargetVolumeAttributesClassName string
+	// status is the status of the ControllerModifyVolume operation. It can be in any of following states:
+	//  - Pending
+	//    Pending indicates that the PersistentVolumeClaim cannot be modified due to unmet requirements, such as
+	//    the specified VolumeAttributesClass not existing.
+	//  - InProgress
+	//    InProgress indicates that the volume is being modified.
+	//  - Infeasible
+	//   Infeasible indicates that the request has been rejected as invalid by the CSI driver. To
+	// 	  resolve the error, a valid VolumeAttributesClass needs to be specified.
+	// Note: New statuses can be added in the future. Consumers should check for unknown statuses and fail appropriately.
+	Status PersistentVolumeClaimModifyVolumeStatus
+}
 
 // PersistentVolumeClaimCondition represents the current condition of PV claim
 type PersistentVolumeClaimCondition struct {
@@ -635,6 +725,18 @@ type PersistentVolumeClaimStatus struct {
 	// +mapType=granular
 	// +optional
 	AllocatedResourceStatuses map[ResourceName]ClaimResourceStatus
+	// currentVolumeAttributesClassName is the current name of the VolumeAttributesClass the PVC is using.
+	// When unset, there is no VolumeAttributeClass applied to this PersistentVolumeClaim
+	// This is a beta field and requires enabling VolumeAttributesClass feature (off by default).
+	// +featureGate=VolumeAttributesClass
+	// +optional
+	CurrentVolumeAttributesClassName *string
+	// ModifyVolumeStatus represents the status object of ControllerModifyVolume operation.
+	// When this is unset, there is no ModifyVolume operation being attempted.
+	// This is a beta field and requires enabling VolumeAttributesClass feature (off by default).
+	// +featureGate=VolumeAttributesClass
+	// +optional
+	ModifyVolumeStatus *ModifyVolumeStatus
 }
 
 // PersistentVolumeAccessMode defines various access modes for PV.
@@ -1685,6 +1787,29 @@ type ServiceAccountTokenProjection struct {
 	Path string
 }
 
+// ClusterTrustBundleProjection allows a pod to access the
+// `.spec.trustBundle` field of a ClusterTrustBundle object in an auto-updating
+// file.
+type ClusterTrustBundleProjection struct {
+	// Select a single ClusterTrustBundle by object name.   Mutually-exclusive
+	// with SignerName and LabelSelector.
+	Name *string
+
+	// Select all ClusterTrustBundles for this signer that match LabelSelector.
+	// Mutually-exclusive with Name.
+	SignerName *string
+
+	// Select all ClusterTrustBundles that match this LabelSelecotr.
+	// Mutually-exclusive with Name.
+	LabelSelector *metav1.LabelSelector
+
+	// Block pod startup if the selected ClusterTrustBundle(s) aren't available?
+	Optional *bool
+
+	// Relative path from the volume root to write the bundle.
+	Path string
+}
+
 // ProjectedVolumeSource represents a projected volume source
 type ProjectedVolumeSource struct {
 	// list of volume projections
@@ -1710,6 +1835,8 @@ type VolumeProjection struct {
 	ConfigMap *ConfigMapProjection
 	// information about the serviceAccountToken data to project
 	ServiceAccountToken *ServiceAccountTokenProjection
+	// information about the ClusterTrustBundle data to project
+	ClusterTrustBundle *ClusterTrustBundleProjection
 }
 
 // KeyToPath maps a string key to a path within a volume.
@@ -1805,10 +1932,8 @@ type CSIPersistentVolumeSource struct {
 	// NodeExpandSecretRef is a reference to the secret object containing
 	// sensitive information to pass to the CSI driver to complete the CSI
 	// NodeExpandVolume call.
-	// This is a beta field which is enabled default by CSINodeExpandSecret feature gate.
 	// This field is optional, may be omitted if no secret is required. If the
 	// secret object contains more than one secret, all secrets are passed.
-	// +featureGate=CSINodeExpandSecret
 	// +optional
 	NodeExpandSecretRef *SecretReference
 }
@@ -1914,6 +2039,26 @@ type VolumeMount struct {
 	// Optional: Defaults to false (read-write).
 	// +optional
 	ReadOnly bool
+	// RecursiveReadOnly specifies whether read-only mounts should be handled
+	// recursively.
+	//
+	// If ReadOnly is false, this field has no meaning and must be unspecified.
+	//
+	// If ReadOnly is true, and this field is set to Disabled, the mount is not made
+	// recursively read-only.  If this field is set to IfPossible, the mount is made
+	// recursively read-only, if it is supported by the container runtime.  If this
+	// field is set to Enabled, the mount is made recursively read-only if it is
+	// supported by the container runtime, otherwise the pod will not be started and
+	// an error will be generated to indicate the reason.
+	//
+	// If this field is set to IfPossible or Enabled, MountPropagation must be set to
+	// None (or be unspecified, which defaults to None).
+	//
+	// If this field is not specified, it is treated as an equivalent of Disabled.
+	//
+	// +featureGate=RecursiveReadOnlyMounts
+	// +optional
+	RecursiveReadOnly *RecursiveReadOnlyMode
 	// Required. If the path is not an absolute path (e.g. some/path) it
 	// will be prepended with the appropriate root prefix for the operating
 	// system.  On Linux this is '/', on Windows this is 'C:\'.
@@ -1926,6 +2071,8 @@ type VolumeMount struct {
 	// to container and the other way around.
 	// When not set, MountPropagationNone is used.
 	// This field is beta in 1.10.
+	// When RecursiveReadOnly is set to IfPossible or to Enabled, MountPropagation must be None or unspecified
+	// (which defaults to None).
 	// +optional
 	MountPropagation *MountPropagationMode
 	// Expanded path within the volume from which the container's volume should be mounted.
@@ -1961,6 +2108,18 @@ const (
 	MountPropagationBidirectional MountPropagationMode = "Bidirectional"
 )
 
+// RecursiveReadOnlyMode describes recursive-readonly mode.
+type RecursiveReadOnlyMode string
+
+const (
+	// RecursiveReadOnlyDisabled disables recursive-readonly mode.
+	RecursiveReadOnlyDisabled RecursiveReadOnlyMode = "Disabled"
+	// RecursiveReadOnlyIfPossible enables recursive-readonly mode if possible.
+	RecursiveReadOnlyIfPossible RecursiveReadOnlyMode = "IfPossible"
+	// RecursiveReadOnlyEnabled enables recursive-readonly mode, or raise an error.
+	RecursiveReadOnlyEnabled RecursiveReadOnlyMode = "Enabled"
+)
+
 // VolumeDevice describes a mapping of a raw block device within a container.
 type VolumeDevice struct {
 	// name must match the name of a persistentVolumeClaim in the pod
@@ -1971,7 +2130,11 @@ type VolumeDevice struct {
 
 // EnvVar represents an environment variable present in a Container.
 type EnvVar struct {
-	// Required: This must be a C_IDENTIFIER.
+	// Required: Name of the environment variable.
+	// When the RelaxedEnvironmentVariableValidation feature gate is disabled, this must consist of alphabetic characters,
+	// digits, '_', '-', or '.', and must not start with a digit.
+	// When the RelaxedEnvironmentVariableValidation feature gate is enabled,
+	// this may contain any printable ASCII characters except '='.
 	Name string
 	// Optional: no more than one of the following may be specified.
 	// Optional: Defaults to ""; variable references $(VAR_NAME) are expanded
@@ -2150,6 +2313,12 @@ type ExecAction struct {
 	Command []string
 }
 
+// SleepAction describes a "sleep" action.
+type SleepAction struct {
+	// Seconds is the number of seconds to sleep.
+	Seconds int64
+}
+
 // Probe describes a health check to be performed against a container to determine whether it is
 // alive or ready to receive traffic.
 type Probe struct {
@@ -2282,12 +2451,31 @@ type ResourceRequirements struct {
 	Claims []ResourceClaim
 }
 
+// VolumeResourceRequirements describes the storage resource requirements for a volume.
+type VolumeResourceRequirements struct {
+	// Limits describes the maximum amount of compute resources allowed.
+	// +optional
+	Limits ResourceList
+	// Requests describes the minimum amount of compute resources required.
+	// If Request is omitted for a container, it defaults to Limits if that is explicitly specified,
+	// otherwise to an implementation-defined value
+	// +optional
+	Requests ResourceList
+}
+
 // ResourceClaim references one entry in PodSpec.ResourceClaims.
 type ResourceClaim struct {
 	// Name must match the name of one entry in pod.spec.resourceClaims of
 	// the Pod where this field is used. It makes that resource available
 	// inside a container.
 	Name string
+
+	// Request is the name chosen for a request in the referenced claim.
+	// If empty, everything from the claim is made available, otherwise
+	// only the result of this request.
+	//
+	// +optional
+	Request string
 }
 
 // Container represents a single container that is expected to be run on the host.
@@ -2420,6 +2608,10 @@ type LifecycleHandler struct {
 	// lifecycle hooks will fail in runtime when tcp handler is specified.
 	// +optional
 	TCPSocket *TCPSocketAction
+	// Sleep represents the duration that the container should sleep before being terminated.
+	// +featureGate=PodLifecycleSleepAction
+	// +optional
+	Sleep *SleepAction
 }
 
 type GRPCAction struct {
@@ -2579,6 +2771,90 @@ type ContainerStatus struct {
 	// +featureGate=InPlacePodVerticalScaling
 	// +optional
 	Resources *ResourceRequirements
+	// Status of volume mounts.
+	// +listType=atomic
+	// +optional
+	// +featureGate=RecursiveReadOnlyMounts
+	VolumeMounts []VolumeMountStatus
+	// User represents user identity information initially attached to the first process of the container
+	// +featureGate=SupplementalGroupsPolicy
+	// +optional
+	User *ContainerUser
+	// AllocatedResourcesStatus represents the status of various resources
+	// allocated for this Pod.
+	// +featureGate=ResourceHealthStatus
+	// +optional
+	AllocatedResourcesStatus []ResourceStatus
+}
+
+type ResourceStatus struct {
+	Name ResourceName
+	// List of unique Resources health. Each element in the list contains a unique resource ID and resource health.
+	// At a minimum, ResourceID must uniquely identify the Resource
+	// allocated to the Pod on the Node for the lifetime of a Pod.
+	// See ResourceID type for it's definition.
+	Resources []ResourceHealth
+
+	// allow to extend this struct in future with the overall health fields or things like Device Plugin version
+}
+
+// ResourceID is calculated based on the source of this resource health information.
+// For DevicePlugin:
+//
+//	deviceplugin:DeviceID, where DeviceID is from the Device structure of DevicePlugin's ListAndWatchResponse type: https://github.com/kubernetes/kubernetes/blob/eda1c780543a27c078450e2f17d674471e00f494/staging/src/k8s.io/kubelet/pkg/apis/deviceplugin/v1alpha/api.proto#L61-L73
+//
+// DevicePlugin ID is usually a constant for the lifetime of a Node and typically can be used to uniquely identify the device on the node.
+// For DRA:
+//
+//	dra:<driver name>/<pool name>/<device name>: such a device can be looked up in the information published by that DRA driver to learn more about it. It is designed to be globally unique in a cluster.
+type ResourceID string
+
+type ResourceHealthStatus string
+
+const (
+	ResourceHealthStatusHealthy   ResourceHealthStatus = "Healthy"
+	ResourceHealthStatusUnhealthy ResourceHealthStatus = "Unhealthy"
+	ResourceHealthStatusUnknown   ResourceHealthStatus = "Unknown"
+)
+
+// ResourceHealth represents the health of a resource. It has the latest device health information.
+// This is a part of KEP https://kep.k8s.io/4680 and historical health changes are planned to be added in future iterations of a KEP.
+type ResourceHealth struct {
+	// ResourceID is the unique identifier of the resource. See the ResourceID type for more information.
+	ResourceID ResourceID
+	// Health of the resource.
+	// can be one of:
+	//  - Healthy: operates as normal
+	//  - Unhealthy: reported unhealthy. We consider this a temporary health issue
+	//               since we do not have a mechanism today to distinguish
+	//               temporary and permanent issues.
+	//  - Unknown: The status cannot be determined.
+	//             For example, Device Plugin got unregistered and hasn't been re-registered since.
+	//
+	// In future we may want to introduce the PermanentlyUnhealthy Status.
+	Health ResourceHealthStatus
+}
+
+// ContainerUser represents user identity information
+type ContainerUser struct {
+	// Linux holds user identity information initially attached to the first process of the containers in Linux.
+	// Note that the actual running identity can be changed if the process has enough privilege to do so.
+	// +optional
+	Linux *LinuxContainerUser
+
+	// Windows holds user identity information of the first process of the containers in Windows
+	// This is just reserved for future use.
+	// Windows *WindowsContainerUser
+}
+
+// LinuxContainerUser represents user identity information in Linux containers
+type LinuxContainerUser struct {
+	// UID is the primary uid initially attached to the first process in the container
+	UID int64
+	// GID is the primary gid initially attached to the first process in the container
+	GID int64
+	// SupplementalGroups are the supplemental groups initially attached to the first process in the container
+	SupplementalGroups []int64
 }
 
 // PodPhase is a label for the condition of a pod at the current time.
@@ -2617,12 +2893,6 @@ const (
 	PodReady PodConditionType = "Ready"
 	// PodInitialized means that all init containers in the pod have started successfully.
 	PodInitialized PodConditionType = "Initialized"
-	// PodReasonUnschedulable reason in PodScheduled PodCondition means that the scheduler
-	// can't schedule the pod right now, for example due to insufficient resources in the cluster.
-	PodReasonUnschedulable = "Unschedulable"
-	// PodReasonSchedulingGated reason in PodScheduled PodCondition means that the scheduler
-	// skips scheduling the pod because one or more scheduling gates are still present.
-	PodReasonSchedulingGated = "SchedulingGated"
 	// ContainersReady indicates whether all containers in the pod are ready.
 	ContainersReady PodConditionType = "ContainersReady"
 	// DisruptionTarget indicates the pod is about to be terminated due to a
@@ -2657,6 +2927,23 @@ const (
 	// Requested pod resize is not feasible and will not be re-evaluated.
 	PodResizeStatusInfeasible PodResizeStatus = "Infeasible"
 )
+
+// VolumeMountStatus shows status of volume mounts.
+type VolumeMountStatus struct {
+	// Name corresponds to the name of the original VolumeMount.
+	Name string
+	// MountPath corresponds to the original VolumeMount.
+	MountPath string
+	// ReadOnly corresponds to the original VolumeMount.
+	// +optional
+	ReadOnly bool
+	// RecursiveReadOnly must be set to Disabled, Enabled, or unspecified (for non-readonly mounts).
+	// An IfPossible value in the original VolumeMount must be translated to Disabled or Enabled,
+	// depending on the mount result.
+	// +featureGate=RecursiveReadOnlyMounts
+	// +optional
+	RecursiveReadOnly *RecursiveReadOnlyMode
+}
 
 // RestartPolicy describes how the container should be restarted.
 // Only one of the following restart policies may be specified.
@@ -2886,6 +3173,7 @@ type WeightedPodAffinityTerm struct {
 // a pod of the set of pods is running.
 type PodAffinityTerm struct {
 	// A label query over a set of resources, in this case pods.
+	// If it's null, this PodAffinityTerm matches with no Pods.
 	// +optional
 	LabelSelector *metav1.LabelSelector
 	// namespaces specifies a static list of namespace names that the term applies to.
@@ -2907,6 +3195,32 @@ type PodAffinityTerm struct {
 	// An empty selector ({}) matches all namespaces.
 	// +optional
 	NamespaceSelector *metav1.LabelSelector
+	// MatchLabelKeys is a set of pod label keys to select which pods will
+	// be taken into consideration. The keys are used to lookup values from the
+	// incoming pod labels, those key-value labels are merged with `labelSelector` as `key in (value)`
+	// to select the group of existing pods which pods will be taken into consideration
+	// for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming
+	// pod labels will be ignored. The default value is empty.
+	// The same key is forbidden to exist in both matchLabelKeys and labelSelector.
+	// Also, matchLabelKeys cannot be set when labelSelector isn't set.
+	// This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
+	//
+	// +listType=atomic
+	// +optional
+	MatchLabelKeys []string
+	// MismatchLabelKeys is a set of pod label keys to select which pods will
+	// be taken into consideration. The keys are used to lookup values from the
+	// incoming pod labels, those key-value labels are merged with `labelSelector` as `key notin (value)`
+	// to select the group of existing pods which pods will be taken into consideration
+	// for the incoming pod's pod (anti) affinity. Keys that don't exist in the incoming
+	// pod labels will be ignored. The default value is empty.
+	// The same key is forbidden to exist in both mismatchLabelKeys and labelSelector.
+	// Also, mismatchLabelKeys cannot be set when labelSelector isn't set.
+	// This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
+	//
+	// +listType=atomic
+	// +optional
+	MismatchLabelKeys []string
 }
 
 // NodeAffinity is a group of node affinity scheduling rules.
@@ -3085,9 +3399,11 @@ type PodSpec struct {
 	// +optional
 	AutomountServiceAccountToken *bool
 
-	// NodeName is a request to schedule this pod onto a specific node.  If it is non-empty,
-	// the scheduler simply schedules this pod onto that node, assuming that it fits resource
-	// requirements.
+	// NodeName indicates in which node this pod is scheduled.
+	// If empty, this pod is a candidate for scheduling by the scheduler defined in schedulerName.
+	// Once this field is set, the kubelet for this node becomes responsible for the lifecycle of this pod.
+	// This field should not be used to express a desire for the pod to be scheduled on a specific node.
+	// https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodename
 	// +optional
 	NodeName string
 	// SecurityContext holds pod-level security attributes and common container settings.
@@ -3123,7 +3439,7 @@ type PodSpec struct {
 	// +optional
 	Tolerations []Toleration
 	// HostAliases is an optional list of hosts and IPs that will be injected into the pod's hosts
-	// file if specified. This is only valid for non-hostNetwork pods.
+	// file if specified.
 	// +optional
 	HostAliases []HostAlias
 	// If specified, indicates the pod's priority. "system-node-critical" and
@@ -3193,6 +3509,7 @@ type PodSpec struct {
 	// - spec.hostPID
 	// - spec.hostIPC
 	// - spec.hostUsers
+	// - spec.securityContext.appArmorProfile
 	// - spec.securityContext.seLinuxOptions
 	// - spec.securityContext.seccompProfile
 	// - spec.securityContext.fsGroup
@@ -3202,6 +3519,8 @@ type PodSpec struct {
 	// - spec.securityContext.runAsUser
 	// - spec.securityContext.runAsGroup
 	// - spec.securityContext.supplementalGroups
+	// - spec.securityContext.supplementalGroupsPolicy
+	// - spec.containers[*].securityContext.appArmorProfile
 	// - spec.containers[*].securityContext.seLinuxOptions
 	// - spec.containers[*].securityContext.seccompProfile
 	// - spec.containers[*].securityContext.capabilities
@@ -3220,9 +3539,6 @@ type PodSpec struct {
 	//
 	// SchedulingGates can only be set at pod creation time, and be removed only afterwards.
 	//
-	// This is a beta feature enabled by the PodSchedulingReadiness feature gate.
-	//
-	// +featureGate=PodSchedulingReadiness
 	// +optional
 	SchedulingGates []PodSchedulingGate
 	// ResourceClaims defines which ResourceClaims must be allocated
@@ -3248,17 +3564,11 @@ type PodResourceClaim struct {
 	// This must be a DNS_LABEL.
 	Name string
 
-	// Source describes where to find the ResourceClaim.
-	Source ClaimSource
-}
-
-// ClaimSource describes a reference to a ResourceClaim.
-//
-// Exactly one of these fields should be set.  Consumers of this type must
-// treat an empty object as if it has an unknown value.
-type ClaimSource struct {
 	// ResourceClaimName is the name of a ResourceClaim object in the same
 	// namespace as this pod.
+	//
+	// Exactly one of ResourceClaimName and ResourceClaimTemplateName must
+	// be set.
 	ResourceClaimName *string
 
 	// ResourceClaimTemplateName is the name of a ResourceClaimTemplate
@@ -3273,6 +3583,9 @@ type ClaimSource struct {
 	// This field is immutable and no changes will be made to the
 	// corresponding ResourceClaim by the control plane after creating the
 	// ResourceClaim.
+	//
+	// Exactly one of ResourceClaimName and ResourceClaimTemplateName must
+	// be set.
 	ResourceClaimTemplateName *string
 }
 
@@ -3286,7 +3599,7 @@ type PodResourceClaimStatus struct {
 	Name string
 
 	// ResourceClaimName is the name of the ResourceClaim that was
-	// generated for the Pod in the namespace of the Pod. It this is
+	// generated for the Pod in the namespace of the Pod. If this is
 	// unset, then generating a ResourceClaim was not necessary. The
 	// pod.spec.resourceClaims entry can be ignored in this case.
 	ResourceClaimName *string
@@ -3346,6 +3659,22 @@ const (
 	// should always be changed whenever volume is mounted inside a Pod. This the default
 	// behavior.
 	FSGroupChangeAlways PodFSGroupChangePolicy = "Always"
+)
+
+// SupplementalGroupsPolicy defines how supplemental groups
+// of the first container processes are calculated.
+type SupplementalGroupsPolicy string
+
+const (
+	// SupplementalGroupsPolicyMerge means that the container's provided
+	// SupplementalGroups and FsGroup (specified in SecurityContext) will be
+	// merged with the primary user's groups as defined in the container image
+	// (in /etc/group).
+	SupplementalGroupsPolicyMerge SupplementalGroupsPolicy = "Merge"
+	// SupplementalGroupsPolicyStrict means that the container's provided
+	// SupplementalGroups and FsGroup (specified in SecurityContext) will be
+	// used instead of any groups defined in the container image.
+	SupplementalGroupsPolicyStrict SupplementalGroupsPolicy = "Strict"
 )
 
 // PodSecurityContext holds pod-level security attributes and common container settings.
@@ -3430,15 +3759,26 @@ type PodSecurityContext struct {
 	// for that container.
 	// +optional
 	RunAsNonRoot *bool
-	// A list of groups applied to the first process run in each container, in addition
-	// to the container's primary GID, the fsGroup (if specified), and group memberships
-	// defined in the container image for the uid of the container process. If unspecified,
-	// no additional groups are added to any container. Note that group memberships
-	// defined in the container image for the uid of the container process are still effective,
-	// even if they are not included in this list.
+	// A list of groups applied to the first process run in each container, in
+	// addition to the container's primary GID and fsGroup (if specified).  If
+	// the SupplementalGroupsPolicy feature is enabled, the
+	// supplementalGroupsPolicy field determines whether these are in addition
+	// to or instead of any group memberships defined in the container image.
+	// If unspecified, no additional groups are added, though group memberships
+	// defined in the container image may still be used, depending on the
+	// supplementalGroupsPolicy field.
 	// Note that this field cannot be set when spec.os.name is windows.
 	// +optional
 	SupplementalGroups []int64
+	// Defines how supplemental groups of the first container processes are calculated.
+	// Valid values are "Merge" and "Strict". If not specified, "Merge" is used.
+	// (Alpha) Using the field requires the SupplementalGroupsPolicy feature gate to be enabled
+	// and the container runtime must implement support for this feature.
+	// Note that this field cannot be set when spec.os.name is windows.
+	// TODO: update the default value to "Merge" when spec.os.name is not windows in v1.34
+	// +featureGate=SupplementalGroupsPolicy
+	// +optional
+	SupplementalGroupsPolicy *SupplementalGroupsPolicy
 	// A special supplemental group that applies to all containers in a pod.
 	// Some volume types allow the Kubelet to change the ownership of that volume
 	// to be owned by the pod:
@@ -3469,6 +3809,10 @@ type PodSecurityContext struct {
 	// Note that this field cannot be set when spec.os.name is windows.
 	// +optional
 	SeccompProfile *SeccompProfile
+	// appArmorProfile is the AppArmor options to use by the containers in this pod.
+	// Note that this field cannot be set when spec.os.name is windows.
+	// +optional
+	AppArmorProfile *AppArmorProfile
 }
 
 // SeccompProfile defines a pod/container's seccomp profile settings.
@@ -3494,6 +3838,38 @@ const (
 	SeccompProfileTypeRuntimeDefault SeccompProfileType = "RuntimeDefault"
 	// SeccompProfileTypeLocalhost represents custom made profiles stored on the node's disk.
 	SeccompProfileTypeLocalhost SeccompProfileType = "Localhost"
+)
+
+// AppArmorProfile defines a pod or container's AppArmor settings.
+// +union
+type AppArmorProfile struct {
+	// type indicates which kind of AppArmor profile will be applied.
+	// Valid options are:
+	//   Localhost - a profile pre-loaded on the node.
+	//   RuntimeDefault - the container runtime's default profile.
+	//   Unconfined - no AppArmor enforcement.
+	// +unionDescriminator
+	Type AppArmorProfileType
+
+	// localhostProfile indicates a profile loaded on the node that should be used.
+	// The profile must be preconfigured on the node to work.
+	// Must match the loaded name of the profile.
+	// Must be set if and only if type is "Localhost".
+	// +optional
+	LocalhostProfile *string
+}
+
+// +enum
+type AppArmorProfileType string
+
+const (
+	// AppArmorProfileTypeUnconfined indicates that no AppArmor profile should be enforced.
+	AppArmorProfileTypeUnconfined AppArmorProfileType = "Unconfined"
+	// AppArmorProfileTypeRuntimeDefault indicates that the container runtime's default AppArmor
+	// profile should be used.
+	AppArmorProfileTypeRuntimeDefault AppArmorProfileType = "RuntimeDefault"
+	// AppArmorProfileTypeLocalhost indicates that a profile pre-loaded on the node should be used.
+	AppArmorProfileTypeLocalhost AppArmorProfileType = "Localhost"
 )
 
 // PodQOSClass defines the supported qos classes of Pods.
@@ -4034,6 +4410,18 @@ const (
 	ServiceExternalTrafficPolicyLocal ServiceExternalTrafficPolicy = "Local"
 )
 
+// These are valid values for the TrafficDistribution field of a Service.
+const (
+	// Indicates a preference for routing traffic to endpoints that are
+	// topologically proximate to the client. The interpretation of "topologically
+	// proximate" may vary across implementations and could encompass endpoints
+	// within the same node, rack, zone, or even region. Setting this value gives
+	// implementations permission to make different tradeoffs, e.g. optimizing for
+	// proximity rather than equal distribution of load. Users should not set this
+	// value if such tradeoffs are not acceptable.
+	ServiceTrafficDistributionPreferClose = "PreferClose"
+)
+
 // These are the valid conditions of a service.
 const (
 	// LoadBalancerPortsError represents the condition of the requested ports
@@ -4073,6 +4461,15 @@ type LoadBalancerIngress struct {
 	// (typically AWS load-balancers)
 	// +optional
 	Hostname string
+
+	// IPMode specifies how the load-balancer IP behaves, and may only be specified when the ip field is specified.
+	// Setting this to "VIP" indicates that traffic is delivered to the node with
+	// the destination set to the load-balancer's IP and port.
+	// Setting this to "Proxy" indicates that traffic is delivered to the node or pod with
+	// the destination set to the node's IP and node port or the pod's IP and port.
+	// Service implementations may use this information to adjust traffic routing.
+	// +optional
+	IPMode *LoadBalancerIPMode
 
 	// Ports is a list of records of service ports
 	// If used, every port defined in the service should have an entry in it
@@ -4288,6 +4685,15 @@ type ServiceSpec struct {
 	// (possibly modified by topology and other features).
 	// +optional
 	InternalTrafficPolicy *ServiceInternalTrafficPolicy
+
+	// TrafficDistribution offers a way to express preferences for how traffic is
+	// distributed to Service endpoints. Implementations can use this field as a
+	// hint, but are not required to guarantee strict adherence. If the field is
+	// not set, the implementation will apply its default routing strategy. If set
+	// to "PreferClose", implementations should prioritize endpoints that are
+	// topologically close (e.g., same zone).
+	// +optional
+	TrafficDistribution *string
 }
 
 // ServicePort represents the port on which the service is exposed
@@ -4310,7 +4716,7 @@ type ServicePort struct {
 	// RFC-6335 and https://www.iana.org/assignments/service-names).
 	//
 	// * Kubernetes-defined prefixed names:
-	//   * 'kubernetes.io/h2c' - HTTP/2 over cleartext as described in https://www.rfc-editor.org/rfc/rfc7540
+	//   * 'kubernetes.io/h2c' - HTTP/2 prior knowledge over cleartext as described in https://www.rfc-editor.org/rfc/rfc9113.html#name-starting-http-2-with-prior-
 	//   * 'kubernetes.io/ws'  - WebSocket over cleartext as described in https://www.rfc-editor.org/rfc/rfc6455
 	//   * 'kubernetes.io/wss' - WebSocket over TLS as described in https://www.rfc-editor.org/rfc/rfc6455
 	//
@@ -4475,7 +4881,7 @@ type EndpointPort struct {
 	// RFC-6335 and https://www.iana.org/assignments/service-names).
 	//
 	// * Kubernetes-defined prefixed names:
-	//   * 'kubernetes.io/h2c' - HTTP/2 over cleartext as described in https://www.rfc-editor.org/rfc/rfc7540
+	//   * 'kubernetes.io/h2c' - HTTP/2 prior knowledge over cleartext as described in https://www.rfc-editor.org/rfc/rfc9113.html#name-starting-http-2-with-prior-
 	//   * 'kubernetes.io/ws'  - WebSocket over cleartext as described in https://www.rfc-editor.org/rfc/rfc6455
 	//   * 'kubernetes.io/wss' - WebSocket over TLS as described in https://www.rfc-editor.org/rfc/rfc6455
 	//
@@ -4576,6 +4982,38 @@ type NodeDaemonEndpoints struct {
 	KubeletEndpoint DaemonEndpoint
 }
 
+// NodeRuntimeHandlerFeatures is a set of features implemented by the runtime handler.
+type NodeRuntimeHandlerFeatures struct {
+	// RecursiveReadOnlyMounts is set to true if the runtime handler supports RecursiveReadOnlyMounts.
+	// +featureGate=RecursiveReadOnlyMounts
+	// +optional
+	RecursiveReadOnlyMounts *bool
+	// UserNamespaces is set to true if the runtime handler supports UserNamespaces, including for volumes.
+	// +featureGate=UserNamespacesSupport
+	// +optional
+	UserNamespaces *bool
+}
+
+// NodeRuntimeHandler is a set of runtime handler information.
+type NodeRuntimeHandler struct {
+	// Runtime handler name.
+	// Empty for the default runtime handler.
+	// +optional
+	Name string
+	// Supported features.
+	// +optional
+	Features *NodeRuntimeHandlerFeatures
+}
+
+// NodeFeatures describes the set of features implemented by the CRI implementation.
+// The features contained in the NodeFeatures should depend only on the cri implementation
+// independent of runtime handlers.
+type NodeFeatures struct {
+	// SupplementalGroupsPolicy is set to true if the runtime supports SupplementalGroupsPolicy and ContainerUser.
+	// +optional
+	SupplementalGroupsPolicy *bool
+}
+
 // NodeSystemInfo is a set of ids/uuids to uniquely identify the node.
 type NodeSystemInfo struct {
 	// MachineID reported by the node. For unique machine identification
@@ -4596,7 +5034,7 @@ type NodeSystemInfo struct {
 	ContainerRuntimeVersion string
 	// Kubelet Version reported by the node.
 	KubeletVersion string
-	// KubeProxy Version reported by the node.
+	// Deprecated: KubeProxy Version reported by the node.
 	KubeProxyVersion string
 	// The Operating System reported by the node
 	OperatingSystem string
@@ -4686,6 +5124,15 @@ type NodeStatus struct {
 	// Status of the config assigned to the node via the dynamic Kubelet config feature.
 	// +optional
 	Config *NodeConfigStatus
+	// The available runtime handlers.
+	// +featureGate=RecursiveReadOnlyMounts
+	// +featureGate=UserNamespacesSupport
+	// +optional
+	RuntimeHandlers []NodeRuntimeHandler
+	// Features describes the set of features implemented by the CRI implementation.
+	// +featureGate=SupplementalGroupsPolicy
+	// +optional
+	Features *NodeFeatures
 }
 
 // UniqueVolumeName defines the name of attached volume
@@ -4759,9 +5206,8 @@ const (
 // NodeConditionType defines node's condition
 type NodeConditionType string
 
-// These are valid conditions of node. Currently, we don't have enough information to decide
-// node condition. In the future, we will add more. The proposed set of conditions are:
-// NodeReady, NodeReachable
+// These are valid but not exhaustive conditions of node. A cloud provider may set a condition not listed here.
+// Relevant events contain "NodeReady", "NodeNotReady", "NodeSchedulable", and "NodeNotSchedulable".
 const (
 	// NodeReady means kubelet is healthy and ready to accept pods.
 	NodeReady NodeConditionType = "Ready"
@@ -4838,14 +5284,6 @@ type NodeAddress struct {
 	Address string
 }
 
-// NodeResources is an object for conveying resource information about a node.
-// see https://kubernetes.io/docs/concepts/architecture/nodes/#capacity for more details.
-type NodeResources struct {
-	// Capacity represents the available resources of a node
-	// +optional
-	Capacity ResourceList
-}
-
 // ResourceName is the name identifying various resources in a ResourceList.
 type ResourceName string
 
@@ -4862,7 +5300,6 @@ const (
 	// Volume size, in bytes (e,g. 5Gi = 5GiB = 5 * 1024 * 1024 * 1024)
 	ResourceStorage ResourceName = "storage"
 	// Local ephemeral storage, in bytes. (500Gi = 500GiB = 500 * 1024 * 1024 * 1024)
-	// The resource name for ResourceEphemeralStorage is alpha and it can change across releases.
 	ResourceEphemeralStorage ResourceName = "ephemeral-storage"
 )
 
@@ -5429,6 +5866,8 @@ const (
 	ResourceLimitsMemory ResourceName = "limits.memory"
 	// Local ephemeral storage limit, in bytes. (500Gi = 500GiB = 500 * 1024 * 1024 * 1024)
 	ResourceLimitsEphemeralStorage ResourceName = "limits.ephemeral-storage"
+	// resource.k8s.io devices requested with a certain DeviceClass, number
+	ResourceClaimsPerClass string = ".deviceclass.resource.k8s.io/devices"
 )
 
 // The following identify resource prefix for Kubernetes object types
@@ -5868,7 +6307,7 @@ type SecurityContext struct {
 	// +optional
 	AllowPrivilegeEscalation *bool
 	// ProcMount denotes the type of proc mount to use for the containers.
-	// The default is DefaultProcMount which uses the container runtime defaults for
+	// The default value is Default which uses the container runtime defaults for
 	// readonly paths and masked paths.
 	// Note that this field cannot be set when spec.os.name is windows.
 	// +optional
@@ -5879,6 +6318,11 @@ type SecurityContext struct {
 	// Note that this field cannot be set when spec.os.name is windows.
 	// +optional
 	SeccompProfile *SeccompProfile
+	// appArmorProfile is the AppArmor options to use by this container. If set, this profile
+	// overrides the pod's appArmorProfile.
+	// Note that this field cannot be set when spec.os.name is windows.
+	// +optional
+	AppArmorProfile *AppArmorProfile
 }
 
 // ProcMountType defines the type of proc mount
@@ -6080,8 +6524,6 @@ type TopologySpreadConstraint struct {
 	// In this situation, new pod with the same labelSelector cannot be scheduled,
 	// because computed skew will be 3(3 - 0) if new Pod is scheduled to any of the three zones,
 	// it will violate MaxSkew.
-	//
-	// This is a beta field and requires the MinDomainsInPodTopologySpread feature gate to be enabled (enabled by default).
 	// +optional
 	MinDomains *int32
 	// NodeAffinityPolicy indicates how we will treat Pod's nodeAffinity/nodeSelector
@@ -6145,4 +6587,36 @@ type PortStatus struct {
 	// +kubebuilder:validation:Pattern=`^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$`
 	// +kubebuilder:validation:MaxLength=316
 	Error *string
+}
+
+// LoadBalancerIPMode represents the mode of the LoadBalancer ingress IP
+type LoadBalancerIPMode string
+
+const (
+	// LoadBalancerIPModeVIP indicates that traffic is delivered to the node with
+	// the destination set to the load-balancer's IP and port.
+	LoadBalancerIPModeVIP LoadBalancerIPMode = "VIP"
+	// LoadBalancerIPModeProxy indicates that traffic is delivered to the node or pod with
+	// the destination set to the node's IP and port or the pod's IP and port.
+	LoadBalancerIPModeProxy LoadBalancerIPMode = "Proxy"
+)
+
+// ImageVolumeSource represents a image volume resource.
+type ImageVolumeSource struct {
+	// Required: Image or artifact reference to be used.
+	// Behaves in the same way as pod.spec.containers[*].image.
+	// Pull secrets will be assembled in the same way as for the container image by looking up node credentials, SA image pull secrets, and pod spec image pull secrets.
+	// More info: https://kubernetes.io/docs/concepts/containers/images
+	// This field is optional to allow higher level config management to default or override
+	// container images in workload controllers like Deployments and StatefulSets.
+	// +optional
+	Reference string
+
+	// Policy for pulling OCI objects. Possible values are:
+	// Always: the kubelet always attempts to pull the reference. Container creation will fail If the pull fails.
+	// Never: the kubelet never pulls the reference and only uses a local image or artifact. Container creation will fail if the reference isn't present.
+	// IfNotPresent: the kubelet pulls if the reference isn't already present on disk. Container creation will fail if the reference isn't present and the pull fails.
+	// Defaults to Always if :latest tag is specified, or IfNotPresent otherwise.
+	// +optional
+	PullPolicy PullPolicy
 }

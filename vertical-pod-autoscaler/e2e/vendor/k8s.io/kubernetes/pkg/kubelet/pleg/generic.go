@@ -361,7 +361,7 @@ func (g *GenericPLEG) Relist() {
 }
 
 func getContainersFromPods(pods ...*kubecontainer.Pod) []*kubecontainer.Container {
-	cidSet := sets.NewString()
+	cidSet := sets.New[string]()
 	var containers []*kubecontainer.Container
 	fillCidSet := func(cs []*kubecontainer.Container) {
 		for _, c := range cs {
@@ -475,7 +475,7 @@ func (g *GenericPLEG) updateCache(ctx context.Context, pod *kubecontainer.Pod, p
 	// Evented PLEG after the event has been received by the Kubelet.
 	// For more details refer to:
 	// https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/3386-kubelet-evented-pleg#timestamp-of-the-pod-status
-	if utilfeature.DefaultFeatureGate.Enabled(features.EventedPLEG) && isEventedPLEGInUse() {
+	if utilfeature.DefaultFeatureGate.Enabled(features.EventedPLEG) && isEventedPLEGInUse() && status != nil {
 		timestamp = status.TimeStamp
 	}
 

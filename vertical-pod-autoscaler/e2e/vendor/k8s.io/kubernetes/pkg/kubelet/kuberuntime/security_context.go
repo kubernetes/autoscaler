@@ -17,10 +17,11 @@ limitations under the License.
 package kuberuntime
 
 import (
+	"fmt"
+
 	v1 "k8s.io/api/core/v1"
 	runtimeapi "k8s.io/cri-api/pkg/apis/runtime/v1"
 	runtimeutil "k8s.io/kubernetes/pkg/kubelet/kuberuntime/util"
-	"k8s.io/kubernetes/pkg/security/apparmor"
 	"k8s.io/kubernetes/pkg/securitycontext"
 )
 
@@ -42,7 +43,10 @@ func (m *kubeGenericRuntimeManager) determineEffectiveSecurityContext(pod *v1.Po
 	}
 
 	// set ApparmorProfile.
-	synthesized.ApparmorProfile = apparmor.GetProfileNameFromPodAnnotations(pod.Annotations, container.Name)
+	synthesized.Apparmor, synthesized.ApparmorProfile, err = getAppArmorProfile(pod, container)
+	if err != nil {
+		return nil, err
+	}
 
 	// set RunAsUser.
 	if synthesized.RunAsUser == nil {
@@ -53,7 +57,7 @@ func (m *kubeGenericRuntimeManager) determineEffectiveSecurityContext(pod *v1.Po
 	}
 
 	// set namespace options and supplemental groups.
-	namespaceOptions, err := runtimeutil.NamespacesForPod(pod, m.runtimeHelper)
+	namespaceOptions, err := runtimeutil.NamespacesForPod(pod, m.runtimeHelper, m.runtimeClassManager)
 	if err != nil {
 		return nil, err
 	}
@@ -68,6 +72,14 @@ func (m *kubeGenericRuntimeManager) determineEffectiveSecurityContext(pod *v1.Po
 			for _, sg := range podSc.SupplementalGroups {
 				synthesized.SupplementalGroups = append(synthesized.SupplementalGroups, int64(sg))
 			}
+		}
+
+		if podSc.SupplementalGroupsPolicy != nil {
+			policyValue, ok := runtimeapi.SupplementalGroupsPolicy_value[string(*podSc.SupplementalGroupsPolicy)]
+			if !ok {
+				return nil, fmt.Errorf("unsupported supplementalGroupsPolicy: %s", string(*podSc.SupplementalGroupsPolicy))
+			}
+			synthesized.SupplementalGroupsPolicy = runtimeapi.SupplementalGroupsPolicy(policyValue)
 		}
 	}
 	if groups := m.runtimeHelper.GetExtraSupplementalGroupsForPod(pod); len(groups) > 0 {

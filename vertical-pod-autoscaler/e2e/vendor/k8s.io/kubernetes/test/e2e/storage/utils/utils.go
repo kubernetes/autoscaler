@@ -70,8 +70,7 @@ func VerifyFSGroupInPod(f *framework.Framework, filePath, expectedFSGroup string
 	framework.ExpectNoError(err)
 	framework.Logf("pod %s/%s exec for cmd %s, stdout: %s, stderr: %s", pod.Namespace, pod.Name, cmd, stdout, stderr)
 	fsGroupResult := strings.Fields(stdout)[3]
-	framework.ExpectEqual(expectedFSGroup, fsGroupResult,
-		"Expected fsGroup of %s, got %s", expectedFSGroup, fsGroupResult)
+	gomega.Expect(expectedFSGroup).To(gomega.Equal(fsGroupResult), "Expected fsGroup of %s, got %s", expectedFSGroup, fsGroupResult)
 }
 
 // getKubeletMainPid return the Main PID of the Kubelet Process
@@ -141,14 +140,14 @@ func TestVolumeUnmountsFromDeletedPodWithForceOption(ctx context.Context, c clie
 	result, err := e2essh.SSH(ctx, fmt.Sprintf("mount | grep %s | grep -v volume-subpaths", clientPod.UID), nodeIP, framework.TestContext.Provider)
 	e2essh.LogResult(result)
 	framework.ExpectNoError(err, "Encountered SSH error.")
-	framework.ExpectEqual(result.Code, 0, fmt.Sprintf("Expected grep exit code of 0, got %d", result.Code))
+	gomega.Expect(result.Code).To(gomega.Equal(0), fmt.Sprintf("Expected grep exit code of 0, got %d", result.Code))
 
 	if checkSubpath {
 		ginkgo.By("Expecting the volume subpath mount to be found.")
 		result, err := e2essh.SSH(ctx, fmt.Sprintf("cat /proc/self/mountinfo | grep %s | grep volume-subpaths", clientPod.UID), nodeIP, framework.TestContext.Provider)
 		e2essh.LogResult(result)
 		framework.ExpectNoError(err, "Encountered SSH error.")
-		framework.ExpectEqual(result.Code, 0, fmt.Sprintf("Expected grep exit code of 0, got %d", result.Code))
+		gomega.Expect(result.Code).To(gomega.Equal(0), fmt.Sprintf("Expected grep exit code of 0, got %d", result.Code))
 	}
 
 	ginkgo.By("Writing to the volume.")
@@ -201,7 +200,7 @@ func TestVolumeUnmountsFromDeletedPodWithForceOption(ctx context.Context, c clie
 		result, err := e2essh.SSH(ctx, fmt.Sprintf("mount | grep %s | grep -v volume-subpaths", secondPod.UID), nodeIP, framework.TestContext.Provider)
 		e2essh.LogResult(result)
 		framework.ExpectNoError(err, "Encountered SSH error when checking the second pod.")
-		framework.ExpectEqual(result.Code, 0, fmt.Sprintf("Expected grep exit code of 0, got %d", result.Code))
+		gomega.Expect(result.Code).To(gomega.Equal(0), fmt.Sprintf("Expected grep exit code of 0, got %d", result.Code))
 
 		ginkgo.By("Testing that written file is accessible in the second pod.")
 		CheckReadFromPath(f, secondPod, v1.PersistentVolumeFilesystem, false, volumePath, byteLen, seed)
@@ -262,13 +261,13 @@ func TestVolumeUnmapsFromDeletedPodWithForceOption(ctx context.Context, c client
 	result, err := e2essh.SSH(ctx, podDirectoryCmd, nodeIP, framework.TestContext.Provider)
 	e2essh.LogResult(result)
 	framework.ExpectNoError(err, "Encountered SSH error.")
-	framework.ExpectEqual(result.Code, 0, fmt.Sprintf("Expected grep exit code of 0, got %d", result.Code))
+	gomega.Expect(result.Code).To(gomega.Equal(0), fmt.Sprintf("Expected grep exit code of 0, got %d", result.Code))
 
 	ginkgo.By("Expecting the symlinks from global map path to be found.")
 	result, err = e2essh.SSH(ctx, globalBlockDirectoryCmd, nodeIP, framework.TestContext.Provider)
 	e2essh.LogResult(result)
 	framework.ExpectNoError(err, "Encountered SSH error.")
-	framework.ExpectEqual(result.Code, 0, fmt.Sprintf("Expected find exit code of 0, got %d", result.Code))
+	gomega.Expect(result.Code).To(gomega.Equal(0), fmt.Sprintf("Expected find exit code of 0, got %d", result.Code))
 
 	// This command is to make sure kubelet is started after test finishes no matter it fails or not.
 	ginkgo.DeferCleanup(KubeletCommand, KStart, c, clientPod)
@@ -620,6 +619,40 @@ func WaitForGVRDeletion(ctx context.Context, c dynamic.Interface, gvr schema.Gro
 	return fmt.Errorf("%s %s is not deleted within %v", gvr.Resource, objectName, timeout)
 }
 
+// EnsureGVRDeletion checks that no object as defined by the group/version/kind and name is ever found during the given time period
+func EnsureGVRDeletion(ctx context.Context, c dynamic.Interface, gvr schema.GroupVersionResource, objectName string, poll, timeout time.Duration, namespace string) error {
+	var resourceClient dynamic.ResourceInterface
+	if namespace != "" {
+		resourceClient = c.Resource(gvr).Namespace(namespace)
+	} else {
+		resourceClient = c.Resource(gvr)
+	}
+
+	err := framework.Gomega().Eventually(ctx, func(ctx context.Context) error {
+		_, err := resourceClient.Get(ctx, objectName, metav1.GetOptions{})
+		return err
+	}).WithTimeout(timeout).WithPolling(poll).Should(gomega.MatchError(apierrors.IsNotFound, fmt.Sprintf("failed to delete %s %s", gvr, objectName)))
+	return err
+}
+
+// EnsureNoGVRDeletion checks that an object as defined by the group/version/kind and name has not been deleted during the given time period
+func EnsureNoGVRDeletion(ctx context.Context, c dynamic.Interface, gvr schema.GroupVersionResource, objectName string, poll, timeout time.Duration, namespace string) error {
+	var resourceClient dynamic.ResourceInterface
+	if namespace != "" {
+		resourceClient = c.Resource(gvr).Namespace(namespace)
+	} else {
+		resourceClient = c.Resource(gvr)
+	}
+	err := framework.Gomega().Consistently(ctx, func(ctx context.Context) error {
+		_, err := resourceClient.Get(ctx, objectName, metav1.GetOptions{})
+		if err != nil {
+			return fmt.Errorf("failed to get %s %s: %w", gvr.Resource, objectName, err)
+		}
+		return nil
+	}).WithTimeout(timeout).WithPolling(poll).Should(gomega.Succeed())
+	return err
+}
+
 // WaitForNamespacedGVRDeletion waits until a namespaced object has been deleted
 func WaitForNamespacedGVRDeletion(ctx context.Context, c dynamic.Interface, gvr schema.GroupVersionResource, ns, objectName string, poll, timeout time.Duration) error {
 	framework.Logf("Waiting up to %v for %s %s to be deleted", timeout, gvr.Resource, objectName)
@@ -699,7 +732,7 @@ func VerifyFilePathGidInPod(f *framework.Framework, filePath, expectedGid string
 	framework.Logf("pod %s/%s exec for cmd %s, stdout: %s, stderr: %s", pod.Namespace, pod.Name, cmd, stdout, stderr)
 	ll := strings.Fields(stdout)
 	framework.Logf("stdout split: %v, expected gid: %v", ll, expectedGid)
-	framework.ExpectEqual(ll[3], expectedGid)
+	gomega.Expect(ll[3]).To(gomega.Equal(expectedGid))
 }
 
 // ChangeFilePathGidInPod changes the GID of the target filepath.

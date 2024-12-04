@@ -105,7 +105,7 @@ func waitForDeploymentCompleteMaybeCheckRolling(c clientset.Interface, d *apps.D
 		return false, nil
 	})
 
-	if err == wait.ErrWaitTimeout {
+	if wait.Interrupted(err) {
 		err = fmt.Errorf("%s", reason)
 	}
 	if err != nil {
@@ -224,7 +224,7 @@ func WaitForDeploymentRevisionAndImage(c clientset.Interface, ns, deploymentName
 		}
 		return true, nil
 	})
-	if err == wait.ErrWaitTimeout {
+	if wait.Interrupted(err) {
 		LogReplicaSetsOfDeployment(deployment, nil, newRS, logf)
 		err = fmt.Errorf(reason)
 	}
@@ -316,7 +316,7 @@ func UpdateDeploymentWithRetries(c clientset.Interface, namespace, name string, 
 		updateErr = err
 		return false, nil
 	})
-	if pollErr == wait.ErrWaitTimeout {
+	if wait.Interrupted(pollErr) {
 		pollErr = fmt.Errorf("couldn't apply the provided updated to deployment %q: %v", name, updateErr)
 	}
 	return deployment, pollErr
@@ -326,25 +326,6 @@ func WaitForObservedDeployment(c clientset.Interface, ns, deploymentName string,
 	return deploymentutil.WaitForObservedDeployment(func() (*apps.Deployment, error) {
 		return c.AppsV1().Deployments(ns).Get(context.TODO(), deploymentName, metav1.GetOptions{})
 	}, desiredGeneration, 2*time.Second, 1*time.Minute)
-}
-
-// WaitForDeploymentRollbackCleared waits for given deployment either started rolling back or doesn't need to rollback.
-func WaitForDeploymentRollbackCleared(c clientset.Interface, ns, deploymentName string, pollInterval, pollTimeout time.Duration) error {
-	err := wait.PollImmediate(pollInterval, pollTimeout, func() (bool, error) {
-		deployment, err := c.AppsV1().Deployments(ns).Get(context.TODO(), deploymentName, metav1.GetOptions{})
-		if err != nil {
-			return false, err
-		}
-		// Rollback not set or is kicked off
-		if deployment.Annotations[apps.DeprecatedRollbackTo] == "" {
-			return true, nil
-		}
-		return false, nil
-	})
-	if err != nil {
-		return fmt.Errorf("error waiting for deployment %s rollbackTo to be cleared: %v", deploymentName, err)
-	}
-	return nil
 }
 
 // WaitForDeploymentUpdatedReplicasGTE waits for given deployment to be observed by the controller and has at least a number of updatedReplicas
@@ -375,7 +356,7 @@ func WaitForDeploymentWithCondition(c clientset.Interface, ns, deploymentName, r
 		cond := deploymentutil.GetDeploymentCondition(deployment.Status, condType)
 		return cond != nil && cond.Reason == reason, nil
 	})
-	if pollErr == wait.ErrWaitTimeout {
+	if wait.Interrupted(pollErr) {
 		pollErr = fmt.Errorf("deployment %q never updated with the desired condition and reason, latest deployment conditions: %+v", deployment.Name, deployment.Status.Conditions)
 		_, allOldRSs, newRS, err := GetAllReplicaSets(deployment, c)
 		if err == nil {

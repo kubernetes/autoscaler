@@ -38,7 +38,7 @@ func HTTPStatusFromCode(code codes.Code) int {
 	case codes.OK:
 		return http.StatusOK
 	case codes.Canceled:
-		return http.StatusRequestTimeout
+		return 499
 	case codes.Unknown:
 		return http.StatusInternalServerError
 	case codes.InvalidArgument:
@@ -70,10 +70,10 @@ func HTTPStatusFromCode(code codes.Code) int {
 		return http.StatusServiceUnavailable
 	case codes.DataLoss:
 		return http.StatusInternalServerError
+	default:
+		grpclog.Warningf("Unknown gRPC error code: %v", code)
+		return http.StatusInternalServerError
 	}
-
-	grpclog.Infof("Unknown gRPC error code: %v", code)
-	return http.StatusInternalServerError
 }
 
 // HTTPError uses the mux-configured error handler.
@@ -114,17 +114,17 @@ func DefaultHTTPErrorHandler(ctx context.Context, mux *ServeMux, marshaler Marsh
 
 	buf, merr := marshaler.Marshal(pb)
 	if merr != nil {
-		grpclog.Infof("Failed to marshal error message %q: %v", s, merr)
+		grpclog.Errorf("Failed to marshal error message %q: %v", s, merr)
 		w.WriteHeader(http.StatusInternalServerError)
 		if _, err := io.WriteString(w, fallback); err != nil {
-			grpclog.Infof("Failed to write response: %v", err)
+			grpclog.Errorf("Failed to write response: %v", err)
 		}
 		return
 	}
 
 	md, ok := ServerMetadataFromContext(ctx)
 	if !ok {
-		grpclog.Infof("Failed to extract ServerMetadata from context")
+		grpclog.Error("Failed to extract ServerMetadata from context")
 	}
 
 	handleForwardResponseServerMetadata(w, mux, md)
@@ -137,7 +137,7 @@ func DefaultHTTPErrorHandler(ctx context.Context, mux *ServeMux, marshaler Marsh
 	doForwardTrailers := requestAcceptsTrailers(r)
 
 	if doForwardTrailers {
-		handleForwardResponseTrailerHeader(w, md)
+		handleForwardResponseTrailerHeader(w, mux, md)
 		w.Header().Set("Transfer-Encoding", "chunked")
 	}
 
@@ -148,11 +148,11 @@ func DefaultHTTPErrorHandler(ctx context.Context, mux *ServeMux, marshaler Marsh
 
 	w.WriteHeader(st)
 	if _, err := w.Write(buf); err != nil {
-		grpclog.Infof("Failed to write response: %v", err)
+		grpclog.Errorf("Failed to write response: %v", err)
 	}
 
 	if doForwardTrailers {
-		handleForwardResponseTrailer(w, md)
+		handleForwardResponseTrailer(w, mux, md)
 	}
 }
 
@@ -162,10 +162,11 @@ func DefaultStreamErrorHandler(_ context.Context, err error) *status.Status {
 
 // DefaultRoutingErrorHandler is our default handler for routing errors.
 // By default http error codes mapped on the following error codes:
-//   NotFound -> grpc.NotFound
-//   StatusBadRequest -> grpc.InvalidArgument
-//   MethodNotAllowed -> grpc.Unimplemented
-//   Other -> grpc.Internal, method is not expecting to be called for anything else
+//
+//	NotFound -> grpc.NotFound
+//	StatusBadRequest -> grpc.InvalidArgument
+//	MethodNotAllowed -> grpc.Unimplemented
+//	Other -> grpc.Internal, method is not expecting to be called for anything else
 func DefaultRoutingErrorHandler(ctx context.Context, mux *ServeMux, marshaler Marshaler, w http.ResponseWriter, r *http.Request, httpStatus int) {
 	sterr := status.Error(codes.Internal, "Unexpected routing error")
 	switch httpStatus {

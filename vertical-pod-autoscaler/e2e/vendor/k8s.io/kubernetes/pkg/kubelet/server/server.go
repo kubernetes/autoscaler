@@ -67,24 +67,24 @@ import (
 	"k8s.io/component-base/metrics/legacyregistry"
 	"k8s.io/component-base/metrics/prometheus/slis"
 	runtimeapi "k8s.io/cri-api/pkg/apis/runtime/v1"
+	"k8s.io/cri-client/pkg/util"
 	podresourcesapi "k8s.io/kubelet/pkg/apis/podresources/v1"
 	podresourcesapiv1alpha1 "k8s.io/kubelet/pkg/apis/podresources/v1alpha1"
 	"k8s.io/kubelet/pkg/cri/streaming"
 	"k8s.io/kubelet/pkg/cri/streaming/portforward"
 	remotecommandserver "k8s.io/kubelet/pkg/cri/streaming/remotecommand"
+	kubelettypes "k8s.io/kubelet/pkg/types"
 	"k8s.io/kubernetes/pkg/api/legacyscheme"
 	api "k8s.io/kubernetes/pkg/apis/core"
 	"k8s.io/kubernetes/pkg/apis/core/v1/validation"
 	"k8s.io/kubernetes/pkg/features"
 	kubeletconfiginternal "k8s.io/kubernetes/pkg/kubelet/apis/config"
+	apisgrpc "k8s.io/kubernetes/pkg/kubelet/apis/grpc"
 	"k8s.io/kubernetes/pkg/kubelet/apis/podresources"
-	podresourcesgrpc "k8s.io/kubernetes/pkg/kubelet/apis/podresources/grpc"
 	kubecontainer "k8s.io/kubernetes/pkg/kubelet/container"
 	"k8s.io/kubernetes/pkg/kubelet/prober"
 	servermetrics "k8s.io/kubernetes/pkg/kubelet/server/metrics"
 	"k8s.io/kubernetes/pkg/kubelet/server/stats"
-	kubelettypes "k8s.io/kubernetes/pkg/kubelet/types"
-	"k8s.io/kubernetes/pkg/kubelet/util"
 )
 
 func init() {
@@ -98,6 +98,7 @@ const (
 	proberMetricsPath   = "/metrics/probes"
 	statsPath           = "/stats/"
 	logsPath            = "/logs/"
+	checkpointPath      = "/checkpoint/"
 	pprofBasePath       = "/debug/pprof/"
 	debugFlagPath       = "/debug/flags/v"
 )
@@ -107,8 +108,8 @@ type Server struct {
 	auth                 AuthInterface
 	host                 HostInterface
 	restfulCont          containerInterface
-	metricsBuckets       sets.String
-	metricsMethodBuckets sets.String
+	metricsBuckets       sets.Set[string]
+	metricsMethodBuckets sets.Set[string]
 	resourceAnalyzer     stats.ResourceAnalyzer
 }
 
@@ -160,7 +161,12 @@ func ListenAndServeKubeletServer(
 	address := netutils.ParseIPSloppy(kubeCfg.Address)
 	port := uint(kubeCfg.Port)
 	klog.InfoS("Starting to listen", "address", address, "port", port)
-	handler := NewServer(host, resourceAnalyzer, auth, tp, kubeCfg)
+	handler := NewServer(host, resourceAnalyzer, auth, kubeCfg)
+
+	if utilfeature.DefaultFeatureGate.Enabled(features.KubeletTracing) {
+		handler.InstallTracingFilter(tp)
+	}
+
 	s := &http.Server{
 		Addr:           net.JoinHostPort(address.String(), strconv.FormatUint(uint64(port), 10)),
 		Handler:        &handler,
@@ -190,10 +196,14 @@ func ListenAndServeKubeletReadOnlyServer(
 	host HostInterface,
 	resourceAnalyzer stats.ResourceAnalyzer,
 	address net.IP,
-	port uint) {
+	port uint,
+	tp oteltrace.TracerProvider) {
 	klog.InfoS("Starting to listen read-only", "address", address, "port", port)
-	// TODO: https://github.com/kubernetes/kubernetes/issues/109829 tracer should use WithPublicEndpoint
-	s := NewServer(host, resourceAnalyzer, nil, oteltrace.NewNoopTracerProvider(), nil)
+	s := NewServer(host, resourceAnalyzer, nil, nil)
+
+	if utilfeature.DefaultFeatureGate.Enabled(features.KubeletTracing) {
+		s.InstallTracingFilter(tp, otelrestful.WithPublicEndpoint())
+	}
 
 	server := &http.Server{
 		Addr:           net.JoinHostPort(address.String(), strconv.FormatUint(uint64(port), 10)),
@@ -210,16 +220,9 @@ func ListenAndServeKubeletReadOnlyServer(
 	}
 }
 
-type PodResourcesProviders struct {
-	Pods    podresources.PodsProvider
-	Devices podresources.DevicesProvider
-	Cpus    podresources.CPUsProvider
-	Memory  podresources.MemoryProvider
-}
-
 // ListenAndServePodResources initializes a gRPC server to serve the PodResources service
 func ListenAndServePodResources(endpoint string, providers podresources.PodResourcesProviders) {
-	server := grpc.NewServer(podresourcesgrpc.WithRateLimiter(podresourcesgrpc.DefaultQPS, podresourcesgrpc.DefaultBurstTokens))
+	server := grpc.NewServer(apisgrpc.WithRateLimiter("podresources", podresources.DefaultQPS, podresources.DefaultBurstTokens))
 
 	podresourcesapiv1alpha1.RegisterPodResourcesListerServer(server, podresources.NewV1alpha1PodResourcesServer(providers))
 	podresourcesapi.RegisterPodResourcesListerServer(server, podresources.NewV1PodResourcesServer(providers))
@@ -270,7 +273,6 @@ func NewServer(
 	host HostInterface,
 	resourceAnalyzer stats.ResourceAnalyzer,
 	auth AuthInterface,
-	tp oteltrace.TracerProvider,
 	kubeCfg *kubeletconfiginternal.KubeletConfiguration) Server {
 
 	server := Server{
@@ -278,14 +280,11 @@ func NewServer(
 		resourceAnalyzer:     resourceAnalyzer,
 		auth:                 auth,
 		restfulCont:          &filteringContainer{Container: restful.NewContainer()},
-		metricsBuckets:       sets.NewString(),
-		metricsMethodBuckets: sets.NewString("OPTIONS", "GET", "HEAD", "POST", "PUT", "DELETE", "TRACE", "CONNECT"),
+		metricsBuckets:       sets.New[string](),
+		metricsMethodBuckets: sets.New[string]("OPTIONS", "GET", "HEAD", "POST", "PUT", "DELETE", "TRACE", "CONNECT"),
 	}
 	if auth != nil {
 		server.InstallAuthFilter()
-	}
-	if utilfeature.DefaultFeatureGate.Enabled(features.KubeletTracing) {
-		server.InstallTracingFilter(tp)
 	}
 	server.InstallDefaultHandlers()
 	if kubeCfg != nil && kubeCfg.EnableDebuggingHandlers {
@@ -340,8 +339,8 @@ func (s *Server) InstallAuthFilter() {
 }
 
 // InstallTracingFilter installs OpenTelemetry tracing filter with the restful Container.
-func (s *Server) InstallTracingFilter(tp oteltrace.TracerProvider) {
-	s.restfulCont.Filter(otelrestful.OTelFilter("kubelet", otelrestful.WithTracerProvider(tp)))
+func (s *Server) InstallTracingFilter(tp oteltrace.TracerProvider, opts ...otelrestful.Option) {
+	s.restfulCont.Filter(otelrestful.OTelFilter("kubelet", append(opts, otelrestful.WithTracerProvider(tp))...))
 }
 
 // addMetricsBucketMatcher adds a regexp matcher and the relevant bucket to use when
@@ -377,9 +376,8 @@ func (s *Server) InstallDefaultHandlers() {
 		healthz.NamedCheck("syncloop", s.syncLoopHealthCheck),
 	)
 
-	if utilfeature.DefaultFeatureGate.Enabled(metricsfeatures.ComponentSLIs) {
-		slis.SLIMetricsWithReset{}.Install(s.restfulCont)
-	}
+	slis.SLIMetricsWithReset{}.Install(s.restfulCont)
+
 	s.addMetricsBucketMatcher("pods")
 	ws := new(restful.WebService)
 	ws.
@@ -449,7 +447,7 @@ func (s *Server) InstallDefaultHandlers() {
 	if utilfeature.DefaultFeatureGate.Enabled(features.ContainerCheckpoint) {
 		s.addMetricsBucketMatcher("checkpoint")
 		ws = &restful.WebService{}
-		ws.Path("/checkpoint").Produces(restful.MIME_JSON)
+		ws.Path(checkpointPath).Produces(restful.MIME_JSON)
 		ws.Route(ws.POST("/{podNamespace}/{podID}/{containerName}").
 			To(s.checkpoint).
 			Operation("checkpoint"))

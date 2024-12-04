@@ -62,6 +62,16 @@ func RegisterConversions(s *runtime.Scheme) error {
 	}); err != nil {
 		return err
 	}
+	if err := s.AddGeneratedConversionFunc((*v1.AppArmorProfile)(nil), (*core.AppArmorProfile)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1_AppArmorProfile_To_core_AppArmorProfile(a.(*v1.AppArmorProfile), b.(*core.AppArmorProfile), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*core.AppArmorProfile)(nil), (*v1.AppArmorProfile)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_core_AppArmorProfile_To_v1_AppArmorProfile(a.(*core.AppArmorProfile), b.(*v1.AppArmorProfile), scope)
+	}); err != nil {
+		return err
+	}
 	if err := s.AddGeneratedConversionFunc((*v1.AttachedVolume)(nil), (*core.AttachedVolume)(nil), func(a, b interface{}, scope conversion.Scope) error {
 		return Convert_v1_AttachedVolume_To_core_AttachedVolume(a.(*v1.AttachedVolume), b.(*core.AttachedVolume), scope)
 	}); err != nil {
@@ -192,16 +202,6 @@ func RegisterConversions(s *runtime.Scheme) error {
 	}); err != nil {
 		return err
 	}
-	if err := s.AddGeneratedConversionFunc((*v1.ClaimSource)(nil), (*core.ClaimSource)(nil), func(a, b interface{}, scope conversion.Scope) error {
-		return Convert_v1_ClaimSource_To_core_ClaimSource(a.(*v1.ClaimSource), b.(*core.ClaimSource), scope)
-	}); err != nil {
-		return err
-	}
-	if err := s.AddGeneratedConversionFunc((*core.ClaimSource)(nil), (*v1.ClaimSource)(nil), func(a, b interface{}, scope conversion.Scope) error {
-		return Convert_core_ClaimSource_To_v1_ClaimSource(a.(*core.ClaimSource), b.(*v1.ClaimSource), scope)
-	}); err != nil {
-		return err
-	}
 	if err := s.AddGeneratedConversionFunc((*v1.ClientIPConfig)(nil), (*core.ClientIPConfig)(nil), func(a, b interface{}, scope conversion.Scope) error {
 		return Convert_v1_ClientIPConfig_To_core_ClientIPConfig(a.(*v1.ClientIPConfig), b.(*core.ClientIPConfig), scope)
 	}); err != nil {
@@ -209,6 +209,16 @@ func RegisterConversions(s *runtime.Scheme) error {
 	}
 	if err := s.AddGeneratedConversionFunc((*core.ClientIPConfig)(nil), (*v1.ClientIPConfig)(nil), func(a, b interface{}, scope conversion.Scope) error {
 		return Convert_core_ClientIPConfig_To_v1_ClientIPConfig(a.(*core.ClientIPConfig), b.(*v1.ClientIPConfig), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*v1.ClusterTrustBundleProjection)(nil), (*core.ClusterTrustBundleProjection)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1_ClusterTrustBundleProjection_To_core_ClusterTrustBundleProjection(a.(*v1.ClusterTrustBundleProjection), b.(*core.ClusterTrustBundleProjection), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*core.ClusterTrustBundleProjection)(nil), (*v1.ClusterTrustBundleProjection)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_core_ClusterTrustBundleProjection_To_v1_ClusterTrustBundleProjection(a.(*core.ClusterTrustBundleProjection), b.(*v1.ClusterTrustBundleProjection), scope)
 	}); err != nil {
 		return err
 	}
@@ -399,6 +409,16 @@ func RegisterConversions(s *runtime.Scheme) error {
 	}
 	if err := s.AddGeneratedConversionFunc((*core.ContainerStatus)(nil), (*v1.ContainerStatus)(nil), func(a, b interface{}, scope conversion.Scope) error {
 		return Convert_core_ContainerStatus_To_v1_ContainerStatus(a.(*core.ContainerStatus), b.(*v1.ContainerStatus), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*v1.ContainerUser)(nil), (*core.ContainerUser)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1_ContainerUser_To_core_ContainerUser(a.(*v1.ContainerUser), b.(*core.ContainerUser), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*core.ContainerUser)(nil), (*v1.ContainerUser)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_core_ContainerUser_To_v1_ContainerUser(a.(*core.ContainerUser), b.(*v1.ContainerUser), scope)
 	}); err != nil {
 		return err
 	}
@@ -772,6 +792,16 @@ func RegisterConversions(s *runtime.Scheme) error {
 	}); err != nil {
 		return err
 	}
+	if err := s.AddGeneratedConversionFunc((*v1.ImageVolumeSource)(nil), (*core.ImageVolumeSource)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1_ImageVolumeSource_To_core_ImageVolumeSource(a.(*v1.ImageVolumeSource), b.(*core.ImageVolumeSource), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*core.ImageVolumeSource)(nil), (*v1.ImageVolumeSource)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_core_ImageVolumeSource_To_v1_ImageVolumeSource(a.(*core.ImageVolumeSource), b.(*v1.ImageVolumeSource), scope)
+	}); err != nil {
+		return err
+	}
 	if err := s.AddGeneratedConversionFunc((*v1.KeyToPath)(nil), (*core.KeyToPath)(nil), func(a, b interface{}, scope conversion.Scope) error {
 		return Convert_v1_KeyToPath_To_core_KeyToPath(a.(*v1.KeyToPath), b.(*core.KeyToPath), scope)
 	}); err != nil {
@@ -842,6 +872,16 @@ func RegisterConversions(s *runtime.Scheme) error {
 	}); err != nil {
 		return err
 	}
+	if err := s.AddGeneratedConversionFunc((*v1.LinuxContainerUser)(nil), (*core.LinuxContainerUser)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1_LinuxContainerUser_To_core_LinuxContainerUser(a.(*v1.LinuxContainerUser), b.(*core.LinuxContainerUser), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*core.LinuxContainerUser)(nil), (*v1.LinuxContainerUser)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_core_LinuxContainerUser_To_v1_LinuxContainerUser(a.(*core.LinuxContainerUser), b.(*v1.LinuxContainerUser), scope)
+	}); err != nil {
+		return err
+	}
 	if err := s.AddGeneratedConversionFunc((*v1.List)(nil), (*core.List)(nil), func(a, b interface{}, scope conversion.Scope) error {
 		return Convert_v1_List_To_core_List(a.(*v1.List), b.(*core.List), scope)
 	}); err != nil {
@@ -862,6 +902,16 @@ func RegisterConversions(s *runtime.Scheme) error {
 	}); err != nil {
 		return err
 	}
+	if err := s.AddGeneratedConversionFunc((*v1.LoadBalancerStatus)(nil), (*core.LoadBalancerStatus)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1_LoadBalancerStatus_To_core_LoadBalancerStatus(a.(*v1.LoadBalancerStatus), b.(*core.LoadBalancerStatus), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*core.LoadBalancerStatus)(nil), (*v1.LoadBalancerStatus)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_core_LoadBalancerStatus_To_v1_LoadBalancerStatus(a.(*core.LoadBalancerStatus), b.(*v1.LoadBalancerStatus), scope)
+	}); err != nil {
+		return err
+	}
 	if err := s.AddGeneratedConversionFunc((*v1.LocalObjectReference)(nil), (*core.LocalObjectReference)(nil), func(a, b interface{}, scope conversion.Scope) error {
 		return Convert_v1_LocalObjectReference_To_core_LocalObjectReference(a.(*v1.LocalObjectReference), b.(*core.LocalObjectReference), scope)
 	}); err != nil {
@@ -879,6 +929,16 @@ func RegisterConversions(s *runtime.Scheme) error {
 	}
 	if err := s.AddGeneratedConversionFunc((*core.LocalVolumeSource)(nil), (*v1.LocalVolumeSource)(nil), func(a, b interface{}, scope conversion.Scope) error {
 		return Convert_core_LocalVolumeSource_To_v1_LocalVolumeSource(a.(*core.LocalVolumeSource), b.(*v1.LocalVolumeSource), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*v1.ModifyVolumeStatus)(nil), (*core.ModifyVolumeStatus)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1_ModifyVolumeStatus_To_core_ModifyVolumeStatus(a.(*v1.ModifyVolumeStatus), b.(*core.ModifyVolumeStatus), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*core.ModifyVolumeStatus)(nil), (*v1.ModifyVolumeStatus)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_core_ModifyVolumeStatus_To_v1_ModifyVolumeStatus(a.(*core.ModifyVolumeStatus), b.(*v1.ModifyVolumeStatus), scope)
 	}); err != nil {
 		return err
 	}
@@ -1012,6 +1072,16 @@ func RegisterConversions(s *runtime.Scheme) error {
 	}); err != nil {
 		return err
 	}
+	if err := s.AddGeneratedConversionFunc((*v1.NodeFeatures)(nil), (*core.NodeFeatures)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1_NodeFeatures_To_core_NodeFeatures(a.(*v1.NodeFeatures), b.(*core.NodeFeatures), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*core.NodeFeatures)(nil), (*v1.NodeFeatures)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_core_NodeFeatures_To_v1_NodeFeatures(a.(*core.NodeFeatures), b.(*v1.NodeFeatures), scope)
+	}); err != nil {
+		return err
+	}
 	if err := s.AddGeneratedConversionFunc((*v1.NodeList)(nil), (*core.NodeList)(nil), func(a, b interface{}, scope conversion.Scope) error {
 		return Convert_v1_NodeList_To_core_NodeList(a.(*v1.NodeList), b.(*core.NodeList), scope)
 	}); err != nil {
@@ -1032,13 +1102,23 @@ func RegisterConversions(s *runtime.Scheme) error {
 	}); err != nil {
 		return err
 	}
-	if err := s.AddGeneratedConversionFunc((*v1.NodeResources)(nil), (*core.NodeResources)(nil), func(a, b interface{}, scope conversion.Scope) error {
-		return Convert_v1_NodeResources_To_core_NodeResources(a.(*v1.NodeResources), b.(*core.NodeResources), scope)
+	if err := s.AddGeneratedConversionFunc((*v1.NodeRuntimeHandler)(nil), (*core.NodeRuntimeHandler)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1_NodeRuntimeHandler_To_core_NodeRuntimeHandler(a.(*v1.NodeRuntimeHandler), b.(*core.NodeRuntimeHandler), scope)
 	}); err != nil {
 		return err
 	}
-	if err := s.AddGeneratedConversionFunc((*core.NodeResources)(nil), (*v1.NodeResources)(nil), func(a, b interface{}, scope conversion.Scope) error {
-		return Convert_core_NodeResources_To_v1_NodeResources(a.(*core.NodeResources), b.(*v1.NodeResources), scope)
+	if err := s.AddGeneratedConversionFunc((*core.NodeRuntimeHandler)(nil), (*v1.NodeRuntimeHandler)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_core_NodeRuntimeHandler_To_v1_NodeRuntimeHandler(a.(*core.NodeRuntimeHandler), b.(*v1.NodeRuntimeHandler), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*v1.NodeRuntimeHandlerFeatures)(nil), (*core.NodeRuntimeHandlerFeatures)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1_NodeRuntimeHandlerFeatures_To_core_NodeRuntimeHandlerFeatures(a.(*v1.NodeRuntimeHandlerFeatures), b.(*core.NodeRuntimeHandlerFeatures), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*core.NodeRuntimeHandlerFeatures)(nil), (*v1.NodeRuntimeHandlerFeatures)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_core_NodeRuntimeHandlerFeatures_To_v1_NodeRuntimeHandlerFeatures(a.(*core.NodeRuntimeHandlerFeatures), b.(*v1.NodeRuntimeHandlerFeatures), scope)
 	}); err != nil {
 		return err
 	}
@@ -1642,6 +1722,16 @@ func RegisterConversions(s *runtime.Scheme) error {
 	}); err != nil {
 		return err
 	}
+	if err := s.AddGeneratedConversionFunc((*v1.ResourceHealth)(nil), (*core.ResourceHealth)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1_ResourceHealth_To_core_ResourceHealth(a.(*v1.ResourceHealth), b.(*core.ResourceHealth), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*core.ResourceHealth)(nil), (*v1.ResourceHealth)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_core_ResourceHealth_To_v1_ResourceHealth(a.(*core.ResourceHealth), b.(*v1.ResourceHealth), scope)
+	}); err != nil {
+		return err
+	}
 	if err := s.AddGeneratedConversionFunc((*v1.ResourceQuota)(nil), (*core.ResourceQuota)(nil), func(a, b interface{}, scope conversion.Scope) error {
 		return Convert_v1_ResourceQuota_To_core_ResourceQuota(a.(*v1.ResourceQuota), b.(*core.ResourceQuota), scope)
 	}); err != nil {
@@ -1689,6 +1779,16 @@ func RegisterConversions(s *runtime.Scheme) error {
 	}
 	if err := s.AddGeneratedConversionFunc((*core.ResourceRequirements)(nil), (*v1.ResourceRequirements)(nil), func(a, b interface{}, scope conversion.Scope) error {
 		return Convert_core_ResourceRequirements_To_v1_ResourceRequirements(a.(*core.ResourceRequirements), b.(*v1.ResourceRequirements), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*v1.ResourceStatus)(nil), (*core.ResourceStatus)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1_ResourceStatus_To_core_ResourceStatus(a.(*v1.ResourceStatus), b.(*core.ResourceStatus), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*core.ResourceStatus)(nil), (*v1.ResourceStatus)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_core_ResourceStatus_To_v1_ResourceStatus(a.(*core.ResourceStatus), b.(*v1.ResourceStatus), scope)
 	}); err != nil {
 		return err
 	}
@@ -1937,6 +2037,16 @@ func RegisterConversions(s *runtime.Scheme) error {
 	}); err != nil {
 		return err
 	}
+	if err := s.AddGeneratedConversionFunc((*v1.SleepAction)(nil), (*core.SleepAction)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1_SleepAction_To_core_SleepAction(a.(*v1.SleepAction), b.(*core.SleepAction), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*core.SleepAction)(nil), (*v1.SleepAction)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_core_SleepAction_To_v1_SleepAction(a.(*core.SleepAction), b.(*v1.SleepAction), scope)
+	}); err != nil {
+		return err
+	}
 	if err := s.AddGeneratedConversionFunc((*v1.StorageOSPersistentVolumeSource)(nil), (*core.StorageOSPersistentVolumeSource)(nil), func(a, b interface{}, scope conversion.Scope) error {
 		return Convert_v1_StorageOSPersistentVolumeSource_To_core_StorageOSPersistentVolumeSource(a.(*v1.StorageOSPersistentVolumeSource), b.(*core.StorageOSPersistentVolumeSource), scope)
 	}); err != nil {
@@ -2047,6 +2157,16 @@ func RegisterConversions(s *runtime.Scheme) error {
 	}); err != nil {
 		return err
 	}
+	if err := s.AddGeneratedConversionFunc((*v1.Volume)(nil), (*core.Volume)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1_Volume_To_core_Volume(a.(*v1.Volume), b.(*core.Volume), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*core.Volume)(nil), (*v1.Volume)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_core_Volume_To_v1_Volume(a.(*core.Volume), b.(*v1.Volume), scope)
+	}); err != nil {
+		return err
+	}
 	if err := s.AddGeneratedConversionFunc((*v1.VolumeDevice)(nil), (*core.VolumeDevice)(nil), func(a, b interface{}, scope conversion.Scope) error {
 		return Convert_v1_VolumeDevice_To_core_VolumeDevice(a.(*v1.VolumeDevice), b.(*core.VolumeDevice), scope)
 	}); err != nil {
@@ -2067,6 +2187,16 @@ func RegisterConversions(s *runtime.Scheme) error {
 	}); err != nil {
 		return err
 	}
+	if err := s.AddGeneratedConversionFunc((*v1.VolumeMountStatus)(nil), (*core.VolumeMountStatus)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1_VolumeMountStatus_To_core_VolumeMountStatus(a.(*v1.VolumeMountStatus), b.(*core.VolumeMountStatus), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*core.VolumeMountStatus)(nil), (*v1.VolumeMountStatus)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_core_VolumeMountStatus_To_v1_VolumeMountStatus(a.(*core.VolumeMountStatus), b.(*v1.VolumeMountStatus), scope)
+	}); err != nil {
+		return err
+	}
 	if err := s.AddGeneratedConversionFunc((*v1.VolumeNodeAffinity)(nil), (*core.VolumeNodeAffinity)(nil), func(a, b interface{}, scope conversion.Scope) error {
 		return Convert_v1_VolumeNodeAffinity_To_core_VolumeNodeAffinity(a.(*v1.VolumeNodeAffinity), b.(*core.VolumeNodeAffinity), scope)
 	}); err != nil {
@@ -2084,6 +2214,16 @@ func RegisterConversions(s *runtime.Scheme) error {
 	}
 	if err := s.AddGeneratedConversionFunc((*core.VolumeProjection)(nil), (*v1.VolumeProjection)(nil), func(a, b interface{}, scope conversion.Scope) error {
 		return Convert_core_VolumeProjection_To_v1_VolumeProjection(a.(*core.VolumeProjection), b.(*v1.VolumeProjection), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*v1.VolumeResourceRequirements)(nil), (*core.VolumeResourceRequirements)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1_VolumeResourceRequirements_To_core_VolumeResourceRequirements(a.(*v1.VolumeResourceRequirements), b.(*core.VolumeResourceRequirements), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*core.VolumeResourceRequirements)(nil), (*v1.VolumeResourceRequirements)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_core_VolumeResourceRequirements_To_v1_VolumeResourceRequirements(a.(*core.VolumeResourceRequirements), b.(*v1.VolumeResourceRequirements), scope)
 	}); err != nil {
 		return err
 	}
@@ -2177,11 +2317,6 @@ func RegisterConversions(s *runtime.Scheme) error {
 	}); err != nil {
 		return err
 	}
-	if err := s.AddConversionFunc((*core.LoadBalancerStatus)(nil), (*v1.LoadBalancerStatus)(nil), func(a, b interface{}, scope conversion.Scope) error {
-		return Convert_core_LoadBalancerStatus_To_v1_LoadBalancerStatus(a.(*core.LoadBalancerStatus), b.(*v1.LoadBalancerStatus), scope)
-	}); err != nil {
-		return err
-	}
 	if err := s.AddConversionFunc((*core.NodeSpec)(nil), (*v1.NodeSpec)(nil), func(a, b interface{}, scope conversion.Scope) error {
 		return Convert_core_NodeSpec_To_v1_NodeSpec(a.(*core.NodeSpec), b.(*v1.NodeSpec), scope)
 	}); err != nil {
@@ -2214,16 +2349,6 @@ func RegisterConversions(s *runtime.Scheme) error {
 	}
 	if err := s.AddConversionFunc((*core.ReplicationControllerSpec)(nil), (*v1.ReplicationControllerSpec)(nil), func(a, b interface{}, scope conversion.Scope) error {
 		return Convert_core_ReplicationControllerSpec_To_v1_ReplicationControllerSpec(a.(*core.ReplicationControllerSpec), b.(*v1.ReplicationControllerSpec), scope)
-	}); err != nil {
-		return err
-	}
-	if err := s.AddConversionFunc((*core.Volume)(nil), (*v1.Volume)(nil), func(a, b interface{}, scope conversion.Scope) error {
-		return Convert_core_Volume_To_v1_Volume(a.(*core.Volume), b.(*v1.Volume), scope)
-	}); err != nil {
-		return err
-	}
-	if err := s.AddConversionFunc((*v1.LoadBalancerStatus)(nil), (*core.LoadBalancerStatus)(nil), func(a, b interface{}, scope conversion.Scope) error {
-		return Convert_v1_LoadBalancerStatus_To_core_LoadBalancerStatus(a.(*v1.LoadBalancerStatus), b.(*core.LoadBalancerStatus), scope)
 	}); err != nil {
 		return err
 	}
@@ -2287,11 +2412,6 @@ func RegisterConversions(s *runtime.Scheme) error {
 	}); err != nil {
 		return err
 	}
-	if err := s.AddConversionFunc((*v1.Volume)(nil), (*core.Volume)(nil), func(a, b interface{}, scope conversion.Scope) error {
-		return Convert_v1_Volume_To_core_Volume(a.(*v1.Volume), b.(*core.Volume), scope)
-	}); err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -2343,6 +2463,28 @@ func autoConvert_core_Affinity_To_v1_Affinity(in *core.Affinity, out *v1.Affinit
 // Convert_core_Affinity_To_v1_Affinity is an autogenerated conversion function.
 func Convert_core_Affinity_To_v1_Affinity(in *core.Affinity, out *v1.Affinity, s conversion.Scope) error {
 	return autoConvert_core_Affinity_To_v1_Affinity(in, out, s)
+}
+
+func autoConvert_v1_AppArmorProfile_To_core_AppArmorProfile(in *v1.AppArmorProfile, out *core.AppArmorProfile, s conversion.Scope) error {
+	out.Type = core.AppArmorProfileType(in.Type)
+	out.LocalhostProfile = (*string)(unsafe.Pointer(in.LocalhostProfile))
+	return nil
+}
+
+// Convert_v1_AppArmorProfile_To_core_AppArmorProfile is an autogenerated conversion function.
+func Convert_v1_AppArmorProfile_To_core_AppArmorProfile(in *v1.AppArmorProfile, out *core.AppArmorProfile, s conversion.Scope) error {
+	return autoConvert_v1_AppArmorProfile_To_core_AppArmorProfile(in, out, s)
+}
+
+func autoConvert_core_AppArmorProfile_To_v1_AppArmorProfile(in *core.AppArmorProfile, out *v1.AppArmorProfile, s conversion.Scope) error {
+	out.Type = v1.AppArmorProfileType(in.Type)
+	out.LocalhostProfile = (*string)(unsafe.Pointer(in.LocalhostProfile))
+	return nil
+}
+
+// Convert_core_AppArmorProfile_To_v1_AppArmorProfile is an autogenerated conversion function.
+func Convert_core_AppArmorProfile_To_v1_AppArmorProfile(in *core.AppArmorProfile, out *v1.AppArmorProfile, s conversion.Scope) error {
+	return autoConvert_core_AppArmorProfile_To_v1_AppArmorProfile(in, out, s)
 }
 
 func autoConvert_v1_AttachedVolume_To_core_AttachedVolume(in *v1.AttachedVolume, out *core.AttachedVolume, s conversion.Scope) error {
@@ -2693,28 +2835,6 @@ func Convert_core_CinderVolumeSource_To_v1_CinderVolumeSource(in *core.CinderVol
 	return autoConvert_core_CinderVolumeSource_To_v1_CinderVolumeSource(in, out, s)
 }
 
-func autoConvert_v1_ClaimSource_To_core_ClaimSource(in *v1.ClaimSource, out *core.ClaimSource, s conversion.Scope) error {
-	out.ResourceClaimName = (*string)(unsafe.Pointer(in.ResourceClaimName))
-	out.ResourceClaimTemplateName = (*string)(unsafe.Pointer(in.ResourceClaimTemplateName))
-	return nil
-}
-
-// Convert_v1_ClaimSource_To_core_ClaimSource is an autogenerated conversion function.
-func Convert_v1_ClaimSource_To_core_ClaimSource(in *v1.ClaimSource, out *core.ClaimSource, s conversion.Scope) error {
-	return autoConvert_v1_ClaimSource_To_core_ClaimSource(in, out, s)
-}
-
-func autoConvert_core_ClaimSource_To_v1_ClaimSource(in *core.ClaimSource, out *v1.ClaimSource, s conversion.Scope) error {
-	out.ResourceClaimName = (*string)(unsafe.Pointer(in.ResourceClaimName))
-	out.ResourceClaimTemplateName = (*string)(unsafe.Pointer(in.ResourceClaimTemplateName))
-	return nil
-}
-
-// Convert_core_ClaimSource_To_v1_ClaimSource is an autogenerated conversion function.
-func Convert_core_ClaimSource_To_v1_ClaimSource(in *core.ClaimSource, out *v1.ClaimSource, s conversion.Scope) error {
-	return autoConvert_core_ClaimSource_To_v1_ClaimSource(in, out, s)
-}
-
 func autoConvert_v1_ClientIPConfig_To_core_ClientIPConfig(in *v1.ClientIPConfig, out *core.ClientIPConfig, s conversion.Scope) error {
 	out.TimeoutSeconds = (*int32)(unsafe.Pointer(in.TimeoutSeconds))
 	return nil
@@ -2733,6 +2853,34 @@ func autoConvert_core_ClientIPConfig_To_v1_ClientIPConfig(in *core.ClientIPConfi
 // Convert_core_ClientIPConfig_To_v1_ClientIPConfig is an autogenerated conversion function.
 func Convert_core_ClientIPConfig_To_v1_ClientIPConfig(in *core.ClientIPConfig, out *v1.ClientIPConfig, s conversion.Scope) error {
 	return autoConvert_core_ClientIPConfig_To_v1_ClientIPConfig(in, out, s)
+}
+
+func autoConvert_v1_ClusterTrustBundleProjection_To_core_ClusterTrustBundleProjection(in *v1.ClusterTrustBundleProjection, out *core.ClusterTrustBundleProjection, s conversion.Scope) error {
+	out.Name = (*string)(unsafe.Pointer(in.Name))
+	out.SignerName = (*string)(unsafe.Pointer(in.SignerName))
+	out.LabelSelector = (*metav1.LabelSelector)(unsafe.Pointer(in.LabelSelector))
+	out.Optional = (*bool)(unsafe.Pointer(in.Optional))
+	out.Path = in.Path
+	return nil
+}
+
+// Convert_v1_ClusterTrustBundleProjection_To_core_ClusterTrustBundleProjection is an autogenerated conversion function.
+func Convert_v1_ClusterTrustBundleProjection_To_core_ClusterTrustBundleProjection(in *v1.ClusterTrustBundleProjection, out *core.ClusterTrustBundleProjection, s conversion.Scope) error {
+	return autoConvert_v1_ClusterTrustBundleProjection_To_core_ClusterTrustBundleProjection(in, out, s)
+}
+
+func autoConvert_core_ClusterTrustBundleProjection_To_v1_ClusterTrustBundleProjection(in *core.ClusterTrustBundleProjection, out *v1.ClusterTrustBundleProjection, s conversion.Scope) error {
+	out.Name = (*string)(unsafe.Pointer(in.Name))
+	out.SignerName = (*string)(unsafe.Pointer(in.SignerName))
+	out.LabelSelector = (*metav1.LabelSelector)(unsafe.Pointer(in.LabelSelector))
+	out.Optional = (*bool)(unsafe.Pointer(in.Optional))
+	out.Path = in.Path
+	return nil
+}
+
+// Convert_core_ClusterTrustBundleProjection_To_v1_ClusterTrustBundleProjection is an autogenerated conversion function.
+func Convert_core_ClusterTrustBundleProjection_To_v1_ClusterTrustBundleProjection(in *core.ClusterTrustBundleProjection, out *v1.ClusterTrustBundleProjection, s conversion.Scope) error {
+	return autoConvert_core_ClusterTrustBundleProjection_To_v1_ClusterTrustBundleProjection(in, out, s)
 }
 
 func autoConvert_v1_ComponentCondition_To_core_ComponentCondition(in *v1.ComponentCondition, out *core.ComponentCondition, s conversion.Scope) error {
@@ -3249,6 +3397,9 @@ func autoConvert_v1_ContainerStatus_To_core_ContainerStatus(in *v1.ContainerStat
 	out.Started = (*bool)(unsafe.Pointer(in.Started))
 	out.AllocatedResources = *(*core.ResourceList)(unsafe.Pointer(&in.AllocatedResources))
 	out.Resources = (*core.ResourceRequirements)(unsafe.Pointer(in.Resources))
+	out.VolumeMounts = *(*[]core.VolumeMountStatus)(unsafe.Pointer(&in.VolumeMounts))
+	out.User = (*core.ContainerUser)(unsafe.Pointer(in.User))
+	out.AllocatedResourcesStatus = *(*[]core.ResourceStatus)(unsafe.Pointer(&in.AllocatedResourcesStatus))
 	return nil
 }
 
@@ -3273,12 +3424,35 @@ func autoConvert_core_ContainerStatus_To_v1_ContainerStatus(in *core.ContainerSt
 	out.Started = (*bool)(unsafe.Pointer(in.Started))
 	out.AllocatedResources = *(*v1.ResourceList)(unsafe.Pointer(&in.AllocatedResources))
 	out.Resources = (*v1.ResourceRequirements)(unsafe.Pointer(in.Resources))
+	out.VolumeMounts = *(*[]v1.VolumeMountStatus)(unsafe.Pointer(&in.VolumeMounts))
+	out.User = (*v1.ContainerUser)(unsafe.Pointer(in.User))
+	out.AllocatedResourcesStatus = *(*[]v1.ResourceStatus)(unsafe.Pointer(&in.AllocatedResourcesStatus))
 	return nil
 }
 
 // Convert_core_ContainerStatus_To_v1_ContainerStatus is an autogenerated conversion function.
 func Convert_core_ContainerStatus_To_v1_ContainerStatus(in *core.ContainerStatus, out *v1.ContainerStatus, s conversion.Scope) error {
 	return autoConvert_core_ContainerStatus_To_v1_ContainerStatus(in, out, s)
+}
+
+func autoConvert_v1_ContainerUser_To_core_ContainerUser(in *v1.ContainerUser, out *core.ContainerUser, s conversion.Scope) error {
+	out.Linux = (*core.LinuxContainerUser)(unsafe.Pointer(in.Linux))
+	return nil
+}
+
+// Convert_v1_ContainerUser_To_core_ContainerUser is an autogenerated conversion function.
+func Convert_v1_ContainerUser_To_core_ContainerUser(in *v1.ContainerUser, out *core.ContainerUser, s conversion.Scope) error {
+	return autoConvert_v1_ContainerUser_To_core_ContainerUser(in, out, s)
+}
+
+func autoConvert_core_ContainerUser_To_v1_ContainerUser(in *core.ContainerUser, out *v1.ContainerUser, s conversion.Scope) error {
+	out.Linux = (*v1.LinuxContainerUser)(unsafe.Pointer(in.Linux))
+	return nil
+}
+
+// Convert_core_ContainerUser_To_v1_ContainerUser is an autogenerated conversion function.
+func Convert_core_ContainerUser_To_v1_ContainerUser(in *core.ContainerUser, out *v1.ContainerUser, s conversion.Scope) error {
+	return autoConvert_core_ContainerUser_To_v1_ContainerUser(in, out, s)
 }
 
 func autoConvert_v1_DaemonEndpoint_To_core_DaemonEndpoint(in *v1.DaemonEndpoint, out *core.DaemonEndpoint, s conversion.Scope) error {
@@ -4265,6 +4439,28 @@ func Convert_core_ISCSIVolumeSource_To_v1_ISCSIVolumeSource(in *core.ISCSIVolume
 	return autoConvert_core_ISCSIVolumeSource_To_v1_ISCSIVolumeSource(in, out, s)
 }
 
+func autoConvert_v1_ImageVolumeSource_To_core_ImageVolumeSource(in *v1.ImageVolumeSource, out *core.ImageVolumeSource, s conversion.Scope) error {
+	out.Reference = in.Reference
+	out.PullPolicy = core.PullPolicy(in.PullPolicy)
+	return nil
+}
+
+// Convert_v1_ImageVolumeSource_To_core_ImageVolumeSource is an autogenerated conversion function.
+func Convert_v1_ImageVolumeSource_To_core_ImageVolumeSource(in *v1.ImageVolumeSource, out *core.ImageVolumeSource, s conversion.Scope) error {
+	return autoConvert_v1_ImageVolumeSource_To_core_ImageVolumeSource(in, out, s)
+}
+
+func autoConvert_core_ImageVolumeSource_To_v1_ImageVolumeSource(in *core.ImageVolumeSource, out *v1.ImageVolumeSource, s conversion.Scope) error {
+	out.Reference = in.Reference
+	out.PullPolicy = v1.PullPolicy(in.PullPolicy)
+	return nil
+}
+
+// Convert_core_ImageVolumeSource_To_v1_ImageVolumeSource is an autogenerated conversion function.
+func Convert_core_ImageVolumeSource_To_v1_ImageVolumeSource(in *core.ImageVolumeSource, out *v1.ImageVolumeSource, s conversion.Scope) error {
+	return autoConvert_core_ImageVolumeSource_To_v1_ImageVolumeSource(in, out, s)
+}
+
 func autoConvert_v1_KeyToPath_To_core_KeyToPath(in *v1.KeyToPath, out *core.KeyToPath, s conversion.Scope) error {
 	out.Key = in.Key
 	out.Path = in.Path
@@ -4315,6 +4511,7 @@ func autoConvert_v1_LifecycleHandler_To_core_LifecycleHandler(in *v1.LifecycleHa
 	out.Exec = (*core.ExecAction)(unsafe.Pointer(in.Exec))
 	out.HTTPGet = (*core.HTTPGetAction)(unsafe.Pointer(in.HTTPGet))
 	out.TCPSocket = (*core.TCPSocketAction)(unsafe.Pointer(in.TCPSocket))
+	out.Sleep = (*core.SleepAction)(unsafe.Pointer(in.Sleep))
 	return nil
 }
 
@@ -4327,6 +4524,7 @@ func autoConvert_core_LifecycleHandler_To_v1_LifecycleHandler(in *core.Lifecycle
 	out.Exec = (*v1.ExecAction)(unsafe.Pointer(in.Exec))
 	out.HTTPGet = (*v1.HTTPGetAction)(unsafe.Pointer(in.HTTPGet))
 	out.TCPSocket = (*v1.TCPSocketAction)(unsafe.Pointer(in.TCPSocket))
+	out.Sleep = (*v1.SleepAction)(unsafe.Pointer(in.Sleep))
 	return nil
 }
 
@@ -4433,6 +4631,30 @@ func Convert_core_LimitRangeSpec_To_v1_LimitRangeSpec(in *core.LimitRangeSpec, o
 	return autoConvert_core_LimitRangeSpec_To_v1_LimitRangeSpec(in, out, s)
 }
 
+func autoConvert_v1_LinuxContainerUser_To_core_LinuxContainerUser(in *v1.LinuxContainerUser, out *core.LinuxContainerUser, s conversion.Scope) error {
+	out.UID = in.UID
+	out.GID = in.GID
+	out.SupplementalGroups = *(*[]int64)(unsafe.Pointer(&in.SupplementalGroups))
+	return nil
+}
+
+// Convert_v1_LinuxContainerUser_To_core_LinuxContainerUser is an autogenerated conversion function.
+func Convert_v1_LinuxContainerUser_To_core_LinuxContainerUser(in *v1.LinuxContainerUser, out *core.LinuxContainerUser, s conversion.Scope) error {
+	return autoConvert_v1_LinuxContainerUser_To_core_LinuxContainerUser(in, out, s)
+}
+
+func autoConvert_core_LinuxContainerUser_To_v1_LinuxContainerUser(in *core.LinuxContainerUser, out *v1.LinuxContainerUser, s conversion.Scope) error {
+	out.UID = in.UID
+	out.GID = in.GID
+	out.SupplementalGroups = *(*[]int64)(unsafe.Pointer(&in.SupplementalGroups))
+	return nil
+}
+
+// Convert_core_LinuxContainerUser_To_v1_LinuxContainerUser is an autogenerated conversion function.
+func Convert_core_LinuxContainerUser_To_v1_LinuxContainerUser(in *core.LinuxContainerUser, out *v1.LinuxContainerUser, s conversion.Scope) error {
+	return autoConvert_core_LinuxContainerUser_To_v1_LinuxContainerUser(in, out, s)
+}
+
 func autoConvert_v1_List_To_core_List(in *v1.List, out *core.List, s conversion.Scope) error {
 	out.ListMeta = in.ListMeta
 	if in.Items != nil {
@@ -4478,6 +4700,7 @@ func Convert_core_List_To_v1_List(in *core.List, out *v1.List, s conversion.Scop
 func autoConvert_v1_LoadBalancerIngress_To_core_LoadBalancerIngress(in *v1.LoadBalancerIngress, out *core.LoadBalancerIngress, s conversion.Scope) error {
 	out.IP = in.IP
 	out.Hostname = in.Hostname
+	out.IPMode = (*core.LoadBalancerIPMode)(unsafe.Pointer(in.IPMode))
 	out.Ports = *(*[]core.PortStatus)(unsafe.Pointer(&in.Ports))
 	return nil
 }
@@ -4490,6 +4713,7 @@ func Convert_v1_LoadBalancerIngress_To_core_LoadBalancerIngress(in *v1.LoadBalan
 func autoConvert_core_LoadBalancerIngress_To_v1_LoadBalancerIngress(in *core.LoadBalancerIngress, out *v1.LoadBalancerIngress, s conversion.Scope) error {
 	out.IP = in.IP
 	out.Hostname = in.Hostname
+	out.IPMode = (*v1.LoadBalancerIPMode)(unsafe.Pointer(in.IPMode))
 	out.Ports = *(*[]v1.PortStatus)(unsafe.Pointer(&in.Ports))
 	return nil
 }
@@ -4504,9 +4728,19 @@ func autoConvert_v1_LoadBalancerStatus_To_core_LoadBalancerStatus(in *v1.LoadBal
 	return nil
 }
 
+// Convert_v1_LoadBalancerStatus_To_core_LoadBalancerStatus is an autogenerated conversion function.
+func Convert_v1_LoadBalancerStatus_To_core_LoadBalancerStatus(in *v1.LoadBalancerStatus, out *core.LoadBalancerStatus, s conversion.Scope) error {
+	return autoConvert_v1_LoadBalancerStatus_To_core_LoadBalancerStatus(in, out, s)
+}
+
 func autoConvert_core_LoadBalancerStatus_To_v1_LoadBalancerStatus(in *core.LoadBalancerStatus, out *v1.LoadBalancerStatus, s conversion.Scope) error {
 	out.Ingress = *(*[]v1.LoadBalancerIngress)(unsafe.Pointer(&in.Ingress))
 	return nil
+}
+
+// Convert_core_LoadBalancerStatus_To_v1_LoadBalancerStatus is an autogenerated conversion function.
+func Convert_core_LoadBalancerStatus_To_v1_LoadBalancerStatus(in *core.LoadBalancerStatus, out *v1.LoadBalancerStatus, s conversion.Scope) error {
+	return autoConvert_core_LoadBalancerStatus_To_v1_LoadBalancerStatus(in, out, s)
 }
 
 func autoConvert_v1_LocalObjectReference_To_core_LocalObjectReference(in *v1.LocalObjectReference, out *core.LocalObjectReference, s conversion.Scope) error {
@@ -4549,6 +4783,28 @@ func autoConvert_core_LocalVolumeSource_To_v1_LocalVolumeSource(in *core.LocalVo
 // Convert_core_LocalVolumeSource_To_v1_LocalVolumeSource is an autogenerated conversion function.
 func Convert_core_LocalVolumeSource_To_v1_LocalVolumeSource(in *core.LocalVolumeSource, out *v1.LocalVolumeSource, s conversion.Scope) error {
 	return autoConvert_core_LocalVolumeSource_To_v1_LocalVolumeSource(in, out, s)
+}
+
+func autoConvert_v1_ModifyVolumeStatus_To_core_ModifyVolumeStatus(in *v1.ModifyVolumeStatus, out *core.ModifyVolumeStatus, s conversion.Scope) error {
+	out.TargetVolumeAttributesClassName = in.TargetVolumeAttributesClassName
+	out.Status = core.PersistentVolumeClaimModifyVolumeStatus(in.Status)
+	return nil
+}
+
+// Convert_v1_ModifyVolumeStatus_To_core_ModifyVolumeStatus is an autogenerated conversion function.
+func Convert_v1_ModifyVolumeStatus_To_core_ModifyVolumeStatus(in *v1.ModifyVolumeStatus, out *core.ModifyVolumeStatus, s conversion.Scope) error {
+	return autoConvert_v1_ModifyVolumeStatus_To_core_ModifyVolumeStatus(in, out, s)
+}
+
+func autoConvert_core_ModifyVolumeStatus_To_v1_ModifyVolumeStatus(in *core.ModifyVolumeStatus, out *v1.ModifyVolumeStatus, s conversion.Scope) error {
+	out.TargetVolumeAttributesClassName = in.TargetVolumeAttributesClassName
+	out.Status = v1.PersistentVolumeClaimModifyVolumeStatus(in.Status)
+	return nil
+}
+
+// Convert_core_ModifyVolumeStatus_To_v1_ModifyVolumeStatus is an autogenerated conversion function.
+func Convert_core_ModifyVolumeStatus_To_v1_ModifyVolumeStatus(in *core.ModifyVolumeStatus, out *v1.ModifyVolumeStatus, s conversion.Scope) error {
+	return autoConvert_core_ModifyVolumeStatus_To_v1_ModifyVolumeStatus(in, out, s)
 }
 
 func autoConvert_v1_NFSVolumeSource_To_core_NFSVolumeSource(in *v1.NFSVolumeSource, out *core.NFSVolumeSource, s conversion.Scope) error {
@@ -4875,6 +5131,26 @@ func Convert_core_NodeDaemonEndpoints_To_v1_NodeDaemonEndpoints(in *core.NodeDae
 	return autoConvert_core_NodeDaemonEndpoints_To_v1_NodeDaemonEndpoints(in, out, s)
 }
 
+func autoConvert_v1_NodeFeatures_To_core_NodeFeatures(in *v1.NodeFeatures, out *core.NodeFeatures, s conversion.Scope) error {
+	out.SupplementalGroupsPolicy = (*bool)(unsafe.Pointer(in.SupplementalGroupsPolicy))
+	return nil
+}
+
+// Convert_v1_NodeFeatures_To_core_NodeFeatures is an autogenerated conversion function.
+func Convert_v1_NodeFeatures_To_core_NodeFeatures(in *v1.NodeFeatures, out *core.NodeFeatures, s conversion.Scope) error {
+	return autoConvert_v1_NodeFeatures_To_core_NodeFeatures(in, out, s)
+}
+
+func autoConvert_core_NodeFeatures_To_v1_NodeFeatures(in *core.NodeFeatures, out *v1.NodeFeatures, s conversion.Scope) error {
+	out.SupplementalGroupsPolicy = (*bool)(unsafe.Pointer(in.SupplementalGroupsPolicy))
+	return nil
+}
+
+// Convert_core_NodeFeatures_To_v1_NodeFeatures is an autogenerated conversion function.
+func Convert_core_NodeFeatures_To_v1_NodeFeatures(in *core.NodeFeatures, out *v1.NodeFeatures, s conversion.Scope) error {
+	return autoConvert_core_NodeFeatures_To_v1_NodeFeatures(in, out, s)
+}
+
 func autoConvert_v1_NodeList_To_core_NodeList(in *v1.NodeList, out *core.NodeList, s conversion.Scope) error {
 	out.ListMeta = in.ListMeta
 	if in.Items != nil {
@@ -4955,24 +5231,48 @@ func Convert_url_Values_To_v1_NodeProxyOptions(in *url.Values, out *v1.NodeProxy
 	return autoConvert_url_Values_To_v1_NodeProxyOptions(in, out, s)
 }
 
-func autoConvert_v1_NodeResources_To_core_NodeResources(in *v1.NodeResources, out *core.NodeResources, s conversion.Scope) error {
-	out.Capacity = *(*core.ResourceList)(unsafe.Pointer(&in.Capacity))
+func autoConvert_v1_NodeRuntimeHandler_To_core_NodeRuntimeHandler(in *v1.NodeRuntimeHandler, out *core.NodeRuntimeHandler, s conversion.Scope) error {
+	out.Name = in.Name
+	out.Features = (*core.NodeRuntimeHandlerFeatures)(unsafe.Pointer(in.Features))
 	return nil
 }
 
-// Convert_v1_NodeResources_To_core_NodeResources is an autogenerated conversion function.
-func Convert_v1_NodeResources_To_core_NodeResources(in *v1.NodeResources, out *core.NodeResources, s conversion.Scope) error {
-	return autoConvert_v1_NodeResources_To_core_NodeResources(in, out, s)
+// Convert_v1_NodeRuntimeHandler_To_core_NodeRuntimeHandler is an autogenerated conversion function.
+func Convert_v1_NodeRuntimeHandler_To_core_NodeRuntimeHandler(in *v1.NodeRuntimeHandler, out *core.NodeRuntimeHandler, s conversion.Scope) error {
+	return autoConvert_v1_NodeRuntimeHandler_To_core_NodeRuntimeHandler(in, out, s)
 }
 
-func autoConvert_core_NodeResources_To_v1_NodeResources(in *core.NodeResources, out *v1.NodeResources, s conversion.Scope) error {
-	out.Capacity = *(*v1.ResourceList)(unsafe.Pointer(&in.Capacity))
+func autoConvert_core_NodeRuntimeHandler_To_v1_NodeRuntimeHandler(in *core.NodeRuntimeHandler, out *v1.NodeRuntimeHandler, s conversion.Scope) error {
+	out.Name = in.Name
+	out.Features = (*v1.NodeRuntimeHandlerFeatures)(unsafe.Pointer(in.Features))
 	return nil
 }
 
-// Convert_core_NodeResources_To_v1_NodeResources is an autogenerated conversion function.
-func Convert_core_NodeResources_To_v1_NodeResources(in *core.NodeResources, out *v1.NodeResources, s conversion.Scope) error {
-	return autoConvert_core_NodeResources_To_v1_NodeResources(in, out, s)
+// Convert_core_NodeRuntimeHandler_To_v1_NodeRuntimeHandler is an autogenerated conversion function.
+func Convert_core_NodeRuntimeHandler_To_v1_NodeRuntimeHandler(in *core.NodeRuntimeHandler, out *v1.NodeRuntimeHandler, s conversion.Scope) error {
+	return autoConvert_core_NodeRuntimeHandler_To_v1_NodeRuntimeHandler(in, out, s)
+}
+
+func autoConvert_v1_NodeRuntimeHandlerFeatures_To_core_NodeRuntimeHandlerFeatures(in *v1.NodeRuntimeHandlerFeatures, out *core.NodeRuntimeHandlerFeatures, s conversion.Scope) error {
+	out.RecursiveReadOnlyMounts = (*bool)(unsafe.Pointer(in.RecursiveReadOnlyMounts))
+	out.UserNamespaces = (*bool)(unsafe.Pointer(in.UserNamespaces))
+	return nil
+}
+
+// Convert_v1_NodeRuntimeHandlerFeatures_To_core_NodeRuntimeHandlerFeatures is an autogenerated conversion function.
+func Convert_v1_NodeRuntimeHandlerFeatures_To_core_NodeRuntimeHandlerFeatures(in *v1.NodeRuntimeHandlerFeatures, out *core.NodeRuntimeHandlerFeatures, s conversion.Scope) error {
+	return autoConvert_v1_NodeRuntimeHandlerFeatures_To_core_NodeRuntimeHandlerFeatures(in, out, s)
+}
+
+func autoConvert_core_NodeRuntimeHandlerFeatures_To_v1_NodeRuntimeHandlerFeatures(in *core.NodeRuntimeHandlerFeatures, out *v1.NodeRuntimeHandlerFeatures, s conversion.Scope) error {
+	out.RecursiveReadOnlyMounts = (*bool)(unsafe.Pointer(in.RecursiveReadOnlyMounts))
+	out.UserNamespaces = (*bool)(unsafe.Pointer(in.UserNamespaces))
+	return nil
+}
+
+// Convert_core_NodeRuntimeHandlerFeatures_To_v1_NodeRuntimeHandlerFeatures is an autogenerated conversion function.
+func Convert_core_NodeRuntimeHandlerFeatures_To_v1_NodeRuntimeHandlerFeatures(in *core.NodeRuntimeHandlerFeatures, out *v1.NodeRuntimeHandlerFeatures, s conversion.Scope) error {
+	return autoConvert_core_NodeRuntimeHandlerFeatures_To_v1_NodeRuntimeHandlerFeatures(in, out, s)
 }
 
 func autoConvert_v1_NodeSelector_To_core_NodeSelector(in *v1.NodeSelector, out *core.NodeSelector, s conversion.Scope) error {
@@ -5078,6 +5378,8 @@ func autoConvert_v1_NodeStatus_To_core_NodeStatus(in *v1.NodeStatus, out *core.N
 	out.VolumesInUse = *(*[]core.UniqueVolumeName)(unsafe.Pointer(&in.VolumesInUse))
 	out.VolumesAttached = *(*[]core.AttachedVolume)(unsafe.Pointer(&in.VolumesAttached))
 	out.Config = (*core.NodeConfigStatus)(unsafe.Pointer(in.Config))
+	out.RuntimeHandlers = *(*[]core.NodeRuntimeHandler)(unsafe.Pointer(&in.RuntimeHandlers))
+	out.Features = (*core.NodeFeatures)(unsafe.Pointer(in.Features))
 	return nil
 }
 
@@ -5102,6 +5404,8 @@ func autoConvert_core_NodeStatus_To_v1_NodeStatus(in *core.NodeStatus, out *v1.N
 	out.VolumesInUse = *(*[]v1.UniqueVolumeName)(unsafe.Pointer(&in.VolumesInUse))
 	out.VolumesAttached = *(*[]v1.AttachedVolume)(unsafe.Pointer(&in.VolumesAttached))
 	out.Config = (*v1.NodeConfigStatus)(unsafe.Pointer(in.Config))
+	out.RuntimeHandlers = *(*[]v1.NodeRuntimeHandler)(unsafe.Pointer(&in.RuntimeHandlers))
+	out.Features = (*v1.NodeFeatures)(unsafe.Pointer(in.Features))
 	return nil
 }
 
@@ -5321,7 +5625,7 @@ func Convert_core_PersistentVolumeClaimList_To_v1_PersistentVolumeClaimList(in *
 func autoConvert_v1_PersistentVolumeClaimSpec_To_core_PersistentVolumeClaimSpec(in *v1.PersistentVolumeClaimSpec, out *core.PersistentVolumeClaimSpec, s conversion.Scope) error {
 	out.AccessModes = *(*[]core.PersistentVolumeAccessMode)(unsafe.Pointer(&in.AccessModes))
 	out.Selector = (*metav1.LabelSelector)(unsafe.Pointer(in.Selector))
-	if err := Convert_v1_ResourceRequirements_To_core_ResourceRequirements(&in.Resources, &out.Resources, s); err != nil {
+	if err := Convert_v1_VolumeResourceRequirements_To_core_VolumeResourceRequirements(&in.Resources, &out.Resources, s); err != nil {
 		return err
 	}
 	out.VolumeName = in.VolumeName
@@ -5329,6 +5633,7 @@ func autoConvert_v1_PersistentVolumeClaimSpec_To_core_PersistentVolumeClaimSpec(
 	out.VolumeMode = (*core.PersistentVolumeMode)(unsafe.Pointer(in.VolumeMode))
 	out.DataSource = (*core.TypedLocalObjectReference)(unsafe.Pointer(in.DataSource))
 	out.DataSourceRef = (*core.TypedObjectReference)(unsafe.Pointer(in.DataSourceRef))
+	out.VolumeAttributesClassName = (*string)(unsafe.Pointer(in.VolumeAttributesClassName))
 	return nil
 }
 
@@ -5340,7 +5645,7 @@ func Convert_v1_PersistentVolumeClaimSpec_To_core_PersistentVolumeClaimSpec(in *
 func autoConvert_core_PersistentVolumeClaimSpec_To_v1_PersistentVolumeClaimSpec(in *core.PersistentVolumeClaimSpec, out *v1.PersistentVolumeClaimSpec, s conversion.Scope) error {
 	out.AccessModes = *(*[]v1.PersistentVolumeAccessMode)(unsafe.Pointer(&in.AccessModes))
 	out.Selector = (*metav1.LabelSelector)(unsafe.Pointer(in.Selector))
-	if err := Convert_core_ResourceRequirements_To_v1_ResourceRequirements(&in.Resources, &out.Resources, s); err != nil {
+	if err := Convert_core_VolumeResourceRequirements_To_v1_VolumeResourceRequirements(&in.Resources, &out.Resources, s); err != nil {
 		return err
 	}
 	out.VolumeName = in.VolumeName
@@ -5348,6 +5653,7 @@ func autoConvert_core_PersistentVolumeClaimSpec_To_v1_PersistentVolumeClaimSpec(
 	out.VolumeMode = (*v1.PersistentVolumeMode)(unsafe.Pointer(in.VolumeMode))
 	out.DataSource = (*v1.TypedLocalObjectReference)(unsafe.Pointer(in.DataSource))
 	out.DataSourceRef = (*v1.TypedObjectReference)(unsafe.Pointer(in.DataSourceRef))
+	out.VolumeAttributesClassName = (*string)(unsafe.Pointer(in.VolumeAttributesClassName))
 	return nil
 }
 
@@ -5363,6 +5669,8 @@ func autoConvert_v1_PersistentVolumeClaimStatus_To_core_PersistentVolumeClaimSta
 	out.Conditions = *(*[]core.PersistentVolumeClaimCondition)(unsafe.Pointer(&in.Conditions))
 	out.AllocatedResources = *(*core.ResourceList)(unsafe.Pointer(&in.AllocatedResources))
 	out.AllocatedResourceStatuses = *(*map[core.ResourceName]core.ClaimResourceStatus)(unsafe.Pointer(&in.AllocatedResourceStatuses))
+	out.CurrentVolumeAttributesClassName = (*string)(unsafe.Pointer(in.CurrentVolumeAttributesClassName))
+	out.ModifyVolumeStatus = (*core.ModifyVolumeStatus)(unsafe.Pointer(in.ModifyVolumeStatus))
 	return nil
 }
 
@@ -5378,6 +5686,8 @@ func autoConvert_core_PersistentVolumeClaimStatus_To_v1_PersistentVolumeClaimSta
 	out.Conditions = *(*[]v1.PersistentVolumeClaimCondition)(unsafe.Pointer(&in.Conditions))
 	out.AllocatedResources = *(*v1.ResourceList)(unsafe.Pointer(&in.AllocatedResources))
 	out.AllocatedResourceStatuses = *(*map[v1.ResourceName]v1.ClaimResourceStatus)(unsafe.Pointer(&in.AllocatedResourceStatuses))
+	out.CurrentVolumeAttributesClassName = (*string)(unsafe.Pointer(in.CurrentVolumeAttributesClassName))
+	out.ModifyVolumeStatus = (*v1.ModifyVolumeStatus)(unsafe.Pointer(in.ModifyVolumeStatus))
 	return nil
 }
 
@@ -5550,6 +5860,7 @@ func autoConvert_v1_PersistentVolumeSpec_To_core_PersistentVolumeSpec(in *v1.Per
 	out.MountOptions = *(*[]string)(unsafe.Pointer(&in.MountOptions))
 	out.VolumeMode = (*core.PersistentVolumeMode)(unsafe.Pointer(in.VolumeMode))
 	out.NodeAffinity = (*core.VolumeNodeAffinity)(unsafe.Pointer(in.NodeAffinity))
+	out.VolumeAttributesClassName = (*string)(unsafe.Pointer(in.VolumeAttributesClassName))
 	return nil
 }
 
@@ -5565,6 +5876,7 @@ func autoConvert_core_PersistentVolumeSpec_To_v1_PersistentVolumeSpec(in *core.P
 	out.MountOptions = *(*[]string)(unsafe.Pointer(&in.MountOptions))
 	out.VolumeMode = (*v1.PersistentVolumeMode)(unsafe.Pointer(in.VolumeMode))
 	out.NodeAffinity = (*v1.VolumeNodeAffinity)(unsafe.Pointer(in.NodeAffinity))
+	out.VolumeAttributesClassName = (*string)(unsafe.Pointer(in.VolumeAttributesClassName))
 	return nil
 }
 
@@ -5665,6 +5977,8 @@ func autoConvert_v1_PodAffinityTerm_To_core_PodAffinityTerm(in *v1.PodAffinityTe
 	out.Namespaces = *(*[]string)(unsafe.Pointer(&in.Namespaces))
 	out.TopologyKey = in.TopologyKey
 	out.NamespaceSelector = (*metav1.LabelSelector)(unsafe.Pointer(in.NamespaceSelector))
+	out.MatchLabelKeys = *(*[]string)(unsafe.Pointer(&in.MatchLabelKeys))
+	out.MismatchLabelKeys = *(*[]string)(unsafe.Pointer(&in.MismatchLabelKeys))
 	return nil
 }
 
@@ -5678,6 +5992,8 @@ func autoConvert_core_PodAffinityTerm_To_v1_PodAffinityTerm(in *core.PodAffinity
 	out.Namespaces = *(*[]string)(unsafe.Pointer(&in.Namespaces))
 	out.TopologyKey = in.TopologyKey
 	out.NamespaceSelector = (*metav1.LabelSelector)(unsafe.Pointer(in.NamespaceSelector))
+	out.MatchLabelKeys = *(*[]string)(unsafe.Pointer(&in.MatchLabelKeys))
+	out.MismatchLabelKeys = *(*[]string)(unsafe.Pointer(&in.MismatchLabelKeys))
 	return nil
 }
 
@@ -6229,9 +6545,8 @@ func Convert_core_PodReadinessGate_To_v1_PodReadinessGate(in *core.PodReadinessG
 
 func autoConvert_v1_PodResourceClaim_To_core_PodResourceClaim(in *v1.PodResourceClaim, out *core.PodResourceClaim, s conversion.Scope) error {
 	out.Name = in.Name
-	if err := Convert_v1_ClaimSource_To_core_ClaimSource(&in.Source, &out.Source, s); err != nil {
-		return err
-	}
+	out.ResourceClaimName = (*string)(unsafe.Pointer(in.ResourceClaimName))
+	out.ResourceClaimTemplateName = (*string)(unsafe.Pointer(in.ResourceClaimTemplateName))
 	return nil
 }
 
@@ -6242,9 +6557,8 @@ func Convert_v1_PodResourceClaim_To_core_PodResourceClaim(in *v1.PodResourceClai
 
 func autoConvert_core_PodResourceClaim_To_v1_PodResourceClaim(in *core.PodResourceClaim, out *v1.PodResourceClaim, s conversion.Scope) error {
 	out.Name = in.Name
-	if err := Convert_core_ClaimSource_To_v1_ClaimSource(&in.Source, &out.Source, s); err != nil {
-		return err
-	}
+	out.ResourceClaimName = (*string)(unsafe.Pointer(in.ResourceClaimName))
+	out.ResourceClaimTemplateName = (*string)(unsafe.Pointer(in.ResourceClaimTemplateName))
 	return nil
 }
 
@@ -6302,10 +6616,12 @@ func autoConvert_v1_PodSecurityContext_To_core_PodSecurityContext(in *v1.PodSecu
 	out.RunAsGroup = (*int64)(unsafe.Pointer(in.RunAsGroup))
 	out.RunAsNonRoot = (*bool)(unsafe.Pointer(in.RunAsNonRoot))
 	out.SupplementalGroups = *(*[]int64)(unsafe.Pointer(&in.SupplementalGroups))
+	out.SupplementalGroupsPolicy = (*core.SupplementalGroupsPolicy)(unsafe.Pointer(in.SupplementalGroupsPolicy))
 	out.FSGroup = (*int64)(unsafe.Pointer(in.FSGroup))
 	out.Sysctls = *(*[]core.Sysctl)(unsafe.Pointer(&in.Sysctls))
 	out.FSGroupChangePolicy = (*core.PodFSGroupChangePolicy)(unsafe.Pointer(in.FSGroupChangePolicy))
 	out.SeccompProfile = (*core.SeccompProfile)(unsafe.Pointer(in.SeccompProfile))
+	out.AppArmorProfile = (*core.AppArmorProfile)(unsafe.Pointer(in.AppArmorProfile))
 	return nil
 }
 
@@ -6326,10 +6642,12 @@ func autoConvert_core_PodSecurityContext_To_v1_PodSecurityContext(in *core.PodSe
 	out.RunAsGroup = (*int64)(unsafe.Pointer(in.RunAsGroup))
 	out.RunAsNonRoot = (*bool)(unsafe.Pointer(in.RunAsNonRoot))
 	out.SupplementalGroups = *(*[]int64)(unsafe.Pointer(&in.SupplementalGroups))
+	out.SupplementalGroupsPolicy = (*v1.SupplementalGroupsPolicy)(unsafe.Pointer(in.SupplementalGroupsPolicy))
 	out.FSGroup = (*int64)(unsafe.Pointer(in.FSGroup))
 	out.FSGroupChangePolicy = (*v1.PodFSGroupChangePolicy)(unsafe.Pointer(in.FSGroupChangePolicy))
 	out.Sysctls = *(*[]v1.Sysctl)(unsafe.Pointer(&in.Sysctls))
 	out.SeccompProfile = (*v1.SeccompProfile)(unsafe.Pointer(in.SeccompProfile))
+	out.AppArmorProfile = (*v1.AppArmorProfile)(unsafe.Pointer(in.AppArmorProfile))
 	return nil
 }
 
@@ -7143,6 +7461,7 @@ func Convert_core_ReplicationControllerStatus_To_v1_ReplicationControllerStatus(
 
 func autoConvert_v1_ResourceClaim_To_core_ResourceClaim(in *v1.ResourceClaim, out *core.ResourceClaim, s conversion.Scope) error {
 	out.Name = in.Name
+	out.Request = in.Request
 	return nil
 }
 
@@ -7153,6 +7472,7 @@ func Convert_v1_ResourceClaim_To_core_ResourceClaim(in *v1.ResourceClaim, out *c
 
 func autoConvert_core_ResourceClaim_To_v1_ResourceClaim(in *core.ResourceClaim, out *v1.ResourceClaim, s conversion.Scope) error {
 	out.Name = in.Name
+	out.Request = in.Request
 	return nil
 }
 
@@ -7183,6 +7503,28 @@ func autoConvert_core_ResourceFieldSelector_To_v1_ResourceFieldSelector(in *core
 // Convert_core_ResourceFieldSelector_To_v1_ResourceFieldSelector is an autogenerated conversion function.
 func Convert_core_ResourceFieldSelector_To_v1_ResourceFieldSelector(in *core.ResourceFieldSelector, out *v1.ResourceFieldSelector, s conversion.Scope) error {
 	return autoConvert_core_ResourceFieldSelector_To_v1_ResourceFieldSelector(in, out, s)
+}
+
+func autoConvert_v1_ResourceHealth_To_core_ResourceHealth(in *v1.ResourceHealth, out *core.ResourceHealth, s conversion.Scope) error {
+	out.ResourceID = core.ResourceID(in.ResourceID)
+	out.Health = core.ResourceHealthStatus(in.Health)
+	return nil
+}
+
+// Convert_v1_ResourceHealth_To_core_ResourceHealth is an autogenerated conversion function.
+func Convert_v1_ResourceHealth_To_core_ResourceHealth(in *v1.ResourceHealth, out *core.ResourceHealth, s conversion.Scope) error {
+	return autoConvert_v1_ResourceHealth_To_core_ResourceHealth(in, out, s)
+}
+
+func autoConvert_core_ResourceHealth_To_v1_ResourceHealth(in *core.ResourceHealth, out *v1.ResourceHealth, s conversion.Scope) error {
+	out.ResourceID = v1.ResourceID(in.ResourceID)
+	out.Health = v1.ResourceHealthStatus(in.Health)
+	return nil
+}
+
+// Convert_core_ResourceHealth_To_v1_ResourceHealth is an autogenerated conversion function.
+func Convert_core_ResourceHealth_To_v1_ResourceHealth(in *core.ResourceHealth, out *v1.ResourceHealth, s conversion.Scope) error {
+	return autoConvert_core_ResourceHealth_To_v1_ResourceHealth(in, out, s)
 }
 
 func autoConvert_v1_ResourceQuota_To_core_ResourceQuota(in *v1.ResourceQuota, out *core.ResourceQuota, s conversion.Scope) error {
@@ -7307,6 +7649,28 @@ func autoConvert_core_ResourceRequirements_To_v1_ResourceRequirements(in *core.R
 // Convert_core_ResourceRequirements_To_v1_ResourceRequirements is an autogenerated conversion function.
 func Convert_core_ResourceRequirements_To_v1_ResourceRequirements(in *core.ResourceRequirements, out *v1.ResourceRequirements, s conversion.Scope) error {
 	return autoConvert_core_ResourceRequirements_To_v1_ResourceRequirements(in, out, s)
+}
+
+func autoConvert_v1_ResourceStatus_To_core_ResourceStatus(in *v1.ResourceStatus, out *core.ResourceStatus, s conversion.Scope) error {
+	out.Name = core.ResourceName(in.Name)
+	out.Resources = *(*[]core.ResourceHealth)(unsafe.Pointer(&in.Resources))
+	return nil
+}
+
+// Convert_v1_ResourceStatus_To_core_ResourceStatus is an autogenerated conversion function.
+func Convert_v1_ResourceStatus_To_core_ResourceStatus(in *v1.ResourceStatus, out *core.ResourceStatus, s conversion.Scope) error {
+	return autoConvert_v1_ResourceStatus_To_core_ResourceStatus(in, out, s)
+}
+
+func autoConvert_core_ResourceStatus_To_v1_ResourceStatus(in *core.ResourceStatus, out *v1.ResourceStatus, s conversion.Scope) error {
+	out.Name = v1.ResourceName(in.Name)
+	out.Resources = *(*[]v1.ResourceHealth)(unsafe.Pointer(&in.Resources))
+	return nil
+}
+
+// Convert_core_ResourceStatus_To_v1_ResourceStatus is an autogenerated conversion function.
+func Convert_core_ResourceStatus_To_v1_ResourceStatus(in *core.ResourceStatus, out *v1.ResourceStatus, s conversion.Scope) error {
+	return autoConvert_core_ResourceStatus_To_v1_ResourceStatus(in, out, s)
 }
 
 func autoConvert_v1_SELinuxOptions_To_core_SELinuxOptions(in *v1.SELinuxOptions, out *core.SELinuxOptions, s conversion.Scope) error {
@@ -7683,6 +8047,7 @@ func autoConvert_v1_SecurityContext_To_core_SecurityContext(in *v1.SecurityConte
 	out.AllowPrivilegeEscalation = (*bool)(unsafe.Pointer(in.AllowPrivilegeEscalation))
 	out.ProcMount = (*core.ProcMountType)(unsafe.Pointer(in.ProcMount))
 	out.SeccompProfile = (*core.SeccompProfile)(unsafe.Pointer(in.SeccompProfile))
+	out.AppArmorProfile = (*core.AppArmorProfile)(unsafe.Pointer(in.AppArmorProfile))
 	return nil
 }
 
@@ -7703,6 +8068,7 @@ func autoConvert_core_SecurityContext_To_v1_SecurityContext(in *core.SecurityCon
 	out.AllowPrivilegeEscalation = (*bool)(unsafe.Pointer(in.AllowPrivilegeEscalation))
 	out.ProcMount = (*v1.ProcMountType)(unsafe.Pointer(in.ProcMount))
 	out.SeccompProfile = (*v1.SeccompProfile)(unsafe.Pointer(in.SeccompProfile))
+	out.AppArmorProfile = (*v1.AppArmorProfile)(unsafe.Pointer(in.AppArmorProfile))
 	return nil
 }
 
@@ -7973,6 +8339,7 @@ func autoConvert_v1_ServiceSpec_To_core_ServiceSpec(in *v1.ServiceSpec, out *cor
 	out.AllocateLoadBalancerNodePorts = (*bool)(unsafe.Pointer(in.AllocateLoadBalancerNodePorts))
 	out.LoadBalancerClass = (*string)(unsafe.Pointer(in.LoadBalancerClass))
 	out.InternalTrafficPolicy = (*core.ServiceInternalTrafficPolicy)(unsafe.Pointer(in.InternalTrafficPolicy))
+	out.TrafficDistribution = (*string)(unsafe.Pointer(in.TrafficDistribution))
 	return nil
 }
 
@@ -8001,6 +8368,7 @@ func autoConvert_core_ServiceSpec_To_v1_ServiceSpec(in *core.ServiceSpec, out *v
 	out.AllocateLoadBalancerNodePorts = (*bool)(unsafe.Pointer(in.AllocateLoadBalancerNodePorts))
 	out.LoadBalancerClass = (*string)(unsafe.Pointer(in.LoadBalancerClass))
 	out.InternalTrafficPolicy = (*v1.ServiceInternalTrafficPolicy)(unsafe.Pointer(in.InternalTrafficPolicy))
+	out.TrafficDistribution = (*string)(unsafe.Pointer(in.TrafficDistribution))
 	return nil
 }
 
@@ -8053,6 +8421,26 @@ func autoConvert_core_SessionAffinityConfig_To_v1_SessionAffinityConfig(in *core
 // Convert_core_SessionAffinityConfig_To_v1_SessionAffinityConfig is an autogenerated conversion function.
 func Convert_core_SessionAffinityConfig_To_v1_SessionAffinityConfig(in *core.SessionAffinityConfig, out *v1.SessionAffinityConfig, s conversion.Scope) error {
 	return autoConvert_core_SessionAffinityConfig_To_v1_SessionAffinityConfig(in, out, s)
+}
+
+func autoConvert_v1_SleepAction_To_core_SleepAction(in *v1.SleepAction, out *core.SleepAction, s conversion.Scope) error {
+	out.Seconds = in.Seconds
+	return nil
+}
+
+// Convert_v1_SleepAction_To_core_SleepAction is an autogenerated conversion function.
+func Convert_v1_SleepAction_To_core_SleepAction(in *v1.SleepAction, out *core.SleepAction, s conversion.Scope) error {
+	return autoConvert_v1_SleepAction_To_core_SleepAction(in, out, s)
+}
+
+func autoConvert_core_SleepAction_To_v1_SleepAction(in *core.SleepAction, out *v1.SleepAction, s conversion.Scope) error {
+	out.Seconds = in.Seconds
+	return nil
+}
+
+// Convert_core_SleepAction_To_v1_SleepAction is an autogenerated conversion function.
+func Convert_core_SleepAction_To_v1_SleepAction(in *core.SleepAction, out *v1.SleepAction, s conversion.Scope) error {
+	return autoConvert_core_SleepAction_To_v1_SleepAction(in, out, s)
 }
 
 func autoConvert_v1_StorageOSPersistentVolumeSource_To_core_StorageOSPersistentVolumeSource(in *v1.StorageOSPersistentVolumeSource, out *core.StorageOSPersistentVolumeSource, s conversion.Scope) error {
@@ -8343,12 +8731,22 @@ func autoConvert_v1_Volume_To_core_Volume(in *v1.Volume, out *core.Volume, s con
 	return nil
 }
 
+// Convert_v1_Volume_To_core_Volume is an autogenerated conversion function.
+func Convert_v1_Volume_To_core_Volume(in *v1.Volume, out *core.Volume, s conversion.Scope) error {
+	return autoConvert_v1_Volume_To_core_Volume(in, out, s)
+}
+
 func autoConvert_core_Volume_To_v1_Volume(in *core.Volume, out *v1.Volume, s conversion.Scope) error {
 	out.Name = in.Name
 	if err := Convert_core_VolumeSource_To_v1_VolumeSource(&in.VolumeSource, &out.VolumeSource, s); err != nil {
 		return err
 	}
 	return nil
+}
+
+// Convert_core_Volume_To_v1_Volume is an autogenerated conversion function.
+func Convert_core_Volume_To_v1_Volume(in *core.Volume, out *v1.Volume, s conversion.Scope) error {
+	return autoConvert_core_Volume_To_v1_Volume(in, out, s)
 }
 
 func autoConvert_v1_VolumeDevice_To_core_VolumeDevice(in *v1.VolumeDevice, out *core.VolumeDevice, s conversion.Scope) error {
@@ -8376,6 +8774,7 @@ func Convert_core_VolumeDevice_To_v1_VolumeDevice(in *core.VolumeDevice, out *v1
 func autoConvert_v1_VolumeMount_To_core_VolumeMount(in *v1.VolumeMount, out *core.VolumeMount, s conversion.Scope) error {
 	out.Name = in.Name
 	out.ReadOnly = in.ReadOnly
+	out.RecursiveReadOnly = (*core.RecursiveReadOnlyMode)(unsafe.Pointer(in.RecursiveReadOnly))
 	out.MountPath = in.MountPath
 	out.SubPath = in.SubPath
 	out.MountPropagation = (*core.MountPropagationMode)(unsafe.Pointer(in.MountPropagation))
@@ -8391,6 +8790,7 @@ func Convert_v1_VolumeMount_To_core_VolumeMount(in *v1.VolumeMount, out *core.Vo
 func autoConvert_core_VolumeMount_To_v1_VolumeMount(in *core.VolumeMount, out *v1.VolumeMount, s conversion.Scope) error {
 	out.Name = in.Name
 	out.ReadOnly = in.ReadOnly
+	out.RecursiveReadOnly = (*v1.RecursiveReadOnlyMode)(unsafe.Pointer(in.RecursiveReadOnly))
 	out.MountPath = in.MountPath
 	out.SubPath = in.SubPath
 	out.MountPropagation = (*v1.MountPropagationMode)(unsafe.Pointer(in.MountPropagation))
@@ -8401,6 +8801,32 @@ func autoConvert_core_VolumeMount_To_v1_VolumeMount(in *core.VolumeMount, out *v
 // Convert_core_VolumeMount_To_v1_VolumeMount is an autogenerated conversion function.
 func Convert_core_VolumeMount_To_v1_VolumeMount(in *core.VolumeMount, out *v1.VolumeMount, s conversion.Scope) error {
 	return autoConvert_core_VolumeMount_To_v1_VolumeMount(in, out, s)
+}
+
+func autoConvert_v1_VolumeMountStatus_To_core_VolumeMountStatus(in *v1.VolumeMountStatus, out *core.VolumeMountStatus, s conversion.Scope) error {
+	out.Name = in.Name
+	out.MountPath = in.MountPath
+	out.ReadOnly = in.ReadOnly
+	out.RecursiveReadOnly = (*core.RecursiveReadOnlyMode)(unsafe.Pointer(in.RecursiveReadOnly))
+	return nil
+}
+
+// Convert_v1_VolumeMountStatus_To_core_VolumeMountStatus is an autogenerated conversion function.
+func Convert_v1_VolumeMountStatus_To_core_VolumeMountStatus(in *v1.VolumeMountStatus, out *core.VolumeMountStatus, s conversion.Scope) error {
+	return autoConvert_v1_VolumeMountStatus_To_core_VolumeMountStatus(in, out, s)
+}
+
+func autoConvert_core_VolumeMountStatus_To_v1_VolumeMountStatus(in *core.VolumeMountStatus, out *v1.VolumeMountStatus, s conversion.Scope) error {
+	out.Name = in.Name
+	out.MountPath = in.MountPath
+	out.ReadOnly = in.ReadOnly
+	out.RecursiveReadOnly = (*v1.RecursiveReadOnlyMode)(unsafe.Pointer(in.RecursiveReadOnly))
+	return nil
+}
+
+// Convert_core_VolumeMountStatus_To_v1_VolumeMountStatus is an autogenerated conversion function.
+func Convert_core_VolumeMountStatus_To_v1_VolumeMountStatus(in *core.VolumeMountStatus, out *v1.VolumeMountStatus, s conversion.Scope) error {
+	return autoConvert_core_VolumeMountStatus_To_v1_VolumeMountStatus(in, out, s)
 }
 
 func autoConvert_v1_VolumeNodeAffinity_To_core_VolumeNodeAffinity(in *v1.VolumeNodeAffinity, out *core.VolumeNodeAffinity, s conversion.Scope) error {
@@ -8436,6 +8862,7 @@ func autoConvert_v1_VolumeProjection_To_core_VolumeProjection(in *v1.VolumeProje
 	} else {
 		out.ServiceAccountToken = nil
 	}
+	out.ClusterTrustBundle = (*core.ClusterTrustBundleProjection)(unsafe.Pointer(in.ClusterTrustBundle))
 	return nil
 }
 
@@ -8457,12 +8884,35 @@ func autoConvert_core_VolumeProjection_To_v1_VolumeProjection(in *core.VolumePro
 	} else {
 		out.ServiceAccountToken = nil
 	}
+	out.ClusterTrustBundle = (*v1.ClusterTrustBundleProjection)(unsafe.Pointer(in.ClusterTrustBundle))
 	return nil
 }
 
 // Convert_core_VolumeProjection_To_v1_VolumeProjection is an autogenerated conversion function.
 func Convert_core_VolumeProjection_To_v1_VolumeProjection(in *core.VolumeProjection, out *v1.VolumeProjection, s conversion.Scope) error {
 	return autoConvert_core_VolumeProjection_To_v1_VolumeProjection(in, out, s)
+}
+
+func autoConvert_v1_VolumeResourceRequirements_To_core_VolumeResourceRequirements(in *v1.VolumeResourceRequirements, out *core.VolumeResourceRequirements, s conversion.Scope) error {
+	out.Limits = *(*core.ResourceList)(unsafe.Pointer(&in.Limits))
+	out.Requests = *(*core.ResourceList)(unsafe.Pointer(&in.Requests))
+	return nil
+}
+
+// Convert_v1_VolumeResourceRequirements_To_core_VolumeResourceRequirements is an autogenerated conversion function.
+func Convert_v1_VolumeResourceRequirements_To_core_VolumeResourceRequirements(in *v1.VolumeResourceRequirements, out *core.VolumeResourceRequirements, s conversion.Scope) error {
+	return autoConvert_v1_VolumeResourceRequirements_To_core_VolumeResourceRequirements(in, out, s)
+}
+
+func autoConvert_core_VolumeResourceRequirements_To_v1_VolumeResourceRequirements(in *core.VolumeResourceRequirements, out *v1.VolumeResourceRequirements, s conversion.Scope) error {
+	out.Limits = *(*v1.ResourceList)(unsafe.Pointer(&in.Limits))
+	out.Requests = *(*v1.ResourceList)(unsafe.Pointer(&in.Requests))
+	return nil
+}
+
+// Convert_core_VolumeResourceRequirements_To_v1_VolumeResourceRequirements is an autogenerated conversion function.
+func Convert_core_VolumeResourceRequirements_To_v1_VolumeResourceRequirements(in *core.VolumeResourceRequirements, out *v1.VolumeResourceRequirements, s conversion.Scope) error {
+	return autoConvert_core_VolumeResourceRequirements_To_v1_VolumeResourceRequirements(in, out, s)
 }
 
 func autoConvert_v1_VolumeSource_To_core_VolumeSource(in *v1.VolumeSource, out *core.VolumeSource, s conversion.Scope) error {
@@ -8503,6 +8953,7 @@ func autoConvert_v1_VolumeSource_To_core_VolumeSource(in *v1.VolumeSource, out *
 	out.StorageOS = (*core.StorageOSVolumeSource)(unsafe.Pointer(in.StorageOS))
 	out.CSI = (*core.CSIVolumeSource)(unsafe.Pointer(in.CSI))
 	out.Ephemeral = (*core.EphemeralVolumeSource)(unsafe.Pointer(in.Ephemeral))
+	out.Image = (*core.ImageVolumeSource)(unsafe.Pointer(in.Image))
 	return nil
 }
 
@@ -8549,6 +9000,7 @@ func autoConvert_core_VolumeSource_To_v1_VolumeSource(in *core.VolumeSource, out
 	out.StorageOS = (*v1.StorageOSVolumeSource)(unsafe.Pointer(in.StorageOS))
 	out.CSI = (*v1.CSIVolumeSource)(unsafe.Pointer(in.CSI))
 	out.Ephemeral = (*v1.EphemeralVolumeSource)(unsafe.Pointer(in.Ephemeral))
+	out.Image = (*v1.ImageVolumeSource)(unsafe.Pointer(in.Image))
 	return nil
 }
 

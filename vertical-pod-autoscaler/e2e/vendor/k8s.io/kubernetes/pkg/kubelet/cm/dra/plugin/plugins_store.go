@@ -17,27 +17,23 @@ limitations under the License.
 package plugin
 
 import (
+	"errors"
 	"sync"
-
-	utilversion "k8s.io/apimachinery/pkg/util/version"
 )
 
-// Plugin is a description of a DRA Plugin, defined by an endpoint
-// and the highest DRA version supported.
-type Plugin struct {
-	endpoint                string
-	highestSupportedVersion *utilversion.Version
-}
-
 // PluginsStore holds a list of DRA Plugins.
-type PluginsStore struct {
+type pluginsStore struct {
 	sync.RWMutex
 	store map[string]*Plugin
 }
 
+// draPlugins map keeps track of all registered DRA plugins on the node
+// and their corresponding sockets.
+var draPlugins = &pluginsStore{}
+
 // Get lets you retrieve a DRA Plugin by name.
 // This method is protected by a mutex.
-func (s *PluginsStore) Get(pluginName string) *Plugin {
+func (s *pluginsStore) get(pluginName string) *Plugin {
 	s.RLock()
 	defer s.RUnlock()
 
@@ -46,7 +42,7 @@ func (s *PluginsStore) Get(pluginName string) *Plugin {
 
 // Set lets you save a DRA Plugin to the list and give it a specific name.
 // This method is protected by a mutex.
-func (s *PluginsStore) Set(pluginName string, plugin *Plugin) {
+func (s *pluginsStore) add(pluginName string, p *Plugin) (replaced bool) {
 	s.Lock()
 	defer s.Unlock()
 
@@ -54,23 +50,25 @@ func (s *PluginsStore) Set(pluginName string, plugin *Plugin) {
 		s.store = make(map[string]*Plugin)
 	}
 
-	s.store[pluginName] = plugin
+	_, exists := s.store[pluginName]
+	s.store[pluginName] = p
+	return exists
 }
 
 // Delete lets you delete a DRA Plugin by name.
 // This method is protected by a mutex.
-func (s *PluginsStore) Delete(pluginName string) {
+func (s *pluginsStore) delete(pluginName string) *Plugin {
 	s.Lock()
 	defer s.Unlock()
 
+	p, exists := s.store[pluginName]
+	if !exists {
+		return nil
+	}
+	if p.cancel != nil {
+		p.cancel(errors.New("plugin got removed"))
+	}
 	delete(s.store, pluginName)
-}
 
-// Clear deletes all entries in the store.
-// This methiod is protected by a mutex.
-func (s *PluginsStore) Clear() {
-	s.Lock()
-	defer s.Unlock()
-
-	s.store = make(map[string]*Plugin)
+	return p
 }

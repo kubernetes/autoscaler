@@ -132,7 +132,7 @@ func svcByName(name string, port int) *v1.Service {
 			},
 			Ports: []v1.ServicePort{{
 				Port:       int32(port),
-				TargetPort: intstr.FromInt(port),
+				TargetPort: intstr.FromInt32(int32(port)),
 			}},
 		},
 	}
@@ -154,7 +154,7 @@ func NewRCByName(c clientset.Interface, ns, name string, replicas int32, gracePe
 	}
 
 	return c.CoreV1().ReplicationControllers(ns).Create(context.TODO(), rcByNamePort(
-		name, replicas, framework.ServeHostnameImage, containerArgs, 9376, v1.ProtocolTCP, map[string]string{}, gracePeriod), metav1.CreateOptions{})
+		name, replicas, imageutils.GetE2EImage(imageutils.Agnhost), containerArgs, 9376, v1.ProtocolTCP, map[string]string{}, gracePeriod), metav1.CreateOptions{})
 }
 
 // RestartNodes restarts specific nodes.

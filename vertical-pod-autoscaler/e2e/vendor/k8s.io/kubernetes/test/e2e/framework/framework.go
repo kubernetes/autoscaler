@@ -66,7 +66,7 @@ var (
 	//
 	// This can be used by extensions of the core framework to modify
 	// settings in the framework instance or to add additional callbacks
-	// with gingko.BeforeEach/AfterEach/DeferCleanup.
+	// with ginkgo.BeforeEach/AfterEach/DeferCleanup.
 	//
 	// When a test runs, functions will be invoked in this order:
 	// - BeforeEaches defined by tests before f.NewDefaultFramework
@@ -720,7 +720,7 @@ func (cl *ClusterVerification) WaitFor(ctx context.Context, atLeast int, timeout
 	pods := []v1.Pod{}
 	var returnedErr error
 
-	err := wait.PollWithContext(ctx, 1*time.Second, timeout, func(ctx context.Context) (bool, error) {
+	err := wait.PollUntilContextTimeout(ctx, 1*time.Second, timeout, false, func(ctx context.Context) (bool, error) {
 		pods, returnedErr = cl.podState.filter(ctx, cl.client, cl.namespace)
 
 		// Failure

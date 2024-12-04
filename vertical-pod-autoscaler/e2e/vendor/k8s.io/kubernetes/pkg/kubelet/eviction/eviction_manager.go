@@ -19,6 +19,7 @@ package eviction
 import (
 	"context"
 	"fmt"
+	"runtime"
 	"sort"
 	"sync"
 	"time"
@@ -56,6 +57,9 @@ const (
 	signalEphemeralPodFsLimit string = "ephemeralpodfs.limit"
 	// signalEmptyDirFsLimit is amount of storage available on filesystem requested by an emptyDir
 	signalEmptyDirFsLimit string = "emptydirfs.limit"
+	// immediateEvictionGracePeriodSeconds is how long we give pods to shut down when we
+	// need them to evict quickly due to resource pressure
+	immediateEvictionGracePeriodSeconds = 1
 )
 
 // managerImpl implements Manager
@@ -94,6 +98,8 @@ type managerImpl struct {
 	lastObservations signalObservations
 	// dedicatedImageFs indicates if imagefs is on a separate device from the rootfs
 	dedicatedImageFs *bool
+	// splitContainerImageFs indicates if containerfs is on a separate device from imagefs
+	splitContainerImageFs *bool
 	// thresholdNotifiers is a list of memory threshold notifiers which each notify for a memory eviction threshold
 	thresholdNotifiers []ThresholdNotifier
 	// thresholdsLastUpdated is the last time the thresholdNotifiers were updated.
@@ -129,6 +135,7 @@ func NewManager(
 		nodeConditionsLastObservedAt:  nodeConditionsObservedAt{},
 		thresholdsFirstObservedAt:     thresholdsObservedAt{},
 		dedicatedImageFs:              nil,
+		splitContainerImageFs:         nil,
 		thresholdNotifiers:            []ThresholdNotifier{},
 		localStorageCapacityIsolation: localStorageCapacityIsolation,
 	}
@@ -166,8 +173,6 @@ func (m *managerImpl) Admit(attrs *lifecycle.PodAdmitAttributes) lifecycle.PodAd
 		}
 	}
 
-	// reject pods when under memory pressure (if pod is best effort), or if under disk pressure.
-	klog.InfoS("Failed to admit pod to node", "pod", klog.KObj(attrs.Pod), "nodeCondition", m.nodeConditions)
 	return lifecycle.PodAdmitResult{
 		Admit:   false,
 		Reason:  Reason,
@@ -181,7 +186,8 @@ func (m *managerImpl) Start(diskInfoProvider DiskInfoProvider, podFunc ActivePod
 		klog.InfoS(message)
 		m.synchronize(diskInfoProvider, podFunc)
 	}
-	if m.config.KernelMemcgNotification {
+	klog.InfoS("Eviction manager: starting control loop")
+	if m.config.KernelMemcgNotification || runtime.GOOS == "windows" {
 		for _, threshold := range m.config.Thresholds {
 			if threshold.Signal == evictionapi.SignalMemoryAvailable || threshold.Signal == evictionapi.SignalAllocatableMemoryAvailable {
 				notifier, err := NewMemoryThresholdNotifier(threshold, m.config.PodCgroupRoot, &CgroupNotifierFactory{}, thresholdHandler)
@@ -197,10 +203,14 @@ func (m *managerImpl) Start(diskInfoProvider DiskInfoProvider, podFunc ActivePod
 	// start the eviction manager monitoring
 	go func() {
 		for {
-			if evictedPods := m.synchronize(diskInfoProvider, podFunc); evictedPods != nil {
+			evictedPods, err := m.synchronize(diskInfoProvider, podFunc)
+			if evictedPods != nil && err == nil {
 				klog.InfoS("Eviction manager: pods evicted, waiting for pod to be cleaned up", "pods", klog.KObjSlice(evictedPods))
 				m.waitForPodsCleanup(podCleanedUpFunc, evictedPods)
 			} else {
+				if err != nil {
+					klog.ErrorS(err, "Eviction manager: failed to synchronize")
+				}
 				time.Sleep(monitoringInterval)
 			}
 		}
@@ -230,33 +240,50 @@ func (m *managerImpl) IsUnderPIDPressure() bool {
 
 // synchronize is the main control loop that enforces eviction thresholds.
 // Returns the pod that was killed, or nil if no pod was killed.
-func (m *managerImpl) synchronize(diskInfoProvider DiskInfoProvider, podFunc ActivePodsFunc) []*v1.Pod {
+func (m *managerImpl) synchronize(diskInfoProvider DiskInfoProvider, podFunc ActivePodsFunc) ([]*v1.Pod, error) {
 	ctx := context.Background()
 	// if we have nothing to do, just return
 	thresholds := m.config.Thresholds
 	if len(thresholds) == 0 && !m.localStorageCapacityIsolation {
-		return nil
+		return nil, nil
 	}
 
 	klog.V(3).InfoS("Eviction manager: synchronize housekeeping")
 	// build the ranking functions (if not yet known)
 	// TODO: have a function in cadvisor that lets us know if global housekeeping has completed
 	if m.dedicatedImageFs == nil {
-		hasImageFs, ok := diskInfoProvider.HasDedicatedImageFs(ctx)
-		if ok != nil {
-			return nil
+		hasImageFs, splitDiskError := diskInfoProvider.HasDedicatedImageFs(ctx)
+		if splitDiskError != nil {
+			klog.ErrorS(splitDiskError, "Eviction manager: failed to get HasDedicatedImageFs")
+			return nil, fmt.Errorf("eviction manager: failed to get HasDedicatedImageFs: %v", splitDiskError)
 		}
 		m.dedicatedImageFs = &hasImageFs
-		m.signalToRankFunc = buildSignalToRankFunc(hasImageFs)
-		m.signalToNodeReclaimFuncs = buildSignalToNodeReclaimFuncs(m.imageGC, m.containerGC, hasImageFs)
+		splitContainerImageFs := m.containerGC.IsContainerFsSeparateFromImageFs(ctx)
+
+		// If we are a split filesystem but the feature is turned off
+		// we should return an error.
+		// This is a bad state.
+		if !utilfeature.DefaultFeatureGate.Enabled(features.KubeletSeparateDiskGC) && splitContainerImageFs {
+			splitDiskError := fmt.Errorf("KubeletSeparateDiskGC is turned off but we still have a split filesystem")
+			return nil, splitDiskError
+		}
+		thresholds, err := UpdateContainerFsThresholds(m.config.Thresholds, hasImageFs, splitContainerImageFs)
+		m.config.Thresholds = thresholds
+		if err != nil {
+			klog.ErrorS(err, "eviction manager: found conflicting containerfs eviction. Ignoring.")
+		}
+		m.splitContainerImageFs = &splitContainerImageFs
+		m.signalToRankFunc = buildSignalToRankFunc(hasImageFs, splitContainerImageFs)
+		m.signalToNodeReclaimFuncs = buildSignalToNodeReclaimFuncs(m.imageGC, m.containerGC, hasImageFs, splitContainerImageFs)
 	}
 
+	klog.V(3).InfoS("FileSystem detection", "DedicatedImageFs", m.dedicatedImageFs, "SplitImageFs", m.splitContainerImageFs)
 	activePods := podFunc()
 	updateStats := true
 	summary, err := m.summaryProvider.Get(ctx, updateStats)
 	if err != nil {
 		klog.ErrorS(err, "Eviction manager: failed to get summary stats")
-		return nil
+		return nil, nil
 	}
 
 	if m.clock.Since(m.thresholdsLastUpdated) > notifierRefreshInterval {
@@ -324,20 +351,20 @@ func (m *managerImpl) synchronize(diskInfoProvider DiskInfoProvider, podFunc Act
 	// If eviction happens in localStorageEviction function, skip the rest of eviction action
 	if m.localStorageCapacityIsolation {
 		if evictedPods := m.localStorageEviction(activePods, statsFunc); len(evictedPods) > 0 {
-			return evictedPods
+			return evictedPods, nil
 		}
 	}
 
 	if len(thresholds) == 0 {
 		klog.V(3).InfoS("Eviction manager: no resources are starved")
-		return nil
+		return nil, nil
 	}
 
 	// rank the thresholds by eviction priority
 	sort.Sort(byEvictionPriority(thresholds))
 	thresholdToReclaim, resourceToReclaim, foundAny := getReclaimableThreshold(thresholds)
 	if !foundAny {
-		return nil
+		return nil, nil
 	}
 	klog.InfoS("Eviction manager: attempting to reclaim", "resourceName", resourceToReclaim)
 
@@ -347,7 +374,7 @@ func (m *managerImpl) synchronize(diskInfoProvider DiskInfoProvider, podFunc Act
 	// check if there are node-level resources we can reclaim to reduce pressure before evicting end-user pods.
 	if m.reclaimNodeLevelResources(ctx, thresholdToReclaim.Signal, resourceToReclaim) {
 		klog.InfoS("Eviction manager: able to reduce resource pressure without evicting pods.", "resourceName", resourceToReclaim)
-		return nil
+		return nil, nil
 	}
 
 	klog.InfoS("Eviction manager: must evict pod(s) to reclaim", "resourceName", resourceToReclaim)
@@ -356,13 +383,13 @@ func (m *managerImpl) synchronize(diskInfoProvider DiskInfoProvider, podFunc Act
 	rank, ok := m.signalToRankFunc[thresholdToReclaim.Signal]
 	if !ok {
 		klog.ErrorS(nil, "Eviction manager: no ranking function for signal", "threshold", thresholdToReclaim.Signal)
-		return nil
+		return nil, nil
 	}
 
 	// the only candidates viable for eviction are those pods that had anything running.
 	if len(activePods) == 0 {
 		klog.ErrorS(nil, "Eviction manager: eviction thresholds have been met, but no pods are active to evict")
-		return nil
+		return nil, nil
 	}
 
 	// rank the running pods for eviction for the specified resource
@@ -381,27 +408,24 @@ func (m *managerImpl) synchronize(diskInfoProvider DiskInfoProvider, podFunc Act
 	// we kill at most a single pod during each eviction interval
 	for i := range activePods {
 		pod := activePods[i]
-		gracePeriodOverride := int64(0)
+		gracePeriodOverride := int64(immediateEvictionGracePeriodSeconds)
 		if !isHardEvictionThreshold(thresholdToReclaim) {
 			gracePeriodOverride = m.config.MaxPodGracePeriodSeconds
 		}
 		message, annotations := evictionMessage(resourceToReclaim, pod, statsFunc, thresholds, observations)
-		var condition *v1.PodCondition
-		if utilfeature.DefaultFeatureGate.Enabled(features.PodDisruptionConditions) {
-			condition = &v1.PodCondition{
-				Type:    v1.DisruptionTarget,
-				Status:  v1.ConditionTrue,
-				Reason:  v1.PodReasonTerminationByKubelet,
-				Message: message,
-			}
+		condition := &v1.PodCondition{
+			Type:    v1.DisruptionTarget,
+			Status:  v1.ConditionTrue,
+			Reason:  v1.PodReasonTerminationByKubelet,
+			Message: message,
 		}
 		if m.evictPod(pod, gracePeriodOverride, message, annotations, condition) {
 			metrics.Evictions.WithLabelValues(string(thresholdToReclaim.Signal)).Inc()
-			return []*v1.Pod{pod}
+			return []*v1.Pod{pod}, nil
 		}
 	}
 	klog.InfoS("Eviction manager: unable to evict any pods from the node")
-	return nil
+	return nil, nil
 }
 
 func (m *managerImpl) waitForPodsCleanup(podCleanedUpFunc PodCleanedUpFunc, pods []*v1.Pod) {
@@ -501,7 +525,7 @@ func (m *managerImpl) emptyDirLimitEviction(podStats statsapi.PodStats, pod *v1.
 			used := podVolumeUsed[pod.Spec.Volumes[i].Name]
 			if used != nil && size != nil && size.Sign() == 1 && used.Cmp(*size) > 0 {
 				// the emptyDir usage exceeds the size limit, evict the pod
-				if m.evictPod(pod, 0, fmt.Sprintf(emptyDirMessageFmt, pod.Spec.Volumes[i].Name, size.String()), nil, nil) {
+				if m.evictPod(pod, immediateEvictionGracePeriodSeconds, fmt.Sprintf(emptyDirMessageFmt, pod.Spec.Volumes[i].Name, size.String()), nil, nil) {
 					metrics.Evictions.WithLabelValues(signalEmptyDirFsLimit).Inc()
 					return true
 				}
@@ -529,7 +553,7 @@ func (m *managerImpl) podEphemeralStorageLimitEviction(podStats statsapi.PodStat
 	if podEphemeralStorageTotalUsage.Cmp(podEphemeralStorageLimit) > 0 {
 		// the total usage of pod exceeds the total size limit of containers, evict the pod
 		message := fmt.Sprintf(podEphemeralStorageMessageFmt, podEphemeralStorageLimit.String())
-		if m.evictPod(pod, 0, message, nil, nil) {
+		if m.evictPod(pod, immediateEvictionGracePeriodSeconds, message, nil, nil) {
 			metrics.Evictions.WithLabelValues(signalEphemeralPodFsLimit).Inc()
 			return true
 		}
@@ -555,7 +579,7 @@ func (m *managerImpl) containerEphemeralStorageLimitEviction(podStats statsapi.P
 
 		if ephemeralStorageThreshold, ok := thresholdsMap[containerStat.Name]; ok {
 			if ephemeralStorageThreshold.Cmp(*containerUsed) < 0 {
-				if m.evictPod(pod, 0, fmt.Sprintf(containerEphemeralStorageMessageFmt, containerStat.Name, ephemeralStorageThreshold.String()), nil, nil) {
+				if m.evictPod(pod, immediateEvictionGracePeriodSeconds, fmt.Sprintf(containerEphemeralStorageMessageFmt, containerStat.Name, ephemeralStorageThreshold.String()), nil, nil) {
 					metrics.Evictions.WithLabelValues(signalEphemeralContainerFsLimit).Inc()
 					return true
 				}
