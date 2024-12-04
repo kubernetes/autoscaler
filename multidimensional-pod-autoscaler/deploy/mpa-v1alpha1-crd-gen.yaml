@@ -49,8 +49,8 @@ spec:
               containerName:
                 description: Name of the checkpointed container.
                 type: string
-              vpaObjectName:
-                description: Name of the VPA object that stored VerticalPodAutoscalerCheckpoint
+              mpaObjectName:
+                description: Name of the MPA object that stored MultidimPodAutoscalerCheckpoint
                   object.
                 type: string
             type: object

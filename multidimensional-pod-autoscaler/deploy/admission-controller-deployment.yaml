@@ -21,7 +21,7 @@ spec:
       containers:
         - name: admission-controller
           image: registry.k8s.io/autoscaling/mpa-admission-controller:latest
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           env:
             - name: NAMESPACE
               valueFrom:

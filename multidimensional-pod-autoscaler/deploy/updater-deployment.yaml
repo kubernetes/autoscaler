@@ -27,7 +27,7 @@ spec:
       containers:
         - name: updater
           image: registry.k8s.io/autoscaling/mpa-updater:latest
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           env:
             - name: NAMESPACE
               valueFrom:

@@ -63,7 +63,7 @@ func (h *resourceHandler) AdmissionResource() admission.AdmissionResource {
 
 // GroupResource returns Group and Resource type this handler accepts.
 func (h *resourceHandler) GroupResource() metav1.GroupResource {
-	return metav1.GroupResource{Group: "autoscaling.k8s.io", Resource: "verticalpodautoscalers"}
+	return metav1.GroupResource{Group: "autoscaling.k8s.io", Resource: "multidimpodautoscalers"}
 }
 
 // DisallowIncorrectObjects decides whether incorrect objects (eg. unparsable, not passing validations) should be disallowed by Admission Server.

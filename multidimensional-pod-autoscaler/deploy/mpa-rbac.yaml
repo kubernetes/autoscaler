@@ -63,7 +63,7 @@ rules:
   - apiGroups:
       - "poc.autoscaling.k8s.io"
     resources:
-      - verticalpodautoscalercheckpoints
+      - multidimpodautoscalercheckpoints
     verbs:
       - get
       - list
@@ -74,7 +74,7 @@ rules:
   - apiGroups:
       - "autoscaling.k8s.io"
     resources:
-      - verticalpodautoscalercheckpoints
+      - multidimpodautoscalercheckpoints
     verbs:
       - get
       - list

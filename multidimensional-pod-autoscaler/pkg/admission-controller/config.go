@@ -70,7 +70,7 @@ func selfRegistration(clientset *kubernetes.Clientset, caCert []byte, namespace,
 		},
 		Webhooks: []admissionregistration.MutatingWebhook{
 			{
-				Name:                    "vpa.k8s.io",
+				Name:                    "mpa.k8s.io",
 				AdmissionReviewVersions: []string{"v1"},
 				Rules: []admissionregistration.RuleWithOperations{
 					{
@@ -86,7 +86,7 @@ func selfRegistration(clientset *kubernetes.Clientset, caCert []byte, namespace,
 						Rule: admissionregistration.Rule{
 							APIGroups:   []string{"autoscaling.k8s.io"},
 							APIVersions: []string{"*"},
-							Resources:   []string{"verticalpodautoscalers"},
+							Resources:   []string{"multidimpodautoscalers"},
 						},
 					},
 				},

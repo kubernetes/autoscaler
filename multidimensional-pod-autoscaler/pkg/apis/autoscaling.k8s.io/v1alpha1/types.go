@@ -230,11 +230,20 @@ type MultidimPodAutoscalerCheckpoint struct {
 	// Specification of the checkpoint.
 	// More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status.
 	// +optional
-	Spec vpa.VerticalPodAutoscalerCheckpointSpec `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
+	Spec MultidimPodAutoscalerCheckpointSpec `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
 
 	// Data of the checkpoint.
 	// +optional
 	Status vpa.VerticalPodAutoscalerCheckpointStatus `json:"status,omitempty" protobuf:"bytes,3,opt,name=status"`
+}
+
+// MultidimPodAutoscalerCheckpointSpec is the specification of the checkpoint object.
+type MultidimPodAutoscalerCheckpointSpec struct {
+	// Name of the MPA object that stored MultidimPodAutoscalerCheckpoint object.
+	MPAObjectName string `json:"mpaObjectName,omitempty" protobuf:"bytes,1,opt,name=mpaObjectName"`
+
+	// Name of the checkpointed container.
+	ContainerName string `json:"containerName,omitempty" protobuf:"bytes,2,opt,name=containerName"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
