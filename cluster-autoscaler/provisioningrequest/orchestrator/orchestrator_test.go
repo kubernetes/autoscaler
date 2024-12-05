@@ -374,11 +374,11 @@ func TestScaleUp(t *testing.T) {
 			name:               "process atomic scale-up requests where batch processing of check capacity requests is enabled and check capacity requests are present in cluster",
 			provReqs:           []*provreqwrapper.ProvisioningRequest{newCheckCapacityMemProvReq, newCheckCapacityCpuProvReq, atomicScaleUpProvReq},
 			provReqToScaleUp:   atomicScaleUpProvReq,
-			scaleUpResult:      status.ScaleUpNotNeeded,
+			scaleUpResult:      status.ScaleUpSuccessful,
 			batchProcessing:    true,
 			maxBatchSize:       3,
 			batchTimebox:       5 * time.Minute,
-			numProvisionedTrue: 1,
+			numProvisionedTrue: 2,
 		},
 		{
 			name:                "batch processing of check capacity requests where some requests' capacity is not available",
