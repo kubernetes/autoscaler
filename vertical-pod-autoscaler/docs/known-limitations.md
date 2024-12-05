@@ -23,7 +23,7 @@
   size, available quota) and cause **pods to go pending**. This can be partly
   addressed by:
   * using VPA together with [Cluster Autoscaler](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#basics) - the drawback of this approach is that pods can still get unschedulable if the recommendation exceeds the largest Node's allocatable.
-  * specifying the `--max-allowed-cpu` and `--max-allowed-memory` flags - the drawback of this approach is that a pod can still get unschedulable if more than one container in the pod is scaled by VPA and the sum of the container recommendations exceeds the largest Node's allocatable.
+  * specifying the `--container-recommendation-max-allowed-cpu` and `--container-recommendation-max-allowed-memory` flags - the drawback of this approach is that a pod can still get unschedulable if more than one container in the pod is scaled by VPA and the sum of the container recommendations exceeds the largest Node's allocatable.
 - Multiple VPA resources matching the same pod have undefined behavior.
 - Running the vpa-recommender with leader election enabled (`--leader-elect=true`) in a GKE cluster
   causes contention with a lease called `vpa-recommender` held by the GKE system component of the
