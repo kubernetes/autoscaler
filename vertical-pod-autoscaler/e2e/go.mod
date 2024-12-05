@@ -50,7 +50,7 @@ require (
 	github.com/euank/go-kmsg-parser v2.0.0+incompatible // indirect
 	github.com/evanphx/json-patch v4.12.0+incompatible // indirect
 	github.com/felixge/httpsnoop v1.0.3 // indirect
-	github.com/fsnotify/fsnotify v1.6.0 // indirect
+	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/go-logr/logr v1.2.4 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-openapi/jsonpointer v0.19.6 // indirect
@@ -128,15 +128,15 @@ require (
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.19.0 // indirect
-	golang.org/x/crypto v0.14.0 // indirect
+	golang.org/x/crypto v0.19.0 // indirect
 	golang.org/x/exp v0.0.0-20220722155223-a9213eeb770e // indirect
 	golang.org/x/mod v0.10.0 // indirect
-	golang.org/x/net v0.17.0 // indirect
+	golang.org/x/net v0.21.0 // indirect
 	golang.org/x/oauth2 v0.8.0 // indirect
 	golang.org/x/sync v0.3.0 // indirect
-	golang.org/x/sys v0.13.0 // indirect
-	golang.org/x/term v0.13.0 // indirect
-	golang.org/x/text v0.13.0 // indirect
+	golang.org/x/sys v0.17.0 // indirect
+	golang.org/x/term v0.17.0 // indirect
+	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.4.0 // indirect
 	golang.org/x/tools v0.8.0 // indirect
 	google.golang.org/api v0.114.0 // indirect
@@ -186,8 +186,13 @@ replace (
 	k8s.io/cluster-bootstrap => k8s.io/cluster-bootstrap v0.28.3
 	k8s.io/code-generator => k8s.io/code-generator v0.28.3
 	k8s.io/component-base => k8s.io/component-base v0.28.3
+	k8s.io/component-helpers => k8s.io/component-helpers v0.28.3
+	k8s.io/controller-manager => k8s.io/controller-manager v0.28.3
 	k8s.io/cri-api => k8s.io/cri-api v0.28.3
 	k8s.io/csi-translation-lib => k8s.io/csi-translation-lib v0.28.3
+	k8s.io/dynamic-resource-allocation => k8s.io/dynamic-resource-allocation v0.28.3
+	k8s.io/endpointslice => k8s.io/endpointslice v0.28.3
+	k8s.io/kms => k8s.io/kms v0.28.3
 	k8s.io/kube-aggregator => k8s.io/kube-aggregator v0.28.3
 	k8s.io/kube-controller-manager => k8s.io/kube-controller-manager v0.28.3
 	k8s.io/kube-proxy => k8s.io/kube-proxy v0.28.3
@@ -196,21 +201,9 @@ replace (
 	k8s.io/kubelet => k8s.io/kubelet v0.28.3
 	k8s.io/legacy-cloud-providers => k8s.io/legacy-cloud-providers v0.28.3
 	k8s.io/metrics => k8s.io/metrics v0.28.3
+	k8s.io/mount-utils => k8s.io/mount-utils v0.28.3
+	k8s.io/pod-security-admission => k8s.io/pod-security-admission v0.28.3
 	k8s.io/sample-apiserver => k8s.io/sample-apiserver v0.28.3
 	k8s.io/sample-cli-plugin => k8s.io/sample-cli-plugin v0.28.3
 	k8s.io/sample-controller => k8s.io/sample-controller v0.28.3
 )
-
-replace k8s.io/component-helpers => k8s.io/component-helpers v0.28.3
-
-replace k8s.io/controller-manager => k8s.io/controller-manager v0.28.3
-
-replace k8s.io/mount-utils => k8s.io/mount-utils v0.28.3
-
-replace k8s.io/pod-security-admission => k8s.io/pod-security-admission v0.28.3
-
-replace k8s.io/dynamic-resource-allocation => k8s.io/dynamic-resource-allocation v0.28.3
-
-replace k8s.io/kms => k8s.io/kms v0.28.3
-
-replace k8s.io/endpointslice => k8s.io/endpointslice v0.28.3
