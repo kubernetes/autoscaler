@@ -49,13 +49,9 @@ import (
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/client-go/kubernetes/fake"
 	clocktesting "k8s.io/utils/clock/testing"
-
-	schedulermetrics "k8s.io/kubernetes/pkg/scheduler/metrics"
 )
 
 func TestScaleUp(t *testing.T) {
-	schedulermetrics.Register()
-
 	// Set up a cluster with 200 nodes:
 	// - 100 nodes with high cpu, low memory in autoscaled group with max 150
 	// - 100 nodes with high memory, low cpu not in autoscaled group
@@ -378,11 +374,11 @@ func TestScaleUp(t *testing.T) {
 			name:               "process atomic scale-up requests where batch processing of check capacity requests is enabled and check capacity requests are present in cluster",
 			provReqs:           []*provreqwrapper.ProvisioningRequest{newCheckCapacityMemProvReq, newCheckCapacityCpuProvReq, atomicScaleUpProvReq},
 			provReqToScaleUp:   atomicScaleUpProvReq,
-			scaleUpResult:      status.ScaleUpNotNeeded,
+			scaleUpResult:      status.ScaleUpSuccessful,
 			batchProcessing:    true,
 			maxBatchSize:       3,
 			batchTimebox:       5 * time.Minute,
-			numProvisionedTrue: 1,
+			numProvisionedTrue: 2,
 		},
 		{
 			name:                "batch processing of check capacity requests where some requests' capacity is not available",

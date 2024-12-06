@@ -62,12 +62,12 @@ const (
 	customMetricName                = "QPS"
 	serviceInitializationTimeout    = 2 * time.Minute
 	serviceInitializationInterval   = 15 * time.Second
-	stressImage                     = "gcr.io/google-containers/stress:v1"
+	stressImage                     = "registry.k8s.io/e2e-test-images/agnhost:2.53"
 )
 
 var (
 	resourceConsumerImage = imageutils.GetE2EImage(imageutils.ResourceConsumer)
-	stressCommand         = []string{"/stress", "--mem-total", "10000000000", "--logtostderr", "--mem-alloc-size", "8000"}
+	stressCommand         = []string{"/agnhost", "stress", "--mem-total", "10000000000", "--mem-alloc-size", "8000"}
 )
 
 var (

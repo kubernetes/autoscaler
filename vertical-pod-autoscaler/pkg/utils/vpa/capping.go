@@ -116,7 +116,6 @@ func getCappedRecommendationForContainer(
 	cappingAnnotations := make([]string, 0)
 
 	process := func(recommendation apiv1.ResourceList, genAnnotations bool) {
-		// TODO: Add annotation if limitRange is conflicting with VPA policy.
 		limitAnnotations := applyContainerLimitRange(recommendation, container, limitRange)
 		annotations := applyVPAPolicy(recommendation, containerPolicy)
 		if genAnnotations {

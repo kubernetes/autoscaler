@@ -28,7 +28,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	clientset "k8s.io/client-go/kubernetes"
 	typedcoordinationv1 "k8s.io/client-go/kubernetes/typed/coordination/v1"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 )
 
 const (
@@ -97,7 +97,7 @@ func (c *Client) UpdateStatus(ctx context.Context) error {
 			return err
 		}
 		lease.Spec.RenewTime = &metav1.MicroTime{Time: time.Now()}
-		lease.Spec.HolderIdentity = pointer.String(c.holderIdentity)
+		lease.Spec.HolderIdentity = ptr.To(c.holderIdentity)
 		_, err = c.client.Update(ctx, lease, metav1.UpdateOptions{})
 		if apierrors.IsConflict(err) {
 			// Lease was updated by an another replica of the component.
@@ -126,8 +126,9 @@ func (c *Client) newLease() *apicoordinationv1.Lease {
 			Namespace: c.leaseNamespace,
 		},
 		Spec: apicoordinationv1.LeaseSpec{
-			HolderIdentity:       pointer.String(c.holderIdentity),
-			LeaseDurationSeconds: pointer.Int32(c.leaseDurationSeconds),
+			HolderIdentity: ptr.To(c.holderIdentity),
+
+			LeaseDurationSeconds: ptr.To(c.leaseDurationSeconds),
 		},
 	}
 }
@@ -174,7 +175,7 @@ func isRetryableAPIError(err error) bool {
 
 func isRetryableNetError(err error) bool {
 	if netError, ok := err.(net.Error); ok {
-		return netError.Temporary() || netError.Timeout()
+		return netError.Timeout()
 	}
 	return false
 }

@@ -591,6 +591,7 @@ func TestEvictEmitEvent(t *testing.T) {
 		evictionTolerance float64
 		vpa               *vpa_types.VerticalPodAutoscaler
 		pods              []podWithExpectations
+		errorExpected     bool
 	}{
 		{
 			name:              "Pods that can be evicted",
@@ -609,6 +610,7 @@ func TestEvictEmitEvent(t *testing.T) {
 					evictionSuccess: true,
 				},
 			},
+			errorExpected: false,
 		},
 		{
 			name:              "Pod that can not be evicted",
@@ -623,6 +625,7 @@ func TestEvictEmitEvent(t *testing.T) {
 					evictionSuccess: false,
 				},
 			},
+			errorExpected: true,
 		},
 	}
 
@@ -642,7 +645,12 @@ func TestEvictEmitEvent(t *testing.T) {
 			mockRecorder.On("Event", mock.Anything, apiv1.EventTypeNormal, "EvictedByVPA", mock.Anything).Return()
 			mockRecorder.On("Event", mock.Anything, apiv1.EventTypeNormal, "EvictedPod", mock.Anything).Return()
 
-			eviction.Evict(p.pod, testCase.vpa, mockRecorder)
+			errGot := eviction.Evict(p.pod, testCase.vpa, mockRecorder)
+			if testCase.errorExpected {
+				assert.Error(t, errGot)
+			} else {
+				assert.NoError(t, errGot)
+			}
 
 			if p.canEvict {
 				mockRecorder.AssertNumberOfCalls(t, "Event", 2)
