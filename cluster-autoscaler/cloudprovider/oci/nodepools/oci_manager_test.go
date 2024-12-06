@@ -361,16 +361,20 @@ func TestRemoveInstance(t *testing.T) {
 		},
 	}
 
-	if err := nodePoolCache.removeInstance(nodePoolId, instanceId1); err != nil {
+	if err := nodePoolCache.removeInstance(nodePoolId, instanceId1, instanceId1); err != nil {
 		t.Errorf("Remove instance #{instanceId1} incorrectly")
 	}
 
-	if err := nodePoolCache.removeInstance(nodePoolId, instanceId2); err != nil {
+	if err := nodePoolCache.removeInstance(nodePoolId, instanceId2, instanceId2); err != nil {
 		t.Errorf("Remove instance #{instanceId2} incorrectly")
 	}
 
-	if err := nodePoolCache.removeInstance(nodePoolId, instanceId3); err != nil {
+	if err := nodePoolCache.removeInstance(nodePoolId, instanceId3, instanceId3); err != nil {
 		t.Errorf("Fail to remove instance #{instanceId3}")
+	}
+
+	if err := nodePoolCache.removeInstance(nodePoolId, "", "badNode"); err == nil {
+		t.Errorf("Bad node should not have been deleted.")
 	}
 
 	if len(nodePoolCache.cache[nodePoolId].Nodes) != 3 {

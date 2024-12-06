@@ -640,7 +640,7 @@ func (m *ociManagerImpl) SetNodePoolSize(np NodePool, size int) error {
 func (m *ociManagerImpl) DeleteInstances(np NodePool, instances []ocicommon.OciRef) error {
 	klog.Infof("DeleteInstances called")
 	for _, instance := range instances {
-		err := m.nodePoolCache.removeInstance(np.Id(), instance.InstanceID)
+		err := m.nodePoolCache.removeInstance(np.Id(), instance.InstanceID, instance.Name)
 		if err != nil {
 			return err
 		}
