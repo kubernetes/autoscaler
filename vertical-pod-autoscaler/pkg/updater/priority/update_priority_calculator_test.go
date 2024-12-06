@@ -602,18 +602,18 @@ func TestAddPodLogs(t *testing.T) {
 			givenRec: &vpa_types.RecommendedPodResources{
 				ContainerRecommendations: []vpa_types.RecommendedContainerResources{
 					{
-						ContainerName: "container-1",
-						Target:        test.Resources("4", "10M"),
+						ContainerName:  "container-1",
+						Target:         test.Resources("4", "10M"),
 						UncappedTarget: test.Resources("4", "10M"),
 					},
 					{
-						ContainerName: "container-2",
-						Target:        test.Resources("8", ""),
+						ContainerName:  "container-2",
+						Target:         test.Resources("8", ""),
 						UncappedTarget: test.Resources("8", ""),
 					},
 					{
-						ContainerName: "container-3",
-						Target:        test.Resources("", "10m"),
+						ContainerName:  "container-3",
+						Target:         test.Resources("", "10m"),
 						UncappedTarget: test.Resources("", "10m"),
 					},
 				},
