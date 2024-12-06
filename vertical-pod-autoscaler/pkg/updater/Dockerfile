@@ -29,7 +29,7 @@ ARG TARGETOS TARGETARCH
 
 RUN CGO_ENABLED=0 LD_FLAGS=-s GOARCH=$TARGETARCH GOOS=$TARGETOS go build -C pkg/updater -o updater-$TARGETARCH
 
-FROM gcr.io/distroless/static:nonroot
+FROM gcr.io/distroless/static:latest
 
 ARG TARGETARCH
 
