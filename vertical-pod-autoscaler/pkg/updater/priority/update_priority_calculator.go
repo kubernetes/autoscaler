@@ -169,26 +169,26 @@ func (calc *UpdatePriorityCalculator) GetSortedPods(admission PodEvictionAdmissi
 func (calc *UpdatePriorityCalculator) GetProcessedRecommendationTargets(r *vpa_types.RecommendedPodResources) string {
 	sb := &strings.Builder{}
 	for _, cr := range r.ContainerRecommendations {
-		sb.WriteString(fmt.Sprintf("%s: ", cr.ContainerName))
+		fmt.Fprintf(sb, "%s: ", cr.ContainerName)
 		if cr.Target != nil {
-			sb.WriteString("target: ")
+			fmt.Fprint(sb, "target: ")
 			if !cr.Target.Memory().IsZero() {
-				sb.WriteString(fmt.Sprintf("%dk ", cr.Target.Memory().ScaledValue(resource.Kilo)))
+				fmt.Fprintf(sb, "%dk ", cr.Target.Memory().ScaledValue(resource.Kilo))
 			}
 			if !cr.Target.Cpu().IsZero() {
-				sb.WriteString(fmt.Sprintf("%vm; ", cr.Target.Cpu().MilliValue()))
+				fmt.Fprintf(sb, "%vm; ", cr.Target.Cpu().MilliValue())
 			}
 		}
 		if cr.UncappedTarget != nil {
-			sb.WriteString("uncappedTarget: ")
+			fmt.Fprintf(sb, "uncappedTarget: ")
 			if !cr.UncappedTarget.Memory().IsZero() {
-				sb.WriteString(fmt.Sprintf("%dk ", cr.UncappedTarget.Memory().ScaledValue(resource.Kilo)))
+				fmt.Fprintf(sb, "%dk ", cr.UncappedTarget.Memory().ScaledValue(resource.Kilo))
 			}
 			if !cr.UncappedTarget.Cpu().IsZero() {
-				sb.WriteString(fmt.Sprintf("%vm;", cr.UncappedTarget.Cpu().MilliValue()))
+				fmt.Fprintf(sb, "%vm;", cr.UncappedTarget.Cpu().MilliValue())
 			}
 		}
-		sb.WriteString("\n")
+		fmt.Fprintf(sb, "\n")
 	}
 	return sb.String()
 }
