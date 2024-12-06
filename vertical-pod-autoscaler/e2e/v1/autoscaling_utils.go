@@ -63,7 +63,7 @@ const (
 	customMetricName                = "QPS"
 	serviceInitializationTimeout    = 2 * time.Minute
 	serviceInitializationInterval   = 15 * time.Second
-	stressImage                     = "gcr.io/google-containers/stress:v1"
+	stressImage                     = "registry.k8s.io/e2e-test-images/agnhost:2.53"
 )
 
 var (
@@ -439,7 +439,7 @@ func runOomingReplicationController(c clientset.Interface, ns, name string, repl
 		Client: c,
 		Image:  stressImage,
 		// request exactly 1025 MiB, in a single chunk (1 MiB above the limit)
-		Command:     []string{"/stress", "--mem-total", "1074790400", "--logtostderr", "--mem-alloc-size", "1074790400"},
+		Command:     []string{"/agnhost", "stress", "--mem-total", "1074790400", "--mem-alloc-size", "1074790400"},
 		Name:        name,
 		Namespace:   ns,
 		Timeout:     timeoutRC,
