@@ -565,17 +565,60 @@ func TestAddPodLogs(t *testing.T) {
 		{
 			name:        "container with target and uncappedTarget",
 			givenRec:    test.Recommendation().WithContainer(containerName).WithTarget("4", "10M").Get(),
-			expectedLog: "container1: target: 10000k 4000m; uncappedTarget: 10000k 4000m;\n",
+			expectedLog: "container1: target: 10000k 4000m; uncappedTarget: 10000k 4000m;",
 		},
 		{
 			name:        "container with cpu only",
 			givenRec:    test.Recommendation().WithContainer(containerName).WithTarget("8", "").Get(),
-			expectedLog: "container1: target: 8000m; uncappedTarget: 8000m;\n",
+			expectedLog: "container1: target: 8000m; uncappedTarget: 8000m;",
 		},
 		{
 			name:        "container with memory only",
 			givenRec:    test.Recommendation().WithContainer(containerName).WithTarget("", "10M").Get(),
-			expectedLog: "container1: target: 10000k uncappedTarget: 10000k \n",
+			expectedLog: "container1: target: 10000k uncappedTarget: 10000k ",
+		},
+		{
+			name: "multi-container with different resources",
+			givenRec: &vpa_types.RecommendedPodResources{
+				ContainerRecommendations: []vpa_types.RecommendedContainerResources{
+					{
+						ContainerName: "container-1",
+						Target:        test.Resources("4", "10M"),
+					},
+					{
+						ContainerName: "container-2",
+						Target:        test.Resources("8", ""),
+					},
+					{
+						ContainerName: "container-3",
+						Target:        test.Resources("", "10m"),
+					},
+				},
+			},
+			expectedLog: "container-1: target: 10000k 4000m; container-2: target: 8000m; container-3: target: 1k ",
+		},
+		{
+			name: "multi-containers with uncappedTarget",
+			givenRec: &vpa_types.RecommendedPodResources{
+				ContainerRecommendations: []vpa_types.RecommendedContainerResources{
+					{
+						ContainerName:  "container-1",
+						Target:         test.Resources("4", "10M"),
+						UncappedTarget: test.Resources("4", "10M"),
+					},
+					{
+						ContainerName:  "container-2",
+						Target:         test.Resources("8", ""),
+						UncappedTarget: test.Resources("8", ""),
+					},
+					{
+						ContainerName:  "container-3",
+						Target:         test.Resources("", "10m"),
+						UncappedTarget: test.Resources("", "10m"),
+					},
+				},
+			},
+			expectedLog: "container-1: target: 10000k 4000m; uncappedTarget: 10000k 4000m;container-2: target: 8000m; uncappedTarget: 8000m;container-3: target: 1k uncappedTarget: 1k ",
 		},
 	}
 	for _, tc := range testCases {

@@ -188,7 +188,6 @@ func (calc *UpdatePriorityCalculator) GetProcessedRecommendationTargets(r *vpa_t
 				sb.WriteString(fmt.Sprintf("%vm;", cr.UncappedTarget.Cpu().MilliValue()))
 			}
 		}
-		sb.WriteString("\n")
 	}
 	return sb.String()
 }
