@@ -1,3 +1,15 @@
+# github.com/argoproj/argo-rollouts v1.6.6
+## explicit; go 1.20
+github.com/argoproj/argo-rollouts/pkg/apis/rollouts
+github.com/argoproj/argo-rollouts/pkg/apis/rollouts/v1alpha1
+github.com/argoproj/argo-rollouts/pkg/client/clientset/versioned
+github.com/argoproj/argo-rollouts/pkg/client/clientset/versioned/scheme
+github.com/argoproj/argo-rollouts/pkg/client/clientset/versioned/typed/rollouts/v1alpha1
+github.com/argoproj/argo-rollouts/pkg/client/informers/externalversions
+github.com/argoproj/argo-rollouts/pkg/client/informers/externalversions/internalinterfaces
+github.com/argoproj/argo-rollouts/pkg/client/informers/externalversions/rollouts
+github.com/argoproj/argo-rollouts/pkg/client/informers/externalversions/rollouts/v1alpha1
+github.com/argoproj/argo-rollouts/pkg/client/listers/rollouts/v1alpha1
 # github.com/beorn7/perks v1.0.1
 ## explicit; go 1.11
 github.com/beorn7/perks/quantile
@@ -14,7 +26,7 @@ github.com/davecgh/go-spew/spew
 ## explicit; go 1.13
 github.com/emicklei/go-restful/v3
 github.com/emicklei/go-restful/v3/log
-# github.com/evanphx/json-patch v4.12.0+incompatible
+# github.com/evanphx/json-patch v5.6.0+incompatible
 ## explicit
 github.com/evanphx/json-patch
 # github.com/fsnotify/fsnotify v1.7.0
@@ -71,8 +83,8 @@ github.com/google/gofuzz/bytesource
 # github.com/google/uuid v1.3.0
 ## explicit
 github.com/google/uuid
-# github.com/imdario/mergo v0.3.6
-## explicit
+# github.com/imdario/mergo v0.3.13
+## explicit; go 1.13
 github.com/imdario/mergo
 # github.com/inconshreveable/mousetrap v1.1.0
 ## explicit; go 1.18
@@ -136,8 +148,8 @@ github.com/spf13/pflag
 # github.com/stretchr/objx v0.5.0
 ## explicit; go 1.12
 github.com/stretchr/objx
-# github.com/stretchr/testify v1.8.2
-## explicit; go 1.13
+# github.com/stretchr/testify v1.8.4
+## explicit; go 1.20
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/mock
 # golang.org/x/mod v0.10.0
@@ -152,7 +164,7 @@ golang.org/x/net/http/httpguts
 golang.org/x/net/http2
 golang.org/x/net/http2/hpack
 golang.org/x/net/idna
-# golang.org/x/oauth2 v0.8.0
+# golang.org/x/oauth2 v0.10.0
 ## explicit; go 1.17
 golang.org/x/oauth2
 golang.org/x/oauth2/internal
