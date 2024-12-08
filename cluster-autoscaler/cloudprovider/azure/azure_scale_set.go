@@ -121,7 +121,7 @@ func NewScaleSet(spec *dynamic.NodeGroupSpec, az *AzureManager, curSize int64, d
 	if az.config.GetVmssSizeRefreshPeriod != 0 {
 		scaleSet.getVmssSizeRefreshPeriod = time.Duration(az.config.GetVmssSizeRefreshPeriod) * time.Second
 	} else {
-		scaleSet.getVmssSizeRefreshPeriod = time.Duration(az.azureCache.refreshInterval) * time.Second
+		scaleSet.getVmssSizeRefreshPeriod = az.azureCache.refreshInterval
 	}
 
 	if az.config.EnableDetailedCSEMessage {

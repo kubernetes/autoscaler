@@ -1033,7 +1033,7 @@ func TestGetFilteredAutoscalingGroupsVmss(t *testing.T) {
 		enableForceDelete:        manager.config.EnableForceDelete,
 		curSize:                  3,
 		sizeRefreshPeriod:        manager.azureCache.refreshInterval,
-		getVmssSizeRefreshPeriod: time.Duration(manager.azureCache.refreshInterval) * time.Second,
+		getVmssSizeRefreshPeriod: manager.azureCache.refreshInterval,
 		InstanceCache:            InstanceCache{instancesRefreshPeriod: defaultVmssInstancesRefreshPeriod},
 	}}
 	assert.True(t, assert.ObjectsAreEqualValues(expectedAsgs, asgs), "expected %#v, but found: %#v", expectedAsgs, asgs)
