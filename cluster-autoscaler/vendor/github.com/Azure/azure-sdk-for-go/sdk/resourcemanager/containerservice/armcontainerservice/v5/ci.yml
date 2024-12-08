@@ -26,3 +26,5 @@ extends:
   parameters:
     IncludeRelease: true
     ServiceDirectory: 'resourcemanager/containerservice/armcontainerservice'
+    UsePipelineProxy: false
+    UseFederatedAuth: true

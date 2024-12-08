@@ -46,7 +46,7 @@ func NewManagedClusterSnapshotsClient(subscriptionID string, credential azcore.T
 // CreateOrUpdate - Creates or updates a managed cluster snapshot.
 // If the operation fails it returns an *azcore.ResponseError type.
 //
-// Generated from API version 2024-01-02-preview
+// Generated from API version 2024-04-02-preview
 //   - resourceGroupName - The name of the resource group. The name is case insensitive.
 //   - resourceName - The name of the managed cluster resource.
 //   - parameters - The managed cluster snapshot to create or update.
@@ -94,7 +94,7 @@ func (client *ManagedClusterSnapshotsClient) createOrUpdateCreateRequest(ctx con
 		return nil, err
 	}
 	reqQP := req.Raw().URL.Query()
-	reqQP.Set("api-version", "2024-01-02-preview")
+	reqQP.Set("api-version", "2024-04-02-preview")
 	req.Raw().URL.RawQuery = reqQP.Encode()
 	req.Raw().Header["Accept"] = []string{"application/json"}
 	if err := runtime.MarshalAsJSON(req, parameters); err != nil {
@@ -115,7 +115,7 @@ func (client *ManagedClusterSnapshotsClient) createOrUpdateHandleResponse(resp *
 // Delete - Deletes a managed cluster snapshot.
 // If the operation fails it returns an *azcore.ResponseError type.
 //
-// Generated from API version 2024-01-02-preview
+// Generated from API version 2024-04-02-preview
 //   - resourceGroupName - The name of the resource group. The name is case insensitive.
 //   - resourceName - The name of the managed cluster resource.
 //   - options - ManagedClusterSnapshotsClientDeleteOptions contains the optional parameters for the ManagedClusterSnapshotsClient.Delete
@@ -161,7 +161,7 @@ func (client *ManagedClusterSnapshotsClient) deleteCreateRequest(ctx context.Con
 		return nil, err
 	}
 	reqQP := req.Raw().URL.Query()
-	reqQP.Set("api-version", "2024-01-02-preview")
+	reqQP.Set("api-version", "2024-04-02-preview")
 	req.Raw().URL.RawQuery = reqQP.Encode()
 	req.Raw().Header["Accept"] = []string{"application/json"}
 	return req, nil
@@ -170,7 +170,7 @@ func (client *ManagedClusterSnapshotsClient) deleteCreateRequest(ctx context.Con
 // Get - Gets a managed cluster snapshot.
 // If the operation fails it returns an *azcore.ResponseError type.
 //
-// Generated from API version 2024-01-02-preview
+// Generated from API version 2024-04-02-preview
 //   - resourceGroupName - The name of the resource group. The name is case insensitive.
 //   - resourceName - The name of the managed cluster resource.
 //   - options - ManagedClusterSnapshotsClientGetOptions contains the optional parameters for the ManagedClusterSnapshotsClient.Get
@@ -217,7 +217,7 @@ func (client *ManagedClusterSnapshotsClient) getCreateRequest(ctx context.Contex
 		return nil, err
 	}
 	reqQP := req.Raw().URL.Query()
-	reqQP.Set("api-version", "2024-01-02-preview")
+	reqQP.Set("api-version", "2024-04-02-preview")
 	req.Raw().URL.RawQuery = reqQP.Encode()
 	req.Raw().Header["Accept"] = []string{"application/json"}
 	return req, nil
@@ -234,7 +234,7 @@ func (client *ManagedClusterSnapshotsClient) getHandleResponse(resp *http.Respon
 
 // NewListPager - Gets a list of managed cluster snapshots in the specified subscription.
 //
-// Generated from API version 2024-01-02-preview
+// Generated from API version 2024-04-02-preview
 //   - options - ManagedClusterSnapshotsClientListOptions contains the optional parameters for the ManagedClusterSnapshotsClient.NewListPager
 //     method.
 func (client *ManagedClusterSnapshotsClient) NewListPager(options *ManagedClusterSnapshotsClientListOptions) *runtime.Pager[ManagedClusterSnapshotsClientListResponse] {
@@ -272,7 +272,7 @@ func (client *ManagedClusterSnapshotsClient) listCreateRequest(ctx context.Conte
 		return nil, err
 	}
 	reqQP := req.Raw().URL.Query()
-	reqQP.Set("api-version", "2024-01-02-preview")
+	reqQP.Set("api-version", "2024-04-02-preview")
 	req.Raw().URL.RawQuery = reqQP.Encode()
 	req.Raw().Header["Accept"] = []string{"application/json"}
 	return req, nil
@@ -289,7 +289,7 @@ func (client *ManagedClusterSnapshotsClient) listHandleResponse(resp *http.Respo
 
 // NewListByResourceGroupPager - Lists managed cluster snapshots in the specified subscription and resource group.
 //
-// Generated from API version 2024-01-02-preview
+// Generated from API version 2024-04-02-preview
 //   - resourceGroupName - The name of the resource group. The name is case insensitive.
 //   - options - ManagedClusterSnapshotsClientListByResourceGroupOptions contains the optional parameters for the ManagedClusterSnapshotsClient.NewListByResourceGroupPager
 //     method.
@@ -332,7 +332,7 @@ func (client *ManagedClusterSnapshotsClient) listByResourceGroupCreateRequest(ct
 		return nil, err
 	}
 	reqQP := req.Raw().URL.Query()
-	reqQP.Set("api-version", "2024-01-02-preview")
+	reqQP.Set("api-version", "2024-04-02-preview")
 	req.Raw().URL.RawQuery = reqQP.Encode()
 	req.Raw().Header["Accept"] = []string{"application/json"}
 	return req, nil
@@ -350,7 +350,7 @@ func (client *ManagedClusterSnapshotsClient) listByResourceGroupHandleResponse(r
 // UpdateTags - Updates tags on a managed cluster snapshot.
 // If the operation fails it returns an *azcore.ResponseError type.
 //
-// Generated from API version 2024-01-02-preview
+// Generated from API version 2024-04-02-preview
 //   - resourceGroupName - The name of the resource group. The name is case insensitive.
 //   - resourceName - The name of the managed cluster resource.
 //   - parameters - Parameters supplied to the Update managed cluster snapshot Tags operation.
@@ -398,7 +398,7 @@ func (client *ManagedClusterSnapshotsClient) updateTagsCreateRequest(ctx context
 		return nil, err
 	}
 	reqQP := req.Raw().URL.Query()
-	reqQP.Set("api-version", "2024-01-02-preview")
+	reqQP.Set("api-version", "2024-04-02-preview")
 	req.Raw().URL.RawQuery = reqQP.Encode()
 	req.Raw().Header["Accept"] = []string{"application/json"}
 	if err := runtime.MarshalAsJSON(req, parameters); err != nil {

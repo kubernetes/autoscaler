@@ -30,7 +30,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 )
 
-func TestExtractLabelsFromScaleSet(t *testing.T) {
+func TestExtractLabelsFromTags(t *testing.T) {
 	expectedNodeLabelKey := "zip"
 	expectedNodeLabelValue := "zap"
 	extraNodeLabelValue := "buzz"
@@ -52,14 +52,14 @@ func TestExtractLabelsFromScaleSet(t *testing.T) {
 		fmt.Sprintf("%s%s", nodeLabelTagName, escapedUnderscoreNodeLabelKey): &escapedUnderscoreNodeLabelValue,
 	}
 
-	labels := extractLabelsFromScaleSet(tags)
+	labels := extractLabelsFromTags(tags)
 	assert.Len(t, labels, 3)
 	assert.Equal(t, expectedNodeLabelValue, labels[expectedNodeLabelKey])
 	assert.Equal(t, escapedSlashNodeLabelValue, labels[expectedSlashEscapedNodeLabelKey])
 	assert.Equal(t, escapedUnderscoreNodeLabelValue, labels[expectedUnderscoreEscapedNodeLabelKey])
 }
 
-func TestExtractTaintsFromScaleSet(t *testing.T) {
+func TestExtractTaintsFromTags(t *testing.T) {
 	noScheduleTaintValue := "foo:NoSchedule"
 	noExecuteTaintValue := "bar:NoExecute"
 	preferNoScheduleTaintValue := "fizz:PreferNoSchedule"
@@ -100,7 +100,7 @@ func TestExtractTaintsFromScaleSet(t *testing.T) {
 		},
 	}
 
-	taints := extractTaintsFromScaleSet(tags)
+	taints := extractTaintsFromTags(tags)
 	assert.Len(t, taints, 4)
 	assert.Equal(t, makeTaintSet(expectedTaints), makeTaintSet(taints))
 }
@@ -176,8 +176,8 @@ func TestTopologyFromScaleSet(t *testing.T) {
 		Location: to.StringPtr("westus"),
 	}
 	expectedZoneValues := []string{"westus-1", "westus-2", "westus-3"}
-
-	labels := buildGenericLabels(testVmss, testNodeName)
+	template := buildNodeTemplateFromVMSS(testVmss, map[string]string{}, "")
+	labels := buildGenericLabels(template, testNodeName)
 	failureDomain, ok := labels[apiv1.LabelZoneFailureDomain]
 	assert.True(t, ok)
 	topologyZone, ok := labels[apiv1.LabelTopologyZone]
@@ -205,7 +205,8 @@ func TestEmptyTopologyFromScaleSet(t *testing.T) {
 	expectedFailureDomain := "0"
 	expectedTopologyZone := "0"
 	expectedAzureDiskTopology := ""
-	labels := buildGenericLabels(testVmss, testNodeName)
+	template := buildNodeTemplateFromVMSS(testVmss, map[string]string{}, "")
+	labels := buildGenericLabels(template, testNodeName)
 
 	failureDomain, ok := labels[apiv1.LabelZoneFailureDomain]
 	assert.True(t, ok)

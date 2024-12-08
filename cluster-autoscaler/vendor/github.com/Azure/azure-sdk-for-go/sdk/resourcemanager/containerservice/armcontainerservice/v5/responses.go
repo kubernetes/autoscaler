@@ -59,6 +59,33 @@ type AgentPoolsClientUpgradeNodeImageVersionResponse struct {
 	AgentPool
 }
 
+// LoadBalancersClientCreateOrUpdateResponse contains the response from method LoadBalancersClient.CreateOrUpdate.
+type LoadBalancersClientCreateOrUpdateResponse struct {
+	// The configurations regarding multiple standard load balancers. If not supplied, single load balancer mode will be used.
+	// Multiple standard load balancers mode will be used if at lease one configuration is supplied. There has to be a configuration
+	// named `kubernetes`.
+	LoadBalancer
+}
+
+// LoadBalancersClientDeleteResponse contains the response from method LoadBalancersClient.BeginDelete.
+type LoadBalancersClientDeleteResponse struct {
+	// placeholder for future response values
+}
+
+// LoadBalancersClientGetResponse contains the response from method LoadBalancersClient.Get.
+type LoadBalancersClientGetResponse struct {
+	// The configurations regarding multiple standard load balancers. If not supplied, single load balancer mode will be used.
+	// Multiple standard load balancers mode will be used if at lease one configuration is supplied. There has to be a configuration
+	// named `kubernetes`.
+	LoadBalancer
+}
+
+// LoadBalancersClientListByManagedClusterResponse contains the response from method LoadBalancersClient.NewListByManagedClusterPager.
+type LoadBalancersClientListByManagedClusterResponse struct {
+	// The response from the List Load Balancers operation.
+	LoadBalancerListResult
+}
+
 // MachinesClientGetResponse contains the response from method MachinesClient.Get.
 type MachinesClientGetResponse struct {
 	// A machine. Contains details about the underlying virtual machine. A machine may be visible here but not in kubectl get
@@ -269,6 +296,11 @@ type ManagedClustersClientListResponse struct {
 type ManagedClustersClientListSafeguardsVersionsResponse struct {
 	// Hold values properties, which is array of SafeguardsVersions
 	SafeguardsAvailableVersionsList
+}
+
+// ManagedClustersClientRebalanceLoadBalancersResponse contains the response from method ManagedClustersClient.BeginRebalanceLoadBalancers.
+type ManagedClustersClientRebalanceLoadBalancersResponse struct {
+	// placeholder for future response values
 }
 
 // ManagedClustersClientResetAADProfileResponse contains the response from method ManagedClustersClient.BeginResetAADProfile.

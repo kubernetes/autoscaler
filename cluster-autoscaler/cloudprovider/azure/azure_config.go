@@ -89,6 +89,9 @@ type Config struct {
 	// EnableForceDelete defines whether to enable force deletion on the APIs
 	EnableForceDelete bool `json:"enableForceDelete,omitempty" yaml:"enableForceDelete,omitempty"`
 
+	// EnableVMsAgentPool defines whether to support VMs agentpool type in addition to VMSS type
+	EnableVMsAgentPool bool `json:"enableVMsAgentPool,omitempty" yaml:"enableVMsAgentPool,omitempty"`
+
 	// (DEPRECATED, DO NOT USE) EnableDynamicInstanceList defines whether to enable dynamic instance workflow for instance information check
 	EnableDynamicInstanceList bool `json:"enableDynamicInstanceList,omitempty" yaml:"enableDynamicInstanceList,omitempty"`
 
@@ -122,6 +125,7 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 	// Static defaults
 	cfg.EnableDynamicInstanceList = false
 	cfg.EnableVmssFlexNodes = false
+	cfg.EnableVMsAgentPool = false
 	cfg.CloudProviderBackoffRetries = providerazureconsts.BackoffRetriesDefault
 	cfg.CloudProviderBackoffExponent = providerazureconsts.BackoffExponentDefault
 	cfg.CloudProviderBackoffDuration = providerazureconsts.BackoffDurationDefault
@@ -251,6 +255,9 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 		return nil, err
 	}
 	if _, err = assignBoolFromEnvIfExists(&cfg.EnableForceDelete, "AZURE_ENABLE_FORCE_DELETE"); err != nil {
+		return nil, err
+	}
+	if _, err = assignBoolFromEnvIfExists(&cfg.EnableVMsAgentPool, "AZURE_ENABLE_VMS_AGENT_POOLS"); err != nil {
 		return nil, err
 	}
 	if _, err = assignBoolFromEnvIfExists(&cfg.EnableDynamicInstanceList, "AZURE_ENABLE_DYNAMIC_INSTANCE_LIST"); err != nil {

@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"time"
 
 	_ "go.uber.org/mock/mockgen/model" // for go:generate
 
@@ -30,7 +31,7 @@ import (
 	azurecore_policy "github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v4"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v5"
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-03-01/compute"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/adal"
@@ -50,7 +51,14 @@ import (
 	providerazureconfig "sigs.k8s.io/cloud-provider-azure/pkg/provider/config"
 )
 
-//go:generate sh -c "mockgen k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure AgentPoolsClient >./agentpool_client.go"
+//go:generate sh -c "mockgen -source=azure_client.go -destination azure_mock_agentpool_client.go -package azure -exclude_interfaces DeploymentsClient"
+
+const (
+	vmsGetRequestContextTimeout    = 1 * time.Minute
+	vmsListRequestContextTimeout   = 5 * time.Minute
+	vmsPutRequestContextTimeout    = 10 * time.Minute
+	vmsDeleteRequestContextTimeout = 10 * time.Minute
+)
 
 // AgentPoolsClient interface defines the methods needed for scaling vms pool.
 // it is implemented by track2 sdk armcontainerservice.AgentPoolsClient
@@ -71,41 +79,47 @@ type AgentPoolsClient interface {
 		machines armcontainerservice.AgentPoolDeleteMachinesParameter,
 		options *armcontainerservice.AgentPoolsClientBeginDeleteMachinesOptions) (
 		*runtime.Poller[armcontainerservice.AgentPoolsClientDeleteMachinesResponse], error)
+	NewListPager(
+		resourceGroupName, resourceName string,
+		options *armcontainerservice.AgentPoolsClientListOptions,
+	) *runtime.Pager[armcontainerservice.AgentPoolsClientListResponse]
 }
 
 func getAgentpoolClientCredentials(cfg *Config) (azcore.TokenCredential, error) {
-	var cred azcore.TokenCredential
-	var err error
-	if cfg.AuthMethod == authMethodCLI {
-		cred, err = azidentity.NewAzureCLICredential(&azidentity.AzureCLICredentialOptions{
-			TenantID: cfg.TenantID})
-		if err != nil {
-			klog.Errorf("NewAzureCLICredential failed: %v", err)
-			return nil, err
+	if cfg.AuthMethod == "" || cfg.AuthMethod == authMethodPrincipal {
+		// Use MSI
+		if cfg.UseManagedIdentityExtension {
+			// Use System Assigned MSI
+			if len(cfg.UserAssignedIdentityID) == 0 {
+				klog.V(4).Info("Agentpool client: using System Assigned MSI to retrieve access token")
+				return azidentity.NewManagedIdentityCredential(nil)
+			}
+			// Use User Assigned MSI
+			klog.V(4).Info("Agentpool client: using User Assigned MSI to retrieve access token")
+			return azidentity.NewManagedIdentityCredential(&azidentity.ManagedIdentityCredentialOptions{
+				ID: azidentity.ClientID(cfg.UserAssignedIdentityID),
+			})
 		}
-	} else if cfg.AuthMethod == "" || cfg.AuthMethod == authMethodPrincipal {
-		cred, err = azidentity.NewClientSecretCredential(cfg.TenantID, cfg.AADClientID, cfg.AADClientSecret, nil)
-		if err != nil {
-			klog.Errorf("NewClientSecretCredential failed: %v", err)
-			return nil, err
-		}
-	} else {
-		return nil, fmt.Errorf("unsupported authorization method: %s", cfg.AuthMethod)
-	}
-	return cred, nil
-}
 
-func getAgentpoolClientRetryOptions(cfg *Config) azurecore_policy.RetryOptions {
-	if cfg.AuthMethod == authMethodCLI {
-		return azurecore_policy.RetryOptions{
-			MaxRetries: -1, // no retry when using CLI auth for UT
+		// Use Service Principal
+		if len(cfg.AADClientID) > 0 && len(cfg.AADClientSecret) > 0 {
+			klog.V(2).Infoln("Agentpool client: using client_id+client_secret to retrieve access token")
+			return azidentity.NewClientSecretCredential(cfg.TenantID, cfg.AADClientID, cfg.AADClientSecret, nil)
 		}
 	}
-	return azextensions.DefaultRetryOpts()
+
+	if cfg.UseFederatedWorkloadIdentityExtension {
+		klog.V(4).Info("Agentpool client: using workload identity for access token")
+		return azidentity.NewWorkloadIdentityCredential(&azidentity.WorkloadIdentityCredentialOptions{
+			TokenFilePath: cfg.AADFederatedTokenFile,
+		})
+	}
+
+	return nil, fmt.Errorf("unsupported authorization method: %s", cfg.AuthMethod)
 }
 
 func newAgentpoolClient(cfg *Config) (AgentPoolsClient, error) {
-	retryOptions := getAgentpoolClientRetryOptions(cfg)
+	retryOptions := azextensions.DefaultRetryOpts()
 
 	if cfg.ARMBaseURLForAPClient != "" {
 		klog.V(10).Infof("Using ARMBaseURLForAPClient to create agent pool client")
@@ -266,9 +280,11 @@ func newAzClient(cfg *Config, env *azure.Environment) (*azClient, error) {
 
 	agentPoolClient, err := newAgentpoolClient(cfg)
 	if err != nil {
-		// we don't want to fail the whole process so we don't break any existing functionality
-		// since this may not be fatal - it is only used by vms pool which is still under development.
-		klog.Warningf("newAgentpoolClient failed with error: %s", err)
+		klog.Errorf("newAgentpoolClient failed with error: %s", err)
+		if cfg.EnableVMsAgentPool {
+			// only return error if VMs agent pool is supported which is controlled by toggle
+			return nil, err
+		}
 	}
 
 	return &azClient{

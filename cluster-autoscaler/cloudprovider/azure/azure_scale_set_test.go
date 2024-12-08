@@ -1040,7 +1040,7 @@ func TestTemplateNodeInfo(t *testing.T) {
 	t.Run("Checking dynamic workflow", func(t *testing.T) {
 		asg.enableDynamicInstanceList = true
 
-		GetVMSSTypeDynamically = func(template compute.VirtualMachineScaleSet, azCache *azureCache) (InstanceType, error) {
+		GetVMSSTypeDynamically = func(template NodeTemplate, azCache *azureCache) (InstanceType, error) {
 			vmssType := InstanceType{}
 			vmssType.VCPU = 1
 			vmssType.GPU = 2
@@ -1058,10 +1058,10 @@ func TestTemplateNodeInfo(t *testing.T) {
 	t.Run("Checking static workflow if dynamic fails", func(t *testing.T) {
 		asg.enableDynamicInstanceList = true
 
-		GetVMSSTypeDynamically = func(template compute.VirtualMachineScaleSet, azCache *azureCache) (InstanceType, error) {
+		GetVMSSTypeDynamically = func(template NodeTemplate, azCache *azureCache) (InstanceType, error) {
 			return InstanceType{}, fmt.Errorf("dynamic error exists")
 		}
-		GetVMSSTypeStatically = func(template compute.VirtualMachineScaleSet) (*InstanceType, error) {
+		GetVMSSTypeStatically = func(template NodeTemplate) (*InstanceType, error) {
 			vmssType := InstanceType{}
 			vmssType.VCPU = 1
 			vmssType.GPU = 2
@@ -1079,10 +1079,10 @@ func TestTemplateNodeInfo(t *testing.T) {
 	t.Run("Fails to find vmss instance information using static and dynamic workflow, instance not supported", func(t *testing.T) {
 		asg.enableDynamicInstanceList = true
 
-		GetVMSSTypeDynamically = func(template compute.VirtualMachineScaleSet, azCache *azureCache) (InstanceType, error) {
+		GetVMSSTypeDynamically = func(template NodeTemplate, azCache *azureCache) (InstanceType, error) {
 			return InstanceType{}, fmt.Errorf("dynamic error exists")
 		}
-		GetVMSSTypeStatically = func(template compute.VirtualMachineScaleSet) (*InstanceType, error) {
+		GetVMSSTypeStatically = func(template NodeTemplate) (*InstanceType, error) {
 			return &InstanceType{}, fmt.Errorf("static error exists")
 		}
 		nodeInfo, err := asg.TemplateNodeInfo()
@@ -1095,7 +1095,7 @@ func TestTemplateNodeInfo(t *testing.T) {
 	t.Run("Checking static-only workflow", func(t *testing.T) {
 		asg.enableDynamicInstanceList = false
 
-		GetVMSSTypeStatically = func(template compute.VirtualMachineScaleSet) (*InstanceType, error) {
+		GetVMSSTypeStatically = func(template NodeTemplate) (*InstanceType, error) {
 			vmssType := InstanceType{}
 			vmssType.VCPU = 1
 			vmssType.GPU = 2

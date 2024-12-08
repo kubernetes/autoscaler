@@ -32,6 +32,7 @@ import (
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	uber_gomock "go.uber.org/mock/gomock"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	azclients "sigs.k8s.io/cloud-provider-azure/pkg/azureclients"
@@ -270,6 +271,7 @@ func TestCreateAzureManagerValidConfig(t *testing.T) {
 		},
 		VmssVmsCacheJitter:  120,
 		MaxDeploymentsCount: 8,
+		EnableVMsAgentPool:  false,
 	}
 
 	assert.NoError(t, err)
@@ -554,9 +556,15 @@ func TestCreateAzureManagerWithNilConfig(t *testing.T) {
 	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
 	mockVMSSClient.EXPECT().List(gomock.Any(), "resourceGroup").Return([]compute.VirtualMachineScaleSet{}, nil).AnyTimes()
 	mockVMClient.EXPECT().List(gomock.Any(), "resourceGroup").Return([]compute.VirtualMachine{}, nil).AnyTimes()
+	unberCtl := uber_gomock.NewController(t)
+	mockAgentpoolclient := NewMockAgentPoolsClient(unberCtl)
+	vmspool := getTestVMsAgentPool("vmspool", false)
+	fakeAPListPager := getFakeAgentpoolListPager(&vmspool)
+	mockAgentpoolclient.EXPECT().NewListPager(gomock.Any(), gomock.Any(), nil).Return(fakeAPListPager).AnyTimes()
 	mockAzClient := &azClient{
 		virtualMachinesClient:         mockVMClient,
 		virtualMachineScaleSetsClient: mockVMSSClient,
+		agentPoolClient:               mockAgentpoolclient,
 	}
 
 	expectedConfig := &Config{
@@ -633,6 +641,7 @@ func TestCreateAzureManagerWithNilConfig(t *testing.T) {
 		Deployment:            "deployment",
 		VmssVmsCacheJitter:    90,
 		MaxDeploymentsCount:   8,
+		EnableVMsAgentPool:    true,
 	}
 
 	t.Setenv("ARM_CLOUD", "AzurePublicCloud")
@@ -665,6 +674,7 @@ func TestCreateAzureManagerWithNilConfig(t *testing.T) {
 	t.Setenv("CLUSTER_NAME", "mycluster")
 	t.Setenv("ARM_CLUSTER_RESOURCE_GROUP", "myrg")
 	t.Setenv("ARM_BASE_URL_FOR_AP_CLIENT", "nodeprovisioner-svc.nodeprovisioner.svc.cluster.local")
+	t.Setenv("AZURE_ENABLE_VMS_AGENT_POOLS", "true")
 
 	t.Run("environment variables correctly set", func(t *testing.T) {
 		manager, err := createAzureManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, mockAzClient)
