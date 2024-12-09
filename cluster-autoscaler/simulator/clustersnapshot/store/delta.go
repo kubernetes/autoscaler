@@ -21,7 +21,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
+	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
 	"k8s.io/klog/v2"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
@@ -387,6 +387,21 @@ func (snapshot *DeltaSnapshotStore) StorageInfos() schedulerframework.StorageInf
 	return (*deltaSnapshotStoreStorageLister)(snapshot)
 }
 
+// ResourceClaims exposes snapshot as ResourceClaimTracker
+func (snapshot *DeltaSnapshotStore) ResourceClaims() schedulerframework.ResourceClaimTracker {
+	return snapshot.DraSnapshot().ResourceClaims()
+}
+
+// ResourceSlices exposes snapshot as ResourceSliceLister.
+func (snapshot *DeltaSnapshotStore) ResourceSlices() schedulerframework.ResourceSliceLister {
+	return snapshot.DraSnapshot().ResourceSlices()
+}
+
+// DeviceClasses exposes the snapshot as DeviceClassLister.
+func (snapshot *DeltaSnapshotStore) DeviceClasses() schedulerframework.DeviceClassLister {
+	return snapshot.DraSnapshot().DeviceClasses()
+}
+
 // NewDeltaSnapshotStore creates instances of DeltaSnapshotStore.
 func NewDeltaSnapshotStore() *DeltaSnapshotStore {
 	snapshot := &DeltaSnapshotStore{}
@@ -394,27 +409,18 @@ func NewDeltaSnapshotStore() *DeltaSnapshotStore {
 	return snapshot
 }
 
-// GetNodeInfo gets a NodeInfo.
-func (snapshot *DeltaSnapshotStore) GetNodeInfo(nodeName string) (*framework.NodeInfo, error) {
-	schedNodeInfo, err := snapshot.getNodeInfo(nodeName)
-	if err != nil {
-		return nil, err
-	}
-	return framework.WrapSchedulerNodeInfo(schedNodeInfo), nil
+// DraSnapshot returns the DRA snapshot.
+func (snapshot *DeltaSnapshotStore) DraSnapshot() drasnapshot.Snapshot {
+	// TODO(DRA): Return DRA snapshot.
+	return drasnapshot.Snapshot{}
 }
 
-// ListNodeInfos lists NodeInfos.
-func (snapshot *DeltaSnapshotStore) ListNodeInfos() ([]*framework.NodeInfo, error) {
-	schedNodeInfos := snapshot.data.getNodeInfoList()
-	return framework.WrapSchedulerNodeInfos(schedNodeInfos), nil
-}
-
-// AddNodeInfo adds a NodeInfo.
-func (snapshot *DeltaSnapshotStore) AddNodeInfo(nodeInfo *framework.NodeInfo) error {
+// AddSchedulerNodeInfo adds a NodeInfo.
+func (snapshot *DeltaSnapshotStore) AddSchedulerNodeInfo(nodeInfo *schedulerframework.NodeInfo) error {
 	if err := snapshot.data.addNode(nodeInfo.Node()); err != nil {
 		return err
 	}
-	for _, podInfo := range nodeInfo.Pods() {
+	for _, podInfo := range nodeInfo.Pods {
 		if err := snapshot.data.addPod(podInfo.Pod, nodeInfo.Node().Name); err != nil {
 			return err
 		}
@@ -423,7 +429,7 @@ func (snapshot *DeltaSnapshotStore) AddNodeInfo(nodeInfo *framework.NodeInfo) er
 }
 
 // SetClusterState sets the cluster state.
-func (snapshot *DeltaSnapshotStore) SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod) error {
+func (snapshot *DeltaSnapshotStore) SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod, draSnapshot drasnapshot.Snapshot) error {
 	snapshot.clear()
 
 	knownNodes := make(map[string]bool)
@@ -440,11 +446,12 @@ func (snapshot *DeltaSnapshotStore) SetClusterState(nodes []*apiv1.Node, schedul
 			}
 		}
 	}
+	// TODO(DRA): Save DRA snapshot.
 	return nil
 }
 
-// RemoveNodeInfo removes nodes (and pods scheduled to it) from the snapshot.
-func (snapshot *DeltaSnapshotStore) RemoveNodeInfo(nodeName string) error {
+// RemoveSchedulerNodeInfo removes nodes (and pods scheduled to it) from the snapshot.
+func (snapshot *DeltaSnapshotStore) RemoveSchedulerNodeInfo(nodeName string) error {
 	return snapshot.data.removeNodeInfo(nodeName)
 }
 

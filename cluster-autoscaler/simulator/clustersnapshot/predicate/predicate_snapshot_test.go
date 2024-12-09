@@ -25,6 +25,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot/store"
+	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
@@ -38,14 +39,14 @@ var snapshots = map[string]func() (clustersnapshot.ClusterSnapshot, error){
 		if err != nil {
 			return nil, err
 		}
-		return NewPredicateSnapshot(store.NewBasicSnapshotStore(), fwHandle), nil
+		return NewPredicateSnapshot(store.NewBasicSnapshotStore(), fwHandle, true), nil
 	},
 	"delta": func() (clustersnapshot.ClusterSnapshot, error) {
 		fwHandle, err := framework.NewTestFrameworkHandle()
 		if err != nil {
 			return nil, err
 		}
-		return NewPredicateSnapshot(store.NewDeltaSnapshotStore(), fwHandle), nil
+		return NewPredicateSnapshot(store.NewDeltaSnapshotStore(), fwHandle, true), nil
 	},
 }
 
@@ -90,7 +91,7 @@ func getSnapshotState(t *testing.T, snapshot clustersnapshot.ClusterSnapshot) sn
 func startSnapshot(t *testing.T, snapshotFactory func() (clustersnapshot.ClusterSnapshot, error), state snapshotState) clustersnapshot.ClusterSnapshot {
 	snapshot, err := snapshotFactory()
 	assert.NoError(t, err)
-	err = snapshot.SetClusterState(state.nodes, state.pods)
+	err = snapshot.SetClusterState(state.nodes, state.pods, drasnapshot.Snapshot{})
 	assert.NoError(t, err)
 	return snapshot
 }
@@ -324,7 +325,7 @@ func TestSetClusterState(t *testing.T) {
 				snapshot := startSnapshot(t, snapshotFactory, state)
 				compareStates(t, state, getSnapshotState(t, snapshot))
 
-				assert.NoError(t, snapshot.SetClusterState(nil, nil))
+				assert.NoError(t, snapshot.SetClusterState(nil, nil, drasnapshot.Snapshot{}))
 
 				compareStates(t, snapshotState{}, getSnapshotState(t, snapshot))
 			})
@@ -335,7 +336,7 @@ func TestSetClusterState(t *testing.T) {
 
 				newNodes, newPods := clustersnapshot.CreateTestNodes(13), clustersnapshot.CreateTestPods(37)
 				clustersnapshot.AssignTestPodsToNodes(newPods, newNodes)
-				assert.NoError(t, snapshot.SetClusterState(newNodes, newPods))
+				assert.NoError(t, snapshot.SetClusterState(newNodes, newPods, drasnapshot.Snapshot{}))
 
 				compareStates(t, snapshotState{nodes: newNodes, pods: newPods}, getSnapshotState(t, snapshot))
 			})
@@ -358,7 +359,7 @@ func TestSetClusterState(t *testing.T) {
 
 				compareStates(t, snapshotState{allNodes, allPods}, getSnapshotState(t, snapshot))
 
-				assert.NoError(t, snapshot.SetClusterState(nil, nil))
+				assert.NoError(t, snapshot.SetClusterState(nil, nil, drasnapshot.Snapshot{}))
 
 				compareStates(t, snapshotState{}, getSnapshotState(t, snapshot))
 
@@ -754,7 +755,7 @@ func TestPVCClearAndFork(t *testing.T) {
 			volumeExists := snapshot.StorageInfos().IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", "claim1"))
 			assert.Equal(t, true, volumeExists)
 
-			assert.NoError(t, snapshot.SetClusterState(nil, nil))
+			assert.NoError(t, snapshot.SetClusterState(nil, nil, drasnapshot.Snapshot{}))
 			volumeExists = snapshot.StorageInfos().IsPVCUsedByPods(schedulerframework.GetNamespacedName("default", "claim1"))
 			assert.Equal(t, false, volumeExists)
 

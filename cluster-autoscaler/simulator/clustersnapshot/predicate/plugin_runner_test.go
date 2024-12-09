@@ -139,15 +139,15 @@ func TestRunFiltersOnNode(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			snapshotStore := store.NewBasicSnapshotStore()
-			err := snapshotStore.AddNodeInfo(framework.NewTestNodeInfo(tt.node, tt.scheduledPods...))
+			pluginRunner, snapshot, err := newTestPluginRunnerAndSnapshot(tt.customConfig)
+			assert.NoError(t, err)
+			err = snapshot.AddNodeInfo(framework.NewTestNodeInfo(tt.node, tt.scheduledPods...))
 			assert.NoError(t, err)
 
-			pluginRunner, err := newTestPluginRunner(snapshotStore, tt.customConfig)
-			assert.NoError(t, err)
-
-			predicateError := pluginRunner.RunFiltersOnNode(tt.testPod, tt.node.Name)
+			node, state, predicateError := pluginRunner.RunFiltersOnNode(tt.testPod, tt.node.Name)
 			if tt.expectError {
+				assert.Nil(t, node)
+				assert.Nil(t, state)
 				assert.NotNil(t, predicateError)
 				assert.Equal(t, clustersnapshot.FailingPredicateError, predicateError.Type())
 				assert.Equal(t, "NodeResourcesFit", predicateError.FailingPredicateName())
@@ -156,6 +156,8 @@ func TestRunFiltersOnNode(t *testing.T) {
 				assert.Contains(t, predicateError.Error(), "Insufficient cpu")
 			} else {
 				assert.Nil(t, predicateError)
+				assert.NotNil(t, state)
+				assert.Equal(t, tt.node, node)
 			}
 		})
 	}
@@ -235,23 +237,25 @@ func TestRunFilterUntilPassingNode(t *testing.T) {
 		},
 	}
 
-	snapshotStore := store.NewBasicSnapshotStore()
-	err = snapshotStore.AddNodeInfo(framework.NewTestNodeInfo(n1000))
-	assert.NoError(t, err)
-	err = snapshotStore.AddNodeInfo(framework.NewTestNodeInfo(n2000))
-	assert.NoError(t, err)
-
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			pluginRunner, err := newTestPluginRunner(snapshotStore, tc.customConfig)
+			pluginRunner, snapshot, err := newTestPluginRunnerAndSnapshot(tc.customConfig)
 			assert.NoError(t, err)
 
-			nodeName, err := pluginRunner.RunFiltersUntilPassingNode(tc.pod, func(info *framework.NodeInfo) bool { return true })
+			err = snapshot.AddNodeInfo(framework.NewTestNodeInfo(n1000))
+			assert.NoError(t, err)
+			err = snapshot.AddNodeInfo(framework.NewTestNodeInfo(n2000))
+			assert.NoError(t, err)
+
+			node, state, err := pluginRunner.RunFiltersUntilPassingNode(tc.pod, func(info *framework.NodeInfo) bool { return true })
 			if tc.expectError {
+				assert.Nil(t, node)
+				assert.Nil(t, state)
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
-				assert.Contains(t, tc.expectedNodes, nodeName)
+				assert.NotNil(t, state)
+				assert.Contains(t, tc.expectedNodes, node.Name)
 			}
 		})
 	}
@@ -274,14 +278,14 @@ func TestDebugInfo(t *testing.T) {
 	}
 	SetNodeReadyState(node1, true, time.Time{})
 
-	clusterSnapshot := store.NewBasicSnapshotStore()
-	err := clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(node1))
+	// with default predicate checker
+	defaultPluginRunner, clusterSnapshot, err := newTestPluginRunnerAndSnapshot(nil)
 	assert.NoError(t, err)
 
-	// with default predicate checker
-	defaultPluginRunner, err := newTestPluginRunner(clusterSnapshot, nil)
+	err = clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(node1))
 	assert.NoError(t, err)
-	predicateErr := defaultPluginRunner.RunFiltersOnNode(p1, "n1")
+
+	_, _, predicateErr := defaultPluginRunner.RunFiltersOnNode(p1, "n1")
 	assert.NotNil(t, predicateErr)
 	assert.Contains(t, predicateErr.FailingPredicateReasons(), "node(s) had untolerated taint {SomeTaint: WhyNot?}")
 	assert.Contains(t, predicateErr.Error(), "node(s) had untolerated taint {SomeTaint: WhyNot?}")
@@ -305,25 +309,29 @@ func TestDebugInfo(t *testing.T) {
 
 	customConfig, err := scheduler.ConfigFromPath(customConfigFile)
 	assert.NoError(t, err)
-	customPluginRunner, err := newTestPluginRunner(clusterSnapshot, customConfig)
+	customPluginRunner, clusterSnapshot, err := newTestPluginRunnerAndSnapshot(customConfig)
 	assert.NoError(t, err)
-	predicateErr = customPluginRunner.RunFiltersOnNode(p1, "n1")
+
+	err = clusterSnapshot.AddNodeInfo(framework.NewTestNodeInfo(node1))
+	assert.NoError(t, err)
+
+	_, _, predicateErr = customPluginRunner.RunFiltersOnNode(p1, "n1")
 	assert.Nil(t, predicateErr)
 }
 
-// newTestPluginRunner builds test version of SchedulerPluginRunner.
-func newTestPluginRunner(snapshotStore clustersnapshot.ClusterSnapshotStore, schedConfig *config.KubeSchedulerConfiguration) (*SchedulerPluginRunner, error) {
+func newTestPluginRunnerAndSnapshot(schedConfig *config.KubeSchedulerConfiguration) (*SchedulerPluginRunner, clustersnapshot.ClusterSnapshot, error) {
 	if schedConfig == nil {
 		defaultConfig, err := scheduler_config_latest.Default()
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		schedConfig = defaultConfig
 	}
 
-	fwHandle, err := framework.NewHandle(informers.NewSharedInformerFactory(clientsetfake.NewSimpleClientset(), 0), schedConfig)
+	fwHandle, err := framework.NewHandle(informers.NewSharedInformerFactory(clientsetfake.NewSimpleClientset(), 0), schedConfig, true)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return NewSchedulerPluginRunner(fwHandle, snapshotStore), nil
+	snapshot := NewPredicateSnapshot(store.NewBasicSnapshotStore(), fwHandle, true)
+	return NewSchedulerPluginRunner(fwHandle, snapshot), snapshot, nil
 }

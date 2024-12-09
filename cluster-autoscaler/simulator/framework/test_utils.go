@@ -33,7 +33,7 @@ type testFailer interface {
 func NewTestNodeInfo(node *apiv1.Node, pods ...*apiv1.Pod) *NodeInfo {
 	nodeInfo := NewNodeInfo(node, nil)
 	for _, pod := range pods {
-		nodeInfo.AddPod(&PodInfo{Pod: pod, NeededResourceClaims: nil})
+		nodeInfo.AddPod(NewPodInfo(pod, nil))
 	}
 	return nodeInfo
 }
@@ -44,7 +44,7 @@ func NewTestFrameworkHandle() (*Handle, error) {
 	if err != nil {
 		return nil, err
 	}
-	fwHandle, err := NewHandle(informers.NewSharedInformerFactory(clientsetfake.NewSimpleClientset(), 0), defaultConfig)
+	fwHandle, err := NewHandle(informers.NewSharedInformerFactory(clientsetfake.NewSimpleClientset(), 0), defaultConfig, true)
 	if err != nil {
 		return nil, err
 	}

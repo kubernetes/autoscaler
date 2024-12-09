@@ -30,27 +30,27 @@ import (
 
 // SchedulerPluginRunner can be used to run various phases of scheduler plugins through the scheduler framework.
 type SchedulerPluginRunner struct {
-	fwHandle      *framework.Handle
-	snapshotStore clustersnapshot.ClusterSnapshotStore
-	lastIndex     int
+	fwHandle  *framework.Handle
+	snapshot  clustersnapshot.ClusterSnapshot
+	lastIndex int
 }
 
 // NewSchedulerPluginRunner builds a SchedulerPluginRunner.
-func NewSchedulerPluginRunner(fwHandle *framework.Handle, snapshotStore clustersnapshot.ClusterSnapshotStore) *SchedulerPluginRunner {
-	return &SchedulerPluginRunner{fwHandle: fwHandle, snapshotStore: snapshotStore}
+func NewSchedulerPluginRunner(fwHandle *framework.Handle, snapshot clustersnapshot.ClusterSnapshot) *SchedulerPluginRunner {
+	return &SchedulerPluginRunner{fwHandle: fwHandle, snapshot: snapshot}
 }
 
 // RunFiltersUntilPassingNode runs the scheduler framework PreFilter phase once, and then keeps running the Filter phase for all nodes in the cluster that match the provided
 // function - until a Node where the Filters pass is found. Filters are only run for matching Nodes. If no matching Node with passing Filters is found, an error is returned.
 //
 // The node iteration always starts from the next Node from the last Node that was found by this method. TODO: Extract the iteration strategy out of SchedulerPluginRunner.
-func (p *SchedulerPluginRunner) RunFiltersUntilPassingNode(pod *apiv1.Pod, nodeMatches func(*framework.NodeInfo) bool) (string, clustersnapshot.SchedulingError) {
-	nodeInfosList, err := p.snapshotStore.ListNodeInfos()
+func (p *SchedulerPluginRunner) RunFiltersUntilPassingNode(pod *apiv1.Pod, nodeMatches func(*framework.NodeInfo) bool) (*apiv1.Node, *schedulerframework.CycleState, clustersnapshot.SchedulingError) {
+	nodeInfosList, err := p.snapshot.ListNodeInfos()
 	if err != nil {
-		return "", clustersnapshot.NewSchedulingInternalError(pod, fmt.Sprintf("error listing NodeInfos: %v", err))
+		return nil, nil, clustersnapshot.NewSchedulingInternalError(pod, fmt.Sprintf("error listing NodeInfos: %v", err))
 	}
 
-	p.fwHandle.DelegatingLister.UpdateDelegate(p.snapshotStore)
+	p.fwHandle.DelegatingLister.UpdateDelegate(p.snapshot)
 	defer p.fwHandle.DelegatingLister.ResetDelegate()
 
 	state := schedulerframework.NewCycleState()
@@ -61,7 +61,7 @@ func (p *SchedulerPluginRunner) RunFiltersUntilPassingNode(pod *apiv1.Pod, nodeM
 	if !preFilterStatus.IsSuccess() {
 		// If any of the plugin PreFilter methods isn't successful, the corresponding Filter method can't be run, so the whole scheduling cycle is aborted.
 		// Match that behavior here.
-		return "", clustersnapshot.NewFailingPredicateError(pod, preFilterStatus.Plugin(), preFilterStatus.Reasons(), "PreFilter failed", "")
+		return nil, nil, clustersnapshot.NewFailingPredicateError(pod, preFilterStatus.Plugin(), preFilterStatus.Reasons(), "PreFilter failed", "")
 	}
 
 	for i := range nodeInfosList {
@@ -92,31 +92,31 @@ func (p *SchedulerPluginRunner) RunFiltersUntilPassingNode(pod *apiv1.Pod, nodeM
 		if filterStatus.IsSuccess() {
 			// Filter passed for all plugins, so this pod can be scheduled on this Node.
 			p.lastIndex = (p.lastIndex + i + 1) % len(nodeInfosList)
-			return nodeInfo.Node().Name, nil
+			return nodeInfo.Node(), state, nil
 		}
 		// Filter didn't pass for some plugin, so this Node won't work - move on to the next one.
 	}
-	return "", clustersnapshot.NewNoNodesPassingPredicatesFoundError(pod)
+	return nil, nil, clustersnapshot.NewNoNodesPassingPredicatesFoundError(pod)
 }
 
 // RunFiltersOnNode runs the scheduler framework PreFilter and Filter phases to check if the given pod can be scheduled on the given node.
-func (p *SchedulerPluginRunner) RunFiltersOnNode(pod *apiv1.Pod, nodeName string) clustersnapshot.SchedulingError {
-	nodeInfo, err := p.snapshotStore.GetNodeInfo(nodeName)
+func (p *SchedulerPluginRunner) RunFiltersOnNode(pod *apiv1.Pod, nodeName string) (*apiv1.Node, *schedulerframework.CycleState, clustersnapshot.SchedulingError) {
+	nodeInfo, err := p.snapshot.GetNodeInfo(nodeName)
 	if err != nil {
-		return clustersnapshot.NewSchedulingInternalError(pod, fmt.Sprintf("error obtaining NodeInfo for name %q: %v", nodeName, err))
+		return nil, nil, clustersnapshot.NewSchedulingInternalError(pod, fmt.Sprintf("error obtaining NodeInfo for name %q: %v", nodeName, err))
 	}
 
-	p.fwHandle.DelegatingLister.UpdateDelegate(p.snapshotStore)
+	p.fwHandle.DelegatingLister.UpdateDelegate(p.snapshot)
 	defer p.fwHandle.DelegatingLister.ResetDelegate()
 
 	state := schedulerframework.NewCycleState()
 	// Run the PreFilter phase of the framework for the Pod and check the results. See the corresponding comments in RunFiltersUntilPassingNode() for more info.
 	preFilterResult, preFilterStatus, _ := p.fwHandle.Framework.RunPreFilterPlugins(context.TODO(), state, pod)
 	if !preFilterStatus.IsSuccess() {
-		return clustersnapshot.NewFailingPredicateError(pod, preFilterStatus.Plugin(), preFilterStatus.Reasons(), "PreFilter failed", "")
+		return nil, nil, clustersnapshot.NewFailingPredicateError(pod, preFilterStatus.Plugin(), preFilterStatus.Reasons(), "PreFilter failed", "")
 	}
 	if !preFilterResult.AllNodes() && !preFilterResult.NodeNames.Has(nodeInfo.Node().Name) {
-		return clustersnapshot.NewFailingPredicateError(pod, preFilterStatus.Plugin(), preFilterStatus.Reasons(), "PreFilter filtered the Node out", "")
+		return nil, nil, clustersnapshot.NewFailingPredicateError(pod, preFilterStatus.Plugin(), preFilterStatus.Reasons(), "PreFilter filtered the Node out", "")
 	}
 
 	// Run the Filter phase of the framework for the Pod and the Node and check the results. See the corresponding comments in RunFiltersUntilPassingNode() for more info.
@@ -128,10 +128,22 @@ func (p *SchedulerPluginRunner) RunFiltersOnNode(pod *apiv1.Pod, nodeName string
 		if !filterStatus.IsRejected() {
 			unexpectedErrMsg = fmt.Sprintf("unexpected filter status %q", filterStatus.Code().String())
 		}
-		return clustersnapshot.NewFailingPredicateError(pod, filterName, filterReasons, unexpectedErrMsg, p.failingFilterDebugInfo(filterName, nodeInfo))
+		return nil, nil, clustersnapshot.NewFailingPredicateError(pod, filterName, filterReasons, unexpectedErrMsg, p.failingFilterDebugInfo(filterName, nodeInfo))
 	}
 
 	// PreFilter and Filter phases checked, this Pod can be scheduled on this Node.
+	return nodeInfo.Node(), state, nil
+}
+
+// RunReserveOnNode runs the scheduler framework Reserve phase to update the scheduler plugins state to reflect the Pod being scheduled on the Node.
+func (p *SchedulerPluginRunner) RunReserveOnNode(pod *apiv1.Pod, nodeName string, postFilterState *schedulerframework.CycleState) error {
+	p.fwHandle.DelegatingLister.UpdateDelegate(p.snapshot)
+	defer p.fwHandle.DelegatingLister.ResetDelegate()
+
+	status := p.fwHandle.Framework.RunReservePluginsReserve(context.Background(), postFilterState, pod, nodeName)
+	if !status.IsSuccess() {
+		return fmt.Errorf("couldn't reserve node %s for pod %s/%s: %v", nodeName, pod.Namespace, pod.Name, status.Message())
+	}
 	return nil
 }
 

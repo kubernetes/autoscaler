@@ -21,7 +21,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/framework"
+	drasnapshot "k8s.io/autoscaler/cluster-autoscaler/simulator/dynamicresources/snapshot"
 	"k8s.io/klog/v2"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
@@ -35,6 +35,7 @@ type BasicSnapshotStore struct {
 type internalBasicSnapshotData struct {
 	nodeInfoMap        map[string]*schedulerframework.NodeInfo
 	pvcNamespacePodMap map[string]map[string]bool
+	draSnapshot        drasnapshot.Snapshot
 }
 
 func (data *internalBasicSnapshotData) listNodeInfos() []*schedulerframework.NodeInfo {
@@ -141,6 +142,7 @@ func (data *internalBasicSnapshotData) clone() *internalBasicSnapshotData {
 	return &internalBasicSnapshotData{
 		nodeInfoMap:        clonedNodeInfoMap,
 		pvcNamespacePodMap: clonedPvcNamespaceNodeMap,
+		draSnapshot:        data.draSnapshot.Clone(),
 	}
 }
 
@@ -205,27 +207,17 @@ func (snapshot *BasicSnapshotStore) getInternalData() *internalBasicSnapshotData
 	return snapshot.data[len(snapshot.data)-1]
 }
 
-// GetNodeInfo gets a NodeInfo.
-func (snapshot *BasicSnapshotStore) GetNodeInfo(nodeName string) (*framework.NodeInfo, error) {
-	schedNodeInfo, err := snapshot.getInternalData().getNodeInfo(nodeName)
-	if err != nil {
-		return nil, err
-	}
-	return framework.WrapSchedulerNodeInfo(schedNodeInfo), nil
+// DraSnapshot returns the DRA snapshot.
+func (snapshot *BasicSnapshotStore) DraSnapshot() drasnapshot.Snapshot {
+	return snapshot.getInternalData().draSnapshot
 }
 
-// ListNodeInfos lists NodeInfos.
-func (snapshot *BasicSnapshotStore) ListNodeInfos() ([]*framework.NodeInfo, error) {
-	schedNodeInfos := snapshot.getInternalData().listNodeInfos()
-	return framework.WrapSchedulerNodeInfos(schedNodeInfos), nil
-}
-
-// AddNodeInfo adds a NodeInfo.
-func (snapshot *BasicSnapshotStore) AddNodeInfo(nodeInfo *framework.NodeInfo) error {
+// AddSchedulerNodeInfo adds a NodeInfo.
+func (snapshot *BasicSnapshotStore) AddSchedulerNodeInfo(nodeInfo *schedulerframework.NodeInfo) error {
 	if err := snapshot.getInternalData().addNode(nodeInfo.Node()); err != nil {
 		return err
 	}
-	for _, podInfo := range nodeInfo.Pods() {
+	for _, podInfo := range nodeInfo.Pods {
 		if err := snapshot.getInternalData().addPod(podInfo.Pod, nodeInfo.Node().Name); err != nil {
 			return err
 		}
@@ -234,7 +226,7 @@ func (snapshot *BasicSnapshotStore) AddNodeInfo(nodeInfo *framework.NodeInfo) er
 }
 
 // SetClusterState sets the cluster state.
-func (snapshot *BasicSnapshotStore) SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod) error {
+func (snapshot *BasicSnapshotStore) SetClusterState(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod, draSnapshot drasnapshot.Snapshot) error {
 	snapshot.clear()
 
 	knownNodes := make(map[string]bool)
@@ -251,11 +243,12 @@ func (snapshot *BasicSnapshotStore) SetClusterState(nodes []*apiv1.Node, schedul
 			}
 		}
 	}
+	snapshot.getInternalData().draSnapshot = draSnapshot
 	return nil
 }
 
-// RemoveNodeInfo removes nodes (and pods scheduled to it) from the snapshot.
-func (snapshot *BasicSnapshotStore) RemoveNodeInfo(nodeName string) error {
+// RemoveSchedulerNodeInfo removes nodes (and pods scheduled to it) from the snapshot.
+func (snapshot *BasicSnapshotStore) RemoveSchedulerNodeInfo(nodeName string) error {
 	return snapshot.getInternalData().removeNodeInfo(nodeName)
 }
 
@@ -317,6 +310,21 @@ func (snapshot *BasicSnapshotStore) NodeInfos() schedulerframework.NodeInfoListe
 // StorageInfos exposes snapshot as StorageInfoLister.
 func (snapshot *BasicSnapshotStore) StorageInfos() schedulerframework.StorageInfoLister {
 	return (*basicSnapshotStoreStorageLister)(snapshot)
+}
+
+// ResourceClaims exposes snapshot as ResourceClaimTracker
+func (snapshot *BasicSnapshotStore) ResourceClaims() schedulerframework.ResourceClaimTracker {
+	return snapshot.DraSnapshot().ResourceClaims()
+}
+
+// ResourceSlices exposes snapshot as ResourceSliceLister.
+func (snapshot *BasicSnapshotStore) ResourceSlices() schedulerframework.ResourceSliceLister {
+	return snapshot.DraSnapshot().ResourceSlices()
+}
+
+// DeviceClasses exposes the snapshot as DeviceClassLister.
+func (snapshot *BasicSnapshotStore) DeviceClasses() schedulerframework.DeviceClassLister {
+	return snapshot.DraSnapshot().DeviceClasses()
 }
 
 // List returns the list of nodes in the snapshot.
